@@ -1,0 +1,52 @@
+@import "./normalize.css"; // normalize css for cross-browser integrations
+@import "font"; //applications font-face
+@import "breakpoints";
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #__nuxt, #__layout, main {
+  min-height: 100vh !important;
+  font-size: 16px; //root font-size
+}
+
+body {
+  background: linear-gradient(to left top, #212121 0%/*bottom-right color*/, #263238 100% /*top-left color*/);
+  min-height: 100%;
+  font-family: 'ProductSans';
+  color: $mainFontColor;
+}
+
+#right-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0;
+  padding: 2rem;
+}
+
+input {
+  border: none !important;
+  padding: .75rem;
+  color: #fff;
+
+  &:focus,
+  &:active {
+    border: none;
+    box-shadow: none !important;
+    outline: $mainFontColor solid 2px;
+  }
+}
+
+//Dividers
+.vd-2 {
+  height: 2rem;
+}
+
+.error-container {
+  padding: 1rem;
+  border-radius: .5rem;
+  background-color: #191c1e;
+  border: 1px solid #263238;
+  color: #e6e6e6;
+}
