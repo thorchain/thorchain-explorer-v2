@@ -94,13 +94,15 @@ export default {
         [
           {
             name: 'Total Reserve',
-            value: (this.network.totalReserve ?? 0) / 10**8
+            value: (this.network.totalReserve ?? 0) / 10**8,
+            usdValue: true
           }
         ],
         [
           {
             name: 'Total Pooled Rune',
-            value: (this.network.totalPooledRune ?? 0) / 10**8
+            value: (this.network.totalPooledRune ?? 0) / 10**8,
+            usdValue: true
           }
         ],
 

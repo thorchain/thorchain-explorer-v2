@@ -106,17 +106,17 @@ export default {
                 {
                   name: "To Asset Fees",
                   value: Number.parseInt(res.data?.toAssetFees) / 10 ** 8,
-                  usd: true
+                  usdValue: true
                 },
                 {
                   name: 'To RUNE Fees',
                   value: Number.parseInt(res.data?.toRuneFees) / 10 ** 8,
-                  usd: true
+                  usdValue: true
                 },
                 {
                   name: 'Total Fees',
                   value: Number.parseInt(res.data?.totalFees) / 10 ** 8,
-                  usd: true
+                  usdValue: true
                 },
               ],
               [
@@ -141,17 +141,17 @@ export default {
                 {
                   name: 'To Asset Volume',
                   value: Number.parseInt(res.data?.toAssetVolume) / 10**8,
-                  usd: true
+                  usdValue: true
                 },
                 {
                   name: 'To RUNE Volume',
                   value: Number.parseInt(res.data?.toRuneVolume) / 10**8,
-                  usd: true
+                  usdValue: true
                 },
                 {
                   name: 'Swap Volume',
                   value: Number.parseInt(res.data?.swapVolume) / 10**8,
-                  usd: true
+                  usdValue: true
                 },
               ]
             ],
@@ -162,7 +162,8 @@ export default {
               [
                 {
                   name: 'Add Liquidity Count',
-                  value: Number.parseInt(res.data?.addLiquidityCount)
+                  value: Number.parseInt(res.data?.addLiquidityCount),
+                  filter: true
                 },
                 {
                   name: 'Unique Member Count',
@@ -171,24 +172,24 @@ export default {
                 {
                   name: 'Loss Protection Paid',
                   value: Number.parseInt(res.data?.impermanentLossProtectionPaid) / 10**8,
-                  usd: true
+                  usdValue: true
                 }
               ],
               [
                 {
                   name: 'Add Asset Liquidity Volume',
                   value: Number.parseInt(res.data?.addAssetLiquidityVolume) / 10**8,
-                  usd: true
+                  usdValue: true
                 },
                 {
                   name: 'Add RUNE Liquidity Volume',
                   value: Number.parseInt(res.data?.addRuneLiquidityVolume) / 10**8,
-                  usd: true
+                  usdValue: true
                 },
                 {
                   name: 'Add Liquidity Volume',
                   value: Number.parseInt(res.data?.addLiquidityVolume) / 10**8,
-                  usd: true
+                  usdValue: true
                 }
               ]
             ]
@@ -206,17 +207,17 @@ export default {
                 {
                   name: 'Withdraw Asset Volume',
                   value: Number.parseInt(res.data?.withdrawAssetVolume) / 10**8,
-                  usd: true
+                  usdValue: true
                 },
                 {
                   name: 'Withdraw RUNE Volume',
                   value: Number.parseInt(res.data?.withdrawRuneVolume) / 10**8,
-                  usd: true
+                  usdValue: true
                 },
                 {
                   name: 'Withdraw Volume',
                   value: Number.parseInt(res.data?.withdrawVolume) / 10**8,
-                  usd: true
+                  usdValue: true
                 }
               ]
             ]

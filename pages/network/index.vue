@@ -37,11 +37,13 @@ export default {
         [
           {
             name: 'Total Bond',
-            value: ((this.bondMetrics?.bondMetrics?.active?.totalBond ?? 0)/10**8)
+            value: ((this.bondMetrics?.bondMetrics?.active?.totalBond ?? 0)/10**8),
+            usdValue: true
           },
           {
             name: 'Average Bond',
-            value: ((this.bondMetrics?.bondMetrics?.active?.averageBond ?? 0)/10**8)
+            value: ((this.bondMetrics?.bondMetrics?.active?.averageBond ?? 0)/10**8),
+            usdValue: true
           },
           {
             name: 'Total Node Cound',
@@ -51,15 +53,18 @@ export default {
         [
           {
             name: 'Maximum Bond',
-            value: Math.floor(Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.active?.maximumBond) ?? 0)/10**8))
+            value: Math.floor(Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.active?.maximumBond) ?? 0)/10**8)),
+            usdValue: true
           },
           {
             name: 'Median Bond',
-            value: Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.active?.medianBond) ?? 0)/10**8)
+            value: Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.active?.medianBond) ?? 0)/10**8),
+            usdValue: true
           },
           {
             name: 'Minimum Bond',
-            value: Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.active?.minimumBond) ?? 0)/10**8)
+            value: Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.active?.minimumBond) ?? 0)/10**8),
+            usdValue: true
           }
         ]
       ]
@@ -69,11 +74,13 @@ export default {
         [
           {
             name: 'Total Bond',
-            value: ((this.bondMetrics?.bondMetrics?.standby?.totalBond ?? 0)/10**8)
+            value: ((this.bondMetrics?.bondMetrics?.standby?.totalBond ?? 0)/10**8),
+            usdValue: true
           },
           {
             name: 'Average Bond',
-            value: ((this.bondMetrics?.bondMetrics?.standby?.averageBond ?? 0)/10**8)
+            value: ((this.bondMetrics?.bondMetrics?.standby?.averageBond ?? 0)/10**8),
+            usdValue: true
           },
           {
             name: 'Total Node Cound',
@@ -83,15 +90,18 @@ export default {
         [
           {
             name: 'Maximum Bond',
-            value: Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.standby?.maximumBond) ?? 0)/10**8)
+            value: Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.standby?.maximumBond) ?? 0)/10**8),
+            usdValue: true
           },
           {
             name: 'Median Bond',
-            value: Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.standby?.medianBond) ?? 0)/10**8)
+            value: Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.standby?.medianBond) ?? 0)/10**8),
+            usdValue: true
           },
           {
             name: 'Minimum Bond',
-            value: Math.floor((this.bondMetrics?.bondMetrics?.standby?.minimumBond)/10**8).toString()
+            value: Math.floor((this.bondMetrics?.bondMetrics?.standby?.minimumBond)/10**8).toString(),
+            usdValue: true
           }
         ]
       ]
