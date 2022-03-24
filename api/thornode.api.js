@@ -8,3 +8,7 @@ export function getMimir() {
 export function getBalance(address) {
   return $axiosInstace.get(process.env.THORNODE_URL + `/bank/balances/${address}`);
 }
+
+export function getLastBlockHeight() {
+  return $axiosInstace.get(process.env.THORNODE_URL + 'thorchain/lastblock');
+}

@@ -15,8 +15,9 @@
 </template>
 
 <script>
-import {bondMetrics, networkQuery} from '~/_gql_queries'
+import {bondMetrics, networkQuery} from '~/_gql_queries';
 import StatTable from "~/components/StatTable.vue";
+import {nextChurnTime} from '~/utils';
 
 export default {
   components: { StatTable },
@@ -24,12 +25,28 @@ export default {
     return {
       network: [],
       rune: [],
+      lastblock: undefined
     };
   },
   apollo: {
     $prefetch: false,
     network: networkQuery,
     bondMetrics: bondMetrics,
+  },
+  mounted() {
+    this.$api.getLastBlockHeight()
+    .then(res => this.lastblock = res.data)
+    .catch(error => {
+      console.error(error)
+    })
+  },
+  methods: {
+    nextChurnTime() {
+      if (this.lastblock && this.network) {
+        console.log(this.network)
+        return nextChurnTime(this.lastblock[0]['thorchain'], this.network.nextChurnHeight)
+      }
+    }
   },
   computed: {
     topActiveBonds: function() {
@@ -124,6 +141,7 @@ export default {
           {
             name: "Next Churn Height",
             value: this.network.nextChurnHeight,
+            extraText: this.nextChurnTime()
           },
           {
             name: "Pool Activation Countdown",

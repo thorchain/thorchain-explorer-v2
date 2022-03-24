@@ -25,6 +25,7 @@
               <template v-else> - </template>
             </template>
             <span class="usd-value" v-if="colItem.value && colItem.usdValue">({{ colItem.value * runePrice | currency }})</span>
+            <span class="usd-value" v-if="colItem.extraText">({{ colItem.extraText }})</span>
           </div>
         </div>
       </div>
