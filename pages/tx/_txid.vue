@@ -172,7 +172,7 @@ export default {
     const txid = params.txid;
     const nTx = await $api.getNativeTx(txid).catch(e => {
       console.error(e);
-      if (e.response.status === 404) {
+      if (e?.response?.status === 404) {
         errorMsg = 'No transaction with this hash ID.'
         return
       }
