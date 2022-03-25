@@ -16,7 +16,8 @@
 </template>
 
 <script>
-import {networkQuery, volumeHistoryQuery} from '~/_gql_queries'
+import {networkQuery, volumeHistoryQuery} from '~/_gql_queries';
+import { nextChurnTime} from '~/utils';
 
 export default {
   components: { 
@@ -32,6 +33,7 @@ export default {
       network: [],
       rune: '',
       volumeHistoryQuery: undefined,
+      lastblock: undefined,
       stats: [],
     };
   },
@@ -75,7 +77,8 @@ export default {
         [
           {
             name: 'Next Churn Height',
-            value: this.network.nextChurnHeight
+            value: this.network.nextChurnHeight,
+            extraText: this.nextChurnTime()
           }
         ],
         [
@@ -94,13 +97,15 @@ export default {
         [
           {
             name: 'Total Reserve',
-            value: (this.network.totalReserve ?? 0) / 10**8
+            value: (this.network.totalReserve ?? 0) / 10**8,
+            usdValue: true
           }
         ],
         [
           {
             name: 'Total Pooled Rune',
-            value: (this.network.totalPooledRune ?? 0) / 10**8
+            value: (this.network.totalPooledRune ?? 0) / 10**8,
+            usdValue: true
           }
         ],
 
@@ -206,6 +211,11 @@ export default {
   methods: {
     stringToPercentage(val) {
       return (Number.parseFloat(val ?? 0) * 100).toFixed(2).toString() + ' %'
+    },
+    nextChurnTime() {
+      if (this.lastblock && this.network) {
+        return nextChurnTime(this.lastblock[0]['thorchain'], this.network.nextChurnHeight)
+      }
     }
   },
   apollo: {
@@ -226,6 +236,12 @@ export default {
   mounted() {
     this.$api.getStats()
     .then(res => this.stats = res.data)
+    .catch(error => {
+      console.error(error)
+    })
+
+    this.$api.getLastBlockHeight()
+    .then(res => this.lastblock = res.data)
     .catch(error => {
       console.error(error)
     })

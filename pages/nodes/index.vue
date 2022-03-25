@@ -24,6 +24,7 @@
 <script>
 import { nodesQuery } from "~/_gql_queries";
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue';
+import { mapGetters } from 'vuex';
 
 export default {
   name: "nodesPage",
@@ -44,6 +45,9 @@ export default {
     }
   },
   computed: {
+    ...mapGetters({
+      runePrice: 'getRunePrice'
+    }),
     activeNodes: function () {
       if (this.nodesQuery) {
         const actNodes = this.nodesQuery.nodes?.filter(
@@ -58,7 +62,8 @@ export default {
             el.version,
             el.slashPoints,
             this.$options.filters.number(Number.parseInt(el.currentAward)/10**8, '0,0'),
-            this.$options.filters.number(Math.floor(Number.parseInt(el.bond)/10**8), '0,0'),
+            this.$options.filters.number(Math.floor(Number.parseInt(el.bond)/10**8), '0,0')
+            + ` (${this.$options.filters.currency(Math.floor(Number.parseInt(el.bond)/10**8) * this.runePrice)})`,
           ]);
           addresses.push(el.address);
         });
@@ -93,7 +98,8 @@ export default {
             el.version,
             el.slashPoints,
             this.$options.filters.number(Math.ceil(Number.parseInt(el.currentAward)/10**8), '0,0'),
-            this.$options.filters.number(Math.floor(Number.parseInt(el.bond)/10**8), '0,0'),
+            this.$options.filters.number(Math.floor(Number.parseInt(el.bond)/10**8), '0,0') 
+            + ` (${this.$options.filters.currency(Math.floor(Number.parseInt(el.bond)/10**8) * this.runePrice)})`,
           ]);
           addresses.push(el.address);
         });

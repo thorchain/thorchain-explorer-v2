@@ -1,5 +1,5 @@
 import { getStats, getTxs, getConstants, getTx, getAddress, getPoolStats, getPoolTxs } from './midgard.api';
-import { getMimir, getBalance } from './thornode.api';
+import { getMimir, getBalance, getLastBlockHeight, getNativeTx } from './thornode.api';
 export var $axiosInstace;
 
 // interceptor to catch errors
@@ -70,7 +70,9 @@ export default function ({ $axios }, inject) {
     getAddress,
     getPoolStats,
     getPoolTxs,
-    getBalance
+    getBalance,
+    getLastBlockHeight,
+    getNativeTx
   }
 
   inject('api', api);
