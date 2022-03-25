@@ -2,85 +2,132 @@
   <div class="tx-container">
     <template v-if="tx">
       <div class="tx-header">Transaction</div>
-      <div class="tx-id">{{ tx.in[0].txID }}</div>
+      <div class="tx-id">{{ tx.txID }}</div>
       <div class="utility">
-        <div class="icon-wrapper" @click="copy(tx.in[0].txID)">
+        <div class="icon-wrapper" @click="copy(tx.txID)">
           <span class="icon-name">{{ copyText }}</span>
           <CopyIcon class="icon small" />
         </div>
       </div>
       <div class="tx-date">
-        {{ new Date(tx.date / 10 ** 6).toLocaleString() }}
+        {{ tx.date }}
       </div>
       <div style="margin: 1rem 0"></div>
-      <div class="tx-inner-container">
-        <div class="in-container">
-          <div class="bubble">In</div>
-          <div
-            class="tx"
-            v-if="tx.in[0] && tx.in[0].txID"
-            @click="gotoTx(tx.in[0].txID)"
-          >
-            {{ tx.in[0].txID.slice(0, 4) }}...{{ tx.in[0].txID.slice(-4) }}
-          </div>
-          <div class="break"></div>
-          <div class="tx-amount" v-if="tx.in[0] && tx.in[0].coins[0]">
-            <img
-              class="asset-coin"
-              :src="assetImage(tx.in[0].coins[0].asset)"
-              alt="in-coin"
-            />
-            <span
-              >{{
-                (tx.in[0].coins[0].amount / 10 ** 8) | number("0,0.00000000")
-              }}
-              {{ tx.in[0].coins[0].asset }}</span
+      <template v-if="tx.isMidgard">
+        <div class="tx-inner-container">
+          <div class="in-container">
+            <div class="bubble">In</div>
+            <div
+              class="tx"
+              v-if="tx.in[0] && tx.in[0].txID"
+              @click="gotoTx(tx.in[0].txID)"
             >
-          </div>
-          <div class="break"></div>
-          <a
-            class="tx-address"
-            v-if="tx.in[0].address"
-            @click="gotoAddress(tx.in[0].address)"
-          >
-            {{ tx.in[0].address.slice(0, 6) }}...{{ tx.in[0].address.slice(-6) }}
-          </a>
-        </div>
-        <div class="out-container" v-if="tx.out[0]">
-          <div class="bubble">Out</div>
-          <div class="tx" v-if="tx.out[0].txID" @click="gotoTx(tx.out[0].txID)">
-            {{ tx.out[0].txID.slice(0, 4) }}...{{ tx.out[0].txID.slice(-4) }}
-          </div>
-          <div class="break"></div>
-          <div class="tx-amount" v-if="tx.out[0].coins[0]">
-            <img
-              class="asset-coin"
-              :src="assetImage(tx.out[0].coins[0].asset)"
-              alt="in-coin"
-            />
-            <span
-              >{{
-                (tx.out[0].coins[0].amount / 10 ** 8) | number("0,0.00000000")
-              }}
-              {{ tx.out[0].coins[0].asset }}</span
+              {{ tx.in[0].txID.slice(0, 4) }}...{{ tx.in[0].txID.slice(-4) }}
+            </div>
+            <div class="break"></div>
+            <div class="tx-amount" v-if="tx.in[0] && tx.in[0].coins[0]">
+              <img
+                class="asset-coin"
+                :src="assetImage(tx.in[0].coins[0].asset)"
+                alt="in-coin"
+              />
+              <span
+                >{{
+                  (tx.in[0].coins[0].amount / 10 ** 8) | number("0,0.00000000")
+                }}
+                {{ tx.in[0].coins[0].asset }}</span
+              >
+            </div>
+            <div class="break"></div>
+            <a
+              class="tx-address"
+              v-if="tx.in[0].address"
+              @click="gotoAddress(tx.in[0].address)"
             >
+              {{ tx.in[0].address.slice(0, 6) }}...{{ tx.in[0].address.slice(-6) }}
+            </a>
           </div>
-          <div class="break"></div>
-          <a
-            class="tx-address"
-            v-if="tx.out[0].address"
-            @click="gotoAddress(tx.out[0].address)"
-          >
-            {{ tx.out[0].address.slice(0, 6) }}...{{
-              tx.out[0].address.slice(-6)
-            }}
-          </a>
+          <div class="out-container" v-if="tx.out[0]">
+            <div class="bubble">Out</div>
+            <div class="tx" v-if="tx.out[0].txID" @click="gotoTx(tx.out[0].txID)">
+              {{ tx.out[0].txID.slice(0, 4) }}...{{ tx.out[0].txID.slice(-4) }}
+            </div>
+            <div class="break"></div>
+            <div class="tx-amount" v-if="tx.out[0].coins[0]">
+              <img
+                class="asset-coin"
+                :src="assetImage(tx.out[0].coins[0].asset)"
+                alt="in-coin"
+              />
+              <span
+                >{{
+                  (tx.out[0].coins[0].amount / 10 ** 8) | number("0,0.00000000")
+                }}
+                {{ tx.out[0].coins[0].asset }}</span
+              >
+            </div>
+            <div class="break"></div>
+            <a
+              class="tx-address"
+              v-if="tx.out[0].address"
+              @click="gotoAddress(tx.out[0].address)"
+            >
+              {{ tx.out[0].address.slice(0, 6) }}...{{
+                tx.out[0].address.slice(-6)
+              }}
+            </a>
+          </div>
         </div>
-      </div>
-      <stat-table :tableSettings="extraDetail"></stat-table>
+        <stat-table :tableSettings="extraDetail"></stat-table>
+      </template>
+      <template v-else>
+        <div class="tx-inner-container">
+          <div class="in-container">
+            <div class="bubble">Send</div>
+            <div
+              class="tx"
+              v-if="tx && tx.txID"
+              @click="gotoTx(tx.txID)"
+            >
+              {{ tx.txID.slice(0, 4) }}...{{ tx.txID.slice(-4) }}
+            </div>
+            <div class="break"></div>
+            <div class="tx-amount" v-if="tx && tx.amount[0]">
+              <img
+                class="asset-coin"
+                :src="assetImage('THOR.RUNE')"
+                alt="transfer-coin"
+              />
+              <span
+                >{{
+                  (tx.amount[0].amount / 10 ** 8) | number("0,0.00000000")
+                }}
+                {{ tx.amount[0].denom }}</span
+              >
+            </div>
+            <div class="break"></div>
+            <a
+              class="tx-address"
+              v-if="tx.from"
+              @click="gotoAddress(tx.from)"
+            >
+              {{ tx.from.slice(0, 6) }}...{{ tx.from.slice(-6) }} 
+            </a>
+            <span style="margin: 0 1rem;">-></span>
+            <a
+              class="tx-address"
+              v-if="tx.to"
+              @click="gotoAddress(tx.to)"
+            >
+              {{ tx.to.slice(0, 6) }}...{{ tx.to.slice(-6) }}
+            </a>
+          </div>
+        </div>
+        <stat-table :tableSettings="extraDetail"></stat-table>
+      </template>
     </template>
     <div v-else class="error-container">
-      Can't Fetch the Transaction! Please Try again Later.
+      {{errorMsg}}
     </div>
   </div>
 </template>
@@ -88,6 +135,7 @@
 <script>
 import { AssetImage } from "~/classes/assetImage";
 import CopyIcon from "~/assets/images/copy.svg?inline";
+import { parseCosmosTx } from '~/utils';
 
 export default {
   methods: {
@@ -120,11 +168,27 @@ export default {
     },
   },
   async asyncData({ params, $api }) {
+    let errorMsg = 'Can\'t Fetch the Transaction! Please Try again Later.';
     const txid = params.txid;
-    const tx = await $api.getTx(txid).catch(e => {
-      console.error(e)
+    const nTx = await $api.getNativeTx(txid).catch(e => {
+      console.error(e);
+      if (e.response.status === 404) {
+        errorMsg = 'No transaction with this hash ID.'
+        return
+      }
     });
-    return { txid, tx: tx?.data?.actions[0] };
+    //check thorchain native tx
+    let nativeTx;
+    if (nTx && nTx.data) {
+      nativeTx = parseCosmosTx(nTx.data);
+    }
+    let tx;
+    if (!(nativeTx?.txID)) {
+      tx = await $api.getTx(txid).catch(e => {
+        console.error(e)
+      });
+    }
+    return { txid, midgardTx: tx?.data?.actions[0], nativeTx, errorMsg };
   },
   components: {
     CopyIcon,
@@ -135,17 +199,24 @@ export default {
     };
   },
   computed: {
+    tx: function () {
+      let ret = {
+        date: new Date(this.midgardTx?.date / 10 ** 6).toLocaleString() || this.nativeTx[0]?.date,
+      }
+      Object.assign(ret, (this.midgardTx? this.midgardTx:this.nativeTx[0]));
+      ret.txID = this.midgardTx?.in[0]?.txID || this.nativeTx[0]?.txID;
+      ret.isMidgard = (!!this.midgardTx);
+      ret.height = (this.midgardTx?.height) || this.nativeTx[0]?.height;
+      ret.type = this.midgardTx?.type || this.nativeTx[0]?.type;
+      console.log(ret)
+      return ret;
+    },
     extraDetail: function () {
       let res = [
         [
           {
             name: "Block Height",
             value: this.tx?.height,
-          },
-          {
-            name: "Status",
-            value: this.$options.filters.capitalize(this.tx?.status),
-            filter: true,
           },
           {
             name: "Type",
@@ -155,27 +226,42 @@ export default {
         ],
       ];
 
-      let gasFee = undefined;
-      if (this.tx?.metadata && this.tx?.metadata[Object.keys(this.tx?.metadata)[0]].networkFees) {
-        gasFee = {
-          name: "Gas Fee",
-          value:
-            this.$options.filters.number(
-              Number.parseInt(
-                this.tx?.metadata[Object.keys(this.tx?.metadata)[0]]
-                  ?.networkFees[0].amount
-              ) /
-                10 ** 8,
-              "0.00000000"
-            ) +
-            " " +
-            this.tx?.metadata[Object.keys(this.tx?.metadata)[0]]?.networkFees[0]
-              .asset,
+      if (!this.midgardTx) {
+        res.push([{
+          name: 'Gas Fee',
+          value: this.$options.filters.number(this.nativeTx[0]?.gas/10**8, "0.00000000")
+          + " THOR.RUNE",
           filter: true
-        };
-        res.push([gasFee])
+        }])
       }
 
+      if (this.midgardTx) {
+        let gasFee = undefined;
+        if (this.tx?.metadata && this.tx?.metadata[Object.keys(this.tx?.metadata)[0]].networkFees) {
+          gasFee = {
+            name: "Gas Fee",
+            value:
+              this.$options.filters.number(
+                Number.parseInt(
+                  this.tx?.metadata[Object.keys(this.tx?.metadata)[0]]
+                    ?.networkFees[0].amount
+                ) /
+                  10 ** 8,
+                "0.00000000"
+              ) +
+              " " +
+              this.tx?.metadata[Object.keys(this.tx?.metadata)[0]]?.networkFees[0]
+                .asset,
+            filter: true
+          };
+          res.push([gasFee, {
+            name: "Status",
+            value: this.$options.filters.capitalize(this.tx?.status),
+            filter: true,
+          }])
+        }
+      }
+  console.log(res);
       return res;
     },
   },
