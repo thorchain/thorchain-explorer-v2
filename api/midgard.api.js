@@ -2,7 +2,7 @@
 import { $axiosInstace } from './index';
 
 export function getStats() {
-  return $axiosInstace.get('/stats');
+  return $axiosInstace.get('stats');
 }
 
 export function getTxs(offset=0, limit=10) {
@@ -11,7 +11,7 @@ export function getTxs(offset=0, limit=10) {
     limit
   }
 
-  return $axiosInstace.get('/actions', { params });
+  return $axiosInstace.get('actions', { params });
 }
 
 export function getConstants() {
@@ -25,7 +25,7 @@ export function getTx(txid, limit=10) {
     txid
   }
 
-  return $axiosInstace.get('/actions', {params})
+  return $axiosInstace.get('actions', {params})
 }
 
 export function getAddress(address, offset=0, limit=10) {
@@ -35,7 +35,7 @@ export function getAddress(address, offset=0, limit=10) {
     address
   }
 
-  return $axiosInstace.get('/actions', {params})
+  return $axiosInstace.get('actions', {params})
 }
 
 export function getPoolTxs(poolName, offset=0, limit=10) {
@@ -45,9 +45,9 @@ export function getPoolTxs(poolName, offset=0, limit=10) {
     asset: poolName
   }
 
-  return $axiosInstace.get('/actions', {params})
+  return $axiosInstace.get('actions', {params})
 }
 
 export function getPoolStats(poolName) {
-  return $axiosInstace.get(`/pool/${poolName}/stats`)
+  return $axiosInstace.get(`pool/${poolName}/stats`)
 }
