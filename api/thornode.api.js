@@ -2,7 +2,7 @@
 import { $axiosInstace } from './index';
 
 export function getMimir() {
-  return $axiosInstace.get(process.env.THORNODE_URL + 'mimir');
+  return $axiosInstace.get(process.env.THORNODE_URL + 'thorchain/mimir');
 }
 
 export function getBalance(address) {
