@@ -16,3 +16,11 @@ export function getLastBlockHeight() {
 export function getNativeTx(txID) {
   return $axiosInstace.get(process.env.THORNODE_URL + `cosmos/tx/v1beta1/txs/${txID}`);
 }
+
+export function getThorNetwork() {
+  return $axiosInstace.get(process.env.THORNODE_URL + `thorchain/network`);
+}
+
+export function getInboundAddresses() {
+  return $axiosInstace.get(process.env.THORNODE_URL + `thorchain/inbound_addresses`);
+}
