@@ -1,6 +1,14 @@
 <template>
   <div class="nodes-wrapper">
-    <div v-if="nodesQuery && nodesQuery.nodes" class="nodes-container">
+      <div v-if="nodesQuery && nodesQuery.nodes" class="nodes-container">
+        <div class="grid-network">
+        <div>
+          <stat-table :tableSettings="topActiveBonds" header="Top Active Bonds"></stat-table>
+        </div>
+        <div>
+          <stat-table :tableSettings="topStandbyBonds" header="Top Standby Bonds"></stat-table>
+        </div>
+      </div>
       <content-table
         :table="activeNodes"
         header="Active Nodes"
@@ -22,7 +30,7 @@
 </template>
 
 <script>
-import { nodesQuery } from "~/_gql_queries";
+import {bondMetrics, nodesQuery} from "~/_gql_queries";
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue';
 import { mapGetters } from 'vuex';
 
@@ -38,6 +46,7 @@ export default {
         return data;
       },
     },
+    bondMetrics: bondMetrics,
   },
   methods: {
     gotoNode(address) {
@@ -48,6 +57,80 @@ export default {
     ...mapGetters({
       runePrice: 'getRunePrice'
     }),
+    topActiveBonds: function() {
+      return [
+        [
+          {
+            name: 'Total Bond',
+            value: ((this.bondMetrics?.bondMetrics?.active?.totalBond ?? 0)/10**8),
+            usdValue: true
+          },
+          {
+            name: 'Average Bond',
+            value: ((this.bondMetrics?.bondMetrics?.active?.averageBond ?? 0)/10**8),
+            usdValue: true
+          },
+          {
+            name: 'Total Node Cound',
+            value: this.bondMetrics?.activeNodeCount
+          }
+        ],
+        [
+          {
+            name: 'Maximum Bond',
+            value: Math.floor(Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.active?.maximumBond) ?? 0)/10**8)),
+            usdValue: true
+          },
+          {
+            name: 'Median Bond',
+            value: Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.active?.medianBond) ?? 0)/10**8),
+            usdValue: true
+          },
+          {
+            name: 'Minimum Bond',
+            value: Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.active?.minimumBond) ?? 0)/10**8),
+            usdValue: true
+          }
+        ]
+      ]
+    },
+    topStandbyBonds: function() {
+      return [
+        [
+          {
+            name: 'Total Bond',
+            value: ((this.bondMetrics?.bondMetrics?.standby?.totalBond ?? 0)/10**8),
+            usdValue: true
+          },
+          {
+            name: 'Average Bond',
+            value: ((this.bondMetrics?.bondMetrics?.standby?.averageBond ?? 0)/10**8),
+            usdValue: true
+          },
+          {
+            name: 'Total Node Cound',
+            value: this.bondMetrics?.standbyNodeCount
+          }
+        ],
+        [
+          {
+            name: 'Maximum Bond',
+            value: Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.standby?.maximumBond) ?? 0)/10**8),
+            usdValue: true
+          },
+          {
+            name: 'Median Bond',
+            value: Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.standby?.medianBond) ?? 0)/10**8),
+            usdValue: true
+          },
+          {
+            name: 'Minimum Bond',
+            value: Math.floor((this.bondMetrics?.bondMetrics?.standby?.minimumBond)/10**8).toString(),
+            usdValue: true
+          }
+        ]
+      ]
+    },
     activeNodes: function () {
       if (this.nodesQuery) {
         const actNodes = this.nodesQuery.nodes?.filter(
@@ -132,5 +215,14 @@ export default {
   .nodes-container {
     flex: 1 0;
   }
+}
+
+.grid-network {
+  margin-bottom: 1rem;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-gap: .5rem;
+  gap: .5rem;
 }
 </style>

@@ -13,7 +13,8 @@ export function formatTime(val) {
 }
 
 export function nextChurnTime(blockHeight, nextChurnHeight) {
-  let val = (nextChurnHeight - blockHeight)/6;
+  console.log(blockHeight, nextChurnHeight)
+  let val = (nextChurnHeight - blockHeight)*6;
   return formatTime(val);        
 }
 
