@@ -6,6 +6,11 @@
         :columns="cols"
         :rows="rows"
         styleClass="vgt-table net-table vgt-compact"
+        :pagination-options="{
+          enabled: true,
+          perPage: 30,
+          perPageDropdownEnabled: false,
+        }"
       />
     </div>
     <div v-if="loading">

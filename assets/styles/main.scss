@@ -86,3 +86,27 @@ input {
     }
   }
 }
+
+.vgt-wrap__footer {
+  font-size: .875rem !important;
+  border-top: none !important;
+  border-color: #263238 !important;
+  background: #191c1e !important;
+}
+
+.vgt-wrap__footer .footer__navigation__page-btn  {
+
+  .chevron::after {
+    border-left-color: #263238 !important;
+    border-right-color: #263238 !important;
+  }
+
+  &:hover {
+    color: #e6e6e6;
+
+    .chevron::after {
+      border-left-color: #63FDD9 !important;
+      border-right-color: #63FDD9 !important;
+    }
+  }
+}
