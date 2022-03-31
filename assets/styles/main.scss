@@ -58,3 +58,31 @@ input {
   border: 1px solid #263238;
   color: #e6e6e6;
 }
+
+.base-container table.net-table {
+  border: 1px solid #263238;
+  border-color: #263238 !important;
+  background-color: #191c1e;
+
+  thead th {
+    font-size: .875rem;
+    background: #191c1e;
+    border-color: #263238;
+
+    &:first-of-type {
+      border-radius: .3rem 0 0 0;
+    }
+
+    &:last-of-type {
+      border-radius: 0 .3rem 0 0;
+    }
+  }
+
+  tbody tr {
+    td {
+      font-size: .875rem;
+      color: #e6e6e6;
+      border-color: #263238;
+    }
+  }
+}
