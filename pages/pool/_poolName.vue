@@ -3,6 +3,7 @@
     <div class="nav-pool-header">
       <nuxt-link :to="`/pool/${poolName}`">Overview</nuxt-link>
       <nuxt-link :to="`/pool/${poolName}/tx`">Pool Txs</nuxt-link>
+      <nuxt-link :to="`/pool/${poolName}/lp`">LP Positions</nuxt-link>
     </div>
     <nuxt-child keep-alive></nuxt-child>
   </div>

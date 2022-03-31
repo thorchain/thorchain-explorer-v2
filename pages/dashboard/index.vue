@@ -17,7 +17,7 @@
 
 <script>
 import {networkQuery, volumeHistoryQuery} from '~/_gql_queries';
-import { nextChurnTime} from '~/utils';
+import { blockTime} from '~/utils';
 
 export default {
   components: { 
@@ -214,7 +214,7 @@ export default {
     },
     nextChurnTime() {
       if (this.lastblock && this.network) {
-        return nextChurnTime(this.lastblock[0]['thorchain'], this.network.nextChurnHeight)
+        return blockTime(this.network.nextChurnHeight - this.lastblock[0]['thorchain'])
       }
     }
   },

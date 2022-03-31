@@ -29,6 +29,7 @@ export default {
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
     '@/plugins/vue-filters',
+    '@/plugins/vgt',
     '@/api/index.js'
   ],
 
@@ -79,7 +80,7 @@ export default {
   apollo: {
     clientConfigs: {
       default: {
-        httpEndpoint: process.env.MIDGARD_BASE_URL,
+        httpEndpoint: process.env.MIDGARD_GRAPH_QL,
       }
     }
   },

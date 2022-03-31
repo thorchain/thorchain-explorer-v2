@@ -44,6 +44,28 @@
               {{ (pool.poolQuery.units / 10 ** 8) | number("0,0.00") }}
             </div>
           </div>
+          <div class="item" v-if="poolDetail">
+            <div class="header">Pending Inbound RUNE</div>
+            <div class="value">
+              {{ (poolDetail.pending_inbound_rune / 10 ** 8) | number("0,0.00") }}
+              <span style="font-size: 0.7rem">THOR.RUNE</span>
+            </div>
+          </div>
+          <div class="item" v-if="poolDetail">
+            <div class="header">Pending Inbound asset</div>
+            <div class="value">
+              {{ (poolDetail.pending_inbound_asset / 10 ** 8) | number("0,0.00") }}
+              <span style="font-size: 0.7rem">
+                {{ assetString(pool.poolQuery.asset) }}
+              </span>
+            </div>
+          </div>
+          <div class="item" v-if="poolDetail">
+            <div class="header">Synth Supply</div>
+            <div class="value">
+              {{ (poolDetail.synth_supply / 10 ** 8) | number("0,0.00") }}
+            </div>
+          </div>
         </div>
         <volume-chart :chartSettings="pool.volumeHistory"></volume-chart>
         <div class="pool-swap-detail" v-for="(settings, i) in poolStats" :key="i">
@@ -225,11 +247,18 @@ export default {
         ];
       })
       .catch((e) => console.error(e));
+
+      this.$api.getPoolDetail(this.poolName).then(res => {
+        this.poolDetail = res?.data;
+      }).catch(e => {
+        console.error(e);
+      })
   },
   data() {
     return {
       pool: [],
-      poolStats: []
+      poolStats: [],
+      poolDetail: undefined
     };
   },
   apollo: {

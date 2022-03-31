@@ -12,7 +12,7 @@
 <script>
 import {bondMetrics, networkQuery} from '~/_gql_queries';
 import StatTable from "~/components/StatTable.vue";
-import {nextChurnTime} from '~/utils';
+import {blockTime} from '~/utils';
 
 export default {
   components: { StatTable },
@@ -53,7 +53,7 @@ export default {
     nextChurnTime() {
       if (this.lastblock && this.network) {
         console.log(this.network)
-        return nextChurnTime(this.lastblock[0]['thorchain'], this.network.nextChurnHeight)
+        return blockTime(this.network.nextChurnHeight - this.lastblock[0]['thorchain'])
       }
     }
   },
