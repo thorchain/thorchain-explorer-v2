@@ -53,7 +53,7 @@ export default {
     nextChurnTime() {
       if (this.lastblock && this.network) {
         console.log(this.network)
-        return blockTime(this.lastblock[0]['thorchain'] - this.network.nextChurnHeight)
+        return blockTime(this.network.nextChurnHeight - this.lastblock[0]['thorchain'])
       }
     }
   },
