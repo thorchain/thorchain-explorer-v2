@@ -107,7 +107,10 @@ const pools = gql`query {
     status,
     volume24h,
     poolAPY,
-    price
+    price,
+    depth {
+      poolDepth
+    }
   }
 }
 `

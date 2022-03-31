@@ -24,13 +24,10 @@
 
 <script>
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue';
-import 'vue-good-table/dist/vue-good-table.css'
-import { VueGoodTable } from 'vue-good-table';
 
 export default {
   components: {
     BounceLoader,
-    VueGoodTable
   },
   data() {
     return {

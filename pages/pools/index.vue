@@ -1,6 +1,10 @@
 <template>
   <div class="pool-wrapper">
-    <div v-if="pools && pools.length > 0" class="pools-container">
+    <div class="nav-headers">
+      <div class="nav-item" @click="mode = 'grid'" :class="{'active': mode == 'grid'}">Grid</div>
+      <div class="nav-item" @click="mode = 'table'" :class="{'active': mode == 'table'}">Table</div>
+    </div>
+    <div v-if="pools && pools.length > 0 && mode == 'grid'" class="pools-container">
       <div class="pool-item" v-for="(pool, idx) in pools" :key="idx"  @click="gotoPool(pool.asset)">
         <div class="row">
           <div class="pool-chain">
@@ -26,6 +30,34 @@
         </div>
       </div>
     </div>
+    <div v-else-if="pools && pools.length > 0 && mode == 'table'">
+      <div class="base-container" style="margin-bottom: 1.5rem;">
+        <vue-good-table
+          v-if="cols && activeRows.length > 0"
+          :columns="cols"
+          :rows="activeRows"
+          styleClass="vgt-table net-table vgt-compact"
+          :pagination-options="{
+            enabled: true,
+            perPage: 30,
+            perPageDropdownEnabled: false,
+          }"
+        />
+      </div>
+      <div class="base-container">
+        <vue-good-table
+          v-if="cols && standbyRows.length > 0"
+          :columns="cols"
+          :rows="standbyRows"
+          styleClass="vgt-table net-table vgt-compact"
+          :pagination-options="{
+            enabled: true,
+            perPage: 30,
+            perPageDropdownEnabled: false,
+          }"
+        />
+      </div>
+    </div>
     <div v-else class="loading">
       <BounceLoader color="#9F9F9F" size="3rem"/>
     </div>
@@ -40,6 +72,47 @@ import { mapGetters } from 'vuex';
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue';
 
 export default {
+  data: function () {
+    return {
+      mode: 'grid',
+      cols: [
+        {
+          label: 'Asset',
+          field: 'asset',
+          formatFn: this.formatAsset
+        },
+        {
+          label: 'Status',
+          field: 'status'
+        },
+        {
+          label: 'USD Price',
+          field: 'price',
+          type: 'number',
+          formatFn: this.curFormat
+        },
+        {
+          label: 'Volume',
+          field: 'volume',
+          type: 'number',
+          formatFn: this.numberFormat
+        },
+        {
+          label: 'Depth',
+          field: 'depth',
+          type: 'number',
+          formatFn: this.curFormat
+        },
+        {
+          label: 'APY',
+          field: 'apy',
+          type: 'percentage'
+        }
+      ],
+      activeRows: [],
+      standbyRows: []
+    }
+  },
   apollo: {
     $prefetch: false,
     pools: pools,
@@ -74,6 +147,44 @@ export default {
     },
     imgErr(e) {
       e.target.src = require('~/assets/images/unknown.png');
+    },
+    numberFormat(number, filter) {
+      return this.$options.filters.number(number, '0a')
+    },
+    curFormat(number) {
+      return this.$options.filters.currency(number)
+    },
+    formatAsset(asset) {
+      return asset.length > 10 ? 
+        asset.slice(0, 14) + '...':
+        asset
+    },
+    addRow(pool) {
+      return {
+        asset: pool.asset,
+        status: pool.status,
+        price: pool.price*this.runePrice,
+        volume: (pool.volume24h/10**8)*this.runePrice,
+        depth: Number.parseInt((pool.depth?.poolDepth/10**8)*this.runePrice),
+        apy: pool.poolAPY,
+      }
+    }
+  },
+  watch: {
+    pools: function() {
+      this.activeRows = [];
+      this.standbyRows = [];
+      if (!this.pools && this.pools.length <= 0)
+        return
+      for(let i in this.pools) {
+        if (this.pools[i].status === "available") {
+          this.activeRows.push(this.addRow(this.pools[i]))
+        }
+        else {
+          this.standbyRows.push(this.addRow(this.pools[i]))
+        }
+      }
+      console.log(this.activeRows);
     }
   }
 }

@@ -110,3 +110,31 @@ input {
     }
   }
 }
+
+//nav headers
+.nav-headers {
+  display: flex;
+  margin-bottom: 1rem;
+
+  .nav-item {
+    cursor: pointer;
+    padding: 0.5rem 0.7rem;
+    margin: 0 0.1rem;
+    color: #9f9f9f;
+    text-decoration: none;
+    border-radius: 0.3rem;
+
+    &.active {
+      background-color: #3E464B;
+      color: #e6e6e6;
+    }
+
+    &:hover {
+      background-color: #3E464B;
+    }
+
+    &:first-of-type {
+      margin-left: 0;
+    }
+  }
+}
