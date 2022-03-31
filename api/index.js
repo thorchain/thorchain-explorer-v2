@@ -16,7 +16,9 @@ import {
   getInboundAddresses,
   getMimirVotes,
   getLpPositions,
-  getPoolDetail
+  getPoolDetail,
+  getAssets,
+  getThorPools
 } from "./thornode.api";
 export var $axiosInstace;
 
@@ -94,7 +96,9 @@ export default function ({ $axios }, inject) {
     getInboundAddresses,
     getMimirVotes,
     getLpPositions,
-    getPoolDetail
+    getPoolDetail,
+    getAssets,
+    getThorPools
   };
 
   inject("api", api);

@@ -44,6 +44,9 @@ import exchangeUnselected from '~/assets/images/exchange-unselected.svg?inline';
 import swimmerSelected from '~/assets/images/swimmer-selected.svg?inline';
 import swimmerUnselected from '~/assets/images/swimmer-unselected.svg?inline';
 
+import moneySelected from '~/assets/images/money-selected.svg?inline';
+import moneyUnselected from '~/assets/images/money.svg?inline';
+
 export default {
   name: 'SideBar',
   props: ['mini'],
@@ -60,7 +63,9 @@ export default {
     exchangeSelected,
     exchangeUnselected,
     swimmerSelected,
-    swimmerUnselected
+    swimmerUnselected,
+    moneySelected,
+    moneyUnselected
   },
   data() {
     return {
@@ -94,6 +99,12 @@ export default {
           unicon: 'swimmerUnselected',
           icon: 'swimmerSelected',
           link: '/pools'
+        },
+        {
+          name: 'Assets',
+          unicon: 'moneyUnselected',
+          icon: 'moneySelected',
+          link: '/assets'
         }
       ]
     }
@@ -181,6 +192,7 @@ export default {
       fill: #e6e6e6;
       margin-right: .5rem;
       height: 1.25rem;
+      width: 1.25rem;
 
       &.selected {
         display: none;

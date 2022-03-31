@@ -1,3 +1,5 @@
+import { assetFromString, AssetRuneNative, assetToString, isSynthAsset } from "@xchainjs/xchain-util";
+
 // Formats time in seconds into `hh:mm hrs`
 export function formatTime(val) {
   var hrs = ~~(val / 3600);
@@ -38,4 +40,28 @@ export function parseCosmosTx(ntx) {
   })
 
   return ret;  
+}
+
+export function synthToAsset(assetString) {
+  let asset = assetFromString(assetString.toUpperCase());
+  
+  if (assetString === 'rune')
+    asset = AssetRuneNative;
+  
+  if(!isSynthAsset(asset))
+    return assetToString(asset)
+  
+  asset.synth = false;
+
+  return assetToString(asset);
+}
+
+export function curFormat(number) {
+  return this.$options.filters.currency(number)
+}
+
+export function formatAsset(asset) {
+  return asset.length > 10 ? 
+    asset.slice(0, 14) + '...':
+    asset
 }

@@ -36,3 +36,11 @@ export function getLpPositions(poolName) {
 export function getPoolDetail(poolName) {
   return $axiosInstace.get(process.env.THORNODE_URL + `thorchain/pool/${poolName}`);
 }
+
+export function getAssets() {
+  return $axiosInstace.get(process.env.THORNODE_URL + `cosmos/bank/v1beta1/supply`);
+}
+
+export function getThorPools() {
+  return $axiosInstace.get(process.env.THORNODE_URL + `thorchain/pools`);
+}
