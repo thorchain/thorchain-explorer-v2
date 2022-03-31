@@ -3,7 +3,6 @@ export function formatTime(val) {
   var hrs = ~~(val / 3600);
   var mins = ~~((val % 3600) / 60);
   
-  console.log(val, hrs, mins)
   var ret = `${hrs}:${mins < 10? `0${mins}` : mins} hrs`;
   
   return ret;

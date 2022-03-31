@@ -24,3 +24,7 @@ export function getThorNetwork() {
 export function getInboundAddresses() {
   return $axiosInstace.get(process.env.THORNODE_URL + `thorchain/inbound_addresses`);
 }
+
+export function getMimirVotes() {
+  return $axiosInstace.get(process.env.THORNODE_URL + `thorchain/mimir/nodes_all`);
+}
