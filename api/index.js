@@ -15,6 +15,8 @@ import {
   getThorNetwork,
   getInboundAddresses,
   getMimirVotes,
+  getLpPositions,
+  getPoolDetail
 } from "./thornode.api";
 export var $axiosInstace;
 
@@ -91,6 +93,8 @@ export default function ({ $axios }, inject) {
     getThorNetwork,
     getInboundAddresses,
     getMimirVotes,
+    getLpPositions,
+    getPoolDetail
   };
 
   inject("api", api);

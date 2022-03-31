@@ -28,3 +28,11 @@ export function getInboundAddresses() {
 export function getMimirVotes() {
   return $axiosInstace.get(process.env.THORNODE_URL + `thorchain/mimir/nodes_all`);
 }
+
+export function getLpPositions(poolName) {
+  return $axiosInstace.get(process.env.THORNODE_URL + `thorchain/pool/${poolName}/liquidity_providers`);
+}
+
+export function getPoolDetail(poolName) {
+  return $axiosInstace.get(process.env.THORNODE_URL + `thorchain/pool/${poolName}`);
+}
