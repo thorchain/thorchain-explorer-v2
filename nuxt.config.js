@@ -80,7 +80,7 @@ export default {
   apollo: {
     clientConfigs: {
       default: {
-        httpEndpoint: process.env.MIDGARD_BASE_URL,
+        httpEndpoint: process.env.MIDGARD_GRAPH_QL,
       }
     }
   },
