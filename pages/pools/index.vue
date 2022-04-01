@@ -42,6 +42,7 @@
             perPage: 30,
             perPageDropdownEnabled: false,
           }"
+          @on-row-click="gotoPoolTable"
         />
       </div>
       <div class="base-container">
@@ -55,6 +56,7 @@
             perPage: 30,
             perPageDropdownEnabled: false,
           }"
+          @on-row-click="gotoPoolTable"
         />
       </div>
     </div>
@@ -168,6 +170,9 @@ export default {
         depth: Number.parseInt((pool.depth?.poolDepth/10**8)*this.runePrice),
         apy: pool.poolAPY,
       }
+    },
+    gotoPoolTable(params) {
+      this.gotoPool(params.row.asset)
     }
   },
   watch: {
