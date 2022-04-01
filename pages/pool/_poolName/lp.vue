@@ -49,15 +49,21 @@ export default {
         },
         {
           label: 'Rune added',
-          field: 'rune_add'
+          field: 'rune_add',
+          type: 'number',
+          formatFn: this.formatNumber
         },
         {
           label: 'Asset added',
-          field: 'asset_add'
+          field: 'asset_add',
+          type: 'number',
+          formatFn: this.formatNumber
         },
         {
           label: 'Last Height added',
-          field: 'last_add_height'
+          field: 'last_add_height',
+          type: 'number',
+          formatFn: this.formatBlock
         }
       ],
       rows: []
@@ -94,19 +100,20 @@ export default {
           position: this.checkPostion(pos[i]),
           rune_addr: pos[i]?.rune_address? this.formatAddress(pos[i]?.rune_address):'Not Assigned',
           asset_addr: pos[i]?.asset_address? this.formatAddress(pos[i]?.asset_address):'Not Assigned',
-          rune_add: pos[i]?.rune_deposit_value? this.formatNumber(pos[i]?.rune_deposit_value):'Not Added',
-          asset_add: pos[i]?.asset_deposit_value? this.formatNumber(pos[i]?.asset_deposit_value):'Not Added',
-          last_add_height: pos[i]?.last_add_height? this.formatNumber(pos[i]?.last_add_height, false):' '
+          rune_add: pos[i]?.rune_deposit_value? pos[i]?.rune_deposit_value/10**8:'Not Added',
+          asset_add: pos[i]?.asset_deposit_value? pos[i]?.asset_deposit_value/10**8:'Not Added',
+          last_add_height: pos[i]?.last_add_height? pos[i]?.last_add_height:' '
         })
       }
     },
     formatAddress(address, length=6) {
       return `${address.slice(0, length)}...${address.slice(-1*length)}`
     },
-    formatNumber(number, base=true) {
-      if (base)
-        number = Number.parseFloat(number/10**8)
-      return this.$options.filters.number(number, base?'0,0.00':'0,0')
+    formatNumber(number) {
+      return this.$options.filters.number(number, '0,0.00')
+    },
+    formatBlock(number) {
+      return this.$options.filters.number(number, '0,0')
     }
   }
 }
