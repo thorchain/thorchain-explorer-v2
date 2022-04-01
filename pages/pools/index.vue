@@ -31,6 +31,7 @@
       </div>
     </div>
     <div v-else-if="pools && pools.length > 0 && mode == 'table'">
+      <h2 style="margin-left: .5rem">Active Pools</h2>
       <div class="base-container" style="margin-bottom: 1.5rem;">
         <vue-good-table
           v-if="cols && activeRows.length > 0"
@@ -45,6 +46,7 @@
           @on-row-click="gotoPoolTable"
         />
       </div>
+      <h2 style="margin-left: .5rem">Staged/Suspended Pools</h2>
       <div class="base-container">
         <vue-good-table
           v-if="cols && standbyRows.length > 0"
