@@ -27,6 +27,18 @@
             <span v-if="props.column.field == 'address'">
               <span v-tooltip="props.row.address">{{addressFormat(props.row.address)}}</span> 
             </span>
+            <span v-else-if="props.column.field == 'bond'">
+              <span>
+                <span class="extra">{{runeCur()}}</span>  
+                {{numberFormat(props.row.bond)}}
+              </span> 
+            </span>
+            <span v-else-if="props.column.field == 'award'">
+              <span>
+                <span class="extra">{{runeCur()}}</span>  
+                {{props.row.award}}
+              </span> 
+            </span>
             <span v-else>
               {{props.formattedRow[props.column.field]}}
             </span>
@@ -61,6 +73,7 @@ import {bondMetrics, nodesQuery} from "~/_gql_queries";
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue';
 import { mapGetters } from 'vuex';
 import { addressFormat, fillNodeData, numberFormat } from '~/utils';
+import { AssetCurrencySymbol } from '@xchainjs/xchain-util';
 
 export default {
   name: "nodesPage",
@@ -86,6 +99,9 @@ export default {
     },
     addressFormat(string) {
       return addressFormat(string)
+    },
+    runeCur() {
+      return AssetCurrencySymbol.RUNE
     }
   },
   data: function() {
@@ -102,7 +118,7 @@ export default {
           sortable: false
         },
         {
-          label: 'status',
+          label: 'Flag',
           field: 'status'
         },
         {
@@ -113,7 +129,8 @@ export default {
         {
           label: 'Slash Point',
           field: 'slash',
-          type: 'number'
+          type: 'number',
+          formatFn: this.numberFormat
         },
         {
           label: 'Current Award',
@@ -256,5 +273,9 @@ export default {
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   grid-gap: .5rem;
   gap: .5rem;
+}
+
+.extra {
+  font-size: .7rem;
 }
 </style>
