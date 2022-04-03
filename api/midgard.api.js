@@ -51,3 +51,7 @@ export function getPoolTxs(poolName, offset=0, limit=10) {
 export function getPoolStats(poolName) {
   return $axiosInstace.get(`pool/${poolName}/stats`)
 }
+
+export function volumeWeekly() {
+  return $axiosInstace.get(`history/liquidity_changes?interval=day&count=100`)
+}

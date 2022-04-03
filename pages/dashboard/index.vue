@@ -2,6 +2,8 @@
   <div class="overview-container">
     <div class="chart-container">
       <client-only>
+        <u-chart name="lpchange" :chartSettings="volumeWeekly"></u-chart>
+        <div class="vd-2"></div>
         <volume-chart :chartSettings="volumeHistoryQuery"></volume-chart>
       </client-only>
     </div>
@@ -25,6 +27,11 @@ export default {
       if(process.client) {
         return import('~/components/page_components/volumeChart.vue')
       }
+    },
+    uChart: () => {
+      if(process.client) {
+        return import('~/components/page_components/uChart.vue')
+      }
     }
   },
   name: "OverviewPage",
@@ -35,6 +42,7 @@ export default {
       volumeHistoryQuery: undefined,
       lastblock: undefined,
       stats: [],
+      volumeWeekly: undefined
     };
   },
   computed: {
@@ -216,6 +224,62 @@ export default {
       if (this.lastblock && this.network) {
         return blockTime(this.network.nextChurnHeight - this.lastblock[0]['thorchain'])
       }
+    },
+    formatLPChange(d) {
+      /*
+        header: 'string',
+        datum: [
+          {
+            name: 'time',
+            data: number[]
+          },
+          {
+            name: 'string',
+            color: 'string,
+            label: 'string',
+            data: number[]
+          },
+          ...
+        ]
+      */
+      let data = {
+        header: 'Liquidity Change',
+        datum: [
+          {
+            name: 'time',
+            data: []
+          },
+          {
+            name: 'add',
+            color: `rgb(54, 176, 121)`,
+            fill: `rgb(54, 176, 121, 0.1)`,
+            label: "Add Liquidity Volume",
+            data: []
+          },
+          {
+            name: 'widthdraw',
+            color: `rgb(234, 95, 148)`,
+            fill: `rgb(234, 95, 1488, 0.1)`,
+            label: 'Withdraw Liquidity Volume',
+            data: []
+          },
+          {
+            name: 'total',
+            color: `rgb(255, 177, 78)`,
+            fill: `rgb(255, 177, 78, 0.1)`,
+            label: "Total Change",
+            data: []
+          }
+        ]
+      }
+      d?.intervals.forEach(interval => {
+        data.datum[0].data.push(Math.floor((~~interval.endTime + ~~interval.startTime)/2));
+        data.datum[1].data.push(+interval.addLiquidityVolume / 10**8);
+        data.datum[2].data.push(-1*((+interval.withdrawVolume) / 10**8));
+        data.datum[3].data.push((+interval.addLiquidityVolume - +interval.withdrawVolume) / 10**8);
+      })
+
+      return data;
     }
   },
   apollo: {
@@ -242,6 +306,12 @@ export default {
 
     this.$api.getLastBlockHeight()
     .then(res => this.lastblock = res.data)
+    .catch(error => {
+      console.error(error)
+    })
+
+    this.$api.volumeWeekly()
+    .then(res => this.volumeWeekly = this.formatLPChange(res.data))
     .catch(error => {
       console.error(error)
     })

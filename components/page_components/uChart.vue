@@ -1,21 +1,13 @@
 <template>
-  <div class="chart-wrapper volume-chart">
-    <div class="chart-header">Volume <span style="color: #9F9F9F">(USD)</span></div>
-    <div v-show="chartSettings" class="chart-legends">
-      <div class="legend-wrapper">
-        <div class="legend-header" style="background-color: rgb(255, 177, 78)"></div>
-        Total
-      </div>
-      <div class="legend-wrapper">
-        <div class="legend-header" style="background-color: rgb(54, 176, 121)"></div>
-        Rune Volume
-      </div>
-      <div class="legend-wrapper">
-        <div class="legend-header" style="background-color: rgb(234, 95, 148)"></div>
-        Asset Volume
+  <div class="chart-wrapper" :class="[name]">
+    <div class="chart-header">{{chartSettings && chartSettings.header}} <span style="color: #9F9F9F">(USD)</span></div>
+    <div class="chart-legends">
+      <div class="legend-wrapper" v-for="(d, i) in chartSettings && chartSettings.datum.slice(1)" :key="i">
+        <div class="legend-header" :style="{backgroundColor: d.color}"></div>
+        {{d.name | capitalize}}
       </div>
     </div>
-    <div v-show="chartSettings" class="chart"></div>
+    <div class="chart"></div>
     <div v-if="!chartSettings" class="skeleton-placeholder">
       <BounceLoader color="#9F9F9F" size="2rem"/>
     </div>
@@ -31,6 +23,10 @@ import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
 export default {
   name: 'chartComponent',
   props: {
+    name: {
+      type: String,
+      default: 'uChart'
+    },
     chartSettings: Array | Object
   },
   data() {
@@ -48,13 +44,13 @@ export default {
   },
   methods: {
     getSize() {
-      if (document.querySelector('.volume-chart .chart .uplot')) {
-        document.querySelector('.volume-chart .chart .uplot').style.display = "none";
+      if (document.querySelector(`.${this.name} .chart .uplot`)) {
+        document.querySelector(`.${this.name} .chart .uplot`).style.display = "none";
       }
-      const chartWrapper = document.querySelector('.volume-chart.chart-wrapper');
-      const chartWidth = chartWrapper.offsetWidth - 36;
-      if (document.querySelector('.volume-chart .chart .uplot')) {
-        document.querySelector('.volume-chart .chart .uplot').style.display = "block";
+      const chartWrapper = document.querySelector(`.${this.name}.chart-wrapper`);
+      const chartWidth = chartWrapper?.offsetWidth - 36;
+      if (document.querySelector(`.${this.name} .chart .uplot`)) {
+        document.querySelector(`.${this.name} .chart .uplot`).style.display = "block";
       }
       //TODO: change fixed width with relative size
       return {
@@ -63,26 +59,22 @@ export default {
       }
     },
     fillData() {
-      let time = [];
-      let total = [];
-      let rune = [];
-      let assets = [];
-      this.chartSettings?.intervals.forEach(interval => {
-        let date = new Date(interval.time * 1000)
-        time.push(interval.time);
-        total.push((interval.combined.volumeInRune) / 10**8)
-        rune.push((interval.toRune.volumeInRune) / 10**8)
-        assets.push((interval.toAsset.volumeInRune) / 10**8)
-      });
-
-      let data = [time, total, rune, assets];
-      this.uPlot.setData(data);
+      try {
+        let data = []
+        this.chartSettings?.datum?.forEach(e => {
+          data.push(e.data)
+        })
+        this.uPlot.setData(data);
+      }
+      catch (e) {
+        console.error(e)
+      }
     },
     tooltipGenerator(u, idx) {
-      let tooltip = document.querySelector('.volume-chart .tooltip');
+      let tooltip = document.querySelector(`.${this.name} .tooltip`);
       tooltip.innerHTML = '';
       let dc = uPlot.fmtDate('{h}{AA} {YYYY}/{MM}/{DD}')
-      let vals = [u.data[0][idx], u.data[1][idx], u.data[2][idx], u.data[3][idx]]
+      let vals = [u.data[0][idx], u.data[1][idx],  u.data[2][idx],  u.data[3][idx]]
       vals.forEach((v, id) => {
         let d = document.createElement('div');
         d.classList.add('legend-item');
@@ -102,25 +94,39 @@ export default {
         tooltip.appendChild(d);
       })
     },
+    checkWidth(el, chartWidth, cursor) {
+      let width = el.getBoundingClientRect().width;
+      
+      return cursor.left + width < chartWidth ? false : true;
+    },
     update(u) {
       const { left, top, idx } = u.cursor;
-      let tooltip = document.querySelector('.volume-chart .tooltip');
-      tooltip.style.transform = "translate(" + (left + 10) + "px, " + (top + 5) + "px)";
+      let tooltip = document.querySelector(`.${this.name} .tooltip`);
+      
+      let res = this.checkWidth(tooltip, u.width, u.cursor)
+      if(res) {
+        let tooltipWidth = tooltip.getBoundingClientRect().width;
+        tooltip.style.transform = "translate(" + (left - tooltipWidth - 10) + "px, " + (top + 5) + "px)";
+      }
+      else {
+        tooltip.style.transform = "translate(" + (left + 10) + "px, " + (top + 5) + "px)";
+      }
 
       if (idx) {
         // console.log(u.data[0][idx], u.data[1][idx], u.data[2][idx], u.data[3][idx])
         this.tooltipGenerator(u, idx);
       }
     },
-    legendAsTooltipPlugin({ className, style = { backgroundColor:"rgb(46, 46, 46)", color: "#e6e6e6" } } = {}) {
+    legendAsTooltipPlugin() {
       let legendEl;
       let tooltip;
+      let name = this.name;
 
       //TODO: delete extra legendEls
       function init(u, opts) {
         //deleting legend
-        legendEl = u.root.querySelector(".volume-chart .u-legend");
-        legendEl.remove();
+        legendEl = u.root.querySelector(`.${name} .u-legend`);
+        legendEl?.remove();
         
         const overEl = u.over;
         overEl.style.overflow = "visible";
@@ -146,89 +152,62 @@ export default {
       };
     }
   },
-  mounted() {
-    const { spline } = uPlot.paths;
-
-    let opts = {
-      ...this.getSize(),
-      tzDate: ts => uPlot.tzDate(new Date(ts * 1e3), 'Etc/UTC'),
-      plugins: [
-        this.legendAsTooltipPlugin()
-      ],
-      axes: [
-        {
-          show: true,
-          labelFont: "bold 9px ProductSans",
-          stroke: "#9F9F9F",
-          grid: {
-            show: false,
-          },
-          ticks: {
-            show: false,
-          }
-        },
-        {
-          show: false
-        }
-      ],
-      scales: {
-        x: {
-          time: true
-        },
-        y: {
-        }
-      },
-      series: [
-        {},
-        {
-          label: "Total",
-          stroke: "rgb(255, 177, 78)",
-          fill: "rgb(255, 177, 78, .1)",
-          width: 2,
-          paths: spline(),
-        },
-        {
-          label: "Asset Volume",
-          stroke: "rgb(234, 95, 148)",
-          fill: "rgb(234, 95, 148, .1)",
-          width: 2,
-          paths: spline(),
-        },
-        {
-          label: "RUNE Volume",
-          stroke: "rgb(54, 176, 121)",
-          fill: "rgb(54, 176, 121, .1)",
-          width: 2,
-          paths: spline(),
-        },
-      ],
-    };
-
-    this.uPlot  = new uPlot(opts, null, document.querySelector('.volume-chart .chart'));
-    this.chartSettings? this.fillData() : console.log('data not yet reached');
-
-    function throttle(cb, limit) {
-      var wait = false;
-
-      return () => {
-        if (!wait) {
-          requestAnimationFrame(cb);
-          wait = true;
-          setTimeout(() => {
-            wait = false;
-          }, limit);
-        }
-      }
-    }
-
-    window.addEventListener("resize", e => {
-      this.uPlot.setSize(this.getSize());
-    });
-  },
   watch: {
     chartSettings: function() {
-      //TODO: find better way maybe!
+      const { bars } = uPlot.paths;
+
+      let opts = {
+        ...this.getSize(),
+        tzDate: ts => uPlot.tzDate(new Date(ts * 1e3), 'Etc/UTC'),
+        plugins: [
+          this.legendAsTooltipPlugin()
+        ],
+        axes: [
+          {
+            show: true,
+            labelFont: "bold 9px ProductSans",
+            stroke: "#9F9F9F",
+            grid: {
+              show: false,
+            },
+            ticks: {
+              show: false,
+            }
+          },
+          {
+            show: false
+          }
+        ],
+        scales: {
+          x: {
+            time: true
+          },
+          y: {
+          }
+        },
+        series: [
+          {},
+        ],
+      };
+
+      this.chartSettings?.datum?.slice(1).forEach(e => {
+        opts.series.push({
+          label: e.label,
+          stroke: e.color,
+          fill: e.fill,
+          width: 1,
+          paths: bars()
+        })
+      })
+
+      this.uPlot = new uPlot(opts, null, document.querySelector(`.${this.name} .chart`));
+      console.log(document.querySelector(`.${this.name} .chart`))
+      let uPlotChart = this.uPlot;
       this.fillData();
+
+      window.addEventListener("resize", e => {
+        uPlotChart.setSize(this.getSize());
+      });
     }
   }
 }
