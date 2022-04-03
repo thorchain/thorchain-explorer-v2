@@ -28,13 +28,13 @@
               <span v-tooltip="props.row.address">{{addressFormat(props.row.address)}}</span> 
             </span>
             <span v-else-if="props.column.field == 'bond'">
-              <span>
+              <span v-tooltip="curFormat(runePrice * props.row.bond)">
                 <span class="extra">{{runeCur()}}</span>  
                 {{numberFormat(props.row.bond)}}
               </span> 
             </span>
             <span v-else-if="props.column.field == 'award'">
-              <span>
+              <span v-tooltip="curFormat(runePrice * props.row.award)">
                 <span class="extra">{{runeCur()}}</span>  
                 {{props.row.award}}
               </span> 
@@ -59,7 +59,28 @@
             perPage: 50,
             perPageDropdownEnabled: false,
           }"
-        />
+        >
+          <template slot="table-row" slot-scope="props">
+            <span v-if="props.column.field == 'address'">
+              <span v-tooltip="props.row.address">{{addressFormat(props.row.address)}}</span> 
+            </span>
+            <span v-else-if="props.column.field == 'bond'">
+              <span v-tooltip="curFormat(runePrice * props.row.bond)">
+                <span class="extra">{{runeCur()}}</span>  
+                {{numberFormat(props.row.bond)}}
+              </span> 
+            </span>
+            <span v-else-if="props.column.field == 'award'">
+              <span v-tooltip="curFormat(runePrice * props.row.award)">
+                <span class="extra">{{runeCur()}}</span>  
+                {{props.row.award}}
+              </span> 
+            </span>
+            <span v-else>
+              {{props.formattedRow[props.column.field]}}
+            </span>
+          </template>
+        </vue-good-table>
       </div>
     </div>
     <div v-else class="loading">
@@ -72,7 +93,7 @@
 import {bondMetrics, nodesQuery} from "~/_gql_queries";
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue';
 import { mapGetters } from 'vuex';
-import { addressFormat, fillNodeData, numberFormat } from '~/utils';
+import { addressFormat, curFormat, fillNodeData, numberFormat } from '~/utils';
 import { AssetCurrencySymbol } from '@xchainjs/xchain-util';
 
 export default {
@@ -102,6 +123,9 @@ export default {
     },
     runeCur() {
       return AssetCurrencySymbol.RUNE
+    },
+    curFormat(number) {
+      return this.$options.filters.currency(number)
     }
   },
   data: function() {

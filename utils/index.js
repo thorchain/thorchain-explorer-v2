@@ -87,6 +87,6 @@ export function fillNodeData(nodes, el) {
     version: el.version,
     slash: Number.parseInt(el.slashPoints),
     award: (Number.parseFloat(el.currentAward)/10**8).toFixed(2),
-    bond: Number.parseInt(el.bond)/10**8
+    bond: el.bond/10**8 < 0.01?0:el.bond/10**8
   })
 }
