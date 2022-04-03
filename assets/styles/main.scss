@@ -59,7 +59,7 @@ input {
   color: #e6e6e6;
 }
 
-.base-container table.net-table {
+#main-content table.net-table {
   border: 1px solid #263238;
   border-color: #263238 !important;
   background-color: #191c1e;
@@ -115,6 +115,12 @@ input {
       border-right-color: #63FDD9 !important;
     }
   }
+}
+
+.vgt-table thead th.sorting-desc button:before,
+.vgt-table thead th.sorting-asc button:after {
+  border-top-color: #63FDD9 !important;
+  border-bottom-color: #63FDD9 !important;
 }
 
 //nav headers
