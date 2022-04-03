@@ -117,6 +117,12 @@ input {
   }
 }
 
+.vgt-table thead th.sorting-desc button:before,
+.vgt-table thead th.sorting-asc button:after {
+  border-top-color: #63FDD9 !important;
+  border-bottom-color: #63FDD9 !important;
+}
+
 //nav headers
 .nav-headers {
   display: flex;
