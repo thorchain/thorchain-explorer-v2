@@ -72,3 +72,21 @@ export function formatAsset(asset) {
     asset.slice(0, 14) + '...':
     asset
 }
+
+export function addressFormat(string) {
+  return string.slice(0,6)+'...'+string.slice(-6);
+}
+
+export function fillNodeData(nodes, el) {
+  if (!el)
+    return
+  nodes.push({
+    address: el.address,
+    ip: el.ipAddress,
+    status: el.status,
+    version: el.version,
+    slash: Number.parseInt(el.slashPoints),
+    award: Math.floor(Number.parseInt(el.currentAward)/10**8),
+    bond: Number.parseInt(el.bond)/10**8
+  })
+}

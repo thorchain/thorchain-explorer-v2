@@ -9,19 +9,46 @@
           <stat-table :tableSettings="topStandbyBonds" header="Top Standby Bonds"></stat-table>
         </div>
       </div>
-      <content-table
-        :table="activeNodes"
-        header="Active Nodes"
-        :stats="activeStats"
-        @gotoNode="gotoNode"
-      ></content-table>
+      <div class="base-container">
+        <h2>Active Noes</h2>
+        <vue-good-table
+          v-if="cols && activeNodes.length > 0"
+          :columns="cols"
+          :rows="activeNodes"
+          @on-row-click="gotoNode"
+          styleClass="vgt-table net-table vgt-compact"
+          :pagination-options="{
+            enabled: true,
+            perPage: 50,
+            perPageDropdownEnabled: false,
+          }"
+        >
+          <template slot="table-row" slot-scope="props">
+            <span v-if="props.column.field == 'address'">
+              <span v-tooltip="props.row.address">{{addressFormat(props.row.address)}}</span> 
+            </span>
+            <span v-else>
+              {{props.formattedRow[props.column.field]}}
+            </span>
+          </template>
+        </vue-good-table>
+      </div>
       <div style="height: 2rem;"></div>
-      <content-table
-        :table="standbyNodes"
-        header="Standby Nodes"
-        :stats="standbyStats"
-        @gotoNode="gotoNode"
-      ></content-table>
+      <div class="base-container">
+        <h2>Standby Noes</h2>
+        <vue-good-table
+          v-if="cols && standbyNodes.length > 0"
+          :columns="cols"
+          :rows="standbyNodes"
+          @on-row-click="gotoNode"
+          styleClass="vgt-table net-table vgt-compact"
+          :pagination-options="{
+            enabled: true,
+            perPage: 50,
+            perPageDropdownEnabled: false,
+          }"
+        />
+      </div>
     </div>
     <div v-else class="loading">
       <BounceLoader color="#9F9F9F" size="3rem"></BounceLoader>
@@ -33,6 +60,7 @@
 import {bondMetrics, nodesQuery} from "~/_gql_queries";
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue';
 import { mapGetters } from 'vuex';
+import { addressFormat, fillNodeData, numberFormat } from '~/utils';
 
 export default {
   name: "nodesPage",
@@ -49,8 +77,56 @@ export default {
     bondMetrics: bondMetrics,
   },
   methods: {
-    gotoNode(address) {
-      this.$router.push({path: `/node/${address}`});
+    gotoNode(t) {
+      
+      this.$router.push({path: `/node/${t.row.address}`});
+    },
+    numberFormat(number) {
+      return this.$options.filters.number(number, '0,0')
+    },
+    addressFormat(string) {
+      return addressFormat(string)
+    }
+  },
+  data: function() {
+    return {
+      cols: [
+        {
+          label: 'Address',
+          field: 'address',
+          formatFn: addressFormat
+        },
+        {
+          label: 'IP',
+          field: 'ip',
+          sortable: false
+        },
+        {
+          label: 'status',
+          field: 'status'
+        },
+        {
+          label: 'Version',
+          field: 'version',
+          type: 'number'
+        },
+        {
+          label: 'Slash Point',
+          field: 'slash',
+          type: 'number'
+        },
+        {
+          label: 'Current Award',
+          field: 'award',
+          type: 'number'
+        },
+        {
+          label: 'Bond',
+          field: 'bond',
+          type: 'number',
+          formatFn: this.numberFormat
+        }
+      ]
     }
   },
   computed: {
@@ -136,33 +212,11 @@ export default {
         const actNodes = this.nodesQuery.nodes?.filter(
           (e) => e.status === "Active"
         );
-        let addresses = [];
         let filteredNodes = [];
         actNodes.forEach((el) => {
-          filteredNodes.push([
-            el.address.slice(0, 8) + "..." + el.address.slice(-8),
-            el.ipAddress,
-            el.version,
-            el.slashPoints,
-            this.$options.filters.number(Number.parseInt(el.currentAward)/10**8, '0,0'),
-            this.$options.filters.number(Math.floor(Number.parseInt(el.bond)/10**8), '0,0')
-            + ` (${this.$options.filters.currency(Math.floor(Number.parseInt(el.bond)/10**8) * this.runePrice)})`,
-          ]);
-          addresses.push(el.address);
+          fillNodeData(filteredNodes, el)
         });
-        let res = {
-          content: filteredNodes,
-          header: [
-            "Address",
-            "IP",
-            "Version",
-            "Slash Point",
-            "Current Award",
-            "Bond",
-          ],
-          addresses
-        };
-        return res;
+        return filteredNodes;
       } else {
         return [];
       }
@@ -172,33 +226,11 @@ export default {
         const actNodes = this.nodesQuery.nodes?.filter(
           (e) => e.status === "Standby"
         );
-        let addresses = [];
         let filteredNodes = [];
         actNodes.forEach((el) => {
-          filteredNodes.push([
-            el.address.slice(0, 8) + "..." + el.address.slice(-8),
-            el.ipAddress,
-            el.version,
-            el.slashPoints,
-            this.$options.filters.number(Math.ceil(Number.parseInt(el.currentAward)/10**8), '0,0'),
-            this.$options.filters.number(Math.floor(Number.parseInt(el.bond)/10**8), '0,0') 
-            + ` (${this.$options.filters.currency(Math.floor(Number.parseInt(el.bond)/10**8) * this.runePrice)})`,
-          ]);
-          addresses.push(el.address);
+          fillNodeData(filteredNodes, el)
         });
-        let res = {
-          content: filteredNodes,
-          header: [
-            "Address",
-            "IP",
-            "Version",
-            "Slash Point",
-            "Current Award",
-            "Bond",
-          ],
-          addresses
-        };
-        return res;
+        return filteredNodes;
       } else {
         return [];
       }
