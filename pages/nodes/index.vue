@@ -10,7 +10,7 @@
         </div>
       </div>
       <div class="base-container">
-        <h2>Active Noes</h2>
+        <h2>Active Nodes</h2>
         <vue-good-table
           v-if="cols && activeNodes.length > 0"
           :columns="cols"
@@ -47,7 +47,7 @@
       </div>
       <div style="height: 2rem;"></div>
       <div class="base-container">
-        <h2>Standby Noes</h2>
+        <h2>Standby Nodes</h2>
         <vue-good-table
           v-if="cols && standbyNodes.length > 0"
           :columns="cols"
