@@ -2,6 +2,8 @@
   <div class="overview-container">
     <div class="chart-container">
       <client-only>
+        <u-chart name="swapchange" :chartSettings="swapWeekly"></u-chart>
+        <div class="vd-2"></div>
         <u-chart name="lpchange" :chartSettings="volumeWeekly"></u-chart>
         <div class="vd-2"></div>
         <volume-chart :chartSettings="volumeHistoryQuery"></volume-chart>
@@ -42,7 +44,8 @@ export default {
       volumeHistoryQuery: undefined,
       lastblock: undefined,
       stats: [],
-      volumeWeekly: undefined
+      volumeWeekly: undefined,
+      swapWeekly: undefined
     };
   },
   computed: {
@@ -274,10 +277,52 @@ export default {
       }
       d?.intervals.forEach(interval => {
         data.datum[0].data.push(Math.floor((~~interval.endTime + ~~interval.startTime)/2));
-        data.datum[1].data.push(+interval.addLiquidityVolume / 10**8);
-        data.datum[2].data.push(-1*((+interval.withdrawVolume) / 10**8));
-        data.datum[3].data.push((+interval.addLiquidityVolume - +interval.withdrawVolume) / 10**8);
+        data.datum[1].data.push(+interval.addLiquidityVolume * +interval.runePriceUSD / 10**8);
+        data.datum[2].data.push(-1*((+interval.withdrawVolume) * +interval.runePriceUSD / 10**8));
+        data.datum[3].data.push((+interval.addLiquidityVolume - +interval.withdrawVolume)  * +interval.runePriceUSD / 10**8);
       })
+
+      return data;
+    },
+    formatSwap: function(d) {
+      let data = {
+        header: 'Swap Volume',
+        datum: [
+          {
+            name: 'time',
+            data: []
+          },
+          {
+            name: 'Total Volume',
+            color: `rgb(255, 177, 78)`,
+            fill: `rgb(255, 177, 78, 0.1)`,
+            label: "Total Volume",
+            data: []
+          },
+          {
+            name: 'to Asset Volume',
+            color: `rgb(234, 95, 148)`,
+            fill: `rgb(234, 95, 1488, 0.1)`,
+            label: 'to Asset Volume',
+            data: []
+          },
+          {
+            name: 'to Rune Volume',
+            color: `rgb(54, 176, 121)`,
+            fill: `rgb(54, 176, 121, 0.1)`,
+            label: 'to Rune Volume',
+            data: []
+          }
+        ]
+      }
+      d?.intervals.forEach(interval => {
+        data.datum[0].data.push(Math.floor((~~interval.endTime + ~~interval.startTime)/2));
+        data.datum[1].data.push((+interval.totalVolume * +interval.runePriceUSD) / 10**8);
+        data.datum[2].data.push((+interval.toAssetVolume * +interval.runePriceUSD) / 10**8);
+        data.datum[3].data.push((+interval.toRuneVolume * +interval.runePriceUSD) / 10**8);
+      })
+
+      console.log(data)
 
       return data;
     }
@@ -312,6 +357,12 @@ export default {
 
     this.$api.volumeWeekly()
     .then(res => this.volumeWeekly = this.formatLPChange(res.data))
+    .catch(error => {
+      console.error(error)
+    })
+
+    this.$api.swapWeekly()
+    .then(res => this.swapWeekly = this.formatSwap(res.data))
     .catch(error => {
       console.error(error)
     })

@@ -55,3 +55,7 @@ export function getPoolStats(poolName) {
 export function volumeWeekly() {
   return $axiosInstace.get(`history/liquidity_changes?interval=day&count=100`)
 }
+
+export function swapWeekly() {
+  return $axiosInstace.get(`history/swaps?interval=day&count=100`)
+}
