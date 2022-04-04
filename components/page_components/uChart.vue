@@ -73,8 +73,11 @@ export default {
     tooltipGenerator(u, idx) {
       let tooltip = document.querySelector(`.${this.name} .tooltip`);
       tooltip.innerHTML = '';
-      let dc = uPlot.fmtDate('{h}{AA} {YYYY}/{MM}/{DD}')
-      let vals = [u.data[0][idx], u.data[1][idx],  u.data[2][idx],  u.data[3][idx]]
+      let dc = uPlot.fmtDate('{h}{AA} {YYYY}/{MM}/{DD}');
+      let vals = []
+      u.data?.forEach(d => {
+        vals.push(d[idx])
+      })
       vals.forEach((v, id) => {
         let d = document.createElement('div');
         d.classList.add('legend-item');
@@ -88,7 +91,7 @@ export default {
           d.innerHTML = `
             <div class='legend-fill' style='background-color: ${u.series[id]._stroke}; display: inline-block;'></div>
             <span>${u.series[id].label}</span>
-            <span class='value'>${this.$options.filters.currency(v * this.runePrice, '$', 0)}</span>
+            <span class='value'>${this.$options.filters.currency(v, '$', 0)}</span>
           `
         }
         tooltip.appendChild(d);
