@@ -78,6 +78,11 @@ export default {
       let data = [time, total, rune, assets];
       this.uPlot.setData(data);
     },
+    checkWidth(el, chartWidth, cursor) {
+      let width = el.getBoundingClientRect().width;
+      
+      return cursor.left + width < chartWidth ? false : true;
+    },
     tooltipGenerator(u, idx) {
       let tooltip = document.querySelector('.volume-chart .tooltip');
       tooltip.innerHTML = '';
@@ -105,7 +110,15 @@ export default {
     update(u) {
       const { left, top, idx } = u.cursor;
       let tooltip = document.querySelector('.volume-chart .tooltip');
-      tooltip.style.transform = "translate(" + (left + 10) + "px, " + (top + 5) + "px)";
+      
+      let res = this.checkWidth(tooltip, u.width, u.cursor)
+      if(res) {
+        let tooltipWidth = tooltip.getBoundingClientRect().width;
+        tooltip.style.transform = "translate(" + (left - tooltipWidth - 10) + "px, " + (top + 5) + "px)";
+      }
+      else {
+        tooltip.style.transform = "translate(" + (left + 10) + "px, " + (top + 5) + "px)";
+      }
 
       if (idx) {
         // console.log(u.data[0][idx], u.data[1][idx], u.data[2][idx], u.data[3][idx])
