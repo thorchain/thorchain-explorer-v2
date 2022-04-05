@@ -7,7 +7,8 @@ import {
   getPoolStats,
   getPoolTxs,
   volumeWeekly,
-  swapWeekly
+  swapWeekly,
+  tvlWeekly
 } from "./midgard.api";
 import {
   getMimir,
@@ -102,7 +103,8 @@ export default function ({ $axios }, inject) {
     getAssets,
     getThorPools,
     volumeWeekly,
-    swapWeekly
+    swapWeekly,
+    tvlWeekly
   };
 
   inject("api", api);

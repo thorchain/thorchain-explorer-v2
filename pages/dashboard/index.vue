@@ -2,11 +2,17 @@
   <div class="overview-container">
     <div class="chart-container">
       <client-only>
-        <u-chart name="swapchange" :chartSettings="swapWeekly"></u-chart>
-        <div class="vd-2"></div>
-        <u-chart name="lpchange" :chartSettings="volumeWeekly"></u-chart>
-        <div class="vd-2"></div>
-        <volume-chart :chartSettings="volumeHistoryQuery"></volume-chart>
+        <div class="chart-inner-container">
+          <u-chart name="swapchange" :chartSettings="swapWeekly"></u-chart>
+          <div class="divider"></div>
+          <u-chart name="lpchange" :chartSettings="volumeWeekly"></u-chart>
+        </div>
+        <div style="height: 1rem;"></div>
+        <div class="chart-inner-container">
+          <volume-chart :chartSettings="volumeHistoryQuery"></volume-chart>
+          <div class="divider"></div>
+          <u-chart name="tvlchange" :chartSettings="tvlWeekly"></u-chart>
+        </div>
       </client-only>
     </div>
     <div class="break"></div>
@@ -45,7 +51,8 @@ export default {
       lastblock: undefined,
       stats: [],
       volumeWeekly: undefined,
-      swapWeekly: undefined
+      swapWeekly: undefined,
+      tvlWeekly: undefined
     };
   },
   computed: {
@@ -317,12 +324,35 @@ export default {
       }
       d?.intervals.forEach(interval => {
         data.datum[0].data.push(Math.floor((~~interval.endTime + ~~interval.startTime)/2));
-        data.datum[1].data.push((+interval.totalVolume * +interval.runePriceUSD) / 10**8);
+        data.datum[1].data.push((+interval.totalVolume / 10**8) * Number.parseFloat(interval.runePriceUSD));
         data.datum[2].data.push((+interval.toAssetVolume * +interval.runePriceUSD) / 10**8);
         data.datum[3].data.push((+interval.toRuneVolume * +interval.runePriceUSD) / 10**8);
       })
 
-      console.log(data)
+      return data;
+    },
+    formatTvl: function(d) {
+      let data = {
+        header: 'TVL Volume',
+        datum: [
+          {
+            name: 'time',
+            data: []
+          },
+          {
+            name: 'Total Value Pooled',
+            color: `rgb(255, 177, 78)`,
+            fill: `rgb(255, 177, 78, 0.1)`,
+            label: "Total Value Locked",
+            mode: 'spline',
+            data: []
+          }
+        ]
+      }
+      d?.intervals.forEach(interval => {
+        data.datum[0].data.push(Math.floor((~~interval.endTime + ~~interval.startTime)/2));
+        data.datum[1].data.push((+interval.totalValuePooled / 10**8) * Number.parseFloat(interval.runePriceUSD));
+      })
 
       return data;
     }
@@ -366,6 +396,12 @@ export default {
     .catch(error => {
       console.error(error)
     })
+
+    this.$api.tvlWeekly()
+    .then(res => this.tvlWeekly = this.formatTvl(res.data))
+    .catch(error => {
+      console.error(error)
+    })
   }
 };
 </script>
@@ -399,5 +435,21 @@ export default {
 
 .chart-container {
   width: 100%;
+
+  .chart-inner-container {
+    flex-direction: column;
+    display: flex;
+
+    .divider {
+      width: 1rem;
+      height: 1rem;
+    }
+  }
+
+  @include lg {
+    .chart-inner-container {
+      flex-direction: row;
+    }
+  }
 }
 </style>

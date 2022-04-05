@@ -1,6 +1,6 @@
 <template>
   <div class="chart-wrapper volume-chart">
-    <div class="chart-header">Volume <span style="color: #9F9F9F">(USD)</span></div>
+    <div class="chart-header">Volume</div>
     <div v-show="chartSettings" class="chart-legends">
       <div class="legend-wrapper">
         <div class="legend-header" style="background-color: rgb(255, 177, 78)"></div>
@@ -26,7 +26,8 @@
 import uPlot from 'uplot';
 import 'uplot/dist/uPlot.min.css';
 import { mapGetters } from 'vuex';
-import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
+import BounceLoader from 'vue-spinner/src/BounceLoader.vue';
+const Spline = require('cubic-spline');
 
 export default {
   name: 'chartComponent',
@@ -35,7 +36,8 @@ export default {
   },
   data() {
     return {
-      uPlot: null
+      uPlot: null,
+      opts: undefined,
     }
   },
   components: {
@@ -67,16 +69,40 @@ export default {
       let total = [];
       let rune = [];
       let assets = [];
+
       this.chartSettings?.intervals.forEach(interval => {
-        let date = new Date(interval.time * 1000)
-        time.push(interval.time);
-        total.push((interval.combined.volumeInRune) / 10**8)
-        rune.push((interval.toRune.volumeInRune) / 10**8)
-        assets.push((interval.toAsset.volumeInRune) / 10**8)
+        time.push(+interval.time);
+        total.push((+interval.combined.volumeInRune) / 10**8)
+        rune.push((+interval.toRune.volumeInRune) / 10**8)
+        assets.push((+interval.toAsset.volumeInRune) / 10**8)
       });
 
-      let data = [time, total, rune, assets];
-      this.uPlot.setData(data);
+      //Data smoothing
+      const splineTotal = new Spline(time, total);
+      const splineRune = new Spline(time, rune);
+      const splineAssets = new Spline(time, assets);
+      let rtime = []
+      let rtotal = []
+      let rrune = []
+      let rassets = []
+      for(let i in time) {
+        if (time.length - 1 == i)
+          continue
+        for (let j = 0; j < 6; j++) {
+          let t = splineTotal.at(time[i] + (j*600))
+          let r = splineRune.at(time[i] + (j*600))
+          let a = splineAssets.at(time[i] + (j*600))
+          rtime.push(time[i] + (j*600))
+          rtotal.push(t)
+          rrune.push(r)
+          rassets.push(a)
+        }
+      }
+      console.log(time.length, rtime.length)
+
+      let data = [rtime, rtotal, rrune, rassets];
+
+      this.uPlot  = new uPlot(this.opts, data, document.querySelector('.volume-chart .chart'));
     },
     checkWidth(el, chartWidth, cursor) {
       let width = el.getBoundingClientRect().width;
@@ -86,7 +112,7 @@ export default {
     tooltipGenerator(u, idx) {
       let tooltip = document.querySelector('.volume-chart .tooltip');
       tooltip.innerHTML = '';
-      let dc = uPlot.fmtDate('{h}{AA} {YYYY}/{MM}/{DD}')
+      let dc = uPlot.fmtDate('{h}:{mm} {AA} {YYYY}/{MM}/{DD}')
       let vals = [u.data[0][idx], u.data[1][idx], u.data[2][idx], u.data[3][idx]]
       vals.forEach((v, id) => {
         let d = document.createElement('div');
@@ -125,7 +151,7 @@ export default {
         this.tooltipGenerator(u, idx);
       }
     },
-    legendAsTooltipPlugin({ className, style = { backgroundColor:"rgb(46, 46, 46)", color: "#e6e6e6" } } = {}) {
+    legendAsTooltipPlugin() {
       let legendEl;
       let tooltip;
 
@@ -162,23 +188,36 @@ export default {
   mounted() {
     const { spline } = uPlot.paths;
 
-    let opts = {
+    this.opts = {
       ...this.getSize(),
-      tzDate: ts => uPlot.tzDate(new Date(ts * 1e3), 'Etc/UTC'),
+      // tzDate: ts => uPlot.tzDate(new Date(ts * 1e3), 'Etc/UTC'),
       plugins: [
         this.legendAsTooltipPlugin()
       ],
+      focus: {
+        alpha: 0.3
+      },
+      cursor: {
+        focus: {
+          prox: 10,
+        }
+      },
       axes: [
         {
           show: true,
           labelFont: "bold 9px ProductSans",
+          font: '12px ProductSans',
           stroke: "#9F9F9F",
           grid: {
             show: false,
           },
           ticks: {
             show: false,
-          }
+          },
+          values: [
+            [3600, "{M}/{D}/{YY}", null, null, null, null, null, null, 1],
+            [60, "{M}/{D}/{YY}", null, null, null, null, null, null, 1],
+          ],
         },
         {
           show: false
@@ -198,6 +237,9 @@ export default {
           stroke: "rgb(255, 177, 78)",
           fill: "rgb(255, 177, 78, .1)",
           width: 2,
+          points: {
+            show: false
+          },
           paths: spline(),
         },
         {
@@ -205,6 +247,9 @@ export default {
           stroke: "rgb(234, 95, 148)",
           fill: "rgb(234, 95, 148, .1)",
           width: 2,
+          points: {
+            show: false
+          },
           paths: spline(),
         },
         {
@@ -212,13 +257,15 @@ export default {
           stroke: "rgb(54, 176, 121)",
           fill: "rgb(54, 176, 121, .1)",
           width: 2,
+          points: {
+            show: false
+          },
           paths: spline(),
         },
       ],
     };
 
-    this.uPlot  = new uPlot(opts, null, document.querySelector('.volume-chart .chart'));
-    this.chartSettings? this.fillData() : console.log('data not yet reached');
+    this.chartSettings && this.uPlot? this.fillData() : console.log('data not yet reached');
 
     function throttle(cb, limit) {
       var wait = false;
