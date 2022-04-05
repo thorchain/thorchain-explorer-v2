@@ -59,3 +59,7 @@ export function volumeWeekly() {
 export function swapWeekly() {
   return $axiosInstace.get(`history/swaps?interval=day&count=100`)
 }
+
+export function tvlWeekly() {
+  return $axiosInstace.get(`history/tvl?interval=day&count=100`)
+}

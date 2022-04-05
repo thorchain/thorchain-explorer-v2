@@ -1,6 +1,6 @@
 <template>
   <div class="chart-wrapper" :class="[name]">
-    <div class="chart-header">{{chartSettings && chartSettings.header}} <span style="color: #9F9F9F">(USD)</span></div>
+    <div class="chart-header">{{chartSettings && chartSettings.header}}</div>
     <div class="chart-legends">
       <div class="legend-wrapper" v-for="(d, i) in chartSettings && chartSettings.datum.slice(1)" :key="i">
         <div class="legend-header" :style="{backgroundColor: d.color}"></div>
@@ -64,6 +64,7 @@ export default {
         this.chartSettings?.datum?.forEach(e => {
           data.push(e.data)
         })
+        console.log(data)
         this.uPlot.setData(data);
       }
       catch (e) {
@@ -157,7 +158,7 @@ export default {
   },
   watch: {
     chartSettings: function() {
-      const { bars } = uPlot.paths;
+      const { spline, bars } = uPlot.paths;
 
       let opts = {
         ...this.getSize(),
@@ -165,17 +166,30 @@ export default {
         plugins: [
           this.legendAsTooltipPlugin()
         ],
+        focus: {
+          alpha: 0.3
+        },
+        cursor: {
+          focus: {
+            prox: 10,
+          }
+        },
         axes: [
           {
             show: true,
             labelFont: "bold 9px ProductSans",
+            font: '12px ProductSans',
             stroke: "#9F9F9F",
             grid: {
               show: false,
             },
             ticks: {
               show: false,
-            }
+            },
+            values: [
+              [3600, "{M}/{D}/{YY}", null, null, null, null, null, null, 1],
+              [60, "{M}/{D}/{YY}", null, null, null, null, null, null, 1],
+            ],
           },
           {
             show: false
@@ -199,7 +213,10 @@ export default {
           stroke: e.color,
           fill: e.fill,
           width: 1,
-          paths: bars()
+          points: {
+            show: false
+          },
+          paths: e.mode === 'spline'? spline():bars()
         })
       })
 
@@ -218,6 +235,7 @@ export default {
 
 <style lang="scss">
 .chart-wrapper {
+  flex: 1;
   display: flex;
   flex-direction: column;
   background-color: rgb(25, 28, 30);
