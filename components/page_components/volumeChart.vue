@@ -98,7 +98,6 @@ export default {
           rassets.push(a)
         }
       }
-      console.log(time.length, rtime.length)
 
       let data = [rtime, rtotal, rrune, rassets];
 

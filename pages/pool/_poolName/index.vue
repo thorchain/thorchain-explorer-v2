@@ -67,7 +67,9 @@
             </div>
           </div>
         </div>
-        <volume-chart :chartSettings="pool.volumeHistory"></volume-chart>
+        <client-only>
+          <u-chart name="volumechange" :chartSettings="volumeHistory"></u-chart>
+        </client-only>
         <div class="pool-swap-detail" v-for="(settings, i) in poolStats" :key="i">
           <stat-table :tableSettings="settings.content" :header="settings.header"></stat-table>
         </div>
@@ -92,9 +94,9 @@ export default {
   },
   components: {
     BounceLoader,
-    VolumeChart: () => {
+    uChart: () => {
       if (process.client) {
-        return import("~/components/page_components/volumeChart.vue");
+        return import("~/components/page_components/uChart.vue");
       }
     },
   },
@@ -110,6 +112,50 @@ export default {
       const { chain, ticker } = assetFromString(assetStr);
       return `${chain}.${ticker}`;
     },
+    formatVol(d) {
+      let data = {
+        header: `Pool Volume`,
+        datum: [
+          {
+            name: 'time',
+            data: []
+          },
+          {
+            name: 'add',
+            color: `rgb(54, 176, 121)`,
+            fill: `rgb(54, 176, 121, 0.1)`,
+            label: "Add Liquidity Volume",
+            mode: 'spline',
+            data: []
+          },
+          {
+            name: 'widthdraw',
+            color: `rgb(234, 95, 148)`,
+            fill: `rgb(234, 95, 1488, 0.1)`,
+            label: 'Withdraw Liquidity Volume',
+            mode: 'spline',
+            data: []
+          },
+          {
+            name: 'total',
+            color: `rgb(255, 177, 78)`,
+            fill: `rgb(255, 177, 78, 0.1)`,
+            label: "Total Change",
+            mode: 'spline',
+            data: []
+          }
+        ]
+      }
+      d?.intervals.pop();
+      d?.intervals.forEach(interval => {
+        data.datum[0].data.push(Math.floor((~~interval.endTime + ~~interval.startTime)/2));
+        data.datum[1].data.push(+interval.addLiquidityVolume * +interval.runePriceUSD / 10**8);
+        data.datum[2].data.push(-1*((+interval.withdrawVolume) * +interval.runePriceUSD / 10**8));
+        data.datum[3].data.push((+interval.addLiquidityVolume - +interval.withdrawVolume)  * +interval.runePriceUSD / 10**8);
+      })
+
+      return data;
+    }
   },
   computed: {
     ...mapGetters({
@@ -253,12 +299,19 @@ export default {
       }).catch(e => {
         console.error(e);
       })
+
+      this.$api.getPoolVolume(this.poolName).then(res => {
+        this.volumeHistory = this.formatVol(res?.data);
+      }).catch(e => {
+        console.error(e);
+      })
   },
   data() {
     return {
       pool: [],
       poolStats: [],
-      poolDetail: undefined
+      poolDetail: undefined,
+      volumeHistory: undefined
     };
   },
   apollo: {
@@ -269,11 +322,7 @@ export default {
         return data;
       },
       variables() {
-        let d = new Date();
-        const until = Math.round(Date.now() / 1000);
-        const from = Math.round(d.setDate(d.getDate() - 7) / 1000);
-
-        return { until, from, asset: this.poolName };
+        return { asset: this.poolName };
       },
     },
   },
