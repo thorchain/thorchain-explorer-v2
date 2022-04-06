@@ -115,7 +115,7 @@ const pools = gql`query {
 }
 `
 
-const poolQuery = gql`query poolQuery($asset: String!, $from: Int64!, $until: Int64!){
+const poolQuery = gql`query poolQuery($asset: String!){
   poolQuery: pool(asset: $asset) {
     asset,
     status,

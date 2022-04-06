@@ -322,11 +322,7 @@ export default {
         return data;
       },
       variables() {
-        let d = new Date();
-        const until = Math.round(Date.now() / 1000);
-        const from = Math.round(d.setDate(d.getDate() - 7) / 1000);
-
-        return { until, from, asset: this.poolName };
+        return { asset: this.poolName };
       },
     },
   },
