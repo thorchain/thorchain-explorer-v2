@@ -264,7 +264,7 @@ export default {
           {
             name: 'widthdraw',
             color: `rgb(234, 95, 148)`,
-            fill: `rgb(234, 95, 1488)`,
+            fill: `rgb(234, 95, 148)`,
             label: 'Withdraw Liquidity Volume',
             data: []
           },
@@ -304,7 +304,7 @@ export default {
           {
             name: 'to Asset Volume',
             color: `rgb(234, 95, 148)`,
-            fill: `rgb(234, 95, 1488)`,
+            fill: `rgb(234, 95, 148)`,
             label: 'to Asset Volume',
             data: []
           },
