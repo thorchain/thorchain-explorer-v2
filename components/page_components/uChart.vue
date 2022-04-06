@@ -94,7 +94,7 @@ export default {
     checkWidth(el, chartWidth, cursor) {
       let width = el.getBoundingClientRect().width;
       
-      return cursor.left + width < chartWidth ? false : true;
+      return cursor.left + width + 10 < chartWidth ? false : true;
     },
     update(u) {
       const { left, top, idx } = u.cursor;
