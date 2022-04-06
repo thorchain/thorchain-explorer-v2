@@ -17,11 +17,10 @@
 <script>
 import uPlot from 'uplot';
 import 'uplot/dist/uPlot.min.css';
-import { mapGetters } from 'vuex';
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
 
 export default {
-  name: 'chartComponent',
+  name: 'uChart',
   props: {
     name: {
       type: String,
@@ -36,11 +35,6 @@ export default {
   },
   components: {
     BounceLoader
-  },
-  computed: {
-    ...mapGetters({
-      runePrice: 'getRunePrice'
-    })
   },
   methods: {
     getSize() {
@@ -64,7 +58,6 @@ export default {
         this.chartSettings?.datum?.forEach(e => {
           data.push(e.data)
         })
-        console.log(data)
         this.uPlot.setData(data);
       }
       catch (e) {
@@ -74,7 +67,7 @@ export default {
     tooltipGenerator(u, idx) {
       let tooltip = document.querySelector(`.${this.name} .tooltip`);
       tooltip.innerHTML = '';
-      let dc = uPlot.fmtDate('{h}{AA} {YYYY}/{MM}/{DD}');
+      let dc = uPlot.fmtDate('{YYYY}/{MM}/{DD}');
       let vals = []
       u.data?.forEach(d => {
         vals.push(d[idx])
@@ -154,10 +147,8 @@ export default {
           setCursor: this.update,
         }
       };
-    }
-  },
-  watch: {
-    chartSettings: function() {
+    },
+    chartInit() {
       const { spline, bars } = uPlot.paths;
 
       let opts = {
@@ -221,13 +212,22 @@ export default {
       })
 
       this.uPlot = new uPlot(opts, null, document.querySelector(`.${this.name} .chart`));
-      console.log(document.querySelector(`.${this.name} .chart`))
       let uPlotChart = this.uPlot;
       this.fillData();
 
       window.addEventListener("resize", e => {
         uPlotChart.setSize(this.getSize());
       });
+    }
+  },
+  watch: {
+    chartSettings: function() {
+      this.chartInit();
+    }
+  },
+  mounted() {
+    if (this.chartSettings) {
+      this.chartInit();
     }
   }
 }

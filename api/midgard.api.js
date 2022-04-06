@@ -52,14 +52,22 @@ export function getPoolStats(poolName) {
   return $axiosInstace.get(`pool/${poolName}/stats`)
 }
 
-export function volumeWeekly() {
-  return $axiosInstace.get(`history/liquidity_changes?interval=day&count=100`)
+export function volumeHistory() {
+  return $axiosInstace.get(`history/liquidity_changes?interval=day&count=30`)
 }
 
-export function swapWeekly() {
-  return $axiosInstace.get(`history/swaps?interval=day&count=100`)
+export function swapHistory() {
+  return $axiosInstace.get(`history/swaps?interval=day&count=30`)
 }
 
-export function tvlWeekly() {
-  return $axiosInstace.get(`history/tvl?interval=day&count=100`)
+export function tvlHistory() {
+  return $axiosInstace.get(`history/tvl?interval=day&count=30`)
+}
+
+export function earningsHistory() {
+  return $axiosInstace.get(`history/earnings?interval=day&count=30`)
+}
+
+export function getPoolVolume(poolName) {
+  return $axiosInstace.get(`history/liquidity_changes?pool=${poolName}&interval=day&count=30`)
 }

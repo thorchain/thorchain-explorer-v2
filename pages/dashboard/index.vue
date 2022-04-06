@@ -3,15 +3,15 @@
     <div class="chart-container">
       <client-only>
         <div class="chart-inner-container">
-          <u-chart name="swapchange" :chartSettings="swapWeekly"></u-chart>
+          <u-chart name="swapchange" :chartSettings="swapHistory"></u-chart>
           <div class="divider"></div>
-          <u-chart name="lpchange" :chartSettings="volumeWeekly"></u-chart>
+          <u-chart name="lpchange" :chartSettings="volumeHistory"></u-chart>
         </div>
         <div style="height: 1rem;"></div>
         <div class="chart-inner-container">
-          <volume-chart :chartSettings="volumeHistoryQuery"></volume-chart>
+          <u-chart name="earningchange" :chartSettings="earningsHistory"></u-chart>
           <div class="divider"></div>
-          <u-chart name="tvlchange" :chartSettings="tvlWeekly"></u-chart>
+          <u-chart name="tvlchange" :chartSettings="tvlHistory"></u-chart>
         </div>
       </client-only>
     </div>
@@ -26,16 +26,11 @@
 </template>
 
 <script>
-import {networkQuery, volumeHistoryQuery} from '~/_gql_queries';
+import {networkQuery} from '~/_gql_queries';
 import { blockTime} from '~/utils';
 
 export default {
   components: { 
-    volumeChart: () => {
-      if(process.client) {
-        return import('~/components/page_components/volumeChart.vue')
-      }
-    },
     uChart: () => {
       if(process.client) {
         return import('~/components/page_components/uChart.vue')
@@ -47,12 +42,12 @@ export default {
     return {
       network: [],
       rune: '',
-      volumeHistoryQuery: undefined,
       lastblock: undefined,
       stats: [],
-      volumeWeekly: undefined,
-      swapWeekly: undefined,
-      tvlWeekly: undefined
+      volumeHistory: undefined,
+      swapHistory: undefined,
+      tvlHistory: undefined,
+      earningsHistory: undefined
     };
   },
   computed: {
@@ -262,21 +257,21 @@ export default {
           {
             name: 'add',
             color: `rgb(54, 176, 121)`,
-            fill: `rgb(54, 176, 121, 0.1)`,
+            fill: `rgb(54, 176, 121)`,
             label: "Add Liquidity Volume",
             data: []
           },
           {
             name: 'widthdraw',
             color: `rgb(234, 95, 148)`,
-            fill: `rgb(234, 95, 1488, 0.1)`,
+            fill: `rgb(234, 95, 1488)`,
             label: 'Withdraw Liquidity Volume',
             data: []
           },
           {
             name: 'total',
             color: `rgb(255, 177, 78)`,
-            fill: `rgb(255, 177, 78, 0.1)`,
+            fill: `rgb(255, 177, 78)`,
             label: "Total Change",
             data: []
           }
@@ -302,21 +297,21 @@ export default {
           {
             name: 'Total Volume',
             color: `rgb(255, 177, 78)`,
-            fill: `rgb(255, 177, 78, 0.1)`,
+            fill: `rgb(255, 177, 78)`,
             label: "Total Volume",
             data: []
           },
           {
             name: 'to Asset Volume',
             color: `rgb(234, 95, 148)`,
-            fill: `rgb(234, 95, 1488, 0.1)`,
+            fill: `rgb(234, 95, 1488)`,
             label: 'to Asset Volume',
             data: []
           },
           {
             name: 'to Rune Volume',
             color: `rgb(54, 176, 121)`,
-            fill: `rgb(54, 176, 121, 0.1)`,
+            fill: `rgb(54, 176, 121)`,
             label: 'to Rune Volume',
             data: []
           }
@@ -349,9 +344,45 @@ export default {
           }
         ]
       }
+      d?.intervals.pop();
       d?.intervals.forEach(interval => {
         data.datum[0].data.push(Math.floor((~~interval.endTime + ~~interval.startTime)/2));
         data.datum[1].data.push((+interval.totalValuePooled / 10**8) * Number.parseFloat(interval.runePriceUSD));
+      })
+
+      return data;
+    },
+    formatEarnings: function(d) {
+      let data = {
+        header: 'Earnings Volume',
+        datum: [
+          {
+            name: 'time',
+            data: []
+          },
+          {
+            name: 'Liquidity Earning',
+            color: `rgb(255, 177, 78)`,
+            fill: `rgb(255, 177, 78, 0.1)`,
+            label: "Liquidity Earning",
+            mode: 'spline',
+            data: []
+          },
+          {
+            name: 'Bond Earning',
+            color: `rgb(234, 95, 148)`,
+            fill: `rgb(234, 95, 1488, 0.1)`,
+            label: "Bond Earning",
+            mode: 'spline',
+            data: []
+          }
+        ]
+      }
+      d?.intervals.pop();
+      d?.intervals.forEach(interval => {
+        data.datum[0].data.push(Math.floor((~~interval.endTime + ~~interval.startTime)/2));
+        data.datum[1].data.push((+interval.liquidityEarnings / 10**8) * Number.parseFloat(interval.runePriceUSD));
+        data.datum[2].data.push((+interval.bondingEarnings / 10**8) * Number.parseFloat(interval.runePriceUSD));
       })
 
       return data;
@@ -360,17 +391,6 @@ export default {
   apollo: {
     $prefetch: false,
     network: networkQuery,
-    volumeHistoryQuery: {
-      query: volumeHistoryQuery,
-      update: data => data.volumeHistory,
-      variables() {
-        let d = new Date()
-        let until = Math.round(Date.now() / 1000);
-        let from = Math.round(d.setDate(d.getDate() - 7) / 1000);
-
-        return { from, until }
-      }
-    },
   },
   mounted() {
     this.$api.getStats()
@@ -385,20 +405,26 @@ export default {
       console.error(error)
     })
 
-    this.$api.volumeWeekly()
-    .then(res => this.volumeWeekly = this.formatLPChange(res.data))
+    this.$api.volumeHistory()
+    .then(res => this.volumeHistory = this.formatLPChange(res.data))
     .catch(error => {
       console.error(error)
     })
 
-    this.$api.swapWeekly()
-    .then(res => this.swapWeekly = this.formatSwap(res.data))
+    this.$api.swapHistory()
+    .then(res => this.swapHistory = this.formatSwap(res.data))
     .catch(error => {
       console.error(error)
     })
 
-    this.$api.tvlWeekly()
-    .then(res => this.tvlWeekly = this.formatTvl(res.data))
+    this.$api.tvlHistory()
+    .then(res => this.tvlHistory = this.formatTvl(res.data))
+    .catch(error => {
+      console.error(error)
+    })
+
+    this.$api.earningsHistory()
+    .then(res => this.earningsHistory = this.formatEarnings(res.data))
     .catch(error => {
       console.error(error)
     })
