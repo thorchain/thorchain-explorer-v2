@@ -5,7 +5,7 @@
       <div class="nav-item" @click="mode = 'table'" :class="{'active': mode == 'table'}">Table</div>
     </div>
     <div v-if="pools && pools.length > 0 && mode == 'grid'" class="pools-container">
-      <div class="pool-item" v-for="(pool, idx) in pools" :key="idx"  @click="gotoPool(pool.asset)">
+      <div class="pool-item" v-for="(pool, idx) in sortedPools" :key="idx"  @click="gotoPool(pool.asset)">
         <div class="row">
           <div class="pool-chain">
             <img class="asset-chain" :src="assetImage(assetToChain(pool.asset))">
@@ -127,7 +127,12 @@ export default {
   computed: {
     ...mapGetters({
       runePrice: 'getRunePrice'
-    })
+    }),
+    sortedPools() {
+      return this.pools.sort((a,b) => {
+        return b.depth.poolDepth - a.depth.poolDepth
+      })
+    }
   },
   methods: {
     assetImage(assetStr) {
@@ -191,7 +196,6 @@ export default {
           this.standbyRows.push(this.addRow(this.pools[i]))
         }
       }
-      console.log(this.activeRows);
     }
   }
 }
