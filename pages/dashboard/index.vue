@@ -8,6 +8,7 @@
             <div class="item-detail">
               <div class="header">Block Height</div>
               <div v-if="lastHeight" class="value">{{lastHeight | number('0,0')}}</div>
+              <span v-else>-</span>
             </div>
           </div>
           <hr>
@@ -20,6 +21,7 @@
                 <span style="font-size: 0.75rem;">RUNE</span>
                 <span class="extra" v-if="stats">(${{runeSupply*stats.runePriceUSD | number('0.00 a')}})</span>
               </div>
+              <span v-else>-</span>
             </div>
           </div>
           <hr>
@@ -30,6 +32,7 @@
             <div class="item-detail">
               <div class="header">RUNE Price</div>
               <div v-if="stats" class="value">{{ stats.runePriceUSD | currency }}</div>
+              <span v-else>-</span>
             </div>
           </div>
           <hr>
@@ -42,6 +45,7 @@
                 <span style="font-size: 0.75rem;">RUNE</span>
                 <span class="extra" v-if="stats">(${{runeVolume*stats.runePriceUSD | number('0.00 a')}})</span>
               </div>
+              <span v-else>-</span>
             </div>
           </div>
         </div>
@@ -330,7 +334,7 @@ export default {
             data: []
           },
           {
-            name: 'total',
+            name: 'Total Change',
             color: `rgb(255, 177, 78)`,
             fill: `rgb(255, 177, 78)`,
             label: "Total Change",
@@ -603,8 +607,21 @@ export default {
     justify-content: space-between;
 
     .stat-group {
+      position: relative;
       padding: 1rem;
       flex: 1;
+
+      &:first-of-type::after {
+        position: absolute;
+        right: 0;
+        top: 0;
+        content: "";
+        display: block;
+        height: calc(100% - 1rem);
+        border-left: 0;
+        border-right: 1px solid #263238;
+        margin: .5rem 0;
+      }
     }
 
     .stat-group hr:last-child {
