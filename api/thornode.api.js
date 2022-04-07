@@ -13,6 +13,10 @@ export function getLastBlockHeight() {
   return $axiosInstace.get(process.env.THORNODE_URL + 'thorchain/lastblock');
 }
 
+export function getRPCLastBlockHeight() {
+  return $axiosInstace.get(process.env.THORNODE_URL + 'blocks/latest');
+}
+
 export function getNativeTx(txID) {
   return $axiosInstace.get(process.env.THORNODE_URL + `cosmos/tx/v1beta1/txs/${txID}`);
 }
@@ -39,6 +43,10 @@ export function getPoolDetail(poolName) {
 
 export function getAssets() {
   return $axiosInstace.get(process.env.THORNODE_URL + `cosmos/bank/v1beta1/supply`);
+}
+
+export function getSupplyRune() {
+  return $axiosInstace.get(process.env.THORNODE_URL + `cosmos/bank/v1beta1/supply/rune`);
 }
 
 export function getThorPools() {

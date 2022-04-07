@@ -10,7 +10,8 @@ import {
   swapHistory,
   tvlHistory,
   earningsHistory,
-  getPoolVolume
+  getPoolVolume,
+  getLastTvl
 } from "./midgard.api";
 import {
   getMimir,
@@ -23,7 +24,9 @@ import {
   getLpPositions,
   getPoolDetail,
   getAssets,
-  getThorPools
+  getThorPools,
+  getSupplyRune,
+  getRPCLastBlockHeight
 } from "./thornode.api";
 export var $axiosInstace;
 
@@ -108,7 +111,10 @@ export default function ({ $axios }, inject) {
     swapHistory,
     tvlHistory,
     earningsHistory,
-    getPoolVolume
+    getPoolVolume,
+    getSupplyRune,
+    getRPCLastBlockHeight,
+    getLastTvl
   };
 
   inject("api", api);
