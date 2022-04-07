@@ -64,6 +64,10 @@ export function tvlHistory() {
   return $axiosInstace.get(`history/tvl?interval=day&count=30`)
 }
 
+export function getLastTvl() {
+  return $axiosInstace.get(`history/tvl`)
+}
+
 export function earningsHistory() {
   return $axiosInstace.get(`history/earnings?interval=day&count=30`)
 }

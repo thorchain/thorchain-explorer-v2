@@ -1,6 +1,51 @@
 <template>
   <div class="overview-container">
     <div class="chart-container">
+      <div class="network-stats base-container">
+        <div class="stat-group">
+          <div class="stat-item">
+            <block class="stat-image" />
+            <div class="item-detail">
+              <div class="header">Block Height</div>
+              <div v-if="lastHeight" class="value">{{lastHeight | number('0,0')}}</div>
+            </div>
+          </div>
+          <hr>
+          <div class="stat-item">
+            <globe class="stat-image" />
+            <div class="item-detail">
+              <div class="header">RUNE Supply</div>
+              <div class="value" v-if="runeSupply">
+                {{runeSupply | number('0,0') }}
+                <span style="font-size: 0.75rem;">RUNE</span>
+                <span class="extra" v-if="stats">(${{runeSupply*stats.runePriceUSD | number('0.00 a')}})</span>
+              </div>
+            </div>
+          </div>
+          <hr>
+        </div>
+        <div class="stat-group">
+          <div class="stat-item">
+            <span class="rune-symbol">{{runeSymbol}}</span>
+            <div class="item-detail">
+              <div class="header">RUNE Price</div>
+              <div v-if="stats" class="value">{{ stats.runePriceUSD | currency }}</div>
+            </div>
+          </div>
+          <hr>
+          <div class="stat-item">
+            <circulate class="stat-image" />
+            <div class="item-detail">
+              <div class="header">Total Circulating Volume (On Chain)</div>
+              <div v-if="runeVolume" class="value">
+                {{runeVolume | number('0,0') }}
+                <span style="font-size: 0.75rem;">RUNE</span>
+                <span class="extra" v-if="stats">(${{runeVolume*stats.runePriceUSD | number('0.00 a')}})</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       <client-only>
         <div class="chart-inner-container">
           <u-chart name="swapchange" :chartSettings="swapHistory"></u-chart>
@@ -28,6 +73,11 @@
 <script>
 import {networkQuery} from '~/_gql_queries';
 import { blockTime} from '~/utils';
+import Block from '~/assets/images/block.svg?inline';
+import Globe from '~/assets/images/globe.svg?inline';
+import Circulate from '~/assets/images/circulate.svg?inline';
+import { AssetCurrencySymbol } from '@xchainjs/xchain-util';
+
 
 export default {
   components: { 
@@ -35,7 +85,10 @@ export default {
       if(process.client) {
         return import('~/components/page_components/uChart.vue')
       }
-    }
+    },
+    Block,
+    Globe,
+    Circulate
   },
   name: "OverviewPage",
   data() {
@@ -47,10 +100,18 @@ export default {
       volumeHistory: undefined,
       swapHistory: undefined,
       tvlHistory: undefined,
-      earningsHistory: undefined
+      earningsHistory: undefined,
+      runeSupply: undefined,
+      lastHeight: undefined,
     };
   },
   computed: {
+    runeSymbol() {
+      return AssetCurrencySymbol.RUNE
+    },
+    runeVolume() {
+      return (+this.stats.swapVolume + +this.stats.withdrawVolume + +this.stats.addLiquidityVolume)/10**8
+    },
     networkSettings: function () {
       return [
         [
@@ -428,6 +489,18 @@ export default {
     .catch(error => {
       console.error(error)
     })
+
+    this.$api.getSupplyRune()
+    .then(res => this.runeSupply = (+res?.data?.amount?.amount)/10**8)
+    .catch(error => {
+      console.error(error)
+    })
+
+    this.$api.getRPCLastBlockHeight()
+    .then(res => this.lastHeight = +res?.data?.block?.header?.height)
+    .catch(error => {
+      console.error(error)
+    })
   }
 };
 </script>
@@ -475,6 +548,67 @@ export default {
   @include lg {
     .chart-inner-container {
       flex-direction: row;
+    }
+  }
+}
+
+.network-stats {
+  margin-bottom: 1rem;
+
+  .stat-item {
+    display: flex;
+
+    .header {
+      color: #9F9F9F;
+      font-size: .875rem;
+    }
+
+    .value {
+      .extra {
+        color: #9F9F9F;
+        font-size: .78rem;
+      }
+    }
+
+    .stat-image {
+      margin-right: .75rem;
+      width: 2rem;
+      height: 2rem;
+      fill: #9F9F9F;
+    }
+  }
+
+  hr {
+    margin: .75rem 0;
+    opacity: .65;
+    overflow: visible;
+    height: 0;
+    border: 0;
+    border-top: 1px solid #263238;
+  }
+  
+  .rune-symbol {
+    color: #9F9F9F;
+    margin: 0 .6rem;
+    font-size: 2rem;
+    line-height: 28px;
+    width: 1.6rem;
+  }
+}
+
+@include md {
+  .network-stats {
+    padding: 0;
+    display: flex;
+    justify-content: space-between;
+
+    .stat-group {
+      padding: 1rem;
+      flex: 1;
+    }
+
+    .stat-group hr:last-child {
+      display: none;
     }
   }
 }
