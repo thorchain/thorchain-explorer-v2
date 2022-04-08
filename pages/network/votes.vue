@@ -5,18 +5,18 @@
         Vote: <span>{{k}}</span>
       </div>
       <div class="voters-container">
-        <div class="headers">
-          <div class="signer">Signer</div>
-          <div class="value">Value</div>
-        </div>
-        <div class="voter" v-for="(vr, idx) in v" :key="i + ',' + idx">
-          <div class="signer" @click="gotoAddr(vr.signer)">
-            {{vr.signer}}
-          </div>
-          <div class="value">
-            {{vr.value}}
-          </div>
-        </div>
+        <vue-good-table
+          v-if="cols && v.length > 0"
+          :columns="cols"
+          :rows="v"
+          styleClass="vgt-table net-table vgt-compact"
+          :pagination-options="{
+            enabled: true,
+            perPage: 30,
+            perPageDropdownEnabled: false,
+          }"
+          @on-row-click="gotoPoolTable"
+        />
       </div>
     </div>
   </div>
@@ -26,7 +26,17 @@
 export default {
   data() {
     return {
-      mimirVotes: undefined
+      mimirVotes: undefined,
+      cols: [
+        {
+          label: 'Signer',
+          field: 'signer',
+        },
+        {
+          label: 'Value',
+          field: 'value'
+        }
+      ]
     }
   },
   mounted() {
@@ -77,10 +87,6 @@ export default {
   }
 
   .voters-container {
-    padding-bottom: 1rem;
-    border-radius: .3rem;
-    border: 1px solid #263238;
-
     .voter {
       padding: 0 1rem;
       margin: 1rem 0;
