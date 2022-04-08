@@ -31,10 +31,12 @@ export default {
         {
           label: 'Signer',
           field: 'signer',
+          sortable: false
         },
         {
           label: 'Value',
-          field: 'value'
+          field: 'value',
+          type: 'number'
         }
       ]
     }
