@@ -1,5 +1,19 @@
 <template>
   <div class="votes-container">
+    <div class="base-container">
+      <h3>Current Constants</h3>
+      <vue-good-table
+        v-if="votesCols && currentVoting"
+        :columns="votesCols"
+        :rows="currentVoting"
+        styleClass="vgt-table net-table vgt-compact"
+        :pagination-options="{
+          enabled: true,
+          perPage: 30,
+          perPageDropdownEnabled: false,
+        }"
+      />
+    </div>
     <div class="vote-container base-container" v-for="(v,k,i) in mimirVotes" :key="i">
       <div class="vote-name">
         Vote: <span>{{k}}</span>
@@ -15,7 +29,6 @@
             perPage: 30,
             perPageDropdownEnabled: false,
           }"
-          @on-row-click="gotoPoolTable"
         />
       </div>
     </div>
@@ -27,6 +40,7 @@ export default {
   data() {
     return {
       mimirVotes: undefined,
+      mimirs: undefined,
       cols: [
         {
           label: 'Signer',
@@ -38,6 +52,18 @@ export default {
           field: 'value',
           type: 'number'
         }
+      ],
+      votesCols: [
+        {
+          label: 'Vote',
+          field: 'vote',
+          sortable: false
+        },
+        {
+          label: 'Current Value',
+          field: 'currentVal',
+          type: 'number'
+        }
       ]
     }
   },
@@ -47,6 +73,29 @@ export default {
     }).catch(e => {
       console.error(e);
     })
+
+    this.$api.getMimir().then(res => {
+      this.mimirs = res.data;
+    }).catch(e => {
+      console.error(e);
+    })
+  },
+  computed: {
+    currentVoting: function() {
+      if(this.mimirVotes && this.mimirs) {
+        let mimrsVoteConstants = []
+        for (let m of Object.keys(this.mimirs)) {
+          console.log(m, this.mimirs[m])
+          if(Object.keys(this.mimirVotes).includes(m)) {
+            mimrsVoteConstants.push({
+              vote: m,
+              currentVal: this.mimirs[m],
+            })
+          }
+        }
+        return mimrsVoteConstants
+      }
+    }
   },
   methods: {
     formatVotes(mimirs) {
