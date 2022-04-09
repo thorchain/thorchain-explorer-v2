@@ -52,3 +52,7 @@ export function getSupplyRune() {
 export function getThorPools() {
   return $axiosInstace.get(process.env.THORNODE_URL + `thorchain/pools`);
 }
+
+export function getYggdrasil() {
+  return $axiosInstace.get(process.env.THORNODE_URL + `thorchain/vaults/yggdrasil`);
+}
