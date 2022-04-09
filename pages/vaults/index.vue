@@ -13,17 +13,38 @@
         }"
       >
         <template slot="table-row" slot-scope="props">
-          <span v-if="props.column.field == 'bond'">
-            <span v-tooltip="curFormat(runePrice * props.row.bond)">
+          <span v-if="props.column.field == 'hash'">
+            <span class="mono" v-tooltip="props.row.hash">
+              {{props.row.hash.slice(0,8)}}...{{props.row.hash.slice(-8)}}
+            </span> 
+          </span>
+          <span v-else-if="props.column.field == 'bond'">
+            <span class="mono" v-if="props.row.bond" v-tooltip="curFormat(runePrice * props.row.bond)">
               <span class="extra">{{runeCur()}}</span>  
               {{numberFormat(props.row.bond)}}
             </span> 
+            <span v-else>
+              -
+            </span>
           </span>
           <span v-else-if="props.column.field == 'total_value'">
-            <span v-tooltip="curFormat(runePrice * props.row.total_value)">
+            <span class="mono" v-if="props.row.total_value" v-tooltip="curFormat(runePrice * props.row.total_value)">
               <span class="extra">{{runeCur()}}</span>  
               {{numberFormat(props.row.total_value)}}
             </span> 
+            <span v-else>
+              -
+            </span>
+          </span>
+          <span v-else-if="props.column.field == 'type'">
+            <div :class="['bubble-container', {'blue': props.row.type == 'Yggdrasil'}]">
+              <span>{{props.row.type}}</span>
+            </div>
+          </span>
+          <span v-else-if="props.column.field == 'status'">
+            <div :class="['bubble-container', {'yellow': props.row.status == 'Standby'}]">
+              <span>{{props.row.status}}</span>
+            </div>
           </span>
         </template>
       </vue-good-table>
@@ -60,21 +81,27 @@ export default {
         },
         {
           label: 'Bond',
-          field: 'bond'
+          field: 'bond',
+          type: 'number'
         },
         {
           label: 'Total Vaule',
-          field: 'total_value'
+          field: 'total_value',
+          type: 'number'
         },
         {
           label: 'Ins',
           field: 'ins',
-          type: 'number'
+          type: 'number',
+          formatFn: this.numberFormat,
+          tdClass: 'mono'
         },
         {
           label: 'Outs',
           field: 'outs',
-          type: 'number'
+          type: 'number',
+          formatFn: this.numberFormat,
+          tdClass: 'mono'
         }
       ],
       yggdrasil: [],
@@ -95,13 +122,19 @@ export default {
     })
   },
   methods: {
+    formatStatus(status) {
+      if (status === 'ActiveVault') {
+        return 'Active'
+      }
+      return status
+    },
     formatVaults(data, type='Yggdrasil') {
       let y = []
       for(let vault of data) {
         y.push({
           hash: vault.addresses.find(e => e.chain === 'THOR').address,
           type: type,
-          status: vault.status,
+          status: this.formatStatus(vault.status),
           ins: vault.inbound_tx_count,
           bond: +vault.bond / 10**8,
           total_value: +vault.total_value / 10**8,
