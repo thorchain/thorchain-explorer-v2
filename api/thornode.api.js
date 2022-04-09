@@ -56,3 +56,7 @@ export function getThorPools() {
 export function getYggdrasil() {
   return $axiosInstace.get(process.env.THORNODE_URL + `thorchain/vaults/yggdrasil`);
 }
+
+export function getAsgard() {
+  return $axiosInstace.get(process.env.THORNODE_URL + `thorchain/vaults/asgard`);
+}
