@@ -4,11 +4,11 @@
       <vue-good-table
         v-if="cols && yggdrasil.length > 0"
         :columns="cols"
-        :rows="yggdrasil"
+        :rows="[...asgard, ...yggdrasil]"
         styleClass="vgt-table net-table vgt-compact"
         :pagination-options="{
           enabled: true,
-          perPage: 100,
+          perPage: 120,
           perPageDropdownEnabled: false,
         }"
       >
@@ -77,23 +77,30 @@ export default {
           type: 'number'
         }
       ],
-      yggdrasil: []
+      yggdrasil: [],
+      asgard: []
     }
   },
   mounted() {
     this.$api.getYggdrasil().then(res => {
-      this.yggdrasil = this.formatYggdrasil(res?.data);
+      this.yggdrasil = this.formatVaults(res?.data, 'Yggdrasil');
+    }).catch(e => {
+      console.error(e);
+    })
+
+    this.$api.getAsgard().then(res => {
+      this.asgard = this.formatVaults(res?.data, 'Asgard');
     }).catch(e => {
       console.error(e);
     })
   },
   methods: {
-    formatYggdrasil(data) {
+    formatVaults(data, type='Yggdrasil') {
       let y = []
       for(let vault of data) {
         y.push({
           hash: vault.addresses.find(e => e.chain === 'THOR').address,
-          type: 'Yggdrasil',
+          type: type,
           status: vault.status,
           ins: vault.inbound_tx_count,
           bond: +vault.bond / 10**8,
