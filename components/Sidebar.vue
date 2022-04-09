@@ -47,6 +47,9 @@ import swimmerUnselected from '~/assets/images/swimmer-unselected.svg?inline';
 import moneySelected from '~/assets/images/money-selected.svg?inline';
 import moneyUnselected from '~/assets/images/money.svg?inline';
 
+import shieldSelected from '~/assets/images/shield.svg?inline';
+import shieldUnselected from '~/assets/images/shield-unselected.svg?inline';
+
 export default {
   name: 'SideBar',
   props: ['mini'],
@@ -65,7 +68,9 @@ export default {
     swimmerSelected,
     swimmerUnselected,
     moneySelected,
-    moneyUnselected
+    moneyUnselected,
+    shieldSelected,
+    shieldUnselected
   },
   data() {
     return {
@@ -105,6 +110,12 @@ export default {
           unicon: 'moneyUnselected',
           icon: 'moneySelected',
           link: '/assets'
+        },
+        {
+          name: 'Vaults',
+          unicon: 'shieldUnselected',
+          icon: 'shieldSelected',
+          link: '/vaults'
         }
       ]
     }

@@ -1,4 +1,4 @@
-import { assetFromString, AssetRuneNative, assetToString, isSynthAsset } from "@xchainjs/xchain-util";
+import { AssetCurrencySymbol, assetFromString, AssetRuneNative, assetToString, isSynthAsset } from "@xchainjs/xchain-util";
 
 // Formats time in seconds into `dd:hh:mm hrs`
 export function formatTime(seconds) {
@@ -89,4 +89,8 @@ export function fillNodeData(nodes, el) {
     award: (Number.parseFloat(el.currentAward)/10**8).toFixed(2),
     bond: el.bond/10**8 < 0.01?0:el.bond/10**8
   })
+}
+
+export function runeCur() {
+  return AssetCurrencySymbol.RUNE
 }

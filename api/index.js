@@ -26,7 +26,8 @@ import {
   getAssets,
   getThorPools,
   getSupplyRune,
-  getRPCLastBlockHeight
+  getRPCLastBlockHeight,
+  getYggdrasil
 } from "./thornode.api";
 export var $axiosInstace;
 
@@ -114,7 +115,8 @@ export default function ({ $axios }, inject) {
     getPoolVolume,
     getSupplyRune,
     getRPCLastBlockHeight,
-    getLastTvl
+    getLastTvl,
+    getYggdrasil
   };
 
   inject("api", api);
