@@ -39,12 +39,12 @@ export default {
   methods: {
     getSize() {
       if (document.querySelector(`.${this.name} .chart .uplot`)) {
-        document.querySelector(`.${this.name} .chart .uplot`).style.display = "none";
+        document.querySelectorAll(`.uplot`).forEach(e => e.style.display = "none");
       }
       const chartWrapper = document.querySelector(`.${this.name}.chart-wrapper`);
       const chartWidth = chartWrapper?.offsetWidth - 36;
       if (document.querySelector(`.${this.name} .chart .uplot`)) {
-        document.querySelector(`.${this.name} .chart .uplot`).style.display = "block";
+        document.querySelectorAll(`.uplot`).forEach(e => e.style.display = "block");
       }
       //TODO: change fixed width with relative size
       return {

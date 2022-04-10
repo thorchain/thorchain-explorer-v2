@@ -733,7 +733,28 @@ export default {
 
 .cards-container {
   display: flex;
+  flex-direction: column;
   width: 100%;
   margin: 1rem 0;
+  
+  .card {
+    margin: .5rem 0;
+  }
+
+  @include lg {
+    flex-direction: row;
+
+    .card {
+      width: 50%;
+      
+      &:first-of-type {
+        margin-right: .5rem;
+      }
+
+      &:last-of-type {
+        margin-left: .5rem;
+      }
+    }
+  }
 }
 </style>
