@@ -31,7 +31,7 @@
             <span class="rune-symbol">{{runeSymbol}}</span>
             <div class="item-detail">
               <div class="header">RUNE Price</div>
-              <div v-if="stats" class="value">{{ stats.runePriceUSD | currency }}</div>
+              <div v-if="stats && stats.runePriceUSD" class="value">{{ stats.runePriceUSD | currency }}</div>
               <span v-else>-</span>
             </div>
           </div>
@@ -65,6 +65,70 @@
       </client-only>
     </div>
     <div class="break"></div>
+    <div class="cards-container">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-title">
+            <h2>Latest Blocks</h2>
+          </div>
+        </div>
+        <div class="card-body">
+          <template v-if="blocks">
+            <template v-for="(b,i) in blocks">
+              <div class="row-item" :key="i">
+                <div class="meta">
+                  <span class="header">
+                    {{b.height | number('0,0')}}
+                  </span>
+                  <br>
+                  <span class="timestamp">
+                    {{formatMoment(b.timestamp)}}
+                  </span>
+                </div>
+                <div class="txs"></div>
+              </div>
+              <hr class="hr-space" :key="i + 'hr'">
+            </template>
+          </template>
+          <div v-else class="loading">
+            <BounceLoader color="#9F9F9F" size="3rem" />
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-title">
+            <h2>Latest Transactions</h2>
+          </div>
+        </div>
+        <div class="card-body">
+          <template v-if="txs">
+            <template v-for="(t,i) in txs">
+              <div class="row-item" :key="i">
+                <div class="meta">
+                  <span class="header">
+                    {{t.height | number('0,0')}}
+                  </span>
+                  <br>
+                  <span class="timestamp">
+                    {{formatMoment(t.date)}}
+                  </span>
+                </div>
+                <div class="txs">
+                  <span>TxID <a @click="gotoTx(t.in && t.in[0].txID)" class="value">{{t.in && t.in[0].txID}}</a></span>
+                  <br>
+                  <span>From <a @click="gotoAddr(t.in[0].address)" class="value">{{t.in && t.in[0].address}}</a></span>
+                </div>
+              </div>
+              <hr class="hr-space" :key="i + 'hr'">
+            </template>
+          </template>
+          <div v-else class="loading">
+            <BounceLoader color="#9F9F9F" size="3rem" />
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="stats-container">
       <stat-table header="Stats" :tableSettings="statsSettings"></stat-table>
     </div>
@@ -81,7 +145,8 @@ import Block from '~/assets/images/block.svg?inline';
 import Globe from '~/assets/images/globe.svg?inline';
 import Circulate from '~/assets/images/circulate.svg?inline';
 import { AssetCurrencySymbol } from '@xchainjs/xchain-util';
-
+import BounceLoader from "vue-spinner/src/BounceLoader.vue";
+import moment from 'moment';
 
 export default {
   components: { 
@@ -92,7 +157,8 @@ export default {
     },
     Block,
     Globe,
-    Circulate
+    Circulate,
+    BounceLoader
   },
   name: "OverviewPage",
   data() {
@@ -107,6 +173,8 @@ export default {
       earningsHistory: undefined,
       runeSupply: undefined,
       lastHeight: undefined,
+      blocks: undefined,
+      txs: undefined
     };
   },
   computed: {
@@ -451,7 +519,27 @@ export default {
       })
 
       return data;
-    }
+    },
+    formatBlocks: function(blocks) {
+      let blockJsons = []
+      const r = /(?<=Timestamp: )\d+/gm;
+      for (let block of blocks) {
+        let blockJson = JSON.parse(block.slice(block.indexOf('\n')))
+        blockJson['timestamp'] = block.match(r)[0]
+        blockJsons.push(blockJson)
+      }
+      return blockJsons.reverse()
+    },
+    formatMoment: function(time) {
+      console.log(time)
+      return moment(Number.parseInt(time/10**6)).fromNow();
+    },
+    gotoTx(txid) {
+      this.$router.push({ path: `/tx/${txid}` })
+    },
+    gotoAddr(address) {
+      this.$router.push({ path: `/address/${address}` })
+    },
   },
   apollo: {
     $prefetch: false,
@@ -501,7 +589,20 @@ export default {
     })
 
     this.$api.getRPCLastBlockHeight()
-    .then(res => this.lastHeight = +res?.data?.block?.header?.height)
+    .then(res => {
+      this.lastHeight = +res?.data?.block?.header?.height;
+      this.$api.getLatestBlocks(+this.lastHeight)
+      .then(res => this.blocks = this.formatBlocks(res))
+      .catch(error => {
+        console.error(error)
+      })
+    })
+    .catch(error => {
+      console.error(error)
+    })
+    
+    this.$api.getTxs()
+    .then(res => this.txs = res?.data?.actions)
     .catch(error => {
       console.error(error)
     })
@@ -626,6 +727,33 @@ export default {
 
     .stat-group hr:last-child {
       display: none;
+    }
+  }
+}
+
+.cards-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: 1rem 0;
+  
+  .card {
+    margin: .5rem 0;
+  }
+
+  @include lg {
+    flex-direction: row;
+
+    .card {
+      width: 50%;
+      
+      &:first-of-type {
+        margin-right: .5rem;
+      }
+
+      &:last-of-type {
+        margin-left: .5rem;
+      }
     }
   }
 }

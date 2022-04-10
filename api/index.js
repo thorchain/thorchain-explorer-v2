@@ -11,7 +11,8 @@ import {
   tvlHistory,
   earningsHistory,
   getPoolVolume,
-  getLastTvl
+  getLastTvl,
+  getLatestBlocks
 } from "./midgard.api";
 import {
   getMimir,
@@ -118,7 +119,8 @@ export default function ({ $axios }, inject) {
     getRPCLastBlockHeight,
     getLastTvl,
     getYggdrasil,
-    getAsgard
+    getAsgard,
+    getLatestBlocks
   };
 
   inject("api", api);
