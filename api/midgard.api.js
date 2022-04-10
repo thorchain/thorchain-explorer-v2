@@ -1,6 +1,8 @@
 // axios instance
 import { $axiosInstace } from './index';
 
+
+
 export function getStats() {
   return $axiosInstace.get('stats');
 }
@@ -74,4 +76,23 @@ export function earningsHistory() {
 
 export function getPoolVolume(poolName) {
   return $axiosInstace.get(`history/liquidity_changes?pool=${poolName}&interval=day&count=30`)
+}
+
+export async function getLatestBlocks(latestBlock, count=10) {
+  if (!latestBlock) {
+    return
+  }
+
+  let axiosUrls = [...Array(latestBlock+1).keys()].slice(-1*count).map(b => `debug/block/${b}`)
+
+  let res = await Promise.all(axiosUrls.map(url => $axiosInstace.get(url))).then(
+    (data) => {
+      let datum = []
+      for (let d of data) {
+        datum.push(d.data)
+      }
+      return datum
+    }
+  )
+  return res;
 }

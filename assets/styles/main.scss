@@ -42,6 +42,106 @@ input {
   font-family: 'Roboto Mono' !important;
 }
 
+.card {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  word-wrap: break-word;
+  border: 1px solid #263238;
+  background-color: #161819;
+  border-radius: 0.5rem;
+  margin: 0 .5rem;
+
+  &:first-of-type {
+    margin-left: 0;
+  }
+
+  &:last-of-type {
+    margin-right: 0;
+  }
+
+  .card-header {
+    padding: 0.75rem;
+    margin-bottom: 0;
+    border-bottom: 1px solid #263238;
+
+    .card-header-title {
+      font-size: .875rem;
+      font-weight: 600;
+      margin-bottom: 0;
+
+      h2 {
+        margin: 0;
+      }
+    }
+  }
+
+  .card-body {
+    padding: .75rem;
+    .row-item {
+      justify-content: space-between;
+      display: flex;
+
+      .meta {
+        color: #e6e6e6;
+        
+        .header {
+          font-size: .975rem;
+        }
+
+        .timestamp {
+          color: #9F9F9F;
+          font-size: .75rem;
+        }
+      }
+      
+      .txs {
+        text-overflow: ellipsis;
+        overflow: hidden;
+        width: 66%;
+
+        > span {
+          white-space: nowrap;
+          word-break: keep-all;
+          font-size: .875rem;
+          color: #e6e6e6;
+
+          .value {
+            color: #63FDD9;
+          }
+        }
+
+        a {
+          cursor: pointer;
+        }
+      }
+    }
+
+    .hr-space {
+      margin-top: 0.75rem;
+      margin-bottom: 0.75rem;
+      opacity: .75;
+      height: 0;
+      border: 0;
+      border-top: 1px solid #263238;
+
+      &:last-of-type {
+        display: none;
+      }
+    }
+  }
+}
+
+//loader 
+.v-bounce {
+  margin: auto;
+}
+
+.v-spinner {
+  margin: 1rem 0;
+}
+
 //Dividers
 .vd-2 {
   height: 2rem;
