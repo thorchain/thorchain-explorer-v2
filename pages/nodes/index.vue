@@ -134,12 +134,13 @@ export default {
         {
           label: 'Address',
           field: 'address',
-          formatFn: addressFormat
+          formatFn: addressFormat,
+          tdClass: 'mono'
         },
         {
           label: 'IP',
           field: 'ip',
-          sortable: false
+          sortable: false,
         },
         {
           label: 'Flag',
@@ -154,18 +155,21 @@ export default {
           label: 'Slash Point',
           field: 'slash',
           type: 'number',
-          formatFn: this.numberFormat
+          formatFn: this.numberFormat,
+          tdClass: 'mono'
         },
         {
           label: 'Current Award',
           field: 'award',
-          type: 'number'
+          type: 'number',
+          tdClass: 'mono'
         },
         {
           label: 'Bond',
           field: 'bond',
           type: 'number',
-          formatFn: this.numberFormat
+          formatFn: this.numberFormat,
+          tdClass: 'mono'
         }
       ]
     }
