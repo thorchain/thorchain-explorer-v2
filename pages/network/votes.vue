@@ -45,12 +45,14 @@ export default {
         {
           label: 'Signer',
           field: 'signer',
-          sortable: false
+          sortable: false,
+          tdClass: 'mono'
         },
         {
           label: 'Value',
           field: 'value',
-          type: 'number'
+          type: 'number',
+          tdClass: 'mono'
         }
       ],
       votesCols: [
@@ -62,7 +64,8 @@ export default {
         {
           label: 'Current Value',
           field: 'currentVal',
-          type: 'number'
+          type: 'number',
+          tdClass: 'mono'
         }
       ]
     }

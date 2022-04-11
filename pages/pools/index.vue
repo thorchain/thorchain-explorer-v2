@@ -93,24 +93,28 @@ export default {
           label: 'USD Price',
           field: 'price',
           type: 'number',
-          formatFn: this.curFormat
+          formatFn: this.curFormat,
+          tdClass: 'mono'
         },
         {
           label: 'Volume',
           field: 'volume',
           type: 'number',
-          formatFn: this.numberFormat
+          formatFn: this.numberFormat,
+          tdClass: 'mono'
         },
         {
           label: 'Depth',
           field: 'depth',
           type: 'number',
-          formatFn: this.curFormat
+          formatFn: this.curFormat,
+          tdClass: 'mono'
         },
         {
           label: 'APY',
           field: 'apy',
-          type: 'percentage'
+          type: 'percentage',
+          tdClass: 'mono'
         }
       ],
       activeRows: [],
