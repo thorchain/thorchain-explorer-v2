@@ -32,7 +32,7 @@
         >
           <template slot="table-row" slot-scope="props">
             <span v-if="props.column.field == 'signer'">
-              <span @click="gotoNode(props.row.signer)">
+              <span class="clickable" @click="gotoNode(props.row.signer)">
                 {{props.row.signer}}
               </span> 
             </span>
