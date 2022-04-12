@@ -29,7 +29,18 @@
             perPage: 30,
             perPageDropdownEnabled: false,
           }"
-        />
+        >
+          <template slot="table-row" slot-scope="props">
+            <span v-if="props.column.field == 'signer'">
+              <span @click="gotoNode(props.row.signer)">
+                {{props.row.signer}}
+              </span> 
+            </span>
+            <span v-else>
+              {{props.formattedRow[props.column.field]}}
+            </span>
+          </template>
+        </vue-good-table>
       </div>
     </div>
   </div>
@@ -121,6 +132,9 @@ export default {
     },
     gotoAddr(address) {
       this.$router.push({ path: `/address/${address}` })
+    },
+    gotoNode(signer) {
+      this.$router.push({path: `/node/${signer}`});
     },
   }
 }
