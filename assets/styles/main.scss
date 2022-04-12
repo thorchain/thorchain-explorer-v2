@@ -42,6 +42,11 @@ input {
   font-family: 'Roboto Mono' !important;
 }
 
+.clickable {
+  color: #63FDD9;
+  cursor: pointer;
+}
+
 .card {
   position: relative;
   display: flex;
