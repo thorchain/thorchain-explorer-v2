@@ -55,6 +55,27 @@ export default {
         console.log(this.network)
         return blockTime(this.network.nextChurnHeight - this.lastblock[0]['thorchain'])
       }
+    },
+    formatGas(gas_rate, chain) {
+      console.log(gas_rate, chain)
+      switch (chain) {
+        case 'BCH':
+        case 'BTC':
+        case 'LTC':
+        case 'DOGE':
+          return (250 * (+gas_rate)) / (10 ** 8);
+      
+        case 'ETH':
+          const limit = 35000;
+          return (limit * (+gas_rate * 10 ** 9)) / (10 ** 18);
+
+        case 'BNB':
+        case 'TERRA':
+          return ((+gas_rate) * 1) / (10 ** 8);
+
+        default:
+          return gas_rate;
+      }
     }
   },
   computed: {
@@ -149,13 +170,17 @@ export default {
     },
     gasSettings: function() {
       const getChain = c => this.inAddresses?.find(e => e.chain === c)?.gas_rate;
+      const chains = this.inAddresses.map(e => {
+        return {
+          name: `${e.chain} gas rate`,
+          value: this.formatGas(getChain(e.chain), e.chain),
+          filter: true,
+        }
+      })
       return [
-        this.inAddresses.map(e => {
-          return {
-            name: `${e.chain} gas rate`,
-            value: getChain(e.chain)
-          }
-        })
+        chains.slice(0,3),
+        chains.slice(3,6),
+        chains.slice(6)
       ]
     }
   },

@@ -112,7 +112,6 @@ export default {
   },
   methods: {
     gotoNode(t) {
-      
       this.$router.push({path: `/node/${t.row.address}`});
     },
     numberFormat(number) {
