@@ -4,7 +4,7 @@
       <stat-table :tableSettings="networkSettings" header="Network Overview"></stat-table>
     </div>
     <div v-if="inAddresses.length > 0" style="width: 100%">
-      <stat-table :tableSettings="gasSettings" header="Gas Rates"></stat-table>
+      <stat-table :tableSettings="gasSettings" header="Gas Fees"></stat-table>
     </div>
   </div>
 </template>
@@ -57,7 +57,6 @@ export default {
       }
     },
     formatGas(gas_rate, chain) {
-      console.log(gas_rate, chain)
       switch (chain) {
         case 'BCH':
         case 'BTC':
@@ -66,7 +65,8 @@ export default {
           return (250 * (+gas_rate)) / (10 ** 8);
       
         case 'ETH':
-          const limit = 35000;
+        case 'ERC20':
+          const limit = chain === 'ERC20'? 70000:35000;
           return (limit * (+gas_rate * 10 ** 9)) / (10 ** 18);
 
         case 'BNB':
@@ -172,14 +172,20 @@ export default {
       const getChain = c => this.inAddresses?.find(e => e.chain === c)?.gas_rate;
       const chains = this.inAddresses.map(e => {
         return {
-          name: `${e.chain} gas rate`,
+          name: `${e.chain} gas fee`,
           value: this.formatGas(getChain(e.chain), e.chain),
           filter: true,
         }
       })
+      chains.push({
+        name: 'ERC20 gas fee',
+        value: this.formatGas(getChain('ETH'), 'ERC20'),
+        filter: true
+      })
       return [
-        chains.slice(0,3),
-        chains.slice(3,6),
+        chains.slice(0,2),
+        chains.slice(2,4),
+        chains.slice(4,6),
         chains.slice(6)
       ]
     }
