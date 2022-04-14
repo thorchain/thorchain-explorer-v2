@@ -4,7 +4,7 @@
       <div class="network-stats base-container">
         <div class="stat-group">
           <div class="stat-item">
-            <block class="stat-image" />
+            <img class="stat-image" src="~/assets/images/blockchain.png" alt="blockchain">
             <div class="item-detail">
               <div class="header">Block Height</div>
               <div v-if="lastHeight" class="value">{{lastHeight | number('0,0')}}</div>
@@ -13,7 +13,8 @@
           </div>
           <hr>
           <div class="stat-item">
-            <globe class="stat-image" />
+            <!-- <globe class="stat-image" /> -->
+            <img class="stat-image" src="~/assets/images/globe.png" alt="globe-icon">
             <div class="item-detail">
               <div class="header">RUNE Supply</div>
               <div class="value" v-if="runeSupply">
@@ -28,7 +29,7 @@
         </div>
         <div class="stat-group">
           <div class="stat-item">
-            <span class="rune-symbol">{{runeSymbol}}</span>
+            <img class="stat-image" src="~/assets/images/coin.png" alt="rune-coin">
             <div class="item-detail">
               <div class="header">RUNE Price</div>
               <div v-if="stats && stats.runePriceUSD" class="value">{{ stats.runePriceUSD | currency }}</div>
