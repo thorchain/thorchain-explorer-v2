@@ -44,7 +44,18 @@
             perPageDropdownEnabled: false,
           }"
           @on-row-click="gotoPoolTable"
-        />
+        >
+          <template slot="table-row" slot-scope="props">
+            <span v-if="props.column.field == 'status'">
+              <div :class="['bubble-container']">
+                <span>{{props.row.status | capitalize}}</span>
+              </div>
+            </span>
+            <span v-else>
+              {{props.formattedRow[props.column.field]}}
+            </span>
+          </template>
+        </vue-good-table>
       </div>
       <h2 style="margin-left: .5rem">Staged/Suspended Pools</h2>
       <div class="base-container">
@@ -59,7 +70,18 @@
             perPageDropdownEnabled: false,
           }"
           @on-row-click="gotoPoolTable"
-        />
+        >
+          <template slot="table-row" slot-scope="props">
+            <span v-if="props.column.field == 'status'">
+              <div :class="['bubble-container yellow', {'red': props.row.status === 'suspended'}]">
+                <span>{{props.row.status | capitalize}}</span>
+              </div>
+            </span>
+            <span v-else>
+              {{props.formattedRow[props.column.field]}}
+            </span>
+          </template>
+        </vue-good-table>
       </div>
     </div>
     <div v-else class="loading">
