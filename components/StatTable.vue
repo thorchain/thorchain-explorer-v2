@@ -1,7 +1,10 @@
 <template>
   <div class="stat-table">
     <div v-if="header" class="stat-header">
-      <div class="stat-header-text">{{ header }}</div>
+      <div class="stat-header-text">
+        <img v-if="iconSrc" class="header-icon" :src="iconSrc" alt="header-icon">
+        <span>{{ header }}</span>
+      </div>
       <button v-if="false" class="stat-header-btn"></button>
     </div>
     <div v-if="tableSettings && tableSettings.length > 0" class="stat-table-container">
@@ -44,6 +47,7 @@ export default {
     })
   },
   props: {
+    iconSrc: String,
     header: String,
     tableSettings: Array,
   },
@@ -63,6 +67,16 @@ export default {
     .stat-header-btn {
       background-color: transparent;
       border: none;
+    }
+
+    .stat-header-text {
+      display: flex;
+      align-items: center;
+    }
+
+    .header-icon {
+      margin-right: 10px;
+      height: 1.5rem;
     }
   }
 
