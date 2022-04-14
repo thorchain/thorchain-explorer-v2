@@ -39,6 +39,11 @@
                 {{props.row.award}}
               </span> 
             </span>
+            <span v-else-if="props.column.field == 'status'">
+              <div :class="'bubble-container'">
+                <span>{{props.row.status}}</span>
+              </div>
+            </span>
             <span v-else>
               {{props.formattedRow[props.column.field]}}
             </span>
@@ -75,6 +80,11 @@
                 <span class="extra">{{runeCur()}}</span>  
                 {{props.row.award}}
               </span> 
+            </span>
+            <span v-else-if="props.column.field == 'status'">
+              <div :class="'bubble-container yellow'">
+                <span>{{props.row.status}}</span>
+              </div>
             </span>
             <span v-else>
               {{props.formattedRow[props.column.field]}}
