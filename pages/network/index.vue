@@ -1,10 +1,10 @@
 <template>
   <div class="network-index-container">
     <div style="width: 100%">
-      <stat-table :tableSettings="networkSettings" header="Network Overview"></stat-table>
+      <stat-table :tableSettings="networkSettings" header="Network Overview" :iconSrc="require('@/assets/images/network-icon.png')"></stat-table>
     </div>
     <div v-if="inAddresses.length > 0" style="width: 100%">
-      <stat-table :tableSettings="gasSettings" header="Gas Fees"></stat-table>
+      <stat-table :tableSettings="gasSettings" header="Gas Fees" :iconSrc="require('@/assets/images/gas-station.png')"></stat-table>
     </div>
   </div>
 </template>
