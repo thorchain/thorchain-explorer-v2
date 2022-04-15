@@ -31,6 +31,9 @@ import {
   getYggdrasil,
   getAsgard
 } from "./thornode.api";
+import {
+  getTendermintLatestBlocks
+} from "./tendermint.api";
 export var $axiosInstace;
 
 // interceptor to catch errors
@@ -120,7 +123,8 @@ export default function ({ $axios }, inject) {
     getLastTvl,
     getYggdrasil,
     getAsgard,
-    getLatestBlocks
+    getLatestBlocks,
+    getTendermintLatestBlocks
   };
 
   inject("api", api);
