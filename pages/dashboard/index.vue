@@ -541,11 +541,10 @@ export default {
         blockJsons.push({
           height: block?.header?.height,
           date: moment(block?.header?.time).fromNow(),
-          txs: block?.num_txs?.length,
+          txs: block?.num_txs,
           size: block?.block_size
         })
       }
-      console.log(blockJsons)
       return blockJsons
     },
     formatMoment: function(time) {
@@ -608,11 +607,6 @@ export default {
     this.$api.getRPCLastBlockHeight()
     .then(res => {
       this.lastHeight = +res?.data?.block?.header?.height;
-      // this.$api.getLatestBlocks(+this.lastHeight)
-      // .then(res => this.blocks = this.formatBlocks(res))
-      // .catch(error => {
-      //   console.error(error)
-      // })
       this.$api.getTendermintLatestBlocks(+this.lastHeight-9)
       .then(res => this.blocks = this.formatTendermintBlocks(res?.data?.result.block_metas))
       .catch(error => {
