@@ -182,6 +182,17 @@ export default {
       txs: undefined
     };
   },
+  activated() {
+    // Call fetch again if last fetch more than 30 sec ago
+    if (this.$fetchState.timestamp <= Date.now() - 6000) {
+      this.$fetch()
+    }
+  },
+  async fetch() {
+    const resBlock = await this.$api.getRPCLastBlockHeight()
+    this.lastHeight = +resBlock?.data?.block?.header?.heigh
+  },
+  fetchOnServer: false,
   computed: {
     runeSymbol() {
       return AssetCurrencySymbol.RUNE
@@ -545,7 +556,7 @@ export default {
           size: block?.block_size
         })
       }
-      return blockJsons
+      return blockJsons.slice(0, 10)
     },
     formatMoment: function(time) {
       return moment(Number.parseInt(time/10**6)).fromNow();

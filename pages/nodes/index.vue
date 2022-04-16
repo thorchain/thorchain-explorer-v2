@@ -9,7 +9,11 @@
           <stat-table :tableSettings="topStandbyBonds" header="Top Standby Bonds"></stat-table>
         </div>
       </div>
-      <div class="base-container">
+      <div class="nav-headers">
+        <div class="nav-item" @click="mode = 'active'" :class="{'active': mode == 'active'}">Active</div>
+        <div class="nav-item" @click="mode = 'standby'" :class="{'active': mode == 'standby'}">Stand By</div>
+      </div>
+      <div v-if="mode == 'active'" class="base-container">
         <h2>Active Nodes</h2>
         <vue-good-table
           v-if="cols && activeNodes.length > 0"
@@ -50,8 +54,7 @@
           </template>
         </vue-good-table>
       </div>
-      <div style="height: 2rem;"></div>
-      <div class="base-container">
+      <div v-else-if="mode === 'standby'" class="base-container">
         <h2>Standby Nodes</h2>
         <vue-good-table
           v-if="cols && standbyNodes.length > 0"
@@ -82,7 +85,11 @@
               </span> 
             </span>
             <span v-else-if="props.column.field == 'status'">
-              <div :class="'bubble-container yellow'">
+              <div :class="['bubble-container yellow', {
+                'red': props.row.status === 'Disabled',
+                'black': props.row.status === 'Unknown',
+                'white': props.row.status === 'Whitelisted',
+              }]">
                 <span>{{props.row.status}}</span>
               </div>
             </span>
@@ -139,6 +146,7 @@ export default {
   },
   data: function() {
     return {
+      mode: 'active',
       cols: [
         {
           label: 'Address',
@@ -278,7 +286,7 @@ export default {
     standbyNodes: function () {
       if (this.nodesQuery) {
         const actNodes = this.nodesQuery.nodes?.filter(
-          (e) => e.status === "Standby"
+          (e) => e.status !== "Active"
         );
         let filteredNodes = [];
         actNodes.forEach((el) => {
