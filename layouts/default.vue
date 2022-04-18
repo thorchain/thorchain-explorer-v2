@@ -19,6 +19,9 @@
 </template>
 
 <script>
+import Vue from 'vue';
+import global from "~/mixins.js/global";
+
 export default {
   name: 'DefaultLayout',
   data() {
@@ -52,6 +55,8 @@ export default {
     })
   },
 }
+
+Vue.mixin(global)
 </script>
 
 <style lang="scss">

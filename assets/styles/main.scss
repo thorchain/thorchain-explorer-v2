@@ -229,6 +229,10 @@ input {
   width: 1.5rem;
   border-radius: 50%;
   margin-right: .5rem;
+
+  &.synth {
+    border: 2px solid #63FDD9;
+  }
 }
 
 .cell-content {

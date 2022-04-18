@@ -26,6 +26,10 @@ export const AssetImage = (assetStr) => {
         if (ticker != null && ticker == 'RUNE') {
           iconPath =
             'https://raw.githubusercontent.com/asgardex/thorchain_explorer/main/assets/images/thorchain-logo.png';
+        } 
+        else {
+          iconPath =
+          'https://raw.githubusercontent.com/asgardex/thorchain_explorer/main/assets/images/thorchain-logo.png';
         }
         break;
 

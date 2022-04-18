@@ -13,7 +13,6 @@
 import {bondMetrics, networkQuery} from '~/_gql_queries';
 import StatTable from "~/components/StatTable.vue";
 import {blockTime} from '~/utils';
-import { AssetImage } from '~/classes/assetImage';
 
 export default {
   components: { StatTable },
@@ -76,13 +75,6 @@ export default {
 
         default:
           return gas_rate;
-      }
-    },
-    assetImage(assetStr) {
-      try {
-        return AssetImage(assetStr) ?? require('~/assets/images/unknown.png');
-      } catch (error) {
-        return require('~/assets/images/unknown.png');
       }
     },
   },
