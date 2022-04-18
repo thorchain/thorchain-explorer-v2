@@ -10,25 +10,30 @@
     <div v-if="tableSettings && tableSettings.length > 0" class="stat-table-container">
       <div class="stat-table-row" v-for="(row, ri) in tableSettings" :key="ri">
         <div
-          class="stat-table-item"
+          class="stat-table-group"
           v-for="(colItem, ci) in row"
           :key="ci + ',' + ri"
         >
-          <div class="col-header">
-            {{ colItem.name }}
+          <div v-if="colItem.image" class="img-div">
+            <img :src="colItem.image" alt="item-icon">
           </div>
-          <div class="col-value">
-            <template v-if="colItem.filter">
-              {{ colItem.value || '-' }}
-            </template>
-            <template v-else>
-              <template v-if="colItem.value">
-                {{ colItem.value | number('0,0') }}
+          <div class="stat-table-item">
+            <div class="col-header">
+              {{ colItem.name }}
+            </div>
+            <div class="col-value">
+              <template v-if="colItem.filter">
+                {{ colItem.value || '-' }}
               </template>
-              <template v-else> - </template>
-            </template>
-            <span class="usd-value" v-if="colItem.value && colItem.usdValue">({{ colItem.value * runePrice | currency }})</span>
-            <span class="usd-value" v-if="colItem.extraText">({{ colItem.extraText }})</span>
+              <template v-else>
+                <template v-if="colItem.value">
+                  {{ colItem.value | number('0,0') }}
+                </template>
+                <template v-else> - </template>
+              </template>
+              <span class="usd-value" v-if="colItem.value && colItem.usdValue">({{ colItem.value * runePrice | currency }})</span>
+              <span class="usd-value" v-if="colItem.extraText">({{ colItem.extraText }})</span>
+            </div>
           </div>
         </div>
       </div>
@@ -96,9 +101,23 @@ export default {
       border-bottom: none;
     }
 
-    .stat-table-item {
-      flex: 1 0;
+    .stat-table-group {
+      display: flex;
+      align-items: center;
       padding: 0.5rem 1rem;
+      flex: 1 0;
+
+      .img-div {
+        display: inherit;
+        img {
+          border-radius: 50%;
+          margin-right: .5rem;
+          width: 1.5rem;
+        }
+      }
+    }
+
+    .stat-table-item {
 
       .col-value {
         color: #e6e6e6;

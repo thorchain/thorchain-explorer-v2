@@ -36,13 +36,17 @@ export const AssetImage = (assetStr) => {
 
       case "LTC":
         iconPath =
-          "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/litecoin/info/logo.png";
+          "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/binance/assets/LTC-F07/logo.png";
         break;
 
       case "BNB":
         if (ticker === "BNB") {
           iconPath =
             "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/binance/info/logo.png";
+        }
+        else {
+          iconPath =
+          `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/binance/assets/${symbol}/logo.png`;
         }
         break;
 
@@ -62,10 +66,9 @@ export const AssetImage = (assetStr) => {
           if (ticker === "ALCX") {
             iconPath = "https://etherscan.io/token/images/Alchemix_32.png";
           } 
-          // TODO
-          // else if (this.ticker === "XRUNE") {
-          //   iconPath = "/assets/icons/xrune-icon.png";
-          // }
+          else if (ticker === 'TGT') {
+            iconPath = "https://app.thorswap.finance/assets/asset-tgt.81fad622.png";
+          }
         }
         break;
 
@@ -76,13 +79,16 @@ export const AssetImage = (assetStr) => {
 
       case "DOGE":
         iconPath = 
-          "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/doge/info/logo.png"
+          "https://app.thorswap.finance/assets/asset-dogecoin.660e86f3.png"
       break;
 
       case "TERRA":
         if (ticker === 'TERRA' || ticker === 'LUNA')
           iconPath = 
-            "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/terra/info/logo.png"
+            "https://app.thorswap.finance/assets/asset-luna.82340679.png"
+        else if (ticker === 'UST')
+          iconPath = 
+            "https://app.thorswap.finance/assets/asset-ust.1c0b5be9.png"
       break;
 
       default:

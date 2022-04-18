@@ -13,6 +13,7 @@
 import {bondMetrics, networkQuery} from '~/_gql_queries';
 import StatTable from "~/components/StatTable.vue";
 import {blockTime} from '~/utils';
+import { AssetImage } from '~/classes/assetImage';
 
 export default {
   components: { StatTable },
@@ -76,7 +77,14 @@ export default {
         default:
           return gas_rate;
       }
-    }
+    },
+    assetImage(assetStr) {
+      try {
+        return AssetImage(assetStr) ?? require('~/assets/images/unknown.png');
+      } catch (error) {
+        return require('~/assets/images/unknown.png');
+      }
+    },
   },
   computed: {
     networkSettings: function () {
@@ -174,12 +182,14 @@ export default {
         return {
           name: `${e.chain} gas fee`,
           value: this.formatGas(getChain(e.chain), e.chain),
+          image: this.assetImage(`${e.chain}.${e.chain}`),
           filter: true,
         }
       })
       chains.push({
         name: 'ERC20 gas fee',
         value: this.formatGas(getChain('ETH'), 'ERC20'),
+        image: this.assetImage('ETH.ETH'),
         filter: true
       })
       return [
