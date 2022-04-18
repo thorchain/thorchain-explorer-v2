@@ -225,6 +225,17 @@ input {
   border-bottom-color: #63FDD9 !important;
 }
 
+.table-asset-icon {
+  width: 1.5rem;
+  border-radius: 50%;
+  margin-right: .5rem;
+}
+
+.cell-content {
+  display: flex;
+  align-items: center;
+}
+
 //nav headers
 .nav-headers {
   display: flex;
