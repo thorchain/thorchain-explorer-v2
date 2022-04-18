@@ -1,5 +1,6 @@
 <template>
   <div class="assets-container">
+    <h2>Assets</h2>
     <div class="base-container" style="margin-bottom: 1.5rem;">
       <vue-good-table
         v-if="cols && rows.length > 0"
@@ -11,7 +12,20 @@
           perPage: 30,
           perPageDropdownEnabled: false,
         }"
-      />
+      >
+        <template slot="table-row" slot-scope="props">
+          <div v-if="props.column.field == 'asset'" class="cell-content" v-tooltip="props.row.asset">
+            <img class="table-asset-icon synth" :src="assetImage(props.row.asset)" alt="asset-icon">
+            <span>{{props.formattedRow[props.column.field]}}</span>
+          </div>
+          <span v-else-if="props.column.field == 'synth'">
+            <span v-tooltip="props.row.synth">{{props.formattedRow[props.column.field]}}</span>
+          </span>
+          <span v-else>
+            {{props.formattedRow[props.column.field]}}
+          </span>
+        </template>
+      </vue-good-table>
     </div>
   </div>
 </template>

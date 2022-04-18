@@ -10,7 +10,11 @@
           <div class="pool-chain">
             <img class="asset-chain" :src="assetImage(assetToChain(pool.asset))">
           </div>
-          <div class="pool-status">{{pool.status | capitalize}}</div>
+          <div class="pool-status">
+            <div :class="['bubble-container', {'yellow': pool.status === 'staged', 'red': pool.status === 'suspended'}]">
+              {{pool.status | capitalize}}
+            </div>
+          </div>
           <div class="pool-price">{{pool.price*runePrice | currency}}</div>
         </div>
         <div class="row" style="align-items: center; flex-direction: column; padding: 2rem;">
@@ -21,7 +25,7 @@
         <div class="row" style="justify-content: space-between; margin-top: auto;">
           <div class="detail">
             <div class="header">24H Volume</div>
-            <div class="value">{{(pool.volume24h/10**8)*runePrice | number('0a')}}</div>
+            <div class="value">${{(pool.volume24h/10**8)*runePrice | number('0 a')}}</div>
           </div>
           <div class="detail">
             <div class="header">Pool APY</div>
@@ -31,8 +35,11 @@
       </div>
     </div>
     <div v-else-if="pools && pools.length > 0 && mode == 'table'">
-      <h2 style="margin-left: .5rem">Active Pools</h2>
-      <div class="base-container" style="margin-bottom: 1.5rem;">
+      <div class="nav-headers">
+        <div class="nav-item" @click="tableMode = 'active'" :class="{'active': tableMode == 'active'}">Active Pools</div>
+        <div class="nav-item" @click="tableMode = 'staged'" :class="{'active': tableMode == 'staged'}">Staged/Suspended Pools</div>
+      </div>
+      <div v-show="tableMode == 'active'" class="base-container" style="margin-bottom: 1.5rem;">
         <vue-good-table
           v-if="cols && activeRows.length > 0"
           :columns="cols"
@@ -46,7 +53,11 @@
           @on-row-click="gotoPoolTable"
         >
           <template slot="table-row" slot-scope="props">
-            <span v-if="props.column.field == 'status'">
+            <div v-if="props.column.field == 'asset'" class="cell-content" v-tooltip="props.row.asset">
+              <img class="table-asset-icon" :src="assetImage(props.row.asset)" alt="asset-icon">
+              <span>{{props.formattedRow[props.column.field]}}</span>
+            </div>
+            <span v-else-if="props.column.field == 'status'">
               <div :class="['bubble-container']">
                 <span>{{props.row.status | capitalize}}</span>
               </div>
@@ -57,8 +68,7 @@
           </template>
         </vue-good-table>
       </div>
-      <h2 style="margin-left: .5rem">Staged/Suspended Pools</h2>
-      <div class="base-container">
+      <div v-show="tableMode == 'staged'" class="base-container">
         <vue-good-table
           v-if="cols && standbyRows.length > 0"
           :columns="cols"
@@ -72,7 +82,11 @@
           @on-row-click="gotoPoolTable"
         >
           <template slot="table-row" slot-scope="props">
-            <span v-if="props.column.field == 'status'">
+            <div v-if="props.column.field == 'asset'" class="cell-content" v-tooltip="props.row.asset">
+              <img class="table-asset-icon" :src="assetImage(props.row.asset)" alt="asset-icon">
+              <span>{{props.formattedRow[props.column.field]}}</span>
+            </div>
+            <span v-else-if="props.column.field == 'status'">
               <div :class="['bubble-container yellow', {'red': props.row.status === 'suspended'}]">
                 <span>{{props.row.status | capitalize}}</span>
               </div>
@@ -101,6 +115,7 @@ export default {
   data: function () {
     return {
       mode: 'grid',
+      tableMode: 'active',
       cols: [
         {
           label: 'Asset',
@@ -184,7 +199,7 @@ export default {
       e.target.src = require('~/assets/images/unknown.png');
     },
     numberFormat(number, filter) {
-      return this.$options.filters.number(number, '0a')
+      return '$' + this.$options.filters.number(number, '0a')
     },
     curFormat(number) {
       return this.$options.filters.currency(number)
@@ -206,7 +221,7 @@ export default {
     },
     gotoPoolTable(params) {
       this.gotoPool(params.row.asset)
-    }
+    },
   },
   watch: {
     pools: function() {
@@ -288,6 +303,11 @@ export default {
     .row {
       display: flex;
       width: 100%;
+
+      .pool-chain {
+        display: flex;
+        align-items: center;
+      }
     }
 
     .detail {
