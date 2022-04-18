@@ -10,7 +10,11 @@
           <div class="pool-chain">
             <img class="asset-chain" :src="assetImage(assetToChain(pool.asset))">
           </div>
-          <div class="pool-status">{{pool.status | capitalize}}</div>
+          <div class="pool-status">
+            <div :class="['bubble-container', {'yellow': pool.status === 'staged', 'red': pool.status === 'suspended'}]">
+              {{pool.status | capitalize}}
+            </div>
+          </div>
           <div class="pool-price">{{pool.price*runePrice | currency}}</div>
         </div>
         <div class="row" style="align-items: center; flex-direction: column; padding: 2rem;">
@@ -288,6 +292,11 @@ export default {
     .row {
       display: flex;
       width: 100%;
+
+      .pool-chain {
+        display: flex;
+        align-items: center;
+      }
     }
 
     .detail {
