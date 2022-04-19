@@ -49,6 +49,30 @@
               <span v-else>-</span>
             </div>
           </div>
+          <hr>
+        </div>
+        <div class="stat-group">
+          <div class="stat-item">
+            <img class="stat-image" src="~/assets/images/book.png" style="width: 2rem; height: auto; padding: .3rem;" alt="rune-coin">
+            <div class="item-detail">
+              <div class="header">Total Addresses</div>
+              <div v-if="totalAddresses" class="value">
+                {{ totalAddresses | number('0,0') }}
+              </div>
+              <span v-else>-</span>
+            </div>
+          </div>
+          <hr>
+          <div class="stat-item">
+            <img class="stat-image" src="~/assets/images/transaction.png" style="width: 2rem; height: auto; padding: .2rem;" alt="rune-coin">
+            <div class="item-detail">
+              <div class="header">Total Swap, Add, and Withdraw txs</div>
+              <div v-if="totalTxs" class="value">
+                {{totalTxs | number('0,0') }}
+              </div>
+              <span v-else>-</span>
+            </div>
+          </div>
         </div>
       </div>
       <client-only>
@@ -179,7 +203,9 @@ export default {
       runeSupply: undefined,
       lastHeight: undefined,
       blocks: undefined,
-      txs: undefined
+      txs: undefined,
+      totalTxs: undefined,
+      totalAddresses: undefined
     };
   },
   activated() {
@@ -629,7 +655,16 @@ export default {
     })
     
     this.$api.getTxs()
-    .then(res => this.txs = res?.data?.actions)
+    .then(res => {
+      this.txs = res?.data?.actions;
+      this.totalTxs = +res?.data?.count;
+    })
+    .catch(error => {
+      console.error(error)
+    })
+
+    this.$api.getAddresses()
+    .then(res => this.totalAddresses = +res?.data?.pagination?.total)
     .catch(error => {
       console.error(error)
     })
@@ -689,6 +724,7 @@ export default {
 
   .stat-item {
     display: flex;
+    align-items: center;
 
     .header {
       color: #9F9F9F;
@@ -739,7 +775,7 @@ export default {
       padding: 1rem;
       flex: 1;
 
-      &:first-of-type::after {
+      &::after {
         position: absolute;
         right: 0;
         top: 0;
@@ -749,6 +785,11 @@ export default {
         border-left: 0;
         border-right: 1px solid #263238;
         margin: .5rem 0;
+
+      }
+
+      &:last-of-type::after {
+        display: none;
       }
     }
 

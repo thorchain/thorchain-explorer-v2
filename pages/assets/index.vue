@@ -1,6 +1,5 @@
 <template>
   <div class="assets-container">
-    <h2>Assets</h2>
     <div class="base-container" style="margin-bottom: 1.5rem;">
       <vue-good-table
         v-if="cols && rows.length > 0"
@@ -45,17 +44,19 @@ export default {
         {
           label: 'Synth',
           field: 'synth',
-          formatFn: formatAsset
+          formatFn: formatAsset,
         },
         {
           label: 'Liability',
           field: 'liability',
           type: 'percentage',
+          tdClass: 'mono'
         },
         {
           label: 'Utilisation',
           field: 'utilisation',
           type: 'percentage',
+          tdClass: 'mono'
         },
       ],
       rows: []

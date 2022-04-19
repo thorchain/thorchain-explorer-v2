@@ -29,7 +29,8 @@ import {
   getSupplyRune,
   getRPCLastBlockHeight,
   getYggdrasil,
-  getAsgard
+  getAsgard,
+  getAddresses
 } from "./thornode.api";
 import {
   getTendermintLatestBlocks
@@ -124,7 +125,8 @@ export default function ({ $axios }, inject) {
     getYggdrasil,
     getAsgard,
     getLatestBlocks,
-    getTendermintLatestBlocks
+    getTendermintLatestBlocks,
+    getAddresses
   };
 
   inject("api", api);

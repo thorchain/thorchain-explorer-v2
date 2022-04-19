@@ -60,3 +60,7 @@ export function getYggdrasil() {
 export function getAsgard() {
   return $axiosInstace.get(process.env.THORNODE_URL + `thorchain/vaults/asgard`);
 }
+
+export function getAddresses() {
+  return $axiosInstace.get(process.env.THORNODE_URL + `cosmos/auth/v1beta1/accounts`);
+}
