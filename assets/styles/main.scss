@@ -47,6 +47,11 @@ input {
   cursor: pointer;
 }
 
+.not-clickable {
+  color: #e6e6e6;
+  cursor: initial;
+}
+
 .card {
   position: relative;
   display: flex;
