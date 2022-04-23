@@ -47,6 +47,11 @@ input {
   cursor: pointer;
 }
 
+.not-clickable {
+  color: #e6e6e6;
+  cursor: initial;
+}
+
 .card {
   position: relative;
   display: flex;
@@ -227,6 +232,7 @@ input {
 
 .table-asset-icon {
   width: 1.5rem;
+  height: 1.5rem;
   border-radius: 50%;
   margin-right: .5rem;
 

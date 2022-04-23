@@ -13,8 +13,8 @@
         }"
       >
         <template slot="table-row" slot-scope="props">
-          <span v-if="props.column.field == 'hash'">
-            <span class="mono" v-tooltip="props.row.hash">
+          <span v-if="props.column.field == 'hash'" @click="gotoAddr(props.row.hash)">
+            <span class="mono clickable" v-tooltip="props.row.hash">
               {{props.row.hash.slice(0,8)}}...{{props.row.hash.slice(-8)}}
             </span> 
           </span>

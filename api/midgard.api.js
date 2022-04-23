@@ -96,3 +96,7 @@ export async function getLatestBlocks(latestBlock, count=10) {
   )
   return res;
 }
+
+export function getRevThorname(address) {
+  return $axiosInstace.get(`https://midgard.ninerealms.com/v2/thorname/rlookup/${address}`)
+}

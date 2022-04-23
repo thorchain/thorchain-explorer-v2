@@ -28,7 +28,7 @@
           }"
         >
           <template slot="table-row" slot-scope="props">
-            <span v-if="props.column.field == 'address'">
+            <span class="clickable" v-if="props.column.field == 'address'">
               <span v-tooltip="props.row.address">{{addressFormat(props.row.address)}}</span> 
             </span>
             <span v-else-if="props.column.field == 'bond'">
@@ -69,8 +69,9 @@
           }"
         >
           <template slot="table-row" slot-scope="props">
-            <span v-if="props.column.field == 'address'">
-              <span v-tooltip="props.row.address">{{addressFormat(props.row.address)}}</span> 
+            <span class="clickable" v-if="props.column.field == 'address'">
+              <span v-if="props.row.address" v-tooltip="props.row.address">{{addressFormat(props.row.address)}}</span> 
+              <span v-else class="not-clickable">No Address Set</span>
             </span>
             <span v-else-if="props.column.field == 'bond'">
               <span v-tooltip="curFormat(runePrice * props.row.bond)">
@@ -129,7 +130,8 @@ export default {
   },
   methods: {
     gotoNode(t) {
-      this.$router.push({path: `/node/${t.row.address}`});
+      if (t.row.address)
+        this.$router.push({path: `/node/${t.row.address}`});
     },
     numberFormat(number) {
       return this.$options.filters.number(number, '0,0')
