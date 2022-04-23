@@ -22,7 +22,12 @@
     </div>
     <template v-if="addrTxs">
       <div class="stat-wrapper">
-        <stat-table :tableSettings="addressStat"></stat-table>
+        <div class="nav-headers">
+          <div class="nav-item" @click="mode = 'balance'" :class="{'active': mode == 'balance'}">Balances</div>
+          <div class="nav-item" @click="mode = 'thorname'" :class="{'active': mode == 'thorname'}">THORName</div>
+        </div>
+        <stat-table v-if="mode == 'balance'" :tableSettings="addressStat"></stat-table>
+        <stat-table v-else-if="mode == 'thorname'" :tableSettings="thornames"></stat-table>
       </div>
       <div style="margin: 1rem 0"></div>
       <transactions v-if="addrTxs && addrTxs.actions" :txs="addrTxs" :loading="loading"></transactions>
@@ -54,7 +59,9 @@ export default {
       loading: false,
       balance: undefined,
       copyText: 'Copy',
-      showQR: false
+      showQR: false,
+      thornames: undefined,
+      mode: 'balance'
     }
   },
   computed: {
@@ -92,16 +99,32 @@ export default {
         this.loading = false;
       })
     },
-    copy(address) {
-      navigator.clipboard.writeText(address).then(() => {
-        this.copyText = 'Copied';
-        setTimeout(() => {
-          this.copyText = 'Copy'
-        }, 2000);
-      }, (err) => {
-        console.error('Could not copy text: ', err);
-      });
-    },
+    rlookThorname(address) {
+      this.$api.getRevThorname(address)
+      .then(res => {
+        const names = res?.data;
+        this.thornames = names.map(n => {
+          return [{
+            name: 'Address Name',
+            value: n,
+            filter: true
+          }]
+        })
+      })
+      .catch(e => {
+        if (e.response.status == 404) {
+          this.thornames = [[
+            {
+              name: 'Address Name',
+              value: 'Not assigned',
+              filter: true
+            }
+          ]]
+        }
+        else 
+          console.error(e);
+      })
+    }
   },
   async asyncData({params, $api}) {
     const address = params.adderid;
@@ -111,12 +134,11 @@ export default {
     const count = addrTxs?.data?.count ?? 0;
     let balance = 0;
     let otherBalances = [];
-    // TODO: change with regex
-    if (address.toUpperCase().includes('THOR')) {
+    if (address.match(/^[st]?thor.*/gmi)) {
       try {
         let balances = (await $api.getBalance(address)).data.result;
         const index = balances.findIndex(object => {
-        return object.denom === 'rune';
+         return object.denom === 'rune';
         });
 
         if (index !== -1) {
@@ -140,6 +162,7 @@ export default {
     return { address, addrTxs: addrTxs?.data, count, balance, otherBalances }
   },
   async mounted() {
+    this.rlookThorname(this.address);
   }
 }
 </script>
@@ -218,5 +241,22 @@ export default {
 }
 .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
   opacity: 0;
+}
+
+.nav-headers {
+  margin-bottom: .2rem;
+  background-color: rgb(25, 28, 30);
+  border: 2px solid #263238;
+  border-radius: 5px;
+
+  .nav-item {
+    margin: .2rem;
+    font-size: .875rem;
+    cursor: pointer;
+
+    &.active {
+      color: #63FDD9;
+    }
+  }
 }
 </style>

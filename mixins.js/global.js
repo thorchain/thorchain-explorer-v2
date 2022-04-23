@@ -18,5 +18,15 @@ export default {
     gotoPool(pool) {
       this.$router.push({ path: `/pool/${pool}`});
     },
+    copy(address) {
+      navigator.clipboard.writeText(address).then(() => {
+        this.copyText = 'Copied';
+        setTimeout(() => {
+          this.copyText = 'Copy'
+        }, 2000);
+      }, (err) => {
+        console.error('Could not copy text: ', err);
+      });
+    },
   }
 }

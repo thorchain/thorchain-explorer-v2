@@ -12,7 +12,8 @@ import {
   earningsHistory,
   getPoolVolume,
   getLastTvl,
-  getLatestBlocks
+  getLatestBlocks,
+  getRevThorname
 } from "./midgard.api";
 import {
   getMimir,
@@ -126,7 +127,8 @@ export default function ({ $axios }, inject) {
     getAsgard,
     getLatestBlocks,
     getTendermintLatestBlocks,
-    getAddresses
+    getAddresses,
+    getRevThorname
   };
 
   inject("api", api);
