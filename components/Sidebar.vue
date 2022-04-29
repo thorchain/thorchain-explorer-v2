@@ -17,7 +17,7 @@
         <a href="https://discord.gg/KjPVnGy5jR">
           <DiscordLogo class="social-icon" />
         </a>
-        <a href="https://github.com/HooriRn/thorchain_explorer">
+        <a href="https://github.com/thorchain/thorchain-explorer-v2">
           <GithubLogo class="social-icon" />
         </a>
       </div>
