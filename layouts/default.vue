@@ -93,7 +93,7 @@ Vue.mixin(global)
   #side-bar {
     background-color: var(--sidebar);
     padding: 1rem;
-    background-color: rgba(0,0,0, 0.2); /* Black w/opacity/see-through */
+    opacity: .95; /* Black w/opacity/see-through */
 
     @include lg {
       display: block;
@@ -121,7 +121,7 @@ Vue.mixin(global)
       width: 100%;
       background-color: var(--sidebar);
       padding: .5rem;
-      background-color: rgba(17,19,20, 0.85); /* Black w/opacity/see-through */
+      opacity: .95; /* Black w/opacity/see-through */
       backdrop-filter: blur(10px);
       border-top: 1.5px solid var(--border-color);
 
