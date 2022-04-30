@@ -209,6 +209,7 @@ export default {
     color: inherit;
     text-decoration: none;
     line-height: 1.25rem;
+    margin: .2rem;
 
     &:hover {
       background-color: var(--bg-color);
@@ -217,6 +218,7 @@ export default {
 
     &.nuxt-link-active {
       color: var(--sec-font-color);
+      background-color: var(--bg-color);
 
       .icon.selected {
         display: block;
