@@ -294,7 +294,7 @@ export default {
     background-color: var(--bg-color);
 
     &:hover {
-      background-color: #3e464b;
+      background-color: var(--active-bg-color);
     }
 
     .icon-name {

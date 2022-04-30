@@ -120,7 +120,7 @@
             </template>
           </template>
           <div v-else class="loading">
-            <BounceLoader color="#9F9F9F" size="3rem" />
+            <BounceLoader color="var(--font-color)" size="3rem" />
           </div>
         </div>
       </div>
@@ -153,7 +153,7 @@
             </template>
           </template>
           <div v-else class="loading">
-            <BounceLoader color="#9F9F9F" size="3rem" />
+            <BounceLoader color="var(--font-color)" size="3rem" />
           </div>
         </div>
       </div>
@@ -727,13 +727,13 @@ export default {
     align-items: center;
 
     .header {
-      color: #9F9F9F;
+      color: var(--font-color);
       font-size: .875rem;
     }
 
     .value {
       .extra {
-        color: #9F9F9F;
+        color: var(--font-color);
         font-size: .78rem;
       }
     }
@@ -742,7 +742,7 @@ export default {
       margin-right: .75rem;
       width: 2rem;
       height: 2rem;
-      fill: #9F9F9F;
+      fill: var(--font-color);
     }
   }
 
@@ -756,7 +756,7 @@ export default {
   }
   
   .rune-symbol {
-    color: #9F9F9F;
+    color: var(--font-color);
     margin: 0 .6rem;
     font-size: 2rem;
     line-height: 28px;

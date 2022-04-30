@@ -43,7 +43,7 @@
       </div>
     </template>
     <div v-else class="loading">
-      <BounceLoader color="#9F9F9F" size="3rem" />
+      <BounceLoader color="var(--font-color)" size="3rem" />
     </div>
   </div>
 </template>
@@ -181,7 +181,7 @@ export default {
       }
 
       .icon-arrow {
-        fill: #9f9f9f;
+        fill: var(--font-color);
         background-color: var(--border-color);
         border-radius: 50%;
         position: absolute;

@@ -145,7 +145,7 @@ export default {
   margin: 1rem 0;
 
   .vote-name {
-    color: #9f9f9f;
+    color: var(--font-color);
     padding: 1rem 0;
 
     span {
@@ -182,7 +182,7 @@ export default {
       border-bottom: 1px solid var(--border-color);
 
       div {
-        color: #9f9f9f;
+        color: var(--font-color);
       }
     }
   }

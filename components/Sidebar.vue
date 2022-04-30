@@ -210,7 +210,7 @@ export default {
       }
 
       &.unselected {
-        fill: #9f9f9f;
+        fill: var(--font-color);
       }
     }
   }
@@ -222,7 +222,7 @@ export default {
   }
 
   .social-icon {
-    color: #9f9f9f;
+    color: var(--font-color);
     cursor: pointer;
     width: 1.5rem;
     height: 1.5rem;

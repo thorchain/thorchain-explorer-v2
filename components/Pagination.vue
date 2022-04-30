@@ -59,7 +59,7 @@ export default {
     border-radius: .2rem;
 
     svg {
-      fill: #9F9F9F;
+      fill: var(--font-color);
       width: 1.2rem;
       height: 1.2rem;
     }

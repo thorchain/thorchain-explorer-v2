@@ -86,7 +86,7 @@ export default {
   }
 
   .stat-table-container {
-    background-color: rgb(25, 28, 30);
+    background-color: var(--bg-color);
     border-radius: 5px;
     border: 2px solid var(--border-color);
   }
@@ -123,7 +123,7 @@ export default {
         color: var(--sec-font-color);
 
         .usd-value {
-          color: #9F9F9F;
+          color: var(--font-color);
           font-size: .8rem;
         }
       }

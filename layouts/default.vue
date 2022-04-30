@@ -26,7 +26,8 @@ export default {
   name: 'DefaultLayout',
   data() {
     return {
-      mini: false
+      mini: false,
+      darkMode: false,
     }
   },
   methods: {
@@ -53,7 +54,32 @@ export default {
     .catch(error => {
       console.error(error)
     })
+
+    let htmlElement = document.documentElement;
+
+    const darkThemeMq = window.matchMedia("(prefers-color-scheme: dark)");
+    if (darkThemeMq.matches) {
+      htmlElement.setAttribute('theme', 'dark')
+      this.darkMode = true
+    } else {
+      htmlElement.setAttribute('theme', 'light');
+      this.darkMode = false
+    }
   },
+  watch: {
+    darkMode: function () {
+        // add/remove class to/from html tag
+        let htmlElement = document.documentElement;
+
+        if (this.darkMode) {
+            localStorage.setItem("theme", 'dark');
+            htmlElement.setAttribute('theme', 'dark');
+        } else {
+            localStorage.setItem("theme", 'light');
+            htmlElement.setAttribute('theme', 'light');
+        }
+    }
+  }
 }
 
 Vue.mixin(global)

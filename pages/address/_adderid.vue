@@ -188,7 +188,7 @@ export default {
     border-radius: .3rem;
 
     &:hover {
-      background-color: #3E464B;
+      background-color: var(--active-bg-color);
     }
     
     .icon-name {
@@ -232,7 +232,7 @@ export default {
     align-items: center;
     margin: .4rem 0;
     font-weight: bold;
-    color: #9F9F9F;
+    color: var(--font-color);
   }
 }
 
@@ -245,7 +245,7 @@ export default {
 
 .nav-headers {
   margin-bottom: .2rem;
-  background-color: rgb(25, 28, 30);
+  background-color: var(--bg-color);
   border: 2px solid var(--border-color);
   border-radius: 5px;
 
