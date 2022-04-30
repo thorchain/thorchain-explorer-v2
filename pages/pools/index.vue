@@ -99,7 +99,7 @@
       </div>
     </div>
     <div v-else class="loading">
-      <BounceLoader color="#9F9F9F" size="3rem"/>
+      <BounceLoader color="var(--font-color)" size="3rem"/>
     </div>
   </div>
 </template>
@@ -262,8 +262,8 @@ export default {
     cursor: pointer;
     display: flex;
     flex-direction: column;
-    background-color: #191C1E;
-    border: 1px solid #263238;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
     padding: 1rem;
     border-radius: .4rem;
 
@@ -275,7 +275,7 @@ export default {
     }
 
     .pool-status {
-      color: #e6e6e6;
+      color: var(--sec-font-color);
     }
 
     .pool-price {
@@ -290,7 +290,7 @@ export default {
     }
 
     .asset-name {
-      color: #e6e6e6;
+      color: var(--sec-font-color);
       font-size: 1.5rem;
     }
 
@@ -319,7 +319,7 @@ export default {
 
       .value {
         font-size: 1.1rem;
-        color: #e6e6e6;
+        color: var(--sec-font-color);
       }
     }
   }

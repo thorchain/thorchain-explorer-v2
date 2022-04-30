@@ -102,7 +102,7 @@
       </div>
     </div>
     <div v-else class="loading">
-      <BounceLoader color="#9F9F9F" size="3rem"></BounceLoader>
+      <BounceLoader color="var(--font-color)" size="3rem"></BounceLoader>
     </div>
   </div>
 </template>

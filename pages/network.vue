@@ -22,7 +22,7 @@ export default {
   a {
     padding: .5rem .7rem;
     margin: 0 .1rem;
-    color: #9f9f9f;
+    color: var(--font-color);
     text-decoration: none;
     border-radius: .3rem;
 
@@ -31,12 +31,12 @@ export default {
     }
 
     &:hover {
-      background-color: #3E464B;
+      background-color: var(--active-bg-color);
     }
 
     &.nuxt-link-exact-active {
-      background-color: #3E464B;
-      color: #e6e6e6;
+      background-color: var(--active-bg-color);
+      color: var(--sec-font-color);
     }
   }
 }

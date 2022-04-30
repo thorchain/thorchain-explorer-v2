@@ -86,16 +86,16 @@ export default {
   }
 
   .stat-table-container {
-    background-color: rgb(25, 28, 30);
+    background-color: var(--bg-color);
     border-radius: 5px;
-    border: 2px solid #263238;
+    border: 2px solid var(--border-color);
   }
 
   .stat-table-row {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
-    border-bottom: 1px solid #263238;
+    border-bottom: 1px solid var(--border-color);
 
     &:last-of-type {
       border-bottom: none;
@@ -120,10 +120,10 @@ export default {
     .stat-table-item {
 
       .col-value {
-        color: #e6e6e6;
+        color: var(--sec-font-color);
 
         .usd-value {
-          color: #9F9F9F;
+          color: var(--font-color);
           font-size: .8rem;
         }
       }

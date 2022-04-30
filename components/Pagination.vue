@@ -59,16 +59,16 @@ export default {
     border-radius: .2rem;
 
     svg {
-      fill: #9F9F9F;
+      fill: var(--font-color);
       width: 1.2rem;
       height: 1.2rem;
     }
 
     &:hover {
-        background-color: #191C1E;
+        background-color: var(--bg-color);
 
       svg {
-        fill: #e6e6e6;
+        fill: var(--sec-font-color);
       }
     }
   }

@@ -21,13 +21,20 @@
 <script>
 import Vue from 'vue';
 import global from "~/mixins.js/global";
+import { mapGetters } from 'vuex';
 
 export default {
   name: 'DefaultLayout',
   data() {
     return {
-      mini: false
+      mini: false,
+      darkMode: false,
     }
+  },
+  computed: {
+    ...mapGetters({
+      theme: 'getTheme'
+    })
   },
   methods: {
     resizedWindow() {
@@ -53,7 +60,27 @@ export default {
     .catch(error => {
       console.error(error)
     })
+
+    let htmlElement = document.documentElement;
+
+    const darkThemeMq = window.matchMedia("(prefers-color-scheme: dark)");
+    if (darkThemeMq.matches) {
+      htmlElement.setAttribute('theme', 'dark')
+      this.darkMode = true
+    } else {
+      htmlElement.setAttribute('theme', 'light');
+      this.darkMode = false
+    }
   },
+  watch: {
+    darkMode: function () {
+        if (this.darkMode) {
+          this.$store.commit('setTheme', true)
+        } else {
+          this.$store.commit('setTheme', false)
+        }
+    }
+  }
 }
 
 Vue.mixin(global)
@@ -64,7 +91,7 @@ Vue.mixin(global)
   display: flex;
 
   #side-bar {
-    background-color: $bgSidebar;
+    background-color: var(--sidebar);
     padding: 1rem;
     background-color: rgba(0,0,0, 0.2); /* Black w/opacity/see-through */
 
@@ -92,11 +119,11 @@ Vue.mixin(global)
       position: fixed;
       bottom: 0;
       width: 100%;
-      background-color: $bgSidebar;
+      background-color: var(--sidebar);
       padding: .5rem;
       background-color: rgba(17,19,20, 0.85); /* Black w/opacity/see-through */
       backdrop-filter: blur(10px);
-      border-top: 1.5px solid #263238;
+      border-top: 1.5px solid var(--border-color);
 
       @include lg {
         display: block;

@@ -17,7 +17,7 @@
     </div>
     <div v-show="chartSettings" class="chart"></div>
     <div v-if="!chartSettings" class="skeleton-placeholder">
-      <BounceLoader color="#9F9F9F" size="2rem"/>
+      <BounceLoader color="var(--font-color)" size="2rem"/>
     </div>
   </div>
 </template>
@@ -206,7 +206,7 @@ export default {
           show: true,
           labelFont: "bold 9px ProductSans",
           font: '12px ProductSans',
-          stroke: "#9F9F9F",
+          stroke: "var(--font-color)",
           grid: {
             show: false,
           },
@@ -297,14 +297,14 @@ export default {
 .chart-wrapper {
   display: flex;
   flex-direction: column;
-  background-color: rgb(25, 28, 30);
+  background-color: var(--bg-color);
   border-radius: 5px;
-  border: 2px solid #263238;
+  border: 2px solid var(--border-color);
   padding: 1rem;
   height: 400px;
 
   .chart-header {
-    color: #e6e6e6;
+    color: var(--sec-font-color);
   }
 }
 
@@ -320,7 +320,7 @@ export default {
   flex-direction: column;
   padding: .2rem;
   background: rgb(46, 46, 46);
-  color: #e6e6e6;
+  color: var(--sec-font-color);
 
   .legend-item {
     display: flex;
@@ -349,7 +349,7 @@ export default {
 .legend-wrapper {
   display: inline-flex;
   align-items: center;
-  color: #e6e6e6;
+  color: var(--sec-font-color);
   font-size: .8rem;
   margin: 0 .3rem;
 

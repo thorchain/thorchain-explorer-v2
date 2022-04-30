@@ -76,7 +76,7 @@
       </div>
     </div>
     <div v-else class="loading">
-      <BounceLoader color="#9F9F9F" size="3rem" />
+      <BounceLoader color="var(--font-color)" size="3rem" />
     </div>
   </div>
 </template>
@@ -346,7 +346,7 @@ export default {
 
   .pool-header {
     font-weight: bold;
-    color: #e6e6e6;
+    color: var(--sec-font-color);
     text-align: center;
   }
 
@@ -373,8 +373,8 @@ export default {
     width: 100%;
     display: flex;
     flex-direction: column;
-    background-color: #191c1e;
-    border: 1px solid #263238;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
     padding: 1rem;
     border-radius: 0.4rem;
 
@@ -394,7 +394,7 @@ export default {
       }
 
       .value {
-        color: #e6e6e6;
+        color: var(--sec-font-color);
       }
     }
   }

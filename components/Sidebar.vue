@@ -20,6 +20,10 @@
         <a href="https://github.com/thorchain/thorchain-explorer-v2">
           <GithubLogo class="social-icon" />
         </a>
+        <div @click="changeTheme">
+          <SunIcon v-if="theme === 'light'" class="social-icon"/>
+          <MoonIcon v-if="theme === 'dark'" class="social-icon"/>
+        </div>
       </div>
   </div>
 </template>
@@ -50,6 +54,11 @@ import moneyUnselected from '~/assets/images/money.svg?inline';
 import shieldSelected from '~/assets/images/shield.svg?inline';
 import shieldUnselected from '~/assets/images/shield-unselected.svg?inline';
 
+import SunIcon from '~/assets/images/sun.svg?inline';
+import MoonIcon from '~/assets/images/moon.svg?inline';
+
+import { mapGetters } from 'vuex';
+
 export default {
   name: 'SideBar',
   props: ['mini'],
@@ -70,7 +79,9 @@ export default {
     moneySelected,
     moneyUnselected,
     shieldSelected,
-    shieldUnselected
+    shieldUnselected,
+    SunIcon,
+    MoonIcon
   },
   data() {
     return {
@@ -118,6 +129,23 @@ export default {
           link: '/vaults'
         }
       ]
+    }
+  },
+  computed: {
+    ...mapGetters({
+      theme: 'getTheme'
+    })
+  },
+  methods: {
+    changeTheme() {
+      if (this.theme == 'dark') {
+        this.$store.commit('setTheme', false)
+
+      }
+      else {
+        this.$store.commit('setTheme', true)
+
+      }
     }
   }
 }
@@ -177,18 +205,18 @@ export default {
     padding: .7rem;
     text-align: left;
     border-radius: .5rem;
-    color: $mainFontColor;
+    color: var(--font-color);
     color: inherit;
     text-decoration: none;
     line-height: 1.25rem;
 
     &:hover {
-      background-color: #191c1e;
-      color: #e6e6e6;
+      background-color: var(--bg-color);
+      color: var(--sec-font-color);
     }
 
     &.nuxt-link-active {
-      color: #e6e6e6;
+      color: var(--sec-font-color);
 
       .icon.selected {
         display: block;
@@ -200,7 +228,7 @@ export default {
     }
 
     .icon {
-      fill: #e6e6e6;
+      fill: var(--sec-font-color);
       margin-right: .5rem;
       height: 1.25rem;
       width: 1.25rem;
@@ -210,7 +238,7 @@ export default {
       }
 
       &.unselected {
-        fill: #9f9f9f;
+        fill: var(--font-color);
       }
     }
   }
@@ -222,13 +250,14 @@ export default {
   }
 
   .social-icon {
-    color: #9f9f9f;
+    fill: var(--font-color);
+    color: var(--font-color);
     cursor: pointer;
     width: 1.5rem;
     height: 1.5rem;
 
     &:hover {
-      color: #e6e6e6;
+      color: var(--sec-font-color);
     }
   }
 }

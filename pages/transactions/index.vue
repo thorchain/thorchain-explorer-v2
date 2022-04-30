@@ -16,7 +16,7 @@
       <pagination :limit="10" :offset="offset" :count="count" @changePage="getActions"></pagination>
     </div>
     <div v-else class="loading">
-      <BounceLoader color="#9F9F9F" size="3rem"/>
+      <BounceLoader color="var(--font-color)" size="3rem"/>
     </div>
   </div>
 </template>
@@ -75,6 +75,6 @@ export default {
 .transactions-container .header {
   font-size: 1.5rem;
   margin-bottom: 1rem;
-  color: #e6e6e6;
+  color: var(--sec-font-color);
 }
 </style>

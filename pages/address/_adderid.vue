@@ -170,7 +170,7 @@ export default {
 <style lang="scss" scoped>
 .address-container {
   .icon {
-    fill: #e6e6e6;
+    fill: var(--sec-font-color);
     height: 1.5rem;
 
     &.small {
@@ -188,11 +188,11 @@ export default {
     border-radius: .3rem;
 
     &:hover {
-      background-color: #3E464B;
+      background-color: var(--active-bg-color);
     }
     
     .icon-name {
-      color: #e6e6e6;
+      color: var(--sec-font-color);
       font-size: .625rem;
       margin-right: .3rem;
     }
@@ -224,7 +224,7 @@ export default {
       margin-left: .7rem;
       line-height: 1.5rem;
       font-size: 1.5rem;
-      color: #e6e6e6;
+      color: var(--sec-font-color);
     }
   }
   .address-name {
@@ -232,7 +232,7 @@ export default {
     align-items: center;
     margin: .4rem 0;
     font-weight: bold;
-    color: #9F9F9F;
+    color: var(--font-color);
   }
 }
 
@@ -245,8 +245,8 @@ export default {
 
 .nav-headers {
   margin-bottom: .2rem;
-  background-color: rgb(25, 28, 30);
-  border: 2px solid #263238;
+  background-color: var(--bg-color);
+  border: 2px solid var(--border-color);
   border-radius: 5px;
 
   .nav-item {
@@ -255,7 +255,7 @@ export default {
     cursor: pointer;
 
     &.active {
-      color: #63FDD9;
+      color: var(--primary-color);
     }
   }
 }

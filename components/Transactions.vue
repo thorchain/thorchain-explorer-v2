@@ -43,7 +43,7 @@
       </div>
     </template>
     <div v-else class="loading">
-      <BounceLoader color="#9F9F9F" size="3rem" />
+      <BounceLoader color="var(--font-color)" size="3rem" />
     </div>
   </div>
 </template>
@@ -100,8 +100,8 @@ export default {
   display: flex;
   flex-direction: column;
   border-radius: .5rem;
-  background-color: #191C1E;
-  border: 1px solid #263238;
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
 
   .loading {
     height: 10rem;
@@ -116,7 +116,7 @@ export default {
     display: flex;
     flex: 1 1 100%;
     padding: 1rem;
-    border-bottom: 1px solid #263238;
+    border-bottom: 1px solid var(--border-color);
     overflow: auto;
 
     &:last-of-type {
@@ -128,7 +128,7 @@ export default {
       flex-direction: column;
 
       .action {
-        color: #e6e6e6;
+        color: var(--sec-font-color);
       }
 
       .date {
@@ -139,12 +139,12 @@ export default {
     .tx-content {
       display: flex;
       flex: 1;
-      border: 1px solid #263238;
+      border: 1px solid var(--border-color);
       border-radius: .5rem;
       margin-left: 2rem;
       
       > * {
-        color: #e6e6e6;
+        color: var(--sec-font-color);
         padding: .7rem;
         flex: 1 1 50%;
       }
@@ -159,14 +159,14 @@ export default {
 
       .tx {
         cursor: pointer;
-        color: #63FDD9;
+        color: var(--primary-color);
         margin-left: .2rem;
         display: inline-block;
       }
 
       .tx-out {
         position: relative;
-        border-left: 1px solid #263238;
+        border-left: 1px solid var(--border-color);
         padding-left: 2rem;
         min-height: 4rem;
 
@@ -177,12 +177,12 @@ export default {
 
       .address {
         cursor: pointer;
-        color: #63FDD9;
+        color: var(--primary-color);
       }
 
       .icon-arrow {
-        fill: #9f9f9f;
-        background-color: #263238;
+        fill: var(--font-color);
+        background-color: var(--border-color);
         border-radius: 50%;
         position: absolute;
         width: 2rem;

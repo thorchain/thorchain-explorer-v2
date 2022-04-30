@@ -12,10 +12,10 @@ html, body, #__nuxt, #__layout, main {
 }
 
 body {
-  background: linear-gradient(to left top, #212121 0%/*bottom-right color*/, #263238 100% /*top-left color*/);
+  background: linear-gradient(to left top, var(--gradient-left) 0%/*bottom-right color*/, var(--gradient-right) 100% /*top-left color*/);
   min-height: 100%;
   font-family: 'ProductSans';
-  color: $mainFontColor;
+  color: var(--font-color);
 }
 
 #right-content {
@@ -34,7 +34,7 @@ input {
   &:active {
     border: none;
     box-shadow: none !important;
-    outline: $mainFontColor solid 2px;
+    outline: var(--font-color) solid 2px;
   }
 }
 
@@ -43,12 +43,12 @@ input {
 }
 
 .clickable {
-  color: #63FDD9;
+  color: var(--primary-color);
   cursor: pointer;
 }
 
 .not-clickable {
-  color: #e6e6e6;
+  color: var(--sec-font-color);
   cursor: initial;
 }
 
@@ -58,15 +58,15 @@ input {
   flex: 1;
   flex-direction: column;
   word-wrap: break-word;
-  border: 1px solid #263238;
-  background-color: #161819;
+  border: 1px solid var(--border-color);
+  background-color: var(--card-bg-color);
   border-radius: 0.5rem;
   margin: 0 .5rem;
 
   .card-header {
     padding: 0.75rem;
     margin-bottom: 0;
-    border-bottom: 1px solid #263238;
+    border-bottom: 1px solid var(--border-color);
 
     .card-header-title {
       font-size: .875rem;
@@ -86,14 +86,14 @@ input {
       display: flex;
 
       .meta {
-        color: #e6e6e6;
+        color: var(--sec-font-color);
         
         .header {
           font-size: .975rem;
         }
 
         .timestamp {
-          color: #9F9F9F;
+          color: var(--font-color);
           font-size: .75rem;
         }
       }
@@ -107,10 +107,10 @@ input {
           white-space: nowrap;
           word-break: keep-all;
           font-size: .875rem;
-          color: #e6e6e6;
+          color: var(--sec-font-color);
 
           .value {
-            color: #63FDD9;
+            color: var(--primary-color);
           }
         }
 
@@ -126,7 +126,7 @@ input {
       opacity: .75;
       height: 0;
       border: 0;
-      border-top: 1px solid #263238;
+      border-top: 1px solid var(--border-color);
 
       &:last-of-type {
         display: none;
@@ -152,28 +152,28 @@ input {
 .error-container {
   padding: 1rem;
   border-radius: .5rem;
-  background-color: #191c1e;
-  border: 1px solid #263238;
-  color: #e6e6e6;
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  color: var(--sec-font-color);
 }
 
 .base-container {
   padding: 1rem;
   border-radius: .5rem;
-  background-color: #191c1e;
-  border: 1px solid #263238;
-  color: #e6e6e6;
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  color: var(--sec-font-color);
 }
 
 #main-content table.net-table {
-  border: 1px solid #263238;
-  border-color: #263238 !important;
-  background-color: #191c1e;
+  border: 1px solid var(--border-color);
+  border-color: var(--border-color) !important;
+  background-color: var(--bg-color);
 
   thead th {
     font-size: .875rem;
-    background: #191c1e;
-    border-color: #263238;
+    background: var(--bg-color);
+    border-color: var(--border-color);
 
     &:first-of-type {
       border-radius: .3rem 0 0 0;
@@ -187,14 +187,14 @@ input {
   tbody tr {
     td {
       font-size: .875rem;
-      color: #e6e6e6;
-      border-color: #263238;
+      color: var(--sec-font-color);
+      border-color: var(--border-color);
       vertical-align: middle;
     }
 
     &.clickable {
       &:hover {
-        background-color: #161819;
+        background-color: var(--card-bg-color);
       }
     }
   }
@@ -203,31 +203,31 @@ input {
 .vgt-wrap__footer {
   font-size: .875rem !important;
   border-top: none !important;
-  border-color: #263238 !important;
-  background: #191c1e !important;
+  border-color: var(--border-color) !important;
+  background: var(--bg-color) !important;
 }
 
 .vgt-wrap__footer .footer__navigation__page-btn  {
 
   .chevron::after {
-    border-left-color: #263238 !important;
-    border-right-color: #263238 !important;
+    border-left-color: var(--border-color) !important;
+    border-right-color: var(--border-color) !important;
   }
 
   &:hover {
-    color: #e6e6e6;
+    color: var(--sec-font-color);
 
     .chevron::after {
-      border-left-color: #63FDD9 !important;
-      border-right-color: #63FDD9 !important;
+      border-left-color: var(--primary-color) !important;
+      border-right-color: var(--primary-color) !important;
     }
   }
 }
 
 .vgt-table thead th.sorting-desc button:before,
 .vgt-table thead th.sorting-asc button:after {
-  border-top-color: #63FDD9 !important;
-  border-bottom-color: #63FDD9 !important;
+  border-top-color: var(--primary-color) !important;
+  border-bottom-color: var(--primary-color) !important;
 }
 
 .table-asset-icon {
@@ -237,7 +237,7 @@ input {
   margin-right: .5rem;
 
   &.synth {
-    border: 2px solid #63FDD9;
+    border: 2px solid var(--primary-color);
   }
 }
 
@@ -256,17 +256,17 @@ input {
     cursor: pointer;
     padding: 0.5rem 0.7rem;
     margin: 0 0.1rem;
-    color: #9f9f9f;
+    color: var(--font-color);
     text-decoration: none;
     border-radius: 0.3rem;
 
     &.active {
-      background-color: #3E464B;
-      color: #e6e6e6;
+      background-color: var(--active-bg-color);
+      color: var(--sec-font-color);
     }
 
     &:hover {
-      background-color: #3E464B;
+      background-color: var(--active-bg-color);
     }
 
     &:first-of-type {
@@ -276,13 +276,13 @@ input {
 
   &.box {
     padding: 0.2rem;
-    background-color: rgb(25, 28, 30);
-    border: 2px solid #263238;
+    background-color: var(--bg-color);
+    border: 2px solid var(--border-color);
     border-radius: 5px;
 
     .nav-item {
       &.active {
-        color: #63FDD9;
+        color: var(--primary-color);
       }
     }
   }
@@ -296,7 +296,7 @@ input {
   padding: 2px 6px;
   justify-content: center;
   align-items: center;
-  color: #161819;
+  color: var(--card-bg-color);
   border-radius: .2rem;
   background-color: #33ff99;
 
@@ -317,7 +317,7 @@ input {
   }
 
   &.black {
-    color: #e6e6e6;
+    color: var(--sec-font-color);
     background-color: #000;
   }
 }
