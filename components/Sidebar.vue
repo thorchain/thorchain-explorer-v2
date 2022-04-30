@@ -20,6 +20,10 @@
         <a href="https://github.com/thorchain/thorchain-explorer-v2">
           <GithubLogo class="social-icon" />
         </a>
+        <div @click="changeTheme">
+          <SunIcon v-if="theme === 'light'" class="social-icon"/>
+          <MoonIcon v-if="theme === 'dark'" class="social-icon"/>
+        </div>
       </div>
   </div>
 </template>
@@ -50,6 +54,11 @@ import moneyUnselected from '~/assets/images/money.svg?inline';
 import shieldSelected from '~/assets/images/shield.svg?inline';
 import shieldUnselected from '~/assets/images/shield-unselected.svg?inline';
 
+import SunIcon from '~/assets/images/sun.svg?inline';
+import MoonIcon from '~/assets/images/moon.svg?inline';
+
+import { mapGetters } from 'vuex';
+
 export default {
   name: 'SideBar',
   props: ['mini'],
@@ -70,7 +79,9 @@ export default {
     moneySelected,
     moneyUnselected,
     shieldSelected,
-    shieldUnselected
+    shieldUnselected,
+    SunIcon,
+    MoonIcon
   },
   data() {
     return {
@@ -118,6 +129,23 @@ export default {
           link: '/vaults'
         }
       ]
+    }
+  },
+  computed: {
+    ...mapGetters({
+      theme: 'getTheme'
+    })
+  },
+  methods: {
+    changeTheme() {
+      if (this.theme == 'dark') {
+        this.$store.commit('setTheme', false)
+
+      }
+      else {
+        this.$store.commit('setTheme', true)
+
+      }
     }
   }
 }
@@ -222,6 +250,7 @@ export default {
   }
 
   .social-icon {
+    fill: var(--font-color);
     color: var(--font-color);
     cursor: pointer;
     width: 1.5rem;

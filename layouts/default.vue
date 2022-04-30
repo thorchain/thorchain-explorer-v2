@@ -21,6 +21,7 @@
 <script>
 import Vue from 'vue';
 import global from "~/mixins.js/global";
+import { mapGetters } from 'vuex';
 
 export default {
   name: 'DefaultLayout',
@@ -29,6 +30,11 @@ export default {
       mini: false,
       darkMode: false,
     }
+  },
+  computed: {
+    ...mapGetters({
+      theme: 'getTheme'
+    })
   },
   methods: {
     resizedWindow() {
@@ -68,15 +74,10 @@ export default {
   },
   watch: {
     darkMode: function () {
-        // add/remove class to/from html tag
-        let htmlElement = document.documentElement;
-
         if (this.darkMode) {
-            localStorage.setItem("theme", 'dark');
-            htmlElement.setAttribute('theme', 'dark');
+          this.$store.commit('setTheme', true)
         } else {
-            localStorage.setItem("theme", 'light');
-            htmlElement.setAttribute('theme', 'light');
+          this.$store.commit('setTheme', false)
         }
     }
   }
