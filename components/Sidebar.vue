@@ -177,18 +177,18 @@ export default {
     padding: .7rem;
     text-align: left;
     border-radius: .5rem;
-    color: $mainFontColor;
+    color: var(--font-color);
     color: inherit;
     text-decoration: none;
     line-height: 1.25rem;
 
     &:hover {
-      background-color: #191c1e;
-      color: #e6e6e6;
+      background-color: var(--bg-color);
+      color: var(--sec-font-color);
     }
 
     &.nuxt-link-active {
-      color: #e6e6e6;
+      color: var(--sec-font-color);
 
       .icon.selected {
         display: block;
@@ -200,7 +200,7 @@ export default {
     }
 
     .icon {
-      fill: #e6e6e6;
+      fill: var(--sec-font-color);
       margin-right: .5rem;
       height: 1.25rem;
       width: 1.25rem;
@@ -228,7 +228,7 @@ export default {
     height: 1.5rem;
 
     &:hover {
-      color: #e6e6e6;
+      color: var(--sec-font-color);
     }
   }
 }

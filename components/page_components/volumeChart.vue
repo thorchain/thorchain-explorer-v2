@@ -299,12 +299,12 @@ export default {
   flex-direction: column;
   background-color: rgb(25, 28, 30);
   border-radius: 5px;
-  border: 2px solid #263238;
+  border: 2px solid var(--border-color);
   padding: 1rem;
   height: 400px;
 
   .chart-header {
-    color: #e6e6e6;
+    color: var(--sec-font-color);
   }
 }
 
@@ -320,7 +320,7 @@ export default {
   flex-direction: column;
   padding: .2rem;
   background: rgb(46, 46, 46);
-  color: #e6e6e6;
+  color: var(--sec-font-color);
 
   .legend-item {
     display: flex;
@@ -349,7 +349,7 @@ export default {
 .legend-wrapper {
   display: inline-flex;
   align-items: center;
-  color: #e6e6e6;
+  color: var(--sec-font-color);
   font-size: .8rem;
   margin: 0 .3rem;
 

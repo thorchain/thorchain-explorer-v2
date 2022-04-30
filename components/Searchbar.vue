@@ -54,7 +54,7 @@ export default {
     width: 100%;
     border-radius: 5px;
     height: 3rem;
-    background-color: #191C1E;
+    background-color: var(--bg-color);
   }
 }
 </style>

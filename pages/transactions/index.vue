@@ -75,6 +75,6 @@ export default {
 .transactions-container .header {
   font-size: 1.5rem;
   margin-bottom: 1rem;
-  color: #e6e6e6;
+  color: var(--sec-font-color);
 }
 </style>

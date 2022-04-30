@@ -41,11 +41,11 @@ export default {
   display: flex;
   flex-direction: column;
   border-radius: .5rem;
-  background-color: #191C1E;
-  border: 1px solid #263238;
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
 
   .header {
-    color: #e6e6e6;
+    color: var(--sec-font-color);
     font-size: 1.5rem;
     padding: 1rem;
   }
@@ -60,19 +60,19 @@ export default {
 
     thead tr th {
       padding: 1rem;
-      color: #e6e6e6;
+      color: var(--sec-font-color);
     }
 
     tbody tr {
       &:hover {
-        background-color: #161819;  
+        background-color: var(--card-bg-color);  
       }
 
       td {
         cursor: pointer;
         padding: 1rem;
-        color: #e6e6e6;
-        border: 1px solid #263238;
+        color: var(--sec-font-color);
+        border: 1px solid var(--border-color);
         border-width: 1px 0 1px 0;
       }
 

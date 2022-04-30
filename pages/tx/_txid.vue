@@ -271,7 +271,7 @@ export default {
 <style lang="scss" scoped>
 .tx-container {
   .icon {
-    fill: #e6e6e6;
+    fill: var(--sec-font-color);
     height: 1.5rem;
 
     &.small {
@@ -291,14 +291,14 @@ export default {
     cursor: pointer;
     padding: 0.4rem;
     border-radius: 0.3rem;
-    background-color: #191c1e;
+    background-color: var(--bg-color);
 
     &:hover {
       background-color: #3e464b;
     }
 
     .icon-name {
-      color: #e6e6e6;
+      color: var(--sec-font-color);
       font-size: 0.625rem;
       margin-right: 0.3rem;
     }
@@ -306,18 +306,18 @@ export default {
 
   .tx-header {
     font-size: 1.5rem;
-    color: #e6e6e6;
+    color: var(--sec-font-color);
   }
 
   .tx-id {
     margin: 0.4rem 0;
-    color: #63fdd9;
+    color: var(--primary-color);
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
   .tx-date {
-    color: #e6e6e6;
+    color: var(--sec-font-color);
     margin: 0.4rem 0;
   }
 
@@ -326,9 +326,9 @@ export default {
     gap: 1rem;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     flex-wrap: wrap;
-    background-color: #191c1e;
+    background-color: var(--bg-color);
     padding: 1rem;
-    border: 1px solid #263238;
+    border: 1px solid var(--border-color);
     border-radius: 0.3rem;
     margin: 0.5rem 0;
     width: 100%;
@@ -343,11 +343,11 @@ export default {
     .tx {
       cursor: pointer;
       line-height: 1.2rem;
-      color: #63fdd9;
+      color: var(--primary-color);
     }
 
     .bubble {
-      color: #e6e6e6;
+      color: var(--sec-font-color);
       padding: 0 0.5rem;
       border-radius: 0.2rem;
       display: inline-block;
@@ -363,7 +363,7 @@ export default {
       display: flex;
       align-items: center;
       margin: 0.5rem 0;
-      color: #e6e6e6;
+      color: var(--sec-font-color);
 
       span {
         line-height: 1.2rem;
@@ -377,7 +377,7 @@ export default {
 
     .tx-address {
       cursor: pointer;
-      color: #63fdd9;
+      color: var(--primary-color);
     }
 
     .extra-details {
@@ -397,7 +397,7 @@ export default {
         }
 
         .value {
-          color: #e6e6e6;
+          color: var(--sec-font-color);
         }
       }
     }

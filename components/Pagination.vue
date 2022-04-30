@@ -65,10 +65,10 @@ export default {
     }
 
     &:hover {
-        background-color: #191C1E;
+        background-color: var(--bg-color);
 
       svg {
-        fill: #e6e6e6;
+        fill: var(--sec-font-color);
       }
     }
   }

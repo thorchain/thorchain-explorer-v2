@@ -149,7 +149,7 @@ export default {
     padding: 1rem 0;
 
     span {
-      color: #e6e6e6;
+      color: var(--sec-font-color);
       font-weight: bold;
     }
   }
@@ -171,7 +171,7 @@ export default {
 
       .signer {
         cursor: pointer;
-        color: #63FDD9;
+        color: var(--primary-color);
       }
     }
 
@@ -179,7 +179,7 @@ export default {
       padding: 1rem;
       display: flex;
       justify-content: space-between;
-      border-bottom: 1px solid #263238;
+      border-bottom: 1px solid var(--border-color);
 
       div {
         color: #9f9f9f;

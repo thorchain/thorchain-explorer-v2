@@ -752,7 +752,7 @@ export default {
     overflow: visible;
     height: 0;
     border: 0;
-    border-top: 1px solid #263238;
+    border-top: 1px solid var(--border-color);
   }
   
   .rune-symbol {
@@ -783,7 +783,7 @@ export default {
         display: block;
         height: calc(100% - 1rem);
         border-left: 0;
-        border-right: 1px solid #263238;
+        border-right: 1px solid var(--border-color);
         margin: .5rem 0;
 
       }

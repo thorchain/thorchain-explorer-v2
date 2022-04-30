@@ -40,7 +40,7 @@ export default {
   
       &.nuxt-link-exact-active {
         background-color: #3E464B;
-        color: #e6e6e6;
+        color: var(--sec-font-color);
       }
     }
   }
