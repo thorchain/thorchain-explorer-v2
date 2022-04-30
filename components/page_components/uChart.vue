@@ -18,6 +18,7 @@
 import uPlot from 'uplot';
 import 'uplot/dist/uPlot.min.css';
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
+import { mapGetters } from 'vuex';
 
 export default {
   name: 'uChart',
@@ -32,6 +33,11 @@ export default {
     return {
       uPlot: null
     }
+  },
+  computed: {
+    ...mapGetters({
+      theme: 'getTheme'
+    })
   },
   components: {
     BounceLoader
@@ -170,7 +176,7 @@ export default {
             show: true,
             labelFont: "bold 9px ProductSans",
             font: '12px ProductSans',
-            stroke: "var(--font-color)",
+            stroke: this.theme === 'dark' ? "#9F9F9F":"#000",
             grid: {
               show: false,
             },
@@ -260,8 +266,9 @@ export default {
   display: flex;
   flex-direction: column;
   padding: .2rem;
-  background: rgb(46, 46, 46);
+  background: var(--sidebar);
   color: var(--sec-font-color);
+  border: 1px solid var(--border-color);
 
   .legend-item {
     display: flex;
