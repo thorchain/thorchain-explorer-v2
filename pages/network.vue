@@ -2,7 +2,7 @@
   <div class="network-page-container">
     <div class="nav-header">
       <nuxt-link to="/network">Network</nuxt-link>
-      <nuxt-link to="/network/constants">Constants</nuxt-link>
+      <nuxt-link to="/network/settings">Network Settings</nuxt-link>
       <nuxt-link to="/network/votes">Mimir Votes</nuxt-link>
     </div>
     <nuxt-child></nuxt-child>
