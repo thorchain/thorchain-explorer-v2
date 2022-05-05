@@ -263,6 +263,11 @@ export default {
             filter: true
           },
           {
+            name: 'COSMOS CHAIN is paused',
+            value: this.mimir?.HALTGAIACHAIN ? 'Yes' : 'No',
+            filter: true
+          },
+          {
             name: 'LTC CHAIN is paused',
             value: this.mimir?.HALTLTCCHAIN ? 'Yes' : 'No',
             filter: true
