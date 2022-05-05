@@ -246,7 +246,7 @@ export default {
   flex-direction: column;
   background-color: var(--bg-color);
   border-radius: 5px;
-  border: 2px solid var(--border-color);
+  border: 1px solid var(--border-color);
   padding: 1rem;
   height: 400px;
 

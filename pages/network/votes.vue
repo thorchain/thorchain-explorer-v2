@@ -1,18 +1,29 @@
 <template>
   <div class="votes-container">
     <div class="base-container">
-      <h3>Current Constants</h3>
+      <h3>Mimir Voting Overview</h3>
       <vue-good-table
         v-if="votesCols && currentVoting"
         :columns="votesCols"
         :rows="currentVoting"
-        styleClass="vgt-table net-table vgt-compact"
+        styleClass="vgt-table net-table vgt-compact bordered"
         :pagination-options="{
           enabled: true,
           perPage: 30,
           perPageDropdownEnabled: false,
         }"
-      />
+      >
+        <template slot="table-row" slot-scope="props">
+          <div v-if="props.column.field == 'result'" class="cell-content">
+            <div :class="['bubble-container', {'yellow': props.row.result === 'In Progress'}]">
+              {{props.row.result | capitalize}}
+            </div>
+          </div>
+          <span v-else>
+            {{props.formattedRow[props.column.field]}}
+          </span>
+        </template>
+      </vue-good-table>
     </div>
     <div class="vote-container base-container" v-for="(v,k,i) in mimirVotes" :key="i">
       <div class="vote-name">
@@ -47,6 +58,8 @@
 </template>
 
 <script>
+import { nodeCountQuery } from '~/_gql_queries';
+import _ from 'lodash';
 export default {
   data() {
     return {
@@ -73,10 +86,39 @@ export default {
           sortable: false
         },
         {
-          label: 'Current Value',
+          label: 'Current Mimir Value',
           field: 'currentVal',
           type: 'number',
           tdClass: 'mono'
+        },
+        {
+          label: 'Highest Voted Value',
+          field: 'highestValue',
+          type: 'number',
+          tdClass: 'mono'
+        },
+        {
+          label: 'Voted',
+          field: 'votePassed',
+          type: 'number',
+          tdClass: 'mono'
+        },
+        {
+          label: 'Missing',
+          field: 'remainingVotes',
+          type: 'number',
+          tdClass: 'mono'
+        },
+        {
+          label: 'Consensus',
+          field: 'consensus',
+          type: 'percentage',
+          tdClass: 'mono'
+        },
+        {
+          label: 'Result',
+          field: 'result',
+          type: 'text',
         }
       ]
     }
@@ -99,11 +141,16 @@ export default {
       if(this.mimirVotes && this.mimirs) {
         let mimrsVoteConstants = []
         for (let m of Object.keys(this.mimirs)) {
-          console.log(m, this.mimirs[m])
           if(Object.keys(this.mimirVotes).includes(m)) {
+            const hVotes = this.getVoteHighestBid(this.mimirVotes[m]);
             mimrsVoteConstants.push({
               vote: m,
-              currentVal: this.mimirs[m],
+              currentVal: this.mimirs[m] == -1 ? '-':this.mimirs[m],
+              highestValue: hVotes.value,
+              consensus: hVotes.consensus,
+              votePassed: hVotes.votePassed,
+              remainingVotes: +this.network.activeNodeCount - hVotes.votePassed,
+              result: (+this.mimirs[m] == +hVotes.value)? 'Passed':'In Progress'
             })
           }
         }
@@ -136,6 +183,28 @@ export default {
     gotoNode(signer) {
       this.$router.push({path: `/node/${signer}`});
     },
+    getVoteHighestBid(voters) {
+      const activeVoters = voters.filter(v => this.nodes.filter(n => n.status == 'Active').map(n => n.address).includes(v.signer))
+      const voteCount = _.countBy(activeVoters.map(v => v.value));
+      const votesObj = Object.keys(voteCount).map((v, i) => (
+        {
+          value: v,
+          count: voteCount[v],
+          consensus: (voteCount[v]/(+this.network.activeNodeCount))
+        }
+      ));
+      const hVote = _.maxBy(votesObj, (o) => o.consensus);
+      return {
+        consensus: hVote?.consensus ?? 0,
+        votePassed: activeVoters?.length ?? 0,
+        value: hVote?.value ?? '-'
+      }
+    }
+  },
+  apollo: {
+    $prefetch: true,
+    network: nodeCountQuery,
+    nodes: nodeCountQuery
   }
 }
 </script>

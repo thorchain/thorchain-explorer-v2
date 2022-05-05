@@ -246,7 +246,7 @@ export default {
 .nav-headers {
   margin-bottom: .2rem;
   background-color: var(--bg-color);
-  border: 2px solid var(--border-color);
+  border: 1px solid var(--border-color);
   border-radius: 5px;
 
   .nav-item {

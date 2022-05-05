@@ -277,7 +277,7 @@ input {
   &.box {
     padding: 0.2rem;
     background-color: var(--bg-color);
-    border: 2px solid var(--border-color);
+    border: 1px solid var(--border-color);
     border-radius: 5px;
 
     .nav-item {
@@ -296,7 +296,7 @@ input {
   padding: 2px 6px;
   justify-content: center;
   align-items: center;
-  color: var(--card-bg-color);
+  color: var(--bubble-font-color);
   border-radius: .2rem;
   background-color: #33ff99;
 
@@ -313,11 +313,11 @@ input {
   }
 
   &.white {
-    background-color: #fff;
+    background-color: #eee;
   }
 
   &.black {
-    color: var(--sec-font-color);
+    color: #FFF;
     background-color: #000;
   }
 }
