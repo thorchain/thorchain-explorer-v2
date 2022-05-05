@@ -296,7 +296,7 @@ input {
   padding: 2px 6px;
   justify-content: center;
   align-items: center;
-  color: var(--card-bg-color);
+  color: var(--bubble-font-color);
   border-radius: .2rem;
   background-color: #33ff99;
 
@@ -313,11 +313,11 @@ input {
   }
 
   &.white {
-    background-color: #fff;
+    background-color: #eee;
   }
 
   &.black {
-    color: var(--sec-font-color);
+    color: #FFF;
     background-color: #000;
   }
 }
