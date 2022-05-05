@@ -211,7 +211,7 @@ export default {
             usdValue: true
           },
           {
-            name: 'Total Node Cound',
+            name: 'Total Node Count',
             value: this.bondMetrics?.activeNodeCount
           }
         ],
@@ -248,7 +248,7 @@ export default {
             usdValue: true
           },
           {
-            name: 'Total Node Cound',
+            name: 'Total Node Count',
             value: this.bondMetrics?.standbyNodeCount
           }
         ],
