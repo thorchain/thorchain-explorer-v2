@@ -194,4 +194,15 @@ const nodeQuery = gql`query nodeQuery($address: String!){
   }
 }`
 
-export { networkQuery, volumeHistoryQuery, runePriceQuery, bondMetrics, pools, poolQuery, nodesQuery, nodeQuery }
+const nodeCountQuery = gql`query {
+	network {
+    activeNodeCount,
+    standbyNodeCount
+  },
+  nodes {
+    address,
+    status
+  }
+}`
+
+export { networkQuery, volumeHistoryQuery, runePriceQuery, bondMetrics, pools, poolQuery, nodesQuery, nodeQuery, nodeCountQuery }
