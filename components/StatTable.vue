@@ -88,7 +88,7 @@ export default {
   .stat-table-container {
     background-color: var(--bg-color);
     border-radius: 5px;
-    border: 2px solid var(--border-color);
+    border: 1px solid var(--border-color);
   }
 
   .stat-table-row {
