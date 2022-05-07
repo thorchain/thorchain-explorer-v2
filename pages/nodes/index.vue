@@ -113,6 +113,7 @@ import BounceLoader from 'vue-spinner/src/BounceLoader.vue';
 import { mapGetters } from 'vuex';
 import { addressFormat, curFormat, fillNodeData, numberFormat } from '~/utils';
 import { AssetCurrencySymbol } from '@xchainjs/xchain-util';
+import _ from 'lodash';
 
 export default {
   name: "nodesPage",
@@ -144,6 +145,16 @@ export default {
     },
     curFormat(number) {
       return this.$options.filters.currency(number)
+    },
+    calAverageBond() {
+      return _.mean(this.bondMetrics?.standbyBonds.filter(b => b >= this.minBond))/10**8;
+    },
+    calMinBond() {
+      return _.min(this.bondMetrics?.standbyBonds.filter(b => b >= this.minBond))/10**8;
+    },
+    calMedianBond() {
+      const eNodes = this.bondMetrics?.standbyBonds.filter(b => b >= this.minBond)
+      return eNodes.sort((a, b) => +a - +b)[Math.floor(eNodes.length / 2)]/10**8; 
     }
   },
   data: function() {
@@ -190,8 +201,16 @@ export default {
           formatFn: this.numberFormat,
           tdClass: 'mono'
         }
-      ]
+      ],
+      minBond: 30000000000000
     }
+  },
+  mounted() {
+    this.$api.getMimir().then(res => {
+      this.minBond = +res.data.MINIMUMBONDINRUNE;
+    }).catch(e => {
+      console.error(e);
+    })
   },
   computed: {
     ...mapGetters({
@@ -244,7 +263,7 @@ export default {
           },
           {
             name: 'Average Bond',
-            value: ((this.bondMetrics?.bondMetrics?.standby?.averageBond ?? 0)/10**8),
+            value: this.calAverageBond(),
             usdValue: true
           },
           {
@@ -260,12 +279,12 @@ export default {
           },
           {
             name: 'Median Bond',
-            value: Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.standby?.medianBond) ?? 0)/10**8),
+            value: this.calMedianBond(),
             usdValue: true
           },
           {
             name: 'Minimum Bond',
-            value: Math.floor((this.bondMetrics?.bondMetrics?.standby?.minimumBond)/10**8).toString(),
+            value: this.calMinBond(),
             usdValue: true
           }
         ]
