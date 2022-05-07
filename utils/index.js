@@ -14,7 +14,7 @@ export function formatTime(seconds) {
   var hDisplay = h > 0 ? h + (h == 1 ? " hour" : " hours") : "";
   var mDisplay = m > 0 ? m + (m == 1 ? " minute" : " minutes") : "";
   var sDisplay = s > 0 ? s + (s == 1 ? " second" : " seconds") : "";
-  return dDisplay + comms(d && h) + hDisplay + comms(h && m) + mDisplay + comms(m && s) + sDisplay;
+  return dDisplay + comms(d && h) + hDisplay + comms((h && m) || (d && m)) + mDisplay + comms((m && s) || (d && s) || (h && s)) + sDisplay;
 }
 
 export function blockTime(blockHeight) {

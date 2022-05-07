@@ -20,6 +20,13 @@
           <span v-else-if="props.column.field == 'synth'">
             <span v-tooltip="props.row.synth">{{props.formattedRow[props.column.field]}}</span>
           </span>
+          <span v-else-if="props.column.field == 'supply'">
+            <span>{{props.formattedRow[props.column.field]}}
+              <span class="extra-text">
+                {{showAsset(props.row.asset)}}
+              </span>
+            </span>
+          </span>
           <span v-else>
             {{props.formattedRow[props.column.field]}}
           </span>
@@ -58,6 +65,13 @@ export default {
           type: 'percentage',
           tdClass: 'mono'
         },
+        {
+          label: 'Supply',
+          field: 'supply',
+          type: 'number',
+          tdClass: 'mono',
+          formatFn: this.numberFormat
+        },
       ],
       rows: []
     }
@@ -69,17 +83,18 @@ export default {
     let synthUtils = []
     for(let asset of synthAssets.supply) {
       let assetName = synthToAsset(asset.denom)
-      let pool = pools.find(p => p.asset = assetName)
+      let pool = pools.find(p => p.asset === assetName)
       if (!pool)
         console.log('Pool hasn\'t been find');
       synthUtils.push({
         asset: assetName,
         synth: asset.denom,
         amount: asset.amount,
-        synth_units: pool.synth_units,
-        synth_supply: pool.synth_supply,
-        asset_depth: pool.balance_asset,
-        units: pool.pool_units,
+        synth_units: pool?.synth_units,
+        synth_supply: pool?.synth_supply,
+        asset_depth: pool?.balance_asset,
+        units: pool?.pool_units,
+        supply: asset?.amount,
       })
     }
     return {pools, synthAssets, synthUtils}
@@ -92,6 +107,7 @@ export default {
           synth: asset.synth,
           liability: +asset.synth_units/+asset.units,
           utilisation: +asset.synth_supply/+asset.asset_depth,
+          supply: +asset.supply/10**8
         })
       }
     }

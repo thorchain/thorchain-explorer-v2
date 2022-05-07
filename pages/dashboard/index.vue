@@ -272,7 +272,8 @@ export default {
         [
           {
             name: 'Pool Activation Countdown',
-            value: this.network.poolActivationCountdown
+            value: this.network.poolActivationCountdown,
+            extraText: blockTime(this.network.poolActivationCountdown)
           }
         ],
         [

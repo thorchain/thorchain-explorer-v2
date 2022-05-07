@@ -1,3 +1,4 @@
+import { assetFromString } from '@xchainjs/xchain-util';
 import { AssetImage } from '~/classes/assetImage';
 
 export default {
@@ -28,5 +29,12 @@ export default {
         console.error('Could not copy text: ', err);
       });
     },
+    numberFormat(number) {
+      return number? this.$options.filters.number(number, '0,0.0000'):'-'
+    },
+    showAsset(assetStr) {
+      const asset = assetFromString(assetStr);
+      return asset.chain + '.' + asset.ticker;
+    }
   }
 }
