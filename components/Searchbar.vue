@@ -55,6 +55,7 @@ export default {
     border-radius: 5px;
     height: 3rem;
     background-color: var(--bg-color);
+    color: var(--font-color);
   }
 }
 </style>
