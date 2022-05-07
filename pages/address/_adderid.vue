@@ -2,7 +2,7 @@
   <div class="address-container">
     <div class="address-header">
       <WalletIcon class="icon" />
-      <span>{{isVault?'Vault':'Asgard'}}</span>
+      <span>{{isVault?'Vault':'Address'}}</span>
     </div>
     <div class="address-name">
       <span>{{address}}</span>
@@ -44,6 +44,41 @@
             </div>
           </div>
         </div>
+        <div class="simple-card">
+          <div class="card-header">
+            Vault Balances
+          </div>
+          <div class="card-body">
+            <vue-good-table
+              v-if="vaultInfo"
+              :columns="cols"
+              :rows="vaultInfo.coins"
+              styleClass="vgt-table net-table vgt-compact"
+              :pagination-options="{
+                enabled: true,
+                perPage: 30,
+                perPageDropdownEnabled: false,
+              }"
+            >
+              <template slot="table-row" slot-scope="props">
+                <div v-if="props.column.field == 'asset'" class="cell-content" v-tooltip="props.row.asset">
+                  <img class="table-asset-icon" :src="assetImage(props.row.asset)" alt="asset-icon">
+                  <span>{{props.formattedRow[props.column.field]}}</span>
+                </div>
+                <span v-else-if="props.column.field == 'amount'">
+                  <span>{{props.formattedRow[props.column.field]}}
+                    <span class="extra-text">
+                      {{showAsset(props.row.asset)}}
+                    </span>
+                  </span>
+                </span>
+                <span v-else>
+                  {{props.formattedRow[props.column.field]}}
+                </span>
+              </template>
+            </vue-good-table>
+          </div>
+        </div>
       </template>
       <template>
         <transactions v-if="addrTxs && addrTxs.actions" :txs="addrTxs" :loading="loading"></transactions>
@@ -61,6 +96,7 @@ import WalletIcon from '~/assets/images/wallet.svg?inline';
 import CopyIcon from '~/assets/images/copy.svg?inline';
 import ExpandIcon from '~/assets/images/expand.svg?inline';
 import QrcodeVue from 'qrcode.vue'
+import { formatAsset } from '~/utils';
 
 export default {
   components: {
@@ -81,7 +117,19 @@ export default {
       mode: 'balance',
       isVault: false,
       chainAddresses: [],
-      vaultInfo: undefined
+      vaultInfo: undefined,
+      cols: [
+        {
+          label: 'Asset',
+          field: 'asset',
+          formatFn: formatAsset,
+        },
+        {
+          label: 'Balance',
+          field: 'amount',
+          formatFn: this.baseAmountFormat
+        }
+      ]
     }
   },
   computed: {

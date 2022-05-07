@@ -40,11 +40,14 @@ export default {
       });
     },
     numberFormat(number) {
-      return number? this.$options.filters.number(number, '0,0.0000'):'-'
+      return number? this.$options.filters.number(+number, '0,0.0000'):'-'
     },
     showAsset(assetStr) {
       const asset = assetFromString(assetStr);
       return asset.chain + '.' + asset.ticker;
+    },
+    baseAmountFormat(number) {
+      return number? this.$options.filters.number(+number/10**8, '0,0.0000'):'-'
     }
   }
 }
