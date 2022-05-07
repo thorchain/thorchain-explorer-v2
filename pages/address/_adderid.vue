@@ -2,7 +2,7 @@
   <div class="address-container">
     <div class="address-header">
       <WalletIcon class="icon" />
-      <span>Address</span>
+      <span>{{isVault?'Vault':'Asgard'}}</span>
     </div>
     <div class="address-name">
       <span>{{address}}</span>
@@ -30,10 +30,27 @@
         <stat-table v-else-if="mode == 'thorname'" :tableSettings="thornames"></stat-table>
       </div>
       <div style="margin: 1rem 0"></div>
-      <transactions v-if="addrTxs && addrTxs.actions" :txs="addrTxs" :loading="loading"></transactions>
-      <pagination v-if="addrTxs && addrTxs.actions && count" :limit="10" :offset="offset" :count="count" @changePage="getActions"></pagination>
+      <template v-if="isVault">
+        <div class="simple-card">
+          <div class="card-header">
+            Chain Addresses
+          </div>
+          <div class="card-body">
+            <div class="addresses-container">
+              <div class="addresses" v-for="address in chainAddresses" :key="address.chain">
+                <img class="asset-icon" :src="assetImage(baseChainAsset(address.chain))">
+                <span class="clickable mono" @click="gotoAddr(address.address)">{{address.address.slice(0,8)}}...{{address.address.slice(-8)}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+      <template>
+        <transactions v-if="addrTxs && addrTxs.actions" :txs="addrTxs" :loading="loading"></transactions>
+        <pagination v-if="addrTxs && addrTxs.actions && count" :limit="10" :offset="offset" :count="count" @changePage="getActions"></pagination>
+      </template>
     </template>
-    <div class="error-container" v-else>
+    <div class="error-container" v-else-if="!addrTxs">
       Can't Fetch the Address! Please Try again Later.
     </div>
   </div>
@@ -61,12 +78,46 @@ export default {
       copyText: 'Copy',
       showQR: false,
       thornames: undefined,
-      mode: 'balance'
+      mode: 'balance',
+      isVault: false,
+      chainAddresses: [],
+      vaultInfo: undefined
     }
   },
   computed: {
     addressStat: function() {
       let otherBalances = this.otherBalances ?? [];
+      let vaultInfo = [];
+      if (this.isVault) {
+        vaultInfo = [
+          [
+            {
+              name: 'Vault type',
+              value: 'Asgard',
+              filter: true
+            },
+            {
+              name: 'Status',
+              value: this.vaultInfo?.status,
+              filter: true
+            },
+            {
+              name: 'Inbound Txs',
+              value: this.vaultInfo?.inbound_tx_count,
+            },
+            {
+              name: 'Outbound Txs',
+              value: this.vaultInfo?.outbound_tx_count,
+            }
+          ],
+          [
+            {
+              name: 'Block Height',
+              value: this.vaultInfo?.block_height,
+            }
+          ]
+        ]
+      }
       return [
         [
           {
@@ -79,7 +130,8 @@ export default {
             value: this.count
           }
         ],
-        ...otherBalances
+        ...otherBalances,
+        ...vaultInfo
       ]
     }
   },
@@ -124,6 +176,17 @@ export default {
         else 
           console.error(e);
       })
+    },
+    checkIsVault(address) {
+      this.$api.getAsgard().then(({data}) => {
+        for (let vaultIndex in data) {
+          if (data[vaultIndex].addresses.map(a => a.address).includes(address)) {
+            this.isVault = true;
+            this.chainAddresses = data[vaultIndex].addresses;
+            this.vaultInfo = data[vaultIndex];
+          }
+        }
+      }).catch(e => console.error(e));
     }
   },
   async asyncData({params, $api}) {
@@ -163,6 +226,7 @@ export default {
   },
   async mounted() {
     this.rlookThorname(this.address);
+    this.checkIsVault(this.address);
   }
 }
 </script>
@@ -257,6 +321,19 @@ export default {
     &.active {
       color: var(--primary-color);
     }
+  }
+}
+
+.addresses-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 10px;
+  align-items: center;
+  justify-items: center;
+
+  .addresses {
+    display: flex;
+    align-items: center;
   }
 }
 </style>

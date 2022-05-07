@@ -1,4 +1,4 @@
-import { assetFromString } from '@xchainjs/xchain-util';
+import { assetFromString, Chain, chainToString } from '@xchainjs/xchain-util';
 import { AssetImage } from '~/classes/assetImage';
 
 export default {
@@ -8,6 +8,16 @@ export default {
         return AssetImage(assetStr) ?? require('~/assets/images/unknown.png');
       } catch (error) {
         return require('~/assets/images/unknown.png');
+      }
+    },
+    baseChainAsset(chain) {
+      switch (chain) {
+        case Chain.THORChain:
+          return `THOR.RUNE`
+        case Chain.Terra:
+          return `TERRA.LUNA`;
+        default:
+          return `${chain}.${chain}`
       }
     },
     gotoAddr(address) {
