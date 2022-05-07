@@ -69,17 +69,17 @@ export default {
     let synthUtils = []
     for(let asset of synthAssets.supply) {
       let assetName = synthToAsset(asset.denom)
-      let pool = pools.find(p => p.asset = assetName)
+      let pool = pools.find(p => p.asset === assetName)
       if (!pool)
         console.log('Pool hasn\'t been find');
       synthUtils.push({
         asset: assetName,
         synth: asset.denom,
         amount: asset.amount,
-        synth_units: pool.synth_units,
-        synth_supply: pool.synth_supply,
-        asset_depth: pool.balance_asset,
-        units: pool.pool_units,
+        synth_units: pool?.synth_units,
+        synth_supply: pool?.synth_supply,
+        asset_depth: pool?.balance_asset,
+        units: pool?.pool_units,
       })
     }
     return {pools, synthAssets, synthUtils}
@@ -87,6 +87,7 @@ export default {
   mounted() {
     if (this.synthUtils) {
       for (let asset of this.synthUtils) {
+        console.log(asset.asset, asset.synth_units)
         this.rows.push({
           asset: asset.asset,
           synth: asset.synth,
