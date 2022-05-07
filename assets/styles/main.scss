@@ -52,7 +52,7 @@ input {
   cursor: initial;
 }
 
-.card {
+.card, .simple-card {
   position: relative;
   display: flex;
   flex: 1;
@@ -132,6 +132,15 @@ input {
         display: none;
       }
     }
+  }
+}
+
+.simple-card {
+  margin: 0;
+  margin-bottom: .5rem;
+
+  .card-header {
+    font-size: .875rem;
   }
 }
 
@@ -230,7 +239,7 @@ input {
   border-bottom-color: var(--primary-color) !important;
 }
 
-.table-asset-icon {
+.table-asset-icon, .asset-icon {
   width: 1.5rem;
   height: 1.5rem;
   border-radius: 50%;
