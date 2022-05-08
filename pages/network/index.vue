@@ -6,6 +6,47 @@
     <div v-if="inAddresses.length > 0" style="width: 100%">
       <stat-table :tableSettings="gasSettings" header="Gas Fees" :iconSrc="require('@/assets/images/gas-station.png')"></stat-table>
     </div>
+    <div v-show="outboundQueue" style="width: 100%;">
+      <h4 class="header">
+        <img class="stat-image" src="~/assets/images/exit.png">
+        Outbound Queue
+      </h4>
+      <div class="base-container simple-card">
+        <vue-good-table
+          :columns="cols"
+          :rows="outboundQueue"
+          styleClass="vgt-table net-table vgt-compact bordered"
+          :pagination-options="{
+            enabled: true,
+            perPage: 30,
+            perPageDropdownEnabled: false,
+          }"
+        >
+          <template slot="table-row" slot-scope="props">
+            <div v-if="props.column.field == 'coin.asset'" class="cell-content">
+              <img class="table-asset-icon" :src="assetImage(props.row.coin.asset)" alt="asset-icon">
+              <span v-tooltip="props.row.coin.asset">{{props.formattedRow[props.column.field]}}</span>
+            </div>
+            <span v-else-if="props.column.field == 'coin.amount'">
+              <span>{{props.formattedRow[props.column.field]}}
+                <span class="extra-text">
+                  {{showAsset(props.row.coin.asset)}}
+                </span>
+              </span>
+            </span>
+            <span v-else-if="props.column.field == 'to_address'" @click="gotoAddr(props.row.to_address)">
+              <span class="clickable" v-tooltip="props.row.to_address">{{props.formattedRow[props.column.field]}}</span>
+            </span>
+            <span v-else-if="props.column.field == 'in_hash'" @click="gotoTx(props.row.in_hash)">
+              <span class="clickable" v-tooltip="props.row.in_hash">{{props.formattedRow[props.column.field]}}</span>
+            </span>
+            <span v-else>
+              {{props.formattedRow[props.column.field]}}
+            </span>
+          </template>
+        </vue-good-table>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -13,6 +54,7 @@
 import {bondMetrics, networkQuery} from '~/_gql_queries';
 import StatTable from "~/components/StatTable.vue";
 import {blockTime} from '~/utils';
+import { formatAsset, addressFormat } from '~/utils';
 
 export default {
   components: { StatTable },
@@ -22,7 +64,38 @@ export default {
       rune: [],
       lastblock: undefined,
       thorNetwork: undefined,
-      inAddresses: []
+      outboundQueue: undefined,
+      inAddresses: [],
+      cols: [
+        {
+          label: 'Asset',
+          field: 'coin.asset',
+          formatFn: formatAsset,
+        },
+        {
+          label: 'Chain',
+          field: 'chain',
+        },
+        {
+          label: 'Balance',
+          field: 'coin.amount',
+          formatFn: this.baseAmountFormat
+        },
+        {
+          label: 'Balance',
+          field: 'coin.amount',
+          formatFn: this.baseAmountFormat
+        },
+        {
+          label: 'Gas Rate',
+          field: 'gas_rate',
+        },
+        {
+          label: 'Inbound TxID',
+          field: 'in_hash',
+          formatFn: addressFormat,
+        }
+      ]
     };
   },
   apollo: {
@@ -45,6 +118,12 @@ export default {
 
     this.$api.getInboundAddresses()
     .then(res => this.inAddresses = res.data)
+    .catch(error => {
+      console.error(error)
+    })
+
+    this.$api.getOutbound()
+    .then(res => this.outboundQueue = res.data)
     .catch(error => {
       console.error(error)
     })

@@ -23,6 +23,9 @@ export default {
     gotoAddr(address) {
       this.$router.push({ path: `/address/${address}` })
     },
+    gotoTx(hash) {
+      this.$router.push({ path: `/tx/${hash}` })
+    },
     gotoNode(signer) {
       this.$router.push({path: `/node/${signer}`});
     },

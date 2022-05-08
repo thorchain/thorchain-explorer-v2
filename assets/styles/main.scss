@@ -250,6 +250,17 @@ input {
   }
 }
 
+.stat-image {
+  margin-right: 10px;
+  height: 1.5rem;
+}
+
+.header {
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+}
+
 .cell-content {
   display: flex;
   align-items: center;

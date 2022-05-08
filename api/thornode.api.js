@@ -64,3 +64,7 @@ export function getAsgard() {
 export function getAddresses() {
   return $axiosInstace.get(process.env.THORNODE_URL + `cosmos/auth/v1beta1/accounts`);
 }
+
+export function getOutbound() {
+  return $axiosInstace.get(process.env.THORNODE_URL + `thorchain/queue/outbound`);
+}
