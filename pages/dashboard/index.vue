@@ -243,13 +243,13 @@ export default {
         [
           {
             name: 'Total Standby Bonded',
-            value: this.$options.filters.currency(((this.network.bondMetrics?.standby?.totalBond ?? '-') / 10**8) * 1/this.rune.runePrice) ?? 0,
-            filter: true
+            value: ((+this.network.bondMetrics?.standby?.totalBond) / 10**8),
+            usdValue: true
           },
           {
             name: 'Total Active Bonded',
-            value: this.$options.filters.currency(((this.network.bondMetrics?.active?.totalBond ?? '-') / 10**8) * 1/this.rune.runePrice) ?? 0,
-            filter: true
+            value: ((+this.network.bondMetrics?.active?.totalBond) / 10**8),
+            usdValue: true
           }
         ],
         [
