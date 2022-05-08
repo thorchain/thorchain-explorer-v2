@@ -100,14 +100,16 @@ export default {
     return {pools, synthAssets, synthUtils}
   },
   mounted() {
-    if (this.synthUtils) {
+    if (this.synthUtils && this.synthUtils.length > 0) {
       for (let asset of this.synthUtils) {
+        if(!asset)
+          continue
         this.rows.push({
-          asset: asset.asset,
-          synth: asset.synth,
-          liability: +asset.synth_units/+asset.units,
-          utilisation: +asset.synth_supply/+asset.asset_depth,
-          supply: +asset.supply/10**8
+          asset: asset?.asset,
+          synth: asset?.synth,
+          liability: +asset?.synth_units/+asset?.units,
+          utilisation: +asset?.synth_supply/+asset?.asset_depth,
+          supply: +asset?.supply/10**8
         })
       }
     }
