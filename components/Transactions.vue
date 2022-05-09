@@ -10,7 +10,7 @@
           </div>
           <div class="tx-content">
             <div class="tx-in">
-              <div class="bubble">In</div>
+              <div class="bubble-container">In</div>
               <a v-if="tx.in[0].txID" class="tx" @click="gotoTx(tx.in[0].txID)">{{(tx.in[0].txID.slice(0,4)+'...'+tx.in[0].txID.slice(end=-4))}}</a>
               <!-- in coin -->
               <div style="margin: .5rem 0; display: flex; align-items: center;" v-if="tx.in[0].coins[0]">
@@ -23,7 +23,7 @@
             <!-- check pending status -->
             <div v-if="tx.out.length > 0" class="tx-out">
               <right-arrow class="icon-arrow"></right-arrow>
-              <div class="bubble">Out</div>
+              <div class="bubble-container blue">Out</div>
               <a v-if="tx.out[0].txID" @click="gotoTx(tx.out[0].txID)" class="tx">{{(tx.out[0].txID.slice(0,4)+'...'+tx.out[0].txID.slice(end=-4))}}</a>
               <!-- out coin -->
               <div style="margin: .5rem 0; display: flex; align-items: center;" v-if="tx.out[0].coins[0]">
@@ -149,14 +149,6 @@ export default {
         flex: 1 1 50%;
       }
 
-      .bubble {
-        line-height: 17px;
-        padding: 0 .5rem;
-        border-radius: .2rem;
-        display: inline-block;
-        background-color: #2196F3;
-      }
-
       .tx {
         cursor: pointer;
         color: var(--primary-color);
@@ -169,10 +161,6 @@ export default {
         border-left: 1px solid var(--border-color);
         padding-left: 2rem;
         min-height: 4rem;
-
-        .bubble {
-          background-color: #4CAF50;
-        }
       }
 
       .address {

@@ -318,22 +318,28 @@ input {
   align-items: center;
   color: var(--bubble-font-color);
   border-radius: .2rem;
-  background-color: #33ff99;
+  background-color: #81C784;
+  color: #1B5E20;
 
   &.blue {
-    background-color: #00ccff;
+    background-color: #29B6F6;
+    color: #01579B;
   }
 
   &.yellow {
-    background-color: #f3ba2f;
+    background-color: #FFEE58;
+    color: #F57F17;
   }
 
   &.red {
-    background-color: #ff4954;
+    background-color: #EF5350;
+    color: #B71C1C;
   }
 
   &.white {
+    border: 1px solid #eee;
     background-color: #eee;
+    color: #000;
   }
 
   &.black {
