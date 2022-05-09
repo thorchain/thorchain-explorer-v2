@@ -2,7 +2,7 @@
   <div class="address-container">
     <div class="address-header">
       <WalletIcon class="icon" />
-      <span>{{isVault?'Vault':'Address'}}</span>
+      <span>{{isVault?vaultType:'Address'}}</span>
     </div>
     <div class="address-name">
       <span>{{address}}</span>
@@ -118,6 +118,7 @@ export default {
       isVault: false,
       chainAddresses: [],
       vaultInfo: undefined,
+      vaultType: 'Asgard',
       cols: [
         {
           label: 'Asset',
@@ -228,8 +229,19 @@ export default {
     checkIsVault(address) {
       this.$api.getAsgard().then(({data}) => {
         for (let vaultIndex in data) {
-          if (data[vaultIndex].addresses.map(a => a.address).includes(address)) {
+          if (data[vaultIndex].addresses.map(a => a.address.toUpperCase()).includes(address.toUpperCase())) {
             this.isVault = true;
+            this.vaultType = 'Asgard';
+            this.chainAddresses = data[vaultIndex].addresses;
+            this.vaultInfo = data[vaultIndex];
+          }
+        }
+      }).catch(e => console.error(e));
+      this.$api.getYggdrasil().then(({data}) => {
+        for (let vaultIndex in data) {
+          if (data[vaultIndex].addresses.map(a => a.address.toUpperCase()).includes(address.toUpperCase())) {
+            this.isVault = true;
+            this.vaultType = 'Yggdrasil';
             this.chainAddresses = data[vaultIndex].addresses;
             this.vaultInfo = data[vaultIndex];
           }
