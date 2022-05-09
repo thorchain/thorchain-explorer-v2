@@ -142,7 +142,7 @@ export default {
           [
             {
               name: 'Vault type',
-              value: 'Asgard',
+              value: this.vaultType,
               filter: true
             },
             {
