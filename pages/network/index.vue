@@ -131,7 +131,6 @@ export default {
       {
         ...t, 
         type: t.memo?.split(":")[0] ?? '-',
-        maxGas: t.max_gas[0]?.
       }
     )))
     .catch(error => {
