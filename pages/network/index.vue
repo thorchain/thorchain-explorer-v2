@@ -77,6 +77,10 @@ export default {
           field: 'chain',
         },
         {
+          label: 'Type',
+          field: 'type',
+        },
+        {
           label: 'Balance',
           field: 'coin.amount',
           formatFn: this.baseAmountFormat
@@ -123,7 +127,13 @@ export default {
     })
 
     this.$api.getOutbound()
-    .then(res => this.outboundQueue = res.data)
+    .then(res => this.outboundQueue = res.data.map(t => (
+      {
+        ...t, 
+        type: t.memo?.split(":")[0] ?? '-',
+        maxGas: t.max_gas[0]?.
+      }
+    )))
     .catch(error => {
       console.error(error)
     })
