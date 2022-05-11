@@ -53,8 +53,7 @@
 <script>
 import {bondMetrics, networkQuery} from '~/_gql_queries';
 import StatTable from "~/components/StatTable.vue";
-import {blockTime} from '~/utils';
-import { formatAsset, addressFormat } from '~/utils';
+import { formatAsset, addressFormat, blockTime } from '~/utils';
 
 export default {
   components: { StatTable },
@@ -190,6 +189,7 @@ export default {
           {
             name: "Pool Activation Countdown",
             value: this.network.poolActivationCountdown,
+            extraText: blockTime(+this.network.poolActivationCountdown)
           },
           {
             name: "Pool Share Factor",
