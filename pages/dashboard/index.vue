@@ -7,7 +7,7 @@
             <img class="stat-image" src="~/assets/images/blockchain.png" alt="blockchain">
             <div class="item-detail">
               <div class="header">Block Height</div>
-              <div v-if="lastHeight" class="value">{{lastHeight | number('0,0')}}</div>
+              <div v-if="thorHeight" class="value">{{thorHeight | number('0,0')}}</div>
               <span v-else>-</span>
             </div>
           </div>
@@ -178,7 +178,7 @@ import BounceLoader from "vue-spinner/src/BounceLoader.vue";
 import moment from 'moment';
 
 export default {
-  components: { 
+  components: {
     uChart: () => {
       if(process.client) {
         return import('~/components/page_components/uChart.vue')
@@ -205,7 +205,8 @@ export default {
       blocks: undefined,
       txs: undefined,
       totalTxs: undefined,
-      totalAddresses: undefined
+      totalAddresses: undefined,
+      thorHeight: undefined
     };
   },
   activated() {
@@ -304,16 +305,6 @@ export default {
       return [
         [
           {
-            name: 'Daily Active Users',
-            value: this.stats.dailyActiveUsers ?? 0
-          },
-          {
-            name: 'Monthly Active Users',
-            value: this.stats.monthlyActiveUsers ?? 0
-          },
-        ],
-        [
-          {
             name: 'RUNE Price USD',
             value: this.$options.filters.currency(this.stats.runePriceUSD),
             filter: true
@@ -340,9 +331,15 @@ export default {
         ],
         [
           {
-            name: 'Unique Swapper Count',
-            value: this.stats.uniqueSwapperCount ?? 0
+            name: 'Synth Burn Count',
+            value: this.stats.synthBurnCount ?? 0
           },
+          {
+            name: 'Synth Mint Count',
+            value: this.stats.synthMintCount ?? 0
+          }
+        ],
+        [
           {
             name: 'Swap To Asset Count',
             value: this.stats.toAssetCount ?? 0
@@ -607,7 +604,10 @@ export default {
     })
 
     this.$api.getLastBlockHeight()
-    .then(res => this.lastblock = res.data)
+    .then(res => {
+      this.lastblock = res.data;
+      this.thorHeight = res.data.find(e => e.chain === 'BTC').thorchain
+    })
     .catch(error => {
       console.error(error)
     })
@@ -654,7 +654,7 @@ export default {
     .catch(error => {
       console.error(error)
     })
-    
+
     this.$api.getTxs()
     .then(res => {
       this.txs = res?.data?.actions;
@@ -755,7 +755,7 @@ export default {
     border: 0;
     border-top: 1px solid var(--border-color);
   }
-  
+
   .rune-symbol {
     color: var(--font-color);
     margin: 0 .6rem;
@@ -805,7 +805,7 @@ export default {
   flex-direction: column;
   width: 100%;
   margin: 1rem 0;
-  
+
   .card {
     margin: .5rem 0;
   }
@@ -815,7 +815,7 @@ export default {
 
     .card {
       width: 50%;
-      
+
       &:first-of-type {
         margin-right: .5rem;
       }
