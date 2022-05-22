@@ -1,14 +1,39 @@
 <template>
   <div class="network-index-container">
     <div style="width: 100%">
-      <stat-table :tableSettings="networkSettings" header="Network Overview" :iconSrc="require('@/assets/images/network-icon.png')"></stat-table>
+      <stat-table
+        :tableSettings="networkSettings"
+        header="Network Overview"
+        :iconSrc="require('@/assets/images/network-icon.png')"
+      ></stat-table>
+    </div>
+    <div v-if="activeNodesQuery && blockchainVersion" style="width: 100%">
+      <div class="card" style="margin: 0.5rem 0">
+        <div class="card-header">THORChain version upgrade progress</div>
+        <div class="card-body">
+          <div class="progress-bar-container">
+            <div
+              :class="[{ complete: versionProgress == 100 }, 'progress-bar']"
+              :style="{ width: versionProgress + '%' }"
+            ></div>
+          </div>
+          <h3 style="text-align: center">
+            <span class="sec-color">{{ uptodateNodes.length }}</span> of <span class="sec-color">{{ activeNodes.length }}</span> nodes
+            upgraded to <span class="sec-color">{{ blockchainVersion.current }}</span>
+          </h3>
+        </div>
+      </div>
     </div>
     <div v-if="inAddresses.length > 0" style="width: 100%">
-      <stat-table :tableSettings="gasSettings" header="Gas Fees" :iconSrc="require('@/assets/images/gas-station.png')"></stat-table>
+      <stat-table
+        :tableSettings="gasSettings"
+        header="Gas Fees"
+        :iconSrc="require('@/assets/images/gas-station.png')"
+      ></stat-table>
     </div>
-    <div v-show="outboundQueue" style="width: 100%;">
+    <div v-show="outboundQueue" style="width: 100%">
       <h4 class="header">
-        <img class="stat-image" src="~/assets/images/exit.png">
+        <img class="stat-image" src="~/assets/images/exit.png" />
         Outbound Queue
       </h4>
       <div class="base-container simple-card">
@@ -24,24 +49,41 @@
         >
           <template slot="table-row" slot-scope="props">
             <div v-if="props.column.field == 'coin.asset'" class="cell-content">
-              <img class="table-asset-icon" :src="assetImage(props.row.coin.asset)" alt="asset-icon">
-              <span v-tooltip="props.row.coin.asset">{{props.formattedRow[props.column.field]}}</span>
+              <img
+                class="table-asset-icon"
+                :src="assetImage(props.row.coin.asset)"
+                alt="asset-icon"
+              />
+              <span v-tooltip="props.row.coin.asset">{{
+                props.formattedRow[props.column.field]
+              }}</span>
             </div>
             <span v-else-if="props.column.field == 'coin.amount'">
-              <span>{{props.formattedRow[props.column.field]}}
+              <span
+                >{{ props.formattedRow[props.column.field] }}
                 <span class="extra-text">
-                  {{showAsset(props.row.coin.asset)}}
+                  {{ showAsset(props.row.coin.asset) }}
                 </span>
               </span>
             </span>
-            <span v-else-if="props.column.field == 'to_address'" @click="gotoAddr(props.row.to_address)">
-              <span class="clickable" v-tooltip="props.row.to_address">{{props.formattedRow[props.column.field]}}</span>
+            <span
+              v-else-if="props.column.field == 'to_address'"
+              @click="gotoAddr(props.row.to_address)"
+            >
+              <span class="clickable" v-tooltip="props.row.to_address">{{
+                props.formattedRow[props.column.field]
+              }}</span>
             </span>
-            <span v-else-if="props.column.field == 'in_hash'" @click="gotoTx(props.row.in_hash)">
-              <span class="clickable" v-tooltip="props.row.in_hash">{{props.formattedRow[props.column.field]}}</span>
+            <span
+              v-else-if="props.column.field == 'in_hash'"
+              @click="gotoTx(props.row.in_hash)"
+            >
+              <span class="clickable" v-tooltip="props.row.in_hash">{{
+                props.formattedRow[props.column.field]
+              }}</span>
             </span>
             <span v-else>
-              {{props.formattedRow[props.column.field]}}
+              {{ props.formattedRow[props.column.field] }}
             </span>
           </template>
         </vue-good-table>
@@ -51,9 +93,9 @@
 </template>
 
 <script>
-import {bondMetrics, networkQuery} from '~/_gql_queries';
+import { activeNodesQuery, bondMetrics, networkQuery } from "~/_gql_queries";
 import StatTable from "~/components/StatTable.vue";
-import { formatAsset, addressFormat, blockTime } from '~/utils';
+import { formatAsset, addressFormat, blockTime } from "~/utils";
 
 export default {
   components: { StatTable },
@@ -64,101 +106,124 @@ export default {
       lastblock: undefined,
       thorNetwork: undefined,
       outboundQueue: undefined,
+      blockchainVersion: undefined,
+      activeNodes: undefined,
+      uptodateNodes: undefined,
       inAddresses: [],
       cols: [
         {
-          label: 'Asset',
-          field: 'coin.asset',
+          label: "Asset",
+          field: "coin.asset",
           formatFn: formatAsset,
         },
         {
-          label: 'Chain',
-          field: 'chain',
+          label: "Chain",
+          field: "chain",
         },
         {
-          label: 'Type',
-          field: 'type',
+          label: "Type",
+          field: "type",
         },
         {
-          label: 'Balance',
-          field: 'coin.amount',
-          formatFn: this.baseAmountFormat
+          label: "Balance",
+          field: "coin.amount",
+          formatFn: this.baseAmountFormat,
         },
         {
-          label: 'Balance',
-          field: 'coin.amount',
-          formatFn: this.baseAmountFormat
+          label: "Balance",
+          field: "coin.amount",
+          formatFn: this.baseAmountFormat,
         },
         {
-          label: 'Gas Rate',
-          field: 'gas_rate',
+          label: "Gas Rate",
+          field: "gas_rate",
         },
         {
-          label: 'Inbound TxID',
-          field: 'in_hash',
+          label: "Inbound TxID",
+          field: "in_hash",
           formatFn: addressFormat,
-        }
-      ]
+        },
+      ],
     };
   },
   apollo: {
     $prefetch: false,
     network: networkQuery,
     bondMetrics: bondMetrics,
+    activeNodesQuery: {
+      query: activeNodesQuery,
+      update(data) {
+        return data;
+      },
+    },
   },
   mounted() {
-    this.$api.getLastBlockHeight()
-    .then(res => this.lastblock = res.data)
-    .catch(error => {
-      console.error(error)
-    })
+    this.$api
+      .getLastBlockHeight()
+      .then((res) => (this.lastblock = res.data))
+      .catch((error) => {
+        console.error(error);
+      });
 
-    this.$api.getThorNetwork()
-    .then(res => this.thorNetwork = res.data)
-    .catch(error => {
-      console.error(error)
-    })
+    this.$api
+      .getThorNetwork()
+      .then((res) => (this.thorNetwork = res.data))
+      .catch((error) => {
+        console.error(error);
+      });
 
-    this.$api.getInboundAddresses()
-    .then(res => this.inAddresses = res.data)
-    .catch(error => {
-      console.error(error)
-    })
+    this.$api
+      .getInboundAddresses()
+      .then((res) => (this.inAddresses = res.data))
+      .catch((error) => {
+        console.error(error);
+      });
 
-    this.$api.getOutbound()
-    .then(res => this.outboundQueue = res.data.map(t => (
-      {
-        ...t, 
-        type: t.memo?.split(":")[0] ?? '-',
-      }
-    )))
-    .catch(error => {
-      console.error(error)
-    })
+    this.$api
+      .getOutbound()
+      .then(
+        (res) =>
+          (this.outboundQueue = res.data.map((t) => ({
+            ...t,
+            type: t.memo?.split(":")[0] ?? "-",
+          })))
+      )
+      .catch((error) => {
+        console.error(error);
+      });
+
+    this.$api
+      .getBlockChainVersion()
+      .then((res) => (this.blockchainVersion = res.data))
+      .catch((error) => {
+        console.error(error);
+      });
   },
   methods: {
     nextChurnTime() {
       if (this.lastblock && this.network) {
-        console.log(this.network)
-        return blockTime(this.network.nextChurnHeight - this.lastblock[0]['thorchain'])
+        console.log(this.network);
+        return blockTime(
+          this.network.nextChurnHeight - this.lastblock[0]["thorchain"]
+        );
       }
     },
     formatGas(gas_rate, chain) {
       switch (chain) {
-        case 'BCH':
-        case 'BTC':
-        case 'LTC':
-        case 'DOGE':
-          return (250 * (+gas_rate)) / (10 ** 8);
-      
-        case 'ETH':
-        case 'ERC20':
-          const limit = chain === 'ERC20'? 70000:35000;
-          return (limit * (+gas_rate * 10 ** 9)) / (10 ** 18);
+        case "BCH":
+        case "BTC":
+        case "LTC":
+        case "DOGE":
+          return (250 * +gas_rate) / 10 ** 8;
 
-        case 'BNB':
-        case 'TERRA':
-          return ((+gas_rate) * 1) / (10 ** 8);
+        case "ETH":
+        case "ERC20":
+          const limit = chain === "ERC20" ? 70000 : 35000;
+          return (limit * (+gas_rate * 10 ** 9)) / 10 ** 18;
+
+        case "BNB":
+        case "TERRA":
+          return (+gas_rate * 1) / 10 ** 8;
 
         default:
           return gas_rate;
@@ -166,6 +231,19 @@ export default {
     },
   },
   computed: {
+    versionProgress: function () {
+      if (!!this.activeNodesQuery && this.blockchainVersion) {
+        this.activeNodes = this.activeNodesQuery.nodes.filter(
+          (n) => n.status === "Active"
+        );
+        this.uptodateNodes = this.activeNodes.filter(
+          (n) => n.version == this.blockchainVersion.current
+        );
+        return parseInt(
+          parseFloat(this.uptodateNodes.length / this.activeNodes.length) * 100
+        );
+      }
+    },
     networkSettings: function () {
       return [
         [
@@ -184,12 +262,12 @@ export default {
           {
             name: "Next Churn Height",
             value: this.network.nextChurnHeight,
-            extraText: this.nextChurnTime()
+            extraText: this.nextChurnTime(),
           },
           {
             name: "Pool Activation Countdown",
             value: this.network.poolActivationCountdown,
-            extraText: blockTime(+this.network.poolActivationCountdown)
+            extraText: blockTime(+this.network.poolActivationCountdown),
           },
           {
             name: "Pool Share Factor",
@@ -201,84 +279,95 @@ export default {
           {
             name: "Total Reserve",
             value: (this.network.totalReserve ?? 0) / 10 ** 8,
-            usdValue: true
+            usdValue: true,
           },
           {
             name: "Total Pooled Rune",
             value: (this.network.totalPooledRune ?? 0) / 10 ** 8,
-            usdValue: true
+            usdValue: true,
           },
         ],
         [
           {
-            name: 'Block Reward / Day',
-            value: ((this.network.blockRewards?.blockReward/10**8) ?? 0) * (5256000 / 365),
-            usdValue: true
+            name: "Block Reward / Day",
+            value:
+              (this.network.blockRewards?.blockReward / 10 ** 8 ?? 0) *
+              (5256000 / 365),
+            usdValue: true,
           },
           {
-            name: 'Block Bond Reward / Day',
-            value: ((this.network.blockRewards?.bondReward/10**8) ?? 0) * (5256000 / 365),
-            usdValue: true
+            name: "Block Bond Reward / Day",
+            value:
+              (this.network.blockRewards?.bondReward / 10 ** 8 ?? 0) *
+              (5256000 / 365),
+            usdValue: true,
           },
           {
-            name: 'Block Pool Reward / Day',
-            value: ((this.network.blockRewards?.poolReward/10**8) ?? 0) * (5256000 / 365),
-            usdValue: true
+            name: "Block Pool Reward / Day",
+            value:
+              (this.network.blockRewards?.poolReward / 10 ** 8 ?? 0) *
+              (5256000 / 365),
+            usdValue: true,
           },
           {
-            name: 'Block Reward / Node / Month',
-            value: ((this.network.blockRewards?.bondReward/10**8)/(this.network.activeNodeCount) ?? 0) * (5256000 / 12),
-            usdValue: true
-          }
+            name: "Block Reward / Node / Month",
+            value:
+              (this.network.blockRewards?.bondReward /
+                10 ** 8 /
+                this.network.activeNodeCount ?? 0) *
+              (5256000 / 12),
+            usdValue: true,
+          },
         ],
         [
           {
-            name: 'Total Bond Units',
-            value: this.thorNetwork?.total_bond_units
+            name: "Total Bond Units",
+            value: this.thorNetwork?.total_bond_units,
           },
           {
-            name: 'Total Bond Reward',
-            value: this.thorNetwork?.bond_reward_rune / 10**8,
-            usdValue: true
-          }
+            name: "Total Bond Reward",
+            value: this.thorNetwork?.bond_reward_rune / 10 ** 8,
+            usdValue: true,
+          },
         ],
         [
           {
-            name: 'Total Burned BEP2 RUNE',
-            value: this.thorNetwork?.burned_bep_2_rune / 10**8,
-            usdValue: true
+            name: "Total Burned BEP2 RUNE",
+            value: this.thorNetwork?.burned_bep_2_rune / 10 ** 8,
+            usdValue: true,
           },
           {
-            name: 'Total Burned ERC20 RUNE',
-            value: this.thorNetwork?.burned_erc_20_rune / 10**8,
-            usdValue: true
-          }
-        ]
+            name: "Total Burned ERC20 RUNE",
+            value: this.thorNetwork?.burned_erc_20_rune / 10 ** 8,
+            usdValue: true,
+          },
+        ],
       ];
     },
-    gasSettings: function() {
-      const getChain = c => this.inAddresses?.find(e => e.chain === c)?.gas_rate;
-      const chains = this.inAddresses.map(e => {
+    gasSettings: function () {
+      const getChain = (c) =>
+        this.inAddresses?.find((e) => e.chain === c)?.gas_rate;
+      const chains = this.inAddresses.map((e) => {
         return {
           name: `${e.chain} gas fee`,
           value: this.formatGas(getChain(e.chain), e.chain),
           image: this.assetImage(`${e.chain}.${e.chain}`),
           filter: true,
-        }
-      })
+        };
+      });
       chains.push({
-        name: 'ERC20 gas fee',
-        value: this.formatGas(getChain('ETH'), 'ERC20'),
-        image: this.assetImage('ETH.ETH'),
-        filter: true
-      })
+        name: "ERC20 gas fee",
+        value: this.formatGas(getChain("ETH"), "ERC20"),
+        image: this.assetImage("ETH.ETH"),
+        filter: true,
+      });
       return [
-        chains.slice(0,2),
-        chains.slice(2,4),
-        chains.slice(4,6),
-        chains.slice(6)
-      ]
-    }
+        chains.slice(0, 2),
+        chains.slice(2, 4),
+        chains.slice(4, 6),
+        chains.slice(6),
+      ];
+    },
   },
 };
 </script>
@@ -294,7 +383,26 @@ export default {
   width: 100%;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  grid-gap: .5rem;
-  gap: .5rem;
+  grid-gap: 0.5rem;
+  gap: 0.5rem;
+}
+
+.progress-bar-container {
+  display: flex;
+  align-items: center;
+  border-radius: 2rem;
+  height: 1.2rem;
+  background-color: var(--active-bg-color);
+
+  .progress-bar {
+    border-radius: inherit;
+    margin: 0.2rem;
+    height: 0.8rem;
+    background-color: #29b6f6;
+
+    &.complete {
+      background-color: #81c784;
+    }
+  }
 }
 </style>
