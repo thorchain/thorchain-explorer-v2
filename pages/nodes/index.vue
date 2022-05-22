@@ -16,8 +16,8 @@
       <div v-if="mode == 'active'" class="base-container">
         <h2>Active Nodes</h2>
         <vue-good-table
-          v-if="cols && activeNodes.length > 0"
-          :columns="cols"
+          v-if="activeCols && activeNodes.length > 0"
+          :columns="activeCols"
           :rows="activeNodes"
           @on-row-click="gotoNode"
           styleClass="vgt-table net-table vgt-compact"
@@ -111,7 +111,7 @@
 import {bondMetrics, nodesQuery} from "~/_gql_queries";
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue';
 import { mapGetters } from 'vuex';
-import { addressFormat, curFormat, fillNodeData, numberFormat } from '~/utils';
+import { addressFormat, fillNodeData } from '~/utils';
 import { AssetCurrencySymbol } from '@xchainjs/xchain-util';
 import _ from 'lodash';
 
@@ -179,7 +179,8 @@ export default {
         {
           label: 'Version',
           field: 'version',
-          type: 'number'
+          type: 'text',
+          sortFn: this.versionSort
         },
         {
           label: 'Slash Point',
@@ -202,7 +203,8 @@ export default {
           tdClass: 'mono'
         }
       ],
-      minBond: 30000000000000
+      minBond: 30000000000000,
+      lastBlockHeight: undefined
     }
   },
   mounted() {
@@ -211,11 +213,72 @@ export default {
     }).catch(e => {
       console.error(e);
     })
+
+    this.$api.getLastBlockHeight().then(res => {
+      this.lastBlockHeight = res.data;
+    }).catch(e => {
+      console.error(e);
+    })
   },
   computed: {
     ...mapGetters({
       runePrice: 'getRunePrice'
     }),
+    activeCols: function() {
+      return [
+        ...this.cols,
+        // Commenting these because it's not yet implemented.
+        // {
+        //   label: 'BTC',
+        //   field: 'BTC',
+        //   type: 'number',
+        //   formatFn: this.numberFormat,
+        //   tdClass: 'mono'
+        // },
+        // {
+        //   label: 'BCH',
+        //   field: 'BCH',
+        //   type: 'number',
+        //   formatFn: this.numberFormat,
+        //   tdClass: 'mono'
+        // },
+        // {
+        //   label: 'LTC',
+        //   field: 'LTC',
+        //   type: 'number',
+        //   formatFn: this.numberFormat,
+        //   tdClass: 'mono'
+        // },
+        // {
+        //   label: 'ETH',
+        //   field: 'ETH',
+        //   type: 'number',
+        //   formatFn: this.numberFormat,
+        //   tdClass: 'mono'
+        // },
+        // {
+        //   label: 'BNB',
+        //   field: 'BNB',
+        //   type: 'number',
+        //   formatFn: this.numberFormat,
+        //   tdClass: 'mono'
+        // },
+        // {
+        //   label: 'DOGE',
+        //   field: 'DOGE',
+        //   type: 'number',
+        //   formatFn: this.numberFormat,
+        //   tdClass: 'mono'
+        // },
+        // {
+        //   label: 'TERRA',
+        //   field: 'TERRA',
+        //   type: 'number',
+        //   formatFn: this.numberFormat,
+        //   tdClass: 'mono'
+        // }
+      ]
+    },
     topActiveBonds: function() {
       return [
         [
@@ -297,7 +360,13 @@ export default {
         );
         let filteredNodes = [];
         actNodes.forEach((el) => {
-          fillNodeData(filteredNodes, el)
+          fillNodeData(filteredNodes, el);
+          if (this.lastBlockHeight) {
+            this.lastBlockHeight.forEach(chain => {
+              filteredNodes[chain.chain] = 
+                chain
+            })
+          }
         });
         return filteredNodes;
       } else {
