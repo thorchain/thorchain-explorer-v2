@@ -13,6 +13,10 @@ export function getLastBlockHeight() {
   return $axiosInstace.get(process.env.THORNODE_URL + 'thorchain/lastblock');
 }
 
+export function getBlockChainVersion() {
+  return $axiosInstace.get(process.env.THORNODE_URL + 'thorchain/version');
+}
+
 export function getRPCLastBlockHeight() {
   return $axiosInstace.get(process.env.THORNODE_URL + 'blocks/latest');
 }

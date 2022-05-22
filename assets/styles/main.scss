@@ -265,6 +265,10 @@ input {
   align-items: center;
 }
 
+.sec-color {
+  color: var(--sec-font-color);
+}
+
 //nav headers
 .nav-headers {
   display: flex;

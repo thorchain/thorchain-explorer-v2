@@ -32,7 +32,8 @@ import {
   getYggdrasil,
   getAsgard,
   getAddresses,
-  getOutbound
+  getOutbound,
+  getBlockChainVersion
 } from "./thornode.api";
 import {
   getTendermintLatestBlocks
@@ -130,7 +131,8 @@ export default function ({ $axios }, inject) {
     getTendermintLatestBlocks,
     getAddresses,
     getRevThorname,
-    getOutbound
+    getOutbound,
+    getBlockChainVersion
   };
 
   inject("api", api);
