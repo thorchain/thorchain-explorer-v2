@@ -94,6 +94,7 @@ Vue.mixin(global)
     background-color: var(--sidebar);
     padding: 1rem;
     opacity: .95; /* Black w/opacity/see-through */
+    min-height: 800px;
 
     @include lg {
       display: block;
