@@ -1,5 +1,6 @@
 import { assetFromString, Chain, chainToString } from '@xchainjs/xchain-util';
 import { AssetImage } from '~/classes/assetImage';
+import compareVersions from 'compare-versions';
 
 export default {
   methods: {
@@ -54,6 +55,9 @@ export default {
     },
     formatCurrency(number) {
       return this.$options.filters.currency(number);
+    },
+    versionSort(x, y, col, rowX, rowY) {
+      return (compareVersions(x, y))
     }
   }
 }
