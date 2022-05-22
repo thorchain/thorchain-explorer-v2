@@ -199,6 +199,7 @@ export default {
           new Date(this.midgardTx?.date / 10 ** 6).toLocaleString() ||
           this.nativeTx[0]?.date,
       };
+      console.log(ret.date)
       Object.assign(ret, this.midgardTx ? this.midgardTx : this.nativeTx[0]);
       ret.txID = this.midgardTx?.in[0]?.txID || this.nativeTx[0]?.txID;
       ret.isMidgard = !!this.midgardTx;
@@ -206,7 +207,6 @@ export default {
       ret.type = this.midgardTx?.type || this.nativeTx[0]?.type;
       ret.isTx =
         !!this.midgardTx || (this.nativeTx && this.nativeTx.length > 0);
-      console.log(ret);
       return ret;
     },
     extraDetail: function () {
