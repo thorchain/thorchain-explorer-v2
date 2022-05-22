@@ -51,7 +51,7 @@ export function parseCosmosTx(ntx) {
           memo: el['memo'],
           gas: +ntx?.tx_response?.gas_used,
           txID: ntx?.tx_response?.txhash,
-          date: moment(ntx?.tx_response.timestamp).format('MM/DD/YYYY hh:mm'),
+          date: moment(ntx?.tx_response.timestamp).format('MM/DD/YYYY, hh:mm:ss A'),
           height: +ntx?.tx_response.height,
         })
       default:

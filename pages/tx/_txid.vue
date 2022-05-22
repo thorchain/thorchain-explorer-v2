@@ -179,9 +179,10 @@ export default {
       tx = await $api.getTx(txid).catch((e) => {
         console.error(e);
       });
+      if (tx.data && tx.data?.actions && tx.data?.actions.length > 0) {
+        tx.data.actions[0].date = (new Date(tx?.data?.actions[0]?.date / 10 ** 6)).toLocaleString();
+      }
     }
-    console.log(tx?.data?.actions[0]);
-    console.log(nativeTx);
     return { txid, midgardTx: tx?.data?.actions[0], nativeTx, errorMsg };
   },
   components: {
@@ -196,8 +197,8 @@ export default {
     tx: function () {
       let ret = {
         date:
-          new Date(this.midgardTx?.date / 10 ** 6).toLocaleString() ||
-          this.nativeTx[0]?.date,
+          this.midgardTx?.date ||
+          this.nativeTx[0]?.date || 'NA',
       };
       console.log(ret.date)
       Object.assign(ret, this.midgardTx ? this.midgardTx : this.nativeTx[0]);
