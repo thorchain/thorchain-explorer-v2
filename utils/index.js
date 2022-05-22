@@ -40,10 +40,22 @@ export function parseCosmosTx(ntx) {
           height: +ntx?.tx_response.height
         })
         break;
-    
+      
+      // Deposit messages
+      case "/types.MsgDeposit":
+        ret.push({
+          type: 'Deposit/Withdraw',
+          from: el['signer'],
+          memo: el['memo'],
+          gas: +ntx?.tx_response?.gas_used,
+          txID: ntx?.tx_response?.txhash,
+          date: ntx.tx_response.timestamp,
+          height: +ntx?.tx_response.height,
+        })
       default:
         break;
     }
+    
   })
 
   return ret;  
