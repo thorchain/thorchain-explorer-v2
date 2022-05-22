@@ -1,4 +1,5 @@
 import { AssetCurrencySymbol, assetFromString, AssetRuneNative, assetToString, isSynthAsset } from "@xchainjs/xchain-util";
+import moment from "moment";
 
 // Formats time in seconds into `dd:hh:mm hrs`
 export function formatTime(seconds) {
@@ -26,6 +27,7 @@ export function parseCosmosTx(ntx) {
   console.log(ntx)
   let ret = [];
   ntx.tx?.body.messages.forEach(el => {
+    console.log()
     // Send messages
     switch (el['@type']) {
       case "/types.MsgSend":
@@ -36,7 +38,7 @@ export function parseCosmosTx(ntx) {
           from: el['from_address'],
           gas: +ntx?.tx_response?.gas_used,
           txID: ntx?.tx_response?.txhash,
-          date: ntx.tx_response.timestamp,
+          date: moment(ntx?.tx_response.timestamp).format('MM/DD/YYYY hh:mm'),
           height: +ntx?.tx_response.height
         })
         break;
@@ -49,7 +51,7 @@ export function parseCosmosTx(ntx) {
           memo: el['memo'],
           gas: +ntx?.tx_response?.gas_used,
           txID: ntx?.tx_response?.txhash,
-          date: ntx.tx_response.timestamp,
+          date: moment(ntx?.tx_response.timestamp).format('MM/DD/YYYY, hh:mm:ss A'),
           height: +ntx?.tx_response.height,
         })
       default:
