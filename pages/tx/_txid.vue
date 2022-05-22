@@ -1,6 +1,6 @@
 <template>
   <div class="tx-container">
-    <template v-if="tx">
+    <template v-if="tx.isTx">
       <div class="tx-header">Transaction</div>
       <div class="tx-id">{{ tx.txID }}</div>
       <div class="utility">
@@ -16,10 +16,10 @@
       <template v-if="tx.isMidgard">
         <div class="tx-inner-container">
           <div class="in-container">
-            <div class="bubble">In</div>
+            <div class="bubble-container blue">In</div>
             <div
               class="tx"
-              v-if="tx.in[0] && tx.in[0].txID"
+              v-if="tx.in[0] && tx.in[0] && tx.in[0].txID"
               @click="gotoTx(tx.in[0].txID)"
             >
               {{ tx.in[0].txID.slice(0, 4) }}...{{ tx.in[0].txID.slice(-4) }}
@@ -44,12 +44,18 @@
               v-if="tx.in[0].address"
               @click="gotoAddress(tx.in[0].address)"
             >
-              {{ tx.in[0].address.slice(0, 6) }}...{{ tx.in[0].address.slice(-6) }}
+              {{ tx.in[0].address.slice(0, 6) }}...{{
+                tx.in[0].address.slice(-6)
+              }}
             </a>
           </div>
           <div class="out-container" v-if="tx.out[0]">
-            <div class="bubble">Out</div>
-            <div class="tx" v-if="tx.out[0].txID" @click="gotoTx(tx.out[0].txID)">
+            <div class="bubble-container">Out</div>
+            <div
+              class="tx"
+              v-if="tx.out[0].txID"
+              @click="gotoTx(tx.out[0].txID)"
+            >
               {{ tx.out[0].txID.slice(0, 4) }}...{{ tx.out[0].txID.slice(-4) }}
             </div>
             <div class="break"></div>
@@ -80,45 +86,31 @@
         </div>
         <stat-table :tableSettings="extraDetail"></stat-table>
       </template>
-      <template v-else>
+      <template v-else-if="nativeTx && nativeTx.length > 0">
         <div class="tx-inner-container">
           <div class="in-container">
-            <div class="bubble">Send</div>
-            <div
-              class="tx"
-              v-if="tx && tx.txID"
-              @click="gotoTx(tx.txID)"
-            >
+            <div class="bubble-container blue">{{ tx.type }}</div>
+            <div class="tx" v-if="tx && tx.txID" @click="gotoTx(tx.txID)">
               {{ tx.txID.slice(0, 4) }}...{{ tx.txID.slice(-4) }}
             </div>
             <div class="break"></div>
-            <div class="tx-amount" v-if="tx && tx.amount[0]">
+            <div class="tx-amount" v-if="tx && tx.amount && tx.amount[0]">
               <img
                 class="asset-coin"
                 :src="assetImage('THOR.RUNE')"
                 alt="transfer-coin"
               />
               <span
-                >{{
-                  (tx.amount[0].amount / 10 ** 8) | number("0,0.00000000")
-                }}
+                >{{ (tx.amount[0].amount / 10 ** 8) | number("0,0.00000000") }}
                 {{ tx.amount[0].denom }}</span
               >
             </div>
             <div class="break"></div>
-            <a
-              class="tx-address"
-              v-if="tx.from"
-              @click="gotoAddress(tx.from)"
-            >
-              {{ tx.from.slice(0, 6) }}...{{ tx.from.slice(-6) }} 
+            <a class="tx-address" v-if="tx.from" @click="gotoAddress(tx.from)">
+              {{ tx.from.slice(0, 6) }}...{{ tx.from.slice(-6) }}
             </a>
-            <span style="margin: 0 1rem;">-></span>
-            <a
-              class="tx-address"
-              v-if="tx.to"
-              @click="gotoAddress(tx.to)"
-            >
+            <span v-if="tx.to" style="margin: 0 1rem">-></span>
+            <a class="tx-address" v-if="tx.to" @click="gotoAddress(tx.to)">
               {{ tx.to.slice(0, 6) }}...{{ tx.to.slice(-6) }}
             </a>
           </div>
@@ -127,7 +119,7 @@
       </template>
     </template>
     <div v-else class="error-container">
-      {{errorMsg}}
+      {{ errorMsg }}
     </div>
   </div>
 </template>
@@ -135,7 +127,7 @@
 <script>
 import { AssetImage } from "~/classes/assetImage";
 import CopyIcon from "~/assets/images/copy.svg?inline";
-import { parseCosmosTx } from '~/utils';
+import { parseCosmosTx } from "~/utils";
 
 export default {
   methods: {
@@ -168,13 +160,13 @@ export default {
     },
   },
   async asyncData({ params, $api }) {
-    let errorMsg = 'Can\'t Fetch the Transaction! Please Try again Later.';
+    let errorMsg = "Can't Fetch the Transaction! Please Try again Later.";
     const txid = params.txid;
-    const nTx = await $api.getNativeTx(txid).catch(e => {
+    const nTx = await $api.getNativeTx(txid).catch((e) => {
       console.error(e);
       if (e?.response?.status === 404) {
-        errorMsg = 'No transaction with this hash ID.'
-        return
+        errorMsg = "No transaction with this hash ID.";
+        return;
       }
     });
     //check thorchain native tx
@@ -183,11 +175,13 @@ export default {
       nativeTx = parseCosmosTx(nTx.data);
     }
     let tx;
-    if (!(nativeTx?.txID)) {
-      tx = await $api.getTx(txid).catch(e => {
-        console.error(e)
+    if (!nativeTx?.txID) {
+      tx = await $api.getTx(txid).catch((e) => {
+        console.error(e);
       });
     }
+    console.log(tx?.data?.actions[0]);
+    console.log(nativeTx);
     return { txid, midgardTx: tx?.data?.actions[0], nativeTx, errorMsg };
   },
   components: {
@@ -201,14 +195,18 @@ export default {
   computed: {
     tx: function () {
       let ret = {
-        date: new Date(this.midgardTx?.date / 10 ** 6).toLocaleString() || this.nativeTx[0]?.date,
-      }
-      Object.assign(ret, (this.midgardTx? this.midgardTx:this.nativeTx[0]));
+        date:
+          new Date(this.midgardTx?.date / 10 ** 6).toLocaleString() ||
+          this.nativeTx[0]?.date,
+      };
+      Object.assign(ret, this.midgardTx ? this.midgardTx : this.nativeTx[0]);
       ret.txID = this.midgardTx?.in[0]?.txID || this.nativeTx[0]?.txID;
-      ret.isMidgard = (!!this.midgardTx);
-      ret.height = (this.midgardTx?.height) || this.nativeTx[0]?.height;
+      ret.isMidgard = !!this.midgardTx;
+      ret.height = this.midgardTx?.height || this.nativeTx[0]?.height;
       ret.type = this.midgardTx?.type || this.nativeTx[0]?.type;
-      console.log(ret)
+      ret.isTx =
+        !!this.midgardTx || (this.nativeTx && this.nativeTx.length > 0);
+      console.log(ret);
       return ret;
     },
     extraDetail: function () {
@@ -227,17 +225,30 @@ export default {
       ];
 
       if (!this.midgardTx) {
-        res.push([{
-          name: 'Gas Fee',
-          value: this.$options.filters.number(this.nativeTx[0]?.gas/10**8, "0.00000000")
-          + " THOR.RUNE",
-          filter: true
-        }])
+        res.push([
+          {
+            name: "Gas Fee",
+            value:
+              this.$options.filters.number(
+                this.nativeTx[0]?.gas / 10 ** 8,
+                "0.00000000"
+              ) + " THOR.RUNE",
+            filter: true,
+          },
+          {
+            name: "Memo",
+            value: this.nativeTx[0]?.memo,
+            filter: true
+          }
+        ]);
       }
 
       if (this.midgardTx) {
         let gasFee = undefined;
-        if (this.tx?.metadata && this.tx?.metadata[Object.keys(this.tx?.metadata)[0]].networkFees) {
+        if (
+          this.tx?.metadata &&
+          this.tx?.metadata[Object.keys(this.tx?.metadata)[0]].networkFees
+        ) {
           gasFee = {
             name: "Gas Fee",
             value:
@@ -250,15 +261,18 @@ export default {
                 "0.00000000"
               ) +
               " " +
-              this.tx?.metadata[Object.keys(this.tx?.metadata)[0]]?.networkFees[0]
-                .asset,
-            filter: true
-          };
-          res.push([gasFee, {
-            name: "Status",
-            value: this.$options.filters.capitalize(this.tx?.status),
+              this.tx?.metadata[Object.keys(this.tx?.metadata)[0]]
+                ?.networkFees[0].asset,
             filter: true,
-          }])
+          };
+          res.push([
+            gasFee,
+            {
+              name: "Status",
+              value: this.$options.filters.capitalize(this.tx?.status),
+              filter: true,
+            },
+          ]);
         }
       }
       return res;
@@ -345,17 +359,8 @@ export default {
       color: var(--primary-color);
     }
 
-    .bubble {
-      color: var(--sec-font-color);
-      padding: 0 0.5rem;
-      border-radius: 0.2rem;
-      display: inline-block;
-      background-color: #2196f3;
+    .bubble-container {
       margin-right: 0.5rem;
-    }
-
-    .out-container .bubble {
-      background-color: #4caf50;
     }
 
     .tx-amount {
@@ -377,6 +382,7 @@ export default {
     .tx-address {
       cursor: pointer;
       color: var(--primary-color);
+      margin-top: .5rem;
     }
 
     .extra-details {
