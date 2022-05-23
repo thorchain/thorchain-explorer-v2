@@ -222,9 +222,11 @@ export default {
           return (limit * (+gas_rate * 10 ** 9)) / 10 ** 18;
 
         case "BNB":
-        case "TERRA":
           return (+gas_rate * 1) / 10 ** 8;
 
+        case "TERRA":
+          return (+gas_rate * 1.5) / 10 ** 8;
+        
         default:
           return gas_rate;
       }
