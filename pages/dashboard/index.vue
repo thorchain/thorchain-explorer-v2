@@ -105,14 +105,12 @@
                   <span class="header">
                     {{b.height | number('0,0')}}
                   </span>
-                  <br>
                   <span class="timestamp">
                     {{b.date}}
                   </span>
                 </div>
                 <div class="txs" style="width: 40%;">
                   <span>Tx Size: <span class="value">{{b.txs}}</span></span>
-                  <br>
                   <span>Block Size: <span class="value">{{b.size | number('0,0')}}</span></span>
                 </div>
               </div>
