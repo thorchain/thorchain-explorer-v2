@@ -125,6 +125,7 @@ Vue.mixin(global)
       opacity: .95; /* Black w/opacity/see-through */
       backdrop-filter: blur(10px);
       border-top: 1.5px solid var(--border-color);
+      min-height: initial;
 
       @include lg {
         display: block;
