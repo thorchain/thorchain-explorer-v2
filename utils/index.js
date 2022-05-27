@@ -24,32 +24,46 @@ export function blockTime(blockHeight) {
 }
 
 export function parseCosmosTx(ntx) {
-  console.log(ntx)
   let ret = [];
   ntx.tx?.body.messages.forEach(el => {
-    console.log()
     // Send messages
     switch (el['@type']) {
       case "/types.MsgSend":
+        var assetName = `THOR.${el?.amount[0]?.denom}`.toLocaleUpperCase()
         ret.push({
           type: 'Send',
-          amount: el?.amount,
-          to: el['to_address'],
-          from: el['from_address'],
-          gas: +ntx?.tx_response?.gas_used,
-          txID: ntx?.tx_response?.txhash,
-          date: moment(ntx?.tx_response.timestamp).format('MM/DD/YYYY hh:mm'),
+          inout: [{
+            is: el?.amount[0],
+            address: el['to_address'],
+            outAddress: el['from_address'],
+            txID: ntx?.tx_response?.txhash,
+            asset: {
+              name: assetName,
+              amount: el?.amount[0].amount / 10**8
+            }
+          }],
+          gas: [+ntx?.tx_response?.gas_used / 10**8 + ' ' + assetName],
+          date: moment(ntx?.tx_response.timestamp).format('MM/DD/YYYY hh:mm:ss A'),
           height: +ntx?.tx_response.height
         })
         break;
       
       // Deposit messages
       case "/types.MsgDeposit":
+        var assetName = `THOR.${el?.amount[0]?.denom}`.toLocaleUpperCase()
         ret.push({
           type: 'Deposit/Withdraw',
-          from: el['signer'],
+          inout: [{
+            is: el?.amount[0],
+            address: el['signer'],
+            txID: ntx?.tx_response?.txhash,
+            asset: {
+              name: assetName,
+              amount: el?.amount[0].amount / 10**8
+            }
+          }],
+          gas: [+ntx?.tx_response?.gas_used / 10**8 + ' ' + assetName],
           memo: el['memo'],
-          gas: +ntx?.tx_response?.gas_used,
           txID: ntx?.tx_response?.txhash,
           date: moment(ntx?.tx_response.timestamp).format('MM/DD/YYYY, hh:mm:ss A'),
           height: +ntx?.tx_response.height,
@@ -60,7 +74,44 @@ export function parseCosmosTx(ntx) {
     
   })
 
-  return ret;  
+  return ret[0];  
+}
+
+export function parseMidgardTx(tx) {
+  //get action
+  let tx_action = tx.actions[0];
+
+  let res = {
+    type: tx_action.type,
+    inout: [{
+        is: tx_action?.in[0]?.coins[0]?.asset,
+        address: tx_action?.in[0]?.address ?? '',
+        txID: tx_action?.in[0]?.txID ?? '',
+        asset: {
+          name: tx_action?.in[0]?.coins[0]?.asset,
+          amount: tx_action?.in[0]?.coins[0]?.amount / 10**8,
+        }
+      },
+      {
+        is: tx_action?.out[0]?.coins[0]?.asset,
+        address: tx_action?.out[0]?.address ?? '',
+        txID: tx_action?.out[0]?.txID ?? '',
+        asset: {
+          name: tx_action?.out[0]?.coins[0]?.asset,
+          amount: tx_action?.out[0]?.coins[0]?.amount / 10**8,
+        }
+    }],
+    date: (new Date(tx_action?.date / 10 ** 6)).toLocaleString(),
+    height: tx_action.height,
+    pools: tx_action.pools,
+    status: tx_action.status
+  }
+
+  if (tx_action.metadata) {
+    res['gas'] = tx_action.metadata[tx_action.type].networkFees.map(f => (f.amount / 10**8 + ' ' + f.asset))
+  }
+
+  return res;
 }
 
 export function synthToAsset(assetString) {

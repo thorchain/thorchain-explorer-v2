@@ -52,6 +52,33 @@ input {
   cursor: initial;
 }
 
+.break {
+  flex-basis: 100%;
+  height: 0;
+}
+
+.notify-card {
+  margin: auto;
+  display: flex;
+  align-items: center;
+  min-height: 300px;
+  flex-direction: column;
+
+  &.card-bg {
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    min-height: initial;
+    padding: 20px;
+    background-color: var(--card-bg-color);
+  }
+}
+
+.disconnect-icon {
+  width: 100px;
+  height: 120px;
+  padding: 20px;
+}
+
 .card, .simple-card {
   position: relative;
   display: flex;
@@ -86,6 +113,8 @@ input {
       display: flex;
 
       .meta {
+        display: flex;
+        flex-direction: column;
         color: var(--sec-font-color);
         
         .header {
@@ -99,6 +128,8 @@ input {
       }
       
       .txs {
+        display: flex;
+        flex-direction: column;
         text-overflow: ellipsis;
         overflow: hidden;
         width: 66%;
@@ -250,6 +281,17 @@ input {
   }
 }
 
+.icon {
+  fill: var(--font-color);
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-right: .5rem;
+
+  .header {
+    margin-right: .2rem;
+  }
+}
+
 .stat-image {
   margin-right: 10px;
   height: 1.5rem;
@@ -355,4 +397,32 @@ input {
 .extra-text {
   font-family: 'ProductSans';
   font-size: .7rem;
+}
+
+.utility {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0.4rem;
+  border-radius: 0.3rem;
+  background-color: var(--bg-color);
+  margin: 10px 0;
+
+  &:hover {
+    background-color: var(--active-bg-color);
+  }
+
+  .icon-name {
+    color: var(--sec-font-color);
+    font-size: 0.625rem;
+    margin-right: 0.3rem;
+  }
 }

@@ -29,6 +29,8 @@ export default {
         //LTC
         search.startsWith('LTC') ||
         search.startsWith('TLTC') ||
+        //TERRA
+        search.startsWith('terra') ||
         //ETH
         search.startsWith('0X')
       ) {

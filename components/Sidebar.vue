@@ -160,7 +160,6 @@ export default {
   &.mini {
     flex-direction: row;
     align-items: center;
-    min-height: initial;
 
     .logo {
       margin-bottom: 0;

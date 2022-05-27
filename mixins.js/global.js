@@ -58,6 +58,12 @@ export default {
     },
     versionSort(x, y, col, rowX, rowY) {
       return (compareVersions(x, y))
+    },
+    formatAddress(string) {
+      if (string && string.length > 12)
+        return string.slice(0,6)+'...'+string.slice(-6)
+      else
+        return string
     }
   }
 }

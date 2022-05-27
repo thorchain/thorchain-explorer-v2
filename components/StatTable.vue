@@ -23,7 +23,7 @@
             </div>
             <div class="col-value">
               <template v-if="colItem.filter">
-                {{ colItem.value || '-' }}
+                <pre>{{ colItem.value || '-' }}</pre>
               </template>
               <template v-else>
                 <template v-if="colItem.value">
@@ -133,5 +133,12 @@ export default {
       }
     }
   }
+}
+
+pre {
+  font-family: 'ProductSans';
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  margin: 0;
 }
 </style>
