@@ -72,3 +72,7 @@ export function getAddresses() {
 export function getOutbound() {
   return $axiosInstace.get(process.env.THORNODE_URL + `thorchain/queue/outbound`);
 }
+
+export function getThorchainTx(txID) {
+  return $axiosInstace.get(process.env.THORNODE_URL + `thorchain/tx/${txID}`);
+}
