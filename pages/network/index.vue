@@ -4,10 +4,10 @@
       <stat-table
         :tableSettings="networkSettings"
         header="Network Overview"
-        :iconSrc="require('@/assets/images/network-icon.png')"
+        :iconSrc="require('@/assets/images/database.svg')"
       ></stat-table>
     </div>
-    <div v-if="activeNodesQuery && blockchainVersion" style="width: 100%">
+    <div v-if="activeNodesQuery && blockchainVersion" style="width: 100%; margin-top: .5rem;">
       <div class="card" style="margin: 0.5rem 0">
         <div class="card-header">THORChain version upgrade progress</div>
         <div class="card-body">
@@ -24,69 +24,71 @@
         </div>
       </div>
     </div>
-    <div v-if="inAddresses.length > 0" style="width: 100%">
+    <div v-if="inAddresses.length > 0" style="width: 100%; margin-top: .5rem;">
       <stat-table
         :tableSettings="gasSettings"
         header="Gas Fees"
-        :iconSrc="require('@/assets/images/gas-station.png')"
+        :iconSrc="require('@/assets/images/gas.svg')"
       ></stat-table>
     </div>
-    <div v-show="outboundQueue" style="width: 100%">
-      <h4 class="header">
-        <img class="stat-image" src="~/assets/images/exit.png" />
-        Outbound Queue
-      </h4>
-      <div class="base-container simple-card">
-        <vue-good-table
-          :columns="cols"
-          :rows="outboundQueue"
-          styleClass="vgt-table net-table vgt-compact bordered"
-          :pagination-options="{
-            enabled: true,
-            perPage: 30,
-            perPageDropdownEnabled: false,
-          }"
-        >
-          <template slot="table-row" slot-scope="props">
-            <div v-if="props.column.field == 'coin.asset'" class="cell-content">
-              <img
-                class="table-asset-icon"
-                :src="assetImage(props.row.coin.asset)"
-                alt="asset-icon"
-              />
-              <span v-tooltip="props.row.coin.asset">{{
-                props.formattedRow[props.column.field]
-              }}</span>
-            </div>
-            <span v-else-if="props.column.field == 'coin.amount'">
-              <span
-                >{{ props.formattedRow[props.column.field] }}
-                <span class="extra-text">
-                  {{ showAsset(props.row.coin.asset) }}
+    <div v-show="outboundQueue" style="width: 100%; margin-top: .5rem;">
+      <div class="simple-card">
+        <div class="card-header">
+          <img class="stat-image" src="~/assets/images/sign-out.svg" />
+          <span>Outbound Queue</span>
+        </div>
+        <div class="card-body">
+          <vue-good-table
+            :columns="cols"
+            :rows="outboundQueue"
+            styleClass="vgt-table net-table vgt-compact bordered"
+            :pagination-options="{
+              enabled: true,
+              perPage: 30,
+              perPageDropdownEnabled: false,
+            }"
+          >
+            <template slot="table-row" slot-scope="props">
+              <div v-if="props.column.field == 'coin.asset'" class="cell-content">
+                <img
+                  class="table-asset-icon"
+                  :src="assetImage(props.row.coin.asset)"
+                  alt="asset-icon"
+                />
+                <span v-tooltip="props.row.coin.asset">{{
+                  props.formattedRow[props.column.field]
+                }}</span>
+              </div>
+              <span v-else-if="props.column.field == 'coin.amount'">
+                <span
+                  >{{ props.formattedRow[props.column.field] }}
+                  <span class="extra-text">
+                    {{ showAsset(props.row.coin.asset) }}
+                  </span>
                 </span>
               </span>
-            </span>
-            <span
-              v-else-if="props.column.field == 'to_address'"
-              @click="gotoAddr(props.row.to_address)"
-            >
-              <span class="clickable" v-tooltip="props.row.to_address">{{
-                props.formattedRow[props.column.field]
-              }}</span>
-            </span>
-            <span
-              v-else-if="props.column.field == 'in_hash'"
-              @click="gotoTx(props.row.in_hash)"
-            >
-              <span class="clickable" v-tooltip="props.row.in_hash">{{
-                props.formattedRow[props.column.field]
-              }}</span>
-            </span>
-            <span v-else>
-              {{ props.formattedRow[props.column.field] }}
-            </span>
-          </template>
-        </vue-good-table>
+              <span
+                v-else-if="props.column.field == 'to_address'"
+                @click="gotoAddr(props.row.to_address)"
+              >
+                <span class="clickable" v-tooltip="props.row.to_address">{{
+                  props.formattedRow[props.column.field]
+                }}</span>
+              </span>
+              <span
+                v-else-if="props.column.field == 'in_hash'"
+                @click="gotoTx(props.row.in_hash)"
+              >
+                <span class="clickable" v-tooltip="props.row.in_hash">{{
+                  props.formattedRow[props.column.field]
+                }}</span>
+              </span>
+              <span v-else>
+                {{ props.formattedRow[props.column.field] }}
+              </span>
+            </template>
+          </vue-good-table>
+        </div>
       </div>
     </div>
   </div>

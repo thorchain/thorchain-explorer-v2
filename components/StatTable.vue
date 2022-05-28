@@ -69,6 +69,11 @@ export default {
     font-weight: bold;
     padding: 1rem;
 
+    background-color: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 5px 5px 0 0;
+    border-bottom: none;
+
     .stat-header-btn {
       background-color: transparent;
       border: none;
@@ -87,7 +92,7 @@ export default {
 
   .stat-table-container {
     background-color: var(--bg-color);
-    border-radius: 5px;
+    border-radius: 0 0 5px 5px;
     border: 1px solid var(--border-color);
   }
 
