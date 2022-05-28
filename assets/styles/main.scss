@@ -91,9 +91,17 @@ input {
   margin: 0 .5rem;
 
   .card-header {
-    padding: 0.75rem;
+    padding: 1rem;
     margin-bottom: 0;
     border-bottom: 1px solid var(--border-color);
+
+    display: flex;
+    align-items: center;
+
+    span {
+      color: var(--font-color);
+      font-size: 1rem;
+    }
 
     .card-header-title {
       font-size: .875rem;
@@ -187,6 +195,10 @@ input {
 //Dividers
 .vd-2 {
   height: 2rem;
+}
+
+.vd {
+  height: .5rem;
 }
 
 .error-container {
