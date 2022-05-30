@@ -1,6 +1,12 @@
 <template>
   <div class="side-bar-container" :class="{'mini': mini? true:false}">
-      <img v-if="!mini" class="logo" src="@/assets/images/thorchain.png" alt="">
+      <div v-if="!mini" class="logo-wrapper">
+        <ThorchainLogo class="logo" />
+        <div>
+          <strong>THORChain</strong> 
+          Explorer
+        </div>
+      </div>
       <div class="side-bar-lists">
         <template v-for="(item, index) in sidebarLists" >
           <NuxtLink :to="item.link" :class="['side-bar-item']" :key="index">
@@ -25,6 +31,8 @@
 </template>
 
 <script>
+import ThorchainLogo from '~/assets/images/thorchain-logo.svg?inline';
+
 import TwitterLogo from '~/assets/images/twitter-brands.svg?inline';
 import DiscordLogo from '~/assets/images/discord-brands.svg?inline';
 import GithubLogo from '~/assets/images/github-brands.svg?inline';
@@ -71,6 +79,7 @@ export default {
     moneyUnselected,
     shieldSelected,
     shieldUnselected,
+    ThorchainLogo
   },
   data() {
     return {
@@ -155,11 +164,26 @@ export default {
     }
   }
 
-  .logo {
-    border-radius: .3rem;
-    width: 2rem;
-    height: 2rem;
+  .logo-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 2.25rem;
+
+    .logo {
+      border-radius: .3rem;
+      width: 2rem;
+      height: 2rem;
+    }
+
+    div {
+
+      strong {
+        color: #fff;  
+      }
+      font-family: 'Exo 2';
+      font-weight: 400;
+    }
   }
 
   .side-bar-lists {
