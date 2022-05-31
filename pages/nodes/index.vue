@@ -392,20 +392,11 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.nodes-wrapper {
-  display: flex;
-  justify-content: center;
-
-  .nodes-container {
-    flex: 1 0;
-  }
-}
-
 .grid-network {
   margin-bottom: 1rem;
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   grid-gap: .5rem;
   gap: .5rem;
 }

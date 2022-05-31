@@ -231,6 +231,10 @@ export default {
       .icon.unselected {
         display: none;
       }
+
+      .sidebar-text {
+        color: var(--primary-color);
+      }
     }
 
     .icon {
@@ -241,6 +245,7 @@ export default {
 
       &.selected {
         display: none;
+        fill: var(--primary-color);
       }
 
       &.unselected {
