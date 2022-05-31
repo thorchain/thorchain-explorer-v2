@@ -231,6 +231,10 @@ export default {
       .icon.unselected {
         display: none;
       }
+
+      .sidebar-text {
+        color: var(--primary-color);
+      }
     }
 
     .icon {
