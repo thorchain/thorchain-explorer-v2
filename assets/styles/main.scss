@@ -1,5 +1,5 @@
 @import "./normalize.css"; // normalize css for cross-browser integrations
-@import "font"; //applications font-face
+@import "fonts"; //applications font-face
 @import "breakpoints";
 
 * {
@@ -7,22 +7,13 @@
 }
 
 html, body, #__nuxt, #__layout, main {
-  min-height: 100vh !important;
   font-size: 16px; //root font-size
 }
 
 body {
   background: linear-gradient(to left top, var(--gradient-left) 0%/*bottom-right color*/, var(--gradient-right) 100% /*top-left color*/);
-  min-height: 100%;
   font-family: 'ProductSans';
   color: var(--font-color);
-}
-
-#right-content {
-  display: flex;
-  flex-direction: column;
-  flex: 1 0;
-  padding: 2rem;
 }
 
 input {
@@ -250,6 +241,10 @@ input {
       }
     }
   }
+}
+
+.vgt-wrap {
+  overflow: auto;
 }
 
 .vgt-wrap__footer {

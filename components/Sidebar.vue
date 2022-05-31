@@ -1,6 +1,6 @@
 <template>
   <div class="side-bar-container" :class="{'mini': mini? true:false}">
-      <div v-if="!mini" class="logo-wrapper">
+      <div class="logo-wrapper">
         <ThorchainLogo class="logo" />
         <div>
           <strong>THORChain</strong> 
@@ -16,7 +16,7 @@
           </NuxtLink>
         </template>
       </div>
-      <div class="social-items" v-show="!mini">
+      <div class="social-items">
         <a href="https://twitter.com/THORChain">
           <TwitterLogo class="social-icon" />
         </a>
@@ -136,7 +136,6 @@ export default {
 .side-bar-container {
   display: flex;
   flex-direction: column;
-  min-height: 100%;
 
   &.mini {
     flex-direction: row;
@@ -165,10 +164,12 @@ export default {
   }
 
   .logo-wrapper {
-    display: flex;
-    justify-content: space-between;
+    display: none;
+    justify-content: center;
     align-items: center;
     margin-bottom: 2.25rem;
+    height: 64px;
+    border-bottom: 1px solid var(--border-color);
 
     .logo {
       border-radius: .3rem;
@@ -184,6 +185,10 @@ export default {
       font-family: 'Exo 2';
       font-weight: 400;
     }
+
+    @include lg {
+      display: flex;
+    }
   }
 
   .side-bar-lists {
@@ -198,14 +203,14 @@ export default {
     background: transparent;
     border: none;
     width: 100%;
-    padding: .7rem;
+    padding: 14px 20px;
     text-align: left;
     border-radius: .5rem;
     color: var(--font-color);
     color: inherit;
     text-decoration: none;
     line-height: 1.25rem;
-    margin: .2rem;
+    gap: 10px;
 
     &:hover {
       background-color: var(--bg-color);
@@ -242,9 +247,20 @@ export default {
   }
 
   .social-items {
+    border-top: 1px solid var(--border-color);
+    padding: 28px 20px;
     margin-top: auto;
-    display: flex;
-    justify-content: space-around;
+    display: none;
+    align-items: center;
+    gap: 20px;
+
+    a {
+      display: flex;
+    }
+
+    @include lg {
+      display: flex;
+    }
   }
 
   .social-icon {

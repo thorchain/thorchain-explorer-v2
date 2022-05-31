@@ -136,14 +136,12 @@
                   <span class="header">
                     {{t.height | number('0,0')}}
                   </span>
-                  <br>
                   <span class="timestamp">
                     {{formatMoment(t.date)}}
                   </span>
                 </div>
                 <div class="txs">
                   <span>TxID <a @click="gotoTx(t.in && t.in[0].txID)" class="value">{{t.in && t.in[0].txID}}</a></span>
-                  <br>
                   <span>From <a @click="gotoAddr(t.in[0].address)" class="value">{{t.in && t.in[0].address}}</a></span>
                 </div>
               </div>
