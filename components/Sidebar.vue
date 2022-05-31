@@ -179,7 +179,7 @@ export default {
     div {
 
       strong {
-        color: #fff;  
+        color: var(--sec-font-color);  
       }
       font-family: 'Exo 2';
       font-weight: 400;
