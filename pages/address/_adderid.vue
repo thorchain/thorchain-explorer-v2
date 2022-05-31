@@ -353,6 +353,7 @@ export default {
   }
   .address-name {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     margin: .4rem 0;
     font-weight: bold;

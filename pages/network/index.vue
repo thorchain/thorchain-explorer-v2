@@ -41,7 +41,7 @@
           <vue-good-table
             :columns="cols"
             :rows="outboundQueue"
-            styleClass="vgt-table net-table vgt-compact bordered"
+            styleClass="vgt-table net-table bordered"
             :pagination-options="{
               enabled: true,
               perPage: 30,

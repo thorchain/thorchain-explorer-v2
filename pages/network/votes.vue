@@ -6,7 +6,7 @@
         v-if="votesCols && currentVoting"
         :columns="votesCols"
         :rows="currentVoting"
-        styleClass="vgt-table net-table vgt-compact bordered"
+        styleClass="vgt-table net-table bordered"
         :pagination-options="{
           enabled: true,
           perPage: 30,

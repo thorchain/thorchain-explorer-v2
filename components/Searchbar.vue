@@ -77,8 +77,15 @@ export default {
 
 <style lang="scss">
 .search-bar-container {
+  flex: 1;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+
+  @include lg {
+    padding: 0 64px;
+  }
 
   .social-icon {
     margin-left: .5rem;
@@ -88,11 +95,16 @@ export default {
   }
 
   .search-bar-input {
-    width: 100%;
     border-radius: 5px;
-    height: 3rem;
+    height: 40px;
+    border: 1px solid var(--border-color) !important;
     background-color: var(--bg-color);
     color: var(--font-color);
+    flex: 1;
+
+    @include lg {
+      min-width: 600px;
+    }
   }
 }
 </style>

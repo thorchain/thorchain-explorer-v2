@@ -4,17 +4,14 @@
     <div id="side-bar">
       <sidebar :mini="mini" />
     </div>
-    <div id="right-content">
-      <!-- Searchbar -->
-      <div id="search-bar">
-        <searchbar />
-      </div>
-      <div class="vd-2"></div>
-      <!-- Main content -->
-      <div id="main-content">
-        <Nuxt />
-      </div>
-    </div>
+    <!-- Searchbar -->
+    <header id="header">
+      <searchbar />
+    </header>
+    <!-- Main content -->
+    <main id="main-content">
+      <Nuxt />
+    </main>
   </main>
 </template>
 
@@ -88,49 +85,50 @@ Vue.mixin(global)
 
 <style lang="scss">
 #default-layout {
-  display: flex;
+  display: grid;
+  height: 100vh;
+  overflow: hidden;
+
+  @include lg {
+    grid-template-columns: 220px 1fr;
+    grid-template-rows: 64px 1fr;
+    grid-template-areas: "sidebar header" "sidebar main";
+  }
+
+  grid-template-columns: 1fr;
+  grid-template-rows: 64px 1fr 48px;
+  grid-template-areas: "header" "main" "sidebar";
 
   #side-bar {
+    grid-area: sidebar;
     background-color: var(--sidebar);
-    padding: 1rem;
     opacity: .95; /* Black w/opacity/see-through */
-    min-height: 800px;
+    border-top: 1px solid var(--border-color);
 
     @include lg {
+      border: none;
+      border-right: 1px solid var(--border-color);
+      min-height: 800px;
       display: block;
       flex: 0 0 13.75rem;
     }
   }
 
-  #main-content {
-    flex: 1 1;
+  #header {
+    display: flex;
+    align-items: center;
+    background: var(--sidebar);
+    grid-area: header;
+    border-bottom: 1px solid var(--border-color);
   }
 
-  &.mini {
-    display: flex;
-    flex-direction: column-reverse;
-    margin-bottom: 4rem;
+  #main-content {
+    overflow: auto;
+    grid-area: main;
+    padding: 32px 0;
 
-    #right-content {
-      padding: .7rem;
-    }
-
-    #side-bar {
-      z-index: 1000;
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      background-color: var(--sidebar);
-      padding: .5rem;
-      opacity: .95; /* Black w/opacity/see-through */
-      backdrop-filter: blur(10px);
-      border-top: 1.5px solid var(--border-color);
-      min-height: initial;
-
-      @include lg {
-        display: block;
-        flex: 0 0 13.75rem;
-      }
+    @include lg {
+      padding: 32px 64px;
     }
   }
 }

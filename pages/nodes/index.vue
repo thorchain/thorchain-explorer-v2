@@ -20,7 +20,7 @@
           :columns="activeCols"
           :rows="activeNodes"
           @on-row-click="gotoNode"
-          styleClass="vgt-table net-table vgt-compact"
+          styleClass="vgt-table net-table"
           :pagination-options="{
             enabled: true,
             perPage: 50,
@@ -61,7 +61,7 @@
           :columns="cols"
           :rows="standbyNodes"
           @on-row-click="gotoNode"
-          styleClass="vgt-table net-table vgt-compact"
+          styleClass="vgt-table net-table"
           :pagination-options="{
             enabled: true,
             perPage: 50,

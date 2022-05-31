@@ -5,7 +5,7 @@
         v-if="cols && yggdrasil.length > 0"
         :columns="cols"
         :rows="[...asgard, ...yggdrasil]"
-        styleClass="vgt-table net-table vgt-compact"
+        styleClass="vgt-table net-table"
         :pagination-options="{
           enabled: true,
           perPage: 120,

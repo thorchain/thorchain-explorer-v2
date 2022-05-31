@@ -44,7 +44,7 @@
           v-if="cols && activeRows.length > 0"
           :columns="cols"
           :rows="activeRows"
-          styleClass="vgt-table net-table vgt-compact"
+          styleClass="vgt-table net-table"
           :pagination-options="{
             enabled: true,
             perPage: 30,
@@ -73,7 +73,7 @@
           v-if="cols && standbyRows.length > 0"
           :columns="cols"
           :rows="standbyRows"
-          styleClass="vgt-table net-table vgt-compact"
+          styleClass="vgt-table net-table"
           :pagination-options="{
             enabled: true,
             perPage: 30,
