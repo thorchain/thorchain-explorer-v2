@@ -1,20 +1,22 @@
 <template>
   <div class="side-bar-container" :class="{'mini': mini? true:false}">
-      <div class="logo-wrapper">
-        <ThorchainLogo class="logo" />
-        <div>
-          <strong>THORChain</strong> 
-          Explorer
+      <div class="upper-wrapper">
+        <div class="logo-wrapper">
+          <ThorchainLogo class="logo" />
+          <div>
+            <strong>THORChain</strong>
+            Explorer
+          </div>
         </div>
-      </div>
-      <div class="side-bar-lists">
-        <template v-for="(item, index) in sidebarLists" >
-          <NuxtLink :to="item.link" :class="['side-bar-item']" :key="index">
-            <component v-bind:is="item.icon" class="icon selected"></component>
-            <component v-bind:is="item.unicon" class="icon unselected"></component>
-            <span class="sidebar-text">{{item.name}}</span>
-          </NuxtLink>
-        </template>
+        <div class="side-bar-lists">
+          <template v-for="(item, index) in sidebarLists" >
+            <NuxtLink :to="item.link" :class="['side-bar-item']" :key="index">
+              <component v-bind:is="item.icon" class="icon selected"></component>
+              <component v-bind:is="item.unicon" class="icon unselected"></component>
+              <span class="sidebar-text">{{item.name}}</span>
+            </NuxtLink>
+          </template>
+        </div>
       </div>
       <div class="social-items">
         <a href="https://twitter.com/THORChain">
@@ -134,8 +136,9 @@ export default {
 
 <style lang="scss">
 .side-bar-container {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  height: 100%;
 
   &.mini {
     flex-direction: row;
