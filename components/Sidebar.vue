@@ -241,6 +241,7 @@ export default {
 
       &.selected {
         display: none;
+        fill: var(--primary-color);
       }
 
       &.unselected {
