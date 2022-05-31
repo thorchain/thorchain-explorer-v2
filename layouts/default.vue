@@ -111,6 +111,7 @@ Vue.mixin(global)
       min-height: 800px;
       display: block;
       flex: 0 0 13.75rem;
+      height: 100%;
     }
   }
 
