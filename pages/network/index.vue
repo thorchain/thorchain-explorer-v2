@@ -15,7 +15,7 @@
       </div>
       <h3 v-if="uptodateNodes && activeNodes && blockchainVersion" style="text-align: center">
         <span class="sec-color">{{ uptodateNodes.length }}</span> of <span class="sec-color">{{ activeNodes.length }}</span> nodes
-        upgraded to <span class="sec-color">{{ blockchainVersion.current }}</span>
+        upgraded to <span class="sec-color">{{ uptodateNodes(activeNodes) }}</span>
       </h3>
       <p v-if="newStandByVersion" style="text-align: center; color: var(--primary-color)">✨ New version detected! ({{newStandByVersion}})</p>
     </Card>
@@ -85,7 +85,7 @@ import { activeNodesQuery, bondMetrics, networkQuery } from "~/_gql_queries";
 import StatTable from "~/components/StatTable.vue";
 import { formatAsset, addressFormat, blockTime } from "~/utils";
 import { Chain } from '@xchainjs/xchain-util';
-import {gt, rsort} from 'semver';
+import {gt, rsort, valid} from 'semver';
 
 export default {
   components: { StatTable },
@@ -252,6 +252,14 @@ export default {
       }
       else
         return false
+    },
+    uptodateNodeVersion(nodes) {
+      if (nodes && nodes.length > 0) {
+        let nodesVersion = nodes.map(n => n.version);
+        // TODO: should make sure all active nodes are vaild
+        return rsort(nodesVersion)[0]
+      }
+      return undefined
     }
   },
   computed: {
@@ -261,7 +269,7 @@ export default {
           (n) => n.status === "Active"
         );
         this.uptodateNodes = this.activeNodes.filter(
-          (n) => n.version == this.blockchainVersion.current
+          (n) => n.version == this.uptodateNodeVersion(this.activeNodes)
         );
         return parseInt(
           parseFloat(this.uptodateNodes.length / this.activeNodes.length) * 100
@@ -405,8 +413,8 @@ export default {
         return
       let currentVer = this.blockchainVersion.current;
       let node = this.activeNodesQuery.nodes.filter(
-        (n) => gt(n.version, currentVer)
-      );
+        (n) => valid(n.version) && gt(n.version, currentVer)
+      ).map(n => n.version);
       if (node && node.length > 0)
         return rsort(node)[0].version;
     }
