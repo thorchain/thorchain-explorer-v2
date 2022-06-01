@@ -1,5 +1,5 @@
 <template>
-  <div class="assets-container">
+  <Page>
     <vue-good-table
       v-if="cols && rows.length > 0"
       :columns="cols"
@@ -31,7 +31,7 @@
         </span>
       </template>
     </vue-good-table>
-  </div>
+  </Page>
 </template>
 
 <script>
@@ -116,5 +116,4 @@ export default {
 </script>
 
 <style>
-
 </style>
