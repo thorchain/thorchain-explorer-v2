@@ -1,107 +1,96 @@
 <template>
-  <div class="nodes-wrapper">
-      <div v-if="nodesQuery && nodesQuery.nodes" class="nodes-container">
-        <div class="grid-network">
-        <div>
-          <stat-table :tableSettings="topActiveBonds" header="Top Active Bonds"></stat-table>
-        </div>
-        <div>
-          <stat-table :tableSettings="topStandbyBonds" header="Top Standby Bonds"></stat-table>
-        </div>
-      </div>
-      <Nav :activeMode.sync="mode" :navItems="[{text: 'Active', mode: 'active'}, {text: 'Stand By', mode: 'standby'}]" />
-      <div v-if="mode == 'active'" class="base-container">
-        <h2>Active Nodes</h2>
-        <vue-good-table
-          v-if="activeCols && activeNodes.length > 0"
-          :columns="activeCols"
-          :rows="activeNodes"
-          @on-row-click="gotoNode"
-          styleClass="vgt-table net-table"
-          :pagination-options="{
-            enabled: true,
-            perPage: 50,
-            perPageDropdownEnabled: false,
-          }"
-        >
-          <template slot="table-row" slot-scope="props">
-            <span class="clickable" v-if="props.column.field == 'address'">
-              <span v-tooltip="props.row.address">{{addressFormat(props.row.address)}}</span> 
-            </span>
-            <span v-else-if="props.column.field == 'bond'">
-              <span v-tooltip="curFormat(runePrice * props.row.bond)">
-                <span class="extra">{{runeCur()}}</span>  
-                {{numberFormat(props.row.bond)}}
-              </span> 
-            </span>
-            <span v-else-if="props.column.field == 'award'">
-              <span v-tooltip="curFormat(runePrice * props.row.award)">
-                <span class="extra">{{runeCur()}}</span>  
-                {{props.row.award}}
-              </span> 
-            </span>
-            <span v-else-if="props.column.field == 'status'">
-              <div :class="'bubble-container'">
-                <span>{{props.row.status}}</span>
-              </div>
-            </span>
-            <span v-else>
-              {{props.formattedRow[props.column.field]}}
-            </span>
-          </template>
-        </vue-good-table>
-      </div>
-      <div v-else-if="mode === 'standby'" class="base-container">
-        <h2>Standby Nodes</h2>
-        <vue-good-table
-          v-if="cols && standbyNodes.length > 0"
-          :columns="cols"
-          :rows="standbyNodes"
-          @on-row-click="gotoNode"
-          styleClass="vgt-table net-table"
-          :pagination-options="{
-            enabled: true,
-            perPage: 50,
-            perPageDropdownEnabled: false,
-          }"
-        >
-          <template slot="table-row" slot-scope="props">
-            <span class="clickable" v-if="props.column.field == 'address'">
-              <span v-if="props.row.address" v-tooltip="props.row.address">{{addressFormat(props.row.address)}}</span> 
-              <span v-else class="not-clickable">No Address Set</span>
-            </span>
-            <span v-else-if="props.column.field == 'bond'">
-              <span v-tooltip="curFormat(runePrice * props.row.bond)">
-                <span class="extra">{{runeCur()}}</span>  
-                {{numberFormat(props.row.bond)}}
-              </span> 
-            </span>
-            <span v-else-if="props.column.field == 'award'">
-              <span v-tooltip="curFormat(runePrice * props.row.award)">
-                <span class="extra">{{runeCur()}}</span>  
-                {{props.row.award}}
-              </span> 
-            </span>
-            <span v-else-if="props.column.field == 'status'">
-              <div :class="['bubble-container yellow', {
-                'red': props.row.status === 'Disabled',
-                'black': props.row.status === 'Unknown',
-                'white': props.row.status === 'Whitelisted',
-              }]">
-                <span>{{props.row.status}}</span>
-              </div>
-            </span>
-            <span v-else>
-              {{props.formattedRow[props.column.field]}}
-            </span>
-          </template>
-        </vue-good-table>
-      </div>
+  <Page>
+    <div v-if="nodesQuery && nodesQuery.nodes" class="grid-network">
+      <stat-table :tableSettings="topActiveBonds" header="Top Active Bonds"></stat-table>
+      <stat-table :tableSettings="topStandbyBonds" header="Top Standby Bonds"></stat-table>
     </div>
-    <div v-else class="loading">
-      <BounceLoader color="var(--font-color)" size="3rem"></BounceLoader>
-    </div>
-  </div>
+    <Nav :activeMode.sync="mode" :navItems="[{text: 'Active', mode: 'active'}, {text: 'Stand By and Others', mode: 'standby'}]" />
+    <Card title="Active Nodes" v-if="mode == 'active'" :isLoading="!activeNodes">
+      <vue-good-table
+        v-if="activeCols && activeNodes"
+        :columns="activeCols"
+        :rows="activeNodes"
+        @on-row-click="gotoNode"
+        styleClass="vgt-table net-table"
+        :pagination-options="{
+          enabled: true,
+          perPage: 50,
+          perPageDropdownEnabled: false,
+        }"
+      >
+        <template slot="table-row" slot-scope="props">
+          <span class="clickable" v-if="props.column.field == 'address'">
+            <span v-tooltip="props.row.address">{{addressFormat(props.row.address)}}</span> 
+          </span>
+          <span v-else-if="props.column.field == 'bond'">
+            <span v-tooltip="curFormat(runePrice * props.row.bond)">
+              <span class="extra">{{runeCur()}}</span>  
+              {{numberFormat(props.row.bond)}}
+            </span> 
+          </span>
+          <span v-else-if="props.column.field == 'award'">
+            <span v-tooltip="curFormat(runePrice * props.row.award)">
+              <span class="extra">{{runeCur()}}</span>  
+              {{props.row.award}}
+            </span> 
+          </span>
+          <span v-else-if="props.column.field == 'status'">
+            <div :class="'bubble-container'">
+              <span>{{props.row.status}}</span>
+            </div>
+          </span>
+          <span v-else>
+            {{props.formattedRow[props.column.field]}}
+          </span>
+        </template>
+      </vue-good-table>
+    </Card>
+    <Card v-else-if="mode === 'standby'" title="Standby Nodes" :isLoading="!standbyNodes">
+      <vue-good-table
+        v-if="cols && standbyNodes"
+        :columns="cols"
+        :rows="standbyNodes"
+        @on-row-click="gotoNode"
+        styleClass="vgt-table net-table"
+        :pagination-options="{
+          enabled: true,
+          perPage: 50,
+          perPageDropdownEnabled: false,
+        }"
+      >
+        <template slot="table-row" slot-scope="props">
+          <span class="clickable" v-if="props.column.field == 'address'">
+            <span v-if="props.row.address" v-tooltip="props.row.address">{{addressFormat(props.row.address)}}</span> 
+            <span v-else class="not-clickable">No Address Set</span>
+          </span>
+          <span v-else-if="props.column.field == 'bond'">
+            <span v-tooltip="curFormat(runePrice * props.row.bond)">
+              <span class="extra">{{runeCur()}}</span>  
+              {{numberFormat(props.row.bond)}}
+            </span> 
+          </span>
+          <span v-else-if="props.column.field == 'award'">
+            <span v-tooltip="curFormat(runePrice * props.row.award)">
+              <span class="extra">{{runeCur()}}</span>  
+              {{props.row.award}}
+            </span> 
+          </span>
+          <span v-else-if="props.column.field == 'status'">
+            <div :class="['bubble-container yellow', {
+              'red': props.row.status === 'Disabled',
+              'black': props.row.status === 'Unknown',
+              'white': props.row.status === 'Whitelisted',
+            }]">
+              <span>{{props.row.status}}</span>
+            </div>
+          </span>
+          <span v-else>
+            {{props.formattedRow[props.column.field]}}
+          </span>
+        </template>
+      </vue-good-table>
+    </Card>
+  </Page>
 </template>
 
 <script>
@@ -367,7 +356,7 @@ export default {
         });
         return filteredNodes;
       } else {
-        return [];
+        return undefined;
       }
     },
     standbyNodes: function () {
@@ -381,7 +370,7 @@ export default {
         });
         return filteredNodes;
       } else {
-        return [];
+        return undefined;
       }
     },
   },

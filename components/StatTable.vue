@@ -1,13 +1,6 @@
 <template>
-  <div class="stat-table">
-    <div v-if="header" class="stat-header">
-      <div class="stat-header-text">
-        <img v-if="iconSrc" class="header-icon" :src="iconSrc" alt="header-icon">
-        <span>{{ header }}</span>
-      </div>
-      <button v-if="false" class="stat-header-btn"></button>
-    </div>
-    <div v-if="tableSettings && tableSettings.length > 0" class="stat-table-container">
+  <Card :isLoading="isLoading || !(tableSettings && tableSettings.length > 0)" extraClass="stat-table" :title="header" :imgSrc="iconSrc">
+    <div class="stat-table-container">
       <div class="stat-table-row" v-for="(row, ri) in tableSettings" :key="ri">
         <div
           class="stat-table-group"
@@ -38,7 +31,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </Card>
 </template>
 
 <script>
@@ -55,6 +48,7 @@ export default {
     iconSrc: String,
     header: String,
     tableSettings: Array,
+    isLoading: Boolean
   },
 };
 </script>
@@ -82,6 +76,8 @@ export default {
     .stat-header-text {
       display: flex;
       align-items: center;
+      font-size: 1.125rem;
+      font-weight: 700;
     }
 
     .header-icon {

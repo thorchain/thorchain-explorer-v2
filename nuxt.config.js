@@ -40,6 +40,9 @@ export default {
       path: '~/components'
     },
     {
+      path: '~/components/layouts'
+    },
+    {
       path: '~/components/page_components',
       ignore: '*.vue'
     }

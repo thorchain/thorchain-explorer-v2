@@ -1,97 +1,82 @@
 <template>
-  <div class="network-index-container">
-    <div style="width: 100%">
-      <stat-table
-        :tableSettings="networkSettings"
-        header="Network Overview"
-        :iconSrc="require('@/assets/images/database.svg')"
-      ></stat-table>
-    </div>
-    <div v-if="activeNodesQuery && blockchainVersion" style="width: 100%; margin-top: .5rem;">
-      <div class="card" style="margin: 0.5rem 0">
-        <div class="card-header">THORChain version upgrade progress</div>
-        <div class="card-body">
-          <div class="progress-bar-container">
-            <div
-              :class="[{ complete: versionProgress == 100 }, 'progress-bar']"
-              :style="{ width: versionProgress + '%' }"
-            ></div>
-          </div>
-          <h3 style="text-align: center">
-            <span class="sec-color">{{ uptodateNodes.length }}</span> of <span class="sec-color">{{ activeNodes.length }}</span> nodes
-            upgraded to <span class="sec-color">{{ blockchainVersion.current }}</span>
-          </h3>
-        </div>
+  <Page>
+    <stat-table
+      :isLoading="!network || network.length == 0"
+      :tableSettings="networkSettings"
+      header="Network Overview"
+      :iconSrc="require('@/assets/images/database.svg')"
+    ></stat-table>
+    <Card :isLoading="!activeNodesQuery" title="THORChain version upgrade progress">
+      <div class="progress-bar-container">
+        <div
+          :class="[{ complete: versionProgress == 100 }, 'progress-bar']"
+          :style="{ width: versionProgress + '%' }"
+        ></div>
       </div>
-    </div>
-    <div v-if="inAddresses.length > 0" style="width: 100%; margin-top: .5rem;">
-      <stat-table
-        :tableSettings="gasSettings"
-        header="Gas Fees"
-        :iconSrc="require('@/assets/images/gas.svg')"
-      ></stat-table>
-    </div>
-    <div v-show="outboundQueue" style="width: 100%; margin-top: .5rem;">
-      <div class="simple-card">
-        <div class="card-header">
-          <img class="stat-image" src="~/assets/images/sign-out.svg" />
-          <span>Outbound Queue</span>
-        </div>
-        <div class="card-body">
-          <vue-good-table
-            :columns="cols"
-            :rows="outboundQueue"
-            styleClass="vgt-table net-table bordered"
-            :pagination-options="{
-              enabled: true,
-              perPage: 30,
-              perPageDropdownEnabled: false,
-            }"
-          >
-            <template slot="table-row" slot-scope="props">
-              <div v-if="props.column.field == 'coin.asset'" class="cell-content">
-                <img
-                  class="table-asset-icon"
-                  :src="assetImage(props.row.coin.asset)"
-                  alt="asset-icon"
-                />
-                <span v-tooltip="props.row.coin.asset">{{
-                  props.formattedRow[props.column.field]
-                }}</span>
-              </div>
-              <span v-else-if="props.column.field == 'coin.amount'">
-                <span
-                  >{{ props.formattedRow[props.column.field] }}
-                  <span class="extra-text">
-                    {{ showAsset(props.row.coin.asset) }}
-                  </span>
+      <h3 v-if="uptodateNodes && activeNodes && blockchainVersion" style="text-align: center">
+        <span class="sec-color">{{ uptodateNodes.length }}</span> of <span class="sec-color">{{ activeNodes.length }}</span> nodes
+        upgraded to <span class="sec-color">{{ blockchainVersion.current }}</span>
+      </h3>
+    </Card>
+    <stat-table
+      :isLoading="!inAddresses"
+      :tableSettings="gasSettings"
+      header="Gas Fees"
+      :iconSrc="require('@/assets/images/gas.svg')"
+    ></stat-table>
+    <Card :isLoading="!outboundQueue" title="Outbound Queue" :imgSrc="require('~/assets/images/sign-out.svg')">
+      <vue-good-table
+          :columns="cols"
+          :rows="outboundQueue"
+          styleClass="vgt-table net-table bordered"
+          :pagination-options="{
+            enabled: true,
+            perPage: 30,
+            perPageDropdownEnabled: false,
+          }"
+        >
+          <template slot="table-row" slot-scope="props">
+            <div v-if="props.column.field == 'coin.asset'" class="cell-content">
+              <img
+                class="table-asset-icon"
+                :src="assetImage(props.row.coin.asset)"
+                alt="asset-icon"
+              />
+              <span v-tooltip="props.row.coin.asset">{{
+                props.formattedRow[props.column.field]
+              }}</span>
+            </div>
+            <span v-else-if="props.column.field == 'coin.amount'">
+              <span
+                >{{ props.formattedRow[props.column.field] }}
+                <span class="extra-text">
+                  {{ showAsset(props.row.coin.asset) }}
                 </span>
               </span>
-              <span
-                v-else-if="props.column.field == 'to_address'"
-                @click="gotoAddr(props.row.to_address)"
-              >
-                <span class="clickable" v-tooltip="props.row.to_address">{{
-                  props.formattedRow[props.column.field]
-                }}</span>
-              </span>
-              <span
-                v-else-if="props.column.field == 'in_hash'"
-                @click="gotoTx(props.row.in_hash)"
-              >
-                <span class="clickable" v-tooltip="props.row.in_hash">{{
-                  props.formattedRow[props.column.field]
-                }}</span>
-              </span>
-              <span v-else>
-                {{ props.formattedRow[props.column.field] }}
-              </span>
-            </template>
-          </vue-good-table>
-        </div>
-      </div>
-    </div>
-  </div>
+            </span>
+            <span
+              v-else-if="props.column.field == 'to_address'"
+              @click="gotoAddr(props.row.to_address)"
+            >
+              <span class="clickable" v-tooltip="props.row.to_address">{{
+                props.formattedRow[props.column.field]
+              }}</span>
+            </span>
+            <span
+              v-else-if="props.column.field == 'in_hash'"
+              @click="gotoTx(props.row.in_hash)"
+            >
+              <span class="clickable" v-tooltip="props.row.in_hash">{{
+                props.formattedRow[props.column.field]
+              }}</span>
+            </span>
+            <span v-else>
+              {{ props.formattedRow[props.column.field] }}
+            </span>
+          </template>
+        </vue-good-table>
+    </Card>
+  </Page>
 </template>
 
 <script>

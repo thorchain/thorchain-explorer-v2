@@ -1,12 +1,12 @@
 <template>
-  <div class="constants-container">
+  <Page>
     <stat-table :tableSettings="outboundTxs" header="Outbound Transactions" :iconSrc="require('@/assets/images/sign-out.svg')"></stat-table>
-    <stat-table style="margin-top: .5rem;" :tableSettings="swapping" header="Swapping" :iconSrc="require('@/assets/images/swap-icon.png')"></stat-table>
-    <stat-table style="margin-top: .5rem;" :tableSettings="lpManagement" header="LP Management" :iconSrc="require('@/assets/images/pi.png')"></stat-table>
-    <stat-table style="margin-top: .5rem;" :tableSettings="chainManagement" header="Chain Management" :iconSrc="require('@/assets/images/pi.png')"></stat-table>
-    <stat-table style="margin-top: .5rem;" :tableSettings="nodeManagement" header="Node Management" :iconSrc="require('@/assets/images/pi.png')"></stat-table>
-    <stat-table style="margin-top: .5rem;" :tableSettings="economics" header="Economics" :iconSrc="require('@/assets/images/pi.png')"></stat-table>
-  </div>
+    <stat-table :tableSettings="swapping" header="Swapping" :iconSrc="require('@/assets/images/swap-icon.png')"></stat-table>
+    <stat-table :tableSettings="lpManagement" header="LP Management" :iconSrc="require('@/assets/images/pi.png')"></stat-table>
+    <stat-table :tableSettings="chainManagement" header="Chain Management" :iconSrc="require('@/assets/images/pi.png')"></stat-table>
+    <stat-table :tableSettings="nodeManagement" header="Node Management" :iconSrc="require('@/assets/images/pi.png')"></stat-table>
+    <stat-table :tableSettings="economics" header="Economics" :iconSrc="require('@/assets/images/pi.png')"></stat-table>
+  </Page>
 </template>
 
 <script>
@@ -522,5 +522,4 @@ export default {
 </script>
 
 <style>
-
 </style>
