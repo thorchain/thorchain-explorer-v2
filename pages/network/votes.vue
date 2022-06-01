@@ -184,7 +184,7 @@ export default {
       this.$router.push({path: `/node/${signer}`});
     },
     getVoteHighestBid(voters) {
-      if (!voters) {
+      if (!voters || voters.length == 0) {
         return
       }
       const activeVoters = voters.filter(v => this.nodes.filter(n => n.status == 'Active').map(n => n.address).includes(v.signer))

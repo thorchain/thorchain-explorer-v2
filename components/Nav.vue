@@ -1,13 +1,14 @@
 <template>
   <div class="nav-headers box">
-    <div 
+    <component :is="isLink? 'nuxt-link':'div'" 
       v-for="navItem in navItems"
-      @click="$emit('update:activeMode', navItem.mode)" 
-      :class="[{'active': activeMode == navItem.mode}, 'nav-item']"
+      @click="!isLink? $emit('update:activeMode', navItem.mode):false" 
+      :class="[{'active': activeMode && activeMode === navItem.mode}, 'nav-item']"
       :key="navItem.mode"
+      :to="isLink? navItem.link:false"
     >
      {{navItem.text}}
-    </div>
+    </component>
   </div>
 </template>
 
@@ -17,7 +18,7 @@ export default {
     prop: 'activeMode',
     event: 'update'
   },
-  props: ['activeMode', 'navItems'],
+  props: ['activeMode', 'navItems', 'isLink'],
   emits: ['update']
 }
 </script>
@@ -37,7 +38,7 @@ export default {
     text-decoration: none;
     border-radius: 0.3rem;
 
-    &.active {
+    &.active, &.nuxt-link-exact-active {
       background-color: var(--active-bg-color);
       color: var(--sec-font-color);
     }
@@ -58,7 +59,7 @@ export default {
     border-radius: 5px;
 
     .nav-item {
-      &.active {
+      &.active, &.nuxt-link-exact-active {
         color: var(--primary-color);
       }
     }
