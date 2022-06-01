@@ -1,7 +1,6 @@
 <template>
   <div class="txs-wrapper">
     <div v-if="txs && txs.actions" class="transactions-container">
-      <div class="header">Transactions</div>
       <!-- transactions component -->
       <Nav :activeMode="filter" @update:activeMode="(f) => changeFilter(f)" :navItems="navItems" />
       <transactions :txs="txs" :loading="loading"></transactions>
@@ -68,14 +67,4 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.loading {
-  display: flex;
-  justify-content: center;
-}
-
-.transactions-container .header {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
-  color: var(--sec-font-color);
-}
 </style>

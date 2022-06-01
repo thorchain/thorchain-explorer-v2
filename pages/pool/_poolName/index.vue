@@ -399,9 +399,4 @@ export default {
     }
   }
 }
-
-.loading {
-  display: flex;
-  justify-content: center;
-}
 </style>

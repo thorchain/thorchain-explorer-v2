@@ -1,38 +1,36 @@
 <template>
   <div class="assets-container">
-    <div class="base-container" style="margin-bottom: 1.5rem;">
-      <vue-good-table
-        v-if="cols && rows.length > 0"
-        :columns="cols"
-        :rows="rows"
-        styleClass="vgt-table net-table"
-        :pagination-options="{
-          enabled: true,
-          perPage: 30,
-          perPageDropdownEnabled: false,
-        }"
-      >
-        <template slot="table-row" slot-scope="props">
-          <div v-if="props.column.field == 'asset'" class="cell-content" v-tooltip="props.row.asset">
-            <img class="table-asset-icon synth" :src="assetImage(props.row.asset)" alt="asset-icon">
-            <span>{{props.formattedRow[props.column.field]}}</span>
-          </div>
-          <span v-else-if="props.column.field == 'synth'">
-            <span v-tooltip="props.row.synth">{{props.formattedRow[props.column.field]}}</span>
-          </span>
-          <span v-else-if="props.column.field == 'supply'">
-            <span>{{props.formattedRow[props.column.field]}}
-              <span class="extra-text">
-                {{showAsset(props.row.asset)}}
-              </span>
+    <vue-good-table
+      v-if="cols && rows.length > 0"
+      :columns="cols"
+      :rows="rows"
+      styleClass="vgt-table net-table"
+      :pagination-options="{
+        enabled: true,
+        perPage: 30,
+        perPageDropdownEnabled: false,
+      }"
+    >
+      <template slot="table-row" slot-scope="props">
+        <div v-if="props.column.field == 'asset'" class="cell-content" v-tooltip="props.row.asset">
+          <img class="table-asset-icon synth" :src="assetImage(props.row.asset)" alt="asset-icon">
+          <span>{{props.formattedRow[props.column.field]}}</span>
+        </div>
+        <span v-else-if="props.column.field == 'synth'">
+          <span v-tooltip="props.row.synth">{{props.formattedRow[props.column.field]}}</span>
+        </span>
+        <span v-else-if="props.column.field == 'supply'">
+          <span>{{props.formattedRow[props.column.field]}}
+            <span class="extra-text">
+              {{showAsset(props.row.asset)}}
             </span>
           </span>
-          <span v-else>
-            {{props.formattedRow[props.column.field]}}
-          </span>
-        </template>
-      </vue-good-table>
-    </div>
+        </span>
+        <span v-else>
+          {{props.formattedRow[props.column.field]}}
+        </span>
+      </template>
+    </vue-good-table>
   </div>
 </template>
 
