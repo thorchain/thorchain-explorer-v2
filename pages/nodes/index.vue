@@ -9,10 +9,7 @@
           <stat-table :tableSettings="topStandbyBonds" header="Top Standby Bonds"></stat-table>
         </div>
       </div>
-      <div class="nav-headers">
-        <div class="nav-item" @click="mode = 'active'" :class="{'active': mode == 'active'}">Active</div>
-        <div class="nav-item" @click="mode = 'standby'" :class="{'active': mode == 'standby'}">Stand By</div>
-      </div>
+      <Nav :activeMode.sync="mode" :navItems="[{text: 'Active', mode: 'active'}, {text: 'Stand By', mode: 'standby'}]" />
       <div v-if="mode == 'active'" class="base-container">
         <h2>Active Nodes</h2>
         <vue-good-table
@@ -396,7 +393,7 @@ export default {
   margin-bottom: 1rem;
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
   grid-gap: .5rem;
   gap: .5rem;
 }

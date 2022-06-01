@@ -1,9 +1,6 @@
 <template>
   <div class="pool-wrapper">
-    <div class="nav-headers">
-      <div class="nav-item" @click="mode = 'grid'" :class="{'active': mode == 'grid'}">Grid</div>
-      <div class="nav-item" @click="mode = 'table'" :class="{'active': mode == 'table'}">Table</div>
-    </div>
+    <Nav :activeMode.sync="mode" :navItems="navItems" />
     <div v-if="pools && pools.length > 0 && mode == 'grid'" class="pools-container">
       <div class="pool-item" v-for="(pool, idx) in sortedPools" :key="idx"  @click="gotoPool(pool.asset)">
         <div class="row">
@@ -35,10 +32,7 @@
       </div>
     </div>
     <div v-else-if="pools && pools.length > 0 && mode == 'table'">
-      <div class="nav-headers">
-        <div class="nav-item" @click="tableMode = 'active'" :class="{'active': tableMode == 'active'}">Active Pools</div>
-        <div class="nav-item" @click="tableMode = 'staged'" :class="{'active': tableMode == 'staged'}">Staged/Suspended Pools</div>
-      </div>
+      <Nav :activeMode.sync="tableMode" :navItems="tableModeItems" />
       <div v-show="tableMode == 'active'" class="base-container" style="margin-bottom: 1.5rem;">
         <vue-good-table
           v-if="cols && activeRows.length > 0"
@@ -115,6 +109,14 @@ export default {
   data: function () {
     return {
       mode: 'grid',
+      navItems: [
+        {text: 'Grid', mode: 'grid'},
+        {text: 'Table', mode: 'table'},
+      ],
+      tableModeItems: [
+        {text: 'Active Pools', mode: 'active'},
+        {text: 'Staged/Suspended Pools', mode: 'staged'}
+      ],
       tableMode: 'active',
       cols: [
         {
