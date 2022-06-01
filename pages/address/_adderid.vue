@@ -22,12 +22,9 @@
     </div>
     <template v-if="addrTxs">
       <div class="stat-wrapper">
-        <div class="nav-headers">
-          <div class="nav-item" @click="mode = 'balance'" :class="{'active': mode == 'balance'}">Balances</div>
-          <div class="nav-item" @click="mode = 'thorname'" :class="{'active': mode == 'thorname'}">THORName</div>
-        </div>
-        <stat-table v-if="mode == 'balance'" :tableSettings="addressStat"></stat-table>
-        <stat-table v-else-if="mode == 'thorname'" :tableSettings="thornames"></stat-table>
+        <Nav :activeMode.sync="activeMode" :navItems="[{text: 'Balances', mode: 'balance'},{text: 'THORName', mode: 'thorname'}]" />
+        <stat-table v-if="activeMode == 'balance'" :tableSettings="addressStat"></stat-table>
+        <stat-table v-else-if="activeMode == 'thorname'" :tableSettings="thornames"></stat-table>
       </div>
       <div style="margin: 1rem 0"></div>
       <template v-if="isVault">
@@ -114,7 +111,7 @@ export default {
       copyText: 'Copy',
       showQR: false,
       thornames: undefined,
-      mode: 'balance',
+      activeMode: 'balance',
       isVault: false,
       chainAddresses: [],
       vaultInfo: undefined,
@@ -366,23 +363,6 @@ export default {
 }
 .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
   opacity: 0;
-}
-
-.nav-headers {
-  margin-bottom: .2rem;
-  background-color: var(--bg-color);
-  border: 1px solid var(--border-color);
-  border-radius: 5px;
-
-  .nav-item {
-    margin: .2rem;
-    font-size: .875rem;
-    cursor: pointer;
-
-    &.active {
-      color: var(--primary-color);
-    }
-  }
 }
 
 .addresses-container {

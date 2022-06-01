@@ -3,15 +3,7 @@
     <div v-if="txs && txs.actions" class="transactions-container">
       <div class="header">Transactions</div>
       <!-- transactions component -->
-      <div class="nav-headers box">
-        <div class="nav-item" @click="changeFilter('all')" :class="{'active': filter == 'all'}">All</div>
-        <div class="nav-item" @click="changeFilter('swap')" :class="{'active': filter == 'swap'}">Swap</div>
-        <div class="nav-item" @click="changeFilter('addLiquidity')" :class="{'active': filter == 'addLiquidity'}">Add Liquidity</div>
-        <div class="nav-item" @click="changeFilter('withdraw')" :class="{'active': filter == 'withdraw'}">Withdraw Liquidity</div>
-        <div class="nav-item" @click="changeFilter('donate')" :class="{'active': filter == 'donate'}">Donate</div>
-        <div class="nav-item" @click="changeFilter('refund')" :class="{'active': filter == 'refund'}">Refund</div>
-        <div class="nav-item" @click="changeFilter('switch')" :class="{'active': filter == 'switch'}">Switch</div>
-      </div>
+      <Nav :activeMode="filter" @update:activeMode="(f) => changeFilter(f)" :navItems="navItems" />
       <transactions :txs="txs" :loading="loading"></transactions>
       <pagination :limit="10" :offset="offset" :count="count" @changePage="getActions"></pagination>
     </div>
@@ -34,7 +26,16 @@ export default {
       offset: undefined,
       count: undefined,
       loading: false,
-      filter: 'all'
+      filter: 'all',
+      navItems: [
+        {text: 'All', mode: 'all'},
+        {text: 'Swap', mode: 'swap'},
+        {text: 'Add Liquidity', mode: 'addLiquidity'},
+        {text: 'Withdraw Liquidity', mode: 'withdraw'},
+        {text: 'Donate', mode: 'donate'},
+        {text: 'Refund', mode: 'refund'},
+        {text: 'Switch', mode: 'switch'},
+      ]
     }
   },
   methods: {

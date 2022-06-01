@@ -14,7 +14,7 @@
           <hr>
           <div class="stat-item">
             <!-- <globe class="stat-image" /> -->
-            <img class="stat-image" src="~/assets/images/globe.png" alt="globe-icon">
+            <Globe class="stat-image" />
             <div class="item-detail">
               <div class="header">RUNE Supply</div>
               <div class="value" v-if="runeSupply">
@@ -64,7 +64,7 @@
           </div>
           <hr>
           <div class="stat-item">
-            <img class="stat-image" src="~/assets/images/transaction.png" style="width: 2rem; height: auto; padding: .2rem;" alt="rune-coin">
+            <Chart class="stat-image" />
             <div class="item-detail">
               <div class="header">Total Swap, Add, and Withdraw txs</div>
               <div v-if="totalTxs" class="value">
@@ -167,8 +167,9 @@
 import {networkQuery} from '~/_gql_queries';
 import { blockTime} from '~/utils';
 import Block from '~/assets/images/block.svg?inline';
-import Globe from '~/assets/images/globe.svg?inline';
-import Circulate from '~/assets/images/circulate.svg?inline';
+import Globe from '~/assets/images/world.svg?inline';
+import Circulate from '~/assets/images/stats.svg?inline';
+import Chart from '~/assets/images/chart.svg?inline';
 import { AssetCurrencySymbol } from '@xchainjs/xchain-util';
 import BounceLoader from "vue-spinner/src/BounceLoader.vue";
 import moment from 'moment';
@@ -181,6 +182,7 @@ export default {
       }
     },
     Block,
+    Chart,
     Globe,
     Circulate,
     BounceLoader
@@ -739,7 +741,7 @@ export default {
       margin-right: .75rem;
       width: 2rem;
       height: 2rem;
-      fill: var(--font-color);
+      fill: #9F9F9F;
     }
   }
 
