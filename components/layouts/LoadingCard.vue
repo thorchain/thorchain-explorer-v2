@@ -1,5 +1,5 @@
 <template>
-  <Card class="loading-container">
+  <Card :class="['loading-container', extraClass]">
     <BounceLoader color="var(--font-color)" size="3rem"></BounceLoader>
   </Card>
 </template>
@@ -8,6 +8,7 @@
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue';
 
 export default {
+  props: ['extraClass'],
   components: {
     BounceLoader
   }
