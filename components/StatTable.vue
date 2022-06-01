@@ -119,6 +119,7 @@ export default {
     }
 
     .stat-table-item {
+      flex: 1;
 
       .col-value {
         color: var(--sec-font-color);
