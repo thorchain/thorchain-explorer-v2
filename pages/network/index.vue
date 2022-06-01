@@ -15,7 +15,7 @@
       </div>
       <h3 v-if="uptodateNodes && activeNodes && blockchainVersion" style="text-align: center">
         <span class="sec-color">{{ uptodateNodes.length }}</span> of <span class="sec-color">{{ activeNodes.length }}</span> nodes
-        upgraded to <span class="sec-color">{{ uptodateNodes(activeNodes) }}</span>
+        upgraded to <span class="sec-color">{{ uptodateNodeVersion(activeNodes) }}</span>
       </h3>
       <p v-if="newStandByVersion" style="text-align: center; color: var(--primary-color)">✨ New version detected! ({{newStandByVersion}})</p>
     </Card>
