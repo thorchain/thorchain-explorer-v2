@@ -1,23 +1,22 @@
 <template>
-  <div class="txs-wrapper">
+  <Page>
     <div v-if="txs && txs.actions" class="transactions-container">
       <!-- transactions component -->
       <Nav :activeMode="filter" @update:activeMode="(f) => changeFilter(f)" :navItems="navItems" />
       <transactions :txs="txs" :loading="loading"></transactions>
       <pagination :limit="10" :offset="offset" :count="count" @changePage="getActions"></pagination>
     </div>
-    <div v-else class="loading">
-      <BounceLoader color="var(--font-color)" size="3rem"/>
-    </div>
-  </div>
+    <loading-card v-else></loading-card>
+  </Page>
 </template>
 
 <script>
 import Transactions from '~/components/Transactions.vue';
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue';
+import LoadingCard from '~/components/layouts/LoadingCard.vue';
 
 export default {
-  components: { Transactions, BounceLoader },
+  components: { Transactions, BounceLoader, LoadingCard },
   name: 'txsPage',
   data() {
     return {
@@ -66,5 +65,5 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
+<style>
 </style>

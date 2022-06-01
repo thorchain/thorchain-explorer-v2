@@ -1,5 +1,5 @@
 <template>
-  <div class="vaults-container">
+  <Page>
     <template v-if="yggdrasil.length > 0">
       <vue-good-table
         v-if="cols && yggdrasil.length > 0"
@@ -52,7 +52,7 @@
     <div v-else class="loading">
       <BounceLoader color="var(--font-color)" size="3rem"></BounceLoader>
     </div>
-  </div>
+  </Page>
 </template>
 
 <script>
@@ -162,5 +162,4 @@ export default {
 </script>
 
 <style>
-
 </style>

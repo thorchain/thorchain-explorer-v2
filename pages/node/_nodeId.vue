@@ -1,5 +1,5 @@
 <template>
-  <div class="node-wrapper">
+  <Page>
     <div v-if="nodeSettings && nodeSettings.length > 0" class="node-container">
       <stat-table
         :header="$options.filters.capitalize(nodeId)"
@@ -9,7 +9,7 @@
     <div v-else class="loading">
       <BounceLoader color="var(--font-color)" size="3rem" />
     </div>
-  </div>
+  </Page>
 </template>
 
 <script>

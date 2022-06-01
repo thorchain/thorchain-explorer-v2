@@ -1,6 +1,6 @@
 import { assetFromString, Chain, chainToString } from '@xchainjs/xchain-util';
 import { AssetImage } from '~/classes/assetImage';
-import compareVersions from 'compare-versions';
+import compare from 'semver/functions/compare';
 
 export default {
   methods: {
@@ -10,6 +10,18 @@ export default {
       } catch (error) {
         return require('~/assets/images/unknown.png');
       }
+    },
+    assetToChain(assetStr) {
+      const { chain } = assetFromString(assetStr);
+      let asset = `${chain}.${chain}`;
+      switch (chain) {
+        default:
+          break;
+      }
+      return asset;
+    },
+    imgErr(e) {
+      e.target.src = require('~/assets/images/unknown.png');
     },
     baseChainAsset(chain) {
       switch (chain) {
@@ -57,7 +69,7 @@ export default {
       return this.$options.filters.currency(number);
     },
     versionSort(x, y, col, rowX, rowY) {
-      return (compareVersions(x, y))
+      return (compare(x, y))
     },
     formatAddress(string) {
       if (string && string.length > 12)
