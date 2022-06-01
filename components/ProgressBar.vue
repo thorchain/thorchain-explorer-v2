@@ -1,13 +1,13 @@
 <template>
   <div class="progress-wrapper">
-    <div class="progress-bar" :style="{'width': width + '%'}"></div>
+    <div class="progress-bar" :style="{'width': width + '%', backgroundColor: color}"></div>
     <span class="progress-text" v-if="extraText">{{extraText}}</span>
   </div>
 </template>
 
 <script>
 export default {
-  props: ['width', 'extraText']
+  props: ['width', 'extraText', 'color']
 }
 </script>
 
@@ -21,7 +21,7 @@ export default {
   .progress-bar {
     height: 10px;
     border-radius: 5px;
-    width: 50%;
+    width: 1%;
     background-color: var(--primary-color);
 
     transition: width 700ms;
