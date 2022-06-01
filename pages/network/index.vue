@@ -17,6 +17,7 @@
         <span class="sec-color">{{ uptodateNodes.length }}</span> of <span class="sec-color">{{ activeNodes.length }}</span> nodes
         upgraded to <span class="sec-color">{{ blockchainVersion.current }}</span>
       </h3>
+      <p v-if="newStandByVersion" style="text-align: center; color: var(--primary-color)">✨ New version detected! ({{newStandByVersion}})</p>
     </Card>
     <stat-table
       :isLoading="!inAddresses"
@@ -83,6 +84,8 @@
 import { activeNodesQuery, bondMetrics, networkQuery } from "~/_gql_queries";
 import StatTable from "~/components/StatTable.vue";
 import { formatAsset, addressFormat, blockTime } from "~/utils";
+import { Chain } from '@xchainjs/xchain-util';
+import {gt, rsort} from 'semver';
 
 export default {
   components: { StatTable },
@@ -218,6 +221,38 @@ export default {
           return gas_rate;
       }
     },
+    lowerLevelGas(chain) {
+      if (chain == Chain.Bitcoin || chain == Chain.Litecoin || chain == Chain.BitcoinCash || chain == Chain.Doge) {
+        return (10**8/250)
+      }
+      else if (chain == Chain.Ethereum) {
+        return (10**9/35000)
+      }
+      else if (chain == Chain.Binance) {
+        return (10**8)
+      }
+      else if (chain == Chain.Terra) {
+        return (10**6)
+      }
+      else
+        return false
+    },
+    gasFormat(chain) {
+      if (chain == Chain.Bitcoin || chain == Chain.Litecoin || chain == Chain.BitcoinCash || chain == Chain.Doge) {
+        return ' sat/byte'
+      }
+      else if (chain == Chain.Ethereum) {
+        return ' gwei'
+      }
+      else if (chain == Chain.Binance) {
+        return ' sat'
+      }
+      else if (chain == Chain.Terra) {
+        return ' uluna'
+      }
+      else
+        return false
+    }
   },
   computed: {
     versionProgress: function () {
@@ -235,6 +270,13 @@ export default {
     },
     networkSettings: function () {
       return [
+        [
+          {
+            name: "Current Blockchain version",
+            value: this.blockchainVersion?.current,
+            filter: true
+          }
+        ],
         [
           {
             name: "Bonding APY",
@@ -341,6 +383,7 @@ export default {
           name: `${e.chain} gas fee`,
           value: this.formatGas(getChain(e.chain), e.chain),
           image: this.assetImage(`${e.chain}.${e.chain}`),
+          extraText: this.lowerLevelGas(e.chain)? this.formatGas(getChain(e.chain), e.chain)*this.lowerLevelGas(e.chain)+this.gasFormat(e.chain):false,
           filter: true,
         };
       });
@@ -357,6 +400,16 @@ export default {
         chains.slice(6),
       ];
     },
+    newStandByVersion: function () {
+      if (!this.blockchainVersion || !this.activeNodesQuery)
+        return
+      let currentVer = this.blockchainVersion.current;
+      let node = this.activeNodesQuery.nodes.filter(
+        (n) => gt(n.version, currentVer)
+      );
+      if (node && node.length > 0)
+        return rsort(node)[0].version;
+    }
   },
 };
 </script>
