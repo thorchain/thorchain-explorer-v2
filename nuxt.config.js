@@ -93,5 +93,6 @@ export default {
     MIDGARD_BASE_URL: process.env.MIDGARD_BASE_URL,
     THORNODE_URL: process.env.THORNODE_URL,
     TENDERMINT_URL: process.env.TENDERMINT_URL,
+    SERVER_URL: process.env.SERVER_URL
   }
 }
