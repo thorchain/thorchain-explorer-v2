@@ -643,28 +643,37 @@ export default {
       })
     });
 
-    this.$api.volumeHistory()
-    .then(res => this.volumeHistory = this.formatLPChange(res.data))
-    .catch(error => {
-      console.error(error)
+    this.$api.getDashboardPlots()
+    .then(({data}) => {
+      this.volumeHistory = this.formatLPChange(data?.LPChange);
+      this.swapHistory = this.formatSwap(data?.swaps);
+      this.tvlHistory = this.formatTvl(data?.tvl);
+      this.earningsHistory = this.formatEarnings(data?.earning);
     })
-
-    this.$api.swapHistory()
-    .then(res => this.swapHistory = this.formatSwap(res.data))
     .catch(error => {
-      console.error(error)
-    })
+      this.$api.volumeHistory()
+      .then(res => this.volumeHistory = this.formatLPChange(res.data))
+      .catch(error => {
+        console.error(error)
+      })
 
-    this.$api.tvlHistory()
-    .then(res => this.tvlHistory = this.formatTvl(res.data))
-    .catch(error => {
-      console.error(error)
-    })
+      this.$api.swapHistory()
+      .then(res => this.swapHistory = this.formatSwap(res.data))
+      .catch(error => {
+        console.error(error)
+      })
 
-    this.$api.earningsHistory()
-    .then(res => this.earningsHistory = this.formatEarnings(res.data))
-    .catch(error => {
-      console.error(error)
+      this.$api.tvlHistory()
+      .then(res => this.tvlHistory = this.formatTvl(res.data))
+      .catch(error => {
+        console.error(error)
+      })
+
+      this.$api.earningsHistory()
+      .then(res => this.earningsHistory = this.formatEarnings(res.data))
+      .catch(error => {
+        console.error(error)
+      })
     })
 
     this.$api.getRPCLastBlockHeight()
