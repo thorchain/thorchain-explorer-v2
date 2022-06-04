@@ -80,6 +80,7 @@ export default {
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
+  overflow: hidden;
 
   @include lg {
     padding: 0 64px;

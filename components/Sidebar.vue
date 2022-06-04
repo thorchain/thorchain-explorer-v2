@@ -9,7 +9,7 @@
             Explorer
           </div>
         </div>
-        <div class="menu-wrapper" @click="toggleMenu">
+        <div class="menu-wrapper" @click="toggleMenu()">
           <MenuIcon v-if="!menu" class="icon" />
           <CrossIcon v-else class="icon" />
         </div>

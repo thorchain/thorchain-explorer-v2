@@ -142,7 +142,7 @@ export default {
     sortedPools() {
       if (!this.pools)
         return undefined
-      return this.pools.sort((a,b) => {
+      return this.pools?.sort((a,b) => {
         return b.depth.poolDepth - a.depth.poolDepth
       })
     }

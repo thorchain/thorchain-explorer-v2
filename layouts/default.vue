@@ -100,6 +100,7 @@ Vue.mixin(global)
     grid-area: sidebar;
     background-color: var(--sidebar);
     opacity: .95; /* Black w/opacity/see-through */
+    overflow: hidden;
     border-top: 1px solid var(--border-color);
 
     @include lg {
@@ -118,6 +119,7 @@ Vue.mixin(global)
     background: var(--sidebar);
     grid-area: header;
     border-bottom: 1px solid var(--border-color);
+    overflow: hidden;
   }
 
   #main-content {

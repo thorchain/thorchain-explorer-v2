@@ -140,7 +140,7 @@ export default {
     },
     calMedianBond() {
       const eNodes = this.bondMetrics?.standbyBonds.filter(b => b >= this.minBond)
-      return eNodes.sort((a, b) => +a - +b)[Math.floor(eNodes.length / 2)]/10**8; 
+      return eNodes?.sort((a, b) => +a - +b)[Math.floor(eNodes.length / 2)]/10**8; 
     }
   },
   data: function() {
