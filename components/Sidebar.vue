@@ -264,8 +264,12 @@ export default {
           }
           
           span {
-            color: var(--font-color);
+            color: var(--sec-font-color);
             font-weight: bolder;
+          }
+
+          .icon {
+            fill: var(--sec-font-color);
           }
         }
 
