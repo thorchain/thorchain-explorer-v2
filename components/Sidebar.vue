@@ -16,7 +16,7 @@
       </div>
       <div class="side-bar-lists">
         <template v-for="(item, index) in sidebarLists" >
-          <NuxtLink :to="item.link" :class="['side-bar-item']" :key="index" v-on:click.native="toggleMenu">
+          <NuxtLink :to="item.link" :class="['side-bar-item']" :key="index" v-on:click.native="toggleMenu(false)">
             <component v-bind:is="item.icon" class="icon selected"></component>
             <component v-bind:is="item.unicon" class="icon unselected"></component>
             <span class="sidebar-text">{{item.name}}</span>
@@ -178,21 +178,58 @@ export default {
       display: flex;
       justify-content: space-between;
       align-items: center;
-
+      font-family: 'Exo 2';
       font-size: .875rem;
+
       .logo {
         width: 1.5rem;
+      }
+
+      @include lg {
+        font-size: 1rem;
+
+        .logo {
+          width: 1.75rem;
+        }
       }
     }
   }
 
   .footer-wrapper {
-    display: none;
+      display: none;
+      padding: 18px 20px;
 
-    @include lg {
-      display: block;
+      @include lg {
+        display: block;
+      }
+
+      .social-items {
+        display: flex;
+        gap: 10px;
+        width: 100%;
+        padding: 10px;
+        border-top: 1px solid var(--border-color);
+
+        a {
+          color: var(--font-color);
+          text-decoration: none;
+
+          .social-icon {
+            fill: inherit;
+            widows: 1.2rem;
+            height: 1.2rem;
+          }
+
+          &:hover {
+            color: var(--border-color);
+
+            .social-icon {
+              fill: var(--border-color);
+            }
+          }
+        }
+      }
     }
-  }
   
   .side-bar-lists {
     display: none;
@@ -245,14 +282,39 @@ export default {
     display: flex;
     align-items: center;
     cursor: pointer;
+
+    @include lg {
+      display: none;
+    }
   }
 
   .icon {
     width: 1.5rem;
   }
 
-  &.menu {
+  @include lg {
+    .header {
+      margin-bottom: 25px;
+    }
 
+    .side-bar-lists {
+      display: flex;
+      flex-direction: column;
+
+      .side-bar-item {
+
+        span {
+          font-size: 14px;
+        }
+
+        .icon {
+          width: 20px;
+        }
+      }
+    }
+  }
+
+  &.menu {
     .header {
       margin-bottom: 25px;
     }
@@ -264,34 +326,6 @@ export default {
 
     .footer-wrapper {
       display: flex;
-      padding: 18px 20px;
-
-      .social-items {
-        display: flex;
-        gap: 10px;
-        width: 100%;
-        padding: 10px;
-        border-top: 1px solid var(--border-color);
-
-        a {
-          color: var(--font-color);
-          text-decoration: none;
-
-          .social-icon {
-            fill: inherit;
-            widows: 1.2rem;
-            height: 1.2rem;
-          }
-
-          &:hover {
-            color: var(--border-color);
-
-            .social-icon {
-              fill: var(--border-color);
-            }
-          }
-        }
-      }
     }
   }
 }

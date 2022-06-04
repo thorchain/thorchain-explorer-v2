@@ -26,7 +26,7 @@ export const mutations = {
     htmlElement.setAttribute('theme', isDarkTheme?'dark':'light');
     state.darkTheme = isDarkTheme;
   },
-  toggleMenu(state) {
-    state.showMenu = !state.showMenu;
+  toggleMenu(state, action) {
+    state.showMenu = action!==undefined?action:!state.showMenu;
   }
 }
