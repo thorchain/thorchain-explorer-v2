@@ -6,16 +6,11 @@
       header="Network Overview"
       :iconSrc="require('@/assets/images/database.svg')"
     ></stat-table>
-    <Card :isLoading="!activeNodesQuery" title="THORChain version upgrade progress">
-      <div class="progress-bar-container">
-        <div
-          :class="[{ complete: versionProgress == 100 }, 'progress-bar']"
-          :style="{ width: versionProgress + '%' }"
-        ></div>
-      </div>
-      <h3 v-if="uptodateNodes && activeNodes && blockchainVersion" style="text-align: center">
-        <span class="sec-color">{{ uptodateNodes.length }}</span> of <span class="sec-color">{{ activeNodes.length }}</span> nodes
-        upgraded to <span class="sec-color">{{ uptodateNodeVersion(activeNodes) }}</span>
+    <Card title="THORChain version upgrade progress">
+      <ProgressBar v-if="versionProgress" :width="versionProgress" :color="versionProgress < 100? '#29b6f6':false" />
+      <h3 style="text-align: center">
+        <span class="sec-color">{{ uptodateNodes?uptodateNodes.length:'*' }}</span> of <span class="sec-color">{{ activeNodes?activeNodes.length:'*' }}</span> nodes
+        upgraded to <span class="sec-color">{{ activeNodes?uptodateNodeVersion(activeNodes):'*' }}</span>
       </h3>
       <p v-if="newStandByVersion" style="text-align: center; color: var(--primary-color)">✨ New version detected! ({{newStandByVersion}})</p>
     </Card>
@@ -275,6 +270,7 @@ export default {
           parseFloat(this.uptodateNodes.length / this.activeNodes.length) * 100
         );
       }
+      return 1;
     },
     networkSettings: function () {
       return [
@@ -423,36 +419,11 @@ export default {
 </script>
 
 <style lang="scss">
-.network-index-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-}
-
 .grid-network {
   width: 100%;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   grid-gap: 0.5rem;
   gap: 0.5rem;
-}
-
-.progress-bar-container {
-  display: flex;
-  align-items: center;
-  border-radius: 2rem;
-  height: 1.2rem;
-  background-color: var(--active-bg-color);
-
-  .progress-bar {
-    border-radius: inherit;
-    margin: 0.2rem;
-    height: 0.8rem;
-    background-color: #29b6f6;
-
-    &.complete {
-      background-color: #81c784;
-    }
-  }
 }
 </style>
