@@ -558,16 +558,6 @@ export default {
 
       return data;
     },
-    formatBlocks: function(blocks) {
-      let blockJsons = []
-      const r = /(?<=Timestamp: )\d+/gm;
-      for (let block of blocks) {
-        let blockJson = JSON.parse(block.slice(block.indexOf('\n')))
-        blockJson['timestamp'] = block.match(r)[0]
-        blockJsons.push(blockJson)
-      }
-      return blockJsons.reverse()
-    },
     formatTendermintBlocks: function(blocks) {
       let blockJsons = []
       for (let block of blocks) {
@@ -582,12 +572,6 @@ export default {
     },
     formatMoment: function(time) {
       return moment(Number.parseInt(time/10**6)).fromNow();
-    },
-    gotoTx(txid) {
-      this.$router.push({ path: `/tx/${txid}` })
-    },
-    gotoAddr(address) {
-      this.$router.push({ path: `/address/${address}` })
     },
   },
   apollo: {
