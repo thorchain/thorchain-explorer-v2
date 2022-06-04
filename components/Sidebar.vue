@@ -1,6 +1,7 @@
 <template>
-  <div class="side-bar-container" :class="{'mini': mini? true:false}">
-      <div class="upper-wrapper">
+  <div class="side-bar-container" :class="{'menu': menu}">
+    <div class="upper-wrapper">
+      <div class="header">
         <div class="logo-wrapper">
           <ThorchainLogo class="logo" />
           <div>
@@ -8,16 +9,22 @@
             Explorer
           </div>
         </div>
-        <div class="side-bar-lists">
-          <template v-for="(item, index) in sidebarLists" >
-            <NuxtLink :to="item.link" :class="['side-bar-item']" :key="index">
-              <component v-bind:is="item.icon" class="icon selected"></component>
-              <component v-bind:is="item.unicon" class="icon unselected"></component>
-              <span class="sidebar-text">{{item.name}}</span>
-            </NuxtLink>
-          </template>
+        <div class="menu-wrapper" @click="toggleMenu()">
+          <MenuIcon v-if="!menu" class="icon" />
+          <CrossIcon v-else class="icon" />
         </div>
       </div>
+      <div class="side-bar-lists">
+        <template v-for="(item, index) in sidebarLists" >
+          <NuxtLink :to="item.link" :class="['side-bar-item']" :key="index" v-on:click.native="toggleMenu(false)">
+            <component v-bind:is="item.icon" class="icon selected"></component>
+            <component v-bind:is="item.unicon" class="icon unselected"></component>
+            <span class="sidebar-text">{{item.name}}</span>
+          </NuxtLink>
+        </template>
+      </div>
+    </div>
+    <div class="footer-wrapper">
       <div class="social-items">
         <a href="https://twitter.com/THORChain">
           <TwitterLogo class="social-icon" />
@@ -29,6 +36,7 @@
           <GithubLogo class="social-icon" />
         </a>
       </div>
+    </div>
   </div>
 </template>
 
@@ -60,9 +68,12 @@ import moneyUnselected from '~/assets/images/money.svg?inline';
 import shieldSelected from '~/assets/images/shield.svg?inline';
 import shieldUnselected from '~/assets/images/shield-unselected.svg?inline';
 
+import MenuIcon from '~/assets/images/menu-burger.svg?inline';
+import CrossIcon from '~/assets/images/cross.svg?inline';
+import { mapMutations, mapGetters } from 'vuex';
+
 export default {
   name: 'SideBar',
-  props: ['mini'],
   components: {
     TwitterLogo,
     DiscordLogo,
@@ -81,7 +92,9 @@ export default {
     moneyUnselected,
     shieldSelected,
     shieldUnselected,
-    ThorchainLogo
+    ThorchainLogo,
+    MenuIcon,
+    CrossIcon
   },
   data() {
     return {
@@ -131,6 +144,16 @@ export default {
       ]
     }
   },
+  methods: {
+    ...mapMutations([
+      'toggleMenu'
+    ])
+  },
+  computed: {
+    ...mapGetters({
+      menu: 'getIsMenuOn'
+    })
+  }
 }
 </script>
 
@@ -138,148 +161,176 @@ export default {
 .side-bar-container {
   display: grid;
   grid-template-rows: 1fr auto;
-  height: 100%;
+  min-height: 64px;
 
-  &.mini {
-    flex-direction: row;
+  background-color: var(--color-light);
+
+  .header {
+    display: flex;
     align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    min-height: 64px;
 
-    .logo {
-      margin-bottom: 0;
-    }
-
-    .sidebar-text {
-      display: none;
-    }
-
-    .side-bar-item {
-      justify-content: center;
-      .icon {
-        margin: 0;
-      }
-    }
-
-    .side-bar-lists {
-      flex: 1;
-      justify-content: space-around;
-      flex-direction: row;
-    }
-  }
-
-  .logo-wrapper {
-    display: none;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 2.25rem;
-    height: 64px;
     border-bottom: 1px solid var(--border-color);
 
-    .logo {
-      border-radius: .3rem;
-      width: 2rem;
-      height: 2rem;
-    }
-
-    div {
-
-      strong {
-        color: var(--sec-font-color);  
-      }
-      font-family: 'Exo 2';
-      font-weight: 400;
-    }
-
-    @include lg {
+    .logo-wrapper {
       display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: 'Exo 2';
+      font-size: .875rem;
+
+      .logo {
+        width: 1.5rem;
+      }
+
+      @include lg {
+        font-size: 1rem;
+
+        .logo {
+          width: 1.75rem;
+        }
+      }
     }
   }
 
-  .side-bar-lists {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-  }
+  .footer-wrapper {
+      display: none;
+      padding: 18px 20px;
 
-  .side-bar-item {
-    cursor: pointer;
-    display: flex;
-    background: transparent;
-    border: none;
-    width: 100%;
-    padding: 14px 20px;
-    text-align: left;
-    border-radius: .5rem;
-    color: var(--font-color);
-    color: inherit;
-    text-decoration: none;
-    line-height: 1.25rem;
-    gap: 10px;
-
-    &:hover {
-      background-color: var(--bg-color);
-      color: var(--sec-font-color);
-    }
-
-    &.nuxt-link-active {
-      color: var(--sec-font-color);
-      background-color: var(--bg-color);
-
-      .icon.selected {
+      @include lg {
         display: block;
       }
 
-      .icon.unselected {
-        display: none;
-      }
+      .social-items {
+        display: flex;
+        gap: 10px;
+        width: 100%;
+        padding: 10px;
+        border-top: 1px solid var(--border-color);
 
-      .sidebar-text {
-        color: var(--primary-color);
+        a {
+          color: var(--font-color);
+          text-decoration: none;
+
+          .social-icon {
+            fill: inherit;
+            widows: 1.2rem;
+            height: 1.2rem;
+          }
+
+          &:hover {
+            color: var(--border-color);
+
+            .social-icon {
+              fill: var(--border-color);
+            }
+          }
+        }
       }
     }
+  
+  .side-bar-lists {
+    display: none;
 
-    .icon {
-      fill: var(--sec-font-color);
-      margin-right: .5rem;
-      height: 1.25rem;
-      width: 1.25rem;
+    .side-bar-item {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+      padding: 5px 20px;
 
-      &.selected {
+      .icon {
         display: none;
-        fill: var(--primary-color);
       }
 
-      &.unselected {
-        fill: var(--font-color);
+      &.nuxt-link-active {
+        span {
+          color: var(--font-color);
+          font-weight: bolder;
+        }
+      }
+
+      span {
+        font-size: 2.25rem;
+        color: var(--sec-font-color);
+        font-family: 'Exo 2';
+      }
+
+      @include lg {
+        &.nuxt-link-active {
+          .selected {
+            display: block;
+          }
+          
+          span {
+            color: var(--sec-font-color);
+            font-weight: bolder;
+          }
+
+          .icon {
+            fill: var(--sec-font-color);
+          }
+        }
+
+        &:not(.nuxt-link-active) {
+          .unselected {
+            display: block;
+          }
+        }
       }
     }
   }
 
-  .social-items {
-    border-top: 1px solid var(--border-color);
-    padding: 28px 20px;
-    margin-top: auto;
-    display: none;
+  .menu-wrapper {
+    display: flex;
     align-items: center;
-    gap: 20px;
-
-    a {
-      display: flex;
-    }
+    cursor: pointer;
 
     @include lg {
-      display: flex;
+      display: none;
     }
   }
 
-  .social-icon {
-    fill: var(--font-color);
-    color: var(--font-color);
-    cursor: pointer;
+  .icon {
     width: 1.5rem;
-    height: 1.5rem;
+  }
 
-    &:hover {
-      color: var(--sec-font-color);
+  @include lg {
+    .header {
+      margin-bottom: 25px;
+    }
+
+    .side-bar-lists {
+      display: flex;
+      flex-direction: column;
+
+      .side-bar-item {
+        padding: 14px 20px;
+
+        span {
+          font-size: 14px;
+        }
+
+        .icon {
+          width: 20px;
+        }
+      }
+    }
+  }
+
+  &.menu {
+    .header {
+      margin-bottom: 25px;
+    }
+
+    .side-bar-lists {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .footer-wrapper {
+      display: flex;
     }
   }
 }

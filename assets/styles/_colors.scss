@@ -11,6 +11,7 @@
   --gradient-left: #212121;
   --gradient-right: #263238;
   --active-bg-color: #3E464B;
+  --color-light: hsl(0,0%,10%);
 }
 
 [theme="dark"] {
@@ -26,6 +27,7 @@
   --gradient-right: #263238;
   --active-bg-color: #3E464B;
   --bubble-font-color: #191c1e;
+  --color-light: hsl(0,0%,10%);
 }
 
 [theme="light"] {
@@ -41,4 +43,5 @@
   --gradient-right: #DEE4E7;
   --active-bg-color: #CCCCCC;
   --bubble-font-color: #191c1e;
+  --color-light: hsl(0,0%,98%);
 }
