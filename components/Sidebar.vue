@@ -302,6 +302,7 @@ export default {
       flex-direction: column;
 
       .side-bar-item {
+        padding: 14px 20px;
 
         span {
           font-size: 14px;
