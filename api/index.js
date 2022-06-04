@@ -40,6 +40,7 @@ import {
   getTendermintLatestBlocks
 } from "./tendermint.api";
 export var $axiosInstace;
+import axiosRetry from 'axios-retry';
 
 // interceptor to catch errors
 const errorInterceptor = (error) => {
@@ -94,6 +95,7 @@ const responseInterceptor = (response) => {
 };
 
 export default function ({ $axios }, inject) {
+  axiosRetry($axios, { retries: 3, retryDelay: axiosRetry.exponentialDelay });
   $axios.interceptors.response.use(responseInterceptor, errorInterceptor);
 
   //defining the inner Vue axios instace to the outer scope
