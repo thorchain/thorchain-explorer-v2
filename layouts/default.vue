@@ -58,6 +58,8 @@ export default {
       document.documentElement.style.setProperty('--vh', `${vh}px`);
     }
 
+    changeHeight();
+
     window.addEventListener('resize', changeHeight);
   },
   watch: {
