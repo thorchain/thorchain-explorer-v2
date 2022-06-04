@@ -1,8 +1,8 @@
 <template>
-  <main id="default-layout" :class="{'mini': mini, 'long-sidebar': menu}">
+  <main id="default-layout" :class="{'long-sidebar': menu}">
     <!-- Sidebar -->
     <div id="side-bar">
-      <sidebar :mini="mini" />
+      <sidebar />
     </div>
     <!-- Searchbar -->
     <header id="header">
@@ -24,7 +24,6 @@ export default {
   name: 'DefaultLayout',
   data() {
     return {
-      mini: false,
       darkMode: false,
     }
   },
@@ -34,23 +33,7 @@ export default {
       menu: 'getIsMenuOn'
     })
   },
-  methods: {
-    resizedWindow() {
-      // get smaller than lg
-      if (document.body.offsetWidth < 992) {
-        this.mini = true;
-      }
-      else {
-        this.mini = false;
-      }
-    }
-  },
   mounted() {
-    this.resizedWindow();
-    window.addEventListener('resize', () => {
-      this.resizedWindow();
-    });
-
     this.$api.getStats()
     .then(res => {
       this.$store.commit('setRunePrice', Number.parseFloat(res.data.runePriceUSD))

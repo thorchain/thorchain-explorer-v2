@@ -1,5 +1,5 @@
 <template>
-  <div class="side-bar-container" :class="{'mini': mini? true:false, 'menu': menu}">
+  <div class="side-bar-container" :class="{'menu': menu}">
     <div class="upper-wrapper">
       <div class="header">
         <div class="logo-wrapper">
@@ -74,7 +74,6 @@ import { mapMutations, mapGetters } from 'vuex';
 
 export default {
   name: 'SideBar',
-  props: ['mini'],
   components: {
     TwitterLogo,
     DiscordLogo,
