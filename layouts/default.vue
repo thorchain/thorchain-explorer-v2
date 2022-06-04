@@ -1,5 +1,5 @@
 <template>
-  <main id="default-layout" :class="{'mini': mini}">
+  <main id="default-layout" :class="{'mini': mini, 'long-sidebar': menu}">
     <!-- Sidebar -->
     <div id="side-bar">
       <sidebar :mini="mini" />
@@ -30,7 +30,8 @@ export default {
   },
   computed: {
     ...mapGetters({
-      theme: 'getTheme'
+      theme: 'getTheme',
+      menu: 'getIsMenuOn'
     })
   },
   methods: {
@@ -96,8 +97,21 @@ Vue.mixin(global)
   }
 
   grid-template-columns: 1fr;
-  grid-template-rows: 64px 1fr 48px;
-  grid-template-areas: "header" "main" "sidebar";
+  grid-template-rows: 64px 64px 1fr;
+  grid-template-areas: "sidebar" "header" "main";
+
+  &.long-sidebar {
+    grid-template-rows: 1fr;
+    grid-template-areas: "sidebar";
+
+    #header, #main-content {
+      display: none;
+    }
+
+    #side-bar {
+      display: grid;
+    }
+  }
 
   #side-bar {
     grid-area: sidebar;

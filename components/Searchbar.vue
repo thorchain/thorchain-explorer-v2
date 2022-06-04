@@ -54,11 +54,9 @@ export default {
     changeTheme() {
       if (this.theme == 'dark') {
         this.$store.commit('setTheme', false)
-
       }
       else {
         this.$store.commit('setTheme', true)
-
       }
     }
   },
@@ -81,7 +79,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  padding: 0 20px;
 
   @include lg {
     padding: 0 64px;
@@ -90,8 +88,8 @@ export default {
   .social-icon {
     margin-left: .5rem;
     fill: var(--font-color);
-    width: 1.5rem;
-    height: 1.5rem;
+    width: 1rem;
+    height: 1rem;
   }
 
   .search-bar-input {
