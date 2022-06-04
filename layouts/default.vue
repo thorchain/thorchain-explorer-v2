@@ -52,6 +52,9 @@ export default {
       htmlElement.setAttribute('theme', 'light');
       this.darkMode = false
     }
+
+    let vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
   },
   watch: {
     darkMode: function () {
@@ -71,6 +74,7 @@ Vue.mixin(global)
 #default-layout {
   display: grid;
   height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
   overflow: hidden;
 
   @include lg {
