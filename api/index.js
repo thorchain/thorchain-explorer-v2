@@ -39,6 +39,10 @@ import {
 import {
   getTendermintLatestBlocks
 } from "./tendermint.api";
+import {
+  getDashboardData,
+  getDashboardPlots
+} from "./middleware.api";
 export var $axiosInstace;
 import axiosRetry from 'axios-retry';
 
@@ -136,7 +140,9 @@ export default function ({ $axios }, inject) {
     getRevThorname,
     getOutbound,
     getBlockChainVersion,
-    getThorchainTx
+    getThorchainTx,
+    getDashboardData,
+    getDashboardPlots
   };
 
   inject("api", api);

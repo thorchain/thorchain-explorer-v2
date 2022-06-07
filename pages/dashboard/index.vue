@@ -579,49 +579,85 @@ export default {
     network: networkQuery,
   },
   mounted() {
-    this.$api.getStats()
-    .then(res => this.stats = res.data)
-    .catch(error => {
-      console.error(error)
+    this.$api.getDashboardData()
+    .then(({data}) => {
+      this.stats = data?.stats;
+      this.runeSupply = (+data?.runeSupply?.amount?.amount)/10**8;
+      this.lastblock = data?.lastBlockHeight;
+      this.thorHeight = data?.lastBlockHeight.find(e => e.chain === 'BTC').thorchain;
+      this.txs = data?.txs?.actions;
+      this.totalTxs = +data?.txs?.count;
+      this.totalAddresses = +data?.addresses?.pagination?.total
     })
+    .catch(e => {
+      this.$api.getStats()
+      .then(res => this.stats = res.data)
+      .catch(error => {
+        console.error(error)
+      })
 
-    this.$api.getLastBlockHeight()
-    .then(res => {
-      this.lastblock = res.data;
-      this.thorHeight = res.data.find(e => e.chain === 'BTC').thorchain
-    })
-    .catch(error => {
-      console.error(error)
-    })
+      this.$api.getLastBlockHeight()
+      .then(res => {
+        this.lastblock = res.data;
+        this.thorHeight = res.data.find(e => e.chain === 'BTC').thorchain;
+      })
+      .catch(error => {
+        console.error(error)
+      })
 
-    this.$api.volumeHistory()
-    .then(res => this.volumeHistory = this.formatLPChange(res.data))
-    .catch(error => {
-      console.error(error)
-    })
+      this.$api.getSupplyRune()
+      .then(res => this.runeSupply = (+res?.data?.amount?.amount)/10**8)
+      .catch(error => {
+        console.error(error)
+      })
 
-    this.$api.swapHistory()
-    .then(res => this.swapHistory = this.formatSwap(res.data))
-    .catch(error => {
-      console.error(error)
-    })
+      this.$api.getTxs()
+      .then(res => {
+        this.txs = res?.data?.actions;
+        this.totalTxs = +res?.data?.count;
+      })
+      .catch(error => {
+        console.error(error)
+      })
 
-    this.$api.tvlHistory()
-    .then(res => this.tvlHistory = this.formatTvl(res.data))
-    .catch(error => {
-      console.error(error)
-    })
+      this.$api.getAddresses()
+      .then(res => this.totalAddresses = +res?.data?.pagination?.total)
+      .catch(error => {
+        console.error(error)
+      })
+    });
 
-    this.$api.earningsHistory()
-    .then(res => this.earningsHistory = this.formatEarnings(res.data))
-    .catch(error => {
-      console.error(error)
+    this.$api.getDashboardPlots()
+    .then(({data}) => {
+      this.volumeHistory = this.formatLPChange(data?.LPChange);
+      this.swapHistory = this.formatSwap(data?.swaps);
+      this.tvlHistory = this.formatTvl(data?.tvl);
+      this.earningsHistory = this.formatEarnings(data?.earning);
     })
-
-    this.$api.getSupplyRune()
-    .then(res => this.runeSupply = (+res?.data?.amount?.amount)/10**8)
     .catch(error => {
-      console.error(error)
+      this.$api.volumeHistory()
+      .then(res => this.volumeHistory = this.formatLPChange(res.data))
+      .catch(error => {
+        console.error(error)
+      })
+
+      this.$api.swapHistory()
+      .then(res => this.swapHistory = this.formatSwap(res.data))
+      .catch(error => {
+        console.error(error)
+      })
+
+      this.$api.tvlHistory()
+      .then(res => this.tvlHistory = this.formatTvl(res.data))
+      .catch(error => {
+        console.error(error)
+      })
+
+      this.$api.earningsHistory()
+      .then(res => this.earningsHistory = this.formatEarnings(res.data))
+      .catch(error => {
+        console.error(error)
+      })
     })
 
     this.$api.getRPCLastBlockHeight()
@@ -633,21 +669,6 @@ export default {
         console.error(error)
       })
     })
-    .catch(error => {
-      console.error(error)
-    })
-
-    this.$api.getTxs()
-    .then(res => {
-      this.txs = res?.data?.actions;
-      this.totalTxs = +res?.data?.count;
-    })
-    .catch(error => {
-      console.error(error)
-    })
-
-    this.$api.getAddresses()
-    .then(res => this.totalAddresses = +res?.data?.pagination?.total)
     .catch(error => {
       console.error(error)
     })
