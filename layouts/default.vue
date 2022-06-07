@@ -1,8 +1,8 @@
 <template>
-  <main id="default-layout" :class="{'mini': mini}">
+  <main id="default-layout" :class="{'long-sidebar': menu}">
     <!-- Sidebar -->
     <div id="side-bar">
-      <sidebar :mini="mini" />
+      <sidebar />
     </div>
     <!-- Searchbar -->
     <header id="header">
@@ -24,32 +24,16 @@ export default {
   name: 'DefaultLayout',
   data() {
     return {
-      mini: false,
       darkMode: false,
     }
   },
   computed: {
     ...mapGetters({
-      theme: 'getTheme'
+      theme: 'getTheme',
+      menu: 'getIsMenuOn'
     })
   },
-  methods: {
-    resizedWindow() {
-      // get smaller than lg
-      if (document.body.offsetWidth < 992) {
-        this.mini = true;
-      }
-      else {
-        this.mini = false;
-      }
-    }
-  },
   mounted() {
-    this.resizedWindow();
-    window.addEventListener('resize', () => {
-      this.resizedWindow();
-    });
-
     this.$api.getStats()
     .then(res => {
       this.$store.commit('setRunePrice', Number.parseFloat(res.data.runePriceUSD))
@@ -68,6 +52,15 @@ export default {
       htmlElement.setAttribute('theme', 'light');
       this.darkMode = false
     }
+
+    let changeHeight = () => {
+      let vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    }
+
+    changeHeight();
+
+    window.addEventListener('resize', changeHeight);
   },
   watch: {
     darkMode: function () {
@@ -87,6 +80,7 @@ Vue.mixin(global)
 #default-layout {
   display: grid;
   height: 100vh;
+  height: calc(var(--vh, 1vh) * 100);
   overflow: hidden;
 
   @include lg {
@@ -96,20 +90,34 @@ Vue.mixin(global)
   }
 
   grid-template-columns: 1fr;
-  grid-template-rows: 64px 1fr 48px;
-  grid-template-areas: "header" "main" "sidebar";
+  grid-template-rows: 64px 64px 1fr;
+  grid-template-areas: "sidebar" "header" "main";
+
+  &.long-sidebar {
+    grid-template-rows: 1fr;
+    grid-template-areas: "sidebar";
+
+    #header, #main-content {
+      display: none;
+    }
+
+    #side-bar {
+      display: grid;
+    }
+  }
 
   #side-bar {
     grid-area: sidebar;
     background-color: var(--sidebar);
     opacity: .95; /* Black w/opacity/see-through */
+    overflow: hidden;
     border-top: 1px solid var(--border-color);
 
     @include lg {
       border: none;
       border-right: 1px solid var(--border-color);
       min-height: 800px;
-      display: block;
+      display: grid;
       flex: 0 0 13.75rem;
       height: 100%;
     }
@@ -121,6 +129,7 @@ Vue.mixin(global)
     background: var(--sidebar);
     grid-area: header;
     border-bottom: 1px solid var(--border-color);
+    overflow: hidden;
   }
 
   #main-content {

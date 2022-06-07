@@ -1,6 +1,7 @@
 export const state = () => ({
   runePrice: 0,
-  darkTheme: false
+  darkTheme: false,
+  showMenu: false,
 })
 
 export const getters = {
@@ -9,6 +10,9 @@ export const getters = {
   },
   getTheme (state) {
     return state.darkTheme? 'dark':'light';
+  },
+  getIsMenuOn (state) {
+    return state.showMenu;
   }
 }
 
@@ -21,5 +25,8 @@ export const mutations = {
     localStorage.setItem("theme", isDarkTheme?'dark':'light');
     htmlElement.setAttribute('theme', isDarkTheme?'dark':'light');
     state.darkTheme = isDarkTheme;
+  },
+  toggleMenu(state, action) {
+    state.showMenu = action!==undefined?action:!state.showMenu;
   }
 }

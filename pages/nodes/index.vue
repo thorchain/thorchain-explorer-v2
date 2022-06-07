@@ -140,7 +140,7 @@ export default {
     },
     calMedianBond() {
       const eNodes = this.bondMetrics?.standbyBonds.filter(b => b >= this.minBond)
-      return eNodes.sort((a, b) => +a - +b)[Math.floor(eNodes.length / 2)]/10**8; 
+      return eNodes?.sort((a, b) => +a - +b)[Math.floor(eNodes.length / 2)]/10**8; 
     }
   },
   data: function() {
@@ -382,7 +382,7 @@ export default {
   margin-bottom: 1rem;
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
   grid-gap: .5rem;
   gap: .5rem;
 }
