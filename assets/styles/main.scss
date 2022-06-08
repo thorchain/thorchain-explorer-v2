@@ -134,6 +134,9 @@ input {
         width: 66%;
 
         > span {
+          overflow: hidden;
+          text-overflow: ellipsis;
+
           white-space: nowrap;
           word-break: keep-all;
           font-size: .875rem;
