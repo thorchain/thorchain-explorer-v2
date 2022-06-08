@@ -296,6 +296,23 @@ input {
   }
 }
 
+.table-icon {
+  width: 1rem;
+  height: 1rem;
+  fill: var(--font-color);
+  cursor: pointer;
+
+  &:hover, &.active {
+    fill: var(--primary-color);
+  }
+}
+
+.table-wrapper-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .icon {
   fill: var(--font-color);
   width: 1.5rem;

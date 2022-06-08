@@ -10,8 +10,7 @@
         v-if="activeCols && activeNodes"
         :columns="activeCols"
         :rows="activeNodes"
-        @on-row-click="gotoNode"
-        styleClass="vgt-table net-table"
+        styleClass="vgt-table net-table bordered"
         :pagination-options="{
           enabled: true,
           perPage: 50,
@@ -20,7 +19,15 @@
       >
         <template slot="table-row" slot-scope="props">
           <span class="clickable" v-if="props.column.field == 'address'">
-            <span v-tooltip="props.row.address">{{addressFormat(props.row.address)}}</span> 
+            <div class="table-wrapper-row">
+              <span v-tooltip="props.row.address" @click="gotoNode(props.row.address)">
+                {{addressFormat(props.row.address)}}
+              </span> 
+              <a style="height: 1rem" :href="gotoNodeUrl(props.row.address)" target="_blank">
+                <NetworkIcon class="table-icon" />
+              </a>
+              <LinkIcon @click="gotoAddr(props.row.address)" class="table-icon" />
+            </div>
           </span>
           <span v-else-if="props.column.field == 'bond'">
             <span v-tooltip="curFormat(runePrice * props.row.bond)">
@@ -39,6 +46,12 @@
               <span>{{props.row.status}}</span>
             </div>
           </span>
+          <span v-else-if="props.column.field == 'ip'">
+            <div class="table-wrapper-row">
+              <span>{{props.row.ip}}</span>
+              <Copy :strCopy="props.row.ip" />
+            </div>
+          </span>
           <span v-else>
             {{props.formattedRow[props.column.field]}}
           </span>
@@ -50,8 +63,7 @@
         v-if="cols && standbyNodes"
         :columns="cols"
         :rows="standbyNodes"
-        @on-row-click="gotoNode"
-        styleClass="vgt-table net-table"
+        styleClass="vgt-table net-table bordered"
         :pagination-options="{
           enabled: true,
           perPage: 50,
@@ -60,7 +72,13 @@
       >
         <template slot="table-row" slot-scope="props">
           <span class="clickable" v-if="props.column.field == 'address'">
-            <span v-if="props.row.address" v-tooltip="props.row.address">{{addressFormat(props.row.address)}}</span> 
+            <div class="table-wrapper-row" v-if="props.row.address">
+              <span v-tooltip="props.row.address" @click="gotoNode(props.row.address)">{{addressFormat(props.row.address)}}</span>
+              <a style="height: 1rem" :href="gotoNodeUrl(props.row.address)" target="_blank">
+                <NetworkIcon class="table-icon" />
+              </a>
+              <LinkIcon @click="gotoAddr(props.row.address)" class="table-icon" />
+            </div> 
             <span v-else class="not-clickable">No Address Set</span>
           </span>
           <span v-else-if="props.column.field == 'bond'">
@@ -84,6 +102,13 @@
               <span>{{props.row.status}}</span>
             </div>
           </span>
+          <span v-else-if="props.column.field == 'ip'">
+            <div v-if="props.row.ip" class="table-wrapper-row">
+              <span>{{props.row.ip}}</span>
+              <Copy :strCopy="props.row.ip" />
+            </div>
+            <div v-else></div>
+          </span>
           <span v-else>
             {{props.formattedRow[props.column.field]}}
           </span>
@@ -95,16 +120,18 @@
 
 <script>
 import {bondMetrics, nodesQuery} from "~/_gql_queries";
-import BounceLoader from 'vue-spinner/src/BounceLoader.vue';
 import { mapGetters } from 'vuex';
 import { addressFormat, fillNodeData } from '~/utils';
 import { AssetCurrencySymbol } from '@xchainjs/xchain-util';
 import _ from 'lodash';
+import NetworkIcon from '@/assets/images/chart-network.svg?inline'
+import LinkIcon from '@/assets/images/link.svg?inline'
 
 export default {
   name: "nodesPage",
   components: {
-    BounceLoader
+    NetworkIcon,
+    LinkIcon,
   },
   apollo: {
     nodesQuery: {
@@ -116,15 +143,15 @@ export default {
     bondMetrics: bondMetrics,
   },
   methods: {
-    gotoNode(t) {
-      if (t.row.address)
-        this.$router.push({path: `/node/${t.row.address}`});
+    gotoNode(address) {
+      if (address === typeof String)
+        this.$router.push({path: `/node/${address}`});
     },
     numberFormat(number) {
       return this.$options.filters.number(number, '0,0')
     },
     addressFormat(string) {
-      return addressFormat(string)
+      return addressFormat(string, 4, true)
     },
     runeCur() {
       return AssetCurrencySymbol.RUNE
@@ -187,7 +214,7 @@ export default {
           type: 'number',
           formatFn: this.numberFormat,
           tdClass: 'mono'
-        }
+        },
       ],
       minBond: 30000000000000,
       lastBlockHeight: undefined

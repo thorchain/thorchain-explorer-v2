@@ -138,8 +138,8 @@ export function formatAsset(asset) {
     asset
 }
 
-export function addressFormat(string) {
-  return string.slice(0,6)+'...'+string.slice(-6);
+export function addressFormat(string, number=6, isOnlyLast=false) {
+  return (isOnlyLast?'':(string.slice(0,number)+'...'))+string.slice(-number);
 }
 
 export function fillNodeData(nodes, el) {

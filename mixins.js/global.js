@@ -76,6 +76,9 @@ export default {
         return string.slice(0,6)+'...'+string.slice(-6)
       else
         return string
+    },
+    gotoNodeUrl(node) {
+      return (`${process.env.THORNODE_URL}thorchain/node/${node}`)
     }
   }
 }
