@@ -78,13 +78,11 @@
       <client-only>
         <div class="chart-inner-container">
           <u-chart name="swapchange" :chartSettings="swapHistory"></u-chart>
-          <div class="divider"></div>
           <u-chart name="lpchange" :chartSettings="volumeHistory"></u-chart>
         </div>
         <div style="height: 1rem;"></div>
         <div class="chart-inner-container">
           <u-chart name="earningchange" :chartSettings="earningsHistory"></u-chart>
-          <div class="divider"></div>
           <u-chart name="tvlchange" :chartSettings="tvlHistory"></u-chart>
         </div>
       </client-only>
@@ -154,10 +152,8 @@
         </div>
       </div>
     </div>
-    <div class="stats-container">
+    <div class="footer-stats">
       <stat-table header="Stats" :tableSettings="statsSettings"></stat-table>
-    </div>
-    <div class="network-container">
       <stat-table header="Network" :tableSettings="networkSettings"></stat-table>
     </div>
   </div>
@@ -683,18 +679,15 @@ export default {
   flex-wrap: wrap;
 }
 
-.stats-container,
-.network-container {
-  width: 100%;
-
-  @include md {
-    flex: 1 0 29rem;
-  }
+.footer-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-wrap: wrap;
+  flex: 1;
 
   @include lg {
-    flex-grow: 0;
-    flex-basis: initial;
-    width: calc(50% - 1rem);
+    flex-direction: row;
   }
 }
 
@@ -709,6 +702,7 @@ export default {
   .chart-inner-container {
     flex-direction: column;
     display: flex;
+    gap: 10px;
 
     .divider {
       width: 1rem;
@@ -804,29 +798,20 @@ export default {
 }
 
 .cards-container {
-  display: flex;
-  flex-direction: column;
+  display: grid;
   width: 100%;
   margin: 1rem 0;
+  grid-gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(30rem, 1fr));
+  grid-template-rows: 1fr 1fr;
 
   .card {
-    margin: .5rem 0;
+    margin: 0;
   }
 
   @include lg {
-    flex-direction: row;
-
-    .card {
-      width: 50%;
-
-      &:first-of-type {
-        margin-right: .5rem;
-      }
-
-      &:last-of-type {
-        margin-left: .5rem;
-      }
-    }
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: 1fr;
   }
 }
 </style>
