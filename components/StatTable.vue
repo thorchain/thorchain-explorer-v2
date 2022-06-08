@@ -141,6 +141,7 @@ pre {
   font-family: 'ProductSans';
   white-space: pre-wrap;
   word-wrap: break-word;
+  word-break: break-all;
   margin: 0;
 }
 </style>
