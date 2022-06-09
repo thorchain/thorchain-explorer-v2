@@ -802,8 +802,7 @@ export default {
   width: 100%;
   margin: 1rem 0;
   grid-gap: 10px;
-  grid-template-columns: repeat(auto-fill, minmax(30rem, 1fr));
-  grid-template-rows: 1fr 1fr;
+  grid-auto-columns: minmax(100px, auto);
 
   .card {
     margin: 0;
@@ -811,7 +810,6 @@ export default {
 
   @include lg {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-rows: 1fr;
   }
 }
 </style>
