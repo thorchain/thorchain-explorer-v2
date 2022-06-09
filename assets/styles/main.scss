@@ -34,6 +34,19 @@ input {
   font-family: 'Roboto Mono' !important;
 }
 
+.center {
+  text-align: center !important;
+}
+
+.cutsom-popover {
+  padding: 15px;
+  margin: 10px;
+  background-color: var(--card-bg-color) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 5px;
+  font-size: .9rem;
+}
+
 .clickable {
   color: var(--primary-color);
   cursor: pointer;
@@ -423,6 +436,11 @@ input {
   &.black {
     color: #FFF;
     background-color: #000;
+  }
+
+  &.gery {
+    color: var(--font-color);
+    background-color: var(--active-bg-color);
   }
 }
 

@@ -139,6 +139,8 @@ export function formatAsset(asset) {
 }
 
 export function addressFormat(string, number=6, isOnlyLast=false) {
+  if (!string) 
+    return string
   return (isOnlyLast?'':(string.slice(0,number)+'...'))+string.slice(-number);
 }
 
@@ -146,13 +148,14 @@ export function fillNodeData(nodes, el) {
   if (!el)
     return
   nodes.push({
-    address: el.address,
-    ip: el.ipAddress,
+    address: el.node_address,
+    ip: el.ip_address,
     status: el.status,
     version: el.version,
-    slash: Number.parseInt(el.slashPoints),
-    award: (Number.parseFloat(el.currentAward)/10**8).toFixed(2),
-    bond: el.bond/10**8 < 0.01?0:el.bond/10**8
+    slash: Number.parseInt(el.slash_points),
+    award: (Number.parseFloat(el.current_award)/10**8).toFixed(2),
+    providers: el.bond_providers?.providers,    
+    bond: el.bond/10**8 < 0.01?0:el.bond/10**8,
   })
 }
 

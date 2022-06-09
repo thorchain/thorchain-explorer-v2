@@ -1,6 +1,6 @@
 <template>
   <Page>
-    <div v-if="nodesQuery && nodesQuery.nodes" class="grid-network">
+    <div v-if="nodesQuery" class="grid-network">
       <stat-table :tableSettings="topActiveBonds" header="Top Active Bonds"></stat-table>
       <stat-table :tableSettings="topStandbyBonds" header="Top Standby Bonds"></stat-table>
     </div>
@@ -51,6 +51,32 @@
               <span>{{props.row.ip}}</span>
               <Copy :strCopy="props.row.ip" />
             </div>
+          </span>
+          <span v-else-if="props.column.field == 'providers'">
+            <div 
+              :id="props.row.providers.length?`popover-${props.row.originalIndex}`:false"
+              class="bubble-container gery"
+            >
+              {{props.row.providers.length}}
+            </div>
+            <b-popover
+              triggers="hover focus"
+              :target="`popover-${props.row.originalIndex}`"
+              customClass="cutsom-popover"
+            >
+              <div class="popover-table" v-for="(p,i) in props.row.providers" :key="i">
+                <span class="clickable" @click="gotoAddr(p.bond_address)">
+                  {{addressFormat(p.bond_address)}}
+                </span>
+                <span class="text">
+                  {{(p.bond/10**8)/(props.row.bond) | percent}}
+                </span>
+                <div style="justify-content: end;" class="text">
+                  <span class="extra">{{runeCur()}}</span>  
+                  {{numberFormat(p.bond/10**8)}}
+                </div>
+              </div>
+            </b-popover>
           </span>
           <span v-else>
             {{props.formattedRow[props.column.field]}}
@@ -119,7 +145,7 @@
 </template>
 
 <script>
-import {bondMetrics, nodesQuery} from "~/_gql_queries";
+import {bondMetrics} from "~/_gql_queries";
 import { mapGetters } from 'vuex';
 import { addressFormat, fillNodeData } from '~/utils';
 import { AssetCurrencySymbol } from '@xchainjs/xchain-util';
@@ -134,12 +160,6 @@ export default {
     LinkIcon,
   },
   apollo: {
-    nodesQuery: {
-      query: nodesQuery,
-      update(data) {
-        return data;
-      },
-    },
     bondMetrics: bondMetrics,
   },
   methods: {
@@ -168,11 +188,16 @@ export default {
     calMedianBond() {
       const eNodes = this.bondMetrics?.standbyBonds.filter(b => b >= this.minBond)
       return eNodes?.sort((a, b) => +a - +b)[Math.floor(eNodes.length / 2)]/10**8; 
+    },
+    pSort(x, y, col, rowX, rowY) {
+      return (x?.length > y?.length)
     }
   },
   data: function() {
     return {
       mode: 'active',
+      nodesQuery: undefined,
+      popoverText: 'Test',
       cols: [
         {
           label: 'Address',
@@ -239,7 +264,17 @@ export default {
     }),
     activeCols: function() {
       return [
-        ...this.cols,
+        ...this.cols.slice(0,6),
+        {
+
+          label: 'Providers',
+          field: 'providers',
+          type: 'number',
+          tdClass: 'mono center clickable',
+          width: '100px',
+          sortFn: this.pSort
+        },
+        ...this.cols.slice(-1)
         // Commenting these because it's not yet implemented.
         // {
         //   label: 'BTC',
@@ -368,7 +403,7 @@ export default {
     },
     activeNodes: function () {
       if (this.nodesQuery) {
-        const actNodes = this.nodesQuery.nodes?.filter(
+        const actNodes = this.nodesQuery?.filter(
           (e) => e.status === "Active"
         );
         let filteredNodes = [];
@@ -388,7 +423,7 @@ export default {
     },
     standbyNodes: function () {
       if (this.nodesQuery) {
-        const actNodes = this.nodesQuery.nodes?.filter(
+        const actNodes = this.nodesQuery?.filter(
           (e) => e.status !== "Active"
         );
         let filteredNodes = [];
@@ -401,6 +436,11 @@ export default {
       }
     },
   },
+  mounted() {
+    this.$api.getNodes().then(({data}) => {
+      this.nodesQuery = data;
+    })
+  }
 };
 </script>
 
@@ -416,5 +456,22 @@ export default {
 
 .extra {
   font-size: .7rem;
+}
+
+.popover-table {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+
+  > * {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .text {
+    color: var(--font-color);
+  }
 }
 </style>
