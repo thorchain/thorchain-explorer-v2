@@ -144,9 +144,30 @@ export function addressFormat(string, number=6, isOnlyLast=false) {
   return (isOnlyLast?'':(string.slice(0,number)+'...'))+string.slice(-number);
 }
 
-export function fillNodeData(nodes, el) {
+
+const supportedChains = ['BTC', 'DOGE', 'ETH', 'LTC', 'TERRA', 'BCH', 'BNB'];
+export function observeredChains(nodes) {
+  let maxHeight = {};
+  for (let chain of supportedChains) {
+    maxHeight[chain] = nodes.map(item =>item.observe_chains).filter(item => item !== null)
+    .map(item => +item.filter(item=>item.chain === chain)[0].height).reduce((a, b) => { return Math.max(+a, +b) });
+  }
+  console.log(nodes)
+
+  return maxHeight;
+}
+
+export function fillNodeData(nodes, el, chains) {
   if (!el)
     return
+  const chainsHeight = {};
+  try {
+    supportedChains.forEach((chain) => {
+      chainsHeight[chain] = (+chains[chain] - +el.observe_chains.filter(item=>item?.chain === chain)[0]?.height)
+    })  
+  } catch (error) {
+    console.error('Can\'t get the height.')
+  }
   nodes.push({
     address: el.node_address,
     ip: el.ip_address,
@@ -156,6 +177,7 @@ export function fillNodeData(nodes, el) {
     award: (Number.parseFloat(el.current_award)/10**8).toFixed(2),
     providers: el.bond_providers?.providers,    
     bond: el.bond/10**8 < 0.01?0:el.bond/10**8,
+    chains: chainsHeight
   })
 }
 

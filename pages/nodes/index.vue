@@ -78,6 +78,10 @@
               </div>
             </b-popover>
           </span>
+          <span v-else-if="props.column.field.includes('chains.')">
+            <span v-if="props.formattedRow[props.column.field] == 0" style="color: #1B5E20;">OK</span> 
+            <span v-else style="color: #EF5350;">-{{props.formattedRow[props.column.field]}}</span>
+          </span>
           <span v-else>
             {{props.formattedRow[props.column.field]}}
           </span>
@@ -147,7 +151,7 @@
 <script>
 import {bondMetrics} from "~/_gql_queries";
 import { mapGetters } from 'vuex';
-import { addressFormat, fillNodeData } from '~/utils';
+import { addressFormat, fillNodeData, observeredChains } from '~/utils';
 import { AssetCurrencySymbol } from '@xchainjs/xchain-util';
 import _ from 'lodash';
 import NetworkIcon from '@/assets/images/chart-network.svg?inline'
@@ -257,6 +261,10 @@ export default {
     }).catch(e => {
       console.error(e);
     })
+
+    this.$api.getNodes().then(({data}) => {
+      this.nodesQuery = data;
+    })
   },
   computed: {
     ...mapGetters({
@@ -274,57 +282,64 @@ export default {
           width: '100px',
           sortFn: this.pSort
         },
-        ...this.cols.slice(-1)
+        ...this.cols.slice(-1),
         // Commenting these because it's not yet implemented.
-        // {
-        //   label: 'BTC',
-        //   field: 'BTC',
-        //   type: 'number',
-        //   formatFn: this.numberFormat,
-        //   tdClass: 'mono'
-        // },
-        // {
-        //   label: 'BCH',
-        //   field: 'BCH',
-        //   type: 'number',
-        //   formatFn: this.numberFormat,
-        //   tdClass: 'mono'
-        // },
-        // {
-        //   label: 'LTC',
-        //   field: 'LTC',
-        //   type: 'number',
-        //   formatFn: this.numberFormat,
-        //   tdClass: 'mono'
-        // },
-        // {
-        //   label: 'ETH',
-        //   field: 'ETH',
-        //   type: 'number',
-        //   formatFn: this.numberFormat,
-        //   tdClass: 'mono'
-        // },
-        // {
-        //   label: 'BNB',
-        //   field: 'BNB',
-        //   type: 'number',
-        //   formatFn: this.numberFormat,
-        //   tdClass: 'mono'
-        // },
-        // {
-        //   label: 'DOGE',
-        //   field: 'DOGE',
-        //   type: 'number',
-        //   formatFn: this.numberFormat,
-        //   tdClass: 'mono'
-        // },
-        // {
-        //   label: 'TERRA',
-        //   field: 'TERRA',
-        //   type: 'number',
-        //   formatFn: this.numberFormat,
-        //   tdClass: 'mono'
-        // }
+        {
+          label: 'BTC',
+          field: 'chains.BTC',
+          type: 'number',
+          formatFn: this.numberFormat,
+          tdClass: 'mono center',
+          thClass: 'center'
+        },
+        {
+          label: 'BCH',
+          field: 'chains.BCH',
+          type: 'number',
+          formatFn: this.numberFormat,
+          tdClass: 'mono center',
+          thClass: 'center'
+        },
+        {
+          label: 'LTC',
+          field: 'chains.LTC',
+          type: 'number',
+          formatFn: this.numberFormat,
+          tdClass: 'mono center',
+          thClass: 'center'
+        },
+        {
+          label: 'ETH',
+          field: 'chains.ETH',
+          type: 'number',
+          formatFn: this.numberFormat,
+          tdClass: 'mono center',
+          thClass: 'center'
+        },
+        {
+          label: 'BNB',
+          field: 'chains.BNB',
+          type: 'number',
+          formatFn: this.numberFormat,
+          tdClass: 'mono center',
+          thClass: 'center'
+        },
+        {
+          label: 'DOGE',
+          field: 'chains.DOGE',
+          type: 'number',
+          formatFn: this.numberFormat,
+          tdClass: 'mono center',
+          thClass: 'center'
+        },
+        {
+          label: 'TERRA',
+          field: 'chains.TERRA',
+          type: 'number',
+          formatFn: this.numberFormat,
+          tdClass: 'mono center',
+          thClass: 'center'
+        }
       ]
     },
     topActiveBonds: function() {
@@ -407,8 +422,9 @@ export default {
           (e) => e.status === "Active"
         );
         let filteredNodes = [];
+        let chains = observeredChains(actNodes);
         actNodes.forEach((el) => {
-          fillNodeData(filteredNodes, el);
+          fillNodeData(filteredNodes, el, chains);
           if (this.lastBlockHeight) {
             this.lastBlockHeight.forEach(chain => {
               filteredNodes[chain.chain] = 
@@ -436,11 +452,6 @@ export default {
       }
     },
   },
-  mounted() {
-    this.$api.getNodes().then(({data}) => {
-      this.nodesQuery = data;
-    })
-  }
 };
 </script>
 
