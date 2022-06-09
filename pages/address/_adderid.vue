@@ -328,6 +328,8 @@ export default {
       padding: .625rem;
       top: calc(100% + .625rem);
       position: absolute;
+      z-index: 2;
+      border: 1px solid var(--border-color);
     }
   }
 
