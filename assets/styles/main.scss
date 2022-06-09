@@ -14,6 +14,7 @@ body {
   background: linear-gradient(to left top, var(--gradient-left) 0%/*bottom-right color*/, var(--gradient-right) 100% /*top-left color*/);
   font-family: 'ProductSans';
   color: var(--font-color);
+  background-color: var(--bg-color);
 }
 
 input {
