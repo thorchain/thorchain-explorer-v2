@@ -38,6 +38,12 @@ input {
   text-align: center !important;
 }
 
+.table-asset {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .cutsom-popover {
   padding: 15px;
   margin: 10px;

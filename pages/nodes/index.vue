@@ -17,6 +17,14 @@
           perPageDropdownEnabled: false,
         }"
       >
+        <template slot="table-column" slot-scope="props">
+          <div class="table-asset" v-if="props.column.field.includes('chains')">
+            <img class="asset-chain" :src="assetImage(`${props.column.label}.${props.column.label}`)">
+          </div>
+          <span v-else>
+              {{props.column.label}}
+          </span>
+        </template>
         <template slot="table-row" slot-scope="props">
           <span class="clickable" v-if="props.column.field == 'address'">
             <div class="table-wrapper-row">
@@ -79,7 +87,7 @@
             </b-popover>
           </span>
           <span v-else-if="props.column.field.includes('chains.')">
-            <span v-if="props.formattedRow[props.column.field] == 0" style="color: #1B5E20;">OK</span> 
+            <span v-if="props.formattedRow[props.column.field] == 0" style="color: #81C784;">OK</span> 
             <span v-else style="color: #EF5350;">-{{props.formattedRow[props.column.field]}}</span>
           </span>
           <span v-else>
@@ -484,5 +492,10 @@ export default {
   .text {
     color: var(--font-color);
   }
+}
+
+.asset-chain {
+  height: 1.2rem;
+  border-radius: 50%;
 }
 </style>
