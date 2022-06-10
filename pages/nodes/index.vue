@@ -5,161 +5,176 @@
       <stat-table :tableSettings="topStandbyBonds" header="Top Standby Bonds"></stat-table>
     </div>
     <Nav :activeMode.sync="mode" :navItems="[{text: 'Active', mode: 'active'}, {text: 'Stand By and Others', mode: 'standby'}]" />
-    <Card title="Active Nodes" v-if="mode == 'active'" :isLoading="!activeNodes">
-      <vue-good-table
-        v-if="activeCols && activeNodes"
-        :columns="activeCols"
-        :rows="activeNodes"
-        styleClass="vgt-table net-table bordered"
-        :pagination-options="{
-          enabled: true,
-          perPage: 50,
-          perPageDropdownEnabled: false,
-        }"
-      >
-        <template slot="table-column" slot-scope="props">
-          <div class="table-asset" v-if="props.column.field.includes('chains')">
-            <img class="asset-chain" :src="assetImage(`${props.column.label}.${props.column.label}`)">
-          </div>
-          <span v-else>
-              {{props.column.label}}
-          </span>
-        </template>
-        <template slot="table-row" slot-scope="props">
-          <span class="clickable" v-if="props.column.field == 'address'">
-            <div class="table-wrapper-row">
-              <span v-tooltip="props.row.address" @click="gotoNode(props.row.address)">
-                {{addressFormat(props.row.address)}}
+    <KeepAlive>
+      <Card title="Active Nodes" v-if="mode == 'active'" :isLoading="!activeNodes">
+        <vue-good-table
+          v-if="activeCols && activeNodes"
+          :columns="activeCols"
+          :rows="activeNodes"
+          styleClass="vgt-table net-table bordered"
+          :pagination-options="{
+            enabled: true,
+            perPage: 50,
+            perPageDropdownEnabled: false,
+          }"
+          :key="1"
+        >
+          <template slot="table-column" slot-scope="props">
+            <div class="table-asset" v-if="props.column.field.includes('chains')">
+              <img class="asset-chain" :src="assetImage(`${props.column.label}.${props.column.label}`)">
+            </div>
+            <span v-else>
+                {{props.column.label}}
+            </span>
+          </template>
+          <template slot="table-row" slot-scope="props">
+            <span class="clickable" v-if="props.column.field == 'address'">
+              <div class="table-wrapper-row">
+                <span v-tooltip="props.row.address" @click="gotoNode(props.row.address)">
+                  {{addressFormat(props.row.address)}}
+                </span> 
+                <a style="height: 1rem" :href="gotoNodeUrl(props.row.address)" target="_blank">
+                  <NetworkIcon class="table-icon" />
+                </a>
+                <LinkIcon @click="gotoAddr(props.row.address)" class="table-icon" />
+              </div>
+            </span>
+            <span v-else-if="props.column.field == 'age'">
+              <span v-if="props.row.age" style="cursor: pointer;" v-tooltip="props.row.age.text">{{props.row.age.number | number('0,0.00')}}</span>
+              <span v-else>-</span>
+            </span>
+            <span v-else-if="props.column.field == 'isp'">
+              <cloud-image v-if="props.row.isp" :name="props.row.isp"></cloud-image>
+              <span v-else>-</span>
+            </span>
+            <span v-else-if="props.column.field == 'location'">
+              <div v-tooltip="`${props.row.location.code}, ${props.row.location.region}, ${props.row.location.city}`" class="countries">
+                <!-- <span>{{getUnicodeFlagIcon(props.row.location.code)}}</span>  -->
+                <VFlag :flag="props.row.location.code"/>
+                <span>{{props.row.location.city}}</span>
+              </div>
+            </span>
+            <span v-else-if="props.column.field == 'bond'">
+              <span v-tooltip="curFormat(runePrice * props.row.bond)">
+                <span class="extra">{{runeCur()}}</span>  
+                {{numberFormat(props.row.bond)}}
               </span> 
-              <a style="height: 1rem" :href="gotoNodeUrl(props.row.address)" target="_blank">
-                <NetworkIcon class="table-icon" />
-              </a>
-              <LinkIcon @click="gotoAddr(props.row.address)" class="table-icon" />
-            </div>
-          </span>
-          <span v-else-if="props.column.field == 'isp'">
-            <cloud-image v-if="props.row.isp" :name="props.row.isp"></cloud-image>
-            <span v-else>-</span>
-          </span>
-          <span v-else-if="props.column.field == 'bond'">
-            <span v-tooltip="curFormat(runePrice * props.row.bond)">
-              <span class="extra">{{runeCur()}}</span>  
-              {{numberFormat(props.row.bond)}}
-            </span> 
-          </span>
-          <span v-else-if="props.column.field == 'award'">
-            <span v-tooltip="curFormat(runePrice * props.row.award)">
-              <span class="extra">{{runeCur()}}</span>  
-              {{props.row.award}}
-            </span> 
-          </span>
-          <span v-else-if="props.column.field == 'status'">
-            <div :class="'bubble-container'">
-              <span>{{props.row.status}}</span>
-            </div>
-          </span>
-          <span v-else-if="props.column.field == 'ip'">
-            <div class="table-wrapper-row">
-              <span>{{props.row.ip}}</span>
-              <Copy :strCopy="props.row.ip" />
-            </div>
-          </span>
-          <span v-else-if="props.column.field == 'providers'">
-            <div 
-              :id="props.row.providers.length?`popover-${props.row.originalIndex}`:false"
-              class="bubble-container gery"
-            >
-              {{props.row.providers.length}}
-            </div>
-            <b-popover
-              triggers="hover focus"
-              :target="`popover-${props.row.originalIndex}`"
-              customClass="cutsom-popover"
-            >
-              <div class="title" style="margin-bottom: 5px;">
-                <strong>Providers</strong>
+            </span>
+            <span v-else-if="props.column.field == 'award'">
+              <span v-tooltip="curFormat(runePrice * props.row.award)">
+                <span class="extra">{{runeCur()}}</span>  
+                {{props.row.award}}
+              </span> 
+            </span>
+            <span v-else-if="props.column.field == 'status'">
+              <div :class="'bubble-container'">
+                <span>{{props.row.status}}</span>
               </div>
-              <div class="popover-table" v-for="(p,i) in props.row.providers" :key="i">
-                <span class="clickable" @click="gotoAddr(p.bond_address)">
-                  {{addressFormat(p.bond_address)}}
-                </span>
-                <span class="text">
-                  {{(p.bond/10**8)/(props.row.bond) | percent}}
-                </span>
-                <div style="justify-content: end;" class="text">
-                  <span class="extra">{{runeCur()}}</span>  
-                  {{numberFormat(p.bond/10**8)}}
+            </span>
+            <span v-else-if="props.column.field == 'ip'">
+              <div class="table-wrapper-row">
+                <span>{{props.row.ip}}</span>
+                <Copy :strCopy="props.row.ip" />
+              </div>
+            </span>
+            <span v-else-if="props.column.field == 'providers'">
+              <div 
+                :id="props.row.providers.length?`popover-${props.row.originalIndex}`:false"
+                class="bubble-container gery"
+              >
+                {{props.row.providers.length}}
+              </div>
+              <b-popover
+                triggers="hover focus"
+                :target="`popover-${props.row.originalIndex}`"
+                customClass="cutsom-popover"
+              >
+                <div class="title" style="margin-bottom: 5px;">
+                  <strong>Providers</strong>
                 </div>
+                <div class="popover-table" v-for="(p,i) in props.row.providers" :key="i">
+                  <span class="clickable" @click="gotoAddr(p.bond_address)">
+                    {{addressFormat(p.bond_address)}}
+                  </span>
+                  <span class="text">
+                    {{(p.bond/10**8)/(props.row.bond) | percent}}
+                  </span>
+                  <div style="justify-content: end;" class="text">
+                    <span class="extra">{{runeCur()}}</span>  
+                    {{numberFormat(p.bond/10**8)}}
+                  </div>
+                </div>
+              </b-popover>
+            </span>
+            <span v-else-if="props.column.field.includes('chains.')">
+              <span v-if="props.formattedRow[props.column.field] == 0" style="color: #81C784;">OK</span> 
+              <span v-else style="color: #EF5350;">-{{props.formattedRow[props.column.field]}}</span>
+            </span>
+            <span v-else>
+              {{props.formattedRow[props.column.field]}}
+            </span>
+          </template>
+        </vue-good-table>
+      </Card>
+      <Card v-else-if="mode === 'standby'" title="Standby Nodes" :isLoading="!standbyNodes">
+        <vue-good-table
+          v-if="cols && standbyNodes"
+          :columns="cols"
+          :rows="standbyNodes"
+          styleClass="vgt-table net-table bordered"
+          :pagination-options="{
+            enabled: true,
+            perPage: 50,
+            perPageDropdownEnabled: false,
+          }"
+          :key="2"
+        >
+          <template slot="table-row" slot-scope="props">
+            <span class="clickable" v-if="props.column.field == 'address'">
+              <div class="table-wrapper-row" v-if="props.row.address">
+                <span v-tooltip="props.row.address" @click="gotoNode(props.row.address)">{{addressFormat(props.row.address)}}</span>
+                <a style="height: 1rem" :href="gotoNodeUrl(props.row.address)" target="_blank">
+                  <NetworkIcon class="table-icon" />
+                </a>
+                <LinkIcon @click="gotoAddr(props.row.address)" class="table-icon" />
+              </div> 
+              <span v-else class="not-clickable">No Address Set</span>
+            </span>
+            <span v-else-if="props.column.field == 'bond'">
+              <span v-tooltip="curFormat(runePrice * props.row.bond)">
+                <span class="extra">{{runeCur()}}</span>  
+                {{numberFormat(props.row.bond)}}
+              </span> 
+            </span>
+            <span v-else-if="props.column.field == 'award'">
+              <span v-tooltip="curFormat(runePrice * props.row.award)">
+                <span class="extra">{{runeCur()}}</span>  
+                {{props.row.award}}
+              </span> 
+            </span>
+            <span v-else-if="props.column.field == 'status'">
+              <div :class="['bubble-container yellow', {
+                'red': props.row.status === 'Disabled',
+                'black': props.row.status === 'Unknown',
+                'white': props.row.status === 'Whitelisted',
+              }]">
+                <span>{{props.row.status}}</span>
               </div>
-            </b-popover>
-          </span>
-          <span v-else-if="props.column.field.includes('chains.')">
-            <span v-if="props.formattedRow[props.column.field] == 0" style="color: #81C784;">OK</span> 
-            <span v-else style="color: #EF5350;">-{{props.formattedRow[props.column.field]}}</span>
-          </span>
-          <span v-else>
-            {{props.formattedRow[props.column.field]}}
-          </span>
-        </template>
-      </vue-good-table>
-    </Card>
-    <Card v-else-if="mode === 'standby'" title="Standby Nodes" :isLoading="!standbyNodes">
-      <vue-good-table
-        v-if="cols && standbyNodes"
-        :columns="cols"
-        :rows="standbyNodes"
-        styleClass="vgt-table net-table bordered"
-        :pagination-options="{
-          enabled: true,
-          perPage: 50,
-          perPageDropdownEnabled: false,
-        }"
-      >
-        <template slot="table-row" slot-scope="props">
-          <span class="clickable" v-if="props.column.field == 'address'">
-            <div class="table-wrapper-row" v-if="props.row.address">
-              <span v-tooltip="props.row.address" @click="gotoNode(props.row.address)">{{addressFormat(props.row.address)}}</span>
-              <a style="height: 1rem" :href="gotoNodeUrl(props.row.address)" target="_blank">
-                <NetworkIcon class="table-icon" />
-              </a>
-              <LinkIcon @click="gotoAddr(props.row.address)" class="table-icon" />
-            </div> 
-            <span v-else class="not-clickable">No Address Set</span>
-          </span>
-          <span v-else-if="props.column.field == 'bond'">
-            <span v-tooltip="curFormat(runePrice * props.row.bond)">
-              <span class="extra">{{runeCur()}}</span>  
-              {{numberFormat(props.row.bond)}}
-            </span> 
-          </span>
-          <span v-else-if="props.column.field == 'award'">
-            <span v-tooltip="curFormat(runePrice * props.row.award)">
-              <span class="extra">{{runeCur()}}</span>  
-              {{props.row.award}}
-            </span> 
-          </span>
-          <span v-else-if="props.column.field == 'status'">
-            <div :class="['bubble-container yellow', {
-              'red': props.row.status === 'Disabled',
-              'black': props.row.status === 'Unknown',
-              'white': props.row.status === 'Whitelisted',
-            }]">
-              <span>{{props.row.status}}</span>
-            </div>
-          </span>
-          <span v-else-if="props.column.field == 'ip'">
-            <div v-if="props.row.ip" class="table-wrapper-row">
-              <span>{{props.row.ip}}</span>
-              <Copy :strCopy="props.row.ip" />
-            </div>
-            <div v-else></div>
-          </span>
-          <span v-else>
-            {{props.formattedRow[props.column.field]}}
-          </span>
-        </template>
-      </vue-good-table>
-    </Card>
+            </span>
+            <span v-else-if="props.column.field == 'ip'">
+              <div v-if="props.row.ip" class="table-wrapper-row">
+                <span>{{props.row.ip}}</span>
+                <Copy :strCopy="props.row.ip" />
+              </div>
+              <div v-else></div>
+            </span>
+            <span v-else>
+              {{props.formattedRow[props.column.field]}}
+            </span>
+          </template>
+        </vue-good-table>
+      </Card>
+    </KeepAlive>
   </Page>
 </template>
 
@@ -169,8 +184,8 @@ import { mapGetters } from 'vuex';
 import { addressFormat, fillNodeData, observeredChains } from '~/utils';
 import { AssetCurrencySymbol } from '@xchainjs/xchain-util';
 import _ from 'lodash';
-import NetworkIcon from '@/assets/images/chart-network.svg?inline'
-import LinkIcon from '@/assets/images/link.svg?inline'
+import NetworkIcon from '@/assets/images/chart-network.svg?inline';
+import LinkIcon from '@/assets/images/link.svg?inline';
 
 export default {
   name: "nodesPage",
@@ -210,6 +225,15 @@ export default {
     },
     pSort(x, y, col, rowX, rowY) {
       return (x?.length > y?.length)
+    },
+    cSort(x, y, col, rowX, rowY) {
+      return (x.code > y.code)
+    },
+    aSort(x, y, col, rowX, rowY) {
+      return (x.number > y.number)
+    },
+    getUnicodeFlagIcon(name) {
+      return getUnicodeFlagIcon(name)
     }
   },
   data: function() {
@@ -222,7 +246,7 @@ export default {
         {
           label: 'Address',
           field: 'address',
-          formatFn: addressFormat,
+          formatFn: this.addressFormat,
           tdClass: 'mono'
         },
         {
@@ -262,20 +286,31 @@ export default {
         },
       ],
       minBond: 30000000000000,
-      lastBlockHeight: undefined
+      lastBlockHeight: undefined,
+      churnInterval: undefined
     }
   },
   mounted() {
     this.$api.getMimir().then(res => {
       this.minBond = +res.data.MINIMUMBONDINRUNE;
+      this.churnInterval = +res.data.CHURNINTERVAL;
+      console.log(this.churnInterval)
     }).catch(e => {
       console.error(e);
     })
 
-    this.$api.getLastBlockHeight().then(res => {
-      this.lastBlockHeight = res.data;
-    }).catch(e => {
-      console.error(e);
+    // this.$api.getLastBlockHeight().then(res => {
+    //   this.lastBlockHeight = res.data;
+    // }).catch(e => {
+    //   console.error(e);
+    // })
+    
+    this.$api.getRPCLastBlockHeight()
+    .then(res => {
+      this.lastBlockHeight = +res?.data?.block?.header?.height;
+    })
+    .catch(error => {
+      console.error(error)
     })
 
     this.$api.getNodes().then(({data}) => {
@@ -294,10 +329,27 @@ export default {
       return [
         this.cols[0],
         {
+          label: 'Age',
+          field: 'age',
+          type: 'number',
+          tdClass: 'center',
+          thClass: 'center',
+          sortFn: this.aSort,
+          formatFn: this.numberFormat,
+        },
+        {
           label: 'ISP',
           field: 'isp',
           type: 'text',
-          hidden: !process.env.SERVER_URL
+          hidden: !process.env.SERVER_URL,
+          tdClass: 'center',
+        },
+        {
+          label: 'Location',
+          field: 'location',
+          hidden: !process.env.SERVER_URL,
+          tdClass: 'center',
+          sortFn: this.cSort
         },
         ...this.cols.slice(1, 6),
         {
@@ -310,7 +362,13 @@ export default {
           sortFn: this.pSort
         },
         ...this.cols.slice(-1),
-        // Commenting these because it's not yet implemented.
+        {
+          label: 'APY',
+          field: 'apy',
+          type: 'percentage',
+          tdClass: 'mono center',
+          thClass: 'center',
+        },
         {
           label: 'BTC',
           field: 'chains.BTC',
@@ -341,7 +399,6 @@ export default {
           type: 'number',
           formatFn: this.numberFormat,
           tdClass: 'mono center',
-          thClass: 'center'
         },
         {
           label: 'BNB',
@@ -450,14 +507,23 @@ export default {
         );
         let filteredNodes = [];
         let chains = observeredChains(actNodes);
+        let ratioReward = (this.churnInterval-(+this.bondMetrics.nextChurnHeight-this.lastBlockHeight))/this.churnInterval;
         actNodes.forEach((el) => {
-          fillNodeData(filteredNodes, el, chains, this.nodesExtra);
-          if (this.lastBlockHeight) {
-            this.lastBlockHeight.forEach(chain => {
-              filteredNodes[chain.chain] = 
-                chain
-            })
-          }
+          fillNodeData(
+            filteredNodes,
+            el,
+            chains,
+            this.nodesExtra,
+            this.lastBlockHeight,
+            ratioReward,
+            this.churnInterval
+          );
+          // if (this.lastBlockHeight) {
+          //   this.lastBlockHeight.forEach(chain => {
+          //     filteredNodes[chain.chain] = 
+          //       chain
+          //   })
+          // }
         });
         return filteredNodes;
       } else {
@@ -516,5 +582,12 @@ export default {
 .asset-chain {
   height: 1.2rem;
   border-radius: 50%;
+}
+
+.countries {
+  display: flex;
+  cursor: pointer;
+  gap: 10px;
+  align-items: center;
 }
 </style>

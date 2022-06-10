@@ -299,6 +299,10 @@ input {
   }
 }
 
+.vgt-table thead th span {
+  font-size: .85rem !important;
+}
+
 .vgt-table thead th.sorting-desc button:before,
 .vgt-table thead th.sorting-asc button:after {
   border-top-color: var(--primary-color) !important;

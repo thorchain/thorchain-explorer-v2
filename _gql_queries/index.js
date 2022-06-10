@@ -76,6 +76,7 @@ const volumeHistoryQuery = gql`
 const bondMetrics = gql`
   query {
     bondMetrics: network {
+      nextChurnHeight
       activeBonds
       standbyBonds
       activeNodeCount

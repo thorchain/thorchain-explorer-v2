@@ -146,18 +146,17 @@ export function addressFormat(string, number=6, isOnlyLast=false) {
 
 
 const supportedChains = ['BTC', 'DOGE', 'ETH', 'LTC', 'TERRA', 'BCH', 'BNB'];
+
 export function observeredChains(nodes) {
   let maxHeight = {};
   for (let chain of supportedChains) {
     maxHeight[chain] = nodes.map(item =>item.observe_chains).filter(item => item !== null)
     .map(item => +item.filter(item=>item.chain === chain)[0].height).reduce((a, b) => { return Math.max(+a, +b) });
   }
-  console.log(nodes)
-
   return maxHeight;
 }
 
-export function fillNodeData(nodes, el, chains, nodesExtra) {
+export function fillNodeData(nodes, el, chains, nodesExtra, lastBlockHeight, ratioReward, churnInterval) {
   if (!el)
     return
   const chainsHeight = {};
@@ -169,8 +168,20 @@ export function fillNodeData(nodes, el, chains, nodesExtra) {
     console.error('Can\'t get the height.')
   }
   let isp = undefined;
+  let location = undefined;
   if (nodesExtra && el.ip_address) {
-    isp = nodesExtra[el.ip_address]?.isp ?? undefined;
+    let node = nodesExtra[el.ip_address];
+    isp = node?.isp ?? undefined;
+    location = {code: node?.countryCode, region: node?.regionName, city: node?.city} ?? undefined;
+  }
+  let age = undefined;
+  if (lastBlockHeight) {
+    age = {number: (((lastBlockHeight - el.status_since)*6)/60/60/24), text: blockTime(lastBlockHeight - el.status_since)}
+  }
+  let apy = undefined;
+  if (ratioReward) {
+    const churnsInYear = 365/((6*churnInterval)/60/60/24)
+    apy = ((((el.current_award/ratioReward)/10**8)*churnsInYear)/(el.bond/10**8)) ?? undefined;
   }
   nodes.push({
     address: el.node_address,
@@ -182,7 +193,10 @@ export function fillNodeData(nodes, el, chains, nodesExtra) {
     providers: el.bond_providers?.providers,    
     bond: el.bond/10**8 < 0.01?0:el.bond/10**8,
     chains: chainsHeight,
-    isp 
+    isp,
+    location,
+    age,
+    apy
   })
 }
 
