@@ -211,7 +211,7 @@ export default {
   },
   async fetch() {
     const resBlock = await this.$api.getRPCLastBlockHeight()
-    this.lastHeight = +resBlock?.data?.block?.header?.heigh
+    this.lastHeight = +resBlock?.data?.block?.header?.height
   },
   fetchOnServer: false,
   computed: {
