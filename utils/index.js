@@ -196,7 +196,8 @@ export function fillNodeData(nodes, el, chains, nodesExtra, lastBlockHeight, rat
     isp,
     location,
     age,
-    apy
+    apy,
+    score: ((1/el.slash_points)*10**4).toFixed(0)
   })
 }
 

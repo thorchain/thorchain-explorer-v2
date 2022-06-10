@@ -363,6 +363,13 @@ export default {
         },
         ...this.cols.slice(-1),
         {
+          label: 'Score',
+          field: 'score',
+          type: 'number',
+          tdClass: 'mono center',
+          thClass: 'center',
+        },
+        {
           label: 'APY',
           field: 'apy',
           type: 'percentage',

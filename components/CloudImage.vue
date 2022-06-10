@@ -58,6 +58,7 @@ export default {
 
   .asset-icon {
     margin: 0;
+    border-radius: 0;
   }
 }
 </style>
