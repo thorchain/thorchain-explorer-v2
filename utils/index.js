@@ -157,7 +157,7 @@ export function observeredChains(nodes) {
   return maxHeight;
 }
 
-export function fillNodeData(nodes, el, chains) {
+export function fillNodeData(nodes, el, chains, nodesExtra) {
   if (!el)
     return
   const chainsHeight = {};
@@ -168,6 +168,10 @@ export function fillNodeData(nodes, el, chains) {
   } catch (error) {
     console.error('Can\'t get the height.')
   }
+  let isp = undefined;
+  if (nodesExtra && el.ip_address) {
+    isp = nodesExtra[el.ip_address]?.isp ?? undefined;
+  }
   nodes.push({
     address: el.node_address,
     ip: el.ip_address,
@@ -177,7 +181,8 @@ export function fillNodeData(nodes, el, chains) {
     award: (Number.parseFloat(el.current_award)/10**8).toFixed(2),
     providers: el.bond_providers?.providers,    
     bond: el.bond/10**8 < 0.01?0:el.bond/10**8,
-    chains: chainsHeight
+    chains: chainsHeight,
+    isp 
   })
 }
 

@@ -37,6 +37,10 @@
               <LinkIcon @click="gotoAddr(props.row.address)" class="table-icon" />
             </div>
           </span>
+          <span v-else-if="props.column.field == 'isp'">
+            <cloud-image v-if="props.row.isp" :name="props.row.isp"></cloud-image>
+            <span v-else>-</span>
+          </span>
           <span v-else-if="props.column.field == 'bond'">
             <span v-tooltip="curFormat(runePrice * props.row.bond)">
               <span class="extra">{{runeCur()}}</span>  
@@ -72,6 +76,9 @@
               :target="`popover-${props.row.originalIndex}`"
               customClass="cutsom-popover"
             >
+              <div class="title" style="margin-bottom: 5px;">
+                <strong>Providers</strong>
+              </div>
               <div class="popover-table" v-for="(p,i) in props.row.providers" :key="i">
                 <span class="clickable" @click="gotoAddr(p.bond_address)">
                   {{addressFormat(p.bond_address)}}
@@ -210,6 +217,7 @@ export default {
       mode: 'active',
       nodesQuery: undefined,
       popoverText: 'Test',
+      nodesExtra: undefined,
       cols: [
         {
           label: 'Address',
@@ -273,6 +281,10 @@ export default {
     this.$api.getNodes().then(({data}) => {
       this.nodesQuery = data;
     })
+
+    this.$api.getExraNodesInfo().then(({data}) => {
+      this.nodesExtra = data;
+    })
   },
   computed: {
     ...mapGetters({
@@ -280,7 +292,14 @@ export default {
     }),
     activeCols: function() {
       return [
-        ...this.cols.slice(0,6),
+        this.cols[0],
+        {
+          label: 'ISP',
+          field: 'isp',
+          type: 'text',
+          hidden: !process.env.SERVER_URL
+        },
+        ...this.cols.slice(1, 6),
         {
 
           label: 'Providers',
@@ -432,7 +451,7 @@ export default {
         let filteredNodes = [];
         let chains = observeredChains(actNodes);
         actNodes.forEach((el) => {
-          fillNodeData(filteredNodes, el, chains);
+          fillNodeData(filteredNodes, el, chains, this.nodesExtra);
           if (this.lastBlockHeight) {
             this.lastBlockHeight.forEach(chain => {
               filteredNodes[chain.chain] = 

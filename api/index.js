@@ -42,7 +42,8 @@ import {
 } from "./tendermint.api";
 import {
   getDashboardData,
-  getDashboardPlots
+  getDashboardPlots,
+  getExraNodesInfo
 } from "./middleware.api";
 export var $axiosInstace;
 import axiosRetry from 'axios-retry';
@@ -144,7 +145,8 @@ export default function ({ $axios }, inject) {
     getThorchainTx,
     getDashboardData,
     getDashboardPlots,
-    getNodes
+    getNodes,
+    getExraNodesInfo
   };
 
   inject("api", api);

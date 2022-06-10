@@ -7,3 +7,7 @@ export function getDashboardData() {
 export function getDashboardPlots() {
   return $axiosInstace.get(process.env.SERVER_URL + `api/dashboardPlots`);
 }
+
+export function getExraNodesInfo() {
+  return $axiosInstace.get(process.env.SERVER_URL + `api/extraNodesInfo`);
+}
