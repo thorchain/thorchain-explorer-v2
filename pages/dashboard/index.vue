@@ -495,7 +495,7 @@ export default {
     },
     formatTvl: function(d) {
       let data = {
-        header: 'TVL Volume',
+        header: 'Total Value Pooled Volume',
         datum: [
           {
             name: 'time',

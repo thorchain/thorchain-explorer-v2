@@ -4,7 +4,7 @@
       <stat-table :tableSettings="topActiveBonds" header="Top Active Bonds"></stat-table>
       <stat-table :tableSettings="topStandbyBonds" header="Top Standby Bonds"></stat-table>
     </div>
-    <Nav :activeMode.sync="mode" :navItems="[{text: 'Active', mode: 'active'}, {text: 'Stand By and Others', mode: 'standby'}]" />
+    <Nav :activeMode.sync="mode" :navItems="[{text: 'Active', mode: 'active'}, {text: 'StandBy', mode: 'standby'}]" />
     <KeepAlive>
       <Card title="Active Nodes" v-if="mode == 'active'" :isLoading="!activeNodes">
         <vue-good-table
@@ -126,6 +126,10 @@
             enabled: true,
             perPage: 50,
             perPageDropdownEnabled: false,
+          }"
+          :sort-options="{
+            enabled: true,
+            initialSortBy: {field: 'bond', type: 'desc'}
           }"
           :key="2"
         >
@@ -546,6 +550,9 @@ export default {
         actNodes.forEach((el) => {
           fillNodeData(filteredNodes, el)
         });
+        filteredNodes.sort((a,b) => {
+          return b.bond - a.bond
+        })
         return filteredNodes;
       } else {
         return undefined;
