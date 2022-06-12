@@ -33,6 +33,10 @@
                 <span v-tooltip="props.row.address" @click="gotoNode(props.row.address)">
                   {{addressFormat(props.row.address)}}
                 </span> 
+                <template>
+                  <StaredIcon v-if="isFav(props.row.address)" class="table-icon" @click="delFav(props.row.address)" style="fill: #FFEE58"></StaredIcon>
+                  <StarIcon v-else class="table-icon" @click="addFav(props.row.address)"></StarIcon>
+                </template>
                 <a style="height: 1rem" :href="gotoNodeUrl(props.row.address)" target="_blank">
                   <NetworkIcon class="table-icon" />
                 </a>
@@ -190,12 +194,16 @@ import { AssetCurrencySymbol } from '@xchainjs/xchain-util';
 import _ from 'lodash';
 import NetworkIcon from '@/assets/images/chart-network.svg?inline';
 import LinkIcon from '@/assets/images/link.svg?inline';
+import StarIcon from '@/assets/images/star.svg?inline';
+import StaredIcon from '@/assets/images/stared.svg?inline';
 
 export default {
   name: "nodesPage",
   components: {
     NetworkIcon,
     LinkIcon,
+    StarIcon,
+    StaredIcon
   },
   apollo: {
     bondMetrics: bondMetrics,
@@ -238,6 +246,32 @@ export default {
     },
     getUnicodeFlagIcon(name) {
       return getUnicodeFlagIcon(name)
+    },
+    isFav(address) {
+      if (this.favNodes && this.favNodes.includes(address)) {
+        return true
+      }
+      return false
+    },
+    addFav(address) {
+      let favNodes;
+      try {
+        favNodes = this.favNodes || [];
+      }
+      catch (e) {
+        this.favNodes = [];
+      }
+      
+      if (address) {
+        this.favNodes = [...favNodes, address];
+      }
+    },
+    delFav(address) {
+      let favNodes = this.favNodes;
+      _.remove(favNodes, (n) => {
+        return n == address;
+      });
+      this.favNodes = [...favNodes];
     }
   },
   data: function() {
@@ -291,14 +325,14 @@ export default {
       ],
       minBond: 30000000000000,
       lastBlockHeight: undefined,
-      churnInterval: undefined
+      churnInterval: undefined,
+      localFavNodes: undefined,
     }
   },
   mounted() {
     this.$api.getMimir().then(res => {
       this.minBond = +res.data.MINIMUMBONDINRUNE;
       this.churnInterval = +res.data.CHURNINTERVAL;
-      console.log(this.churnInterval)
     }).catch(e => {
       console.error(e);
     })
@@ -536,6 +570,11 @@ export default {
           //   })
           // }
         });
+        if (this.favNodes) {
+          let favNodesFilter = filteredNodes.filter((n) => this.favNodes.includes(n.address));
+          let nonFavNodesFilter = filteredNodes.filter((n) => !this.favNodes.includes(n.address));
+          return [...favNodesFilter, ...nonFavNodesFilter];
+        }
         return filteredNodes;
       } else {
         return undefined;
@@ -558,6 +597,17 @@ export default {
         return undefined;
       }
     },
+    favNodes: {
+      set(array) {
+        this.localFavNodes = array;
+        localStorage.setItem('FavNodes', JSON.stringify(array));
+      },
+      get() {
+        if (process.browser) {
+          return this.localFavNodes ?? JSON.parse(localStorage.getItem('FavNodes'));
+        }
+      }
+    }
   },
 };
 </script>
