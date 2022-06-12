@@ -1,7 +1,10 @@
 <template>
-  <div class="pool-txs-container">
-    <transactions v-if="poolTxs && poolTxs.actions" :txs="poolTxs" :loading="loading"></transactions>
-    <pagination v-if="poolTxs && poolTxs.actions && count" :limit="10" :offset="offset" :count="count" @changePage="getActions"></pagination>
+  <div>
+    <div v-if="poolTxs">
+      <transactions v-if="poolTxs && poolTxs.actions" :txs="poolTxs" :loading="loading"></transactions>
+      <pagination v-if="poolTxs && poolTxs.actions && count" :limit="10" :offset="offset" :count="count" @changePage="getActions"></pagination>
+    </div>
+    <loadingCard v-else></loadingCard>
   </div>
 </template>
 

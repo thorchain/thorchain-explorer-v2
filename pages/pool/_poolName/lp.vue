@@ -13,9 +13,7 @@
         }"
       />
     </div>
-    <div v-if="loading">
-      <BounceLoader color="var(--font-color)" size="3rem"/>
-    </div>
+    <LoadingCard v-if="loading"></LoadingCard>
     <div v-if="error" class="base-container">
       <span>Can't fetch the pool LPs</span>
     </div>
