@@ -1,5 +1,5 @@
 <template>
-  <div class="">
+  <Page>
     <template v-if="!isError && !isLoading">
       <div class="tx-header">
         <h3>
@@ -58,7 +58,7 @@
         <progress-bar :width="loadingPercentage" :extraText="progressText + ' of queries'"></progress-bar>
       </div>
     </div>
-  </div>
+  </Page>
 </template>
 
 <script>

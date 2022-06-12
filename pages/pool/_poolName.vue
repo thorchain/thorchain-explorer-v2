@@ -1,12 +1,15 @@
 <template>
-  <div class="pool-page-container">
-    <div class="nav-pool-header">
-      <nuxt-link :to="`/pool/${poolName}`">Overview</nuxt-link>
-      <nuxt-link :to="`/pool/${poolName}/tx`">Pool Txs</nuxt-link>
-      <nuxt-link :to="`/pool/${poolName}/lp`">LP Positions</nuxt-link>
-    </div>
+  <Page>
+    <Nav
+      :isLink="true"
+      :navItems="[
+        {link: `/pool/${poolName}`, text: 'Overview'},
+        {link: `/pool/${poolName}/tx`, text: 'Pool Txs'},
+        {link: `/pool/${poolName}/lp`, text: 'LP Positions'},
+      ]"
+    ></Nav>
     <nuxt-child keep-alive></nuxt-child>
-  </div>
+  </Page>
 </template>
 
 <script>
@@ -18,30 +21,28 @@ export default {
 </script>
 
 <style lang="scss">
-.pool-page-container {
-  .nav-pool-header {
-    display: flex;
-    margin-bottom: 1rem;
-  
-    a {
-      padding: .5rem .7rem;
-      margin: 0 .1rem;
-      color: var(--font-color);
-      text-decoration: none;
-      border-radius: .3rem;
-  
-      &:first-of-type {
-        margin-left: 0;
-      }
-  
-      &:hover {
-        background-color: var(--active-bg-color);
-      }
-  
-      &.nuxt-link-exact-active {
-        background-color: var(--active-bg-color);
-        color: var(--sec-font-color);
-      }
+.nav-pool-header {
+  display: flex;
+  margin-bottom: 1rem;
+
+  a {
+    padding: .5rem .7rem;
+    margin: 0 .1rem;
+    color: var(--font-color);
+    text-decoration: none;
+    border-radius: .3rem;
+
+    &:first-of-type {
+      margin-left: 0;
+    }
+
+    &:hover {
+      background-color: var(--active-bg-color);
+    }
+
+    &.nuxt-link-exact-active {
+      background-color: var(--active-bg-color);
+      color: var(--sec-font-color);
     }
   }
 }

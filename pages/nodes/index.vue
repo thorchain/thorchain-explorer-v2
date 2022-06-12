@@ -52,7 +52,7 @@
               <span v-else>-</span>
             </span>
             <span v-else-if="props.column.field == 'location'">
-              <div v-tooltip="`${props.row.location.code}, ${props.row.location.region}, ${props.row.location.city}`" class="countries">
+              <div v-if="props.row.location" v-tooltip="`${props.row.location.code}, ${props.row.location.region}, ${props.row.location.city}`" class="countries">
                 <!-- <span>{{getUnicodeFlagIcon(props.row.location.code)}}</span>  -->
                 <VFlag :flag="props.row.location.code"/>
                 <span>{{props.row.location.city}}</span>

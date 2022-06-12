@@ -16,5 +16,7 @@ export default {
   flex-direction: column;
   align-items: stretch;
   gap: 10px;
+  max-width: 90rem;
+  margin: auto;
 }
 </style>

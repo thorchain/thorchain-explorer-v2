@@ -1,5 +1,5 @@
 <template>
-  <div class="overview-container">
+  <Page>
     <div class="chart-container">
       <div class="network-stats base-container">
         <div class="stat-group">
@@ -156,7 +156,7 @@
       <stat-table header="Stats" :tableSettings="statsSettings"></stat-table>
       <stat-table header="Network" :tableSettings="networkSettings"></stat-table>
     </div>
-  </div>
+  </Page>
 </template>
 
 <script>

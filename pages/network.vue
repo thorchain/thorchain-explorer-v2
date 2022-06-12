@@ -1,8 +1,10 @@
 <template>
-  <div class="network-page-container">
-    <Nav isLink="true" :navItems="navItems"/>
-    <nuxt-child></nuxt-child>
-  </div>
+  <Page>
+    <div class="network-page-container">
+      <Nav isLink="true" :navItems="navItems"/>
+      <nuxt-child></nuxt-child>
+    </div>
+  </Page>
 </template>
 
 <script>
