@@ -108,6 +108,7 @@ export default {
   overflow: hidden;
   max-width: 90rem;
   margin: auto;
+  gap: 10px;
 
   .social-icon {
     margin-left: .5rem;
