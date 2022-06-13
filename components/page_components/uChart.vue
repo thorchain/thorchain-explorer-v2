@@ -245,13 +245,18 @@ export default {
   display: flex;
   flex-direction: column;
   background-color: var(--bg-color);
-  border-radius: 5px;
   border: 1px solid var(--border-color);
+  border-width: 1px 0 1px 0;
   padding: 1rem;
   height: 400px;
 
   .chart-header {
     color: var(--sec-font-color);
+  }
+
+  @include lg {
+    border-width: 1px;
+    border-radius: 5px;
   }
 }
 

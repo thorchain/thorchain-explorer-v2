@@ -33,7 +33,14 @@ export default {
   word-wrap: break-word;
   border: 1px solid var(--border-color);
   background-color: var(--card-bg-color);
-  border-radius: 0.5rem;
+
+  border-left: 0;
+  border-right: 0;
+
+  @include lg {
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+  }
 
   &.loading-container {
     justify-content: center;

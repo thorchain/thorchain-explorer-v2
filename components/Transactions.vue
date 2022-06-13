@@ -99,9 +99,14 @@ export default {
 .txs-component-container {
   display: flex;
   flex-direction: column;
-  border-radius: .5rem;
   background-color: var(--bg-color);
   border: 1px solid var(--border-color);
+  border-width: 1px 0 1px 0;
+
+  @include lg {
+    border-width: 1px;
+    border-radius: .5rem;
+  }
 
   .loading {
     height: 10rem;
