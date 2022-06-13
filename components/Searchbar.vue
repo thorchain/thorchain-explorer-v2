@@ -1,6 +1,18 @@
 <template>
   <div class="search-bar-container">
-    <input class="search-bar-input" type="text" placeholder="Enter Transaction ID or Address then press ENTER" v-model="searchQuery" @keyup.enter="find()">
+    <div id="search-container" :class="[{'expanded': isSearch}]" @click="search()">
+      <input class="search-bar-input" 
+        type="text" v-model="searchQuery"
+        @keyup.enter="find()"
+        @blur="isSearch = false"
+      >
+      <span v-if="!isSearch">Search</span>
+      <SearchIcon class="search-icon" @click="find()"/>
+    </div>
+
+    <!-- <button class="search-btn">
+      <span>Search</span>
+    </button> -->
     <SunIcon @click="changeTheme" v-if="theme === 'light'" class="social-icon"/>
     <MoonIcon @click="changeTheme" v-if="theme === 'dark'" class="social-icon"/>
   </div>
@@ -9,17 +21,20 @@
 <script>
 import SunIcon from '~/assets/images/eclipse-sun.svg?inline';
 import MoonIcon from '~/assets/images/eclipse-moon.svg?inline';
+import SearchIcon from '~/assets/images/search.svg?inline';
 import { mapGetters } from 'vuex';
 
 export default {
   name: 'SearchBar',
   components: {
     SunIcon,
-    MoonIcon
+    MoonIcon,
+    SearchIcon
   },
   data() {
     return {
-      searchQuery: ''
+      searchQuery: '',
+      isSearch: false,
     }
   },
   methods: {
@@ -58,6 +73,9 @@ export default {
       else {
         this.$store.commit('setTheme', true)
       }
+    },
+    search() {
+      this.isSearch = true;
     }
   },
   watch:{
@@ -70,6 +88,14 @@ export default {
       theme: 'getTheme'
     })
   },
+  mounted() {
+    window.addEventListener('click', (e) => {   
+      if (!document.getElementById('search-container').contains(e.target)){
+        console.log('outside')
+        this.isSearch = false;
+      }
+    });
+  }
 }
 </script>
 
@@ -79,12 +105,9 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
   overflow: hidden;
-
-  @include lg {
-    padding: 0 64px;
-  }
+  max-width: 90rem;
+  margin: auto;
 
   .social-icon {
     margin-left: .5rem;
@@ -93,16 +116,83 @@ export default {
     height: 1rem;
   }
 
-  .search-bar-input {
-    border-radius: 5px;
-    height: 40px;
-    border: 1px solid var(--border-color) !important;
-    background-color: var(--bg-color);
-    color: var(--font-color);
-    flex: 1;
+  #search-container {
+    display: flex;
+    position: relative;
+    transition: all .1s linear;
 
-    @include lg {
-      min-width: 600px;
+    &.expanded {
+      flex: 1;
+      transition: all .1s linear;
+
+      .search-bar-input {
+        flex: 1;
+        transition: all .1s linear;
+
+        @include lg {
+          max-width: 600px;
+        }
+      }
+
+      @include lg {
+        .search-icon {
+          left: 570px;
+        }
+      }
+    }
+
+    .search-bar-input {
+      transition: all .1s linear;
+      font-size: .875rem;
+      border-radius: 5px;
+      height: 40px;
+      color: var(--font-color);
+      background-color: var(--darker-bg);
+      width: 5.5rem;
+
+      &:focus, &:active {
+        outline: none;
+      }
+      
+      @include lg {
+        max-width: 600px;
+      }
+    }
+
+    .search-icon {
+      position: absolute;
+      width: 1rem;
+      height: 1rem;
+      fill: var(--font-color);
+      right: .5rem;
+      top: calc( 50% - .5rem );
+      cursor: pointer;
+    }
+    
+    span {
+      pointer-events: none;
+      font-size: .875rem;
+      position: absolute;
+      left: .7rem;
+      top: .8rem;
+    }
+  }
+
+
+  .search-btn {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    gap: 15px;
+    border: none;
+    height: 40px;
+    border-radius: .3rem;
+    cursor: pointer;
+    background-color: var(--darker-bg);
+
+    span {
+      font-size: .9rem;
+      color: var(--font-color);
     }
   }
 }

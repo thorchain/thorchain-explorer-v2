@@ -130,6 +130,11 @@ Vue.mixin(global)
     grid-area: header;
     border-bottom: 1px solid var(--border-color);
     overflow: hidden;
+    padding: 0 20px;
+
+    @include lg {
+      padding: 0 64px;
+    }
   }
 
   #main-content {
