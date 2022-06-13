@@ -299,8 +299,12 @@ input {
   }
 }
 
-.vgt-table thead th span {
-  font-size: .85rem !important;
+.vgt-table thead th {
+  vertical-align: middle !important;
+
+  span {
+    font-size: .85rem !important;
+  }
 }
 
 .vgt-table thead th.sorting-desc button:before,

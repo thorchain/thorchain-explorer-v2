@@ -12,7 +12,7 @@
         <span class="sec-color">{{ uptodateNodes?uptodateNodes.length:'*' }}</span> of <span class="sec-color">{{ activeNodes?activeNodes.length:'*' }}</span> nodes
         upgraded to <span class="sec-color">{{ activeNodes?uptodateNodeVersion(activeNodes):'*' }}</span>
       </h3>
-      <p v-if="newStandByVersion" style="text-align: center; color: var(--primary-color)">✨ New version detected! ({{newStandByVersion}})</p>
+      <p v-if="newStandByVersion || (uptodateNodes && uptodateNodes.length == 1)" style="text-align: center; color: var(--primary-color)">✨ New version detected! ({{newStandByVersion || uptodateNodeVersion(activeNodes) }})</p>
     </Card>
     <stat-table
       :isLoading="!inAddresses"
@@ -266,7 +266,7 @@ export default {
         this.uptodateNodes = this.activeNodes.filter(
           (n) => n.version == this.uptodateNodeVersion(this.activeNodes)
         );
-        return parseInt(
+        return Math.ceil (
           parseFloat(this.uptodateNodes.length / this.activeNodes.length) * 100
         );
       }
