@@ -121,13 +121,10 @@ export default {
     display: flex;
     position: relative;
     max-width: 600px;
+    transition: all .5s ease;
 
     &.expanded {
       flex: 1;
-
-      .search-bar-input {
-        flex: 1;
-      }
 
       .search-icon {
         right: .5rem;
@@ -135,13 +132,13 @@ export default {
     }
 
     .search-bar-input {
+      flex: 1;
       font-size: .875rem;
       border-radius: 5px;
       height: 40px;
       color: var(--font-color);
       background-color: var(--darker-bg);
       width: 2.5rem;
-      max-width: 600px;
 
       &:focus, &:active {
         outline: none;
