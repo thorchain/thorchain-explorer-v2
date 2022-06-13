@@ -9,10 +9,6 @@
       <span v-if="!isSearch">Search</span>
       <SearchIcon class="search-icon" @click="find()"/>
     </div>
-
-    <!-- <button class="search-btn">
-      <span>Search</span>
-    </button> -->
     <SunIcon @click="changeTheme" v-if="theme === 'light'" class="social-icon"/>
     <MoonIcon @click="changeTheme" v-if="theme === 'dark'" class="social-icon"/>
   </div>
@@ -39,6 +35,10 @@ export default {
   },
   methods: {
     find() {
+      if (!this.isSearch) {
+        document.getElementsByClassName('search-bar-input')[0].focus()
+        return
+      }
       let search = this.searchQuery.toUpperCase();
       if (
         //THORCHAIN
@@ -120,43 +120,31 @@ export default {
   #search-container {
     display: flex;
     position: relative;
-    transition: all .1s linear;
+    max-width: 600px;
 
     &.expanded {
       flex: 1;
-      transition: all .1s linear;
 
       .search-bar-input {
         flex: 1;
-        transition: all .1s linear;
-
-        @include lg {
-          max-width: 600px;
-        }
       }
 
-      @include lg {
-        .search-icon {
-          left: 570px;
-        }
+      .search-icon {
+        right: .5rem;
       }
     }
 
     .search-bar-input {
-      transition: all .1s linear;
       font-size: .875rem;
       border-radius: 5px;
       height: 40px;
       color: var(--font-color);
       background-color: var(--darker-bg);
-      width: 5.5rem;
+      width: 2.5rem;
+      max-width: 600px;
 
       &:focus, &:active {
         outline: none;
-      }
-      
-      @include lg {
-        max-width: 600px;
       }
     }
 
@@ -165,36 +153,31 @@ export default {
       width: 1rem;
       height: 1rem;
       fill: var(--font-color);
-      right: .5rem;
+      right: calc(1rem - 4px);
       top: calc( 50% - .5rem );
       cursor: pointer;
     }
     
     span {
+      display: none;
       pointer-events: none;
       font-size: .875rem;
       position: absolute;
       left: .7rem;
       top: .8rem;
     }
-  }
 
 
-  .search-btn {
-    display: flex;
-    align-items: center;
-    padding: 10px;
-    gap: 15px;
-    border: none;
-    height: 40px;
-    border-radius: .3rem;
-    cursor: pointer;
-    background-color: var(--darker-bg);
+    @include lg {
+      .search-bar-input {
+        width: 100px;
+      }
 
-    span {
-      font-size: .9rem;
-      color: var(--font-color);
+      span {
+        display: block;
+      }
     }
   }
+  
 }
 </style>
