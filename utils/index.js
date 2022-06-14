@@ -151,7 +151,7 @@ export function observeredChains(nodes) {
   let maxHeight = {};
   for (let chain of supportedChains) {
     maxHeight[chain] = nodes.map(item =>item.observe_chains).filter(item => item !== null)
-    .map(item => +item.filter(item=>item.chain === chain)[0].height).reduce((a, b) => { return Math.max(+a, +b) });
+    .map(item => +item.filter(item=>item.chain === chain)[0]?.height)?.reduce((a, b) => { return Math.max(+a, +b) });
   }
   return maxHeight;
 }
