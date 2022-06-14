@@ -162,7 +162,7 @@ export function fillNodeData(nodes, el, chains, nodesExtra, lastBlockHeight, rat
   const chainsHeight = {};
   try {
     supportedChains.forEach((chain) => {
-      chainsHeight[chain] = (+chains[chain] - +el.observe_chains.filter(item=>item?.chain === chain)[0]?.height)
+      chainsHeight[chain] = (+chains[chain] - (el.observe_chains.filter(item=>item?.chain === chain)[0]?.height ?? 0))
     })  
   } catch (error) {
     console.error('Can\'t get the height.')

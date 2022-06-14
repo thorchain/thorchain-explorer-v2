@@ -112,7 +112,8 @@
             </span>
             <span v-else-if="props.column.field.includes('chains.')">
               <span v-if="props.formattedRow[props.column.field] == 0" style="color: #81C784;">OK</span> 
-              <span v-else style="color: #EF5350;">-{{props.formattedRow[props.column.field]}}</span>
+              <span v-else-if="props.formattedRow[props.column.field] < 10000" style="color: #EF5350;">-{{props.formattedRow[props.column.field]}}</span>
+              <DangerIcon v-else class="table-icon" style="fill: #EF5350;" v-tooltip="`-${props.formattedRow[props.column.field]}`"></DangerIcon>
             </span>
             <span v-else>
               {{props.formattedRow[props.column.field]}}
@@ -196,6 +197,7 @@ import NetworkIcon from '@/assets/images/chart-network.svg?inline';
 import LinkIcon from '@/assets/images/link.svg?inline';
 import StarIcon from '@/assets/images/star.svg?inline';
 import StaredIcon from '@/assets/images/stared.svg?inline';
+import DangerIcon from '@/assets/images/danger.svg?inline';
 
 export default {
   name: "nodesPage",
@@ -203,7 +205,8 @@ export default {
     NetworkIcon,
     LinkIcon,
     StarIcon,
-    StaredIcon
+    StaredIcon,
+    DangerIcon
   },
   apollo: {
     bondMetrics: bondMetrics,
