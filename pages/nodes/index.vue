@@ -41,6 +41,7 @@
                   <NetworkIcon class="table-icon" />
                 </a>
                 <LinkIcon @click="gotoAddr(props.row.address)" class="table-icon" />
+                <Copy :strCopy="props.row.address" />
               </div>
             </span>
             <span v-else-if="props.column.field == 'age'">
