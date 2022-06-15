@@ -508,13 +508,23 @@ export default {
             label: "Total Value Locked",
             mode: 'spline',
             data: []
-          }
+          },
+          {
+            name: 'Total Value Pooled (In Rune)',
+            color: `rgb(54, 176, 121)`,
+            fill: `rgba(54, 176, 121, 0.1)`,
+            label: "Total Value Locked (In Rune)",
+            mode: 'spline',
+            data: [],
+            inRune: true
+          } 
         ]
       }
       d?.intervals.pop();
       d?.intervals.forEach(interval => {
         data.datum[0].data.push(Math.floor((~~interval.endTime + ~~interval.startTime)/2));
         data.datum[1].data.push((+interval.totalValuePooled / 10**8) * Number.parseFloat(interval.runePriceUSD));
+        data.datum[2].data.push(+interval.totalValuePooled / 10**8);
       })
 
       return data;

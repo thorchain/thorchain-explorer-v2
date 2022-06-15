@@ -15,6 +15,7 @@
 </template>
 
 <script>
+import { AssetCurrencySymbol } from '@xchainjs/xchain-util';
 import uPlot from 'uplot';
 import 'uplot/dist/uPlot.min.css';
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
@@ -91,7 +92,7 @@ export default {
           d.innerHTML = `
             <div class='legend-fill' style='background-color: ${u.series[id]._stroke}; display: inline-block;'></div>
             <span>${u.series[id].label}</span>
-            <span class='value'>${this.$options.filters.currency(v, '$', 0)}</span>
+            <span class='value'>${this.$options.filters.currency(v, this.chartSettings?.datum[id]?.inRune?AssetCurrencySymbol.RUNE:'$', 0)}</span>
           `
         }
         tooltip.appendChild(d);
