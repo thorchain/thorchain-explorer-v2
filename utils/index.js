@@ -197,7 +197,8 @@ export function fillNodeData(nodes, el, chains, nodesExtra, lastBlockHeight, rat
     location,
     age,
     apy,
-    score: ((1/el.slash_points)*10**4).toFixed(0)
+    score: ((1/el.slash_points)*10**4).toFixed(0),
+    leave: el.requested_to_leave
   })
 }
 
