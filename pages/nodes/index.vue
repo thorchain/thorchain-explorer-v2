@@ -23,6 +23,12 @@
             <div class="table-asset" v-if="props.column.field.includes('chains')">
               <img class="asset-chain" :src="assetImage(`${props.column.label}.${props.column.label}`)">
             </div>
+            <div v-else-if="props.column.field == 'leave'" v-tooltip="'Provider'">
+              <ExitIcon class="table-icon"></ExitIcon>
+            </div>
+            <div v-else-if="props.column.field == 'providers'" v-tooltip="'Provider'">
+              <DollarIcon class="table-icon"></DollarIcon>
+            </div>
             <span v-else>
                 {{props.column.label}}
             </span>
@@ -80,6 +86,12 @@
               <div class="table-wrapper-row">
                 <span>{{props.row.ip}}</span>
                 <Copy :strCopy="props.row.ip" />
+              </div>
+            </span>
+            <span v-else-if="props.column.field == 'leave'">
+              <div class="table-wrapper-row" style="justify-content: center;">
+                <CheckBoxIcon v-if="props.row.leave == true" class="table-icon" style="fill: #81C784;"/>
+                <span v-else>-</span>
               </div>
             </span>
             <span v-else-if="props.column.field == 'providers'">
@@ -200,6 +212,9 @@ import LinkIcon from '@/assets/images/link.svg?inline';
 import StarIcon from '@/assets/images/star.svg?inline';
 import StaredIcon from '@/assets/images/stared.svg?inline';
 import DangerIcon from '@/assets/images/danger.svg?inline';
+import ExitIcon from '@/assets/images/sign-out.svg?inline';
+import CheckBoxIcon from '@/assets/images/checkbox.svg?inline';
+import DollarIcon from '@/assets/images/dollar.svg?inline';
 
 export default {
   name: "nodesPage",
@@ -208,7 +223,10 @@ export default {
     LinkIcon,
     StarIcon,
     StaredIcon,
-    DangerIcon
+    DangerIcon,
+    ExitIcon,
+    CheckBoxIcon,
+    DollarIcon
   },
   apollo: {
     bondMetrics: bondMetrics,
@@ -401,7 +419,7 @@ export default {
           field: 'providers',
           type: 'number',
           tdClass: 'mono center clickable',
-          width: '100px',
+          thClass: 'center',
           sortFn: this.pSort
         },
         ...this.cols.slice(-1),
@@ -411,6 +429,11 @@ export default {
           type: 'number',
           tdClass: 'mono center',
           thClass: 'center',
+        },
+        {
+          label: 'Leave',
+          field: 'leave',
+          tdClass: 'center'
         },
         {
           label: 'APY',
