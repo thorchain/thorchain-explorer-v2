@@ -16,8 +16,6 @@ export const AssetImage = (assetStr) => {
 
   let iconPath = undefined;
   
-  console.log(chain)
-  
   if (trustWalletMatch && chain !== "THOR") {
     iconPath = `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/binance/assets/${trustWalletMatch}/logo.png`;
   } else {
