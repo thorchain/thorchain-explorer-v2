@@ -16,6 +16,7 @@ export const AssetImage = (assetStr) => {
 
   let iconPath = undefined;
   
+  console.log(chain)
   
   if (trustWalletMatch && chain !== "THOR") {
     iconPath = `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/binance/assets/${trustWalletMatch}/logo.png`;
@@ -94,6 +95,10 @@ export const AssetImage = (assetStr) => {
           iconPath = 
             "https://app.thorswap.finance/assets/asset-ust.1c0b5be9.png"
       break;
+
+      case "GAIA":
+        iconPath =
+          "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/cosmos/info/logo.png"
 
       default:
         break;
