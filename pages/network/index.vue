@@ -7,12 +7,13 @@
       :iconSrc="require('@/assets/images/database.svg')"
     ></stat-table>
     <Card title="THORChain version upgrade progress">
-      <ProgressBar v-if="versionProgress" :width="versionProgress" :color="versionProgress < 100? '#29b6f6':false" />
+      <ProgressBar v-if="versionProgress" :width="versionProgress" :color="versionProgress == 100? '#81C784':false" />
       <h3 style="text-align: center">
         <span class="sec-color">{{ uptodateNodes?uptodateNodes.length:'*' }}</span> of <span class="sec-color">{{ activeNodes?activeNodes.length:'*' }}</span> nodes
         upgraded to <span class="sec-color">{{ activeNodes?uptodateNodeVersion(activeNodes):'*' }}</span>
       </h3>
       <p v-if="newStandByVersion || (uptodateNodes && uptodateNodes.length == 1)" style="text-align: center; color: var(--primary-color)">✨ New version detected! ({{newStandByVersion || uptodateNodeVersion(activeNodes) }})</p>
+      <p v-if="versionProgress === 100" style="text-align: center; color: var(--primary-color)">✅ All nodes are updated to the latest.</p>
     </Card>
     <stat-table
       :isLoading="!inAddresses"
