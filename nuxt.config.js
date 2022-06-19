@@ -54,7 +54,8 @@ export default {
     // https://go.nuxtjs.dev/typescript
     '@nuxtjs/style-resources',
     '@nuxtjs/dotenv',
-    "@nuxtjs/svg"
+    "@nuxtjs/svg",
+    '@nuxtjs/composition-api/module'
   ],
 
   // Modules: https://go.nuxtjs.dev/config-modules
@@ -72,6 +73,7 @@ export default {
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
+    transpile: [/echarts/, /zrender/]
   },
 
   styleResources: {

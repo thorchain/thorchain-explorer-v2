@@ -46,7 +46,8 @@ import {
   getExraNodesInfo
 } from "./middleware.api";
 import {
-  getChurnHistory
+  getChurnHistory,
+  getFlipTVL
 } from "./insights.api";
 export var $axiosInstace;
 import axiosRetry from 'axios-retry';
@@ -150,7 +151,8 @@ export default function ({ $axios }, inject) {
     getDashboardPlots,
     getNodes,
     getExraNodesInfo,
-    getChurnHistory
+    getChurnHistory,
+    getFlipTVL
   };
 
   inject("api", api);
