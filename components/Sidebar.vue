@@ -68,6 +68,9 @@ import moneyUnselected from '~/assets/images/money.svg?inline';
 import shieldSelected from '~/assets/images/shield.svg?inline';
 import shieldUnselected from '~/assets/images/shield-unselected.svg?inline';
 
+import chartSelected from '~/assets/images/chart-selected.svg?inline';
+import chartUnselected from '~/assets/images/chart-unselected.svg?inline';
+
 import MenuIcon from '~/assets/images/menu-burger.svg?inline';
 import CrossIcon from '~/assets/images/cross.svg?inline';
 import { mapMutations, mapGetters } from 'vuex';
@@ -94,7 +97,9 @@ export default {
     shieldUnselected,
     ThorchainLogo,
     MenuIcon,
-    CrossIcon
+    CrossIcon,
+    chartSelected,
+    chartUnselected
   },
   data() {
     return {
@@ -140,6 +145,12 @@ export default {
           unicon: 'shieldUnselected',
           icon: 'shieldSelected',
           link: '/vaults'
+        },
+        {
+          name: 'Insights',
+          unicon: 'chartUnselected',
+          icon: 'chartSelected',
+          link: '/insights'
         }
       ]
     }

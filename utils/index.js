@@ -23,6 +23,10 @@ export function blockTime(blockHeight) {
   return formatTime(val);        
 }
 
+export function momentTimeFormat(time) {
+  return moment(time).format('MM/DD/YYYY hh:mm:ss A')
+}
+
 export function parseCosmosTx(ntx) {
   let ret = [];
   ntx.tx?.body.messages.forEach(el => {
