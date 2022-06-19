@@ -4,5 +4,5 @@ import { $axiosInstace } from './index';
 const INSIGHT_URL = "https://node-api.flipsidecrypto.com/api/v2/queries/";
 
 export function getChurnHistory() {
-  return $axiosInstace.get(INSIGHT_URL + `a82e302f-c9a1-451b-8f49-3cf6b7c39d91/data/latest`);
+  return $axiosInstace.get(INSIGHT_URL + `9fb2fd10-0a5a-4786-af5e-d5b346bcc220/data/latest`);
 }
