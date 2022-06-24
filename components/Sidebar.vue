@@ -146,12 +146,16 @@ export default {
           icon: 'shieldSelected',
           link: '/vaults'
         },
-        {
-          name: 'Insights',
-          unicon: 'chartUnselected',
-          icon: 'chartSelected',
-          link: '/insights'
-        }
+        (
+          process.env.NETWORK === 'mainnet' ? 
+          {
+            name: 'Insights',
+            unicon: 'chartUnselected',
+            icon: 'chartSelected',
+            link: '/insights'
+          }:
+          false
+        )
       ]
     }
   },
