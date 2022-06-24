@@ -1,6 +1,6 @@
 <template>
   <div class="chart-wrapper" :class="[name]">
-    <div class="chart-header">{{chartSettings && chartSettings.header}}</div>
+    <h3 class="chart-header" v-if="chartSettings">{{chartSettings && chartSettings.header}}</h3>
     <div class="chart-legends">
       <div class="legend-wrapper" v-for="(d, i) in chartSettings && chartSettings.datum.slice(1)" :key="i">
         <div class="legend-header" :style="{backgroundColor: d.color}"></div>
@@ -248,11 +248,14 @@ export default {
   background-color: var(--bg-color);
   border: 1px solid var(--border-color);
   border-width: 1px 0 1px 0;
-  padding: 1rem;
   height: 400px;
 
   .chart-header {
+    padding: 1rem;
+    font-size: 1.125rem;
+    margin: 0;
     color: var(--sec-font-color);
+    border-bottom: 1px solid var(--border-color);
   }
 
   @include lg {

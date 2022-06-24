@@ -28,10 +28,14 @@
     "vue2-filters": "^0.14.0"
   },
   "devDependencies": {
+    "vue-echarts": "^6.1.0",
+    "echarts": "^5.3.3",
     "@babel/eslint-parser": "^7.16.3",
+    "@nuxtjs/composition-api": "^0.32.0",
     "@nuxtjs/eslint-config": "^8.0.0",
     "@nuxtjs/eslint-module": "^3.0.2",
     "@nuxtjs/svg": "^0.4.0",
+    "@vue/composition-api": "^1.6.2",
     "@xchainjs/xchain-util": "^0.6.0",
     "bignumber.js": "^9.0.2",
     "bootstrap": "^5.1.3",

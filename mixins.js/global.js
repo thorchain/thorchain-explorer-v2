@@ -55,6 +55,9 @@ export default {
         console.error('Could not copy text: ', err);
       });
     },
+    normalFormat(number) {
+      return number? this.$options.filters.number(+number, '0,0'):'-'
+    },
     numberFormat(number) {
       return number? this.$options.filters.number(+number, '0,0.0000'):'-'
     },
