@@ -51,6 +51,7 @@ import {
 } from "./insights.api";
 export var $axiosInstace;
 import axiosRetry from 'axios-retry';
+import endpoints from "./endpoints";
 
 // interceptor to catch errors
 const errorInterceptor = (error) => {
@@ -109,6 +110,7 @@ export default function ({ $axios }, inject) {
   $axios.interceptors.response.use(responseInterceptor, errorInterceptor);
 
   //defining the inner Vue axios instace to the outer scope
+  $axios.defaults.baseURL = endpoints[process.env.NETWORK].MIDGARD_BASE_URL;
   $axiosInstace = $axios;
 
   let api = {

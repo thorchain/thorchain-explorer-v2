@@ -1,5 +1,3 @@
-const endpoints = require('./endpoints.js');
-
 export default {
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
@@ -67,12 +65,6 @@ export default {
     '@nuxtjs/apollo',
   ],
 
-  // Axios module configuration: https://go.nuxtjs.dev/config-axios
-  axios: {
-    // Workaround to avoid enforcing hard-coded localhost:3000: https://github.com/nuxt-community/axios-module/issues/308
-    baseURL: endpoints[process.env.NETWORK].MIDGARD_BASE_URL,
-  },
-
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
     transpile: [/echarts/, /zrender/]
@@ -89,15 +81,13 @@ export default {
   apollo: {
     clientConfigs: {
       default: {
-        httpEndpoint: endpoints[process.env.NETWORK].MIDGARD_GRAPH_QL,
+        httpEndpoint: process.env.MIDGARD_GRAPH_QL,
       }
     }
   },
 
   env: {
-    MIDGARD_BASE_URL: endpoints[process.env.NETWORK].MIDGARD_BASE_URL,
-    THORNODE_URL: endpoints[process.env.NETWORK].THORNODE_URL,
-    TENDERMINT_URL: endpoints[process.env.NETWORK].TENDERMINT_URL,
-    SERVER_URL: endpoints[process.env.NETWORK].SERVER_URL
+    MIDGARD_GRAPH_QL: process.env.MIDGARD_GRAPH_QL,
+    NETWORK: process.env.NETWORK
   }
 }

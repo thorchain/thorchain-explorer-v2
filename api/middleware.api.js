@@ -1,13 +1,14 @@
+import endpoints from './endpoints';
 import { $axiosInstace } from './index';
 
 export function getDashboardData() {
-  return $axiosInstace.get(process.env.SERVER_URL + `api/dashboardData`);
+  return $axiosInstace.get(endpoints[process.env.NETWORK].SERVER_URL + `api/dashboardData`);
 }
 
 export function getDashboardPlots() {
-  return $axiosInstace.get(process.env.SERVER_URL + `api/dashboardPlots`);
+  return $axiosInstace.get(endpoints[process.env.NETWORK].SERVER_URL + `api/dashboardPlots`);
 }
 
 export function getExraNodesInfo() {
-  return $axiosInstace.get(process.env.SERVER_URL + `api/extraNodesInfo`);
+  return $axiosInstace.get(endpoints[process.env.NETWORK].SERVER_URL + `api/extraNodesInfo`);
 }
