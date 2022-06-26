@@ -248,7 +248,7 @@ export default {
   background-color: var(--bg-color);
   border: 1px solid var(--border-color);
   border-width: 1px 0 1px 0;
-  height: 400px;
+  height: 470px;
 
   .chart-header {
     padding: 1rem;
