@@ -1,4 +1,4 @@
-import endpoints from "./endpoints";
+const endpoints = require('./endpoints.js');
 
 export default {
   // Global page headers: https://go.nuxtjs.dev/config-head
