@@ -1,4 +1,4 @@
-export default {
+module.exports = {
   mainnet: {
     MIDGARD_BASE_URL: "https://midgard.ninerealms.com/v2/",
     MIDGARD_GRAPH_QL: "https://midgard.ninerealms.com/v2",

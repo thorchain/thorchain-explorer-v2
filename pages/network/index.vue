@@ -21,7 +21,7 @@
       header="Gas Fees"
       :iconSrc="require('@/assets/images/gas.svg')"
     ></stat-table>
-    <Card :isLoading="!outboundQueue" title="Outbound Queue" :imgSrc="require('~/assets/images/sign-out.svg')">
+    <Card v-show="outboundQueue" title="Outbound Queue" :imgSrc="require('~/assets/images/sign-out.svg')">
       <vue-good-table
           :columns="cols"
           :rows="outboundQueue"
