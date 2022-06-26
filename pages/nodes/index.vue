@@ -1,5 +1,5 @@
 <template>
-  <Page>
+  <Page :error="error && !loading">
     <div v-if="nodesQuery" class="grid-network">
       <stat-table :tableSettings="topActiveBonds" header="Top Active Bonds"></stat-table>
       <stat-table :tableSettings="topStandbyBonds" header="Top Standby Bonds"></stat-table>
@@ -202,7 +202,7 @@
 </template>
 
 <script>
-import {bondMetrics} from "~/_gql_queries";
+import {bondMetrics, nodesQuery} from "~/_gql_queries";
 import { mapGetters } from 'vuex';
 import { addressFormat, fillNodeData, observeredChains } from '~/utils';
 import { AssetCurrencySymbol } from '@xchainjs/xchain-util';
@@ -299,6 +299,7 @@ export default {
   },
   data: function() {
     return {
+      loading: true,
       mode: 'active',
       nodesQuery: undefined,
       popoverText: 'Test',
@@ -375,6 +376,7 @@ export default {
     })
 
     this.$api.getNodes().then(({data}) => {
+      this.loading = false;
       this.nodesQuery = data;
     })
 
@@ -386,6 +388,9 @@ export default {
     ...mapGetters({
       runePrice: 'getRunePrice'
     }),
+    error: function () {
+      return !this.nodesQuery
+    },
     activeCols: function() {
       return [
         this.cols[0],

@@ -1,12 +1,18 @@
 <template>
   <div class="page-container">
-    <slot></slot>
+    <slot v-if="!error"></slot>
+    <Card v-else>
+      <div class="page-error-container">
+        <img src="@/assets/images/error.png" alt="error image">
+        <h3>Can't fetch the data, please try again later.</h3>
+      </div>
+    </Card>
   </div>
 </template>
 
 <script>
 export default {
-
+  props: ['error'],
 }
 </script>
 
@@ -18,5 +24,18 @@ export default {
   gap: 10px;
   max-width: 90rem;
   margin: auto;
+}
+
+.page-error-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  padding: 1rem;
+
+  img {
+    width: 150px;
+    margin-bottom: 1rem;
+  }
 }
 </style>
