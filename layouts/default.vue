@@ -33,15 +33,7 @@ export default {
       menu: 'getIsMenuOn'
     })
   },
-  mounted() {
-    this.$api.getStats()
-    .then(res => {
-      this.$store.commit('setRunePrice', Number.parseFloat(res.data.runePriceUSD))
-    })
-    .catch(error => {
-      console.error(error)
-    })
-
+  beforeCreate() {
     let htmlElement = document.documentElement;
 
     const darkThemeMq = window.matchMedia("(prefers-color-scheme: dark)");
@@ -52,6 +44,15 @@ export default {
       htmlElement.setAttribute('theme', 'light');
       this.darkMode = false
     }
+  },
+  mounted() {
+    this.$api.getStats()
+    .then(res => {
+      this.$store.commit('setRunePrice', Number.parseFloat(res.data.runePriceUSD))
+    })
+    .catch(error => {
+      console.error(error)
+    })
 
     let changeHeight = () => {
       let vh = window.innerHeight * 0.01;
