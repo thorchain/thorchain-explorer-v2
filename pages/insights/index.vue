@@ -124,14 +124,19 @@ export default {
           show: false,
         },
         tooltip: {
+          confine: true,
           trigger: "axis",
           valueFormatter: (value) => `${this.normalFormat(value)} ${runeCur()}`
         },
         legend: {
-          left: 'bottom'
+          padding: [15, 5],
+          x: 'center',
+          y: 'bottom',
+          icon: 'rect'
         },
         xAxis: {
           data: xAxis.reverse(),
+          boundaryGap: false,
           splitLine: {
             show: false,
           },
@@ -146,9 +151,9 @@ export default {
           }
         },
         yAxis: {
-          show: false,
+          show: true,
           splitLine: {
-            show: false
+            show: true
           }
         },
         series: [
