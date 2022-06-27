@@ -51,6 +51,10 @@ export function getPoolTxs(poolName, offset=0, limit=10) {
   return $axiosInstace.get('actions', {params})
 }
 
+export function getPools() {
+  return $axiosInstace.get(`pools`)
+}
+
 export function getPoolStats(poolName) {
   return $axiosInstace.get(`pool/${poolName}/stats`)
 }
