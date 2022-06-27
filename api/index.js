@@ -13,7 +13,8 @@ import {
   getPoolVolume,
   getLastTvl,
   getLatestBlocks,
-  getRevThorname
+  getRevThorname,
+  getPools
 } from "./midgard.api";
 import {
   getMimir,
@@ -121,6 +122,7 @@ export default function ({ $axios }, inject) {
     getTx,
     getAddress,
     getPoolStats,
+    getPools,
     getPoolTxs,
     getBalance,
     getLastBlockHeight,
