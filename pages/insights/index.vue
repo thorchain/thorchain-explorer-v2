@@ -113,7 +113,7 @@ export default {
       let tvl = [];
       let tvb = [];
       d.forEach(interval => {
-        xAxis.push(interval.DAY);
+        xAxis.push(moment(interval.DAY).format("MM/DD"));
         tvp.push(interval.TOTAL_VALUE_POOLED);
         tvl.push(interval.TOTAL_VALUE_LOCKED);
         tvb.push(interval.TOTAL_VALUE_BONDED);
@@ -129,7 +129,6 @@ export default {
           valueFormatter: (value) => `${this.normalFormat(value)} ${runeCur()}`
         },
         legend: {
-          padding: [15, 5],
           x: 'center',
           y: 'bottom',
           icon: 'rect'
@@ -151,10 +150,14 @@ export default {
           }
         },
         yAxis: {
-          show: true,
+          show: false,
           splitLine: {
             show: true
           }
+        },
+        grid: {
+          left: '20px',
+          right: '20px'
         },
         series: [
           {
