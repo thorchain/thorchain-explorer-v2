@@ -131,7 +131,10 @@ export default {
         legend: {
           x: 'center',
           y: 'bottom',
-          icon: 'rect'
+          icon: 'rect',
+          textStyle: {
+            color: "var(--font-color)"
+          }
         },
         xAxis: {
           data: xAxis.reverse(),
