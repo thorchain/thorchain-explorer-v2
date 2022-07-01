@@ -113,12 +113,7 @@ export default {
         {
           label: "Balance",
           field: "coin.amount",
-          formatFn: this.baseAmountFormat,
-        },
-        {
-          label: "Balance",
-          field: "coin.amount",
-          formatFn: this.baseAmountFormat,
+          formatFn: this.balanceAmount,
         },
         {
           label: "Gas Rate",
@@ -127,8 +122,13 @@ export default {
         {
           label: "Inbound TxID",
           field: "in_hash",
-          formatFn: addressFormat,
+          formatFn: this.outAddressHash,
         },
+        {
+          label: "To Address",
+          field: "to_address",
+          formatFn: this.outAddressHash,
+        }
       ],
     };
   },
@@ -215,7 +215,13 @@ export default {
         
         default:
           return gas_rate;
-      }
+      } 
+    },
+    balanceAmount(number) {
+      return (+number/1e8).toFixed(4)
+    },
+    outAddressHash(txID) {
+      return txID.slice(0,6) + '...' + txID.slice(-6);
     },
     lowerLevelGas(chain) {
       if (chain == Chain.Bitcoin || chain == Chain.Litecoin || chain == Chain.BitcoinCash || chain == Chain.Doge) {
