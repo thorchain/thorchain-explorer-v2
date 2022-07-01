@@ -70,9 +70,9 @@
             </div>
           </div>
         </div>
-        <client-only>
-          <u-chart name="volumechange" :chartSettings="volumeHistory"></u-chart>
-        </client-only>
+        <div style="margin: 1rem 0;">
+          <VChart :option="volumeHistory" :loading="!volumeHistory"></VChart>
+        </div>
         <div class="pool-detail-container">
           <div
             class="pool-swap-detail"
@@ -96,6 +96,27 @@ import BounceLoader from "vue-spinner/src/BounceLoader.vue";
 import { AssetImage } from "~/classes/assetImage";
 import { assetFromString } from "@xchainjs/xchain-util";
 import { mapGetters } from "vuex";
+import moment from "moment";
+
+import { use } from "echarts/core";
+import { SVGRenderer } from "echarts/renderers";
+import { LineChart } from "echarts/charts";
+import {
+  TitleComponent,
+  TooltipComponent,
+  LegendComponent,
+  GridComponent,
+} from "echarts/components";
+import VChart from "vue-echarts";
+
+use([
+  SVGRenderer,
+  GridComponent,
+  LineChart,
+  TitleComponent,
+  TooltipComponent,
+  LegendComponent,
+]);
 
 export default {
   async asyncData({ params }) {
@@ -103,11 +124,7 @@ export default {
   },
   components: {
     BounceLoader,
-    uChart: () => {
-      if (process.client) {
-        return import("~/components/page_components/uChart.vue");
-      }
-    },
+    VChart
   },
   methods: {
     assetImage(assetStr) {
@@ -122,58 +139,54 @@ export default {
       return `${chain}.${ticker}`;
     },
     formatVol(d) {
-      let data = {
-        header: `Pool Volume`,
-        datum: [
-          {
-            name: "time",
-            data: [],
-          },
-          {
-            name: "add",
-            color: `rgb(54, 176, 121)`,
-            fill: `rgb(54, 176, 121, 0.1)`,
-            label: "Add Liquidity Volume",
-            mode: "spline",
-            data: [],
-          },
-          {
-            name: "widthdraw",
-            color: `rgb(234, 95, 148)`,
-            fill: `rgb(234, 95, 1488, 0.1)`,
-            label: "Withdraw Liquidity Volume",
-            mode: "spline",
-            data: [],
-          },
-          {
-            name: "total",
-            color: `rgb(255, 177, 78)`,
-            fill: `rgb(255, 177, 78, 0.1)`,
-            label: "Total Change",
-            mode: "spline",
-            data: [],
-          },
-        ],
-      };
-      d?.intervals.pop();
+      let xAxis = [];
+      let av = [];
+      let wv = [];
+      let tv = [];
       d?.intervals.forEach((interval) => {
-        data.datum[0].data.push(
-          Math.floor((~~interval.endTime + ~~interval.startTime) / 2)
+        xAxis.push(
+          moment(Math.floor((~~interval.endTime + ~~interval.startTime) / 2)*1e3).format("MM/DD")
         );
-        data.datum[1].data.push(
+        av.push(
           (+interval.addLiquidityVolume * +interval.runePriceUSD) / 10 ** 8
         );
-        data.datum[2].data.push(
+        wv.push(
           -1 * ((+interval.withdrawVolume * +interval.runePriceUSD) / 10 ** 8)
         );
-        data.datum[3].data.push(
+        tv.push(
           ((+interval.addLiquidityVolume - +interval.withdrawVolume) *
             +interval.runePriceUSD) /
             10 ** 8
         );
       });
 
-      return data;
+      return this.basicChartFormat(
+        (value) => `$ ${this.normalFormat(value)}`,
+        [
+          {
+            type: "line",
+            name: "Total Liquidity Change",
+            showSymbol: false,
+            data: tv,
+            smooth: true,
+          },
+          {
+            type: "line",
+            name: "Add Liquidity Volume",
+            showSymbol: false,
+            data: av,
+            smooth: true,
+          },
+          {
+            type: "line",
+            name: "Withdraw Liquidity Volume",
+            showSymbol: false,
+            data: wv,
+            smooth: true,
+          },
+        ],
+        xAxis
+      )      
     },
   },
   computed: {

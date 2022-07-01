@@ -82,6 +82,53 @@ export default {
     },
     gotoNodeUrl(node) {
       return (`${process.env.THORNODE_URL}thorchain/node/${node}`)
-    }
+    },
+    basicChartFormat(formatter, series, xAxis) {
+      return {
+        title: {
+          show: false,
+        },
+        tooltip: {
+          confine: true,
+          trigger: "axis",
+          valueFormatter: formatter,
+        },
+        legend: {
+          x: "center",
+          y: "bottom",
+          icon: "rect",
+          textStyle: {
+            color: "var(--font-color)",
+          },
+        },
+        xAxis: {
+          data: xAxis,
+          boundaryGap: false,
+          splitLine: {
+            show: false,
+          },
+          axisLine: {
+            lineStyle: {
+              color: "#9f9f9f",
+            },
+          },
+          axisLabel: {
+            color: "#9f9f9f",
+            fontFamily: "ProductSans",
+          },
+        },
+        yAxis: {
+          show: false,
+          splitLine: {
+            show: true,
+          },
+        },
+        grid: {
+          left: "20px",
+          right: "20px",
+        },
+        series: series,
+      };
+    },
   }
 }
