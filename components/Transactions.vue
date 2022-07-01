@@ -15,7 +15,7 @@
               <!-- in coin -->
               <div style="margin: .5rem 0; display: flex; align-items: center;" v-if="tx.in[0].coins[0]">
                 <img class="asset-icon" :src="assetImage(tx.in[0].coins[0].asset)" alt="in-coin" @error="imgErr">
-                <span style="line-height: 1.2rem; margin-left: .4rem">{{(tx.in[0].coins[0].amount/10**8) | number('0,0.00000000')}} {{tx.in[0].coins[0].asset | shortSymbol}}</span>
+                <span style="line-height: 1.2rem; margin-left: .4rem">{{(tx.in[0].coins[0].amount/1e8).toFixed(8)}} {{tx.in[0].coins[0].asset | shortSymbol}}</span>
               </div>
               <!-- address -->
               <a v-if="tx.in[0].address" class="address" @click="gotoAddr(tx.in[0].address)">{{tx.in[0].address.slice(0,4)+'...'+tx.in[0].address.slice(end=-4)}}</a>
@@ -28,7 +28,7 @@
               <!-- out coin -->
               <div style="margin: .5rem 0; display: flex; align-items: center;" v-if="tx.out[0].coins[0]">
                 <img class="asset-icon" :src="assetImage(tx.out[0].coins[0].asset)" alt="out-coin" @error="imgErr">
-                <span style="line-height: 1.2rem; margin-left: .4rem">{{(tx.out[0].coins[0].amount/10**8) | number('0,0.00000000')}} {{tx.out[0].coins[0].asset | shortSymbol}}</span>
+                <span style="line-height: 1.2rem; margin-left: .4rem">{{(tx.out[0].coins[0].amount/1e8).toFixed(8)}} {{tx.out[0].coins[0].asset | shortSymbol}}</span>
               </div>
               <!-- address -->
               <a v-if="tx.out[0].address" class="address" @click="gotoAddr(tx.out[0].address)">{{tx.out[0].address.slice(0,4)+'...'+tx.out[0].address.slice(end=-4)}}</a>
