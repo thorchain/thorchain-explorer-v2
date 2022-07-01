@@ -10,28 +10,38 @@
           </div>
           <div class="tx-content">
             <div class="tx-in">
-              <div class="bubble-container">In</div>
-              <a v-if="tx.in[0].txID" class="tx" @click="gotoTx(tx.in[0].txID)">{{(tx.in[0].txID.slice(0,4)+'...'+tx.in[0].txID.slice(end=-4))}}</a>
-              <!-- in coin -->
-              <div style="margin: .5rem 0; display: flex; align-items: center;" v-if="tx.in[0].coins[0]">
-                <img class="asset-icon" :src="assetImage(tx.in[0].coins[0].asset)" alt="in-coin" @error="imgErr">
-                <span style="line-height: 1.2rem; margin-left: .4rem">{{(tx.in[0].coins[0].amount/1e8).toFixed(8)}} {{tx.in[0].coins[0].asset | shortSymbol}}</span>
+              <div class="tx-contain" v-for="(t, j) in tx.in" :key="j">
+                <div>
+                  <div class="bubble-container">In</div>
+                  <div v-if="t.coins[0] && isSynth(t.coins[0].asset)" class="bubble-container yellow">Synth</div>
+                  <a v-if="t.txID" class="tx" @click="gotoTx(t.txID)">{{(t.txID.slice(0,4)+'...'+t.txID.slice(end=-4))}}</a>
+                </div>
+                <!-- in coin -->
+                <div style="display: flex; align-items: center;" v-if="t.coins[0]">
+                  <img class="asset-icon" :src="assetImage(t.coins[0].asset)" alt="in-coin" @error="imgErr">
+                  <span style="line-height: 1.2rem; margin-left: .4rem">{{(t.coins[0].amount/1e8).toFixed(8)}} {{t.coins[0].asset | shortSymbol}}</span>
+                </div>
+                <!-- address -->
+                <a v-if="t.address" class="address" @click="gotoAddr(t.address)">{{t.address.slice(0,4)+'...'+t.address.slice(end=-4)}}</a>
               </div>
-              <!-- address -->
-              <a v-if="tx.in[0].address" class="address" @click="gotoAddr(tx.in[0].address)">{{tx.in[0].address.slice(0,4)+'...'+tx.in[0].address.slice(end=-4)}}</a>
             </div>
             <!-- check pending status -->
             <div v-if="tx.out.length > 0" class="tx-out">
               <right-arrow class="icon-arrow"></right-arrow>
-              <div class="bubble-container blue">Out</div>
-              <a v-if="tx.out[0].txID" @click="gotoTx(tx.out[0].txID)" class="tx">{{(tx.out[0].txID.slice(0,4)+'...'+tx.out[0].txID.slice(end=-4))}}</a>
-              <!-- out coin -->
-              <div style="margin: .5rem 0; display: flex; align-items: center;" v-if="tx.out[0].coins[0]">
-                <img class="asset-icon" :src="assetImage(tx.out[0].coins[0].asset)" alt="out-coin" @error="imgErr">
-                <span style="line-height: 1.2rem; margin-left: .4rem">{{(tx.out[0].coins[0].amount/1e8).toFixed(8)}} {{tx.out[0].coins[0].asset | shortSymbol}}</span>
+              <div class="tx-contain" v-for="(t, j) in tx.out" :key="j">
+                <!-- out coin -->
+                <div>
+                  <div class="bubble-container blue">Out</div>
+                  <div v-if="isSynth(t.coins[0] && t.coins[0].asset)" class="bubble-container yellow">Synth</div>
+                  <a v-if="t.txID" @click="gotoTx(t.txID)" class="tx">{{(t.txID.slice(0,4)+'...'+t.txID.slice(end=-4))}}</a>
+                </div>
+                <div style="display: flex; align-items: center;" v-if="t.coins[0]">
+                  <img class="asset-icon" :src="assetImage(t.coins[0].asset)" alt="out-coin" @error="imgErr">
+                  <span style="line-height: 1.2rem; margin-left: .4rem">{{(t.coins[0].amount/1e8).toFixed(8)}} {{t.coins[0].asset | shortSymbol}}</span>
+                </div>
+                <!-- address -->
+                <a v-if="t.address" class="address" @click="gotoAddr(t.address)">{{t.address.slice(0,4)+'...'+t.address.slice(end=-4)}}</a>
               </div>
-              <!-- address -->
-              <a v-if="tx.out[0].address" class="address" @click="gotoAddr(tx.out[0].address)">{{tx.out[0].address.slice(0,4)+'...'+tx.out[0].address.slice(end=-4)}}</a>
             </div>
           </div>
         </div>
@@ -52,6 +62,7 @@
 import rightArrow from '~/assets/images/arrow-small-right.svg?inline';
 import { AssetImage } from '~/classes/assetImage';
 import BounceLoader from "vue-spinner/src/BounceLoader.vue";
+import { assetFromString, isSynthAsset } from '@xchainjs/xchain-util';
 
 export default {
   props: ['txs', 'loading'],
@@ -77,11 +88,18 @@ export default {
     },
     imgErr(e) {
       e.target.src = require('~/assets/images/unknown.png');
+    },
+    isSynth(assetStr) {
+      if (!assetStr) {
+        return false
+      }
+      const asset = assetFromString(assetStr);
+      return isSynthAsset(asset);
     }
   },
   filters: {
     shortSymbol: function(assetStr) {
-      if (assetStr.includes('-')) {
+      if (assetStr?.includes('-')) {
         let assetStrSplit = assetStr.split('-');
         if (assetStrSplit[1].length > 8)
           return assetStrSplit[0] + '-' + assetStrSplit[1].slice(0,4) + '...' + assetStrSplit[1].slice(-4);
@@ -161,8 +179,17 @@ export default {
         display: inline-block;
       }
 
+      .tx-in {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
       .tx-out {
         position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
         border-left: 1px solid var(--border-color);
         padding-left: 2rem;
         min-height: 4rem;
@@ -193,4 +220,9 @@ export default {
   }
 }
 
+.tx-contain {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 </style>
