@@ -40,7 +40,8 @@ export default {
     getActions(offset=0,filter=undefined) {
       this.loading = true;
       this.offset = offset;
-      this.$api.getTxs(this.offset, 10, filter=filter)
+      filter = this.filter=='all'?undefined:this.filter;
+      this.$api.getTxs(this.offset, 10, filter)
       .then(res => {
         this.txs = res.data;
         this.count = res.data.count;

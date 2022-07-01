@@ -36,7 +36,7 @@ export function parseCosmosTx(ntx) {
         var assetName = `THOR.${el?.amount[0]?.denom}`.toLocaleUpperCase()
         ret.push({
           type: 'Send',
-          inout: [{
+          inout: [[{
             is: el?.amount[0],
             address: el['to_address'],
             outAddress: el['from_address'],
@@ -45,7 +45,7 @@ export function parseCosmosTx(ntx) {
               name: assetName,
               amount: el?.amount[0].amount / 10**8
             }
-          }],
+          }]],
           gas: [+ntx?.tx_response?.gas_used / 10**8 + ' ' + assetName],
           date: moment(ntx?.tx_response.timestamp).format('MM/DD/YYYY hh:mm:ss A'),
           height: +ntx?.tx_response.height
@@ -57,7 +57,7 @@ export function parseCosmosTx(ntx) {
         var assetName = `THOR.${el?.amount[0]?.denom}`.toLocaleUpperCase()
         ret.push({
           type: 'Deposit/Withdraw',
-          inout: [{
+          inout: [[{
             is: el?.amount[0],
             address: el['signer'],
             txID: ntx?.tx_response?.txhash,
@@ -65,7 +65,7 @@ export function parseCosmosTx(ntx) {
               name: assetName,
               amount: el?.amount[0].amount / 10**8
             }
-          }],
+          }]],
           gas: [+ntx?.tx_response?.gas_used / 10**8 + ' ' + assetName],
           memo: el['memo'],
           txID: ntx?.tx_response?.txhash,
@@ -87,7 +87,8 @@ export function parseMidgardTx(tx) {
 
   let res = {
     type: tx_action.type,
-    inout: [{
+    inout: [
+      [{
         is: tx_action?.in[0]?.coins[0]?.asset,
         address: tx_action?.in[0]?.address ?? '',
         txID: tx_action?.in[0]?.txID ?? '',
@@ -95,16 +96,17 @@ export function parseMidgardTx(tx) {
           name: tx_action?.in[0]?.coins[0]?.asset,
           amount: tx_action?.in[0]?.coins[0]?.amount / 10**8,
         }
-      },
-      {
-        is: tx_action?.out[0]?.coins[0]?.asset,
-        address: tx_action?.out[0]?.address ?? '',
-        txID: tx_action?.out[0]?.txID ?? '',
+      }],
+      tx_action?.out.map(t => ({
+        is: t.coins[0]?.asset,
+        address: t?.address ?? '',
+        txID: t?.txID ?? '',
         asset: {
-          name: tx_action?.out[0]?.coins[0]?.asset,
-          amount: tx_action?.out[0]?.coins[0]?.amount / 10**8,
+          name: t?.coins[0]?.asset,
+          amount: t?.coins[0]?.amount / 10**8,
         }
-    }],
+      }))
+    ],
     date: (new Date(tx_action?.date / 10 ** 6)).toLocaleString(),
     height: tx_action.height,
     pools: tx_action.pools,

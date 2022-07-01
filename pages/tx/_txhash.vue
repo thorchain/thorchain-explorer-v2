@@ -21,26 +21,28 @@
       </div>
       <div style="margin: 1rem 0"></div>
       <div class="tx-container" v-if="tx">
-        <div class="tx-contain" v-for="(one_tx, i) in tx.inout" :key="i">
-          <template v-if="one_tx.is">
-            <div class="txid">
-              <div :class="['bubble-container', i?'blue':'']">{{i?'Out':'In'}}</div>
-              <span class="tx-hash clickable" @click="gotoTx(one_tx.txID)">{{one_tx.txID}}</span>
-            </div>
-            <div class="asset-icon-container">
-              <img
-                class="asset-icon"
-                :src="assetImage(one_tx.asset.name)"
-                alt="in-coin"
-              />
-              <span>{{one_tx.asset.amount}} {{one_tx.asset.name}}</span>
-            </div>
-            <div class="address">
-              <span v-if="one_tx.address" class="clickable" @click="gotoAddr(one_tx.address)">{{formatAddress(one_tx.address)}}</span>
-              <ArrowIcon v-if="one_tx.outAddress" class="icon small" />
-              <span v-if="one_tx.outAddress" class="clickable" @click="gotoAddr(one_tx.outAddress)">{{formatAddress(one_tx.outAddress)}}</span>
-            </div>
-          </template>
+        <div class="tx-contain" v-for="(txs, i) in tx.inout" :key="i">
+          <div v-for="(one_tx, j) in txs" :key="j">
+            <template v-if="one_tx.is">
+              <div class="txid">
+                <div :class="['bubble-container', i?'blue':'']">{{i?'Out':'In'}}</div>
+                <span class="tx-hash clickable" @click="gotoTx(one_tx.txID)">{{one_tx.txID}}</span>
+              </div>
+              <div class="asset-icon-container">
+                <img
+                  class="asset-icon"
+                  :src="assetImage(one_tx.asset.name)"
+                  alt="in-coin"
+                />
+                <span>{{(+one_tx.asset.amount).toFixed(8)}} {{one_tx.asset.name}}</span>
+              </div>
+              <div class="address">
+                <span v-if="one_tx.address" class="clickable" @click="gotoAddr(one_tx.address)">{{formatAddress(one_tx.address)}}</span>
+                <ArrowIcon v-if="one_tx.outAddress" class="icon small" />
+                <span v-if="one_tx.outAddress" class="clickable" @click="gotoAddr(one_tx.outAddress)">{{formatAddress(one_tx.outAddress)}}</span>
+              </div>
+            </template>
+          </div>
         </div>
       </div>
       <div v-if="tx" class="extra-details">
@@ -228,6 +230,9 @@ export default {
 }
 
 .tx-contain {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   flex: 1;
 
   .asset-icon-container {
@@ -281,5 +286,13 @@ export default {
 
 .extra-details {
   margin-top: 1rem;
+}
+
+.utility, .tx-date, .tx-header {
+  padding: 0 1rem;
+}
+
+.tx-id {
+  word-break: break-all;
 }
 </style>
