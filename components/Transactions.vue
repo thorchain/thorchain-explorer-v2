@@ -225,4 +225,9 @@ export default {
   flex-direction: column;
   gap: 10px;
 }
+
+.tx-out .tx-contain:not(:first-of-type), .tx-in .tx-contain:not(:first-of-type) {
+  border-top: 1px solid var(--border-color);
+  padding-top: 0.8rem;
+}
 </style>
