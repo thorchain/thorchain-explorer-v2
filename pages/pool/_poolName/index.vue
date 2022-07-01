@@ -71,7 +71,10 @@
           </div>
         </div>
         <div style="margin: 1rem 0;">
-          <VChart :option="volumeHistory" :loading="!volumeHistory"></VChart>
+          <VChart :option="volumeHistory" 
+            :loading="!volumeHistory"
+            :loading-options="showLoading"
+          ></VChart>
         </div>
         <div class="pool-detail-container">
           <div
@@ -358,6 +361,11 @@ export default {
       poolStats: [],
       poolDetail: undefined,
       volumeHistory: undefined,
+      showLoading: {
+        color: "var(--primary-color)",
+        textColor: 'var(--primary-color)',
+        maskColor: 'var(--card-bg-color)',
+      }
     };
   },
   apollo: {

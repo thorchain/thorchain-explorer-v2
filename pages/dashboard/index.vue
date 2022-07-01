@@ -108,6 +108,7 @@
           :option="swapHistory"
           :loading="!swapHistory"
           :autoresize="true"
+          :loading-options="showLoading"
         ></VChart>
       </Card>
       <Card title="Value Locked History">
@@ -115,6 +116,7 @@
           :option="tvlHistory"
           :loading="!tvlHistory"
           :autoresize="true"
+          :loading-options="showLoading"
         ></VChart>
       </Card>
     </div>
@@ -124,6 +126,7 @@
           :option="earningsHistory"
           :loading="!earningsHistory"
           :autoresize="true"
+          :loading-options="showLoading"
         ></VChart>
       </Card>
       <Card title="Liquidity Volume Change">
@@ -131,6 +134,7 @@
           :option="volumeHistory"
           :loading="!volumeHistory"
           :autoresize="true"
+          :loading-options="showLoading"
         ></VChart>
       </Card>
     </div>
@@ -285,6 +289,11 @@ export default {
       totalTxs: undefined,
       totalAddresses: undefined,
       thorHeight: undefined,
+      showLoading: {
+        color: "var(--primary-color)",
+        textColor: 'var(--primary-color)',
+        maskColor: 'var(--card-bg-color)',
+      }
     };
   },
   activated() {
