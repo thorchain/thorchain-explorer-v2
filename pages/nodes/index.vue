@@ -585,7 +585,7 @@ export default {
         );
         let filteredNodes = [];
         let chains = observeredChains(actNodes);
-        let ratioReward = (this.churnInterval-(+this.bondMetrics.nextChurnHeight-this.lastBlockHeight))/this.churnInterval;
+        let ratioReward = (this.churnInterval-(+this.bondMetrics?.nextChurnHeight-this.lastBlockHeight))/this.churnInterval;
         actNodes.forEach((el) => {
           fillNodeData(
             filteredNodes,
