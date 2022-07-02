@@ -4,9 +4,10 @@
       <template v-if="txs.actions && txs.actions.length > 0">
         <div class="tx-container" v-for="(tx, idx) in txs.actions" :key="idx">
           <div class="tx-header">
-            <div class="action">{{tx.type | capitalize }}</div>
+            <div class="action bubble-container grey">{{tx.type | capitalize }}</div>
             <div class="date">{{ (new Date(tx.date/10**6)).toLocaleDateString() }}</div>
             <div class="time">{{ (new Date(tx.date/10**6)).toLocaleTimeString() }}</div>
+            <div class="since">({{ since(tx.date) }})</div>
           </div>
           <div class="tx-content">
             <div class="tx-in">
@@ -63,6 +64,7 @@ import rightArrow from '~/assets/images/arrow-small-right.svg?inline';
 import { AssetImage } from '~/classes/assetImage';
 import BounceLoader from "vue-spinner/src/BounceLoader.vue";
 import { assetFromString, isSynthAsset } from '@xchainjs/xchain-util';
+import moment from "moment";
 
 export default {
   props: ['txs', 'loading'],
@@ -95,6 +97,10 @@ export default {
       }
       const asset = assetFromString(assetStr);
       return isSynthAsset(asset);
+    },
+    since(date) {
+      console.log(date)
+      return moment(date/1e6).fromNow()
     }
   },
   filters: {
@@ -144,6 +150,10 @@ export default {
 
     &:last-of-type {
       border-bottom: none;
+    }
+
+    .since, .date, .time {
+      font-size: .875rem;
     }
 
     .tx-header {

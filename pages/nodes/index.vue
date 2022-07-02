@@ -97,7 +97,7 @@
             <span v-else-if="props.column.field == 'providers'">
               <div 
                 :id="props.row.providers.length?`popover-${props.row.originalIndex}`:false"
-                class="bubble-container gery"
+                class="bubble-container grey"
               >
                 {{props.row.providers.length}}
               </div>
@@ -585,7 +585,7 @@ export default {
         );
         let filteredNodes = [];
         let chains = observeredChains(actNodes);
-        let ratioReward = (this.churnInterval-(+this.bondMetrics.nextChurnHeight-this.lastBlockHeight))/this.churnInterval;
+        let ratioReward = (this.churnInterval-(+this.bondMetrics?.nextChurnHeight-this.lastBlockHeight))/this.churnInterval;
         actNodes.forEach((el) => {
           fillNodeData(
             filteredNodes,
