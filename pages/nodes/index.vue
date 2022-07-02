@@ -97,7 +97,7 @@
             <span v-else-if="props.column.field == 'providers'">
               <div 
                 :id="props.row.providers.length?`popover-${props.row.originalIndex}`:false"
-                class="bubble-container gery"
+                class="bubble-container grey"
               >
                 {{props.row.providers.length}}
               </div>
