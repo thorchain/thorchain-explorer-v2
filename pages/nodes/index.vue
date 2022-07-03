@@ -407,13 +407,13 @@ export default {
           label: 'ISP',
           field: 'isp',
           type: 'text',
-          hidden: !process.env.SERVER_URL,
+          hidden: process.env.NETWORK !== 'mainnet',
           tdClass: 'center',
         },
         {
           label: 'Location',
           field: 'location',
-          hidden: !process.env.SERVER_URL,
+          hidden: process.env.NETWORK !== 'mainnet',
           tdClass: 'center',
           sortFn: this.cSort
         },
