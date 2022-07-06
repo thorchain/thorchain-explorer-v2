@@ -227,6 +227,7 @@ export default {
   background: var(--card-bg-color);
   border-radius: 5px;
   padding: 20px;
+  gap: 10px;
 }
 
 .tx-contain {
@@ -252,10 +253,7 @@ export default {
     width: 300px;
     display: flex;
     align-items: center;
-
-    .bubble-container {
-      margin-right: 0.2rem;
-    }
+    gap: 10px;
 
     .tx-hash {
       overflow: hidden;
