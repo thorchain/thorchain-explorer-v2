@@ -97,16 +97,16 @@ export function parseMidgardTx(tx) {
 
   tx.actions.forEach(txa => {
     let insouts = [
-      [{
-        is: txa?.in[0]?.coins[0]?.asset,
-        address: txa?.in[0]?.address ?? '',
-        txID: txa?.in[0]?.txID ?? '',
+      txa?.in?.map(t => ({
+        is: t?.coins[0]?.asset,
+        address: t?.address ?? '',
+        txID: t?.txID ?? '',
         asset: {
-          name: txa?.in[0]?.coins[0]?.asset,
-          amount: txa?.in[0]?.coins[0]?.amount / 10**8,
+          name: t?.coins[0]?.asset,
+          amount: t?.coins[0]?.amount / 10**8,
         }
-      }],
-      txa?.out.map(t => ({
+      })),
+      txa?.out?.map(t => ({
         is: t.coins[0]?.asset,
         address: t?.address ?? '',
         txID: t?.txID ?? '',
@@ -121,7 +121,7 @@ export function parseMidgardTx(tx) {
   })
 
   if (tx_action.metadata) {
-    res['gas'] = tx_action.metadata[tx_action.type].networkFees.map(f => (f.amount / 10**8 + ' ' + f.asset))
+    res['gas'] = tx_action.metadata[tx_action.type]?.networkFees?.map(f => (f.amount / 10**8 + ' ' + f.asset))
   }
 
   return res;
