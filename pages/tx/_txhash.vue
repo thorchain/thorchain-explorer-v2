@@ -20,28 +20,30 @@
         {{ tx.date }}
       </div>
       <div style="margin: 1rem 0"></div>
-      <div class="tx-container" v-if="tx">
-        <div class="tx-contain" v-for="(txs, i) in tx.inout" :key="i">
-          <div v-for="(one_tx, j) in txs" :key="j">
-            <template v-if="one_tx.is">
-              <div class="txid">
-                <div :class="['bubble-container', i?'blue':'']">{{i?'Out':'In'}}</div>
-                <span class="tx-hash clickable" @click="gotoTx(one_tx.txID)">{{one_tx.txID}}</span>
-              </div>
-              <div class="asset-icon-container">
-                <img
-                  class="asset-icon"
-                  :src="assetImage(one_tx.asset.name)"
-                  alt="in-coin"
-                />
-                <span>{{(+one_tx.asset.amount).toFixed(8)}} {{one_tx.asset.name}}</span>
-              </div>
-              <div class="address">
-                <span v-if="one_tx.address" class="clickable" @click="gotoAddr(one_tx.address)">{{formatAddress(one_tx.address)}}</span>
-                <ArrowIcon v-if="one_tx.outAddress" class="icon small" />
-                <span v-if="one_tx.outAddress" class="clickable" @click="gotoAddr(one_tx.outAddress)">{{formatAddress(one_tx.outAddress)}}</span>
-              </div>
-            </template>
+      <div v-for="(txa, j) in tx.inout" :key="j">
+        <div class="tx-container" v-if="tx">
+          <div class="tx-contain" v-for="(txs, i) in txa" :key="i">
+            <div v-for="(one_tx, j) in txs" :key="j">
+              <template v-if="one_tx.is">
+                <div class="txid">
+                  <div :class="['bubble-container', i?'blue':'']">{{i?'Out':'In'}}</div>
+                  <span class="tx-hash clickable" @click="gotoTx(one_tx.txID)">{{one_tx.txID}}</span>
+                </div>
+                <div class="asset-icon-container">
+                  <img
+                    class="asset-icon"
+                    :src="assetImage(one_tx.asset.name)"
+                    alt="in-coin"
+                  />
+                  <span>{{(+one_tx.asset.amount).toFixed(8) | number('0,0.0000000000')}} {{one_tx.asset.name}}</span>
+                </div>
+                <div class="address">
+                  <span v-if="one_tx.address" class="clickable" @click="gotoAddr(one_tx.address)">{{formatAddress(one_tx.address)}}</span>
+                  <ArrowIcon v-if="one_tx.outAddress" class="icon small" />
+                  <span v-if="one_tx.outAddress" class="clickable" @click="gotoAddr(one_tx.outAddress)">{{formatAddress(one_tx.outAddress)}}</span>
+                </div>
+              </template>
+            </div>
           </div>
         </div>
       </div>
@@ -203,7 +205,7 @@ export default {
       }
 
       if (this.tx.memo) {
-        ret.push([
+        res.push([
           {
             name: 'Memo',
             value: this.tx.memo,
