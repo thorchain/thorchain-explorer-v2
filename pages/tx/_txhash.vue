@@ -35,7 +35,7 @@
                     :src="assetImage(one_tx.asset.name)"
                     alt="in-coin"
                   />
-                  <span>{{(+one_tx.asset.amount).toFixed(8) | number('0,0.0000000000')}} {{one_tx.asset.name}}</span>
+                  <span>{{(+one_tx.asset.amount).toFixed(8)}} {{one_tx.asset.name}}</span>
                 </div>
                 <div class="address">
                   <span v-if="one_tx.address" class="clickable" @click="gotoAddr(one_tx.address)">{{formatAddress(one_tx.address)}}</span>
