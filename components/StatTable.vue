@@ -16,7 +16,10 @@
             </div>
             <div class="col-value">
               <template v-if="colItem.filter">
-                <pre>{{ colItem.value || '-' }}</pre>
+                <template v-if="!$slots[colItem.name]">
+                  <pre>{{ colItem.value || '-' }}</pre>
+                </template>
+                <slot v-else :name="colItem.name"></slot>
               </template>
               <template v-else>
                 <template v-if="colItem.value">
