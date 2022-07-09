@@ -87,17 +87,26 @@ export function parseMidgardTx(tx) {
 
   let res = {
     type: tx_action.type,
-    inout: [
-      [{
-        is: tx_action?.in[0]?.coins[0]?.asset,
-        address: tx_action?.in[0]?.address ?? '',
-        txID: tx_action?.in[0]?.txID ?? '',
+    inout: [],
+    date: (new Date(tx_action?.date / 10 ** 6)).toLocaleString(),
+    height: tx_action.height,
+    pools: tx_action.pools,
+    status: tx_action.status,
+    liqidityFee: tx_action.metadata
+  }
+
+  tx.actions.forEach(txa => {
+    let insouts = [
+      txa?.in?.map(t => ({
+        is: t?.coins[0]?.asset,
+        address: t?.address ?? '',
+        txID: t?.txID ?? '',
         asset: {
-          name: tx_action?.in[0]?.coins[0]?.asset,
-          amount: tx_action?.in[0]?.coins[0]?.amount / 10**8,
+          name: t?.coins[0]?.asset,
+          amount: t?.coins[0]?.amount / 10**8,
         }
-      }],
-      tx_action?.out.map(t => ({
+      })),
+      txa?.out?.map(t => ({
         is: t.coins[0]?.asset,
         address: t?.address ?? '',
         txID: t?.txID ?? '',
@@ -106,15 +115,13 @@ export function parseMidgardTx(tx) {
           amount: t?.coins[0]?.amount / 10**8,
         }
       }))
-    ],
-    date: (new Date(tx_action?.date / 10 ** 6)).toLocaleString(),
-    height: tx_action.height,
-    pools: tx_action.pools,
-    status: tx_action.status
-  }
+    ];
+
+    res.inout.push(insouts);
+  })
 
   if (tx_action.metadata) {
-    res['gas'] = tx_action.metadata[tx_action.type].networkFees.map(f => (f.amount / 10**8 + ' ' + f.asset))
+    res['gas'] = tx_action.metadata[tx_action.type]?.networkFees?.map(f => (f.amount / 10**8 + ' ' + f.asset))
   }
 
   return res;
