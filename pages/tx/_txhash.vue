@@ -46,7 +46,18 @@
         </div>
       </div>
       <div v-if="tx" class="extra-details">
-        <stat-table :tableSettings="extraDetail"></stat-table>
+        <stat-table :tableSettings="extraDetail">
+          <template #Pools>
+            <div v-for="p in tx.pools" class="pool-box">
+              <img
+                class="asset-icon"
+                :src="assetImage(p)"
+                alt="in-coin"
+              />
+              <span>{{p}}</span>
+            </div>
+          </template>
+        </stat-table>
       </div>
     </template>
     <div v-else-if="isError" class="notify-card card-bg">
@@ -284,6 +295,12 @@ export default {
 
 .extra-details {
   margin-top: 1rem;
+
+  .pool-box {
+    margin: 5px 0;
+    display: flex;
+    align-items: center;
+  }
 }
 
 .utility, .tx-date, .tx-header {
