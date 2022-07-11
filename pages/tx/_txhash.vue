@@ -36,7 +36,10 @@
                     :src="assetImage(one_tx.asset.name)"
                     alt="in-coin"
                   />
-                  <span>{{(+one_tx.asset.amount).toFixed(8)}} {{one_tx.asset.name}}</span>
+                  <span>
+                    {{(+one_tx.asset.amount).toFixed(8)}} {{one_tx.asset.name}}
+                  </span>
+                  <div style="margin-left: .2rem" v-if="checkSynth(one_tx.asset.name)" class="bubble-container yellow">synth</div>
                 </div>
                 <div class="address">
                   <span v-if="one_tx.address" class="clickable" @click="gotoAddr(one_tx.address)">{{formatAddress(one_tx.address)}}</span>
@@ -259,7 +262,7 @@ export default {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      width: 300px;
+      max-width: 300px;
     }
   }
 
