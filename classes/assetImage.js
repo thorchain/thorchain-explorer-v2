@@ -88,10 +88,10 @@ export const AssetImage = (assetStr) => {
       case "TERRA":
         if (ticker === 'TERRA' || ticker === 'LUNA')
           iconPath = 
-            "https://app.thorswap.finance/assets/asset-luna.82340679.png"
+            "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/terra/info/logo.png"
         else if (ticker === 'UST')
           iconPath = 
-            "https://app.thorswap.finance/assets/asset-ust.1c0b5be9.png"
+            "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/terra/assets/uusd/logo.png"
       break;
 
       case "GAIA":
