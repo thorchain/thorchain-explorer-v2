@@ -4,7 +4,8 @@
       <template v-if="txs.actions && txs.actions.length > 0">
         <div class="tx-container" v-for="(tx, idx) in txs.actions" :key="idx">
           <div class="tx-header">
-            <div class="action bubble-container grey">{{tx.type | capitalize }}</div>
+            <div class="action bubble-container grey">{{tx.type | capitalize}}</div>
+            <div :class="['action bubble-container blue', {'green': tx.status == 'success'}]" style="margin-top: .2rem;">{{tx.status | capitalize }}</div>
             <div class="date">{{ (new Date(tx.date/10**6)).toLocaleDateString() }}</div>
             <div class="time">{{ (new Date(tx.date/10**6)).toLocaleTimeString() }}</div>
             <div class="since">({{ since(tx.date) }})</div>
