@@ -14,7 +14,7 @@
               <div class="tx-contain" v-for="(t, j) in tx.in" :key="j">
                 <div>
                   <div class="bubble-container">In</div>
-                  <div v-if="t.coins[0] && isSynth(t.coins[0].asset)" class="bubble-container yellow">Synth</div>
+                  <div v-if="t.coins[0] && checkSynth(t.coins[0].asset)" class="bubble-container yellow">Synth</div>
                   <a v-if="t.txID" class="tx" @click="gotoTx(t.txID)">{{(t.txID.slice(0,4)+'...'+t.txID.slice(end=-4))}}</a>
                 </div>
                 <!-- in coin -->
@@ -33,7 +33,7 @@
                 <!-- out coin -->
                 <div>
                   <div class="bubble-container blue">Out</div>
-                  <div v-if="isSynth(t.coins[0] && t.coins[0].asset)" class="bubble-container yellow">Synth</div>
+                  <div v-if="checkSynth(t.coins[0] && t.coins[0].asset)" class="bubble-container yellow">Synth</div>
                   <a v-if="t.txID" @click="gotoTx(t.txID)" class="tx">{{(t.txID.slice(0,4)+'...'+t.txID.slice(end=-4))}}</a>
                 </div>
                 <div style="display: flex; align-items: center;" v-if="t.coins[0]">
@@ -90,13 +90,6 @@ export default {
     },
     imgErr(e) {
       e.target.src = require('~/assets/images/unknown.png');
-    },
-    isSynth(assetStr) {
-      if (!assetStr) {
-        return false
-      }
-      const asset = assetFromString(assetStr);
-      return isSynthAsset(asset);
     },
     since(date) {
       console.log(date)
