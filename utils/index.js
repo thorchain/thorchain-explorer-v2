@@ -81,6 +81,13 @@ export function parseCosmosTx(ntx) {
   return ret[0];  
 }
 
+function checkSynth(asset) {
+  if (!asset) {
+    return false
+  }
+  return isSynthAsset(assetFromString(asset))
+}
+
 export function parseMidgardTx(tx) {
   //get action
   let tx_action = tx.actions[0];
@@ -88,33 +95,42 @@ export function parseMidgardTx(tx) {
   let res = {
     type: tx_action.type,
     inout: [],
-    date: (new Date(tx_action?.date / 10 ** 6)).toLocaleString(),
+    date: (new Date(tx_action?.date / 10 ** 6)),
     height: tx_action.height,
     pools: tx_action.pools,
     status: tx_action.status,
-    liqidityFee: tx_action.metadata
+    liqidityFee: tx_action.metadata,
+    synth: false
   }
 
   tx.actions.forEach(txa => {
     let insouts = [
-      txa?.in?.map(t => ({
-        is: t?.coins[0]?.asset,
-        address: t?.address ?? '',
-        txID: t?.txID ?? '',
-        asset: {
-          name: t?.coins[0]?.asset,
-          amount: t?.coins[0]?.amount / 10**8,
+      txa?.in?.map(t => {
+        checkSynth(t?.coins[0]?.asset) == true ? res.synth = true:undefined;
+
+        return {
+          is: t?.coins[0]?.asset,
+          address: t?.address ?? '',
+          txID: t?.txID ?? '',
+          asset: {
+            name: t?.coins[0]?.asset,
+            amount: t?.coins[0]?.amount / 10**8,
+          }
         }
-      })),
-      txa?.out?.map(t => ({
-        is: t.coins[0]?.asset,
-        address: t?.address ?? '',
-        txID: t?.txID ?? '',
-        asset: {
-          name: t?.coins[0]?.asset,
-          amount: t?.coins[0]?.amount / 10**8,
+      }),
+      txa?.out?.map(t => {
+        checkSynth(t?.coins[0]?.asset) == true ? res.synth = true:undefined;
+
+        return {
+          is: t.coins[0]?.asset,
+          address: t?.address ?? '',
+          txID: t?.txID ?? '',
+          asset: {
+            name: t?.coins[0]?.asset,
+            amount: t?.coins[0]?.amount / 10**8,
+          }
         }
-      }))
+      })
     ];
 
     res.inout.push(insouts);
