@@ -158,7 +158,7 @@ export function addressFormat(string, number=6, isOnlyLast=false) {
 }
 
 
-const supportedChains = ['BTC', 'DOGE', 'ETH', 'LTC', 'TERRA', 'BCH', 'BNB'];
+const supportedChains = ['BTC', 'DOGE', 'ETH', 'LTC', 'GAIA', 'BCH', 'BNB'];
 
 export function observeredChains(nodes) {
   let maxHeight = {};
