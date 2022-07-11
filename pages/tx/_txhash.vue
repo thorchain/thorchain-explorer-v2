@@ -6,6 +6,7 @@
           Transaction
           <span v-if="tx.type" class="bubble-container" style="margin-left: 0.2rem">{{tx.type}}</span>
           <span v-if="tx.status" class="bubble-container blue" style="margin-left: 0.2rem">{{tx.status}}</span>
+          <span v-if="tx.synth" class="bubble-container yellow" style="margin-left: 0.2rem">synth</span>
         </h3>
       </div>
       <div class="utility">
@@ -17,9 +18,9 @@
         </div>
       </div>
       <div class="tx-date">
-        {{ tx.date }}
+        {{ tx.date.toLocaleString() }} ({{fromNow(tx.date)}})
       </div>
-      <div style="margin: 1rem 0"></div>
+      <div style="margin: .2rem 0"></div>
       <div v-for="(txa, j) in tx.inout" :key="j">
         <div class="tx-container" v-if="tx">
           <div class="tx-contain" v-for="(txs, i) in txa" :key="i">
@@ -35,7 +36,10 @@
                     :src="assetImage(one_tx.asset.name)"
                     alt="in-coin"
                   />
-                  <span>{{(+one_tx.asset.amount).toFixed(8)}} {{one_tx.asset.name}}</span>
+                  <span>
+                    {{(+one_tx.asset.amount).toFixed(8)}} {{one_tx.asset.name}}
+                  </span>
+                  <div style="margin-left: .2rem" v-if="checkSynth(one_tx.asset.name)" class="bubble-container yellow">synth</div>
                 </div>
                 <div class="address">
                   <span v-if="one_tx.address" class="clickable" @click="gotoAddr(one_tx.address)">{{formatAddress(one_tx.address)}}</span>
@@ -258,7 +262,7 @@ export default {
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      width: 300px;
+      max-width: 300px;
     }
   }
 

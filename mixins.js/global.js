@@ -1,6 +1,7 @@
-import { assetFromString, Chain, chainToString } from '@xchainjs/xchain-util';
+import { assetFromString, Chain, chainToString, isSynthAsset } from '@xchainjs/xchain-util';
 import { AssetImage } from '~/classes/assetImage';
 import compare from 'semver/functions/compare';
+import moment from 'moment';
 
 export default {
   methods: {
@@ -54,6 +55,17 @@ export default {
       }, (err) => {
         console.error('Could not copy text: ', err);
       });
+    },
+    checkSynth(asset) {
+      if (!asset) {
+        return false;
+      }
+
+      return isSynthAsset(assetFromString(asset));
+    },
+    fromNow(date) {
+      console.log(date, moment(date))
+      return moment(date).fromNow();
     },
     normalFormat(number) {
       return number? this.$options.filters.number(+number, '0,0'):'-'
