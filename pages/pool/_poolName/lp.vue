@@ -11,7 +11,21 @@
           perPage: 30,
           perPageDropdownEnabled: false,
         }"
-      />
+      >
+        <template slot="table-row" slot-scope="props">
+          <template v-if="props.column.field.includes('addr')">
+            <span v-if="props.row[props.column.field]" class="clickable" @click="gotoAddr(props.row[props.column.field])">
+              {{props.formattedRow[props.column.field]}}
+            </span>
+            <span v-else>
+              Not Assgined
+            </span>
+          </template>
+          <span v-else>
+            {{props.formattedRow[props.column.field]}}
+          </span>
+        </template>
+      </vue-good-table>
     </div>
     <LoadingCard v-if="loading"></LoadingCard>
     <div v-if="error" class="base-container">
@@ -39,11 +53,13 @@ export default {
         },
         {
           label: 'Rune address',
-          field: 'rune_addr'
+          field: 'rune_addr',
+          formatFn: this.formatAddress
         },
         {
           label: 'Asset address',
-          field: 'asset_addr'
+          field: 'asset_addr',
+          formatFn: this.formatAddress
         },
         {
           label: 'Rune added',
@@ -96,19 +112,16 @@ export default {
       for(let i in pos) {
         this.rows.push({
           position: this.checkPostion(pos[i]),
-          rune_addr: pos[i]?.rune_address? this.formatAddress(pos[i]?.rune_address):'Not Assigned',
-          asset_addr: pos[i]?.asset_address? this.formatAddress(pos[i]?.asset_address):'Not Assigned',
+          rune_addr: pos[i]?.rune_address? pos[i]?.rune_address:undefined,
+          asset_addr: pos[i]?.asset_address? pos[i]?.asset_address:undefined,
           rune_add: pos[i]?.rune_deposit_value? pos[i]?.rune_deposit_value/10**8:'Not Added',
           asset_add: pos[i]?.asset_deposit_value? pos[i]?.asset_deposit_value/10**8:'Not Added',
           last_add_height: pos[i]?.last_add_height? pos[i]?.last_add_height:' '
         })
       }
     },
-    formatAddress(address, length=6) {
-      return `${address.slice(0, length)}...${address.slice(-1*length)}`
-    },
     formatNumber(number) {
-      return this.$options.filters.number(number, '0,0.00')
+      return this.$options.filters.number(number, '0,0.0000')
     },
     formatBlock(number) {
       return this.$options.filters.number(number, '0,0')
