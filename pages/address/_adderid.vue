@@ -5,7 +5,7 @@
       <span>{{isVault?vaultType:'Address'}}</span>
     </div>
     <div class="address-name">
-      <span>{{address}}</span>
+      <span style="color: var(--primary-color)">{{address}}</span>
       <div class="icon-wrapper"  style="margin-left: .7rem;" @click="copy(address)">
         <span class="icon-name">{{copyText}}</span>
         <CopyIcon class="icon small"/>
@@ -342,6 +342,7 @@ export default {
     display: flex;
     align-items: center;
     margin-bottom: 1rem;
+    padding: 0 .8rem;
 
     span {
       margin-left: .7rem;
@@ -357,6 +358,7 @@ export default {
     margin: .4rem 0;
     font-weight: bold;
     color: var(--font-color);
+    padding: 0 .8rem;
   }
 }
 
