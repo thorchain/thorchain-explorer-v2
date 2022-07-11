@@ -495,8 +495,8 @@ export default {
           thClass: 'center'
         },
         {
-          label: 'TERRA',
-          field: 'chains.TERRA',
+          label: 'GAIA',
+          field: 'chains.GAIA',
           type: 'number',
           formatFn: this.numberFormat,
           tdClass: 'mono center',
