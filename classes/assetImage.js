@@ -69,8 +69,8 @@ export const AssetImage = (assetStr) => {
           if (ticker === "ALCX") {
             iconPath = "https://etherscan.io/token/images/Alchemix_32.png";
           } 
-          else if (ticker === 'TGT') {
-            iconPath = "https://app.thorswap.finance/assets/asset-tgt.81fad622.png";
+          else if (ticker === "TGT") {
+            iconPath = require("~/assets/images/assets/tgt.png")
           }
         }
         break;
@@ -82,7 +82,7 @@ export const AssetImage = (assetStr) => {
 
       case "DOGE":
         iconPath = 
-          "https://app.thorswap.finance/assets/asset-dogecoin.660e86f3.png"
+          require("~/assets/images/assets/dogecoin.png")
       break;
 
       case "TERRA":
