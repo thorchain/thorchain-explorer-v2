@@ -108,8 +108,8 @@ export default {
             filter: true
           },
           {
-            name: 'TERRA Trading is Halted',
-            value: this.mimir?.HALTTERRATRADING ? 'Yes' : 'No',
+            name: 'GAIA Trading is Halted',
+            value: this.mimir?.HALTGAIATRADING ? 'Yes' : 'No',
             filter: true
           },
           {
@@ -189,8 +189,8 @@ export default {
             filter: true
           },
           {
-            name: 'TERRA LP is paused',
-            value: this.mimir?.PAUSELPTERRA ? 'Yes' : 'No',
+            name: 'GAIA LP is paused',
+            value: this.mimir?.PAUSELPGAIA ? 'Yes' : 'No',
             filter: true
           },
           {
@@ -258,12 +258,7 @@ export default {
             filter: true
           },
           {
-            name: 'TERRA CHAIN is paused',
-            value: this.mimir?.HALTTERRACHAIN ? 'Yes' : 'No',
-            filter: true
-          },
-          {
-            name: 'COSMOS CHAIN is paused',
+            name: 'GAIA CHAIN is paused',
             value: this.mimir?.HALTGAIACHAIN ? 'Yes' : 'No',
             filter: true
           },
