@@ -4,7 +4,7 @@
       <stat-table :tableSettings="topActiveBonds" header="Top Active Bonds"></stat-table>
       <stat-table :tableSettings="topStandbyBonds" header="Top Standby Bonds"></stat-table>
     </div>
-    <Nav :activeMode.sync="mode" :navItems="[{text: 'Active', mode: 'active'}, {text: 'StandBy', mode: 'standby'}]" />
+    <Nav :activeMode.sync="mode" :navItems="modes" />
     <KeepAlive>
       <Card title="Active Nodes" v-if="mode == 'active'" :isLoading="!activeNodes">
         <vue-good-table
@@ -134,75 +134,86 @@
           </template>
         </vue-good-table>
       </Card>
-      <Card v-else-if="mode === 'standby'" title="Standby Nodes" :isLoading="!standbyNodes">
-        <vue-good-table
-          v-if="cols && standbyNodes"
-          :columns="cols"
-          :rows="standbyNodes"
-          styleClass="vgt-table net-table bordered"
-          :pagination-options="{
-            enabled: true,
-            perPage: 50,
-            perPageDropdownEnabled: false,
-          }"
-          :sort-options="{
-            enabled: true,
-            initialSortBy: {field: 'bond', type: 'desc'}
-          }"
-          :key="2"
-        >
-          <template slot="table-row" slot-scope="props">
-            <span class="clickable" v-if="props.column.field == 'address'">
-              <div class="table-wrapper-row" v-if="props.row.address">
-                <span v-tooltip="props.row.address" @click="gotoNode(props.row.address)">{{addressFormat(props.row.address)}}</span>
-                <a style="height: 1rem" :href="gotoNodeUrl(props.row.address)" target="_blank">
-                  <NetworkIcon class="table-icon" />
-                </a>
-                <LinkIcon @click="gotoAddr(props.row.address)" class="table-icon" />
-                <Copy :strCopy="props.row.address" />
-              </div> 
-              <span v-else class="not-clickable">No Address Set</span>
-            </span>
-            <span v-else-if="props.column.field == 'bond'">
-              <span v-tooltip="curFormat(runePrice * props.row.bond)">
-                <span class="extra">{{runeCur()}}</span>  
-                {{numberFormat(props.row.bond)}}
-              </span> 
-            </span>
-            <span v-else-if="props.column.field == 'award'">
-              <span v-tooltip="curFormat(runePrice * props.row.award)">
-                <span class="extra">{{runeCur()}}</span>  
-                {{props.row.award}}
-              </span> 
-            </span>
-            <span v-else-if="props.column.field == 'status'">
-              <div :class="['bubble-container yellow', {
-                'red': props.row.status === 'Disabled',
-                'black': props.row.status === 'Unknown',
-                'white': props.row.status === 'Whitelisted',
-              }]">
-                <span>{{props.row.status}}</span>
-              </div>
-            </span>
-            <span v-else-if="props.column.field == 'ip'">
-              <div v-if="props.row.ip" class="table-wrapper-row">
-                <span>{{props.row.ip}}</span>
-                <Copy :strCopy="props.row.ip" />
-              </div>
-              <div v-else></div>
-            </span>
-            <span v-else>
-              {{props.formattedRow[props.column.field]}}
-            </span>
-          </template>
-        </vue-good-table>
-      </Card>
+      <template v-for="m in otherNodes" v-else>
+        <Card v-if="mode == m.name" :title="m.title" :isLoading="!m.cols">
+          <vue-good-table
+            v-if="cols && m.cols"
+            :columns="cols"
+            :rows="m.cols"
+            styleClass="vgt-table net-table bordered"
+            :pagination-options="{
+              enabled: true,
+              perPage: 50,
+              perPageDropdownEnabled: false,
+            }"
+            :sort-options="{
+              enabled: true,
+              initialSortBy: {field: 'bond', type: 'desc'}
+            }"
+            :key="2"
+          >
+            <template slot="table-row" slot-scope="props">
+              <span class="clickable" v-if="props.column.field == 'address'">
+                <div class="table-wrapper-row" v-if="props.row.address">
+                  <span v-tooltip="props.row.address" @click="gotoNode(props.row.address)">{{addressFormat(props.row.address)}}</span>
+                  <a style="height: 1rem" :href="gotoNodeUrl(props.row.address)" target="_blank">
+                    <NetworkIcon class="table-icon" />
+                  </a>
+                  <LinkIcon @click="gotoAddr(props.row.address)" class="table-icon" />
+                  <Copy :strCopy="props.row.address" />
+                </div> 
+                <span v-else class="not-clickable">No Address Set</span>
+              </span>
+              <span v-else-if="props.column.field == 'bond'">
+                <span v-tooltip="curFormat(runePrice * props.row.bond)">
+                  <span class="extra">{{runeCur()}}</span>  
+                  {{numberFormat(props.row.bond)}}
+                </span> 
+              </span>
+              <span v-else-if="props.column.field == 'award'">
+                <span v-tooltip="curFormat(runePrice * props.row.award)">
+                  <span class="extra">{{runeCur()}}</span>  
+                  {{props.row.award}}
+                </span> 
+              </span>
+              <span v-else-if="props.column.field == 'status'">
+                <div v-if="props.row.status !== 'Eligible'" :class="['bubble-container', {
+                  'red': props.row.status === 'Disabled',
+                  'black': props.row.status === 'Unknown',
+                  'white': props.row.status === 'Whitelisted',
+                  'yellow': props.row.status === 'Standby',
+                }]">
+                  <span>{{props.row.status}}</span>
+                </div>
+                <template v-else>
+                  <div class='bubble-container blue'>
+                    Eligible
+                  </div>  
+                  <div class="bubble-container yellow">
+                    StandBy
+                  </div>
+                </template>
+              </span>
+              <span v-else-if="props.column.field == 'ip'">
+                <div v-if="props.row.ip" class="table-wrapper-row">
+                  <span>{{props.row.ip}}</span>
+                  <Copy :strCopy="props.row.ip" />
+                </div>
+                <div v-else></div>
+              </span>
+              <span v-else>
+                {{props.formattedRow[props.column.field]}}
+              </span>
+            </template>
+          </vue-good-table>
+        </Card>
+      </template>
     </KeepAlive>
   </Page>
 </template>
 
 <script>
-import {bondMetrics, nodesQuery} from "~/_gql_queries";
+import {bondMetrics} from "~/_gql_queries";
 import { mapGetters } from 'vuex';
 import { addressFormat, fillNodeData, observeredChains } from '~/utils';
 import { AssetCurrencySymbol } from '@xchainjs/xchain-util';
@@ -232,6 +243,40 @@ export default {
     bondMetrics: bondMetrics,
   },
   methods: {
+    fillENode(nodes) {
+      let filteredNodes = [];
+      nodes.forEach((el) => {
+        fillNodeData(filteredNodes, el)
+      });
+      return filteredNodes;
+    },
+    fillExtraNodes(nodes) {
+      if (nodes) {
+        let eliNodes = nodes?.filter(
+          (e) => e.status == "Standby" && parseInt(e.bond) >= 30000000000000
+        );
+        eliNodes = this.fillENode(eliNodes);
+        eliNodes.map(el => el.status = 'Eligible');
+        this.otherNodes[0].cols = eliNodes;
+
+        let stbNodes = nodes?.filter(
+          (e) => e.status == "Standby" && parseInt(e.bond) < 30000000000000
+        );
+        this.otherNodes[1].cols = this.fillENode(stbNodes);
+
+        let whNodes = nodes?.filter(
+          (e) => e.status == "Whitelisted"
+        );
+        this.otherNodes[2].cols = this.fillENode(whNodes);
+
+        let rdNodes = nodes?.filter(
+          (e) => e.status == "Ready" || e.status == "Unknown"
+        );
+        this.otherNodes[3].cols = this.fillENode(rdNodes);
+      } else {
+        return undefined;
+      }
+    },
     gotoNode(address) {
       if (address === typeof String)
         this.$router.push({path: `/node/${address}`});
@@ -301,9 +346,38 @@ export default {
     return {
       loading: true,
       mode: 'active',
+      modes: [
+        {text: 'Active', mode: 'active'}, 
+        {text: 'Eligible', mode: 'eligible'},
+        {text: 'StandBy', mode: 'standby'},
+        {text: 'Whitelisted', mode: 'whitelisted'},
+        {text: 'Ready', mode: 'ready'},
+      ],
       nodesQuery: undefined,
       popoverText: 'Test',
       nodesExtra: undefined,
+      otherNodes: [
+        {
+          name: 'eligible',
+          title: 'Eligible',
+          cols: undefined
+        },
+        {
+          name: 'standby',
+          title: 'StandBy',
+          cols: undefined
+        },
+        {
+          name: 'whitelisted',
+          title: 'Whitelisted',
+          cols: undefined
+        },
+        {
+          name: 'ready',
+          title: 'Ready',
+          cols: undefined
+        }
+      ],
       cols: [
         {
           label: 'Address',
@@ -378,11 +452,12 @@ export default {
     this.$api.getNodes().then(({data}) => {
       this.loading = false;
       this.nodesQuery = data;
-    })
+      this.fillExtraNodes(data);
+    });
 
     this.$api.getExraNodesInfo().then(({data}) => {
       this.nodesExtra = data;
-    })
+    });
   },
   computed: {
     ...mapGetters({
@@ -608,23 +683,6 @@ export default {
           let nonFavNodesFilter = filteredNodes.filter((n) => !this.favNodes.includes(n.address));
           return [...favNodesFilter, ...nonFavNodesFilter];
         }
-        return filteredNodes;
-      } else {
-        return undefined;
-      }
-    },
-    standbyNodes: function () {
-      if (this.nodesQuery) {
-        const actNodes = this.nodesQuery?.filter(
-          (e) => e.status !== "Active"
-        );
-        let filteredNodes = [];
-        actNodes.forEach((el) => {
-          fillNodeData(filteredNodes, el)
-        });
-        filteredNodes.sort((a,b) => {
-          return b.bond - a.bond
-        })
         return filteredNodes;
       } else {
         return undefined;
