@@ -4,6 +4,15 @@ import compare from 'semver/functions/compare';
 import moment from 'moment';
 
 export default {
+  data: function() {
+    return {
+      showLoading: {
+        color: "var(--primary-color)",
+        textColor: 'var(--primary-color)',
+        maskColor: 'var(--card-bg-color)',
+      }
+    }
+  },
   methods: {
     assetImage(assetStr) {
       try {

@@ -28,7 +28,7 @@ export default {
 .nav-headers {
   display: flex;
   flex-wrap: wrap;
-  margin-bottom: 1rem;
+  margin-bottom: 10px;
 
   .nav-item {
     cursor: pointer;

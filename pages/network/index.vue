@@ -188,7 +188,6 @@ export default {
   methods: {
     nextChurnTime() {
       if (this.lastblock && this.network) {
-        console.log(this.network);
         return blockTime(
           this.network.nextChurnHeight - this.lastblock[0]["thorchain"]
         );

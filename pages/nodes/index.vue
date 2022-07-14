@@ -4,7 +4,27 @@
       <stat-table :tableSettings="topActiveBonds" header="Top Active Bonds"></stat-table>
       <stat-table :tableSettings="topStandbyBonds" header="Top Standby Bonds"></stat-table>
     </div>
-    <Nav :activeMode.sync="mode" :navItems="[{text: 'Active', mode: 'active'}, {text: 'StandBy', mode: 'standby'}]" />
+    <div class="chart-inner-container">
+      <Card title="Node Stauts">
+        <VChart
+          style="height: 250px"
+          :option="nodeStatus"
+          :loading="!nodeStatus"
+          :autoresize="true"
+          :loading-options="showLoading"
+        ></VChart>
+      </Card>
+      <Card title="Churn Info">
+        <VChart
+          style="height: 250px"
+          :option="churnOption"
+          :loading="!(churnInterval && bondMetrics && lastBlockHeight)"
+          :autoresize="true"
+          :loading-options="showLoading"
+        ></VChart>
+      </Card>
+    </div>
+    <Nav :activeMode.sync="mode" :navItems="modes" style="margin-bottom: 0px;" />
     <KeepAlive>
       <Card title="Active Nodes" v-if="mode == 'active'" :isLoading="!activeNodes">
         <vue-good-table
@@ -134,77 +154,92 @@
           </template>
         </vue-good-table>
       </Card>
-      <Card v-else-if="mode === 'standby'" title="Standby Nodes" :isLoading="!standbyNodes">
-        <vue-good-table
-          v-if="cols && standbyNodes"
-          :columns="cols"
-          :rows="standbyNodes"
-          styleClass="vgt-table net-table bordered"
-          :pagination-options="{
-            enabled: true,
-            perPage: 50,
-            perPageDropdownEnabled: false,
-          }"
-          :sort-options="{
-            enabled: true,
-            initialSortBy: {field: 'bond', type: 'desc'}
-          }"
-          :key="2"
-        >
-          <template slot="table-row" slot-scope="props">
-            <span class="clickable" v-if="props.column.field == 'address'">
-              <div class="table-wrapper-row" v-if="props.row.address">
-                <span v-tooltip="props.row.address" @click="gotoNode(props.row.address)">{{addressFormat(props.row.address)}}</span>
-                <a style="height: 1rem" :href="gotoNodeUrl(props.row.address)" target="_blank">
-                  <NetworkIcon class="table-icon" />
-                </a>
-                <LinkIcon @click="gotoAddr(props.row.address)" class="table-icon" />
-                <Copy :strCopy="props.row.address" />
-              </div> 
-              <span v-else class="not-clickable">No Address Set</span>
-            </span>
-            <span v-else-if="props.column.field == 'bond'">
-              <span v-tooltip="curFormat(runePrice * props.row.bond)">
-                <span class="extra">{{runeCur()}}</span>  
-                {{numberFormat(props.row.bond)}}
-              </span> 
-            </span>
-            <span v-else-if="props.column.field == 'award'">
-              <span v-tooltip="curFormat(runePrice * props.row.award)">
-                <span class="extra">{{runeCur()}}</span>  
-                {{props.row.award}}
-              </span> 
-            </span>
-            <span v-else-if="props.column.field == 'status'">
-              <div :class="['bubble-container yellow', {
-                'red': props.row.status === 'Disabled',
-                'black': props.row.status === 'Unknown',
-                'white': props.row.status === 'Whitelisted',
-              }]">
-                <span>{{props.row.status}}</span>
-              </div>
-            </span>
-            <span v-else-if="props.column.field == 'ip'">
-              <div v-if="props.row.ip" class="table-wrapper-row">
-                <span>{{props.row.ip}}</span>
-                <Copy :strCopy="props.row.ip" />
-              </div>
-              <div v-else></div>
-            </span>
-            <span v-else>
-              {{props.formattedRow[props.column.field]}}
-            </span>
-          </template>
-        </vue-good-table>
-      </Card>
+      <template v-for="m in otherNodes" v-else>
+        <Card v-if="mode == m.name" :title="m.title" :isLoading="!m.cols">
+          <vue-good-table
+            v-if="cols && m.cols"
+            :columns="cols"
+            :rows="m.cols"
+            styleClass="vgt-table net-table bordered"
+            :pagination-options="{
+              enabled: true,
+              perPage: 50,
+              perPageDropdownEnabled: false,
+            }"
+            :sort-options="{
+              enabled: true,
+              initialSortBy: {field: 'bond', type: 'desc'}
+            }"
+            :key="2"
+          >
+            <template slot="table-row" slot-scope="props">
+              <span class="clickable" v-if="props.column.field == 'address'">
+                <div class="table-wrapper-row" v-if="props.row.address">
+                  <span v-tooltip="props.row.address" @click="gotoNode(props.row.address)">{{addressFormat(props.row.address)}}</span>
+                  <a style="height: 1rem" :href="gotoNodeUrl(props.row.address)" target="_blank">
+                    <NetworkIcon class="table-icon" />
+                  </a>
+                  <LinkIcon @click="gotoAddr(props.row.address)" class="table-icon" />
+                  <Copy :strCopy="props.row.address" />
+                </div> 
+                <span v-else class="not-clickable">No Address Set</span>
+              </span>
+              <span v-else-if="props.column.field == 'bond'">
+                <span v-tooltip="curFormat(runePrice * props.row.bond)">
+                  <span class="extra">{{runeCur()}}</span>  
+                  {{numberFormat(props.row.bond)}}
+                </span> 
+              </span>
+              <span v-else-if="props.column.field == 'award'">
+                <span v-tooltip="curFormat(runePrice * props.row.award)">
+                  <span class="extra">{{runeCur()}}</span>  
+                  {{props.row.award}}
+                </span> 
+              </span>
+              <span v-else-if="props.column.field == 'status'">
+                <div v-if="m.name !== 'eligible'" :class="['bubble-container', {
+                  'red': props.row.status === 'Disabled',
+                  'black': props.row.status === 'Unknown',
+                  'white': props.row.status === 'Whitelisted',
+                  'yellow': props.row.status === 'Standby',
+                }]">
+                  <span>{{props.row.status}}</span>
+                </div>
+                <template v-else>
+                  <div class='bubble-container blue'>
+                    Eligible
+                  </div>  
+                  <div 
+                    :class="['bubble-container', {
+                      'green': props.row.status === 'Ready',
+                      'yellow': props.row.status === 'Standby'
+                    }]"
+                  >
+                    <span>{{props.row.status}}</span>
+                  </div>
+                </template>
+              </span>
+              <span v-else-if="props.column.field == 'ip'">
+                <div v-if="props.row.ip" class="table-wrapper-row">
+                  <span>{{props.row.ip}}</span>
+                  <Copy :strCopy="props.row.ip" />
+                </div>
+                <div v-else></div>
+              </span>
+              <span v-else>
+                {{props.formattedRow[props.column.field]}}
+              </span>
+            </template>
+          </vue-good-table>
+        </Card>
+      </template>
     </KeepAlive>
   </Page>
 </template>
 
 <script>
-import {bondMetrics, nodesQuery} from "~/_gql_queries";
 import { mapGetters } from 'vuex';
-import { addressFormat, fillNodeData, observeredChains } from '~/utils';
+import { addressFormat, blockTime, fillNodeData, observeredChains } from '~/utils';
 import { AssetCurrencySymbol } from '@xchainjs/xchain-util';
 import _ from 'lodash';
 import NetworkIcon from '@/assets/images/chart-network.svg?inline';
@@ -216,6 +251,25 @@ import ExitIcon from '@/assets/images/sign-out.svg?inline';
 import CheckBoxIcon from '@/assets/images/checkbox.svg?inline';
 import DollarIcon from '@/assets/images/dollar.svg?inline';
 
+import { use } from "echarts/core";
+import { SVGRenderer } from "echarts/renderers";
+import { GaugeChart, PieChart } from "echarts/charts";
+import {
+  TooltipComponent,
+  LegendComponent,
+  GridComponent,
+} from "echarts/components";
+import VChart from "vue-echarts";
+
+use([
+  SVGRenderer,
+  GridComponent,
+  PieChart,
+  GaugeChart,
+  TooltipComponent,
+  LegendComponent,
+]);
+
 export default {
   name: "nodesPage",
   components: {
@@ -226,12 +280,143 @@ export default {
     DangerIcon,
     ExitIcon,
     CheckBoxIcon,
-    DollarIcon
-  },
-  apollo: {
-    bondMetrics: bondMetrics,
+    DollarIcon,
+    VChart
   },
   methods: {
+    updateChurnTime() {
+      let churnTimeRemaining = +this.bondMetrics?.nextChurnHeight-this.lastBlockHeight;
+      let chartTime = (this.churnInterval-(churnTimeRemaining))/this.churnInterval;
+
+      this.churnOption = {
+        series: [
+          {
+            type: 'gauge',
+            startAngle: 180,
+            endAngle: 0,
+            min: 0,
+            max: 1,
+            pointer: {
+              show: false
+            },
+            progress: {
+              show: true,
+              overlap: false,
+              roundCap: true,
+              clip: false,
+              itemStyle: {
+                borderWidth: 1,
+                borderColor: '#464646'
+              }
+            },
+            splitLine: {
+              show: false,
+            },
+            axisTick: {
+              show: false
+            },
+            axisLabel: {
+              show: false,
+            },
+            data: [
+              {
+                value: chartTime,
+                name: '',
+                title: {
+                  offsetCenter: ['0%', '0%']
+                },
+                detail: {
+                  offsetCenter: ['0%', '40%']
+                }
+              },
+            ],
+            title: {
+              fontSize: 14
+            },
+            detail: {
+              width: 50,
+              height: 14,
+              fontSize: 14,
+              color: 'auto',
+              valueAnimation: true,
+              formatter: (value) => {
+                return blockTime((1-value)*this.churnInterval)
+              }
+            }
+          }
+        ]
+      }
+
+      setInterval(() => {
+        churnTimeRemaining--;
+        this.churnOption.series[0].data[0].value = 1-(churnTimeRemaining/this.churnInterval);
+      }, 6000);
+    },
+    catNodes(nodes) {
+      if (nodes) {
+        let actNodes = nodes?.filter(
+          (e) => e.status == "Active"
+        );
+
+        let eliNodes = nodes?.filter(
+          (e) => e.status == "Standby" && parseInt(e.bond) >= 30000000000000
+        );
+        eliNodes.map(el => el.status = 'Eligible');
+
+        let stbNodes = nodes?.filter(
+          (e) => e.status == "Standby" && parseInt(e.bond) < 30000000000000
+        );
+
+        let whNodes = nodes?.filter(
+          (e) => e.status == "Whitelisted"
+        );
+
+        let rdNodes = nodes?.filter(
+          (e) => e.status == "Ready"
+        );
+
+        let unNodes = nodes?.filter(
+          (e) => e.status == "Unknown"
+        );
+
+        return [actNodes, eliNodes, stbNodes, whNodes, rdNodes, unNodes]
+      } else {
+        return undefined;
+      }
+    },
+    fillENode(nodes) {
+      let filteredNodes = [];
+      nodes.forEach((el) => {
+        fillNodeData(filteredNodes, el)
+      });
+      return filteredNodes;
+    },
+    fillExtraNodes(nodes) {
+      if (nodes) {
+        let eliNodes = nodes?.filter(
+          (e) => (e.status == "Standby" || e.status == "Ready") && parseInt(e.bond) >= 30000000000000
+        );
+        eliNodes = this.fillENode(eliNodes);
+        this.otherNodes[0].cols = eliNodes;
+
+        let stbNodes = nodes?.filter(
+          (e) => e.status == "Standby" && parseInt(e.bond) < 30000000000000
+        );
+        this.otherNodes[1].cols = this.fillENode(stbNodes);
+
+        let whNodes = nodes?.filter(
+          (e) => e.status == "Whitelisted"
+        );
+        this.otherNodes[2].cols = this.fillENode(whNodes);
+
+        let rdNodes = nodes?.filter(
+          (e) => e.status == "Unknown"
+        );
+        this.otherNodes[3].cols = this.fillENode(rdNodes);
+      } else {
+        return undefined;
+      }
+    },
     gotoNode(address) {
       if (address === typeof String)
         this.$router.push({path: `/node/${address}`});
@@ -247,12 +432,6 @@ export default {
     },
     curFormat(number) {
       return this.$options.filters.currency(number)
-    },
-    calAverageBond() {
-      return _.mean(this.bondMetrics?.standbyBonds.filter(b => b >= this.minBond))/10**8;
-    },
-    calMinBond() {
-      return _.min(this.bondMetrics?.standbyBonds.filter(b => b >= this.minBond))/10**8;
     },
     calMedianBond() {
       const eNodes = this.bondMetrics?.standbyBonds.filter(b => b >= this.minBond)
@@ -301,9 +480,38 @@ export default {
     return {
       loading: true,
       mode: 'active',
+      modes: [
+        {text: 'Active', mode: 'active'}, 
+        {text: 'Eligible', mode: 'eligible'},
+        {text: 'StandBy', mode: 'standby'},
+        {text: 'Whitelisted', mode: 'whitelisted'},
+        {text: 'Unknown', mode: 'unknown'},
+      ],
       nodesQuery: undefined,
       popoverText: 'Test',
       nodesExtra: undefined,
+      otherNodes: [
+        {
+          name: 'eligible',
+          title: 'Eligible',
+          cols: undefined
+        },
+        {
+          name: 'standby',
+          title: 'StandBy',
+          cols: undefined
+        },
+        {
+          name: 'whitelisted',
+          title: 'Whitelisted',
+          cols: undefined
+        },
+        {
+          name: 'unknown',
+          title: 'Unknown',
+          cols: undefined
+        }
+      ],
       cols: [
         {
           label: 'Address',
@@ -351,38 +559,45 @@ export default {
       lastBlockHeight: undefined,
       churnInterval: undefined,
       localFavNodes: undefined,
+      churnOption: undefined,
+      bondMetrics: undefined
     }
   },
   mounted() {
-    this.$api.getMimir().then(res => {
+    let mimirProm = this.$api.getMimir().then(res => {
       this.minBond = +res.data.MINIMUMBONDINRUNE;
       this.churnInterval = +res.data.CHURNINTERVAL;
     }).catch(e => {
       console.error(e);
     })
 
-    // this.$api.getLastBlockHeight().then(res => {
-    //   this.lastBlockHeight = res.data;
-    // }).catch(e => {
-    //   console.error(e);
-    // })
+    let netProm = this.$api.getNetwork().then(res => {
+      this.bondMetrics = res.data;
+    }).catch(e => {
+      console.error(e);
+    })
     
-    this.$api.getRPCLastBlockHeight()
+    let lastProm = this.$api.getRPCLastBlockHeight()
     .then(res => {
       this.lastBlockHeight = +res?.data?.block?.header?.height;
     })
     .catch(error => {
       console.error(error)
-    })
+    });
 
     this.$api.getNodes().then(({data}) => {
       this.loading = false;
       this.nodesQuery = data;
-    })
+      this.fillExtraNodes(data);
+    });
 
     this.$api.getExraNodesInfo().then(({data}) => {
       this.nodesExtra = data;
-    })
+    });
+
+    Promise.all([lastProm, netProm, mimirProm]).then((_) => {
+      this.updateChurnTime();
+    });
   },
   computed: {
     ...mapGetters({
@@ -390,6 +605,45 @@ export default {
     }),
     error: function () {
       return !this.nodesQuery
+    },
+    nodeStatus: function () {
+      if (this.nodesQuery) {
+        let nodes = this.catNodes(this.nodesQuery);
+        return {
+          tooltip: {
+            trigger: 'item'
+          },
+          legend: {
+            textStyle: {
+              color: "var(--font-color)",
+            },
+          },
+          series: [
+            {
+              name: 'Node type',
+              type: 'pie',
+              radius: ['40%', '50%'],
+              avoidLabelOverlap: false,
+              itemStyle: {
+                borderRadius: 10,
+                borderColor: 'transparent',
+                borderWidth: 2
+              },
+              data: [
+                { value: nodes[0]?.length, name: 'Active' },
+                { value: nodes[1]?.length, name: 'Eligible' },
+                { value: nodes[2]?.length, name: 'StandBy' },
+                { value: nodes[3]?.length, name: 'Whitelisted' },
+                { value: nodes[4]?.length, name: 'Ready' },
+                { value: nodes[5]?.length, name: 'Unknown' },
+              ]
+            }
+          ]
+        }
+      }
+      else {
+        return undefined
+      }
     },
     activeCols: function() {
       return [
@@ -509,12 +763,12 @@ export default {
         [
           {
             name: 'Total Bond',
-            value: ((this.bondMetrics?.bondMetrics?.active?.totalBond ?? 0)/10**8),
+            value: ((this.bondMetrics?.bondMetrics?.totalActiveBond ?? 0)/10**8),
             usdValue: true
           },
           {
             name: 'Average Bond',
-            value: ((this.bondMetrics?.bondMetrics?.active?.averageBond ?? 0)/10**8),
+            value: ((this.bondMetrics?.bondMetrics?.averageActiveBond ?? 0)/10**8),
             usdValue: true
           },
           {
@@ -525,17 +779,17 @@ export default {
         [
           {
             name: 'Maximum Bond',
-            value: Math.floor(Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.active?.maximumBond) ?? 0)/10**8)),
+            value: Math.floor(Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.maximumActiveBond) ?? 0)/10**8)),
             usdValue: true
           },
           {
             name: 'Median Bond',
-            value: Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.active?.medianBond) ?? 0)/10**8),
+            value: Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.medianActiveBond) ?? 0)/10**8),
             usdValue: true
           },
           {
             name: 'Minimum Bond',
-            value: Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.active?.minimumBond) ?? 0)/10**8),
+            value: Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.minimumActiveBond) ?? 0)/10**8),
             usdValue: true
           }
         ]
@@ -546,12 +800,12 @@ export default {
         [
           {
             name: 'Total Bond',
-            value: ((this.bondMetrics?.bondMetrics?.standby?.totalBond ?? 0)/10**8),
+            value: ((this.bondMetrics?.bondMetrics?.totalStandbyBond ?? 0)/10**8),
             usdValue: true
           },
           {
             name: 'Average Bond',
-            value: this.calAverageBond(),
+            value: ((this.bondMetrics?.bondMetrics?.averageStandbyBond ?? 0)/10**8),
             usdValue: true
           },
           {
@@ -562,7 +816,7 @@ export default {
         [
           {
             name: 'Maximum Bond',
-            value: Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.standby?.maximumBond) ?? 0)/10**8),
+            value: Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.maximumStandbyBond) ?? 0)/10**8),
             usdValue: true
           },
           {
@@ -572,7 +826,7 @@ export default {
           },
           {
             name: 'Minimum Bond',
-            value: this.calMinBond(),
+            value: ((this.bondMetrics?.bondMetrics?.minimumStandbyBond ?? 0)/10**8),
             usdValue: true
           }
         ]
@@ -613,23 +867,6 @@ export default {
         return undefined;
       }
     },
-    standbyNodes: function () {
-      if (this.nodesQuery) {
-        const actNodes = this.nodesQuery?.filter(
-          (e) => e.status !== "Active"
-        );
-        let filteredNodes = [];
-        actNodes.forEach((el) => {
-          fillNodeData(filteredNodes, el)
-        });
-        filteredNodes.sort((a,b) => {
-          return b.bond - a.bond
-        })
-        return filteredNodes;
-      } else {
-        return undefined;
-      }
-    },
     favNodes: {
       set(array) {
         this.localFavNodes = array;
@@ -647,10 +884,9 @@ export default {
 
 <style lang="scss" scoped>
 .grid-network {
-  margin-bottom: 1rem;
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
   grid-gap: .5rem;
   gap: .5rem;
 }
