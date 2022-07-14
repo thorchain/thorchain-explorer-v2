@@ -83,6 +83,10 @@ export function getPoolVolume(poolName) {
   return $axiosInstace.get(`history/liquidity_changes?pool=${poolName}&interval=day&count=30`)
 }
 
+export function getNetwork() {
+  return $axiosInstace.get(`network`)
+}
+
 export async function getLatestBlocks(latestBlock, count=10) {
   if (!latestBlock) {
     return

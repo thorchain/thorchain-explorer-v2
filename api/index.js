@@ -14,7 +14,8 @@ import {
   getLastTvl,
   getLatestBlocks,
   getRevThorname,
-  getPools
+  getPools,
+  getNetwork
 } from "./midgard.api";
 import {
   getMimir,
@@ -156,7 +157,8 @@ export default function ({ $axios }, inject) {
     getNodes,
     getExraNodesInfo,
     getChurnHistory,
-    getFlipTVL
+    getFlipTVL,
+    getNetwork
   };
 
   inject("api", api);
