@@ -289,11 +289,6 @@ export default {
       totalTxs: undefined,
       totalAddresses: undefined,
       thorHeight: undefined,
-      showLoading: {
-        color: "var(--primary-color)",
-        textColor: 'var(--primary-color)',
-        maskColor: 'var(--card-bg-color)',
-      }
     };
   },
   activated() {
@@ -835,28 +830,6 @@ export default {
 .break {
   flex-basis: 100%;
   height: 0;
-}
-
-.chart-inner-container {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-
-  @include lg {
-    flex-direction: row;
-  }
-
-  > div {
-    @include lg {
-      width: calc(50% - 10px);
-    }
-  }
-}
-
-@include lg {
-  .chart-inner-container {
-    flex-direction: row;
-  }
 }
 
 .network-stats {

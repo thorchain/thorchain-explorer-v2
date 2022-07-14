@@ -464,3 +464,25 @@ input {
     margin-right: 0.3rem;
   }
 }
+
+.chart-inner-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  @include lg {
+    flex-direction: row;
+  }
+
+  > div {
+    @include lg {
+      width: calc(50% - 10px);
+    }
+  }
+}
+
+@include lg {
+  .chart-inner-container {
+    flex-direction: row;
+  }
+}
