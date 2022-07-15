@@ -1,4 +1,5 @@
 import { AssetCurrencySymbol, AssetRuneNative, assetToString, isSynthAsset } from "@xchainjs/xchain-util";
+import { compact } from "lodash";
 import moment from "moment";
 
 const SYNTH_DELIMITER = '/';
@@ -177,9 +178,14 @@ export function addressFormat(string, number=6, isOnlyLast=false) {
 }
 
 
-const supportedChains = ['BTC', 'DOGE', 'ETH', 'LTC', 'GAIA', 'BCH', 'BNB'];
+var supportedChains = [];
+
+export function availableChains(nodes) {
+  return compact(nodes?.map(n => n.observe_chains?.map(o => o.chain))).reduce((a,b) => a?.length >= b?.length ? a:b,0);
+}
 
 export function observeredChains(nodes) {
+  supportedChains = availableChains(nodes);
   let maxHeight = {};
   for (let chain of supportedChains) {
     maxHeight[chain] = nodes.map(item =>item.observe_chains).filter(item => item !== null)
