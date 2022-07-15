@@ -58,7 +58,7 @@
               <div class="table-wrapper-row">
                 <span v-tooltip="props.row.address" @click="gotoNode(props.row.address)">
                   {{addressFormat(props.row.address)}}
-                </span> 
+                </span>
                 <template>
                   <StaredIcon v-if="isFav(props.row.address)" class="table-icon" @click="delFav(props.row.address)" style="fill: #FFEE58"></StaredIcon>
                   <StarIcon v-else class="table-icon" @click="addFav(props.row.address)"></StarIcon>
@@ -87,15 +87,15 @@
             </span>
             <span v-else-if="props.column.field == 'bond'">
               <span v-tooltip="curFormat(runePrice * props.row.bond)">
-                <span class="extra">{{runeCur()}}</span>  
+                <span class="extra">{{runeCur()}}</span>
                 {{numberFormat(props.row.bond)}}
-              </span> 
+              </span>
             </span>
             <span v-else-if="props.column.field == 'award'">
               <span v-tooltip="curFormat(runePrice * props.row.award)">
-                <span class="extra">{{runeCur()}}</span>  
+                <span class="extra">{{runeCur()}}</span>
                 {{props.row.award}}
-              </span> 
+              </span>
             </span>
             <span v-else-if="props.column.field == 'status'">
               <div :class="'bubble-container'">
@@ -115,7 +115,7 @@
               </div>
             </span>
             <span v-else-if="props.column.field == 'providers'">
-              <div 
+              <div
                 :id="props.row.providers.length?`popover-${props.row.originalIndex}`:false"
                 class="bubble-container grey"
               >
@@ -137,14 +137,14 @@
                     {{(p.bond/10**8)/(props.row.bond) | percent}}
                   </span>
                   <div style="justify-content: end;" class="text">
-                    <span class="extra">{{runeCur()}}</span>  
+                    <span class="extra">{{runeCur()}}</span>
                     {{numberFormat(p.bond/10**8)}}
                   </div>
                 </div>
               </b-popover>
             </span>
             <span v-else-if="props.column.field.includes('chains.')">
-              <span v-if="props.formattedRow[props.column.field] == 0" style="color: #81C784;">OK</span> 
+              <span v-if="props.formattedRow[props.column.field] == 0" style="color: #81C784;">OK</span>
               <span v-else-if="props.formattedRow[props.column.field] < 10000" style="color: #EF5350;">-{{props.formattedRow[props.column.field]}}</span>
               <DangerIcon v-else class="table-icon" style="fill: #EF5350;" v-tooltip="`-${props.formattedRow[props.column.field]}`"></DangerIcon>
             </span>
@@ -181,20 +181,20 @@
                   </a>
                   <LinkIcon @click="gotoAddr(props.row.address)" class="table-icon" />
                   <Copy :strCopy="props.row.address" />
-                </div> 
+                </div>
                 <span v-else class="not-clickable">No Address Set</span>
               </span>
               <span v-else-if="props.column.field == 'bond'">
                 <span v-tooltip="curFormat(runePrice * props.row.bond)">
-                  <span class="extra">{{runeCur()}}</span>  
+                  <span class="extra">{{runeCur()}}</span>
                   {{numberFormat(props.row.bond)}}
-                </span> 
+                </span>
               </span>
               <span v-else-if="props.column.field == 'award'">
                 <span v-tooltip="curFormat(runePrice * props.row.award)">
-                  <span class="extra">{{runeCur()}}</span>  
+                  <span class="extra">{{runeCur()}}</span>
                   {{props.row.award}}
-                </span> 
+                </span>
               </span>
               <span v-else-if="props.column.field == 'status'">
                 <div v-if="m.name !== 'eligible'" :class="['bubble-container', {
@@ -208,8 +208,8 @@
                 <template v-else>
                   <div class='bubble-container blue'>
                     Eligible
-                  </div>  
-                  <div 
+                  </div>
+                  <div
                     :class="['bubble-container', {
                       'green': props.row.status === 'Ready',
                       'yellow': props.row.status === 'Standby'
@@ -352,34 +352,35 @@ export default {
         this.churnOption.series[0].data[0].value = 1-(churnTimeRemaining/this.churnInterval);
       }, 6000);
     },
-    catNodes(nodes) {
+    categorizedNodes(nodes) {
       if (nodes) {
-        let actNodes = nodes?.filter(
-          (e) => e.status == "Active"
-        );
+        let sortedNodes = [];
 
-        let eliNodes = nodes?.filter(
-          (e) => e.status == "Standby" && parseInt(e.bond) >= 30000000000000
-        );
-        eliNodes.map(el => el.status = 'Eligible');
+        let nodesStatus = ['Active', 'Ready', 'Whitelisted', 'Unknown'];
+        nodesStatus.forEach(n => {
+          sortedNodes.push({
+            name: n,
+            nodes: nodes?.filter(
+              (e) => e.status == n
+            )
+          });
+        });
 
-        let stbNodes = nodes?.filter(
-          (e) => e.status == "Standby" && parseInt(e.bond) < 30000000000000
-        );
+        sortedNodes.push({
+          name: 'Eligiable',
+          nodes: nodes?.filter(
+            (e) => e.status == "Standby" && parseInt(e.bond) >= 30000000000000
+          )
+        });
 
-        let whNodes = nodes?.filter(
-          (e) => e.status == "Whitelisted"
-        );
+        sortedNodes.push({
+          name: 'StandBy',
+          nodes: nodes?.filter(
+            (e) => e.status == "Standby" && parseInt(e.bond) < 30000000000000
+          )
+        });
 
-        let rdNodes = nodes?.filter(
-          (e) => e.status == "Ready"
-        );
-
-        let unNodes = nodes?.filter(
-          (e) => e.status == "Unknown"
-        );
-
-        return [actNodes, eliNodes, stbNodes, whNodes, rdNodes, unNodes]
+        return sortedNodes;
       } else {
         return undefined;
       }
@@ -435,7 +436,7 @@ export default {
     },
     calMedianBond() {
       const eNodes = this.bondMetrics?.standbyBonds.filter(b => b >= this.minBond)
-      return eNodes?.sort((a, b) => +a - +b)[Math.floor(eNodes.length / 2)]/10**8; 
+      return eNodes?.sort((a, b) => +a - +b)[Math.floor(eNodes.length / 2)]/10**8;
     },
     pSort(x, y, col, rowX, rowY) {
       return (x?.length > y?.length)
@@ -463,7 +464,7 @@ export default {
       catch (e) {
         this.favNodes = [];
       }
-      
+
       if (address) {
         this.favNodes = [...favNodes, address];
       }
@@ -481,7 +482,7 @@ export default {
       loading: true,
       mode: 'active',
       modes: [
-        {text: 'Active', mode: 'active'}, 
+        {text: 'Active', mode: 'active'},
         {text: 'Eligible', mode: 'eligible'},
         {text: 'StandBy', mode: 'standby'},
         {text: 'Whitelisted', mode: 'whitelisted'},
@@ -576,7 +577,7 @@ export default {
     }).catch(e => {
       console.error(e);
     })
-    
+
     let lastProm = this.$api.getRPCLastBlockHeight()
     .then(res => {
       this.lastBlockHeight = +res?.data?.block?.header?.height;
@@ -608,7 +609,7 @@ export default {
     },
     nodeStatus: function () {
       if (this.nodesQuery) {
-        let nodes = this.catNodes(this.nodesQuery);
+        let nodes = this.categorizedNodes(this.nodesQuery);
         return {
           tooltip: {
             trigger: 'item'
@@ -617,6 +618,10 @@ export default {
             textStyle: {
               color: "var(--font-color)",
             },
+             formatter: function (name) {
+                let node = nodes.find(n => n.name === name);
+                return `${name}: ${node.nodes.length}`;
+            }
           },
           series: [
             {
@@ -629,14 +634,12 @@ export default {
                 borderColor: 'transparent',
                 borderWidth: 2
               },
-              data: [
-                { value: nodes[0]?.length, name: 'Active' },
-                { value: nodes[1]?.length, name: 'Eligible' },
-                { value: nodes[2]?.length, name: 'StandBy' },
-                { value: nodes[3]?.length, name: 'Whitelisted' },
-                { value: nodes[4]?.length, name: 'Ready' },
-                { value: nodes[5]?.length, name: 'Unknown' },
-              ]
+              label:{
+                show: true,
+                color: 'var(--font-color)',
+                textBorderColor: 'transparent'
+              },
+              data: nodes.map(n => ({value: n.nodes.length, name: n.name}))
             }
           ]
         }
@@ -852,7 +855,7 @@ export default {
           );
           // if (this.lastBlockHeight) {
           //   this.lastBlockHeight.forEach(chain => {
-          //     filteredNodes[chain.chain] = 
+          //     filteredNodes[chain.chain] =
           //       chain
           //   })
           // }
@@ -906,7 +909,7 @@ export default {
     align-items: center;
     gap: 5px;
   }
-  
+
   .text {
     color: var(--font-color);
   }
