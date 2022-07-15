@@ -15,7 +15,7 @@
         </div>
       </div>
       <div class="side-bar-lists">
-        <template v-for="(item, index) in sidebarLists" >
+        <template v-for="(item, index) in sidebarLists" v-if="item">
           <NuxtLink :to="item.link" :class="['side-bar-item']" :key="index" v-on:click.native="toggleMenu(false)">
             <component v-bind:is="item.icon" class="icon selected"></component>
             <component v-bind:is="item.unicon" class="icon unselected"></component>

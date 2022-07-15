@@ -1,5 +1,8 @@
-import { AssetCurrencySymbol, assetFromString, AssetRuneNative, assetToString, isSynthAsset } from "@xchainjs/xchain-util";
+import { AssetCurrencySymbol, AssetRuneNative, assetToString, isSynthAsset } from "@xchainjs/xchain-util";
 import moment from "moment";
+
+const SYNTH_DELIMITER = '/';
+const NON_SYNTH_DELIMITER = '.';
 
 // Formats time in seconds into `dd:hh:mm hrs`
 export function formatTime(seconds) {
@@ -20,7 +23,7 @@ export function formatTime(seconds) {
 
 export function blockTime(blockHeight) {
   let val = (blockHeight)*6;
-  return formatTime(val);        
+  return formatTime(val);
 }
 
 export function momentTimeFormat(time) {
@@ -51,7 +54,7 @@ export function parseCosmosTx(ntx) {
           height: +ntx?.tx_response.height
         })
         break;
-      
+
       // Deposit messages
       case "/types.MsgDeposit":
         var assetName = `THOR.${el?.amount[0]?.denom}`.toLocaleUpperCase()
@@ -75,10 +78,10 @@ export function parseCosmosTx(ntx) {
       default:
         break;
     }
-    
+
   })
 
-  return ret[0];  
+  return ret[0];
 }
 
 function checkSynth(asset) {
@@ -145,13 +148,13 @@ export function parseMidgardTx(tx) {
 
 export function synthToAsset(assetString) {
   let asset = assetFromString(assetString.toUpperCase());
-  
+
   if (assetString === 'rune')
     asset = AssetRuneNative;
-  
+
   if(!isSynthAsset(asset))
     return assetToString(asset)
-  
+
   asset.synth = false;
 
   return assetToString(asset);
@@ -162,13 +165,13 @@ export function curFormat(number) {
 }
 
 export function formatAsset(asset) {
-  return asset.length > 10 ? 
+  return asset.length > 10 ?
     asset.slice(0, 14) + '...':
     asset
 }
 
 export function addressFormat(string, number=6, isOnlyLast=false) {
-  if (!string) 
+  if (!string)
     return string
   return (isOnlyLast?'':(string.slice(0,number)+'...'))+string.slice(-number);
 }
@@ -192,7 +195,7 @@ export function fillNodeData(nodes, el, chains, nodesExtra, lastBlockHeight, rat
   try {
     supportedChains.forEach((chain) => {
       chainsHeight[chain] = (+chains[chain] - (el.observe_chains.filter(item=>item?.chain === chain)[0]?.height ?? 0))
-    })  
+    })
   } catch (error) {
     console.error('Can\'t get the height.')
   }
@@ -219,7 +222,7 @@ export function fillNodeData(nodes, el, chains, nodesExtra, lastBlockHeight, rat
     version: el.version,
     slash: Number.parseInt(el.slash_points),
     award: (Number.parseFloat(el.current_award)/10**8).toFixed(2),
-    providers: el.bond_providers?.providers,    
+    providers: el.bond_providers?.providers,
     bond: el.bond/10**8 < 0.01?0:el.bond/10**8,
     chains: chainsHeight,
     isp,
@@ -233,4 +236,19 @@ export function fillNodeData(nodes, el, chains, nodesExtra, lastBlockHeight, rat
 
 export function runeCur() {
   return AssetCurrencySymbol.RUNE
+}
+
+export const assetFromString = (s) => {
+  const isSynth = s.includes(SYNTH_DELIMITER)
+  const delimiter = isSynth ? SYNTH_DELIMITER : NON_SYNTH_DELIMITER
+  const data = s.split(delimiter)
+  if (data.length <= 1 || data[1]?.length < 1) {
+    return null
+  }
+
+  const chain = data[0]
+  const symbol = data[1]
+  const ticker = symbol.split('-')[0]
+
+  return { chain, symbol, ticker, synth: isSynth }
 }
