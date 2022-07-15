@@ -3,6 +3,7 @@ import { AssetImage } from '~/classes/assetImage';
 import compare from 'semver/functions/compare';
 import moment from 'moment';
 import { assetFromString } from "~/utils";
+import endpoints from '~/api/endpoints';
 
 export default {
   data: function() {
@@ -107,7 +108,7 @@ export default {
         return string
     },
     gotoNodeUrl(node) {
-      return (`${process.env.THORNODE_URL}thorchain/node/${node}`)
+      return (`${endpoints[process.env.NETWORK].THORNODE_URL}thorchain/node/${node}`)
     },
     basicChartFormat(formatter, series, xAxis) {
       return {
