@@ -1,7 +1,8 @@
-import { assetFromString, Chain, chainToString, isSynthAsset } from '@xchainjs/xchain-util';
+import { Chain, isSynthAsset } from '@xchainjs/xchain-util';
 import { AssetImage } from '~/classes/assetImage';
 import compare from 'semver/functions/compare';
 import moment from 'moment';
+import { assetFromString } from "~/utils";
 
 export default {
   data: function() {
@@ -83,8 +84,12 @@ export default {
       return number? this.$options.filters.number(+number, '0,0.0000'):'-'
     },
     showAsset(assetStr) {
-      const asset = assetFromString(assetStr);
-      return asset.chain + '.' + asset.ticker;
+      try {
+        const asset = assetFromString(assetStr);
+        return asset.chain + '.' + asset.ticker;
+      } catch (error) {
+        console.error("Can't get the asset:", assetStr);
+      }
     },
     baseAmountFormat(number) {
       return number? this.$options.filters.number(+number/10**8, '0,0.0000'):'-'

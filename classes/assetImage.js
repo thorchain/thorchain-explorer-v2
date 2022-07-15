@@ -1,5 +1,5 @@
 import { CoinIconsFromTrustWallet } from "~/const/icon-list";
-import { assetFromString } from "@xchainjs/xchain-util";
+import { assetFromString } from "~/utils";
 import { ethers } from 'ethers';
 
 function _setEthIconPath(assetSymbol, assetTicker) {
@@ -15,7 +15,7 @@ export const AssetImage = (assetStr) => {
   const trustWalletMatch = CoinIconsFromTrustWallet[ticker];
 
   let iconPath = undefined;
-  
+
   if (trustWalletMatch && chain !== "THOR") {
     iconPath = `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/binance/assets/${trustWalletMatch}/logo.png`;
   } else {
@@ -25,7 +25,7 @@ export const AssetImage = (assetStr) => {
         if (ticker != null && ticker == 'RUNE') {
           iconPath =
             'https://raw.githubusercontent.com/asgardex/thorchain_explorer/main/assets/images/thorchain-logo.png';
-        } 
+        }
         else {
           iconPath =
           'https://raw.githubusercontent.com/asgardex/thorchain_explorer/main/assets/images/thorchain-logo.png';
@@ -68,7 +68,7 @@ export const AssetImage = (assetStr) => {
 
           if (ticker === "ALCX") {
             iconPath = "https://etherscan.io/token/images/Alchemix_32.png";
-          } 
+          }
           else if (ticker === "TGT") {
             iconPath = require("~/assets/images/assets/tgt.png")
           }
@@ -81,22 +81,28 @@ export const AssetImage = (assetStr) => {
         break;
 
       case "DOGE":
-        iconPath = 
+        iconPath =
           require("~/assets/images/assets/dogecoin.png")
       break;
 
       case "TERRA":
         if (ticker === 'TERRA' || ticker === 'LUNA')
-          iconPath = 
+          iconPath =
             "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/terra/info/logo.png"
         else if (ticker === 'UST')
-          iconPath = 
+          iconPath =
             "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/terra/assets/uusd/logo.png"
       break;
 
       case "GAIA":
         iconPath =
           "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/cosmos/info/logo.png"
+      break;
+
+      case "AVAX":
+        iconPath =
+          "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/avalanchex/info/logo.png"
+      break;
 
       default:
         break;
