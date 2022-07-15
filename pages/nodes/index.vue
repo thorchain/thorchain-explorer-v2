@@ -239,7 +239,7 @@
 
 <script>
 import { mapGetters } from 'vuex';
-import { addressFormat, blockTime, fillNodeData, observeredChains } from '~/utils';
+import { addressFormat, blockTime, fillNodeData, observeredChains, availableChains } from '~/utils';
 import { AssetCurrencySymbol } from '@xchainjs/xchain-util';
 import _ from 'lodash';
 import NetworkIcon from '@/assets/images/chart-network.svg?inline';
@@ -260,6 +260,7 @@ import {
   GridComponent,
 } from "echarts/components";
 import VChart from "vue-echarts";
+import { nodesQuery } from '~/_gql_queries';
 
 use([
   SVGRenderer,
@@ -649,6 +650,10 @@ export default {
       }
     },
     activeCols: function() {
+      if (!this.nodesQuery) {
+        return this.cols
+      }
+
       return [
         this.cols[0],
         {
@@ -704,61 +709,18 @@ export default {
           tdClass: 'mono center',
           thClass: 'center',
         },
-        {
-          label: 'BTC',
-          field: 'chains.BTC',
-          type: 'number',
-          formatFn: this.numberFormat,
-          tdClass: 'mono center',
-          thClass: 'center'
-        },
-        {
-          label: 'BCH',
-          field: 'chains.BCH',
-          type: 'number',
-          formatFn: this.numberFormat,
-          tdClass: 'mono center',
-          thClass: 'center'
-        },
-        {
-          label: 'LTC',
-          field: 'chains.LTC',
-          type: 'number',
-          formatFn: this.numberFormat,
-          tdClass: 'mono center',
-          thClass: 'center'
-        },
-        {
-          label: 'ETH',
-          field: 'chains.ETH',
-          type: 'number',
-          formatFn: this.numberFormat,
-          tdClass: 'mono center',
-        },
-        {
-          label: 'BNB',
-          field: 'chains.BNB',
-          type: 'number',
-          formatFn: this.numberFormat,
-          tdClass: 'mono center',
-          thClass: 'center'
-        },
-        {
-          label: 'DOGE',
-          field: 'chains.DOGE',
-          type: 'number',
-          formatFn: this.numberFormat,
-          tdClass: 'mono center',
-          thClass: 'center'
-        },
-        {
-          label: 'GAIA',
-          field: 'chains.GAIA',
-          type: 'number',
-          formatFn: this.numberFormat,
-          tdClass: 'mono center',
-          thClass: 'center'
-        }
+        ...(
+          availableChains(this.nodesQuery?.filter(n => n.status == "Active"))?.sort().map(c => (
+            {
+              label: c,
+              field: `chains.${c}`,
+              type: 'number',
+              formatFn: this.numberFormat,
+              tdClass: 'mono center',
+              thClass: 'center'
+            }
+          ))
+        )
       ]
     },
     topActiveBonds: function() {
