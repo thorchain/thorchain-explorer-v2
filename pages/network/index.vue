@@ -77,9 +77,8 @@
 </template>
 
 <script>
-import { activeNodesQuery, bondMetrics, networkQuery } from "~/_gql_queries";
 import StatTable from "~/components/StatTable.vue";
-import { formatAsset, addressFormat, blockTime } from "~/utils";
+import { formatAsset, blockTime } from "~/utils";
 import { Chain } from '@xchainjs/xchain-util';
 import {gt, rsort, valid} from 'semver';
 
@@ -93,6 +92,7 @@ export default {
       thorNetwork: undefined,
       outboundQueue: undefined,
       blockchainVersion: undefined,
+      nodes: undefined,
       activeNodes: undefined,
       uptodateNodes: undefined,
       inAddresses: [],
@@ -131,17 +131,6 @@ export default {
         }
       ],
     };
-  },
-  apollo: {
-    $prefetch: false,
-    network: networkQuery,
-    bondMetrics: bondMetrics,
-    activeNodesQuery: {
-      query: activeNodesQuery,
-      update(data) {
-        return data;
-      },
-    },
   },
   mounted() {
     this.$api
@@ -184,6 +173,16 @@ export default {
       .catch((error) => {
         console.error(error);
       });
+
+    this.$api.getNetwork()
+      .then(({data}) => {
+        this.network = data;
+      })
+
+    this.$api.getNodes()
+      .then(({data}) => {
+        this.nodes = data;
+      })
   },
   methods: {
     nextChurnTime() {
@@ -211,10 +210,10 @@ export default {
 
         case "TERRA":
           return (+gas_rate * 1.5) / 10 ** 8;
-        
+
         default:
           return gas_rate;
-      } 
+      }
     },
     balanceAmount(number) {
       return (+number/1e8).toFixed(4)
@@ -265,8 +264,8 @@ export default {
   },
   computed: {
     versionProgress: function () {
-      if (!!this.activeNodesQuery && this.blockchainVersion) {
-        this.activeNodes = this.activeNodesQuery.nodes.filter(
+      if (!!this.nodes && this.blockchainVersion) {
+        this.activeNodes = this.nodes?.filter(
           (n) => n.status === "Active"
         );
         this.uptodateNodes = this.activeNodes.filter(
@@ -411,10 +410,10 @@ export default {
       ];
     },
     newStandByVersion: function () {
-      if (!this.blockchainVersion || !this.activeNodesQuery)
+      if (!this.blockchainVersion || !this.nodes)
         return
       let currentVer = this.blockchainVersion.current;
-      let node = this.activeNodesQuery.nodes.filter(
+      let node = this.nodes?.filter(
         (n) => valid(n.version) && gt(n.version, currentVer)
       ).map(n => n.version);
       if (node && node.length > 0)
