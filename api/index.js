@@ -37,7 +37,8 @@ import {
   getOutbound,
   getBlockChainVersion,
   getThorchainTx,
-  getNodes
+  getNodes,
+  getNode
 } from "./thornode.api";
 import {
   getTendermintLatestBlocks
@@ -158,7 +159,8 @@ export default function ({ $axios }, inject) {
     getExraNodesInfo,
     getChurnHistory,
     getFlipTVL,
-    getNetwork
+    getNetwork,
+    getNode
   };
 
   inject("api", api);

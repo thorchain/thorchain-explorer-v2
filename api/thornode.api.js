@@ -81,3 +81,7 @@ export function getThorchainTx(txID) {
 export function getNodes() {
   return $axiosInstace.get(endpoints[process.env.NETWORK].THORNODE_URL + `thorchain/nodes`);
 }
+
+export function getNode(addr) {
+  return $axiosInstace.get(endpoints[process.env.NETWORK].THORNODE_URL + `thorchain/node/${addr}`);
+}
