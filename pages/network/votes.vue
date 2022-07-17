@@ -40,7 +40,7 @@
           <span v-if="props.column.field == 'signer'">
             <span class="clickable" @click="gotoNode(props.row.signer)">
               {{props.row.signer}}
-            </span> 
+            </span>
           </span>
           <span v-else>
             {{props.formattedRow[props.column.field]}}
@@ -52,14 +52,17 @@
 </template>
 
 <script>
-import { nodeCountQuery } from '~/_gql_queries';
 import _ from 'lodash';
+import { mapGetters } from 'vuex';
+
 export default {
   data() {
     return {
       isLoading: true,
       mimirVotes: undefined,
       mimirs: undefined,
+      nodes: undefined,
+      network: undefined,
       cols: [
         {
           label: 'Signer',
@@ -144,14 +147,18 @@ export default {
               highestValue: hVotes.value,
               consensus: hVotes.consensus,
               votePassed: hVotes.votePassed,
-              remainingVotes: +this.network.activeNodeCount - hVotes.votePassed,
+              remainingVotes: +this.network?.activeNodeCount - hVotes.votePassed,
               result: (+this.mimirs[m] == +hVotes.value)? 'Passed':'In Progress'
             })
           }
         }
         return mimrsVoteConstants
       }
-    }
+    },
+    ...mapGetters({
+      network: 'getNetworkData',
+      nodes: 'getNodesData'
+    })
   },
   methods: {
     formatVotes(mimirs) {
@@ -182,13 +189,13 @@ export default {
       if ((!voters || voters.length == 0) && !this.nodes) {
         return
       }
-      const activeVoters = voters.filter(v => this.nodes.filter(n => n.status == 'Active').map(n => n.address).includes(v.signer))
+      const activeVoters = voters.filter(v => this.nodes?.filter(n => n.status == 'Active').map(n => n.address).includes(v.signer))
       const voteCount = _.countBy(activeVoters.map(v => v.value));
       const votesObj = Object.keys(voteCount).map((v, i) => (
         {
           value: v,
           count: voteCount[v],
-          consensus: (voteCount[v]/(+this.network.activeNodeCount))
+          consensus: (voteCount[v]/(+this.network?.activeNodeCount))
         }
       ));
       const hVote = _.maxBy(votesObj, (o) => o.consensus);
@@ -199,11 +206,6 @@ export default {
       }
     }
   },
-  apollo: {
-    $prefetch: true,
-    network: nodeCountQuery,
-    nodes: nodeCountQuery
-  }
 }
 </script>
 

@@ -231,7 +231,6 @@
 </template>
 
 <script>
-import { networkQuery } from "~/_gql_queries";
 import { blockTime } from "~/utils";
 import Block from "~/assets/images/block.svg?inline";
 import Globe from "~/assets/images/world.svg?inline";
@@ -335,12 +334,12 @@ export default {
         [
           {
             name: "Total Standby Bonded",
-            value: +this.network.bondMetrics?.standby?.totalBond / 10 ** 8,
+            value: +this.network.bondMetrics?.totalStandbyBond / 10 ** 8,
             usdValue: true,
           },
           {
             name: "Total Active Bonded",
-            value: +this.network.bondMetrics?.active?.totalBond / 10 ** 8,
+            value: +this.network.bondMetrics?.totalActiveBond / 10 ** 8,
             usdValue: true,
           },
         ],
@@ -684,10 +683,6 @@ export default {
       return moment(Number.parseInt(time / 10 ** 6)).fromNow();
     },
   },
-  apollo: {
-    $prefetch: false,
-    network: networkQuery,
-  },
   mounted() {
     this.$api
       .getDashboardData()
@@ -804,6 +799,10 @@ export default {
       .catch((error) => {
         console.error(error);
       });
+
+    this.$api.getNetwork().then(({data}) => {
+      this.network = data;
+    })
   },
 };
 </script>

@@ -54,6 +54,16 @@ export default {
       console.error(error)
     })
 
+    this.$api.getNodes()
+    .then(({data}) => {
+      this.$store.commit('setNetworkData', data)
+    }).catch(e => console.error(e));
+
+    this.$api.getNetwork()
+    .then(({data}) => {
+      this.$store.commit('setNodesData', data)
+    }).catch(e => console.error(e));
+
     let changeHeight = () => {
       let vh = window.innerHeight * 0.01;
       document.documentElement.style.setProperty('--vh', `${vh}px`);

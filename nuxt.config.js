@@ -1,6 +1,6 @@
 export default {
   ssr: false,
-  
+
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
     title: 'THORChain Network Explorer',
@@ -64,7 +64,6 @@ export default {
   modules: [
     // https://go.nuxtjs.dev/axios
     '@nuxtjs/axios',
-    '@nuxtjs/apollo',
   ],
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
@@ -79,17 +78,7 @@ export default {
       ]
   },
 
-  // Graphql appollo configure
-  apollo: {
-    clientConfigs: {
-      default: {
-        httpEndpoint: process.env.MIDGARD_GRAPH_QL,
-      }
-    }
-  },
-
   env: {
-    MIDGARD_GRAPH_QL: process.env.MIDGARD_GRAPH_QL,
     NETWORK: process.env.NETWORK
   }
 }

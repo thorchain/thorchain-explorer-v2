@@ -1,46 +1,46 @@
 <template>
-  <Card :isLoading="!pool.poolQuery" class="pool-container" :title="pool.poolQuery && pool.poolQuery.asset" :imgSrc="pool.poolQuery && assetImage(pool.poolQuery.asset)">
-    <template v-if="pool.poolQuery">
+  <Card :isLoading="!pool" class="pool-container" :title="pool && pool.asset" :imgSrc="pool && assetImage(pool.asset)">
+    <template v-if="pool">
       <div class="pool-overview">
         <div class="pool-detail-header">
           <div class="item">
             <div class="header">Asset Price</div>
             <div class="value">
               {{
-                (Number.parseFloat(pool.poolQuery.price) * runePrice) | currency
+                (Number.parseFloat(pool.assetPriceUSD)) | currency
               }}
             </div>
           </div>
           <div class="item">
             <div class="header">Pool APY</div>
             <div class="value">
-              {{ Number.parseFloat(pool.poolQuery.poolAPY) | percent }}
+              {{ Number.parseFloat(pool.poolAPY) | percent }}
             </div>
           </div>
           <div class="item">
             <div class="header">Status</div>
-            <div class="value">{{ pool.poolQuery.status | capitalize }}</div>
+            <div class="value">{{ pool.status | capitalize }}</div>
           </div>
           <div class="item">
             <div class="header">Asset Depth</div>
             <div class="value">
-              {{ (pool.poolQuery.depth.assetDepth / 10 ** 8) | number("0,0") }}
+              {{ (pool.assetDepth / 10 ** 8) | number("0,0") }}
               <span style="font-size: 0.7rem">{{
-                assetString(pool.poolQuery.asset)
+                assetString(pool.asset)
               }}</span>
             </div>
           </div>
           <div class="item">
             <div class="header">Rune Depth</div>
             <div class="value">
-              {{ (pool.poolQuery.depth.runeDepth / 10 ** 8) | number("0,0") }}
+              {{ (pool.runeDepth / 10 ** 8) | number("0,0") }}
               <span style="font-size: 0.7rem">THOR.RUNE</span>
             </div>
           </div>
           <div class="item">
             <div class="header">Units</div>
             <div class="value">
-              {{ (pool.poolQuery.units / 10 ** 8) | number("0,0.00") }}
+              {{ (pool.units / 10 ** 8) | number("0,0.00") }}
             </div>
           </div>
           <div class="item" v-if="poolDetail">
@@ -59,7 +59,7 @@
                 (poolDetail.pending_inbound_asset / 10 ** 8) | number("0,0.00")
               }}
               <span style="font-size: 0.7rem">
-                {{ assetString(pool.poolQuery.asset) }}
+                {{ assetString(pool.asset) }}
               </span>
             </div>
           </div>
@@ -71,7 +71,7 @@
           </div>
         </div>
         <div style="margin: 1rem 0;">
-          <VChart :option="volumeHistory" 
+          <VChart :option="volumeHistory"
             :loading="!volumeHistory"
             :loading-options="showLoading"
           ></VChart>
@@ -94,7 +94,6 @@
 </template>
 
 <script>
-import { poolQuery } from "~/_gql_queries";
 import BounceLoader from "vue-spinner/src/BounceLoader.vue";
 import { AssetImage } from "~/classes/assetImage";
 import { assetFromString } from "@xchainjs/xchain-util";
@@ -189,7 +188,7 @@ export default {
           },
         ],
         xAxis
-      )      
+      )
     },
   },
   computed: {
@@ -201,6 +200,7 @@ export default {
     this.$api
       .getPoolStats(this.poolName)
       .then((res) => {
+        this.pool = res.data;
         this.poolStats = [
           {
             header: "Swap",
@@ -266,7 +266,6 @@ export default {
                 {
                   name: "Add Liquidity Count",
                   value: Number.parseInt(res.data?.addLiquidityCount),
-                  filter: true,
                 },
                 {
                   name: "Unique Member Count",
@@ -357,7 +356,7 @@ export default {
   },
   data() {
     return {
-      pool: [],
+      pool: undefined,
       poolStats: [],
       poolDetail: undefined,
       volumeHistory: undefined,
@@ -367,18 +366,6 @@ export default {
         maskColor: 'var(--card-bg-color)',
       }
     };
-  },
-  apollo: {
-    $prefetch: false,
-    pool: {
-      query: poolQuery,
-      update(data) {
-        return data;
-      },
-      variables() {
-        return { asset: this.poolName };
-      },
-    },
   },
 };
 </script>
