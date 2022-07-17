@@ -63,6 +63,7 @@
                   <StaredIcon v-if="isFav(props.row.address)" class="table-icon" @click="delFav(props.row.address)" style="fill: #FFEE58"></StaredIcon>
                   <StarIcon v-else class="table-icon" @click="addFav(props.row.address)"></StarIcon>
                 </template>
+                <InfoIcon @click="gotoNode(props.row.address)" class="table-icon" />
                 <a style="height: 1rem" :href="gotoNodeUrl(props.row.address)" target="_blank">
                   <NetworkIcon class="table-icon" />
                 </a>
@@ -244,6 +245,7 @@ import { AssetCurrencySymbol } from '@xchainjs/xchain-util';
 import _ from 'lodash';
 import NetworkIcon from '@/assets/images/chart-network.svg?inline';
 import LinkIcon from '@/assets/images/link.svg?inline';
+import InfoIcon from '@/assets/images/info.svg?inline';
 import StarIcon from '@/assets/images/star.svg?inline';
 import StaredIcon from '@/assets/images/stared.svg?inline';
 import DangerIcon from '@/assets/images/danger.svg?inline';
@@ -260,7 +262,6 @@ import {
   GridComponent,
 } from "echarts/components";
 import VChart from "vue-echarts";
-import { nodesQuery } from '~/_gql_queries';
 
 use([
   SVGRenderer,
@@ -276,6 +277,7 @@ export default {
   components: {
     NetworkIcon,
     LinkIcon,
+    InfoIcon,
     StarIcon,
     StaredIcon,
     DangerIcon,
@@ -418,10 +420,6 @@ export default {
       } else {
         return undefined;
       }
-    },
-    gotoNode(address) {
-      if (address === typeof String)
-        this.$router.push({path: `/node/${address}`});
     },
     numberFormat(number) {
       return this.$options.filters.number(number, '0,0')
