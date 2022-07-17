@@ -1,7 +1,7 @@
 <template>
   <div class="search-bar-container">
     <div id="search-container" :class="[{'expanded': isSearch}]" @click="search()">
-      <input class="search-bar-input" 
+      <input class="search-bar-input"
         type="text" v-model="searchQuery"
         @keyup.enter="find()"
         @blur="isSearch = false"
@@ -89,9 +89,8 @@ export default {
     })
   },
   mounted() {
-    window.addEventListener('click', (e) => {   
+    window.addEventListener('click', (e) => {
       if (!document.getElementById('search-container').contains(e.target)){
-        console.log('outside')
         this.isSearch = false;
       }
     });
@@ -154,7 +153,7 @@ export default {
       top: calc( 50% - .5rem );
       cursor: pointer;
     }
-    
+
     span {
       display: none;
       pointer-events: none;
@@ -175,6 +174,6 @@ export default {
       }
     }
   }
-  
+
 }
 </style>
