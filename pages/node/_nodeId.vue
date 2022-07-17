@@ -2,7 +2,7 @@
   <Page>
     <div v-if="nodeSettings && nodeSettings.length > 0" class="node-container">
       <stat-table
-        :header="$options.filters.capitalize(nodeId)"
+        :header="`Node: ${nodeId}`"
         :tableSettings="nodeSettings"
       ></stat-table>
     </div>
@@ -14,7 +14,6 @@
 
 <script>
 import StatTable from "~/components/StatTable.vue";
-import { nodeQuery } from "~/_gql_queries";
 import BounceLoader from "vue-spinner/src/BounceLoader.vue";
 
 export default {
@@ -22,14 +21,16 @@ export default {
   async asyncData({ params }) {
     return { nodeId: params.nodeId };
   },
-  apollo: {
-    $prefetch: false,
-    node: {
-      query: nodeQuery,
-      variables() {
-        return { address: this.nodeId };
-      },
-    },
+  data() {
+    return {
+      node: undefined
+    }
+  },
+  mounted() {
+    this.$api.getNode(this.nodeId)
+    .then(({data}) => {
+      this.node = data;
+    })
   },
   computed: {
     nodeSettings: function () {
@@ -37,7 +38,7 @@ export default {
         [
           {
             name: "IP Address",
-            value: this.node?.ipAddress,
+            value: this.node?.ip_address,
             filter: true,
           },
           {
@@ -58,58 +59,58 @@ export default {
           },
           {
             name: "Slash Points",
-            value: Number.parseInt(this.node?.slashPoints),
+            value: Number.parseInt(this.node?.slash_points),
           },
           {
             name: "Current Reward",
-            value: Number.parseInt(this.node?.currentAward) / 10 ** 8,
+            value: Number.parseInt(this.node?.current_award) / 10 ** 8,
           },
         ],
         [
           {
             name: "Public Keys: Secp256k1",
-            value: this.node?.publicKeys.secp256k1,
+            value: this.node?.pub_key_set?.secp256k1,
             filter: true,
           },
         ],
         [
           {
             name: "Public Keys: Ed25519",
-            value: this.node?.publicKeys.ed25519,
+            value: this.node?.pub_key_set?.ed25519,
             filter: true,
           },
         ],
         [
           {
             name: "Requested To Leave",
-            value: this.node?.requestedToLeave.toString(),
+            value: this.node?.requested_to_leave?.toString(),
             filter: true,
           },
           {
             name: "Forced To Leave",
-            value: this.node?.forcedToLeave.toString(),
+            value: this.node?.forced_to_leave?.toString(),
             filter: true,
           },
           {
             name: "Leave Height",
-            value: this.node?.leaveHeight?.toString(),
+            value: this.node?.leave_height?.toString(),
             filter: true,
           },
         ],
         [
           {
             name: "Jail Node Address",
-            value: this.node?.jail.nodeAddr,
+            value: this.node?.jail?.node_address,
             filter: true,
           },
           {
             name: "Jail Release Height",
-            value: this.node?.jail.releaseHeight,
+            value: this.node?.jail?.release_height,
             filter: true,
           },
           {
             name: "Jail Reason",
-            value: this.node?.jail.reason,
+            value: this.node?.jail?.reason,
             filter: true,
           },
         ],
