@@ -1003,16 +1003,11 @@ export default {
       }
     }
 
-    .pool-depth-chart {
-      position: relative;
-      flex: 1;
-    }
-
     .pool-depth-extra {
-      flex: 1;
+      margin-top: 1.5rem;
 
       @include lg {
-        display: block;
+        margin-top: 0;
       }
 
       .pool-name-container {
@@ -1081,5 +1076,4 @@ export default {
     justify-content: space-between;
   }
 }
-
 </style>
