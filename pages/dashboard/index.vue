@@ -4,11 +4,7 @@
       <div class="network-stats base-container">
         <div class="stat-group">
           <div class="stat-item">
-            <img
-              class="stat-image"
-              src="~/assets/images/blockchain.png"
-              alt="blockchain"
-            />
+            <img class="stat-image" src="~/assets/images/blockchain.png" alt="blockchain" />
             <div class="item-detail">
               <div class="header">Block Height</div>
               <div v-if="thorHeight" class="value">
@@ -26,11 +22,9 @@
               <div class="value" v-if="runeSupply">
                 {{ runeSupply | number("0,0") }}
                 <span style="font-size: 0.75rem">RUNE</span>
-                <span class="extra" v-if="stats"
-                  >(${{
+                <span class="extra" v-if="stats">(${{
                     (runeSupply * stats.runePriceUSD) | number("0.00 a")
-                  }})</span
-                >
+                }})</span>
               </div>
               <span v-else>-</span>
             </div>
@@ -39,11 +33,7 @@
         </div>
         <div class="stat-group">
           <div class="stat-item">
-            <img
-              class="stat-image"
-              src="~/assets/images/coin.png"
-              alt="rune-coin"
-            />
+            <img class="stat-image" src="~/assets/images/coin.png" alt="rune-coin" />
             <div class="item-detail">
               <div class="header">RUNE Price</div>
               <div v-if="stats && stats.runePriceUSD" class="value">
@@ -60,11 +50,9 @@
               <div v-if="runeVolume" class="value">
                 {{ runeVolume | number("0,0") }}
                 <span style="font-size: 0.75rem">RUNE</span>
-                <span class="extra" v-if="stats"
-                  >(${{
+                <span class="extra" v-if="stats">(${{
                     (runeVolume * stats.runePriceUSD) | number("0.00 a")
-                  }})</span
-                >
+                }})</span>
               </div>
               <span v-else>-</span>
             </div>
@@ -73,12 +61,8 @@
         </div>
         <div class="stat-group">
           <div class="stat-item">
-            <img
-              class="stat-image"
-              src="~/assets/images/book.png"
-              style="width: 2rem; height: auto; padding: 0.3rem"
-              alt="rune-coin"
-            />
+            <img class="stat-image" src="~/assets/images/book.png" style="width: 2rem; height: auto; padding: 0.3rem"
+              alt="rune-coin" />
             <div class="item-detail">
               <div class="header">Total Addresses</div>
               <div v-if="totalAddresses" class="value">
@@ -104,38 +88,46 @@
     <div class="break"></div>
     <div class="chart-inner-container">
       <Card title="Swap History">
-        <VChart
-          :option="swapHistory"
-          :loading="!swapHistory"
-          :autoresize="true"
-          :loading-options="showLoading"
-        ></VChart>
+        <VChart :option="swapHistory" :loading="!swapHistory" :autoresize="true" :loading-options="showLoading">
+        </VChart>
       </Card>
-      <Card title="Value Locked History">
-        <VChart
-          :option="tvlHistory"
-          :loading="!tvlHistory"
-          :autoresize="true"
-          :loading-options="showLoading"
-        ></VChart>
+      <Card title="Pool Depth & Volume" class="pool-depth-container">
+        <div class="pool-depth-chart">
+          <VChart :option="poolsOption" :loading="!poolsOption" :autoresize="true" :loading-options="showLoading">
+          </VChart>
+        </div>
+        <div class="pool-depth-extra">
+            <table>
+              <thead>
+                <tr>
+                  <th>Pool Name</th>
+                  <th>Volume</th>
+                  <th>Depth</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="p in poolsData">
+                  <td>{{p.name}}</td>
+                  <td>${{p.value | number('0,0 a')}}</td>
+                  <td>${{p.vol | number('0,0 a')}}</td>
+                </tr>
+                <tr>
+                  <td colspan="2">Total value locked in pools:</td>
+                  <td style="text-align: center;">${{totalValuePooled | number('0,0 a')}}</td>
+                </tr>
+              </tbody>
+            </table>
+        </div>
       </Card>
     </div>
     <div class="chart-inner-container">
       <Card title="Earnings Volume">
-        <VChart
-          :option="earningsHistory"
-          :loading="!earningsHistory"
-          :autoresize="true"
-          :loading-options="showLoading"
-        ></VChart>
+        <VChart :option="earningsHistory" :loading="!earningsHistory" :autoresize="true" :loading-options="showLoading">
+        </VChart>
       </Card>
       <Card title="Liquidity Volume Change">
-        <VChart
-          :option="volumeHistory"
-          :loading="!volumeHistory"
-          :autoresize="true"
-          :loading-options="showLoading"
-        ></VChart>
+        <VChart :option="volumeHistory" :loading="!volumeHistory" :autoresize="true" :loading-options="showLoading">
+        </VChart>
       </Card>
     </div>
     <div class="break"></div>
@@ -159,15 +151,11 @@
                   </span>
                 </div>
                 <div class="txs" style="width: 40%">
-                  <span
-                    >Tx Size: <span class="value">{{ b.txs }}</span></span
-                  >
-                  <span
-                    >Block Size:
+                  <span>Tx Size: <span class="value">{{ b.txs }}</span></span>
+                  <span>Block Size:
                     <span class="value">{{
-                      b.size | number("0,0")
-                    }}</span></span
-                  >
+                        b.size | number("0,0")
+                    }}</span></span>
                 </div>
               </div>
               <hr class="hr-space" :key="i + 'hr'" />
@@ -197,18 +185,14 @@
                   </span>
                 </div>
                 <div class="txs">
-                  <span
-                    >TxID
+                  <span>TxID
                     <a @click="gotoTx(t.in && t.in[0].txID)" class="value">{{
-                      t.in && t.in[0].txID
-                    }}</a></span
-                  >
-                  <span
-                    >From
+                        t.in && t.in[0].txID
+                    }}</a></span>
+                  <span>From
                     <a @click="gotoAddr(t.in[0].address)" class="value">{{
-                      t.in && t.in[0].address
-                    }}</a></span
-                  >
+                        t.in && t.in[0].address
+                    }}</a></span>
                 </div>
               </div>
               <hr class="hr-space" :key="i + 'hr'" />
@@ -222,10 +206,7 @@
     </div>
     <div class="footer-stats">
       <stat-table header="Stats" :tableSettings="statsSettings"></stat-table>
-      <stat-table
-        header="Network"
-        :tableSettings="networkSettings"
-      ></stat-table>
+      <stat-table header="Network" :tableSettings="networkSettings"></stat-table>
     </div>
   </Page>
 </template>
@@ -236,13 +217,13 @@ import Block from "~/assets/images/block.svg?inline";
 import Globe from "~/assets/images/world.svg?inline";
 import Circulate from "~/assets/images/stats.svg?inline";
 import Chart from "~/assets/images/chart.svg?inline";
-import { AssetCurrencySymbol } from "@xchainjs/xchain-util";
+import { AssetCurrencySymbol, assetFromString } from "@xchainjs/xchain-util";
 import BounceLoader from "vue-spinner/src/BounceLoader.vue";
 import moment from "moment";
 
 import { use } from "echarts/core";
 import { SVGRenderer } from "echarts/renderers";
-import { LineChart, BarChart } from "echarts/charts";
+import { LineChart, BarChart, PieChart } from "echarts/charts";
 import {
   TitleComponent,
   TooltipComponent,
@@ -256,6 +237,7 @@ use([
   GridComponent,
   BarChart,
   LineChart,
+  PieChart,
   TitleComponent,
   TooltipComponent,
   LegendComponent,
@@ -279,7 +261,6 @@ export default {
       stats: [],
       volumeHistory: undefined,
       swapHistory: undefined,
-      tvlHistory: undefined,
       earningsHistory: undefined,
       runeSupply: undefined,
       lastHeight: undefined,
@@ -288,6 +269,9 @@ export default {
       totalTxs: undefined,
       totalAddresses: undefined,
       thorHeight: undefined,
+      poolsOption: undefined,
+      poolData: undefined,
+      totalValuePooled: undefined
     };
   },
   activated() {
@@ -515,7 +499,7 @@ export default {
         lv.push(
           ((+interval.addLiquidityVolume - +interval.withdrawVolume) *
             +interval.runePriceUSD) /
-            10 ** 8
+          10 ** 8
         );
       });
 
@@ -547,7 +531,7 @@ export default {
         xAxis
       );
     },
-    formatSwap: function (d) {
+    formatSwap(d) {
       let xAxis = [];
       let tv = [];
       let tva = [];
@@ -560,7 +544,7 @@ export default {
         );
         tv.push(
           (+interval.totalVolume / 10 ** 8) *
-            Number.parseFloat(interval.runePriceUSD)
+          Number.parseFloat(interval.runePriceUSD)
         );
         tva.push((+interval.toAssetVolume * +interval.runePriceUSD) / 10 ** 8);
         tvr.push((+interval.toRuneVolume * +interval.runePriceUSD) / 10 ** 8);
@@ -597,7 +581,7 @@ export default {
 
       return res;
     },
-    formatTvl: function (d) {
+    formatTvl(d) {
       let xAxis = [];
       let tvp = [];
       d?.intervals.forEach((interval) => {
@@ -608,7 +592,7 @@ export default {
         );
         tvp.push(
           (+interval.totalValuePooled / 10 ** 8) *
-            Number.parseFloat(interval.runePriceUSD)
+          Number.parseFloat(interval.runePriceUSD)
         );
       });
 
@@ -626,7 +610,7 @@ export default {
         xAxis
       );
     },
-    formatEarnings: function (d) {
+    formatEarnings(d) {
       let xAxis = [];
       let le = [];
       let be = [];
@@ -638,11 +622,11 @@ export default {
         );
         le.push(
           (+interval.liquidityEarnings / 10 ** 8) *
-            Number.parseFloat(interval.runePriceUSD)
+          Number.parseFloat(interval.runePriceUSD)
         );
         be.push(
           (+interval.bondingEarnings / 10 ** 8) *
-            Number.parseFloat(interval.runePriceUSD)
+          Number.parseFloat(interval.runePriceUSD)
         );
       });
 
@@ -667,7 +651,7 @@ export default {
         xAxis
       );
     },
-    formatTendermintBlocks: function (blocks) {
+    formatTendermintBlocks(blocks) {
       let blockJsons = [];
       for (let block of blocks) {
         blockJsons.push({
@@ -679,9 +663,54 @@ export default {
       }
       return blockJsons.slice(0, 10);
     },
-    formatMoment: function (time) {
+    formatMoment(time) {
       return moment(Number.parseInt(time / 10 ** 6)).fromNow();
     },
+    formatPoolsData(d) {
+      let poolData = [];
+      const stablePool = d.find(p => p.asset == "BNB.BUSD-BD1");
+      const runePrice = +stablePool.assetPriceUSD / +stablePool.assetPrice;
+      let totalValuePooled = 0;
+      d.sort((a,b) => (+b.runeDepth)-(+a.runeDepth)).forEach((p, i) => {
+        let runeInPools = (+p.runeDepth);
+        let assetsInRune = (+p.assetDepth) * +p.assetPrice;
+        totalValuePooled += (runeInPools+assetsInRune*runePrice)/1e8;
+        if (i > 5) return
+        let asset = assetFromString(p.asset);
+        poolData.push({
+          value: ((runeInPools + assetsInRune)*runePrice)/1e8,
+          name: `${asset.chain}.${asset.ticker}`,
+          vol: (+p.volume24h)*runePrice/1e8
+        });
+      })
+
+      console.log(poolData);
+
+      let option = {
+        tooltip: {
+          trigger: 'item',
+        },
+        series: [
+          {
+            name: 'Pool Value',
+            type: 'pie',
+            radius: [20, 140],
+            roseType: 'radius',
+            itemStyle: {
+              borderRadius: 5
+            },
+            label: {
+              show: false
+            },
+            data: poolData
+          }
+        ]
+      }
+
+      this.poolsOption = option;
+      this.poolsData = poolData;
+      this.totalValuePooled = totalValuePooled;
+    }
   },
   mounted() {
     this.$api
@@ -747,7 +776,6 @@ export default {
       .then(({ data }) => {
         this.volumeHistory = this.formatLPChange(data?.LPChange);
         this.swapHistory = this.formatSwap(data?.swaps);
-        this.tvlHistory = this.formatTvl(data?.tvl);
         this.earningsHistory = this.formatEarnings(data?.earning);
       })
       .catch((error) => {
@@ -788,9 +816,9 @@ export default {
           .getTendermintLatestBlocks(+this.lastHeight - 9)
           .then(
             (res) =>
-              (this.blocks = this.formatTendermintBlocks(
-                res?.data?.result.block_metas
-              ))
+            (this.blocks = this.formatTendermintBlocks(
+              res?.data?.result.block_metas
+            ))
           )
           .catch((error) => {
             console.error(error);
@@ -800,8 +828,12 @@ export default {
         console.error(error);
       });
 
-    this.$api.getNetwork().then(({data}) => {
+    this.$api.getNetwork().then(({ data }) => {
       this.network = data;
+    })
+
+    this.$api.getPools().then(({ data }) => {
+      this.formatPoolsData(data);
     })
   },
 };
@@ -925,5 +957,43 @@ export default {
 
 .echarts {
   min-height: 400px;
+}
+
+.pool-depth-container {
+  .card-body {
+    display: flex;
+    padding-right: 1.5rem !important;
+
+    .pool-depth-chart {
+      flex: 1;
+      width: 50%;
+    }
+
+    .pool-depth-extra {
+      padding-top: 4rem;
+
+      thead {
+        text-transform: uppercase;
+        border-bottom: 1px solid var(--border-color);
+
+        th {
+          padding-bottom: 7px;
+          font-size: 0.875rem;
+        }
+      }
+
+      th {
+        font-weight: 700;
+        text-align: inherit;
+      }
+
+      tbody td {
+        font-weight: 700;
+        padding: 7px 0;
+        color: var(--sec-font-color);
+        font-size: 0.875rem;
+      }
+    }
+  }
 }
 </style>
