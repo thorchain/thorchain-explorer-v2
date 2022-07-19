@@ -91,27 +91,32 @@
         <VChart :option="swapHistory" :loading="!swapHistory" :autoresize="true" :loading-options="showLoading">
         </VChart>
       </Card>
-      <Card title="Pool Depth & Volume" class="pool-depth-container">
+      <Card title="Pool Depth & Volume" class="pool-depth-container" :isLoading="!poolsOption">
         <div class="pool-depth-chart">
-          <VChart :option="poolsOption" :loading="!poolsOption" :autoresize="true" :loading-options="showLoading">
+          <VChart :option="poolsOption" :autoresize="true" :loading-options="showLoading" style="width: 275px;height:250px;min-height: initial;">
           </VChart>
         </div>
-        <div class="pool-depth-extra">
+        <div class="pool-depth-extra" v-if="poolsData">
             <table>
               <thead>
                 <tr>
                   <th>Pool Name</th>
-                  <th>Volume</th>
+                  <th style="text-align: center;">Volume</th>
                   <th>Depth</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="p in poolsData">
-                  <td>{{p.name}}</td>
-                  <td>${{p.value | number('0,0 a')}}</td>
-                  <td>${{p.vol | number('0,0 a')}}</td>
+                  <td>
+                    <div class="pool-name-container">
+                      <div class="data-color" :style="{backgroundColor: p.color}"></div>
+                      {{p.name}}
+                    </div>
+                  </td>
+                  <td style="text-align: center;">${{p.value | number('0,0 a')}}</td>
+                  <td style="text-align: center;">${{p.vol | number('0,0 a')}}</td>
                 </tr>
-                <tr>
+                <tr class="table-footer">
                   <td colspan="2">Total value locked in pools:</td>
                   <td style="text-align: center;">${{totalValuePooled | number('0,0 a')}}</td>
                 </tr>
@@ -671,6 +676,7 @@ export default {
       const stablePool = d.find(p => p.asset == "BNB.BUSD-BD1");
       const runePrice = +stablePool.assetPriceUSD / +stablePool.assetPrice;
       let totalValuePooled = 0;
+      const defaultColors = ['#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de', '#3ba272', '#fc8452', '#9a60b4', '#ea7ccc'];
       d.sort((a,b) => (+b.runeDepth)-(+a.runeDepth)).forEach((p, i) => {
         let runeInPools = (+p.runeDepth);
         let assetsInRune = (+p.assetDepth) * +p.assetPrice;
@@ -680,13 +686,30 @@ export default {
         poolData.push({
           value: ((runeInPools + assetsInRune)*runePrice)/1e8,
           name: `${asset.chain}.${asset.ticker}`,
-          vol: (+p.volume24h)*runePrice/1e8
+          vol: (+p.volume24h)*runePrice/1e8,
+          color: defaultColors[i]
         });
       })
 
-      console.log(poolData);
-
       let option = {
+        formatter: (param) => {
+          return `
+            <div class="tooltip-header">
+              <div class="data-color" style="background-color: ${param.color}"></div>
+              ${param.name}
+            </div>
+            <div class="tooltip-body">
+              <span>
+                <span>Depth</span> 
+                <b>$${this.$options.filters.number(param.value, '0,0 a')}</b>
+              </span>
+              <span>
+                <span>Volume</span> 
+                <b>$${this.$options.filters.number(poolData[param.dataIndex].vol, '0,0 a')}</b>
+              </span>
+            </div> 
+          `
+        },
         tooltip: {
           trigger: 'item',
         },
@@ -695,6 +718,9 @@ export default {
             name: 'Pool Value',
             type: 'pie',
             radius: [20, 140],
+            center: ['40%', '60%'],
+            width: 275,
+            height: 250,
             roseType: 'radius',
             itemStyle: {
               borderRadius: 5
@@ -960,40 +986,100 @@ export default {
 }
 
 .pool-depth-container {
+
   .card-body {
+    flex: 1;
     display: flex;
+    align-items: center;
+    flex-direction: column;
     padding-right: 1.5rem !important;
 
+    @include lg {
+      flex-wrap: wrap;
+      flex-direction: initial;
+
+      .pool-depth-chart {
+        min-width: 250px;
+      }
+    }
+
     .pool-depth-chart {
+      position: relative;
       flex: 1;
-      width: 50%;
     }
 
     .pool-depth-extra {
-      padding-top: 4rem;
+      flex: 1;
 
-      thead {
-        text-transform: uppercase;
-        border-bottom: 1px solid var(--border-color);
+      @include lg {
+        display: block;
+      }
+
+      .pool-name-container {
+        display: flex;
+        align-items: center;
+      }
+
+      table {
+        border-collapse: collapse;
+        margin: auto;
+
+        thead {
+          text-transform: uppercase;
+          border-bottom: 1px solid var(--border-color);
+
+          th {
+            padding-bottom: 7px;
+            font-size: 0.875rem;
+          }
+        }
 
         th {
-          padding-bottom: 7px;
-          font-size: 0.875rem;
+          font-weight: 700;
+          text-align: inherit;
         }
-      }
 
-      th {
-        font-weight: 700;
-        text-align: inherit;
-      }
+        tbody td {
+          font-weight: 700;
+          padding: 7px 0;
+          color: var(--sec-font-color);
+          font-size: 0.8rem;
+        }
 
-      tbody td {
-        font-weight: 700;
-        padding: 7px 0;
-        color: var(--sec-font-color);
-        font-size: 0.875rem;
+        .table-footer {
+          border-top: 1px solid var(--border-color);
+        }
       }
     }
   }
 }
+
+.data-color {
+  margin-right: 6px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.tooltip-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 5px;
+}
+
+.tooltip-body {
+  margin-top: 5px;
+  width: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  > span {
+    display: flex;
+    justify-content: space-between;
+  }
+}
+
 </style>
