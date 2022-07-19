@@ -28,6 +28,7 @@
               <template v-if="one_tx.is">
                 <div class="txid">
                   <div :class="['bubble-container', i?'blue':'']">{{i?'Out':'In'}}</div>
+                  <div v-if="one_tx.status === 'pending'" :class="['bubble-container', 'blue']">pending</div>
                   <span class="tx-hash clickable" @click="gotoTx(one_tx.txID)">{{one_tx.txID}}</span>
                 </div>
                 <div class="asset-icon-container">
