@@ -275,7 +275,7 @@ export default {
       totalAddresses: undefined,
       thorHeight: undefined,
       poolsOption: undefined,
-      poolData: undefined,
+      poolsData: undefined,
       totalValuePooled: undefined
     };
   },
@@ -673,8 +673,7 @@ export default {
     },
     formatPoolsData(d) {
       let poolData = [];
-      const stablePool = d.find(p => p.asset == "BNB.BUSD-BD1");
-      const runePrice = +stablePool.assetPriceUSD / +stablePool.assetPrice;
+      const runePrice = this.$store.getters.getRunePrice;
       let totalValuePooled = 0;
       const defaultColors = ['#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de', '#3ba272', '#fc8452', '#9a60b4', '#ea7ccc'];
       d.sort((a,b) => (+b.runeDepth)-(+a.runeDepth)).forEach((p, i) => {
