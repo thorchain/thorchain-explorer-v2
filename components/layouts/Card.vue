@@ -80,7 +80,7 @@ export default {
         display: flex;
         flex-direction: column;
         color: var(--sec-font-color);
-        
+
         .header {
           font-size: .975rem;
         }
@@ -90,7 +90,7 @@ export default {
           font-size: .75rem;
         }
       }
-      
+
       .txs {
         display: flex;
         flex-direction: column;

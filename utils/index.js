@@ -95,6 +95,7 @@ function checkSynth(asset) {
 export function parseMidgardTx(tx) {
   //get action
   let tx_action = tx.actions[0];
+  let status = tx.actions.map(t => t.status);
 
   let res = {
     type: tx_action.type,
@@ -102,12 +103,12 @@ export function parseMidgardTx(tx) {
     date: (new Date(tx_action?.date / 10 ** 6)),
     height: tx_action.height,
     pools: tx_action.pools,
-    status: tx_action.status,
+    status: status.some(t => t === "success")?"success":status[0],
     liqidityFee: tx_action.metadata,
     synth: false
   }
 
-  tx.actions.forEach(txa => {
+  tx.actions.forEach((txa, i) => {
     let insouts = [
       txa?.in?.map(t => {
         checkSynth(t?.coins[0]?.asset) == true ? res.synth = true:undefined;
@@ -119,7 +120,8 @@ export function parseMidgardTx(tx) {
           asset: {
             name: t?.coins[0]?.asset,
             amount: t?.coins[0]?.amount / 10**8,
-          }
+          },
+          status: txa?.status
         }
       }),
       txa?.out?.map(t => {
@@ -132,7 +134,8 @@ export function parseMidgardTx(tx) {
           asset: {
             name: t?.coins[0]?.asset,
             amount: t?.coins[0]?.amount / 10**8,
-          }
+          },
+          status: txa?.status
         }
       })
     ];

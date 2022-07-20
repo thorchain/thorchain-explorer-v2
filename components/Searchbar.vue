@@ -1,12 +1,14 @@
 <template>
   <div class="search-bar-container">
     <div id="search-container" :class="[{'expanded': isSearch}]" @click="search()">
-      <input class="search-bar-input"
-        type="text" v-model="searchQuery"
+      <input 
+        class="search-bar-input"
+        type="text" 
+        placeholder="Search"
+        v-model="searchQuery"
         @keyup.enter="find()"
         @blur="isSearch = false"
       >
-      <span v-if="!isSearch">Search</span>
       <SearchIcon class="search-icon" @click="find()"/>
     </div>
     <SunIcon @click="changeTheme" v-if="theme === 'light'" class="social-icon"/>
@@ -146,12 +148,14 @@ export default {
 
     .search-icon {
       position: absolute;
-      width: 1rem;
-      height: 1rem;
+      padding: .2rem;
+      width: 1.4rem;
+      height: 1.4rem;
       fill: var(--font-color);
-      right: calc(1rem - 4px);
-      top: calc( 50% - .5rem );
+      right: calc(1rem - .4rem);
+      top: calc( 50% - .8rem );
       cursor: pointer;
+      background-color: var(--darker-bg);
     }
 
     span {

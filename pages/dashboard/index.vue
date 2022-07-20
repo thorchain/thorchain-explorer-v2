@@ -4,11 +4,7 @@
       <div class="network-stats base-container">
         <div class="stat-group">
           <div class="stat-item">
-            <img
-              class="stat-image"
-              src="~/assets/images/blockchain.png"
-              alt="blockchain"
-            />
+            <img class="stat-image" src="~/assets/images/blockchain.png" alt="blockchain" />
             <div class="item-detail">
               <div class="header">Block Height</div>
               <div v-if="thorHeight" class="value">
@@ -26,11 +22,9 @@
               <div class="value" v-if="runeSupply">
                 {{ runeSupply | number("0,0") }}
                 <span style="font-size: 0.75rem">RUNE</span>
-                <span class="extra" v-if="stats"
-                  >(${{
+                <span class="extra" v-if="stats">(${{
                     (runeSupply * stats.runePriceUSD) | number("0.00 a")
-                  }})</span
-                >
+                }})</span>
               </div>
               <span v-else>-</span>
             </div>
@@ -39,11 +33,7 @@
         </div>
         <div class="stat-group">
           <div class="stat-item">
-            <img
-              class="stat-image"
-              src="~/assets/images/coin.png"
-              alt="rune-coin"
-            />
+            <img class="stat-image" src="~/assets/images/coin.png" alt="rune-coin" />
             <div class="item-detail">
               <div class="header">RUNE Price</div>
               <div v-if="stats && stats.runePriceUSD" class="value">
@@ -60,11 +50,9 @@
               <div v-if="runeVolume" class="value">
                 {{ runeVolume | number("0,0") }}
                 <span style="font-size: 0.75rem">RUNE</span>
-                <span class="extra" v-if="stats"
-                  >(${{
+                <span class="extra" v-if="stats">(${{
                     (runeVolume * stats.runePriceUSD) | number("0.00 a")
-                  }})</span
-                >
+                }})</span>
               </div>
               <span v-else>-</span>
             </div>
@@ -73,12 +61,8 @@
         </div>
         <div class="stat-group">
           <div class="stat-item">
-            <img
-              class="stat-image"
-              src="~/assets/images/book.png"
-              style="width: 2rem; height: auto; padding: 0.3rem"
-              alt="rune-coin"
-            />
+            <img class="stat-image" src="~/assets/images/book.png" style="width: 2rem; height: auto; padding: 0.3rem"
+              alt="rune-coin" />
             <div class="item-detail">
               <div class="header">Total Addresses</div>
               <div v-if="totalAddresses" class="value">
@@ -104,38 +88,51 @@
     <div class="break"></div>
     <div class="chart-inner-container">
       <Card title="Swap History">
-        <VChart
-          :option="swapHistory"
-          :loading="!swapHistory"
-          :autoresize="true"
-          :loading-options="showLoading"
-        ></VChart>
+        <VChart :option="swapHistory" :loading="!swapHistory" :autoresize="true" :loading-options="showLoading">
+        </VChart>
       </Card>
-      <Card title="Value Locked History">
-        <VChart
-          :option="tvlHistory"
-          :loading="!tvlHistory"
-          :autoresize="true"
-          :loading-options="showLoading"
-        ></VChart>
+      <Card title="Pool Depth & Volume" class="pool-depth-container" :isLoading="!poolsOption">
+        <div class="pool-depth-chart">
+          <VChart :option="poolsOption" :autoresize="true" :loading-options="showLoading" style="width: 275px;height:250px;min-height: initial;">
+          </VChart>
+        </div>
+        <div class="pool-depth-extra" v-if="poolsData">
+            <table>
+              <thead>
+                <tr>
+                  <th>Pool Name</th>
+                  <th style="text-align: center;">Volume</th>
+                  <th>Depth</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="p in poolsData">
+                  <td>
+                    <div class="pool-name-container">
+                      <div class="data-color" :style="{backgroundColor: p.color}"></div>
+                      {{p.name}}
+                    </div>
+                  </td>
+                  <td style="text-align: center;">${{p.vol | number('0,0 a')}}</td>
+                  <td style="text-align: center;">${{p.value | number('0,0 a')}}</td>
+                </tr>
+                <tr class="table-footer">
+                  <td colspan="2">Total value locked in pools:</td>
+                  <td style="text-align: center;">${{totalValuePooled | number('0,0 a')}}</td>
+                </tr>
+              </tbody>
+            </table>
+        </div>
       </Card>
     </div>
     <div class="chart-inner-container">
       <Card title="Earnings Volume">
-        <VChart
-          :option="earningsHistory"
-          :loading="!earningsHistory"
-          :autoresize="true"
-          :loading-options="showLoading"
-        ></VChart>
+        <VChart :option="earningsHistory" :loading="!earningsHistory" :autoresize="true" :loading-options="showLoading">
+        </VChart>
       </Card>
       <Card title="Liquidity Volume Change">
-        <VChart
-          :option="volumeHistory"
-          :loading="!volumeHistory"
-          :autoresize="true"
-          :loading-options="showLoading"
-        ></VChart>
+        <VChart :option="volumeHistory" :loading="!volumeHistory" :autoresize="true" :loading-options="showLoading">
+        </VChart>
       </Card>
     </div>
     <div class="break"></div>
@@ -159,15 +156,11 @@
                   </span>
                 </div>
                 <div class="txs" style="width: 40%">
-                  <span
-                    >Tx Size: <span class="value">{{ b.txs }}</span></span
-                  >
-                  <span
-                    >Block Size:
+                  <span>Tx Size: <span class="value">{{ b.txs }}</span></span>
+                  <span>Block Size:
                     <span class="value">{{
-                      b.size | number("0,0")
-                    }}</span></span
-                  >
+                        b.size | number("0,0")
+                    }}</span></span>
                 </div>
               </div>
               <hr class="hr-space" :key="i + 'hr'" />
@@ -197,18 +190,14 @@
                   </span>
                 </div>
                 <div class="txs">
-                  <span
-                    >TxID
+                  <span>TxID
                     <a @click="gotoTx(t.in && t.in[0].txID)" class="value">{{
-                      t.in && t.in[0].txID
-                    }}</a></span
-                  >
-                  <span
-                    >From
+                        t.in && t.in[0].txID
+                    }}</a></span>
+                  <span>From
                     <a @click="gotoAddr(t.in[0].address)" class="value">{{
-                      t.in && t.in[0].address
-                    }}</a></span
-                  >
+                        t.in && t.in[0].address
+                    }}</a></span>
                 </div>
               </div>
               <hr class="hr-space" :key="i + 'hr'" />
@@ -222,10 +211,7 @@
     </div>
     <div class="footer-stats">
       <stat-table header="Stats" :tableSettings="statsSettings"></stat-table>
-      <stat-table
-        header="Network"
-        :tableSettings="networkSettings"
-      ></stat-table>
+      <stat-table header="Network" :tableSettings="networkSettings"></stat-table>
     </div>
   </Page>
 </template>
@@ -236,13 +222,13 @@ import Block from "~/assets/images/block.svg?inline";
 import Globe from "~/assets/images/world.svg?inline";
 import Circulate from "~/assets/images/stats.svg?inline";
 import Chart from "~/assets/images/chart.svg?inline";
-import { AssetCurrencySymbol } from "@xchainjs/xchain-util";
+import { AssetCurrencySymbol, assetFromString } from "@xchainjs/xchain-util";
 import BounceLoader from "vue-spinner/src/BounceLoader.vue";
 import moment from "moment";
 
 import { use } from "echarts/core";
 import { SVGRenderer } from "echarts/renderers";
-import { LineChart, BarChart } from "echarts/charts";
+import { LineChart, BarChart, PieChart } from "echarts/charts";
 import {
   TitleComponent,
   TooltipComponent,
@@ -256,6 +242,7 @@ use([
   GridComponent,
   BarChart,
   LineChart,
+  PieChart,
   TitleComponent,
   TooltipComponent,
   LegendComponent,
@@ -279,7 +266,6 @@ export default {
       stats: [],
       volumeHistory: undefined,
       swapHistory: undefined,
-      tvlHistory: undefined,
       earningsHistory: undefined,
       runeSupply: undefined,
       lastHeight: undefined,
@@ -288,6 +274,9 @@ export default {
       totalTxs: undefined,
       totalAddresses: undefined,
       thorHeight: undefined,
+      poolsOption: undefined,
+      poolsData: undefined,
+      totalValuePooled: undefined
     };
   },
   activated() {
@@ -515,7 +504,7 @@ export default {
         lv.push(
           ((+interval.addLiquidityVolume - +interval.withdrawVolume) *
             +interval.runePriceUSD) /
-            10 ** 8
+          10 ** 8
         );
       });
 
@@ -547,7 +536,7 @@ export default {
         xAxis
       );
     },
-    formatSwap: function (d) {
+    formatSwap(d) {
       let xAxis = [];
       let tv = [];
       let tva = [];
@@ -560,7 +549,7 @@ export default {
         );
         tv.push(
           (+interval.totalVolume / 10 ** 8) *
-            Number.parseFloat(interval.runePriceUSD)
+          Number.parseFloat(interval.runePriceUSD)
         );
         tva.push((+interval.toAssetVolume * +interval.runePriceUSD) / 10 ** 8);
         tvr.push((+interval.toRuneVolume * +interval.runePriceUSD) / 10 ** 8);
@@ -593,11 +582,10 @@ export default {
         ],
         xAxis
       );
-      console.log(res, tva, tvr, tv);
 
       return res;
     },
-    formatTvl: function (d) {
+    formatTvl(d) {
       let xAxis = [];
       let tvp = [];
       d?.intervals.forEach((interval) => {
@@ -608,7 +596,7 @@ export default {
         );
         tvp.push(
           (+interval.totalValuePooled / 10 ** 8) *
-            Number.parseFloat(interval.runePriceUSD)
+          Number.parseFloat(interval.runePriceUSD)
         );
       });
 
@@ -626,7 +614,7 @@ export default {
         xAxis
       );
     },
-    formatEarnings: function (d) {
+    formatEarnings(d) {
       let xAxis = [];
       let le = [];
       let be = [];
@@ -638,11 +626,11 @@ export default {
         );
         le.push(
           (+interval.liquidityEarnings / 10 ** 8) *
-            Number.parseFloat(interval.runePriceUSD)
+          Number.parseFloat(interval.runePriceUSD)
         );
         be.push(
           (+interval.bondingEarnings / 10 ** 8) *
-            Number.parseFloat(interval.runePriceUSD)
+          Number.parseFloat(interval.runePriceUSD)
         );
       });
 
@@ -667,7 +655,7 @@ export default {
         xAxis
       );
     },
-    formatTendermintBlocks: function (blocks) {
+    formatTendermintBlocks(blocks) {
       let blockJsons = [];
       for (let block of blocks) {
         blockJsons.push({
@@ -679,11 +667,91 @@ export default {
       }
       return blockJsons.slice(0, 10);
     },
-    formatMoment: function (time) {
+    formatMoment(time) {
       return moment(Number.parseInt(time / 10 ** 6)).fromNow();
     },
+    formatPoolsData(d) {
+      let poolData = [];
+      const runePrice = this.stats.runePriceUSD;
+      let totalValuePooled = 0;
+      let otherPoolsVolume = 0;
+      let otherValuePooled = 0;
+      const defaultColors = ['#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de', '#3ba272', '#fc8452', '#9a60b4', '#ea7ccc'];
+      d.sort((a,b) => (+b.runeDepth)-(+a.runeDepth)).forEach((p, i) => {
+        let runeInPools = (+p.runeDepth);
+        let assetsInRune = (+p.assetDepth) * +p.assetPrice;
+        totalValuePooled += ((runeInPools+assetsInRune)*runePrice)/1e8;
+        if (i < 6) {
+          let asset = assetFromString(p.asset);
+          poolData.push({
+            value: ((runeInPools + assetsInRune)*runePrice)/1e8,
+            name: `${asset.chain}.${asset.ticker}`,
+            vol: (+p.volume24h)*runePrice/1e8,
+            color: defaultColors[i]
+          });
+        }
+        else if (i >= 6) {
+          otherPoolsVolume += (+p.volume24h)*runePrice/1e8;
+          otherValuePooled += ((runeInPools+assetsInRune)*runePrice)/1e8;
+
+          if (i == d.length - 1) {
+            poolData.push({
+              value: otherValuePooled,
+              name: `Other pools`,
+              vol: otherPoolsVolume,
+              color: defaultColors[6]
+            });
+          }
+        }
+      })
+
+      let option = {
+        formatter: (param) => {
+          return `
+            <div class="tooltip-header">
+              <div class="data-color" style="background-color: ${param.color}"></div>
+              ${param.name}
+            </div>
+            <div class="tooltip-body">
+              <span>
+                <span>Depth</span>
+                <b>$${this.$options.filters.number(param.value, '0,0 a')}</b>
+              </span>
+              <span>
+                <span>Volume</span>
+                <b>$${this.$options.filters.number(poolData[param.dataIndex].vol, '0,0 a')}</b>
+              </span>
+            </div>
+          `
+        },
+        tooltip: {
+          trigger: 'item',
+        },
+        series: [
+          {
+            name: 'Pool Value',
+            type: 'pie',
+            radius: [0, 80],
+            center: ['50%', '50%'],
+            width: 275,
+            height: 250,
+            itemStyle: {
+              borderRadius: 5
+            },
+            label: {
+              show: false
+            },
+            data: poolData
+          }
+        ]
+      }
+
+      this.poolsOption = option;
+      this.poolsData = poolData;
+      this.totalValuePooled = totalValuePooled;
+    }
   },
-  mounted() {
+  async mounted() {
     this.$api
       .getDashboardData()
       .then(({ data }) => {
@@ -696,14 +764,22 @@ export default {
         this.txs = data?.txs?.actions;
         this.totalTxs = +data?.txs?.count;
         this.totalAddresses = +data?.addresses?.pagination?.total;
+
+        this.$api.getPools().then(({ data }) => {
+          this.formatPoolsData(data);
+        })
       })
-      .catch((e) => {
-        this.$api
+      .catch(async (e) => {
+        await this.$api
           .getStats()
           .then((res) => (this.stats = res.data))
           .catch((error) => {
             console.error(error);
           });
+
+        this.$api.getPools().then(({ data }) => {
+          this.formatPoolsData(data);
+        })
 
         this.$api
           .getLastBlockHeight()
@@ -747,7 +823,6 @@ export default {
       .then(({ data }) => {
         this.volumeHistory = this.formatLPChange(data?.LPChange);
         this.swapHistory = this.formatSwap(data?.swaps);
-        this.tvlHistory = this.formatTvl(data?.tvl);
         this.earningsHistory = this.formatEarnings(data?.earning);
       })
       .catch((error) => {
@@ -788,9 +863,9 @@ export default {
           .getTendermintLatestBlocks(+this.lastHeight - 9)
           .then(
             (res) =>
-              (this.blocks = this.formatTendermintBlocks(
-                res?.data?.result.block_metas
-              ))
+            (this.blocks = this.formatTendermintBlocks(
+              res?.data?.result.block_metas
+            ))
           )
           .catch((error) => {
             console.error(error);
@@ -800,7 +875,7 @@ export default {
         console.error(error);
       });
 
-    this.$api.getNetwork().then(({data}) => {
+    this.$api.getNetwork().then(({ data }) => {
       this.network = data;
     })
   },
@@ -925,5 +1000,105 @@ export default {
 
 .echarts {
   min-height: 400px;
+}
+
+.pool-depth-container {
+
+  .card-body {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    padding-right: 1.5rem !important;
+
+    @include lg {
+      flex-wrap: wrap;
+      flex-direction: initial;
+
+      .pool-depth-chart {
+        min-width: 250px;
+      }
+    }
+
+    .pool-depth-chart {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .pool-depth-extra {
+      flex: 1;
+      margin-top: 1.5rem;
+
+      @include lg {
+        margin-top: 0;
+      }
+
+      .pool-name-container {
+        display: flex;
+        align-items: center;
+      }
+
+      table {
+        border-collapse: collapse;
+        margin: auto;
+
+        thead {
+          text-transform: uppercase;
+          border-bottom: 1px solid var(--border-color);
+
+          th {
+            padding-bottom: 7px;
+            font-size: 0.875rem;
+          }
+        }
+
+        th {
+          font-weight: 700;
+          text-align: inherit;
+        }
+
+        tbody td {
+          font-weight: 700;
+          padding: 7px 0;
+          color: var(--sec-font-color);
+          font-size: 0.8rem;
+        }
+
+        .table-footer {
+          border-top: 1px solid var(--border-color);
+        }
+      }
+    }
+  }
+}
+
+.data-color {
+  margin-right: 6px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.tooltip-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 5px;
+}
+
+.tooltip-body {
+  margin-top: 5px;
+  width: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  > span {
+    display: flex;
+    justify-content: space-between;
+  }
 }
 </style>

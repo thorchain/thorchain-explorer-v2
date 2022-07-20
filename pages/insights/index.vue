@@ -17,7 +17,7 @@
             {{timeFormat(props.row.timestamp)}}
             <span style="font-size: .75rem;">
               ({{fromNow(props.row.timestamp)}})
-            </span> 
+            </span>
           </span>
           <span v-else>
             {{props.formattedRow[props.column.field]}}
@@ -28,8 +28,11 @@
         Powered By <strong>Multipartite</strong>
       </span>
     </Card>
-    <Card :isLoading="!option" title="🔒 Total Value Locked (from Flipside)">
-      <VChart v-if="option" class="chart" :option="option" :loading="!option" :autoresize="true"></VChart>
+    <Card title="🔒 Total Value Locked (from Flipside)">
+      <VChart v-if="tvlOption" class="chart" :option="tvlOption" :loading="!tvlOption" :autoresize="true"></VChart>
+    </Card>
+    <Card title="💰 Rune Price History (from Flipside)">
+      <VChart v-if="runePriceOption" :option="runePriceOption" :loading="!runePriceOption" :autoresize="true"></VChart>
     </Card>
   </Page>
 </template>
@@ -84,7 +87,8 @@ export default {
           tdClass: 'mono',
         }
       ],
-      option: undefined
+      tvlOption: undefined,
+      runePriceOption: undefined
     }
   },
   mounted() {
@@ -92,10 +96,16 @@ export default {
       this.churnHistory = data.map(d => ({...d, timestamp: moment(d.BLOCK_TIMESTAMP)}));;
     }).catch(e => {
       console.error(e);
-    }) 
+    })
 
     this.$api.getFlipTVL().then(({data}) => {
       this.flipTVLFormat(data);
+    }).catch(e => {
+      console.error(e);
+    })
+
+    this.$api.getRunePrice().then(({data}) => {
+      this.runePriceFormat(data);
     }).catch(e => {
       console.error(e);
     })
@@ -107,7 +117,7 @@ export default {
     fromNow(time) {
       return moment(time)?.fromNow();
     },
-    flipTVLFormat: function(d) {
+    flipTVLFormat(d) {
       let xAxis = [];
       let tvp = [];
       let tvl = [];
@@ -187,8 +197,72 @@ export default {
         ]
       };
 
-      this.option = option;
+      this.tvlOption = option;
     },
+    runePriceFormat(d) {
+      let xAxis = [];
+      let runePrice = [];
+      d.forEach(interval => {
+        xAxis.push(moment(interval.DATE).format("YY/MM/DD HH:MM A"));
+        runePrice.push(interval.DAILY_RUNE_PRICE);
+      });
+
+      let option = {
+        title: {
+          show: false,
+        },
+        tooltip: {
+          confine: true,
+          trigger: "axis",
+          valueFormatter: (value) => `$${value.toFixed(2)}`
+        },
+        legend: {
+          x: 'center',
+          y: 'bottom',
+          icon: 'rect',
+          textStyle: {
+            color: "var(--font-color)"
+          }
+        },
+        xAxis: {
+          data: xAxis.reverse(),
+          boundaryGap: false,
+          splitLine: {
+            show: false,
+          },
+          axisLine: {
+            lineStyle: {
+              color: '#9f9f9f'
+            }
+          },
+          axisLabel: {
+            color: '#9f9f9f',
+            fontFamily: 'ProductSans',
+          }
+        },
+        yAxis: {
+          show: false,
+          splitLine: {
+            show: true
+          }
+        },
+        grid: {
+          left: '20px',
+          right: '20px'
+        },
+        series: [
+          {
+            type: 'line',
+            name: 'Rune Price',
+            showSymbol: false,
+            data: runePrice.reverse(),
+            smooth: true
+          },
+        ]
+      };
+
+      this.runePriceOption = option;
+    }
   }
 }
 </script>
@@ -201,7 +275,7 @@ export default {
 
 .echarts {
   width: 100%;
-  height: 400px; 
+  height: 400px;
 }
 
 .legend-item {

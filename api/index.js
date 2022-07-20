@@ -50,7 +50,8 @@ import {
 } from "./middleware.api";
 import {
   getChurnHistory,
-  getFlipTVL
+  getFlipTVL,
+  getRunePrice
 } from "./insights.api";
 export var $axiosInstace;
 import axiosRetry from 'axios-retry';
@@ -160,7 +161,8 @@ export default function ({ $axios }, inject) {
     getChurnHistory,
     getFlipTVL,
     getNetwork,
-    getNode
+    getNode,
+    getRunePrice
   };
 
   inject("api", api);
