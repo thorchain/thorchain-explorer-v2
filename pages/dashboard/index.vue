@@ -582,7 +582,6 @@ export default {
         ],
         xAxis
       );
-      console.log(res, tva, tvr, tv);
 
       return res;
     },
@@ -673,21 +672,37 @@ export default {
     },
     formatPoolsData(d) {
       let poolData = [];
-      const runePrice = this.$store.getters.getRunePrice;
+      const runePrice = this.stats.runePriceUSD;
       let totalValuePooled = 0;
+      let otherPoolsVolume = 0;
+      let otherValuePooled = 0;
       const defaultColors = ['#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de', '#3ba272', '#fc8452', '#9a60b4', '#ea7ccc'];
       d.sort((a,b) => (+b.runeDepth)-(+a.runeDepth)).forEach((p, i) => {
         let runeInPools = (+p.runeDepth);
         let assetsInRune = (+p.assetDepth) * +p.assetPrice;
-        totalValuePooled += (runeInPools+assetsInRune*runePrice)/1e8;
-        if (i > 5) return
-        let asset = assetFromString(p.asset);
-        poolData.push({
-          value: ((runeInPools + assetsInRune)*runePrice)/1e8,
-          name: `${asset.chain}.${asset.ticker}`,
-          vol: (+p.volume24h)*runePrice/1e8,
-          color: defaultColors[i]
-        });
+        totalValuePooled += ((runeInPools+assetsInRune)*runePrice)/1e8;
+        if (i < 6) {
+          let asset = assetFromString(p.asset);
+          poolData.push({
+            value: ((runeInPools + assetsInRune)*runePrice)/1e8,
+            name: `${asset.chain}.${asset.ticker}`,
+            vol: (+p.volume24h)*runePrice/1e8,
+            color: defaultColors[i]
+          });
+        }
+        else if (i >= 6) {
+          otherPoolsVolume += (+p.volume24h)*runePrice/1e8;
+          otherValuePooled += ((runeInPools+assetsInRune)*runePrice)/1e8;
+
+          if (i == d.length - 1) {
+            poolData.push({
+              value: otherValuePooled,
+              name: `Other pools`,
+              vol: otherPoolsVolume,
+              color: defaultColors[6]
+            });
+          }
+        }
       })
 
       let option = {
@@ -699,14 +714,14 @@ export default {
             </div>
             <div class="tooltip-body">
               <span>
-                <span>Depth</span> 
+                <span>Depth</span>
                 <b>$${this.$options.filters.number(param.value, '0,0 a')}</b>
               </span>
               <span>
-                <span>Volume</span> 
+                <span>Volume</span>
                 <b>$${this.$options.filters.number(poolData[param.dataIndex].vol, '0,0 a')}</b>
               </span>
-            </div> 
+            </div>
           `
         },
         tooltip: {
@@ -716,11 +731,10 @@ export default {
           {
             name: 'Pool Value',
             type: 'pie',
-            radius: [20, 140],
-            center: ['40%', '60%'],
+            radius: [0, 80],
+            center: ['50%', '50%'],
             width: 275,
             height: 250,
-            roseType: 'radius',
             itemStyle: {
               borderRadius: 5
             },
@@ -737,7 +751,7 @@ export default {
       this.totalValuePooled = totalValuePooled;
     }
   },
-  mounted() {
+  async mounted() {
     this.$api
       .getDashboardData()
       .then(({ data }) => {
@@ -750,14 +764,22 @@ export default {
         this.txs = data?.txs?.actions;
         this.totalTxs = +data?.txs?.count;
         this.totalAddresses = +data?.addresses?.pagination?.total;
+
+        this.$api.getPools().then(({ data }) => {
+          this.formatPoolsData(data);
+        })
       })
-      .catch((e) => {
-        this.$api
+      .catch(async (e) => {
+        await this.$api
           .getStats()
           .then((res) => (this.stats = res.data))
           .catch((error) => {
             console.error(error);
           });
+
+        this.$api.getPools().then(({ data }) => {
+          this.formatPoolsData(data);
+        })
 
         this.$api
           .getLastBlockHeight()
@@ -855,10 +877,6 @@ export default {
 
     this.$api.getNetwork().then(({ data }) => {
       this.network = data;
-    })
-
-    this.$api.getPools().then(({ data }) => {
-      this.formatPoolsData(data);
     })
   },
 };
@@ -1002,7 +1020,15 @@ export default {
       }
     }
 
+    .pool-depth-chart {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
     .pool-depth-extra {
+      flex: 1;
       margin-top: 1.5rem;
 
       @include lg {
