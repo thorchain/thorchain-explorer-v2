@@ -113,8 +113,8 @@
                       {{p.name}}
                     </div>
                   </td>
-                  <td style="text-align: center;">${{p.value | number('0,0 a')}}</td>
                   <td style="text-align: center;">${{p.vol | number('0,0 a')}}</td>
+                  <td style="text-align: center;">${{p.value | number('0,0 a')}}</td>
                 </tr>
                 <tr class="table-footer">
                   <td colspan="2">Total value locked in pools:</td>
