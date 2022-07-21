@@ -1063,7 +1063,7 @@ export default {
           font-weight: 700;
           padding: 7px 0;
           color: var(--sec-font-color);
-          font-size: 0.8rem;
+          font-size: 0.875rem;
         }
 
         .table-footer {
