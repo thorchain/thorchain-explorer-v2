@@ -52,7 +52,7 @@ export default {
   data: function () {
     return {
       error: false,
-      mode: 'grid',
+      mode: 'table',
       navItems: [
         {text: 'Grid', mode: 'grid'},
         {text: 'Table', mode: 'table'},
@@ -94,6 +94,12 @@ export default {
           tdClass: 'mono'
         },
         {
+          label: 'Volume/Depth',
+          field: 'vd',
+          type: 'percentage',
+          tdClass: 'mono'
+        },
+        {
           label: 'APY',
           field: 'apy',
           type: 'percentage',
@@ -125,6 +131,7 @@ export default {
         depth: ((+p.assetDepth/10**8)*p.assetPriceUSD)+((+p.runeDepth/10**8)*runePrice),
         apy: p.poolAPY,
         volume: (+p.volume24h/10**8)*runePrice,
+        vd: (+p.volume24h)/((+p.assetDepth*+p.assetPrice)+(+p.runeDepth)),
         asset: p.asset,
       }));
       this.sepPools(ps)
@@ -153,7 +160,7 @@ export default {
       return this.$options.filters.currency(number)
     },
     formatAsset(asset) {
-      return asset.length > 10 ? 
+      return asset.length > 10 ?
         asset.slice(0, 14) + '...':
         asset
     },
