@@ -90,6 +90,11 @@ export default {
           type: 'number'
         },
         {
+          label: 'Value/Bond',
+          field: 'vb',
+          type: 'percentage'
+        },
+        {
           label: 'Ins',
           field: 'ins',
           type: 'number',
@@ -109,14 +114,16 @@ export default {
     }
   },
   mounted() {
-    this.$api.getYggdrasil().then(res => {
-      this.yggdrasil = this.formatVaults(res?.data, 'Yggdrasil');
+    this.$api.getYggdrasil().then(async (res) => {
+      this.yggdrasil = await this.formatVaults(res?.data, 'Yggdrasil');
     }).catch(e => {
       console.error(e);
     })
 
-    this.$api.getAsgard().then(res => {
-      this.asgard = this.formatVaults(res?.data, 'Asgard');
+    this.$api.getAsgard().then(async (res) => {
+      let poolsPrice = await this.formatPoolPrice()
+      let nodes = await this.formatNodes()
+      this.asgard = await this.formatVaults(res?.data, 'Asgard', poolsPrice, nodes);
     }).catch(e => {
       console.error(e);
     })
@@ -128,17 +135,44 @@ export default {
       }
       return status
     },
-    formatVaults(data, type='Yggdrasil') {
+    async formatPoolPrice() {
+      let pools = await this.$api.getPools()
+      let poolsPrice = []
+      pools.data.map(p => poolsPrice[p.asset] = p.assetPrice)
+      return poolsPrice
+    },
+    async formatNodes() {
+      let nodes = await this.$api.getNodes()
+      let nodesBond = []
+      nodes.data.map(n => nodesBond[n.pub_key_set?.secp256k1] = n.bond)
+      return nodesBond      
+    },
+    async formatVaults(data, type='Yggdrasil', poolsPrice=undefined, nodes=undefined) {
       let y = []
       for(let vault of data) {
+        let bond = vault?.bond / 1e8 
+        let total_value = (+vault?.total_value<100?0.1:vault?.total_value / 1e8)
+        let vb = undefined;
+        if (type === 'Asgard' && poolsPrice) {
+          total_value = 0;
+          vault.coins?.forEach(a => {
+            total_value += (+(poolsPrice[a.asset] || 0)*+a.amount)/1e8
+          })
+          bond = 0;
+          vault.membership?.forEach(m => {
+            bond += nodes[m]/1e8
+          })
+          vb = total_value/bond;
+        }
         y.push({
-          hash: vault.addresses.find(e => e.chain === 'THOR').address,
+          hash: vault?.addresses.find(e => e.chain === 'THOR').address,
           type: type,
-          status: this.formatStatus(vault.status),
-          ins: vault.inbound_tx_count,
-          bond: +vault.bond / 10**8,
-          total_value: +vault.total_value / 10**8,
-          outs: vault.outbound_tx_count
+          status: this.formatStatus(vault?.status),
+          ins: vault?.inbound_tx_count,
+          bond: bond,
+          total_value: total_value,
+          vb: vb,
+          outs: vault?.outbound_tx_count
         })
       }
       return y
