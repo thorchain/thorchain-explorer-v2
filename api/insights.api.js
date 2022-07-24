@@ -14,3 +14,7 @@ export function getFlipTVL() {
 export function getRunePrice() {
   return $axiosInstace.get(INSIGHT_URL + `1aaa2137-b392-40a1-a9ce-22512f02d722/data/latest`);
 }
+
+export function getDailySwap() {
+  return $axiosInstace.get(INSIGHT_URL + `ec833986-4bda-4d39-b1c9-7e44094c5e8e/data/latest`);
+}
