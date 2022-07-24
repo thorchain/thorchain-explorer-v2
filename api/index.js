@@ -51,7 +51,8 @@ import {
 import {
   getChurnHistory,
   getFlipTVL,
-  getRunePrice
+  getRunePrice,
+  getDailySwap
 } from "./insights.api";
 export var $axiosInstace;
 import axiosRetry from 'axios-retry';
@@ -162,7 +163,8 @@ export default function ({ $axios }, inject) {
     getFlipTVL,
     getNetwork,
     getNode,
-    getRunePrice
+    getRunePrice,
+    getDailySwap
   };
 
   inject("api", api);
