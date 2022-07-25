@@ -209,9 +209,11 @@ export default {
     runePriceFormat(d) {
       let xAxis = [];
       let runePrice = [];
+      let determinPrice = [];
       d.forEach(interval => {
         xAxis.push(moment(interval.DATE).format("YY/MM/DD HH:MM A"));
         runePrice.push(interval.DAILY_RUNE_PRICE);
+        determinPrice.push(interval.DETERMINISTIC_RUNE_PRICE);
       });
 
       let option = {
@@ -232,7 +234,7 @@ export default {
           }
         },
         xAxis: {
-          data: xAxis.reverse(),
+          data: xAxis,
           boundaryGap: false,
           splitLine: {
             show: false,
@@ -259,7 +261,14 @@ export default {
             type: 'line',
             name: 'Rune Price',
             showSymbol: false,
-            data: runePrice.reverse(),
+            data: runePrice,
+            smooth: true
+          },
+          {
+            type: 'line',
+            name: 'Deterministic Rune Price',
+            showSymbol: false,
+            data: determinPrice,
             smooth: true
           },
         ]
