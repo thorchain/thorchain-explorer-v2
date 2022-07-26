@@ -1,33 +1,5 @@
 <template>
   <Page>
-    <Card title="⏰ Churn History" :isLoading="!churnHistory">
-      <vue-good-table
-        v-if="churnHistory"
-        :columns="cols"
-        :rows="churnHistory"
-        styleClass="vgt-table net-table bordered"
-        :pagination-options="{
-          enabled: true,
-          perPage: 30,
-          perPageDropdownEnabled: false,
-        }"
-      >
-        <template slot="table-row" slot-scope="props">
-          <span v-if="props.column.field == 'timestamp'">
-            {{timeFormat(props.row.timestamp)}}
-            <span style="font-size: .75rem;">
-              ({{fromNow(props.row.timestamp)}})
-            </span>
-          </span>
-          <span v-else>
-            {{props.formattedRow[props.column.field]}}
-          </span>
-        </template>
-      </vue-good-table>
-      <span class="footer">
-        Powered By <strong>Multipartite</strong>
-      </span>
-    </Card>
     <Card title="🔒 Total Value Locked (from Flipside)">
       <VChart v-if="tvlOption" class="chart" :option="tvlOption" :loading="!tvlOption" :autoresize="true"></VChart>
     </Card>
@@ -42,7 +14,7 @@
 
 <script>
 import moment from "moment";
-import { momentTimeFormat, runeCur } from '~/utils';
+import { runeCur } from '~/utils';
 
 import { use } from "echarts/core";
 import { SVGRenderer } from "echarts/renderers";
@@ -92,16 +64,11 @@ export default {
         }
       ],
       tvlOption: undefined,
-      runePriceOption: undefined
+      runePriceOption: undefined,
+      swapCountChart: undefined
     }
   },
   mounted() {
-    this.$api.getChurnHistory().then(({data}) => {
-      this.churnHistory = data.map(d => ({...d, timestamp: moment(d.BLOCK_TIMESTAMP)}));;
-    }).catch(e => {
-      console.error(e);
-    })
-
     this.$api.getFlipTVL().then(({data}) => {
       this.flipTVLFormat(data);
     }).catch(e => {
@@ -121,12 +88,6 @@ export default {
     })
   },
   methods: {
-    timeFormat(time) {
-      return momentTimeFormat(time)
-    },
-    fromNow(time) {
-      return moment(time)?.fromNow();
-    },
     flipTVLFormat(d) {
       let xAxis = [];
       let tvp = [];
@@ -367,11 +328,6 @@ export default {
 </script>
 
 <style lang="scss">
-.footer {
-  display: block;
-  margin: 1rem 0 .3rem .5rem;
-}
-
 .echarts {
   width: 100%;
   height: 400px;
