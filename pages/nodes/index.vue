@@ -5,7 +5,7 @@
       <stat-table :tableSettings="topStandbyBonds" header="Top Standby Bonds"></stat-table>
     </div>
     <div class="chart-inner-container">
-      <Card title="Node Stauts">
+      <Card title="Node Status">
         <VChart
           style="height: 250px"
           :option="nodeStatus"
