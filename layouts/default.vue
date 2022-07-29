@@ -56,12 +56,12 @@ export default {
 
     this.$api.getNodes()
     .then(({data}) => {
-      this.$store.commit('setNetworkData', data)
+      this.$store.commit('setNodesData', data)
     }).catch(e => console.error(e));
 
     this.$api.getNetwork()
     .then(({data}) => {
-      this.$store.commit('setNodesData', data)
+      this.$store.commit('setNetworkData', data)
     }).catch(e => console.error(e));
 
     let changeHeight = () => {

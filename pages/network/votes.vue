@@ -30,6 +30,7 @@
         :columns="cols"
         :rows="v"
         styleClass="vgt-table net-table vgt-compact"
+        :line-numbers="true"
         :pagination-options="{
           enabled: true,
           perPage: 30,
@@ -61,8 +62,6 @@ export default {
       isLoading: true,
       mimirVotes: undefined,
       mimirs: undefined,
-      nodes: undefined,
-      network: undefined,
       cols: [
         {
           label: 'Signer',
@@ -189,7 +188,7 @@ export default {
       if ((!voters || voters.length == 0) && !this.nodes) {
         return
       }
-      const activeVoters = voters.filter(v => this.nodes?.filter(n => n.status == 'Active').map(n => n.address).includes(v.signer))
+      const activeVoters = voters.filter(v => this.nodes?.filter(n => n.status == 'Active').map(n => n.node_address).includes(v.signer))
       const voteCount = _.countBy(activeVoters.map(v => v.value));
       const votesObj = Object.keys(voteCount).map((v, i) => (
         {
