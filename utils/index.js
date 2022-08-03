@@ -156,6 +156,10 @@ export function synthToAsset(assetString) {
   if (assetString === 'rune')
     asset = AssetRuneNative;
 
+  if (!asset) {
+    return
+  }
+
   if(!isSynthAsset(asset))
     return assetToString(asset)
 

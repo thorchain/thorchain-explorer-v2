@@ -61,7 +61,6 @@ export default {
           },
           formatter: (param) => {
             let prices = param[0];
-            console.log(param[1])
             return [
               'Date: ' + prices.name + '<hr size=1 style="margin: 3px 0">',
               'Open: $' + prices.data[1]?.toFixed(2) + '<br/>',

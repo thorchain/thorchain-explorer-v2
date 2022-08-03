@@ -72,6 +72,9 @@ export const AssetImage = (assetStr) => {
           else if (ticker === "TGT") {
             iconPath = require("~/assets/images/assets/tgt.png")
           }
+          else if (ticker === 'XRUNE') {
+            iconPath = "https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x69fa0feE221AD11012BAb0FdB45d444D3D2Ce71c/logo.png"
+          }
         }
         break;
 
