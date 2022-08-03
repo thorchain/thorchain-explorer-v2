@@ -46,7 +46,8 @@ import {
 import {
   getDashboardData,
   getDashboardPlots,
-  getExraNodesInfo
+  getExraNodesInfo,
+  getOhclPrice
 } from "./middleware.api";
 import {
   getChurnHistory,
@@ -164,7 +165,8 @@ export default function ({ $axios }, inject) {
     getNetwork,
     getNode,
     getRunePrice,
-    getDailySwap
+    getDailySwap,
+    getOhclPrice
   };
 
   inject("api", api);

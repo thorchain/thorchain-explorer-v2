@@ -5,6 +5,7 @@
       :navItems="[
         {link: `/insights`, text: 'Overview'},
         {link: `/insights/network`, text: 'Network'},
+        {link: `/insights/price`, text: 'Rune Price'},
       ]"
     ></Nav>
     <nuxt-child></nuxt-child>

@@ -12,3 +12,7 @@ export function getDashboardPlots() {
 export function getExraNodesInfo() {
   return $axiosInstace.get(endpoints[process.env.NETWORK].SERVER_URL + `api/extraNodesInfo`);
 }
+
+export function getOhclPrice() {
+  return $axiosInstace.get(endpoints[process.env.NETWORK].SERVER_URL + `api/ohclPrice`);
+}
