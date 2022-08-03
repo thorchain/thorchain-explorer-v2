@@ -53,8 +53,27 @@ export default {
           trigger: "axis",
           axisPointer: {
             type: 'cross',
-            link: { xAxisIndex: 'all' },
+          },
+          position: function (pos, params, el, elRect, size) {
+            var obj = { top: 10 };
+            obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 30;
+            return obj;
+          },
+          formatter: (param) => {
+            let prices = param[0];
+            console.log(param[1])
+            return [
+              'Date: ' + prices.name + '<hr size=1 style="margin: 3px 0">',
+              'Open: $' + prices.data[1]?.toFixed(2) + '<br/>',
+              'Close: $' + prices.data[2]?.toFixed(2) + '<br/>',
+              'Lowest: $' + prices.data[3]?.toFixed(2) + '<br/>',
+              'Highest: $' + prices.data[4]?.toFixed(2) + '<br/>',
+              'Volume: $' + this.$options.filters.number(param[1].data, '0 a') + '<br/>'
+            ].join('');
           }
+        },
+        axisPointer: {
+          link: { xAxisIndex: 'all' },
         },
         legend: {
           show: false,
@@ -112,6 +131,16 @@ export default {
             splitNumber: 20,
             min: 'dataMin',
             max: 'dataMax',
+            axisPointer: {
+            label: {
+              formatter: (params) => {
+                var seriesValue = (params.seriesData[0] || {}).value;
+                return (
+                  this.$options.filters.number(seriesValue.toString()??'0', '0 a')
+                );
+              }
+            }
+          }
           }
         ],
         yAxis: [
@@ -130,20 +159,19 @@ export default {
           {
             show: false,
             gridIndex: 1,
-            max: 1e9
           }
         ],
         grid: [
           {
             left: '8%',
             right: '8%',
-            height: '55%'
+            height: '50%'
           },
           {
             left: '8%',
             right: '8%',
             bottom: '20%',
-            height: '25%'
+            height: '15%'
           }
         ],
         series: [
@@ -156,7 +184,7 @@ export default {
               color0: "#c23531",
               borderColor: 'green',
               borderColor0: '#c23531'
-            }
+            },
           },
           {
             name: 'Thorchain Trade Volume',
