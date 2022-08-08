@@ -1,5 +1,5 @@
 <template>
-  <Page>
+  <div class="container-page">
     <Card title="🔒 Total Value Locked (from Flipside)">
       <VChart v-if="tvlOption" class="chart" :option="tvlOption" :loading="!tvlOption" :autoresize="true"></VChart>
     </Card>
@@ -9,7 +9,7 @@
     <Card title="📊 Swap Count Chart (from Flipside)">
       <VChart v-if="swapCountChart" :option="swapCountChart" :loading="!swapCountChart" :autoresize="true"></VChart>
     </Card>
-  </Page>
+  </div>
 </template>
 
 <script>
@@ -350,5 +350,11 @@ export default {
     font-weight: bold;
     margin-left: 5px;
   }
+}
+
+.container-page {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 </style>

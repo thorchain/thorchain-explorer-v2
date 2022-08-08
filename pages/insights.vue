@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <Page>
     <Nav
       :isLink="true"
       :navItems="[
@@ -9,7 +9,7 @@
       ]"
     ></Nav>
     <nuxt-child></nuxt-child>
-  </div>
+  </Page>
 </template>
 
 <script>

@@ -23,7 +23,15 @@
     <template v-if="addrTxs">
       <div class="stat-wrapper">
         <Nav :activeMode.sync="activeMode" :navItems="[{text: 'Balances', mode: 'balance'},{text: 'THORName', mode: 'thorname'}]" />
-        <stat-table v-if="activeMode == 'balance'" :tableSettings="addressStat"></stat-table>
+        <stat-table v-if="activeMode == 'balance'" :tableSettings="addressStat">
+          <template #Balance>
+            <span v-if="balance && runePrice">
+              {{balance | number('0,0.00')}}
+              (<span class="value">{{balance * runePrice | currency}}</span>)
+            </span>
+            <span v-else>-</span>
+          </template>
+        </stat-table>
         <stat-table v-else-if="activeMode == 'thorname'" :tableSettings="thornames"></stat-table>
       </div>
       <div style="margin: 1rem 0"></div>
@@ -94,6 +102,7 @@ import CopyIcon from '~/assets/images/copy.svg?inline';
 import ExpandIcon from '~/assets/images/expand.svg?inline';
 import QrcodeVue from 'qrcode.vue'
 import { formatAsset } from '~/utils';
+import { mapGetters } from 'vuex';
 
 export default {
   components: {
@@ -167,9 +176,7 @@ export default {
       return [
         [
           {
-            name: 'RUNE Balance',
-            value: this.balance && this.$options.filters.number(this.balance, '0,0.00'),
-            filter: true,
+            name: 'Balance',
           },
           {
             name: 'Transactions',
@@ -179,7 +186,10 @@ export default {
         ...otherBalances,
         ...vaultInfo
       ]
-    }
+    },
+    ...mapGetters({
+      runePrice: 'getRunePrice'
+    }),
   },
   methods: {
     getActions(offset=0) {
@@ -379,6 +389,12 @@ export default {
   .addresses {
     display: flex;
     align-items: center;
+  }
+}
+
+.stat-wrapper {
+  .value {
+    color: var(--primary-color);
   }
 }
 </style>
