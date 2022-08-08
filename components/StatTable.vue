@@ -15,22 +15,22 @@
               {{ colItem.name }}
             </div>
             <div class="col-value">
-              <template v-if="colItem.filter">
-                <template v-if="!$slots[colItem.name]">
-                  <pre v-if="colItem.value !== 0">{{ colItem.value || '-' }}</pre>
-                  <pre v-if="colItem.value === 0">0</pre>
+              <template v-if="!$slots[colItem.name]">
+                <template v-if="colItem.filter">
+                    <pre v-if="colItem.value !== 0">{{ colItem.value || '-' }}</pre>
+                    <pre v-if="colItem.value === 0">0</pre>
                 </template>
-                <slot v-else :name="colItem.name"></slot>
+                <template v-else>
+                  <template v-if="colItem.value !== 0">
+                    {{ colItem.value | number('0,0') }}
+                  </template>
+                  <template v-else-if="colItem.value === 0">
+                    0
+                  </template>
+                  <template v-else> - </template>
+                </template>
               </template>
-              <template v-else>
-                <template v-if="colItem.value !== 0">
-                  {{ colItem.value | number('0,0') }}
-                </template>
-                <template v-else-if="colItem.value === 0">
-                  0
-                </template>
-                <template v-else> - </template>
-              </template>
+              <slot v-else :name="colItem.name"></slot>
               <span class="usd-value" v-if="colItem.value && colItem.usdValue">({{ colItem.value * runePrice | currency }})</span>
               <span class="usd-value" v-if="colItem.extraText">({{ colItem.extraText }})</span>
             </div>
