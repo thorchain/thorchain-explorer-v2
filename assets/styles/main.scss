@@ -44,13 +44,18 @@ input {
   justify-content: center;
 }
 
-.cutsom-popover {
+.custom-popover {
   padding: 15px;
   margin: 15px;
   background-color: var(--card-bg-color) !important;
   border: 1px solid var(--border-color) !important;
   border-radius: 5px;
   font-size: .9rem;
+
+  .key {
+    word-break: keep-all;
+    white-space: nowrap;
+  }
 }
 
 .clickable {
