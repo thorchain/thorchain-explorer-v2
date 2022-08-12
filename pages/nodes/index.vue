@@ -465,13 +465,13 @@ export default {
       return eNodes?.sort((a, b) => +a - +b)[Math.floor(eNodes.length / 2)]/10**8;
     },
     pSort(x, y, col, rowX, rowY) {
-      return (x?.length > y?.length)
+      return (x?.length < y?.length ? -1 : (x?.length > y?.length ? 1 : 0))
     },
     cSort(x, y, col, rowX, rowY) {
-      return (x.code > y.code)
+      return (x?.code < y?.code ? -1 : (x?.code > y?.code ? 1 : 0))
     },
     aSort(x, y, col, rowX, rowY) {
-      return (x.number > y.number)
+      return (x?.number < y?.number ? -1 : (x?.number > y?.number ? 1 : 0))
     },
     getUnicodeFlagIcon(name) {
       return getUnicodeFlagIcon(name)
