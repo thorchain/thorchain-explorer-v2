@@ -202,6 +202,32 @@
               <span class="clickable" v-if="props.column.field == 'address'">
                 <div class="table-wrapper-row" v-if="props.row.address">
                   <span v-tooltip="props.row.address" @click="gotoNode(props.row.address)">{{addressFormat(props.row.address)}}</span>
+                  <InfoIcon @click="gotoNode(props.row.address)" class="table-icon" />
+                  <div :id="`vote-${props.row.originalIndex}`">
+                  <VoteIcon v-if="mimirs" class="table-icon"/>
+                  </div>
+                  <b-popover
+                    triggers="hover focus"
+                    :target="`vote-${props.row.originalIndex}`"
+                    customClass="custom-popover"
+                  >
+                    <div class="title" style="margin-bottom: 5px;">
+                      <strong>Node Votes</strong>
+                    </div>
+                    <template v-if="mimirs">
+                      <div class="popover-table" v-for="(p,i) in mimirs[props.row.address]" :key="i">
+                        <span class="key clickable" @click="goto('network/votes')">
+                          {{p.key}}
+                        </span>
+                        <span class="vote-value">
+                          {{p.value}}
+                        </span>
+                      </div>
+                      <div v-if="!mimirs[props.row.address]">
+                        No Votes!
+                      </div>
+                    </template>
+                  </b-popover>
                   <a style="height: 1rem" :href="gotoNodeUrl(props.row.address)" target="_blank">
                     <NetworkIcon class="table-icon" />
                   </a>
