@@ -64,6 +64,31 @@
                   <StarIcon v-else class="table-icon" @click="addFav(props.row.address)"></StarIcon>
                 </template>
                 <InfoIcon @click="gotoNode(props.row.address)" class="table-icon" />
+                <div :id="`vote-${props.row.originalIndex}`">
+                  <VoteIcon v-if="mimirs" class="table-icon"/>
+                </div>
+                <b-popover
+                  triggers="hover focus"
+                  :target="`vote-${props.row.originalIndex}`"
+                  customClass="custom-popover"
+                >
+                  <div class="title" style="margin-bottom: 5px;">
+                    <strong>Node Votes</strong>
+                  </div>
+                  <template v-if="mimirs">
+                    <div class="popover-table" v-for="(p,i) in mimirs[props.row.address]" :key="i">
+                      <span class="key clickable" @click="goto('network/votes')">
+                        {{p.key}}
+                      </span>
+                      <span class="vote-value">
+                        {{p.value}}
+                      </span>
+                    </div>
+                    <div v-if="!mimirs[props.row.address]">
+                      No Votes!
+                    </div>
+                  </template>
+                </b-popover>
                 <a style="height: 1rem" :href="gotoNodeUrl(props.row.address)" target="_blank">
                   <NetworkIcon class="table-icon" />
                 </a>
@@ -125,7 +150,7 @@
               <b-popover
                 triggers="hover focus"
                 :target="`popover-${props.row.originalIndex}`"
-                customClass="cutsom-popover"
+                customClass="custom-popover"
               >
                 <div class="title" style="margin-bottom: 5px;">
                   <strong>Providers</strong>
@@ -252,6 +277,7 @@ import DangerIcon from '@/assets/images/danger.svg?inline';
 import ExitIcon from '@/assets/images/sign-out.svg?inline';
 import CheckBoxIcon from '@/assets/images/checkbox.svg?inline';
 import DollarIcon from '@/assets/images/dollar.svg?inline';
+import VoteIcon from '@/assets/images/vote.svg?inline';
 
 import { use } from "echarts/core";
 import { SVGRenderer } from "echarts/renderers";
@@ -284,6 +310,7 @@ export default {
     ExitIcon,
     CheckBoxIcon,
     DollarIcon,
+    VoteIcon,
     VChart
   },
   methods: {
@@ -438,13 +465,13 @@ export default {
       return eNodes?.sort((a, b) => +a - +b)[Math.floor(eNodes.length / 2)]/10**8;
     },
     pSort(x, y, col, rowX, rowY) {
-      return (x?.length > y?.length)
+      return (x?.length < y?.length ? -1 : (x?.length > y?.length ? 1 : 0))
     },
     cSort(x, y, col, rowX, rowY) {
-      return (x.code > y.code)
+      return (x?.code < y?.code ? -1 : (x?.code > y?.code ? 1 : 0))
     },
     aSort(x, y, col, rowX, rowY) {
-      return (x.number > y.number)
+      return (x?.number < y?.number ? -1 : (x?.number > y?.number ? 1 : 0))
     },
     getUnicodeFlagIcon(name) {
       return getUnicodeFlagIcon(name)
@@ -474,6 +501,29 @@ export default {
         return n == address;
       });
       this.favNodes = [...favNodes];
+    },
+    // Can be wrapped on the server
+    formatMimirs(d) {
+      let mimirs = {};
+      d.mimirs.forEach(v => {
+        if (!v.value)
+          return
+
+        if (v.signer in mimirs) {
+          mimirs[v.signer].push({
+            value: v.value,
+            key: v.key
+          })
+        }
+        else {
+          mimirs[v.signer] = [{
+            value: v.value,
+            key: v.key
+          }]
+        }
+      })
+
+      return mimirs;
     }
   },
   data: function() {
@@ -560,7 +610,8 @@ export default {
       churnInterval: undefined,
       localFavNodes: undefined,
       churnOption: undefined,
-      bondMetrics: undefined
+      bondMetrics: undefined,
+      mimirs: undefined
     }
   },
   mounted() {
@@ -594,6 +645,10 @@ export default {
     this.$api.getExraNodesInfo().then(({data}) => {
       this.nodesExtra = data;
     });
+
+    this.$api.getMimirVotes().then(({data}) => {
+      this.mimirs = this.formatMimirs(data);
+    })
 
     Promise.all([lastProm, netProm, mimirProm]).then((_) => {
       this.updateChurnTime();
@@ -661,7 +716,6 @@ export default {
           tdClass: 'center',
           thClass: 'center',
           sortFn: this.aSort,
-          formatFn: this.numberFormat,
         },
         {
           label: 'ISP',
@@ -870,6 +924,10 @@ export default {
 
   .text {
     color: var(--font-color);
+  }
+
+  .vote-value {
+    justify-content: end;
   }
 }
 
