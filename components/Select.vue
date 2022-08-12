@@ -38,6 +38,7 @@ export default {
 
 <style lang="scss">
 .option-wrapper {
+  position: relative;
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
   background-color: var(--card-bg-color);
@@ -60,7 +61,7 @@ export default {
   border: 1px solid var(--border-color);
   border-radius: 0.5rem;
   max-width: 250px;
-  top: calc(100% - 5px);
+  top: calc(100% + 10px);
   max-height: 400px;
   overflow-y: auto;
 
