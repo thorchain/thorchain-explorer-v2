@@ -3,7 +3,11 @@
     <div class="pool-nav-wrapper">
       <div>
         <span>Pool:</span>
-        <Select :options="poolOptions" v-bind:option.sync="poolOption" name="pool"></Select>
+        <Select :options="poolOptions" v-bind:option.sync="poolOption" name="pool">
+          <template>
+            <span class="overflow-label">{{poolOption.label}}</span>
+          </template>
+        </Select>
       </div>
       <div>
         <span>Period:</span>
@@ -49,24 +53,24 @@ export default {
     return {
       periodOption: {
         label: '30 days',
-        value: 62
+        value: 30
       },
       periodOptions: [
         {
           label: '30 days',
-          value: 62
+          value: 30
         },
         {
           label: '60 days',
-          value: 92
+          value: 60
         },
         {
           label: '90 days',
-          value: 122
+          value: 90
         },
         {
           label: '180 days',
-          value: 212
+          value: 180
         }
       ],
       poolOption: {
@@ -109,23 +113,23 @@ export default {
       });
     },
     async getDepth(p, c) {
-      let {data} = await this.$api.getPoolDepth(p, c);
+      let now = (await this.$api.getPoolDepth(p, 365)).data.intervals;
+      let then = (await this.$api.getPoolDepth(p, 365, moment(~~now[0].startTime * 1e3).subtract(c, 'days').unix())).data.intervals.reverse();
+      now = now.reverse()
 
       let aprs = [];
-      if (data.intervals) {
-        for(let i = 0; i < 31; i++) {
-          let firstLuvi = data.intervals[i]?.luvi;
-          let secondLuvi = data.intervals[c+i-31]?.luvi;
+      if (now) {
+        for(let i = 0; i < then.length - 1; i++) {
+          let firstLuvi = then[i]?.luvi;
+          let secondLuvi = now[i]?.luvi;
 
           // calculating APR
           let increase = 100*(secondLuvi-firstLuvi)/firstLuvi;
-          let apr = (365*increase)/(c-32);
-          aprs.push({
+          let apr = (365*increase)/(c);
+          aprs.unshift({
             increase: apr,
             time: 
-            moment(
-              Math.floor((~~data.intervals[i].endTime + ~~data.intervals[i].startTime) / 2) * 1e3
-            ).format("MM/DD") 
+            moment( now[i].startTime * 1e3 ).format("YY/MM/DD") 
           });
         }
       }
@@ -138,8 +142,6 @@ export default {
         xAxis.push(t.time);
         apr.push(t.increase);
       });
-
-      console.log(apr, xAxis)
 
       let option = {
         title: {
@@ -203,6 +205,7 @@ export default {
 .pool-nav-wrapper {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 15px;
 
   > div {
@@ -214,5 +217,12 @@ export default {
 
 .chart-wrapper {
   padding: 1rem 0;
+}
+
+.overflow-label {
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>

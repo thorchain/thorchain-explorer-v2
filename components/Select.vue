@@ -1,6 +1,7 @@
 <template>
   <div class="option-wrapper" :id="name" :ref="name" @click="toggleDialog">
-    <span>{{option.label}}</span>
+    <span v-if="!$slots['default']">{{option.label}}</span>
+    <slot v-else></slot>
     <div class="option-dialog" :ref="`${name}-dialog`" v-show="showDialog">
       <div v-for="(o, i) in options" :key="i" :class="['option-item', {'active': o.value == option.value}]" @click="handleSelect(o)">
         <span>{{ o.label }}</span>
