@@ -322,6 +322,35 @@ input {
   }
 }
 
+.vgt-wrap .vgt-global-search {
+ background: transparent;
+ border: 1px solid var(--border-color);
+ border-radius: 8px 8px 0 0;
+
+ form label {
+  display: none;
+ }
+
+ form input {
+  margin: 3px 10px;
+  border: 1px solid var(--border-color) !important;
+  background-color: transparent;
+  color: var(--font-color);
+
+  &::placeholder {
+    color: var(--font-color);
+  }
+ }
+
+ .vgt-pull-right {
+  display: none;
+ }
+
+ .vgt-global-search__input {
+  padding-left: 0;
+ }
+}
+
 .vgt-table thead th.sorting-desc button:before,
 .vgt-table thead th.sorting-asc button:after {
   border-top-color: var(--primary-color) !important;

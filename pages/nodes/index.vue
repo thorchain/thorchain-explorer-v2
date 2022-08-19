@@ -38,6 +38,10 @@
             perPageDropdownEnabled: false,
           }"
           :key="1"
+          :search-options="{
+            enabled: true,
+            placeholder: 'Search node address, version, ip address, provider or etc.',
+          }">
         >
           <template slot="table-column" slot-scope="props">
             <div class="table-asset" v-if="props.column.field.includes('chains')">
