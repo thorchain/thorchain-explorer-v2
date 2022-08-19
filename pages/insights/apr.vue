@@ -1,0 +1,218 @@
+<template>
+  <Card title="Historical Pool APR">
+    <div class="pool-nav-wrapper">
+      <div>
+        <span>Pool:</span>
+        <Select :options="poolOptions" v-bind:option.sync="poolOption" name="pool"></Select>
+      </div>
+      <div>
+        <span>Period:</span>
+        <Select :options="periodOptions" v-bind:option.sync="periodOption" name="period"></Select>
+      </div>
+    </div>
+    <div class="chart-wrapper">
+      <VChart :option="aprChart" :loading="aprLoading" :autoresize="true" :loading-options="showLoading"></VChart>
+    </div>
+  </Card>
+</template>
+
+<script>
+import {compact} from "lodash";
+
+import { use } from "echarts/core";
+import { SVGRenderer } from "echarts/renderers";
+import { LineChart } from "echarts/charts";
+import {
+  TitleComponent,
+  TooltipComponent,
+  LegendComponent,
+  GridComponent
+} from "echarts/components";
+import VChart from "vue-echarts";
+
+import moment from "moment";
+
+use([
+  SVGRenderer,
+  GridComponent,
+  LineChart,
+  TitleComponent,
+  TooltipComponent,
+  LegendComponent
+]);
+
+export default {
+  components: {
+    VChart
+  },
+  data() {
+    return {
+      periodOption: {
+        label: '30 days',
+        value: 62
+      },
+      periodOptions: [
+        {
+          label: '30 days',
+          value: 62
+        },
+        {
+          label: '60 days',
+          value: 92
+        },
+        {
+          label: '90 days',
+          value: 122
+        },
+        {
+          label: '180 days',
+          value: 212
+        }
+      ],
+      poolOption: {
+        label: 'BTC.BTC',
+        value: 'BTC.BTC'
+      },
+      poolOptions: [],
+      aprChart: undefined,
+      aprLoading: true
+    }
+  },
+  mounted() {
+    this.$api.getPools().then(({data}) => {
+      this.poolOptions = compact(data.map(p => {
+        if (p.status != "available")
+          return
+        return {
+          value: p.asset,
+          label: p.asset
+        }
+      }))
+    })
+
+    this.calPoolAPR();
+  },
+  watch: {
+    poolOption: function (val) {
+      this.calPoolAPR();
+    },
+    periodOption: function (val) {
+      this.calPoolAPR();
+    }
+  },
+  methods: {
+    async calPoolAPR() {
+      this.aprLoading = true;
+      this.getDepth(this.poolOption.value, this.periodOption.value).then((result) => {
+        this.aprLoading = false;
+        this.aprFormat(result)
+      });
+    },
+    async getDepth(p, c) {
+      let {data} = await this.$api.getPoolDepth(p, c);
+
+      let aprs = [];
+      if (data.intervals) {
+        for(let i = 0; i < 31; i++) {
+          let firstLuvi = data.intervals[i]?.luvi;
+          let secondLuvi = data.intervals[c+i-31]?.luvi;
+
+          // calculating APR
+          let increase = 100*(secondLuvi-firstLuvi)/firstLuvi;
+          let apr = (365*increase)/(c-32);
+          aprs.push({
+            increase: apr,
+            time: 
+            moment(
+              Math.floor((~~data.intervals[i].endTime + ~~data.intervals[i].startTime) / 2) * 1e3
+            ).format("MM/DD") 
+          });
+        }
+      }
+      return aprs
+    },
+    aprFormat(d) {
+      let xAxis = [];
+      let apr = [];
+      d.forEach(t => {
+        xAxis.push(t.time);
+        apr.push(t.increase);
+      });
+
+      console.log(apr, xAxis)
+
+      let option = {
+        title: {
+          show: false,
+        },
+        tooltip: {
+          confine: true,
+          trigger: "axis",
+          valueFormatter: (value) => `${value.toFixed(2)} %`
+        },
+        legend: {
+          x: 'center',
+          y: 'bottom',
+          icon: 'rect',
+          textStyle: {
+            color: "var(--font-color)"
+          }
+        },
+        xAxis: {
+          data: xAxis,
+          boundaryGap: false,
+          splitLine: {
+            show: false,
+          },
+          axisLine: {
+            lineStyle: {
+              color: '#9f9f9f'
+            }
+          },
+          axisLabel: {
+            color: '#9f9f9f',
+            fontFamily: 'ProductSans',
+          }
+        },
+        yAxis: {
+          show: false,
+        },
+        grid: {
+          left: '20px',
+          right: '20px'
+        },
+        series: [
+          {
+            type: 'line',
+            name: 'APR (In percentage)',
+            showSymbol: false,
+            data: apr,
+            smooth: true,
+            areaStyle: {}
+          },
+        ]
+      };
+
+      this.aprChart = option;
+    },
+  }
+};
+</script>
+
+<style lang="scss" scoped>
+.pool-nav-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+
+  > div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+}
+
+.chart-wrapper {
+  padding: 1rem 0;
+}
+</style>
