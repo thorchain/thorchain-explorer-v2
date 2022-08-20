@@ -248,6 +248,12 @@ export default {
             }).join('\n')}
             `
           },
+          title: {
+            text: 'Mimir Voting Chart',
+            textStyle: {
+              color: 'var(--font-color)'
+            }
+          },
           grid: {
             left: '23%'
           },
