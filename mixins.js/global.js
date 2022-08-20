@@ -133,7 +133,6 @@ export default {
         },
         xAxis: {
           data: xAxis,
-          boundaryGap: false,
           splitLine: {
             show: false,
           },

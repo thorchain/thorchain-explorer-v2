@@ -520,3 +520,9 @@ input {
     flex-direction: row;
   }
 }
+
+.vgt-table tr th.line-numbers {
+  background: var(--bg-color);
+  color: var(--font-color);
+  border-color: var(--border-color);
+}
