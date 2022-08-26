@@ -198,7 +198,10 @@
             }"
             :sort-options="{
               enabled: true,
-              initialSortBy: {field: 'bond', type: 'desc'}
+              initialSortBy: [
+                {field: 'bond', type: 'desc'},
+                {field: 'address', type: 'asc'},
+              ]
             }"
             :key="2"
           >
