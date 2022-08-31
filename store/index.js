@@ -4,7 +4,7 @@ export const state = () => ({
   showMenu: false,
   networkData: undefined,
   nodesData: undefined,
-  fullscreen: true
+  fullscreen: false
 })
 
 export const getters = {
