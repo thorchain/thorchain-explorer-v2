@@ -5,6 +5,13 @@
       <div v-if="title" class="card-header">
         <img v-if="imgSrc" class="stat-image" :src="imgSrc">
         <h2 class="card-header-title">{{title}}</h2>
+
+        <div v-if="fullscreen" class="fullscreen-container" @click="toggleFullscreen">
+          <span>
+            FullScreen
+          </span>
+          <ExpandIcon class="icon"></ExpandIcon>
+        </div>
       </div>
       <div class="card-body">
         <slot></slot>
@@ -15,11 +22,19 @@
 
 <script>
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue';
+import ExpandIcon from 'assets/images/expand.svg?inline';
+import { mapMutations } from 'vuex';
 
 export default {
-  props: ['imgSrc', 'title', 'isLoading', 'extraClass'],
+  props: ['imgSrc', 'title', 'isLoading', 'extraClass', 'fullscreen'],
   components: {
-    BounceLoader
+    BounceLoader,
+    ExpandIcon
+  },
+  methods: {
+    ...mapMutations([
+      'toggleFullscreen'
+    ])
   }
 }
 </script>
@@ -67,6 +82,24 @@ export default {
     .stat-image {
       margin-right: 10px;
       height: 1.5rem;
+    }
+
+    .fullscreen-container {
+      display: flex;
+      align-items: center;
+      margin-left: auto;
+      gap: 10px;
+      cursor: pointer;
+      padding: 5px;
+      border-radius: 5px;
+      
+      .icon {
+        margin-right: 0;
+      }
+
+      &:hover {
+        background-color: var(--active-bg-color);
+      }
     }
   }
 

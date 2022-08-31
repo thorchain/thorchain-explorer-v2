@@ -1,5 +1,5 @@
 <template>
-  <main id="default-layout" :class="{'long-sidebar': menu}">
+  <main id="default-layout" :class="{'long-sidebar': menu, 'fullscreen': fullscreen}">
     <!-- Sidebar -->
     <div id="side-bar">
       <sidebar />
@@ -30,7 +30,8 @@ export default {
   computed: {
     ...mapGetters({
       theme: 'getTheme',
-      menu: 'getIsMenuOn'
+      menu: 'getIsMenuOn',
+      fullscreen: 'getFullScreen'
     })
   },
   beforeCreate() {

@@ -3,7 +3,8 @@ export const state = () => ({
   darkTheme: false,
   showMenu: false,
   networkData: undefined,
-  nodesData: undefined
+  nodesData: undefined,
+  fullscreen: true
 })
 
 export const getters = {
@@ -21,6 +22,9 @@ export const getters = {
   },
   getNodesData (state) {
     return state.nodesData;
+  },
+  getFullScreen (state) {
+    return state.fullscreen;
   }
 }
 
@@ -42,5 +46,8 @@ export const mutations = {
   },
   toggleMenu(state, action) {
     state.showMenu = action!==undefined?action:!state.showMenu;
+  },
+  toggleFullscreen(state, action) {
+    state.fullscreen = !state.fullscreen;
   }
 }
