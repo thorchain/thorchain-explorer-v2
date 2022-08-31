@@ -34,6 +34,7 @@
       </div>
       <SunIcon @click="changeTheme" v-if="theme === 'light'" class="social-icon"/>
       <MoonIcon @click="changeTheme" v-if="theme === 'dark'" class="social-icon"/>
+      <ExpandIcon @click="toggleFullscreen" class="social-icon"></ExpandIcon>
     </div>
   </div>
 </template>
@@ -42,7 +43,8 @@
 import SunIcon from '~/assets/images/eclipse-sun.svg?inline';
 import MoonIcon from '~/assets/images/eclipse-moon.svg?inline';
 import SearchIcon from '~/assets/images/search.svg?inline';
-import { mapGetters } from 'vuex';
+import ExpandIcon from 'assets/images/expand.svg?inline';
+import { mapGetters, mapMutations } from 'vuex';
 import links from '~/const/links';
 
 export default {
@@ -50,7 +52,8 @@ export default {
   components: {
     SunIcon,
     MoonIcon,
-    SearchIcon
+    SearchIcon,
+    ExpandIcon
   },
   data() {
     return {
@@ -118,7 +121,10 @@ export default {
         this.$refs.netDialog.style.left = `${left}px`
         this.$refs.netDialog.style.top = `${top+45}px`
       }
-    }
+    },
+    ...mapMutations([
+      'toggleFullscreen'
+    ])
   },
   watch:{
     $route (to, from){
@@ -162,13 +168,17 @@ export default {
   overflow: hidden;
   max-width: 90rem;
   margin: auto;
-  gap: 10px;
+  gap: 15px;
 
   .social-icon {
-    margin-left: .5rem;
     fill: var(--font-color);
     width: 1rem;
     height: 1rem;
+    cursor: pointer;
+
+    &:hover {
+      fill: var(--active-bg-color);
+    }
   }
 
   .right-section {

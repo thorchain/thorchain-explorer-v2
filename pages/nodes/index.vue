@@ -31,7 +31,7 @@
           v-if="activeCols && activeNodes"
           :columns="activeCols"
           :rows="activeNodes"
-          styleClass="vgt-table net-table bordered"
+          styleClass="vgt-table net-table bordered condensed"
           :pagination-options="{
             enabled: true,
             perPage: 50,
@@ -669,11 +669,13 @@ export default {
       console.error(error)
     });
 
-    this.$api.getNodes().then(({data}) => {
-      this.loading = false;
-      this.nodesQuery = data;
-      this.fillExtraNodes(data);
-    });
+    setInterval(() => {
+      this.$api.getNodes().then(({data}) => {
+        this.loading = false;
+        this.nodesQuery = data;
+        this.fillExtraNodes(data);
+      });
+    }, 10000)
 
     this.$api.getExraNodesInfo().then(({data}) => {
       this.nodesExtra = data;

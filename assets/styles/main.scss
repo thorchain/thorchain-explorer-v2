@@ -526,3 +526,17 @@ input {
   color: var(--font-color);
   border-color: var(--border-color);
 }
+
+#default-layout.fullscreen {
+  grid-template-areas:
+    "header header"
+    "main main";
+
+  #side-bar {
+    display: none !important;
+  }
+
+  .page-container, .search-bar-container {
+    max-width: 100%;
+  }
+}
