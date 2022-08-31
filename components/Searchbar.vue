@@ -34,7 +34,7 @@
       </div>
       <SunIcon @click="changeTheme" v-if="theme === 'light'" class="social-icon"/>
       <MoonIcon @click="changeTheme" v-if="theme === 'dark'" class="social-icon"/>
-      <ExpandIcon @click="toggleFullscreen" class="social-icon"></ExpandIcon>
+      <ExpandIcon @click="toggleFullscreen" class="social-icon expand-icon"></ExpandIcon>
     </div>
   </div>
 </template>
@@ -178,6 +178,14 @@ export default {
 
     &:hover {
       fill: var(--active-bg-color);
+    }
+
+    &.expand-icon {
+      display: none;
+      
+      @include lg {
+        display: block;
+      }
     }
   }
 
