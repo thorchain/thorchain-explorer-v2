@@ -528,7 +528,6 @@ input {
 }
 
 #default-layout.fullscreen {
-
   @include lg {
     grid-template-columns: 220px 1fr;
     grid-template-rows: 64px 1fr;
@@ -539,9 +538,9 @@ input {
     #side-bar {
       display: none !important;
     }
-  }
 
-  .page-container, .search-bar-container {
-    max-width: 100%;
+    .page-container, .search-bar-container {
+      max-width: 100%;
+    }
   }
 }
