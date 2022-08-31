@@ -199,8 +199,7 @@
             :sort-options="{
               enabled: true,
               initialSortBy: [
-                {field: 'bond', type: 'desc'},
-                {field: 'address', type: 'asc'},
+                {field: 'bond', type: 'desc'}
               ]
             }"
             :key="2"
@@ -672,6 +671,7 @@ export default {
     setInterval(() => {
       this.$api.getNodes().then(({data}) => {
         this.loading = false;
+        data = data.sort((a, b) => a.node_address.localeCompare(b.node_address));
         this.nodesQuery = data;
         this.fillExtraNodes(data);
       });
@@ -936,7 +936,7 @@ export default {
 .grid-network {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
   grid-gap: .5rem;
   gap: .5rem;
 }
