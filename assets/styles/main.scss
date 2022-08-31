@@ -528,12 +528,17 @@ input {
 }
 
 #default-layout.fullscreen {
-  grid-template-areas:
-    "header header"
-    "main main";
 
-  #side-bar {
-    display: none !important;
+  @include lg {
+    grid-template-columns: 220px 1fr;
+    grid-template-rows: 64px 1fr;
+    grid-template-areas:
+      "header header"
+      "main main";
+
+    #side-bar {
+      display: none !important;
+    }
   }
 
   .page-container, .search-bar-container {
