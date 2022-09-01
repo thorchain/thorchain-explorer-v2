@@ -168,9 +168,6 @@ export default {
     });
 
     window.addEventListener("click", (e) => {
-      console.log(document.querySelector('#side-bar').style.display)
-      setTimeout(console.log(this.sidebar), 1000)
-      
       if (!document.querySelector('.collapse-icon').contains(e.target) && !document.querySelector('.side-bar-container').contains(e.target)) {
         this.$store.commit('setSidebar', false);
       }
