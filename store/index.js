@@ -4,7 +4,8 @@ export const state = () => ({
   showMenu: false,
   networkData: undefined,
   nodesData: undefined,
-  fullscreen: false
+  fullscreen: false,
+  showSidebar: false
 })
 
 export const getters = {
@@ -25,6 +26,9 @@ export const getters = {
   },
   getFullScreen (state) {
     return state.fullscreen;
+  },
+  getSidebar (state) {
+    return state.showSidebar;
   }
 }
 
@@ -49,5 +53,8 @@ export const mutations = {
   },
   toggleFullscreen(state, action) {
     state.fullscreen = !state.fullscreen;
+  },
+  setSidebar(state, action) {
+    state.showSidebar = action;
   }
 }
