@@ -536,11 +536,27 @@ input {
       "main main";
 
     #side-bar {
-      display: none !important;
+      display: none;
     }
 
     .page-container, .search-bar-container {
       max-width: 100%;
     }
+
+    &.show-sidebar {
+      #side-bar {
+        display: grid;
+        position: absolute;
+        z-index: 10;
+        width: 100%;
+        background-color: rgba(0,0,0,0.3);
+
+        .side-bar-container {
+          max-width: 220px;
+          border-right: 1px solid var(--border-color);
+        }
+      }
+    }
   }
+
 }

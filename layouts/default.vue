@@ -1,5 +1,5 @@
 <template>
-  <main id="default-layout" :class="{'long-sidebar': menu, 'fullscreen': fullscreen}">
+  <main id="default-layout" :class="{'long-sidebar': menu, 'fullscreen': fullscreen, 'show-sidebar': sidebar}">
     <!-- Sidebar -->
     <div id="side-bar">
       <sidebar />
@@ -31,7 +31,8 @@ export default {
     ...mapGetters({
       theme: 'getTheme',
       menu: 'getIsMenuOn',
-      fullscreen: 'getFullScreen'
+      fullscreen: 'getFullScreen',
+      sidebar: 'getSidebar',
     })
   },
   beforeCreate() {
@@ -76,11 +77,11 @@ export default {
   },
   watch: {
     darkMode: function () {
-        if (this.darkMode) {
-          this.$store.commit('setTheme', true)
-        } else {
-          this.$store.commit('setTheme', false)
-        }
+      if (this.darkMode) {
+        this.$store.commit('setTheme', true)
+      } else {
+        this.$store.commit('setTheme', false)
+      }
     }
   }
 }

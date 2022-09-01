@@ -1,15 +1,18 @@
 <template>
   <div class="search-bar-container">
-    <div id="search-container" :class="[{'expanded': isSearch}]" @click="search()">
-      <input 
-        class="search-bar-input"
-        type="text" 
-        placeholder="Search"
-        v-model="searchQuery"
-        @keyup.enter="find()"
-        @blur="isSearch = false"
-      >
-      <SearchIcon class="search-icon" @click="find()"/>
+    <div class="left-section">
+      <MenuIcon v-if="fullscreen" @click="toggleSidebar" class="social-icon collapse-icon"></MenuIcon>
+      <div id="search-container" :class="[{'expanded': isSearch}]" @click="search()">
+        <input 
+          class="search-bar-input"
+          type="text" 
+          placeholder="Search"
+          v-model="searchQuery"
+          @keyup.enter="find()"
+          @blur="isSearch = false"
+        >
+        <SearchIcon class="search-icon" @click="find()"/>
+      </div>
     </div>
     <div class="right-section">
       <div id="network-wrapper">
@@ -34,7 +37,10 @@
       </div>
       <SunIcon @click="changeTheme" v-if="theme === 'light'" class="social-icon"/>
       <MoonIcon @click="changeTheme" v-if="theme === 'dark'" class="social-icon"/>
-      <ExpandIcon @click="toggleFullscreen" class="social-icon expand-icon"></ExpandIcon>
+      <div @click="toggleFullscreen" >
+        <ExpandIcon v-if="!fullscreen" class="social-icon expand-icon"></ExpandIcon>
+        <ExpandBoldIcon v-else class="social-icon expand-icon"></ExpandBoldIcon>
+      </div>
     </div>
   </div>
 </template>
@@ -44,7 +50,9 @@ import SunIcon from '~/assets/images/eclipse-sun.svg?inline';
 import MoonIcon from '~/assets/images/eclipse-moon.svg?inline';
 import SearchIcon from '~/assets/images/search.svg?inline';
 import ExpandIcon from 'assets/images/expand.svg?inline';
-import { mapGetters, mapMutations } from 'vuex';
+import ExpandBoldIcon from 'assets/images/expand_bold.svg?inline';
+import MenuIcon from 'assets/images/menu-burger.svg?inline';
+import { mapGetters } from 'vuex';
 import links from '~/const/links';
 
 export default {
@@ -53,7 +61,9 @@ export default {
     SunIcon,
     MoonIcon,
     SearchIcon,
-    ExpandIcon
+    ExpandIcon,
+    ExpandBoldIcon,
+    MenuIcon
   },
   data() {
     return {
@@ -122,9 +132,12 @@ export default {
         this.$refs.netDialog.style.top = `${top+45}px`
       }
     },
-    ...mapMutations([
-      'toggleFullscreen'
-    ])
+    toggleSidebar() {
+      this.$store.commit('setSidebar', true); 
+    },
+    toggleFullscreen() {
+      this.$store.commit('toggleFullscreen'); 
+    }
   },
   watch:{
     $route (to, from){
@@ -133,7 +146,9 @@ export default {
   },
   computed: {
     ...mapGetters({
-      theme: 'getTheme'
+      theme: 'getTheme',
+      fullscreen: 'getFullScreen',
+      sidebar: 'getSidebar',
     }),
     networkEnv: function() {
       return process.env.NETWORK;
@@ -149,6 +164,12 @@ export default {
     window.addEventListener('click', (e) => {
       if (!document.getElementById('network-wrapper').contains(e.target)){
         this.showDialog = false;
+      }
+    });
+
+    window.addEventListener("click", (e) => {
+      if (!document.querySelector('.collapse-icon').contains(e.target) && !document.querySelector('.side-bar-container').contains(e.target)) {
+        this.$store.commit('setSidebar', false);
       }
     });
 
@@ -180,13 +201,20 @@ export default {
       fill: var(--active-bg-color);
     }
 
-    &.expand-icon {
+    &.expand-icon, &.collapse-icon {
       display: none;
       
       @include lg {
         display: block;
       }
     }
+  }
+
+  .left-section {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
 
   .right-section {
