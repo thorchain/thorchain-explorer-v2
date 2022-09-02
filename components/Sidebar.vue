@@ -1,28 +1,26 @@
 <template>
   <div class="side-bar-container" :class="{'menu': menu}">
-    <div class="upper-wrapper">
-      <div class="header">
-        <div class="logo-wrapper">
-          <ThorchainLogo class="logo" />
-          <div>
-            <strong>THORChain</strong>
-            Explorer
-          </div>
-        </div>
-        <div class="menu-wrapper" @click="toggleMenu()">
-          <MenuIcon v-if="!menu" class="icon" />
-          <CrossIcon v-else class="icon" />
+    <div class="header">
+      <div class="logo-wrapper">
+        <ThorchainLogo class="logo" />
+        <div>
+          <strong>THORChain</strong>
+          Explorer
         </div>
       </div>
-      <div class="side-bar-lists">
-        <template v-for="(item, index) in sidebarLists" v-if="item">
-          <NuxtLink :to="item.link" :class="['side-bar-item']" :key="index" v-on:click.native="toggleMenu(false)">
-            <component v-bind:is="item.icon" class="icon selected"></component>
-            <component v-bind:is="item.unicon" class="icon unselected"></component>
-            <span class="sidebar-text">{{item.name}}</span>
-          </NuxtLink>
-        </template>
+      <div class="menu-wrapper" @click="toggleMenu()">
+        <MenuIcon v-if="!menu" class="icon" />
+        <CrossIcon v-else class="icon" />
       </div>
+    </div>
+    <div class="side-bar-lists">
+      <template v-for="(item, index) in sidebarLists" v-if="item">
+        <NuxtLink :to="item.link" :class="['side-bar-item']" :key="index" v-on:click.native="toggleMenu(false)">
+          <component v-bind:is="item.icon" class="icon selected"></component>
+          <component v-bind:is="item.unicon" class="icon unselected"></component>
+          <span class="sidebar-text">{{item.name}}</span>
+        </NuxtLink>
+      </template>
     </div>
     <div class="footer-wrapper">
       <div class="social-items">
@@ -147,7 +145,7 @@ export default {
           link: '/vaults'
         },
         (
-          process.env.NETWORK === 'mainnet' ? 
+          process.env.NETWORK === 'mainnet' ?
           {
             name: 'Insights',
             unicon: 'chartUnselected',
@@ -175,7 +173,7 @@ export default {
 <style lang="scss">
 .side-bar-container {
   display: grid;
-  grid-template-rows: 1fr auto;
+  grid-template-rows: 64px 1fr auto;
   min-height: 64px;
 
   background-color: var(--color-light);
@@ -245,7 +243,7 @@ export default {
         }
       }
     }
-  
+
   .side-bar-lists {
     display: none;
 
@@ -277,7 +275,7 @@ export default {
           .selected {
             display: block;
           }
-          
+
           span {
             color: var(--sec-font-color);
             font-weight: bolder;
@@ -312,13 +310,27 @@ export default {
   }
 
   @include lg {
+    grid-template-columns: 1fr;
+    grid-template-rows: 64px 1fr 64px;
+    grid-template-areas: "header" "sidebar" "footer";
+
     .header {
+      grid-area: header;
       margin-bottom: 25px;
     }
 
     .side-bar-lists {
+      grid-area: sidebar;
       display: flex;
       flex-direction: column;
+
+      overflow: auto;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
 
       .side-bar-item {
         padding: 14px 20px;
@@ -331,6 +343,11 @@ export default {
           width: 20px;
         }
       }
+    }
+
+    .footer-wrapper {
+      grid-area: footer;
+      align-self: end;
     }
   }
 
