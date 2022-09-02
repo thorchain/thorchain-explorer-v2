@@ -129,7 +129,6 @@ Vue.mixin(global)
     @include lg {
       border: none;
       border-right: 1px solid var(--border-color);
-      min-height: 800px;
       display: grid;
       flex: 0 0 13.75rem;
       height: 100%;
