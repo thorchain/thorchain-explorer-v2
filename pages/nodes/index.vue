@@ -346,6 +346,12 @@ export default {
     VChart
   },
   methods: {
+    async updateNodes() {
+      let { data } = await this.$api.getNodes();
+      data = data.sort((a, b) => a.node_address.localeCompare(b.node_address));
+      this.nodesQuery = data;
+      this.fillExtraNodes(data);
+    },
     updateChurnTime() {
       let churnTimeRemaining = +this.bondMetrics?.nextChurnHeight-this.lastBlockHeight;
       let chartTime = (this.churnInterval-(churnTimeRemaining))/this.churnInterval;
@@ -668,13 +674,12 @@ export default {
       console.error(error)
     });
 
+    this.updateNodes().then(_ => {
+      this.loading = false;
+    });
+
     setInterval(() => {
-      this.$api.getNodes().then(({data}) => {
-        this.loading = false;
-        data = data.sort((a, b) => a.node_address.localeCompare(b.node_address));
-        this.nodesQuery = data;
-        this.fillExtraNodes(data);
-      });
+      this.updateNodes();
     }, 10000)
 
     this.$api.getExraNodesInfo().then(({data}) => {
