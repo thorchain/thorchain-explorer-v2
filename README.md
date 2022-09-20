@@ -1,25 +1,35 @@
-# thorchain_explorer
+# THORChain Explorer Interface
+
+## Usage
+
+before serving or building the repo add `.env` file to the root folder with current `NETWORK` variable
+
+```bash
+# Network can be "stagenet" or "testnet"
+NETWORK="mainnet"
+```
+
 
 ## Build Setup
 
 ```bash
 # install dependencies
-$ yarn install
+$ npm install
 
 # serve with hot reload at localhost:3000
-$ yarn dev
+$ npm dev
 
 # build for production and launch server
-$ yarn build
-$ yarn start
+$ npm build
+$ npm start
 
 # generate static project
-$ yarn generate
+$ npm generate
 ```
-
+Project is based on NuxtJS
 For detailed explanation on how things work, check out the [documentation](https://nuxtjs.org).
 
-## Special Directories
+## Special Directories (NuxtJS)
 
 You can create the following extra directories, some of which have special behaviors. Only `pages` is required; you can delete them if you don't want to use their functionality.
 

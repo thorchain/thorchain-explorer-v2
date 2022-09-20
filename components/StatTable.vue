@@ -1,11 +1,11 @@
 <template>
-  <Card :isLoading="isLoading || !(tableSettings && tableSettings.length > 0)" extraClass="stat-table" :title="header" :imgSrc="iconSrc">
+  <Card :is-loading="isLoading || !(tableSettings && tableSettings.length > 0)" extra-class="stat-table" :title="header" :img-src="iconSrc">
     <div class="stat-table-container">
-      <div class="stat-table-row" v-for="(row, ri) in tableSettings" :key="ri">
+      <div v-for="(row, ri) in tableSettings" :key="ri" class="stat-table-row">
         <div
-          class="stat-table-group"
           v-for="(colItem, ci) in row"
           :key="ci + ',' + ri"
+          class="stat-table-group"
         >
           <div v-if="colItem.image" class="img-div">
             <img :src="colItem.image" alt="item-icon">
@@ -17,8 +17,8 @@
             <div class="col-value">
               <template v-if="!$slots[colItem.name]">
                 <template v-if="colItem.filter">
-                    <pre v-if="colItem.value !== 0">{{ colItem.value || '-' }}</pre>
-                    <pre v-if="colItem.value === 0">0</pre>
+                  <pre v-if="colItem.value !== 0">{{ colItem.value || '-' }}</pre>
+                  <pre v-if="colItem.value === 0">0</pre>
                 </template>
                 <template v-else>
                   <template v-if="colItem.value !== 0">
@@ -27,12 +27,14 @@
                   <template v-else-if="colItem.value === 0">
                     0
                   </template>
-                  <template v-else> - </template>
+                  <template v-else>
+                    -
+                  </template>
                 </template>
               </template>
-              <slot v-else :name="colItem.name"></slot>
-              <span class="usd-value" v-if="colItem.value && colItem.usdValue">({{ colItem.value * runePrice | currency }})</span>
-              <span class="usd-value" v-if="colItem.extraText">({{ colItem.extraText }})</span>
+              <slot v-else :name="colItem.name" />
+              <span v-if="colItem.value && colItem.usdValue" class="usd-value">({{ colItem.value * runePrice | currency }})</span>
+              <span v-if="colItem.extraText" class="usd-value">({{ colItem.extraText }})</span>
             </div>
           </div>
         </div>
@@ -42,10 +44,10 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import { mapGetters } from 'vuex'
 
 export default {
-  name: "statTable",
+  name: 'StatTable',
   computed: {
     ...mapGetters({
       runePrice: 'getRunePrice'
@@ -56,8 +58,8 @@ export default {
     header: String,
     tableSettings: Array,
     isLoading: Boolean
-  },
-};
+  }
+}
 </script>
 
 <style lang="scss">

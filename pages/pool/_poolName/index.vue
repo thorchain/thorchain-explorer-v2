@@ -1,10 +1,12 @@
 <template>
-  <Card :isLoading="!pool" class="pool-container" :title="pool && pool.asset" :imgSrc="pool && assetImage(pool.asset)">
+  <Card :is-loading="!pool" class="pool-container" :title="pool && pool.asset" :img-src="pool && assetImage(pool.asset)">
     <template v-if="pool">
       <div class="pool-overview">
         <div class="pool-detail-header">
           <div class="item">
-            <div class="header">Asset Price</div>
+            <div class="header">
+              Asset Price
+            </div>
             <div class="value">
               {{
                 (Number.parseFloat(pool.assetPriceUSD)) | currency
@@ -12,17 +14,25 @@
             </div>
           </div>
           <div class="item">
-            <div class="header">Pool APY</div>
+            <div class="header">
+              Pool APY
+            </div>
             <div class="value">
               {{ Number.parseFloat(pool.poolAPY) | percent }}
             </div>
           </div>
           <div class="item">
-            <div class="header">Status</div>
-            <div class="value">{{ pool.status | capitalize }}</div>
+            <div class="header">
+              Status
+            </div>
+            <div class="value">
+              {{ pool.status | capitalize }}
+            </div>
           </div>
           <div class="item">
-            <div class="header">Asset Depth</div>
+            <div class="header">
+              Asset Depth
+            </div>
             <div class="value">
               {{ (pool.assetDepth / 10 ** 8) | number("0,0") }}
               <span style="font-size: 0.7rem">{{
@@ -31,20 +41,26 @@
             </div>
           </div>
           <div class="item">
-            <div class="header">Rune Depth</div>
+            <div class="header">
+              Rune Depth
+            </div>
             <div class="value">
               {{ (pool.runeDepth / 10 ** 8) | number("0,0") }}
               <span style="font-size: 0.7rem">THOR.RUNE</span>
             </div>
           </div>
           <div class="item">
-            <div class="header">Units</div>
+            <div class="header">
+              Units
+            </div>
             <div class="value">
               {{ (pool.units / 10 ** 8) | number("0,0.00") }}
             </div>
           </div>
-          <div class="item" v-if="poolDetail">
-            <div class="header">Pending Inbound RUNE</div>
+          <div v-if="poolDetail" class="item">
+            <div class="header">
+              Pending Inbound RUNE
+            </div>
             <div class="value">
               {{
                 (poolDetail.pending_inbound_rune / 10 ** 8) | number("0,0.00")
@@ -52,8 +68,10 @@
               <span style="font-size: 0.7rem">THOR.RUNE</span>
             </div>
           </div>
-          <div class="item" v-if="poolDetail">
-            <div class="header">Pending Inbound asset</div>
+          <div v-if="poolDetail" class="item">
+            <div class="header">
+              Pending Inbound asset
+            </div>
             <div class="value">
               {{
                 (poolDetail.pending_inbound_asset / 10 ** 8) | number("0,0.00")
@@ -63,29 +81,32 @@
               </span>
             </div>
           </div>
-          <div class="item" v-if="poolDetail">
-            <div class="header">Synth Supply</div>
+          <div v-if="poolDetail" class="item">
+            <div class="header">
+              Synth Supply
+            </div>
             <div class="value">
               {{ (poolDetail.synth_supply / 10 ** 8) | number("0,0.00") }}
             </div>
           </div>
         </div>
         <div style="margin: 1rem 0;">
-          <VChart :option="volumeHistory"
+          <VChart
+            :option="volumeHistory"
             :loading="!volumeHistory"
             :loading-options="showLoading"
-          ></VChart>
+          />
         </div>
         <div class="pool-detail-container">
           <div
-            class="pool-swap-detail"
             v-for="(settings, i) in poolStats"
             :key="i"
+            class="pool-swap-detail"
           >
             <stat-table
-              :tableSettings="settings.content"
+              :table-settings="settings.content"
               :header="settings.header"
-            ></stat-table>
+            />
           </div>
         </div>
       </div>
@@ -94,22 +115,22 @@
 </template>
 
 <script>
-import BounceLoader from "vue-spinner/src/BounceLoader.vue";
-import { AssetImage } from "~/classes/assetImage";
-import { assetFromString } from "@xchainjs/xchain-util";
-import { mapGetters } from "vuex";
-import moment from "moment";
+import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
+import { assetFromString } from '@xchainjs/xchain-util'
+import { mapGetters } from 'vuex'
+import moment from 'moment'
 
-import { use } from "echarts/core";
-import { SVGRenderer } from "echarts/renderers";
-import { LineChart } from "echarts/charts";
+import { use } from 'echarts/core'
+import { SVGRenderer } from 'echarts/renderers'
+import { LineChart } from 'echarts/charts'
 import {
   TitleComponent,
   TooltipComponent,
   LegendComponent,
-  GridComponent,
-} from "echarts/components";
-import VChart from "vue-echarts";
+  GridComponent
+} from 'echarts/components'
+import VChart from 'vue-echarts'
+import { AssetImage } from '~/classes/assetImage'
 
 use([
   SVGRenderer,
@@ -117,257 +138,257 @@ use([
   LineChart,
   TitleComponent,
   TooltipComponent,
-  LegendComponent,
-]);
+  LegendComponent
+])
 
 export default {
-  async asyncData({ params }) {
-    return { poolName: params.poolName };
-  },
   components: {
     BounceLoader,
     VChart
   },
+  async asyncData ({ params }) {
+    return { poolName: params.poolName }
+  },
   methods: {
-    assetImage(assetStr) {
+    assetImage (assetStr) {
       try {
-        return AssetImage(assetStr) ?? require("~/assets/images/unknown.png");
+        return AssetImage(assetStr) ?? require('~/assets/images/unknown.png')
       } catch (error) {
-        return require("~/assets/images/unknown.png");
+        return require('~/assets/images/unknown.png')
       }
     },
-    assetString(assetStr) {
-      const { chain, ticker } = assetFromString(assetStr);
-      return `${chain}.${ticker}`;
+    assetString (assetStr) {
+      const { chain, ticker } = assetFromString(assetStr)
+      return `${chain}.${ticker}`
     },
-    formatVol(d) {
-      let xAxis = [];
-      let av = [];
-      let wv = [];
-      let tv = [];
+    formatVol (d) {
+      const xAxis = []
+      const av = []
+      const wv = []
+      const tv = []
       d?.intervals.forEach((interval) => {
         xAxis.push(
-          moment(Math.floor((~~interval.endTime + ~~interval.startTime) / 2)*1e3).format("MM/DD")
-        );
+          moment(Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3).format('MM/DD')
+        )
         av.push(
           (+interval.addLiquidityVolume * +interval.runePriceUSD) / 10 ** 8
-        );
+        )
         wv.push(
           -1 * ((+interval.withdrawVolume * +interval.runePriceUSD) / 10 ** 8)
-        );
+        )
         tv.push(
           ((+interval.addLiquidityVolume - +interval.withdrawVolume) *
             +interval.runePriceUSD) /
             10 ** 8
-        );
-      });
+        )
+      })
 
       return this.basicChartFormat(
-        (value) => `$ ${this.normalFormat(value)}`,
+        value => `$ ${this.normalFormat(value)}`,
         [
           {
-            type: "line",
-            name: "Total Liquidity Change",
+            type: 'line',
+            name: 'Total Liquidity Change',
             showSymbol: false,
             data: tv,
-            smooth: true,
+            smooth: true
           },
           {
-            type: "line",
-            name: "Add Liquidity Volume",
+            type: 'line',
+            name: 'Add Liquidity Volume',
             showSymbol: false,
             data: av,
-            smooth: true,
+            smooth: true
           },
           {
-            type: "line",
-            name: "Withdraw Liquidity Volume",
+            type: 'line',
+            name: 'Withdraw Liquidity Volume',
             showSymbol: false,
             data: wv,
-            smooth: true,
-          },
+            smooth: true
+          }
         ],
         xAxis
       )
-    },
+    }
   },
   computed: {
     ...mapGetters({
-      runePrice: "getRunePrice",
-    }),
+      runePrice: 'getRunePrice'
+    })
   },
-  mounted() {
+  mounted () {
     this.$api
       .getPoolStats(this.poolName)
       .then((res) => {
-        this.pool = res.data;
+        this.pool = res.data
         this.poolStats = [
           {
-            header: "Swap",
+            header: 'Swap',
             content: [
               [
                 {
-                  name: "To Asset Fees",
+                  name: 'To Asset Fees',
                   value: Number.parseInt(res.data?.toAssetFees) / 10 ** 8,
-                  usdValue: true,
+                  usdValue: true
                 },
                 {
-                  name: "To RUNE Fees",
+                  name: 'To RUNE Fees',
                   value: Number.parseInt(res.data?.toRuneFees) / 10 ** 8,
-                  usdValue: true,
+                  usdValue: true
                 },
                 {
-                  name: "Total Fees",
+                  name: 'Total Fees',
                   value: Number.parseInt(res.data?.totalFees) / 10 ** 8,
-                  usdValue: true,
-                },
+                  usdValue: true
+                }
               ],
               [
                 {
-                  name: "To Asset Count",
-                  value: Number.parseInt(res.data?.toAssetCount),
+                  name: 'To Asset Count',
+                  value: Number.parseInt(res.data?.toAssetCount)
                 },
                 {
-                  name: "To RUNE Count",
-                  value: Number.parseInt(res.data?.toRuneCount),
+                  name: 'To RUNE Count',
+                  value: Number.parseInt(res.data?.toRuneCount)
                 },
                 {
-                  name: "Swap Count",
-                  value: Number.parseInt(res.data?.swapCount),
+                  name: 'Swap Count',
+                  value: Number.parseInt(res.data?.swapCount)
                 },
                 {
-                  name: "Unique Swapper Count",
-                  value: Number.parseInt(res.data?.uniqueSwapperCount),
-                },
+                  name: 'Unique Swapper Count',
+                  value: Number.parseInt(res.data?.uniqueSwapperCount)
+                }
               ],
               [
                 {
-                  name: "To Asset Volume",
+                  name: 'To Asset Volume',
                   value: Number.parseInt(res.data?.toAssetVolume) / 10 ** 8,
-                  usdValue: true,
+                  usdValue: true
                 },
                 {
-                  name: "To RUNE Volume",
+                  name: 'To RUNE Volume',
                   value: Number.parseInt(res.data?.toRuneVolume) / 10 ** 8,
-                  usdValue: true,
+                  usdValue: true
                 },
                 {
-                  name: "Swap Volume",
+                  name: 'Swap Volume',
                   value: Number.parseInt(res.data?.swapVolume) / 10 ** 8,
-                  usdValue: true,
-                },
-              ],
-            ],
+                  usdValue: true
+                }
+              ]
+            ]
           },
           {
-            header: "Deposit",
+            header: 'Deposit',
             content: [
               [
                 {
-                  name: "Add Liquidity Count",
-                  value: Number.parseInt(res.data?.addLiquidityCount),
+                  name: 'Add Liquidity Count',
+                  value: Number.parseInt(res.data?.addLiquidityCount)
                 },
                 {
-                  name: "Unique Member Count",
-                  value: Number.parseInt(res.data?.uniqueMemberCount),
+                  name: 'Unique Member Count',
+                  value: Number.parseInt(res.data?.uniqueMemberCount)
                 },
                 {
-                  name: "Loss Protection Paid",
+                  name: 'Loss Protection Paid',
                   value:
                     Number.parseInt(res.data?.impermanentLossProtectionPaid) /
                     10 ** 8,
-                  usdValue: true,
-                },
+                  usdValue: true
+                }
               ],
               [
                 {
-                  name: "Add Asset Liquidity Volume",
+                  name: 'Add Asset Liquidity Volume',
                   value:
                     Number.parseInt(res.data?.addAssetLiquidityVolume) /
                     10 ** 8,
-                  usdValue: true,
+                  usdValue: true
                 },
                 {
-                  name: "Add RUNE Liquidity Volume",
+                  name: 'Add RUNE Liquidity Volume',
                   value:
                     Number.parseInt(res.data?.addRuneLiquidityVolume) / 10 ** 8,
-                  usdValue: true,
+                  usdValue: true
                 },
                 {
-                  name: "Add Liquidity Volume",
+                  name: 'Add Liquidity Volume',
                   value:
                     Number.parseInt(res.data?.addLiquidityVolume) / 10 ** 8,
-                  usdValue: true,
-                },
-              ],
-            ],
+                  usdValue: true
+                }
+              ]
+            ]
           },
           {
-            header: "Withdraw",
+            header: 'Withdraw',
             content: [
               [
                 {
-                  name: "Withdraw Count",
-                  value: Number.parseInt(res.data?.withdrawCount),
-                },
+                  name: 'Withdraw Count',
+                  value: Number.parseInt(res.data?.withdrawCount)
+                }
               ],
               [
                 {
-                  name: "Withdraw Asset Volume",
+                  name: 'Withdraw Asset Volume',
                   value:
                     Number.parseInt(res.data?.withdrawAssetVolume) / 10 ** 8,
-                  usdValue: true,
+                  usdValue: true
                 },
                 {
-                  name: "Withdraw RUNE Volume",
+                  name: 'Withdraw RUNE Volume',
                   value:
                     Number.parseInt(res.data?.withdrawRuneVolume) / 10 ** 8,
-                  usdValue: true,
+                  usdValue: true
                 },
                 {
-                  name: "Withdraw Volume",
+                  name: 'Withdraw Volume',
                   value: Number.parseInt(res.data?.withdrawVolume) / 10 ** 8,
-                  usdValue: true,
-                },
-              ],
-            ],
-          },
-        ];
+                  usdValue: true
+                }
+              ]
+            ]
+          }
+        ]
       })
-      .catch((e) => console.error(e));
+      .catch(e => console.error(e))
 
     this.$api
       .getPoolDetail(this.poolName)
       .then((res) => {
-        this.poolDetail = res?.data;
+        this.poolDetail = res?.data
       })
       .catch((e) => {
-        console.error(e);
-      });
+        console.error(e)
+      })
 
     this.$api
       .getPoolVolume(this.poolName)
       .then((res) => {
-        this.volumeHistory = this.formatVol(res?.data);
+        this.volumeHistory = this.formatVol(res?.data)
       })
       .catch((e) => {
-        console.error(e);
-      });
+        console.error(e)
+      })
   },
-  data() {
+  data () {
     return {
       pool: undefined,
       poolStats: [],
       poolDetail: undefined,
       volumeHistory: undefined,
       showLoading: {
-        color: "var(--primary-color)",
+        color: 'var(--primary-color)',
         textColor: 'var(--primary-color)',
-        maskColor: 'var(--card-bg-color)',
+        maskColor: 'var(--card-bg-color)'
       }
-    };
-  },
-};
+    }
+  }
+}
 </script>
 
 <style lang="scss" scoped>

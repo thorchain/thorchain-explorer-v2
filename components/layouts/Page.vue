@@ -1,6 +1,6 @@
 <template>
   <div class="page-container">
-    <slot v-if="!error"></slot>
+    <slot v-if="!error" />
     <Card v-else>
       <div class="page-error-container">
         <img src="@/assets/images/error.png" alt="error image">
@@ -12,7 +12,7 @@
 
 <script>
 export default {
-  props: ['error'],
+  props: ['error']
 }
 </script>
 

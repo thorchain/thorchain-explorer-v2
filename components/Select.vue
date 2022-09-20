@@ -1,8 +1,8 @@
 <template>
-  <div class="option-wrapper" :id="name" :ref="name" @click="toggleDialog">
-    <span v-if="!$slots['default']">{{option.label}}</span>
-    <slot v-else></slot>
-    <div class="option-dialog" :ref="`${name}-dialog`" v-show="showDialog">
+  <div :id="name" :ref="name" class="option-wrapper" @click="toggleDialog">
+    <span v-if="!$slots['default']">{{ option.label }}</span>
+    <slot v-else />
+    <div v-show="showDialog" :ref="`${name}-dialog`" class="option-dialog">
       <div v-for="(o, i) in options" :key="i" :class="['option-item', {'active': o.value == option.value}]" @click="handleSelect(o)">
         <span>{{ o.label }}</span>
       </div>
@@ -12,29 +12,29 @@
 
 <script>
 export default {
-  props: ["options", "option", "name"],
-  emits: ["update:option"],
-  data() {
+  props: ['options', 'option', 'name'],
+  emits: ['update:option'],
+  data () {
     return {
       showDialog: false
     }
   },
-  methods: {
-    handleSelect(o) {
-      this.$emit('update:option', o);
-    },
-    toggleDialog() {
-      this.showDialog = !this.showDialog;
-    }
-  },
-  mounted() {
-    window.addEventListener("click", (e) => {
+  mounted () {
+    window.addEventListener('click', (e) => {
       if (!document.getElementById(this.name).contains(e.target)) {
-        this.showDialog = false;
+        this.showDialog = false
       }
-    });
+    })
   },
-};
+  methods: {
+    handleSelect (o) {
+      this.$emit('update:option', o)
+    },
+    toggleDialog () {
+      this.showDialog = !this.showDialog
+    }
+  }
+}
 </script>
 
 <style lang="scss">

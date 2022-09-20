@@ -1,115 +1,114 @@
 // axios instance
-import { $axiosInstace } from './index';
+import { $axiosInstace } from './index'
 
-export function getStats() {
-  return $axiosInstace.get('stats');
+export function getStats () {
+  return $axiosInstace.get('stats')
 }
 
-export function getTxs(offset=0, limit=10, type=undefined) {
+export function getTxs (offset = 0, limit = 10, type = undefined) {
   const params = {
     offset,
-    limit,
+    limit
   }
 
-  if (type) 
-    params['type'] = type;
+  if (type) { params.type = type }
 
-  return $axiosInstace.get('actions', { params });
+  return $axiosInstace.get('actions', { params })
 }
 
-export function getConstants() {
-  return $axiosInstace.get('thorchain/constants');
+export function getConstants () {
+  return $axiosInstace.get('thorchain/constants')
 }
 
-export function getTx(txid, limit=10) {
+export function getTx (txid, limit = 10) {
   const params = {
     offset: 0,
     limit,
     txid
   }
 
-  return $axiosInstace.get('actions', {params})
+  return $axiosInstace.get('actions', { params })
 }
 
-export function getAddress(address, offset=0, limit=10) {
+export function getAddress (address, offset = 0, limit = 10) {
   const params = {
     offset,
     limit,
     address
   }
 
-  return $axiosInstace.get('actions', {params})
+  return $axiosInstace.get('actions', { params })
 }
 
-export function getPoolTxs(poolName, offset=0, limit=10) {
+export function getPoolTxs (poolName, offset = 0, limit = 10) {
   const params = {
     offset,
     limit,
     asset: poolName
   }
 
-  return $axiosInstace.get('actions', {params})
+  return $axiosInstace.get('actions', { params })
 }
 
-export function getPools() {
-  return $axiosInstace.get(`pools`)
+export function getPools () {
+  return $axiosInstace.get('pools')
 }
 
-export function getPoolStats(poolName) {
+export function getPoolStats (poolName) {
   return $axiosInstace.get(`pool/${poolName}/stats`)
 }
 
-export function getPoolDepth(poolName, count=30, from=undefined) {
-  return $axiosInstace.get(`history/depths/${poolName}?interval=day&count=${count}` + (from?`&from=${from}`:''))
+export function getPoolDepth (poolName, count = 30, from = undefined) {
+  return $axiosInstace.get(`history/depths/${poolName}?interval=day&count=${count}` + (from ? `&from=${from}` : ''))
 }
 
-export function volumeHistory() {
-  return $axiosInstace.get(`history/liquidity_changes?interval=day&count=30`)
+export function volumeHistory () {
+  return $axiosInstace.get('history/liquidity_changes?interval=day&count=30')
 }
 
-export function swapHistory() {
-  return $axiosInstace.get(`history/swaps?interval=day&count=30`)
+export function swapHistory () {
+  return $axiosInstace.get('history/swaps?interval=day&count=30')
 }
 
-export function tvlHistory() {
-  return $axiosInstace.get(`history/tvl?interval=day&count=30`)
+export function tvlHistory () {
+  return $axiosInstace.get('history/tvl?interval=day&count=30')
 }
 
-export function getLastTvl() {
-  return $axiosInstace.get(`history/tvl`)
+export function getLastTvl () {
+  return $axiosInstace.get('history/tvl')
 }
 
-export function earningsHistory() {
-  return $axiosInstace.get(`history/earnings?interval=day&count=30`)
+export function earningsHistory () {
+  return $axiosInstace.get('history/earnings?interval=day&count=30')
 }
 
-export function getPoolVolume(poolName) {
+export function getPoolVolume (poolName) {
   return $axiosInstace.get(`history/liquidity_changes?pool=${poolName}&interval=day&count=30`)
 }
 
-export function getNetwork() {
-  return $axiosInstace.get(`network`)
+export function getNetwork () {
+  return $axiosInstace.get('network')
 }
 
-export async function getLatestBlocks(latestBlock, count=10) {
+export async function getLatestBlocks (latestBlock, count = 10) {
   if (!latestBlock) {
     return
   }
 
-  let axiosUrls = [...Array(latestBlock+1).keys()].slice(-1*count).map(b => `debug/block/${b}`)
+  const axiosUrls = [...Array(latestBlock + 1).keys()].slice(-1 * count).map(b => `debug/block/${b}`)
 
-  let res = await Promise.all(axiosUrls.map(url => $axiosInstace.get(url))).then(
+  const res = await Promise.all(axiosUrls.map(url => $axiosInstace.get(url))).then(
     (data) => {
-      let datum = []
-      for (let d of data) {
+      const datum = []
+      for (const d of data) {
         datum.push(d.data)
       }
       return datum
     }
   )
-  return res;
+  return res
 }
 
-export function getRevThorname(address) {
+export function getRevThorname (address) {
   return $axiosInstace.get(`thorname/rlookup/${address}`)
 }

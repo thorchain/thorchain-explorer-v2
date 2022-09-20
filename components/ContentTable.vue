@@ -1,12 +1,17 @@
 <template>
   <div class="table-wrapper">
-    <div class="header">{{header}}
+    <div class="header">
+      {{ header }}
     </div>
     <div v-if="stats" class="table-stat">
       <dir v-for="(stat, idx) in stats" :key="idx">
         <div class="item">
-          <div class="header">{{stat.name}}</div>
-          <div class="value">{{stat.value}}</div>
+          <div class="header">
+            {{ stat.name }}
+          </div>
+          <div class="value">
+            {{ stat.value }}
+          </div>
         </div>
       </dir>
     </div>
@@ -14,13 +19,15 @@
       <table v-if="table">
         <thead>
           <tr align="left">
-            <th v-for="(h, idx) in table.header" :key="idx">{{h}}</th>
+            <th v-for="(h, idx) in table.header" :key="idx">
+              {{ h }}
+            </th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="(t, idx) in table.content" :key="idx" @click="$emit('gotoNode', table.addresses[idx])">
             <td v-for="(item, i) in t" :key="idx+'t'+i">
-              {{item}}
+              {{ item }}
             </td>
           </tr>
         </tbody>
@@ -65,7 +72,7 @@ export default {
 
     tbody tr {
       &:hover {
-        background-color: var(--card-bg-color);  
+        background-color: var(--card-bg-color);
       }
 
       td {

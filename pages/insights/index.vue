@@ -1,31 +1,31 @@
 <template>
   <div class="container-page">
     <Card title="🔒 Total Value Locked (from Flipside)">
-      <VChart v-if="tvlOption" class="chart" :option="tvlOption" :loading="!tvlOption" :autoresize="true"></VChart>
+      <VChart v-if="tvlOption" class="chart" :option="tvlOption" :loading="!tvlOption" :autoresize="true" />
     </Card>
     <Card title="💰 Rune Price History (from Flipside)">
-      <VChart v-if="runePriceOption" :option="runePriceOption" :loading="!runePriceOption" :autoresize="true"></VChart>
+      <VChart v-if="runePriceOption" :option="runePriceOption" :loading="!runePriceOption" :autoresize="true" />
     </Card>
     <Card title="📊 Swap Count Chart (from Flipside)">
-      <VChart v-if="swapCountChart" :option="swapCountChart" :loading="!swapCountChart" :autoresize="true"></VChart>
+      <VChart v-if="swapCountChart" :option="swapCountChart" :loading="!swapCountChart" :autoresize="true" />
     </Card>
   </div>
 </template>
 
 <script>
-import moment from "moment";
-import { runeCur } from '~/utils';
+import moment from 'moment'
 
-import { use } from "echarts/core";
-import { SVGRenderer } from "echarts/renderers";
-import { LineChart, BarChart } from "echarts/charts";
+import { use } from 'echarts/core'
+import { SVGRenderer } from 'echarts/renderers'
+import { LineChart, BarChart } from 'echarts/charts'
 import {
   TitleComponent,
   TooltipComponent,
   LegendComponent,
   GridComponent
-} from "echarts/components";
-import VChart from "vue-echarts";
+} from 'echarts/components'
+import VChart from 'vue-echarts'
+import { runeCur } from '~/utils'
 
 use([
   SVGRenderer,
@@ -35,19 +35,19 @@ use([
   TitleComponent,
   TooltipComponent,
   LegendComponent
-]);
+])
 
 export default {
   components: {
     VChart
   },
-  data() {
+  data () {
     return {
       churnHistory: undefined,
       cols: [
         {
           label: 'Churn Occurred',
-          field: 'timestamp',
+          field: 'timestamp'
         },
         {
           label: 'Block ID',
@@ -60,7 +60,7 @@ export default {
           label: 'Churn Length (days)',
           field: 'DAYS_SINCE_LAST_CHURN',
           type: 'number',
-          tdClass: 'mono',
+          tdClass: 'mono'
         }
       ],
       tvlOption: undefined,
@@ -68,60 +68,60 @@ export default {
       swapCountChart: undefined
     }
   },
-  mounted() {
-    this.$api.getFlipTVL().then(({data}) => {
-      this.flipTVLFormat(data);
-    }).catch(e => {
-      console.error(e);
+  mounted () {
+    this.$api.getFlipTVL().then(({ data }) => {
+      this.flipTVLFormat(data)
+    }).catch((e) => {
+      console.error(e)
     })
 
-    this.$api.getRunePrice().then(({data}) => {
-      this.runePriceFormat(data);
-    }).catch(e => {
-      console.error(e);
+    this.$api.getRunePrice().then(({ data }) => {
+      this.runePriceFormat(data)
+    }).catch((e) => {
+      console.error(e)
     })
 
-    this.$api.getDailySwap().then(({data}) => {
-      this.dailySwapFormat(data);
-    }).catch(e => {
-      console.error(e);
+    this.$api.getDailySwap().then(({ data }) => {
+      this.dailySwapFormat(data)
+    }).catch((e) => {
+      console.error(e)
     })
   },
   methods: {
-    flipTVLFormat(d) {
-      let xAxis = [];
-      let tvp = [];
-      let tvl = [];
-      let tvb = [];
-      d.forEach(interval => {
-        xAxis.push(moment(interval.DAY).format("YY/MM/DD"));
-        tvp.push(interval.TOTAL_VALUE_POOLED);
-        tvl.push(interval.TOTAL_VALUE_LOCKED);
-        tvb.push(interval.TOTAL_VALUE_BONDED);
-      });
+    flipTVLFormat (d) {
+      const xAxis = []
+      const tvp = []
+      const tvl = []
+      const tvb = []
+      d.forEach((interval) => {
+        xAxis.push(moment(interval.DAY).format('YY/MM/DD'))
+        tvp.push(interval.TOTAL_VALUE_POOLED)
+        tvl.push(interval.TOTAL_VALUE_LOCKED)
+        tvb.push(interval.TOTAL_VALUE_BONDED)
+      })
 
-      let option = {
+      const option = {
         title: {
-          show: false,
+          show: false
         },
         tooltip: {
           confine: true,
-          trigger: "axis",
-          valueFormatter: (value) => `${this.normalFormat(value)} ${runeCur()}`
+          trigger: 'axis',
+          valueFormatter: value => `${this.normalFormat(value)} ${runeCur()}`
         },
         legend: {
           x: 'center',
           y: 'bottom',
           icon: 'rect',
           textStyle: {
-            color: "var(--font-color)"
+            color: 'var(--font-color)'
           }
         },
         xAxis: {
           data: xAxis.reverse(),
           boundaryGap: false,
           splitLine: {
-            show: false,
+            show: false
           },
           axisLine: {
             lineStyle: {
@@ -130,11 +130,11 @@ export default {
           },
           axisLabel: {
             color: '#9f9f9f',
-            fontFamily: 'ProductSans',
+            fontFamily: 'ProductSans'
           }
         },
         yAxis: {
-          show: false,
+          show: false
         },
         grid: {
           left: '20px',
@@ -163,42 +163,42 @@ export default {
             smooth: true
           }
         ]
-      };
+      }
 
-      this.tvlOption = option;
+      this.tvlOption = option
     },
-    runePriceFormat(d) {
-      let xAxis = [];
-      let runePrice = [];
-      let determinPrice = [];
-      d.forEach(interval => {
-        xAxis.push(moment(interval.DATE).format("YY/MM/DD HH:MM A"));
-        runePrice.push(interval.DAILY_RUNE_PRICE);
-        determinPrice.push(interval.DETERMINISTIC_RUNE_PRICE);
-      });
+    runePriceFormat (d) {
+      const xAxis = []
+      const runePrice = []
+      const determinPrice = []
+      d.forEach((interval) => {
+        xAxis.push(moment(interval.DATE).format('YY/MM/DD HH:MM A'))
+        runePrice.push(interval.DAILY_RUNE_PRICE)
+        determinPrice.push(interval.DETERMINISTIC_RUNE_PRICE)
+      })
 
-      let option = {
+      const option = {
         title: {
-          show: false,
+          show: false
         },
         tooltip: {
           confine: true,
-          trigger: "axis",
-          valueFormatter: (value) => `$${value.toFixed(2)}`
+          trigger: 'axis',
+          valueFormatter: value => `$${value.toFixed(2)}`
         },
         legend: {
           x: 'center',
           y: 'bottom',
           icon: 'rect',
           textStyle: {
-            color: "var(--font-color)"
+            color: 'var(--font-color)'
           }
         },
         xAxis: {
           data: xAxis,
           boundaryGap: false,
           splitLine: {
-            show: false,
+            show: false
           },
           axisLine: {
             lineStyle: {
@@ -207,11 +207,11 @@ export default {
           },
           axisLabel: {
             color: '#9f9f9f',
-            fontFamily: 'ProductSans',
+            fontFamily: 'ProductSans'
           }
         },
         yAxis: {
-          show: false,
+          show: false
         },
         grid: {
           left: '20px',
@@ -231,45 +231,45 @@ export default {
             showSymbol: false,
             data: determinPrice,
             smooth: true
-          },
+          }
         ]
-      };
+      }
 
-      this.runePriceOption = option;
+      this.runePriceOption = option
     },
-    dailySwapFormat(d) {
-      let xAxis = [];
-      let swapCount = [];
-      let cumSwapCount = [];
-      let uniqueSwapperCount = [];
-      d.forEach(interval => {
-        xAxis.push(moment(interval.DATE).format("YY/MM/DD"));
-        swapCount.push(interval.SWAP_COUNT);
+    dailySwapFormat (d) {
+      const xAxis = []
+      const swapCount = []
+      const cumSwapCount = []
+      const uniqueSwapperCount = []
+      d.forEach((interval) => {
+        xAxis.push(moment(interval.DATE).format('YY/MM/DD'))
+        swapCount.push(interval.SWAP_COUNT)
         cumSwapCount.push(interval.SWAP_COUNT_CUMULATIVE)
         uniqueSwapperCount.push(interval.UNIQUE_SWAPERS)
-      });
+      })
 
-      let option = {
+      const option = {
         title: {
-          show: false,
+          show: false
         },
         tooltip: {
           confine: true,
-          trigger: "axis",
+          trigger: 'axis'
         },
         legend: {
           x: 'center',
           y: 'bottom',
           icon: 'rect',
           textStyle: {
-            color: "var(--font-color)"
+            color: 'var(--font-color)'
           }
         },
         xAxis: {
           data: xAxis,
           boundaryGap: false,
           splitLine: {
-            show: false,
+            show: false
           },
           axisLine: {
             lineStyle: {
@@ -278,15 +278,15 @@ export default {
           },
           axisLabel: {
             color: '#9f9f9f',
-            fontFamily: 'ProductSans',
+            fontFamily: 'ProductSans'
           }
         },
         yAxis: [
           {
-            show: false,
+            show: false
           },
           {
-            show: false,
+            show: false
           }
         ],
         grid: {
@@ -317,11 +317,11 @@ export default {
             showSymbol: false,
             data: cumSwapCount,
             smooth: true
-          },
+          }
         ]
-      };
+      }
 
-      this.swapCountChart = option;
+      this.swapCountChart = option
     }
   }
 }

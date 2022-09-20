@@ -1,163 +1,160 @@
-import { Chain, isSynthAsset } from '@xchainjs/xchain-util';
-import { AssetImage } from '~/classes/assetImage';
-import compare from 'semver/functions/compare';
-import moment from 'moment';
-import { assetFromString } from "~/utils";
-import endpoints from '~/api/endpoints';
+import { Chain, isSynthAsset } from '@xchainjs/xchain-util'
+import compare from 'semver/functions/compare'
+import moment from 'moment'
+import { AssetImage } from '~/classes/assetImage'
+import { assetFromString } from '~/utils'
+import endpoints from '~/api/endpoints'
 
 export default {
-  data: function() {
+  data () {
     return {
       showLoading: {
-        color: "var(--primary-color)",
+        color: 'var(--primary-color)',
         textColor: 'var(--primary-color)',
-        maskColor: 'var(--card-bg-color)',
+        maskColor: 'var(--card-bg-color)'
       }
     }
   },
   methods: {
-    assetImage(assetStr) {
+    assetImage (assetStr) {
       try {
-        return AssetImage(assetStr) ?? require('~/assets/images/unknown.png');
+        return AssetImage(assetStr) ?? require('~/assets/images/unknown.png')
       } catch (error) {
-        return require('~/assets/images/unknown.png');
+        return require('~/assets/images/unknown.png')
       }
     },
-    assetToChain(assetStr) {
-      const { chain } = assetFromString(assetStr);
-      let asset = `${chain}.${chain}`;
+    assetToChain (assetStr) {
+      const { chain } = assetFromString(assetStr)
+      const asset = `${chain}.${chain}`
       switch (chain) {
         default:
-          break;
+          break
       }
-      return asset;
+      return asset
     },
-    imgErr(e) {
-      e.target.src = require('~/assets/images/unknown.png');
+    imgErr (e) {
+      e.target.src = require('~/assets/images/unknown.png')
     },
-    baseChainAsset(chain) {
+    baseChainAsset (chain) {
       switch (chain) {
         case Chain.THORChain:
-          return `THOR.RUNE`
+          return 'THOR.RUNE'
         case Chain.Terra:
-          return `TERRA.LUNA`;
+          return 'TERRA.LUNA'
         default:
           return `${chain}.${chain}`
       }
     },
-    goto(url) {
+    goto (url) {
       this.$router.push({ path: `${url}` })
     },
-    gotoAddr(address) {
-      
+    gotoAddr (address) {
+
     },
-    gotoTx(hash) {
+    gotoTx (hash) {
       this.$router.push({ path: `/tx/${hash}` })
     },
-    gotoNode(signer) {
-      this.$router.push({path: `/node/${signer}`});
+    gotoNode (signer) {
+      this.$router.push({ path: `/node/${signer}` })
     },
-    gotoPool(pool) {
-      this.$router.push({ path: `/pool/${pool}`});
+    gotoPool (pool) {
+      this.$router.push({ path: `/pool/${pool}` })
     },
-    copy(address) {
+    copy (address) {
       navigator.clipboard.writeText(address).then(() => {
-        this.copyText = 'Copied';
+        this.copyText = 'Copied'
         setTimeout(() => {
           this.copyText = 'Copy'
-        }, 2000);
+        }, 2000)
       }, (err) => {
-        console.error('Could not copy text: ', err);
-      });
+        console.error('Could not copy text: ', err)
+      })
     },
-    checkSynth(asset) {
+    checkSynth (asset) {
       if (!asset) {
-        return false;
+        return false
       }
 
-      return isSynthAsset(assetFromString(asset));
+      return isSynthAsset(assetFromString(asset))
     },
-    fromNow(date) {
+    fromNow (date) {
       console.log(date, moment(date))
-      return moment(date).fromNow();
+      return moment(date).fromNow()
     },
-    normalFormat(number) {
-      return number? this.$options.filters.number(+number, '0,0'):'-'
+    normalFormat (number) {
+      return number ? this.$options.filters.number(+number, '0,0') : '-'
     },
-    numberFormat(number) {
-      return number? this.$options.filters.number(+number, '0,0.0000'):'-'
+    numberFormat (number) {
+      return number ? this.$options.filters.number(+number, '0,0.0000') : '-'
     },
-    showAsset(assetStr) {
+    showAsset (assetStr) {
       try {
-        const asset = assetFromString(assetStr);
-        return asset.chain + '.' + asset.ticker;
+        const asset = assetFromString(assetStr)
+        return asset.chain + '.' + asset.ticker
       } catch (error) {
-        console.error("Can't get the asset:", assetStr);
+        console.error("Can't get the asset:", assetStr)
       }
     },
-    baseAmountFormat(number) {
-      return number? this.$options.filters.number(+number/10**8, '0,0.0000'):'-'
+    baseAmountFormat (number) {
+      return number ? this.$options.filters.number(+number / 10 ** 8, '0,0.0000') : '-'
     },
-    formatCurrency(number) {
-      return this.$options.filters.currency(number);
+    formatCurrency (number) {
+      return this.$options.filters.currency(number)
     },
-    versionSort(x, y, col, rowX, rowY) {
+    versionSort (x, y, col, rowX, rowY) {
       return (compare(x, y))
     },
-    formatAddress(string) {
-      if (string && string.length > 12)
-        return string.slice(0,6)+'...'+string.slice(-6)
-      else
-        return string
+    formatAddress (string) {
+      if (string && string.length > 12) { return string.slice(0, 6) + '...' + string.slice(-6) } else { return string }
     },
-    gotoNodeUrl(node) {
+    gotoNodeUrl (node) {
       return (`${endpoints[process.env.NETWORK].THORNODE_URL}thorchain/node/${node}`)
     },
-    basicChartFormat(formatter, series, xAxis) {
+    basicChartFormat (formatter, series, xAxis) {
       return {
         title: {
-          show: false,
+          show: false
         },
         tooltip: {
           confine: true,
-          trigger: "axis",
-          valueFormatter: formatter,
+          trigger: 'axis',
+          valueFormatter: formatter
         },
         legend: {
-          x: "center",
-          y: "bottom",
-          icon: "rect",
+          x: 'center',
+          y: 'bottom',
+          icon: 'rect',
           textStyle: {
-            color: "var(--font-color)",
-          },
+            color: 'var(--font-color)'
+          }
         },
         xAxis: {
           data: xAxis,
           splitLine: {
-            show: false,
+            show: false
           },
           axisLine: {
             lineStyle: {
-              color: "#9f9f9f",
-            },
+              color: '#9f9f9f'
+            }
           },
           axisLabel: {
-            color: "#9f9f9f",
-            fontFamily: "ProductSans",
-          },
+            color: '#9f9f9f',
+            fontFamily: 'ProductSans'
+          }
         },
         yAxis: {
           show: false,
           splitLine: {
-            show: true,
-          },
+            show: true
+          }
         },
         grid: {
-          left: "20px",
-          right: "20px",
+          left: '20px',
+          right: '20px'
         },
-        series: series,
-      };
-    },
+        series
+      }
+    }
   }
 }

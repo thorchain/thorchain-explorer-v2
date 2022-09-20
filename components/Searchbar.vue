@@ -1,28 +1,28 @@
 <template>
   <div class="search-bar-container">
     <div class="left-section">
-      <MenuIcon v-if="fullscreen" @click="toggleSidebar" class="social-icon collapse-icon"></MenuIcon>
+      <MenuIcon v-if="fullscreen" class="social-icon collapse-icon" @click="toggleSidebar" />
       <div id="search-container" :class="[{'expanded': isSearch}]" @click="search()">
-        <input 
-          class="search-bar-input"
-          type="text" 
-          placeholder="Search"
+        <input
           v-model="searchQuery"
+          class="search-bar-input"
+          type="text"
+          placeholder="Search"
           @keyup.enter="find()"
           @blur="isSearch = false"
         >
-        <SearchIcon class="search-icon" @click="find()"/>
+        <SearchIcon class="search-icon" @click="find()" />
       </div>
     </div>
     <div class="right-section">
       <div id="network-wrapper">
-        <div class="network-container" @click="toggleDialog" ref="network">
-          <span>{{networkEnv | capitalize}}</span>
+        <div ref="network" class="network-container" @click="toggleDialog">
+          <span>{{ networkEnv | capitalize }}</span>
         </div>
-        <div 
-          class="network-dialog" 
+        <div
           v-show="showDialog"
           ref="netDialog"
+          class="network-dialog"
         >
           <a :class="{'active': networkEnv == 'mainnet'}" :disabled="networkEnv == 'mainnet'" :href="gotoInstance('mainnet', networkEnv == 'mainnet')">
             Mainnet
@@ -30,30 +30,30 @@
           <a :class="{'active': networkEnv == 'stagenet'}" :disabled="networkEnv == 'stagenet'" :href="gotoInstance('stagenet', networkEnv == 'stagenet')">
             Stagenet
           </a>
-          <a :class="{'active': networkEnv == 'testnet'}" :disabled="networkEnv == 'testnet'"  :href="gotoInstance('testnet', networkEnv == 'testnet')">
+          <a :class="{'active': networkEnv == 'testnet'}" :disabled="networkEnv == 'testnet'" :href="gotoInstance('testnet', networkEnv == 'testnet')">
             Testnet
           </a>
         </div>
       </div>
-      <SunIcon @click="changeTheme" v-if="theme === 'light'" class="social-icon"/>
-      <MoonIcon @click="changeTheme" v-if="theme === 'dark'" class="social-icon"/>
-      <div @click="toggleFullscreen" >
-        <ExpandIcon v-if="!fullscreen" class="social-icon expand-icon"></ExpandIcon>
-        <ExpandBoldIcon v-else class="social-icon expand-icon"></ExpandBoldIcon>
+      <SunIcon v-if="theme === 'light'" class="social-icon" @click="changeTheme" />
+      <MoonIcon v-if="theme === 'dark'" class="social-icon" @click="changeTheme" />
+      <div @click="toggleFullscreen">
+        <ExpandIcon v-if="!fullscreen" class="social-icon expand-icon" />
+        <ExpandBoldIcon v-else class="social-icon expand-icon" />
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import SunIcon from '~/assets/images/eclipse-sun.svg?inline';
-import MoonIcon from '~/assets/images/eclipse-moon.svg?inline';
-import SearchIcon from '~/assets/images/search.svg?inline';
-import ExpandIcon from 'assets/images/expand.svg?inline';
-import ExpandBoldIcon from 'assets/images/expand_bold.svg?inline';
-import MenuIcon from 'assets/images/menu-burger.svg?inline';
-import { mapGetters } from 'vuex';
-import links from '~/const/links';
+import ExpandIcon from 'assets/images/expand.svg?inline'
+import ExpandBoldIcon from 'assets/images/expand_bold.svg?inline'
+import MenuIcon from 'assets/images/menu-burger.svg?inline'
+import { mapGetters } from 'vuex'
+import SearchIcon from '~/assets/images/search.svg?inline'
+import MoonIcon from '~/assets/images/eclipse-moon.svg?inline'
+import SunIcon from '~/assets/images/eclipse-sun.svg?inline'
+import links from '~/const/links'
 
 export default {
   name: 'SearchBar',
@@ -65,118 +65,115 @@ export default {
     ExpandBoldIcon,
     MenuIcon
   },
-  data() {
+  data () {
     return {
       searchQuery: '',
       isSearch: false,
-      showDialog: false,
+      showDialog: false
+    }
+  },
+  watch: {
+    $route (to, from) {
+      this.searchQuery = ''
     }
   },
   methods: {
-    find() {
+    find () {
       if (!this.isSearch) {
         document.getElementsByClassName('search-bar-input')[0].focus()
         return
       }
-      let search = this.searchQuery.toUpperCase();
+      const search = this.searchQuery.toUpperCase()
       if (
-        //THORCHAIN
+        // THORCHAIN
         search.startsWith('THOR') ||
         search.startsWith('TTHOR') ||
         search.startsWith('STHOR') ||
-        //BNB
+        // BNB
         search.startsWith('BNB') ||
         search.startsWith('TBNB') ||
-        //BITCOIN
+        // BITCOIN
         search.startsWith('BC1') ||
         search.startsWith('TB1') ||
-        //LTC
+        // LTC
         search.startsWith('LTC') ||
         search.startsWith('TLTC') ||
-        //TERRA
+        // TERRA
         search.startsWith('terra') ||
-        //ETH
+        // ETH
         search.startsWith('0X')
       ) {
-        this.$router.push({ path: `/address/${this.searchQuery}` });
-      }
-      else {
+        this.$router.push({ path: `/address/${this.searchQuery}` })
+      } else {
         // this.$api.getTx(this.searchQuery).then()
         this.$router.push({ path: `/tx/${this.searchQuery}` })
       }
     },
-    changeTheme() {
+    changeTheme () {
       if (this.theme == 'dark') {
         this.$store.commit('setTheme', false)
-      }
-      else {
+      } else {
         this.$store.commit('setTheme', true)
       }
     },
-    search() {
-      this.isSearch = true;
+    search () {
+      this.isSearch = true
     },
-    toggleDialog() {
-      this.showDialog = !this.showDialog;
+    toggleDialog () {
+      this.showDialog = !this.showDialog
     },
-    gotoInstance(instance, disabled) {
-      if (disabled)
-        return
-      return links[instance];
+    gotoInstance (instance, disabled) {
+      if (disabled) { return }
+      return links[instance]
     },
-    dialogPos() {
+    dialogPos () {
       if (this.$refs.network) {
-        let left = this.$refs.network.getBoundingClientRect().left;
-        let top = this.$refs.network.getBoundingClientRect().top;
+        const left = this.$refs.network.getBoundingClientRect().left
+        const top = this.$refs.network.getBoundingClientRect().top
         this.$refs.netDialog.style.left = `${left}px`
-        this.$refs.netDialog.style.top = `${top+45}px`
+        this.$refs.netDialog.style.top = `${top + 45}px`
       }
     },
-    toggleSidebar() {
-      this.$store.commit('setSidebar', true); 
+    toggleSidebar () {
+      this.$store.commit('setSidebar', true)
     },
-    toggleFullscreen() {
-      this.$store.commit('toggleFullscreen'); 
-    }
-  },
-  watch:{
-    $route (to, from){
-      this.searchQuery = '';
+    toggleFullscreen () {
+      this.$store.commit('toggleFullscreen')
     }
   },
   computed: {
     ...mapGetters({
       theme: 'getTheme',
       fullscreen: 'getFullScreen',
-      sidebar: 'getSidebar',
+      sidebar: 'getSidebar'
     }),
-    networkEnv: function() {
-      return process.env.NETWORK;
-    },
+    networkEnv () {
+      return process.env.NETWORK
+    }
   },
-  mounted() {
+  mounted () {
     window.addEventListener('click', (e) => {
-      if (!document.getElementById('search-container').contains(e.target)){
-        this.isSearch = false;
+      if (!document.getElementById('search-container').contains(e.target)) {
+        this.isSearch = false
       }
-    });
+    })
 
     window.addEventListener('click', (e) => {
-      if (!document.getElementById('network-wrapper').contains(e.target)){
-        this.showDialog = false;
+      if (!document.getElementById('network-wrapper').contains(e.target)) {
+        this.showDialog = false
       }
-    });
+    })
 
-    window.addEventListener("click", (e) => {
+    window.addEventListener('click', (e) => {
       if (!document.querySelector('.collapse-icon').contains(e.target) && !document.querySelector('.side-bar-container').contains(e.target)) {
-        this.$store.commit('setSidebar', false);
+        this.$store.commit('setSidebar', false)
       }
-    });
+    })
 
-    window.addEventListener('resize', this.dialogPos);
+    window.addEventListener('resize', this.dialogPos)
 
-    this.dialogPos();    
-  },
+    this.dialogPos()
+  }
 }
 </script>
 
@@ -203,7 +200,7 @@ export default {
 
     &.expand-icon, &.collapse-icon {
       display: none;
-      
+
       @include lg {
         display: block;
       }
@@ -222,7 +219,6 @@ export default {
     align-items: center;
     gap: 10px;
 
-
     #network-wrapper {
       .network-container {
         padding: .5rem 1rem;
@@ -233,7 +229,7 @@ export default {
         display: flex;
         justify-content: center;
         cursor: pointer;
-        
+
         span {
           text-align: center;
           color: var(--primary-color);
@@ -332,7 +328,6 @@ export default {
       left: .7rem;
       top: .8rem;
     }
-
 
     @include lg {
       .search-bar-input {

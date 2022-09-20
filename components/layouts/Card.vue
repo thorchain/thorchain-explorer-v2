@@ -1,36 +1,38 @@
 <template>
   <div :class="['card-container', {'loading-container': isLoading}, extraClass]">
-    <BounceLoader v-if="isLoading" color="var(--font-color)" size="3rem"></BounceLoader>
+    <BounceLoader v-if="isLoading" color="var(--font-color)" size="3rem" />
     <template v-else>
       <div v-if="title" class="card-header">
         <img v-if="imgSrc" class="stat-image" :src="imgSrc">
-        <h2 class="card-header-title">{{title}}</h2>
+        <h2 class="card-header-title">
+          {{ title }}
+        </h2>
 
         <div v-if="fullscreen" class="fullscreen-container" @click="toggleFullscreen">
           <span>
             FullScreen
           </span>
-          <ExpandIcon class="icon"></ExpandIcon>
+          <ExpandIcon class="icon" />
         </div>
       </div>
       <div class="card-body">
-        <slot></slot>
+        <slot />
       </div>
     </template>
   </div>
 </template>
 
 <script>
-import BounceLoader from 'vue-spinner/src/BounceLoader.vue';
-import ExpandIcon from 'assets/images/expand.svg?inline';
-import { mapMutations } from 'vuex';
+import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
+import ExpandIcon from 'assets/images/expand.svg?inline'
+import { mapMutations } from 'vuex'
 
 export default {
-  props: ['imgSrc', 'title', 'isLoading', 'extraClass', 'fullscreen'],
   components: {
     BounceLoader,
     ExpandIcon
   },
+  props: ['imgSrc', 'title', 'isLoading', 'extraClass', 'fullscreen'],
   methods: {
     ...mapMutations([
       'toggleFullscreen'
@@ -92,7 +94,7 @@ export default {
       cursor: pointer;
       padding: 5px;
       border-radius: 5px;
-      
+
       .icon {
         margin-right: 0;
       }

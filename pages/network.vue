@@ -1,28 +1,28 @@
 <template>
   <Page>
     <div class="network-page-container">
-      <Nav isLink="true" :navItems="navItems"/>
-      <nuxt-child></nuxt-child>
+      <Nav is-link="true" :nav-items="navItems" />
+      <nuxt-child />
     </div>
   </Page>
 </template>
 
 <script>
 export default {
-  data() {
+  data () {
     return {
       navItems: [
         {
           text: 'Network',
-          link: '/network',
+          link: '/network'
         },
         {
           text: 'Network Settings',
-          link: '/network/settings',
+          link: '/network/settings'
         },
         {
           text: 'Mimir Votes',
-          link: '/network/votes',
+          link: '/network/votes'
         }
       ]
     }

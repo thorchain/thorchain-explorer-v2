@@ -1,15 +1,15 @@
 <template>
   <Page>
     <Nav
-      :isLink="true"
-      :navItems="[
+      :is-link="true"
+      :nav-items="[
         {link: `/insights`, text: 'Overview'},
         {link: `/insights/network`, text: 'Network'},
         {link: `/insights/price`, text: 'Rune Price'},
         {link: `/insights/apr`, text: 'APR'},
       ]"
-    ></Nav>
-    <nuxt-child></nuxt-child>
+    />
+    <nuxt-child />
   </Page>
 </template>
 
@@ -24,6 +24,5 @@ export default {
   display: block;
   margin: 1rem 0 .3rem .5rem;
 }
-
 
 </style>

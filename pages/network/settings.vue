@@ -1,11 +1,11 @@
 <template>
   <Page>
-    <stat-table :tableSettings="outboundTxs" header="Outbound Transactions" :iconSrc="require('@/assets/images/sign-out.svg')"></stat-table>
-    <stat-table :tableSettings="swapping" header="Swapping" :iconSrc="require('@/assets/images/swap-icon.png')"></stat-table>
-    <stat-table :tableSettings="lpManagement" header="LP Management" :iconSrc="require('@/assets/images/pi.png')"></stat-table>
-    <stat-table :tableSettings="chainManagement" header="Chain Management" :iconSrc="require('@/assets/images/pi.png')"></stat-table>
-    <stat-table :tableSettings="nodeManagement" header="Node Management" :iconSrc="require('@/assets/images/pi.png')"></stat-table>
-    <stat-table :tableSettings="economics" header="Economics" :iconSrc="require('@/assets/images/pi.png')"></stat-table>
+    <stat-table :table-settings="outboundTxs" header="Outbound Transactions" :icon-src="require('@/assets/images/sign-out.svg')" />
+    <stat-table :table-settings="swapping" header="Swapping" :icon-src="require('@/assets/images/swap-icon.png')" />
+    <stat-table :table-settings="lpManagement" header="LP Management" :icon-src="require('@/assets/images/pi.png')" />
+    <stat-table :table-settings="chainManagement" header="Chain Management" :icon-src="require('@/assets/images/pi.png')" />
+    <stat-table :table-settings="nodeManagement" header="Node Management" :icon-src="require('@/assets/images/pi.png')" />
+    <stat-table :table-settings="economics" header="Economics" :icon-src="require('@/assets/images/pi.png')" />
   </Page>
 </template>
 
@@ -17,32 +17,19 @@ const camelCase = e => e && e.replace(/([A-Z])/g, ' $1')
 
 export default {
   components: { StatTable },
-  data() {
+  data () {
     return {
       networkConst: [],
       mimir: undefined
     }
   },
-  mounted() {
-    this.$api.getConstants().then(res => {
-      this.networkConst = res.data;
-    }).catch(e => {
-      console.error(e);
-    })
-
-    this.$api.getMimir().then(res => {
-      this.mimir = res.data;
-    }).catch(e => {
-      console.error(e);
-    })
-  },
   computed: {
-    outboundTxs: function() {
+    outboundTxs () {
       return [
         [
           {
             name: camelCase('OutboundTransactionFee'),
-            value: this.networkConst?.int_64_values?.OutboundTransactionFee / 10**8,
+            value: this.networkConst?.int_64_values?.OutboundTransactionFee / 10 ** 8,
             filter: true,
             usdValue: true
           }
@@ -55,7 +42,7 @@ export default {
           },
           {
             name: camelCase('MinTxOutVolumeThreshold'),
-            value: this.networkConst?.int_64_values?.MinTxOutVolumeThreshold / 10**8,
+            value: this.networkConst?.int_64_values?.MinTxOutVolumeThreshold / 10 ** 8,
             usdValue: true
           },
           {
@@ -66,11 +53,11 @@ export default {
           {
             name: camelCase('TxOutDelayRate'),
             value: this.networkConst?.int_64_values?.TxOutDelayRate
-          },
+          }
         ]
       ]
     },
-    swapping: function() {
+    swapping () {
       return [
         [
           {
@@ -126,9 +113,9 @@ export default {
           {
             name: camelCase('MinSwapsPerBlock'),
             value: this.networkConst?.int_64_values?.MinSwapsPerBlock
-          },
+          }
         ],
-        //Synths
+        // Synths
         [
           {
             name: camelCase('MaxSynthPerAssetDepth'),
@@ -142,16 +129,16 @@ export default {
           {
             name: 'Synth Minting',
             value: this.mimir?.MINTSYNTHS ? 'Disabled' : 'Enabled',
-            filter: true,
+            filter: true
           },
           {
             name: 'Virtual Mult Synths',
-            value: this.networkConst?.int_64_values?.VirtualMultSynths,
+            value: this.networkConst?.int_64_values?.VirtualMultSynths
           }
         ]
       ]
     },
-    lpManagement: function() {
+    lpManagement () {
       return [
         [
           {
@@ -202,13 +189,13 @@ export default {
         [
           {
             name: camelCase('LiquidityLockUpBlocks'),
-            value: this.networkConst?.int_64_values?.LiquidityLockUpBlocks? this.networkConst?.int_64_values?.LiquidityLockUpBlocks: '0'
+            value: this.networkConst?.int_64_values?.LiquidityLockUpBlocks ? this.networkConst?.int_64_values?.LiquidityLockUpBlocks : '0'
           },
           {
             name: 'Soft Cap',
-            value: this.mimir?.MAXIMUMLIQUIDITYRUNE / 10**8,
+            value: this.mimir?.MAXIMUMLIQUIDITYRUNE / 10 ** 8,
             usdValue: true
-          },
+          }
         ],
         // Impermanent Loss Protection
         [
@@ -220,12 +207,12 @@ export default {
         ]
       ]
     },
-    chainManagement: function() {
+    chainManagement () {
       return [
         [
           {
             name: 'Observations on all chains are paused',
-            value: this.mimir?.HALTCHAINGLOBAL? 'Yes':'No',
+            value: this.mimir?.HALTCHAINGLOBAL ? 'Yes' : 'No',
             filter: true
           }
         ],
@@ -276,22 +263,22 @@ export default {
           },
           {
             name: camelCase('BlocksPerYear'),
-            value: this.networkConst?.int_64_values?.BlocksPerYear,
+            value: this.networkConst?.int_64_values?.BlocksPerYear
           },
           {
             name: 'Max UTXO to be spend on one block',
-            value: this.mimir?.MAXUTXOSTOSPEND,
+            value: this.mimir?.MAXUTXOSTOSPEND
           },
           {
             name: 'Minimum Nodes For BFT',
             value: this.networkConst?.int_64_values?.MinimumNodesForBFT
-          },
+          }
         ],
-        //Fee Management
+        // Fee Management
         [
           {
             name: camelCase('NativeTransactionFee'),
-            value: (this.networkConst?.int_64_values?.NativeTransactionFee / 10**8),
+            value: (this.networkConst?.int_64_values?.NativeTransactionFee / 10 ** 8),
             filter: true,
             usdValue: true
           },
@@ -308,38 +295,38 @@ export default {
             value: this.networkConst?.int_64_values?.TNSRegisterFee
           }
         ],
-        //Solvency Checker
+        // Solvency Checker
         [
           {
             name: 'Solvency Check',
-            value: this.mimir?.STOPSOLVENCYCHECK? 'Disabled':'Enabled',
+            value: this.mimir?.STOPSOLVENCYCHECK ? 'Disabled' : 'Enabled',
             filter: true
           },
           {
             name: 'BNB Solvency Check',
-            value: this.mimir?.STOPSOLVENCYCHECKBNB? 'Disabled':'Enabled',
+            value: this.mimir?.STOPSOLVENCYCHECKBNB ? 'Disabled' : 'Enabled',
             filter: true
           },
           {
             name: 'ETH Solvency Check',
-            value: this.mimir?.STOPSOLVENCYCHECKETH? 'Disabled':'Enabled',
+            value: this.mimir?.STOPSOLVENCYCHECKETH ? 'Disabled' : 'Enabled',
             filter: true
           },
           {
-            //Is this In RUNE
+            // Is this In RUNE
             name: 'Permitted Solvency Gap',
-            value: this.networkConst?.int_64_values?.PermittedSolvencyGap,
+            value: this.networkConst?.int_64_values?.PermittedSolvencyGap
           }
         ]
       ]
     },
-    nodeManagement: function() {
+    nodeManagement () {
       return [
         [
-          //Can't find the maximum bond
+          // Can't find the maximum bond
           {
             name: camelCase('MinimumBondInRune'),
-            value: this.mimir?.MINIMUMBONDINRUNE / 10**8,
+            value: this.mimir?.MINIMUMBONDINRUNE / 10 ** 8,
             extraText: 'Overwritten by Mimir',
             usdValue: true
           },
@@ -347,13 +334,13 @@ export default {
             name: camelCase('ValidatorMaxRewardRatio'),
             value: this.mimir?.VALIDATORMAXREWARDRATIO,
             extraText: 'Overwritten by Mimir'
-          },
+          }
         ],
-        //Yggdrasil Management
+        // Yggdrasil Management
         [
           {
             name: camelCase('YggFundLimit'),
-            value: this.$options.filters.percent(this.networkConst?.int_64_values?.YggFundLimit/100),
+            value: this.$options.filters.percent(this.networkConst?.int_64_values?.YggFundLimit / 100),
             filter: true
           },
           {
@@ -363,17 +350,17 @@ export default {
           },
           {
             name: 'Yggdrasil funding',
-            value: this.mimir?.STOPFUNDYGGDRASI? 'Disabled':'Enabled',
+            value: this.mimir?.STOPFUNDYGGDRASI ? 'Disabled' : 'Enabled',
             filter: true
-          },
+          }
         ],
         [
           {
             name: camelCase('MinimumNodesForYggdrasil'),
             value: this.networkConst?.int_64_values?.MinimumNodesForYggdrasil
-          },
+          }
         ],
-        //Slashing Management
+        // Slashing Management
         [
           {
             name: camelCase('LackOfObservationPenalty'),
@@ -399,7 +386,7 @@ export default {
             name: camelCase('FailKeygenSlashPoints'),
             value: this.networkConst?.int_64_values?.FailKeygenSlashPoints,
             extraText: 'Slashes'
-          },
+          }
         ],
         [
           {
@@ -421,9 +408,9 @@ export default {
             name: camelCase('JailTimeKeysign'),
             value: this.networkConst?.int_64_values?.JailTimeKeysign,
             extraText: blockTime(this.networkConst?.int_64_values?.JailTimeKeysign)
-          },
+          }
         ],
-        //Churning
+        // Churning
         [
           {
             name: 'Asgard Size',
@@ -437,31 +424,31 @@ export default {
           {
             name: camelCase('ChurnInterval'),
             value: this.mimir?.CHURNINTERVAL,
-            extraText: blockTime(this.mimir?.CHURNINTERVAL),
+            extraText: blockTime(this.mimir?.CHURNINTERVAL)
           },
           {
             name: 'Churning is halted',
-            value: this.mimir?.HALTCHURNING? 'Yes':'No',
-          },
+            value: this.mimir?.HALTCHURNING ? 'Yes' : 'No'
+          }
         ],
         [
           {
             name: 'Max number of validators',
-            value: this.mimir?.DESIREDVALIDATORSET,
+            value: this.mimir?.DESIREDVALIDATORSET
           },
           {
             name: camelCase('FundMigrationInterval'),
             value: this.mimir?.FUNDMIGRATIONINTERVAL,
-            extraText: blockTime(this.mimir?.FUNDMIGRATIONINTERVAL),
+            extraText: blockTime(this.mimir?.FUNDMIGRATIONINTERVAL)
           },
           {
             name: camelCase('NumberOfNewNodesPerChurn'),
-            value: this.mimir?.NUMBEROFNEWNODESPERCHURN,
+            value: this.mimir?.NUMBEROFNEWNODESPERCHURN
           },
           {
             name: camelCase('BadValidatorRedline'),
-            value: this.mimir?.BADVALIDATORREDLINE,
-          },
+            value: this.mimir?.BADVALIDATORREDLINE
+          }
         ],
         [
           {
@@ -471,11 +458,11 @@ export default {
           {
             name: camelCase('LowBondValidatorRate'),
             value: this.networkConst?.int_64_values?.LowBondValidatorRate
-          },
+          }
         ]
       ]
     },
-    economics: function() {
+    economics () {
       return [
         [
           {
@@ -490,28 +477,41 @@ export default {
           {
             name: camelCase('MaxAvailablePools'),
             value: this.networkConst?.int_64_values?.MaxAvailablePools
-          },
+          }
         ],
         [
           {
             name: camelCase('MinRunePoolDepth'),
-            value: this.mimir?.MINRUNEPOOLDEPTH/10**8,
+            value: this.mimir?.MINRUNEPOOLDEPTH / 10 ** 8,
             usdValue: true,
             extraText: 'Overwritten by Mimir'
           },
           {
             name: camelCase('PoolCycle'),
             value: this.mimir?.POOLCYCLE,
-            extraText: `${blockTime(this.mimir?.POOLCYCLE)}, Overwritten by Mimir`,
+            extraText: `${blockTime(this.mimir?.POOLCYCLE)}, Overwritten by Mimir`
           },
           {
             name: camelCase('StagedPoolCost'),
-            value: this.networkConst?.int_64_values?.StagedPoolCost/10**8,
+            value: this.networkConst?.int_64_values?.StagedPoolCost / 10 ** 8,
             usdValue: true
-          },
+          }
         ]
-      ] 
-    } 
+      ]
+    }
+  },
+  mounted () {
+    this.$api.getConstants().then((res) => {
+      this.networkConst = res.data
+    }).catch((e) => {
+      console.error(e)
+    })
+
+    this.$api.getMimir().then((res) => {
+      this.mimir = res.data
+    }).catch((e) => {
+      console.error(e)
+    })
   }
 }
 </script>

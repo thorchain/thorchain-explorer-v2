@@ -1,21 +1,21 @@
 <template>
-   <Card title="📊 Rune Price Chart (From Flipside)" extraClass="priceChart">
-      <VChart v-if="priceChart" :option="priceChart" :loading="!priceChart" :autoresize="true"></VChart>
-   </Card>
+  <Card title="📊 Rune Price Chart (From Flipside)" extra-class="priceChart">
+    <VChart v-if="priceChart" :option="priceChart" :loading="!priceChart" :autoresize="true" />
+  </Card>
 </template>
 
 <script>
-import { use } from "echarts/core";
-import { SVGRenderer } from "echarts/renderers";
-import { BarChart, CandlestickChart } from "echarts/charts";
+import { use } from 'echarts/core'
+import { SVGRenderer } from 'echarts/renderers'
+import { BarChart, CandlestickChart } from 'echarts/charts'
 import {
   TitleComponent,
   TooltipComponent,
   LegendComponent,
   GridComponent,
   DataZoomComponent
-} from "echarts/components";
-import VChart from "vue-echarts";
+} from 'echarts/components'
+import VChart from 'vue-echarts'
 
 use([
   SVGRenderer,
@@ -26,41 +26,41 @@ use([
   TooltipComponent,
   DataZoomComponent,
   LegendComponent
-]);
+])
 
 export default {
   components: {
     VChart
   },
-  data() {
+  data () {
     return {
       priceChart: undefined
     }
   },
-  mounted() {
-    this.$api.getOhclPrice().then(({data}) => {
-      this.priceChart = this.addChart(data);
+  mounted () {
+    this.$api.getOhclPrice().then(({ data }) => {
+      this.priceChart = this.addChart(data)
     })
   },
   methods: {
-    addChart(data) {
-      let option = {
+    addChart (data) {
+      const option = {
         title: {
-          show: false,
+          show: false
         },
         tooltip: {
           confine: true,
-          trigger: "axis",
+          trigger: 'axis',
           axisPointer: {
-            type: 'cross',
+            type: 'cross'
           },
-          position: function (pos, params, el, elRect, size) {
-            var obj = { top: 10 };
-            obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 30;
-            return obj;
+          position (pos, params, el, elRect, size) {
+            const obj = { top: 10 }
+            obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 30
+            return obj
           },
           formatter: (param) => {
-            let prices = param[0];
+            const prices = param[0]
             return [
               'Date: ' + prices.name + '<hr size=1 style="margin: 3px 0">',
               'Open: $' + prices.data[1]?.toFixed(2) + '<br/>',
@@ -68,11 +68,11 @@ export default {
               'Lowest: $' + prices.data[3]?.toFixed(2) + '<br/>',
               'Highest: $' + prices.data[4]?.toFixed(2) + '<br/>',
               'Volume: $' + this.$options.filters.number(param[1].data, '0 a') + '<br/>'
-            ].join('');
+            ].join('')
           }
         },
         axisPointer: {
-          link: { xAxisIndex: 'all' },
+          link: { xAxisIndex: 'all' }
         },
         legend: {
           show: false,
@@ -80,7 +80,7 @@ export default {
           y: 'bottom',
           icon: 'rect',
           textStyle: {
-            color: "var(--font-color)"
+            color: 'var(--font-color)'
           }
         },
         dataZoom: [
@@ -105,7 +105,7 @@ export default {
             data: data.map(d => d.date),
             boundaryGap: false,
             splitLine: {
-              show: false,
+              show: false
             },
             axisLine: {
               lineStyle: {
@@ -114,7 +114,7 @@ export default {
             },
             axisLabel: {
               color: 'var(--font-color)',
-              fontFamily: 'ProductSans',
+              fontFamily: 'ProductSans'
             }
           },
           {
@@ -131,15 +131,15 @@ export default {
             min: 'dataMin',
             max: 'dataMax',
             axisPointer: {
-            label: {
-              formatter: (params) => {
-                var seriesValue = (params.seriesData[0] || {}).value;
-                return (
-                  this.$options.filters.number(seriesValue.toString()??'0', '0 a')
-                );
+              label: {
+                formatter: (params) => {
+                  const seriesValue = (params.seriesData[0] || {}).value
+                  return (
+                    this.$options.filters.number(seriesValue.toString() ?? '0', '0 a')
+                  )
+                }
               }
             }
-          }
           }
         ],
         yAxis: [
@@ -157,7 +157,7 @@ export default {
           },
           {
             show: false,
-            gridIndex: 1,
+            gridIndex: 1
           }
         ],
         grid: [
@@ -179,11 +179,11 @@ export default {
             name: 'Rune Price',
             data: data.map(d => d.prices),
             itemStyle: {
-              color: "green",
-              color0: "#c23531",
+              color: 'green',
+              color0: '#c23531',
               borderColor: 'green',
               borderColor0: '#c23531'
-            },
+            }
           },
           {
             name: 'Thorchain Trade Volume',
@@ -193,12 +193,12 @@ export default {
             xAxisIndex: 1,
             itemStyle: {
               color: '#2962ff'
-            },
+            }
           }
         ]
-      };
+      }
 
-      return option;
+      return option
     }
   }
 }

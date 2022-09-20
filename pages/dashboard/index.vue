@@ -4,78 +4,94 @@
       <div class="network-stats base-container">
         <div class="stat-group">
           <div class="stat-item">
-            <img class="stat-image" src="~/assets/images/blockchain.png" alt="blockchain" />
+            <img class="stat-image" src="~/assets/images/blockchain.png" alt="blockchain">
             <div class="item-detail">
-              <div class="header">Block Height</div>
+              <div class="header">
+                Block Height
+              </div>
               <div v-if="thorHeight" class="value">
                 {{ thorHeight | number("0,0") }}
               </div>
               <span v-else>-</span>
             </div>
           </div>
-          <hr />
+          <hr>
           <div class="stat-item">
             <!-- <globe class="stat-image" /> -->
             <Globe class="stat-image" />
             <div class="item-detail">
-              <div class="header">RUNE Supply</div>
-              <div class="value" v-if="runeSupply">
+              <div class="header">
+                RUNE Supply
+              </div>
+              <div v-if="runeSupply" class="value">
                 {{ runeSupply | number("0,0") }}
                 <span style="font-size: 0.75rem">RUNE</span>
-                <span class="extra" v-if="stats">(${{
-                    (runeSupply * stats.runePriceUSD) | number("0.00 a")
+                <span v-if="stats" class="extra">(${{
+                  (runeSupply * stats.runePriceUSD) | number("0.00 a")
                 }})</span>
               </div>
               <span v-else>-</span>
             </div>
           </div>
-          <hr />
+          <hr>
         </div>
         <div class="stat-group">
           <div class="stat-item">
-            <img class="stat-image" src="~/assets/images/coin.png" alt="rune-coin" />
+            <img class="stat-image" src="~/assets/images/coin.png" alt="rune-coin">
             <div class="item-detail">
-              <div class="header">RUNE Price</div>
+              <div class="header">
+                RUNE Price
+              </div>
               <div v-if="stats && stats.runePriceUSD" class="value">
                 {{ stats.runePriceUSD | currency }}
               </div>
               <span v-else>-</span>
             </div>
           </div>
-          <hr />
+          <hr>
           <div class="stat-item">
             <circulate class="stat-image" />
             <div class="item-detail">
-              <div class="header">Total Circulating Volume (On Chain)</div>
+              <div class="header">
+                Total Circulating Volume (On Chain)
+              </div>
               <div v-if="runeVolume" class="value">
                 {{ runeVolume | number("0,0") }}
                 <span style="font-size: 0.75rem">RUNE</span>
-                <span class="extra" v-if="stats">(${{
-                    (runeVolume * stats.runePriceUSD) | number("0.00 a")
+                <span v-if="stats" class="extra">(${{
+                  (runeVolume * stats.runePriceUSD) | number("0.00 a")
                 }})</span>
               </div>
               <span v-else>-</span>
             </div>
           </div>
-          <hr />
+          <hr>
         </div>
         <div class="stat-group">
           <div class="stat-item">
-            <img class="stat-image" src="~/assets/images/book.png" style="width: 2rem; height: auto; padding: 0.3rem"
-              alt="rune-coin" />
+            <img
+              class="stat-image"
+              src="~/assets/images/book.png"
+              style="width: 2rem; height: auto; padding: 0.3rem"
+              alt="rune-coin"
+            >
             <div class="item-detail">
-              <div class="header">Total Addresses</div>
+              <div class="header">
+                Total Addresses
+              </div>
               <div v-if="totalAddresses" class="value">
                 {{ totalAddresses | number("0,0") }}
               </div>
               <span v-else>-</span>
             </div>
           </div>
-          <hr />
+          <hr>
           <div class="stat-item">
             <Chart class="stat-image" />
             <div class="item-detail">
-              <div class="header">Total Swap, Add, and Withdraw txs</div>
+              <div class="header">
+                Total Swap, Add, and Withdraw txs
+              </div>
               <div v-if="totalTxs" class="value">
                 {{ totalTxs | number("0,0") }}
               </div>
@@ -85,57 +101,63 @@
         </div>
       </div>
     </div>
-    <div class="break"></div>
+    <div class="break" />
     <div class="chart-inner-container">
       <Card title="Swap History">
-        <VChart :option="swapHistory" :loading="!swapHistory" :autoresize="true" :loading-options="showLoading">
-        </VChart>
+        <VChart :option="swapHistory" :loading="!swapHistory" :autoresize="true" :loading-options="showLoading" />
       </Card>
-      <Card title="Pool Depth & Volume" class="pool-depth-container" :isLoading="!poolsOption">
+      <Card title="Pool Depth & Volume" class="pool-depth-container" :is-loading="!poolsOption">
         <div class="pool-depth-chart">
-          <VChart :option="poolsOption" :autoresize="true" :loading-options="showLoading" style="width: 275px;height:250px;min-height: initial;">
-          </VChart>
+          <VChart :option="poolsOption" :autoresize="true" :loading-options="showLoading" style="width: 275px;height:250px;min-height: initial;" />
         </div>
-        <div class="pool-depth-extra" v-if="poolsData">
-            <table>
-              <thead>
-                <tr>
-                  <th>Pool Name</th>
-                  <th style="text-align: center;">Volume</th>
-                  <th>Depth</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="p in poolsData">
-                  <td>
-                    <div class="pool-name-container">
-                      <div class="data-color" :style="{backgroundColor: p.color}"></div>
-                      {{p.name}}
-                    </div>
-                  </td>
-                  <td style="text-align: center;">${{p.vol | number('0,0 a')}}</td>
-                  <td style="text-align: center;">${{p.value | number('0,0 a')}}</td>
-                </tr>
-                <tr class="table-footer">
-                  <td colspan="2">Total value locked in pools:</td>
-                  <td style="text-align: center;">${{totalValuePooled | number('0,0 a')}}</td>
-                </tr>
-              </tbody>
-            </table>
+        <div v-if="poolsData" class="pool-depth-extra">
+          <table>
+            <thead>
+              <tr>
+                <th>Pool Name</th>
+                <th style="text-align: center;">
+                  Volume
+                </th>
+                <th>Depth</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="p in poolsData">
+                <td>
+                  <div class="pool-name-container">
+                    <div class="data-color" :style="{backgroundColor: p.color}" />
+                    {{ p.name }}
+                  </div>
+                </td>
+                <td style="text-align: center;">
+                  ${{ p.vol | number('0,0 a') }}
+                </td>
+                <td style="text-align: center;">
+                  ${{ p.value | number('0,0 a') }}
+                </td>
+              </tr>
+              <tr class="table-footer">
+                <td colspan="2">
+                  Total value locked in pools:
+                </td>
+                <td style="text-align: center;">
+                  ${{ totalValuePooled | number('0,0 a') }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </Card>
     </div>
     <div class="chart-inner-container">
       <Card title="Earnings Volume">
-        <VChart :option="earningsHistory" :loading="!earningsHistory" :autoresize="true" :loading-options="showLoading">
-        </VChart>
+        <VChart :option="earningsHistory" :loading="!earningsHistory" :autoresize="true" :loading-options="showLoading" />
       </Card>
       <Card title="Liquidity Volume Change">
-        <VChart :option="volumeHistory" :loading="!volumeHistory" :autoresize="true" :loading-options="showLoading">
-        </VChart>
+        <VChart :option="volumeHistory" :loading="!volumeHistory" :autoresize="true" :loading-options="showLoading" />
       </Card>
     </div>
-    <div class="break"></div>
+    <div class="break" />
     <div class="cards-container">
       <div class="card">
         <div class="card-header">
@@ -146,7 +168,7 @@
         <div class="card-body">
           <template v-if="blocks">
             <template v-for="(b, i) in blocks">
-              <div class="row-item" :key="i">
+              <div :key="i" class="row-item">
                 <div class="meta">
                   <span class="header">
                     {{ b.height | number("0,0") }}
@@ -159,11 +181,11 @@
                   <span>Tx Size: <span class="value">{{ b.txs }}</span></span>
                   <span>Block Size:
                     <span class="value">{{
-                        b.size | number("0,0")
+                      b.size | number("0,0")
                     }}</span></span>
                 </div>
               </div>
-              <hr class="hr-space" :key="i + 'hr'" />
+              <hr :key="i + 'hr'" class="hr-space">
             </template>
           </template>
           <div v-else class="loading">
@@ -180,7 +202,7 @@
         <div class="card-body">
           <template v-if="txs">
             <template v-for="(t, i) in txs">
-              <div class="row-item" :key="i">
+              <div :key="i" class="row-item">
                 <div class="meta">
                   <span class="header">
                     {{ t.height | number("0,0") }}
@@ -191,16 +213,16 @@
                 </div>
                 <div class="txs">
                   <span>TxID
-                    <a @click="gotoTx(t.in && t.in[0].txID)" class="value">{{
-                        t.in && t.in[0].txID
+                    <a class="value" @click="gotoTx(t.in && t.in[0].txID)">{{
+                      t.in && t.in[0].txID
                     }}</a></span>
                   <span>From
-                    <a @click="gotoAddr(t.in[0].address)" class="value">{{
-                        t.in && t.in[0].address
+                    <a class="value" @click="gotoAddr(t.in[0].address)">{{
+                      t.in && t.in[0].address
                     }}</a></span>
                 </div>
               </div>
-              <hr class="hr-space" :key="i + 'hr'" />
+              <hr :key="i + 'hr'" class="hr-space">
             </template>
           </template>
           <div v-else class="loading">
@@ -210,32 +232,31 @@
       </div>
     </div>
     <div class="footer-stats">
-      <stat-table header="Stats" :tableSettings="statsSettings"></stat-table>
-      <stat-table header="Network" :tableSettings="networkSettings"></stat-table>
+      <stat-table header="Stats" :table-settings="statsSettings" />
+      <stat-table header="Network" :table-settings="networkSettings" />
     </div>
   </Page>
 </template>
 
 <script>
-import { blockTime } from "~/utils";
-import Block from "~/assets/images/block.svg?inline";
-import Globe from "~/assets/images/world.svg?inline";
-import Circulate from "~/assets/images/stats.svg?inline";
-import Chart from "~/assets/images/chart.svg?inline";
-import { AssetCurrencySymbol, assetFromString } from "@xchainjs/xchain-util";
-import BounceLoader from "vue-spinner/src/BounceLoader.vue";
-import moment from "moment";
+import { AssetCurrencySymbol, assetFromString } from '@xchainjs/xchain-util'
+import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
+import moment from 'moment'
 
-import { use } from "echarts/core";
-import { SVGRenderer } from "echarts/renderers";
-import { LineChart, BarChart, PieChart } from "echarts/charts";
+import { use } from 'echarts/core'
+import { SVGRenderer } from 'echarts/renderers'
+import { LineChart, BarChart, PieChart } from 'echarts/charts'
 import {
   TitleComponent,
   TooltipComponent,
   LegendComponent,
-  GridComponent,
-} from "echarts/components";
-import VChart from "vue-echarts";
+  GridComponent
+} from 'echarts/components'
+import VChart from 'vue-echarts'
+import Chart from '~/assets/images/chart.svg?inline'
+import Circulate from '~/assets/images/stats.svg?inline'
+import Globe from '~/assets/images/world.svg?inline'
+import { blockTime } from '~/utils'
 
 use([
   SVGRenderer,
@@ -245,23 +266,22 @@ use([
   PieChart,
   TitleComponent,
   TooltipComponent,
-  LegendComponent,
-]);
+  LegendComponent
+])
 
 export default {
+  name: 'OverviewPage',
   components: {
     VChart,
-    Block,
     Chart,
     Globe,
     Circulate,
-    BounceLoader,
+    BounceLoader
   },
-  name: "OverviewPage",
-  data() {
+  data () {
     return {
       network: [],
-      rune: "",
+      rune: '',
       lastblock: undefined,
       stats: [],
       volumeHistory: undefined,
@@ -277,435 +297,564 @@ export default {
       poolsOption: undefined,
       poolsData: undefined,
       totalValuePooled: undefined
-    };
-  },
-  activated() {
-    // Call fetch again if last fetch more than 30 sec ago
-    if (this.$fetchState.timestamp <= Date.now() - 6000) {
-      this.$fetch();
     }
   },
-  async fetch() {
-    const resBlock = await this.$api.getRPCLastBlockHeight();
-    this.lastHeight = +resBlock?.data?.block?.header?.height;
+  async fetch () {
+    const resBlock = await this.$api.getRPCLastBlockHeight()
+    this.lastHeight = +resBlock?.data?.block?.header?.height
   },
-  fetchOnServer: false,
   computed: {
-    runeSymbol() {
-      return AssetCurrencySymbol.RUNE;
+    runeSymbol () {
+      return AssetCurrencySymbol.RUNE
     },
-    runeVolume() {
+    runeVolume () {
       return (
         (+this.stats.swapVolume +
           +this.stats.withdrawVolume +
           +this.stats.addLiquidityVolume) /
         10 ** 8
-      );
+      )
     },
-    networkSettings: function () {
+    networkSettings () {
       return [
         [
           {
-            name: "Bonding APY",
+            name: 'Bonding APY',
             value:
               this.network.bondingAPY &&
               this.stringToPercentage(this.network.bondingAPY),
-            filter: true,
+            filter: true
           },
           {
-            name: "Liquidity APY",
+            name: 'Liquidity APY',
             value:
               this.network.bondingAPY &&
               this.stringToPercentage(this.network.liquidityAPY),
-            filter: true,
-          },
+            filter: true
+          }
         ],
         [
           {
-            name: "Total Standby Bonded",
+            name: 'Total Standby Bonded',
             value: +this.network.bondMetrics?.totalStandbyBond / 10 ** 8,
-            usdValue: true,
+            usdValue: true
           },
           {
-            name: "Total Active Bonded",
+            name: 'Total Active Bonded',
             value: +this.network.bondMetrics?.totalActiveBond / 10 ** 8,
-            usdValue: true,
-          },
+            usdValue: true
+          }
         ],
         [
           {
-            name: "Active Node Count",
-            value: this.network.activeNodeCount,
+            name: 'Active Node Count',
+            value: this.network.activeNodeCount
           },
           {
-            name: "Standby Node Count",
-            value: this.network.standbyNodeCount,
-          },
+            name: 'Standby Node Count',
+            value: this.network.standbyNodeCount
+          }
         ],
         [
           {
-            name: "Next Churn Height",
+            name: 'Next Churn Height',
             value: this.network.nextChurnHeight,
-            extraText: this.nextChurnTime(),
-          },
+            extraText: this.nextChurnTime()
+          }
         ],
         [
           {
-            name: "Pool Activation Countdown",
+            name: 'Pool Activation Countdown',
             value: this.network.poolActivationCountdown,
-            extraText: blockTime(this.network.poolActivationCountdown),
-          },
+            extraText: blockTime(this.network.poolActivationCountdown)
+          }
         ],
         [
           {
-            name: "Pool Share Factor",
+            name: 'Pool Share Factor',
             value:
               this.network.bondingAPY &&
               this.stringToPercentage(this.network.poolShareFactor),
-            filter: true,
-          },
+            filter: true
+          }
         ],
         [
           {
-            name: "Total Reserve",
+            name: 'Total Reserve',
             value: (this.network.totalReserve ?? 0) / 10 ** 8,
-            usdValue: true,
-          },
+            usdValue: true
+          }
         ],
         [
           {
-            name: "Total Pooled Rune",
+            name: 'Total Pooled Rune',
             value: (this.network.totalPooledRune ?? 0) / 10 ** 8,
-            usdValue: true,
-          },
-        ],
-      ];
+            usdValue: true
+          }
+        ]
+      ]
     },
-    statsSettings: function () {
+    statsSettings () {
       return [
         [
           {
-            name: "RUNE Price USD",
+            name: 'RUNE Price USD',
             value: this.$options.filters.currency(this.stats.runePriceUSD),
-            filter: true,
+            filter: true
           },
           {
-            name: "RUNE Depth",
+            name: 'RUNE Depth',
             value: Math.ceil(this.stats.runeDepth / 10 ** 8) ?? 0,
-            usdValue: true,
-          },
+            usdValue: true
+          }
         ],
         [
           {
-            name: "24h Swap Count",
-            value: this.stats.swapCount24h ?? 0,
+            name: '24h Swap Count',
+            value: this.stats.swapCount24h ?? 0
           },
           {
-            name: "30d Swap Count",
-            value: this.stats.swapCount30d ?? 0,
+            name: '30d Swap Count',
+            value: this.stats.swapCount30d ?? 0
           },
           {
-            name: "Total Swap Count",
-            value: this.stats.swapCount ?? 0,
-          },
+            name: 'Total Swap Count',
+            value: this.stats.swapCount ?? 0
+          }
         ],
         [
           {
-            name: "Synth Burn Count",
-            value: this.stats.synthBurnCount ?? 0,
+            name: 'Synth Burn Count',
+            value: this.stats.synthBurnCount ?? 0
           },
           {
-            name: "Synth Mint Count",
-            value: this.stats.synthMintCount ?? 0,
-          },
+            name: 'Synth Mint Count',
+            value: this.stats.synthMintCount ?? 0
+          }
         ],
         [
           {
-            name: "Swap To Asset Count",
-            value: this.stats.toAssetCount ?? 0,
+            name: 'Swap To Asset Count',
+            value: this.stats.toAssetCount ?? 0
           },
           {
-            name: "Swap To RUNE Count",
-            value: this.stats.toRuneCount ?? 0,
-          },
+            name: 'Swap To RUNE Count',
+            value: this.stats.toRuneCount ?? 0
+          }
         ],
         [
           {
-            name: "Swap Volume",
+            name: 'Swap Volume',
             value: this.stats.swapVolume / 10 ** 8 ?? 0,
-            usdValue: true,
+            usdValue: true
           },
           {
-            name: "Switched RUNE",
+            name: 'Switched RUNE',
             value: this.stats.switchedRune / 10 ** 8 ?? 0,
-            usdValue: true,
-          },
+            usdValue: true
+          }
         ],
         [
           {
-            name: "Add Liquidity Volume",
+            name: 'Add Liquidity Volume',
             value: this.stats.addLiquidityVolume / 10 ** 8 ?? 0,
-            usdValue: true,
+            usdValue: true
           },
           {
-            name: "Add Liquidity Count",
-            value: this.stats.addLiquidityCount ?? 0,
-          },
+            name: 'Add Liquidity Count',
+            value: this.stats.addLiquidityCount ?? 0
+          }
         ],
         [
           {
-            name: "Withdraw Volume",
+            name: 'Withdraw Volume',
             value: this.stats.withdrawVolume / 10 ** 8 ?? 0,
-            usdValue: true,
+            usdValue: true
           },
           {
-            name: "Withdraw Count",
-            value: this.stats.withdrawCount ?? 0,
-          },
+            name: 'Withdraw Count',
+            value: this.stats.withdrawCount ?? 0
+          }
         ],
         [
           {
-            name: "Impermanent Loss Protection Paid",
+            name: 'Impermanent Loss Protection Paid',
             value: this.stats.impermanentLossProtectionPaid / 10 ** 8 ?? 0,
-            usdValue: true,
-          },
-        ],
-      ];
-    },
+            usdValue: true
+          }
+        ]
+      ]
+    }
+  },
+  activated () {
+    // Call fetch again if last fetch more than 30 sec ago
+    if (this.$fetchState.timestamp <= Date.now() - 6000) {
+      this.$fetch()
+    }
+  },
+  fetchOnServer: false,
+  mounted () {
+    this.$api
+      .getDashboardData()
+      .then(({ data }) => {
+        this.stats = data?.stats
+        this.runeSupply = +data?.runeSupply?.amount?.amount / 10 ** 8
+        this.lastblock = data?.lastBlockHeight
+        this.thorHeight = data?.lastBlockHeight.find(
+          e => e.chain === 'BTC'
+        ).thorchain
+        this.txs = data?.txs?.actions
+        this.totalTxs = +data?.txs?.count
+        this.totalAddresses = +data?.addresses?.pagination?.total
+
+        this.$api.getPools().then(({ data }) => {
+          this.formatPoolsData(data)
+        })
+      })
+      .catch(async (e) => {
+        await this.$api
+          .getStats()
+          .then(res => (this.stats = res.data))
+          .catch((error) => {
+            console.error(error)
+          })
+
+        this.$api.getPools().then(({ data }) => {
+          this.formatPoolsData(data)
+        })
+
+        this.$api
+          .getLastBlockHeight()
+          .then((res) => {
+            this.lastblock = res.data
+            this.thorHeight = res.data.find(e => e.chain === 'BTC').thorchain
+          })
+          .catch((error) => {
+            console.error(error)
+          })
+
+        this.$api
+          .getSupplyRune()
+          .then(
+            res => (this.runeSupply = +res?.data?.amount?.amount / 10 ** 8)
+          )
+          .catch((error) => {
+            console.error(error)
+          })
+
+        this.$api
+          .getTxs()
+          .then((res) => {
+            this.txs = res?.data?.actions
+            this.totalTxs = +res?.data?.count
+          })
+          .catch((error) => {
+            console.error(error)
+          })
+
+        this.$api
+          .getAddresses()
+          .then(res => (this.totalAddresses = +res?.data?.pagination?.total))
+          .catch((error) => {
+            console.error(error)
+          })
+      })
+
+    this.$api
+      .getDashboardPlots()
+      .then(({ data }) => {
+        this.volumeHistory = this.formatLPChange(data?.LPChange)
+        this.swapHistory = this.formatSwap(data?.swaps)
+        this.earningsHistory = this.formatEarnings(data?.earning)
+      })
+      .catch((error) => {
+        console.error(error)
+
+        this.$api
+          .volumeHistory()
+          .then(res => (this.volumeHistory = this.formatLPChange(res.data)))
+          .catch((error) => {
+            console.error(error)
+          })
+
+        this.$api
+          .swapHistory()
+          .then(res => (this.swapHistory = this.formatSwap(res.data)))
+          .catch((error) => {
+            console.error(error)
+          })
+
+        this.$api
+          .tvlHistory()
+          .then(res => (this.tvlHistory = this.formatTvl(res.data)))
+          .catch((error) => {
+            console.error(error)
+          })
+
+        this.$api
+          .earningsHistory()
+          .then(res => (this.earningsHistory = this.formatEarnings(res.data)))
+          .catch((error) => {
+            console.error(error)
+          })
+      })
+
+    this.$api
+      .getRPCLastBlockHeight()
+      .then((res) => {
+        this.lastHeight = +res?.data?.block?.header?.height
+        this.$api
+          .getTendermintLatestBlocks(+this.lastHeight - 9)
+          .then(
+            res =>
+              (this.blocks = this.formatTendermintBlocks(
+                res?.data?.result.block_metas
+              ))
+          )
+          .catch((error) => {
+            console.error(error)
+          })
+      })
+      .catch((error) => {
+        console.error(error)
+      })
+
+    this.$api.getNetwork().then(({ data }) => {
+      this.network = data
+    })
   },
   methods: {
-    stringToPercentage(val) {
-      return (Number.parseFloat(val ?? 0) * 100).toFixed(2).toString() + " %";
+    stringToPercentage (val) {
+      return (Number.parseFloat(val ?? 0) * 100).toFixed(2).toString() + ' %'
     },
-    nextChurnTime() {
+    nextChurnTime () {
       if (this.lastblock && this.network) {
         return blockTime(
-          this.network.nextChurnHeight - this.lastblock[0]["thorchain"]
-        );
+          this.network.nextChurnHeight - this.lastblock[0].thorchain
+        )
       }
     },
-    formatLPChange(d) {
-      let xAxis = [];
-      let lv = [];
-      let wv = [];
-      let alv = [];
+    formatLPChange (d) {
+      const xAxis = []
+      const lv = []
+      const wv = []
+      const alv = []
       d?.intervals.forEach((interval) => {
         xAxis.push(
           moment(
             Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
-          ).format("MM/DD")
-        );
+          ).format('MM/DD')
+        )
         alv.push(
           (+interval.addLiquidityVolume * +interval.runePriceUSD) / 10 ** 8
-        );
+        )
         wv.push(
           -1 * ((+interval.withdrawVolume * +interval.runePriceUSD) / 10 ** 8)
-        );
+        )
         lv.push(
           ((+interval.addLiquidityVolume - +interval.withdrawVolume) *
             +interval.runePriceUSD) /
           10 ** 8
-        );
-      });
+        )
+      })
 
       return this.basicChartFormat(
-        (value) => `$ ${this.normalFormat(value)}`,
+        value => `$ ${this.normalFormat(value)}`,
         [
           {
-            type: "bar",
-            name: "Total Change",
+            type: 'bar',
+            name: 'Total Change',
             showSymbol: false,
             data: lv,
-            smooth: true,
+            smooth: true
           },
           {
-            type: "bar",
-            name: "Add Volume",
+            type: 'bar',
+            name: 'Add Volume',
             showSymbol: false,
             data: alv,
-            smooth: true,
+            smooth: true
           },
           {
-            type: "bar",
-            name: "Withdraw Volume",
+            type: 'bar',
+            name: 'Withdraw Volume',
             showSymbol: false,
             data: wv,
-            smooth: true,
-          },
+            smooth: true
+          }
         ],
         xAxis
-      );
+      )
     },
-    formatSwap(d) {
-      let xAxis = [];
-      let tv = [];
-      let tva = [];
-      let tvr = [];
+    formatSwap (d) {
+      const xAxis = []
+      const tv = []
+      const tva = []
+      const tvr = []
       d?.intervals.forEach((interval) => {
         xAxis.push(
           moment(
             Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
-          ).format("MM/DD")
-        );
+          ).format('MM/DD')
+        )
         tv.push(
           (+interval.totalVolume / 10 ** 8) *
           Number.parseFloat(interval.runePriceUSD)
-        );
-        tva.push((+interval.toAssetVolume * +interval.runePriceUSD) / 10 ** 8);
-        tvr.push((+interval.toRuneVolume * +interval.runePriceUSD) / 10 ** 8);
-      });
+        )
+        tva.push((+interval.toAssetVolume * +interval.runePriceUSD) / 10 ** 8)
+        tvr.push((+interval.toRuneVolume * +interval.runePriceUSD) / 10 ** 8)
+      })
 
       const res = this.basicChartFormat(
-        (value) => `$ ${this.normalFormat(value)}`,
+        value => `$ ${this.normalFormat(value)}`,
         [
           {
-            type: "bar",
-            name: "Total Volume",
+            type: 'bar',
+            name: 'Total Volume',
             showSymbol: false,
             data: tv,
-            smooth: true,
+            smooth: true
           },
           {
-            type: "bar",
-            name: "to Asset Volume",
+            type: 'bar',
+            name: 'to Asset Volume',
             showSymbol: false,
             data: tva,
-            smooth: true,
+            smooth: true
           },
           {
-            type: "bar",
-            name: "to Rune Volume",
+            type: 'bar',
+            name: 'to Rune Volume',
             showSymbol: false,
             data: tvr,
-            smooth: true,
-          },
+            smooth: true
+          }
         ],
         xAxis
-      );
+      )
 
-      return res;
+      return res
     },
-    formatTvl(d) {
-      let xAxis = [];
-      let tvp = [];
+    formatTvl (d) {
+      const xAxis = []
+      const tvp = []
       d?.intervals.forEach((interval) => {
         xAxis.push(
           moment(
             Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
-          ).format("MM/DD")
-        );
+          ).format('MM/DD')
+        )
         tvp.push(
           (+interval.totalValuePooled / 10 ** 8) *
           Number.parseFloat(interval.runePriceUSD)
-        );
-      });
+        )
+      })
 
       return this.basicChartFormat(
-        (value) => `$ ${this.normalFormat(value)}`,
+        value => `$ ${this.normalFormat(value)}`,
         [
           {
-            type: "line",
-            name: "Total Value Pooled",
+            type: 'line',
+            name: 'Total Value Pooled',
             showSymbol: false,
             data: tvp,
-            smooth: true,
-          },
+            smooth: true
+          }
         ],
         xAxis
-      );
+      )
     },
-    formatEarnings(d) {
-      let xAxis = [];
-      let le = [];
-      let be = [];
+    formatEarnings (d) {
+      const xAxis = []
+      const le = []
+      const be = []
       d?.intervals.forEach((interval) => {
         xAxis.push(
           moment(
             Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
-          ).format("MM/DD")
-        );
+          ).format('MM/DD')
+        )
         le.push(
           (+interval.liquidityEarnings / 10 ** 8) *
           Number.parseFloat(interval.runePriceUSD)
-        );
+        )
         be.push(
           (+interval.bondingEarnings / 10 ** 8) *
           Number.parseFloat(interval.runePriceUSD)
-        );
-      });
+        )
+      })
 
       return this.basicChartFormat(
-        (value) => `$ ${this.normalFormat(value)}`,
+        value => `$ ${this.normalFormat(value)}`,
         [
           {
-            type: "line",
-            name: "Liquidity Earning",
+            type: 'line',
+            name: 'Liquidity Earning',
             showSymbol: false,
             data: le,
-            smooth: true,
+            smooth: true
           },
           {
-            type: "line",
-            name: "Bond Earning",
+            type: 'line',
+            name: 'Bond Earning',
             showSymbol: false,
             data: be,
-            smooth: true,
-          },
+            smooth: true
+          }
         ],
         xAxis
-      );
+      )
     },
-    formatTendermintBlocks(blocks) {
-      let blockJsons = [];
-      for (let block of blocks) {
+    formatTendermintBlocks (blocks) {
+      const blockJsons = []
+      for (const block of blocks) {
         blockJsons.push({
           height: block?.header?.height,
           date: moment(block?.header?.time).fromNow(),
           txs: block?.num_txs,
-          size: block?.block_size,
-        });
+          size: block?.block_size
+        })
       }
-      return blockJsons.slice(0, 10);
+      return blockJsons.slice(0, 10)
     },
-    formatMoment(time) {
-      return moment(Number.parseInt(time / 10 ** 6)).fromNow();
+    formatMoment (time) {
+      return moment(Number.parseInt(time / 10 ** 6)).fromNow()
     },
-    formatPoolsData(d) {
-      let poolData = [];
-      const runePrice = this.stats.runePriceUSD;
-      let totalValuePooled = 0;
-      let otherPoolsVolume = 0;
-      let otherValuePooled = 0;
-      const defaultColors = ['#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de', '#3ba272', '#fc8452', '#9a60b4', '#ea7ccc'];
-      d.sort((a,b) => (+b.runeDepth)-(+a.runeDepth)).forEach((p, i) => {
-        let runeInPools = (+p.runeDepth);
-        let assetsInRune = (+p.assetDepth) * +p.assetPrice;
-        totalValuePooled += ((runeInPools+assetsInRune)*runePrice)/1e8;
+    formatPoolsData (d) {
+      const poolData = []
+      const runePrice = this.stats.runePriceUSD
+      let totalValuePooled = 0
+      let otherPoolsVolume = 0
+      let otherValuePooled = 0
+      const defaultColors = ['#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de', '#3ba272', '#fc8452', '#9a60b4', '#ea7ccc']
+      d.sort((a, b) => (+b.runeDepth) - (+a.runeDepth)).forEach((p, i) => {
+        const runeInPools = (+p.runeDepth)
+        const assetsInRune = (+p.assetDepth) * +p.assetPrice
+        totalValuePooled += ((runeInPools + assetsInRune) * runePrice) / 1e8
         if (i < 6) {
-          let asset = assetFromString(p.asset);
+          const asset = assetFromString(p.asset)
           poolData.push({
-            value: ((runeInPools + assetsInRune)*runePrice)/1e8,
+            value: ((runeInPools + assetsInRune) * runePrice) / 1e8,
             name: `${asset.chain}.${asset.ticker}`,
-            vol: (+p.volume24h)*runePrice/1e8,
+            vol: (+p.volume24h) * runePrice / 1e8,
             color: defaultColors[i]
-          });
-        }
-        else if (i >= 6) {
-          otherPoolsVolume += (+p.volume24h)*runePrice/1e8;
-          otherValuePooled += ((runeInPools+assetsInRune)*runePrice)/1e8;
+          })
+        } else if (i >= 6) {
+          otherPoolsVolume += (+p.volume24h) * runePrice / 1e8
+          otherValuePooled += ((runeInPools + assetsInRune) * runePrice) / 1e8
 
-          if (i == d.length - 1) {
+          if (i === d.length - 1) {
             poolData.push({
               value: otherValuePooled,
-              name: `Other pools`,
+              name: 'Other pools',
               vol: otherPoolsVolume,
               color: defaultColors[6]
-            });
+            })
           }
         }
       })
 
-      let option = {
+      const option = {
         formatter: (param) => {
           return `
             <div class="tooltip-header">
@@ -725,7 +874,7 @@ export default {
           `
         },
         tooltip: {
-          trigger: 'item',
+          trigger: 'item'
         },
         series: [
           {
@@ -746,140 +895,12 @@ export default {
         ]
       }
 
-      this.poolsOption = option;
-      this.poolsData = poolData;
-      this.totalValuePooled = totalValuePooled;
+      this.poolsOption = option
+      this.poolsData = poolData
+      this.totalValuePooled = totalValuePooled
     }
-  },
-  async mounted() {
-    this.$api
-      .getDashboardData()
-      .then(({ data }) => {
-        this.stats = data?.stats;
-        this.runeSupply = +data?.runeSupply?.amount?.amount / 10 ** 8;
-        this.lastblock = data?.lastBlockHeight;
-        this.thorHeight = data?.lastBlockHeight.find(
-          (e) => e.chain === "BTC"
-        ).thorchain;
-        this.txs = data?.txs?.actions;
-        this.totalTxs = +data?.txs?.count;
-        this.totalAddresses = +data?.addresses?.pagination?.total;
-
-        this.$api.getPools().then(({ data }) => {
-          this.formatPoolsData(data);
-        })
-      })
-      .catch(async (e) => {
-        await this.$api
-          .getStats()
-          .then((res) => (this.stats = res.data))
-          .catch((error) => {
-            console.error(error);
-          });
-
-        this.$api.getPools().then(({ data }) => {
-          this.formatPoolsData(data);
-        })
-
-        this.$api
-          .getLastBlockHeight()
-          .then((res) => {
-            this.lastblock = res.data;
-            this.thorHeight = res.data.find((e) => e.chain === "BTC").thorchain;
-          })
-          .catch((error) => {
-            console.error(error);
-          });
-
-        this.$api
-          .getSupplyRune()
-          .then(
-            (res) => (this.runeSupply = +res?.data?.amount?.amount / 10 ** 8)
-          )
-          .catch((error) => {
-            console.error(error);
-          });
-
-        this.$api
-          .getTxs()
-          .then((res) => {
-            this.txs = res?.data?.actions;
-            this.totalTxs = +res?.data?.count;
-          })
-          .catch((error) => {
-            console.error(error);
-          });
-
-        this.$api
-          .getAddresses()
-          .then((res) => (this.totalAddresses = +res?.data?.pagination?.total))
-          .catch((error) => {
-            console.error(error);
-          });
-      });
-
-    this.$api
-      .getDashboardPlots()
-      .then(({ data }) => {
-        this.volumeHistory = this.formatLPChange(data?.LPChange);
-        this.swapHistory = this.formatSwap(data?.swaps);
-        this.earningsHistory = this.formatEarnings(data?.earning);
-      })
-      .catch((error) => {
-        this.$api
-          .volumeHistory()
-          .then((res) => (this.volumeHistory = this.formatLPChange(res.data)))
-          .catch((error) => {
-            console.error(error);
-          });
-
-        this.$api
-          .swapHistory()
-          .then((res) => (this.swapHistory = this.formatSwap(res.data)))
-          .catch((error) => {
-            console.error(error);
-          });
-
-        this.$api
-          .tvlHistory()
-          .then((res) => (this.tvlHistory = this.formatTvl(res.data)))
-          .catch((error) => {
-            console.error(error);
-          });
-
-        this.$api
-          .earningsHistory()
-          .then((res) => (this.earningsHistory = this.formatEarnings(res.data)))
-          .catch((error) => {
-            console.error(error);
-          });
-      });
-
-    this.$api
-      .getRPCLastBlockHeight()
-      .then((res) => {
-        this.lastHeight = +res?.data?.block?.header?.height;
-        this.$api
-          .getTendermintLatestBlocks(+this.lastHeight - 9)
-          .then(
-            (res) =>
-            (this.blocks = this.formatTendermintBlocks(
-              res?.data?.result.block_metas
-            ))
-          )
-          .catch((error) => {
-            console.error(error);
-          });
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-
-    this.$api.getNetwork().then(({ data }) => {
-      this.network = data;
-    })
-  },
-};
+  }
+}
 </script>
 
 <style lang="scss">

@@ -1,7 +1,7 @@
 <template>
   <div class="progress-wrapper">
-    <div class="progress-bar" :style="{'width': width + '%', backgroundColor: color}"></div>
-    <span class="progress-text" v-if="extraText">{{extraText}}</span>
+    <div class="progress-bar" :style="{'width': width + '%', backgroundColor: color}" />
+    <span v-if="extraText" class="progress-text">{{ extraText }}</span>
   </div>
 </template>
 
