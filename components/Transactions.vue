@@ -2,47 +2,65 @@
   <div class="txs-component-container">
     <template v-if="!loading">
       <template v-if="txs.actions && txs.actions.length > 0">
-        <div class="tx-container" v-for="(tx, idx) in txs.actions" :key="idx">
+        <div v-for="(tx, idx) in txs.actions" :key="idx" class="tx-container">
           <div class="tx-header">
-            <div class="action bubble-container grey">{{tx.type | capitalize}}</div>
-            <div :class="['action bubble-container blue', {'green': tx.status == 'success'}]" style="margin-top: .2rem;">{{tx.status | capitalize }}</div>
-            <div class="date">{{ (new Date(tx.date/10**6)).toLocaleDateString() }}</div>
-            <div class="time">{{ (new Date(tx.date/10**6)).toLocaleTimeString() }}</div>
-            <div class="since">({{ since(tx.date) }})</div>
+            <div class="action bubble-container grey">
+              {{ tx.type | capitalize }}
+            </div>
+            <div :class="['action bubble-container blue', {'green': tx.status == 'success'}]" style="margin-top: .2rem;">
+              {{ tx.status | capitalize }}
+            </div>
+            <div class="date">
+              {{ (new Date(tx.date/10**6)).toLocaleDateString() }}
+            </div>
+            <div class="time">
+              {{ (new Date(tx.date/10**6)).toLocaleTimeString() }}
+            </div>
+            <div class="since">
+              ({{ since(tx.date) }})
+            </div>
           </div>
           <div class="tx-content">
             <div class="tx-in">
-              <div class="tx-contain" v-for="(t, j) in tx.in" :key="j">
+              <div v-for="(t, j) in tx.in" :key="j" class="tx-contain">
                 <div>
-                  <div class="bubble-container">In</div>
-                  <div v-if="t.coins[0] && checkSynth(t.coins[0].asset)" class="bubble-container yellow">Synth</div>
-                  <a v-if="t.txID" class="tx" @click="gotoTx(t.txID)">{{(t.txID.slice(0,4)+'...'+t.txID.slice(end=-4))}}</a>
+                  <div class="bubble-container">
+                    In
+                  </div>
+                  <div v-if="t.coins[0] && checkSynth(t.coins[0].asset)" class="bubble-container yellow">
+                    Synth
+                  </div>
+                  <a v-if="t.txID" class="tx" @click="gotoTx(t.txID)">{{ (t.txID.slice(0,4)+'...'+t.txID.slice(end=-4)) }}</a>
                 </div>
                 <!-- in coin -->
-                <div style="display: flex; align-items: center;" v-if="t.coins[0]">
+                <div v-if="t.coins[0]" style="display: flex; align-items: center;">
                   <img class="asset-icon" :src="assetImage(t.coins[0].asset)" alt="in-coin" @error="imgErr">
-                  <span style="line-height: 1.2rem; margin-left: .4rem">{{(t.coins[0].amount/1e8).toFixed(8)}} {{t.coins[0].asset | shortSymbol}}</span>
+                  <span style="line-height: 1.2rem; margin-left: .4rem">{{ (t.coins[0].amount/1e8).toFixed(8) }} {{ t.coins[0].asset | shortSymbol }}</span>
                 </div>
                 <!-- address -->
-                <a v-if="t.address" class="address" @click="gotoAddr(t.address)">{{t.address.slice(0,4)+'...'+t.address.slice(end=-4)}}</a>
+                <a v-if="t.address" class="address" @click="gotoAddr(t.address)">{{ t.address.slice(0,4)+'...'+t.address.slice(end=-4) }}</a>
               </div>
             </div>
             <!-- check pending status -->
             <div v-if="tx.out.length > 0" class="tx-out">
-              <right-arrow class="icon-arrow"></right-arrow>
-              <div class="tx-contain" v-for="(t, j) in tx.out" :key="j">
+              <right-arrow class="icon-arrow" />
+              <div v-for="(t, j) in tx.out" :key="j" class="tx-contain">
                 <!-- out coin -->
                 <div>
-                  <div class="bubble-container blue">Out</div>
-                  <div v-if="checkSynth(t.coins[0] && t.coins[0].asset)" class="bubble-container yellow">Synth</div>
-                  <a v-if="t.txID" @click="gotoTx(t.txID)" class="tx">{{(t.txID.slice(0,4)+'...'+t.txID.slice(end=-4))}}</a>
+                  <div class="bubble-container blue">
+                    Out
+                  </div>
+                  <div v-if="checkSynth(t.coins[0] && t.coins[0].asset)" class="bubble-container yellow">
+                    Synth
+                  </div>
+                  <a v-if="t.txID" class="tx" @click="gotoTx(t.txID)">{{ (t.txID.slice(0,4)+'...'+t.txID.slice(end=-4)) }}</a>
                 </div>
-                <div style="display: flex; align-items: center;" v-if="t.coins[0]">
+                <div v-if="t.coins[0]" style="display: flex; align-items: center;">
                   <img class="asset-icon" :src="assetImage(t.coins[0].asset)" alt="out-coin" @error="imgErr">
-                  <span style="line-height: 1.2rem; margin-left: .4rem">{{(t.coins[0].amount/1e8).toFixed(8)}} {{t.coins[0].asset | shortSymbol}}</span>
+                  <span style="line-height: 1.2rem; margin-left: .4rem">{{ (t.coins[0].amount/1e8).toFixed(8) }} {{ t.coins[0].asset | shortSymbol }}</span>
                 </div>
                 <!-- address -->
-                <a v-if="t.address" class="address" @click="gotoAddr(t.address)">{{t.address.slice(0,4)+'...'+t.address.slice(end=-4)}}</a>
+                <a v-if="t.address" class="address" @click="gotoAddr(t.address)">{{ t.address.slice(0,4)+'...'+t.address.slice(end=-4) }}</a>
               </div>
             </div>
           </div>
@@ -61,53 +79,49 @@
 </template>
 
 <script>
-import rightArrow from '~/assets/images/arrow-small-right.svg?inline';
-import { AssetImage } from '~/classes/assetImage';
-import BounceLoader from "vue-spinner/src/BounceLoader.vue";
-import { assetFromString, isSynthAsset } from '@xchainjs/xchain-util';
-import moment from "moment";
+import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
+import { assetFromString, isSynthAsset } from '@xchainjs/xchain-util'
+import moment from 'moment'
+import { AssetImage } from '~/classes/assetImage'
+import rightArrow from '~/assets/images/arrow-small-right.svg?inline'
 
 export default {
-  props: ['txs', 'loading'],
   components: {
     rightArrow,
     BounceLoader
   },
-  methods: {
-    assetImage(assetStr) {
-      try {
-        return AssetImage(assetStr) ?? require('~/assets/images/unknown.png');
+  filters: {
+    shortSymbol (assetStr) {
+      if (assetStr?.includes('-')) {
+        const assetStrSplit = assetStr.split('-')
+        if (assetStrSplit[1].length > 8) { return assetStrSplit[0] + '-' + assetStrSplit[1].slice(0, 4) + '...' + assetStrSplit[1].slice(-4) } else { return assetStr }
+      } else {
+        return assetStr
       }
-      catch (e) {
-        console.error(e)
-        return require('~/assets/images/unknown.png');
-      }
-    },
-    gotoTx(txid) {
-      this.$router.push({ path: `/tx/${txid}` })
-    },
-    gotoAddr(address) {
-      this.$router.push({ path: `/address/${address}` })
-    },
-    imgErr(e) {
-      e.target.src = require('~/assets/images/unknown.png');
-    },
-    since(date) {
-      console.log(date)
-      return moment(date/1e6).fromNow()
     }
   },
-  filters: {
-    shortSymbol: function(assetStr) {
-      if (assetStr?.includes('-')) {
-        let assetStrSplit = assetStr.split('-');
-        if (assetStrSplit[1].length > 8)
-          return assetStrSplit[0] + '-' + assetStrSplit[1].slice(0,4) + '...' + assetStrSplit[1].slice(-4);
-        else
-          return assetStr
-      } else {
-        return assetStr;
+  props: ['txs', 'loading'],
+  methods: {
+    assetImage (assetStr) {
+      try {
+        return AssetImage(assetStr) ?? require('~/assets/images/unknown.png')
+      } catch (e) {
+        console.error(e)
+        return require('~/assets/images/unknown.png')
       }
+    },
+    gotoTx (txid) {
+      this.$router.push({ path: `/tx/${txid}` })
+    },
+    gotoAddr (address) {
+      this.$router.push({ path: `/address/${address}` })
+    },
+    imgErr (e) {
+      e.target.src = require('~/assets/images/unknown.png')
+    },
+    since (date) {
+      console.log(date)
+      return moment(date / 1e6).fromNow()
     }
   }
 }
@@ -169,7 +183,7 @@ export default {
       border: 1px solid var(--border-color);
       border-radius: .5rem;
       margin-left: 2rem;
-      
+
       > * {
         color: var(--sec-font-color);
         padding: .7rem;

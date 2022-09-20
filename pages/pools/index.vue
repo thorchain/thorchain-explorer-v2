@@ -1,65 +1,65 @@
 <template>
   <Page>
-    <Nav :activeMode.sync="mode" :navItems="navItems" />
+    <Nav :active-mode.sync="mode" :nav-items="navItems" />
     <template v-if="mode == 'grid'">
-      <pool-card :pools="sortedPools"></pool-card>
+      <pool-card :pools="sortedPools" />
     </template>
     <template v-else-if="pools && pools.length > 0 && mode == 'table'">
-      <Nav :activeMode.sync="tableMode" :navItems="tableModeItems" />
-        <tamplate v-for="(k, v, i) in tables" :key="i">
-          <vue-good-table
-            v-if="k.data.length > 0"
-            :key="i"
-            :columns="cols"
-            :rows="k.data"
-            styleClass="vgt-table net-table"
-            :pagination-options="{
-              enabled: true,
-              perPage: 30,
-              perPageDropdownEnabled: false,
-            }"
-            :sort-options="{
-              enabled: true,
-              initialSortBy: {field: 'apy', type: 'desc'}
-            }"
-            @on-row-click="gotoPoolTable"
-            v-show="tableMode == k.mode"
-          >
-            <template slot="table-row" slot-scope="props">
-              <div v-if="props.column.field == 'asset'" class="cell-content" v-tooltip="props.row.asset">
-                <img class="table-asset-icon" :src="assetImage(props.row.asset)" alt="asset-icon">
-                <span>{{props.formattedRow[props.column.field]}}</span>
+      <Nav :active-mode.sync="tableMode" :nav-items="tableModeItems" />
+      <tamplate v-for="(k, v, i) in tables" :key="i">
+        <vue-good-table
+          v-if="k.data.length > 0"
+          v-show="tableMode == k.mode"
+          :key="i"
+          :columns="cols"
+          :rows="k.data"
+          style-class="vgt-table net-table"
+          :pagination-options="{
+            enabled: true,
+            perPage: 30,
+            perPageDropdownEnabled: false,
+          }"
+          :sort-options="{
+            enabled: true,
+            initialSortBy: {field: 'apy', type: 'desc'}
+          }"
+          @on-row-click="gotoPoolTable"
+        >
+          <template slot="table-row" slot-scope="props">
+            <div v-if="props.column.field == 'asset'" v-tooltip="props.row.asset" class="cell-content">
+              <img class="table-asset-icon" :src="assetImage(props.row.asset)" alt="asset-icon">
+              <span>{{ props.formattedRow[props.column.field] }}</span>
+            </div>
+            <span v-else-if="props.column.field == 'status'">
+              <div :class="['bubble-container', {'yellow': k.mode == 'staged'}]">
+                <span>{{ props.row.status | capitalize }}</span>
               </div>
-              <span v-else-if="props.column.field == 'status'">
-                <div :class="['bubble-container', {'yellow': k.mode == 'staged'}]">
-                  <span>{{props.row.status | capitalize}}</span>
-                </div>
-              </span>
-              <span v-else>
-                {{props.formattedRow[props.column.field]}}
-              </span>
-            </template>
-          </vue-good-table>
-        </tamplate>
+            </span>
+            <span v-else>
+              {{ props.formattedRow[props.column.field] }}
+            </span>
+          </template>
+        </vue-good-table>
+      </tamplate>
     </template>
   </Page>
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import { mapGetters } from 'vuex'
 
 export default {
-  data: function () {
+  data () {
     return {
       error: false,
       mode: 'table',
       navItems: [
-        {text: 'Grid', mode: 'grid'},
-        {text: 'Table', mode: 'table'},
+        { text: 'Grid', mode: 'grid' },
+        { text: 'Table', mode: 'table' }
       ],
       tableModeItems: [
-        {text: 'Active Pools', mode: 'active'},
-        {text: 'Staged/Suspended Pools', mode: 'staged'}
+        { text: 'Active Pools', mode: 'active' },
+        { text: 'Staged/Suspended Pools', mode: 'staged' }
       ],
       tableMode: 'active',
       cols: [
@@ -119,67 +119,63 @@ export default {
       }
     }
   },
-  mounted() {
-    this.$api.getPools().then(async ({data}) => {
+  mounted () {
+    this.$api.getPools().then(async ({ data }) => {
       this.pools = data
 
-      let runePrice = (await this.$api.getStats()).data.runePriceUSD
+      const runePrice = (await this.$api.getStats()).data.runePriceUSD
 
       const ps = this.pools.map(p => ({
         status: p.status,
         price: p.assetPriceUSD,
-        depth: ((+p.assetDepth/10**8)*p.assetPriceUSD)+((+p.runeDepth/10**8)*runePrice),
+        depth: ((+p.assetDepth / 10 ** 8) * p.assetPriceUSD) + ((+p.runeDepth / 10 ** 8) * runePrice),
         apy: p.poolAPY,
-        volume: (+p.volume24h/10**8)*runePrice,
-        vd: (+p.volume24h)/((+p.assetDepth*+p.assetPrice)+(+p.runeDepth)),
-        asset: p.asset,
-      }));
+        volume: (+p.volume24h / 10 ** 8) * runePrice,
+        vd: (+p.volume24h) / ((+p.assetDepth * +p.assetPrice) + (+p.runeDepth)),
+        asset: p.asset
+      }))
       this.sepPools(ps)
-
-    }).catch(e => {
-      console.error(e);
+    }).catch((e) => {
+      console.error(e)
     })
   },
   computed: {
     ...mapGetters({
       runePrice: 'getRunePrice'
     }),
-    sortedPools() {
-      if (!this.pools)
-        return undefined
-      return this.pools?.sort((a,b) => {
+    sortedPools () {
+      if (!this.pools) { return undefined }
+      return this.pools?.sort((a, b) => {
         return (+b.runeDepth) - (+a.runeDepth)
       })
-    },
+    }
   },
   methods: {
-    numberFormat(number, filter) {
+    numberFormat (number, filter) {
       return '$' + this.$options.filters.number(number, '0.00a')
     },
-    curFormat(number) {
+    curFormat (number) {
       return this.$options.filters.currency(number)
     },
-    formatAsset(asset) {
-      return asset.length > 10 ?
-        asset.slice(0, 14) + '...':
-        asset
+    formatAsset (asset) {
+      return asset.length > 10
+        ? asset.slice(0, 14) + '...'
+        : asset
     },
-    gotoPoolTable(params) {
+    gotoPoolTable (params) {
       this.gotoPool(params.row.asset)
     },
-    sepPools(pools) {
-      if (!pools && pools.length <= 0)
-        return
-      for(let i in pools) {
-        if (pools[i].status === "available") {
+    sepPools (pools) {
+      if (!pools && pools.length <= 0) { return }
+      for (const i in pools) {
+        if (pools[i].status === 'available') {
           this.tables.activeRows.data.push(pools[i])
-        }
-        else {
+        } else {
           this.tables.standbyRows.data.push(pools[i])
         }
       }
     }
-  },
+  }
 }
 </script>
 

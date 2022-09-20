@@ -2,39 +2,39 @@
   <div class="address-container">
     <div class="address-header">
       <WalletIcon class="icon" />
-      <span>{{isVault?vaultType:'Address'}}</span>
+      <span>{{ isVault?vaultType:'Address' }}</span>
     </div>
     <div class="address-name">
-      <span style="color: var(--primary-color)">{{address}}</span>
-      <div class="icon-wrapper"  style="margin-left: .7rem;" @click="copy(address)">
-        <span class="icon-name">{{copyText}}</span>
-        <CopyIcon class="icon small"/>
+      <span style="color: var(--primary-color)">{{ address }}</span>
+      <div class="icon-wrapper" style="margin-left: .7rem;" @click="copy(address)">
+        <span class="icon-name">{{ copyText }}</span>
+        <CopyIcon class="icon small" />
       </div>
-      <div class="icon-wrapper qr-wrapper"  style="margin-left: .7rem;" @mouseover="showQR = true" @mouseleave="showQR = false">
+      <div class="icon-wrapper qr-wrapper" style="margin-left: .7rem;" @mouseover="showQR = true" @mouseleave="showQR = false">
         <span class="icon-name">QR</span>
-        <ExpandIcon class="icon small"/>
+        <ExpandIcon class="icon small" />
         <transition name="fade">
           <div v-show="showQR" class="qr-show">
-            <qrcode-vue :value="address"></qrcode-vue>
+            <qrcode-vue :value="address" />
           </div>
         </transition>
       </div>
     </div>
     <template v-if="addrTxs">
       <div class="stat-wrapper">
-        <Nav :activeMode.sync="activeMode" :navItems="[{text: 'Balances', mode: 'balance'},{text: 'THORName', mode: 'thorname'}]" />
-        <stat-table v-if="activeMode == 'balance'" :tableSettings="addressStat">
+        <Nav :active-mode.sync="activeMode" :nav-items="[{text: 'Balances', mode: 'balance'},{text: 'THORName', mode: 'thorname'}]" />
+        <stat-table v-if="activeMode == 'balance'" :table-settings="addressStat">
           <template #Balance>
             <span v-if="balance && runePrice">
-              {{balance | number('0,0.00')}}
-              (<span class="value">{{balance * runePrice | currency}}</span>)
+              {{ balance | number('0,0.00') }}
+              (<span class="value">{{ balance * runePrice | currency }}</span>)
             </span>
             <span v-else>-</span>
           </template>
         </stat-table>
-        <stat-table v-else-if="activeMode == 'thorname'" :tableSettings="thornames"></stat-table>
+        <stat-table v-else-if="activeMode == 'thorname'" :table-settings="thornames" />
       </div>
-      <div style="margin: 1rem 0"></div>
+      <div style="margin: 1rem 0" />
       <template v-if="isVault">
         <div class="simple-card">
           <div class="card-header">
@@ -42,9 +42,9 @@
           </div>
           <div class="card-body">
             <div class="addresses-container">
-              <div class="addresses" v-for="address in chainAddresses" :key="address.chain">
+              <div v-for="address in chainAddresses" :key="address.chain" class="addresses">
                 <img class="asset-icon" :src="assetImage(baseChainAsset(address.chain))">
-                <span class="clickable mono" @click="gotoAddr(address.address)">{{address.address.slice(0,8)}}...{{address.address.slice(-8)}}</span>
+                <span class="clickable mono" @click="gotoAddr(address.address)">{{ address.address.slice(0,8) }}...{{ address.address.slice(-8) }}</span>
               </div>
             </div>
           </div>
@@ -58,7 +58,7 @@
               v-if="vaultInfo"
               :columns="cols"
               :rows="vaultInfo.coins"
-              styleClass="vgt-table net-table vgt-compact"
+              style-class="vgt-table net-table vgt-compact"
               :pagination-options="{
                 enabled: true,
                 perPage: 30,
@@ -66,19 +66,19 @@
               }"
             >
               <template slot="table-row" slot-scope="props">
-                <div v-if="props.column.field == 'asset'" class="cell-content" v-tooltip="props.row.asset">
+                <div v-if="props.column.field == 'asset'" v-tooltip="props.row.asset" class="cell-content">
                   <img class="table-asset-icon" :src="assetImage(props.row.asset)" alt="asset-icon">
-                  <span>{{props.formattedRow[props.column.field]}}</span>
+                  <span>{{ props.formattedRow[props.column.field] }}</span>
                 </div>
                 <span v-else-if="props.column.field == 'amount'">
-                  <span>{{props.formattedRow[props.column.field]}}
+                  <span>{{ props.formattedRow[props.column.field] }}
                     <span class="extra-text">
-                      {{showAsset(props.row.asset)}}
+                      {{ showAsset(props.row.asset) }}
                     </span>
                   </span>
                 </span>
                 <span v-else>
-                  {{props.formattedRow[props.column.field]}}
+                  {{ props.formattedRow[props.column.field] }}
                 </span>
               </template>
             </vue-good-table>
@@ -86,23 +86,23 @@
         </div>
       </template>
       <template>
-        <transactions v-if="addrTxs && addrTxs.actions" :txs="addrTxs" :loading="loading"></transactions>
-        <pagination v-if="addrTxs && addrTxs.actions && count" :limit="10" :offset="offset" :count="count" @changePage="getActions"></pagination>
+        <transactions v-if="addrTxs && addrTxs.actions" :txs="addrTxs" :loading="loading" />
+        <pagination v-if="addrTxs && addrTxs.actions && count" :limit="10" :offset="offset" :count="count" @changePage="getActions" />
       </template>
     </template>
-    <div class="error-container" v-else-if="!addrTxs">
+    <div v-else-if="!addrTxs" class="error-container">
       Can't Fetch the Address! Please Try again Later.
     </div>
   </div>
 </template>
 
 <script>
-import WalletIcon from '~/assets/images/wallet.svg?inline';
-import CopyIcon from '~/assets/images/copy.svg?inline';
-import ExpandIcon from '~/assets/images/expand.svg?inline';
 import QrcodeVue from 'qrcode.vue'
-import { formatAsset } from '~/utils';
-import { mapGetters } from 'vuex';
+import { mapGetters } from 'vuex'
+import WalletIcon from '~/assets/images/wallet.svg?inline'
+import CopyIcon from '~/assets/images/copy.svg?inline'
+import ExpandIcon from '~/assets/images/expand.svg?inline'
+import { formatAsset } from '~/utils'
 
 export default {
   components: {
@@ -111,7 +111,7 @@ export default {
     ExpandIcon,
     QrcodeVue
   },
-  data() {
+  data () {
     return {
       offset: 0,
       count: undefined,
@@ -129,7 +129,7 @@ export default {
         {
           label: 'Asset',
           field: 'asset',
-          formatFn: formatAsset,
+          formatFn: formatAsset
         },
         {
           label: 'Balance',
@@ -140,9 +140,9 @@ export default {
     }
   },
   computed: {
-    addressStat: function() {
-      let otherBalances = this.otherBalances ?? [];
-      let vaultInfo = [];
+    addressStat () {
+      const otherBalances = this.otherBalances ?? []
+      let vaultInfo = []
       if (this.isVault) {
         vaultInfo = [
           [
@@ -158,17 +158,17 @@ export default {
             },
             {
               name: 'Inbound Txs',
-              value: this.vaultInfo?.inbound_tx_count,
+              value: this.vaultInfo?.inbound_tx_count
             },
             {
               name: 'Outbound Txs',
-              value: this.vaultInfo?.outbound_tx_count,
+              value: this.vaultInfo?.outbound_tx_count
             }
           ],
           [
             {
               name: 'Block Height',
-              value: this.vaultInfo?.block_height,
+              value: this.vaultInfo?.block_height
             }
           ]
         ]
@@ -176,7 +176,7 @@ export default {
       return [
         [
           {
-            name: 'Balance',
+            name: 'Balance'
           },
           {
             name: 'Transactions',
@@ -189,111 +189,108 @@ export default {
     },
     ...mapGetters({
       runePrice: 'getRunePrice'
-    }),
+    })
+  },
+  mounted () {
+    this.rlookThorname(this.address)
+    this.checkIsVault(this.address)
   },
   methods: {
-    getActions(offset=0) {
-      this.loading = true;
-      this.offset = offset;
+    getActions (offset = 0) {
+      this.loading = true
+      this.offset = offset
       this.$api.getAddress(this.address, this.offset)
-      .then(res => {
-        this.addrTxs = res.data;
-        this.count = res.data.count;
-      })
-      .catch(error => {
-        console.error(error)
-      })
-      .finally(() => {
-        this.loading = false;
-      })
-    },
-    rlookThorname(address) {
-      this.$api.getRevThorname(address)
-      .then(res => {
-        const names = res?.data;
-        this.thornames = names.map(n => {
-          return [{
-            name: 'Address Name',
-            value: n,
-            filter: true
-          }]
+        .then((res) => {
+          this.addrTxs = res.data
+          this.count = res.data.count
         })
-      })
-      .catch(e => {
-        if (e.response.status == 404) {
-          this.thornames = [[
-            {
-              name: 'Address Name',
-              value: 'Not assigned',
-              filter: true
-            }
-          ]]
-        }
-        else 
-          console.error(e);
-      })
+        .catch((error) => {
+          console.error(error)
+        })
+        .finally(() => {
+          this.loading = false
+        })
     },
-    checkIsVault(address) {
-      this.$api.getAsgard().then(({data}) => {
-        for (let vaultIndex in data) {
+    rlookThorname (address) {
+      this.$api.getRevThorname(address)
+        .then((res) => {
+          const names = res?.data
+          this.thornames = names.map((n) => {
+            return [{
+              name: 'Address Name',
+              value: n,
+              filter: true
+            }]
+          })
+        })
+        .catch((e) => {
+          if (e.response.status === 404) {
+            this.thornames = [[
+              {
+                name: 'Address Name',
+                value: 'Not assigned',
+                filter: true
+              }
+            ]]
+          } else { console.error(e) }
+        })
+    },
+    checkIsVault (address) {
+      this.$api.getAsgard().then(({ data }) => {
+        for (const vaultIndex in data) {
           if (data[vaultIndex].addresses.map(a => a.address.toUpperCase()).includes(address.toUpperCase())) {
-            this.isVault = true;
-            this.vaultType = 'Asgard';
-            this.chainAddresses = data[vaultIndex].addresses;
-            this.vaultInfo = data[vaultIndex];
+            this.isVault = true
+            this.vaultType = 'Asgard'
+            this.chainAddresses = data[vaultIndex].addresses
+            this.vaultInfo = data[vaultIndex]
           }
         }
-      }).catch(e => console.error(e));
-      this.$api.getYggdrasil().then(({data}) => {
-        for (let vaultIndex in data) {
+      }).catch(e => console.error(e))
+      this.$api.getYggdrasil().then(({ data }) => {
+        for (const vaultIndex in data) {
           if (data[vaultIndex].addresses.map(a => a.address.toUpperCase()).includes(address.toUpperCase())) {
-            this.isVault = true;
-            this.vaultType = 'Yggdrasil';
-            this.chainAddresses = data[vaultIndex].addresses;
-            this.vaultInfo = data[vaultIndex];
+            this.isVault = true
+            this.vaultType = 'Yggdrasil'
+            this.chainAddresses = data[vaultIndex].addresses
+            this.vaultInfo = data[vaultIndex]
           }
         }
-      }).catch(e => console.error(e));
+      }).catch(e => console.error(e))
     }
   },
-  async asyncData({params, $api}) {
-    const address = params.adderid;
-    const addrTxs = await $api.getAddress(address, 0).catch(e => {
-      console.error(e);
-    });
-    const count = addrTxs?.data?.count ?? 0;
-    let balance = 0;
-    let otherBalances = [];
+  async asyncData ({ params, $api }) {
+    const address = params.adderid
+    const addrTxs = await $api.getAddress(address, 0).catch((e) => {
+      console.error(e)
+    })
+    const count = addrTxs?.data?.count ?? 0
+    let balance = 0
+    let otherBalances = []
     if (address.match(/^[st]?thor.*/gmi)) {
       try {
-        let balances = (await $api.getBalance(address)).data.result;
-        const index = balances.findIndex(object => {
-         return object.denom === 'rune';
-        });
+        const balances = (await $api.getBalance(address)).data.result
+        const index = balances.findIndex((object) => {
+          return object.denom === 'rune'
+        })
 
         if (index !== -1) {
-          balance = Number.parseFloat(balances[index]?.amount)/10**8 ?? 0;
-          balances.splice(index, 1);
+          balance = Number.parseFloat(balances[index]?.amount) / 10 ** 8 ?? 0
+          balances.splice(index, 1)
         }
 
-        otherBalances = balances.map(item => {
+        otherBalances = balances.map((item) => {
           return [{
             name: 'Synth ' + item.denom.toUpperCase(),
-            value: (item?.amount/10**8).toFixed(8),
+            value: (item?.amount / 10 ** 8).toFixed(8),
             filter: true
           }]
         })
-      }
-      catch(e) {
-        console.warn('can\'t get the balances');
+      } catch (e) {
+        console.warn('can\'t get the balances')
       }
     }
 
     return { address, addrTxs: addrTxs?.data, count, balance, otherBalances }
-  },
-  async mounted() {
-    this.rlookThorname(this.address);
-    this.checkIsVault(this.address);
   }
 }
 </script>
@@ -321,7 +318,7 @@ export default {
     &:hover {
       background-color: var(--active-bg-color);
     }
-    
+
     .icon-name {
       color: var(--sec-font-color);
       font-size: .625rem;

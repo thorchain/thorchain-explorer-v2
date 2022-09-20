@@ -1,22 +1,22 @@
 <template>
   <Page>
     <Nav
-      :isLink="true"
-      :navItems="[
+      :is-link="true"
+      :nav-items="[
         {link: `/pool/${poolName}`, text: 'Overview'},
         {link: `/pool/${poolName}/tx`, text: 'Pool Txs'},
         {link: `/pool/${poolName}/lp`, text: 'LP Positions'},
       ]"
-    ></Nav>
-    <nuxt-child keep-alive></nuxt-child>
+    />
+    <nuxt-child keep-alive />
   </Page>
 </template>
 
 <script>
 export default {
-  async asyncData({ params }) {
-    return { poolName: params.poolName };
-  },
+  async asyncData ({ params }) {
+    return { poolName: params.poolName }
+  }
 }
 </script>
 

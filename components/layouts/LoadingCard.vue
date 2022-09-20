@@ -1,17 +1,17 @@
 <template>
   <Card :class="['loading-container', extraClass]">
-    <BounceLoader color="var(--font-color)" size="3rem"></BounceLoader>
+    <BounceLoader color="var(--font-color)" size="3rem" />
   </Card>
 </template>
 
 <script>
-import BounceLoader from 'vue-spinner/src/BounceLoader.vue';
+import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
 
 export default {
-  props: ['extraClass'],
   components: {
     BounceLoader
-  }
+  },
+  props: ['extraClass']
 }
 </script>
 

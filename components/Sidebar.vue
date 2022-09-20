@@ -15,10 +15,10 @@
     </div>
     <div class="side-bar-lists">
       <template v-for="(item, index) in sidebarLists" v-if="item">
-        <NuxtLink :to="item.link" :class="['side-bar-item']" :key="index" v-on:click.native="toggleMenu(false)">
-          <component v-bind:is="item.icon" class="icon selected"></component>
-          <component v-bind:is="item.unicon" class="icon unselected"></component>
-          <span class="sidebar-text">{{item.name}}</span>
+        <NuxtLink :key="index" :to="item.link" :class="['side-bar-item']" @click.native="toggleMenu(false)">
+          <component :is="item.icon" class="icon selected" />
+          <component :is="item.unicon" class="icon unselected" />
+          <span class="sidebar-text">{{ item.name }}</span>
         </NuxtLink>
       </template>
     </div>
@@ -39,39 +39,39 @@
 </template>
 
 <script>
-import ThorchainLogo from '~/assets/images/thorchain-logo.svg?inline';
+import { mapMutations, mapGetters } from 'vuex'
+import ThorchainLogo from '~/assets/images/thorchain-logo.svg?inline'
 
-import TwitterLogo from '~/assets/images/twitter-brands.svg?inline';
-import DiscordLogo from '~/assets/images/discord-brands.svg?inline';
-import GithubLogo from '~/assets/images/github-brands.svg?inline';
+import TwitterLogo from '~/assets/images/twitter-brands.svg?inline'
+import DiscordLogo from '~/assets/images/discord-brands.svg?inline'
+import GithubLogo from '~/assets/images/github-brands.svg?inline'
 
-import appsSelected from '~/assets/images/apps-selected.svg?inline';
-import appsUnselected from '~/assets/images/apps-unselected.svg?inline';
+import appsSelected from '~/assets/images/apps-selected.svg?inline'
+import appsUnselected from '~/assets/images/apps-unselected.svg?inline'
 
-import vectorSelected from '~/assets/images/vector-selected.svg?inline';
-import vectorUnselected from '~/assets/images/vector-unselected.svg?inline';
+import vectorSelected from '~/assets/images/vector-selected.svg?inline'
+import vectorUnselected from '~/assets/images/vector-unselected.svg?inline'
 
-import layersSelected from '~/assets/images/layers-selected.svg?inline';
-import layersUnselected from '~/assets/images/layers-unselected.svg?inline';
+import layersSelected from '~/assets/images/layers-selected.svg?inline'
+import layersUnselected from '~/assets/images/layers-unselected.svg?inline'
 
-import exchangeSelected from '~/assets/images/exchange-selected.svg?inline';
-import exchangeUnselected from '~/assets/images/exchange-unselected.svg?inline';
+import exchangeSelected from '~/assets/images/exchange-selected.svg?inline'
+import exchangeUnselected from '~/assets/images/exchange-unselected.svg?inline'
 
-import swimmerSelected from '~/assets/images/swimmer-selected.svg?inline';
-import swimmerUnselected from '~/assets/images/swimmer-unselected.svg?inline';
+import swimmerSelected from '~/assets/images/swimmer-selected.svg?inline'
+import swimmerUnselected from '~/assets/images/swimmer-unselected.svg?inline'
 
-import moneySelected from '~/assets/images/money-selected.svg?inline';
-import moneyUnselected from '~/assets/images/money.svg?inline';
+import moneySelected from '~/assets/images/money-selected.svg?inline'
+import moneyUnselected from '~/assets/images/money.svg?inline'
 
-import shieldSelected from '~/assets/images/shield.svg?inline';
-import shieldUnselected from '~/assets/images/shield-unselected.svg?inline';
+import shieldSelected from '~/assets/images/shield.svg?inline'
+import shieldUnselected from '~/assets/images/shield-unselected.svg?inline'
 
-import chartSelected from '~/assets/images/chart-selected.svg?inline';
-import chartUnselected from '~/assets/images/chart-unselected.svg?inline';
+import chartSelected from '~/assets/images/chart-selected.svg?inline'
+import chartUnselected from '~/assets/images/chart-unselected.svg?inline'
 
-import MenuIcon from '~/assets/images/menu-burger.svg?inline';
-import CrossIcon from '~/assets/images/cross.svg?inline';
-import { mapMutations, mapGetters } from 'vuex';
+import MenuIcon from '~/assets/images/menu-burger.svg?inline'
+import CrossIcon from '~/assets/images/cross.svg?inline'
 
 export default {
   name: 'SideBar',
@@ -99,7 +99,7 @@ export default {
     chartSelected,
     chartUnselected
   },
-  data() {
+  data () {
     return {
       sidebarLists: [
         {
@@ -145,14 +145,14 @@ export default {
           link: '/vaults'
         },
         (
-          process.env.NETWORK === 'mainnet' ?
-          {
-            name: 'Insights',
-            unicon: 'chartUnselected',
-            icon: 'chartSelected',
-            link: '/insights'
-          }:
-          false
+          process.env.NETWORK === 'mainnet'
+            ? {
+                name: 'Insights',
+                unicon: 'chartUnselected',
+                icon: 'chartSelected',
+                link: '/insights'
+              }
+            : false
         )
       ]
     }

@@ -3,38 +3,38 @@
     <div class="pool-nav-wrapper">
       <div>
         <span>Pool:</span>
-        <Select :options="poolOptions" v-bind:option.sync="poolOption" name="pool">
+        <Select :options="poolOptions" :option.sync="poolOption" name="pool">
           <template>
-            <span class="overflow-label">{{poolOption.label}}</span>
+            <span class="overflow-label">{{ poolOption.label }}</span>
           </template>
         </Select>
       </div>
       <div>
         <span>Period:</span>
-        <Select :options="periodOptions" v-bind:option.sync="periodOption" name="period"></Select>
+        <Select :options="periodOptions" :option.sync="periodOption" name="period" />
       </div>
     </div>
     <div class="chart-wrapper">
-      <VChart :option="aprChart" :loading="aprLoading" :autoresize="true" :loading-options="showLoading"></VChart>
+      <VChart :option="aprChart" :loading="aprLoading" :autoresize="true" :loading-options="showLoading" />
     </div>
   </Card>
 </template>
 
 <script>
-import {compact} from "lodash";
+import { compact } from 'lodash'
 
-import { use } from "echarts/core";
-import { SVGRenderer } from "echarts/renderers";
-import { LineChart } from "echarts/charts";
+import { use } from 'echarts/core'
+import { SVGRenderer } from 'echarts/renderers'
+import { LineChart } from 'echarts/charts'
 import {
   TitleComponent,
   TooltipComponent,
   LegendComponent,
   GridComponent
-} from "echarts/components";
-import VChart from "vue-echarts";
+} from 'echarts/components'
+import VChart from 'vue-echarts'
 
-import moment from "moment";
+import moment from 'moment'
 
 use([
   SVGRenderer,
@@ -43,13 +43,13 @@ use([
   TitleComponent,
   TooltipComponent,
   LegendComponent
-]);
+])
 
 export default {
   components: {
     VChart
   },
-  data() {
+  data () {
     return {
       periodOption: {
         label: '30 days',
@@ -82,11 +82,18 @@ export default {
       aprLoading: true
     }
   },
-  mounted() {
-    this.$api.getPools().then(({data}) => {
-      this.poolOptions = compact(data.map(p => {
-        if (p.status != "available")
-          return
+  watch: {
+    poolOption (val) {
+      this.calPoolAPR()
+    },
+    periodOption (val) {
+      this.calPoolAPR()
+    }
+  },
+  mounted () {
+    this.$api.getPools().then(({ data }) => {
+      this.poolOptions = compact(data.map((p) => {
+        if (p.status !== 'available') { return false }
         return {
           value: p.asset,
           label: p.asset
@@ -94,77 +101,69 @@ export default {
       }))
     })
 
-    this.calPoolAPR();
-  },
-  watch: {
-    poolOption: function (val) {
-      this.calPoolAPR();
-    },
-    periodOption: function (val) {
-      this.calPoolAPR();
-    }
+    this.calPoolAPR()
   },
   methods: {
-    async calPoolAPR() {
-      this.aprLoading = true;
+    calPoolAPR () {
+      this.aprLoading = true
       this.getDepth(this.poolOption.value, this.periodOption.value).then((result) => {
-        this.aprLoading = false;
+        this.aprLoading = false
         this.aprFormat(result)
-      });
+      })
     },
-    async getDepth(p, c) {
-      let now = (await this.$api.getPoolDepth(p, 365)).data.intervals;
-      let then = (await this.$api.getPoolDepth(p, 365, moment(~~now[0].startTime * 1e3).subtract(c, 'days').unix())).data.intervals.reverse();
+    async getDepth (p, c) {
+      let now = (await this.$api.getPoolDepth(p, 365)).data.intervals
+      const then = (await this.$api.getPoolDepth(p, 365, moment(~~now[0].startTime * 1e3).subtract(c, 'days').unix())).data.intervals.reverse()
       now = now.reverse()
 
-      let aprs = [];
+      const aprs = []
       if (now) {
-        for(let i = 0; i < then.length - 1; i++) {
-          let firstLuvi = then[i]?.luvi;
-          let secondLuvi = now[i]?.luvi;
+        for (let i = 0; i < then.length - 1; i++) {
+          const firstLuvi = then[i]?.luvi
+          const secondLuvi = now[i]?.luvi
 
           // calculating APR
-          let increase = 100*(secondLuvi-firstLuvi)/firstLuvi;
-          let apr = (365*increase)/(c);
+          const increase = 100 * (secondLuvi - firstLuvi) / firstLuvi
+          const apr = (365 * increase) / (c)
           aprs.unshift({
             increase: apr,
-            time: 
-            moment( now[i].startTime * 1e3 ).format("YY/MM/DD") 
-          });
+            time:
+            moment(now[i].startTime * 1e3).format('YY/MM/DD')
+          })
         }
       }
       return aprs
     },
-    aprFormat(d) {
-      let xAxis = [];
-      let apr = [];
-      d.forEach(t => {
-        xAxis.push(t.time);
-        apr.push(t.increase);
-      });
+    aprFormat (d) {
+      const xAxis = []
+      const apr = []
+      d.forEach((t) => {
+        xAxis.push(t.time)
+        apr.push(t.increase)
+      })
 
-      let option = {
+      const option = {
         title: {
-          show: false,
+          show: false
         },
         tooltip: {
           confine: true,
-          trigger: "axis",
-          valueFormatter: (value) => `${value.toFixed(2)} %`
+          trigger: 'axis',
+          valueFormatter: value => `${value.toFixed(2)} %`
         },
         legend: {
           x: 'center',
           y: 'bottom',
           icon: 'rect',
           textStyle: {
-            color: "var(--font-color)"
+            color: 'var(--font-color)'
           }
         },
         xAxis: {
           data: xAxis,
           boundaryGap: false,
           splitLine: {
-            show: false,
+            show: false
           },
           axisLine: {
             lineStyle: {
@@ -173,11 +172,11 @@ export default {
           },
           axisLabel: {
             color: '#9f9f9f',
-            fontFamily: 'ProductSans',
+            fontFamily: 'ProductSans'
           }
         },
         yAxis: {
-          show: false,
+          show: false
         },
         grid: {
           left: '20px',
@@ -191,14 +190,14 @@ export default {
             data: apr,
             smooth: true,
             areaStyle: {}
-          },
+          }
         ]
-      };
+      }
 
-      this.aprChart = option;
-    },
+      this.aprChart = option
+    }
   }
-};
+}
 </script>
 
 <style lang="scss" scoped>

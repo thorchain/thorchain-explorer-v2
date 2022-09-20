@@ -1,50 +1,60 @@
 <template>
   <div class="pools-container">
     <template v-if="pools">
-      <div class="pool-item" v-for="(pool, idx) in pools" :key="idx"  @click="gotoPool(pool.asset)">
+      <div v-for="(pool, idx) in pools" :key="idx" class="pool-item" @click="gotoPool(pool.asset)">
         <div class="row">
           <div class="pool-chain">
             <img class="asset-chain" :src="assetImage(assetToChain(pool.asset))">
           </div>
           <div class="pool-status">
             <div :class="['bubble-container', {'yellow': pool.status === 'staged', 'red': pool.status === 'suspended'}]">
-              {{pool.status | capitalize}}
+              {{ pool.status | capitalize }}
             </div>
           </div>
-          <div class="pool-price">{{pool.price*runePrice | currency}}</div>
+          <div class="pool-price">
+            {{ pool.price*runePrice | currency }}
+          </div>
         </div>
         <div class="row" style="align-items: center; flex-direction: column; padding: 2rem;">
           <img class="asset-icon" :src="assetImage(pool.asset)" @error="imgErr">
-          <span class="asset-name">{{pool.asset.split('-')[0].split('.')[1]}}</span>
-          <span class="symbol-name">{{pool.asset.split('-')[1]}}</span>
+          <span class="asset-name">{{ pool.asset.split('-')[0].split('.')[1] }}</span>
+          <span class="symbol-name">{{ pool.asset.split('-')[1] }}</span>
         </div>
         <div class="row" style="justify-content: space-between; margin-top: auto;">
           <div class="detail">
-            <div class="header">24H Volume</div>
-            <div class="value">${{(pool.volume24h/10**8)*runePrice | number('0 a')}}</div>
+            <div class="header">
+              24H Volume
+            </div>
+            <div class="value">
+              ${{ (pool.volume24h/10**8)*runePrice | number('0 a') }}
+            </div>
           </div>
           <div class="detail">
-            <div class="header">Pool APY</div>
-            <div class="value">{{pool.poolAPY | percent}}</div>
+            <div class="header">
+              Pool APY
+            </div>
+            <div class="value">
+              {{ pool.poolAPY | percent }}
+            </div>
           </div>
         </div>
       </div>
     </template>
     <template v-else>
-      <LoadingCard v-for="p in 8" :key="p" extraClass="pool-item"></LoadingCard>
+      <LoadingCard v-for="p in 8" :key="p" extra-class="pool-item" />
     </template>
   </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import { mapGetters } from 'vuex'
 
 export default {
   props: ['pools'],
   computed: {
     ...mapGetters({
       runePrice: 'getRunePrice'
-    }),
+    })
   }
 }
 </script>

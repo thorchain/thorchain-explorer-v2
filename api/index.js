@@ -1,3 +1,4 @@
+import axiosRetry from 'axios-retry'
 import {
   getStats,
   getTxs,
@@ -17,7 +18,7 @@ import {
   getPools,
   getNetwork,
   getPoolDepth
-} from "./midgard.api";
+} from './midgard.api'
 import {
   getMimir,
   getBalance,
@@ -40,87 +41,86 @@ import {
   getThorchainTx,
   getNodes,
   getNode
-} from "./thornode.api";
+} from './thornode.api'
 import {
   getTendermintLatestBlocks
-} from "./tendermint.api";
+} from './tendermint.api'
 import {
   getDashboardData,
   getDashboardPlots,
   getExraNodesInfo,
   getOhclPrice
-} from "./middleware.api";
+} from './middleware.api'
 import {
   getChurnHistory,
   getFlipTVL,
   getRunePrice,
   getDailySwap
-} from "./insights.api";
-export var $axiosInstace;
-import axiosRetry from 'axios-retry';
-import endpoints from "./endpoints";
+} from './insights.api'
+import endpoints from './endpoints'
+export var $axiosInstace
 
 // interceptor to catch errors
 const errorInterceptor = (error) => {
   // check if it's a server error
   if (!error.response) {
-    console.warn("Network/Server error");
-    return Promise.reject(error);
+    console.warn('Network/Server error')
+    return Promise.reject(error)
   }
 
   // all the other error responses
   switch (error.response.status) {
     case 400:
-      console.error(error.response.status, error.message);
-      console.warn("Nothing to display", "Data Not Found");
-      break;
+      console.error(error.response.status, error.message)
+      console.warn('Nothing to display', 'Data Not Found')
+      break
 
     case 401: // authentication error, logout the user
-      console.warn("Please login again", "Session Expired");
-      break;
+      console.warn('Please login again', 'Session Expired')
+      break
 
     case 429: // too many requests
-      console.warn("Too many requests, Try again");
-      break;
+      console.warn('Too many requests, Try again')
+      break
 
     case 501: // Wrong request
-      console.warn("Wrong Request");
-      break;
+      console.warn('Wrong Request')
+      break
 
     case 503: // Wrong request
-      console.warn("Service Unavailable");
-      break;
+      console.warn('Service Unavailable')
+      break
 
     default:
-      console.error(error.response.status, error.message);
-      console.error("Server Error");
+      console.error(error.response.status, error.message)
+      console.error('Server Error')
   }
-  return Promise.reject(error);
-};
+  return Promise.reject(error)
+}
 
 // Interceptor for responses
 const responseInterceptor = (response) => {
   switch (response.status) {
     case 200:
       // yay!
-      break;
+      break
     // any other cases
     default:
     // default case
   }
 
-  return response;
-};
+  return response
+}
 
 export default function ({ $axios }, inject) {
-  axiosRetry($axios, { retries: 3, retryDelay: axiosRetry.exponentialDelay });
-  $axios.interceptors.response.use(responseInterceptor, errorInterceptor);
+  axiosRetry($axios, { retries: 3, retryDelay: axiosRetry.exponentialDelay })
+  $axios.interceptors.response.use(responseInterceptor, errorInterceptor)
 
-  //defining the inner Vue axios instace to the outer scope
-  $axios.defaults.baseURL = endpoints[process.env.NETWORK].MIDGARD_BASE_URL;
-  $axiosInstace = $axios;
+  // defining the inner Vue axios instace to the outer scope
+  $axios.defaults.baseURL = endpoints[process.env.NETWORK].MIDGARD_BASE_URL
+  $axiosInstace = $axios
 
-  let api = {
+  const api = {
     getStats,
     getTxs,
     getConstants,
@@ -169,7 +169,7 @@ export default function ({ $axios }, inject) {
     getDailySwap,
     getOhclPrice,
     getPoolDepth
-  };
+  }
 
-  inject("api", api);
+  inject('api', api)
 }

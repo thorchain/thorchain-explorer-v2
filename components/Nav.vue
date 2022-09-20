@@ -1,13 +1,14 @@
 <template>
   <div class="nav-headers box">
-    <component :is="isLink? 'nuxt-link':'div'" 
+    <component
+      :is="isLink? 'nuxt-link':'div'"
       v-for="navItem in navItems"
-      @click="!isLink? $emit('update:activeMode', navItem.mode):false" 
-      :class="[{'active': activeMode && activeMode === navItem.mode}, 'nav-item']"
       :key="navItem.mode"
+      :class="[{'active': activeMode && activeMode === navItem.mode}, 'nav-item']"
       :to="isLink? navItem.link:false"
+      @click="!isLink? $emit('update:activeMode', navItem.mode):false"
     >
-     {{navItem.text}}
+      {{ navItem.text }}
     </component>
   </div>
 </template>

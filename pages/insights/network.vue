@@ -1,10 +1,10 @@
 <template>
-  <Card title="⏰ Churn History" :isLoading="!churnHistory">
+  <Card title="⏰ Churn History" :is-loading="!churnHistory">
     <vue-good-table
       v-if="churnHistory"
       :columns="cols"
       :rows="churnHistory"
-      styleClass="vgt-table net-table bordered"
+      style-class="vgt-table net-table bordered"
       :pagination-options="{
         enabled: true,
         perPage: 30,
@@ -13,34 +13,34 @@
     >
       <template slot="table-row" slot-scope="props">
         <span v-if="props.column.field == 'timestamp'">
-          {{timeFormat(props.row.timestamp)}}
+          {{ timeFormat(props.row.timestamp) }}
           <span style="font-size: .75rem;">
-            ({{fromNow(props.row.timestamp)}})
+            ({{ fromNow(props.row.timestamp) }})
           </span>
         </span>
         <span v-else>
-          {{props.formattedRow[props.column.field]}}
+          {{ props.formattedRow[props.column.field] }}
         </span>
       </template>
     </vue-good-table>
     <span class="footer">
       Powered By <strong>Multipartite</strong>
     </span>
-  </Card> 
+  </Card>
 </template>
 
 <script>
-import moment from "moment";
-import { momentTimeFormat } from '~/utils';
+import moment from 'moment'
+import { momentTimeFormat } from '~/utils'
 
 export default {
-  data() {
+  data () {
     return {
       churnHistory: undefined,
       cols: [
         {
           label: 'Churn Occurred',
-          field: 'timestamp',
+          field: 'timestamp'
         },
         {
           label: 'Block ID',
@@ -53,25 +53,25 @@ export default {
           label: 'Churn Length (days)',
           field: 'DAYS_SINCE_LAST_CHURN',
           type: 'number',
-          tdClass: 'mono',
+          tdClass: 'mono'
         }
-      ],
+      ]
     }
   },
-  mounted() {
-    this.$api.getChurnHistory().then(({data}) => {
-      this.churnHistory = data.map(d => ({...d, timestamp: moment(d.BLOCK_TIMESTAMP)}));;
-    }).catch(e => {
-      console.error(e);
+  mounted () {
+    this.$api.getChurnHistory().then(({ data }) => {
+      this.churnHistory = data.map(d => ({ ...d, timestamp: moment(d.BLOCK_TIMESTAMP) }))
+    }).catch((e) => {
+      console.error(e)
     })
   },
   methods: {
-    timeFormat(time) {
+    timeFormat (time) {
       return momentTimeFormat(time)
     },
-    fromNow(time) {
-      return moment(time)?.fromNow();
-    },
+    fromNow (time) {
+      return moment(time)?.fromNow()
+    }
   }
 }
 </script>

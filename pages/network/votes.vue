@@ -1,14 +1,14 @@
 <template>
   <Page>
     <Card v-if="votingChart && currentVoting">
-      <VChart :option="votingChart" :loading="!votingChart" :autoresize="true" :loading-options="showLoading"></VChart>
+      <VChart :option="votingChart" :loading="!votingChart" :autoresize="true" :loading-options="showLoading" />
     </Card>
-    <Card :isLoading="!currentVoting" title="Mimir Voting Overview">
+    <Card :is-loading="!currentVoting" title="Mimir Voting Overview">
       <vue-good-table
         v-if="votesCols && currentVoting"
         :columns="votesCols"
         :rows="currentVoting"
-        styleClass="vgt-table net-table bordered"
+        style-class="vgt-table net-table bordered"
         :pagination-options="{
           enabled: true,
           perPage: 30,
@@ -18,11 +18,11 @@
         <template slot="table-row" slot-scope="props">
           <div v-if="props.column.field == 'result'" class="cell-content">
             <div :class="['bubble-container', {'yellow': props.row.result === 'In Progress'}]">
-              {{props.row.result | capitalize}}
+              {{ props.row.result | capitalize }}
             </div>
           </div>
           <span v-else>
-            {{props.formattedRow[props.column.field]}}
+            {{ props.formattedRow[props.column.field] }}
           </span>
         </template>
       </vue-good-table>
@@ -32,7 +32,7 @@
         v-if="cols && v.length > 0"
         :columns="cols"
         :rows="v"
-        styleClass="vgt-table net-table vgt-compact"
+        style-class="vgt-table net-table vgt-compact"
         :line-numbers="true"
         :pagination-options="{
           enabled: true,
@@ -43,11 +43,11 @@
         <template slot="table-row" slot-scope="props">
           <span v-if="props.column.field == 'signer'">
             <span class="clickable" @click="gotoNode(props.row.signer)">
-              {{props.row.signer}}
+              {{ props.row.signer }}
             </span>
           </span>
           <span v-else>
-            {{props.formattedRow[props.column.field]}}
+            {{ props.formattedRow[props.column.field] }}
           </span>
         </template>
       </vue-good-table>
@@ -56,19 +56,19 @@
 </template>
 
 <script>
-import _ from 'lodash';
-import { mapGetters } from 'vuex';
+import _ from 'lodash'
+import { mapGetters } from 'vuex'
 
-import { use } from "echarts/core";
-import { SVGRenderer } from "echarts/renderers";
-import { LineChart } from "echarts/charts";
+import { use } from 'echarts/core'
+import { SVGRenderer } from 'echarts/renderers'
+import { LineChart } from 'echarts/charts'
 import {
   TitleComponent,
   TooltipComponent,
   LegendComponent,
-  GridComponent,
-} from "echarts/components";
-import VChart from "vue-echarts";
+  GridComponent
+} from 'echarts/components'
+import VChart from 'vue-echarts'
 
 use([
   SVGRenderer,
@@ -76,14 +76,14 @@ use([
   LineChart,
   TitleComponent,
   TooltipComponent,
-  LegendComponent,
-]);
+  LegendComponent
+])
 
 export default {
   components: {
     VChart
-  },  
-  data() {
+  },
+  data () {
     return {
       isLoading: true,
       mimirVotes: undefined,
@@ -142,55 +142,52 @@ export default {
         {
           label: 'Result',
           field: 'result',
-          type: 'text',
+          type: 'text'
         }
       ]
     }
   },
-  mounted() {
-    this.$api.getMimirVotes().then(res => {
-      this.mimirVotes = this.formatVotes(res.data?.mimirs);
-    }).catch(e => {
-      console.error(e);
+  mounted () {
+    this.$api.getMimirVotes().then((res) => {
+      this.mimirVotes = this.formatVotes(res.data?.mimirs)
+    }).catch((e) => {
+      console.error(e)
     })
 
-    this.$api.getMimir().then(res => {
-      this.mimirs = res.data;
-    }).catch(e => {
-      console.error(e);
+    this.$api.getMimir().then((res) => {
+      this.mimirs = res.data
+    }).catch((e) => {
+      console.error(e)
     })
   },
   computed: {
-    currentVoting: function() {
-      if(this.mimirVotes && this.mimirs) {
-        let mimrsVoteConstants = []
-        let xaxis = []
-        let types = []
+    currentVoting () {
+      if (this.mimirVotes && this.mimirs) {
+        const mimrsVoteConstants = []
+        const xaxis = []
+        const types = []
         let votesLength = 0
-        for (let m of Object.keys(this.mimirs)) {
-          if(Object.keys(this.mimirVotes).includes(m)) {
-            if (this.mimirVotes[m].every(v => v.value == undefined))
-              continue
+        for (const m of Object.keys(this.mimirs)) {
+          if (Object.keys(this.mimirVotes).includes(m)) {
+            if (this.mimirVotes[m].every(v => v.value == undefined)) { continue }
             votesLength++
           }
         }
-        let index = 0;
-        for (let m of Object.keys(this.mimirs)) {
-          if(Object.keys(this.mimirVotes).includes(m)) {
-            const hVotes = this.getVoteHighestBid(this.mimirVotes[m]);
-            if (this.mimirVotes[m].every(v => v.value == undefined))
-              continue
+        let index = 0
+        for (const m of Object.keys(this.mimirs)) {
+          if (Object.keys(this.mimirVotes).includes(m)) {
+            const hVotes = this.getVoteHighestBid(this.mimirVotes[m])
+            if (this.mimirVotes[m].every(v => v.value == undefined)) { continue }
             if (hVotes.values.length == 0) {
-              votesLength--; 
+              votesLength--
               continue
             }
             xaxis.push(m)
-            hVotes.values.forEach(v => {
-              if (v.value == 'undefined')
-                return
-              let vIndex = types?.findIndex(t => t.name?.toString() == v.value?.toString())
+            hVotes.values.forEach((v) => {
+              if (v.value == 'undefined') { return }
+              const vIndex = types?.findIndex(t => t.name?.toString() == v.value?.toString())
               if (vIndex == -1) {
-                let initData = _.times(votesLength, _.constant(0))
+                const initData = _.times(votesLength, _.constant(0))
                 initData[index] = v.count
                 types.push({
                   name: v.value,
@@ -198,22 +195,21 @@ export default {
                   stack: 'total',
                   data: initData
                 })
-              }
-              else {
+              } else {
                 types[vIndex].data[index] = v.count
               }
             })
             mimrsVoteConstants.push({
               vote: m,
-              currentVal: this.mimirs[m] == -1 ? '-':this.mimirs[m],
+              currentVal: this.mimirs[m] == -1 ? '-' : this.mimirs[m],
               highestValue: hVotes.value,
               consensus: hVotes.consensus,
               votePassed: hVotes.votePassed,
               remainingVotes: +this.network?.activeNodeCount - hVotes.votePassed,
-              result: (+this.mimirs[m] == +hVotes.value)? 'Passed':'In Progress',
+              result: (+this.mimirs[m] == +hVotes.value) ? 'Passed' : 'In Progress',
               votedValues: hVotes.values
             })
-            index++;
+            index++
           }
         }
         let option = this.basicChartFormat(undefined, types, xaxis)
@@ -231,7 +227,7 @@ export default {
                 <span>Count</span>
               </span>
             </div>
-            ${param.map(p => {
+            ${param.map((p) => {
               if (p.value > 0) {
                 return `
                 <div class="tooltip-body">
@@ -241,9 +237,8 @@ export default {
                   </span>
                 </div>
                 `
-              }
-              else {
-                return ``
+              } else {
+                return ''
               }
             }).join('\n')}
             `
@@ -263,8 +258,8 @@ export default {
           xAxis: {
             type: 'value',
             splitLine: {
-              show: false,
-            },
+              show: false
+            }
           },
           yAxis: {
             type: 'category',
@@ -275,7 +270,7 @@ export default {
               nameTextStyle: {
                 padding: 20,
                 margin: 20,
-                align: 'right',
+                align: 'right'
               }
             }
           }
@@ -290,16 +285,15 @@ export default {
     })
   },
   methods: {
-    formatVotes(mimirs) {
-      let votes = {}
-      for (let i in mimirs) {
+    formatVotes (mimirs) {
+      const votes = {}
+      for (const i in mimirs) {
         if (!(mimirs[i].key in votes)) {
           votes[mimirs[i].key] = [{
             signer: mimirs[i].signer,
             value: mimirs[i].value
           }]
-        }
-        else {
+        } else {
           votes[mimirs[i].key].push({
             signer: mimirs[i].signer,
             value: mimirs[i].value
@@ -308,27 +302,27 @@ export default {
       }
       return votes
     },
-    gotoAddr(address) {
+    gotoAddr (address) {
       this.$router.push({ path: `/address/${address}` })
     },
-    gotoNode(signer) {
-      this.$router.push({path: `/node/${signer}`});
+    gotoNode (signer) {
+      this.$router.push({ path: `/node/${signer}` })
     },
-    getVoteHighestBid(voters) {
+    getVoteHighestBid (voters) {
       if ((!voters || voters.length == 0) && !this.nodes) {
         return
       }
       const activeVoters = voters.filter(v => this.nodes?.filter(n => n.status == 'Active').map(n => n.node_address).includes(v.signer))
-      const values = activeVoters.map(v => v.value);
-      const voteCount = _.countBy(values);
+      const values = activeVoters.map(v => v.value)
+      const voteCount = _.countBy(values)
       const votesObj = Object.keys(voteCount).map((v, i) => (
         {
           value: v,
           count: voteCount[v],
-          consensus: (voteCount[v]/(+this.network?.activeNodeCount))
+          consensus: (voteCount[v] / (+this.network?.activeNodeCount))
         }
-      ));
-      const hVote = _.maxBy(votesObj, (o) => o.consensus);
+      ))
+      const hVote = _.maxBy(votesObj, o => o.consensus)
       return {
         consensus: hVote?.consensus ?? 0,
         votePassed: activeVoters?.length ?? 0,
@@ -336,7 +330,7 @@ export default {
         values: votesObj
       }
     }
-  },
+  }
 }
 </script>
 
@@ -366,7 +360,7 @@ export default {
   > span {
     display: flex;
     justify-content: space-between;
-    
+
     b {
       text-align: right;
     }
