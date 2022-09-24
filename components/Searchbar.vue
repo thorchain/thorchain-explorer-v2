@@ -153,19 +153,19 @@ export default {
   },
   mounted () {
     window.addEventListener('click', (e) => {
-      if (!document.getElementById('search-container').contains(e.target)) {
+      if (!document.getElementById('search-container')?.contains(e.target)) {
         this.isSearch = false
       }
     })
 
     window.addEventListener('click', (e) => {
-      if (!document.getElementById('network-wrapper').contains(e.target)) {
+      if (!document.getElementById('network-wrapper')?.contains(e.target)) {
         this.showDialog = false
       }
     })
 
     window.addEventListener('click', (e) => {
-      if (!document.querySelector('.collapse-icon').contains(e.target) && !document.querySelector('.side-bar-container').contains(e.target)) {
+      if (!document.querySelector('.collapse-icon')?.contains(e.target) && !document.querySelector('.side-bar-container')?.contains(e.target)) {
         this.$store.commit('setSidebar', false)
       }
     })

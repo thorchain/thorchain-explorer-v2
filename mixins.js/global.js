@@ -49,7 +49,7 @@ export default {
       this.$router.push({ path: `${url}` })
     },
     gotoAddr (address) {
-
+      this.$router.push({ path: `/address/${address}` })
     },
     gotoTx (hash) {
       this.$router.push({ path: `/tx/${hash}` })
