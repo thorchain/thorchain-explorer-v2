@@ -691,6 +691,8 @@ export default {
       const tv = []
       const tva = []
       const tvr = []
+      const tvrs = []
+      const tvsr = []
       d?.intervals.forEach((interval) => {
         xAxis.push(
           moment(
@@ -703,6 +705,8 @@ export default {
         )
         tva.push((+interval.toAssetVolume * +interval.runePriceUSD) / 10 ** 8)
         tvr.push((+interval.toRuneVolume * +interval.runePriceUSD) / 10 ** 8)
+        tvrs.push((+interval.synthMintVolume * +interval.runePriceUSD) / 10 ** 8)
+        tvsr.push((+interval.synthRedeemVolume * +interval.runePriceUSD) / 10 ** 8)
       })
 
       const res = this.basicChartFormat(
@@ -728,7 +732,21 @@ export default {
             showSymbol: false,
             data: tvr,
             smooth: true
-          }
+          },
+          {
+            type: 'bar',
+            name: 'Synth mint Volume',
+            showSymbol: false,
+            data: tvrs,
+            smooth: true
+          },
+          {
+            type: 'bar',
+            name: 'Synth redeem Volume',
+            showSymbol: false,
+            data: tvsr,
+            smooth: true
+          },
         ],
         xAxis
       )
@@ -768,6 +786,7 @@ export default {
       const xAxis = []
       const le = []
       const be = []
+      d?.intervals.pop()
       d?.intervals.forEach((interval) => {
         xAxis.push(
           moment(

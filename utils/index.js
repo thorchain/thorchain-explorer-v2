@@ -205,9 +205,7 @@ export function fillNodeData (nodes, el, chains, nodesExtra, lastBlockHeight, ra
     supportedChains.forEach((chain) => {
       chainsHeight[chain] = (+chains[chain] - (el.observe_chains.filter(item => item?.chain === chain)[0]?.height ?? 0))
     })
-  } catch (error) {
-    console.error('Can\'t get the height.')
-  }
+  } catch (error) {}
   let isp
   let location
   if (nodesExtra && el.ip_address) {
