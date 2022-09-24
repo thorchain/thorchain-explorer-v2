@@ -940,7 +940,7 @@ export default {
 .grid-network {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(auto, 1fr));
   grid-gap: .5rem;
   gap: .5rem;
 }
