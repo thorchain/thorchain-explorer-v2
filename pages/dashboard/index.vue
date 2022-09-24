@@ -786,6 +786,7 @@ export default {
       const xAxis = []
       const le = []
       const be = []
+      d?.intervals.pop()
       d?.intervals.forEach((interval) => {
         xAxis.push(
           moment(
