@@ -66,7 +66,7 @@
               }"
             >
               <template slot="table-row" slot-scope="props">
-                <div v-if="props.column.field == 'asset'" v-tooltip="props.row.asset" class="cell-content">
+                <div v-if="props.column.field == 'asset'" v-tooltip="props.row.asset" class="cell-content clickable" @click="gotoPool(props.row.asset)">
                   <img class="table-asset-icon" :src="assetImage(props.row.asset)" alt="asset-icon">
                   <span>{{ props.formattedRow[props.column.field] }}</span>
                 </div>
@@ -367,6 +367,10 @@ export default {
     color: var(--font-color);
     padding: 0 .8rem;
   }
+}
+
+.cell-content {
+  display: flex;
 }
 
 .fade-enter-active, .fade-leave-active {
