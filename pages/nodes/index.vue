@@ -185,8 +185,8 @@
           </template>
         </vue-good-table>
       </Card>
-      <template v-for="m in otherNodes" v-else>
-        <Card v-if="mode == m.name" :title="m.title" :is-loading="!m.cols">
+      <template v-for="(m, i) in otherNodes" v-else>
+        <Card v-if="mode == m.name" :key="i" :title="m.title" :is-loading="!m.cols">
           <vue-good-table
             v-if="cols && m.cols"
             :key="2"
@@ -562,7 +562,7 @@ export default {
           sortedNodes.push({
             name: n,
             nodes: nodes?.filter(
-              e => e.status == n
+              e => e.status === n
             )
           })
         })
@@ -570,14 +570,14 @@ export default {
         sortedNodes.push({
           name: 'Eligiable',
           nodes: nodes?.filter(
-            e => e.status == 'Standby' && parseInt(e.bond) >= 30000000000000
+            e => e.status === 'Standby' && parseInt(e.bond) >= 30000000000000
           )
         })
 
         sortedNodes.push({
           name: 'StandBy',
           nodes: nodes?.filter(
-            e => e.status == 'Standby' && parseInt(e.bond) < 30000000000000
+            e => e.status === 'Standby' && parseInt(e.bond) < 30000000000000
           )
         })
 
@@ -596,23 +596,23 @@ export default {
     fillExtraNodes (nodes) {
       if (nodes) {
         let eliNodes = nodes?.filter(
-          e => (e.status == 'Standby' || e.status == 'Ready') && parseInt(e.bond) >= 30000000000000
+          e => (e.status === 'Standby' || e.status === 'Ready') && parseInt(e.bond) >= 30000000000000
         )
         eliNodes = this.fillENode(eliNodes)
         this.otherNodes[0].cols = eliNodes
 
         const stbNodes = nodes?.filter(
-          e => e.status == 'Standby' && parseInt(e.bond) < 30000000000000
+          e => e.status === 'Standby' && parseInt(e.bond) < 30000000000000
         )
         this.otherNodes[1].cols = this.fillENode(stbNodes)
 
         const whNodes = nodes?.filter(
-          e => e.status == 'Whitelisted'
+          e => e.status === 'Whitelisted'
         )
         this.otherNodes[2].cols = this.fillENode(whNodes)
 
         const rdNodes = nodes?.filter(
-          e => e.status == 'Unknown'
+          e => e.status === 'Unknown'
         )
         this.otherNodes[3].cols = this.fillENode(rdNodes)
       } else {
@@ -668,7 +668,7 @@ export default {
     delFav (address) {
       const favNodes = this.favNodes
       _.remove(favNodes, (n) => {
-        return n == address
+        return n === address
       })
       this.favNodes = [...favNodes]
     },

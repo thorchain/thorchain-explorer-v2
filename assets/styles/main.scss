@@ -8,6 +8,7 @@
 
 html, body, #__nuxt, #__layout, main {
   font-size: 16px; //root font-size
+  overflow: hidden;
 }
 
 body {
@@ -145,7 +146,7 @@ input {
         display: flex;
         flex-direction: column;
         color: var(--sec-font-color);
-        
+
         .header {
           font-size: .975rem;
         }
@@ -155,7 +156,7 @@ input {
           font-size: .75rem;
         }
       }
-      
+
       .txs {
         display: flex;
         flex-direction: column;
@@ -212,7 +213,7 @@ input {
   justify-content: center;
 }
 
-//loader 
+//loader
 .v-bounce {
   margin: auto;
 }
@@ -244,7 +245,7 @@ input {
   border: 1px solid var(--border-color);
   border-width: 1px 0 1px 0;
   color: var(--sec-font-color);
-  
+
   @include lg {
     border-radius: .5rem;
     border-width: 1px;

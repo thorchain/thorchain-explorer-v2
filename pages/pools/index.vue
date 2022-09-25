@@ -6,7 +6,7 @@
     </template>
     <template v-else-if="pools && pools.length > 0 && mode == 'table'">
       <Nav :active-mode.sync="tableMode" :nav-items="tableModeItems" />
-      <tamplate v-for="(k, v, i) in tables" :key="i">
+      <template v-for="(k, v, i) in tables">
         <vue-good-table
           v-if="k.data.length > 0"
           v-show="tableMode == k.mode"
@@ -26,7 +26,7 @@
           @on-row-click="gotoPoolTable"
         >
           <template slot="table-row" slot-scope="props">
-            <div v-if="props.column.field == 'asset'" v-tooltip="props.row.asset" class="cell-content">
+            <div v-if="props.column.field == 'asset'" class="cell-content" v-tooltip="props.row.asset">
               <img class="table-asset-icon" :src="assetImage(props.row.asset)" alt="asset-icon">
               <span>{{ props.formattedRow[props.column.field] }}</span>
             </div>
@@ -40,7 +40,7 @@
             </span>
           </template>
         </vue-good-table>
-      </tamplate>
+      </template>
     </template>
   </Page>
 </template>

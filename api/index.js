@@ -17,7 +17,8 @@ import {
   getRevThorname,
   getPools,
   getNetwork,
-  getPoolDepth
+  getPoolDepth,
+  getThorname
 } from './midgard.api'
 import {
   getMimir,
@@ -168,7 +169,8 @@ export default function ({ $axios }, inject) {
     getRunePrice,
     getDailySwap,
     getOhclPrice,
-    getPoolDepth
+    getPoolDepth,
+    getThorname
   }
 
   inject('api', api)
