@@ -1,99 +1,116 @@
 <template>
-  <div class="address-container">
-    <div class="address-header">
-      <WalletIcon class="icon" />
-      <span>{{ isVault?vaultType:'Address' }}</span>
-    </div>
-    <div class="address-name">
-      <span style="color: var(--primary-color)">{{ address }}</span>
-      <div class="icon-wrapper" style="margin-left: .7rem;" @click="copy(address)">
-        <span class="icon-name">{{ copyText }}</span>
-        <CopyIcon class="icon small" />
+  <Page>
+    <div class="address-container">
+      <div class="address-header">
+        <WalletIcon class="icon" />
+        <span>{{ isVault?vaultType:'Address' }}</span>
       </div>
-      <div class="icon-wrapper qr-wrapper" style="margin-left: .7rem;" @mouseover="showQR = true" @mouseleave="showQR = false">
-        <span class="icon-name">QR</span>
-        <ExpandIcon class="icon small" />
-        <transition name="fade">
-          <div v-show="showQR" class="qr-show">
-            <qrcode-vue :value="address" />
-          </div>
-        </transition>
+      <div class="address-name">
+        <span style="color: var(--primary-color)">{{ address }}</span>
+        <div class="icon-wrapper" style="margin-left: .7rem;" @click="copy(address)">
+          <span class="icon-name">{{ copyText }}</span>
+          <CopyIcon class="icon small" />
+        </div>
+        <div class="icon-wrapper qr-wrapper" style="margin-left: .7rem;" @mouseover="showQR = true" @mouseleave="showQR = false">
+          <span class="icon-name">QR</span>
+          <ExpandIcon class="icon small" />
+          <transition name="fade">
+            <div v-show="showQR" class="qr-show">
+              <qrcode-vue :value="address" />
+            </div>
+          </transition>
+        </div>
       </div>
-    </div>
-    <template v-if="addrTxs">
-      <div class="stat-wrapper">
-        <Nav :active-mode.sync="activeMode" :nav-items="[{text: 'Balances', mode: 'balance'},{text: 'THORName', mode: 'thorname'}]" />
-        <stat-table v-if="activeMode == 'balance'" :table-settings="addressStat">
-          <template #Balance>
-            <span v-if="balance && runePrice">
-              {{ balance | number('0,0.00') }}
-              (<span class="value">{{ balance * runePrice | currency }}</span>)
-            </span>
-            <span v-else>-</span>
+      <template v-if="addrTxs">
+        <div class="stat-wrapper">
+          <Nav :active-mode.sync="activeMode" :nav-items="[{text: 'Balances', mode: 'balance'},{text: 'THORName', mode: 'thorname'}]" />
+          <stat-table v-if="activeMode == 'balance'" :table-settings="addressStat">
+            <template #Balance>
+              <span v-if="balance && runePrice">
+                {{ balance | number('0,0.00') }}
+                (<span class="value">{{ balance * runePrice | currency }}</span>)
+              </span>
+              <span v-else>-</span>
+            </template>
+          </stat-table>
+          <template v-else-if="activeMode == 'thorname'">
+            <stat-table :table-settings="thornames" />
+            <div class="simple-card">
+              <div class="card-header">
+                Thorname Addresses
+              </div>
+              <div class="card-body">
+                <div class="addresses-container">
+                  <div v-for="address in thornameAddresses" :key="address.chain" class="addresses">
+                    <img class="asset-icon" :src="assetImage(baseChainAsset(address.chain))">
+                    <span class="clickable mono" @click="gotoAddr(address.address)">{{ address.address.slice(0,8) }}...{{ address.address.slice(-8) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </template>
-        </stat-table>
-        <stat-table v-else-if="activeMode == 'thorname'" :table-settings="thornames" />
-      </div>
-      <div style="margin: 1rem 0" />
-      <template v-if="isVault">
-        <div class="simple-card">
-          <div class="card-header">
-            Chain Addresses
-          </div>
-          <div class="card-body">
-            <div class="addresses-container">
-              <div v-for="address in chainAddresses" :key="address.chain" class="addresses">
-                <img class="asset-icon" :src="assetImage(baseChainAsset(address.chain))">
-                <span class="clickable mono" @click="gotoAddr(address.address)">{{ address.address.slice(0,8) }}...{{ address.address.slice(-8) }}</span>
+        </div>
+        <div style="margin: 1rem 0" />
+        <template v-if="isVault">
+          <div class="simple-card">
+            <div class="card-header">
+              Chain Addresses
+            </div>
+            <div class="card-body">
+              <div class="addresses-container">
+                <div v-for="address in chainAddresses" :key="address.chain" class="addresses">
+                  <img class="asset-icon" :src="assetImage(baseChainAsset(address.chain))">
+                  <span class="clickable mono" @click="gotoAddr(address.address)">{{ address.address.slice(0,8) }}...{{ address.address.slice(-8) }}</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <div class="simple-card">
-          <div class="card-header">
-            Vault Balances
-          </div>
-          <div class="card-body">
-            <vue-good-table
-              v-if="vaultInfo"
-              :columns="cols"
-              :rows="vaultInfo.coins"
-              style-class="vgt-table net-table vgt-compact"
-              :pagination-options="{
-                enabled: true,
-                perPage: 30,
-                perPageDropdownEnabled: false,
-              }"
-            >
-              <template slot="table-row" slot-scope="props">
-                <div v-if="props.column.field == 'asset'" v-tooltip="props.row.asset" class="cell-content clickable" @click="gotoPool(props.row.asset)">
-                  <img class="table-asset-icon" :src="assetImage(props.row.asset)" alt="asset-icon">
-                  <span>{{ props.formattedRow[props.column.field] }}</span>
-                </div>
-                <span v-else-if="props.column.field == 'amount'">
-                  <span>{{ props.formattedRow[props.column.field] }}
-                    <span class="extra-text">
-                      {{ showAsset(props.row.asset) }}
+          <div class="simple-card">
+            <div class="card-header">
+              Vault Balances
+            </div>
+            <div class="card-body">
+              <vue-good-table
+                v-if="vaultInfo"
+                :columns="cols"
+                :rows="vaultInfo.coins"
+                style-class="vgt-table net-table vgt-compact"
+                :pagination-options="{
+                  enabled: true,
+                  perPage: 30,
+                  perPageDropdownEnabled: false,
+                }"
+              >
+                <template slot="table-row" slot-scope="props">
+                  <div v-if="props.column.field == 'asset'" v-tooltip="props.row.asset" class="cell-content clickable" @click="gotoPool(props.row.asset)">
+                    <img class="table-asset-icon" :src="assetImage(props.row.asset)" alt="asset-icon">
+                    <span>{{ props.formattedRow[props.column.field] }}</span>
+                  </div>
+                  <span v-else-if="props.column.field == 'amount'">
+                    <span>{{ props.formattedRow[props.column.field] }}
+                      <span class="extra-text">
+                        {{ showAsset(props.row.asset) }}
+                      </span>
                     </span>
                   </span>
-                </span>
-                <span v-else>
-                  {{ props.formattedRow[props.column.field] }}
-                </span>
-              </template>
-            </vue-good-table>
+                  <span v-else>
+                    {{ props.formattedRow[props.column.field] }}
+                  </span>
+                </template>
+              </vue-good-table>
+            </div>
           </div>
-        </div>
+        </template>
+        <template>
+          <transactions v-if="addrTxs && addrTxs.actions" :txs="addrTxs" :loading="loading" />
+          <pagination v-if="addrTxs && addrTxs.actions && count" :limit="10" :offset="offset" :count="count" @changePage="getActions" />
+        </template>
       </template>
-      <template>
-        <transactions v-if="addrTxs && addrTxs.actions" :txs="addrTxs" :loading="loading" />
-        <pagination v-if="addrTxs && addrTxs.actions && count" :limit="10" :offset="offset" :count="count" @changePage="getActions" />
-      </template>
-    </template>
-    <div v-else-if="!addrTxs" class="error-container">
-      Can't Fetch the Address! Please Try again Later.
+      <div v-else-if="!addrTxs" class="error-container">
+        Can't Fetch the Address! Please Try again Later.
+      </div>
     </div>
-  </div>
+  </Page>
 </template>
 
 <script>
@@ -124,6 +141,7 @@ export default {
       isVault: false,
       chainAddresses: [],
       vaultInfo: undefined,
+      thornameAddresses: [],
       vaultType: 'Asgard',
       cols: [
         {
@@ -211,6 +229,19 @@ export default {
           this.loading = false
         })
     },
+    checkThornameAddresses (names) {
+      if (!names) {
+        return
+      }
+
+      names.forEach((n) => {
+        this.$api.getThorname(n).then((res) => {
+          if (this.thornameAddresses.length < res.data?.entries.length) {
+            this.thornameAddresses = res.data?.entries
+          }
+        })
+      })
+    },
     rlookThorname (address) {
       this.$api.getRevThorname(address)
         .then((res) => {
@@ -222,6 +253,7 @@ export default {
               filter: true
             }]
           })
+          this.checkThornameAddresses(names)
         })
         .catch((e) => {
           if (e.response.status === 404) {

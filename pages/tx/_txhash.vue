@@ -63,7 +63,7 @@
       <div v-if="tx" class="extra-details">
         <stat-table :table-settings="extraDetail">
           <template #Pools>
-            <div v-for="p in tx.pools" class="pool-box">
+            <div v-for="(p, i) in tx.pools" :key="i" class="pool-box">
               <img
                 class="asset-icon"
                 :src="assetImage(p)"
@@ -191,6 +191,7 @@ export default {
 
       // Searching midgard database
       this.progressText = '1/2'
+
       res = await this.$api.getTx(txHash).catch((e) => {
         if (e?.response?.status === 404) {
           this.error.message = 'Please make sure the correct transaction hash or account address is inserted.'
@@ -198,7 +199,7 @@ export default {
         }
       })
 
-      if (res.status / 200 == 1 && res.data.count !== '0') {
+      if (res.status / 200 === 1 && res.data.count !== '0') {
         this.tx = parseMidgardTx(res.data)
         this.isLoading = false
         this.loadingPercentage = 100
@@ -214,7 +215,7 @@ export default {
         }
       })
 
-      if (res.status / 200 == 1) {
+      if (res.status / 200 === 1) {
         this.tx = parseCosmosTx(res.data)
         this.isLoading = false
         this.loadingPercentage = 100

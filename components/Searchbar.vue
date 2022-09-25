@@ -84,7 +84,14 @@ export default {
         return
       }
       const search = this.searchQuery.toUpperCase()
-      if (
+      if (search.length <= 30) {
+        this.$api.getThorname(this.searchQuery).then((res) => {
+          if (res.status / 200 === 1) {
+            const thorchainAddr = res.data?.entries?.find(el => el.chain === 'THOR').address
+            this.$router.push({ path: `/address/${thorchainAddr}` })
+          }
+        })
+      } else if (
         // THORCHAIN
         search.startsWith('THOR') ||
         search.startsWith('TTHOR') ||
@@ -105,12 +112,11 @@ export default {
       ) {
         this.$router.push({ path: `/address/${this.searchQuery}` })
       } else {
-        // this.$api.getTx(this.searchQuery).then()
         this.$router.push({ path: `/tx/${this.searchQuery}` })
       }
     },
     changeTheme () {
-      if (this.theme == 'dark') {
+      if (this.theme === 'dark') {
         this.$store.commit('setTheme', false)
       } else {
         this.$store.commit('setTheme', true)
