@@ -35,8 +35,8 @@
           style-class="vgt-table net-table bordered condensed"
           :pagination-options="{
             enabled: true,
-            perPage: 50,
-            perPageDropdownEnabled: false,
+            perPageDropdown: [25, 50],
+            perPageDropdownEnabled: true,
           }"
           :search-options="{
             enabled: true,
