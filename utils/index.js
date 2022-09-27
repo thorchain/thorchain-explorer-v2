@@ -34,10 +34,11 @@ export function momentTimeFormat (time) {
 export function parseCosmosTx (ntx) {
   const ret = []
   ntx.tx?.body.messages.forEach((el) => {
+    const assetName = `THOR.${el?.amount[0]?.denom}`.toLocaleUpperCase()
     // Send messages
     switch (el['@type']) {
       case '/types.MsgSend':
-        var assetName = `THOR.${el?.amount[0]?.denom}`.toLocaleUpperCase()
+
         ret.push({
           type: 'Send',
           inout: [[{
@@ -58,7 +59,6 @@ export function parseCosmosTx (ntx) {
 
       // Deposit messages
       case '/types.MsgDeposit':
-        var assetName = `THOR.${el?.amount[0]?.denom}`.toLocaleUpperCase()
         ret.push({
           type: 'Deposit/Withdraw',
           inout: [[{
@@ -112,7 +112,7 @@ export function parseMidgardTx (tx) {
   tx.actions.forEach((txa, i) => {
     const insouts = [
       txa?.in?.map((t) => {
-        checkSynth(t?.coins[0]?.asset) == true ? res.synth = true : undefined
+        res.synth = checkSynth(t?.coins[0]?.asset)
 
         return {
           is: t?.coins[0]?.asset,
@@ -126,7 +126,7 @@ export function parseMidgardTx (tx) {
         }
       }),
       txa?.out?.map((t) => {
-        checkSynth(t?.coins[0]?.asset) == true ? res.synth = true : undefined
+        res.synth = checkSynth(t?.coins[0]?.asset)
 
         return {
           is: t.coins[0]?.asset,
