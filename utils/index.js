@@ -185,7 +185,8 @@ export function addressFormat (string, number = 6, isOnlyLast = false) {
 let supportedChains = []
 
 export function availableChains (nodes) {
-  return compact(nodes?.map(n => n.observe_chains?.map(o => o.chain))).reduce((a, b) => a?.length >= b?.length ? a : b, 0)
+  return compact(nodes?.map(n => n.observe_chains?.map(({ chain }) => chain).filter(chain => chain !== 'TERRA' /* disable TERRA */)
+  )).reduce((a, b) => a?.length >= b?.length ? a : b, 0)
 }
 
 export function observeredChains (nodes) {
