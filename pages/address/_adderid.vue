@@ -35,7 +35,7 @@
           </stat-table>
           <template v-else-if="activeMode == 'thorname'">
             <stat-table :table-settings="thornames" />
-            <div class="simple-card">
+            <div v-if="thornameAddresses.length > 0" class="simple-card">
               <div class="card-header">
                 Thorname Addresses
               </div>
