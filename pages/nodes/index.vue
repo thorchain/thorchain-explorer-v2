@@ -35,8 +35,8 @@
           style-class="vgt-table net-table bordered condensed"
           :pagination-options="{
             enabled: true,
-            perPage: 50,
-            perPageDropdownEnabled: false,
+            perPageDropdown: [25, 50],
+            perPageDropdownEnabled: true,
           }"
           :search-options="{
             enabled: true,
@@ -64,10 +64,10 @@
                 <span v-tooltip="props.row.address" @click="gotoNode(props.row.address)">
                   {{ addressFormat(props.row.address) }}
                 </span>
-                <template>
+                <div>
                   <StaredIcon v-if="isFav(props.row.address)" class="table-icon" style="fill: #FFEE58" @click="delFav(props.row.address)" />
                   <StarIcon v-else class="table-icon" @click="addFav(props.row.address)" />
-                </template>
+                </div>
                 <InfoIcon class="table-icon" @click="gotoNode(props.row.address)" />
                 <div :id="`vote-${props.row.originalIndex}`">
                   <VoteIcon v-if="mimirs" class="table-icon" />
@@ -111,7 +111,6 @@
             </span>
             <span v-else-if="props.column.field == 'location'">
               <div v-if="props.row.location" v-tooltip="`${props.row.location.code}, ${props.row.location.region}, ${props.row.location.city}`" class="countries">
-                <!-- <span>{{getUnicodeFlagIcon(props.row.location.code)}}</span>  -->
                 <VFlag :flag="props.row.location.code" />
                 <span>{{ props.row.location.city }}</span>
               </div>
@@ -222,7 +221,7 @@
                       <strong>Node Votes</strong>
                     </div>
                     <template v-if="mimirs">
-                      <div v-for="(p,i) in mimirs[props.row.address]" :key="i" class="popover-table">
+                      <div v-for="(p,j) in mimirs[props.row.address]" :key="j" class="popover-table">
                         <span class="key clickable" @click="goto('network/votes')">
                           {{ p.key }}
                         </span>
@@ -436,6 +435,246 @@ export default {
       mimirs: undefined
     }
   },
+  computed: {
+    ...mapGetters({
+      runePrice: 'getRunePrice'
+    }),
+    error () {
+      return !this.nodesQuery
+    },
+    nodeStatus () {
+      if (this.nodesQuery) {
+        const nodes = this.categorizedNodes(this.nodesQuery)
+        return {
+          tooltip: {
+            trigger: 'item'
+          },
+          legend: {
+            textStyle: {
+              color: 'var(--font-color)'
+            },
+            formatter (name) {
+              const node = nodes.find(n => n.name === name)
+              return `${name}: ${node.nodes.length}`
+            }
+          },
+          series: [
+            {
+              name: 'Node type',
+              type: 'pie',
+              radius: ['40%', '50%'],
+              avoidLabelOverlap: false,
+              itemStyle: {
+                borderRadius: 10,
+                borderColor: 'transparent',
+                borderWidth: 2
+              },
+              label: {
+                show: true,
+                color: 'var(--font-color)',
+                textBorderColor: 'transparent'
+              },
+              data: nodes.map(n => ({ value: n.nodes.length, name: n.name }))
+            }
+          ]
+        }
+      } else {
+        return undefined
+      }
+    },
+    activeCols () {
+      if (!this.nodesQuery) {
+        return this.cols
+      }
+
+      return [
+        this.cols[0],
+        {
+          label: 'Age',
+          field: 'age',
+          type: 'number',
+          tdClass: 'center',
+          thClass: 'center',
+          sortFn: this.aSort
+        },
+        {
+          label: 'ISP',
+          field: 'isp',
+          type: 'text',
+          tdClass: 'center'
+        },
+        {
+          label: 'Location',
+          field: 'location',
+          tdClass: 'center',
+          sortFn: this.cSort
+        },
+        ...this.cols.slice(1, 6),
+        {
+
+          label: 'Providers',
+          field: 'providers',
+          type: 'number',
+          tdClass: 'mono center clickable',
+          thClass: 'center',
+          sortFn: this.pSort
+        },
+        ...this.cols.slice(-1),
+        {
+          label: 'Score',
+          field: 'score',
+          type: 'number',
+          tdClass: 'mono center',
+          thClass: 'center'
+        },
+        {
+          label: 'Leave',
+          field: 'leave',
+          tdClass: 'center'
+        },
+        {
+          label: 'APY',
+          field: 'apy',
+          type: 'percentage',
+          tdClass: 'mono center',
+          thClass: 'center'
+        },
+        ...(
+          availableChains(this.nodesQuery?.filter(n => n.status === 'Active'))?.sort().map(c => (
+            {
+              label: c,
+              field: `chains.${c}`,
+              type: 'number',
+              formatFn: this.numberFormat,
+              tdClass: 'mono center',
+              thClass: 'center'
+            }
+          ))
+        )
+      ]
+    },
+    topActiveBonds () {
+      return [
+        [
+          {
+            name: 'Total Bond',
+            value: ((this.bondMetrics?.bondMetrics?.totalActiveBond ?? 0) / 10 ** 8),
+            usdValue: true
+          },
+          {
+            name: 'Average Bond',
+            value: ((this.bondMetrics?.bondMetrics?.averageActiveBond ?? 0) / 10 ** 8),
+            usdValue: true
+          },
+          {
+            name: 'Total Node Count',
+            value: this.bondMetrics?.activeNodeCount
+          }
+        ],
+        [
+          {
+            name: 'Maximum Bond',
+            value: Math.floor(Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.maximumActiveBond) ?? 0) / 10 ** 8)),
+            usdValue: true
+          },
+          {
+            name: 'Median Bond',
+            value: Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.medianActiveBond) ?? 0) / 10 ** 8),
+            usdValue: true
+          },
+          {
+            name: 'Minimum Bond',
+            value: Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.minimumActiveBond) ?? 0) / 10 ** 8),
+            usdValue: true
+          }
+        ]
+      ]
+    },
+    topStandbyBonds () {
+      return [
+        [
+          {
+            name: 'Total Bond',
+            value: ((this.bondMetrics?.bondMetrics?.totalStandbyBond ?? 0) / 10 ** 8),
+            usdValue: true
+          },
+          {
+            name: 'Average Bond',
+            value: ((this.bondMetrics?.bondMetrics?.averageStandbyBond ?? 0) / 10 ** 8),
+            usdValue: true
+          },
+          {
+            name: 'Total Node Count',
+            value: this.bondMetrics?.standbyNodeCount
+          }
+        ],
+        [
+          {
+            name: 'Maximum Bond',
+            value: Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.maximumStandbyBond) ?? 0) / 10 ** 8),
+            usdValue: true
+          },
+          {
+            name: 'Median Bond',
+            value: this.calMedianBond(),
+            usdValue: true
+          },
+          {
+            name: 'Minimum Bond',
+            value: ((this.bondMetrics?.bondMetrics?.minimumStandbyBond ?? 0) / 10 ** 8),
+            usdValue: true
+          }
+        ]
+      ]
+    },
+    activeNodes () {
+      if (this.nodesQuery) {
+        const actNodes = this.nodesQuery?.filter(
+          e => e.status === 'Active'
+        )
+        const filteredNodes = []
+        const chains = observeredChains(actNodes)
+        const ratioReward = (this.churnInterval - (+this.bondMetrics?.nextChurnHeight - this.lastBlockHeight)) / this.churnInterval
+        actNodes.forEach((el) => {
+          fillNodeData(
+            filteredNodes,
+            el,
+            chains,
+            this.nodesExtra,
+            this.lastBlockHeight,
+            ratioReward,
+            this.churnInterval
+          )
+          // if (this.lastBlockHeight) {
+          //   this.lastBlockHeight.forEach(chain => {
+          //     filteredNodes[chain.chain] =
+          //       chain
+          //   })
+          // }
+        })
+        if (this.favNodes) {
+          const favNodesFilter = filteredNodes.filter(n => this.favNodes.includes(n.address))
+          const nonFavNodesFilter = filteredNodes.filter(n => !this.favNodes.includes(n.address))
+          return [...favNodesFilter, ...nonFavNodesFilter]
+        }
+        return filteredNodes
+      } else {
+        return undefined
+      }
+    },
+    favNodes: {
+      set (array) {
+        this.localFavNodes = array
+        localStorage.setItem('FavNodes', JSON.stringify(array))
+      },
+      get () {
+        if (process.browser) {
+          return this.localFavNodes ?? JSON.parse(localStorage.getItem('FavNodes'))
+        }
+        return []
+      }
+    }
+  },
   mounted () {
     const mimirProm = this.$api.getMimir().then((res) => {
       this.minBond = +res.data.MINIMUMBONDINRUNE
@@ -644,9 +883,6 @@ export default {
     aSort (x, y, col, rowX, rowY) {
       return (x?.number < y?.number ? -1 : (x?.number > y?.number ? 1 : 0))
     },
-    getUnicodeFlagIcon (name) {
-      return getUnicodeFlagIcon(name)
-    },
     isFav (address) {
       if (this.favNodes && this.favNodes.includes(address)) {
         return true
@@ -692,245 +928,6 @@ export default {
       })
 
       return mimirs
-    }
-  },
-  computed: {
-    ...mapGetters({
-      runePrice: 'getRunePrice'
-    }),
-    error () {
-      return !this.nodesQuery
-    },
-    nodeStatus () {
-      if (this.nodesQuery) {
-        const nodes = this.categorizedNodes(this.nodesQuery)
-        return {
-          tooltip: {
-            trigger: 'item'
-          },
-          legend: {
-            textStyle: {
-              color: 'var(--font-color)'
-            },
-            formatter (name) {
-              const node = nodes.find(n => n.name === name)
-              return `${name}: ${node.nodes.length}`
-            }
-          },
-          series: [
-            {
-              name: 'Node type',
-              type: 'pie',
-              radius: ['40%', '50%'],
-              avoidLabelOverlap: false,
-              itemStyle: {
-                borderRadius: 10,
-                borderColor: 'transparent',
-                borderWidth: 2
-              },
-              label: {
-                show: true,
-                color: 'var(--font-color)',
-                textBorderColor: 'transparent'
-              },
-              data: nodes.map(n => ({ value: n.nodes.length, name: n.name }))
-            }
-          ]
-        }
-      } else {
-        return undefined
-      }
-    },
-    activeCols () {
-      if (!this.nodesQuery) {
-        return this.cols
-      }
-
-      return [
-        this.cols[0],
-        {
-          label: 'Age',
-          field: 'age',
-          type: 'number',
-          tdClass: 'center',
-          thClass: 'center',
-          sortFn: this.aSort
-        },
-        {
-          label: 'ISP',
-          field: 'isp',
-          type: 'text',
-          tdClass: 'center'
-        },
-        {
-          label: 'Location',
-          field: 'location',
-          tdClass: 'center',
-          sortFn: this.cSort
-        },
-        ...this.cols.slice(1, 6),
-        {
-
-          label: 'Providers',
-          field: 'providers',
-          type: 'number',
-          tdClass: 'mono center clickable',
-          thClass: 'center',
-          sortFn: this.pSort
-        },
-        ...this.cols.slice(-1),
-        {
-          label: 'Score',
-          field: 'score',
-          type: 'number',
-          tdClass: 'mono center',
-          thClass: 'center'
-        },
-        {
-          label: 'Leave',
-          field: 'leave',
-          tdClass: 'center'
-        },
-        {
-          label: 'APY',
-          field: 'apy',
-          type: 'percentage',
-          tdClass: 'mono center',
-          thClass: 'center'
-        },
-        ...(
-          availableChains(this.nodesQuery?.filter(n => n.status == 'Active'))?.sort().map(c => (
-            {
-              label: c,
-              field: `chains.${c}`,
-              type: 'number',
-              formatFn: this.numberFormat,
-              tdClass: 'mono center',
-              thClass: 'center'
-            }
-          ))
-        )
-      ]
-    },
-    topActiveBonds () {
-      return [
-        [
-          {
-            name: 'Total Bond',
-            value: ((this.bondMetrics?.bondMetrics?.totalActiveBond ?? 0) / 10 ** 8),
-            usdValue: true
-          },
-          {
-            name: 'Average Bond',
-            value: ((this.bondMetrics?.bondMetrics?.averageActiveBond ?? 0) / 10 ** 8),
-            usdValue: true
-          },
-          {
-            name: 'Total Node Count',
-            value: this.bondMetrics?.activeNodeCount
-          }
-        ],
-        [
-          {
-            name: 'Maximum Bond',
-            value: Math.floor(Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.maximumActiveBond) ?? 0) / 10 ** 8)),
-            usdValue: true
-          },
-          {
-            name: 'Median Bond',
-            value: Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.medianActiveBond) ?? 0) / 10 ** 8),
-            usdValue: true
-          },
-          {
-            name: 'Minimum Bond',
-            value: Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.minimumActiveBond) ?? 0) / 10 ** 8),
-            usdValue: true
-          }
-        ]
-      ]
-    },
-    topStandbyBonds () {
-      return [
-        [
-          {
-            name: 'Total Bond',
-            value: ((this.bondMetrics?.bondMetrics?.totalStandbyBond ?? 0) / 10 ** 8),
-            usdValue: true
-          },
-          {
-            name: 'Average Bond',
-            value: ((this.bondMetrics?.bondMetrics?.averageStandbyBond ?? 0) / 10 ** 8),
-            usdValue: true
-          },
-          {
-            name: 'Total Node Count',
-            value: this.bondMetrics?.standbyNodeCount
-          }
-        ],
-        [
-          {
-            name: 'Maximum Bond',
-            value: Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.maximumStandbyBond) ?? 0) / 10 ** 8),
-            usdValue: true
-          },
-          {
-            name: 'Median Bond',
-            value: this.calMedianBond(),
-            usdValue: true
-          },
-          {
-            name: 'Minimum Bond',
-            value: ((this.bondMetrics?.bondMetrics?.minimumStandbyBond ?? 0) / 10 ** 8),
-            usdValue: true
-          }
-        ]
-      ]
-    },
-    activeNodes () {
-      if (this.nodesQuery) {
-        const actNodes = this.nodesQuery?.filter(
-          e => e.status === 'Active'
-        )
-        const filteredNodes = []
-        const chains = observeredChains(actNodes)
-        const ratioReward = (this.churnInterval - (+this.bondMetrics?.nextChurnHeight - this.lastBlockHeight)) / this.churnInterval
-        actNodes.forEach((el) => {
-          fillNodeData(
-            filteredNodes,
-            el,
-            chains,
-            this.nodesExtra,
-            this.lastBlockHeight,
-            ratioReward,
-            this.churnInterval
-          )
-          // if (this.lastBlockHeight) {
-          //   this.lastBlockHeight.forEach(chain => {
-          //     filteredNodes[chain.chain] =
-          //       chain
-          //   })
-          // }
-        })
-        if (this.favNodes) {
-          const favNodesFilter = filteredNodes.filter(n => this.favNodes.includes(n.address))
-          const nonFavNodesFilter = filteredNodes.filter(n => !this.favNodes.includes(n.address))
-          return [...favNodesFilter, ...nonFavNodesFilter]
-        }
-        return filteredNodes
-      } else {
-        return undefined
-      }
-    },
-    favNodes: {
-      set (array) {
-        this.localFavNodes = array
-        localStorage.setItem('FavNodes', JSON.stringify(array))
-      },
-      get () {
-        if (process.browser) {
-          return this.localFavNodes ?? JSON.parse(localStorage.getItem('FavNodes'))
-        }
-      }
     }
   }
 }
