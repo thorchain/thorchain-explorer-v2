@@ -128,6 +128,40 @@ export default {
     ExpandIcon,
     QrcodeVue
   },
+  async asyncData ({ params, $api }) {
+    const address = params.adderid
+    const addrTxs = await $api.getAddress(address, 0).catch((e) => {
+      console.error(e)
+    })
+    const count = addrTxs?.data?.count ?? 0
+    let balance = 0
+    let otherBalances = []
+    if (address.match(/^[st]?thor.*/gmi)) {
+      try {
+        const balances = (await $api.getBalance(address)).data.result
+        const index = balances.findIndex((object) => {
+          return object.denom === 'rune'
+        })
+
+        if (index !== -1) {
+          balance = Number.parseFloat(balances[index]?.amount) / 10 ** 8 ?? 0
+          balances.splice(index, 1)
+        }
+
+        otherBalances = balances.map((item) => {
+          return [{
+            name: 'Synth ' + item.denom.toUpperCase(),
+            value: (item?.amount / 10 ** 8).toFixed(8),
+            filter: true
+          }]
+        })
+      } catch (e) {
+        console.warn('can\'t get the balances')
+      }
+    }
+
+    return { address, addrTxs: addrTxs?.data, count, balance, otherBalances }
+  },
   data () {
     return {
       offset: 0,
@@ -289,40 +323,6 @@ export default {
         }
       }).catch(e => console.error(e))
     }
-  },
-  async asyncData ({ params, $api }) {
-    const address = params.adderid
-    const addrTxs = await $api.getAddress(address, 0).catch((e) => {
-      console.error(e)
-    })
-    const count = addrTxs?.data?.count ?? 0
-    let balance = 0
-    let otherBalances = []
-    if (address.match(/^[st]?thor.*/gmi)) {
-      try {
-        const balances = (await $api.getBalance(address)).data.result
-        const index = balances.findIndex((object) => {
-          return object.denom === 'rune'
-        })
-
-        if (index !== -1) {
-          balance = Number.parseFloat(balances[index]?.amount) / 10 ** 8 ?? 0
-          balances.splice(index, 1)
-        }
-
-        otherBalances = balances.map((item) => {
-          return [{
-            name: 'Synth ' + item.denom.toUpperCase(),
-            value: (item?.amount / 10 ** 8).toFixed(8),
-            filter: true
-          }]
-        })
-      } catch (e) {
-        console.warn('can\'t get the balances')
-      }
-    }
-
-    return { address, addrTxs: addrTxs?.data, count, balance, otherBalances }
   }
 }
 </script>
