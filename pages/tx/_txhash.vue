@@ -190,51 +190,44 @@ export default {
       let res
 
       // Searching midgard database
-      this.progressText = '1/2'
+      this.progressText = '1/3'
 
       res = await this.$api.getTx(txHash).catch((e) => {
         if (e?.response?.status === 404) {
           this.error.message = 'Please make sure the correct transaction hash or account address is inserted.'
-          this.isError = true
         }
       })
 
-      if (res.status / 200 === 1 && res.data.count !== '0') {
+      if (res?.status / 200 === 1 && res.data.count !== '0') {
         this.tx = parseMidgardTx(res.data)
         this.isLoading = false
         this.loadingPercentage = 100
         return
       }
 
-      this.progressText = '2/2'
+      this.progressText = '2/3'
 
       res = await this.$api.getNativeTx(txHash).catch((e) => {
         if (e?.response?.status === 404) {
           this.error.message = 'Please make sure the correct transaction hash or account address is inserted.'
-          this.isError = true
         }
       })
 
-      if (res.status / 200 === 1) {
+      if (res?.status / 200 === 1) {
         this.tx = parseCosmosTx(res.data)
         this.isLoading = false
         this.loadingPercentage = 100
         return
       }
 
-      // Commenting observe tx for now, seems midgard is supporting it now.
-      // res = await this.$api.getThorchainTx(txHash).catch((e) => {
-      //   if (e?.response?.status === 404) {
-      //     this.error.message = "Please make sure the correct transaction hash or account address is inserted.";
-      //     this.isError = true;
-      //   }
-      // });
+      this.progressText = '3/3'
 
-      // if (res.status / 200 == 1) {
-      //   parseNativeThorchainTx(res.data);
-      //   this.isLoading = false;
-      //   return;
-      // }
+      res = await this.$api.getAddress(txHash, 0).catch((e) => {})
+
+      if (res.status / 200 === 1) {
+        this.$router.push({ path: `/address/${txHash}` })
+        return
+      }
     } catch (error) {
       // Please make sure the correct transaction hash or account address is inserted.
       console.error(error)
