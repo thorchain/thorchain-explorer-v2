@@ -2,11 +2,11 @@ import { ethers } from 'ethers'
 import { CoinIconsFromTrustWallet } from '~/const/icon-list'
 import { assetFromString } from '~/utils'
 
-function _setEthIconPath (assetSymbol, assetTicker) {
+function getErcIconPath (chain, assetSymbol, assetTicker) {
   const assetAddress = assetSymbol.slice(assetTicker.length + 1)
   const strip0x = assetAddress.substr(2)
   const checkSummedAddress = ethers.utils.getAddress(strip0x)
-  return `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/${checkSummedAddress}/logo.png`
+  return `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/${chain}/assets/${checkSummedAddress}/logo.png`
 }
 
 export const AssetImage = (assetStr) => {
@@ -53,8 +53,7 @@ export const AssetImage = (assetStr) => {
 
       case 'ETH':
         if (symbol !== 'ETH') {
-          // for ETH tokens
-          iconPath = _setEthIconPath(symbol, ticker)
+          iconPath = getErcIconPath('ethereum', symbol, ticker)
 
           // getter of icons for eth testnet
           // if (environment.network === "testnet") {
@@ -100,8 +99,12 @@ export const AssetImage = (assetStr) => {
         break
 
       case 'AVAX':
-        iconPath =
-          'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/avalanchex/info/logo.png'
+        if (symbol !== 'AVAX') {
+          iconPath = getErcIconPath('avalanchec', symbol, ticker)
+        } else {
+          iconPath =
+            'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/avalanchex/info/logo.png'
+        }
         break
 
       default:
