@@ -1,0 +1,50 @@
+//Dark Colors
+:root {
+  --app-background-color: #263137;
+  --bg-color: #191c1e;
+  --sidebar: #212121;
+  --font-color: #9F9F9F;
+  --sec-font-color: #e6e6e6;
+  --primary-color: #63FDD9;
+  --border-color: #263238;
+  --card-bg-color: #161819;
+  --gradient-left: #212121;
+  --gradient-right: #263238;
+  --active-bg-color: #3E464B;
+  --color-light: hsl(0,0%,10%);
+  --darker-bg: hsl(0, 0%, 20%);
+}
+
+[theme="dark"] {
+  --app-background-color: #263137;
+  --bg-color: #191c1e;
+  --sidebar: #212121;
+  --font-color: #9F9F9F;
+  --sec-font-color: #e6e6e6;
+  --primary-color: #63FDD9;
+  --border-color: #263238;
+  --card-bg-color: #161819;
+  --gradient-left: #212121;
+  --gradient-right: #263238;
+  --active-bg-color: #3E464B;
+  --bubble-font-color: #191c1e;
+  --color-light: hsl(0,0%,10%);
+  --darker-bg: hsl(0, 0%, 20%);
+}
+
+[theme="light"] {
+  --app-background-color: #263137;
+  --bg-color: #FFF;
+  --sidebar: #FFF;
+  --font-color: #404040;
+  --sec-font-color: #404040;
+  --primary-color: #3ca38b;
+  --border-color: #CCCCCC;
+  --card-bg-color: #FFF;
+  --gradient-left: #FFFFFF;
+  --gradient-right: #DEE4E7;
+  --active-bg-color: #CCCCCC;
+  --bubble-font-color: #191c1e;
+  --color-light: hsl(0,0%,98%);
+  --darker-bg: hsl(0, 0%, 95%);
+}

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="37px" height="43px" viewBox="0 0 37 43" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Shape</title>
+    <defs>
+        <linearGradient x1="0%" y1="50%" x2="100%" y2="50%" id="linearGradient-1">
+            <stop stop-color="#00CCFF" offset="0%"></stop>
+            <stop stop-color="#33FF99" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="Desktop" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <path d="M0,42.1505376 L29.3660229,29.7578443 L20.0759286,20.3135121 L0,42.1505376 Z M10.7858343,10.8822386 L20.0759286,20.3135121 L36.6709677,-3.63797881e-12 L10.7858343,10.8822386 Z" id="Shape" fill="url(#linearGradient-1)" fill-rule="nonzero"></path>
+    </g>
+</svg>

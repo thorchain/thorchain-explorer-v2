@@ -1,0 +1,25 @@
+{
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "devDependencies": {
+    "@xchainjs/xchain-util": "^0.10.0",
+    "bignumber.js": "^9.1.0",
+    "nuxt": "3.0.0-rc.11",
+    "qrcode.vue": "^3.3.3",
+    "sass": "^1.55.0"
+  },
+  "dependencies": {
+    "country-flag-icons": "^1.5.5",
+    "echarts": "^5.4.0",
+    "loadash": "^1.0.0",
+    "semver": "^7.3.8",
+    "vue-good-table": "^2.21.11",
+    "vue-spinner": "^1.0.4"
+  }
+}
