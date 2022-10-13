@@ -103,6 +103,11 @@ export default {
             name: 'LTC Trading is Halted',
             value: this.mimir?.HALTLTCTRADING ? 'Yes' : 'No',
             filter: true
+          },
+          {
+            name: 'AVAX Trading is Halted',
+            value: this.mimir?.HALTAVAXTRADING ? 'Yes' : 'No',
+            filter: true
           }
         ],
         [
@@ -184,6 +189,11 @@ export default {
             name: 'LTC LP is paused',
             value: this.mimir?.PAUSELPLTC ? 'Yes' : 'No',
             filter: true
+          },
+          {
+            name: 'AVAX LP is paused',
+            value: this.mimir?.PAUSELPAVAX ? 'Yes' : 'No',
+            filter: true
           }
         ],
         [
@@ -252,6 +262,11 @@ export default {
           {
             name: 'LTC CHAIN is paused',
             value: this.mimir?.HALTLTCCHAIN ? 'Yes' : 'No',
+            filter: true
+          },
+          {
+            name: 'AVAX CHAIN is paused',
+            value: this.mimir?.HALTAVAXCHAIN ? 'Yes' : 'No',
             filter: true
           }
         ],
@@ -429,6 +444,10 @@ export default {
           {
             name: 'Churning is halted',
             value: this.mimir?.HALTCHURNING ? 'Yes' : 'No'
+          },
+          {
+            name: 'Max node to churn out for lower version',
+            value: this.mimir?.MAXNODETOCHURNOUTFORLOWVERSION
           }
         ],
         [
