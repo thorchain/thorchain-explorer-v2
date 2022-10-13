@@ -13,7 +13,7 @@
     >
       <template slot="table-row" slot-scope="props">
         <div v-if="props.column.field == 'asset'" v-tooltip="props.row.asset" class="cell-content">
-          <img class="table-asset-icon synth" :src="assetImage(props.row.asset)" alt="asset-icon">
+          <AssetIcon :asset="props.row.asset" chain="THOR.RUNE" />
           <span>{{ props.formattedRow[props.column.field] }}</span>
         </div>
         <span v-else-if="props.column.field == 'synth'">
@@ -41,7 +41,6 @@ export default {
   async asyncData ({ $api }) {
     const synthAssets = (await $api.getAssets().catch(e => console.error(e))).data
     const pools = (await $api.getThorPools().catch(e => console.error(e))).data
-
     const synthUtils = []
     for (const asset of synthAssets.supply) {
       const assetName = synthToAsset(asset.denom)
@@ -98,7 +97,9 @@ export default {
   mounted () {
     if (this.synthUtils && this.synthUtils.length > 0) {
       for (const asset of this.synthUtils) {
-        if (!asset) { continue }
+        if (!asset) {
+          continue
+        }
         this.rows.push({
           asset: asset?.asset,
           synth: asset?.synth,
