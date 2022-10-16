@@ -30,9 +30,6 @@
           <a :class="{'active': networkEnv == 'stagenet'}" :disabled="networkEnv == 'stagenet'" :href="gotoInstance('stagenet', networkEnv == 'stagenet')">
             Stagenet
           </a>
-          <a :class="{'active': networkEnv == 'testnet'}" :disabled="networkEnv == 'testnet'" :href="gotoInstance('testnet', networkEnv == 'testnet')">
-            Testnet
-          </a>
         </div>
       </div>
       <SunIcon v-if="theme === 'light'" class="social-icon" @click="changeTheme" />
