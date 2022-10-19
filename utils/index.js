@@ -155,9 +155,16 @@ export function parseMidgardTx (tx) {
     const ins = res.inout.map(e => e[0][0])
     const hash = ins.find(e => !!e.txID).txID
     if (ins.every(e => e.txID === hash)) {
-      res.inout[0][0][0].asset.amount += res.inout[1][0][0].asset.amount
-      minBy(res.inout[0][1], e => e.asset.amount).label = 'affiliate fee'
-      res.inout.pop()
+      if (res.inout[0][1].length > res.inout[1][1]) {
+        res.inout[0][0][0].asset.amount += res.inout[1][0][0].asset.amount
+        minBy(res.inout[0][1], e => e.asset.amount).label = 'affiliate fee'
+        res.inout.pop()
+      }
+      else {
+        res.inout[1][0][0].asset.amount += res.inout[0][0][0].asset.amount
+        minBy(res.inout[1][1], e => e.asset.amount).label = 'affiliate fee'
+        res.inout.shift()
+      }
     }
   }
 
