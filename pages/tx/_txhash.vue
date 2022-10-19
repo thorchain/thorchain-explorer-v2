@@ -49,6 +49,9 @@
                   <div v-if="checkSynth(one_tx.asset.name)" style="margin-left: .2rem" class="bubble-container yellow">
                     synth
                   </div>
+                  <div v-if="one_tx.label" style="margin-left: .3rem" class="bubble-container">
+                    {{ one_tx.label }}
+                  </div>
                 </div>
                 <div class="address">
                   <span v-if="one_tx.address" class="clickable" @click="gotoAddr(one_tx.address)">{{ formatAddress(one_tx.address) }}</span>
