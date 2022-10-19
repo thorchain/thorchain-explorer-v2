@@ -1,5 +1,5 @@
 import { AssetCurrencySymbol, AssetRuneNative, assetToString, isSynthAsset } from '@xchainjs/xchain-util'
-import { compact, minBy } from 'lodash'
+import { compact } from 'lodash'
 import moment from 'moment'
 
 const SYNTH_DELIMITER = '/'
@@ -157,12 +157,11 @@ export function parseMidgardTx (tx) {
     if (ins.every(e => e.txID === hash)) {
       if (res.inout[0][1].length > res.inout[1][1]) {
         res.inout[0][0][0].asset.amount += res.inout[1][0][0].asset.amount
-        minBy(res.inout[0][1], e => e.asset.amount).label = 'affiliate fee'
+        // minBy(res.inout[0][1], e => e.asset.amount).label = 'affiliate fee'
         res.inout.pop()
-      }
-      else {
+      } else {
         res.inout[1][0][0].asset.amount += res.inout[0][0][0].asset.amount
-        minBy(res.inout[1][1], e => e.asset.amount).label = 'affiliate fee'
+        // minBy(res.inout[1][1], e => e.asset.amount).label = 'affiliate fee'
         res.inout.shift()
       }
     }
