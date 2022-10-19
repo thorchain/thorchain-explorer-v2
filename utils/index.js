@@ -106,7 +106,8 @@ export function parseMidgardTx (tx) {
     pools: txAction.pools,
     status: status.includes('success') ? 'success' : status[0],
     liqidityFee: txAction.metadata,
-    synth: false
+    synth: false,
+    label: []
   }
 
   tx.actions.forEach((txa, i) => {
@@ -146,6 +147,18 @@ export function parseMidgardTx (tx) {
 
   if (txAction.metadata) {
     res.gas = txAction.metadata[txAction.type]?.networkFees?.map(f => (f.amount / 10 ** 8 + ' ' + f.asset))
+    res.memo = txAction.metadata[txAction.type]?.memo
+  }
+
+  // merge two txs one with affilitate fee
+  if (res.inout.length > 1) {
+    const ins = res.inout.map(e => e[0][0])
+    const hash = ins.find(e => !!e.txID).txID
+    if (ins.every(e => e.txID === hash)) {
+      res.inout[0][0][0].asset.amount += res.inout[1][0][0].asset.amount
+      res.inout[0][1][1].label = 'affiliate fee'
+      res.inout.pop()
+    }
   }
 
   return res
