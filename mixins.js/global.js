@@ -78,8 +78,10 @@ export default {
       return isSynthAsset(assetFromString(asset))
     },
     fromNow (date) {
-      console.log(date, moment(date))
       return moment(date).fromNow()
+    },
+    percentageFormat (number) {
+      return number ? this.$options.filters.percent(number, 4) : '-'
     },
     normalFormat (number) {
       return number ? this.$options.filters.number(+number, '0,0') : '-'
