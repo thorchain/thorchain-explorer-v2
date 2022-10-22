@@ -26,8 +26,8 @@
           @on-row-click="gotoPoolTable"
         >
           <template slot="table-row" slot-scope="props">
-            <div v-if="props.column.field == 'asset'" class="cell-content" v-tooltip="props.row.asset">
-              <AssetIcon :asset="props.row.asset"></AssetIcon>
+            <div v-if="props.column.field == 'asset'" v-tooltip="props.row.asset" class="cell-content">
+              <AssetIcon :asset="props.row.asset" />
               <span>{{ props.formattedRow[props.column.field] }}</span>
             </div>
             <span v-else-if="props.column.field == 'status'">
@@ -49,136 +49,135 @@
 import { mapGetters } from 'vuex'
 
 export default {
-    data() {
-        return {
-            error: false,
-            mode: "table",
-            navItems: [
-                { text: "Grid", mode: "grid" },
-                { text: "Table", mode: "table" }
-            ],
-            tableModeItems: [
-                { text: "Active Pools", mode: "active" },
-                { text: "Staged/Suspended Pools", mode: "staged" }
-            ],
-            tableMode: "active",
-            cols: [
-                {
-                    label: "Asset",
-                    field: "asset",
-                    formatFn: this.formatAsset
-                },
-                {
-                    label: "Status",
-                    field: "status"
-                },
-                {
-                    label: "USD Price",
-                    field: "price",
-                    type: "number",
-                    formatFn: this.curFormat,
-                    tdClass: "mono"
-                },
-                {
-                    label: "Volume 24H",
-                    field: "volume",
-                    type: "number",
-                    formatFn: this.numberFormat,
-                    tdClass: "mono"
-                },
-                {
-                    label: "Depth",
-                    field: "depth",
-                    type: "number",
-                    formatFn: this.numberFormat,
-                    tdClass: "mono"
-                },
-                {
-                    label: "Volume/Depth",
-                    field: "vd",
-                    type: "percentage",
-                    tdClass: "mono"
-                },
-                {
-                    label: "APY",
-                    field: "apy",
-                    type: "percentage",
-                    tdClass: "mono"
-                }
-            ],
-            pools: undefined,
-            tables: {
-                activeRows: {
-                    data: [],
-                    mode: "active"
-                },
-                standbyRows: {
-                    data: [],
-                    mode: "staged"
-                }
-            }
-        };
-    },
-    mounted() {
-        this.$api.getPools().then(async ({ data }) => {
-            this.pools = data;
-            const runePrice = (await this.$api.getStats()).data.runePriceUSD;
-            const ps = this.pools.map(p => ({
-                status: p.status,
-                price: p.assetPriceUSD,
-                depth: ((+p.assetDepth / 10 ** 8) * p.assetPriceUSD) + ((+p.runeDepth / 10 ** 8) * runePrice),
-                apy: p.poolAPY,
-                volume: (+p.volume24h / 10 ** 8) * runePrice,
-                vd: (+p.volume24h) / ((+p.assetDepth * +p.assetPrice) + (+p.runeDepth)),
-                asset: p.asset
-            }));
-            this.sepPools(ps);
-        }).catch((e) => {
-            console.error(e);
-        });
-    },
-    computed: {
-        ...mapGetters({
-            runePrice: "getRunePrice"
-        }),
-        sortedPools() {
-            if (!this.pools) {
-                return undefined;
-            }
-            return this.pools?.sort((a, b) => {
-                return (+b.runeDepth) - (+a.runeDepth);
-            });
+  data () {
+    return {
+      error: false,
+      mode: 'table',
+      navItems: [
+        { text: 'Grid', mode: 'grid' },
+        { text: 'Table', mode: 'table' }
+      ],
+      tableModeItems: [
+        { text: 'Active Pools', mode: 'active' },
+        { text: 'Staged/Suspended Pools', mode: 'staged' }
+      ],
+      tableMode: 'active',
+      cols: [
+        {
+          label: 'Asset',
+          field: 'asset',
+          formatFn: this.formatAsset
+        },
+        {
+          label: 'Status',
+          field: 'status'
+        },
+        {
+          label: 'USD Price',
+          field: 'price',
+          type: 'number',
+          formatFn: this.curFormat,
+          tdClass: 'mono'
+        },
+        {
+          label: 'Volume 24H',
+          field: 'volume',
+          type: 'number',
+          formatFn: this.numberFormat,
+          tdClass: 'mono'
+        },
+        {
+          label: 'Depth',
+          field: 'depth',
+          type: 'number',
+          formatFn: this.numberFormat,
+          tdClass: 'mono'
+        },
+        {
+          label: 'Volume/Depth',
+          field: 'vd',
+          type: 'percentage',
+          tdClass: 'mono'
+        },
+        {
+          label: 'APY',
+          field: 'apy',
+          type: 'percentage',
+          tdClass: 'mono'
         }
-    },
-    methods: {
-        numberFormat(number, filter) {
-            return "$" + this.$options.filters.number(number, "0.00a");
+      ],
+      pools: undefined,
+      tables: {
+        activeRows: {
+          data: [],
+          mode: 'active'
         },
-        curFormat(number) {
-            return this.$options.filters.currency(number);
-        },
-        formatAsset(asset) {
-            return asset.length > 10
-                ? asset.slice(0, 14) + "..."
-                : asset;
-        },
-        gotoPoolTable(params) {
-            this.gotoPool(params.row.asset);
-        },
-        sepPools(pools) {
-            if (!pools && pools.length <= 0) {
-                return;
-            }
-            for (const i in pools) {
-                if (pools[i].status === "available") {
-                    this.tables.activeRows.data.push(pools[i]);
-                }
-                else {
-                    this.tables.standbyRows.data.push(pools[i]);
-                }
-            }
+        standbyRows: {
+          data: [],
+          mode: 'staged'
         }
+      }
     }
+  },
+  computed: {
+    ...mapGetters({
+      runePrice: 'getRunePrice'
+    }),
+    sortedPools () {
+      if (!this.pools) {
+        return undefined
+      }
+      return this.pools?.sort((a, b) => {
+        return (+b.runeDepth) - (+a.runeDepth)
+      })
+    }
+  },
+  mounted () {
+    this.$api.getPools().then(async ({ data }) => {
+      this.pools = data
+      const runePrice = (await this.$api.getStats()).data.runePriceUSD
+      const ps = this.pools.map(p => ({
+        status: p.status,
+        price: p.assetPriceUSD,
+        depth: ((+p.assetDepth / 10 ** 8) * p.assetPriceUSD) + ((+p.runeDepth / 10 ** 8) * runePrice),
+        apy: p.poolAPY,
+        volume: (+p.volume24h / 10 ** 8) * runePrice,
+        vd: (+p.volume24h) / ((+p.assetDepth * +p.assetPrice) + (+p.runeDepth)),
+        asset: p.asset
+      }))
+      this.sepPools(ps)
+    }).catch((e) => {
+      console.error(e)
+    })
+  },
+  methods: {
+    numberFormat (number, filter) {
+      return '$' + this.$options.filters.number(number, '0.00a')
+    },
+    curFormat (number) {
+      return this.$options.filters.currency(number)
+    },
+    formatAsset (asset) {
+      return asset.length > 10
+        ? asset.slice(0, 14) + '...'
+        : asset
+    },
+    gotoPoolTable (params) {
+      this.gotoPool(params.row.asset)
+    },
+    sepPools (pools) {
+      if (!pools && pools.length <= 0) {
+        return
+      }
+      for (const i in pools) {
+        if (pools[i].status === 'available') {
+          this.tables.activeRows.data.push(pools[i])
+        } else {
+          this.tables.standbyRows.data.push(pools[i])
+        }
+      }
+    }
+  }
 }
 </script>
 

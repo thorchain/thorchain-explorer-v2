@@ -23,16 +23,8 @@
       </div>
       <template v-if="addrTxs">
         <div class="stat-wrapper">
-          <Nav :active-mode.sync="activeMode" :nav-items="[{text: 'Balances', mode: 'balance'},{text: 'THORName', mode: 'thorname'}]" />
-          <stat-table v-if="activeMode == 'balance'" :table-settings="addressStat">
-            <template #Balance>
-              <span v-if="balance && runePrice">
-                {{ balance | number('0,0.00') }}
-                (<span class="value">{{ balance * runePrice | currency }}</span>)
-              </span>
-              <span v-else>-</span>
-            </template>
-          </stat-table>
+          <Nav :active-mode.sync="activeMode" :nav-items="[{text: 'Balances', mode: 'balance'},{text: 'THORName', mode: 'thorname'}, {text: 'Pools', mode: 'pools'}]" />
+          <balance v-if="activeMode == 'balance'" :state="addressStat" :balance="balance" />
           <template v-else-if="activeMode == 'thorname'">
             <stat-table :table-settings="thornames" />
             <div v-if="thornameAddresses.length > 0" class="simple-card">
@@ -49,6 +41,9 @@
               </div>
             </div>
           </template>
+          <keep-alive>
+            <pools v-if="activeMode == 'pools'" :address="address" />
+          </keep-alive>
         </div>
         <div style="margin: 1rem 0" />
         <template v-if="isVault">
@@ -116,6 +111,8 @@
 <script>
 import QrcodeVue from 'qrcode.vue'
 import { mapGetters } from 'vuex'
+import Balance from './components/balance.vue'
+import Pools from './components/pools.vue'
 import WalletIcon from '~/assets/images/wallet.svg?inline'
 import CopyIcon from '~/assets/images/copy.svg?inline'
 import ExpandIcon from '~/assets/images/expand.svg?inline'
@@ -126,7 +123,9 @@ export default {
     WalletIcon,
     CopyIcon,
     ExpandIcon,
-    QrcodeVue
+    QrcodeVue,
+    Balance,
+    Pools
   },
   async asyncData ({ params, $api }) {
     const address = params.adderid
