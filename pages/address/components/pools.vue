@@ -143,4 +143,8 @@ export default {
     max-width: 200px;
   }
 }
+
+.vgt-right-align .pool-cell span {
+  margin-left: auto;
+}
 </style>
