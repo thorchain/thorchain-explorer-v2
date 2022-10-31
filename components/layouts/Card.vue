@@ -7,12 +7,15 @@
         <h2 class="card-header-title">
           {{ title }}
         </h2>
-
-        <div v-if="fullscreen" class="fullscreen-container" @click="toggleFullscreen">
-          <span>
-            FullScreen
-          </span>
-          <ExpandIcon class="icon" />
+      </div>
+      <div v-else-if="navs" class="card-header" :style="{padding: '0 1rem'}">
+        <div
+          v-for="(nav, i) in navs"
+          :key="i"
+          :class="['nav-section', 'card-header-title', {'active': actNav == nav.value}]"
+          @click="$emit('update:actNav', nav.value)"
+        >
+          {{ nav.title }}
         </div>
       </div>
       <div class="card-body">
@@ -24,19 +27,22 @@
 
 <script>
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
-import ExpandIcon from 'assets/images/expand.svg?inline'
 import { mapMutations } from 'vuex'
 
 export default {
   components: {
-    BounceLoader,
-    ExpandIcon
+    BounceLoader
   },
-  props: ['imgSrc', 'title', 'isLoading', 'extraClass', 'fullscreen'],
+  props: ['imgSrc', 'title', 'isLoading', 'extraClass', 'fullscreen', 'navs', 'actNav'],
+  emits: ['update'],
   methods: {
     ...mapMutations([
       'toggleFullscreen'
     ])
+  },
+  mode: {
+    prop: 'actNav',
+    event: 'update'
   }
 }
 </script>
@@ -74,11 +80,24 @@ export default {
     align-items: center;
 
     .card-header-title {
-      color: var(--font-color);
+      color: var(--sec-font-color);
       font-size: 1.125rem;
       font-weight: 700;
       margin-bottom: 0;
       margin: 0;
+    }
+
+    .nav-section {
+      cursor: pointer;
+      color: var(--font-color);
+      border-bottom: 1px solid transparent;
+      margin-right: 1rem;
+      padding: 1rem .1rem;
+
+      &.active {
+        color: var(--sec-font-color);
+        border-bottom: 2px solid var(--sec-font-color);
+      }
     }
 
     .stat-image {
