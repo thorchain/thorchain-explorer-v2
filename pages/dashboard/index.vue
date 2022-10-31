@@ -103,8 +103,9 @@
     </div>
     <div class="break" />
     <div class="chart-inner-container">
-      <Card title="Swap History">
-        <VChart :option="swapHistory" :loading="!swapHistory" :autoresize="true" :loading-options="showLoading" />
+      <Card :navs="[{title: 'Swap History Volume', value: 'swap-vol'}, {title: 'Swap History Count', value: 'swap-count'}]" :act-nav.sync="swapMode">
+        <VChart v-if="swapMode == 'swap-vol'" :option="swapHistory" :loading="!swapHistory" :autoresize="true" :loading-options="showLoading" />
+        <VChart v-if="swapMode == 'swap-count'" :option="swapHistoryCount" :loading="!swapHistoryCount" :autoresize="true" :loading-options="showLoading" />
       </Card>
       <Card title="Pool Depth & Volume" class="pool-depth-container" :is-loading="!poolsOption">
         <div class="pool-depth-chart">
@@ -162,7 +163,9 @@
       <div class="card">
         <div class="card-header">
           <div class="card-header-title">
-            <h2>Latest Blocks</h2>
+            <h2 style="color: var(--sec-font-color);">
+              Latest Blocks
+            </h2>
           </div>
         </div>
         <div class="card-body">
@@ -196,7 +199,9 @@
       <div class="card">
         <div class="card-header">
           <div class="card-header-title">
-            <h2>Latest Transactions</h2>
+            <h2 style="color: var(--sec-font-color);">
+              Latest Transactions
+            </h2>
           </div>
         </div>
         <div class="card-body">
@@ -286,6 +291,7 @@ export default {
       stats: [],
       volumeHistory: undefined,
       swapHistory: undefined,
+      swapHistoryCount: undefined,
       earningsHistory: undefined,
       runeSupply: undefined,
       lastHeight: undefined,
@@ -296,7 +302,8 @@ export default {
       thorHeight: undefined,
       poolsOption: undefined,
       poolsData: undefined,
-      totalValuePooled: undefined
+      totalValuePooled: undefined,
+      swapMode: 'swap-vol'
     }
   },
   async fetch () {
@@ -563,8 +570,8 @@ export default {
     this.$api
       .getDashboardPlots()
       .then(({ data }) => {
-        this.volumeHistory = this.formatLPChange(data?.LPChange)
-        this.swapHistory = this.formatSwap(data?.swaps)
+        this.volumeHistory = this.formatLPChange(data?.LPChange);
+        ({ resVolume: this.swapHistory, resCount: this.swapHistoryCount } = this.formatSwap(data?.swaps))
         this.earningsHistory = this.formatEarnings(data?.earning)
       })
       .catch((error) => {
@@ -579,7 +586,7 @@ export default {
 
         this.$api
           .swapHistory()
-          .then(res => (this.swapHistory = this.formatSwap(res.data)))
+          .then(res => ({ resVolume: this.swapHistory, resCount: this.swapHistoryCount } = this.formatSwap(res.data)))
           .catch((error) => {
             console.error(error)
           })
@@ -688,70 +695,130 @@ export default {
     },
     formatSwap (d) {
       const xAxis = []
-      const tv = []
-      const tva = []
-      const tvr = []
-      const tvrs = []
-      const tvsr = []
+
+      const swapVolume = {
+        synthMint: [],
+        synthRedeem: [],
+        toRune: [],
+        toAsset: [],
+        total: []
+      }
+
+      const swapCount = {
+        synthMint: [],
+        synthRedeem: [],
+        toRune: [],
+        toAsset: [],
+        total: []
+      }
+
       d?.intervals.forEach((interval) => {
         xAxis.push(
           moment(
             Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
           ).format('MM/DD')
         )
-        tv.push(
+        swapVolume.total.push(
           (+interval.totalVolume / 10 ** 8) *
           Number.parseFloat(interval.runePriceUSD)
         )
-        tva.push((+interval.toAssetVolume * +interval.runePriceUSD) / 10 ** 8)
-        tvr.push((+interval.toRuneVolume * +interval.runePriceUSD) / 10 ** 8)
-        tvrs.push((+interval.synthMintVolume * +interval.runePriceUSD) / 10 ** 8)
-        tvsr.push((+interval.synthRedeemVolume * +interval.runePriceUSD) / 10 ** 8)
+        swapVolume.toAsset.push((+interval.toAssetVolume * +interval.runePriceUSD) / 10 ** 8)
+        swapVolume.toRune.push((+interval.toRuneVolume * +interval.runePriceUSD) / 10 ** 8)
+        swapVolume.synthMint.push((+interval.synthMintVolume * +interval.runePriceUSD) / 10 ** 8)
+        swapVolume.synthRedeem.push((+interval.synthRedeemVolume * +interval.runePriceUSD) / 10 ** 8)
+
+        swapCount.synthRedeem.push((+interval.synthRedeemCount))
+        swapCount.toAsset.push((+interval.toAssetCount))
+        swapCount.toRune.push((+interval.toRuneCount))
+        swapCount.synthMint.push((+interval.synthMintCount))
+        swapCount.total.push((+interval.totalCount))
       })
 
-      const res = this.basicChartFormat(
+      const resVolume = this.basicChartFormat(
         value => `$ ${this.normalFormat(value)}`,
         [
           {
             type: 'bar',
             name: 'Total Volume',
             showSymbol: false,
-            data: tv,
+            data: swapVolume.total,
             smooth: true
           },
           {
             type: 'bar',
             name: 'to Asset Volume',
             showSymbol: false,
-            data: tva,
+            data: swapVolume.toAsset,
             smooth: true
           },
           {
             type: 'bar',
             name: 'to Rune Volume',
             showSymbol: false,
-            data: tvr,
+            data: swapVolume.toRune,
             smooth: true
           },
           {
             type: 'bar',
             name: 'Synth mint Volume',
             showSymbol: false,
-            data: tvrs,
+            data: swapVolume.synthMint,
             smooth: true
           },
           {
             type: 'bar',
             name: 'Synth redeem Volume',
             showSymbol: false,
-            data: tvsr,
+            data: swapVolume.synthRedeem,
             smooth: true
-          },
+          }
         ],
         xAxis
       )
 
-      return res
+      const resCount = this.basicChartFormat(
+        value => `${this.normalFormat(value)}`,
+        [
+          {
+            type: 'bar',
+            name: 'Total Count',
+            showSymbol: false,
+            data: swapCount.total,
+            smooth: true
+          },
+          {
+            type: 'bar',
+            name: 'to Asset Count',
+            showSymbol: false,
+            data: swapCount.toAsset,
+            smooth: true
+          },
+          {
+            type: 'bar',
+            name: 'to Rune Count',
+            showSymbol: false,
+            data: swapCount.toRune,
+            smooth: true
+          },
+          {
+            type: 'bar',
+            name: 'Synth mint Count',
+            showSymbol: false,
+            data: swapCount.synthMint,
+            smooth: true
+          },
+          {
+            type: 'bar',
+            name: 'Synth redeem Count',
+            showSymbol: false,
+            data: swapCount.synthRedeem,
+            smooth: true
+          }
+        ],
+        xAxis
+      )
+
+      return { resVolume, resCount }
     },
     formatTvl (d) {
       const xAxis = []
