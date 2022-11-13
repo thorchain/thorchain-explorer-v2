@@ -18,7 +18,7 @@
               {{ props.formattedRow[props.column.field] }}
             </span>
             <span v-else>
-              Not Assgined
+              Not Assigned
             </span>
           </template>
           <span v-else>
