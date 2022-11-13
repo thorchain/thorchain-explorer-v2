@@ -123,7 +123,8 @@ export function parseMidgardTx (tx) {
             name: t?.coins[0]?.asset,
             amount: t?.coins[0]?.amount / 10 ** 8
           },
-          status: txa?.status
+          status: txa?.status,
+          type: txa?.type
         }
       }),
       txa?.out?.map((t) => {
@@ -137,7 +138,8 @@ export function parseMidgardTx (tx) {
             name: t?.coins[0]?.asset,
             amount: t?.coins[0]?.amount / 10 ** 8
           },
-          status: txa?.status
+          status: txa?.status,
+          type: txa?.type
         }
       })
     ]
@@ -150,8 +152,9 @@ export function parseMidgardTx (tx) {
     res.memo = txAction.metadata[txAction.type]?.memo
   }
 
+  const hasAddOrWithdraw = res.inout.find(t => !!((t[0][0].type === 'addLiquidity' || t[0][0].type === 'withdrawLiquidity')))
   // merge two txs one with affilitate fee
-  if (res.inout.length > 1) {
+  if (res.inout.length > 1 && !hasAddOrWithdraw) {
     const ins = res.inout.map(e => e[0][0])
     const hash = ins.find(e => !!e.txID).txID
     if (ins.every(e => e.txID === hash)) {
