@@ -1,10 +1,10 @@
 <template>
   <Page>
-    <template v-if="yggdrasil.length > 0">
+    <template v-if="asgard.length > 0">
       <vue-good-table
-        v-if="cols && yggdrasil.length > 0"
+        v-if="cols"
         :columns="cols"
-        :rows="[...asgard, ...yggdrasil]"
+        :rows="[...asgard]"
         style-class="vgt-table net-table"
         :pagination-options="{
           enabled: true,
@@ -85,7 +85,7 @@ export default {
           type: 'number'
         },
         {
-          label: 'Total Vaule',
+          label: 'Total Value',
           field: 'total_value',
           type: 'number'
         },
@@ -114,11 +114,12 @@ export default {
     }
   },
   mounted () {
-    this.$api.getYggdrasil().then(async (res) => {
-      this.yggdrasil = await this.formatVaults(res?.data, 'Yggdrasil')
-    }).catch((e) => {
-      console.error(e)
-    })
+    // filter out yggdrasil
+    // this.$api.getYggdrasil().then(async (res) => {
+    //   this.yggdrasil = await this.formatVaults(res?.data, 'Yggdrasil')
+    // }).catch((e) => {
+    //   console.error(e)
+    // })
 
     this.$api.getAsgard().then(async (res) => {
       const poolsPrice = await this.formatPoolPrice()
@@ -147,22 +148,22 @@ export default {
       nodes.data.map(n => nodesBond[n.pub_key_set?.secp256k1] = n.bond)
       return nodesBond
     },
-    async formatVaults (data, type = 'Yggdrasil', poolsPrice = undefined, nodes = undefined) {
+    formatVaults (data, type = 'Yggdrasil', poolsPrice = undefined, nodes = undefined) {
       const y = []
       for (const vault of data) {
         let bond = vault?.bond / 1e8
-        let total_value = (+vault?.total_value < 100 ? 0.1 : vault?.total_value / 1e8)
+        let totalValue = (+vault?.total_value < 100 ? 0.1 : vault?.total_value / 1e8)
         let vb
         if (type === 'Asgard' && poolsPrice) {
-          total_value = 0
+          totalValue = 0
           vault.coins?.forEach((a) => {
-            total_value += (+(poolsPrice[a.asset] || 0) * +a.amount) / 1e8
+            totalValue += (+(poolsPrice[a.asset] || 0) * +a.amount) / 1e8
           })
           bond = 0
           vault.membership?.forEach((m) => {
             bond += nodes[m] / 1e8
           })
-          vb = total_value / bond
+          vb = totalValue / bond
         }
         y.push({
           hash: vault?.addresses.find(e => e.chain === 'THOR').address,
@@ -170,7 +171,7 @@ export default {
           status: this.formatStatus(vault?.status),
           ins: vault?.inbound_tx_count,
           bond,
-          total_value,
+          total_value: totalValue,
           vb,
           outs: vault?.outbound_tx_count
         })
