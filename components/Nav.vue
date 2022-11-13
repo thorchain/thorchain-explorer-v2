@@ -1,5 +1,5 @@
 <template>
-  <div class="nav-headers box">
+  <div :class="['nav-headers box', ...extraClasses]">
     <component
       :is="isLink? 'nuxt-link':'div'"
       v-for="navItem in navItems"
@@ -19,7 +19,7 @@ export default {
     prop: 'activeMode',
     event: 'update'
   },
-  props: ['activeMode', 'navItems', 'isLink'],
+  props: ['activeMode', 'navItems', 'isLink', 'extraClasses'],
   emits: ['update']
 }
 </script>
