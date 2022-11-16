@@ -68,7 +68,7 @@ export default {
           formatFn: this.formatAsset
         },
         {
-          label: 'USD Depth Price',
+          label: 'Depth Price',
           field: 'depthPrice',
           type: 'number',
           formatFn: this.formattedPrice,
@@ -82,9 +82,22 @@ export default {
           tdClass: 'mono'
         },
         {
-          label: 'Total Depth/Units Ratio',
-          field: 'depthToUnitsRatio',
+          label: 'Saver Filled',
+          field: 'filled',
+          type: 'percentage',
+          tdClass: 'mono'
+        },
+        {
+          label: 'Savers Count',
+          field: 'saversCount',
           type: 'number',
+          tdClass: 'mono',
+          formatFn: this.normalFormat
+        },
+        {
+          label: 'Savers APR',
+          field: 'saverReturn',
+          type: 'percentage',
           tdClass: 'mono'
         }
       ],
@@ -111,6 +124,7 @@ export default {
   mounted () {
     this.$api.getPools().then(async ({ data }) => {
       const runePrice = (await this.$api.getStats()).data.runePriceUSD
+      const saversExtraData = (await this.$api.getSaversExtraData()).data
       const ps = data.map(p => ({
         status: p.status,
         price: p.assetPriceUSD,
@@ -122,7 +136,10 @@ export default {
         asset: p.asset,
         saversDepth: (+p.saversDepth / 10 ** 8),
         saversUnits: (+p.saversUnits),
-        depthToUnitsRatio: this.$options.filters.number(+p.saversDepth / +p.saversUnits, '0.00000')
+        depthToUnitsRatio: this.$options.filters.number(+p.saversDepth / +p.saversUnits, '0.00000'),
+        filled: saversExtraData[p.asset]?.filled,
+        saversCount: saversExtraData[p.asset]?.saversCount,
+        saverReturn: saversExtraData[p.asset]?.saverReturn
       }))
       this.setSavers(ps)
     }).catch((e) => {

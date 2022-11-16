@@ -51,7 +51,8 @@ import {
   getDashboardData,
   getDashboardPlots,
   getExraNodesInfo,
-  getOhclPrice
+  getOhclPrice,
+  getSaversExtraData
 } from './middleware.api'
 import {
   getChurnHistory,
@@ -172,7 +173,8 @@ export default function ({ $axios }, inject) {
     getOhclPrice,
     getPoolDepth,
     getThorname,
-    getMemberDetails
+    getMemberDetails,
+    getSaversExtraData
   }
 
   inject('api', api)
