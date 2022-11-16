@@ -1,13 +1,12 @@
 <template>
   <Page>
-    <Nav :active-mode.sync="poolType" :nav-items="poolTypes" />
     <!-- <Nav :active-mode.sync="viewMode" :nav-items="viewPools" /> -->
-    <template v-if="!loading && poolType == 'regular'">
+    <Card :is-loading="loading">
       <template v-if="viewMode == 'grid'">
         <pool-card :pools="sortedPools" />
       </template>
       <div v-else-if="pools && pools.length > 0 && viewMode == 'table'" class="pools-box">
-        <Nav :active-mode.sync="tableMode" :nav-items="tableModeItems" :extra-classes="['pools-type-table']"/>
+        <Nav :active-mode.sync="tableMode" :nav-items="tableModeItems" :extra-classes="['pools-type-table']" />
         <template v-for="(k, v, i) in tables">
           <vue-good-table
             v-if="k.data.length > 0"
@@ -44,46 +43,7 @@
           </vue-good-table>
         </template>
       </div>
-    </template>
-    <template v-else-if="!loading && poolType == 'savers'">
-      <vue-good-table
-        v-if="tables.activeRows.data.length > 0"
-        :columns="saverCols"
-        :rows="tables.saversRows.data"
-        style-class="vgt-table net-table"
-        :pagination-options="{
-          enabled: true,
-          perPage: 30,
-          perPageDropdownEnabled: false,
-        }"
-        @on-row-click="gotoPoolTable"
-      >
-        <template slot="table-row" slot-scope="props">
-          <div v-if="props.column.field == 'asset'" v-tooltip="props.row.asset" class="cell-content">
-            <AssetIcon :asset="props.row.asset" />
-            <span>{{ props.formattedRow[props.column.field] }}</span>
-          </div>
-          <span v-else-if="props.column.field == 'status'">
-            <div :class="['bubble-container', {'yellow': k.mode == 'staged'}]">
-              <span>{{ props.row.status | capitalize }}</span>
-            </div>
-          </span>
-          <span v-else-if="props.column.field == 'saversDepth'">
-            <span v-tooltip="(+props.row.depth / 10e8) * +props.row.price">{{ props.formattedRow[props.column.field] }}
-              <span class="extra-text" style="font-size: .6rem; font-weight: bold;">
-                {{ showAsset(props.row.asset) }}
-              </span>
-            </span>
-          </span>
-          <span v-else>
-            {{ props.formattedRow[props.column.field] }}
-          </span>
-        </template>
-      </vue-good-table>
-    </template>
-    <template v-else>
-      <Card :isLoading="true"></Card>
-    </template>
+    </Card>
   </Page>
 </template>
 
@@ -95,11 +55,6 @@ export default {
     return {
       loading: false,
       error: false,
-      poolType: 'regular',
-      poolTypes: [
-        { text: 'Pools', mode: 'regular' },
-        { text: 'Savers', mode: 'savers' }
-      ],
       viewMode: 'table',
       viewPools: [
         { text: 'Grid', mode: 'grid' },
@@ -154,33 +109,6 @@ export default {
           tdClass: 'mono'
         }
       ],
-      saverCols: [
-        {
-          label: 'Asset',
-          field: 'asset',
-          formatFn: this.formatAsset
-        },
-        {
-          label: 'USD Depth Price',
-          field: 'depthPrice',
-          type: 'number',
-          formatFn: this.formattedPrice,
-          tdClass: 'mono'
-        },
-        {
-          label: 'Saver Depth',
-          field: 'saversDepth',
-          type: 'number',
-          formatFn: this.normalNumberFormat,
-          tdClass: 'mono'
-        },
-        {
-          label: 'Total Depth/Units Ratio',
-          field: 'depthToUnitsRatio',
-          type: 'number',
-          tdClass: 'mono'
-        }
-      ],
       pools: undefined,
       tables: {
         activeRows: {
@@ -190,9 +118,6 @@ export default {
         standbyRows: {
           data: [],
           mode: 'staged'
-        },
-        saversRows: {
-          data: []
         }
       }
     }
@@ -229,7 +154,6 @@ export default {
         depthToUnitsRatio: this.$options.filters.number(+p.saversDepth / +p.saversUnits, '0.00000')
       }))
       this.sepPools(ps)
-      this.setSavers(ps)
       this.loading = false
     }).catch((e) => {
       console.error(e)
@@ -265,16 +189,6 @@ export default {
           this.tables.activeRows.data.push(pools[i])
         } else {
           this.tables.standbyRows.data.push(pools[i])
-        }
-      }
-    },
-    setSavers (pools) {
-      if (!pools && pools.length <= 0) {
-        return
-      }
-      for (const i in pools) {
-        if (+pools[i].saversUnits > 0) {
-          this.tables.saversRows.data.push(pools[i])
         }
       }
     }
