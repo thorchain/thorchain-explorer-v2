@@ -2,7 +2,7 @@
   <Page>
     <Nav :active-mode.sync="poolType" :nav-items="poolTypes" />
     <!-- <Nav :active-mode.sync="viewMode" :nav-items="viewPools" /> -->
-    <template v-if="poolType == 'regular'">
+    <template v-if="!loading && poolType == 'regular'">
       <template v-if="viewMode == 'grid'">
         <pool-card :pools="sortedPools" />
       </template>
@@ -45,7 +45,7 @@
         </template>
       </div>
     </template>
-    <template v-else>
+    <template v-else-if="!loading && poolType == 'savers'">
       <vue-good-table
         v-if="tables.activeRows.data.length > 0"
         :columns="saverCols"
@@ -68,11 +68,21 @@
               <span>{{ props.row.status | capitalize }}</span>
             </div>
           </span>
+          <span v-else-if="props.column.field == 'saversDepth'">
+            <span v-tooltip="(+props.row.depth / 10e8) * +props.row.price">{{ props.formattedRow[props.column.field] }}
+              <span class="extra-text" style="font-size: .6rem; font-weight: bold;">
+                {{ showAsset(props.row.asset) }}
+              </span>
+            </span>
+          </span>
           <span v-else>
             {{ props.formattedRow[props.column.field] }}
           </span>
         </template>
       </vue-good-table>
+    </template>
+    <template v-else>
+      <Card :isLoading="true"></Card>
     </template>
   </Page>
 </template>
@@ -83,6 +93,7 @@ import { mapGetters } from 'vuex'
 export default {
   data () {
     return {
+      loading: false,
       error: false,
       poolType: 'regular',
       poolTypes: [
@@ -150,24 +161,17 @@ export default {
           formatFn: this.formatAsset
         },
         {
-          label: 'USD Price',
-          field: 'price',
+          label: 'USD Depth Price',
+          field: 'depthPrice',
           type: 'number',
-          formatFn: this.curFormat,
+          formatFn: this.formattedPrice,
           tdClass: 'mono'
         },
         {
           label: 'Saver Depth',
           field: 'saversDepth',
           type: 'number',
-          formatFn: this.formattedPrice,
-          tdClass: 'mono'
-        },
-        {
-          label: 'Total Saver Units',
-          field: 'saversUnits',
-          type: 'number',
-          formatFn: this.numberFormat,
+          formatFn: this.normalNumberFormat,
           tdClass: 'mono'
         },
         {
@@ -207,28 +211,34 @@ export default {
     }
   },
   mounted () {
+    this.loading = true
     this.$api.getPools().then(async ({ data }) => {
       this.pools = data
       const runePrice = (await this.$api.getStats()).data.runePriceUSD
       const ps = this.pools.map(p => ({
         status: p.status,
         price: p.assetPriceUSD,
+        depthPrice: (+p.saversDepth / 10 ** 8) * p.assetPriceUSD,
         depth: ((+p.assetDepth / 10 ** 8) * p.assetPriceUSD) + ((+p.runeDepth / 10 ** 8) * runePrice),
         apy: p.poolAPY,
         volume: (+p.volume24h / 10 ** 8) * runePrice,
         vd: (+p.volume24h) / ((+p.assetDepth * +p.assetPrice) + (+p.runeDepth)),
         asset: p.asset,
-        saversDepth: (+p.saversDepth / 10 ** 8) * p.assetPriceUSD,
+        saversDepth: (+p.saversDepth / 10 ** 8),
         saversUnits: (+p.saversUnits),
         depthToUnitsRatio: this.$options.filters.number(+p.saversDepth / +p.saversUnits, '0.00000')
       }))
       this.sepPools(ps)
       this.setSavers(ps)
+      this.loading = false
     }).catch((e) => {
       console.error(e)
     })
   },
   methods: {
+    normalNumberFormat (number, filter) {
+      return number ? this.$options.filters.number(+number, '0,0.00') : '-'
+    },
     formattedPrice (number, filter) {
       return '$' + this.$options.filters.number(number, '0.00a')
     },
