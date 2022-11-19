@@ -102,7 +102,8 @@ export default {
         saversRows: {
           data: []
         }
-      }
+      },
+      maxSaverCap: 0.3
     }
   },
   computed: {
@@ -127,7 +128,7 @@ export default {
         saversStat.totalUSDSaved += +saver.saversDepth * +saver.price
         saversStat.totalEarn += (+saver.saversDepth - +(saver.saversUnits / 1e8)) * +saver.price
         saversStat.meanAPR += (saver.saverReturn)
-        saversStat.totalFilled += saver.filled * ((saver.saversDepth * saver.price) / (totalSaverDepthUSD * 0.3))
+        saversStat.totalFilled += saver.filled * ((saver.saversDepth * saver.price) / (totalSaverDepthUSD * this.maxSaverCap))
       })
       return [
         {
@@ -157,6 +158,7 @@ export default {
     this.$api.getPools().then(async ({ data }) => {
       const runePrice = (await this.$api.getStats()).data.runePriceUSD
       const saversExtraData = (await this.$api.getSaversExtraData()).data
+      this.maxSaverCap = (await this.$api.getMimir()).data.MAXSYNTHPERASSETDEPTH / 10e3
       const ps = data.map(p => ({
         status: p.status,
         price: p.assetPriceUSD,
