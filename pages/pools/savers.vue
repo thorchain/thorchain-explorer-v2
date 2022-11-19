@@ -1,42 +1,54 @@
 <template>
-  <Page>
-    <Card :is-loading="tables.saversRows.data.length <= 0">
-      <vue-good-table
-        v-if="tables.saversRows.data.length > 0"
-        :columns="saverCols"
-        :rows="tables.saversRows.data"
-        style-class="vgt-table net-table"
-        :pagination-options="{
-          enabled: true,
-          perPage: 30,
-          perPageDropdownEnabled: false,
-        }"
-        @on-row-click="gotoPoolTable"
-      >
-        <template slot="table-row" slot-scope="props">
-          <div v-if="props.column.field == 'asset'" v-tooltip="props.row.asset" class="cell-content">
-            <AssetIcon :asset="props.row.asset" />
-            <span>{{ props.formattedRow[props.column.field] }}</span>
-          </div>
-          <span v-else-if="props.column.field == 'status'">
-            <div :class="['bubble-container', {'yellow': k.mode == 'staged'}]">
-              <span>{{ props.row.status | capitalize }}</span>
+  <div>
+    <div v-show="saversGeneralStats && saversGeneralStats.length > 0" class="savers-stat-header">
+      <div v-for="(stat, i) in saversGeneralStats" :key="i" class="savers-stat-card">
+        <div class="value">
+          {{ stat.value }}
+        </div>
+        <div class="name">
+          {{ stat.name }}
+        </div>
+      </div>
+    </div>
+    <Page>
+      <Card :is-loading="tables.saversRows.data.length <= 0">
+        <vue-good-table
+          v-if="tables.saversRows.data.length > 0"
+          :columns="saverCols"
+          :rows="tables.saversRows.data"
+          style-class="vgt-table net-table"
+          :pagination-options="{
+            enabled: true,
+            perPage: 30,
+            perPageDropdownEnabled: false,
+          }"
+          @on-row-click="gotoPoolTable"
+        >
+          <template slot="table-row" slot-scope="props">
+            <div v-if="props.column.field == 'asset'" v-tooltip="props.row.asset" class="cell-content">
+              <AssetIcon :asset="props.row.asset" />
+              <span>{{ props.formattedRow[props.column.field] }}</span>
             </div>
-          </span>
-          <span v-else-if="props.column.field == 'saversDepth'">
-            <span v-tooltip="(+props.row.depth / 10e8) * +props.row.price">{{ props.formattedRow[props.column.field] }}
-              <span class="extra-text" style="font-size: .6rem; font-weight: bold;">
-                {{ showAsset(props.row.asset) }}
+            <span v-else-if="props.column.field == 'status'">
+              <div :class="['bubble-container', {'yellow': k.mode == 'staged'}]">
+                <span>{{ props.row.status | capitalize }}</span>
+              </div>
+            </span>
+            <span v-else-if="props.column.field == 'saversDepth'">
+              <span v-tooltip="(+props.row.depth / 10e8) * +props.row.price">{{ props.formattedRow[props.column.field] }}
+                <span class="extra-text" style="font-size: .6rem; font-weight: bold;">
+                  {{ showAsset(props.row.asset) }}
+                </span>
               </span>
             </span>
-          </span>
-          <span v-else>
-            {{ props.formattedRow[props.column.field] }}
-          </span>
-        </template>
-      </vue-good-table>
-    </Card>
-  </Page>
+            <span v-else>
+              {{ props.formattedRow[props.column.field] }}
+            </span>
+          </template>
+        </vue-good-table>
+      </Card>
+    </Page>
+  </div>
 </template>
 
 <script>
@@ -46,21 +58,6 @@ export default {
   data () {
     return {
       error: false,
-      poolType: 'regular',
-      poolTypes: [
-        { text: 'Pools', mode: 'regular' },
-        { text: 'Savers', mode: 'savers' }
-      ],
-      viewMode: 'table',
-      viewPools: [
-        { text: 'Grid', mode: 'grid' },
-        { text: 'Table', mode: 'table' }
-      ],
-      tableModeItems: [
-        { text: 'Active Pools', mode: 'active' },
-        { text: 'Staged/Suspended Pools', mode: 'staged' }
-      ],
-      tableMode: 'active',
       saverCols: [
         {
           label: 'Asset',
@@ -69,7 +66,7 @@ export default {
         },
         {
           label: 'Depth Price',
-          field: 'depthPrice',
+          field: 'saverDepthPrice',
           type: 'number',
           formatFn: this.formattedPrice,
           tdClass: 'mono'
@@ -102,14 +99,6 @@ export default {
         }
       ],
       tables: {
-        activeRows: {
-          data: [],
-          mode: 'active'
-        },
-        standbyRows: {
-          data: [],
-          mode: 'staged'
-        },
         saversRows: {
           data: []
         }
@@ -119,7 +108,50 @@ export default {
   computed: {
     ...mapGetters({
       runePrice: 'getRunePrice'
-    })
+    }),
+    saversGeneralStats () {
+      if (this.tables.saversRows.data.length <= 0) {
+        return []
+      }
+      const saversStat = {
+        saversCount: 0,
+        totalUSDSaved: 0,
+        totalEarn: 0,
+        meanAPR: 0,
+        totalFilled: 0
+      }
+      const totalSaverDepthUSD = this.tables.saversRows.data
+        .map(d => d.assetDepthUSD).reduce((a, b) => a + b, 0)
+      this.tables.saversRows.data.forEach((saver, index) => {
+        saversStat.saversCount += saver.saversCount
+        saversStat.totalUSDSaved += +saver.saversDepth * +saver.price
+        saversStat.totalEarn += (+saver.saversDepth - +(saver.saversUnits / 1e8)) * +saver.price
+        saversStat.meanAPR += (saver.saverReturn)
+        saversStat.totalFilled += saver.filled * ((saver.saversDepth * saver.price) / (totalSaverDepthUSD * 0.3))
+      })
+      return [
+        {
+          name: 'Total Savers',
+          value: saversStat.saversCount
+        },
+        {
+          name: 'Total Saved Value',
+          value: this.$options.filters.currency(saversStat.totalUSDSaved)
+        },
+        {
+          name: 'Total Earned',
+          value: this.$options.filters.currency(saversStat.totalEarn)
+        },
+        {
+          name: 'APR Mean',
+          value: this.$options.filters.percent(saversStat.meanAPR / this.tables.saversRows.data.length, 2)
+        },
+        {
+          name: 'Total Filled',
+          value: this.$options.filters.percent(saversStat.totalFilled, 2)
+        }
+      ]
+    }
   },
   mounted () {
     this.$api.getPools().then(async ({ data }) => {
@@ -128,8 +160,9 @@ export default {
       const ps = data.map(p => ({
         status: p.status,
         price: p.assetPriceUSD,
-        depthPrice: (+p.saversDepth / 10 ** 8) * p.assetPriceUSD,
+        saverDepthPrice: (+p.saversDepth / 10 ** 8) * p.assetPriceUSD,
         depth: ((+p.assetDepth / 10 ** 8) * p.assetPriceUSD) + ((+p.runeDepth / 10 ** 8) * runePrice),
+        assetDepthUSD: (+p.assetDepth / 10 ** 8) * p.assetPriceUSD,
         apy: p.poolAPY,
         volume: (+p.volume24h / 10 ** 8) * runePrice,
         vd: (+p.volume24h) / ((+p.assetDepth * +p.assetPrice) + (+p.runeDepth)),
@@ -188,6 +221,31 @@ export default {
     border: 1px solid var(--border-color);
     border-bottom: 0;
     border-radius: 7px 8px 0 0;
+  }
+}
+
+.savers-stat-header {
+  display: grid;
+  gap: 15px;
+  margin-bottom: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-rows: auto;
+
+  .savers-stat-card {
+    padding: 2rem 0;
+    border-radius: 8px;
+    background-color: var(--card-bg-color);
+
+    .value {
+      color: var(--sec-font-color);
+      font-size: 1.5rem;
+      text-align: center;
+    }
+
+    .name {
+      color: var(--font-color);
+      text-align: center;
+    }
   }
 }
 </style>
