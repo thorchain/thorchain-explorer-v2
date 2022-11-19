@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-show="saversGeneralStats && saversGeneralStats.length > 0" class="savers-stat-header">
+    <div v-show="networkEnv === 'mainnet' && saversGeneralStats && saversGeneralStats.length > 0" class="savers-stat-header">
       <div v-for="(stat, i) in saversGeneralStats" :key="i" class="savers-stat-card">
         <div class="value">
           {{ stat.value }}
@@ -95,7 +95,8 @@ export default {
           label: 'Savers APR',
           field: 'saverReturn',
           type: 'percentage',
-          tdClass: 'mono'
+          tdClass: 'mono',
+          hidden: this.isStagenet
         }
       ],
       tables: {
@@ -152,6 +153,9 @@ export default {
           value: this.$options.filters.percent(saversStat.totalFilled, 2)
         }
       ]
+    },
+    networkEnv () {
+      return process.env.NETWORK
     }
   },
   mounted () {
@@ -211,6 +215,9 @@ export default {
           this.tables.saversRows.data.push(pools[i])
         }
       }
+    },
+    isStagenet () {
+      return this.networkEnv === 'stagenet'
     }
   }
 }
