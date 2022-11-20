@@ -122,14 +122,14 @@ export default {
         meanAPR: 0,
         totalFilled: 0
       }
-      const totalSaverDepthUSD = this.tables.saversRows.data
+      const totalPoolDepthUSD = this.tables.saversRows.data
         .map(d => d.assetDepthUSD).reduce((a, b) => a + b, 0)
       this.tables.saversRows.data.forEach((saver, index) => {
         saversStat.saversCount += saver.saversCount
         saversStat.totalUSDSaved += +saver.saversDepth * +saver.price
         saversStat.totalEarn += (+saver.saversDepth - +(saver.saversUnits / 1e8)) * +saver.price
         saversStat.meanAPR += (saver.saverReturn)
-        saversStat.totalFilled += saver.filled * ((saver.saversDepth * saver.price) / (totalSaverDepthUSD * this.maxSaverCap))
+        saversStat.totalFilled += +saver.saversDepth * +saver.price
       })
       return [
         {
@@ -150,7 +150,7 @@ export default {
         },
         {
           name: 'Total Filled',
-          value: this.$options.filters.percent(saversStat.totalFilled, 2)
+          value: this.$options.filters.percent(saversStat.totalFilled / (totalPoolDepthUSD * this.maxSaverCap), 2)
         }
       ]
     },
