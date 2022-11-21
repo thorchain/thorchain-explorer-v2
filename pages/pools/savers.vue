@@ -162,7 +162,6 @@ export default {
     this.$api.getPools().then(async ({ data }) => {
       const runePrice = (await this.$api.getStats()).data.runePriceUSD
       const saversExtraData = (await this.$api.getSaversExtraData()).data
-      this.maxSaverCap = (await this.$api.getMimir()).data.MAXSYNTHPERASSETDEPTH / 10e3
       const ps = data.map(p => ({
         status: p.status,
         price: p.assetPriceUSD,
@@ -184,6 +183,9 @@ export default {
     }).catch((e) => {
       console.error(e)
     })
+    this.$api.getMimir().then(({ data }) => {
+      this.maxSaverCap = data.MAXSYNTHPERASSETDEPTH / 10e3
+    }).catch(err => console.error('didn\'t catch the max synth per asset depth', err))
   },
   methods: {
     normalNumberFormat (number, filter) {
