@@ -65,21 +65,21 @@ export default {
           formatFn: this.formatAsset
         },
         {
-          label: 'Depth Price',
+          label: 'Savers Depth Price',
           field: 'saverDepthPrice',
           type: 'number',
           formatFn: this.formattedPrice,
           tdClass: 'mono'
         },
         {
-          label: 'Saver Depth',
+          label: 'Savers Depth',
           field: 'saversDepth',
           type: 'number',
           formatFn: this.normalNumberFormat,
           tdClass: 'mono'
         },
         {
-          label: 'Saver Filled',
+          label: 'Savers Filled',
           field: 'filled',
           type: 'percentage',
           tdClass: 'mono'
@@ -95,8 +95,7 @@ export default {
           label: 'Savers APR',
           field: 'saverReturn',
           type: 'percentage',
-          tdClass: 'mono',
-          hidden: this.isStagenet
+          tdClass: 'mono'
         }
       ],
       tables: {
@@ -159,6 +158,7 @@ export default {
     }
   },
   mounted () {
+    this.saverCols[5].hidden = this.networkEnv === 'stagenet'
     this.$api.getPools().then(async ({ data }) => {
       const runePrice = (await this.$api.getStats()).data.runePriceUSD
       const saversExtraData = (await this.$api.getSaversExtraData()).data
@@ -215,9 +215,6 @@ export default {
           this.tables.saversRows.data.push(pools[i])
         }
       }
-    },
-    isStagenet () {
-      return this.networkEnv === 'stagenet'
     }
   }
 }
@@ -244,6 +241,7 @@ export default {
     padding: 2rem 0;
     border-radius: 8px;
     background-color: var(--card-bg-color);
+    border: 1px solid var(--border-color);
 
     .value {
       color: var(--sec-font-color);
