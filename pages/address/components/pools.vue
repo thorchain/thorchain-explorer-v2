@@ -26,7 +26,7 @@
           </div>
           <span v-else-if="props.column.field.startsWith('pool')" class="pool-cell ellipsis">
             <span v-if="props.row[props.column.field][0]">{{ props.row[props.column.field][0] | number('0,0.00') }} <small>RUNE</small></span>
-            <span v-if="props.row[props.column.field][1]" class="ellipsis">{{ props.row[props.column.field][1] || props.row[props.column.field][1] === 0 ? ($options.filters.number(props.row[props.column.field][1], '0,0.0000')) : '-' }} <small class="ellipsis">{{ props.row.pool }}</small></span>
+            <span v-if="props.row[props.column.field][1]" class="ellipsis">{{ props.row[props.column.field][1] || props.row[props.column.field][1] === 0 ? ($options.filters.number(props.row[props.column.field][1], '0,0.000000')) : '-' }} <small class="ellipsis">{{ props.row.pool }}</small></span>
             <span v-else-if="!props.row[props.column.field][0]">-</span>
           </span>
           <span v-else-if="props.column.field == 'share'">
