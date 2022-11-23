@@ -120,3 +120,7 @@ export function getThorname (name) {
 export function getMemberDetails (address) {
   return $axiosInstace.get(`member/${address}`)
 }
+
+export function getSaverDetails (address) {
+  return $axiosInstace.get(`saver/${address}`)
+}
