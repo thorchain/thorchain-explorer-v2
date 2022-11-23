@@ -20,10 +20,13 @@
             <span class="ellipsis">
               {{ props.row.pool }}
             </span>
+            <div v-if="props.row.label" class="bubble-container" style="margin-left: 10px">
+              {{ props.row.label }}
+            </div>
           </div>
           <span v-else-if="props.column.field.startsWith('pool')" class="pool-cell ellipsis">
-            <span>{{ props.row[props.column.field][0] | number('0,0.00') }} <small>RUNE</small></span>
-            <span class="ellipsis">{{ props.row[props.column.field][1] || props.row[props.column.field][1] === 0 ? ($options.filters.number(props.row[props.column.field][1], '0,0.00')) : '-' }} <small class="ellipsis">{{ props.row.pool }}</small></span>
+            <span v-if="props.row[props.column.field][0]">{{ props.row[props.column.field][0] | number('0,0.00') }} <small>RUNE</small></span>
+            <span class="ellipsis">{{ props.row[props.column.field][1] || props.row[props.column.field][1] === 0 ? ($options.filters.number(props.row[props.column.field][1], '0,0.0000')) : '-' }} <small class="ellipsis">{{ props.row.pool }}</small></span>
           </span>
           <span v-else-if="props.column.field == 'share'">
             <span v-if="props.row.share">{{ props.formattedRow[props.column.field] }}</span>
@@ -89,10 +92,21 @@ export default {
     if (!this.address) {
       return
     }
-    const { data: { pools: memberDetails } } = await this.$api.getMemberDetails(this.address)
-    this.parseMemberDetails(memberDetails)
     const { data: pools } = await this.$api.getPools()
-    this.findShare(pools, memberDetails)
+    this.pools = pools
+    try {
+      const { data: { pools: memberDetails } } = await this.$api.getMemberDetails(this.address)
+      this.parseMemberDetails(memberDetails)
+      this.findShare(pools, memberDetails)
+    } catch (error) {
+      console.error('member not found', error)
+    }
+    try {
+      const { data: { pools: saverDetails } } = await this.$api.getSaverDetails(this.address)
+      this.parseSaverDetails(saverDetails)
+    } catch (error) {
+      console.error('saver not found', error)
+    }
   },
   methods: {
     parseMemberDetails (pools) {
@@ -104,6 +118,24 @@ export default {
         share: 0,
         poolShare: []
       }))
+    },
+    parseSaverDetails (saverPools) {
+      const getSaverShare = (saverPool) => {
+        const poolDetail = this.pools.find(p => p.asset === saverPool.pool)
+        if (!poolDetail) {
+          return 0
+        }
+        return saverPool.saverUnits / poolDetail.saversUnits
+      }
+      this.lps.push(...saverPools.map(p => ({
+        ...p,
+        poolAdded: [undefined, p.saverUnits / 1e8],
+        poolWithdrawn: [undefined, p.assetWithdrawn / 1e8],
+        dateFirstAdded: moment.unix(p.dateFirstAdded).fromNow(),
+        share: getSaverShare(p),
+        poolShare: [undefined, p.assetAdded / 1e8],
+        label: 'saver'
+      })))
     },
     findShare (pools, memberDetails) {
       memberDetails.forEach((m, i) => {
