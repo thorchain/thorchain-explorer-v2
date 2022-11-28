@@ -115,7 +115,6 @@
 </template>
 
 <script>
-import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
 import { assetFromString } from '@xchainjs/xchain-util'
 import { mapGetters } from 'vuex'
 import moment from 'moment'
@@ -143,7 +142,6 @@ use([
 
 export default {
   components: {
-    BounceLoader,
     VChart
   },
   async asyncData ({ params }) {

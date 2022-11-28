@@ -103,6 +103,9 @@ export default {
     baseAmountFormat (number) {
       return number ? this.$options.filters.number(+number / 10 ** 8, '0,0.0000') : '-'
     },
+    baseAmountFormatOrZero (number) {
+      return +number / 10 ** 8
+    },
     formatCurrency (number) {
       return this.$options.filters.currency(number)
     },
