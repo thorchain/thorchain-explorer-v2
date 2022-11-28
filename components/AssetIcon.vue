@@ -1,7 +1,7 @@
 <template>
   <div class="icon-asset-container">
     <img class="asset-icon" :src="assetImage(asset)" alt="asset-icon" @error="imgErr">
-    <img class="chain-asset-icon" :src="assetImage(chain? chain:assetToChain(asset))" alt="asset-chain-icon">
+    <img v-if="showChainImage()" class="chain-asset-icon" :src="assetImage(chain? chain:assetToChain(asset))" alt="asset-chain-icon">
   </div>
 </template>
 
@@ -10,7 +10,17 @@ export default {
   props: [
     "asset",
     "chain"
-  ]
+  ],
+  methods: {
+    showChainImage() {
+      if (this.chain) {
+        return true
+      } else if (this.assetToChain(this.asset) !== this.asset) {
+        return true
+      }
+      return false
+    }
+  }
 }
 </script>
 

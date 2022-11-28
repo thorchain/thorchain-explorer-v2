@@ -25,8 +25,11 @@ export default {
     },
     assetToChain (assetStr) {
       const { chain } = assetFromString(assetStr)
-      const asset = `${chain}.${chain}`
+      let asset = `${chain}.${chain}`
       switch (chain) {
+        case 'GAIA':
+          asset = 'GAIA.ATOM'
+          break
         default:
           break
       }
