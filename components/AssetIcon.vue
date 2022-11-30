@@ -1,5 +1,5 @@
 <template>
-  <div class="icon-asset-container">
+  <div class="icon-asset-container" :style="heightStyle">
     <img class="asset-icon" :src="assetImage(asset)" alt="asset-icon" @error="imgErr">
     <img v-if="showChainImage()" class="chain-asset-icon" :src="assetImage(chain? chain:assetToChain(asset))" alt="asset-chain-icon">
   </div>
@@ -9,7 +9,8 @@
 export default {
   props: [
     "asset",
-    "chain"
+    "chain",
+    "height"
   ],
   methods: {
     showChainImage() {
@@ -20,6 +21,14 @@ export default {
       }
       return false
     }
+  },
+  computed: {
+    heightStyle() {
+      return {
+        "--asset-height": this.height ?? "1.5rem",
+        "--asset-width": this.height ?? "1.5rem",
+      }
+    }
   }
 }
 </script>
@@ -27,14 +36,14 @@ export default {
 <style lang="scss">
 .icon-asset-container {
   position: relative;
-  width: 1.5rem;
-  height: 1.5rem;
+  width: var(--asset-width);
+  height: var(--asset-height);
   border-radius: 50%;
   margin-right: 0.5rem;
 
   .asset-icon {
-    width: 1.5rem;
-    height: 1.5rem;
+    width: var(--asset-width);
+    height: var(--asset-height);
     border-radius: 50%;
   }
 

@@ -43,7 +43,8 @@ import {
   getBlockChainVersion,
   getThorchainTx,
   getNodes,
-  getNode
+  getNode,
+  getSavers
 } from './thornode.api'
 import {
   getTendermintLatestBlocks
@@ -176,7 +177,8 @@ export default function ({ $axios }, inject) {
     getThorname,
     getMemberDetails,
     getSaversExtraData,
-    getSaverDetails
+    getSaverDetails,
+    getSavers
   }
 
   inject('api', api)
