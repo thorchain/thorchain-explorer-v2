@@ -63,6 +63,12 @@ export default {
           formatFn: this.baseAmountFormatOrZero,
         },
         {
+          label: "Realized Yield",
+          field: "realizedYield",
+          tdClass: "mono",
+          type: "percentage",
+        },
+        {
           label: "Annualised Yield",
           field: "APR",
           tdClass: "mono",
@@ -84,17 +90,15 @@ export default {
     return { poolName: params.poolName };
   },
   methods: {
-    updateSavers() {
+    async updateSavers() {
       this.loading = true;
-      this.$api
-        .getLastBlockHeight()
-        .then(({ data }) => {
-          this.lastBlockHeight = data.find((e) => e.chain === "BTC").thorchain;
-        })
-        .catch((error) => {
-          this.error = true;
-          console.error(error);
-        });
+      
+      try {
+        this.lastBlockHeight = (await this.$api.getLastBlockHeight()).data?.find((e) => e.chain === "BTC")?.thorchain;
+      } catch (error) {
+        this.error = true;
+        console.error(error);
+      }
 
       this.$api
         .getSavers(this.poolName)
@@ -103,6 +107,7 @@ export default {
             ...saverDetail,
             asset_earned: saverDetail.asset_deposit_value - saverDetail.units,
             APR: this.calcAPR(saverDetail),
+            realizedYield: this.realizedYield(saverDetail)
           }));
         })
         .catch((e) => {
@@ -115,6 +120,10 @@ export default {
       const diffHeight = (this.lastBlockHeight - saverDetail.last_add_height);
       const periodPerYear = 5256000 / diffHeight
       return ((saverDetail.asset_deposit_value / saverDetail.units) - 1) * periodPerYear
+    },
+    realizedYield(saverDetail) {
+      if (!this.lastBlockHeight) return 0;
+      return ((saverDetail.asset_deposit_value / saverDetail.units) - 1)
     },
   },
   mounted() {

@@ -22,7 +22,7 @@
             perPage: 30,
             perPageDropdownEnabled: false,
           }"
-          @on-row-click="gotoPoolTable"
+          @on-row-click="gotoSaver"
         >
           <template slot="table-row" slot-scope="props">
             <div v-if="props.column.field == 'asset'" v-tooltip="props.row.asset" class="cell-content">
@@ -205,8 +205,9 @@ export default {
         ? asset.slice(0, 14) + '...'
         : asset
     },
-    gotoPoolTable (params) {
-      this.gotoPool(params.row.asset)
+    gotoSaver (params) {
+      if (!params) return
+      this.$router.push(`/savers/${params.row.asset}`)
     },
     setSavers (pools) {
       if (!pools && pools.length <= 0) {
