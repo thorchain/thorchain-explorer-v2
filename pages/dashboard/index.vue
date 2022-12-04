@@ -1181,31 +1181,4 @@ export default {
   }
 }
 
-.data-color {
-  margin-right: 6px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-}
-
-.tooltip-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 5px;
-}
-
-.tooltip-body {
-  margin-top: 5px;
-  width: 120px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-
-  > span {
-    display: flex;
-    justify-content: space-between;
-  }
-}
 </style>
