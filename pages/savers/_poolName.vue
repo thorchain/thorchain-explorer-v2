@@ -24,7 +24,9 @@
         {link: `/savers/${poolName}`, text: 'Savers Overiew'},
       ]"
     />
-    <nuxt-child keep-alive />
+    <div v-if="saversExtraData">
+      <nuxt-child keep-alive :savers-data="saversExtraData" />
+    </div>
   </Page>
 </template>
 
@@ -32,13 +34,14 @@
 import { mapGetters } from 'vuex'
 
 export default {
-  async asyncData ({ params }) {
+  asyncData ({ params }) {
     return { poolName: params.poolName }
   },
-  data() {
+  data () {
     return {
       error: false,
-      saversGeneralStats: []
+      saversGeneralStats: [],
+      saversExtraData: undefined
     }
   },
   computed: {
@@ -52,22 +55,19 @@ export default {
       return this.saversGeneralStats.filter(s => !s.hide)
     }
   },
-  async mounted() {
+  async mounted () {
     const saversExtraData = (await this.$api.getSaversExtraData()).data[this.poolName]
     if (!saversExtraData) this.error = true
+    this.saversExtraData = saversExtraData
     this.updateGeneralStats(saversExtraData)
   },
   methods: {
-    updateGeneralStats(saversExtraData) {
+    updateGeneralStats (saversExtraData) {
       this.saversGeneralStats = [
         {
           name: 'Total Earned',
           value: this.$options.filters.currency((saversExtraData.earned * saversExtraData.assetPrice / 10**8)),
           hide: !saversExtraData.earned
-        },
-        {
-          name: 'Total Filled',
-          value: this.$options.filters.percent(saversExtraData.filled, 2)
         },
         {
           name: 'Total Annulaised Return',
@@ -144,5 +144,34 @@ h3 {
       text-align: center;
     }
   }
+}
+
+.savers-filled-card {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  min-width: 350px;
+}
+
+.chart-edition {
+  margin-bottom: 15px;
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+
+  .card-container {
+    border: 1px solid var(--border-color);
+    border-radius: .5rem;
+    margin: auto;
+  }
+
+  h4 {
+    color: var(--sec-font-color);
+    text-align: center;
+  }
+}
+
+.inner-pie-chart {
+  max-width: 300px;
 }
 </style>

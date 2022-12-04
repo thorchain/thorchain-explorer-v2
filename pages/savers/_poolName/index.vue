@@ -1,47 +1,64 @@
 <template>
-  <Card>
-    <vue-good-table
-      :columns="saverCols"
-      :rows="saverDetails"
-      style-class="vgt-table net-table"
-      :pagination-options="{
-        enabled: true,
-        perPage: 50,
-        perPageDropdownEnabled: true,
-      }"
-      :sort-options="{
-        enabled: true,
-        initialSortBy: {field: 'asset_deposit_value', type: 'desc'}
-      }"
-    >
-      <template slot="table-row" slot-scope="props">
-        <template v-if="props.column.field.includes('asset_address')">
-          <NuxtLink
-            class="address-link clickable"
-            :to="`/address/${props.row.asset_address}`"
-          >
-            {{ props.formattedRow[props.column.field] }}
-          </NuxtLink>
-        </template>
-        <template v-else-if="props.column.field.includes('asset')">
-          <span>
+  <div>
+    <div class="chart-edition savers-distro">
+      <Card title="Address Distribution" :is-loading="(!saverDetails || saverDetails.length == 0)" class="inner-pie-chart">
+        <pie-chart :pie-data="saverDetails" :formatter="totalSaverFormatter" />
+      </Card>
+      <Card title="Savers Cap Filled" :is-loading="!saversData.filled" class="savers-filled-card">
+        <ProgressBar :width="(saversData.filled*100)" />
+        <h4>
+          {{
+            $options.filters.percent(saversData.filled, 2)
+          }}
+          Total Savers Filled
+        </h4>
+      </Card>
+    </div>
+    <Card>
+      <vue-good-table
+        :columns="saverCols"
+        :rows="saverDetails"
+        style-class="vgt-table net-table"
+        :pagination-options="{
+          enabled: true,
+          perPage: 50,
+          perPageDropdownEnabled: true,
+        }"
+        :sort-options="{
+          enabled: true,
+          initialSortBy: {field: 'asset_deposit_value', type: 'desc'}
+        }"
+      >
+        <template slot="table-row" slot-scope="props">
+          <template v-if="props.column.field.includes('asset_address')">
+            <NuxtLink
+              class="address-link clickable"
+              :to="`/address/${props.row.asset_address}`"
+            >
+              {{ props.formattedRow[props.column.field] }}
+            </NuxtLink>
+          </template>
+          <template v-else-if="props.column.field.includes('asset')">
+            <span>
+              {{ props.formattedRow[props.column.field] }}
+            </span>
+            <small>
+              {{ props.row.asset }}
+            </small>
+          </template>
+          <span v-else>
             {{ props.formattedRow[props.column.field] }}
           </span>
-          <small>
-            {{ props.row.asset }}
-          </small>
         </template>
-        <span v-else>
-          {{ props.formattedRow[props.column.field] }}
-        </span>
-      </template>
-    </vue-good-table>
-  </Card>
+      </vue-good-table>
+    </Card>
+  </div>
 </template>
 
 <script>
 export default {
-  async asyncData ({ params }) {
+  props: ['saversData'],
+  asyncData ({ params }) {
     return { poolName: params.poolName }
   },
   data () {
@@ -114,7 +131,10 @@ export default {
             ...saverDetail,
             asset_earned: saverDetail.asset_deposit_value - saverDetail.units,
             APR: this.calcAPR(saverDetail),
-            realizedYield: this.realizedYield(saverDetail)
+            realizedYield: this.realizedYield(saverDetail),
+            // for pie chart
+            value: (saverDetail.asset_deposit_value * this.saversData.assetPrice) / 10e8,
+            name: saverDetail.asset_address
           }))
         })
         .catch((e) => {
@@ -131,6 +151,20 @@ export default {
     realizedYield (saverDetail) {
       if (!this.lastBlockHeight) { return 0 }
       return ((saverDetail.asset_deposit_value / saverDetail.units) - 1)
+    },
+    totalSaverFormatter (param) {
+      return (`
+        <div class="tooltip-header">
+          <div class="data-color" style="background-color: ${param.color}"></div>
+          ${this.formatAddress(param.name)}
+        </div>
+        <div class="tooltip-body">
+          <span>
+            <span>Value</span>
+            <b>$${this.$options.filters.number(param.value, '0,0.00 a')}</b>
+          </span>
+        </div>
+      `)
     }
   }
 }
