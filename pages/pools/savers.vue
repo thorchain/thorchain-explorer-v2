@@ -53,7 +53,7 @@
               </div>
             </span>
             <span v-else-if="props.column.field == 'saversDepth'">
-              <span v-tooltip="(+props.row.depth / 10e8) * +props.row.price">{{ props.formattedRow[props.column.field] }}
+              <span v-tooltip="(+props.row.depth / 10**8) * +props.row.price">{{ props.formattedRow[props.column.field] }}
                 <span class="extra-text" style="font-size: .6rem; font-weight: bold;">
                   {{ showAsset(props.row.asset) }}
                 </span>

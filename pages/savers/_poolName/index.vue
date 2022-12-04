@@ -133,7 +133,7 @@ export default {
             APR: this.calcAPR(saverDetail),
             realizedYield: this.realizedYield(saverDetail),
             // for pie chart
-            value: (saverDetail.asset_deposit_value * this.saversData.assetPrice) / 10e8,
+            value: (saverDetail.asset_deposit_value * this.saversData.assetPrice) / 10 ** 8,
             name: saverDetail.asset_address
           }))
         })

@@ -1,4 +1,4 @@
-import { bn, bnOrZero, Chain, formatBN, isSynthAsset } from '@xchainjs/xchain-util'
+import { bn, bnOrZero, Chain, formatBN, formatBNCurrency, isSynthAsset } from '@xchainjs/xchain-util'
 import compare from 'semver/functions/compare'
 import moment from 'moment'
 import { AssetImage } from '~/classes/assetImage'
@@ -104,7 +104,7 @@ export default {
       return number ? this.$options.filters.number(+number / 10 ** 8, '0,0.0000') : '-'
     },
     baseAmountFormatOrZero (number) {
-      return formatBN(bnOrZero(number).div(10e8), 8)
+      return formatBN(bnOrZero(number).div(1e8), 8)
     },
     formatCurrency (number) {
       return this.$options.filters.currency(number)
