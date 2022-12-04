@@ -306,12 +306,14 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 15px;
+  min-width: 350px;
 }
 
 .chart-edition {
   margin-bottom: 15px;
   display: flex;
   gap: 15px;
+  flex-wrap: wrap;
 
   .card-container {
     border: 1px solid var(--border-color);
