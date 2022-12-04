@@ -10,6 +10,20 @@
         </div>
       </div>
     </div>
+    <div class="chart-edition savers-distro">
+      <Card title="Savers Distribution" :is-loading="!totalSaversValue" class="inner-pie-chart">
+        <pie-chart :pie-data="totalSaversValue" :formatter="totalSaverFormatter" />
+      </Card>
+      <Card title="Savers Cap Filled" :is-loading="!saversFilled" class="savers-filled-card">
+        <ProgressBar :width="(saversFilled*100)" />
+        <h4>
+          {{
+            $options.filters.percent(saversFilled, 2)
+          }}
+          Total Savers Filled
+        </h4>
+      </Card>
+    </div>
     <Page>
       <Card :is-loading="tables.saversRows.data.length <= 0">
         <vue-good-table
@@ -21,6 +35,10 @@
             enabled: true,
             perPage: 30,
             perPageDropdownEnabled: false,
+          }"
+          :sort-options="{
+            enabled: true,
+            initialSortBy: {field: 'saverDepthPrice', type: 'desc'}
           }"
           @on-row-click="gotoSaver"
         >
@@ -53,8 +71,10 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import PieChart from '~/components/PieChart.vue'
 
 export default {
+  components: { PieChart },
   data () {
     return {
       error: false,
@@ -103,7 +123,8 @@ export default {
           data: []
         }
       },
-      maxSaverCap: 0.3
+      maxSaverCap: 0.3,
+      saversFilled: 0
     }
   },
   computed: {
@@ -130,6 +151,7 @@ export default {
         saversStat.meanAPR += (saver.saverReturn)
         saversStat.totalFilled += +saver.saversDepth * +saver.price
       })
+      this.setSaversFilled(saversStat.totalFilled / (totalPoolDepthUSD * this.maxSaverCap))
       return [
         {
           name: 'Total Savers',
@@ -146,10 +168,6 @@ export default {
         {
           name: 'APR Mean',
           value: this.$options.filters.percent(saversStat.meanAPR / this.tables.saversRows.data.length, 2)
-        },
-        {
-          name: 'Total Filled',
-          value: this.$options.filters.percent(saversStat.totalFilled / (totalPoolDepthUSD * this.maxSaverCap), 2)
         }
       ]
     },
@@ -206,7 +224,7 @@ export default {
         : asset
     },
     gotoSaver (params) {
-      if (!params) return
+      if (!params) { return }
       this.$router.push(`/savers/${params.row.asset}`)
     },
     setSavers (pools) {
@@ -218,6 +236,31 @@ export default {
           this.tables.saversRows.data.push(pools[i])
         }
       }
+      this.fillTotalSaversValue()
+    },
+    fillTotalSaversValue () {
+      this.totalSaversValue = this.tables.saversRows.data.map(saver => ({
+        value: saver.saverDepthPrice,
+        name: saver.asset
+      }))
+
+      this.totalSaverFormatter = (param) => {
+        return (`
+          <div class="tooltip-header">
+            <div class="data-color" style="background-color: ${param.color}"></div>
+            ${param.name}
+          </div>
+          <div class="tooltip-body">
+            <span>
+              <span>Value</span>
+              <b>$${this.$options.filters.number(param.value, '0,0.00 a')}</b>
+            </span>
+          </div>
+        `)
+      }
+    },
+    setSaversFilled (saversFilled) {
+      this.saversFilled = saversFilled
     }
   }
 }
@@ -257,5 +300,32 @@ export default {
       text-align: center;
     }
   }
+}
+
+.savers-filled-card {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.chart-edition {
+  margin-bottom: 15px;
+  display: flex;
+  gap: 15px;
+
+  .card-container {
+    border: 1px solid var(--border-color);
+    border-radius: .5rem;
+    margin: auto;
+  }
+
+  h4 {
+    color: var(--sec-font-color);
+    text-align: center;
+  }
+}
+
+.inner-pie-chart {
+  max-width: 300px;
 }
 </style>

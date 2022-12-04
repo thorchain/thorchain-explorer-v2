@@ -55,7 +55,6 @@ export default {
   async mounted() {
     const saversExtraData = (await this.$api.getSaversExtraData()).data[this.poolName]
     if (!saversExtraData) this.error = true
-    console.log(saversExtraData)
     this.updateGeneralStats(saversExtraData)
   },
   methods: {
