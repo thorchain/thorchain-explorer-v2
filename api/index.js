@@ -54,7 +54,8 @@ import {
   getDashboardPlots,
   getExraNodesInfo,
   getOhclPrice,
-  getSaversExtraData
+  getSaversExtraData,
+  getOldSaversExtraData
 } from './middleware.api'
 import {
   getChurnHistory,
@@ -178,7 +179,8 @@ export default function ({ $axios }, inject) {
     getMemberDetails,
     getSaversExtraData,
     getSaverDetails,
-    getSavers
+    getSavers,
+    getOldSaversExtraData
   }
 
   inject('api', api)

@@ -83,8 +83,8 @@ export default {
     fromNow (date) {
       return moment(date).fromNow()
     },
-    percentageFormat (number) {
-      return number ? this.$options.filters.percent(number, 4) : '-'
+    percentageFormat (number, decimal) {
+      return number ? this.$options.filters.percent(number, decimal ?? 4) : '-'
     },
     normalFormat (number) {
       return number ? this.$options.filters.number(+number, '0,0') : '-'
@@ -106,8 +106,14 @@ export default {
     baseAmountFormatOrZero (number) {
       return formatBN(bnOrZero(number).div(1e8), 8)
     },
+    smallBaseAmountFormat (number) {
+      return number ? this.$options.filters.number(+number / 10 ** 8, '0,0.00 a') : '-'
+    },
     formatCurrency (number) {
       return this.$options.filters.currency(number)
+    },
+    formatSmallCurrency (number) {
+      return this.$options.filters.currency(number / 10 ** 8, '$', 2)
     },
     versionSort (x, y, col, rowX, rowY) {
       return (compare(x, y))

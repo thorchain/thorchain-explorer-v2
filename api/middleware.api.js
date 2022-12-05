@@ -20,3 +20,7 @@ export function getOhclPrice () {
 export function getSaversExtraData () {
   return $axiosInstace.get(endpoints[process.env.NETWORK].SERVER_URL + 'api/saversExtraData')
 }
+
+export function getOldSaversExtraData () {
+  return $axiosInstace.get(endpoints[process.env.NETWORK].SERVER_URL + 'api/oldSaversExtraData')
+}

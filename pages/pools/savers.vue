@@ -47,13 +47,10 @@
               <AssetIcon :asset="props.row.asset" />
               <span>{{ props.formattedRow[props.column.field] }}</span>
             </div>
-            <span v-else-if="props.column.field == 'status'">
-              <div :class="['bubble-container', {'yellow': k.mode == 'staged'}]">
-                <span>{{ props.row.status | capitalize }}</span>
-              </div>
-            </span>
             <span v-else-if="props.column.field == 'saversDepth'">
-              <span v-tooltip="(+props.row.depth / 10**8) * +props.row.price">{{ props.formattedRow[props.column.field] }}
+              <span>
+                {{ props.formattedRow[props.column.field] }}
+                <progress-icon :data-number="props.row.changes[props.column.field].value" :is-down="props.row.changes.saversDepth.isDown" />
                 <span class="extra-text" style="font-size: .6rem; font-weight: bold;">
                   {{ showAsset(props.row.asset) }}
                 </span>
@@ -61,6 +58,7 @@
             </span>
             <span v-else>
               {{ props.formattedRow[props.column.field] }}
+              <progress-icon :data-number="props.row.changes[props.column.field].value" :is-down="props.row.changes[props.column.field].isDown" />
             </span>
           </template>
         </vue-good-table>
@@ -72,9 +70,10 @@
 <script>
 import { mapGetters } from 'vuex'
 import PieChart from '~/components/PieChart.vue'
+import ProgressIcon from '~/components/ProgressIcon.vue'
 
 export default {
-  components: { PieChart },
+  components: { PieChart, ProgressIcon },
   data () {
     return {
       error: false,
@@ -124,7 +123,9 @@ export default {
         }
       },
       maxSaverCap: 0.3,
-      saversFilled: 0
+      saversFilled: 0,
+      totalSaversValue: 0,
+      totalSaverFormatter: undefined
     }
   },
   computed: {
@@ -180,6 +181,8 @@ export default {
     this.$api.getPools().then(async ({ data }) => {
       const runePrice = (await this.$api.getStats()).data.runePriceUSD
       const saversExtraData = (await this.$api.getSaversExtraData()).data
+      const saversOldData = (await this.$api.getOldSaversExtraData()).data
+      const changes = this.getSaversChanges(saversOldData, saversExtraData)
       const ps = data.map(p => ({
         status: p.status,
         price: p.assetPriceUSD,
@@ -195,7 +198,8 @@ export default {
         depthToUnitsRatio: this.$options.filters.number(+p.saversDepth / +p.saversUnits, '0.00000'),
         filled: saversExtraData[p.asset]?.filled,
         saversCount: saversExtraData[p.asset]?.saversCount,
-        saverReturn: saversExtraData[p.asset]?.saverReturn
+        saverReturn: saversExtraData[p.asset]?.saverReturn,
+        changes: changes[p.asset]
       }))
       this.setSavers(ps)
     }).catch((e) => {
@@ -261,6 +265,38 @@ export default {
     },
     setSaversFilled (saversFilled) {
       this.saversFilled = saversFilled
+    },
+    getSaversChanges (oldData, newData) {
+      const ret = {}
+      Object.keys(newData).forEach((asset) => {
+        ret[asset] = {
+          saversCount: {
+            value: this.$options.filters.number(newData[asset].saversCount - (oldData[asset].saversCount ?? 0), '0,0'),
+            isDown: (newData[asset].saversCount < (oldData[asset].saversCount ?? 0))
+          },
+          saverReturn: {
+            value: this.percentageFormat(newData[asset].saverReturn - (oldData[asset].saverReturn ?? 0), 2),
+            isDown: (newData[asset].saverReturn < (oldData[asset].saverReturn ?? 0))
+          },
+          earned: {
+            value: this.baseAmountFormat(newData[asset].earned - (oldData[asset].earned ?? 0)),
+            isDown: (newData[asset].earned < (oldData[asset].earned ?? 0))
+          },
+          filled: {
+            value: this.percentageFormat(newData[asset].filled - (oldData[asset].filled ?? 0), 2),
+            isDown: (newData[asset].filled < (oldData[asset].filled ?? 0))
+          },
+          saversDepth: {
+            value: this.smallBaseAmountFormat(+newData[asset].saversDepth - (+oldData[asset].saversDepth ?? 0)),
+            isDown: (+newData[asset].saversDepth < (+oldData[asset].saversDepth ?? 0))
+          },
+          saverDepthPrice: {
+            value: '$' + this.smallBaseAmountFormat((+newData[asset].saversDepth - (+oldData[asset].saversDepth ?? 0)) * newData[asset].assetPrice),
+            isDown: (+newData[asset].saversDepth < (+oldData[asset].saversDepth ?? 0))
+          }
+        }
+      })
+      return ret
     }
   }
 }
