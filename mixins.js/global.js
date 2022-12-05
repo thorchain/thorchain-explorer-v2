@@ -107,7 +107,7 @@ export default {
       return formatBN(bnOrZero(number).div(1e8), 8)
     },
     smallBaseAmountFormat (number) {
-      return number ? this.$options.filters.number(+number / 10 ** 8, '0,0.00 a') : '-'
+      return number ? this.$options.filters.number(+number / 10 ** 8, '0,0.00a') : '-'
     },
     formatCurrency (number) {
       return this.$options.filters.currency(number)
