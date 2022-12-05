@@ -1,7 +1,10 @@
 <template>
-  <div :class="['arrow-container', {'down': isDown}, {'netural': dataNumber == '0'}]">
+  <div
+    :class="['arrow-container', {'down': isDown}, {'netural': dataNumber == '0'}]"
+    :style="{'--font-size': extraStyles.fontSize}"
+  >
     <template v-if="(dataNumber !== '0')">
-      ({{ dataNumber }}<arrow-icon />)
+      ({{ isDown ? '':'+' }}{{ dataNumber }}<arrow-icon />)
     </template>
     <template v-else>
       ({{ dataNumber }} -)
@@ -16,7 +19,14 @@ export default {
   components: {
     ArrowIcon
   },
-  props: ['isDown', 'dataNumber']
+  props: ['isDown', 'dataNumber', 'size'],
+  computed: {
+    extraStyles () {
+      return {
+        fontSize: this.size ?? '.7rem'
+      }
+    }
+  }
 }
 </script>
 
@@ -27,11 +37,11 @@ export default {
   align-items: center;
 
   color: #76ff03;
-  font-size: .7rem;
+  font-size: var(--font-size);
 
   svg {
-    height: .7rem;
-    width: .7rem;
+    height: var(--font-size);
+    width: var(--font-size);
     fill: #76ff03;
     margin-left: 0 .1rem;
   }

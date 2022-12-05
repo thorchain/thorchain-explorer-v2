@@ -5,6 +5,13 @@
         <div class="value">
           {{ stat.value }}
         </div>
+        <div v-if="stat.change" class="stat-change">
+          <progress-icon
+            :data-number="stat.change"
+            :is-down="stat.isDown"
+            size="1rem"
+          />
+        </div>
         <div class="name">
           {{ stat.name }}
         </div>
@@ -20,6 +27,12 @@
           {{
             $options.filters.percent(saversFilled, 2)
           }}
+          <progress-icon
+            v-if="saversChange"
+            :data-number="$options.filters.percent(saversChange, 2)"
+            :is-down="!saversChange"
+            size=".9rem"
+          />
           Total Savers Filled
         </h4>
       </Card>
@@ -125,7 +138,9 @@ export default {
       maxSaverCap: 0.3,
       saversFilled: 0,
       totalSaversValue: 0,
-      totalSaverFormatter: undefined
+      totalSaverFormatter: undefined,
+      oldSavers: {},
+      saversChange: 0
     }
   },
   computed: {
@@ -152,23 +167,51 @@ export default {
         saversStat.meanAPR += (saver.saverReturn)
         saversStat.totalFilled += +saver.saversDepth * +saver.price
       })
-      this.setSaversFilled(saversStat.totalFilled / (totalPoolDepthUSD * this.maxSaverCap))
+
+      const oldSaversStat = {
+        saversCount: 0,
+        totalUSDSaved: 0,
+        totalEarn: 0,
+        meanAPR: 0,
+        totalFilled: 0,
+        assetDepthUSD: 0
+      }
+      Object.keys(this.oldSavers).forEach((saver) => {
+        oldSaversStat.saversCount += this.oldSavers[saver].saversCount
+        oldSaversStat.totalUSDSaved += +this.oldSavers[saver].saversDepth / 1e8 * +this.oldSavers[saver].assetPrice
+        oldSaversStat.totalEarn += +this.oldSavers[saver].earned / 1e8 * +this.oldSavers[saver].assetPrice
+        oldSaversStat.meanAPR += (this.oldSavers[saver].saverReturn)
+        oldSaversStat.totalFilled += +this.oldSavers[saver].saversDepth * +this.oldSavers[saver].assetPrice
+        oldSaversStat.assetDepthUSD += (+this.oldSavers[saver].assetDepth * +this.oldSavers[saver].assetPrice)
+      })
+
+      this.setSaversFilled(
+        saversStat.totalFilled / (totalPoolDepthUSD * this.maxSaverCap),
+        oldSaversStat.totalFilled / (oldSaversStat.assetDepthUSD * this.maxSaverCap)
+      )
       return [
         {
           name: 'Total Savers',
-          value: saversStat.saversCount
+          value: saversStat.saversCount,
+          change: saversStat.saversCount - oldSaversStat.saversCount
         },
         {
           name: 'Total Saved Value',
-          value: this.$options.filters.currency(saversStat.totalUSDSaved)
+          value: this.$options.filters.currency(saversStat.totalUSDSaved),
+          change: this.$options.filters.currency(saversStat.totalUSDSaved - oldSaversStat.totalUSDSaved),
+          isDown: +saversStat.totalUSDSaved < +oldSaversStat.totalUSDSaved
         },
         {
           name: 'Total Earned',
-          value: this.$options.filters.currency(saversStat.totalEarn)
+          value: this.$options.filters.currency(saversStat.totalEarn),
+          change: this.$options.filters.currency(saversStat.totalEarn - oldSaversStat.totalEarn),
+          isDown: saversStat.totalEarn < oldSaversStat.totalEarn
         },
         {
           name: 'APR Mean',
-          value: this.$options.filters.percent(saversStat.meanAPR / this.tables.saversRows.data.length, 2)
+          value: this.$options.filters.percent(saversStat.meanAPR / this.tables.saversRows.data.length, 2),
+          change: this.$options.filters.percent((saversStat.meanAPR - oldSaversStat.meanAPR) / this.tables.saversRows.data.length, 4),
+          isDown: saversStat.meanAPR < oldSaversStat.meanAPR
         }
       ]
     },
@@ -183,6 +226,7 @@ export default {
       const saversExtraData = (await this.$api.getSaversExtraData()).data
       const saversOldData = (await this.$api.getOldSaversExtraData()).data
       const changes = this.getSaversChanges(saversOldData, saversExtraData)
+      this.oldSavers = saversOldData
       const ps = data.map(p => ({
         status: p.status,
         price: p.assetPriceUSD,
@@ -263,8 +307,9 @@ export default {
         `)
       }
     },
-    setSaversFilled (saversFilled) {
+    setSaversFilled (saversFilled, oldSaversFilled) {
       this.saversFilled = saversFilled
+      this.saversChange = saversFilled - oldSaversFilled
     },
     getSaversChanges (oldData, newData) {
       const ret = {}
@@ -365,5 +410,11 @@ export default {
 
 .inner-pie-chart {
   max-width: 300px;
+}
+
+.stat-change {
+  display: flex;
+  justify-content: center;
+  margin: .2rem 0;
 }
 </style>
