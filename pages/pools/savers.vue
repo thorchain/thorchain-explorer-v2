@@ -77,6 +77,12 @@
         </vue-good-table>
       </Card>
     </Page>
+    <div class="footer-stat" v-if="tables.saversRows.data && tables.saversRows.data.length > 0">
+      <small>
+        <sup>*</sup>
+        All of the stat changes are based on 24 hours period
+      </small>
+    </div>
   </div>
 </template>
 
@@ -416,5 +422,14 @@ export default {
   display: flex;
   justify-content: center;
   margin: .2rem 0;
+}
+
+.footer-stat {
+  margin: 1.5rem 1rem 0 1rem;
+
+  small {
+    font-size: small;
+    font-family: 'Roboto Mono';
+  }
 }
 </style>
