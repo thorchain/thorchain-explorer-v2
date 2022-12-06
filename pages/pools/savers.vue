@@ -71,7 +71,7 @@
             </span>
             <span v-else>
               {{ props.formattedRow[props.column.field] }}
-              <progress-icon :data-number="props.row.changes[props.column.field].value" :is-down="props.row.changes[props.column.field].isDown" />
+              <progress-icon v-if="props.row.changes[props.column.field]" :data-number="props.row.changes[props.column.field].value" :is-down="props.row.changes[props.column.field].isDown" />
             </span>
           </template>
         </vue-good-table>
@@ -315,7 +315,7 @@ export default {
     },
     setSaversFilled (saversFilled, oldSaversFilled) {
       this.saversFilled = saversFilled
-      this.saversChange = saversFilled - oldSaversFilled
+      // this.saversChange = saversFilled - oldSaversFilled
     },
     getSaversChanges (oldData, newData) {
       const ret = {}
@@ -333,10 +333,10 @@ export default {
             value: this.baseAmountFormat(newData[asset].earned - (oldData[asset].earned ?? 0)),
             isDown: (newData[asset].earned < (oldData[asset].earned ?? 0))
           },
-          filled: {
-            value: this.percentageFormat(newData[asset].filled - (oldData[asset].filled ?? 0), 2),
-            isDown: (newData[asset].filled < (oldData[asset].filled ?? 0))
-          },
+          // filled: {
+          //   value: this.percentageFormat(newData[asset].filled - (oldData[asset].filled ?? 0), 2),
+          //   isDown: (newData[asset].filled < (oldData[asset].filled ?? 0))
+          // },
           saversDepth: {
             value: this.smallBaseAmountFormat(+newData[asset].saversDepth - (+oldData[asset].saversDepth ?? 0)),
             isDown: (+newData[asset].saversDepth < (+oldData[asset].saversDepth ?? 0))
