@@ -62,5 +62,31 @@ export default {
       fill: #b0bec5;
     }
   }
+
+}
+
+[theme="light"] .arrow-container {
+  color: #00c853;
+
+  svg {
+    fill: #00c853;
+  }
+
+  &.down {
+    color: #ff1744;
+
+    svg {
+      transform: rotate(180deg);
+      fill: #ff1744;
+    }
+  }
+
+  &.netural {
+    color: #616161;
+
+    svg {
+      fill: #616161;
+    }
+  }
 }
 </style>
