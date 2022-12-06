@@ -66,10 +66,10 @@ export default {
 }
 
 [theme="light"] .arrow-container {
-  color: #00c853;
+  color: #4caf50;
 
   svg {
-    fill: #00c853;
+    fill: #4caf50;
   }
 
   &.down {
