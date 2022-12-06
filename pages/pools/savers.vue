@@ -171,7 +171,7 @@ export default {
         saversStat.totalUSDSaved += +saver.saversDepth * +saver.price
         saversStat.totalEarn += (+saver.saversDepth - +(saver.saversUnits / 1e8)) * +saver.price
         saversStat.meanAPR += (saver.saverReturn)
-        saversStat.totalFilled += +saver.saversDepth * +saver.price
+        saversStat.totalFilled += (+saver.synthSupply / 1e8) * +saver.price
       })
 
       const oldSaversStat = {
@@ -195,6 +195,7 @@ export default {
         saversStat.totalFilled / (totalPoolDepthUSD * this.maxSaverCap),
         oldSaversStat.totalFilled / (oldSaversStat.assetDepthUSD * this.maxSaverCap)
       )
+
       return [
         {
           name: 'Total Savers',
@@ -249,6 +250,7 @@ export default {
         filled: saversExtraData[p.asset]?.filled,
         saversCount: saversExtraData[p.asset]?.saversCount,
         saverReturn: saversExtraData[p.asset]?.saverReturn,
+        synthSupply: saversExtraData[p.asset]?.synthSupply,
         changes: changes[p.asset]
       }))
       this.setSavers(ps)
