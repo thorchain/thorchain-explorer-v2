@@ -49,7 +49,7 @@ export default {
         [
           {
             name: 'Bond',
-            value: Number.parseInt(this.node?.bond) / 10 ** 8
+            value: Number.parseInt(this.node?.total_bond) / 10 ** 8
           },
           {
             name: 'Slash Points',
