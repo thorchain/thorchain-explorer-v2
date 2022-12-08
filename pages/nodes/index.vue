@@ -160,15 +160,15 @@
                   <strong>Providers</strong>
                 </div>
                 <div v-for="(p,i) in props.row.providers" :key="i" class="popover-table">
-                  <span class="clickable" @click="gotoAddr(p.node_operator_address)">
-                    {{ addressFormat(p.node_operator_address) }}
+                  <span class="clickable" @click="gotoAddr(p.bond_address)">
+                    {{ addressFormat(p.bond_address) }}
                   </span>
                   <span class="text">
-                    {{ (p.total_bond/10**8)/(props.row.total_bond) | percent }}
+                    {{ (p.bond/10**8)/(props.row.total_bond) | percent }}
                   </span>
                   <div style="justify-content: end;" class="text">
                     <span class="extra">{{ runeCur() }}</span>
-                    {{ numberFormat(p.total_bond/10**8) }}
+                    {{ numberFormat(p.bond/10**8) }}
                   </div>
                 </div>
               </b-popover>
