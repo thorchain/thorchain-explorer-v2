@@ -115,10 +115,10 @@
                 <span>{{ props.row.location.city }}</span>
               </div>
             </span>
-            <span v-else-if="props.column.field == 'bond'">
-              <span v-tooltip="curFormat(runePrice * props.row.bond)">
+            <span v-else-if="props.column.field == 'total_bond'">
+              <span v-tooltip="curFormat(runePrice * props.row.total_bond)">
                 <span class="extra">{{ runeCur() }}</span>
-                {{ numberFormat(props.row.bond) }}
+                {{ numberFormat(props.row.total_bond) }}
               </span>
             </span>
             <span v-else-if="props.column.field == 'award'">
@@ -160,15 +160,15 @@
                   <strong>Providers</strong>
                 </div>
                 <div v-for="(p,i) in props.row.providers" :key="i" class="popover-table">
-                  <span class="clickable" @click="gotoAddr(p.bond_address)">
-                    {{ addressFormat(p.bond_address) }}
+                  <span class="clickable" @click="gotoAddr(p.node_operator_address)">
+                    {{ addressFormat(p.node_operator_address) }}
                   </span>
                   <span class="text">
-                    {{ (p.bond/10**8)/(props.row.bond) | percent }}
+                    {{ (p.total_bond/10**8)/(props.row.total_bond) | percent }}
                   </span>
                   <div style="justify-content: end;" class="text">
                     <span class="extra">{{ runeCur() }}</span>
-                    {{ numberFormat(p.bond/10**8) }}
+                    {{ numberFormat(p.total_bond/10**8) }}
                   </div>
                 </div>
               </b-popover>
@@ -200,7 +200,7 @@
             :sort-options="{
               enabled: true,
               initialSortBy: [
-                {field: 'bond', type: 'desc'}
+                {field: 'total_bond', type: 'desc'}
               ]
             }"
           >
@@ -242,10 +242,10 @@
                 </div>
                 <span v-else class="not-clickable">No Address Set</span>
               </span>
-              <span v-else-if="props.column.field == 'bond'">
-                <span v-tooltip="curFormat(runePrice * props.row.bond)">
+              <span v-else-if="props.column.field == 'total_bond'">
+                <span v-tooltip="curFormat(runePrice * props.row.total_bond)">
                   <span class="extra">{{ runeCur() }}</span>
-                  {{ numberFormat(props.row.bond) }}
+                  {{ numberFormat(props.row.total_bond) }}
                 </span>
               </span>
               <span v-else-if="props.column.field == 'award'">
@@ -420,7 +420,7 @@ export default {
         },
         {
           label: 'Bond',
-          field: 'bond',
+          field: 'total_bond',
           type: 'number',
           formatFn: this.numberFormat,
           tdClass: 'mono'
@@ -809,14 +809,14 @@ export default {
         sortedNodes.push({
           name: 'Eligiable',
           nodes: nodes?.filter(
-            e => e.status === 'Standby' && parseInt(e.bond) >= 30000000000000
+            e => e.status === 'Standby' && parseInt(e.total_bond) >= 30000000000000
           )
         })
 
         sortedNodes.push({
           name: 'StandBy',
           nodes: nodes?.filter(
-            e => e.status === 'Standby' && parseInt(e.bond) < 30000000000000
+            e => e.status === 'Standby' && parseInt(e.total_bond) < 30000000000000
           )
         })
 
@@ -835,13 +835,13 @@ export default {
     fillExtraNodes (nodes) {
       if (nodes) {
         let eliNodes = nodes?.filter(
-          e => (e.status === 'Standby' || e.status === 'Ready') && parseInt(e.bond) >= 30000000000000
+          e => (e.status === 'Standby' || e.status === 'Ready') && parseInt(e.total_bond) >= 30000000000000
         )
         eliNodes = this.fillENode(eliNodes)
         this.otherNodes[0].cols = eliNodes
 
         const stbNodes = nodes?.filter(
-          e => e.status === 'Standby' && parseInt(e.bond) < 30000000000000
+          e => e.status === 'Standby' && parseInt(e.total_bond) < 30000000000000
         )
         this.otherNodes[1].cols = this.fillENode(stbNodes)
 
