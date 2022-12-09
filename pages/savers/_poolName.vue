@@ -4,7 +4,7 @@
       <div class="card-body savers-header">
         <AssetIcon :asset="poolName" height="1.6rem" />
         <h3>
-          {{poolName}}
+          {{ poolName }}
         </h3>
       </div>
     </div>
@@ -13,6 +13,7 @@
         <div class="value">
           {{ stat.value }}
         </div>
+        <div class="extra-text" v-html="stat.extraText" />
         <div class="name">
           {{ stat.name }}
         </div>
@@ -21,7 +22,7 @@
     <Nav
       :is-link="true"
       :nav-items="[
-        {link: `/savers/${poolName}`, text: 'Savers Overiew'},
+        {link: `/savers/${poolName}`, text: 'Savers Overview'},
       ]"
     />
     <div v-if="saversExtraData">
@@ -57,7 +58,7 @@ export default {
   },
   async mounted () {
     const saversExtraData = (await this.$api.getSaversExtraData()).data[this.poolName]
-    if (!saversExtraData) this.error = true
+    if (!saversExtraData) { this.error = true }
     this.saversExtraData = saversExtraData
     this.updateGeneralStats(saversExtraData)
   },
@@ -66,16 +67,21 @@ export default {
       this.saversGeneralStats = [
         {
           name: 'Total Earned',
-          value: this.$options.filters.currency((saversExtraData.earned * saversExtraData.assetPrice / 10**8)),
+          value: this.$options.filters.currency((saversExtraData.earned * saversExtraData.assetPrice / 1e8)),
           hide: !saversExtraData.earned
         },
         {
-          name: 'Total Annulaised Return',
+          name: 'Total Annualised Return',
           value: this.$options.filters.percent(saversExtraData.saverReturn, 2)
         },
         {
           name: 'Savers Count',
           value: this.$options.filters.number(saversExtraData.saversCount, '0,0')
+        },
+        {
+          name: 'Savers Depth',
+          value: this.$options.filters.currency((saversExtraData.saversDepth * saversExtraData.assetPrice / 1e8)),
+          extraText: `(${this.$options.filters.number(saversExtraData.saversDepth / 1e8, '0,0.00')} <small>${saversExtraData.asset}</small>)`
         }
       ]
     }
@@ -141,6 +147,11 @@ h3 {
 
     .name {
       color: var(--font-color);
+      text-align: center;
+    }
+
+    .extra-text {
+      font-size: .9rem;
       text-align: center;
     }
   }

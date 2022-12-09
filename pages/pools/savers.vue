@@ -103,7 +103,7 @@ export default {
           formatFn: this.formatAsset
         },
         {
-          label: 'Savers Depth Price',
+          label: 'Savers Depth (USD)',
           field: 'saverDepthPrice',
           type: 'number',
           formatFn: this.formattedPrice,

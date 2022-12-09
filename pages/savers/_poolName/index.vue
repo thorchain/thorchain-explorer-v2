@@ -73,8 +73,15 @@ export default {
           formatFn: this.formatAddress
         },
         {
-          label: 'Asset Balance',
+          label: 'Member Deposit',
           field: 'asset_deposit_value',
+          tdClass: 'mono',
+          type: 'number',
+          formatFn: this.baseAmountFormatOrZero
+        },
+        {
+          label: 'Member Redeem',
+          field: 'asset_redeem_value',
           tdClass: 'mono',
           type: 'number',
           formatFn: this.baseAmountFormatOrZero
@@ -87,8 +94,8 @@ export default {
           formatFn: this.baseAmountFormatOrZero
         },
         {
-          label: 'Realized Yield',
-          field: 'realizedYield',
+          label: 'Growth Percentage',
+          field: 'growth_pct',
           tdClass: 'mono',
           type: 'percentage'
         },
@@ -129,9 +136,8 @@ export default {
         .then(({ data: savers }) => {
           this.saverDetails = savers.map(saverDetail => ({
             ...saverDetail,
-            asset_earned: saverDetail.asset_deposit_value - saverDetail.units,
+            asset_earned: saverDetail.asset_redeem_value - saverDetail.asset_deposit_value,
             APR: this.calcAPR(saverDetail),
-            realizedYield: this.realizedYield(saverDetail),
             // for pie chart
             value: (saverDetail.asset_deposit_value * this.saversData.assetPrice) / 10 ** 8,
             name: saverDetail.asset_address
@@ -146,11 +152,7 @@ export default {
       if (!this.lastBlockHeight) { return 0 }
       const diffHeight = (this.lastBlockHeight - saverDetail.last_add_height)
       const periodPerYear = 5256000 / diffHeight
-      return ((saverDetail.asset_deposit_value / saverDetail.units) - 1) * periodPerYear
-    },
-    realizedYield (saverDetail) {
-      if (!this.lastBlockHeight) { return 0 }
-      return ((saverDetail.asset_deposit_value / saverDetail.units) - 1)
+      return ((saverDetail.asset_redeem_value / saverDetail.asset_deposit_value) - 1) * periodPerYear
     },
     totalSaverFormatter (param) {
       return (`
