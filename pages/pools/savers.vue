@@ -345,6 +345,8 @@ export default {
           return '#4DCA48'
         case 'AVAX.AVAX':
           return '#E84142'
+        case 'GAIA.ATOM':
+          return '#303249'
         default:
           return this.popRandomColor()
       }
