@@ -332,7 +332,7 @@ export default {
     getAssetColor (asset) {
       switch (asset) {
         case 'BTC.BTC':
-          return '#F8A239'
+          return '#EF8F1C'
         case 'ETH.ETH':
           return '#FFF'
         case 'LTC.LTC':
