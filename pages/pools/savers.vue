@@ -77,7 +77,7 @@
         </vue-good-table>
       </Card>
     </Page>
-    <div class="footer-stat" v-if="tables.saversRows.data && tables.saversRows.data.length > 0">
+    <div v-if="tables.saversRows.data && tables.saversRows.data.length > 0" class="footer-stat">
       <small>
         <sup>*</sup>
         All of the stat changes are based on 24 hours period
@@ -297,7 +297,10 @@ export default {
     fillTotalSaversValue () {
       this.totalSaversValue = this.tables.saversRows.data.map(saver => ({
         value: saver.saverDepthPrice,
-        name: saver.asset
+        name: saver.asset,
+        itemStyle: {
+          color: this.getAssetColor(saver.asset)
+        }
       }))
 
       this.totalSaverFormatter = (param) => {
@@ -318,6 +321,33 @@ export default {
     setSaversFilled (saversFilled, oldSaversFilled) {
       this.saversFilled = saversFilled
       // this.saversChange = saversFilled - oldSaversFilled
+    },
+    popRandomColor () {
+      const defaultColors = ['#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de', '#3ba272', '#fc8452', '#9a60b4', '#ea7ccc']
+      const rand = Math.random()
+      const color = defaultColors[Math.floor(rand * defaultColors.length)]
+      defaultColors.splice(Math.floor(rand * defaultColors.length), 1)
+      return color
+    },
+    getAssetColor (asset) {
+      switch (asset) {
+        case 'BTC.BTC':
+          return '#F8A239'
+        case 'ETH.ETH':
+          return '#FFF'
+        case 'LTC.LTC':
+          return '#335E9D'
+        case 'DOGE.DOGE':
+          return '#BCA23E'
+        case 'BNB.BNB':
+          return '#F0BC18'
+        case 'BCH.BCH':
+          return '#4DCA48'
+        case 'AVAX.AVAX':
+          return '#E84142'
+        default:
+          return this.popRandomColor()
+      }
     },
     getSaversChanges (oldData, newData) {
       const ret = {}
