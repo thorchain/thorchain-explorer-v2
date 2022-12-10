@@ -26,6 +26,14 @@
             </span>
           </span>
         </span>
+        <span v-else-if="props.column.field == 'saverUtilisation'">
+          <span v-if="props.row.saverUtilisation != 0">
+            {{ props.formattedRow[props.column.field] }}
+          </span>
+          <span v-else>
+            -
+          </span>
+        </span>
         <span v-else>
           {{ props.formattedRow[props.column.field] }}
         </span>
@@ -52,6 +60,7 @@ export default {
         synth_units: pool?.synth_units,
         synth_supply: pool?.synth_supply,
         asset_depth: pool?.balance_asset,
+        savers_depth: pool?.savers_depth,
         units: pool?.pool_units,
         supply: asset?.amount
       })
@@ -74,6 +83,12 @@ export default {
         {
           label: 'Liability',
           field: 'liability',
+          type: 'percentage',
+          tdClass: 'mono'
+        },
+        {
+          label: 'Saver Utilisation',
+          field: 'saverUtilisation',
           type: 'percentage',
           tdClass: 'mono'
         },
@@ -105,6 +120,7 @@ export default {
           synth: asset?.synth,
           liability: +asset?.synth_units / +asset?.units,
           utilisation: +asset?.synth_supply / +asset?.asset_depth,
+          saverUtilisation: +asset?.savers_depth / +asset?.supply,
           supply: +asset?.supply / 10 ** 8
         })
       }
