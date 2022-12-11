@@ -300,6 +300,11 @@ export default {
         name: saver.asset,
         itemStyle: {
           color: this.getAssetColor(saver.asset)
+        },
+        emphasis: {
+          itemStyle: {
+            color: this.getAssetColor(saver.asset)
+          }
         }
       }))
 
@@ -313,6 +318,10 @@ export default {
             <span>
               <span>Value</span>
               <b>$${this.$options.filters.number(param.value, '0,0.00 a')}</b>
+            </span>
+            <span>
+              <span>Percentage</span>
+              <b>${this.$options.filters.percent(param.percent / 100, 2)}</b>
             </span>
           </div>
         `)
