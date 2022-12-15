@@ -141,7 +141,7 @@ export default {
           data: []
         }
       },
-      maxSaverCap: 0.3,
+      maxSaverCap: 0.6,
       saversFilled: 0,
       totalSaversValue: 0,
       totalSaverFormatter: undefined,
