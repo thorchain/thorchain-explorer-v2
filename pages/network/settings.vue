@@ -123,8 +123,8 @@ export default {
         // Synths
         [
           {
-            name: camelCase('MaxSynthPerAssetDepth'),
-            value: this.networkConst?.int_64_values?.MaxSynthPerAssetDepth
+            name: camelCase('MAXSYNTHPERPOOLDEPTH'),
+            value: this.networkConst?.int_64_values?.MAXSYNTHPERPOOLDEPTH
           },
           {
             name: 'Synth Burning',

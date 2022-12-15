@@ -258,7 +258,7 @@ export default {
       console.error(e)
     })
     this.$api.getMimir().then(({ data }) => {
-      this.maxSaverCap = data.MAXSYNTHPERASSETDEPTH / 10e3
+      this.maxSaverCap = (data.MAXSYNTHPERPOOLDEPTH * 2) / 10e3
     }).catch(err => console.error('didn\'t catch the max synth per asset depth', err))
   },
   methods: {
