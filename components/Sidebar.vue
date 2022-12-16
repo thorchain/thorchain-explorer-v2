@@ -16,9 +16,11 @@
     <div class="side-bar-lists">
       <template v-for="(item, index) in sidebarLists" v-if="item">
         <NuxtLink :key="index" :to="item.link" :class="['side-bar-item']" @click.native="toggleMenu(false)">
-          <component :is="item.icon" class="icon selected" />
-          <component :is="item.unicon" class="icon unselected" />
-          <span class="sidebar-text">{{ item.name }}</span>
+          <div class="side-bar-wrap">
+            <component :is="item.icon" class="icon selected" />
+            <component :is="item.unicon" class="icon unselected" />
+            <span class="sidebar-text">{{ item.name }}</span>
+          </div>
         </NuxtLink>
       </template>
     </div>
@@ -245,6 +247,7 @@ export default {
     }
 
   .side-bar-lists {
+    margin-top: 20px;
     display: none;
 
     .side-bar-item {
@@ -266,11 +269,34 @@ export default {
 
       span {
         font-size: 2.25rem;
+        height: 2.25rem;
+        line-height: 2.25rem;
         color: var(--sec-font-color);
         font-family: 'Exo 2';
       }
 
+      .side-bar-wrap {
+        display: flex;
+        align-items: center;
+        padding: 12px;
+        border-radius: 3rem;
+
+        &:hover {
+          background: rgba(15, 20, 25, 0.1);
+        }
+      }
+
       @include lg {
+        .side-bar-wrap {
+          padding-right: 1.5rem;
+          padding-left: 1.5rem;
+        }
+
+        span {
+          height: 1rem;
+          line-height: 1rem;
+        }
+
         &.nuxt-link-active {
           .selected {
             display: block;
@@ -333,7 +359,8 @@ export default {
       }
 
       .side-bar-item {
-        padding: 14px 20px;
+        padding: 4px 0;
+        padding-left: 20px;
 
         span {
           font-size: 14px;
