@@ -282,7 +282,7 @@ export default {
         border-radius: 3rem;
 
         &:hover {
-          background: rgba(15, 20, 25, 0.1);
+          background: var(--darker-bg);
         }
       }
 
