@@ -16,7 +16,7 @@ export default {
     return {
       routes: [
         {
-          link: '/thorfi',
+          link: '/thorfi/synths',
           text: 'Synths'
         },
         {
