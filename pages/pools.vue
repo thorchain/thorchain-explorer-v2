@@ -15,10 +15,6 @@ export default {
         {
           text: 'Pools',
           link: '/pools'
-        },
-        {
-          text: 'Savers',
-          link: '/pools/savers'
         }
       ]
     }
