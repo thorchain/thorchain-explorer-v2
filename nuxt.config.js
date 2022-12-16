@@ -23,6 +23,17 @@ export default {
     height: '4px'
   },
 
+  router: {
+    extendRoutes (routes, resolve) {
+      routes.push(
+        {
+          path: '/pools/savers',
+          redirect: '/thorfi/savers'
+        }
+      )
+    }
+  },
+
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [
     '@/assets/styles/main.scss'
@@ -56,14 +67,14 @@ export default {
     // https://go.nuxtjs.dev/typescript
     '@nuxtjs/style-resources',
     '@nuxtjs/dotenv',
-    "@nuxtjs/svg",
+    '@nuxtjs/svg',
     '@nuxtjs/composition-api/module'
   ],
 
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
     // https://go.nuxtjs.dev/axios
-    '@nuxtjs/axios',
+    '@nuxtjs/axios'
   ],
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
@@ -75,7 +86,7 @@ export default {
     scss: [
       './assets/styles/_colors.scss',
       '@/assets/styles/_breakpoints.scss'
-      ]
+    ]
   },
 
   env: {

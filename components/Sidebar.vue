@@ -61,8 +61,8 @@ import exchangeUnselected from '~/assets/images/exchange-unselected.svg?inline'
 import swimmerSelected from '~/assets/images/swimmer-selected.svg?inline'
 import swimmerUnselected from '~/assets/images/swimmer-unselected.svg?inline'
 
-import moneySelected from '~/assets/images/money-selected.svg?inline'
-import moneyUnselected from '~/assets/images/money.svg?inline'
+import financeSelected from '~/assets/images/finance-selected.svg?inline'
+import financeUnselected from '~/assets/images/finance.svg?inline'
 
 import shieldSelected from '~/assets/images/shield.svg?inline'
 import shieldUnselected from '~/assets/images/shield-unselected.svg?inline'
@@ -89,8 +89,8 @@ export default {
     exchangeUnselected,
     swimmerSelected,
     swimmerUnselected,
-    moneySelected,
-    moneyUnselected,
+    financeSelected,
+    financeUnselected,
     shieldSelected,
     shieldUnselected,
     ThorchainLogo,
@@ -133,10 +133,10 @@ export default {
           link: '/pools'
         },
         {
-          name: 'Assets',
-          unicon: 'moneyUnselected',
-          icon: 'moneySelected',
-          link: '/assets'
+          name: 'THORFi',
+          unicon: 'financeUnselected',
+          icon: 'financeSelected',
+          link: '/thorfi'
         },
         {
           name: 'Vaults',
