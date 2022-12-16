@@ -81,12 +81,6 @@ export default {
           formatFn: formatAsset
         },
         {
-          label: 'Liability',
-          field: 'liability',
-          type: 'percentage',
-          tdClass: 'mono'
-        },
-        {
           label: 'Saver Utilisation',
           field: 'saverUtilisation',
           type: 'percentage',
@@ -118,7 +112,6 @@ export default {
         this.rows.push({
           asset: asset?.asset,
           synth: asset?.synth,
-          liability: +asset?.synth_units / +asset?.units,
           utilisation: +asset?.synth_supply / +asset?.asset_depth,
           saverUtilisation: +asset?.savers_depth / +asset?.supply,
           supply: +asset?.supply / 10 ** 8

@@ -29,6 +29,10 @@ export default {
         {
           path: '/pools/savers',
           redirect: '/thorfi/savers'
+        },
+        {
+          path: '/assets',
+          redirect: '/thorfi/synths'
         }
       )
     }
