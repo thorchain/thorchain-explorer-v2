@@ -112,7 +112,7 @@ export default {
         this.rows.push({
           asset: asset?.asset,
           synth: asset?.synth,
-          utilisation: +asset?.synth_supply / +asset?.asset_depth,
+          utilisation: +asset?.synth_supply / (+asset?.asset_depth * 2),
           saverUtilisation: +asset?.savers_depth / +asset?.supply,
           supply: +asset?.supply / 10 ** 8
         })
