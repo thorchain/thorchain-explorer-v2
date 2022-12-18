@@ -10,6 +10,10 @@
         perPage: 30,
         perPageDropdownEnabled: false,
       }"
+      :sort-options="{
+        enabled: true,
+        initialSortBy: {field: 'utilisation', type: 'desc'}
+      }"
     >
       <template slot="table-row" slot-scope="props">
         <div v-if="props.column.field == 'asset'" v-tooltip="props.row.asset" class="cell-content">
