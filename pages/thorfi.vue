@@ -16,12 +16,12 @@ export default {
     return {
       routes: [
         {
-          link: '/thorfi/synths',
-          text: 'Synths'
-        },
-        {
           link: '/thorfi/savers',
           text: 'Savers'
+        },
+        {
+          link: '/thorfi/synths',
+          text: 'Synths'
         }
       ]
     }

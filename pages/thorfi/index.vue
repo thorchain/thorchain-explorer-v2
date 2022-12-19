@@ -1,7 +1,7 @@
 <script>
 export default {
   middleware ({ redirect }) {
-    return redirect('/thorfi/synths')
+    return redirect('/thorfi/savers')
   }
 }
 </script>
