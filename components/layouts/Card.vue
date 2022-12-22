@@ -2,11 +2,14 @@
   <div :class="['card-container', {'loading-container': isLoading}, extraClass]">
     <BounceLoader v-if="isLoading" color="var(--font-color)" size="3rem" />
     <template v-else>
-      <div v-if="title" class="card-header">
-        <img v-if="imgSrc" class="stat-image" :src="imgSrc">
-        <h2 class="card-header-title">
-          {{ title }}
-        </h2>
+      <div v-if="title" :class="[{ 'has-extra': $slots.header }, 'card-header']">
+        <div class="header-title-section">
+          <img v-if="imgSrc" class="stat-image" :src="imgSrc">
+          <h2 class="card-header-title">
+            {{ title }}
+          </h2>
+        </div>
+        <slot name="header" />
       </div>
       <div v-else-if="navs" class="card-header" :style="{padding: '0 1rem'}">
         <div
@@ -85,6 +88,10 @@ export default {
       font-weight: 700;
       margin-bottom: 0;
       margin: 0;
+    }
+
+    &.has-extra {
+      justify-content: space-between;
     }
 
     .nav-section {
