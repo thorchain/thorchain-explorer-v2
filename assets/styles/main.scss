@@ -107,6 +107,11 @@ input {
   background-color: var(--card-bg-color);
   margin: 0 .5rem;
 
+  &.normal {
+    border-width: 1px;
+    border-radius: 0.5rem;
+  }
+
   @include lg {
     border-width: 1px;
     border-radius: 0.5rem;

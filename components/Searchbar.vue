@@ -37,13 +37,13 @@
           <SettingsIcon />
         </div>
         <div v-show="showSettings" id="settingsMenu" ref="settingsMenu">
-          <div class="settings-card simple-card">
+          <div class="settings-card simple-card normal">
             <div class="settings-item" @click="changeTheme">
               <span>Dark Theme</span>
               <SunIcon v-if="theme === 'light'" class="social-icon" @click="changeTheme" />
               <MoonIcon v-if="theme === 'dark'" class="social-icon" @click="changeTheme" />
             </div>
-            <div class="settings-item" @click="toggleFullscreen">
+            <div class="settings-item full-screen" @click="toggleFullscreen">
               <span>Full Screen Mode</span>
               <toggle :checked="fullscreen"></toggle>
             </div>
@@ -405,6 +405,14 @@ export default {
 
       &:hover {
         background-color: var(--darker-bg);
+      }
+    }
+
+    .full-screen {
+      display: none;
+
+      @include lg {
+        display: flex;
       }
     }
   }

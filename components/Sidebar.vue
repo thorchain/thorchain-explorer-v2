@@ -226,8 +226,12 @@ export default {
         border-top: 1px solid var(--border-color);
 
         a {
+          display: flex;
+          align-items: center;
           color: var(--font-color);
           text-decoration: none;
+          padding: 0.5rem;
+          border-radius: 50%;
 
           .social-icon {
             fill: inherit;
@@ -236,11 +240,7 @@ export default {
           }
 
           &:hover {
-            color: var(--border-color);
-
-            .social-icon {
-              fill: var(--border-color);
-            }
+            background-color: var(--border-color);
           }
         }
       }
