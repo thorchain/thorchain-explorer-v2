@@ -32,24 +32,35 @@
           </a>
         </div>
       </div>
-      <SunIcon v-if="theme === 'light'" class="social-icon" @click="changeTheme" />
-      <MoonIcon v-if="theme === 'dark'" class="social-icon" @click="changeTheme" />
-      <div @click="toggleFullscreen">
-        <ExpandIcon v-if="!fullscreen" class="social-icon expand-icon" />
-        <ExpandBoldIcon v-else class="social-icon expand-icon" />
+      <div id="settings-container" ref="settingsContainer" class="settings-container">
+        <div class="settings-icon-container" @click="toggleSettings">
+          <SettingsIcon />
+        </div>
+        <div v-show="showSettings" id="settingsMenu" ref="settingsMenu">
+          <div class="settings-card simple-card">
+            <div class="settings-item" @click="changeTheme">
+              <span>Dark Theme</span>
+              <SunIcon v-if="theme === 'light'" class="social-icon" @click="changeTheme" />
+              <MoonIcon v-if="theme === 'dark'" class="social-icon" @click="changeTheme" />
+            </div>
+            <div class="settings-item" @click="toggleFullscreen">
+              <span>Full Screen Mode</span>
+              <toggle :checked="fullscreen"></toggle>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import ExpandIcon from 'assets/images/expand.svg?inline'
-import ExpandBoldIcon from 'assets/images/expand_bold.svg?inline'
 import MenuIcon from 'assets/images/menu-burger.svg?inline'
 import { mapGetters } from 'vuex'
 import SearchIcon from '~/assets/images/search.svg?inline'
-import MoonIcon from '~/assets/images/eclipse-moon.svg?inline'
-import SunIcon from '~/assets/images/eclipse-sun.svg?inline'
+import MoonIcon from '~/assets/images/moon-icon.svg?inline'
+import SunIcon from '~/assets/images/sun-icon.svg?inline'
+import SettingsIcon from '~/assets/images/settings.svg?inline'
 import links from '~/const/links'
 
 export default {
@@ -58,21 +69,56 @@ export default {
     SunIcon,
     MoonIcon,
     SearchIcon,
-    ExpandIcon,
-    ExpandBoldIcon,
+    SettingsIcon,
     MenuIcon
   },
   data () {
     return {
       searchQuery: '',
       isSearch: false,
-      showDialog: false
+      showDialog: false,
+      showSettings: false
+    }
+  },
+  computed: {
+    ...mapGetters({
+      theme: 'getTheme',
+      fullscreen: 'getFullScreen',
+      sidebar: 'getSidebar'
+    }),
+    networkEnv () {
+      return process.env.NETWORK
     }
   },
   watch: {
     $route (to, from) {
       this.searchQuery = ''
     }
+  },
+  mounted () {
+    window.addEventListener('click', (e) => {
+      if (!document.getElementById('search-container')?.contains(e.target)) {
+        this.isSearch = false
+      }
+
+      if (!document.getElementById('network-wrapper')?.contains(e.target)) {
+        this.showDialog = false
+      }
+
+      if (!document.querySelector('.collapse-icon')?.contains(e.target) && !document.querySelector('.side-bar-container')?.contains(e.target)) {
+        this.$store.commit('setSidebar', false)
+      }
+
+      if (
+        !document.getElementById('settings-container')?.contains(e.target) &&
+        !document.getElementById('settingsMenu')?.contains(e.target)
+      ) {
+        this.showSettings = false
+      }
+    })
+
+    this.createListener('network', 'netDialog', { topM: 45, leftM: 0 })
+    this.createListener('settingsContainer', 'settingsMenu', { topM: 55, leftM: -290 })
   },
   methods: {
     find () {
@@ -125,17 +171,27 @@ export default {
     toggleDialog () {
       this.showDialog = !this.showDialog
     },
+    toggleSettings () {
+      this.showSettings = !this.showSettings
+    },
     gotoInstance (instance, disabled) {
       if (disabled) { return }
       return links[instance]
     },
-    dialogPos () {
-      if (this.$refs.network) {
-        const left = this.$refs.network.getBoundingClientRect().left
-        const top = this.$refs.network.getBoundingClientRect().top
-        this.$refs.netDialog.style.left = `${left}px`
-        this.$refs.netDialog.style.top = `${top + 45}px`
+    followContainer (parentContainer, childContainer, { leftM, topM }) {
+      if (this.$refs[parentContainer]) {
+        const left = this.$refs[parentContainer].getBoundingClientRect().left
+        const top = this.$refs[parentContainer].getBoundingClientRect().top
+        this.$refs[childContainer].style.left = `${left + leftM}px`
+        this.$refs[childContainer].style.top = `${top + topM}px`
       }
+    },
+    createListener (parentContainer, childContainer, styles) {
+      window.addEventListener('resize', () => {
+        this.followContainer(parentContainer, childContainer, styles)
+      })
+
+      this.followContainer(parentContainer, childContainer, styles)
     },
     toggleSidebar () {
       this.$store.commit('setSidebar', true)
@@ -143,39 +199,6 @@ export default {
     toggleFullscreen () {
       this.$store.commit('toggleFullscreen')
     }
-  },
-  computed: {
-    ...mapGetters({
-      theme: 'getTheme',
-      fullscreen: 'getFullScreen',
-      sidebar: 'getSidebar'
-    }),
-    networkEnv () {
-      return process.env.NETWORK
-    }
-  },
-  mounted () {
-    window.addEventListener('click', (e) => {
-      if (!document.getElementById('search-container')?.contains(e.target)) {
-        this.isSearch = false
-      }
-    })
-
-    window.addEventListener('click', (e) => {
-      if (!document.getElementById('network-wrapper')?.contains(e.target)) {
-        this.showDialog = false
-      }
-    })
-
-    window.addEventListener('click', (e) => {
-      if (!document.querySelector('.collapse-icon')?.contains(e.target) && !document.querySelector('.side-bar-container')?.contains(e.target)) {
-        this.$store.commit('setSidebar', false)
-      }
-    })
-
-    window.addEventListener('resize', this.dialogPos)
-
-    this.dialogPos()
   }
 }
 </script>
@@ -190,6 +213,19 @@ export default {
   max-width: 90rem;
   margin: auto;
   gap: 15px;
+
+  .settings-icon-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    border-radius: 50%;
+    cursor: pointer;
+
+    &:hover {
+      background-color: var(--darker-bg);
+    }
+  }
 
   .social-icon {
     fill: var(--font-color);
@@ -343,5 +379,34 @@ export default {
     }
   }
 
+}
+
+#settingsMenu {
+  display: flex;
+  position: absolute;
+  z-index: 1000;
+
+  .settings-card {
+    min-width: 320px;
+    padding: 0.5rem 0;
+
+    .settings-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 1rem;
+      margin: 0 0.5rem;
+      border-radius: 4px;
+      cursor: pointer;
+
+      span {
+        line-height: 24px;
+      }
+
+      &:hover {
+        background-color: var(--darker-bg);
+      }
+    }
+  }
 }
 </style>
