@@ -25,16 +25,25 @@
       </template>
     </div>
     <div class="footer-wrapper">
-      <div class="social-items">
-        <a href="https://twitter.com/THORChain">
-          <TwitterLogo class="social-icon" />
-        </a>
-        <a href="https://discord.gg/KjPVnGy5jR">
-          <DiscordLogo class="social-icon" />
-        </a>
-        <a href="https://github.com/thorchain/thorchain-explorer-v2">
-          <GithubLogo class="social-icon" />
-        </a>
+      <div class="footer-item" @click="toggleExternal">
+        <question />
+        <span>Extra Links</span>
+      </div>
+      <div v-show="showExternalMenu" id="externalMenu">
+        <div class="simple-card normal external-menu">
+          <a href="https://twitter.com/THORChain" target="_blank">
+            <TwitterLogo class="social-icon" />
+            <span>Twitter</span>
+          </a>
+          <a href="https://discord.gg/KjPVnGy5jR" target="_blank">
+            <DiscordLogo class="social-icon" />
+            <span>Discord</span>
+          </a>
+          <a href="https://github.com/thorchain/thorchain-explorer-v2" target="_blank">
+            <GithubLogo class="social-icon" />
+            <span>Github</span>
+          </a>
+        </div>
       </div>
     </div>
   </div>
@@ -47,6 +56,7 @@ import ThorchainLogo from '~/assets/images/thorchain-logo.svg?inline'
 import TwitterLogo from '~/assets/images/twitter-brands.svg?inline'
 import DiscordLogo from '~/assets/images/discord-brands.svg?inline'
 import GithubLogo from '~/assets/images/github-brands.svg?inline'
+import Question from '~/assets/images/question.svg?inline'
 
 import appsSelected from '~/assets/images/apps-selected.svg?inline'
 import appsUnselected from '~/assets/images/apps-unselected.svg?inline'
@@ -99,10 +109,12 @@ export default {
     MenuIcon,
     CrossIcon,
     chartSelected,
-    chartUnselected
+    chartUnselected,
+    Question
   },
   data () {
     return {
+      showExternalMenu: false,
       sidebarLists: [
         {
           name: 'Overview',
@@ -159,15 +171,28 @@ export default {
       ]
     }
   },
-  methods: {
-    ...mapMutations([
-      'toggleMenu'
-    ])
-  },
   computed: {
     ...mapGetters({
       menu: 'getIsMenuOn'
     })
+  },
+  mounted () {
+    window.addEventListener('click', (e) => {
+      if (
+        !document.getElementById('externalMenu')?.contains(e.target) &&
+        !document.getElementsByClassName('footer-item')[0]?.contains(e.target)
+      ) {
+        this.showExternalMenu = false
+      }
+    })
+  },
+  methods: {
+    ...mapMutations([
+      'toggleMenu'
+    ]),
+    toggleExternal () {
+      this.showExternalMenu = !this.showExternalMenu
+    }
   }
 }
 </script>
@@ -211,40 +236,13 @@ export default {
   }
 
   .footer-wrapper {
-      display: none;
-      padding: 18px 20px;
+    display: none;
+    padding: 18px 20px;
 
-      @include lg {
-        display: block;
-      }
-
-      .social-items {
-        display: flex;
-        gap: 10px;
-        width: 100%;
-        padding: 10px;
-        border-top: 1px solid var(--border-color);
-
-        a {
-          display: flex;
-          align-items: center;
-          color: var(--font-color);
-          text-decoration: none;
-          padding: 0.5rem;
-          border-radius: 50%;
-
-          .social-icon {
-            fill: inherit;
-            widows: 1.2rem;
-            height: 1.2rem;
-          }
-
-          &:hover {
-            background-color: var(--border-color);
-          }
-        }
-      }
+    @include lg {
+      display: block;
     }
+  }
 
   .side-bar-lists {
     margin-top: 20px;
@@ -268,9 +266,9 @@ export default {
       }
 
       span {
-        font-size: 2.25rem;
-        height: 2.25rem;
-        line-height: 2.25rem;
+        font-size: 2rem;
+        height: 2rem;
+        line-height: 2rem;
         color: var(--sec-font-color);
         font-family: 'Exo 2';
       }
@@ -278,7 +276,7 @@ export default {
       .side-bar-wrap {
         display: flex;
         align-items: center;
-        padding: 12px;
+        padding: 12px 2rem;
         border-radius: 3rem;
 
         &:hover {
@@ -390,6 +388,60 @@ export default {
 
     .footer-wrapper {
       display: flex;
+    }
+  }
+
+  .footer-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--darker-bg);
+    }
+
+    svg {
+      height: 1rem;
+    }
+
+    span {
+      font-family: "Exo 2";
+    }
+  }
+}
+
+#externalMenu {
+  .external-menu {
+    position: absolute;
+    min-width: 8.125rem;
+    bottom: 50px;
+    left: 20px;
+    padding: 0.2rem 0;
+
+    a {
+      display: flex;
+      align-items: center;
+      color: var(--font-color);
+      text-decoration: none;
+      padding: 0.5rem;
+      border-radius: 0.2rem;
+      margin: 0 0.2rem;
+      gap: 10px;
+      font-family: "Exo 2";
+      font-size: 0.8rem;
+
+      .social-icon {
+        fill: inherit;
+        widows: 1rem;
+        height: 1rem;
+      }
+
+      &:hover {
+        background-color: var(--border-color);
+      }
     }
   }
 }
