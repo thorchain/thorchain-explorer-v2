@@ -3,7 +3,7 @@
     <div class="header">
       <div class="logo-wrapper">
         <ThorchainLogo class="logo" />
-        <div>
+        <div v-if="!fullscreen">
           <strong>THORChain</strong>
           Explorer
         </div>
@@ -19,12 +19,12 @@
           <div class="side-bar-wrap">
             <component :is="item.icon" class="icon selected" />
             <component :is="item.unicon" class="icon unselected" />
-            <span class="sidebar-text">{{ item.name }}</span>
+            <span v-if="!fullscreen" class="sidebar-text">{{ item.name }}</span>
           </div>
         </NuxtLink>
       </template>
     </div>
-    <div class="footer-wrapper">
+    <div v-if="!fullscreen" class="footer-wrapper">
       <div class="footer-item" @click="toggleExternal">
         <question />
         <span>Extra Links</span>
@@ -175,7 +175,8 @@ export default {
   },
   computed: {
     ...mapGetters({
-      menu: 'getIsMenuOn'
+      menu: 'getIsMenuOn',
+      fullscreen: 'getFullScreen'
     })
   },
   mounted () {

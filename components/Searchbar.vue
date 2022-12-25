@@ -1,7 +1,6 @@
 <template>
   <div class="search-bar-container">
     <div class="left-section">
-      <MenuIcon v-if="fullscreen" class="social-icon collapse-icon" @click="toggleSidebar" />
       <div id="search-container" :class="[{'expanded': isSearch}]" @click="search()">
         <input
           v-model="searchQuery"
