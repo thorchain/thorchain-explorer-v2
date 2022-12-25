@@ -534,9 +534,15 @@ input {
 }
 
 #default-layout {
-  #side-bar {
-    width: 220px;
-    transition: all .3s;
+  .menu-wrapper .icon {
+    margin: 0;
+  }
+
+  @include lg {
+    #side-bar {
+      width: 220px;
+      transition: all .3s;
+    }
   }
 }
 
