@@ -45,7 +45,7 @@
             </div>
             <div class="settings-item full-screen" @click="toggleFullscreen">
               <span>Full Screen Mode</span>
-              <toggle :checked="fullscreen"></toggle>
+              <toggle-btn :checked="fullscreen" />
             </div>
           </div>
         </div>
@@ -118,7 +118,7 @@ export default {
     })
 
     this.createListener('network', 'netDialog', { topM: 45, leftM: 0 })
-    this.createListener('settingsContainer', 'settingsMenu', { topM: 55, leftM: -290 })
+    this.createListener('settingsContainer', 'settingsMenu', { topM: 45, leftM: -280 })
   },
   methods: {
     find () {
