@@ -66,6 +66,9 @@
             <div v-else-if="props.column.field == 'providers'" v-tooltip="'Provider'">
               <DollarIcon class="table-icon" />
             </div>
+            <div v-else-if="props.column.field == 'location'" v-tooltip="'Node Location'">
+              <MarkerIcon class="table-icon" />
+            </div>
             <span v-else>
               {{ props.column.label }}
             </span>
@@ -124,7 +127,7 @@
             <span v-else-if="props.column.field == 'location'">
               <div v-if="props.row.location" v-tooltip="`${props.row.location.code}, ${props.row.location.region}, ${props.row.location.city}`" class="countries">
                 <VFlag :flag="props.row.location.code" />
-                <span>{{ props.row.location.city }}</span>
+                <span class="location-name">{{ props.row.location.city }}</span>
               </div>
             </span>
             <span v-else-if="props.column.field == 'total_bond'">
@@ -334,6 +337,7 @@ import ExitIcon from '@/assets/images/sign-out.svg?inline'
 import CheckBoxIcon from '@/assets/images/checkbox.svg?inline'
 import DollarIcon from '@/assets/images/dollar.svg?inline'
 import VoteIcon from '@/assets/images/vote.svg?inline'
+import MarkerIcon from '@/assets/images/marker.svg?inline'
 
 use([
   SVGRenderer,
@@ -357,6 +361,7 @@ export default {
     CheckBoxIcon,
     DollarIcon,
     VoteIcon,
+    MarkerIcon,
     VChart
   },
   data () {
@@ -993,6 +998,7 @@ export default {
   cursor: pointer;
   gap: 10px;
   align-items: center;
+  justify-content: center;
 }
 
 .full-screen-btn {
@@ -1001,5 +1007,9 @@ export default {
   @include lg {
     display: block;
   }
+}
+
+.location-name {
+  display: none;
 }
 </style>
