@@ -19,36 +19,40 @@
         <div ref="network" class="network-container" @click="toggleDialog">
           <span>{{ networkEnv | capitalize }}</span>
         </div>
-        <div
-          v-show="showDialog"
-          ref="netDialog"
-          class="network-dialog"
-        >
-          <a :class="{'active': networkEnv == 'mainnet'}" :disabled="networkEnv == 'mainnet'" :href="gotoInstance('mainnet', networkEnv == 'mainnet')">
-            Mainnet
-          </a>
-          <a :class="{'active': networkEnv == 'stagenet'}" :disabled="networkEnv == 'stagenet'" :href="gotoInstance('stagenet', networkEnv == 'stagenet')">
-            Stagenet
-          </a>
-        </div>
+        <transition name="fade">
+          <div
+            v-show="showDialog"
+            ref="netDialog"
+            class="network-dialog"
+          >
+            <a :class="{'active': networkEnv == 'mainnet'}" :disabled="networkEnv == 'mainnet'" :href="gotoInstance('mainnet', networkEnv == 'mainnet')">
+              Mainnet
+            </a>
+            <a :class="{'active': networkEnv == 'stagenet'}" :disabled="networkEnv == 'stagenet'" :href="gotoInstance('stagenet', networkEnv == 'stagenet')">
+              Stagenet
+            </a>
+          </div>
+        </transition>
       </div>
       <div id="settings-container" ref="settingsContainer" class="settings-container">
         <div class="settings-icon-container" @click="toggleSettings">
           <SettingsIcon />
         </div>
-        <div v-show="showSettings" id="settingsMenu" ref="settingsMenu">
-          <div class="settings-card simple-card normal">
-            <div class="settings-item" @click="changeTheme">
-              <span>Dark Theme</span>
-              <SunIcon v-if="theme === 'light'" class="social-icon" @click="changeTheme" />
-              <MoonIcon v-if="theme === 'dark'" class="social-icon" @click="changeTheme" />
-            </div>
-            <div class="settings-item full-screen" @click="toggleFullscreen">
-              <span>Full Screen Mode</span>
-              <toggle-btn :checked="fullscreen" />
+        <transition name="fade">
+          <div v-show="showSettings" id="settingsMenu" ref="settingsMenu">
+            <div class="settings-card simple-card normal">
+              <div class="settings-item" @click="changeTheme">
+                <span>Dark Theme</span>
+                <SunIcon v-if="theme === 'light'" class="social-icon" @click="changeTheme" />
+                <MoonIcon v-if="theme === 'dark'" class="social-icon" @click="changeTheme" />
+              </div>
+              <div class="settings-item full-screen" @click="toggleFullscreen">
+                <span>Full Screen Mode</span>
+                <toggle-btn :checked="fullscreen" />
+              </div>
             </div>
           </div>
-        </div>
+        </transition>
       </div>
     </div>
   </div>

@@ -611,3 +611,22 @@ input {
     background-color: var(--darker-bg);
   }
 }
+
+//transitions
+.fade-enter-active, .fade-leave-active {
+  transition: all .2s;
+  transform: translateY(0);
+}
+.fade-enter, .fade-leave-to {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.fade-up-enter-active, .fade-up-leave-active {
+  transition: all .2s;
+  transform: translateY(0);
+}
+.fade-up-enter, .fade-up-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
+}

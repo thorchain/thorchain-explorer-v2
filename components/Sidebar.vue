@@ -29,21 +29,23 @@
         <question />
         <span>Extra Links</span>
       </div>
-      <div v-show="showExternalMenu" id="externalMenu">
-        <div class="simple-card normal external-menu">
-          <a href="https://twitter.com/THORChain" target="_blank">
-            <TwitterLogo class="social-icon" />
-            <span>Twitter</span>
-          </a>
-          <a href="https://discord.gg/KjPVnGy5jR" target="_blank">
-            <DiscordLogo class="social-icon" />
-            <span>Discord</span>
-          </a>
-          <a href="https://github.com/thorchain/thorchain-explorer-v2" target="_blank">
-            <GithubLogo class="social-icon" />
-            <span>Github</span>
-          </a>
-        </div>
+      <div id="externalMenu">
+        <transition name="fade-up">
+          <div v-show="showExternalMenu" class="simple-card normal external-menu">
+            <a href="https://twitter.com/THORChain" target="_blank">
+              <TwitterLogo class="social-icon" />
+              <span>Twitter</span>
+            </a>
+            <a href="https://discord.gg/KjPVnGy5jR" target="_blank">
+              <DiscordLogo class="social-icon" />
+              <span>Discord</span>
+            </a>
+            <a href="https://github.com/thorchain/thorchain-explorer-v2" target="_blank">
+              <GithubLogo class="social-icon" />
+              <span>Github</span>
+            </a>
+          </div>
+        </transition>
       </div>
     </div>
   </div>
@@ -440,7 +442,7 @@ export default {
       }
 
       &:hover {
-        background-color: var(--border-color);
+        background-color: var(--darker-bg);
       }
     }
   }
