@@ -82,6 +82,11 @@ export default {
     display: flex;
     align-items: center;
 
+    .header-title-section {
+      display: flex;
+      align-items: center;
+    }
+
     .card-header-title {
       color: var(--sec-font-color);
       font-size: 1.125rem;
