@@ -30,7 +30,7 @@
             <span v-else-if="!props.row[props.column.field][0]">-</span>
           </span>
           <span v-else-if="props.column.field == 'share'">
-            <span v-if="props.row.share">{{ props.formattedRow[props.column.field] }}</span>
+            <span v-if="props.row.share">{{ percentageFormat(props.row.share, 4) }}</span>
             <span v-else>-</span>
           </span>
         </template>
@@ -57,7 +57,6 @@ export default {
           label: 'Liquidity Share',
           field: 'share',
           type: 'number',
-          formatFn: this.percentageFormat,
           tdClass: 'mono'
         },
         {
