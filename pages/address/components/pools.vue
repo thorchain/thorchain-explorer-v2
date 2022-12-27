@@ -134,7 +134,7 @@ export default {
         poolWithdrawn: [undefined, p.assetWithdrawn / 1e8],
         dateFirstAdded: moment.unix(p.dateFirstAdded).fromNow(),
         share: getSaverShare(p),
-        poolShare: [undefined, p.assetAdded / 1e8],
+        poolShare: [undefined, p.assetBalance / 1e8],
         label: 'saver'
       })))
     },
