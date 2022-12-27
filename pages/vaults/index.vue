@@ -145,7 +145,7 @@ export default {
     async formatNodes () {
       const nodes = await this.$api.getNodes()
       const nodesBond = []
-      nodes.data.map(n => nodesBond[n.pub_key_set?.secp256k1] = n.bond)
+      nodes.data.map(n => nodesBond[n.pub_key_set?.secp256k1] = n.total_bond)
       return nodesBond
     },
     formatVaults (data, type = 'Yggdrasil', poolsPrice = undefined, nodes = undefined) {
