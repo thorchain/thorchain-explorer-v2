@@ -315,7 +315,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { AssetCurrencySymbol } from '@xchainjs/xchain-util'
+import { AssetCurrencySymbol, bnOrZero } from '@xchainjs/xchain-util'
 import _ from 'lodash'
 import { use } from 'echarts/core'
 import { SVGRenderer } from 'echarts/renderers'
@@ -605,6 +605,13 @@ export default {
             value: Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.minimumActiveBond) ?? 0) / 10 ** 8),
             usdValue: true
           }
+        ],
+        [
+          {
+            name: 'Soft Hard Cap',
+            value: this.calculateHardCap(),
+            usdValue: true
+          }
         ]
       ]
     },
@@ -744,6 +751,15 @@ export default {
       data = data.sort((a, b) => a.node_address.localeCompare(b.node_address))
       this.nodesQuery = data
       this.fillExtraNodes(data)
+    },
+    calculateHardCap () {
+      const actNodes = this.nodesQuery.filter(n => n.status === 'Active')
+      if (actNodes.length === 0) {
+        return 0
+      }
+      actNodes.sort((a, b) => +a.total_bond - +b.total_bond)
+      const lowerNodes = actNodes.slice(0, Math.floor(actNodes.length * 2 / 3))
+      return Math.floor((Number.parseInt(lowerNodes.slice(-1)[0].total_bond) ?? 0) / 10 ** 8)
     },
     updateChurnTime () {
       let churnTimeRemaining = +this.bondMetrics?.nextChurnHeight - this.lastBlockHeight
