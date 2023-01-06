@@ -219,7 +219,7 @@
                 <div class="txs">
                   <span>TxID
                     <a class="value" @click="gotoTx(t.in && t.in[0].txID)">{{
-                      t.in && t.in[0].txID
+                      showTx(t.in && t.in[0].txID)
                     }}</a></span>
                   <span>From
                     <a class="value" @click="gotoAddr(t.in[0].address)">{{
@@ -902,6 +902,12 @@ export default {
         })
       }
       return blockJsons.slice(0, 10)
+    },
+    showTx (txID) {
+      if (txID === '0000000000000000000000000000000000000000000000000000000000000000') {
+        return 'Internal Tx'
+      }
+      return txID
     },
     formatMoment (time) {
       return moment(Number.parseInt(time / 10 ** 6)).fromNow()

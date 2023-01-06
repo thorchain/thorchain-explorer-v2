@@ -55,6 +55,9 @@ export default {
       this.$router.push({ path: `/address/${address}` })
     },
     gotoTx (hash) {
+      if (hash === '0000000000000000000000000000000000000000000000000000000000000000') {
+        return
+      }
       this.$router.push({ path: `/tx/${hash}` })
     },
     gotoNode (signer) {
