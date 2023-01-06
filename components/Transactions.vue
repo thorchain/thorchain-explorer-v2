@@ -30,7 +30,7 @@
                   <div v-if="t.coins[0] && checkSynth(t.coins[0].asset)" class="bubble-container yellow">
                     Synth
                   </div>
-                  <a v-if="t.txID" class="tx" @click="gotoTx(t.txID)">{{ (t.txID.slice(0,4)+'...'+t.txID.slice(end=-4)) }}</a>
+                  <a v-if="t.txID" class="tx" @click="gotoTx(t.txID)">{{ showTx(t.txID) }}</a>
                 </div>
                 <!-- in coin -->
                 <div v-if="t.coins[0]" style="display: flex; align-items: center;">
@@ -53,7 +53,7 @@
                   <div v-if="checkSynth(t.coins[0] && t.coins[0].asset)" class="bubble-container yellow">
                     Synth
                   </div>
-                  <a v-if="t.txID" class="tx" @click="gotoTx(t.txID)">{{ (t.txID.slice(0,4)+'...'+t.txID.slice(end=-4)) }}</a>
+                  <a v-if="t.txID" class="tx" @click="gotoTx(t.txID)">{{ showTx(t.txID) }}</a>
                 </div>
                 <div v-if="t.coins[0]" style="display: flex; align-items: center;">
                   <img class="asset-icon" :src="assetImage(t.coins[0].asset)" alt="out-coin" @error="imgErr">
@@ -110,8 +110,11 @@ export default {
         return require('~/assets/images/unknown.png')
       }
     },
-    gotoTx (txid) {
-      this.$router.push({ path: `/tx/${txid}` })
+    showTx (txID) {
+      if (txID === '0000000000000000000000000000000000000000000000000000000000000000') {
+        return 'Internal Tx'
+      }
+      return `${txID.slice(0, 4)}...${txID.slice(-4)}`
     },
     gotoAddr (address) {
       this.$router.push({ path: `/address/${address}` })
