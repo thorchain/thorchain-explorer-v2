@@ -5,14 +5,9 @@
       <stat-table :table-settings="topStandbyBonds" header="Top Standby Bonds" />
     </div>
     <div class="chart-inner-container">
-      <Card title="Node Status">
-        <VChart
-          style="height: 250px"
-          :option="nodeStatus"
-          :loading="!nodeStatus"
-          :autoresize="true"
-          :loading-options="showLoading"
-        />
+      <Card :navs="[{title: 'Node Status', value: 'node-stat'}, {title: 'Provider Distribution', value: 'prov-dist'}]" :act-nav.sync="statusMode">
+        <VChart v-if="statusMode == 'node-stat'" :option="nodeStatus" :loading="!nodeStatus" :autoresize="true" :loading-options="showLoading" />
+        <VChart v-if="statusMode == 'prov-dist'" :option="provDist" :loading="!provDist" :autoresize="true" :loading-options="showLoading" />
       </Card>
       <Card title="Churn Info">
         <VChart
@@ -315,7 +310,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { AssetCurrencySymbol, bnOrZero } from '@xchainjs/xchain-util'
+import { AssetCurrencySymbol } from '@xchainjs/xchain-util'
 import _ from 'lodash'
 import { use } from 'echarts/core'
 import { SVGRenderer } from 'echarts/renderers'
@@ -368,6 +363,7 @@ export default {
     return {
       loading: true,
       mode: 'active',
+      statusMode: 'node-stat',
       modes: [
         { text: 'Active', mode: 'active' },
         { text: 'Eligible', mode: 'eligible' },
@@ -449,7 +445,8 @@ export default {
       localFavNodes: undefined,
       churnOption: undefined,
       bondMetrics: undefined,
-      mimirs: undefined
+      mimirs: undefined,
+      provDist: undefined
     }
   },
   computed: {
@@ -468,12 +465,13 @@ export default {
             trigger: 'item'
           },
           legend: {
+            show: true,
             textStyle: {
               color: 'var(--font-color)'
             },
             formatter (name) {
-              const node = nodes.find(n => n.name === name)
-              return `${name}: ${node.nodes.length}`
+              const node = nodes?.find(n => n.name === name)
+              return `${name}: ${node?.nodes?.length}`
             }
           },
           series: [
@@ -677,6 +675,7 @@ export default {
           //   })
           // }
         })
+        this.providerFill(filteredNodes)
         if (this.favNodes) {
           const favNodesFilter = filteredNodes.filter(n => this.favNodes.includes(n.address))
           const nonFavNodesFilter = filteredNodes.filter(n => !this.favNodes.includes(n.address))
@@ -860,6 +859,86 @@ export default {
         return sortedNodes
       } else {
         return undefined
+      }
+    },
+    provType (name) {
+      if (!name) {
+        return ''
+      } else if (name.includes('Amazon')) {
+        return 'Amazon'
+      } else if (name.includes('Google')) {
+        return 'Google'
+      } else if (name.includes('Microsoft')) {
+        return 'Azure'
+      } else if (name.includes('Hetzner')) {
+        return 'Hetzner'
+      } else if (name.includes('DigitalOcean')) {
+        return 'Digital Ocean'
+      } else if (name.includes('The Constant Company')) {
+        return 'Vultr'
+      } else {
+        return name
+      }
+    },
+    providerFill (nodes) {
+      if (!nodes) {
+        return undefined
+      }
+      const isp = nodes.map(n => this.provType(n.isp))
+      const countByIsp = _.countBy(isp)
+      const pieIsp = []
+      for (const name in countByIsp) {
+        pieIsp.push({
+          name,
+          value: countByIsp[name]
+        })
+      }
+      this.provDist = {
+        formatter (param) {
+          return (`
+            <div class="tooltip-header">
+              <div class="data-color" style="background-color: ${param.color}"></div>
+              ${param.name}
+            </div>
+            <div class="tooltip-body">
+              <span>
+                <span>Count</span>
+                <b>${param.value}</b>
+              </span>
+              <span class="right-sec">
+                <span>Distribution</span>
+                <b>${param.percent} %</b>
+              </span>
+            </div>
+          `)
+        },
+        tooltip: {
+          trigger: 'item'
+        },
+        legend: {
+          show: false,
+          formatter: '{name}',
+          icon: 'circle'
+        },
+        series: [
+          {
+            name: 'Provider Distribution',
+            type: 'pie',
+            radius: ['40%', '50%'],
+            avoidLabelOverlap: false,
+            itemStyle: {
+              borderRadius: 10,
+              borderColor: 'transparent',
+              borderWidth: 2
+            },
+            label: {
+              show: true,
+              color: 'var(--font-color)',
+              textBorderColor: 'transparent'
+            },
+            data: pieIsp
+          }
+        ]
       }
     },
     fillENode (nodes) {

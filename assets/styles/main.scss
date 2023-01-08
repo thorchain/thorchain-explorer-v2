@@ -620,7 +620,7 @@ input {
 
 .tooltip-body {
   margin-top: 5px;
-  width: 150px;
+  min-width: 150px;
   display: flex;
   flex-direction: column;
   gap: 5px;
