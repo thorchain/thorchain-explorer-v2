@@ -6,8 +6,8 @@
     </div>
     <div class="chart-inner-container">
       <Card :navs="[{title: 'Node Status', value: 'node-stat'}, {title: 'Provider Distribution', value: 'prov-dist'}]" :act-nav.sync="statusMode">
-        <VChart v-if="statusMode == 'node-stat'" :option="nodeStatus" :loading="!nodeStatus" :autoresize="true" :loading-options="showLoading" />
-        <VChart v-if="statusMode == 'prov-dist'" :option="provDist" :loading="!provDist" :autoresize="true" :loading-options="showLoading" />
+        <VChart v-if="statusMode == 'node-stat'" :option="nodeStatus" :loading="!nodeStatus" :autoresize="true" :loading-options="showLoading" key="node-stat" />
+        <VChart v-if="statusMode == 'prov-dist'" :option="provDist" :loading="!provDist" :autoresize="true" :loading-options="showLoading" key="prov-stat" />
       </Card>
       <Card title="Churn Info">
         <VChart
@@ -914,8 +914,10 @@ export default {
         tooltip: {
           trigger: 'item'
         },
+        labelLine: {
+          show: false
+        },
         legend: {
-          show: false,
           formatter: '{name}',
           icon: 'circle'
         },
@@ -931,9 +933,7 @@ export default {
               borderWidth: 2
             },
             label: {
-              show: true,
-              color: 'var(--font-color)',
-              textBorderColor: 'transparent'
+              show: false
             },
             data: pieIsp
           }
