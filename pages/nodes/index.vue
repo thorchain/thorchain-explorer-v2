@@ -862,30 +862,29 @@ export default {
       }
     },
     provType (name) {
-      if (!name) {
+      if (!name && !name.isp) {
         return ''
-      } else if (name.includes('Amazon')) {
+      } else if (name.isp.includes('Amazon')) {
         return 'Amazon'
-      } else if (name.includes('Google')) {
+      } else if (name.isp.includes('Google')) {
         return 'Google'
-      } else if (name.includes('Microsoft')) {
+      } else if (name.isp.includes('Microsoft')) {
         return 'Azure'
-      } else if (name.includes('Hetzner')) {
+      } else if (name.isp.includes('Hetzner')) {
         return 'Hetzner'
-      } else if (name.includes('DigitalOcean')) {
+      } else if (name.isp.includes('DigitalOcean')) {
         return 'Digital Ocean'
-      } else if (name.includes('The Constant Company')) {
+      } else if (name.isp.includes('The Constant Company')) {
         return 'Vultr'
       } else {
-        return name
+        return name.isp
       }
     },
     providerFill (nodes) {
       if (!nodes) {
         return undefined
       }
-      const isp = nodes.map(n => this.provType(n.isp))
-      const countByIsp = _.countBy(isp)
+      const countByIsp = _.countBy(nodes, this.provType)
       const pieIsp = []
       for (const name in countByIsp) {
         pieIsp.push({
