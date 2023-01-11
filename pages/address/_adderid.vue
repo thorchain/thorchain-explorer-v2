@@ -319,6 +319,7 @@ export default {
             this.vaultType = 'Asgard'
             this.chainAddresses = data[vaultIndex].addresses
             this.vaultInfo = data[vaultIndex]
+            this.fillNodesAddresses()
           }
         }
       }).catch(e => console.error(e))
@@ -343,7 +344,6 @@ export default {
           }
         })
       }
-      console.log(this.nodeAddresses)
     }
   }
 }
