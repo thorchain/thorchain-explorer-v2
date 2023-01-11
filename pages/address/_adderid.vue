@@ -22,7 +22,7 @@
         </div>
       </div>
       <template v-if="addrTxs">
-        <div class="stat-wrapper">
+        <div class="stat-wrapper mb-1">
           <Nav :active-mode.sync="activeMode" :nav-items="[{text: 'Balances', mode: 'balance'},{text: 'THORName', mode: 'thorname'}, {text: 'Pools', mode: 'pools'}]" />
           <balance v-if="activeMode == 'balance'" :state="addressStat" :balance="balance" />
           <template v-else-if="activeMode == 'thorname'">
@@ -45,13 +45,9 @@
             <pools v-if="activeMode == 'pools'" :address="address" />
           </keep-alive>
         </div>
-        <div style="margin: 1rem 0" />
         <template v-if="isVault">
-          <div class="simple-card">
-            <div class="card-header">
-              Chain Addresses
-            </div>
-            <div class="card-body">
+          <Card extra-class="mb-1" :navs="[{title: 'Chain Addresses', value: 'chain-addr'}, {title: 'Node Members', value: 'node-mmb'}]" :act-nav.sync="vaultMode">
+            <div v-if="vaultMode == 'chain-addr'" key="chain-addr">
               <div class="addresses-container">
                 <div v-for="address in chainAddresses" :key="address.chain" class="addresses">
                   <img class="asset-icon" :src="assetImage(baseChainAsset(address.chain))">
@@ -59,8 +55,15 @@
                 </div>
               </div>
             </div>
-          </div>
-          <div class="simple-card">
+            <div v-if="vaultMode == 'node-mmb'" key="node-mmb">
+              <div class="addresses-container">
+                <div v-for="address in nodeAddresses" :key="address.chain" class="addresses">
+                  <span class="clickable mono" @click="gotoAddr(address.address)">{{ address.slice(0,8) }}...{{ address.slice(-8) }}</span>
+                </div>
+              </div>
+            </div>
+          </Card>
+          <div class="simple-card mb-1">
             <div class="card-header">
               Vault Balances
             </div>
@@ -176,6 +179,8 @@ export default {
       vaultInfo: undefined,
       thornameAddresses: [],
       vaultType: 'Asgard',
+      vaultMode: 'chain-addr',
+      nodeAddresses: [],
       cols: [
         {
           label: 'Asset',
@@ -239,8 +244,14 @@ export default {
       ]
     },
     ...mapGetters({
-      runePrice: 'getRunePrice'
+      runePrice: 'getRunePrice',
+      nodesData: 'getNodesData'
     })
+  },
+  watch: {
+    nodesData () {
+      this.fillNodesAddresses()
+    }
   },
   mounted () {
     this.rlookThorname(this.address)
@@ -321,6 +332,18 @@ export default {
           }
         }
       }).catch(e => console.error(e))
+    },
+    fillNodesAddresses () {
+      this.nodeAddresses = []
+      if (this.nodesData && this.vaultInfo) {
+        this.nodesData.forEach((n) => {
+          const nodePubKey = n?.pub_key_set?.secp256k1
+          if (nodePubKey && this.vaultInfo?.membership.includes(nodePubKey)) {
+            this.nodeAddresses.push(n.node_address)
+          }
+        })
+      }
+      console.log(this.nodeAddresses)
     }
   }
 }
