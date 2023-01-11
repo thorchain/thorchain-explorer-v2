@@ -95,6 +95,11 @@ export default {
           type: 'percentage'
         },
         {
+          label: 'Members',
+          field: 'membership_count',
+          type: 'number'
+        },
+        {
           label: 'Ins',
           field: 'ins',
           type: 'number',
@@ -172,6 +177,7 @@ export default {
           ins: vault?.inbound_tx_count,
           bond,
           total_value: totalValue,
+          membership_count: vault?.membership?.length,
           vb,
           outs: vault?.outbound_tx_count
         })
