@@ -96,6 +96,24 @@ input {
   padding: 20px;
 }
 
+.popper-card {
+  display: flex;
+  word-wrap: break-word;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-width: 100px;
+
+  .card-header {
+    padding: .2rem;
+    margin-bottom: 0;
+  }
+
+  .card-body {
+    padding: .2rem;
+  }
+}
+
 .card, .simple-card {
   position: relative;
   display: flex;

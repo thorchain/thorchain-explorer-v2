@@ -36,6 +36,30 @@
               -
             </span>
           </span>
+          <span v-else-if="props.column.field == 'membership_count'">
+            <div>
+              <v-tooltip>
+                <span v-if="props.row.membership_count" class="mono">
+                  {{ props.row.membership_count }}
+                </span>
+                <template slot="popper">
+                  <div class="popper-card">
+                    <div class="card-header">
+                      Nodes Member
+                    </div>
+                    <div class="card-body grid-template">
+                      <small class="mono" v-for="node in props.row.membership">
+                        .{{ node.node_address.slice(-4) }}
+                      </small>
+                    </div>
+                  </div>
+                </template>
+              </v-tooltip>
+              <span v-if="!props.row.membership_count">
+                -
+              </span>
+            </div>
+          </span>
           <span v-else-if="props.column.field == 'type'">
             <div :class="['bubble-container', {'blue': props.row.type == 'Yggdrasil'}]">
               <span>{{ props.row.type }}</span>
@@ -95,7 +119,7 @@ export default {
           type: 'percentage'
         },
         {
-          label: 'Members',
+          label: 'Node Members',
           field: 'membership_count',
           type: 'number'
         },
@@ -149,9 +173,9 @@ export default {
     },
     async formatNodes () {
       const nodes = await this.$api.getNodes()
-      const nodesBond = []
-      nodes.data.map(n => nodesBond[n.pub_key_set?.secp256k1] = n.total_bond)
-      return nodesBond
+      const nodesFormat = []
+      nodes.data.map(n => nodesFormat[n.pub_key_set?.secp256k1] = n)
+      return nodesFormat
     },
     formatVaults (data, type = 'Yggdrasil', poolsPrice = undefined, nodes = undefined) {
       const y = []
@@ -166,7 +190,7 @@ export default {
           })
           bond = 0
           vault.membership?.forEach((m) => {
-            bond += nodes[m] / 1e8
+            bond += nodes[m].total_bond / 1e8
           })
           vb = totalValue / bond
         }
@@ -178,6 +202,7 @@ export default {
           bond,
           total_value: totalValue,
           membership_count: vault?.membership?.length,
+          membership: vault?.membership?.map(v => nodes[v]),
           vb,
           outs: vault?.outbound_tx_count
         })
@@ -203,4 +228,10 @@ export default {
 </script>
 
 <style>
+.grid-template {
+  display: grid;
+  row-gap: .3rem;
+  column-gap: .8rem;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+}
 </style>
