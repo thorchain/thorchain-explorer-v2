@@ -606,7 +606,7 @@ export default {
         ],
         [
           {
-            name: 'Soft Hard Cap',
+            name: 'Bond Hard Cap',
             value: this.calculateHardCap(),
             usdValue: true
           }
