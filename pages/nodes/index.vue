@@ -606,7 +606,7 @@ export default {
         ],
         [
           {
-            name: 'Bond Hard Cap',
+            name: 'Max efficient bond',
             value: this.calculateHardCap(),
             usdValue: true
           }
