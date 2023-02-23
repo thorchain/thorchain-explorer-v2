@@ -51,7 +51,7 @@ export function getPoolTxs (poolName, offset = 0, limit = 10) {
 }
 
 export function getPools () {
-  return $axiosInstace.get('pools')
+  return $axiosInstace.get('pools?period=180d')
 }
 
 export function getPoolStats (poolName) {
