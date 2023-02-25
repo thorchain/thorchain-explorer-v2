@@ -169,7 +169,7 @@ export default {
       this.tables.saversRows.data.forEach((saver, index) => {
         saversStat.saversCount += saver.saversCount
         saversStat.totalUSDSaved += +saver.saversDepth * +saver.price
-        saversStat.totalEarn += (+saver.saversDepth - +(saver.saversUnits / 1e8)) * +saver.price
+        saversStat.totalEarn += (+saver.earned / 1e8) * +saver.price
         saversStat.meanAPR += (saver.saverReturn)
         saversStat.totalFilled += (+saver.synthSupply / 1e8) * +saver.price
       })
@@ -185,7 +185,7 @@ export default {
       Object.keys(this.oldSavers).forEach((saver) => {
         oldSaversStat.saversCount += this.oldSavers[saver].saversCount
         oldSaversStat.totalUSDSaved += +this.oldSavers[saver].saversDepth / 1e8 * +this.oldSavers[saver].assetPrice
-        oldSaversStat.totalEarn += +this.oldSavers[saver].earned / 1e8 * +this.oldSavers[saver].assetPrice
+        oldSaversStat.totalEarn += +this.oldSavers[saver].deltaEarned / 1e8 * +this.oldSavers[saver].assetPrice
         oldSaversStat.meanAPR += (this.oldSavers[saver].saverReturn)
         oldSaversStat.totalFilled += +this.oldSavers[saver].saversDepth * +this.oldSavers[saver].assetPrice
         oldSaversStat.assetDepthUSD += (+this.oldSavers[saver].assetDepth * +this.oldSavers[saver].assetPrice)
@@ -211,7 +211,7 @@ export default {
         {
           name: 'Total Earned',
           value: this.$options.filters.currency(saversStat.totalEarn),
-          change: this.$options.filters.currency(saversStat.totalEarn - oldSaversStat.totalEarn),
+          change: this.$options.filters.currency(oldSaversStat.totalEarn),
           isDown: saversStat.totalEarn < oldSaversStat.totalEarn
         },
         {
@@ -251,6 +251,7 @@ export default {
         saversCount: saversExtraData[p.asset]?.saversCount,
         saverReturn: saversExtraData[p.asset]?.saverReturn,
         synthSupply: saversExtraData[p.asset]?.synthSupply,
+        earned: saversExtraData[p.asset]?.earned,
         changes: changes[p.asset]
       }))
       this.setSavers(ps)
@@ -373,8 +374,8 @@ export default {
             isDown: (newData[asset].saverReturn < (oldData[asset].saverReturn ?? 0))
           },
           earned: {
-            value: this.baseAmountFormat(newData[asset].earned - (oldData[asset].earned ?? 0)),
-            isDown: (newData[asset].earned < (oldData[asset].earned ?? 0))
+            value: this.baseAmountFormat(oldData[asset].deltaEarned ?? 0),
+            isDown: oldData[asset].deltaEarned > 0
           },
           // filled: {
           //   value: this.percentageFormat(newData[asset].filled - (oldData[asset].filled ?? 0), 2),
