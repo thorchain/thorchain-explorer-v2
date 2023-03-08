@@ -1,11 +1,12 @@
 <template>
   <Page>
     <!-- <Nav :active-mode.sync="viewMode" :nav-items="viewPools" /> -->
+    <Nav :active-mode.sync="period" :nav-items="periods" pre-text="APY Period :" />
     <Card :is-loading="loading">
-      <template v-if="viewMode == 'grid'">
-        <pool-card :pools="sortedPools" />
-      </template>
-      <div v-else-if="pools && pools.length > 0 && viewMode == 'table'" class="pools-box">
+      <!-- <template>
+        <pool-card/>
+      </template> -->
+      <div v-if="pools && pools.length > 0" class="pools-box">
         <Nav :active-mode.sync="tableMode" :nav-items="tableModeItems" :extra-classes="['pools-type-table']" />
         <template v-for="(k, v, i) in tables">
           <vue-good-table
@@ -55,10 +56,17 @@ export default {
     return {
       loading: false,
       error: false,
-      viewMode: 'table',
-      viewPools: [
-        { text: 'Grid', mode: 'grid' },
-        { text: 'Table', mode: 'table' }
+      period: '30d',
+      periods: [
+        { text: '1 Hour', mode: '1h' },
+        { text: '24 Hours', mode: '24h' },
+        { text: '7 Days', mode: '7d' },
+        { text: '1 Month', mode: '30d' },
+        { text: '3 Month', mode: '90d' },
+        { text: '100 Days', mode: '100d' },
+        { text: '6 Months', mode: '180d' },
+        { text: '1 Year', mode: '365d' },
+        { text: 'All', mode: 'all' }
       ],
       tableModeItems: [
         { text: 'Active Pools', mode: 'active' },
@@ -125,41 +133,41 @@ export default {
   computed: {
     ...mapGetters({
       runePrice: 'getRunePrice'
-    }),
-    sortedPools () {
-      if (!this.pools) {
-        return undefined
-      }
-      return this.pools?.sort((a, b) => {
-        return (+b.runeDepth) - (+a.runeDepth)
-      })
+    })
+  },
+  watch: {
+    period (period) {
+      this.updatePool(period)
     }
   },
   mounted () {
-    this.loading = true
-    this.$api.getPools().then(async ({ data }) => {
-      this.pools = data
-      const runePrice = (await this.$api.getStats()).data.runePriceUSD
-      const ps = this.pools.map(p => ({
-        status: p.status,
-        price: p.assetPriceUSD,
-        depthPrice: (+p.saversDepth / 10 ** 8) * p.assetPriceUSD,
-        depth: ((+p.assetDepth / 10 ** 8) * p.assetPriceUSD) + ((+p.runeDepth / 10 ** 8) * runePrice),
-        apy: p.poolAPY,
-        volume: (+p.volume24h / 10 ** 8) * runePrice,
-        vd: (+p.volume24h) / ((+p.assetDepth * +p.assetPrice) + (+p.runeDepth)),
-        asset: p.asset,
-        saversDepth: (+p.saversDepth / 10 ** 8),
-        saversUnits: (+p.saversUnits),
-        depthToUnitsRatio: this.$options.filters.number(+p.saversDepth / +p.saversUnits, '0.00000')
-      }))
-      this.sepPools(ps)
-      this.loading = false
-    }).catch((e) => {
-      console.error(e)
-    })
+    this.updatePool(this.period)
   },
   methods: {
+    updatePool (period) {
+      this.loading = true
+      this.$api.getPools(period).then(async ({ data }) => {
+        this.pools = data
+        const runePrice = (await this.$api.getStats()).data.runePriceUSD
+        const ps = this.pools.map(p => ({
+          status: p.status,
+          price: p.assetPriceUSD,
+          depthPrice: (+p.saversDepth / 10 ** 8) * p.assetPriceUSD,
+          depth: ((+p.assetDepth / 10 ** 8) * p.assetPriceUSD) + ((+p.runeDepth / 10 ** 8) * runePrice),
+          apy: p.poolAPY,
+          volume: (+p.volume24h / 10 ** 8) * runePrice,
+          vd: (+p.volume24h) / ((+p.assetDepth * +p.assetPrice) + (+p.runeDepth)),
+          asset: p.asset,
+          saversDepth: (+p.saversDepth / 10 ** 8),
+          saversUnits: (+p.saversUnits),
+          depthToUnitsRatio: this.$options.filters.number(+p.saversDepth / +p.saversUnits, '0.00000')
+        }))
+        this.sepPools(ps)
+        this.loading = false
+      }).catch((e) => {
+        console.error(e)
+      })
+    },
     normalNumberFormat (number, filter) {
       return number ? this.$options.filters.number(+number, '0,0.00') : '-'
     },
@@ -184,6 +192,10 @@ export default {
       if (!pools && pools.length <= 0) {
         return
       }
+
+      this.tables.standbyRows.data = []
+      this.tables.activeRows.data = []
+
       for (const i in pools) {
         if (pools[i].status === 'available') {
           this.tables.activeRows.data.push(pools[i])

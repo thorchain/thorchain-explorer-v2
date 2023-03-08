@@ -1,5 +1,8 @@
 <template>
   <div :class="['nav-headers box', ...extraClasses]">
+    <span v-if="preText" class="pre-text">
+      {{ preText }}
+    </span>
     <component
       :is="isLink? 'nuxt-link':'div'"
       v-for="navItem in navItems"
@@ -19,7 +22,7 @@ export default {
     prop: 'activeMode',
     event: 'update'
   },
-  props: ['activeMode', 'navItems', 'isLink', 'extraClasses'],
+  props: ['activeMode', 'navItems', 'isLink', 'extraClasses', 'preText'],
   emits: ['update']
 }
 </script>
@@ -30,6 +33,12 @@ export default {
   display: flex;
   flex-wrap: wrap;
   margin-bottom: 10px;
+
+  .pre-text {
+    color: var(--sec-font-color);
+    padding: 0 10px;
+    margin: auto 0;
+  }
 
   .nav-item {
     cursor: pointer;
