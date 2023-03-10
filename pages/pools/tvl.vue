@@ -19,6 +19,7 @@ import {
 } from 'echarts/components'
 import { mapGetters } from 'vuex'
 import VChart from 'vue-echarts'
+import { assetFromString } from '@xchainjs/xchain-util'
 
 use([
   SVGRenderer,
@@ -59,27 +60,41 @@ export default {
             return
           }
 
+          const { chain } = assetFromString(pd.pool)
           const poolUSD = (pd.totalDepth / 1e8) * this.runePrice
+          const chainColor = this.getChainColor(chain)
 
-          if (pd.pool in pools) {
-            pools[pd.pool].data.push(poolUSD)
+          if (chain in pools) {
+            if (i + 1 === pools[chain].data.length) {
+              const beforeUSD = pools[chain].data[i]
+              pools[chain].data.splice(i, 1, beforeUSD + poolUSD)
+            } else {
+              pools[chain].data.push(poolUSD)
+            }
           } else {
-            pools[pd.pool] = {
-              name: pd.pool,
+            pools[chain] = {
+              name: chain,
               type: 'line',
-              stack: 'total',
-              lineStyle: {
-                color: this.getAssetColor(pd.pool)
-              },
-              areaStyle: {
-                color: this.getAssetColor(pd.pool)
-              },
+              stack: 'Total',
+              showSymbol: false,
+              symbol: 'circle',
               emphasis: {
-                areaStyle: {
-                  color: this.getAssetColor(pd.pool)
+                focus: 'series',
+                itemStyle: {
+                  color: chainColor
                 }
               },
-              data: [poolUSD]
+              areaStyle: {
+                color: chainColor
+              },
+              lineStyle: {
+                color: chainColor
+              },
+              itemStyle: {
+                color: chainColor
+              },
+              data: [poolUSD],
+              smooth: true
             }
           }
         })
@@ -92,7 +107,34 @@ export default {
       }
 
       const seriesPools = Object.values(pools)
-      this.tvlOption = this.basicChartFormat('', seriesPools, xAxis)
+
+      const formatter = (param) => {
+        return (`
+          <div class="tooltip-header">
+            ${param[0].axisValue}
+          </div>
+          ${param.map(p => (`
+            <div class="tooltip-body">
+              <div style="display: flex; align-items: center;">
+                <div class="data-color" style="background-color: ${p.color}"></div>
+                <span>${p.seriesName}</span>
+              </div>
+              <b>$${this.$options.filters.number(p.value, '0,0.00 a')}</b>
+            </div>
+          `)).join('')}
+        `)
+      }
+
+      this.tvlOption = this.basicChartFormat(undefined, seriesPools, xAxis, {
+        legend: {
+          type: 'scroll',
+          pageIconColor: 'var(--primary-color)',
+          icon: 'rect',
+          textStyle: {
+            color: 'var(--sec-font-color)'
+          }
+        }
+      }, formatter)
     }
   }
 }
@@ -102,5 +144,12 @@ export default {
 .echarts {
   width: 100%;
   height: 400px;
+}
+
+.tooltip-body {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
 }
 </style>

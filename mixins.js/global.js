@@ -66,7 +66,7 @@ export default {
         case 'BTC.BTC':
           return '#EF8F1C'
         case 'ETH.ETH':
-          return '#F2F4F7'
+          return '#202125'
         case 'LTC.LTC':
           return '#335E9D'
         case 'DOGE.DOGE':
@@ -78,6 +78,28 @@ export default {
         case 'AVAX.AVAX':
           return '#E84142'
         case 'GAIA.ATOM':
+          return '#303249'
+        default:
+          return this.popRandomColor()
+      }
+    },
+    getChainColor (asset) {
+      switch (asset) {
+        case 'BTC':
+          return '#EF8F1C'
+        case 'ETH':
+          return '#202125'
+        case 'LTC':
+          return '#335E9D'
+        case 'DOGE':
+          return '#BCA23E'
+        case 'BNB':
+          return '#F0BC18'
+        case 'BCH':
+          return '#4DCA48'
+        case 'AVAX':
+          return '#E84142'
+        case 'GAIA':
           return '#303249'
         default:
           return this.popRandomColor()
@@ -162,7 +184,7 @@ export default {
     gotoNodeUrl (node) {
       return (`${endpoints[process.env.NETWORK].THORNODE_URL}thorchain/node/${node}`)
     },
-    basicChartFormat (formatter, series, xAxis, extraSettings = {}) {
+    basicChartFormat (valueFormatter = undefined, series, xAxis, extraSettings = {}, globalFormatter) {
       return {
         title: {
           show: false
@@ -170,7 +192,8 @@ export default {
         tooltip: {
           confine: true,
           trigger: 'axis',
-          valueFormatter: formatter
+          valueFormatter,
+          formatter: globalFormatter
         },
         legend: {
           x: 'center',

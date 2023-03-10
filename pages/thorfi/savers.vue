@@ -332,35 +332,6 @@ export default {
       this.saversFilled = saversFilled
       // this.saversChange = saversFilled - oldSaversFilled
     },
-    popRandomColor () {
-      const defaultColors = ['#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de', '#3ba272', '#fc8452', '#9a60b4', '#ea7ccc']
-      const rand = Math.random()
-      const color = defaultColors[Math.floor(rand * defaultColors.length)]
-      defaultColors.splice(Math.floor(rand * defaultColors.length), 1)
-      return color
-    },
-    getAssetColor (asset) {
-      switch (asset) {
-        case 'BTC.BTC':
-          return '#EF8F1C'
-        case 'ETH.ETH':
-          return '#F2F4F7'
-        case 'LTC.LTC':
-          return '#335E9D'
-        case 'DOGE.DOGE':
-          return '#BCA23E'
-        case 'BNB.BNB':
-          return '#F0BC18'
-        case 'BCH.BCH':
-          return '#4DCA48'
-        case 'AVAX.AVAX':
-          return '#E84142'
-        case 'GAIA.ATOM':
-          return '#303249'
-        default:
-          return this.popRandomColor()
-      }
-    },
     getSaversChanges (oldData, newData) {
       const ret = {}
       Object.keys(newData).forEach((asset) => {

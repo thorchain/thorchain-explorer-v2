@@ -17,7 +17,7 @@ export default {
           link: '/pools'
         },
         {
-          text: 'Pools Depth History',
+          text: 'TVL by Chain',
           link: '/pools/tvl'
         }
       ]
