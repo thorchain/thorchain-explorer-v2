@@ -15,6 +15,10 @@ export default {
         {
           text: 'Pools',
           link: '/pools'
+        },
+        {
+          text: 'Pools Depth History',
+          link: '/pools/tvl'
         }
       ]
     }
