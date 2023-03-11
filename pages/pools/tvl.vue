@@ -61,7 +61,7 @@ export default {
           }
 
           const { chain } = assetFromString(pd.pool)
-          const poolUSD = (pd.totalDepth / 1e8) * this.runePrice
+          const poolUSD = (pd.totalDepth / 1e8) * (+intervals[i].runePriceUSD)
           const chainColor = this.getChainColor(chain)
 
           if (chain in pools) {

@@ -71,7 +71,7 @@ export function swapHistory () {
 }
 
 export function tvlHistory () {
-  return $axiosInstace.get('history/tvl?interval=day&count=30')
+  return $axiosInstace.get('history/tvl?interval=day&count=90')
 }
 
 export function getLastTvl () {
