@@ -122,6 +122,13 @@ export default {
               <b>$${this.$options.filters.number(p.value, '0,0.00 a')}</b>
             </div>
           `)).join('')}
+          <hr></hr>
+          <div class="tooltip-body">
+            <div style="display: flex; align-items: center;">
+              <span>Total</span>
+            </div>
+            <b>$${this.$options.filters.number(param.reduce((a, b) => a + b.value, 0), '0,0.00 a')}</b>
+          </div>
         `)
       }
 
