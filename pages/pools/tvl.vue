@@ -1,5 +1,5 @@
 <template>
-  <div class="container-page">
+  <div class="container-page tvl-page">
     <Card>
       <VChart v-if="tvlOption" class="chart" :option="tvlOption" :loading="!tvlOption" :autoresize="true" />
     </Card>
@@ -147,16 +147,18 @@ export default {
 }
 </script>
 
-<style>
-.echarts {
-  width: 100%;
-  height: 400px;
-}
+<style lang="scss">
+.tvl-page {
+  .echarts {
+    width: 100%;
+    height: 400px;
+  }
 
-.tooltip-body {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
+  .tooltip-body {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
 }
 </style>
