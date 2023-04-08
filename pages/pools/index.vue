@@ -154,7 +154,7 @@ export default {
           price: p.assetPriceUSD,
           depthPrice: (+p.saversDepth / 10 ** 8) * p.assetPriceUSD,
           depth: ((+p.assetDepth / 10 ** 8) * p.assetPriceUSD) + ((+p.runeDepth / 10 ** 8) * runePrice),
-          apy: p.poolAPY,
+          apy: p.annualPercentageRate,
           volume: (+p.volume24h / 10 ** 8) * runePrice,
           vd: (+p.volume24h) / ((+p.assetDepth * +p.assetPrice) + (+p.runeDepth)),
           asset: p.asset,
