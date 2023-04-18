@@ -44,7 +44,8 @@ import {
   getThorchainTx,
   getNodes,
   getNode,
-  getSavers
+  getSavers,
+  getThornodeDetailTx
 } from './thornode.api'
 import {
   getTendermintLatestBlocks
@@ -180,7 +181,8 @@ export default function ({ $axios }, inject) {
     getSaversExtraData,
     getSaverDetails,
     getSavers,
-    getOldSaversExtraData
+    getOldSaversExtraData,
+    getThornodeDetailTx
   }
 
   inject('api', api)
