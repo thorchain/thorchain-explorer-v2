@@ -96,7 +96,8 @@
 import CopyIcon from '~/assets/images/copy.svg?inline'
 import DisconnectIcon from '~/assets/images/disconnect.svg?inline'
 import ArrowIcon from '~/assets/images/arrow-small-right.svg?inline'
-import { parseCosmosTx, parseMidgardTx } from '~/utils'
+import { parseCosmosTx, parseMidgardTx, parseExtraSwap } from '~/utils'
+import moment from 'moment'
 
 export default {
   components: {
@@ -107,6 +108,7 @@ export default {
   data () {
     return {
       tx: undefined,
+      extraSwapDetails: undefined,
       isLoading: true,
       isError: false,
       copyText: 'Copy Hash',
@@ -140,13 +142,25 @@ export default {
       ]
 
       if (this.tx.status) {
-        res.push([
+        const fields = [
           {
             name: 'Status',
             value: this.$options.filters.capitalize(this.tx.status),
             filter: true
           }
-        ])
+        ]
+
+        if (this.extraSwapDetails) {
+          fields.push(
+            {
+              name: 'Outbound Tx Delay',
+              value: moment.duration(this.extraSwapDetails?.txOutDelay, 'seconds').humanize(),
+              filter: true
+            }
+          )
+        }
+
+        res.push(fields)
       }
 
       if (this.tx.pools) {
@@ -159,7 +173,31 @@ export default {
         ])
       }
 
-      if (this.tx.gas) {
+      if (this.extraSwapDetails) {
+        res.push([
+          {
+            name: 'Inbound Gas Fees',
+            value: this.extraSwapDetails.inboundGases?.map(e => e.amount / 1e8 + ' ' + e.asset).join('\n').trim(),
+            filter: true
+          },
+          {
+            name: 'Outbound Gas Fees',
+            value: this.extraSwapDetails.outboundGases?.map(e => e.amount / 1e8 + ' ' + e.asset).join('\n').trim(),
+            filter: true
+          }
+        ], [
+          {
+            name: 'Affiliate Fee',
+            value: this.extraSwapDetails.affiliateFee?.map(e => e.amount / 1e8 + ' ' + e.asset).join('\n').trim(),
+            filter: true
+          },
+          {
+            name: 'Liquidity Fee',
+            value: this.tx.liqidityFee.swap.liquidityFee / 1e8 + ' THOR.RUNE',
+            filter: true
+          }
+        ])
+      } else if (this.tx.gas) {
         res.push([
           {
             name: 'Gas Fees',
@@ -203,6 +241,17 @@ export default {
 
       if (res?.status / 200 === 1 && res.data.count !== '0') {
         this.tx = parseMidgardTx(res.data)
+
+        // parse extra fees and details from thornode
+        if (this.tx.type === 'swap') {
+          const inboundHash = this.tx?.inout[0][0][0].txID
+          res = await this.$api.getThornodeDetailTx(inboundHash).catch((e) => {
+            this.isLoading = false
+            this.loadingPercentage = 100
+          })
+          this.extraSwapDetails = parseExtraSwap(res.data)
+        }
+
         this.isLoading = false
         this.loadingPercentage = 100
         return

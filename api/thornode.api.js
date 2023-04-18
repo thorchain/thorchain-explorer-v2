@@ -26,6 +26,10 @@ export function getNativeTx (txID) {
   return $axiosInstace.get(endpoints[process.env.NETWORK].THORNODE_URL + `cosmos/tx/v1beta1/txs/${txID}`)
 }
 
+export function getThornodeDetailTx (txID) {
+  return $axiosInstace.get(endpoints[process.env.NETWORK].THORNODE_URL + `thorchain/tx/details/${txID}`)
+}
+
 export function getThorNetwork () {
   return $axiosInstace.get(endpoints[process.env.NETWORK].THORNODE_URL + 'thorchain/network')
 }

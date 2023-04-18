@@ -86,6 +86,24 @@ export function parseCosmosTx (ntx) {
   return ret[0]
 }
 
+export function parseExtraSwap (ntx) {
+  const { tx: { tx: inboundTx }, out_txs: outTxs } = ntx
+  let affiliateFee
+  // has affiliate fee
+  if (outTxs.length > 1 && ntx.tx?.out_hashes.length > 1) {
+    const thorTx = outTxs.find(e => e.chain === 'THOR')
+    affiliateFee = thorTx.coins
+  }
+
+  return {
+    inboundGases: inboundTx?.gas,
+    inSigners: ntx.tx?.signers,
+    outboundGases: outTxs.map(e => e.gas).flat(),
+    affiliateFee,
+    txOutDelay: (ntx.outbound_height - ntx.finalised_height) * 6
+  }
+}
+
 function checkSynth (asset) {
   if (!asset) {
     return false
