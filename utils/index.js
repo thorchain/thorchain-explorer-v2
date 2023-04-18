@@ -86,14 +86,8 @@ export function parseCosmosTx (ntx) {
   return ret[0]
 }
 
-export function getConfCount (height, chain, chainHeight) {
-  const lastHeight = chainHeight.find(e => e.chain === chain)
-  return (lastHeight - height)
-}
-
-export function parseExtraSwap (ntx, chainHeight) {
+export function parseExtraSwap (ntx) {
   const { tx: { tx: inboundTx }, out_txs: outTxs } = ntx
-  const inboundConfCount = getConfCount(ntx.tx?.external_observed_height, inboundTx?.chain, chainHeight)
   let affiliateFee
   // has affiliate fee
   if (outTxs.length > 1 && ntx.tx?.out_hashes.length > 1) {
@@ -104,7 +98,6 @@ export function parseExtraSwap (ntx, chainHeight) {
   return {
     inboundGases: inboundTx?.gas,
     inSigners: ntx.tx?.signers,
-    inboundConfCount,
     outboundGases: outTxs.map(e => e.gas).flat(),
     affiliateFee,
     txOutDelay: (ntx.outbound_height - ntx.finalised_height) * 6

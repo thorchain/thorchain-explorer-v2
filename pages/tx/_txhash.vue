@@ -249,7 +249,7 @@ export default {
             this.isLoading = false
             this.loadingPercentage = 100
           })
-          this.extraSwapDetails = parseExtraSwap(res.data, this.$store.state.chainHeight)
+          this.extraSwapDetails = parseExtraSwap(res.data)
         }
 
         this.isLoading = false
