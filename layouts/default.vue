@@ -89,6 +89,12 @@ export default {
       })
       .catch(e => console.error(e))
 
+    this.getChainsHeight()
+
+    setInterval(() => {
+      this.getChainsHeight()
+    }, 60000)
+
     const changeHeight = () => {
       const vh = window.innerHeight * 0.01
       document.documentElement.style.setProperty('--vh', `${vh}px`)
@@ -97,6 +103,16 @@ export default {
     changeHeight()
 
     window.addEventListener('resize', changeHeight)
+  },
+  methods: {
+    getChainsHeight () {
+      this.$api
+        .getChainsHeight()
+        .then(({ data }) => {
+          this.$store.commit('setChainsHeight', data)
+        })
+        .catch(e => console.error(e))
+    }
   }
 }
 
