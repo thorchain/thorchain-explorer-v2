@@ -4,6 +4,7 @@ export const state = () => ({
   showMenu: false,
   networkData: undefined,
   nodesData: undefined,
+  chainsHeight: undefined,
   fullscreen: false,
   showSidebar: false
 })
@@ -29,6 +30,9 @@ export const getters = {
   },
   getSidebar (state) {
     return state.showSidebar
+  },
+  getChainsHeight (state) {
+    return state.chainsHeight
   }
 }
 
@@ -56,5 +60,8 @@ export const mutations = {
   },
   setSidebar (state, action) {
     state.showSidebar = action
+  },
+  setChainsHeight (state, action) {
+    state.chainsHeight = action
   }
 }
