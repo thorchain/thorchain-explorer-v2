@@ -93,11 +93,12 @@
 </template>
 
 <script>
+import moment from 'moment'
+import { mapGetters } from 'vuex'
 import CopyIcon from '~/assets/images/copy.svg?inline'
 import DisconnectIcon from '~/assets/images/disconnect.svg?inline'
 import ArrowIcon from '~/assets/images/arrow-small-right.svg?inline'
-import { parseCosmosTx, parseMidgardTx, parseExtraSwap } from '~/utils'
-import moment from 'moment'
+import { parseCosmosTx, parseMidgardTx, parseExtraSwap, defaultCoinBase, approxBlockSeconds } from '~/utils'
 
 export default {
   components: {
@@ -121,6 +122,9 @@ export default {
     }
   },
   computed: {
+    ...mapGetters({
+      chainsHeight: 'getChainsHeight'
+    }),
     extraDetail () {
       if (!this.tx) {
         return
@@ -202,6 +206,29 @@ export default {
           {
             name: 'Gas Fees',
             value: this.tx.gas.join('\n').trim(),
+            filter: true
+          }
+        ])
+      }
+
+      if (this.extraSwapDetails && this.chainsHeight) {
+        let confs = 1
+        if (defaultCoinBase(this.extraSwapDetails?.inChain) > 0) {
+          confs = (this.tx.inout[0][0][0].asset.amount) / defaultCoinBase(this.extraSwapDetails?.inChain)
+          confs = Math.ceil(confs)
+        }
+        const filtered = this.$options.filters.number((this.chainsHeight[this.extraSwapDetails?.inChain] - this.extraSwapDetails?.inboundHeight), '0,0')
+        const filteredDelay = moment.duration(confs * approxBlockSeconds(this.extraSwapDetails?.inChain), 'seconds').humanize()
+
+        res.push([
+          {
+            name: 'Est Inbound Confirms needed / Confirmed',
+            value: confs + ' / ' + filtered,
+            filter: true
+          },
+          {
+            name: 'Est Inbound Delay',
+            value: filteredDelay,
             filter: true
           }
         ])

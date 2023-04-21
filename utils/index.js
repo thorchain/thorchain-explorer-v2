@@ -96,11 +96,13 @@ export function parseExtraSwap (ntx) {
   }
 
   return {
+    inChain: inboundTx?.chain,
+    inboundHeight: ntx.tx?.external_observed_height,
     inboundGases: inboundTx?.gas,
     inSigners: ntx.tx?.signers,
     outboundGases: outTxs.map(e => e.gas).flat(),
     affiliateFee,
-    txOutDelay: (ntx.outbound_height - ntx.finalised_height) * 6
+    txOutDelay: (ntx.outbound_height - ntx.finalised_height) * 6,
   }
 }
 
@@ -286,7 +288,49 @@ export function runeCur () {
   return AssetCurrencySymbol.RUNE
 }
 
-export const assetFromString = (s) => {
+// derived directly from thornode `chain.go`
+export function defaultCoinBase (chain) {
+  switch (chain) {
+    case 'BTC':
+      return 6.25
+    case 'LTC':
+      return 12.5
+    case 'BCH':
+      return 6.25
+    case 'DOGE':
+      return 10000
+    default:
+      return 0
+  }
+}
+
+// derived directly from thornode `chain.go`
+export function approxBlockSeconds (chain) {
+  switch (chain) {
+    case 'BTC':
+      return 600
+    case 'LTC':
+      return 150
+    case 'BCH':
+      return 600
+    case 'DOGE':
+      return 60
+    case 'ETH':
+      return 12
+    case 'AVAX':
+      return 3
+    case 'BNB':
+      return 0.5
+    case 'GAIA':
+      return 6
+    case 'THOR':
+      return 6
+    default:
+      return 0
+  }
+}
+
+export function assetFromString (s) {
   const isSynth = s.includes(SYNTH_DELIMITER)
   const delimiter = isSynth ? SYNTH_DELIMITER : NON_SYNTH_DELIMITER
   const data = s.split(delimiter)
