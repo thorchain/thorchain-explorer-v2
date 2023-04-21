@@ -276,7 +276,11 @@ export default {
             this.isLoading = false
             this.loadingPercentage = 100
           })
-          this.extraSwapDetails = parseExtraSwap(res.data)
+          try {
+            this.extraSwapDetails = parseExtraSwap(res.data)
+          } catch (error) {
+            this.extraSwapDetails = undefined
+          }
         }
 
         this.isLoading = false
