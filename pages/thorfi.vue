@@ -22,6 +22,10 @@ export default {
         {
           link: '/thorfi/synths',
           text: 'Synths'
+        },
+        {
+          link: '/thorfi/pol',
+          text: 'Protocol Owned Liquidity'
         }
       ]
     }

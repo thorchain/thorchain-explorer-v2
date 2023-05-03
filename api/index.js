@@ -45,7 +45,8 @@ import {
   getNodes,
   getNode,
   getSavers,
-  getThornodeDetailTx
+  getThornodeDetailTx,
+  getUserLpPosition
 } from './thornode.api'
 import {
   getTendermintLatestBlocks
@@ -184,7 +185,8 @@ export default function ({ $axios }, inject) {
     getSavers,
     getOldSaversExtraData,
     getThornodeDetailTx,
-    getChainsHeight
+    getChainsHeight,
+    getUserLpPosition
   }
 
   inject('api', api)
