@@ -1,50 +1,56 @@
 <template>
-  <div class="simple-card">
-    <div class="card-header">
-      Pools
-    </div>
-    <div class="card-body">
-      <vue-good-table
-        :columns="cols"
-        :rows="lps"
-        style-class="vgt-table net-table"
-        :pagination-options="{
-          enabled: true,
-          perPage: 5,
-          perPageDropdownEnabled: false,
-        }"
-      >
-        <template slot="table-row" slot-scope="props">
-          <div v-if="props.column.field == 'pool'" class="asset-cell">
-            <AssetIcon :asset="props.row.pool" />
-            <span class="ellipsis">
-              {{ props.row.pool }}
-            </span>
-            <div v-if="props.row.label" class="bubble-container" style="margin-left: 10px">
-              {{ props.row.label }}
+  <Page>
+    <stat-table header="Overview" :table-settings="polSettings" />
+    <div class="simple-card">
+      <div class="card-header">
+        Pools
+      </div>
+      <div class="card-body">
+        <vue-good-table
+          :columns="cols"
+          :rows="lps"
+          style-class="vgt-table net-table"
+          :pagination-options="{
+            enabled: true,
+            perPage: 5,
+            perPageDropdownEnabled: false,
+          }"
+        >
+          <template slot="table-row" slot-scope="props">
+            <div v-if="props.column.field == 'pool'" class="asset-cell">
+              <AssetIcon :asset="props.row.pool" />
+              <span class="ellipsis">
+                {{ props.row.pool }}
+              </span>
+              <div v-if="props.row.label" class="bubble-container" style="margin-left: 10px">
+                {{ props.row.label }}
+              </div>
             </div>
-          </div>
-          <span v-else-if="props.column.field.startsWith('pool')" class="pool-cell ellipsis">
-            <span v-if="props.row[props.column.field][0]">{{ props.row[props.column.field][0] | number('0,0.00') }} <small>RUNE</small></span>
-            <span v-if="props.row[props.column.field][1]" class="ellipsis">{{ props.row[props.column.field][1] || props.row[props.column.field][1] === 0 ? ($options.filters.number(props.row[props.column.field][1], '0,0.000000')) : '-' }} <small class="ellipsis">{{ props.row.pool }}</small></span>
-            <span v-else-if="!props.row[props.column.field][0]">-</span>
-          </span>
-          <span v-else-if="props.column.field == 'share'">
-            <span v-if="props.row.share">{{ percentageFormat(props.row.share, 4) }}</span>
-            <span v-else>-</span>
-          </span>
-        </template>
-      </vue-good-table>
+            <span v-else-if="props.column.field.startsWith('pool')" class="pool-cell ellipsis">
+              <span v-if="props.row[props.column.field][0]">{{ props.row[props.column.field][0] | number('0,0.00') }} <small>RUNE</small></span>
+              <span v-if="props.row[props.column.field][1]" class="ellipsis">{{ props.row[props.column.field][1] || props.row[props.column.field][1] === 0 ? ($options.filters.number(props.row[props.column.field][1], '0,0.000000')) : '-' }} <small class="ellipsis">{{ props.row.pool }}</small></span>
+              <span v-else-if="!props.row[props.column.field][0]">-</span>
+            </span>
+            <span v-else-if="props.column.field == 'share'">
+              <span v-if="props.row.share">{{ percentageFormat(props.row.share, 4) }}</span>
+              <span v-else>-</span>
+            </span>
+          </template>
+        </vue-good-table>
+      </div>
     </div>
-  </div>
+  </Page>
 </template>
 
 <script>
 import moment from 'moment'
+import StatTable from '~/components/StatTable.vue'
 export default {
+  components: { StatTable },
   data () {
     return {
       reserveAddress: 'thor1dheycdevq39qlkxs2a6wuuzyn4aqxhve4qxtxt',
+      polOverview: undefined,
       pools: [],
       lps: [],
       cols: [
@@ -94,6 +100,44 @@ export default {
       ]
     }
   },
+  computed: {
+    polSettings () {
+      return [
+        [
+          {
+            name: 'Current RUNE deposited',
+            value: this.polOverview?.current_deposit / 1e8,
+            filter: true,
+            runeValue: true
+          },
+          {
+            name: 'Current RUNE value',
+            value: this.polOverview?.value / 1e8,
+            filter: true,
+            runeValue: true
+          },
+          {
+            name: 'RUNE deposited',
+            value: this.polOverview?.rune_deposited / 1e8,
+            filter: true,
+            runeValue: true
+          },
+          {
+            name: 'RUNE Withdrawn',
+            value: this.polOverview?.rune_withdrawn / 1e8,
+            filter: true,
+            runeValue: true
+          },
+          {
+            name: 'RUNE Withdrawn',
+            value: this.polOverview?.rune_withdrawn / 1e8,
+            filter: true,
+            runeValue: true
+          }
+        ]
+      ]
+    }
+  },
   async mounted () {
     if (!this.reserveAddress) {
       return
@@ -108,9 +152,16 @@ export default {
         const { data: thorData } = await this.$api.getUserLpPosition(poolData.pool, this.reserveAddress)
         this.lps.find(p => p.pool === poolData.pool).luvi = thorData.luvi_growth_pct
       }
-      console.log(this.lps)
     } catch (error) {
       console.error('member not found', error)
+    }
+
+    try {
+      const { data: polData } = await this.$api.getPol()
+      this.polOverview = polData
+      console.log(this.polOverview)
+    } catch (error) {
+      console.error(error)
     }
   },
   methods: {

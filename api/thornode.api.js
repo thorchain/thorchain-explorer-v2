@@ -97,3 +97,7 @@ export function getNode (addr) {
 export function getSavers (poolName) {
   return $axiosInstace.get(endpoints[process.env.NETWORK].THORNODE_URL + `thorchain/pool/${poolName}/savers`)
 }
+
+export function getPol () {
+  return $axiosInstace.get(endpoints[process.env.NETWORK].THORNODE_URL + 'thorchain/pol')
+}
