@@ -46,6 +46,10 @@ export function getLpPositions (poolName) {
   return $axiosInstace.get(endpoints[process.env.NETWORK].THORNODE_URL + `thorchain/pool/${poolName}/liquidity_providers`)
 }
 
+export function getUserLpPosition (poolName, address) {
+  return $axiosInstace.get(endpoints[process.env.NETWORK].THORNODE_URL + `thorchain/pool/${poolName}/liquidity_provider/${address}`)
+}
+
 export function getPoolDetail (poolName) {
   return $axiosInstace.get(endpoints[process.env.NETWORK].THORNODE_URL + `thorchain/pool/${poolName}`)
 }
