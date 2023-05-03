@@ -13,6 +13,7 @@
           <div class="stat-table-item">
             <div class="col-header">
               {{ colItem.name }}
+              <unknown-icon class="header-icon" v-if="colItem.extraInfo" v-tooltip="colItem.extraInfo" />
             </div>
             <div class="col-value">
               <template v-if="!$slots[colItem.name]">
@@ -47,9 +48,11 @@
 <script>
 import { mapGetters } from 'vuex'
 import { AssetCurrencySymbol } from '@xchainjs/xchain-util'
+import UnknownIcon from '~/assets/images/unknown.svg?inline'
 
 export default {
   name: 'StatTable',
+  components: { UnknownIcon },
   props: {
     iconSrc: String,
     header: String,
@@ -147,7 +150,16 @@ export default {
       }
 
       .col-header {
+        display: flex;
         font-size: 0.75rem;
+
+        .header-icon {
+          margin-left: 5px;
+          fill: var(--font-color);
+          margin-right: 10px;
+          height: .9rem;
+          width: .9rem;
+        }
       }
     }
   }

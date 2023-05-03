@@ -1,6 +1,7 @@
 <template>
   <Page>
     <stat-table header="Overview" :table-settings="polSettings" />
+    <stat-table header="Mimirs" :table-settings="polMimirSettings" />
     <div class="simple-card">
       <div class="card-header">
         Pools
@@ -45,12 +46,13 @@
 <script>
 import moment from 'moment'
 import StatTable from '~/components/StatTable.vue'
+
 export default {
-  components: { StatTable },
   data () {
     return {
       reserveAddress: 'thor1dheycdevq39qlkxs2a6wuuzyn4aqxhve4qxtxt',
       polOverview: undefined,
+      mimir: undefined,
       pools: [],
       lps: [],
       cols: [
@@ -111,28 +113,87 @@ export default {
             runeValue: true
           },
           {
-            name: 'Current RUNE value',
+            name: 'Current value',
             value: this.polOverview?.value / 1e8,
             filter: true,
             runeValue: true
           },
           {
-            name: 'RUNE deposited',
+            name: 'Overall RUNE deposited',
             value: this.polOverview?.rune_deposited / 1e8,
             filter: true,
             runeValue: true
           },
           {
-            name: 'RUNE Withdrawn',
+            name: 'Overall RUNE Withdrawn',
             value: this.polOverview?.rune_withdrawn / 1e8,
             filter: true,
             runeValue: true
+          }
+        ]
+      ]
+    },
+    polMimirSettings () {
+      if (!this.mimir) {
+        return []
+      }
+
+      const synthTargetPerPool = this.mimir?.POLTARGETSYNTHPERPOOLDEPTH / 1e4
+      const polBuffer = this.mimir?.POLBUFFER / 1e4
+      const PolMaxPoolMovement = this.mimir?.POLMAXPOOLMOVEMENT / 1e4
+      const POLMaxNetworkDeposit = this.mimir?.POLMAXNETWORKDEPOSIT / 1e8
+
+      return [
+        [
+          {
+            name: 'Enable POL',
+            value: this.mimir?.ENABLEPOL ? 'Yes' : 'No',
+            filter: true
+          }
+        ],
+        [
+          {
+            name: 'Max Synth Utilisation per Pool',
+            value: this.$options.filters.percent(this.mimir?.MAXSYNTHPERPOOLDEPTH / 1e4, 2),
+            filter: true
           },
           {
-            name: 'RUNE Withdrawn',
-            value: this.polOverview?.rune_withdrawn / 1e8,
+            name: 'POL Target Synth per Pool Depth',
+            value: this.$options.filters.percent(synthTargetPerPool, 2),
+            filter: true,
+            extraInfo: `POL will continue adding RUNE to a pool until the synth depth of that pool is ${this.$options.filters.percent(synthTargetPerPool, 2)}`
+          }
+        ],
+        [
+          {
+            name: 'POL Buffer',
+            value: this.$options.filters.percent(polBuffer, 2),
+            filter: true,
+            extraInfo: `Synth utilization must be >${polBuffer * 100}% from the target synth per pool depth in order to add liquidity / remove liquidity. In this context, liquidity will be withdrawn below ${(synthTargetPerPool - polBuffer) * 100}% synth utilization and deposited above ${(synthTargetPerPool + polBuffer) * 100}% synth utilization.`
+          },
+          {
+            name: 'POL Max Pool Movement',
+            value: this.$options.filters.percent(PolMaxPoolMovement, 2),
+            filter: true,
+            extraInfo: `POL will move the pool price at most ${PolMaxPoolMovement * 100}% in one block.`
+          },
+          {
+            name: 'POL Max Network Deposit',
+            value: POLMaxNetworkDeposit,
             filter: true,
             runeValue: true
+          }
+        ],
+        [
+          {
+            name: 'Enable POL on BTC',
+            value: this.mimir['POL-BTC-BTC'] ? 'Yes' : 'No',
+            filter: true
+          },
+          {
+            name: 'Enable POL on ETH',
+            value: this.mimir['POL-ETH-ETH'] ? 'Yes' : 'No',
+            filter: true
           }
         ]
       ]
@@ -159,7 +220,9 @@ export default {
     try {
       const { data: polData } = await this.$api.getPol()
       this.polOverview = polData
-      console.log(this.polOverview)
+
+      const { data: mimirData } = await this.$api.getMimir()
+      this.mimir = mimirData
     } catch (error) {
       console.error(error)
     }
