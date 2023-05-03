@@ -51,7 +51,7 @@
           }"
           :sort-options="{
             enabled: true,
-            initialSortBy: {field: 'saverDepthPrice', type: 'desc'}
+            initialSortBy: networkEnv === 'mainnet' ? {field: 'saverDepthPrice', type: 'desc'} : {}
           }"
           @on-row-click="gotoSaver"
         >
@@ -63,7 +63,7 @@
             <span v-else-if="props.column.field == 'saversDepth'">
               <span>
                 {{ props.formattedRow[props.column.field] }}
-                <progress-icon :data-number="props.row.changes[props.column.field].value" :is-down="props.row.changes.saversDepth.isDown" />
+                <progress-icon v-if="props.row.changes[props.column.field] && props.row.changes[props.column.field].enable" :data-number="props.row.changes[props.column.field].value" :is-down="props.row.changes.saversDepth.isDown" />
                 <span class="extra-text" style="font-size: .6rem; font-weight: bold;">
                   {{ showAsset(props.row.asset) }}
                 </span>
@@ -71,7 +71,7 @@
             </span>
             <span v-else>
               {{ props.formattedRow[props.column.field] }}
-              <progress-icon v-if="props.row.changes[props.column.field]" :data-number="props.row.changes[props.column.field].value" :is-down="props.row.changes[props.column.field].isDown" />
+              <progress-icon v-if="props.row.changes[props.column.field] && props.row.changes[props.column.field].enable" :data-number="props.row.changes[props.column.field].value" :is-down="props.row.changes[props.column.field].isDown" />
             </span>
           </template>
         </vue-good-table>
@@ -234,7 +234,7 @@ export default {
       const saversOldData = (await this.$api.getOldSaversExtraData()).data
       const changes = this.getSaversChanges(saversOldData, saversExtraData)
       this.oldSavers = saversOldData
-      const ps = data.map(p => ({
+      const ps = data.filter(p => +p.units > 0).map(p => ({
         status: p.status,
         price: p.assetPriceUSD,
         saverDepthPrice: (+p.saversDepth / 10 ** 8) * p.assetPriceUSD,
@@ -297,14 +297,14 @@ export default {
     },
     fillTotalSaversValue () {
       this.totalSaversValue = this.tables.saversRows.data.map(saver => ({
-        value: saver.saverDepthPrice,
-        name: saver.asset,
+        value: saver?.saverDepthPrice,
+        name: saver?.asset,
         itemStyle: {
-          color: this.getAssetColor(saver.asset)
+          color: this.getAssetColor(saver?.asset)
         },
         emphasis: {
           itemStyle: {
-            color: this.getAssetColor(saver.asset)
+            color: this.getAssetColor(saver?.asset)
           }
         }
       }))
@@ -338,15 +338,18 @@ export default {
         ret[asset] = {
           saversCount: {
             value: this.$options.filters.number(newData[asset].saversCount - (oldData[asset].saversCount ?? 0), '0,0'),
-            isDown: (newData[asset].saversCount < (oldData[asset].saversCount ?? 0))
+            isDown: (newData[asset].saversCount < (oldData[asset].saversCount ?? 0)),
+            enable: (newData[asset].saversCount ?? 0) - (oldData[asset].saversCount ?? 0)
           },
           saverReturn: {
             value: this.percentageFormat(newData[asset].saverReturn - (oldData[asset].saverReturn ?? 0), 2),
-            isDown: (newData[asset].saverReturn < (oldData[asset].saverReturn ?? 0))
+            isDown: (newData[asset].saverReturn < (oldData[asset].saverReturn ?? 0)),
+            enable: (newData[asset].saverReturn ?? 0) - (oldData[asset].saverReturn ?? 0)
           },
           earned: {
             value: this.baseAmountFormat(oldData[asset].deltaEarned ?? 0),
-            isDown: oldData[asset].deltaEarned > 0
+            isDown: oldData[asset].deltaEarned > 0,
+            enable: newData[asset].deltaEarned > 0
           },
           // filled: {
           //   value: this.percentageFormat(newData[asset].filled - (oldData[asset].filled ?? 0), 2),
@@ -354,11 +357,13 @@ export default {
           // },
           saversDepth: {
             value: this.smallBaseAmountFormat(+newData[asset].saversDepth - (+oldData[asset].saversDepth ?? 0)),
-            isDown: (+newData[asset].saversDepth < (+oldData[asset].saversDepth ?? 0))
+            isDown: (+newData[asset].saversDepth < (+oldData[asset].saversDepth ?? 0)),
+            enable: (newData[asset].saversDepth ?? 0) - (oldData[asset].saversDepth ?? 0)
           },
           saverDepthPrice: {
             value: '$' + this.smallBaseAmountFormat((+newData[asset].saversDepth - (+oldData[asset].saversDepth ?? 0)) * newData[asset].assetPrice),
-            isDown: (+newData[asset].saversDepth < (+oldData[asset].saversDepth ?? 0))
+            isDown: (+newData[asset].saversDepth < (+oldData[asset].saversDepth ?? 0)),
+            enable: (newData[asset].saversDepth ?? 0) - (oldData[asset].saversDepth ?? 0)
           }
         }
       })
