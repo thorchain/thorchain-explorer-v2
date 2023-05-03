@@ -45,12 +45,12 @@
 
 <script>
 import moment from 'moment'
-import StatTable from '~/components/StatTable.vue'
+import endpoints from '~/api/endpoints'
 
 export default {
   data () {
     return {
-      reserveAddress: 'thor1dheycdevq39qlkxs2a6wuuzyn4aqxhve4qxtxt',
+      reserveAddress: endpoints[process.env.NETWORK].MODULE_ADDR,
       polOverview: undefined,
       mimir: undefined,
       pools: [],
