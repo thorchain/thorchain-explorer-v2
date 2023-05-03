@@ -17,8 +17,9 @@
             <div class="col-value">
               <template v-if="!$slots[colItem.name]">
                 <template v-if="colItem.filter">
-                  <pre v-if="colItem.value !== 0">{{ colItem.value || '-' }}</pre>
-                  <pre v-if="colItem.value === 0">0</pre>
+                  <pre v-if="colItem.value && colItem.runeValue" class="rune-value">{{ colItem.value | number('0,0.00') }} <small>RUNE</small></pre>
+                  <pre v-else-if="colItem.value !== 0">{{ colItem.value || '-' }}</pre>
+                  <pre v-if="colItem.value === 0" :class="{'rune-value': colItem.runeValue}">0</pre>
                 </template>
                 <template v-else>
                   <template v-if="colItem.value !== 0">
@@ -45,19 +46,25 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import { AssetCurrencySymbol } from '@xchainjs/xchain-util'
 
 export default {
   name: 'StatTable',
-  computed: {
-    ...mapGetters({
-      runePrice: 'getRunePrice'
-    })
-  },
   props: {
     iconSrc: String,
     header: String,
     tableSettings: Array,
     isLoading: Boolean
+  },
+  computed: {
+    ...mapGetters({
+      runePrice: 'getRunePrice'
+    })
+  },
+  methods: {
+    runeCur () {
+      return AssetCurrencySymbol.RUNE
+    }
   }
 }
 </script>
@@ -152,5 +159,10 @@ pre {
   word-wrap: break-word;
   word-break: break-all;
   margin: 0;
+}
+
+pre.rune-value {
+  font-family: 'Roboto Mono';
+  font-size: .8rem;
 }
 </style>
