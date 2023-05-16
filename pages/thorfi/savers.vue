@@ -200,7 +200,8 @@ export default {
         {
           name: 'Total Savers',
           value: saversStat.saversCount,
-          change: saversStat.saversCount - oldSaversStat.saversCount
+          change: saversStat.saversCount - oldSaversStat.saversCount,
+          isDown: +saversStat.saversCount < +oldSaversStat.saversCount
         },
         {
           name: 'Total Saved Value',
@@ -212,13 +213,13 @@ export default {
           name: 'Total Earned',
           value: this.$options.filters.currency(saversStat.totalEarn),
           change: this.$options.filters.currency(oldSaversStat.totalEarn),
-          isDown: saversStat.totalEarn < oldSaversStat.totalEarn
+          isDown: +saversStat.totalEarn < +oldSaversStat.totalEarn
         },
         {
           name: 'APR Mean',
           value: this.$options.filters.percent(saversStat.meanAPR / this.tables.saversRows.data.length, 2),
           change: this.$options.filters.percent((saversStat.meanAPR - oldSaversStat.meanAPR) / this.tables.saversRows.data.length, 4),
-          isDown: saversStat.meanAPR < oldSaversStat.meanAPR
+          isDown: +saversStat.meanAPR < +oldSaversStat.meanAPR
         }
       ]
     },
