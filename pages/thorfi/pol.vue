@@ -173,9 +173,9 @@ export default {
           },
           {
             name: 'POL Max Pool Movement',
-            value: this.$options.filters.percent(PolMaxPoolMovement, 2),
+            value: this.$options.filters.percent(PolMaxPoolMovement / 1e3, 4),
             filter: true,
-            extraInfo: `POL will move the pool price at most ${PolMaxPoolMovement * 100}% in one block.`
+            extraInfo: `POL will move the pool price at most ${PolMaxPoolMovement / 10}% in one block.`
           },
           {
             name: 'POL Max Network Deposit',
