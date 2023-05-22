@@ -123,8 +123,8 @@ export default {
         // Synths
         [
           {
-            name: camelCase('MAXSYNTHPERPOOLDEPTH'),
-            value: this.networkConst?.int_64_values?.MAXSYNTHPERPOOLDEPTH
+            ...this.parseConstant('MaxSynthPerPoolDepth', { filter: v => this.$options.filters.percent(v / 1e4, 2) }),
+            filter: true
           },
           {
             name: 'Synth Burning',
@@ -198,21 +198,14 @@ export default {
         ],
         [
           {
-            name: camelCase('LiquidityLockUpBlocks'),
-            value: this.networkConst?.int_64_values?.LiquidityLockUpBlocks ? this.networkConst?.int_64_values?.LiquidityLockUpBlocks : '0'
-          },
-          {
-            name: 'Soft Cap',
-            value: this.mimir?.MAXIMUMLIQUIDITYRUNE / 10 ** 8,
-            usdValue: true
+            ...this.parseConstant('LiquidityLockUpBlocks')
           }
         ],
         // Impermanent Loss Protection
         [
           {
-            name: camelCase('FullImpLossProtectionBlocks'),
-            value: this.mimir?.FULLIMPLOSSPROTECTIONBLOCKS,
-            extraText: blockTime(this.mimir?.FULLIMPLOSSPROTECTIONBLOCKS)
+            ...this.parseConstant('FullImpLossProtectionBlocks', { extraText: v => blockTime(v) }),
+            name: 'Impermanent Loss Protection (Block)'
           }
         ]
       ]
@@ -281,12 +274,12 @@ export default {
             value: this.networkConst?.int_64_values?.BlocksPerYear
           },
           {
+            ...this.parseConstant('MAXUTXOSTOSPEND'),
             name: 'Max UTXO to be spend on one block',
-            value: this.mimir?.MAXUTXOSTOSPEND
+            filter: true
           },
           {
-            name: 'Minimum Nodes For BFT',
-            value: this.networkConst?.int_64_values?.MinimumNodesForBFT
+            ...this.parseConstant('MinimumNodesForBFT')
           }
         ],
         // Fee Management
@@ -431,17 +424,18 @@ export default {
             extraText: blockTime(this.mimir?.CHURNINTERVAL)
           },
           {
+            ...this.parseConstant('HaltChurning', { filter: v => v ? 'Yes' : 'No' }),
             name: 'Churning is halted',
-            value: this.mimir?.HALTCHURNING ? 'Yes' : 'No'
+            filter: true
           },
           {
             name: 'Max node to churn out for lower version',
-            value: this.mimir?.MAXNODETOCHURNOUTFORLOWVERSION
+            ...this.parseConstant('MaxNodeToChurnOutForLowVersion')
           }
         ],
         [
           {
-            ...this.parseConstant('DesiredValidatorSet', { extraText: 'Max number of validators'})
+            ...this.parseConstant('DesiredValidatorSet', { extraText: 'Max number of validators' })
           },
           {
             ...this.parseConstant('FundMigrationInterval')
@@ -451,14 +445,6 @@ export default {
           },
           {
             ...this.parseConstant('BadValidatorRedline')
-          }
-        ],
-        [
-          {
-            ...this.parseConstant('OldValidatorRate')
-          },
-          {
-            ...this.parseConstant('LowBondValidatorRate')
           }
         ]
       ]

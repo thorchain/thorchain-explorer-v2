@@ -252,11 +252,16 @@ export default {
         value = this.mimir[uniKey]
       }
 
+      let extraText = options?.extraText
+      if (typeof extraText === 'function') {
+        extraText = options?.extraText(value)
+      }
+
       return {
         name: uniName,
         ...(options?.filter ? { value: options?.filter(value) } : { value }),
-        ...(isMimir && { extraText: `${options?.extraText ?? ''}Overwritten by Mimir` }),
-        ...(!isMimir && options?.extraText && { extraText: options?.extraText })
+        ...(isMimir && { extraText: `${extraText ?? ''}Overwritten by Mimir` }),
+        ...(!isMimir && extraText && { extraText })
       }
     }
   }
