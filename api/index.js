@@ -2,7 +2,6 @@ import axiosRetry from 'axios-retry'
 import {
   getStats,
   getTxs,
-  getConstants,
   getTx,
   getAddress,
   getPoolStats,
@@ -47,7 +46,9 @@ import {
   getSavers,
   getThornodeDetailTx,
   getUserLpPosition,
-  getPol
+  getPol,
+  getBorrowers,
+  getConstants
 } from './thornode.api'
 import {
   getTendermintLatestBlocks
@@ -188,7 +189,8 @@ export default function ({ $axios }, inject) {
     getThornodeDetailTx,
     getChainsHeight,
     getUserLpPosition,
-    getPol
+    getPol,
+    getBorrowers
   }
 
   inject('api', api)
