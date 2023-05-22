@@ -237,7 +237,7 @@ export default {
     },
     parseConstant (key, options) {
       // make sure component has these data in it.
-      if (!this.mimir || !this.networkConst) {
+      if (!this.mimir || !this.networkConst || !this.networkConst?.int_64_values) {
         return {}
       }
 
@@ -245,10 +245,10 @@ export default {
       const uniKey = key.toUpperCase()
       const uniName = this.camelCase(key)
 
-      let value = this.networkConst.int_64_values[key]
+      let value = this.networkConst?.int_64_values[key]
       let isMimir = false
-      if (this.mimir[uniKey]) {
-        isMimir = true
+      if (this.mimir[uniKey] !== undefined) {
+        isMimir = value && true
         value = this.mimir[uniKey]
       }
 
