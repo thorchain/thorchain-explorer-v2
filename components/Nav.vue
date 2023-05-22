@@ -5,7 +5,7 @@
     </span>
     <component
       :is="isLink? 'nuxt-link':'div'"
-      v-for="navItem in navItems"
+      v-for="navItem in filteredNav"
       :key="navItem.mode"
       :class="[{'active': activeMode && activeMode === navItem.mode}, 'nav-item']"
       :to="isLink? navItem.link:false"
@@ -22,7 +22,12 @@ export default {
     prop: 'activeMode',
     event: 'update'
   },
-  props: ['activeMode', 'navItems', 'isLink', 'extraClasses', 'preText'],
+  props: ['activeMode', 'navItems', 'isLink', 'extraClasses', 'preText', 'hide'],
+  computed: {
+    filteredNav () {
+      return this.navItems.filter(n => n.hide !== true)
+    }
+  },
   emits: ['update']
 }
 </script>

@@ -16,10 +16,6 @@ export function getTxs (offset = 0, limit = 10, type = undefined) {
   return $axiosInstace.get('actions', { params })
 }
 
-export function getConstants () {
-  return $axiosInstace.get('thorchain/constants')
-}
-
 export function getTx (txid, limit = 10) {
   const params = {
     offset: 0,

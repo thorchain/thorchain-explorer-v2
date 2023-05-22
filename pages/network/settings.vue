@@ -123,8 +123,8 @@ export default {
         // Synths
         [
           {
-            name: camelCase('MAXSYNTHPERPOOLDEPTH'),
-            value: this.networkConst?.int_64_values?.MAXSYNTHPERPOOLDEPTH
+            ...this.parseConstant('MaxSynthPerPoolDepth', { filter: v => this.$options.filters.percent(v / 1e4, 2) }),
+            filter: true
           },
           {
             name: 'Synth Burning',
@@ -198,21 +198,14 @@ export default {
         ],
         [
           {
-            name: camelCase('LiquidityLockUpBlocks'),
-            value: this.networkConst?.int_64_values?.LiquidityLockUpBlocks ? this.networkConst?.int_64_values?.LiquidityLockUpBlocks : '0'
-          },
-          {
-            name: 'Soft Cap',
-            value: this.mimir?.MAXIMUMLIQUIDITYRUNE / 10 ** 8,
-            usdValue: true
+            ...this.parseConstant('LiquidityLockUpBlocks')
           }
         ],
         // Impermanent Loss Protection
         [
           {
-            name: camelCase('FullImpLossProtectionBlocks'),
-            value: this.mimir?.FULLIMPLOSSPROTECTIONBLOCKS,
-            extraText: blockTime(this.mimir?.FULLIMPLOSSPROTECTIONBLOCKS)
+            ...this.parseConstant('FullImpLossProtectionBlocks', { extraText: v => blockTime(v) }),
+            name: 'Impermanent Loss Protection (Block)'
           }
         ]
       ]
@@ -281,12 +274,12 @@ export default {
             value: this.networkConst?.int_64_values?.BlocksPerYear
           },
           {
+            ...this.parseConstant('MAXUTXOSTOSPEND'),
             name: 'Max UTXO to be spend on one block',
-            value: this.mimir?.MAXUTXOSTOSPEND
+            filter: true
           },
           {
-            name: 'Minimum Nodes For BFT',
-            value: this.networkConst?.int_64_values?.MinimumNodesForBFT
+            ...this.parseConstant('MinimumNodesForBFT')
           }
         ],
         // Fee Management
@@ -340,39 +333,28 @@ export default {
         [
           // Can't find the maximum bond
           {
-            name: camelCase('MinimumBondInRune'),
-            value: this.mimir?.MINIMUMBONDINRUNE / 10 ** 8,
-            extraText: 'Overwritten by Mimir',
+            ...this.parseConstant('MinimumBondInRune', { filter: v => v / 1e8 }),
             usdValue: true
           },
-          {
-            name: camelCase('ValidatorMaxRewardRatio'),
-            value: this.mimir?.VALIDATORMAXREWARDRATIO,
-            extraText: 'Overwritten by Mimir'
-          }
+          this.parseConstant('ValidatorMaxRewardRatio')
         ],
         // Yggdrasil Management
         [
           {
-            name: camelCase('YggFundLimit'),
-            value: this.$options.filters.percent(this.networkConst?.int_64_values?.YggFundLimit / 100),
+            ...this.parseConstant('YggFundLimit', { filter: v => this.$options.filters.percent(v / 100) }),
             filter: true
           },
           {
-            name: camelCase('YggFundRetry'),
-            value: this.mimir?.YGGFUNDRETRY,
-            extraText: `${blockTime(this.mimir?.YGGFUNDRETRY)}, Overwritten by Mimir`
+            ...this.parseConstant('YggFundRetry', { extraText: `${blockTime(this.mimir?.YGGFUNDRETRY)}, ` })
           },
           {
-            name: 'Yggdrasil funding',
-            value: this.mimir?.STOPFUNDYGGDRASI ? 'Disabled' : 'Enabled',
+            ...this.parseConstant('YggFundLimit', { filter: v => v ? 'Disabled' : 'Enabled' }),
             filter: true
           }
         ],
         [
           {
-            name: camelCase('MinimumNodesForYggdrasil'),
-            value: this.networkConst?.int_64_values?.MinimumNodesForYggdrasil
+            ...this.parseConstant('MinimumNodesForYggdrasil')
           }
         ],
         // Slashing Management
@@ -442,41 +424,27 @@ export default {
             extraText: blockTime(this.mimir?.CHURNINTERVAL)
           },
           {
+            ...this.parseConstant('HaltChurning', { filter: v => v ? 'Yes' : 'No' }),
             name: 'Churning is halted',
-            value: this.mimir?.HALTCHURNING ? 'Yes' : 'No'
+            filter: true
           },
           {
             name: 'Max node to churn out for lower version',
-            value: this.mimir?.MAXNODETOCHURNOUTFORLOWVERSION
+            ...this.parseConstant('MaxNodeToChurnOutForLowVersion')
           }
         ],
         [
           {
-            name: 'Max number of validators',
-            value: this.mimir?.DESIREDVALIDATORSET
+            ...this.parseConstant('DesiredValidatorSet', { extraText: 'Max number of validators' })
           },
           {
-            name: camelCase('FundMigrationInterval'),
-            value: this.mimir?.FUNDMIGRATIONINTERVAL,
-            extraText: blockTime(this.mimir?.FUNDMIGRATIONINTERVAL)
+            ...this.parseConstant('FundMigrationInterval')
           },
           {
-            name: camelCase('NumberOfNewNodesPerChurn'),
-            value: this.mimir?.NUMBEROFNEWNODESPERCHURN
+            ...this.parseConstant('NumberOfNewNodesPerChurn')
           },
           {
-            name: camelCase('BadValidatorRedline'),
-            value: this.mimir?.BADVALIDATORREDLINE
-          }
-        ],
-        [
-          {
-            name: camelCase('OldValidatorRate'),
-            value: this.networkConst?.int_64_values?.OldValidatorRate
-          },
-          {
-            name: camelCase('LowBondValidatorRate'),
-            value: this.networkConst?.int_64_values?.LowBondValidatorRate
+            ...this.parseConstant('BadValidatorRedline')
           }
         ]
       ]
@@ -500,10 +468,8 @@ export default {
         ],
         [
           {
-            name: camelCase('MinRunePoolDepth'),
-            value: this.mimir?.MINRUNEPOOLDEPTH / 10 ** 8,
-            usdValue: true,
-            extraText: 'Overwritten by Mimir'
+            ...this.parseConstant('MinRunePoolDepth', { filter: v => (v / 1e8) }),
+            usdValue: true
           },
           {
             name: camelCase('PoolCycle'),

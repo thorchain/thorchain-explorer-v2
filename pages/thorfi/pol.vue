@@ -52,6 +52,7 @@ export default {
     return {
       reserveAddress: endpoints[process.env.NETWORK].MODULE_ADDR,
       polOverview: undefined,
+      networkConst: undefined,
       mimir: undefined,
       pools: [],
       lps: [],
@@ -141,45 +142,37 @@ export default {
       const synthTargetPerPool = this.mimir?.POLTARGETSYNTHPERPOOLDEPTH / 1e4
       const polBuffer = this.mimir?.POLBUFFER / 1e4
       const PolMaxPoolMovement = this.mimir?.POLMAXPOOLMOVEMENT / 1e4
-      const POLMaxNetworkDeposit = this.mimir?.POLMAXNETWORKDEPOSIT / 1e8
 
       return [
         [
           {
-            name: 'Enable POL',
-            value: this.mimir?.ENABLEPOL ? 'Yes' : 'No',
-            filter: true
-          }
-        ],
-        [
-          {
+            ...this.parseConstant('MaxSynthPerPoolDepth', { filter: v => this.$options.filters.percent(v / 1e4, 2) }),
             name: 'Max Synth Utilisation per Pool',
-            value: this.$options.filters.percent(this.mimir?.MAXSYNTHPERPOOLDEPTH / 1e4, 2),
             filter: true
           },
           {
+            ...this.parseConstant('POLTargetSynthPerPoolDepth', { filter: v => this.$options.filters.percent(v / 1e4, 2) }),
             name: 'POL Target Synth per Pool Depth',
-            value: this.$options.filters.percent(synthTargetPerPool, 2),
             filter: true,
             extraInfo: `POL will continue adding RUNE to a pool until the synth depth of that pool is ${this.$options.filters.percent(synthTargetPerPool, 2)}`
           }
         ],
         [
           {
+            ...this.parseConstant('POLBuffer', { filter: v => this.$options.filters.percent(v / 1e4, 2) }),
             name: 'POL Buffer',
-            value: this.$options.filters.percent(polBuffer, 2),
             filter: true,
             extraInfo: `Synth utilization must be >${polBuffer * 100}% from the target synth per pool depth in order to add liquidity / remove liquidity. In this context, liquidity will be withdrawn below ${(synthTargetPerPool - polBuffer) * 100}% synth utilization and deposited above ${(synthTargetPerPool + polBuffer) * 100}% synth utilization.`
           },
           {
+            ...this.parseConstant('POLMaxPoolMovement', { filter: v => this.$options.filters.percent(v / 1e7, 4) }),
             name: 'POL Max Pool Movement',
-            value: this.$options.filters.percent(PolMaxPoolMovement / 1e3, 4),
             filter: true,
             extraInfo: `POL will move the pool price at most ${PolMaxPoolMovement / 10}% in one block.`
           },
           {
+            ...this.parseConstant('POLMaxNetworkDeposit', { filter: v => v / 1e8 }),
             name: 'POL Max Network Deposit',
-            value: POLMaxNetworkDeposit,
             filter: true,
             runeValue: true
           }
@@ -223,6 +216,9 @@ export default {
 
       const { data: mimirData } = await this.$api.getMimir()
       this.mimir = mimirData
+
+      const { data: constantsData } = await this.$api.getConstants()
+      this.networkConst = constantsData
     } catch (error) {
       console.error(error)
     }
