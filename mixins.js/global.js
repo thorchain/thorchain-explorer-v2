@@ -231,6 +231,33 @@ export default {
         series,
         ...extraSettings
       }
+    },
+    camelCase (e) {
+      return e && e.replace(/([A-Z])/g, ' $1')
+    },
+    parseConstant (key, options) {
+      // make sure component has these data in it.
+      if (!this.mimir || !this.networkConst) {
+        return {}
+      }
+
+      // constants keys are in camel case different than what it shows in mimir
+      const uniKey = key.toUpperCase()
+      const uniName = this.camelCase(key)
+
+      let value = this.networkConst.int_64_values[key]
+      let isMimir = false
+      if (this.mimir[uniKey]) {
+        isMimir = true
+        value = this.mimir[uniKey]
+      }
+
+      return {
+        name: uniName,
+        ...(options?.filter ? { value: options?.filter(value) } : { value }),
+        ...(isMimir && { extraText: `${options?.extraText ?? ''}Overwritten by Mimir` }),
+        ...(!isMimir && options?.extraText && { extraText: options?.extraText })
+      }
     }
   }
 }

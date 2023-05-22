@@ -340,39 +340,28 @@ export default {
         [
           // Can't find the maximum bond
           {
-            name: camelCase('MinimumBondInRune'),
-            value: this.mimir?.MINIMUMBONDINRUNE / 10 ** 8,
-            extraText: 'Overwritten by Mimir',
+            ...this.parseConstant('MinimumBondInRune', { filter: v => v / 1e8 }),
             usdValue: true
           },
-          {
-            name: camelCase('ValidatorMaxRewardRatio'),
-            value: this.mimir?.VALIDATORMAXREWARDRATIO,
-            extraText: 'Overwritten by Mimir'
-          }
+          this.parseConstant('ValidatorMaxRewardRatio')
         ],
         // Yggdrasil Management
         [
           {
-            name: camelCase('YggFundLimit'),
-            value: this.$options.filters.percent(this.networkConst?.int_64_values?.YggFundLimit / 100),
+            ...this.parseConstant('YggFundLimit', { filter: v => this.$options.filters.percent(v / 100) }),
             filter: true
           },
           {
-            name: camelCase('YggFundRetry'),
-            value: this.mimir?.YGGFUNDRETRY,
-            extraText: `${blockTime(this.mimir?.YGGFUNDRETRY)}, Overwritten by Mimir`
+            ...this.parseConstant('YggFundRetry', { extraText: `${blockTime(this.mimir?.YGGFUNDRETRY)}, ` })
           },
           {
-            name: 'Yggdrasil funding',
-            value: this.mimir?.STOPFUNDYGGDRASI ? 'Disabled' : 'Enabled',
+            ...this.parseConstant('YggFundLimit', { filter: v => v ? 'Disabled' : 'Enabled' }),
             filter: true
           }
         ],
         [
           {
-            name: camelCase('MinimumNodesForYggdrasil'),
-            value: this.networkConst?.int_64_values?.MinimumNodesForYggdrasil
+            ...this.parseConstant('MinimumNodesForYggdrasil')
           }
         ],
         // Slashing Management
@@ -452,31 +441,24 @@ export default {
         ],
         [
           {
-            name: 'Max number of validators',
-            value: this.mimir?.DESIREDVALIDATORSET
+            ...this.parseConstant('DesiredValidatorSet', { extraText: 'Max number of validators'})
           },
           {
-            name: camelCase('FundMigrationInterval'),
-            value: this.mimir?.FUNDMIGRATIONINTERVAL,
-            extraText: blockTime(this.mimir?.FUNDMIGRATIONINTERVAL)
+            ...this.parseConstant('FundMigrationInterval')
           },
           {
-            name: camelCase('NumberOfNewNodesPerChurn'),
-            value: this.mimir?.NUMBEROFNEWNODESPERCHURN
+            ...this.parseConstant('NumberOfNewNodesPerChurn')
           },
           {
-            name: camelCase('BadValidatorRedline'),
-            value: this.mimir?.BADVALIDATORREDLINE
+            ...this.parseConstant('BadValidatorRedline')
           }
         ],
         [
           {
-            name: camelCase('OldValidatorRate'),
-            value: this.networkConst?.int_64_values?.OldValidatorRate
+            ...this.parseConstant('OldValidatorRate')
           },
           {
-            name: camelCase('LowBondValidatorRate'),
-            value: this.networkConst?.int_64_values?.LowBondValidatorRate
+            ...this.parseConstant('LowBondValidatorRate')
           }
         ]
       ]
@@ -500,10 +482,8 @@ export default {
         ],
         [
           {
-            name: camelCase('MinRunePoolDepth'),
-            value: this.mimir?.MINRUNEPOOLDEPTH / 10 ** 8,
-            usdValue: true,
-            extraText: 'Overwritten by Mimir'
+            ...this.parseConstant('MinRunePoolDepth', { filter: v => (v / 1e8) }),
+            usdValue: true
           },
           {
             name: camelCase('PoolCycle'),
