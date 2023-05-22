@@ -22,7 +22,12 @@ export default {
     prop: 'activeMode',
     event: 'update'
   },
-  props: ['activeMode', 'navItems', 'isLink', 'extraClasses', 'preText'],
+  props: ['activeMode', 'navItems', 'isLink', 'extraClasses', 'preText', 'hide'],
+  computed: {
+    filteredNav () {
+      return this.navItems.filter(n => n.hide != true)
+    }
+  },
   emits: ['update']
 }
 </script>
