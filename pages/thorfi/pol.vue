@@ -146,13 +146,6 @@ export default {
       return [
         [
           {
-            name: 'Enable POL',
-            value: this.mimir?.ENABLEPOL ? 'Yes' : 'No',
-            filter: true
-          }
-        ],
-        [
-          {
             name: 'Max Synth Utilisation per Pool',
             value: this.$options.filters.percent(this.mimir?.MAXSYNTHPERPOOLDEPTH / 1e4, 2),
             filter: true

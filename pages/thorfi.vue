@@ -26,6 +26,11 @@ export default {
         {
           link: '/thorfi/pol',
           text: 'Protocol Owned Liquidity'
+        },
+        {
+          link: '/thorfi/lending',
+          text: 'Lending',
+          hide: process.env.NETWORK === 'mainnet'
         }
       ]
     }
