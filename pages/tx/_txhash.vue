@@ -170,6 +170,7 @@ export default {
       if (this.tx.pools) {
         res.push([
           {
+            slotName: 'Pools',
             name: 'Pools',
             value: this.tx.pools.join('\n').trim(),
             filter: true

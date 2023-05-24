@@ -1,6 +1,16 @@
 <template>
   <Page>
-    <stat-table header="Overview" :table-settings="polSettings" />
+    <stat-table header="Overview" :table-settings="polSettings">
+      <template #pnl>
+        <span v-if="pnl.value" :style="{'color': pnl.isDown ? 'red':'green'}">
+          <span v-if="pnl.isDown">-</span>
+          <span v-if="!pnl.isDown">+</span>
+          {{ pnl.value | number('0,0.00') }}
+          <small>RUNE</small>
+        </span>
+        <span v-else>-</span>
+      </template>
+    </stat-table>
     <stat-table header="Mimirs" :table-settings="polMimirSettings" />
     <div class="simple-card">
       <div class="card-header">
@@ -104,20 +114,21 @@ export default {
     }
   },
   computed: {
+    pnl () {
+      const pnl = (+this.polOverview?.value - +this.polOverview?.current_deposit)
+
+      return {
+        value: pnl / 1e8,
+        name: 'Current RUNE PnL',
+        isDown: pnl <= 0
+      }
+    },
     polSettings () {
       return [
         [
           {
-            name: 'Current RUNE deposited',
-            value: this.polOverview?.current_deposit / 1e8,
-            filter: true,
-            runeValue: true
-          },
-          {
-            name: 'Current value',
-            value: this.polOverview?.value / 1e8,
-            filter: true,
-            runeValue: true
+            name: 'Current RUNE PnL',
+            slotName: 'pnl'
           },
           {
             name: 'Overall RUNE deposited',
