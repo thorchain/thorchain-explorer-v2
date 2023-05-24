@@ -2,7 +2,7 @@
   <stat-table :table-settings="state">
     <template #Balance>
       <span v-if="balance && runePrice">
-        {{ balance | number('0,0.00') }}
+        {{ balance | number('0,0.00') }} <small style="font-size: .7rem">THOR.RUNE</small>
         (<span class="value">{{ balance * runePrice | currency }}</span>)
       </span>
       <span v-else>-</span>

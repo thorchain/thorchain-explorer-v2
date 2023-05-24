@@ -232,6 +232,7 @@ export default {
       return [
         [
           {
+            slotName: 'Balance',
             name: 'Balance'
           },
           {

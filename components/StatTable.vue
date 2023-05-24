@@ -16,7 +16,7 @@
               <unknown-icon class="header-icon" v-if="colItem.extraInfo" v-tooltip="colItem.extraInfo" />
             </div>
             <div class="col-value">
-              <template v-if="!$slots[colItem.name]">
+              <template v-if="!$slots[colItem.slotName]">
                 <template v-if="colItem.filter">
                   <pre v-if="colItem.value && colItem.runeValue" class="rune-value">{{ colItem.value | number('0,0.00') }} <small>RUNE</small></pre>
                   <pre v-else-if="colItem.value !== 0">{{ colItem.value || '-' }}</pre>
@@ -34,7 +34,7 @@
                   </template>
                 </template>
               </template>
-              <slot v-else :name="colItem.name" />
+              <slot v-else :name="colItem.slotName" />
               <span v-if="colItem.value && colItem.usdValue" class="usd-value">({{ colItem.value * runePrice | currency }})</span>
               <span v-if="colItem.extraText" class="usd-value">({{ colItem.extraText }})</span>
             </div>
