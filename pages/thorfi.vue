@@ -29,8 +29,7 @@ export default {
         },
         {
           link: '/thorfi/lending',
-          text: 'Lending',
-          hide: process.env.NETWORK === 'mainnet'
+          text: 'Lending'
         }
       ]
     }
