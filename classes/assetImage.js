@@ -108,7 +108,7 @@ export const AssetImage = (assetStr) => {
         break
 
       case 'BSC':
-        if (symbol !== 'BNB') {
+        if (symbol !== 'BNB' && symbol !== 'BSC') {
           iconPath = getErcIconPath('smartchain', symbol, ticker)
         } else {
           iconPath =
