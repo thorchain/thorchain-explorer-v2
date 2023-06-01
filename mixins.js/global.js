@@ -30,6 +30,9 @@ export default {
         case 'GAIA':
           asset = 'GAIA.ATOM'
           break
+        case 'BSC':
+          asset = 'BSC.BNB'
+          break
         default:
           break
       }
