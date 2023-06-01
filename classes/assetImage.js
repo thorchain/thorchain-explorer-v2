@@ -107,6 +107,15 @@ export const AssetImage = (assetStr) => {
         }
         break
 
+      case 'BSC':
+        if (symbol !== 'BNB') {
+          iconPath = getErcIconPath('smartchain', symbol, ticker)
+        } else {
+          iconPath =
+            'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/smartchain/info/logo.png'
+        }
+        break
+
       default:
         break
     }

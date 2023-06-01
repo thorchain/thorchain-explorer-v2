@@ -8,26 +8,26 @@
 <script>
 export default {
   props: [
-    "asset",
-    "chain",
-    "height"
+    'asset',
+    'chain',
+    'height'
   ],
+  computed: {
+    heightStyle () {
+      return {
+        '--asset-height': this.height ?? '1.5rem',
+        '--asset-width': this.height ?? '1.5rem'
+      }
+    }
+  },
   methods: {
-    showChainImage() {
+    showChainImage () {
       if (this.chain) {
         return true
       } else if (this.assetToChain(this.asset) !== this.asset) {
         return true
       }
       return false
-    }
-  },
-  computed: {
-    heightStyle() {
-      return {
-        "--asset-height": this.height ?? "1.5rem",
-        "--asset-width": this.height ?? "1.5rem",
-      }
     }
   }
 }
