@@ -285,6 +285,7 @@ export default {
   },
   data () {
     return {
+      nodes: [],
       network: [],
       rune: '',
       lastblock: undefined,
@@ -323,7 +324,31 @@ export default {
       )
     },
     networkSettings () {
+      const sbn = this.nodes.filter(n => n.status === 'Active').map(e => +e.total_bond)
+        .sort((a, b) => a - b)
+
+      const totalEffectiveBond = ((sbn[Math.floor(sbn.length * 2 / 3)] * Math.floor(sbn.length * 1 / 3)) +
+       sbn.slice(0, Math.floor(sbn.length * 2 / 3)).reduce((a, c) => a + c, 0)) / 1e8
+
+      const hardCap = sbn.slice(0, Math.floor(sbn.length * 2 / 3)).reduce((a, c) => a + c, 0) / 1e8
+
       return [
+        [
+          {
+            name: 'Total Bond (Effective)',
+            value: totalEffectiveBond,
+            filter: true,
+            runeValue: true,
+            usdValue: true
+          },
+          {
+            name: 'Hard Cap',
+            value: hardCap,
+            filter: true,
+            runeValue: true,
+            usdValue: true
+          }
+        ],
         [
           {
             name: 'Bonding APY',
@@ -628,6 +653,10 @@ export default {
 
     this.$api.getNetwork().then(({ data }) => {
       this.network = data
+    })
+
+    this.$api.getNodes().then(({ data }) => {
+      this.nodes = data
     })
   },
   methods: {
