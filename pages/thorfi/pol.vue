@@ -118,7 +118,7 @@ export default {
       const pnl = (+this.polOverview?.value - +this.polOverview?.current_deposit)
 
       return {
-        value: pnl / 1e8,
+        value: Math.abs(pnl) / 1e8,
         name: 'Current RUNE PnL',
         isDown: pnl <= 0
       }
