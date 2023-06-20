@@ -15,6 +15,19 @@
         initialSortBy: {field: 'utilisation', type: 'desc'}
       }"
     >
+      <template slot="table-column" slot-scope="props">
+        <div v-if="props.column.field == 'saverPercentage'" v-tooltip="'Savers depth to the Asset Supply'" class="table-asset">
+          Saver %
+          <info-icon class="header-icon" />
+        </div>
+        <div v-else-if="props.column.field == 'utilisation'" v-tooltip="'Synth supply to the Asset Depth in pool'" class="table-asset">
+          Utilisation
+          <info-icon class="header-icon" />
+        </div>
+        <span v-else>
+          {{ props.column.label }}
+        </span>
+      </template>
       <template slot="table-row" slot-scope="props">
         <div v-if="props.column.field == 'asset'" v-tooltip="props.row.asset" class="cell-content">
           <AssetIcon :asset="props.row.asset" chain="THOR.RUNE" />
@@ -38,6 +51,14 @@
             -
           </span>
         </span>
+        <span v-else-if="props.column.field == 'utilisation'">
+          <span v-if="props.row.utilisation < (polCap * 2)">
+            {{ props.formattedRow[props.column.field] }}
+          </span>
+          <span v-else style="color: var(--primary-color)">
+            Filled
+          </span>
+        </span>
         <span v-else>
           {{ props.formattedRow[props.column.field] }}
         </span>
@@ -48,11 +69,15 @@
 
 <script>
 import { formatAsset, synthToAsset } from '~/utils'
+import InfoIcon from '~/assets/images/info.svg?inline'
 
 export default {
+  components: { InfoIcon },
   async asyncData ({ $api }) {
     const synthAssets = (await $api.getAssets().catch(e => console.error(e))).data
     const pools = (await $api.getThorPools().catch(e => console.error(e))).data
+    const { data: mimirData } = await $api.getMimir()
+    const polCap = (mimirData.POLTARGETSYNTHPERPOOLDEPTH + mimirData.POLBUFFER) / 10000
     const synthUtils = []
     for (const asset of synthAssets.supply) {
       const assetName = synthToAsset(asset.denom)
@@ -69,7 +94,7 @@ export default {
         supply: asset?.amount
       })
     }
-    return { pools, synthAssets, synthUtils }
+    return { pools, synthAssets, synthUtils, mimirData, polCap }
   },
   data () {
     return {
@@ -85,8 +110,8 @@ export default {
           formatFn: formatAsset
         },
         {
-          label: 'Saver Utilisation',
-          field: 'saverUtilisation',
+          label: 'Saver %',
+          field: 'saverPercentage',
           type: 'percentage',
           tdClass: 'mono'
         },
@@ -116,8 +141,8 @@ export default {
         this.rows.push({
           asset: asset?.asset,
           synth: asset?.synth,
-          utilisation: +asset?.synth_supply / (+asset?.asset_depth * 2),
-          saverUtilisation: +asset?.savers_depth / +asset?.supply,
+          utilisation: +asset?.synth_supply / +asset?.asset_depth,
+          saverPercentage: +asset?.savers_depth / +asset?.supply,
           supply: +asset?.supply / 10 ** 8
         })
       }
@@ -126,5 +151,12 @@ export default {
 }
 </script>
 
-<style>
+<style lang="scss">
+.header-icon {
+  margin-left: 5px;
+  height: 1rem;
+  width: 1rem;
+  fill: #606266;
+  z-index: 2;
+}
 </style>
