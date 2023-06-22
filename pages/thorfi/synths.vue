@@ -20,7 +20,7 @@
           Saver %
           <info-icon class="header-icon" />
         </div>
-        <div v-else-if="props.column.field == 'utilisation'" v-tooltip="'Synth supply to the Asset Depth in pool'" class="table-asset">
+        <div v-else-if="props.column.field == 'utilisation'" v-tooltip="`Synth supply to the Pool Depth relative to the Synth cap (${(synthCap*100).toFixed(2)}%)`" class="table-asset">
           Utilisation
           <info-icon class="header-icon" />
         </div>
@@ -52,8 +52,9 @@
           </span>
         </span>
         <span v-else-if="props.column.field == 'utilisation'">
-          <span v-if="props.row.utilisation < (polCap * 2)">
+          <span v-if="props.row.utilisation < 1">
             {{ props.formattedRow[props.column.field] }}
+            <span v-if="props.row.isPol == true" style="color: var(--primary-color)">(POL Cap)</span>
           </span>
           <span v-else style="color: var(--primary-color)">
             Filled
@@ -78,6 +79,7 @@ export default {
     const pools = (await $api.getThorPools().catch(e => console.error(e))).data
     const { data: mimirData } = await $api.getMimir()
     const polCap = (mimirData.POLTARGETSYNTHPERPOOLDEPTH + mimirData.POLBUFFER) / 10000
+    const synthCap = mimirData.MAXSYNTHPERPOOLDEPTH / 10000
     const synthUtils = []
     for (const asset of synthAssets.supply) {
       const assetName = synthToAsset(asset.denom)
@@ -94,7 +96,7 @@ export default {
         supply: asset?.amount
       })
     }
-    return { pools, synthAssets, synthUtils, mimirData, polCap }
+    return { pools, synthAssets, synthUtils, mimirData, polCap, synthCap }
   },
   data () {
     return {
@@ -141,7 +143,8 @@ export default {
         this.rows.push({
           asset: asset?.asset,
           synth: asset?.synth,
-          utilisation: +asset?.synth_supply / +asset?.asset_depth,
+          utilisation: (+asset?.synth_supply / (+asset?.asset_depth * 2)) * (1 / this.synthCap),
+          isPol: (+asset?.synth_supply / (+asset?.asset_depth * 2)) >= this.polCap,
           saverPercentage: +asset?.savers_depth / +asset?.supply,
           supply: +asset?.supply / 10 ** 8
         })
