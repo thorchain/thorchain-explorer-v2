@@ -16,7 +16,7 @@
       }"
     >
       <template slot="table-column" slot-scope="props">
-        <div v-if="props.column.field == 'saverPercentage'" v-tooltip="'Savers depth to the Asset Supply'" class="table-asset">
+        <div v-if="props.column.field == 'saverPercentage'" v-tooltip="'Savers depth to the Synth Supply'" class="table-asset">
           Saver %
           <info-icon class="header-icon" />
         </div>
@@ -87,13 +87,11 @@ export default {
       synthUtils.push({
         asset: assetName,
         synth: asset.denom,
-        amount: asset.amount,
         synth_units: pool?.synth_units,
         synth_supply: pool?.synth_supply,
         asset_depth: pool?.balance_asset,
         savers_depth: pool?.savers_depth,
-        units: pool?.pool_units,
-        supply: asset?.amount
+        units: pool?.pool_units
       })
     }
     return { pools, synthAssets, synthUtils, mimirData, polCap, synthCap }
@@ -145,8 +143,8 @@ export default {
           synth: asset?.synth,
           utilisation: (+asset?.synth_supply / (+asset?.asset_depth * 2)) * (1 / this.synthCap),
           isPol: (+asset?.synth_supply / (+asset?.asset_depth * 2)) >= this.polCap,
-          saverPercentage: +asset?.savers_depth / +asset?.supply,
-          supply: +asset?.supply / 10 ** 8
+          saverPercentage: +asset?.savers_depth / +asset?.synth_supply,
+          supply: +asset?.synth_supply / 10 ** 8
         })
       }
     }
