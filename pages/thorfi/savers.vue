@@ -218,8 +218,8 @@ export default {
         {
           name: 'APR Mean',
           value: this.$options.filters.percent(saversStat.meanAPR / this.tables.saversRows.data.length, 2),
-          change: this.$options.filters.percent((saversStat.meanAPR - oldSaversStat.meanAPR) / this.tables.saversRows.data.length, 4),
-          isDown: +saversStat.meanAPR < +oldSaversStat.meanAPR
+          // change: this.$options.filters.percent((saversStat.meanAPR - oldSaversStat.meanAPR) / this.tables.saversRows.data.length, 4),
+          // isDown: +saversStat.meanAPR < +oldSaversStat.meanAPR
         }
       ]
     },
@@ -229,7 +229,7 @@ export default {
   },
   mounted () {
     this.saverCols[5].hidden = this.networkEnv === 'stagenet'
-    this.$api.getPools().then(async ({ data }) => {
+    this.$api.getPools('7d').then(async ({ data }) => {
       const runePrice = (await this.$api.getStats()).data.runePriceUSD
       const saversExtraData = (await this.$api.getSaversExtraData()).data
       const saversOldData = (await this.$api.getOldSaversExtraData()).data
@@ -250,7 +250,7 @@ export default {
         depthToUnitsRatio: this.$options.filters.number(+p.saversDepth / +p.saversUnits, '0.00000'),
         filled: saversExtraData[p.asset]?.filled,
         saversCount: saversExtraData[p.asset]?.saversCount,
-        saverReturn: saversExtraData[p.asset]?.saverReturn,
+        saverReturn: +p.saversAPR,
         synthSupply: saversExtraData[p.asset]?.synthSupply,
         earned: saversExtraData[p.asset]?.earned,
         changes: changes[p.asset]
@@ -342,11 +342,11 @@ export default {
             isDown: (newData[asset].saversCount < (oldData[asset].saversCount ?? 0)),
             enable: (newData[asset].saversCount ?? 0) - (oldData[asset].saversCount ?? 0)
           },
-          saverReturn: {
-            value: this.percentageFormat(newData[asset].saverReturn - (oldData[asset].saverReturn ?? 0), 2),
-            isDown: (newData[asset].saverReturn < (oldData[asset].saverReturn ?? 0)),
-            enable: (newData[asset].saverReturn ?? 0) - (oldData[asset].saverReturn ?? 0)
-          },
+          // saverReturn: {
+          //   value: this.percentageFormat(newData[asset].saverReturn - (oldData[asset].saverReturn ?? 0), 2),
+          //   isDown: (newData[asset].saverReturn < (oldData[asset].saverReturn ?? 0)),
+          //   enable: (newData[asset].saverReturn ?? 0) - (oldData[asset].saverReturn ?? 0)
+          // },
           earned: {
             value: this.baseAmountFormat(oldData[asset].deltaEarned ?? 0),
             isDown: oldData[asset].deltaEarned > 0,
