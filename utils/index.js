@@ -1,5 +1,5 @@
 import { AssetCurrencySymbol, AssetRuneNative, assetToString, isSynthAsset } from '@xchainjs/xchain-util'
-import { compact } from 'lodash'
+import { compact, countBy } from 'lodash'
 import moment from 'moment'
 
 const SYNTH_DELIMITER = '/'
@@ -233,12 +233,14 @@ export function availableChains (nodes) {
 
 export function observeredChains (nodes) {
   supportedChains = availableChains(nodes)
-  const maxHeight = {}
+  const majorityHeight = {}
   for (const chain of supportedChains) {
-    maxHeight[chain] = nodes.map(item => item.observe_chains).filter(item => item !== null)
-      .map(item => item.filter(i => i.chain === chain)[0]?.height ?? 0)?.reduce((a, b) => { return Math.max(a, b) })
+    const heights = countBy(nodes.map(item => item.observe_chains).filter(item => item !== null).map(item => item.filter(i => i.chain === chain)[0]?.height ?? 0), (height) => {
+      return height
+    })
+    majorityHeight[chain] = Number(Object.keys(heights).reduce((a, b) => heights[a] > heights[b] ? a : b))
   }
-  return maxHeight
+  return majorityHeight
 }
 
 export function fillNodeData (nodes, el, chains, nodesExtra, lastBlockHeight, ratioReward, churnInterval) {
@@ -246,7 +248,7 @@ export function fillNodeData (nodes, el, chains, nodesExtra, lastBlockHeight, ra
   const chainsHeight = {}
   try {
     supportedChains.forEach((chain) => {
-      chainsHeight[chain] = (+chains[chain] - (el.observe_chains.filter(item => item?.chain === chain)[0]?.height ?? 0))
+      chainsHeight[chain] = ((el.observe_chains.filter(item => item?.chain === chain)[0]?.height ?? 0) - chains[chain])
     })
   } catch (error) {}
   let isp

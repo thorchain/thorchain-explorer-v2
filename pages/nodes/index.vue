@@ -185,8 +185,10 @@
             </span>
             <span v-else-if="props.column.field.includes('chains.')">
               <span v-if="props.formattedRow[props.column.field] == 0" style="color: #81C784;">OK</span>
-              <span v-else-if="props.formattedRow[props.column.field] < 10000" style="color: #EF5350;">-{{ props.formattedRow[props.column.field] }}</span>
-              <DangerIcon v-else v-tooltip="`-${props.formattedRow[props.column.field]}`" class="table-icon" style="fill: #EF5350;" />
+              <span v-else-if="0 < props.formattedRow[props.column.field] && props.formattedRow[props.column.field] < 10000" style="color: #FFC107;">{{ props.formattedRow[props.column.field] }}</span>
+              <span v-else-if="0 > props.formattedRow[props.column.field] && props.formattedRow[props.column.field] > -10000" style="color: #EF5350;">{{ props.formattedRow[props.column.field] }}</span>
+              <DangerIcon v-else-if="props.formattedRow[props.column.field] > 10000" v-tooltip="`${props.formattedRow[props.column.field]}`" class="table-icon" style="fill: #FFC107;" />
+              <DangerIcon v-else v-tooltip="`${props.formattedRow[props.column.field]}`" class="table-icon" style="fill: #EF5350;" />
             </span>
             <span v-else>
               {{ props.formattedRow[props.column.field] }}
