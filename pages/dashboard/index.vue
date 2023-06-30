@@ -53,7 +53,7 @@
             <circulate class="stat-image" />
             <div class="item-detail">
               <div class="header">
-                Total Circulating Volume (On Chain)
+                Total Historical Volume (On Chain)
               </div>
               <div v-if="runeVolume" class="value">
                 {{ runeVolume | number("0,0") }}
