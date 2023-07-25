@@ -157,7 +157,7 @@ export default {
           }
         ]
 
-        if (this.extraSwapDetails) {
+        if (this.extraSwapDetails && this.extraSwapDetails?.txOutDelay) {
           fields.push(
             {
               name: 'Outbound Tx Delay',
