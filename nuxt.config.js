@@ -94,6 +94,6 @@ export default {
   },
 
   env: {
-    NETWORK: process.env.NETWORK
+    NETWORK: process.env.NETWORK || 'mainnet'
   }
 }
