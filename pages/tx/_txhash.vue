@@ -7,6 +7,9 @@
           <span v-if="tx.type" class="bubble-container" style="margin-left: 0.2rem">{{ tx.type }}</span>
           <span v-if="tx.status" class="bubble-container blue" style="margin-left: 0.2rem">{{ tx.status }}</span>
           <span v-if="tx.synth" class="bubble-container yellow" style="margin-left: 0.2rem">synth</span>
+          <template v-for="(l, i) in tx.label">
+            <span :key="i" class="bubble-container" style="margin-left: 0.2rem">{{ l }}</span>
+          </template>
         </h3>
       </div>
       <div class="utility">
@@ -212,7 +215,7 @@ export default {
         ])
       }
 
-      if (this.extraSwapDetails && this.chainsHeight) {
+      if (this.extraSwapDetails && this.chainsHeight && this.extraSwapDetails?.inChain !== 'THOR') {
         let confs = 1
         if (defaultCoinBase(this.extraSwapDetails?.inChain) > 0) {
           confs = (this.tx.inout[0][0][0].asset.amount) / defaultCoinBase(this.extraSwapDetails?.inChain)
@@ -278,6 +281,21 @@ export default {
             this.loadingPercentage = 100
           })
           try {
+            if (this.tx.label.includes('streaming')) {
+              this.tx.inout = [this.tx.inout[0]]
+              const getInTx = res.data.tx.tx
+              this.tx.inout[0][0] = [{
+                asset: {
+                  amount: getInTx.coins[0].amount / 1e8,
+                  name: getInTx.coins[0].asset
+                },
+                is: getInTx.coins[0].asset,
+                address: getInTx.from_address,
+                txID: getInTx.id,
+                status: 'success',
+                type: 'swap'
+              }]
+            }
             this.extraSwapDetails = parseExtraSwap(res.data)
           } catch (error) {
             this.extraSwapDetails = undefined

@@ -173,8 +173,9 @@ export function parseMidgardTx (tx) {
   }
 
   const hasAddOrWithdraw = res.inout.find(t => !!((t[0][0].type === 'addLiquidity' || t[0][0].type === 'withdrawLiquidity')))
+  const isStreamSwap = res.type === 'swap' && res.memo.match(/.+\/\d+/g)
   // merge two txs one with affilitate fee
-  if (res.inout.length > 1 && !hasAddOrWithdraw) {
+  if (res.inout.length > 1 && !hasAddOrWithdraw && !isStreamSwap) {
     const ins = res.inout.map(e => e[0][0])
     const hash = ins.find(e => !!e.txID).txID
     if (ins.every(e => e.txID === hash)) {
@@ -188,6 +189,10 @@ export function parseMidgardTx (tx) {
         res.inout.shift()
       }
     }
+  }
+
+  if (isStreamSwap) {
+    res.label.push('streaming')
   }
 
   return res
