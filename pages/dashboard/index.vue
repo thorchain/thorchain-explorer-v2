@@ -324,13 +324,34 @@ export default {
       )
     },
     networkSettings () {
+      // From Thornode - https://gitlab.com/thorchain/thornode/-/blob/7016020ef3566e1e2855fee0a38e14fbfa069425/x/thorchain/helpers.go#L1008
+      // Refactored for readability
       const sbn = this.nodes.filter(n => n.status === 'Active').map(e => +e.total_bond)
         .sort((a, b) => a - b)
 
-      const totalEffectiveBond = ((sbn[Math.floor(sbn.length * 2 / 3)] * Math.floor(sbn.length * 1 / 3)) +
-       sbn.slice(0, Math.floor(sbn.length * 2 / 3)).reduce((a, c) => a + c, 0)) / 1e8
+      let t = (sbn.length * 2) / 3
+      if (sbn.length % 3 === 0) {
+        t -= 1
+      }
 
-      const hardCap = sbn.slice(0, Math.floor(sbn.length * 2 / 3)).reduce((a, c) => a + c, 0) / 1e8
+      const bondHardCap = sbn[t]
+
+      let totalEffectiveBond = 0
+      for (const i in sbn) {
+        let bond = sbn[i]
+        if (bond > bondHardCap) {
+          bond = bondHardCap
+        }
+
+        totalEffectiveBond += bond
+      }
+      totalEffectiveBond = totalEffectiveBond / 1e8
+
+      let totalHardCap = 0
+      for (let i = 0; i <= t; i++) {
+        totalHardCap += sbn[i]
+      }
+      totalHardCap = totalHardCap / 1e8
 
       return [
         [
@@ -343,7 +364,7 @@ export default {
           },
           {
             name: 'Hard Cap',
-            value: hardCap,
+            value: totalHardCap,
             filter: true,
             runeValue: true,
             usdValue: true
