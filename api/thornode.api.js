@@ -109,3 +109,7 @@ export function getBorrowers (pool) {
 export function getConstants () {
   return $axiosInstace.get(endpoints[process.env.NETWORK].THORNODE_URL + 'thorchain/constants')
 }
+
+export function getStreamingSwap (txid) {
+  return $axiosInstace.get(endpoints[process.env.NETWORK].THORNODE_URL + `thorchain/swap/streaming/${txid}`)
+}

@@ -66,6 +66,9 @@
           </div>
         </div>
       </div>
+      <div v-if="streamingDetail">
+        <stat-table header="Streaming Live" :table-settings="streamingDetail" />
+      </div>
       <div v-if="tx" class="extra-details">
         <stat-table :table-settings="extraDetail">
           <template #Pools>
@@ -113,6 +116,7 @@ export default {
     return {
       tx: undefined,
       extraSwapDetails: undefined,
+      streamingDetail: undefined,
       isLoading: true,
       isError: false,
       copyText: 'Copy Hash',
@@ -295,6 +299,12 @@ export default {
                 status: 'success',
                 type: 'swap'
               }]
+
+              this.updateStreamingDetail(inboundHash)
+
+              setInterval(() => {
+                this.updateStreamingDetail(inboundHash)
+              }, 10000)
             }
             this.extraSwapDetails = parseExtraSwap(res.data)
           } catch (error) {
@@ -334,6 +344,35 @@ export default {
       // Please make sure the correct transaction hash or account address is inserted.
       console.error(error)
       this.isError = true
+    }
+  },
+  methods: {
+    async updateStreamingDetail (txid) {
+      const { data: streamingDetail } = await this.$api.getStreamingSwap(txid)
+
+      if (streamingDetail) {
+        this.streamingDetail = [
+          [
+            {
+              name: 'Counts',
+              value: `${streamingDetail.count} out of ${streamingDetail.quantity}`,
+              filter: true
+            }
+          ],
+          [
+            {
+              name: 'Input',
+              value: +streamingDetail.in / 1e8,
+              extraText: this.tx.pools[0]
+            },
+            {
+              name: 'Output',
+              value: +streamingDetail.out / 1e8,
+              extraText: this.tx.pools[1]
+            }
+          ]
+        ]
+      }
     }
   }
 }
