@@ -350,7 +350,7 @@ export default {
     async updateStreamingDetail (txid) {
       const { data: streamingDetail } = await this.$api.getStreamingSwap(txid)
 
-      if (streamingDetail) {
+      if (streamingDetail && streamingDetail.count) {
         this.streamingDetail = [
           [
             {
