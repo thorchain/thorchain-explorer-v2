@@ -64,6 +64,10 @@ input {
   cursor: pointer;
 }
 
+.sec-color {
+  color: var(--sec-font-color);
+}
+
 .not-clickable {
   color: var(--sec-font-color);
   cursor: initial;

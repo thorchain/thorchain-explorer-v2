@@ -16,17 +16,16 @@
         <div class="tx-id clickable" @click="gotoTx($route.params.txhash)">
           {{ $route.params.txhash }}
         </div>
-        <div class="break" />
-        <div class="icon-wrapper" @click="copy($route.params.txhash)">
+        <div class="icon-wrapper" style="margin: 0" @click="copy($route.params.txhash)">
           <span class="icon-name">{{ copyText }}</span>
           <CopyIcon class="icon small" />
         </div>
       </div>
       <div class="tx-date">
-        {{ tx.date.toLocaleString() }} ({{ fromNow(tx.date) }})
+        <span class="sec-color">Submitted:</span> {{ tx.date.toLocaleString() }} ({{ fromNow(tx.date) }})
       </div>
       <div style="margin: .2rem 0" />
-      <div v-for="(txa, j) in tx.inout" :key="j">
+      <div v-for="(txa, j) in tx.inout" :key="j" class="tx-wrapper">
         <div v-if="tx" class="tx-container">
           <div v-for="(txs, i) in txa" :key="i" class="tx-contain">
             <div v-for="(one_tx, j) in txs" :key="j">
@@ -46,8 +45,8 @@
                     :src="assetImage(one_tx.asset.name)"
                     alt="in-coin"
                   >
-                  <span>
-                    {{ (+one_tx.asset.amount).toFixed(8) }} {{ one_tx.asset.name }}
+                  <span class="asset-text">
+                    {{ (+one_tx.asset.amount).toFixed(8) }} <span class="sec-color">{{ one_tx.asset.name }}</span>
                   </span>
                   <div v-if="checkSynth(one_tx.asset.name)" style="margin-left: .2rem" class="bubble-container yellow">
                     synth
@@ -64,6 +63,9 @@
               </template>
             </div>
           </div>
+        </div>
+        <div v-if="tx && tx.inout && tx.inout.some(t => t[1].length > 0)" class="arrow">
+          <ArrowIcon class="icon" />
         </div>
       </div>
       <div v-if="streamingDetail">
@@ -379,6 +381,19 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.tx-wrapper {
+  position: relative;
+
+  .arrow {
+    position: absolute;
+    right: calc(50% - 12px);
+    top: calc(50% - 12px);
+
+    .icon {
+      margin-right: 0;
+    }
+  }
+}
 .tx-container {
   border: 1px solid var(--border-color);
   display: flex;
@@ -387,14 +402,13 @@ export default {
   background: var(--card-bg-color);
   border-radius: 5px;
   padding: 20px;
-  gap: 10px;
+  gap: 24px;
 }
 
 .tx-contain {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  flex: 1;
 
   .asset-icon-container {
     margin: 10px 0;
@@ -454,6 +468,15 @@ export default {
 
 .utility, .tx-date, .tx-header {
   padding: 0 1rem;
+}
+
+.utility {
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.asset-text {
+  font-size: 1.1rem;
 }
 
 .tx-id {
