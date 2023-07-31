@@ -27,45 +27,47 @@
       <div style="margin: .2rem 0" />
       <div v-for="(txa, j) in tx.inout" :key="j" class="tx-wrapper">
         <div v-if="tx" class="tx-container">
-          <div v-for="(txs, i) in txa" :key="i" class="tx-contain">
-            <div v-for="(one_tx, j) in txs" :key="j">
-              <template v-if="one_tx.is">
-                <div class="txid">
-                  <div :class="['bubble-container', i?'blue':'']">
-                    {{ i?'Out':'In' }}
-                  </div>
-                  <div v-if="one_tx.status === 'pending'" :class="['bubble-container', 'blue']">
-                    pending
-                  </div>
-                  <span class="tx-hash clickable" @click="gotoTx(one_tx.txID)">{{ one_tx.txID }}</span>
-                </div>
-                <div class="asset-icon-container">
-                  <img
-                    class="asset-icon"
-                    :src="assetImage(one_tx.asset.name)"
-                    alt="in-coin"
-                  >
-                  <span class="asset-text">
-                    {{ (+one_tx.asset.amount).toFixed(8) }} <span class="sec-color">{{ one_tx.asset.name }}</span>
-                  </span>
-                  <div v-if="checkSynth(one_tx.asset.name)" style="margin-left: .2rem" class="bubble-container yellow">
-                    synth
-                  </div>
-                  <div v-if="one_tx.label" style="margin-left: .3rem" class="bubble-container">
-                    {{ one_tx.label }}
-                  </div>
-                </div>
-                <div class="address">
-                  <span v-if="one_tx.address" class="clickable" @click="gotoAddr(one_tx.address)">{{ formatAddress(one_tx.address) }}</span>
-                  <ArrowIcon v-if="one_tx.outAddress" class="icon small" />
-                  <span v-if="one_tx.outAddress" class="clickable" @click="gotoAddr(one_tx.outAddress)">{{ formatAddress(one_tx.outAddress) }}</span>
-                </div>
-              </template>
+          <template v-for="(txs, i) in txa">
+            <div v-if="i" :key="i + '-arrow'" class="arrow">
+              <ArrowIcon class="icon" />
             </div>
-          </div>
-        </div>
-        <div v-if="tx && tx.inout && tx.inout.some(t => t[1].length > 0)" class="arrow">
-          <ArrowIcon class="icon" />
+            <div :key="i" class="tx-contain">
+              <div v-for="(one_tx, j) in txs" :key="j">
+                <template v-if="one_tx.is">
+                  <div class="txid">
+                    <div :class="['bubble-container', i?'blue':'']">
+                      {{ i?'Out':'In' }}
+                    </div>
+                    <div v-if="one_tx.status === 'pending'" :class="['bubble-container', 'blue']">
+                      pending
+                    </div>
+                    <span class="tx-hash clickable" @click="gotoTx(one_tx.txID)">{{ one_tx.txID }}</span>
+                  </div>
+                  <div v-if="one_tx.asset && one_tx.asset.name" class="asset-icon-container">
+                    <img
+                      class="asset-icon"
+                      :src="assetImage(one_tx.asset.name)"
+                      alt="in-coin"
+                    >
+                    <span class="asset-text">
+                      {{ (+one_tx.asset.amount).toFixed(8) }} <span class="sec-color">{{ one_tx.asset.name }}</span>
+                    </span>
+                    <div v-if="checkSynth(one_tx.asset.name)" style="margin-left: .2rem" class="bubble-container yellow">
+                      synth
+                    </div>
+                    <div v-if="one_tx.label" style="margin-left: .3rem" class="bubble-container">
+                      {{ one_tx.label }}
+                    </div>
+                  </div>
+                  <div class="address">
+                    <span v-if="one_tx.address" class="clickable" @click="gotoAddr(one_tx.address)">{{ formatAddress(one_tx.address) }}</span>
+                    <ArrowIcon v-if="one_tx.outAddress" class="icon small" />
+                    <span v-if="one_tx.outAddress" class="clickable" @click="gotoAddr(one_tx.outAddress)">{{ formatAddress(one_tx.outAddress) }}</span>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </template>
         </div>
       </div>
       <div v-if="streamingDetail">
@@ -314,6 +316,7 @@ export default {
           }
         }
 
+        console.log(this.tx)
         this.isLoading = false
         this.loadingPercentage = 100
         return
@@ -385,12 +388,17 @@ export default {
   position: relative;
 
   .arrow {
-    position: absolute;
-    right: calc(50% - 12px);
-    top: calc(50% - 12px);
+    display: none;
+    flex: 1;
+    justify-content: center;
+    align-items: center;
 
     .icon {
       margin-right: 0;
+    }
+
+    @include md {
+      display: flex;
     }
   }
 }
@@ -402,7 +410,7 @@ export default {
   background: var(--card-bg-color);
   border-radius: 5px;
   padding: 20px;
-  gap: 24px;
+  gap: 10px;
 }
 
 .tx-contain {
@@ -411,7 +419,7 @@ export default {
   gap: 10px;
 
   .asset-icon-container {
-    margin: 10px 0;
+    margin-top: 10px;
     display: flex;
     align-items: center;
 
@@ -421,6 +429,10 @@ export default {
       text-overflow: ellipsis;
       max-width: 300px;
     }
+  }
+
+  .address {
+    margin-top: 10px;
   }
 
   .txid {

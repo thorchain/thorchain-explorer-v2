@@ -136,7 +136,7 @@ export function parseMidgardTx (tx) {
         res.synth = checkSynth(t?.coins[0]?.asset)
 
         return {
-          is: t?.coins[0]?.asset,
+          is: t?.coins[0]?.asset || t?.txID,
           address: t?.address ?? '',
           txID: t?.txID ?? '',
           asset: {
