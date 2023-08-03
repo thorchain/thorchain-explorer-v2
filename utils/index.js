@@ -115,17 +115,17 @@ function checkSynth (asset) {
 
 export function parseMidgardTx (tx) {
   // get action
-  const txAction = tx.actions[0]
+  const firstTxAction = tx.actions[0]
   const status = tx.actions.map(t => t.status)
 
   const res = {
-    type: txAction.type,
+    type: firstTxAction.type,
     inout: [],
-    date: (new Date(txAction?.date / 10 ** 6)),
-    height: txAction.height,
-    pools: txAction.pools,
+    date: (new Date(firstTxAction?.date / 10 ** 6)),
+    height: firstTxAction.height,
+    pools: firstTxAction.pools,
     status: status.includes('success') ? 'success' : status[0],
-    liqidityFee: txAction.metadata,
+    liqidityFee: firstTxAction.metadata,
     synth: false,
     label: []
   }
@@ -164,18 +164,28 @@ export function parseMidgardTx (tx) {
       })
     ]
 
+    // ignore noop txs
+    if (txa?.metadata?.swap?.memo === 'noop') {
+      return
+    }
+
     res.inout.push(insouts)
   })
 
-  if (txAction.metadata) {
-    res.gas = txAction.metadata[txAction.type]?.networkFees?.map(f => (f.amount / 10 ** 8 + ' ' + f.asset))
-    res.memo = txAction.metadata[txAction.type]?.memo
+  if (firstTxAction.metadata) {
+    res.gas = firstTxAction.metadata[firstTxAction.type]?.networkFees?.map(f => (f.amount / 10 ** 8 + ' ' + f.asset))
+    res.memo = firstTxAction.metadata[firstTxAction.type]?.memo
+    if (res.type === 'swap') {
+      const memos = tx.actions?.map(a => a.metadata?.swap?.memo)
+      res.memo = memos.find(m => m && m !== '' && m !== 'noop')
+    }
   }
 
   const hasAddOrWithdraw = res.inout.find(t => !!((t[0][0].type === 'addLiquidity' || t[0][0].type === 'withdrawLiquidity')))
   const isStreamSwap = res.type === 'swap' && res.memo.match(/.+\/\d+/g)
+  const isLoanTx = res.type === 'swap' && ['loan-', 'loan+', '$-', '$+'].includes(res.memo.split(':')[0].toLowerCase())
   // merge two txs one with affilitate fee
-  if (res.inout.length > 1 && !hasAddOrWithdraw && !isStreamSwap) {
+  if (res.inout.length > 1 && !hasAddOrWithdraw && !isStreamSwap && !isLoanTx) {
     const ins = res.inout.map(e => e[0][0])
     const hash = ins.find(e => !!e.txID).txID
     if (ins.every(e => e.txID === hash)) {
@@ -193,6 +203,10 @@ export function parseMidgardTx (tx) {
 
   if (isStreamSwap) {
     res.label.push('streaming')
+  }
+
+  if (isLoanTx) {
+    res.label.push('loan tx')
   }
 
   return res
