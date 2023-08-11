@@ -1,5 +1,5 @@
 <template>
-  <div class="progress-wrapper">
+  <div class="progress-wrapper" :style="vars">
     <div class="progress-bar" :style="{'width': width + '%', backgroundColor: color}" />
     <span v-if="extraText" class="progress-text">{{ extraText }}</span>
   </div>
@@ -7,19 +7,26 @@
 
 <script>
 export default {
-  props: ['width', 'extraText', 'color']
+  props: ['width', 'height', 'extraText', 'color'],
+  computed: {
+    vars () {
+      return {
+        '--bar-height': this.height ?? '10px'
+      }
+    }
+  }
 }
 </script>
 
 <style lang="scss">
 .progress-wrapper {
-  height: 10px;
+  height: var(--bar-height);
   border-radius: 5px;
   width: 100%;
   background-color: var(--border-color);
 
   .progress-bar {
-    height: 10px;
+    height: var(--bar-height);
     border-radius: 5px;
     width: 1%;
     background-color: var(--primary-color);
@@ -31,7 +38,7 @@ export default {
     display: flex;
     justify-content: center;
     color: var(--sec-font-color);
-    margin-top: 10px;
+    margin-top: var(--bar-height);
     font-size: .875rem;
   }
 }

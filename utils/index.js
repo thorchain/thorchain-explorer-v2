@@ -33,8 +33,8 @@ export function momentTimeFormat (time) {
 
 export function parseCosmosTx (ntx) {
   const ret = []
-  ntx.tx?.body.messages.forEach((el) => {
-    const assetName = `THOR.${el?.amount[0]?.denom}`.toLocaleUpperCase()
+  ntx.tx?.body?.messages?.forEach((el) => {
+    const assetName = `THOR.${el?.amount?.length > 0 && el.amount[0]?.denom}`.toLocaleUpperCase()
     // Send messages
     switch (el['@type']) {
       case '/types.MsgSend':
@@ -148,6 +148,10 @@ export function parseMidgardTx (tx) {
         }
       }),
       txa?.out?.map((t) => {
+        if (t?.coins.length <= 0) {
+          return {}
+        }
+
         res.synth = checkSynth(t?.coins[0]?.asset)
 
         return {
