@@ -16,8 +16,8 @@ export default {
 
 <style>
 .dot {
-  width: 1rem;
-  height: 1rem;
+  width: .7rem;
+  height: .7rem;
   background: var(--primary-color);
   border-radius: 50%;
   position: relative;

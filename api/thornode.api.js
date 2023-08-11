@@ -113,3 +113,7 @@ export function getConstants () {
 export function getStreamingSwap (txid) {
   return $axiosInstace.get(endpoints[process.env.NETWORK].THORNODE_URL + `thorchain/swap/streaming/${txid}`)
 }
+
+export function getTxStages (txid) {
+  return $axiosInstace.get(endpoints[process.env.NETWORK].THORNODE_URL + `thorchain/alpha/tx/stages/${txid}`)
+}
