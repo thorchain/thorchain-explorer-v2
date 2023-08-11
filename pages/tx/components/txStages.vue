@@ -5,7 +5,7 @@
       <dot-live />
     </div>
     <div class="card-body">
-      <div class="info-item">
+      <div v-if="outbound.is" class="info-item">
         <span>Outbound</span>
         <span>
           {{ outbound.remSeconds }}
@@ -43,6 +43,7 @@ export default {
   data () {
     return {
       outbound: {
+        is: false,
         remSeconds: 0,
         status: '',
         signedStatus: false
@@ -68,6 +69,7 @@ export default {
       }
 
       this.outbound = {
+        is: data?.inbound_observed,
         remSeconds: moment.duration(data?.outbound_delay?.remaining_delay_seconds ?? 0, 'seconds').humanize(),
         status: data?.outbound_delay?.completed ? 'Done' : 'On Going',
         signedStatus: data?.outbound_signed?.completed ? 'Signed' : 'Not Signed'
