@@ -21,7 +21,7 @@
           <CopyIcon class="icon small" />
         </div>
       </div>
-      <div class="tx-date">
+      <div v-if="tx.date" class="tx-date">
         <span class="sec-color">Submitted:</span> {{ tx.date.toLocaleString() }} ({{ fromNow(tx.date) }})
       </div>
       <div style="margin: .2rem 0" />
@@ -70,8 +70,8 @@
           </template>
         </div>
       </div>
-      <streaming-swap :inbound-hash="$route.params.txhash" :in-asset="tx.pools[0]" :out-asset="tx.pools[1]" />
-      <tx-stages :inbound-hash="$route.params.txhash" />
+      <streaming-swap v-if="txFormatted" :inbound-hash="txFormatted" :in-asset="tx.pools[0]" :out-asset="tx.pools[1]" />
+      <tx-stages v-if="txFormatted" :inbound-hash="txFormatted" />
       <div v-if="tx" class="extra-details">
         <stat-table :table-settings="extraDetail">
           <template #Pools>
@@ -109,7 +109,7 @@ import txStages from './components/txStages.vue'
 import CopyIcon from '~/assets/images/copy.svg?inline'
 import DisconnectIcon from '~/assets/images/disconnect.svg?inline'
 import ArrowIcon from '~/assets/images/arrow-small-right.svg?inline'
-import { parseCosmosTx, parseMidgardTx, parseExtraSwap, defaultCoinBase, approxBlockSeconds } from '~/utils'
+import { parseCosmosTx, parseMidgardTx, parseExtraSwap, defaultCoinBase, parseThornodeStatus, approxBlockSeconds } from '~/utils'
 
 export default {
   components: {
@@ -128,6 +128,7 @@ export default {
       copyText: 'Copy Hash',
       loadingPercentage: 0,
       progressText: '',
+      txFormatted: undefined,
       error: {
         title: 'Couldn\'t find the Transaction',
         message: 'Something bad happened.'
@@ -143,20 +144,23 @@ export default {
         return
       }
 
-      const res = [
-        [
-          {
-            name: 'Block Height',
-            value: this.tx?.height
-          },
-          {
-            name: 'Type',
-            value: this.$options.filters.capitalize(this.tx?.type),
-            filter: true
-          }
+      let res = []
+      let tmp = []
 
-        ]
-      ]
+      if (this?.tx?.height) {
+        tmp = [{
+          name: 'Block Height',
+          value: this.tx.height
+        }]
+      }
+
+      tmp.push({
+        name: 'Type',
+        value: this.$options.filters.capitalize(this.tx?.type),
+        filter: true
+      })
+
+      res = [tmp]
 
       if (this.tx.status) {
         const fields = [
@@ -262,7 +266,13 @@ export default {
     }
   },
   async mounted () {
-    const txHash = this.$route.params.txhash
+    let txHash = this.$route.params.txhash
+
+    if (txHash.toLowerCase().startsWith('0x')) {
+      txHash = txHash.slice(2)
+    }
+
+    this.txFormatted = txHash
 
     setInterval(() => {
       this.loadingPercentage = (this.loadingPercentage + 8) % 100
@@ -332,12 +342,26 @@ export default {
         return
       }
 
+      // see if this tx is an observed tx
+      res = this.$api.getTxStatus(txHash).catch((e) => {
+        if (e?.response?.status === 404) {
+          this.error.message = 'Please make sure the correct transaction hash or account address is inserted.'
+        }
+      })
+
+      if (res?.status / 200 === 1 && res.data?.inbound_observed?.started !== false) {
+        this.tx = parseThornodeStatus(res.data)
+        this.isLoading = false
+        this.loadingPercentage = 100
+        return
+      }
+
       this.progressText = '3/3'
 
       res = await this.$api.getAddress(txHash, 0).catch((e) => {})
 
       if (res.status / 200 === 1) {
-        this.$router.push({ path: `/address/${txHash}` })
+        this.$router.push({ path: `/address/${this.$route.params.txhash}` })
         return
       }
     } catch (error) {

@@ -216,6 +216,71 @@ export function parseMidgardTx (tx) {
   return res
 }
 
+const memoToType = {
+  add: 'add',
+  '+': 'add',
+  withdraw: 'withdraw',
+  wd: 'withdraw',
+  '-': 'withdraw',
+  swap: 'swap',
+  s: 'swap',
+  '=': 'swap',
+  limito: 'order',
+  lo: 'order',
+  out: 'outbound',
+  donate: 'donate',
+  d: 'donate',
+  bond: 'bond',
+  unbond: 'unbound',
+  leave: 'leave',
+  'yggdrasil+': 'YggdrasilFund',
+  'yggdrasil-': 'YggdrasilReturn',
+  reserve: 'TxReserve',
+  refund: 'refund',
+  migrate: 'migrate',
+  ragnarok: 'ragnarok',
+  switch: 'switch',
+  noop: 'noop',
+  consolidate: 'consolidate',
+  name: 'thorname',
+  n: 'thorname',
+  '~': 'thorname',
+  '$+': 'loanOpen',
+  'loan+': 'loanOpen',
+  '$-': 'loanRepayment',
+  'loan-': 'loanRepayment'
+}
+
+export function parseMemoToTxType (memo) {
+  if (!memo) {
+    return 'unknown'
+  }
+
+  const parsedMemo = memo?.toLowerCase().split(':', 2)[0]
+
+  return memoToType[parsedMemo]
+}
+
+export function parseThornodeStatus (ttx) {
+  const inboundConf = ttx?.stages?.inbound_confirmation_counted
+
+  console.log(inboundConf)
+
+  const res = {
+    type: parseMemoToTxType(ttx?.tx?.memo),
+    inout: [],
+    date: undefined,
+    height: inboundConf?.counting_start_height,
+    pools: [ttx.tx.coins[0].asset],
+    status: 'observed',
+    liqidityFee: undefined,
+    synth: assetFromString(ttx.tx.coins[0].asset).synth,
+    label: []
+  }
+
+  return res
+}
+
 export function synthToAsset (assetString) {
   let asset = assetFromString(assetString.toUpperCase())
 

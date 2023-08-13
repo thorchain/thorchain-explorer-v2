@@ -71,7 +71,7 @@ export default {
       this.outbound = {
         is: data?.outbound_signed,
         remSeconds: moment.duration(data?.outbound_delay?.remaining_delay_seconds ?? 0, 'seconds').humanize(),
-        status: data?.outbound_delay?.completed ? 'Done' : 'On Going',
+        status: data?.outbound_delay?.completed || data?.swap_finalised?.completed ? 'Done' : 'On Going',
         signedStatus: data?.outbound_signed?.completed ? 'Signed' : 'Not Signed'
       }
     }

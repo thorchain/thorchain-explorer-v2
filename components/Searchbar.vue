@@ -152,9 +152,7 @@ export default {
         search.startsWith('LTC') ||
         search.startsWith('TLTC') ||
         // COSMOS
-        search.startsWith('COSMOS') ||
-        // ETH & AVAX
-        search.startsWith('0X')
+        search.startsWith('COSMOS')
       ) {
         this.$router.push({ path: `/address/${this.searchQuery}` })
       } else {
