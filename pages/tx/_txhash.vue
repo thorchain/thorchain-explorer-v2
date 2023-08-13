@@ -329,6 +329,20 @@ export default {
 
       this.progressText = '2/3'
 
+      // see if this tx is an observed tx
+      res = await this.$api.getTxStatus(txHash).catch((e) => {
+        if (e?.response?.status === 404) {
+          this.error.message = 'Please make sure the correct transaction hash or account address is inserted.'
+        }
+      })
+
+      if (res?.status / 200 === 1 && (res.data?.inbound_observed?.started !== false || res.data?.inbound_observed?.completed === true)) {
+        this.tx = parseThornodeStatus(res.data)
+        this.isLoading = false
+        this.loadingPercentage = 100
+        return
+      }
+
       res = await this.$api.getNativeTx(txHash).catch((e) => {
         if (e?.response?.status === 404) {
           this.error.message = 'Please make sure the correct transaction hash or account address is inserted.'
@@ -337,20 +351,6 @@ export default {
 
       if (res?.status / 200 === 1) {
         this.tx = parseCosmosTx(res.data)
-        this.isLoading = false
-        this.loadingPercentage = 100
-        return
-      }
-
-      // see if this tx is an observed tx
-      res = this.$api.getTxStatus(txHash).catch((e) => {
-        if (e?.response?.status === 404) {
-          this.error.message = 'Please make sure the correct transaction hash or account address is inserted.'
-        }
-      })
-
-      if (res?.status / 200 === 1 && res.data?.inbound_observed?.started !== false) {
-        this.tx = parseThornodeStatus(res.data)
         this.isLoading = false
         this.loadingPercentage = 100
         return

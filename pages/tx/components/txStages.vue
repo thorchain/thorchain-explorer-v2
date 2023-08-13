@@ -31,6 +31,14 @@
           </div>
         </span>
       </div>
+      <div v-if="inbound.remSeconds" class="info-item">
+        <span>Inbound Confirmation remaining</span>
+        <span>
+          <div>
+            {{ moment.duration(inbound.remSeconds, 'seconds').humanize() }}
+          </div>
+        </span>
+      </div>
     </div>
   </div>
 </template>
@@ -51,7 +59,8 @@ export default {
       inbound: {
         observed: false,
         confConfirmed: false,
-        finalised: false
+        finalised: false,
+        remSeconds: 0
       }
     }
   },
@@ -65,7 +74,8 @@ export default {
       this.inbound = {
         observed: data?.inbound_observed?.completed,
         confConfirmed: data?.inbound_confirmation_counted?.completed,
-        finalised: data?.inbound_finalised?.completed
+        finalised: data?.inbound_finalised?.completed,
+        remSeconds: data?.inbound_confirmation_counted?.remaining_confirmation_seconds
       }
 
       this.outbound = {

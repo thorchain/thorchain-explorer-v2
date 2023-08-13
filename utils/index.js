@@ -263,11 +263,12 @@ export function parseMemoToTxType (memo) {
 
 export function parseThornodeStatus (ttx) {
   const inboundConf = ttx?.stages?.inbound_confirmation_counted
-
-  console.log(inboundConf)
+  const txAction = ttx?.tx
+  const outTx = ttx?.out_txs
+  const txType = parseMemoToTxType(ttx?.tx?.memo)
 
   const res = {
-    type: parseMemoToTxType(ttx?.tx?.memo),
+    type: txType,
     inout: [],
     date: undefined,
     height: inboundConf?.counting_start_height,
@@ -275,7 +276,46 @@ export function parseThornodeStatus (ttx) {
     status: 'observed',
     liqidityFee: undefined,
     synth: assetFromString(ttx.tx.coins[0].asset).synth,
-    label: []
+    label: [],
+    gas: txAction.gas.map(g => g.amount / 1e8 + ' ' + g.asset)
+  }
+
+  res.inout = [
+    [
+      [
+        {
+          is: txAction?.coins[0]?.asset,
+          address: txAction?.from_address ?? '',
+          txID: txAction?.id === '0000000000000000000000000000000000000000000000000000000000000000' ? '' : txAction?.id,
+          asset: {
+            name: txAction?.coins[0]?.asset,
+            amount: txAction?.coins[0]?.amount / 10 ** 8
+          },
+          status: 'Success',
+          type: txType
+        }
+      ]
+    ]
+  ]
+
+  if (outTx && outTx.length > 0) {
+    const ts = []
+    outTx.forEach((t) => {
+      ts.push(
+        {
+          is: t?.coins[0]?.asset,
+          address: t?.to_address ?? '',
+          txID: t?.id ?? '',
+          asset: {
+            name: t?.coins[0]?.asset,
+            amount: t?.coins[0]?.amount / 10 ** 8
+          },
+          status: 'Success',
+          type: txType
+        })
+    })
+
+    res.inout[0].push(ts)
   }
 
   return res
