@@ -266,111 +266,140 @@ export default {
     }
   },
   async mounted () {
-    let txHash = this.$route.params.txhash
+    await this.updateTx()
 
-    if (txHash.toLowerCase().startsWith('0x')) {
-      txHash = txHash.slice(2)
-    }
-
-    this.txFormatted = txHash
-
-    setInterval(() => {
-      this.loadingPercentage = (this.loadingPercentage + 8) % 100
-    }, 700)
-
-    try {
-      let res
-
-      // Searching midgard database
-      this.progressText = '1/3'
-
-      res = await this.$api.getTx(txHash).catch((e) => {
-        if (e?.response?.status === 404) {
-          this.error.message = 'Please make sure the correct transaction hash or account address is inserted.'
-        }
-      })
-
-      if (res?.status / 200 === 1 && res.data.count !== '0') {
-        this.tx = parseMidgardTx(res.data)
-
-        // parse extra fees and details from thornode
-        if (this.tx.type === 'swap') {
-          const inboundHash = this.tx?.inout[0][0][0].txID
-          res = await this.$api.getThornodeDetailTx(inboundHash).catch((e) => {
-            this.isLoading = false
-            this.loadingPercentage = 100
-          })
-          try {
-            if (this.tx.label.includes('streaming')) {
-              this.tx.inout = [this.tx.inout[0]]
-              const getInTx = res.data.tx.tx
-              this.tx.inout[0][0] = [{
-                asset: {
-                  amount: getInTx.coins[0].amount / 1e8,
-                  name: getInTx.coins[0].asset
-                },
-                is: getInTx.coins[0].asset,
-                address: getInTx.from_address,
-                txID: getInTx.id,
-                status: 'success',
-                type: 'swap'
-              }]
-            }
-            this.extraSwapDetails = parseExtraSwap(res.data)
-          } catch (error) {
-            this.extraSwapDetails = undefined
-          }
-        }
-
-        this.isLoading = false
-        this.loadingPercentage = 100
-        return
-      }
-
-      this.progressText = '2/3'
-
-      // see if this tx is an observed tx
-      res = await this.$api.getTxStatus(txHash).catch((e) => {
-        if (e?.response?.status === 404) {
-          this.error.message = 'Please make sure the correct transaction hash or account address is inserted.'
-        }
-      })
-
-      if (res?.status / 200 === 1 && (res.data?.inbound_observed?.started !== false || res.data?.inbound_observed?.completed === true)) {
-        this.tx = parseThornodeStatus(res.data)
-        this.isLoading = false
-        this.loadingPercentage = 100
-        return
-      }
-
-      res = await this.$api.getNativeTx(txHash).catch((e) => {
-        if (e?.response?.status === 404) {
-          this.error.message = 'Please make sure the correct transaction hash or account address is inserted.'
-        }
-      })
-
-      if (res?.status / 200 === 1) {
-        this.tx = parseCosmosTx(res.data)
-        this.isLoading = false
-        this.loadingPercentage = 100
-        return
-      }
-
-      this.progressText = '3/3'
-
-      res = await this.$api.getAddress(txHash, 0).catch((e) => {})
-
-      if (res.status / 200 === 1) {
-        this.$router.push({ path: `/address/${this.$route.params.txhash}` })
-        return
-      }
-    } catch (error) {
-      // Please make sure the correct transaction hash or account address is inserted.
-      console.error(error)
-      this.isError = true
+    // if has no outbound
+    if (this.tx?.status === 'pending') {
+      const inter = setInterval(() => {
+        this.updateTx()
+        console.log(this.tx.status)
+        clearInterval(inter)
+      }, 10000)
     }
   },
   methods: {
+    async updateTx () {
+      let txHash = this.$route.params.txhash
+
+      if (txHash.toLowerCase().startsWith('0x')) {
+        txHash = txHash.slice(2)
+      }
+
+      this.txFormatted = txHash
+
+      setInterval(() => {
+        this.loadingPercentage = (this.loadingPercentage + 8) % 100
+      }, 700)
+
+      try {
+        let res
+
+        // Searching midgard database
+        this.progressText = '1/3'
+
+        res = await this.$api.getTx(txHash).catch((e) => {
+          if (e?.response?.status === 404) {
+            this.error.message = 'Please make sure the correct transaction hash or account address is inserted.'
+          }
+        })
+
+        if (res?.status / 200 === 1 && res.data.count !== '0') {
+          this.tx = parseMidgardTx(res.data)
+
+          // parse extra fees and details from thornode
+          if (this.tx.type === 'swap') {
+            const inboundHash = this.tx?.inout[0][0][0].txID
+            res = await this.$api.getThornodeDetailTx(inboundHash).catch((e) => {
+              this.isLoading = false
+              this.loadingPercentage = 100
+            })
+
+            const outTxs = this.tx?.inout.map(a => a[1].length > 0)
+            if (outTxs && outTxs.length > 0 && outTxs.every(a => a === false) && res.data?.out_txs?.length > 0) {
+              this.tx.inout[0][1] =
+        res.data?.out_txs.map(t => ({
+          is: t.coins[0]?.asset,
+          address: t?.to_address ?? '',
+          txID: t?.id ?? '',
+          asset: {
+            name: t?.coins[0]?.asset,
+            amount: t?.coins[0]?.amount / 10 ** 8
+          },
+          status: 'success',
+          type: 'swap'
+        }))
+            }
+
+            try {
+              if (this.tx.label.includes('streaming')) {
+                this.tx.inout = [this.tx.inout[0]]
+                const getInTx = res.data.tx.tx
+                this.tx.inout[0][0] = [{
+                  asset: {
+                    amount: getInTx.coins[0].amount / 1e8,
+                    name: getInTx.coins[0].asset
+                  },
+                  is: getInTx.coins[0].asset,
+                  address: getInTx.from_address,
+                  txID: getInTx.id,
+                  status: 'success',
+                  type: 'swap'
+                }]
+              }
+              this.extraSwapDetails = parseExtraSwap(res.data)
+            } catch (error) {
+              this.extraSwapDetails = undefined
+            }
+          }
+
+          this.isLoading = false
+          this.loadingPercentage = 100
+          return
+        }
+
+        this.progressText = '2/3'
+
+        // see if this tx is an observed tx
+        res = await this.$api.getTxStatus(txHash).catch((e) => {
+          if (e?.response?.status === 404) {
+            this.error.message = 'Please make sure the correct transaction hash or account address is inserted.'
+          }
+        })
+
+        if (res?.status / 200 === 1 && (res.data?.inbound_observed?.started !== false || res.data?.inbound_observed?.completed === true)) {
+          this.tx = parseThornodeStatus(res.data)
+          this.isLoading = false
+          this.loadingPercentage = 100
+          return
+        }
+
+        res = await this.$api.getNativeTx(txHash).catch((e) => {
+          if (e?.response?.status === 404) {
+            this.error.message = 'Please make sure the correct transaction hash or account address is inserted.'
+          }
+        })
+
+        if (res?.status / 200 === 1) {
+          this.tx = parseCosmosTx(res.data)
+          this.isLoading = false
+          this.loadingPercentage = 100
+          return
+        }
+
+        this.progressText = '3/3'
+
+        res = await this.$api.getAddress(txHash, 0).catch((e) => {})
+
+        if (res.status / 200 === 1) {
+          this.$router.push({ path: `/address/${this.$route.params.txhash}` })
+          return
+        }
+      } catch (error) {
+        // Please make sure the correct transaction hash or account address is inserted.
+        console.error(error)
+        this.isError = true
+      }
+    }
   }
 }
 </script>

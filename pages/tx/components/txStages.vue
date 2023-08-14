@@ -12,7 +12,7 @@
           <div :class="['mini-bubble', {'yellow': outbound.signedStatus === 'Not Signed'}]">
             {{ outbound.signedStatus }}
           </div>
-          <div :class="['mini-bubble', {'yellow': outbound.status === 'On Going'}]">
+          <div v-if="outbound.status !== ''" :class="['mini-bubble', {'yellow': outbound.status === 'On Going'}]">
             {{ outbound.status }}
           </div>
         </span>
@@ -35,7 +35,17 @@
         <span>Inbound Confirmation remaining</span>
         <span>
           <div>
-            {{ moment.duration(inbound.remSeconds, 'seconds').humanize() }}
+            {{ inbound.remSecondsFiltered }}
+          </div>
+        </span>
+      </div>
+      <div v-if="outbound.outboundHeight" class="info-item">
+        <span>Outbound Scheduled Height</span>
+        <span>
+          <div>
+            {{ $options.filters.number(outbound.outboundHeight, '0,0') }}
+            <small v-if="outbound.remOutboundHeight > 0"> ({{ outbound.remOutboundHeight }} Block Remained)</small>
+            <small style="color: var(--font-color);" v-if="outbound.remOutboundHeight > 0"> {{ outbound.remOutSeconds }}</small>
           </div>
         </span>
       </div>
@@ -45,6 +55,7 @@
 
 <script>
 import moment from 'moment'
+import { mapGetters } from 'vuex'
 
 export default {
   props: ['inboundHash'],
@@ -54,18 +65,31 @@ export default {
         is: false,
         remSeconds: 0,
         status: '',
-        signedStatus: false
+        signedStatus: false,
+        outboundHeight: undefined,
+        remOutboundHeight: 0,
+        remOutSeconds: 0
       },
       inbound: {
         observed: false,
         confConfirmed: false,
         finalised: false,
-        remSeconds: 0
+        remSeconds: 0,
+        remSecondsFiltered: undefined
       }
     }
   },
+  computed: {
+    ...mapGetters({
+      chainsHeight: 'getChainsHeight'
+    })
+  },
   mounted () {
     this.updateTxStages(this.inboundHash)
+
+    setInterval(() => {
+      this.updateTxStages(this.inboundHash)
+    }, 10000)
   },
   methods: {
     async updateTxStages (inTx) {
@@ -78,12 +102,27 @@ export default {
         remSeconds: data?.inbound_confirmation_counted?.remaining_confirmation_seconds
       }
 
+      if (this.inbound.remSeconds) {
+        this.inbound.remSecondsFiltered = moment.duration(this.inbound.remSeconds, 'seconds').humanize()
+      }
+
       this.outbound = {
         is: data?.outbound_signed,
         remSeconds: moment.duration(data?.outbound_delay?.remaining_delay_seconds ?? 0, 'seconds').humanize(),
-        status: data?.outbound_delay?.completed || data?.swap_finalised?.completed ? 'Done' : 'On Going',
+        outboundHeight: data?.outbound_signed?.scheduled_outbound_height,
+        remOutboundHeight: data?.outbound_signed?.scheduled_outbound_height - this.chainsHeight?.THOR,
         signedStatus: data?.outbound_signed?.completed ? 'Signed' : 'Not Signed'
       }
+
+      if (data?.outbound_delay?.completed === true || data?.swap_finalised?.completed === true) {
+        this.outbound.status = 'Done'
+      } else if (data?.outbound_delay?.completed === false || data?.swap_finalised?.completed === false) {
+        this.outbound.status = 'On Going'
+      } else {
+        this.outbound.status = ''
+      }
+
+      this.outbound.remOutSeconds = moment.duration(this.outbound.remOutboundHeight * 5.5, 'seconds').humanize()
     }
   }
 }

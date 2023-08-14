@@ -273,11 +273,11 @@ export function parseThornodeStatus (ttx) {
     date: undefined,
     height: inboundConf?.counting_start_height,
     pools: [ttx.tx.coins[0].asset],
-    status: 'observed',
+    status: 'pending',
     liqidityFee: undefined,
     synth: assetFromString(ttx.tx.coins[0].asset).synth,
     label: [],
-    gas: txAction.gas.map(g => g.amount / 1e8 + ' ' + g.asset)
+    gas: txAction?.gas?.map(g => g.amount / 1e8 + ' ' + g.asset)
   }
 
   res.inout = [
