@@ -39,6 +39,13 @@
           </div>
         </span>
       </div>
+      <div v-if="inbound.remainingExtConf" class="info-item">
+        <span>Confirmation External Height Delay</span>
+        <span>
+          {{ $options.filters.number(inbound.remainingExtConf, '0,0') }} Blocks
+          <small v-if="inbound.obsExtHeight && inbound.obsExtDelay" style="color: var(--font-color);">({{  $options.filters.number(inbound.obsExtHeight, '0,0') }} → {{  $options.filters.number(inbound.obsExtDelay, '0,0') }})</small>
+        </span>
+      </div>
       <div v-if="outbound.outboundHeight" class="info-item">
         <span>Outbound Scheduled Height</span>
         <span>
@@ -100,6 +107,12 @@ export default {
         confConfirmed: data?.inbound_confirmation_counted?.completed,
         finalised: data?.inbound_finalised?.completed,
         remSeconds: data?.inbound_confirmation_counted?.remaining_confirmation_seconds
+      }
+
+      if (data.inbound_confirmation_counted?.external_observed_height && data.inbound_confirmation_counted?.external_confirmation_delay_height) {
+        this.inbound.remainingExtConf = data.inbound_confirmation_counted?.external_confirmation_delay_height - data.inbound_confirmation_counted?.external_observed_height
+        this.inbound.obsExtHeight = data.inbound_confirmation_counted?.external_observed_height
+        this.inbound.obsExtDelay = data.inbound_confirmation_counted?.external_confirmation_delay_height
       }
 
       if (this.inbound.remSeconds) {

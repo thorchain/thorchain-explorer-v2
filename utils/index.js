@@ -277,6 +277,7 @@ export function parseThornodeStatus (ttx) {
     liqidityFee: undefined,
     synth: assetFromString(ttx.tx.coins[0].asset).synth,
     label: [],
+    memo: txAction.memo,
     gas: txAction?.gas?.map(g => g.amount / 1e8 + ' ' + g.asset)
   }
 

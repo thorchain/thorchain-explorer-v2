@@ -270,10 +270,11 @@ export default {
 
     // if has no outbound
     if (this.tx?.status === 'pending') {
-      const inter = setInterval(() => {
-        this.updateTx()
-        console.log(this.tx.status)
-        clearInterval(inter)
+      const inter = setInterval(async () => {
+        await this.updateTx()
+        if (this.tx?.status !== 'pending') {
+          clearInterval(inter)
+        }
       }, 10000)
     }
   },
@@ -317,17 +318,17 @@ export default {
             const outTxs = this.tx?.inout.map(a => a[1].length > 0)
             if (outTxs && outTxs.length > 0 && outTxs.every(a => a === false) && res.data?.out_txs?.length > 0) {
               this.tx.inout[0][1] =
-        res.data?.out_txs.map(t => ({
-          is: t.coins[0]?.asset,
-          address: t?.to_address ?? '',
-          txID: t?.id ?? '',
-          asset: {
-            name: t?.coins[0]?.asset,
-            amount: t?.coins[0]?.amount / 10 ** 8
-          },
-          status: 'success',
-          type: 'swap'
-        }))
+              res.data?.out_txs.map(t => ({
+                is: t.coins[0]?.asset,
+                address: t?.to_address ?? '',
+                txID: t?.id ?? '',
+                asset: {
+                  name: t?.coins[0]?.asset,
+                  amount: t?.coins[0]?.amount / 10 ** 8
+                },
+                status: 'success',
+                type: 'swap'
+              }))
             }
 
             try {
