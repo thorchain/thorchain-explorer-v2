@@ -229,28 +229,29 @@ export default {
         ])
       }
 
-      if (this.extraSwapDetails && this.chainsHeight && this.extraSwapDetails?.inChain !== 'THOR') {
-        let confs = 1
-        if (defaultCoinBase(this.extraSwapDetails?.inChain) > 0) {
-          confs = (this.tx.inout[0][0][0].asset.amount) / defaultCoinBase(this.extraSwapDetails?.inChain)
-          confs = Math.ceil(confs)
-        }
-        const filtered = this.$options.filters.number((this.chainsHeight[this.extraSwapDetails?.inChain] - this.extraSwapDetails?.inboundHeight), '0,0')
-        const filteredDelay = moment.duration(confs * approxBlockSeconds(this.extraSwapDetails?.inChain), 'seconds').humanize()
+      // disable this for now
+      // if (this.extraSwapDetails && this.chainsHeight && this.extraSwapDetails?.inChain !== 'THOR') {
+      //   let confs = 1
+      //   if (defaultCoinBase(this.extraSwapDetails?.inChain) > 0) {
+      //     confs = (this.tx.inout[0][0][0].asset.amount) / defaultCoinBase(this.extraSwapDetails?.inChain)
+      //     confs = Math.ceil(confs)
+      //   }
+      //   const filtered = this.$options.filters.number((this.chainsHeight[this.extraSwapDetails?.inChain] - this.extraSwapDetails?.inboundHeight), '0,0')
+      //   const filteredDelay = moment.duration(confs * approxBlockSeconds(this.extraSwapDetails?.inChain), 'seconds').humanize()
 
-        res.push([
-          {
-            name: 'Est Inbound Confirms needed / Confirmed',
-            value: confs + ' / ' + filtered,
-            filter: true
-          },
-          {
-            name: 'Est Inbound Delay',
-            value: filteredDelay,
-            filter: true
-          }
-        ])
-      }
+      //   res.push([
+      //     {
+      //       name: 'Est Inbound Confirms needed / Confirmed',
+      //       value: confs + ' / ' + filtered,
+      //       filter: true
+      //     },
+      //     {
+      //       name: 'Est Inbound Delay',
+      //       value: filteredDelay,
+      //       filter: true
+      //     }
+      //   ])
+      // }
 
       if (this.tx.memo) {
         res.push([
