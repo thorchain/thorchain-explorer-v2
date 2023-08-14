@@ -42,6 +42,7 @@
       <div v-if="inbound.remainingExtConf" class="info-item">
         <span>Confirmation External Height Delay</span>
         <span>
+          {{ $options.filters.number(inbound.remBlocks, '0,0') }} /
           {{ $options.filters.number(inbound.remainingExtConf, '0,0') }} Blocks
           <small v-if="inbound.obsExtHeight && inbound.obsExtDelay" style="color: var(--font-color);">({{  $options.filters.number(inbound.obsExtHeight, '0,0') }} → {{  $options.filters.number(inbound.obsExtDelay, '0,0') }})</small>
         </span>
@@ -102,6 +103,7 @@ export default {
     async updateTxStages (inTx) {
       const { data } = await this.$api.getTxStages(inTx)
 
+      // get inbound data
       this.inbound = {
         observed: data?.inbound_observed?.completed,
         confConfirmed: data?.inbound_confirmation_counted?.completed,
@@ -113,6 +115,7 @@ export default {
         this.inbound.remainingExtConf = data.inbound_confirmation_counted?.external_confirmation_delay_height - data.inbound_confirmation_counted?.external_observed_height
         this.inbound.obsExtHeight = data.inbound_confirmation_counted?.external_observed_height
         this.inbound.obsExtDelay = data.inbound_confirmation_counted?.external_confirmation_delay_height
+        this.inbound.remBlocks = this.chainsHeight[data.inbound_confirmation_counted.chain] - data.inbound_confirmation_counted?.external_observed_height
       }
 
       if (this.inbound.remSeconds) {
