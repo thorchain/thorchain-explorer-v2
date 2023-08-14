@@ -215,7 +215,7 @@ export default {
           },
           {
             name: 'Liquidity Fee',
-            value: this.tx.liqidityFee.swap.liquidityFee / 1e8 + ' THOR.RUNE',
+            value: (this.tx?.liqidityFee?.swap ?? 0) && this.tx.liqidityFee.swap.liquidityFee / 1e8 + ' THOR.RUNE',
             filter: true
           }
         ])
@@ -275,7 +275,7 @@ export default {
         if (this.tx?.status !== 'pending') {
           clearInterval(inter)
         }
-      }, 10000)
+      }, 60000)
     }
   },
   methods: {
