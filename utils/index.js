@@ -265,6 +265,7 @@ export function parseThornodeStatus (ttx) {
   const inboundConf = ttx?.stages?.inbound_confirmation_counted
   const txAction = ttx?.tx
   const outTx = ttx?.out_txs
+  const plannedTx = ttx?.planned_out_txs
   const txType = parseMemoToTxType(ttx?.tx?.memo)
 
   const res = {
@@ -312,6 +313,24 @@ export function parseThornodeStatus (ttx) {
             amount: t?.coins[0]?.amount / 10 ** 8
           },
           status: 'Success',
+          type: txType
+        })
+    })
+
+    res.inout[0].push(ts)
+  } else if (plannedTx && plannedTx.length > 0) {
+    const ts = []
+    plannedTx.forEach((t) => {
+      ts.push(
+        {
+          is: t?.coin?.asset,
+          address: t?.to_address ?? '',
+          txID: '',
+          asset: {
+            name: t?.coin?.asset,
+            amount: t?.coin?.amount / 10 ** 8
+          },
+          status: 'pending',
           type: txType
         })
     })

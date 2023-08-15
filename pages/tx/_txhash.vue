@@ -352,6 +352,16 @@ export default {
             } catch (error) {
               this.extraSwapDetails = undefined
             }
+
+            const resStatus = await this.$api.getTxStatus(txHash).catch((e) => {
+              if (e?.response?.status === 404) {
+                this.error.message = 'Please make sure the correct transaction hash or account address is inserted.'
+              }
+            })
+
+            if (resStatus?.status / 200 === 1 && (resStatus.data?.stages.outbound_signed?.completed === false)) {
+              this.tx.inout[0][1] = parseThornodeStatus(resStatus.data).inout[0][1]
+            }
           }
 
           this.isLoading = false
@@ -368,7 +378,7 @@ export default {
           }
         })
 
-        if (res?.status / 200 === 1 && (res.data?.inbound_observed?.started !== false || res.data?.inbound_observed?.completed === true)) {
+        if (res?.status / 200 === 1 && (res.data?.inbound_observed?.started !== false || res.data?.inbound_observed?.completed === true || res.data?.outbound_signed?.completed === false)) {
           this.tx = parseThornodeStatus(res.data)
           this.isLoading = false
           this.loadingPercentage = 100
