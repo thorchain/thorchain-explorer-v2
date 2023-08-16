@@ -70,7 +70,7 @@
           </template>
         </div>
       </div>
-      <streaming-swap v-if="txFormatted" :inbound-hash="txFormatted" :in-asset="tx.pools[0]" :out-asset="tx.pools[1]" />
+      <streaming-swap v-if="txFormatted" :inbound-hash="txFormatted" :tx="tx" />
       <tx-stages v-if="txFormatted" :inbound-hash="txFormatted" />
       <div v-if="tx" class="extra-details">
         <stat-table :table-settings="extraDetail">
@@ -109,7 +109,7 @@ import txStages from './components/txStages.vue'
 import CopyIcon from '~/assets/images/copy.svg?inline'
 import DisconnectIcon from '~/assets/images/disconnect.svg?inline'
 import ArrowIcon from '~/assets/images/arrow-small-right.svg?inline'
-import { parseCosmosTx, parseMidgardTx, parseExtraSwap, defaultCoinBase, parseThornodeStatus, approxBlockSeconds } from '~/utils'
+import { parseCosmosTx, parseMidgardTx, parseExtraSwap, parseThornodeStatus, shortAssetName } from '~/utils'
 
 export default {
   components: {
@@ -361,6 +361,12 @@ export default {
 
             if (resStatus?.status / 200 === 1 && (resStatus.data?.stages.outbound_signed?.completed === false)) {
               this.tx.inout[0][1] = parseThornodeStatus(resStatus.data).inout[0][1]
+            }
+
+            if (!this.tx.outAsset) {
+              const m = this.tx.memo.split(':', 3)[1]
+
+              this.tx.outAsset = shortAssetName(m)
             }
           }
 

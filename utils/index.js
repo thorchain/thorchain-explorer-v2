@@ -127,13 +127,19 @@ export function parseMidgardTx (tx) {
     status: status.includes('success') ? 'success' : status[0],
     liqidityFee: firstTxAction.metadata,
     synth: false,
-    label: []
+    label: [],
+    inAsset: '',
+    outAsset: ''
   }
 
   tx.actions.forEach((txa, i) => {
     const insouts = [
       txa?.in?.map((t) => {
         res.synth = checkSynth(t?.coins[0]?.asset)
+
+        if (t?.coins && t.coins.length > 0) {
+          res.inAsset = t.coins[0].asset
+        }
 
         return {
           is: t?.coins[0]?.asset || t?.txID,
@@ -153,6 +159,10 @@ export function parseMidgardTx (tx) {
         }
 
         res.synth = checkSynth(t?.coins[0]?.asset)
+
+        if (t?.coins && t.coins.length > 0) {
+          res.outAsset = t.coins[0].asset
+        }
 
         return {
           is: t.coins[0]?.asset,
@@ -279,7 +289,9 @@ export function parseThornodeStatus (ttx) {
     synth: assetFromString(ttx.tx.coins[0].asset).synth,
     label: [],
     memo: txAction.memo,
-    gas: txAction?.gas?.map(g => g.amount / 1e8 + ' ' + g.asset)
+    gas: txAction?.gas?.map(g => g.amount / 1e8 + ' ' + g.asset),
+    inAsset: ttx.tx.coins[0].asset,
+    outAsset: ''
   }
 
   res.inout = [
@@ -314,9 +326,11 @@ export function parseThornodeStatus (ttx) {
           },
           status: 'Success',
           type: txType
-        })
-    })
+        }
+      )
 
+      res.outAsset = t?.coin?.asset
+    })
     res.inout[0].push(ts)
   } else if (plannedTx && plannedTx.length > 0) {
     const ts = []
@@ -332,7 +346,10 @@ export function parseThornodeStatus (ttx) {
           },
           status: 'pending',
           type: txType
-        })
+        }
+      )
+
+      res.outAsset = t?.coin?.asset
     })
 
     res.inout[0].push(ts)
@@ -478,6 +495,27 @@ export function approxBlockSeconds (chain) {
     default:
       return 0
   }
+}
+
+const hashMapShorts = {
+  a: 'AVAX.AVAX',
+  b: 'BTC.BTC',
+  c: 'BCH.BCH',
+  n: 'BNB.BNB',
+  d: 'BSC.BNB',
+  s: 'DOGE.DOGE',
+  e: 'ETH.ETH',
+  g: 'GAIA.ATOM',
+  l: 'LTC.LTC',
+  r: 'THOR.RUNE'
+}
+
+export function shortAssetName (name) {
+  if (name.length !== 1) {
+    return name
+  }
+
+  return hashMapShorts[name] || name
 }
 
 export function assetFromString (s) {

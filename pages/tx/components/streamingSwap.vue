@@ -80,7 +80,7 @@ import moment from 'moment'
 import { assetFromString } from '@xchainjs/xchain-util'
 
 export default {
-  props: ['inboundHash', 'inAsset', 'outAsset'],
+  props: ['inboundHash', 'tx'],
   data () {
     return {
       streamingDetail: {
@@ -131,8 +131,13 @@ export default {
           this.streamingDetail.tradeTarget = 0
         }
 
-        this.streamingDetail.depositedAsset = assetFromString(this.inAsset)?.ticker ?? ''
-        this.streamingDetail.targetAsset = assetFromString(this.outAsset)?.ticker ?? ''
+        if (this.tx?.inAsset && this.tx?.outAsset) {
+          this.streamingDetail.depositedAsset = assetFromString(this.tx.inAsset)?.ticker ?? ''
+          this.streamingDetail.targetAsset = assetFromString(this.tx.outAsset)?.ticker ?? ''
+        } else {
+          this.streamingDetail.depositedAsset = ''
+          this.streamingDetail.targetAsset = ''
+        }
 
         if (data.deposit) {
           this.streamingDetail.depositedAmt = this.$options.filters.number(+data.deposit / 1e8, '0,0.00')
