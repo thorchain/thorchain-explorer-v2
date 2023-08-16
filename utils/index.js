@@ -183,6 +183,11 @@ export function parseMidgardTx (tx) {
       return
     }
 
+    if (firstTxAction.pools.length > 1) {
+      res.inAsset = firstTxAction.pools[0]
+      res.outAsset = firstTxAction.pools[1]
+    }
+
     res.inout.push(insouts)
   })
 
