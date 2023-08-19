@@ -317,9 +317,9 @@ export default {
     },
     runeVolume () {
       return (
-        (+this.stats.swapVolume +
-          +this.stats.withdrawVolume +
-          +this.stats.addLiquidityVolume) /
+        (+this.stats?.swapVolume +
+          +this.stats?.withdrawVolume +
+          +this.stats?.addLiquidityVolume) /
         10 ** 8
       )
     },
@@ -498,7 +498,7 @@ export default {
         [
           {
             name: 'Swap Volume',
-            value: this.stats.swapVolume / 10 ** 8 ?? 0,
+            value: this.stats?.swapVolume / 10 ** 8 ?? 0,
             usdValue: true
           },
           {
@@ -550,6 +550,10 @@ export default {
     this.$api
       .getDashboardData()
       .then(({ data }) => {
+        if (!data) {
+          throw new Error('Cant read the data')
+        }
+
         this.stats = data?.stats
         this.runeSupply = +data?.runeSupply?.amount?.amount / 10 ** 8
         this.lastblock = data?.lastBlockHeight
@@ -616,6 +620,10 @@ export default {
     this.$api
       .getDashboardPlots()
       .then(({ data }) => {
+        if (!data) {
+          throw new Error('Cant read the data')
+        }
+
         this.volumeHistory = this.formatLPChange(data?.LPChange);
         ({ resVolume: this.swapHistory, resCount: this.swapHistoryCount } = this.formatSwap(data?.swaps))
         this.earningsHistory = this.formatEarnings(data?.earning)
@@ -768,14 +776,14 @@ export default {
             Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
           ).format('MM/DD')
         )
-        swapVolume.total.push(
+        swapVolume?.total.push(
           (+interval.totalVolume / 10 ** 8) *
           Number.parseFloat(interval.runePriceUSD)
         )
-        swapVolume.toAsset.push((+interval.toAssetVolume * +interval.runePriceUSD) / 10 ** 8)
-        swapVolume.toRune.push((+interval.toRuneVolume * +interval.runePriceUSD) / 10 ** 8)
-        swapVolume.synthMint.push((+interval.synthMintVolume * +interval.runePriceUSD) / 10 ** 8)
-        swapVolume.synthRedeem.push((+interval.synthRedeemVolume * +interval.runePriceUSD) / 10 ** 8)
+        swapVolume?.toAsset.push((+interval.toAssetVolume * +interval.runePriceUSD) / 10 ** 8)
+        swapVolume?.toRune.push((+interval.toRuneVolume * +interval.runePriceUSD) / 10 ** 8)
+        swapVolume?.synthMint.push((+interval.synthMintVolume * +interval.runePriceUSD) / 10 ** 8)
+        swapVolume?.synthRedeem.push((+interval.synthRedeemVolume * +interval.runePriceUSD) / 10 ** 8)
 
         swapCount.synthRedeem.push((+interval.synthRedeemCount))
         swapCount.toAsset.push((+interval.toAssetCount))
@@ -791,35 +799,35 @@ export default {
             type: 'bar',
             name: 'Total Volume',
             showSymbol: false,
-            data: swapVolume.total,
+            data: swapVolume?.total,
             smooth: true
           },
           {
             type: 'bar',
             name: 'to Asset Volume',
             showSymbol: false,
-            data: swapVolume.toAsset,
+            data: swapVolume?.toAsset,
             smooth: true
           },
           {
             type: 'bar',
             name: 'to Rune Volume',
             showSymbol: false,
-            data: swapVolume.toRune,
+            data: swapVolume?.toRune,
             smooth: true
           },
           {
             type: 'bar',
             name: 'Synth mint Volume',
             showSymbol: false,
-            data: swapVolume.synthMint,
+            data: swapVolume?.synthMint,
             smooth: true
           },
           {
             type: 'bar',
             name: 'Synth redeem Volume',
             showSymbol: false,
-            data: swapVolume.synthRedeem,
+            data: swapVolume?.synthRedeem,
             smooth: true
           }
         ],
