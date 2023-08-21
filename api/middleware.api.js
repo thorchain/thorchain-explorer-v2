@@ -28,3 +28,7 @@ export function getOldSaversExtraData () {
 export function getChainsHeight () {
   return $axiosInstace.get(endpoints[process.env.NETWORK].SERVER_URL + 'api/chainsHeight')
 }
+
+export function getServerTx (txid) {
+  return $axiosInstace.get(endpoints[process.env.NETWORK].SERVER_URL + `tx/${txid}`)
+}
