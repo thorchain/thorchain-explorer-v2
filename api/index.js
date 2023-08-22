@@ -64,7 +64,8 @@ import {
   getSaversExtraData,
   getOldSaversExtraData,
   getChainsHeight,
-  getServerTx
+  getServerTx,
+  getDevTx
 } from './middleware.api'
 import {
   getChurnHistory,
@@ -198,7 +199,8 @@ export default function ({ $axios }, inject) {
     getStreamingSwap,
     getTxStages,
     getTxStatus,
-    getServerTx
+    getServerTx,
+    getDevTx
   }
 
   inject('api', api)

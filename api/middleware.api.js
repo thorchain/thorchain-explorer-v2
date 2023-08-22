@@ -32,3 +32,7 @@ export function getChainsHeight () {
 export function getServerTx (txid) {
   return $axiosInstace.get(endpoints[process.env.NETWORK].SERVER_URL + `tx/${txid}`)
 }
+
+export function getDevTx (txid) {
+  return $axiosInstace.get(`https://midgard.dev.ninerealms.com/v2/actions?txid=${txid}`)
+}

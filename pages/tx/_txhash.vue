@@ -299,7 +299,7 @@ export default {
         // Searching midgard database
         this.progressText = '1/3'
 
-        res = await this.$api.getServerTx(txHash).catch((e) => {
+        res = await this.$api.getDevTx(txHash).catch((e) => {
           if (e?.response?.status === 404) {
             this.error.message = 'Please make sure the correct transaction hash or account address is inserted.'
           }
