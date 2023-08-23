@@ -78,6 +78,10 @@ export function earningsHistory () {
   return $axiosInstace.get('history/earnings?interval=day&count=30')
 }
 
+export function earningLastDay () {
+  return $axiosInstace.get('history/earnings?interval=day&count=2')
+}
+
 export function getPoolVolume (poolName) {
   return $axiosInstace.get(`history/liquidity_changes?pool=${poolName}&interval=day&count=30`)
 }

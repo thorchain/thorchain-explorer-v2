@@ -23,7 +23,7 @@
             }"
             :sort-options="{
               enabled: true,
-              initialSortBy: {field: 'apy', type: 'desc'}
+              initialSortBy: {field: 'vd', type: 'desc'}
             }"
             @on-row-click="gotoPoolTable"
           >
@@ -111,9 +111,10 @@ export default {
           tdClass: 'mono'
         },
         {
-          label: 'APY',
-          field: 'apy',
-          type: 'percentage',
+          label: '24Hr Earning',
+          field: 'earning24hr',
+          type: 'number',
+          formatFn: this.formattedPrice,
           tdClass: 'mono'
         }
       ],
@@ -149,19 +150,24 @@ export default {
       this.$api.getPools(period).then(async ({ data }) => {
         this.pools = data
         const runePrice = (await this.$api.getStats()).data.runePriceUSD
-        const ps = this.pools.map(p => ({
-          status: p.status,
-          price: p.assetPriceUSD,
-          depthPrice: (+p.saversDepth / 10 ** 8) * p.assetPriceUSD,
-          depth: ((+p.assetDepth / 10 ** 8) * p.assetPriceUSD) + ((+p.runeDepth / 10 ** 8) * runePrice),
-          apy: p.annualPercentageRate,
-          volume: (+p.volume24h / 10 ** 8) * runePrice,
-          vd: (+p.volume24h) / ((+p.assetDepth * +p.assetPrice) + (+p.runeDepth)),
-          asset: p.asset,
-          saversDepth: (+p.saversDepth / 10 ** 8),
-          saversUnits: (+p.saversUnits),
-          depthToUnitsRatio: this.$options.filters.number(+p.saversDepth / +p.saversUnits, '0.00000')
-        }))
+        const dayEarnings = (await this.$api.earningLastDay()).data.meta.pools
+
+        const ps = this.pools.map(p => {
+          const poolEarning = dayEarnings.find(e => e.pool === p.asset)?.earnings ?? 0
+
+          return {
+            status: p.status,
+            price: p.assetPriceUSD,
+            depth: ((+p.assetDepth / 10 ** 8) * p.assetPriceUSD),
+            apy: p.annualPercentageRate,
+            volume: (+p.volume24h / 10 ** 8) * runePrice,
+            vd: (+p.volume24h) / ((+p.assetDepth * +p.assetPrice)),
+            asset: p.asset,
+            saversDepth: (+p.saversDepth / 10 ** 8),
+            depthToUnitsRatio: this.$options.filters.number(+p.saversDepth / +p.saversUnits, '0.00000'),
+            earning24hr: (poolEarning * runePrice) / 10 ** 8
+          }
+        })
         this.sepPools(ps)
         this.loading = false
       }).catch((e) => {
