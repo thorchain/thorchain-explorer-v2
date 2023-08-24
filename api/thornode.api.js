@@ -114,6 +114,10 @@ export function getStreamingSwap (txid) {
   return $axiosInstace.get(endpoints[process.env.NETWORK].THORNODE_URL + `thorchain/swap/streaming/${txid}`)
 }
 
+export function getStreamingSwaps () {
+  return $axiosInstace.get(endpoints[process.env.NETWORK].THORNODE_URL + 'thorchain/swaps/streaming')
+}
+
 export function getTxStages (txid) {
   return $axiosInstace.get(endpoints[process.env.NETWORK].THORNODE_URL + `thorchain/tx/stages/${txid}`)
 }

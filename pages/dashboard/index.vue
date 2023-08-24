@@ -236,6 +236,10 @@
         </div>
       </div>
     </div>
+    <div class="cards-container">
+      <outbounds></outbounds>
+      <streamings></streamings>
+    </div>
     <div class="footer-stats">
       <stat-table header="Stats" :table-settings="statsSettings" />
       <stat-table header="Network" :table-settings="networkSettings" />

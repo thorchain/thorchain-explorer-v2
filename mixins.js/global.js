@@ -184,6 +184,10 @@ export default {
     formatAddress (string) {
       if (string && string.length > 12) { return string.slice(0, 6) + '...' + string.slice(-6) } else { return string }
     },
+    addressFormatV2 (string, number = 6, isOnlyLast = false) {
+      if (!string) { return string }
+      return (isOnlyLast ? '' : (string.slice(0, number) + '...')) + string.slice(-number)
+    },
     gotoNodeUrl (node) {
       return (`${endpoints[process.env.NETWORK].THORNODE_URL}thorchain/node/${node}`)
     },
