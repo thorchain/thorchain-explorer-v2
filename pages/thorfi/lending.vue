@@ -66,14 +66,14 @@ export default {
           formatFn: this.formatAsset
         },
         {
-          label: 'Collateral',
+          label: 'Total Collateral',
           field: 'collateral',
           type: 'number',
           formatFn: this.baseAmountFormat,
           tdClass: 'mono'
         },
         {
-          label: 'Debt',
+          label: 'Total Debt',
           field: 'debt',
           type: 'number',
           formatFn: this.baseAmountFormat,
