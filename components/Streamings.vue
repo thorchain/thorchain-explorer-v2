@@ -22,7 +22,7 @@
             <div v-if="o.outputAsset" class="asset-item">
               <asset-icon :asset="o.outputAsset.asset" />
               <span class="asset-name">
-                {{ $options.filters.number(o.outputAsset.amount / 1e8, '0,0.0000') }}
+                <template v-if="o.outputAsset.amount">{{ $options.filters.number(o.outputAsset.amount / 1e8, '0,0.0000') }}</template>
                 <small class="asset-text sec-color">{{ o.outputAsset.asset }}</small>
               </span>
             </div>
@@ -47,6 +47,7 @@
 <script>
 import moment from 'moment'
 import streamingIcon from '@/assets/images/streaming.svg?inline'
+import { shortAssetName } from '~/utils'
 
 export default {
   components: { streamingIcon },
@@ -117,6 +118,16 @@ export default {
             swap.outputAsset = {
               asset: plannedAsset[0].coin?.asset,
               amount: plannedAsset[0].coin?.amount
+            }
+          }
+
+          if (!swap.outputAsset?.asset) {
+            const memo = swapDetails.tx?.memo
+            if (memo) {
+              const m = swapDetails.tx?.memo.split(':', 3)[1]
+              swap.outputAsset = {
+                asset: shortAssetName(m)
+              }
             }
           }
 
