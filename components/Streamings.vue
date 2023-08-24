@@ -63,7 +63,7 @@ export default {
 
     // Update the component every 20 secs
     setInterval(() => {
-      this.updateStreamingDetail(this.inboundHash)
+      this.updateStreamingSwap(this.inboundHash)
     }, 20000)
   },
   methods: {
@@ -92,13 +92,26 @@ export default {
             }
           }
 
+          let nonRUNE = false
+          if (!swap.outputAsset?.asset) {
+            const memo = swapDetails.tx?.memo
+            if (memo) {
+              const m = swapDetails.tx?.memo.split(':', 3)[1]
+              const outAsset = shortAssetName(m)
+              if (outAsset === 'THOR.RUNE') { nonRUNE = true }
+              swap.outputAsset = {
+                asset: outAsset
+              }
+            }
+          }
+
           const outAsset = swapDetails?.out_txs
           if (outAsset && outAsset.length > 0) {
             const oa = outAsset.map(o => ({ asset: o.coins[0]?.asset, amount: o.coins[0].amount }))
 
             let oamount = 0
             let oasset = ''
-            if (oa.every(a => a.asset === 'THOR.RUNE')) {
+            if (oa.every(a => a.asset === 'THOR.RUNE') && !nonRUNE) {
               oamount = oa.reduce((a, b) => Math.max(+a, +b), -Infinity)
               oasset = oa[0].asset
             } else {
@@ -115,18 +128,10 @@ export default {
 
           const plannedAsset = swapDetails?.planned_out_txs
           if (plannedAsset && plannedAsset.length > 0) {
-            swap.outputAsset = {
-              asset: plannedAsset[0].coin?.asset,
-              amount: plannedAsset[0].coin?.amount
-            }
-          }
-
-          if (!swap.outputAsset?.asset) {
-            const memo = swapDetails.tx?.memo
-            if (memo) {
-              const m = swapDetails.tx?.memo.split(':', 3)[1]
+            if (nonRUNE && plannedAsset[0].coin !== 'THOR.RUNE') {
               swap.outputAsset = {
-                asset: shortAssetName(m)
+                asset: plannedAsset[0].coin?.asset,
+                amount: plannedAsset[0].coin?.amount
               }
             }
           }

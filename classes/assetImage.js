@@ -100,7 +100,11 @@ export const AssetImage = (assetStr) => {
 
       case 'AVAX':
         if (symbol !== 'AVAX') {
-          iconPath = getErcIconPath('avalanchec', symbol, ticker)
+          if (symbol === 'USDC') {
+            iconPath = 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png'
+          } else {
+            iconPath = getErcIconPath('avalanchec', symbol, ticker)
+          }
         } else {
           iconPath =
             'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/avalanchex/info/logo.png'
