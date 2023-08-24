@@ -78,6 +78,13 @@ export default {
           type: 'number',
           formatFn: this.baseAmountFormat,
           tdClass: 'mono'
+        },
+        {
+          label: 'Borrowers',
+          field: 'borrowersCount',
+          type: 'number',
+          formatFn: this.normalFormat,
+          tdClass: 'mono'
         }
       ]
     }
@@ -174,22 +181,24 @@ export default {
 
         bs.map(b => ({
           ...b,
-          collateral: +b.collateral_up - +b.collateral_down,
-          debt: +b.debt_up - +b.debt_down
+          collateral: +b.collateral_current,
+          debt: +b.debt_current
         }))
 
         const res = bs.reduce((ac, cv, i, brs) => {
-          const collateral = +cv.collateral_up - +cv.collateral_down
-          const debt = +cv.debt_up - +cv.debt_down
+          const collateral = +cv.collateral_current
+          const debt = +cv.debt_current
 
           return {
             collateral: ac.collateral + collateral,
-            debt: ac.debt + debt
+            debt: ac.debt + debt,
+            borrowersCount: ac.borrowersCount + 1
           }
         },
         {
           collateral: 0,
-          debt: 0
+          debt: 0,
+          borrowersCount: 0
         })
 
         this.borrowers.push({
