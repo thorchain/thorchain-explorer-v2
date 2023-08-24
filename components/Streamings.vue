@@ -68,32 +68,7 @@ export default {
   methods: {
     async updateStreamingSwap () {
       this.noStreaming = false
-      // const resData = (await this.$api.getStreamingSwaps()).data
-
-      const resData = [
-        {
-          tx_id: '3BEE2EC23D863F93D2AB55462EA0F1C1AB52DCF00F65EEBF55003AF55CDE9F6D',
-          interval: 9,
-          quantity: 3,
-          count: 2,
-          last_height: 12256110,
-          trade_target: '0',
-          deposit: '12997083922',
-          in: '8664722614',
-          out: '37010230600'
-        },
-        {
-          tx_id: '8F29FAFAC721550273F96B0474183DF147B5B50772824ECF2D98327F71A2BEEF',
-          interval: 9,
-          quantity: 95,
-          count: 1,
-          last_height: 12256114,
-          trade_target: '352914901',
-          deposit: '398794560',
-          in: '4197837',
-          out: '4201111'
-        }
-      ]
+      const resData = (await this.$api.getStreamingSwaps()).data
 
       if (!resData || resData.length === 0) {
         this.noStreaming = true
@@ -211,9 +186,18 @@ export default {
   }
 
   .upper-body {
+    height: 38px;
+    overflow: auto;
     display: flex;
     align-items: center;
     margin-bottom: 10px;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
   }
 
   .extra-info {

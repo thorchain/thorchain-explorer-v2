@@ -17,10 +17,10 @@
           </span>
         </div>
         <div class="extra-right">
-          <small v-if="o.to_address" class="sec-color mono">To
+          <small v-if="o.to_address" class="mono">To
             <span class="clickable" @click="gotoAddr(o.to_address)">{{ formatAddress(o.to_address) }}</span>
           </small>
-          <small v-if="o.in_hash" class="sec-color mono">In TxID
+          <small v-if="o.in_hash" class="mono">In TxID
             <span class="clickable" @click="gotoTx(o.in_hash)">{{ formatAddress(o.in_hash) }}</span>
           </small>
         </div>
@@ -87,6 +87,7 @@ export default {
 .outbound-item {
   display: flex;
   justify-content: space-between;
+  gap: 8px;
 
   .asset-item {
     display: flex;
@@ -111,6 +112,7 @@ export default {
   .extra-right {
     display: flex;
     flex-direction: column;
+    margin-left: auto;
 
     span {
       font-size: .9rem;
