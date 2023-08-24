@@ -1,13 +1,51 @@
 <template>
-  <Card :is-loading="loading">
+  <Card :is-loading="loading" title="Ongoing Streaming Swaps">
+    <template #header>
+      <dot-live />
+    </template>
     <div v-if="noStreaming" class="no-streaming">
       <streamingIcon class="streaming-icon large-icon" />
       <h3>There is no streaming swaps ongoing at the moment.</h3>
     </div>
+    <template v-for="(o, i) in streamingSwaps" v-else>
+      <div :key="i" class="streaming-item">
+        <div class="upper-body">
+          <div class="asset-container">
+            <div v-if="o.inputAsset" class="asset-item">
+              <asset-icon :asset="o.inputAsset.asset" />
+              <span class="asset-name">
+                {{ $options.filters.number(o.inputAsset.amount / 1e8, '0,0.0000') }}
+                <small class="asset-text sec-color">{{ o.inputAsset.asset }}</small>
+              </span>
+            </div>
+            →
+            <div v-if="o.outputAsset" class="asset-item">
+              <asset-icon :asset="o.outputAsset.asset" />
+              <span class="asset-name">
+                {{ $options.filters.number(o.outputAsset.amount / 1e8, '0,0.0000') }}
+                <small class="asset-text sec-color">{{ o.outputAsset.asset }}</small>
+              </span>
+            </div>
+          </div>
+          <small v-if="o.tx_id" class="sec-color mono" style="margin-left: auto;">
+            <span class="clickable" @click="gotoTx(o.tx_id)">{{ formatAddress(o.tx_id) }}</span>
+          </small>
+        </div>
+        <div class="extra-info">
+          <progress-bar v-if="o.quantity > 0" :width="(o.count / o.quantity) * 100" height="4px" />
+          <small style="white-space: nowrap;">
+            {{ $options.filters.percent(o.count / o.quantity) }}
+          </small>
+        </div>
+        <small style="margin-top: 5px">{{ o.interval }} Blocks / Swap <span class="sec-color">({{ o.remaningETA }})</span></small>
+      </div>
+      <hr :key="i + '-hr'" class="hr-space">
+    </template>
   </Card>
 </template>
 
 <script>
+import moment from 'moment'
 import streamingIcon from '@/assets/images/streaming.svg?inline'
 
 export default {
@@ -21,24 +59,101 @@ export default {
   },
   async mounted () {
     await this.updateStreamingSwap()
+
+    // Update the component every 20 secs
+    setInterval(() => {
+      this.updateStreamingDetail(this.inboundHash)
+    }, 20000)
   },
   methods: {
     async updateStreamingSwap () {
-      const resData = (await this.$api.getStreamingSwaps()).data
+      this.noStreaming = false
+      // const resData = (await this.$api.getStreamingSwaps()).data
+
+      const resData = [
+        {
+          tx_id: '3BEE2EC23D863F93D2AB55462EA0F1C1AB52DCF00F65EEBF55003AF55CDE9F6D',
+          interval: 9,
+          quantity: 3,
+          count: 2,
+          last_height: 12256110,
+          trade_target: '0',
+          deposit: '12997083922',
+          in: '8664722614',
+          out: '37010230600'
+        },
+        {
+          tx_id: '8F29FAFAC721550273F96B0474183DF147B5B50772824ECF2D98327F71A2BEEF',
+          interval: 9,
+          quantity: 95,
+          count: 1,
+          last_height: 12256114,
+          trade_target: '352914901',
+          deposit: '398794560',
+          in: '4197837',
+          out: '4201111'
+        }
+      ]
+
       if (!resData || resData.length === 0) {
         this.noStreaming = true
+        this.streamingSwaps = []
         this.loading = false
         return
       }
 
       try {
-        this.streamingSwaps = resData
+        const swaps = []
         for (let i = 0; i < resData.length; i++) {
-          const swapDetails = (await this.$api.getTxStatus(resData.tx_id))
-          console.log(swapDetails)
+          const swap = { ...resData[i] }
+          const swapDetails = (await this.$api.getTxStatus(resData[i].tx_id)).data
+
+          const txAsset = swapDetails?.tx
+          if (txAsset) {
+            swap.inputAsset = {
+              asset: txAsset?.coins[0].asset,
+              amount: txAsset?.coins[0].amount
+            }
+          }
+
+          const outAsset = swapDetails?.out_txs
+          if (outAsset && outAsset.length > 0) {
+            const oa = outAsset.map(o => ({ asset: o.coins[0]?.asset, amount: o.coins[0].amount }))
+
+            let oamount = 0
+            let oasset = ''
+            if (oa.every(a => a.asset === 'THOR.RUNE')) {
+              oamount = oa.reduce((a, b) => Math.max(+a, +b), -Infinity)
+              oasset = oa[0].asset
+            } else {
+              const nonRune = oa.find(a => a.asset !== 'THOR.RUNE')
+              oamount = nonRune.amount
+              oamount = nonRune.asset
+            }
+
+            swap.outputAsset = {
+              asset: oasset,
+              amount: oamount
+            }
+          }
+
+          const plannedAsset = swapDetails?.planned_out_txs
+          if (plannedAsset && plannedAsset.length > 0) {
+            swap.outputAsset = {
+              asset: plannedAsset[0].coin?.asset,
+              amount: plannedAsset[0].coin?.amount
+            }
+          }
+
+          swap.remaingIntervals = resData[i].interval * (resData[i].quantity - resData[i].count)
+          swap.remaningETA = moment.duration(swap.remaingIntervals * 6, 'seconds').humanize()
+
+          swaps.push(swap)
         }
+        this.streamingSwaps = swaps
         this.loading = false
       } catch (error) {
+        console.error(error)
         this.noStreaming = true
         this.loading = false
       }
@@ -57,6 +172,55 @@ export default {
 
   .streaming-icon {
     fill: var(--font-color);
+  }
+
+  h3 {
+    text-align: center;
+  }
+}
+
+.streaming-item {
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+
+  .asset-container {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .asset-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+
+    .asset-text {
+      display: inline-block;
+      max-width: 100px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .asset-name {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+  }
+
+  .upper-body {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .extra-info {
+    display: flex;
+    align-items: center;
+    padding-top: 8px;
+    gap: 10px;
   }
 }
 </style>
