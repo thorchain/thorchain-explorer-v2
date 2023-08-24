@@ -142,17 +142,17 @@ export default {
         [
           {
             ...this.parseConstant('LENDING-THOR-BNB', { filter: v => v ? 'Yes' : 'No' }),
-            name: 'Enable Lending on BTC',
+            name: 'Enable Lending on BNB',
             filter: true
           },
           {
             ...this.parseConstant('LENDING-THOR-BCH', { filter: v => v ? 'Yes' : 'No' }),
-            name: 'Enable Lending on ETH',
+            name: 'Enable Lending on BCH',
             filter: true
           },
           {
             ...this.parseConstant('LENDING-THOR-DOGE', { filter: v => v ? 'Yes' : 'No' }),
-            name: 'Enable Lending on ATOM',
+            name: 'Enable Lending on DOGE',
             filter: true
           }
         ]
