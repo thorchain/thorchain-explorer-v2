@@ -160,6 +160,10 @@
     </div>
     <div class="break" />
     <div class="cards-container">
+      <outbounds />
+      <streamings />
+    </div>
+    <div class="cards-container">
       <div class="card">
         <div class="card-header">
           <div class="card-header-title">
@@ -235,10 +239,6 @@
           </div>
         </div>
       </div>
-    </div>
-    <div class="cards-container">
-      <outbounds></outbounds>
-      <streamings></streamings>
     </div>
     <div class="footer-stats">
       <stat-table header="Stats" :table-settings="statsSettings" />
