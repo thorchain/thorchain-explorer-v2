@@ -109,17 +109,17 @@ export default {
         ],
         [
           {
-            ...this.parseConstant('MinCR', { filter: v => `${this.$options.filters.percent(v / 1e5, 2)}` }),
+            ...this.parseConstant('MinCR', { filter: v => `${this.$options.filters.percent(v / 1e4, 2)}` }),
             name: 'Minimum Collateral Ratio',
             filter: true
           },
           {
-            ...this.parseConstant('MaxCR', { filter: v => `${this.$options.filters.percent(v / 1e5, 2)}` }),
+            ...this.parseConstant('MaxCR', { filter: v => `${this.$options.filters.percent(v / 1e4, 2)}` }),
             name: 'Maximum Collateral Ratio',
             filter: true
           },
           {
-            ...this.parseConstant('LendingLever', { filter: v => `${this.$options.filters.percent(v / 1e5, 2)}` }),
+            ...this.parseConstant('LendingLever', { filter: v => `${this.$options.filters.percent(v / 1e4, 2)}` }),
             extraInfo: 'Determines the risk profile the protocol is willing to take',
             filter: true
           }
