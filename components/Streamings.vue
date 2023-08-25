@@ -98,7 +98,7 @@ export default {
             if (memo) {
               const m = swapDetails.tx?.memo.split(':', 3)[1]
               const outAsset = shortAssetName(m)
-              if (outAsset === 'THOR.RUNE') { nonRUNE = true }
+              if (outAsset !== 'THOR.RUNE') { nonRUNE = true }
               swap.outputAsset = {
                 asset: outAsset
               }
@@ -115,13 +115,15 @@ export default {
               oamount = oa.reduce((a, b) => Math.max(+a, +b), -Infinity)
               oasset = oa[0].asset
             } else {
-              const nonRune = oa.find(a => a.asset !== 'THOR.RUNE')
-              oamount = nonRune.amount
-              oamount = nonRune.asset
+              const nonRuneAsset = oa.find(a => a.asset !== 'THOR.RUNE')
+              if (nonRuneAsset) {
+                oamount = nonRuneAsset.amount
+                oamount = nonRuneAsset.asset
+              }
             }
 
             swap.outputAsset = {
-              asset: oasset,
+              ...(oasset !== '' ? { asset: oasset } : {}),
               amount: oamount
             }
           }
