@@ -109,28 +109,32 @@ export default {
           if (outAsset && outAsset.length > 0) {
             const oa = outAsset.map(o => ({ asset: o.coins[0]?.asset, amount: o.coins[0].amount }))
 
-            let oamount = 0
-            let oasset = ''
+            const tmpOut = {
+              amount: 0,
+              asset: '',
+              new: false
+            }
             if (oa.every(a => a.asset === 'THOR.RUNE') && !nonRUNE) {
-              oamount = oa.reduce((a, b) => Math.max(+a, +b), -Infinity)
-              oasset = oa[0].asset
+              tmpOut.amount = oa.reduce((a, b) => Math.max(+a, +b), -Infinity)
+              tmpOut.asset = oa[0].asset
+              tmpOut.new = true
             } else {
               const nonRuneAsset = oa.find(a => a.asset !== 'THOR.RUNE')
               if (nonRuneAsset) {
-                oamount = nonRuneAsset.amount
-                oamount = nonRuneAsset.asset
+                tmpOut.amount = nonRuneAsset.amount
+                tmpOut.asset = nonRuneAsset.asset
+                tmpOut.new = true
               }
-            }
 
-            swap.outputAsset = {
-              ...(oasset !== '' ? { asset: oasset } : {}),
-              amount: oamount
+              if (tmpOut.new) {
+                swap.outputAsset = { asset: tmpOut.asset, amount: tmpOut.amount }
+              }
             }
           }
 
           const plannedAsset = swapDetails?.planned_out_txs
           if (plannedAsset && plannedAsset.length > 0) {
-            if (nonRUNE && plannedAsset[0].coin !== 'THOR.RUNE') {
+            if (nonRUNE && plannedAsset[0].coin.asset !== 'THOR.RUNE') {
               swap.outputAsset = {
                 asset: plannedAsset[0].coin?.asset,
                 amount: plannedAsset[0].coin?.amount
