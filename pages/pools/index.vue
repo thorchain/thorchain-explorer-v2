@@ -116,6 +116,13 @@ export default {
           type: 'number',
           formatFn: this.formattedPrice,
           tdClass: 'mono'
+        },
+        {
+          label: 'Annual Earnings Extrapolated',
+          field: 'annualEarningsExtrapolated',
+          type: 'number',
+          formatFn: this.formattedPrice,
+          tdClass: 'mono'
         }
       ],
       pools: undefined,
@@ -165,7 +172,8 @@ export default {
             asset: p.asset,
             saversDepth: (+p.saversDepth / 10 ** 8),
             depthToUnitsRatio: this.$options.filters.number(+p.saversDepth / +p.saversUnits, '0.00000'),
-            earning24hr: (poolEarning * runePrice) / 10 ** 8
+            earning24hr: (poolEarning * runePrice) / 10 ** 8,
+            annualEarningsExtrapolated: (poolEarning * runePrice * 365) / 10 ** 8
           }
         })
         this.sepPools(ps)
