@@ -5,13 +5,12 @@ export function getStats () {
   return $axiosInstace.get('stats')
 }
 
-export function getTxs (offset = 0, limit = 10, type = undefined) {
+export function getTxs (offset = 0, limit = 10, OtherParams = undefined) {
   const params = {
     offset,
-    limit
+    limit,
+    ...OtherParams
   }
-
-  if (type) { params.type = type }
 
   return $axiosInstace.get('actions', { params })
 }
