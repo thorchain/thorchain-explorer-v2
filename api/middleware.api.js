@@ -29,6 +29,11 @@ export function getChainsHeight () {
   return $axiosInstace.get(endpoints[process.env.NETWORK].SERVER_URL + 'api/chainsHeight')
 }
 
+export function getPoolsHistory (period = '') {
+  if (period === 'day') { period = '' }
+  return $axiosInstace.get(endpoints[process.env.NETWORK].SERVER_URL + 'api/historyPools' + period)
+}
+
 export function getServerTx (txid) {
   return $axiosInstace.get(endpoints[process.env.NETWORK].SERVER_URL + `tx/${txid}`)
 }

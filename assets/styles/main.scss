@@ -513,6 +513,12 @@ input {
     background-color: transparent;
     border: 1px solid rgba(255, 156, 8, .25);
   }
+
+  &.info {
+    color: rgb(47, 138, 245);
+    background-color: transparent;
+    border: 1px solid rgba(47, 138, 245, .16);
+  }
 }
 
 //extra text

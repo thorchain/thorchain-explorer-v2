@@ -15,6 +15,7 @@
             {{ $options.filters.number(o.coin.amount / 1e8, '0,0.0000') }}
             <small class="asset-text sec-color">{{ o.coin.asset }}</small>
           </span>
+          <div v-if="o.label === 'Scheduled'" class="mini-bubble info">Scheduled</div>
         </div>
         <div class="extra-right">
           <small v-if="o.to_address" class="mono">To
@@ -53,7 +54,10 @@ export default {
   methods: {
     async updateOutbounds () {
       this.noOutnound = false
-      const resData = (await this.$api.getOutbound()).data
+      const resData = []
+      const outData = (await this.$api.getOutbound()).data
+      const schData = (await this.$api.getScheduled()).data
+      resData.push(...outData, ...(schData.map(s => ({ ...s, label: 'Scheduled' }))))
       if (!resData || resData?.length === 0) {
         this.outbounds = []
         this.noOutnound = true

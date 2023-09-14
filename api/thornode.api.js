@@ -82,6 +82,10 @@ export function getOutbound () {
   return $axiosInstace.get(endpoints[process.env.NETWORK].THORNODE_URL + 'thorchain/queue/outbound')
 }
 
+export function getScheduled () {
+  return $axiosInstace.get(endpoints[process.env.NETWORK].THORNODE_URL + 'thorchain/queue/scheduled')
+}
+
 export function getThorchainTx (txID) {
   return $axiosInstace.get(endpoints[process.env.NETWORK].THORNODE_URL + `thorchain/tx/${txID}`)
 }

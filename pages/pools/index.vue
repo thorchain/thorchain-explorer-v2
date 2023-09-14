@@ -1,7 +1,7 @@
 <template>
   <Page>
     <!-- <Nav :active-mode.sync="viewMode" :nav-items="viewPools" /> -->
-    <Nav :active-mode.sync="period" :nav-items="periods" pre-text="APY Period :" />
+    <!-- <Nav :active-mode.sync="period" :nav-items="periods" pre-text="APY Period :" /> -->
     <Card :is-loading="loading">
       <!-- <template>
         <pool-card/>
@@ -159,7 +159,7 @@ export default {
         const runePrice = (await this.$api.getStats()).data.runePriceUSD
         const dayEarnings = (await this.$api.earningLastDay()).data.meta.pools
 
-        const ps = this.pools.map(p => {
+        const ps = this.pools.map((p) => {
           const poolEarning = dayEarnings.find(e => e.pool === p.asset)?.earnings ?? 0
 
           return {

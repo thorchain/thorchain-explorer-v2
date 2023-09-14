@@ -53,7 +53,8 @@ import {
   getStreamingSwap,
   getTxStages,
   getTxStatus,
-  getStreamingSwaps
+  getStreamingSwaps,
+  getScheduled
 } from './thornode.api'
 import {
   getTendermintLatestBlocks
@@ -67,7 +68,8 @@ import {
   getOldSaversExtraData,
   getChainsHeight,
   getServerTx,
-  getDevTx
+  getDevTx,
+  getPoolsHistory
 } from './middleware.api'
 import {
   getChurnHistory,
@@ -204,7 +206,9 @@ export default function ({ $axios }, inject) {
     getServerTx,
     getDevTx,
     earningLastDay,
-    getStreamingSwaps
+    getStreamingSwaps,
+    getPoolsHistory,
+    getScheduled
   }
 
   inject('api', api)

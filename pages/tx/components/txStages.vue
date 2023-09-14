@@ -9,10 +9,13 @@
         <span>Outbound</span>
         <span>
           {{ outbound.remSeconds }}
+          <span v-if="outbound.remBlocks">
+            (Blocks: {{ outbound.remBlocks }})
+          </span>
           <div :class="['mini-bubble', {'yellow': outbound.signedStatus === 'Not Signed'}]">
             {{ outbound.signedStatus }}
           </div>
-          <div v-if="outbound.status !== ''" :class="['mini-bubble', {'yellow': outbound.status === 'On Going'}]">
+          <div v-if="outbound.status !== ''" :class="['mini-bubble', {'yellow': outbound.status === 'On Going','info': outbound.status === 'No Delay'}]">
             {{ outbound.status }}
           </div>
         </span>
@@ -124,16 +127,23 @@ export default {
 
       this.outbound = {
         is: data?.outbound_signed,
-        remSeconds: moment.duration(data?.outbound_delay?.remaining_delay_seconds ?? 0, 'seconds').humanize(),
+        remSeconds: data?.outbound_delay?.remaining_delay_seconds && moment.duration(data?.outbound_delay?.remaining_delay_seconds, 'seconds').humanize(),
+        remBlocks: data?.outbound_delay?.remaining_delay_blocks,
         outboundHeight: data?.outbound_signed?.scheduled_outbound_height,
         remOutboundHeight: data?.outbound_signed?.scheduled_outbound_height - this.chainsHeight?.THOR,
         signedStatus: data?.outbound_signed?.completed ? 'Signed' : 'Not Signed'
       }
 
-      if (data?.outbound_delay?.completed === true || data?.swap_finalised?.completed === true) {
+      if (
+        data?.outbound_signed?.completed &&
+        (data?.outbound_delay?.completed === true ||
+        (data?.outbound_delay === undefined && data?.swap_finalised?.completed === true))
+      ) {
         this.outbound.status = 'Done'
       } else if (data?.outbound_delay?.completed === false || data?.swap_finalised?.completed === false) {
         this.outbound.status = 'On Going'
+      } else if (data?.outbound_signed?.completed === false && data?.outbound_delay?.completed === true) {
+        this.outbound.status = 'No Delay'
       } else {
         this.outbound.status = ''
       }
