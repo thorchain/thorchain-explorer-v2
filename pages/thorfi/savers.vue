@@ -253,7 +253,7 @@ export default {
         saverReturn: saversExtraData[p.asset]?.saverReturn,
         synthSupply: saversExtraData[p.asset]?.synthSupply,
         earned: saversExtraData[p.asset]?.earned,
-        changes: changes[p.asset]
+        changes: changes[p.asset] ?? {}
       }))
       this.setSavers(ps)
     }).catch((e) => {
@@ -335,7 +335,7 @@ export default {
     },
     getSaversChanges (oldData, newData) {
       const ret = {}
-      Object.keys(newData).forEach((asset) => {
+      Object.keys(oldData).forEach((asset) => {
         ret[asset] = {
           saversCount: {
             value: this.$options.filters.number(newData[asset].saversCount - (oldData[asset].saversCount ?? 0), '0,0'),
