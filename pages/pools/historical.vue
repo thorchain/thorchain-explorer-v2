@@ -53,6 +53,14 @@
                 :is-down="+props.row.change[props.column.field]< 0"
               />
             </div>
+            <div v-else-if="props.column.field === 'feesEarnings'">
+              {{ props.formattedRow[props.column.field] }}
+              <progress-icon
+                v-if="true"
+                :data-number="`${props.row.change.feesEarnings.toFixed(2) * 1e2}%`"
+                :is-down="props.row.change.feesEarnings < 0"
+              />
+            </div>
             <span v-else>
               {{ props.formattedRow[props.column.field] }}
             </span>
@@ -174,7 +182,8 @@ export default {
             earnings: this.getChange(p.earnings, o?.earnings),
             swapVolume: this.getChange(p.swapVolume, o?.swapVolume),
             swapFees: this.getChange(p.swapFees, o?.swapFees),
-            rewards: this.getChange(p.rewards, o?.rewards)
+            rewards: this.getChange(p.rewards, o?.rewards),
+            feesEarnings: this.getChange((p.swapFees / p.earnings), (o?.swapFees / o?.earnings))
           }
         }
       })
