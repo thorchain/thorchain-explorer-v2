@@ -34,6 +34,11 @@ export function getPoolsHistory (period = '') {
   return $axiosInstace.get(endpoints[process.env.NETWORK].SERVER_URL + 'api/historyPools' + period)
 }
 
+export function getOldPoolsHistory (period = '') {
+  if (period === 'day') { period = '' }
+  return $axiosInstace.get(endpoints[process.env.NETWORK].SERVER_URL + 'api/oldHistoryPools' + period)
+}
+
 export function getServerTx (txid) {
   return $axiosInstace.get(endpoints[process.env.NETWORK].SERVER_URL + `tx/${txid}`)
 }

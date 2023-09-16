@@ -312,7 +312,6 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { AssetCurrencySymbol } from '@xchainjs/xchain-util'
 import _ from 'lodash'
 import { use } from 'echarts/core'
 import { SVGRenderer } from 'echarts/renderers'
@@ -980,9 +979,6 @@ export default {
     },
     addressFormat (string) {
       return addressFormat(string, 4, true)
-    },
-    runeCur () {
-      return AssetCurrencySymbol.RUNE
     },
     curFormat (number) {
       return this.$options.filters.currency(number)

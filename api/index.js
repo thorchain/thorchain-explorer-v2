@@ -69,7 +69,8 @@ import {
   getChainsHeight,
   getServerTx,
   getDevTx,
-  getPoolsHistory
+  getPoolsHistory,
+  getOldPoolsHistory
 } from './middleware.api'
 import {
   getChurnHistory,
@@ -208,6 +209,7 @@ export default function ({ $axios }, inject) {
     earningLastDay,
     getStreamingSwaps,
     getPoolsHistory,
+    getOldPoolsHistory,
     getScheduled
   }
 

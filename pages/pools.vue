@@ -19,6 +19,10 @@ export default {
         {
           text: 'TVL by Chain',
           link: '/pools/tvl'
+        },
+        {
+          text: 'Historical Pools',
+          link: '/pools/historical'
         }
       ]
     }
