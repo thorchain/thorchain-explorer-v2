@@ -40,16 +40,20 @@ export default {
     return {
       noOutnound: false,
       loading: true,
-      outbounds: []
+      outbounds: [],
+      intervalId: undefined
     }
   },
   mounted () {
     this.updateOutbounds()
 
     // Update the component every 20 secs
-    setInterval(() => {
+    this.intervalId = setInterval(() => {
       this.updateOutbounds()
     }, 20000)
+  },
+  destroyed () {
+    this.clearIntervalId(this.intervalId)
   },
   methods: {
     async updateOutbounds () {

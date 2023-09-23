@@ -132,7 +132,8 @@ export default {
       error: {
         title: 'Couldn\'t find the Transaction',
         message: 'Something bad happened.'
-      }
+      },
+      intervalId: undefined
     }
   },
   computed: {
@@ -277,7 +278,12 @@ export default {
           clearInterval(inter)
         }
       }, 60000)
+
+      this.intervalId = inter
     }
+  },
+  destroyed () {
+    this.clearIntervalId(this.intervalId)
   },
   methods: {
     async updateTx () {

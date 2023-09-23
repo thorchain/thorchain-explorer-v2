@@ -87,7 +87,8 @@ export default {
         finalised: false,
         remSeconds: 0,
         remSecondsFiltered: undefined
-      }
+      },
+      intervalId: undefined
     }
   },
   computed: {
@@ -98,9 +99,12 @@ export default {
   mounted () {
     this.updateTxStages(this.inboundHash)
 
-    setInterval(() => {
+    this.intervalId = setInterval(() => {
       this.updateTxStages(this.inboundHash)
     }, 10000)
+  },
+  destroyed () {
+    this.clearIntervalId(this.intervalId)
   },
   methods: {
     async updateTxStages (inTx) {

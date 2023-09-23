@@ -97,15 +97,19 @@ export default {
         depositedAsset: '',
         swappedIn: 0,
         swappedOut: 0
-      }
+      },
+      intervalId: undefined
     }
   },
   mounted () {
     this.updateStreamingDetail(this.inboundHash)
 
-    setInterval(() => {
+    this.intervalId = setInterval(() => {
       this.updateStreamingDetail(this.inboundHash)
     }, 10000)
+  },
+  destroyed () {
+    this.clearIntervalId(this.intervalId)
   },
   methods: {
     async updateStreamingDetail (txid) {

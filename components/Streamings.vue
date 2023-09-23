@@ -55,16 +55,20 @@ export default {
     return {
       noStreaming: false,
       loading: true,
-      streamingSwaps: []
+      streamingSwaps: [],
+      intervalId: undefined
     }
   },
   async mounted () {
     await this.updateStreamingSwap()
 
     // Update the component every 20 secs
-    setInterval(() => {
+    this.intervalId = setInterval(() => {
       this.updateStreamingSwap(this.inboundHash)
     }, 20000)
+  },
+  destroyed () {
+    this.clearIntervalId(this.intervalId)
   },
   methods: {
     async updateStreamingSwap () {

@@ -447,7 +447,8 @@ export default {
       churnOption: undefined,
       bondMetrics: undefined,
       mimirs: undefined,
-      provDist: undefined
+      provDist: undefined,
+      intervalId: undefined
     }
   },
   computed: {
@@ -726,9 +727,9 @@ export default {
       this.loading = false
     })
 
-    setInterval(() => {
+    this.intervalId = setInterval(() => {
       this.updateNodes()
-    }, 10000)
+    }, 30 * 1e3)
 
     this.$api.getExraNodesInfo().then(({ data }) => {
       this.nodesExtra = data
@@ -760,6 +761,9 @@ export default {
       actNodes.sort((a, b) => +a.total_bond - +b.total_bond)
       const lowerNodes = actNodes.slice(0, Math.floor(actNodes.length * 2 / 3))
       return Math.floor((Number.parseInt(lowerNodes.slice(-1)[0].total_bond) ?? 0) / 10 ** 8)
+    },
+    destroyed () {
+      this.clearIntervalId(this.intervalId)
     },
     updateChurnTime () {
       let churnTimeRemaining = +this.bondMetrics?.nextChurnHeight - this.lastBlockHeight

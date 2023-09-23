@@ -273,6 +273,11 @@ export default {
     },
     runeCur () {
       return AssetCurrencySymbol.RUNE
+    },
+    clearIntervalId (id) {
+      if (id) {
+        clearInterval(id)
+      }
     }
   }
 }
