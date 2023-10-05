@@ -1,4 +1,4 @@
-import { bn, bnOrZero, Chain, formatBN, formatBNCurrency, AssetCurrencySymbol, isSynthAsset } from '@xchainjs/xchain-util'
+import { bnOrZero, formatBN, AssetCurrencySymbol, isSynthAsset } from '@xchainjs/xchain-util'
 import compare from 'semver/functions/compare'
 import moment from 'moment'
 import { AssetImage } from '~/classes/assetImage'
@@ -43,9 +43,9 @@ export default {
     },
     baseChainAsset (chain) {
       switch (chain) {
-        case Chain.THORChain:
+        case 'THOR':
           return 'THOR.RUNE'
-        case Chain.Terra:
+        case 'TERRA':
           return 'TERRA.LUNA'
         default:
           return `${chain}.${chain}`

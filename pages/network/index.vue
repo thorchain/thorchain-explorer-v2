@@ -80,7 +80,7 @@
 </template>
 
 <script>
-import { Chain } from '@xchainjs/xchain-util'
+import { chunk } from 'lodash'
 import { gt, rsort, valid } from 'semver'
 import StatTable from '~/components/StatTable.vue'
 import { formatAsset, blockTime } from '~/utils'
@@ -138,12 +138,6 @@ export default {
   computed: {
     versionProgress () {
       if (!!this.nodes && this.blockchainVersion) {
-        this.activeNodes = this.nodes?.filter(
-          n => n.status === 'Active'
-        )
-        this.uptodateNodes = this.activeNodes.filter(
-          n => n.version == this.uptodateNodeVersion(this.activeNodes)
-        )
         return Math.ceil(
           parseFloat(this.uptodateNodes.length / this.activeNodes.length) * 100
         )
@@ -258,29 +252,16 @@ export default {
       ]
     },
     gasSettings () {
-      const getChain = c =>
-        this.inAddresses?.find(e => e.chain === c)?.gas_rate
       const chains = this.inAddresses.map((e) => {
         return {
-          name: `${e.chain} gas fee`,
-          value: this.formatGas(getChain(e.chain), e.chain),
+          name: `${e.chain} gas rate`,
+          value: e.gas_rate,
           image: this.assetImage(`${e.chain}.${e.chain}`),
-          extraText: this.lowerLevelGas(e.chain) ? this.formatGas(getChain(e.chain), e.chain) * this.lowerLevelGas(e.chain) + this.gasFormat(e.chain) : false,
+          extraText: e.gas_rate_units,
           filter: true
         }
       })
-      chains.push({
-        name: 'ERC20 gas fee',
-        value: this.formatGas(getChain('ETH'), 'ERC20'),
-        image: this.assetImage('ETH.ETH'),
-        filter: true
-      })
-      return [
-        chains.slice(0, 2),
-        chains.slice(2, 4),
-        chains.slice(4, 6),
-        chains.slice(6)
-      ]
+      return chunk(chains, 3)
     },
     newStandByVersion () {
       if (!this.blockchainVersion || !this.nodes) { return }
@@ -289,6 +270,7 @@ export default {
         n => valid(n.version) && gt(n.version, currentVer)
       ).map(n => n.version)
       if (node && node.length > 0) { return rsort(node)[0].version }
+      return null
     }
   },
   mounted () {
@@ -341,6 +323,12 @@ export default {
     this.$api.getNodes()
       .then(({ data }) => {
         this.nodes = data
+        this.activeNodes = this.nodes?.filter(
+          n => n.status === 'Active'
+        )
+        this.uptodateNodes = this.activeNodes.filter(
+          n => n.version === this.uptodateNodeVersion(this.activeNodes)
+        )
       })
   },
   methods: {
@@ -351,56 +339,11 @@ export default {
         )
       }
     },
-    formatGas (gas_rate, chain) {
-      switch (chain) {
-        case 'BCH':
-        case 'BTC':
-        case 'LTC':
-        case 'DOGE':
-          return (250 * +gas_rate) / 10 ** 8
-
-        case 'ETH':
-        case 'ERC20':
-          const limit = chain === 'ERC20' ? 70000 : 35000
-          return (limit * (+gas_rate * 10 ** 9)) / 10 ** 18
-
-        case 'BNB':
-          return (+gas_rate * 1) / 10 ** 8
-
-        case 'TERRA':
-          return (+gas_rate * 1.5) / 10 ** 8
-
-        default:
-          return gas_rate
-      }
-    },
     balanceAmount (number) {
       return (+number / 1e8).toFixed(4)
     },
     outAddressHash (txID) {
       return txID.slice(0, 6) + '...' + txID.slice(-6)
-    },
-    lowerLevelGas (chain) {
-      if (chain == Chain.Bitcoin || chain == Chain.Litecoin || chain == Chain.BitcoinCash || chain == Chain.Doge) {
-        return (10 ** 8 / 250)
-      } else if (chain == Chain.Ethereum) {
-        return (10 ** 9 / 35000)
-      } else if (chain == Chain.Binance) {
-        return (10 ** 8)
-      } else if (chain == Chain.Terra) {
-        return (10 ** 6)
-      } else { return false }
-    },
-    gasFormat (chain) {
-      if (chain == Chain.Bitcoin || chain == Chain.Litecoin || chain == Chain.BitcoinCash || chain == Chain.Doge) {
-        return ' sat/byte'
-      } else if (chain == Chain.Ethereum) {
-        return ' gwei'
-      } else if (chain == Chain.Binance) {
-        return ' sat'
-      } else if (chain == Chain.Terra) {
-        return ' uluna'
-      } else { return false }
     },
     uptodateNodeVersion (nodes) {
       if (nodes && nodes.length > 0) {

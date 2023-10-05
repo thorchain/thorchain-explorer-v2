@@ -80,7 +80,6 @@
 
 <script>
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
-import { assetFromString, isSynthAsset } from '@xchainjs/xchain-util'
 import moment from 'moment'
 import { AssetImage } from '~/classes/assetImage'
 import rightArrow from '~/assets/images/arrow-small-right.svg?inline'
