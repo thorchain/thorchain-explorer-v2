@@ -1,4 +1,4 @@
-import { AssetCurrencySymbol, AssetRuneNative, assetToString, isSynthAsset } from '@xchainjs/xchain-util'
+import { AssetCurrencySymbol, assetToString, isSynthAsset } from '@xchainjs/xchain-util'
 import { compact, countBy } from 'lodash'
 import moment from 'moment'
 
@@ -366,7 +366,7 @@ export function parseThornodeStatus (ttx) {
 export function synthToAsset (assetString) {
   let asset = assetFromString(assetString.toUpperCase())
 
-  if (assetString === 'rune') { asset = AssetRuneNative }
+  if (assetString === 'rune') { asset = assetFromString('THOR.RUNE') }
 
   if (!asset) {
     return

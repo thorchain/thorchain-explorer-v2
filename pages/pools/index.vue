@@ -2,6 +2,57 @@
   <Page>
     <!-- <Nav :active-mode.sync="viewMode" :nav-items="viewPools" /> -->
     <!-- <Nav :active-mode.sync="period" :nav-items="periods" pre-text="APY Period :" /> -->
+    <div v-if="!loading" class="pool-stats base-container">
+      <div class="stat-group">
+        <div class="stat-item">
+          <span class="title">Total Pooled:</span>
+          <span class="mono value">{{ totalInfo.pooled | currency }}</span>
+        </div>
+        <hr>
+        <div class="stat-item">
+          <span class="title">24hr Volume:</span>
+          <span class="mono value">{{ totalInfo.day.volume | currency }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="title">24hr Earnings:</span>
+          <span class="mono value">{{ totalInfo.day.earnings | currency }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="title">24hr Swap Count:</span>
+          <span class="mono value">{{ totalInfo.day.swapCount | number('0,0') }}</span>
+        </div>
+      </div>
+      <hr>
+      <div class="stat-group">
+        <div class="stat-item">
+          <span class="title">7D Volume:</span>
+          <span class="mono value">{{ totalInfo.week.volume | currency }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="title">7D Earnings:</span>
+          <span class="mono value">{{ totalInfo.week.earnings | currency }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="title">7D Swap Count:</span>
+          <span class="mono value">{{ totalInfo.week.swapCount | number('0,0') }}</span>
+        </div>
+      </div>
+      <hr>
+      <div class="stat-group">
+        <div class="stat-item">
+          <span class="title">30D Volume:</span>
+          <span class="mono value">{{ totalInfo.month.volume | currency }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="title">30D Earnings:</span>
+          <span class="mono value">{{ totalInfo.month.earnings | currency }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="title">30D Swap Count:</span>
+          <span class="mono value">{{ totalInfo.month.swapCount | number('0,0') }}</span>
+        </div>
+      </div>
+    </div>
     <Card :is-loading="loading">
       <!-- <template>
         <pool-card/>
@@ -32,11 +83,6 @@
                 <AssetIcon :asset="props.row.asset" />
                 <span>{{ props.formattedRow[props.column.field] }}</span>
               </div>
-              <span v-else-if="props.column.field == 'status'">
-                <div :class="['bubble-container', {'yellow': k.mode == 'staged'}]">
-                  <span>{{ props.row.status | capitalize }}</span>
-                </div>
-              </span>
               <span v-else>
                 {{ props.formattedRow[props.column.field] }}
               </span>
@@ -80,10 +126,6 @@ export default {
           formatFn: this.formatAsset
         },
         {
-          label: 'Status',
-          field: 'status'
-        },
-        {
           label: 'USD Price',
           field: 'price',
           type: 'number',
@@ -107,6 +149,12 @@ export default {
         {
           label: 'Volume/Depth',
           field: 'vd',
+          type: 'percentage',
+          tdClass: 'mono'
+        },
+        {
+          label: 'Fee/Reward',
+          field: 'feeRatio',
           type: 'percentage',
           tdClass: 'mono'
         },
@@ -135,6 +183,27 @@ export default {
           data: [],
           mode: 'staged'
         }
+      },
+      totalInfo: {
+        pooled: 0,
+        day: {
+          volume: 0,
+          earnings: 0,
+          earningsAPR: 0,
+          swapCount: 0
+        },
+        week: {
+          volume: 0,
+          earnings: 0,
+          earningsAPR: 0,
+          swapCount: 0
+        },
+        month: {
+          volume: 0,
+          earnings: 0,
+          earningsAPR: 0,
+          swapCount: 0
+        }
       }
     }
   },
@@ -156,31 +225,60 @@ export default {
       this.loading = true
       this.$api.getPools(period).then(async ({ data }) => {
         this.pools = data
-        const runePrice = (await this.$api.getStats()).data.runePriceUSD
-        const dayEarnings = (await this.$api.earningLastDay()).data.meta.pools
+        const pd = await this.getDVEs()
 
         const ps = this.pools.map((p) => {
-          const poolEarning = dayEarnings.find(e => e.pool === p.asset)?.earnings ?? 0
+          const pe = pd?.day.pools.find(e => e.pool === p.asset)
+          this.totalInfo.pooled += ((+p.assetDepth / 10 ** 8) * p.assetPriceUSD)
 
           return {
             status: p.status,
             price: p.assetPriceUSD,
             depth: ((+p.assetDepth / 10 ** 8) * p.assetPriceUSD),
             apy: p.annualPercentageRate,
-            volume: (+p.volume24h / 10 ** 8) * runePrice,
+            volume: pe ? (+pe.swapVolume / 10 ** 8) * this.runePrice : (+p.volume24h / 10 ** 8) * this.runePrice,
             vd: (+p.volume24h) / ((+p.assetDepth * +p.assetPrice)),
             asset: p.asset,
             saversDepth: (+p.saversDepth / 10 ** 8),
-            depthToUnitsRatio: this.$options.filters.number(+p.saversDepth / +p.saversUnits, '0.00000'),
-            earning24hr: (poolEarning * runePrice) / 10 ** 8,
-            annualEarningsExtrapolated: (poolEarning * runePrice * 365) / 10 ** 8
+            depthToUnitsRatio: p.saversDepth ? this.$options.filters.number(+p.saversDepth / +p.saversUnits, '0.00000') : 0,
+            earning24hr: pe ? (pe.earnings * this.runePrice) / 10 ** 8 : 0,
+            annualEarningsExtrapolated: pe ? (pe.earnings * this.runePrice * 365) / 10 ** 8 : 0,
+            feeRatio: pe ? (pe.swapFees / pe.earnings) : 0
           }
         })
         this.sepPools(ps)
+        this.getTotalInfo(pd)
         this.loading = false
       }).catch((e) => {
         console.error(e)
       })
+    },
+    async getDVEs () {
+      try {
+        const poolsDataDay = (await this.$api.getPoolsHistory()).data
+        const poolsDataWeek = (await this.$api.getPoolsHistory('Week')).data
+        const poolsDataMonth = (await this.$api.getPoolsHistory('Month')).data
+        return {
+          day: poolsDataDay,
+          week: poolsDataWeek,
+          month: poolsDataMonth
+        }
+      } catch (error) {
+        return undefined
+      }
+    },
+    getTotalInfo (poolDatum) {
+      const updatePeriod = (period) => {
+        poolDatum[period].pools.forEach((p) => {
+          this.totalInfo[period].volume += (+p.swapVolume * this.runePrice) / 1e8
+          this.totalInfo[period].earnings += (+p.earnings * this.runePrice) / 1e8
+          this.totalInfo[period].swapCount += (+p.swapCount)
+        })
+      }
+
+      updatePeriod('day')
+      updatePeriod('week')
+      updatePeriod('month')
     },
     normalNumberFormat (number, filter) {
       return number ? this.$options.filters.number(+number, '0,0.00') : '-'
@@ -229,6 +327,72 @@ export default {
     border: 1px solid var(--border-color);
     border-bottom: 0;
     border-radius: 7px 8px 0 0;
+  }
+}
+
+.pool-stats {
+  .stat-item {
+    display: flex;
+    align-items: center;
+    padding: 5px 0;
+    justify-content: space-between;
+
+    .title {
+      color: var(--sec-font-color);
+      margin-right: .5rem;
+      font-size: .9rem;
+    }
+
+    .value {
+      color: var(--primary-color);
+      font-size: .875rem;
+    }
+  }
+
+  hr {
+    margin: .5rem 0;
+    opacity: 0.65;
+    overflow: visible;
+    height: 0;
+    border: 0;
+    border-top: 1px solid var(--border-color);
+  }
+
+}
+
+@include md {
+  .pool-stats {
+    padding: 0;
+    display: flex;
+    justify-content: space-between;
+
+    .stat-group {
+      position: relative;
+      padding: 1rem;
+      flex: 1;
+      margin-top: auto;
+
+      &::after {
+        align-self: stretch;
+        position: absolute;
+        right: 0;
+        top: 0;
+        content: "";
+        display: block;
+        height: calc(100% - 1rem);
+        border-left: 0;
+        border-right: 1px solid var(--border-color);
+        margin: 0.5rem 0;
+      }
+
+      &:last-of-type::after {
+        display: none;
+      }
+    }
+
+    .stat-group hr:last-child {
+      display: none;
+    }
   }
 }
 </style>
