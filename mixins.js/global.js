@@ -75,6 +75,7 @@ export default {
         case 'DOGE.DOGE':
           return '#BCA23E'
         case 'BNB.BNB':
+        case 'BSC.BNB':
           return '#F0BC18'
         case 'BCH.BCH':
           return '#4DCA48'
@@ -82,6 +83,13 @@ export default {
           return '#E84142'
         case 'GAIA.ATOM':
           return '#303249'
+        case 'ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48':
+        case 'AVAX.USDC-0XB97EF9EF8734C71904D8002F8B6BC66DD9C48A6E':
+          return '#2775ca'
+        case 'BNB.BUSD-BD1':
+          return '#ffc300'
+        case 'ETH.USDT-0XDAC17F958D2EE523A2206206994597C13D831EC7':
+          return '#26A17B'
         default:
           return this.popRandomColor()
       }
@@ -172,6 +180,9 @@ export default {
     smallBaseAmountFormat (number) {
       return number ? this.$options.filters.number(+number / 10 ** 8, '0,0.00a') : '-'
     },
+    smallBaseAmountFormatWithCur (number) {
+      return number ? `$${this.smallBaseAmountFormat(number)}` : '-'
+    },
     formatCurrency (number) {
       return this.$options.filters.currency(number)
     },
@@ -190,6 +201,10 @@ export default {
     },
     gotoNodeUrl (node) {
       return (`${endpoints[process.env.NETWORK].THORNODE_URL}thorchain/node/${node}`)
+    },
+    gotoSaver (params) {
+      if (!params) { return }
+      this.$router.push(`/savers/${params.row.asset}`)
     },
     basicChartFormat (valueFormatter = undefined, series, xAxis, extraSettings = {}, globalFormatter) {
       return {

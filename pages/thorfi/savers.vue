@@ -1,6 +1,9 @@
 <template>
   <div>
-    <div v-show="networkEnv === 'mainnet' && saversGeneralStats && saversGeneralStats.length > 0" class="savers-stat-header">
+    <div
+      v-show="networkEnv === 'mainnet' && saversGeneralStats && saversGeneralStats.length > 0"
+      class="savers-stat-header"
+    >
       <div v-for="(stat, i) in saversGeneralStats" :key="i" class="savers-stat-card">
         <div class="value">
           {{ stat.value }}
@@ -17,32 +20,12 @@
         </div>
       </div>
     </div>
-    <div class="chart-edition savers-distro">
-      <Card title="Savers Distribution" :is-loading="!totalSaversValue" class="inner-pie-chart">
-        <pie-chart :pie-data="totalSaversValue" :formatter="totalSaverFormatter" />
-      </Card>
-      <Card title="Savers Cap Filled" :is-loading="!saversFilled" class="savers-filled-card">
-        <ProgressBar :width="(saversFilled*100)" />
-        <h4>
-          {{
-            $options.filters.percent(saversFilled, 2)
-          }}
-          <progress-icon
-            v-if="saversChange"
-            :data-number="$options.filters.percent(saversChange, 2)"
-            :is-down="!saversChange"
-            size=".9rem"
-          />
-          Total Savers Filled
-        </h4>
-      </Card>
-    </div>
     <Page>
-      <Card :is-loading="tables.saversRows.data.length <= 0">
+      <Card :is-loading="saversRow.length <= 0">
         <vue-good-table
-          v-if="tables.saversRows.data.length > 0"
+          v-if="saversRow.length > 0"
           :columns="saverCols"
-          :rows="tables.saversRows.data"
+          :rows="saversRow"
           style-class="vgt-table net-table"
           :pagination-options="{
             enabled: true,
@@ -51,7 +34,7 @@
           }"
           :sort-options="{
             enabled: true,
-            initialSortBy: networkEnv === 'mainnet' ? {field: 'saverDepthPrice', type: 'desc'} : {}
+            initialSortBy: networkEnv === 'mainnet' ? {field: 'saversDepthUSD', type: 'desc'} : {}
           }"
           @on-row-click="gotoSaver"
         >
@@ -63,7 +46,11 @@
             <span v-else-if="props.column.field == 'saversDepth'">
               <span>
                 {{ props.formattedRow[props.column.field] }}
-                <progress-icon v-if="props.row.changes[props.column.field] && props.row.changes[props.column.field].enable" :data-number="props.row.changes[props.column.field].value" :is-down="props.row.changes.saversDepth.isDown" />
+                <progress-icon
+                  v-if="props.row.delta && props.row.delta[props.column.field]"
+                  :data-number="smallBaseAmountFormat(props.row.delta[props.column.field])"
+                  :is-down="+props.row.delta[props.column.field] < 0"
+                />
                 <span class="extra-text" style="font-size: .6rem; font-weight: bold;">
                   {{ showAsset(props.row.asset) }}
                 </span>
@@ -71,13 +58,17 @@
             </span>
             <span v-else>
               {{ props.formattedRow[props.column.field] }}
-              <progress-icon v-if="props.row.changes[props.column.field] && props.row.changes[props.column.field].enable" :data-number="props.row.changes[props.column.field].value" :is-down="props.row.changes[props.column.field].isDown" />
+              <progress-icon
+                v-if="props.row.delta && props.row.delta[props.column.field]"
+                :data-number="getFormattedValue(props.column.field, props.row.delta[props.column.field])"
+                :is-down="+props.row.delta[props.column.field] < 0"
+              />
             </span>
           </template>
         </vue-good-table>
       </Card>
     </Page>
-    <div v-if="tables.saversRows.data && tables.saversRows.data.length > 0" class="footer-stat">
+    <div v-if="saversRow && saversRow.length > 0" class="footer-stat">
       <small>
         <sup>*</sup>
         All of the stat changes are based on 24 hours period
@@ -88,8 +79,10 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import { forEach as eachLod } from 'lodash'
 import PieChart from '~/components/PieChart.vue'
 import ProgressIcon from '~/components/ProgressIcon.vue'
+import { formatAsset } from '~/utils'
 
 export default {
   components: { PieChart, ProgressIcon },
@@ -100,20 +93,20 @@ export default {
         {
           label: 'Asset',
           field: 'asset',
-          formatFn: this.formatAsset
+          formatFn: formatAsset
         },
         {
           label: 'Savers Depth (USD)',
-          field: 'saverDepthPrice',
+          field: 'saversDepthUSD',
           type: 'number',
-          formatFn: this.formattedPrice,
+          formatFn: this.smallBaseAmountFormatWithCur,
           tdClass: 'mono'
         },
         {
           label: 'Savers Depth',
           field: 'saversDepth',
           type: 'number',
-          formatFn: this.normalNumberFormat,
+          formatFn: this.baseAmountFormat,
           tdClass: 'mono'
         },
         {
@@ -131,174 +124,146 @@ export default {
         },
         {
           label: 'Savers APR',
-          field: 'saverReturn',
+          field: 'saversReturn',
           type: 'percentage',
           tdClass: 'mono'
         }
       ],
-      tables: {
-        saversRows: {
-          data: []
-        }
-      },
-      maxSaverCap: 0.6,
-      saversFilled: 0,
-      totalSaversValue: 0,
+      saversInfo: {},
+      saversRow: [],
+      saversGeneralStats: [],
+      totalSaversFilled: 0,
+      totalSaversValue: undefined,
       totalSaverFormatter: undefined,
-      oldSavers: {},
-      saversChange: 0
+      maxSaverCap: 0.6
     }
   },
   computed: {
     ...mapGetters({
       runePrice: 'getRunePrice'
     }),
-    saversGeneralStats () {
-      if (this.tables.saversRows.data.length <= 0) {
-        return []
+    networkEnv () {
+      return process.env.NETWORK
+    }
+  },
+  mounted () {
+    // Disable column 5 if stagenet
+    this.saverCols[5].hidden = this.networkEnv === 'stagenet'
+
+    this.$api.getSaversInfo().then(({ data }) => {
+      if (!data) {
+        return
       }
-      const saversStat = {
+      this.saversInfo = data
+      this.saversRow = this.formatSaversInfo()
+      this.fillSaversTotal()
+      this.fillTotalSaversValue()
+      // this.fillSaversTotal()
+    }).catch((e) => {
+      console.error(e)
+    })
+
+    this.$api.getMimir().then(({ data }) => {
+      this.maxSaverCap = (data.MAXSYNTHPERPOOLDEPTH * 2) / 10e3
+    }).catch(err => console.error('didn\'t catch the max synth per asset depth', err))
+  },
+  methods: {
+    formatSaversInfo () {
+      const ret = []
+      for (const asset of Object.keys(this.saversInfo)) {
+        const s = this.saversInfo[asset]
+        const delta = {}
+
+        eachLod(s.oldSavers, (v, k) => {
+          delta[k] = (+s.savers[k] - +v)
+        })
+
+        ret.push({
+          ...s.savers,
+          saversDepthUSD: (+s.savers.assetPriceUSD * +s.savers.saversDepth),
+          delta: {
+            ...delta,
+            saversDepthUSD: (+s.savers.saversDepth - +s.oldSavers.saversDepth) * +s.savers.assetPriceUSD
+          }
+        })
+      }
+
+      return ret
+    },
+    getFormattedValue (field, value) {
+      switch (field) {
+        case 'saversDepthUSD':
+          return this.smallBaseAmountFormatWithCur(+value)
+        case 'saversReturn':
+        case 'filled':
+          return this.percentageFormat(+value, 2)
+        default:
+          return +value
+      }
+    },
+    fillSaversTotal () {
+      const g = {
         saversCount: 0,
         totalUSDSaved: 0,
         totalEarn: 0,
         meanAPR: 0,
         totalFilled: 0
       }
-      const totalPoolDepthUSD = this.tables.saversRows.data
-        .map(d => d.assetDepthUSD).reduce((a, b) => a + b, 0)
-      this.tables.saversRows.data.forEach((saver, index) => {
-        saversStat.saversCount += saver.saversCount
-        saversStat.totalUSDSaved += +saver.saversDepth * +saver.price
-        saversStat.totalEarn += (+saver.earned / 1e8) * +saver.price
-        saversStat.meanAPR += (saver.saverReturn)
-        saversStat.totalFilled += (+saver.synthSupply / 1e8) * +saver.price
-      })
 
-      const oldSaversStat = {
+      const o = {
         saversCount: 0,
         totalUSDSaved: 0,
         totalEarn: 0,
         meanAPR: 0,
-        totalFilled: 0,
-        assetDepthUSD: 0
+        totalFilled: 0
       }
-      Object.keys(this.oldSavers).forEach((saver) => {
-        oldSaversStat.saversCount += this.oldSavers[saver].saversCount
-        oldSaversStat.totalUSDSaved += +this.oldSavers[saver].saversDepth / 1e8 * +this.oldSavers[saver].assetPrice
-        oldSaversStat.totalEarn += +this.oldSavers[saver].deltaEarned / 1e8 * +this.oldSavers[saver].assetPrice
-        oldSaversStat.meanAPR += (this.oldSavers[saver].saverReturn)
-        oldSaversStat.totalFilled += +this.oldSavers[saver].saversDepth * +this.oldSavers[saver].assetPrice
-        oldSaversStat.assetDepthUSD += (+this.oldSavers[saver].assetDepth * +this.oldSavers[saver].assetPrice)
+
+      eachLod(this.saversInfo, (v, k) => {
+        g.saversCount += v.savers.saversCount
+        g.totalUSDSaved += (v.savers.saversDepth * +v.savers.assetPriceUSD) / 1e8
+        g.totalEarn += (v.savers.earned * +v.savers.assetPriceUSD) / 1e8
+        g.meanAPR += (+v.savers.saversReturn / this.saversRow.length)
+        g.totalFilled += (+v.savers.filled)
       })
 
-      this.setSaversFilled(
-        saversStat.totalFilled / (totalPoolDepthUSD * this.maxSaverCap),
-        oldSaversStat.totalFilled / (oldSaversStat.assetDepthUSD * this.maxSaverCap)
-      )
+      eachLod(this.saversInfo, (v, k) => {
+        o.saversCount += v.oldSavers.saversCount
+        o.totalUSDSaved += (v.oldSavers.saversDepth * +v.savers.assetPriceUSD) / 1e8
+        o.totalEarn += (v.oldSavers.earned * +v.savers.assetPriceUSD) / 1e8
+        o.meanAPR += (+v.oldSavers.saversReturn / this.saversRow.length)
+        o.totalFilled += (+v.oldSavers.filled)
+      })
 
-      return [
+      this.saversGeneralStats = [
         {
           name: 'Total Savers',
-          value: saversStat.saversCount,
-          change: saversStat.saversCount - oldSaversStat.saversCount,
-          isDown: +saversStat.saversCount < +oldSaversStat.saversCount
+          value: g.saversCount,
+          change: g.saversCount - o.saversCount,
+          isDown: g.saversCount < o.saversCount
         },
         {
           name: 'Total Saved Value',
-          value: this.$options.filters.currency(saversStat.totalUSDSaved),
-          change: this.$options.filters.currency(saversStat.totalUSDSaved - oldSaversStat.totalUSDSaved),
-          isDown: +saversStat.totalUSDSaved < +oldSaversStat.totalUSDSaved
+          value: this.$options.filters.currency(g.totalUSDSaved),
+          change: this.$options.filters.currency(g.totalUSDSaved - o.totalUSDSaved),
+          isDown: g.totalUSDSaved < o.totalUSDSaved
         },
         {
           name: 'Total Earned',
-          value: this.$options.filters.currency(saversStat.totalEarn),
-          change: this.$options.filters.currency(oldSaversStat.totalEarn),
-          isDown: +saversStat.totalEarn < +oldSaversStat.totalEarn
+          value: this.$options.filters.currency(g.totalEarn),
+          change: this.$options.filters.currency(o.totalEarn),
+          isDown: g.totalEarn < o.totalEarn
         },
         {
           name: 'APR Mean',
-          value: this.$options.filters.percent(saversStat.meanAPR / this.tables.saversRows.data.length, 2),
-          change: this.$options.filters.percent((saversStat.meanAPR - oldSaversStat.meanAPR) / this.tables.saversRows.data.length, 4),
-          isDown: +saversStat.meanAPR < +oldSaversStat.meanAPR
+          value: this.$options.filters.percent(g.meanAPR, 2),
+          change: this.$options.filters.percent((g.meanAPR - o.meanAPR), 4),
+          isDown: g.meanAPR < o.meanAPR
         }
       ]
     },
-    networkEnv () {
-      return process.env.NETWORK
-    }
-  },
-  mounted () {
-    this.saverCols[5].hidden = this.networkEnv === 'stagenet'
-    this.$api.getPools().then(async ({ data }) => {
-      const runePrice = (await this.$api.getStats()).data.runePriceUSD
-      const saversExtraData = (await this.$api.getSaversExtraData()).data
-      const saversOldData = (await this.$api.getOldSaversExtraData()).data
-      const changes = this.getSaversChanges(saversOldData, saversExtraData)
-      this.oldSavers = saversOldData
-      const ps = data.filter(p => +p.units > 0).map(p => ({
-        status: p.status,
-        price: p.assetPriceUSD,
-        saverDepthPrice: (+p.saversDepth / 10 ** 8) * p.assetPriceUSD,
-        depth: ((+p.assetDepth / 10 ** 8) * p.assetPriceUSD) + ((+p.runeDepth / 10 ** 8) * runePrice),
-        assetDepthUSD: (+p.assetDepth / 10 ** 8) * p.assetPriceUSD,
-        apy: p.poolAPY,
-        volume: (+p.volume24h / 10 ** 8) * runePrice,
-        vd: (+p.volume24h) / ((+p.assetDepth * +p.assetPrice) + (+p.runeDepth)),
-        asset: p.asset,
-        saversDepth: (+p.saversDepth / 10 ** 8),
-        saversUnits: (+p.saversUnits),
-        depthToUnitsRatio: this.$options.filters.number(+p.saversDepth / +p.saversUnits, '0.00000'),
-        filled: saversExtraData[p.asset]?.filled,
-        saversCount: saversExtraData[p.asset]?.saversCount,
-        saverReturn: saversExtraData[p.asset]?.saverReturn,
-        synthSupply: saversExtraData[p.asset]?.synthSupply,
-        earned: saversExtraData[p.asset]?.earned,
-        changes: changes[p.asset] ?? {}
-      }))
-      this.setSavers(ps)
-    }).catch((e) => {
-      console.error(e)
-    })
-    this.$api.getMimir().then(({ data }) => {
-      this.maxSaverCap = (data.MAXSYNTHPERPOOLDEPTH * 2) / 10e3
-    }).catch(err => console.error('didn\'t catch the max synth per asset depth', err))
-  },
-  methods: {
-    normalNumberFormat (number, filter) {
-      return number ? this.$options.filters.number(+number, '0,0.00') : '-'
-    },
-    formattedPrice (number, filter) {
-      return '$' + this.$options.filters.number(number, '0.00a')
-    },
-    numberFormat (number, filter) {
-      return this.$options.filters.number(number, '0.00a')
-    },
-    curFormat (number) {
-      return this.$options.filters.currency(number)
-    },
-    formatAsset (asset) {
-      return asset.length > 10
-        ? asset.slice(0, 14) + '...'
-        : asset
-    },
-    gotoSaver (params) {
-      if (!params) { return }
-      this.$router.push(`/savers/${params.row.asset}`)
-    },
-    setSavers (pools) {
-      if (!pools && pools.length <= 0) {
-        return
-      }
-      for (const i in pools) {
-        if (+pools[i].saversUnits > 0) {
-          this.tables.saversRows.data.push(pools[i])
-        }
-      }
-      this.fillTotalSaversValue()
-    },
     fillTotalSaversValue () {
-      this.totalSaversValue = this.tables.saversRows.data.map(saver => ({
-        value: saver?.saverDepthPrice,
+      this.totalSaversValue = this.saversRow.map(saver => ({
+        value: saver?.saversDepthUSD,
         name: saver?.asset,
         itemStyle: {
           color: this.getAssetColor(saver?.asset)
@@ -328,47 +293,6 @@ export default {
           </div>
         `)
       }
-    },
-    setSaversFilled (saversFilled, oldSaversFilled) {
-      this.saversFilled = saversFilled
-      // this.saversChange = saversFilled - oldSaversFilled
-    },
-    getSaversChanges (oldData, newData) {
-      const ret = {}
-      Object.keys(oldData).forEach((asset) => {
-        ret[asset] = {
-          saversCount: {
-            value: this.$options.filters.number(newData[asset].saversCount - (oldData[asset].saversCount ?? 0), '0,0'),
-            isDown: (newData[asset].saversCount < (oldData[asset].saversCount ?? 0)),
-            enable: (newData[asset].saversCount ?? 0) - (oldData[asset].saversCount ?? 0)
-          },
-          saverReturn: {
-            value: this.percentageFormat(newData[asset].saverReturn - (oldData[asset].saverReturn ?? 0), 2),
-            isDown: (newData[asset].saverReturn < (oldData[asset].saverReturn ?? 0)),
-            enable: (newData[asset].saverReturn ?? 0) - (oldData[asset].saverReturn ?? 0)
-          },
-          earned: {
-            value: this.baseAmountFormat(oldData[asset].deltaEarned ?? 0),
-            isDown: oldData[asset].deltaEarned > 0,
-            enable: newData[asset].deltaEarned > 0
-          },
-          // filled: {
-          //   value: this.percentageFormat(newData[asset].filled - (oldData[asset].filled ?? 0), 2),
-          //   isDown: (newData[asset].filled < (oldData[asset].filled ?? 0))
-          // },
-          saversDepth: {
-            value: this.smallBaseAmountFormat(+newData[asset].saversDepth - (+oldData[asset].saversDepth ?? 0)),
-            isDown: (+newData[asset].saversDepth < (+oldData[asset].saversDepth ?? 0)),
-            enable: (newData[asset].saversDepth ?? 0) - (oldData[asset].saversDepth ?? 0)
-          },
-          saverDepthPrice: {
-            value: '$' + this.smallBaseAmountFormat((+newData[asset].saversDepth - (+oldData[asset].saversDepth ?? 0)) * newData[asset].assetPrice),
-            isDown: (+newData[asset].saversDepth < (+oldData[asset].saversDepth ?? 0)),
-            enable: (newData[asset].saversDepth ?? 0) - (oldData[asset].saversDepth ?? 0)
-          }
-        }
-      })
-      return ret
     }
   }
 }
