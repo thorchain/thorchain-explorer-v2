@@ -18,6 +18,12 @@
           <span class="mono value">{{ totalInfo.day.earnings | currency }}</span>
         </div>
         <div class="stat-item">
+          <span class="title">24hr Earnings APR:
+            <unknown-icon class="header-icon" v-tooltip="'(Earnings / Pooled) * Period Per Year'" />
+          </span>
+          <span class="mono value">{{ totalInfo.day.earningsAPR | percent(2) }}</span>
+        </div>
+        <div class="stat-item">
           <span class="title">24hr Swap Count:</span>
           <span class="mono value">{{ totalInfo.day.swapCount | number('0,0') }}</span>
         </div>
@@ -33,6 +39,10 @@
           <span class="mono value">{{ totalInfo.week.earnings | currency }}</span>
         </div>
         <div class="stat-item">
+          <span class="title">7D Earnings APR:</span>
+          <span class="mono value">{{ totalInfo.week.earningsAPR | percent(2) }}</span>
+        </div>
+        <div class="stat-item">
           <span class="title">7D Swap Count:</span>
           <span class="mono value">{{ totalInfo.week.swapCount | number('0,0') }}</span>
         </div>
@@ -46,6 +56,10 @@
         <div class="stat-item">
           <span class="title">30D Earnings:</span>
           <span class="mono value">{{ totalInfo.month.earnings | currency }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="title">30D Earnings APR:</span>
+          <span class="mono value">{{ totalInfo.month.earningsAPR | percent(2) }}</span>
         </div>
         <div class="stat-item">
           <span class="title">30D Swap Count:</span>
@@ -96,8 +110,10 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import UnknownIcon from '~/assets/images/unknown.svg?inline'
 
 export default {
+  components: { UnknownIcon },
   data () {
     return {
       loading: false,
@@ -171,6 +187,12 @@ export default {
           type: 'number',
           formatFn: this.formattedPrice,
           tdClass: 'mono'
+        },
+        {
+          label: 'Earnings APR',
+          field: 'earningsAPR',
+          type: 'percentage',
+          tdClass: 'mono'
         }
       ],
       pools: undefined,
@@ -237,13 +259,14 @@ export default {
             depth: ((+p.assetDepth / 10 ** 8) * p.assetPriceUSD),
             apy: p.annualPercentageRate,
             volume: pe ? (+pe.swapVolume / 10 ** 8) * this.runePrice : (+p.volume24h / 10 ** 8) * this.runePrice,
-            vd: (+p.volume24h) / ((+p.assetDepth * +p.assetPrice)),
+            vd: pe ? (+pe.swapVolume * this.runePrice) / (+p.assetDepth * +p.assetPriceUSD) : (+p.volume24h) / ((+p.assetDepth * +p.assetPrice)),
             asset: p.asset,
             saversDepth: (+p.saversDepth / 10 ** 8),
             depthToUnitsRatio: p.saversDepth ? this.$options.filters.number(+p.saversDepth / +p.saversUnits, '0.00000') : 0,
             earning24hr: pe ? (pe.earnings * this.runePrice) / 10 ** 8 : 0,
             annualEarningsExtrapolated: pe ? (pe.earnings * this.runePrice * 365) / 10 ** 8 : 0,
-            feeRatio: pe ? (pe.swapFees / pe.earnings) : 0
+            feeRatio: pe ? (pe.swapFees / pe.earnings) : 0,
+            earningsAPR: pe ? (pe.earnings / (+p.assetDepth * p.assetPrice)) * 365 : 0
           }
         })
         this.sepPools(ps)
@@ -268,17 +291,20 @@ export default {
       }
     },
     getTotalInfo (poolDatum) {
-      const updatePeriod = (period) => {
+      const updatePeriod = (period, ppy) => {
         poolDatum[period].pools.forEach((p) => {
           this.totalInfo[period].volume += (+p.swapVolume * this.runePrice) / 1e8
           this.totalInfo[period].earnings += (+p.earnings * this.runePrice) / 1e8
           this.totalInfo[period].swapCount += (+p.swapCount)
         })
+        this.totalInfo[period].earningsAPR =
+          (this.totalInfo[period].earnings /
+          this.totalInfo.pooled) * ppy
       }
 
-      updatePeriod('day')
-      updatePeriod('week')
-      updatePeriod('month')
+      updatePeriod('day', 365)
+      updatePeriod('week', 52.1429)
+      updatePeriod('month', 12)
     },
     normalNumberFormat (number, filter) {
       return number ? this.$options.filters.number(+number, '0,0.00') : '-'
@@ -338,9 +364,19 @@ export default {
     justify-content: space-between;
 
     .title {
+      display: flex;
+      align-items: center;
       color: var(--sec-font-color);
       margin-right: .5rem;
       font-size: .9rem;
+
+      .header-icon {
+        display: inline-block;
+        height: .9rem;
+        width: .9rem;
+        fill: var(--sec-font-color);
+        margin-left: 5px;
+      }
     }
 
     .value {
