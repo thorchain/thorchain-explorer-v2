@@ -97,6 +97,36 @@
                 <AssetIcon :asset="props.row.asset" />
                 <span>{{ props.formattedRow[props.column.field] }}</span>
               </div>
+              <div v-else-if="props.column.field == 'volume'" class="action-content">
+                <span>{{ props.formattedRow[props.column.field] }}</span>
+                <div class="action-section">
+                  <button class="action-btn mini-bubble info" @click="toggleSwap(props.row.originalIndex)">
+                    <swap-icon></swap-icon>
+                  </button>
+                  <div class="swap-interfaces">
+                    <transition name="fade-up">
+                      <div v-show="showSwapInterfaces[props.row.originalIndex]" class="simple-card normal swap-menu blue">
+                        <a v-for="ie in interfaces" :href="ie.swap_url" target="_blank">
+                          <img v-if="ie.img" :src="ie.img" alt="interface-icon" class="interface-icon">
+                          <span>{{ ie.name }}</span>
+                        </a>
+                      </div>
+                    </transition>
+                  </div>
+                </div>
+              </div>
+              <div v-else-if="props.column.field == 'earningsAPR'" class="action-content">
+                <span>{{ props.formattedRow[props.column.field] }}</span>
+                <drop-modal>
+                  <template v-slot:button>
+                    <finance-icon class="finance-icon"></finance-icon>
+                  </template>
+                  <a v-for="ie in interfaces" :href="ie.swap_url" target="_blank" class="interface">
+                    <img v-if="ie.img" :src="ie.img" alt="interface-icon" class="interface-icon">
+                    <span>{{ ie.name }}</span>
+                  </a>
+                </drop-modal>
+              </div>
               <span v-else>
                 {{ props.formattedRow[props.column.field] }}
               </span>
@@ -109,11 +139,15 @@
 </template>
 
 <script>
+import { shuffle } from 'lodash'
 import { mapGetters } from 'vuex'
 import UnknownIcon from '~/assets/images/unknown.svg?inline'
+import SwapIcon from '~/assets/images/swap.svg?inline'
+import FinanceIcon from '~/assets/images/finance-selected.svg?inline'
+import InterfacesJSON from '~/assets/wallets/index'
 
 export default {
-  components: { UnknownIcon },
+  components: { UnknownIcon, SwapIcon, FinanceIcon },
   data () {
     return {
       loading: false,
@@ -151,9 +185,9 @@ export default {
         {
           label: 'Volume 24H',
           field: 'volume',
-          type: 'number',
           formatFn: this.formattedPrice,
-          tdClass: 'mono'
+          tdClass: 'mono',
+          sortFn: this.numberSort
         },
         {
           label: 'Depth',
@@ -226,7 +260,9 @@ export default {
           earningsAPR: 0,
           swapCount: 0
         }
-      }
+      },
+      showSwapInterfaces: {},
+      interfaces: []
     }
   },
   computed: {
@@ -240,9 +276,13 @@ export default {
     }
   },
   mounted () {
+    this.loadInterfaces()
     this.updatePool(this.period)
   },
   methods: {
+    loadInterfaces () {
+      this.interfaces = shuffle(InterfacesJSON)
+    },
     updatePool (period) {
       this.loading = true
       this.$api.getPools(period).then(async ({ data }) => {
@@ -324,6 +364,11 @@ export default {
         : asset
     },
     gotoPoolTable (params) {
+      const ac = Array.from(document.querySelectorAll('.action-section'))
+      const el = params.event.srcElement
+      if (ac?.some(l => l?.contains(el))) {
+        return
+      }
       this.gotoPool(params.row.asset)
     },
     sepPools (pools) {
@@ -341,6 +386,14 @@ export default {
           this.tables.standbyRows.data.push(pools[i])
         }
       }
+    },
+    toggleSwap (index) {
+      if (this.showSwapInterfaces[index] !== undefined) {
+        this.showSwapInterfaces[index] = !this.showSwapInterfaces[index]
+      } else {
+        this.$set(this.showSwapInterfaces, index, true)
+      }
+      console.log(this.showSwapInterfaces)
     }
   }
 }
@@ -394,6 +447,100 @@ export default {
     border-top: 1px solid var(--border-color);
   }
 
+}
+
+.finance-icon {
+  fill: #14b8a6;
+}
+
+.action-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.action-btn {
+  cursor: pointer;
+  border-radius: .5rem;
+  border: none;
+
+  svg {
+    height: 1.3rem;
+    width: 1.3rem;
+  }
+}
+
+.action-section {
+  position: relative;
+}
+
+.swap-interfaces {
+  .swap-menu {
+    display: flex;
+    position: absolute;
+    padding: 0.2rem 0;
+    left: calc(100% + 10px);
+    top: 0;
+
+    a {
+      display: flex;
+      align-items: center;
+      color: var(--font-color);
+      text-decoration: none;
+      padding: 0.5rem;
+      border-radius: 0.2rem;
+      margin: 0 0.2rem;
+      gap: 10px;
+      font-family: "Exo 2";
+      font-size: 0.9rem;
+      text-wrap: nowrap;
+
+      .interface-icon {
+        fill: inherit;
+        widows: 1rem;
+        height: 1rem;
+      }
+
+      &:hover {
+        background-color: var(--darker-bg);
+      }
+
+      .interface-icon {
+        width: 1.3rem;
+        height: 1.3rem;
+      }
+    }
+
+    &.blue {
+      a {
+        color: var(--font-color);
+      }
+    }
+  }
+}
+
+a.interface {
+  display: flex;
+  align-items: center;
+  color: var(--font-color);
+  text-decoration: none;
+  padding: 0.5rem;
+  border-radius: 0.2rem;
+  margin: 0 0.2rem;
+  gap: 10px;
+  font-family: "Exo 2";
+  font-size: 0.9rem;
+  text-wrap: nowrap;
+
+  &:hover {
+    background-color: var(--darker-bg);
+  }
+
+  .interface-icon {
+    width: 1.3rem;
+    height: 1.3rem;
+  }
 }
 
 @include md {
