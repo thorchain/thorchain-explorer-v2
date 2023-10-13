@@ -293,6 +293,9 @@ export default {
       if (id) {
         clearInterval(id)
       }
+    },
+    numberSort (x, y, col, rowX, rowY) {
+      return (+x < +y ? -1 : (+x > +y ? 1 : 0))
     }
   }
 }
