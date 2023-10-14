@@ -97,9 +97,9 @@
                 <AssetIcon :asset="props.row.asset" />
                 <span>{{ props.formattedRow[props.column.field] }}</span>
               </div>
-              <div v-else-if="props.column.field == 'volume'" class="action-content">
+              <div v-else-if="props.column.field == 'volume'">
                 <span>{{ props.formattedRow[props.column.field] }}</span>
-                <drop-modal :right="true">
+                <!-- <drop-modal :right="true">
                   <template #button>
                     <swap-icon />
                   </template>
@@ -107,11 +107,11 @@
                     <img v-if="ie.img" :src="ie.img" alt="interface-icon" class="interface-icon">
                     <span>{{ ie.name }}</span>
                   </a>
-                </drop-modal>
+                </drop-modal> -->
               </div>
-              <div v-else-if="props.column.field == 'earningsAPR'" class="action-content">
+              <div v-else-if="props.column.field == 'earningsAPR'">
                 <span>{{ props.formattedRow[props.column.field] }}</span>
-                <drop-modal>
+                <!-- <drop-modal>
                   <template #button>
                     <finance-icon class="finance-icon" />
                   </template>
@@ -119,7 +119,7 @@
                     <img v-if="ie.img" :src="ie.img" alt="interface-icon" class="interface-icon">
                     <span>{{ ie.name }}</span>
                   </a>
-                </drop-modal>
+                </drop-modal> -->
               </div>
               <span v-else>
                 {{ props.formattedRow[props.column.field] }}
@@ -179,9 +179,9 @@ export default {
         {
           label: 'Volume 24H',
           field: 'volume',
+          type: 'number',
           formatFn: this.formattedPrice,
           tdClass: 'mono',
-          sortFn: this.numberSort
         },
         {
           label: 'Depth',
