@@ -1,20 +1,16 @@
 <template>
   <div class="action-section" ref="actRef" >
-    <button :class="['action-btn mini-bubble info', {'on': onCss}]" @click="toggleStyle()" :id="`popover-${name}-${index}`">
+    <button :class="['action-btn mini-bubble info', {'on': onCss}]" @click="toggle()" :id="`popover-${name}-${index}`">
       <slot name="button" />
     </button>
-    <div class="modal">
-      <transition name="fade-up">
-        <b-popover
-          triggers="click"
-          :target="`popover-${name}-${index}`"
-        >
-          <div :class="['simple-card', 'normal', 'menu', {'right': right}]">
-            <slot />
-          </div>
-        </b-popover>
-      </transition>
-    </div>
+    <b-popover
+      :target="`popover-${name}-${index}`"
+      :show.sync="showModal"
+    >
+      <div :class="['simple-card', 'normal', 'menu', {'right': right}]">
+        <slot />
+      </div>
+    </b-popover>
   </div>
 </template>
 
@@ -25,13 +21,21 @@ export default {
   props: ['right', 'name', 'index'],
   data () {
     return {
-      onCss: false
+      onCss: false,
+      showModal: false
     }
   },
   mounted () {
+    window.addEventListener('click', (e) => {
+      if (this.$refs.actRef?.contains(e.target) === false) {
+        this.showModal = false
+        this.onCss = false
+      }
+    })
   },
   methods: {
-    toggleStyle () {
+    toggle () {
+      this.showModal = !this.showModal
       this.onCss = !this.onCss
     }
   }
