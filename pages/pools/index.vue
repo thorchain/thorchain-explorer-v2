@@ -97,9 +97,9 @@
                 <AssetIcon :asset="props.row.asset" />
                 <span>{{ props.formattedRow[props.column.field] }}</span>
               </div>
-              <div v-else-if="props.column.field == 'volume'">
+              <div v-else-if="props.column.field == 'volume'" class="action-content">
                 <span>{{ props.formattedRow[props.column.field] }}</span>
-                <!-- <drop-modal :right="true">
+                <drop-modal name="swap" :index="props.row.originalIndex">
                   <template #button>
                     <swap-icon />
                   </template>
@@ -107,11 +107,11 @@
                     <img v-if="ie.img" :src="ie.img" alt="interface-icon" class="interface-icon">
                     <span>{{ ie.name }}</span>
                   </a>
-                </drop-modal> -->
+                </drop-modal>
               </div>
-              <div v-else-if="props.column.field == 'earningsAPR'">
+              <div v-else-if="props.column.field == 'earningsAPR'" class="action-content">
                 <span>{{ props.formattedRow[props.column.field] }}</span>
-                <!-- <drop-modal>
+                <drop-modal name="earn" :index="props.row.originalIndex">
                   <template #button>
                     <finance-icon class="finance-icon" />
                   </template>
@@ -119,7 +119,7 @@
                     <img v-if="ie.img" :src="ie.img" alt="interface-icon" class="interface-icon">
                     <span>{{ ie.name }}</span>
                   </a>
-                </drop-modal> -->
+                </drop-modal>
               </div>
               <span v-else>
                 {{ props.formattedRow[props.column.field] }}
@@ -510,9 +510,9 @@ a.interface {
   align-items: center;
   color: var(--font-color);
   text-decoration: none;
-  padding: 0.5rem;
+  padding: 0.5rem 0.3rem;
   border-radius: 0.2rem;
-  margin: 0 0.2rem;
+  margin: 0.1rem 0.2rem;
   gap: 10px;
   font-family: "Exo 2";
   font-size: 0.9rem;
