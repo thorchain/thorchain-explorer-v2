@@ -1,33 +1,40 @@
 <template>
-    <div class="action-section">
-        <button class="action-btn mini-bubble info" @click="toggleModal()">
-        <slot name="button"></slot>
-        </button>
-        <div class="modal">
-        <transition name="fade-up">
-            <div v-show="showModal" class="simple-card normal menu">
-                <slot></slot>
-            </div>
-        </transition>
+  <div class="action-section" ref="actRef" >
+    <button class="action-btn mini-bubble info" @click="toggleModal()">
+      <slot name="button" />
+    </button>
+    <div class="modal">
+      <transition name="fade-up">
+        <div v-show="showModal" :class="['simple-card', 'normal', 'menu', {'right': right}]">
+          <slot />
         </div>
+      </transition>
     </div>
+  </div>
 </template>
 
 <script>
 export default {
-    components: {
-    },
-    props: [],
-    data () {
-        return {
-            showModal: false
-        }
-    },
-    methods: {
-        toggleModal() {
-            this.showModal = !this.showModal
-        }
+  components: {
+  },
+  props: ['right'],
+  data () {
+    return {
+      showModal: false
     }
+  },
+  mounted () {
+    window.addEventListener('click', (e) => {
+      if (this.$refs.actRef?.contains(e.target) === false) {
+        this.showModal = false
+      }
+    })
+  },
+  methods: {
+    toggleModal () {
+      this.showModal = !this.showModal
+    }
+  }
 }
 </script>
 
@@ -54,6 +61,11 @@ export default {
     padding: 0.2rem 0;
     right: calc(100% + 10px);
     top: 0;
+
+    &.right {
+      right: initial;
+      left: calc(100% + 10px);
+    }
 
     a {
       display: flex;
@@ -86,4 +98,3 @@ export default {
   }
 }
 </style>
-  
