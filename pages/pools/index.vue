@@ -284,7 +284,7 @@ export default {
 
         const ps = this.pools.map((p) => {
           const pe = pd?.day.pools.find(e => e.pool === p.asset)
-          this.totalInfo.pooled += ((+p.assetDepth / 10 ** 8) * p.assetPriceUSD)
+          this.totalInfo.pooled += ((+p.assetDepth * 2 / 10 ** 8) * p.assetPriceUSD)
 
           return {
             status: p.status,
