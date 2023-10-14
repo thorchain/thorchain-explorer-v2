@@ -19,7 +19,7 @@
         </div>
         <div class="stat-item">
           <span class="title">24hr Earnings APR:
-            <unknown-icon class="header-icon" v-tooltip="'(Earnings / Pooled) * Period Per Year'" />
+            <unknown-icon v-tooltip="'(Earnings / Pooled) * Period Per Year'" class="header-icon" />
           </span>
           <span class="mono value">{{ totalInfo.day.earningsAPR | percent(2) }}</span>
         </div>
@@ -99,29 +99,23 @@
               </div>
               <div v-else-if="props.column.field == 'volume'" class="action-content">
                 <span>{{ props.formattedRow[props.column.field] }}</span>
-                <div class="action-section">
-                  <button class="action-btn mini-bubble info" @click="toggleSwap(props.row.originalIndex)">
-                    <swap-icon></swap-icon>
-                  </button>
-                  <div class="swap-interfaces">
-                    <transition name="fade-up">
-                      <div v-show="showSwapInterfaces[props.row.originalIndex]" class="simple-card normal swap-menu blue">
-                        <a v-for="ie in interfaces" :href="ie.swap_url" target="_blank">
-                          <img v-if="ie.img" :src="ie.img" alt="interface-icon" class="interface-icon">
-                          <span>{{ ie.name }}</span>
-                        </a>
-                      </div>
-                    </transition>
-                  </div>
-                </div>
+                <drop-modal :right="true">
+                  <template #button>
+                    <swap-icon />
+                  </template>
+                  <a v-for="ie in interfaces" :href="ie.swap_url || ie.info_url" target="_blank" class="interface">
+                    <img v-if="ie.img" :src="ie.img" alt="interface-icon" class="interface-icon">
+                    <span>{{ ie.name }}</span>
+                  </a>
+                </drop-modal>
               </div>
               <div v-else-if="props.column.field == 'earningsAPR'" class="action-content">
                 <span>{{ props.formattedRow[props.column.field] }}</span>
                 <drop-modal>
-                  <template v-slot:button>
-                    <finance-icon class="finance-icon"></finance-icon>
+                  <template #button>
+                    <finance-icon class="finance-icon" />
                   </template>
-                  <a v-for="ie in interfaces" :href="ie.swap_url" target="_blank" class="interface">
+                  <a v-for="ie in interfaces.filter(e => e.earn_url)" :href="ie.earn_url" target="_blank" class="interface">
                     <img v-if="ie.img" :src="ie.img" alt="interface-icon" class="interface-icon">
                     <span>{{ ie.name }}</span>
                   </a>
@@ -261,7 +255,6 @@ export default {
           swapCount: 0
         }
       },
-      showSwapInterfaces: {},
       interfaces: []
     }
   },
@@ -386,14 +379,6 @@ export default {
           this.tables.standbyRows.data.push(pools[i])
         }
       }
-    },
-    toggleSwap (index) {
-      if (this.showSwapInterfaces[index] !== undefined) {
-        this.showSwapInterfaces[index] = !this.showSwapInterfaces[index]
-      } else {
-        this.$set(this.showSwapInterfaces, index, true)
-      }
-      console.log(this.showSwapInterfaces)
     }
   }
 }
