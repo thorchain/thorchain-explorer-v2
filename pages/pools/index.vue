@@ -104,7 +104,6 @@
                     <swap-icon />
                   </template>
                   <a v-for="ie in interfaces" :href="ie.swap_url || ie.info_url" target="_blank" class="interface">
-                    <img v-if="ie.img" :src="ie.img" alt="interface-icon" class="interface-icon">
                     <span>{{ ie.name }}</span>
                   </a>
                 </drop-modal>
@@ -116,7 +115,6 @@
                     <finance-icon class="finance-icon" />
                   </template>
                   <a v-for="ie in interfaces.filter(e => e.earn_url)" :href="ie.earn_url" target="_blank" class="interface">
-                    <img v-if="ie.img" :src="ie.img" alt="interface-icon" class="interface-icon">
                     <span>{{ ie.name }}</span>
                   </a>
                 </drop-modal>
