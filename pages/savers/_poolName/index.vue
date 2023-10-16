@@ -139,7 +139,7 @@ export default {
             asset_earned: saverDetail.asset_redeem_value - saverDetail.asset_deposit_value,
             APR: this.calcAPR(saverDetail),
             // for pie chart
-            value: (saverDetail.asset_deposit_value * this.saversData.assetPrice) / 10 ** 8,
+            value: (saverDetail.asset_redeem_value * this.saversData.assetPriceUSD) / 10 ** 8,
             name: saverDetail.asset_address
           }))
         })

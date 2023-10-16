@@ -17,16 +17,8 @@ export function getOhclPrice () {
   return $axiosInstace.get(endpoints[process.env.NETWORK].SERVER_URL + 'api/ohclPrice')
 }
 
-export function getSaversExtraData () {
-  return $axiosInstace.get(endpoints[process.env.NETWORK].SERVER_URL + 'api/saversExtraData')
-}
-
 export function getSaversInfo () {
   return $axiosInstace.get(endpoints[process.env.NETWORK].SERVER_URL + 'api/saversInfo')
-}
-
-export function getOldSaversExtraData () {
-  return $axiosInstace.get(endpoints[process.env.NETWORK].SERVER_URL + 'api/oldSaversExtraData')
 }
 
 export function getChainsHeight () {
