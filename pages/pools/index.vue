@@ -27,6 +27,12 @@
           <span class="title">24hr Swap Count:</span>
           <span class="mono value">{{ totalInfo.day.swapCount | number('0,0') }}</span>
         </div>
+        <div class="stat-item">
+          <span class="title">24hr Average Fee:
+            <unknown-icon v-tooltip="'Average Fee in basis point (Earnings / Volume)'" class="header-icon" />
+          </span>
+          <span class="mono value">{{ totalInfo.day.avgFee | number('0.00') }} BP</span>
+        </div>
       </div>
       <hr>
       <div class="stat-group">
@@ -46,6 +52,10 @@
           <span class="title">7D Swap Count:</span>
           <span class="mono value">{{ totalInfo.week.swapCount | number('0,0') }}</span>
         </div>
+        <div class="stat-item">
+          <span class="title">7D Average Fee:</span>
+          <span class="mono value">{{ totalInfo.week.avgFee | number('0.00') }} BP</span>
+        </div>
       </div>
       <hr>
       <div class="stat-group">
@@ -64,6 +74,33 @@
         <div class="stat-item">
           <span class="title">30D Swap Count:</span>
           <span class="mono value">{{ totalInfo.month.swapCount | number('0,0') }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="title">30D Average Fee:</span>
+          <span class="mono value">{{ totalInfo.month.avgFee | number('0.00') }} BP</span>
+        </div>
+      </div>
+      <hr>
+      <div class="stat-group">
+        <div class="stat-item">
+          <span class="title">Year Volume:</span>
+          <span class="mono value">{{ totalInfo.year.volume | currency }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="title">Year Earnings:</span>
+          <span class="mono value">{{ totalInfo.year.earnings | currency }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="title">Year Earnings APR:</span>
+          <span class="mono value">{{ totalInfo.year.earningsAPR | percent(2) }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="title">Year Swap Count:</span>
+          <span class="mono value">{{ totalInfo.year.swapCount | number('0,0') }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="title">Year Average Fee:</span>
+          <span class="mono value">{{ totalInfo.year.avgFee | number('0.00') }} BP</span>
         </div>
       </div>
     </div>
@@ -238,19 +275,29 @@ export default {
           volume: 0,
           earnings: 0,
           earningsAPR: 0,
-          swapCount: 0
+          swapCount: 0,
+          avgFee: 0
         },
         week: {
           volume: 0,
           earnings: 0,
           earningsAPR: 0,
-          swapCount: 0
+          swapCount: 0,
+          avgFee: 0
         },
         month: {
           volume: 0,
           earnings: 0,
           earningsAPR: 0,
-          swapCount: 0
+          swapCount: 0,
+          avgFee: 0
+        },
+        year: {
+          volume: 0,
+          earnings: 0,
+          earningsAPR: 0,
+          swapCount: 0,
+          avgFee: 0
         }
       },
       interfaces: []
@@ -312,10 +359,12 @@ export default {
         const poolsDataDay = (await this.$api.getPoolsHistory()).data
         const poolsDataWeek = (await this.$api.getPoolsHistory('Week')).data
         const poolsDataMonth = (await this.$api.getPoolsHistory('Month')).data
+        const poolsDataYear = (await this.$api.getPoolsHistory('Year')).data
         return {
           day: poolsDataDay,
           week: poolsDataWeek,
-          month: poolsDataMonth
+          month: poolsDataMonth,
+          year: poolsDataYear
         }
       } catch (error) {
         return undefined
@@ -328,14 +377,18 @@ export default {
           this.totalInfo[period].earnings += (+p.earnings * this.runePrice) / 1e8
           this.totalInfo[period].swapCount += (+p.swapCount)
         })
-        this.totalInfo[period].earningsAPR =
-          (this.totalInfo[period].earnings /
-          this.totalInfo.pooled) * ppy
+
+        const ve = (this.totalInfo[period].earnings / this.totalInfo[period].volume)
+        const ep = (this.totalInfo[period].earnings / this.totalInfo.pooled)
+
+        this.totalInfo[period].earningsAPR = ep * ppy
+        this.totalInfo[period].avgFee = ve * 10000
       }
 
       updatePeriod('day', 365)
       updatePeriod('week', 52.1429)
       updatePeriod('month', 12)
+      updatePeriod('year', 1)
     },
     normalNumberFormat (number, filter) {
       return number ? this.$options.filters.number(+number, '0,0.00') : '-'
@@ -398,6 +451,12 @@ export default {
     align-items: center;
     padding: 5px 0;
     justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 5px;
+
+    .value {
+      margin-top: 5px;
+    }
 
     .title {
       display: flex;
