@@ -344,7 +344,7 @@ export default {
             earning24hr: pe ? (pe.earnings * this.runePrice) / 10 ** 8 : 0,
             annualEarningsExtrapolated: pe ? (pe.earnings * this.runePrice * 365) / 10 ** 8 : 0,
             feeRatio: pe ? (pe.swapFees / pe.earnings) : 0,
-            earningsAPR: pe ? (pe.earnings / (+p.assetDepth * p.assetPrice)) * 365 : 0
+            earningsAPR: pe ? (pe.earnings / ((+p.assetDepth * p.assetPrice) + +p.runeDepth)) * 365 : 0
           }
         })
         this.sepPools(ps)
