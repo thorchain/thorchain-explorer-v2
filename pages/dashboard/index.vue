@@ -669,7 +669,7 @@ export default {
       .then((res) => {
         this.lastHeight = +res?.data?.block?.header?.height
         this.$api
-          .getTendermintLatestBlocks(+this.lastHeight - 9)
+          .getTendermintLatestBlocks()
           .then(
             res =>
               (this.blocks = this.formatTendermintBlocks(
