@@ -41,7 +41,7 @@ export function parseCosmosTx (ntx) {
 
         ret.push({
           type: 'Send',
-          inout: [[{
+          inout: [[[{
             is: el?.amount[0],
             address: el.to_address,
             outAddress: el.from_address,
@@ -50,10 +50,11 @@ export function parseCosmosTx (ntx) {
               name: assetName,
               amount: el?.amount[0].amount / 10 ** 8
             }
-          }]],
+          }]]],
           gas: [+ntx?.tx_response?.gas_used / 10 ** 8 + ' ' + assetName],
           date: moment(ntx?.tx_response.timestamp).format('MM/DD/YYYY hh:mm:ss A'),
-          height: +ntx?.tx_response.height
+          height: +ntx?.tx_response.height,
+          memo: ntx.tx?.body?.memo
         })
         break
 

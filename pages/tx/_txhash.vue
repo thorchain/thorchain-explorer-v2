@@ -390,7 +390,7 @@ export default {
           }
         })
 
-        if (res?.status / 200 === 1 && (res.data?.inbound_observed?.started !== false || res.data?.inbound_observed?.completed === true || res.data?.outbound_signed?.completed === false)) {
+        if (res?.status / 200 === 1 && (res.data?.inbound_observed?.started === true || res.data?.inbound_observed?.completed === true || res.data?.outbound_signed?.completed === false)) {
           this.tx = parseThornodeStatus(res.data)
           this.isLoading = false
           this.loadingPercentage = 100
