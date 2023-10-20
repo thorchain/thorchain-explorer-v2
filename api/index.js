@@ -64,8 +64,6 @@ import {
   getDashboardPlots,
   getExraNodesInfo,
   getOhclPrice,
-  getSaversExtraData,
-  getOldSaversExtraData,
   getChainsHeight,
   getServerTx,
   getDevTx,
