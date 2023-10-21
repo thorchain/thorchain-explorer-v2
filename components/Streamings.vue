@@ -7,7 +7,7 @@
       <streamingIcon class="streaming-icon large-icon" />
       <h3>There is no streaming swaps ongoing at the moment.</h3>
     </div>
-    <template v-for="(o, i) in streamingSwaps" v-else>
+    <template v-for="(o, i) in filteredStreamingSwaps" v-else>
       <div :key="i" class="streaming-item">
         <div class="upper-body">
           <div class="asset-container">
@@ -41,6 +41,15 @@
       </div>
       <hr :key="i + '-hr'" class="hr-space">
     </template>
+    <template #footer>
+      <b-pagination
+        v-model="currentPage"
+        class="center"
+        :total-rows="streamingSwaps.length"
+        :per-page="10"
+        @input="changePage"
+      />
+    </template>
   </Card>
 </template>
 
@@ -53,10 +62,19 @@ export default {
   components: { streamingIcon },
   data () {
     return {
+      currentPage: 1,
       noStreaming: false,
       loading: true,
       streamingSwaps: [],
       intervalId: undefined
+    }
+  },
+  computed: {
+    filteredStreamingSwaps () {
+      return this.streamingSwaps.slice(
+        (this.currentPage - 1) * 10,
+        this.currentPage * 10
+      )
     }
   },
   async mounted () {
