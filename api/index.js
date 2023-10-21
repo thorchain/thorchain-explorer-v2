@@ -66,7 +66,6 @@ import {
   getOhclPrice,
   getChainsHeight,
   getServerTx,
-  getDevTx,
   getPoolsHistory,
   getOldPoolsHistory,
   getSaversInfo
@@ -203,7 +202,6 @@ export default function ({ $axios }, inject) {
     getTxStages,
     getTxStatus,
     getServerTx,
-    getDevTx,
     earningLastDay,
     getStreamingSwaps,
     getPoolsHistory,
