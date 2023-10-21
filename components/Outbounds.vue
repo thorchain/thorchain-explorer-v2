@@ -30,7 +30,7 @@
       </div>
       <hr :key="i + '-hr'" class="hr-space">
     </template>
-    <template #footer>
+    <template v-if="outbounds.length > 10" #footer>
       <b-pagination
         v-model="currentPage"
         class="center"
