@@ -141,6 +141,7 @@ export default {
     display: flex;
     flex-direction: column;
     margin-left: auto;
+    text-overflow: ellipsis;
 
     span {
       font-size: .9rem;
