@@ -7,7 +7,7 @@
       <scheduleIcon class="schedule-icon large-icon" />
       <h3>There is no outbound schedule inside THORChain.</h3>
     </div>
-    <template v-for="(o, i) in outbounds" v-else>
+    <template v-for="(o, i) in filteredOutbounds" v-else>
       <div :key="i" class="outbound-item">
         <div v-if="o.coin" class="asset-item">
           <asset-icon :asset="o.coin.asset" />
@@ -15,7 +15,9 @@
             {{ $options.filters.number(o.coin.amount / 1e8, '0,0.0000') }}
             <small class="asset-text sec-color">{{ o.coin.asset }}</small>
           </span>
-          <div v-if="o.label === 'Scheduled'" class="mini-bubble info">Scheduled</div>
+          <div v-if="o.label === 'Scheduled'" class="mini-bubble info">
+            Scheduled
+          </div>
         </div>
         <div class="extra-right">
           <small v-if="o.to_address" class="mono">To
@@ -28,6 +30,15 @@
       </div>
       <hr :key="i + '-hr'" class="hr-space">
     </template>
+    <template #footer>
+      <b-pagination
+        v-model="currentPage"
+        class="center"
+        :total-rows="outbounds.length"
+        :per-page="10"
+        @input="changePage"
+      />
+    </template>
   </Card>
 </template>
 
@@ -38,10 +49,19 @@ export default {
   components: { scheduleIcon },
   data () {
     return {
+      currentPage: 1,
       noOutnound: false,
       loading: true,
       outbounds: [],
       intervalId: undefined
+    }
+  },
+  computed: {
+    filteredOutbounds () {
+      return this.outbounds.slice(
+        (this.currentPage - 1) * 10,
+        this.currentPage * 10
+      )
     }
   },
   mounted () {
@@ -96,6 +116,7 @@ export default {
   display: flex;
   justify-content: space-between;
   gap: 8px;
+  overflow-y: hidden;
 
   .asset-item {
     display: flex;
