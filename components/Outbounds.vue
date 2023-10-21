@@ -116,7 +116,6 @@ export default {
   display: flex;
   justify-content: space-between;
   gap: 8px;
-  overflow-y: hidden;
 
   .asset-item {
     display: flex;
