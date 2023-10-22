@@ -1,7 +1,17 @@
 <template>
   <Page>
     <Nav :active-mode.sync="period" :nav-items="periods" pre-text="Period :" />
-    <Card :is-loading="loading">
+    <Card :is-loading="loading" title="Pool Earnings">
+      <template #header>
+        <button class="button-container full-screen-btn" @click="showChange = !showChange">
+          <template v-if="showChange">
+            Hide Changes
+          </template>
+          <template v-else>
+            Show Changes
+          </template>
+        </button>
+      </template>
       <div v-if="tableData.length > 0" class="pools-box">
         <vue-good-table
           v-if="tableData.length > 0"
@@ -10,6 +20,7 @@
           style-class="vgt-table net-table"
           :sort-options="{
             enabled: true,
+            initialSortBy: {field: 'swapVolume', type: 'desc'}
           }"
         >
           <template slot="table-row" slot-scope="props">
@@ -20,7 +31,7 @@
             <div v-else-if="props.column.field === 'endAssetDepth'">
               {{ props.formattedRow[props.column.field] }}
               <progress-icon
-                v-if="true"
+                v-if="showChange"
                 :data-number="smallBaseAmountFormat(props.row.change.endAssetDepth)"
                 :is-down="props.row.change.endAssetDepth < 0"
               />
@@ -34,7 +45,7 @@
               </span>
               {{ props.formattedRow[props.column.field] }}
               <progress-icon
-                v-if="true"
+                v-if="showChange"
                 :data-number="smallBaseAmountFormat(props.row.change.endRuneDepth)"
                 :is-down="props.row.change.endRuneDepth < 0"
               />
@@ -44,21 +55,22 @@
                 props.column.field === 'swapFees' ||
                   props.column.field === 'earnings' ||
                   props.column.field === 'swapVolume' ||
-                  props.column.field === 'rewards'"
+                  props.column.field === 'rewards' ||
+                  props.column.field === 'estEarnings'"
             >
               $ {{ smallBaseAmountFormat(+props.row[props.column.field]* runePrice) }}
               <progress-icon
-                v-if="true"
+                v-if="showChange"
                 :data-number="smallBaseAmountFormat(+props.row.change[props.column.field]* runePrice)"
                 :is-down="+props.row.change[props.column.field]< 0"
               />
             </div>
-            <div v-else-if="props.column.field === 'feesEarnings'">
+            <div v-else-if="props.column.field === 'feesEarnings' || props.column.field === 'feesReward'">
               {{ props.formattedRow[props.column.field] }}
               <progress-icon
-                v-if="true"
-                :data-number="`${props.row.change.feesEarnings.toFixed(2) * 1e2}%`"
-                :is-down="props.row.change.feesEarnings < 0"
+                v-if="showChange"
+                :data-number="`${percentageFormat(props.row.change[props.column.field], 2)}`"
+                :is-down="props.row.change[props.column.field] < 0"
               />
             </div>
             <span v-else>
@@ -80,6 +92,7 @@ export default {
       loading: false,
       error: false,
       period: 'Week',
+      showChange: true,
       periods: [
         { text: '24 Hours', mode: 'day' },
         { text: '1 Week', mode: 'Week' },
@@ -122,19 +135,34 @@ export default {
         {
           label: 'Fees',
           field: 'swapFees',
+          type: 'number',
           formatFn: this.smallBaseAmountFormat,
           tdClass: 'mono'
         },
         {
           label: 'Rewards',
           field: 'rewards',
+          type: 'number',
           formatFn: this.smallBaseAmountFormat,
           tdClass: 'mono'
         },
         {
-          label: 'Fees Ratio',
+          label: 'Fees/Earnings',
           field: 'feesEarnings',
           type: 'percentage',
+          tdClass: 'mono'
+        },
+        {
+          label: 'Fees/Reward',
+          field: 'feesReward',
+          type: 'percentage',
+          tdClass: 'mono'
+        },
+        {
+          label: 'Est. Yr. Earnings',
+          field: 'estEarnings',
+          type: 'number',
+          formatFn: this.baseAmountFormat,
           tdClass: 'mono'
         }
       ],
@@ -173,9 +201,12 @@ export default {
     createTableData (poolsData, oldPoolsData) {
       this.tableData = poolsData.pools.map((p) => {
         const o = oldPoolsData.pools.find(op => op.pool === p.pool)
+        const pe = p.earnings * this.getPPY(this.period)
         return {
           ...p,
           feesEarnings: p.swapFees / p.earnings,
+          feesReward: p.swapFees / p.rewards,
+          estEarnings: pe,
           change: {
             endAssetDepth: this.getChange(p.endAssetDepth, p.startAssetDepth),
             endRuneDepth: this.getChange(p.endRuneDepth, p.startRuneDepth),
@@ -183,10 +214,24 @@ export default {
             swapVolume: this.getChange(p.swapVolume, o?.swapVolume),
             swapFees: this.getChange(p.swapFees, o?.swapFees),
             rewards: this.getChange(p.rewards, o?.rewards),
-            feesEarnings: this.getChange((p.swapFees / p.earnings), (o?.swapFees / o?.earnings))
+            feesEarnings: this.getChange((p.swapFees / p.earnings), (o?.swapFees / o?.earnings)),
+            feesReward: this.getChange((p.swapFees / p.rewards), (o?.swapFees / o?.rewards)),
+            estEarnings: this.getChange(pe, o?.earnings * this.getPPY(this.period))
           }
         }
       })
+    },
+    getPPY (period) {
+      switch (period) {
+        case 'day':
+          return 365
+        case 'Month':
+          return 12
+        case 'Year':
+          return 1
+        case 'Week':
+          return 52.1429
+      }
     }
   }
 }

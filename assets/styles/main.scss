@@ -355,6 +355,17 @@ input {
   }
 }
 
+.vgt-table {
+  .td-center {
+    text-align: center;
+  }
+
+  .th-center {
+    text-align: center;
+    padding-right: 10.5px;
+  }
+}
+
 .vgt-wrap .vgt-global-search {
  background: transparent;
  border: 1px solid var(--border-color);

@@ -1,5 +1,5 @@
 <template>
-  <div v-if="!loading" class="pool-stats base-container">
+  <div class="pool-stats base-container">
     <div class="stat-group">
       <div class="stat-item">
         <span class="title">Total Pooled:</span>

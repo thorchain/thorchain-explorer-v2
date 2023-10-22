@@ -28,8 +28,21 @@
                 <AssetIcon :asset="props.row.asset" />
                 <span>{{ props.formattedRow[props.column.field] }}</span>
               </div>
-              <div v-else-if="props.column.field == 'volume'" class="action-content">
+              <div v-else-if="props.column.field == 'volume'">
                 <span>{{ props.formattedRow[props.column.field] }}</span>
+              </div>
+              <div v-else-if="props.column.field == 'earningsAPR'">
+                <span>{{ props.formattedRow[props.column.field] }}</span>
+              </div>
+              <div v-else-if="props.column.field == 'collateral'">
+                <span v-if="props.row.collateral > 0">
+                  ${{ (props.row.collateral * props.row.price) | number('0,0.00a') }}
+                </span>
+                <span v-else>
+                  -
+                </span>
+              </div>
+              <div v-else-if="props.column.field == 'actions'" class="action-content">
                 <drop-modal name="swap" :index="props.row.originalIndex">
                   <template #button>
                     <swap-icon />
@@ -38,9 +51,6 @@
                     <span>{{ ie.name }}</span>
                   </a>
                 </drop-modal>
-              </div>
-              <div v-else-if="props.column.field == 'earningsAPR'" class="action-content">
-                <span>{{ props.formattedRow[props.column.field] }}</span>
                 <drop-modal name="earn" :index="props.row.originalIndex">
                   <template #button>
                     <finance-icon class="finance-icon" />
@@ -125,30 +135,23 @@ export default {
           tdClass: 'mono'
         },
         {
-          label: 'Fee/Reward',
-          field: 'feeRatio',
-          type: 'percentage',
-          tdClass: 'mono'
-        },
-        {
-          label: '24Hr Earning',
-          field: 'earning24hr',
+          label: 'Est. Yr. Earnings',
+          field: 'estEarnings',
           type: 'number',
           formatFn: this.formattedPrice,
           tdClass: 'mono'
         },
         {
-          label: 'Annual Earnings Extrapolated',
-          field: 'annualEarningsExtrapolated',
+          label: 'Collateral',
+          field: 'collateral',
           type: 'number',
-          formatFn: this.formattedPrice,
           tdClass: 'mono'
         },
         {
-          label: 'Earnings APR',
-          field: 'earningsAPR',
-          type: 'percentage',
-          tdClass: 'mono'
+          label: 'Swap/Save/Borrow',
+          field: 'actions',
+          sortable: false,
+          thClass: 'th-center'
         }
       ],
       pools: undefined,
@@ -194,7 +197,7 @@ export default {
 
           return {
             status: p.status,
-            price: p.assetPriceUSD,
+            price: +p.assetPriceUSD,
             depth: ((+p.assetDepth / 10 ** 8) * p.assetPriceUSD),
             apy: p.annualPercentageRate,
             volume: pe ? (+pe.swapVolume / 10 ** 8) * this.runePrice : (+p.volume24h / 10 ** 8) * this.runePrice,
@@ -203,9 +206,8 @@ export default {
             saversDepth: (+p.saversDepth / 10 ** 8),
             depthToUnitsRatio: p.saversDepth ? this.$options.filters.number(+p.saversDepth / +p.saversUnits, '0.00000') : 0,
             earning24hr: pe ? (pe.earnings * this.runePrice) / 10 ** 8 : 0,
-            annualEarningsExtrapolated: pe ? (pe.earnings * this.runePrice * 365) / 10 ** 8 : 0,
-            feeRatio: pe ? (pe.swapFees / pe.earnings) : 0,
-            earningsAPR: pe ? (pe.earnings / ((+p.assetDepth * p.assetPrice) + +p.runeDepth)) * 365 : 0
+            estEarnings: pe ? (pe.earnings * this.runePrice * 365) / 10 ** 8 : 0,
+            collateral: (+p.totalCollateral / 1e8)
           }
         })
         this.sepPools(ps)
@@ -285,8 +287,8 @@ export default {
 
 .action-content {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: center;
   gap: 10px;
 }
 

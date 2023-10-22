@@ -21,12 +21,12 @@ export default {
           link: '/pools'
         },
         {
-          text: 'TVL by Chain',
-          link: '/pools/tvl'
+          text: 'Pool Earnings',
+          link: '/pools/earnings'
         },
         {
-          text: 'Historical Pools',
-          link: '/pools/historical'
+          text: 'TVL by Chain',
+          link: '/pools/tvl'
         }
       ]
     }
