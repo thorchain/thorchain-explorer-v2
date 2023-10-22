@@ -1,0 +1,88 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "common_values": {
+      "type": "object",
+      "properties": {
+        "icon_base_url": {
+          "type": "string"
+        }
+      },
+      "required": ["icon_base_url"]
+    },
+    "version": {
+      "type": "string"
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "interfaces": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "info_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "app_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "icon": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "type": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "platforms": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "links": {
+                  "type": "object",
+                  "properties": {
+                    "app_url": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "swap_link": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "earn_link": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "borrow_link": {
+                      "type": "string",
+                      "format": "uri"
+                    }
+                  }
+                }
+              },
+              "required": ["name", "links"]
+            }
+          }
+        },
+        "required": ["name", "type"]
+      }
+    }
+  },
+  "required": ["common_values", "version", "last_updated", "interfaces"]
+}

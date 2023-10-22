@@ -1,87 +1,248 @@
 {
+  "common_values": {
+    "icon_base_url": "https://thorchain.org/images/services/"
+  },
   "Interfaces": [
-      {
-          "name": "THORSwap",
-          "info_url": "https://thorswap.finance",
-          "app_url": "https://app.thorswap.finance",
-          "icon": "{{icon_base_url}}thorswap.png",
-          "description": "THORSwap is a multi-chain DEX aggregator built on THORChain's cross-chain liquidity protocol and the leading interface for all THORChain services like THORNames and synthetic assets.",
-          "tags": ["Wallet", "Exchange"],
-          "type": "Web",
-          "links": {
-              "swap_link": "/swap",
-              "borrow_link": "/borrow",
-              "earn_link": "/earn"
-          }
-      },
-      {
-          "name": "ASGARDEX",
-          "info_url": "https://github.com/asgardex/asgardex-desktop",
-          "app_url": "https://github.com/asgardex/asgardex-desktop/releases",
-          "icon": "{{icon_base_url}}asgardex.png",
-          "description": "ASGARDEX is a no-fee, standalone desktop app implementing THORChain-based decentralized swaps. As the only open-source frontend codebase, it serves as a reference for many developers building in the ecosystem.",
-          "tags": ["Wallet", "Exchange"],
-          "type": "Desktop",
-          "links": {
-              "swap_link": "",
-              "borrow_link": "",
-              "earn_link": ""
-          }
-      },
-      {
-          "name": "ShapeShift",
-          "info_url": "https://shapeshift.com/",
-          "app_url": "https://app.shapeshift.com",
-          "icon": "{{icon_base_url}}shapeshiftdao.svg",
-          "description": "ShapeShift is a pioneer in self-custody for digital asset trading. Our open source platform empowers users to safely buy, hold, trade, and invest in a range of digital assets and improves access to open, decentralized financial systems.",
-          "tags": ["Community", "Exchange"],
-          "type": "Web",
-          "links": {
-              "swap_link": "/",
-              "earn_link": "/"
-          }
-      },
-      {
-          "name": "XDEFI",
-          "app_url": "https://chrome.google.com/webstore/detail/xdefi-wallet/hmeobnfnfcmdkdcmlblgagmfpfboieaf",
-          "info_url": "https://www.xdefi.io/",
-          "icon": "{{icon_base_url}}xdefi.png",
-          "description": "XDEFI is a versatile wallet and exchange interface for Web3 users.",
-          "tags": ["Wallet", "Exchange"],
-          "type": "Browser",
-          "links": {
-              "swap_link": "",
-              "earn_link": "",
-              "borrow_link": ""
-          }
-      },
-      {
-          "name": "Unizen",
-          "info_url": "https://www.unizen.io/",
-          "app_url": "https://zcx.com",
-          "icon": "{{icon_base_url}}unizen.png",
-          "description": "Unizen is a cutting-edge operating system for Web3 applications that enables users to seamlessly, cost-efficiently, and securely interact with all things Web3, including THORChain-powered cross-chain swaps.",
-          "tags": "Exchange",
-          "type": "Web",
-          "links": {
-              "swap_link": "/trade",
-              "earn_link": "/earn",
-              "borrow_link": ""
-          }
-      },
-      {
-          "name": "THORWallet",
-          "app_url": "https://app.thorwallet.org",
-          "info_url": "https://www.thorwallet.org/",
-          "icon": "{{icon_base_url}}thorwallet.png",
-          "description": "THORWallet is a mobile wallet and exchange interface designed for easy asset management and trading on the THORChain network.",
-          "tags": ["Wallet", "Exchange" ],
-          "type": "Mobile",
-          "links": {
-              "swap_link": "/swap",
-              "earn_link": "saver/",
-              "borrow_link": ""
-          }
+    {
+      "name": "THORSwap",
+      "info_url": "https://thorswap.finance",
+      "app_url": "https://app.thorswap.finance",
+      "icon": "{{icon_base_url}}thorswap.png",
+      "description": "THORSwap is a multi-chain DEX aggregator built on THORChain's cross-chain liquidity protocol and the leading interface for all THORChain services like THORNames and synthetic assets.",
+      "tags": ["Wallet", "Exchange"],
+      "type": "Web",
+      "links": {
+        "swap_link": "/swap",
+        "borrow_link": "/borrow",
+        "earn_link": "/earn"
       }
+    },
+    {
+      "name": "ASGARDEX",
+      "info_url": "https://github.com/asgardex/asgardex-desktop",
+      "app_url": "https://github.com/asgardex/asgardex-desktop/releases",
+      "icon": "{{icon_base_url}}asgardex.png",
+      "description": "ASGARDEX is a no-fee, standalone desktop app implementing THORChain-based decentralized swaps. As the only open-source frontend codebase, it serves as a reference for many developers building in the ecosystem.",
+      "tags": ["Wallet", "Exchange"],
+      "type": "Desktop",
+      "links": {
+        "swap_link": "",
+        "borrow_link": "",
+        "earn_link": ""
+      }
+    },
+    {
+      "name": "ShapeShift",
+      "info_url": "https://shapeshift.com/",
+      "app_url": "https://app.shapeshift.com",
+      "icon": "{{icon_base_url}}shapeshiftdao.svg",
+      "description": "ShapeShift is a pioneer in self-custody for digital asset trading. Our open source platform empowers users to safely buy, hold, trade, and invest in a range of digital assets and improves access to open, decentralized financial systems.",
+      "tags": ["Community", "Exchange"],
+      "type": "Web",
+      "links": {
+        "swap_link": "/",
+        "earn_link": "/"
+      }
+    },
+    {
+      "name": "XDEFI",
+      "app_url": "https://chrome.google.com/webstore/detail/xdefi-wallet/hmeobnfnfcmdkdcmlblgagmfpfboieaf",
+      "info_url": "https://www.xdefi.io/",
+      "icon": "{{icon_base_url}}xdefi.png",
+      "description": "XDEFI is a versatile wallet and exchange interface for Web3 users.",
+      "tags": ["Wallet", "Exchange"],
+      "type": "Browser",
+      "links": {
+        "swap_link": "",
+        "earn_link": "",
+        "borrow_link": ""
+      }
+    },
+    {
+      "name": "Unizen",
+      "info_url": "https://www.unizen.io/",
+      "app_url": "https://zcx.com",
+      "icon": "{{icon_base_url}}unizen.png",
+      "description": "Unizen is a cutting-edge operating system for Web3 applications that enables users to seamlessly, cost-efficiently, and securely interact with all things Web3, including THORChain-powered cross-chain swaps.",
+      "tags": "Exchange",
+      "type": "Web",
+      "links": {
+        "swap_link": "/trade",
+        "earn_link": "/earn",
+        "borrow_link": ""
+      }
+    },
+    {
+      "name": "THORWallet",
+      "app_url": "https://app.thorwallet.org",
+      "info_url": "https://www.thorwallet.org/",
+      "icon": "{{icon_base_url}}thorwallet.png",
+      "description": "THORWallet is a mobile wallet and exchange interface designed for easy asset management and trading on the THORChain network.",
+      "tags": ["Wallet", "Exchange"],
+      "type": "Mobile",
+      "links": {
+        "swap_link": "/swap",
+        "earn_link": "saver/",
+        "borrow_link": ""
+      }
+    },
+    {
+      "name": "TrustWallet",
+      "app_url": "https://trustwallet.com/download",
+      "info_url": "https://trustwallet.com/",
+      "icon": "{{icon_base_url}}trustwallet.png",
+      "tags": ["Wallet", "Exchange"],
+      "type": ["Mobile", "Browser"],
+      "links": {
+        "swap_link": "",
+        "earn_link": "",
+        "borrow_link": ""
+      }
+    },
+    {
+      "name": "Ledger",
+      "app_url": "https://www.ledger.com/",
+      "info_url": "https://support.ledger.com/hc/en-us/articles/4402987997841-THORChain-RUNE-?support=true",
+      "icon": "{{icon_base_url}}ledger.png",
+      "tags": ["Wallet", "Exchange"],
+      "type": ["Hardware"],
+      "links": {
+        "swap_link": "",
+        "earn_link": "",
+        "borrow_link": ""
+      }
+    },
+    {
+      "name": "Edge Wallet",
+      "app_url": "https://edge.app/",
+      "info_url": "https://edge.app/",
+      "icon": "{{icon_base_url}}edge.png",
+      "tags": ["Wallet"],
+      "type": ["Mobile"],
+      "links": {
+        "swap_link": "",
+        "earn_link": "",
+        "borrow_link": ""
+      }
+    },
+    {
+      "name": "Swapper",
+      "app_url": "https://app.swapper.market/",
+      "info_url": "https://swapper.market/",
+      "icon": "{{icon_base_url}}swapper.png",
+      "tags": ["Exchange"],
+      "type": ["Web"],
+      "links": {
+        "swap_link": "",
+        "earn_link": "",
+        "borrow_link": ""
+      }
+    },
+    {
+      "name": "RocketX",
+      "app_url": "https://rocketx.exchange",
+      "info_url": "",
+      "icon": "{{icon_base_url}}rocketx.png",
+      "tags": ["Exchange"],
+      "type": ["Web"],
+      "links": {
+        "swap_link": "/swap",
+        "earn_link": "",
+        "borrow_link": ""
+      }
+    },
+    {
+      "name": "Defispot",
+      "app_url": "https://app.rocketx.exchange/",
+      "info_url": "https://rocketx.exchange/",
+      "icon": "{{icon_base_url}}defispot.png",
+      "tags": ["Exchange"],
+      "type": [],
+      "links": {
+        "swap_link": "",
+        "earn_link": "",
+        "borrow_link": ""
+      }
+    },
+    {
+      "name": "Ferz Wallet",
+      "app_url": "https://ferz.com",
+      "info_url": "",
+      "icon": "{{icon_base_url}}ferz.png",
+      "tags": ["Wallet", "Exchange"],
+      "type": [],
+      "links": {
+        "swap_link": "",
+        "earn_link": "",
+        "borrow_link": ""
+      }
+    },
+    {
+      "name": "Liquality",
+      "app_url": "https://liquality.io/",
+      "info_url": "",
+      "icon": "{{icon_base_url}}liquality.png",
+      "tags": ["Wallet", "Exchange"],
+      "type": [],
+      "links": {
+        "swap_link": "",
+        "earn_link": "",
+        "borrow_link": ""
+      }
+    },
+    {
+      "name": "Decentralfi",
+      "app_url": "https://decentralfi.io/",
+      "info_url": "",
+      "icon": "{{icon_base_url}}decentralfi.png",
+      "tags": ["Exchange"],
+      "type": [],
+      "links": {
+        "swap_link": "",
+        "earn_link": "",
+        "borrow_link": ""
+      }
+    },
+    {
+      "name": "Lends",
+      "app_url": "https://lends.so/",
+      "info_url": "",
+      "icon": "{{icon_base_url}}lends.png",
+      "tags": ["Exchange"],
+      "type": [],
+      "links": {
+        "swap_link": "",
+        "earn_link": "",
+        "borrow_link": ""
+      }
+    }
   ]
 }
+
+
+
+{
+  "name": "THORWallet",
+  "info_url": "https://www.thorwallet.org/",
+  "icon": "{{icon_base_url}}thorwallet.png",
+  "description": "THORWallet is a mobile wallet and exchange interface designed for easy asset management and trading on the THORChain network.",
+  "type": ["Wallet", "Exchange"],
+  "platform": [
+    {
+      "name": "Mobile",
+      "links": {
+        "App store": "https://apps.apple.com/ch/app/thorwallet-defi-crypto-wallet/id1592064324",
+        "Google Play": "https://play.google.com/store/apps/details?id=defisuisse.thorwallet"
+      }
+    },
+    {
+      "name": "Web",
+      "links": {
+        "app_url": "https://app.thorwallet.org",
+        "swap_link": "/swap",
+        "earn_link": "saver/",
+      }
+    }
+  ]
+}
+

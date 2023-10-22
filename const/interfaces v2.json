@@ -1,0 +1,397 @@
+{
+  "common_values": {
+    "icon_base_url": "https://thorchain.org/images/services/"
+  },
+  "version": "1.0",
+  "last_updated": "2023-10-15",
+  "interfaces": [
+    {
+      "name": "ASGARDEX",
+      "info_url": "https://github.com/asgardex/asgardex-desktop",
+      "icon": "{{icon_base_url}}asgardex.png",
+      "description": "ASGARDEX is a no-fee, standalone desktop app implementing THORChain-based decentralized swaps. As the only open-source frontend codebase, it serves as a reference for many developers building in the ecosystem.",
+      "type": [
+        "Wallet",
+        "Exchange"
+      ],
+      "platforms": [
+        {
+          "name": "Desktop",
+          "links": {
+            "app_url": "https://github.com/asgardex/asgardex-desktop/releases",
+            "swap_link": "/",
+            "borrow_link": "/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Decentralfi",
+      "info_url": "https://decentralfi.io/",
+      "icon": "{{icon_base_url}}decentralfi.png",
+      "type": [
+        "Exchange"
+      ],
+      "description": "Decentralfi is a decentralized exchange built with THORChain. Decentralfi has a slippage optimization bot named Slippy to prompt users to break up large trades to optimize swap fees.",
+      "platforms": [
+        {
+          "name": "Web",
+          "links": {
+            "app_url": "https://decentralfi.io/en",
+            "swap_link": "/swap",
+            "earn_link": "/savers"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Defispot",
+      "info_url": "https://defispot.com",
+      "icon": "{{icon_base_url}}defispot.png",
+      "type": [
+        "Exchange"
+      ],
+      "description": "Defispot is an all in one multi-chain DEX built on THORChain, that brings usability to DeFi for all users by offering a traditional UI/UX- a DEX disguised as a CEX",
+      "platforms": [
+        {
+          "name": "Web",
+          "links": {
+            "app_url": "https://www.defispot.com/tokens/ETH.ETH?from=BTC.BTC&to=ETH.ETH",
+            "swap_link": "/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Edge Wallet",
+      "info_url": "https://edge.app/",
+      "icon": "{{icon_base_url}}edge.svg",
+      "type": [
+        "Wallet"
+      ],
+      "description": "Edge is an industry leading self-custody wallet and exchange that supports the most popular cryptocurrencies on the market.",
+      "platforms": [
+        {
+          "name": "Mobile",
+          "links": {
+            "App store": "http://ios.edge.app/?af=edge-app",
+            "Google Play": "http://android.edge.app/?af=edge-app",
+            "APK": "http://apk.edge.app/?af=edge-app"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ferz Wallet",
+      "info_url": "https://ferz.com",
+      "icon": "{{icon_base_url}}ferz.svg",
+      "type": [
+        "Wallet",
+        "Exchange"
+      ],
+      "description": "Ferz is an iOS, Android, and browser extension-based multichain Wallet and Exchange built with THORChain.",
+      "platforms": [
+        {
+          "name": "Browser",
+          "links": {
+            "app_url": "https://chrome.google.com/webstore/detail/ferz-wallet/anfhjfflodcjcfmgcgfenjlkkehphhal"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Lends",
+      "info_url": "https://lends.so/",
+      "icon": "{{icon_base_url}}lendscape.svg",
+      "type": [
+        "Exchange"
+      ],
+      "description": "Lends (rebranded from Lendscape) is a decentralized exchange utilizing THORChain with plans to support lending.",
+      "platforms": [
+        {
+          "name": "Web",
+          "links": {
+            "app_url": "https://app.lends.so/",
+            "swap_link": "/swap",
+            "earn_link": "/savers",
+            "borrow_link": "/borrowing"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ledger",
+      "info_url": "https://support.ledger.com/hc/en-us/articles/4402987997841-THORChain-RUNE-?support=true",
+      "icon": "{{icon_base_url}}ledger.jpeg",
+      "type": [
+        "Wallet",
+        "Exchange"
+      ],
+      "description": "Ledger is a popular multichain hardware wallet that supports native RUNE. Ledger is supported by many exchanges that use THORChain.",
+      "platforms": [
+        {
+          "name": "Hardware",
+          "links": {
+            "app_url": "https://www.ledger.com/",
+            "swap_link": "/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "KeepKey",
+      "info_url": "https://www.keepkey.com/",
+      "icon": "{{icon_base_url}}",
+      "type": [
+        "Wallet",
+        "Exchange"
+      ],
+      "description": "KeepKey is the leading hardware wallet for securely storing digital assets. Our Dapp Store offers access to thousands of decentralized finance opportunities. Get started today and unlock the world of secure, decentralized finance.",
+      "platforms": [
+        {
+          "name": "Hardware",
+          "links": {
+            "app_url": "https://www.keepkey.com/",
+            "swap_link": "/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Liquality",
+      "info_url": "https://liquality.io/",
+      "icon": "{{icon_base_url}}liquality.svg",
+      "type": [
+        "Wallet"
+      ],
+      "description": "Liquality is a multichain wallet that supports native RUNE.",
+      "platforms": [
+        {
+          "name": "Browser",
+          "links": {
+            "app_url": "https://chrome.google.com/webstore/detail/liquality-wallet/kpfopkelmapcoipemfendmdcghnegimn"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rango Exchange",
+      "info_url": "https://rago.finance",
+      "icon": "{{icon_base_url}}rango.png",
+      "description": "Rango Exchange is a powerful multi-chain aggregator for DEX and bridges, based on reachability and support of top blockchains. Rango will be able to find the most secure, fast, and easy path for it. Currently, Rango supports more than dozens of blockchains, 12+ bridges/DEXes, and 7+ different wallets, with a modern and user-friendly UX in the market.",
+      "type": [
+        "Exchange"
+      ],
+      "platforms": [
+        {
+          "name": "Web",
+          "links": {
+            "app_url": "https://app.rango.exchange/",
+            "swap_link": "/swap"
+          }
+        }
+      ]
+    },
+    {
+      "name": "RocketX",
+      "info_url": "https://rocketx.exchange",
+      "icon": "{{icon_base_url}}rocketx.png",
+      "type": [
+        "Exchange"
+      ],
+      "description": "RocketX is the most advanced hybrid aggregator that simplifies access to $100B+ liquidity across 300+ DEXs & 6 Top CEXs via a Single UI and API",
+      "platforms": [
+        {
+          "name": "Web",
+          "links": {
+            "app_url": "https://rocketx.exchange",
+            "swap_link": "/swap"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ShapeShift",
+      "info_url": "https://shapeshift.com/",
+      "icon": "{{icon_base_url}}shapeshiftdao.svg",
+      "description": "ShapeShift is a pioneer in self-custody for digital asset trading. Our open source platform empowers users to safely buy, hold, trade, and invest in a range of digital assets and improves access to open, decentralized financial systems.",
+      "type": [
+        "Community",
+        "Exchange"
+      ],
+      "platforms": [
+        {
+          "name": "Web",
+          "links": {
+            "app_url": "https://app.shapeshift.com",
+            "swap_link": "/",
+            "earn_link": "/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Swapper",
+      "info_url": "https://swapper.market/",
+      "icon": "{{icon_base_url}}swapper.svg",
+      "type": [
+        "Exchange"
+      ],
+      "description": "Swapper enables everyone to buy, store, manage, invest, and transfer crypto effortlessly with seamless interaction with DeFi protocols across multiple blockchains. It aims to address various challenges, such as limited banking accessibility, distrust in centralized institutions, and mounting regulatory pressures faced by traditional industry players.",
+      "platforms": [
+        {
+          "name": "Web",
+          "links": {
+            "app_url": "https://app.swapper.market/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "THORWallet",
+      "info_url": "https://www.thorwallet.org/",
+      "icon": "{{icon_base_url}}thorwallet.png",
+      "description": "THORWallet is a mobile wallet and exchange interface designed for easy asset management and trading on the THORChain network.",
+      "type": [
+        "Wallet",
+        "Exchange"
+      ],
+      "platforms": [
+        {
+          "name": "Mobile",
+          "links": {
+            "App store": "https://apps.apple.com/ch/app/thorwallet-defi-crypto-wallet/id1592064324",
+            "Google Play": "https://play.google.com/store/apps/details?id=defisuisse.thorwallet"
+          }
+        },
+        {
+          "name": "Web",
+          "links": {
+            "app_url": "https://app.thorwallet.org",
+            "swap_link": "/swap",
+            "earn_link": "/saver"
+          }
+        }
+      ]
+    },
+    {
+      "name": "THORSwap",
+      "info_url": "https://thorswap.finance",
+      "app_url": "https://app.thorswap.finance",
+      "icon": "{{icon_base_url}}thorswap.png",
+      "description": "THORSwap is a multi-chain DEX aggregator built on THORChain's cross-chain liquidity protocol and the leading interface for all THORChain services like THORNames and synthetic assets.",
+      "type": [
+        "Wallet",
+        "Exchange"
+      ],
+      "platforms": [
+        {
+          "name": "Web",
+          "links": {
+            "swap_link": "/swap",
+            "earn_link": "/earn",
+            "borrow_link": "/borrow"
+          }
+        }
+      ]
+    },
+    {
+      "name": "TrustWallet",
+      "info_url": "https://trustwallet.com/",
+      "icon": "{{icon_base_url}}trustwallet.svg",
+      "type": [
+        "Wallet",
+        "Exchange"
+      ],
+      "description": "Trust Wallet is a self-custody wallet on iOS and Android that supports native RUNE and cross-chain swaps using THORChain.",
+      "platforms": [
+        {
+          "name": "Mobile",
+          "links": {
+            "App store": "https://apps.apple.com/app/apple-store/id1288339409?mt=8",
+            "Google Play": "https://play.google.com/store/apps/details?id=com.wallet.crypto.trustapp&referrer=utm_source%3Dwebsite",
+            "APK": "https://apk.trustwallet.com/builds/v7.32.5_release.apk"
+          }
+        },
+        {
+          "name": "Browser",
+          "links": {
+            "app_url": "https://chrome.google.com/webstore/detail/trust-wallet/egjidjbpglichdcondbcbdnbeeppgdph"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Unizen",
+      "info_url": "https://www.unizen.io/",
+      "app_url": "https://zcx.com",
+      "icon": "{{icon_base_url}}unizen.png",
+      "description": "Unizen is a cutting-edge operating system for Web3 applications that enables users to seamlessly, cost-efficiently, and securely interact with all things Web3, including THORChain-powered cross-chain swaps.",
+      "type": "Exchange",
+      "platforms": [
+        {
+          "name": "Web",
+          "links": {
+            "app_url": "https://zcx.com",
+            "swap_link": "/trade",
+            "earn_link": "/earn"
+          }
+        }
+      ]
+    },
+    {
+      "name": "XDEFI",
+      "info_url": "https://www.xdefi.io/",
+      "icon": "{{icon_base_url}}xdefi.png",
+      "description": "XDEFI is a versatile wallet and exchange interface for Web3 users.",
+      "type": [
+        "Wallet",
+        "Exchange"
+      ],
+      "platforms": [
+        {
+          "name": "Browser",
+          "links": {
+            "app_url": "https://chrome.google.com/webstore/detail/xdefi-wallet/hmeobnfnfcmdkdcmlblgagmfpfboieaf"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Metamask",
+      "info_url": "https://twitter.com/pluto9r/status/1701712035413692599",
+      "icon": "{{icon_base_url}}",
+      "description": "",
+      "type": [
+        "Wallet"
+      ],
+      "platforms": [
+        {
+          "name": "Browser",
+          "links": {
+            "app_url": "https://metamask.io/download/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Coinbot",
+      "info_url": "https://www.coinbot.finance/",
+      "icon": "{{icon_base_url}}",
+      "description": "A multi-chain DEX on Telegram, powered by THORChain",
+      "type": [
+        "Exchange"
+      ],
+      "platforms": [
+        {
+          "name": "Telegram",
+          "links": {
+            "app_url": "https://t.me/TeamCoinBot_bot",
+            "swap_link": "/"
+          }
+        }
+      ]
+    }
+  ]
+}
+
