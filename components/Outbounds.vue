@@ -116,6 +116,7 @@ export default {
   display: flex;
   justify-content: space-between;
   gap: 8px;
+  overflow: hidden;
 
   .asset-item {
     display: flex;
@@ -141,7 +142,11 @@ export default {
     display: flex;
     flex-direction: column;
     margin-left: auto;
-    text-overflow: ellipsis;
+
+    small {
+      text-wrap: nowrap;
+      text-overflow: ellipsis;
+    }
 
     span {
       font-size: .9rem;
