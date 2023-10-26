@@ -1,13 +1,27 @@
 <template>
-  <Page :error="error && !loading">
+  <Page :error="error && !loading" :fluid="true">
     <div v-if="nodesQuery" class="grid-network">
       <stat-table :table-settings="topActiveBonds" header="Top Active Bonds" />
       <stat-table :table-settings="topStandbyBonds" header="Top Standby Bonds" />
     </div>
     <div class="chart-inner-container">
       <Card :navs="[{title: 'Node Status', value: 'node-stat'}, {title: 'Provider Distribution', value: 'prov-dist'}]" :act-nav.sync="statusMode">
-        <VChart v-if="statusMode == 'node-stat'" :option="nodeStatus" :loading="!nodeStatus" :autoresize="true" :loading-options="showLoading" key="node-stat" />
-        <VChart v-if="statusMode == 'prov-dist'" :option="provDist" :loading="!provDist" :autoresize="true" :loading-options="showLoading" key="prov-stat" />
+        <VChart
+          v-if="statusMode == 'node-stat'"
+          key="node-stat"
+          :option="nodeStatus"
+          :loading="!nodeStatus"
+          :autoresize="true"
+          :loading-options="showLoading"
+        />
+        <VChart
+          v-if="statusMode == 'prov-dist'"
+          key="prov-stat"
+          :option="provDist"
+          :loading="!provDist"
+          :autoresize="true"
+          :loading-options="showLoading"
+        />
       </Card>
       <Card title="Churn Info">
         <VChart
@@ -867,19 +881,19 @@ export default {
       }
     },
     provType (name) {
-      if (!name && !name.isp) {
+      if (!name && !(name.isp)) {
         return ''
-      } else if (name.isp.includes('Amazon')) {
+      } else if (name.isp?.includes('Amazon')) {
         return 'Amazon'
-      } else if (name.isp.includes('Google')) {
+      } else if (name.isp?.includes('Google')) {
         return 'Google'
-      } else if (name.isp.includes('Microsoft')) {
+      } else if (name.isp?.includes('Microsoft')) {
         return 'Azure'
-      } else if (name.isp.includes('Hetzner')) {
+      } else if (name.isp?.includes('Hetzner')) {
         return 'Hetzner'
-      } else if (name.isp.includes('DigitalOcean')) {
+      } else if (name.isp?.includes('DigitalOcean')) {
         return 'Digital Ocean'
-      } else if (name.isp.includes('The Constant Company')) {
+      } else if (name.isp?.includes('The Constant Company')) {
         return 'Vultr'
       } else {
         return name.isp

@@ -143,7 +143,7 @@ Vue.mixin(global)
   // Only on medium screens
   @include olg {
     grid-template-columns: 4rem 1fr;
-    grid-template-rows: 64px 1fr;
+    grid-template-rows: 65px 1fr;
     grid-template-areas:
       "sidebar header"
       "sidebar main";

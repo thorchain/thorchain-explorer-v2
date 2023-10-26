@@ -1,5 +1,5 @@
 <template>
-  <div class="page-container">
+  <div :class="['page-container', {'fluid': fluid}]">
     <slot v-if="!error" />
     <Card v-else>
       <div class="page-error-container">
@@ -12,7 +12,7 @@
 
 <script>
 export default {
-  props: ['error']
+  props: ['error', 'fluid']
 }
 </script>
 
@@ -24,6 +24,10 @@ export default {
   gap: 10px;
   max-width: 90rem;
   margin: auto;
+
+  &.fluid {
+    max-width: none;
+  }
 }
 
 .page-error-container {

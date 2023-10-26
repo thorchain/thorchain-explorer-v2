@@ -14,12 +14,26 @@
       </div>
     </div>
     <div class="side-bar-lists">
-      <template v-for="(item, index) in sidebarLists" v-if="item">
-        <NuxtLink :key="index" :to="item.link" :class="['side-bar-item']" @click.native="toggleMenu(false)">
+      <template v-for="(item, index) in sidebarLists">
+        <NuxtLink
+          v-if="item"
+          :id="`sidebar-${item.name}`"
+          :key="index"
+          :to="item.link"
+          :class="['side-bar-item']"
+          @click.native="toggleMenu(false)"
+        >
           <div class="side-bar-wrap">
             <component :is="item.icon" class="icon selected" />
             <component :is="item.unicon" class="icon unselected" />
             <span class="sidebar-text">{{ item.name }}</span>
+            <b-popover
+              placement="right"
+              custom-class="sidebar-popover"
+              :target="`sidebar-${item.name}`"
+              triggers="hover"
+              :content="`${item.name}`"
+            />
           </div>
         </NuxtLink>
       </template>
@@ -490,6 +504,19 @@ export default {
         background-color: var(--darker-bg);
       }
     }
+  }
+}
+
+.sidebar-popover {
+  background: var(--bg-color);
+  padding: .5rem;
+  border-radius: .5rem;
+  margin-left: .5rem;
+  border: 1px solid var(--border-color);
+  display: none;
+
+  @include olg {
+    display: block;
   }
 }
 </style>

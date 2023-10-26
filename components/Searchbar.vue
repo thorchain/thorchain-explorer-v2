@@ -45,10 +45,6 @@
                 <SunIcon v-if="theme === 'light'" class="social-icon" @click="changeTheme" />
                 <MoonIcon v-if="theme === 'dark'" class="social-icon" @click="changeTheme" />
               </div>
-              <div class="settings-item full-screen" @click="toggleFullscreen">
-                <span>Full Screen Mode</span>
-                <toggle-btn :checked="fullscreen" />
-              </div>
             </div>
           </div>
         </transition>
@@ -58,7 +54,6 @@
 </template>
 
 <script>
-import MenuIcon from 'assets/images/menu-burger.svg?inline'
 import { mapGetters } from 'vuex'
 import SearchIcon from '~/assets/images/search.svg?inline'
 import MoonIcon from '~/assets/images/moon-icon.svg?inline'
@@ -72,8 +67,7 @@ export default {
     SunIcon,
     MoonIcon,
     SearchIcon,
-    SettingsIcon,
-    MenuIcon
+    SettingsIcon
   },
   data () {
     return {
