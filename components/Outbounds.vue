@@ -36,7 +36,6 @@
         class="center"
         :total-rows="outbounds.length"
         :per-page="10"
-        @input="changePage"
       />
     </template>
   </Card>

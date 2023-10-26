@@ -47,7 +47,6 @@
         class="center"
         :total-rows="streamingSwaps.length"
         :per-page="10"
-        @input="changePage"
       />
     </template>
   </Card>
