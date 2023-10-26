@@ -126,12 +126,6 @@ Vue.mixin(global)
   height: calc(var(--vh, 1vh) * 100);
   overflow: hidden;
 
-  @include lg {
-    grid-template-columns: 220px 1fr;
-    grid-template-rows: 64px 1fr;
-    grid-template-areas: "sidebar header" "sidebar main";
-  }
-
   grid-template-columns: 1fr;
   grid-template-rows: 64px 64px 1fr;
   grid-template-areas: "sidebar" "header" "main";
@@ -144,20 +138,36 @@ Vue.mixin(global)
     #main-content {
       display: none;
     }
+  }
 
-    #side-bar {
-      display: grid;
+  // Only on medium screens
+  @include olg {
+    grid-template-columns: 4rem 1fr;
+    grid-template-rows: 64px 1fr;
+    grid-template-areas:
+      "sidebar header"
+      "sidebar main";
+
+    .page-container, .search-bar-container {
+      min-width: 100%;
     }
   }
 
+  @include xl {
+    grid-template-columns: 220px 1fr;
+    grid-template-rows: 64px 1fr;
+    grid-template-areas: "sidebar header" "sidebar main";
+  }
+
   #side-bar {
+    display: grid;
     grid-area: sidebar;
     background-color: var(--sidebar);
     opacity: 0.95; /* Black w/opacity/see-through */
     overflow: hidden;
     border-top: 1px solid var(--border-color);
 
-    @include lg {
+    @include xl {
       border: none;
       border-right: 1px solid var(--border-color);
       display: grid;
