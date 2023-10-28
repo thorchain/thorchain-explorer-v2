@@ -862,7 +862,7 @@ export default {
         })
 
         sortedNodes.push({
-          name: 'Eligiable',
+          name: 'Eligible',
           nodes: nodes?.filter(
             e => e.status === 'Standby' && parseInt(e.total_bond) >= 30000000000000
           )
