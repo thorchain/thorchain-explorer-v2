@@ -65,7 +65,12 @@
                 :is-down="+props.row.change[props.column.field]< 0"
               />
             </div>
-            <div v-else-if="props.column.field === 'feesEarnings' || props.column.field === 'feesReward'">
+            <div
+              v-else-if="
+                props.column.field === 'feesEarnings' ||
+                  props.column.field === 'feesReward' ||
+                  props.column.field === 'poolAPR'"
+            >
               {{ props.formattedRow[props.column.field] }}
               <progress-icon
                 v-if="showChange"
@@ -164,6 +169,12 @@ export default {
           type: 'number',
           formatFn: this.baseAmountFormat,
           tdClass: 'mono'
+        },
+        {
+          label: 'Pool APR',
+          field: 'poolAPR',
+          type: 'percentage',
+          tdClass: 'mono'
         }
       ],
       tableData: []
@@ -202,10 +213,13 @@ export default {
       this.tableData = poolsData.pools.map((p) => {
         const o = oldPoolsData.pools.find(op => op.pool === p.pool)
         const pe = p.earnings * this.getPPY(this.period)
+        const ea = pe / (+p.endRuneDepth * 2)
+        const oea = (o?.earnings * this.getPPY(this.period)) / (+p?.startRuneDepth * 2)
         return {
           ...p,
           feesEarnings: p.swapFees / p.earnings,
           feesReward: p.swapFees / p.rewards,
+          poolAPR: ea,
           estEarnings: pe,
           change: {
             endAssetDepth: this.getChange(p.endAssetDepth, p.startAssetDepth),
@@ -216,7 +230,8 @@ export default {
             rewards: this.getChange(p.rewards, o?.rewards),
             feesEarnings: this.getChange((p.swapFees / p.earnings), (o?.swapFees / o?.earnings)),
             feesReward: this.getChange((p.swapFees / p.rewards), (o?.swapFees / o?.rewards)),
-            estEarnings: this.getChange(pe, o?.earnings * this.getPPY(this.period))
+            estEarnings: this.getChange(pe, o?.earnings * this.getPPY(this.period)),
+            poolAPR: this.getChange(ea, oea)
           }
         }
       })
