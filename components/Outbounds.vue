@@ -26,6 +26,12 @@
           <small v-if="o.in_hash" class="mono">In TxID
             <span class="clickable" @click="gotoTx(o.in_hash)">{{ formatAddress(o.in_hash) }}</span>
           </small>
+          <div v-if="o.height">
+            <small class="mono">ETA </small>
+            <span style="color: var(--sec-font-color)">
+              {{ getOutboundEta(o.height) }}
+            </span>
+          </div>
         </div>
       </div>
       <hr :key="i + '-hr'" class="hr-space">
@@ -42,6 +48,8 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+import moment from 'moment'
 import scheduleIcon from '@/assets/images/schedule.svg?inline'
 
 export default {
@@ -61,7 +69,10 @@ export default {
         (this.currentPage - 1) * 10,
         this.currentPage * 10
       )
-    }
+    },
+    ...mapGetters({
+      chainsHeight: 'getChainsHeight'
+    })
   },
   mounted () {
     this.updateOutbounds()
@@ -89,6 +100,12 @@ export default {
       }
       this.outbounds = resData
       this.loading = false
+    },
+    getOutboundEta (height) {
+      if (this.chainsHeight) {
+        const remHeight = (height - this.chainsHeight.THOR)
+        return moment.duration(remHeight * 6, 'seconds').humanize()
+      }
     }
   }
 }

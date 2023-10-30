@@ -41,12 +41,12 @@
       </div>
       <hr :key="i + '-hr'" class="hr-space">
     </template>
-    <template v-if="streamingSwaps.length > 10" #footer>
+    <template v-if="streamingSwaps.length > perPage" #footer>
       <b-pagination
         v-model="currentPage"
         class="center"
         :total-rows="streamingSwaps.length"
-        :per-page="10"
+        :per-page="perPage"
       />
     </template>
   </Card>
@@ -65,14 +65,15 @@ export default {
       noStreaming: false,
       loading: true,
       streamingSwaps: [],
-      intervalId: undefined
+      intervalId: undefined,
+      perPage: 7
     }
   },
   computed: {
     filteredStreamingSwaps () {
       return this.streamingSwaps.slice(
-        (this.currentPage - 1) * 10,
-        this.currentPage * 10
+        (this.currentPage - 1) * this.perPage,
+        this.currentPage * this.perPage
       )
     }
   },
