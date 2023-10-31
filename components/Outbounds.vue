@@ -23,7 +23,7 @@
           <small v-if="o.to_address" class="mono">To
             <span class="clickable" @click="gotoAddr(o.to_address)">{{ formatAddress(o.to_address) }}</span>
           </small>
-          <small v-if="o.in_hash" class="mono">In TxID
+          <small v-if="o.in_hash && o.label !== 'migrate'" class="mono">In TxID
             <span class="clickable" @click="gotoTx(o.in_hash)">{{ formatAddress(o.in_hash) }}</span>
           </small>
           <div v-if="o.height">
@@ -92,7 +92,7 @@ export default {
       const outData = (await this.$api.getOutbound()).data
       const schData = (await this.$api.getScheduled()).data
       resData.push(
-        ...outData.map(s => ({ ...s, label: s.memo.toUpperCase().includes('MIGRATE') ? 'Migrate' : undefined })),
+        ...outData.map(s => ({ ...s, label: s.memo.toUpperCase().includes('MIGRATE') ? 'migrate' : undefined })),
         ...(schData.map(s => ({ ...s, label: 'Scheduled' })))
       )
       if (!resData || resData?.length === 0) {
