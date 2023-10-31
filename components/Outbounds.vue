@@ -15,7 +15,7 @@
             {{ $options.filters.number(o.coin.amount / 1e8, '0,0.0000') }}
             <small class="asset-text sec-color">{{ o.coin.asset }}</small>
           </span>
-          <div v-if="o.label != false" class="mini-bubble info">
+          <div v-if="o.label" class="mini-bubble info">
             {{ o.label | capitalize }}
           </div>
         </div>
@@ -92,7 +92,7 @@ export default {
       const outData = (await this.$api.getOutbound()).data
       const schData = (await this.$api.getScheduled()).data
       resData.push(
-        ...outData.map(s => ({ ...s, label: s.memo.toUpperCase().includes('MIGRATE') ? 'migrate' : undefined })),
+        ...outData.map(s => ({ ...s, ...(s.memo.toUpperCase().includes('MIGRATE')) && { label: 'migrate' } })),
         ...(schData.map(s => ({ ...s, label: 'Scheduled' })))
       )
       if (!resData || resData?.length === 0) {
