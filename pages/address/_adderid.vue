@@ -23,7 +23,7 @@
       </div>
       <template v-if="addrTxs">
         <div class="stat-wrapper mb-1">
-          <Nav :active-mode.sync="activeMode" :nav-items="[{text: 'Balances', mode: 'balance'},{text: 'THORName', mode: 'thorname'}, {text: 'Pools', mode: 'pools'}, {text: 'Loans', mode: 'loans'}]" />
+          <Nav :active-mode.sync="activeMode" :nav-items="[{text: 'Balances', mode: 'balance'},{text: 'THORName', mode: 'thorname'}, {text: 'LPs/Savers', mode: 'pools'}, {text: 'Loans', mode: 'loans'}]" />
           <balance v-if="activeMode == 'balance'" :state="addressStat" :balance="balance" />
           <template v-else-if="activeMode == 'thorname'">
             <stat-table :table-settings="thornames" />
