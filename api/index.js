@@ -20,7 +20,8 @@ import {
   getThorname,
   getMemberDetails,
   getSaverDetails,
-  earningLastDay
+  earningLastDay,
+  getBorrowerDetails
 } from './midgard.api'
 import {
   getMimir,
@@ -207,7 +208,8 @@ export default function ({ $axios }, inject) {
     getPoolsHistory,
     getOldPoolsHistory,
     getScheduled,
-    getSaversInfo
+    getSaversInfo,
+    getBorrowerDetails
   }
 
   inject('api', api)
