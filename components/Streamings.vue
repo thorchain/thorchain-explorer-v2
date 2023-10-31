@@ -37,7 +37,12 @@
             {{ $options.filters.percent(o.count / o.quantity) }}
           </small>
         </div>
-        <small style="margin-top: 5px">{{ o.interval }} Blocks / Swap <span class="sec-color">({{ o.remaningETA }})</span></small>
+        <small style="margin-top: 5px">{{ o.interval }} Blocks / Swap 
+          <span class="sec-color"><small style="color: var(--font-color);">(ETA </small> {{ o.remaningETA }}
+          <small style="color: var(--font-color);">, Remainng swaps: {{ o.quantity - o.count }}</small>
+          <small style="color: var(--font-color);">)</small>
+          </span>
+        </small>
       </div>
       <hr :key="i + '-hr'" class="hr-space">
     </template>
@@ -83,7 +88,7 @@ export default {
     // Update the component every 20 secs
     this.intervalId = setInterval(() => {
       this.updateStreamingSwap(this.inboundHash)
-    }, 20000)
+    }, 10000)
   },
   destroyed () {
     this.clearIntervalId(this.intervalId)
@@ -247,7 +252,6 @@ export default {
   .extra-info {
     display: flex;
     align-items: center;
-    padding-top: 8px;
     gap: 10px;
   }
 }
