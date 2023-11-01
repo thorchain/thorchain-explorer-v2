@@ -147,19 +147,6 @@ export default {
       ]
     }
   },
-  mounted () {
-    this.$api.getMimirVotes().then((res) => {
-      this.mimirVotes = this.formatVotes(res.data?.mimirs)
-    }).catch((e) => {
-      console.error(e)
-    })
-
-    this.$api.getMimir().then((res) => {
-      this.mimirs = res.data
-    }).catch((e) => {
-      console.error(e)
-    })
-  },
   computed: {
     currentVoting () {
       if (this.mimirVotes && this.mimirs) {
@@ -216,7 +203,6 @@ export default {
         option = {
           ...option,
           formatter: (param) => {
-            console.log(param)
             return `
             <div class="tooltip-header">
               ${param[0].axisValue}
@@ -275,13 +261,28 @@ export default {
             }
           }
         }
+        // eslint-disable-next-line vue/no-side-effects-in-computed-properties
         this.votingChart = option
         return mimrsVoteConstants
       }
+      return []
     },
     ...mapGetters({
       network: 'getNetworkData',
       nodes: 'getNodesData'
+    })
+  },
+  mounted () {
+    this.$api.getMimirVotes().then((res) => {
+      this.mimirVotes = this.formatVotes(res.data?.mimirs)
+    }).catch((e) => {
+      console.error(e)
+    })
+
+    this.$api.getMimir().then((res) => {
+      this.mimirs = res.data
+    }).catch((e) => {
+      console.error(e)
     })
   },
   methods: {

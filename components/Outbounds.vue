@@ -123,7 +123,8 @@ export default {
   padding: 2rem;
 
   .schedule-icon {
-    color: var(--font-color);
+    stroke: var(--font-color);
+    height: 100px;
   }
 
   h3 {
