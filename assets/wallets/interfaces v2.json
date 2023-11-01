@@ -23,7 +23,8 @@
             "borrow_link": "/"
           }
         }
-      ]
+      ],
+      "volume": "https://midgard.ninerealms.com/v2/stats?period=30d?dex=dx"
     },
     {
       "name": "Decentralfi",
