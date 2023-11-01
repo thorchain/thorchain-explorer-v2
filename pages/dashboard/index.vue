@@ -9,10 +9,9 @@
               <div class="header">
                 Block Height
               </div>
-              <div v-if="thorHeight" class="value">
+              <skeleton-item :loading="!thorHeight" class="value">
                 {{ thorHeight | number("0,0") }}
-              </div>
-              <span v-else>-</span>
+              </skeleton-item>
             </div>
           </div>
           <hr>
@@ -23,14 +22,13 @@
               <div class="header">
                 RUNE Supply
               </div>
-              <div v-if="runeSupply" class="value">
+              <skeleton-item :loading="!runeSupply" class="value">
                 {{ runeSupply | number("0,0") }}
                 <span style="font-size: 0.75rem">RUNE</span>
                 <span v-if="stats" class="extra">(${{
                   (runeSupply * stats.runePriceUSD) | number("0.00 a")
                 }})</span>
-              </div>
-              <span v-else>-</span>
+              </skeleton-item>
             </div>
           </div>
           <hr>
@@ -42,10 +40,9 @@
               <div class="header">
                 RUNE Price
               </div>
-              <div v-if="stats && stats.runePriceUSD" class="value">
+              <skeleton-item :loading="!(stats && stats.runePriceUSD)" class="value">
                 {{ stats.runePriceUSD | currency }}
-              </div>
-              <span v-else>-</span>
+              </skeleton-item>
             </div>
           </div>
           <hr>
@@ -55,14 +52,13 @@
               <div class="header">
                 Total Historical Volume (On Chain)
               </div>
-              <div v-if="runeVolume" class="value">
+              <skeleton-item :loading="!runeVolume" class="value">
                 {{ runeVolume | number("0,0") }}
                 <span style="font-size: 0.75rem">RUNE</span>
                 <span v-if="stats" class="extra">(${{
                   (runeVolume * stats.runePriceUSD) | number("0.00 a")
                 }})</span>
-              </div>
-              <span v-else>-</span>
+              </skeleton-item>
             </div>
           </div>
           <hr>
@@ -79,10 +75,9 @@
               <div class="header">
                 Total Addresses
               </div>
-              <div v-if="totalAddresses" class="value">
+              <skeleton-item :loading="!totalAddresses" class="value">
                 {{ totalAddresses | number("0,0") }}
-              </div>
-              <span v-else>-</span>
+              </skeleton-item>
             </div>
           </div>
           <hr>
@@ -92,10 +87,9 @@
               <div class="header">
                 Total Swap, Add, and Withdraw txs
               </div>
-              <div v-if="totalTxs" class="value">
+              <skeleton-item :loading="!totalTxs" class="value">
                 {{ totalTxs | number("0,0") }}
-              </div>
-              <span v-else>-</span>
+              </skeleton-item>
             </div>
           </div>
         </div>

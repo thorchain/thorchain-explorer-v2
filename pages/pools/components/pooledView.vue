@@ -1,104 +1,104 @@
 <template>
   <div class="pool-stats base-container">
     <div class="stat-group">
-      <div class="stat-item">
+      <skeleton-item class="stat-item" :loading="loading">
         <span class="title">Total Pooled:</span>
         <span class="mono value">{{ totalInfo.pooled | currency }}</span>
-      </div>
+      </skeleton-item>
       <hr>
-      <div class="stat-item">
+      <skeleton-item class="stat-item" :loading="loading">
         <span class="title">24hr Volume:</span>
         <span class="mono value">{{ totalInfo.day.volume | currency }}</span>
-      </div>
-      <div class="stat-item">
+      </skeleton-item>
+      <skeleton-item class="stat-item" :loading="loading">
         <span class="title">24hr Earnings:</span>
         <span class="mono value">{{ totalInfo.day.earnings | currency }}</span>
-      </div>
-      <div class="stat-item">
+      </skeleton-item>
+      <skeleton-item class="stat-item" :loading="loading">
         <span class="title">24hr Earnings APR:
           <unknown-icon v-tooltip="'(Earnings / Pooled) * Period Per Year'" class="header-icon" />
         </span>
         <span class="mono value">{{ totalInfo.day.earningsAPR | percent(2) }}</span>
-      </div>
-      <div class="stat-item">
+      </skeleton-item>
+      <skeleton-item class="stat-item" :loading="loading">
         <span class="title">24hr Swap Count:</span>
         <span class="mono value">{{ totalInfo.day.swapCount | number('0,0') }}</span>
-      </div>
-      <div class="stat-item">
+      </skeleton-item>
+      <skeleton-item class="stat-item" :loading="loading">
         <span class="title">24hr Average Fee:
           <unknown-icon v-tooltip="'Average Fee in basis point (Earnings / Volume)'" class="header-icon" />
         </span>
         <span class="mono value">{{ totalInfo.day.avgFee | number('0.00') }} BP</span>
-      </div>
+      </skeleton-item>
     </div>
     <hr>
     <div class="stat-group">
-      <div class="stat-item">
+      <skeleton-item class="stat-item" :loading="loading">
         <span class="title">7D Volume:</span>
         <span class="mono value">{{ totalInfo.week.volume | currency }}</span>
-      </div>
-      <div class="stat-item">
+      </skeleton-item>
+      <skeleton-item class="stat-item" :loading="loading">
         <span class="title">7D Earnings:</span>
         <span class="mono value">{{ totalInfo.week.earnings | currency }}</span>
-      </div>
-      <div class="stat-item">
+      </skeleton-item>
+      <skeleton-item class="stat-item" :loading="loading">
         <span class="title">7D Earnings APR:</span>
         <span class="mono value">{{ totalInfo.week.earningsAPR | percent(2) }}</span>
-      </div>
-      <div class="stat-item">
+      </skeleton-item>
+      <skeleton-item class="stat-item" :loading="loading">
         <span class="title">7D Swap Count:</span>
         <span class="mono value">{{ totalInfo.week.swapCount | number('0,0') }}</span>
-      </div>
-      <div class="stat-item">
+      </skeleton-item>
+      <skeleton-item class="stat-item" :loading="loading">
         <span class="title">7D Average Fee:</span>
         <span class="mono value">{{ totalInfo.week.avgFee | number('0.00') }} BP</span>
-      </div>
+      </skeleton-item>
     </div>
     <hr>
     <div class="stat-group">
-      <div class="stat-item">
+      <skeleton-item class="stat-item" :loading="loading">
         <span class="title">30D Volume:</span>
         <span class="mono value">{{ totalInfo.month.volume | currency }}</span>
-      </div>
-      <div class="stat-item">
+      </skeleton-item>
+      <skeleton-item class="stat-item" :loading="loading">
         <span class="title">30D Earnings:</span>
         <span class="mono value">{{ totalInfo.month.earnings | currency }}</span>
-      </div>
-      <div class="stat-item">
+      </skeleton-item>
+      <skeleton-item class="stat-item" :loading="loading">
         <span class="title">30D Earnings APR:</span>
         <span class="mono value">{{ totalInfo.month.earningsAPR | percent(2) }}</span>
-      </div>
-      <div class="stat-item">
+      </skeleton-item>
+      <skeleton-item class="stat-item" :loading="loading">
         <span class="title">30D Swap Count:</span>
         <span class="mono value">{{ totalInfo.month.swapCount | number('0,0') }}</span>
-      </div>
-      <div class="stat-item">
+      </skeleton-item>
+      <skeleton-item class="stat-item" :loading="loading">
         <span class="title">30D Average Fee:</span>
         <span class="mono value">{{ totalInfo.month.avgFee | number('0.00') }} BP</span>
-      </div>
+      </skeleton-item>
     </div>
     <hr>
     <div class="stat-group">
-      <div class="stat-item">
+      <skeleton-item class="stat-item" :loading="loading">
         <span class="title">Year Volume:</span>
         <span class="mono value">{{ totalInfo.year.volume | currency }}</span>
-      </div>
-      <div class="stat-item">
+      </skeleton-item>
+      <skeleton-item class="stat-item" :loading="loading">
         <span class="title">Year Earnings:</span>
         <span class="mono value">{{ totalInfo.year.earnings | currency }}</span>
-      </div>
-      <div class="stat-item">
+      </skeleton-item>
+      <skeleton-item class="stat-item" :loading="loading">
         <span class="title">Year Earnings APR:</span>
         <span class="mono value">{{ totalInfo.year.earningsAPR | percent(2) }}</span>
-      </div>
-      <div class="stat-item">
+      </skeleton-item>
+      <skeleton-item class="stat-item" :loading="loading">
         <span class="title">Year Swap Count:</span>
         <span class="mono value">{{ totalInfo.year.swapCount | number('0,0') }}</span>
-      </div>
-      <div class="stat-item">
+      </skeleton-item>
+      <skeleton-item class="stat-item" :loading="loading">
         <span class="title">Year Average Fee:</span>
         <span class="mono value">{{ totalInfo.year.avgFee | number('0.00') }} BP</span>
-      </div>
+      </skeleton-item>
     </div>
   </div>
 </template>
@@ -111,6 +111,7 @@ export default {
   components: { UnknownIcon },
   data () {
     return {
+      loading: true,
       totalInfo: {
         pooled: 0,
         day: {
@@ -168,6 +169,8 @@ export default {
         }
       } catch (error) {
         return undefined
+      } finally {
+        this.loading = false
       }
     },
     getTotalInfo (poolDatum) {
@@ -205,7 +208,7 @@ export default {
   .stat-item {
     display: flex;
     align-items: center;
-    padding: 5px 0;
+    padding-top: 5px;
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 5px;
