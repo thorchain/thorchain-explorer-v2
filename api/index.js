@@ -20,7 +20,8 @@ import {
   getThorname,
   getMemberDetails,
   getSaverDetails,
-  earningLastDay
+  earningLastDay,
+  getBorrowerDetails
 } from './midgard.api'
 import {
   getMimir,
@@ -64,11 +65,8 @@ import {
   getDashboardPlots,
   getExraNodesInfo,
   getOhclPrice,
-  getSaversExtraData,
-  getOldSaversExtraData,
   getChainsHeight,
   getServerTx,
-  getDevTx,
   getPoolsHistory,
   getOldPoolsHistory,
   getSaversInfo
@@ -194,10 +192,8 @@ export default function ({ $axios }, inject) {
     getPoolDepth,
     getThorname,
     getMemberDetails,
-    getSaversExtraData,
     getSaverDetails,
     getSavers,
-    getOldSaversExtraData,
     getThornodeDetailTx,
     getChainsHeight,
     getUserLpPosition,
@@ -207,13 +203,13 @@ export default function ({ $axios }, inject) {
     getTxStages,
     getTxStatus,
     getServerTx,
-    getDevTx,
     earningLastDay,
     getStreamingSwaps,
     getPoolsHistory,
     getOldPoolsHistory,
     getScheduled,
-    getSaversInfo
+    getSaversInfo,
+    getBorrowerDetails
   }
 
   inject('api', api)

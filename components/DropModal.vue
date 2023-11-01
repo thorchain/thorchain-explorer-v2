@@ -7,7 +7,7 @@
       :target="`popover-${name}-${index}`"
       :show.sync="showModal"
     >
-      <div :class="['simple-card', 'normal', 'menu', {'right': right}]">
+      <div :class="['simple-card', 'normal', 'drop-menu', {'right': right}]">
         <slot />
       </div>
     </b-popover>
@@ -61,7 +61,7 @@ export default {
   }
 }
 
-.menu {
+.drop-menu {
   padding: .2rem;
   display: flex;
   margin: 0.5rem;

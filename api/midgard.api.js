@@ -123,3 +123,7 @@ export function getMemberDetails (address) {
 export function getSaverDetails (address) {
   return $axiosInstace.get(`saver/${address}`)
 }
+
+export function getBorrowerDetails (address) {
+  return $axiosInstace.get(`borrower/${address}`)
+}

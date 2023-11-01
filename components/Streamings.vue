@@ -7,7 +7,7 @@
       <streamingIcon class="streaming-icon large-icon" />
       <h3>There is no streaming swaps ongoing at the moment.</h3>
     </div>
-    <template v-for="(o, i) in streamingSwaps" v-else>
+    <template v-for="(o, i) in filteredStreamingSwaps" v-else>
       <div :key="i" class="streaming-item">
         <div class="upper-body">
           <div class="asset-container">
@@ -37,9 +37,22 @@
             {{ $options.filters.percent(o.count / o.quantity) }}
           </small>
         </div>
-        <small style="margin-top: 5px">{{ o.interval }} Blocks / Swap <span class="sec-color">({{ o.remaningETA }})</span></small>
+        <small style="margin-top: 5px">{{ o.interval }} Blocks / Swap 
+          <span class="sec-color"><small style="color: var(--font-color);">(ETA </small> {{ o.remaningETA }}
+          <small style="color: var(--font-color);">, Remainng swaps: {{ o.quantity - o.count }}</small>
+          <small style="color: var(--font-color);">)</small>
+          </span>
+        </small>
       </div>
       <hr :key="i + '-hr'" class="hr-space">
+    </template>
+    <template v-if="streamingSwaps.length > perPage" #footer>
+      <b-pagination
+        v-model="currentPage"
+        class="center"
+        :total-rows="streamingSwaps.length"
+        :per-page="perPage"
+      />
     </template>
   </Card>
 </template>
@@ -53,10 +66,20 @@ export default {
   components: { streamingIcon },
   data () {
     return {
+      currentPage: 1,
       noStreaming: false,
       loading: true,
       streamingSwaps: [],
-      intervalId: undefined
+      intervalId: undefined,
+      perPage: 7
+    }
+  },
+  computed: {
+    filteredStreamingSwaps () {
+      return this.streamingSwaps.slice(
+        (this.currentPage - 1) * this.perPage,
+        this.currentPage * this.perPage
+      )
     }
   },
   async mounted () {
@@ -65,7 +88,7 @@ export default {
     // Update the component every 20 secs
     this.intervalId = setInterval(() => {
       this.updateStreamingSwap(this.inboundHash)
-    }, 20000)
+    }, 10000)
   },
   destroyed () {
     this.clearIntervalId(this.intervalId)
@@ -229,7 +252,6 @@ export default {
   .extra-info {
     display: flex;
     align-items: center;
-    padding-top: 8px;
     gap: 10px;
   }
 }

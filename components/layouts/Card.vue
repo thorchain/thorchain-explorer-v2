@@ -24,6 +24,9 @@
       <div class="card-body">
         <slot />
       </div>
+      <div v-if="$slots['footer']" class="footer">
+        <slot name="footer" />
+      </div>
     </template>
   </div>
 </template>
@@ -194,6 +197,11 @@ export default {
         display: none;
       }
     }
+  }
+
+  .footer {
+    margin-top: auto;
+    border-top: 1px solid var(--border-color);
   }
 }
 </style>

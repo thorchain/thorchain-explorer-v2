@@ -3,7 +3,7 @@
     <div class="header">
       <div class="logo-wrapper">
         <ThorchainLogo class="logo" />
-        <div v-if="!fullscreen">
+        <div class="thorchain-name">
           <strong>THORChain</strong>
           Explorer
         </div>
@@ -14,17 +14,31 @@
       </div>
     </div>
     <div class="side-bar-lists">
-      <template v-for="(item, index) in sidebarLists" v-if="item">
-        <NuxtLink :key="index" :to="item.link" :class="['side-bar-item']" @click.native="toggleMenu(false)">
+      <template v-for="(item, index) in sidebarLists">
+        <NuxtLink
+          v-if="item"
+          :id="`sidebar-${item.name}`"
+          :key="index"
+          :to="item.link"
+          :class="['side-bar-item']"
+          @click.native="toggleMenu(false)"
+        >
           <div class="side-bar-wrap">
             <component :is="item.icon" class="icon selected" />
             <component :is="item.unicon" class="icon unselected" />
-            <span v-if="!fullscreen" class="sidebar-text">{{ item.name }}</span>
+            <span class="sidebar-text">{{ item.name }}</span>
+            <b-popover
+              placement="right"
+              custom-class="sidebar-popover"
+              :target="`sidebar-${item.name}`"
+              triggers="hover"
+              :content="`${item.name}`"
+            />
           </div>
         </NuxtLink>
       </template>
     </div>
-    <div v-if="!fullscreen" class="footer-wrapper">
+    <div class="footer-wrapper">
       <div class="footer-item" @click="toggleExternal">
         <question />
         <span>Extra Links</span>
@@ -175,8 +189,7 @@ export default {
   },
   computed: {
     ...mapGetters({
-      menu: 'getIsMenuOn',
-      fullscreen: 'getFullScreen'
+      menu: 'getIsMenuOn'
     })
   },
   mounted () {
@@ -414,6 +427,51 @@ export default {
       font-family: "Exo 2";
     }
   }
+
+  @include olg {
+    grid-template-columns: 4rem;
+    grid-template-rows: 64px 1fr 64px;
+    grid-template-areas: "header" "sidebar" "footer";
+
+    .sidebar-text, .footer-wrapper, .thorchain-name {
+      display: none;
+    }
+
+    .header {
+      padding: 0;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .side-bar-lists {
+      align-items: center;
+
+      .side-bar-item {
+        width: 100%;
+        padding: 0;
+
+        .side-bar-wrap {
+          justify-content: center;
+          width: 100%;
+          padding: 8px 12px;
+
+          &:hover {
+            border-radius: 0;
+          }
+        }
+
+        .icon {
+          margin: 0;
+        }
+
+        &.nuxt-link-active {
+          .side-bar-wrap svg {
+            fill: var(--primary-color);
+          }
+        }
+      }
+    }
+  }
 }
 
 #externalMenu {
@@ -446,6 +504,19 @@ export default {
         background-color: var(--darker-bg);
       }
     }
+  }
+}
+
+.sidebar-popover {
+  background: var(--bg-color);
+  padding: .5rem;
+  border-radius: .5rem;
+  margin-left: .5rem;
+  border: 1px solid var(--border-color);
+  display: none;
+
+  @include olg {
+    display: block;
   }
 }
 </style>

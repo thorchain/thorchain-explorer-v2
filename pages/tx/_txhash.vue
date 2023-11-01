@@ -305,7 +305,7 @@ export default {
         // Searching midgard database
         this.progressText = '1/3'
 
-        res = await this.$api.getDevTx(txHash).catch((e) => {
+        res = await this.$api.getTx(txHash).catch((e) => {
           if (e?.response?.status === 404) {
             this.error.message = 'Please make sure the correct transaction hash or account address is inserted.'
           }
@@ -390,7 +390,7 @@ export default {
           }
         })
 
-        if (res?.status / 200 === 1 && (res.data?.inbound_observed?.started !== false || res.data?.inbound_observed?.completed === true || res.data?.outbound_signed?.completed === false)) {
+        if (res?.status / 200 === 1 && (res.data?.inbound_observed?.started === true || res.data?.inbound_observed?.completed === true || res.data?.outbound_signed?.completed === false)) {
           this.tx = parseThornodeStatus(res.data)
           this.isLoading = false
           this.loadingPercentage = 100

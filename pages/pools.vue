@@ -1,6 +1,7 @@
 <template>
   <Page>
     <div class="pools-page-container">
+      <pooled-view></pooled-view>
       <Nav is-link="true" :nav-items="navItems" />
       <nuxt-child />
     </div>
@@ -8,7 +9,10 @@
 </template>
 
 <script>
+import PooledView from './pools/components/pooledView.vue'
+
 export default {
+  components: { PooledView },
   data () {
     return {
       navItems: [
@@ -17,12 +21,12 @@ export default {
           link: '/pools'
         },
         {
-          text: 'TVL by Chain',
-          link: '/pools/tvl'
+          text: 'Pool Earnings',
+          link: '/pools/earnings'
         },
         {
-          text: 'Historical Pools',
-          link: '/pools/historical'
+          text: 'TVL by Chain',
+          link: '/pools/tvl'
         }
       ]
     }

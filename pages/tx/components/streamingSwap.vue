@@ -80,7 +80,7 @@ import moment from 'moment'
 import { assetFromString } from '@xchainjs/xchain-util'
 
 export default {
-  props: ['inboundHash', 'tx'],
+  props: ['inboundHash', 'tx', 'streamingMeta'],
   data () {
     return {
       streamingDetail: {
@@ -102,6 +102,10 @@ export default {
     }
   },
   mounted () {
+    if (this.streamingMeta) {
+      return
+    }
+
     this.updateStreamingDetail(this.inboundHash)
 
     this.intervalId = setInterval(() => {

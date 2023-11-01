@@ -57,7 +57,7 @@ export default {
     }
   },
   async mounted () {
-    const saversExtraData = (await this.$api.getSaversExtraData()).data[this.poolName]
+    const saversExtraData = (await this.$api.getSaversInfo()).data[this.poolName]?.savers
     if (!saversExtraData) { this.error = true }
     this.saversExtraData = saversExtraData
     this.updateGeneralStats(saversExtraData)
@@ -67,12 +67,12 @@ export default {
       this.saversGeneralStats = [
         {
           name: 'Total Earned',
-          value: this.$options.filters.currency((saversExtraData.earned * saversExtraData.assetPrice / 1e8)),
+          value: this.$options.filters.currency((+saversExtraData.earned * +saversExtraData.assetPriceUSD) / 1e8),
           hide: !saversExtraData.earned
         },
         {
           name: 'Total Annualised Return',
-          value: this.$options.filters.percent(saversExtraData.saverReturn, 2)
+          value: this.$options.filters.percent(saversExtraData.saversReturn, 2)
         },
         {
           name: 'Savers Count',
@@ -80,7 +80,7 @@ export default {
         },
         {
           name: 'Savers Depth',
-          value: this.$options.filters.currency((saversExtraData.saversDepth * saversExtraData.assetPrice / 1e8)),
+          value: this.$options.filters.currency(((saversExtraData.saversDepth * saversExtraData.assetPriceUSD) / 1e8)),
           extraText: `(${this.$options.filters.number(saversExtraData.saversDepth / 1e8, '0,0.00')} <small>${saversExtraData.asset}</small>)`
         }
       ]

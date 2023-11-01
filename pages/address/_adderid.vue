@@ -23,7 +23,7 @@
       </div>
       <template v-if="addrTxs">
         <div class="stat-wrapper mb-1">
-          <Nav :active-mode.sync="activeMode" :nav-items="[{text: 'Balances', mode: 'balance'},{text: 'THORName', mode: 'thorname'}, {text: 'Pools', mode: 'pools'}]" />
+          <Nav :active-mode.sync="activeMode" :nav-items="[{text: 'Balances', mode: 'balance'},{text: 'THORName', mode: 'thorname'}, {text: 'LPs/Savers', mode: 'pools'}, {text: 'Loans', mode: 'loans'}]" />
           <balance v-if="activeMode == 'balance'" :state="addressStat" :balance="balance" />
           <template v-else-if="activeMode == 'thorname'">
             <stat-table :table-settings="thornames" />
@@ -44,6 +44,7 @@
           <keep-alive>
             <pools v-if="activeMode == 'pools'" :address="address" />
           </keep-alive>
+          <loans v-if="activeMode == 'loans'" :address="address" />
         </div>
         <template v-if="isVault">
           <Card extra-class="mb-1" :navs="[{title: 'Chain Addresses', value: 'chain-addr'}, {title: 'Node Members', value: 'node-mmb'}]" :act-nav.sync="vaultMode">
@@ -116,6 +117,7 @@ import QrcodeVue from 'qrcode.vue'
 import { mapGetters } from 'vuex'
 import Balance from './components/balance.vue'
 import Pools from './components/pools.vue'
+import Loans from './components/loans.vue'
 import WalletIcon from '~/assets/images/wallet.svg?inline'
 import CopyIcon from '~/assets/images/copy.svg?inline'
 import ExpandIcon from '~/assets/images/expand.svg?inline'
@@ -128,7 +130,8 @@ export default {
     ExpandIcon,
     QrcodeVue,
     Balance,
-    Pools
+    Pools,
+    Loans
   },
   async asyncData ({ params, $api }) {
     const address = params.adderid

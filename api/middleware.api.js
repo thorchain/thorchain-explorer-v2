@@ -17,16 +17,8 @@ export function getOhclPrice () {
   return $axiosInstace.get(endpoints[process.env.NETWORK].SERVER_URL + 'api/ohclPrice')
 }
 
-export function getSaversExtraData () {
-  return $axiosInstace.get(endpoints[process.env.NETWORK].SERVER_URL + 'api/saversExtraData')
-}
-
 export function getSaversInfo () {
   return $axiosInstace.get(endpoints[process.env.NETWORK].SERVER_URL + 'api/saversInfo')
-}
-
-export function getOldSaversExtraData () {
-  return $axiosInstace.get(endpoints[process.env.NETWORK].SERVER_URL + 'api/oldSaversExtraData')
 }
 
 export function getChainsHeight () {
@@ -45,8 +37,4 @@ export function getOldPoolsHistory (period = '') {
 
 export function getServerTx (txid) {
   return $axiosInstace.get(endpoints[process.env.NETWORK].SERVER_URL + `tx/${txid}`)
-}
-
-export function getDevTx (txid) {
-  return $axiosInstace.get(`https://midgard.dev.ninerealms.com/v2/actions?txid=${txid}`)
 }
