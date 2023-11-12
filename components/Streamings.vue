@@ -28,7 +28,9 @@
             </div>
           </div>
           <small v-if="o.tx_id" class="sec-color mono" style="margin-left: auto;">
-            <span class="clickable" @click="gotoTx(o.tx_id)">{{ formatAddress(o.tx_id) }}</span>
+            <NuxtLink v-if="isValidTx(o.tx_id)" class="clickable" :to="{ path: `/tx/${o.tx_id}` }">
+              {{ formatAddress(o.tx_id) }}
+            </NuxtLink>
           </small>
         </div>
         <div class="extra-info">

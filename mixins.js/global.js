@@ -128,6 +128,12 @@ export default {
       }
       this.$router.push({ path: `/tx/${hash}` })
     },
+    isValidTx(hash) {
+      if (hash === '0000000000000000000000000000000000000000000000000000000000000000') {
+        return false
+      }
+      return true
+    },
     gotoNode (signer) {
       this.$router.push({ path: `/node/${signer}` })
     },
