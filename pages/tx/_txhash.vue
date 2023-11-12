@@ -230,30 +230,6 @@ export default {
         ])
       }
 
-      // disable this for now
-      // if (this.extraSwapDetails && this.chainsHeight && this.extraSwapDetails?.inChain !== 'THOR') {
-      //   let confs = 1
-      //   if (defaultCoinBase(this.extraSwapDetails?.inChain) > 0) {
-      //     confs = (this.tx.inout[0][0][0].asset.amount) / defaultCoinBase(this.extraSwapDetails?.inChain)
-      //     confs = Math.ceil(confs)
-      //   }
-      //   const filtered = this.$options.filters.number((this.chainsHeight[this.extraSwapDetails?.inChain] - this.extraSwapDetails?.inboundHeight), '0,0')
-      //   const filteredDelay = moment.duration(confs * approxBlockSeconds(this.extraSwapDetails?.inChain), 'seconds').humanize()
-
-      //   res.push([
-      //     {
-      //       name: 'Est Inbound Confirms needed / Confirmed',
-      //       value: confs + ' / ' + filtered,
-      //       filter: true
-      //     },
-      //     {
-      //       name: 'Est Inbound Delay',
-      //       value: filteredDelay,
-      //       filter: true
-      //     }
-      //   ])
-      // }
-
       if (this.tx.memo) {
         res.push([
           {
@@ -312,19 +288,19 @@ export default {
         })
 
         if (res?.status / 200 === 1 && res.data.count !== '0') {
-          this.tx = parseMidgardTx(res.data)
+          let parsedTx = parseMidgardTx(res.data)
 
           // parse extra fees and details from thornode
-          if (this.tx.type === 'swap') {
-            const inboundHash = this.tx?.inout[0][0][0].txID
+          if (parsedTx.type === 'swap') {
+            const inboundHash = parsedTx?.inout[0][0][0].txID
             res = await this.$api.getThornodeDetailTx(inboundHash).catch((e) => {
               this.isLoading = false
               this.loadingPercentage = 100
             })
 
-            const outTxs = this.tx?.inout.map(a => a[1].length > 0)
+            const outTxs = parsedTx?.inout.map(a => a[1].length > 0)
             if (outTxs && outTxs.length > 0 && outTxs.every(a => a === false) && res.data?.out_txs?.length > 0) {
-              this.tx.inout[0][1] =
+              parsedTx.inout[0][1] =
               res.data?.out_txs.map(t => ({
                 is: t.coins[0]?.asset,
                 address: t?.to_address ?? '',
@@ -339,10 +315,10 @@ export default {
             }
 
             try {
-              if (this.tx.label.includes('streaming')) {
-                this.tx.inout = [this.tx.inout[0]]
+              if (parsedTx.label.includes('streaming')) {
+                parsedTx.inout = [parsedTx.inout[0]]
                 const getInTx = res.data.tx.tx
-                this.tx.inout[0][0] = [{
+                parsedTx.inout[0][0] = [{
                   asset: {
                     amount: getInTx.coins[0].amount / 1e8,
                     name: getInTx.coins[0].asset
@@ -366,16 +342,17 @@ export default {
             })
 
             if (resStatus?.status / 200 === 1 && (resStatus.data?.stages.outbound_signed?.completed === false)) {
-              this.tx.inout[0][1] = parseThornodeStatus(resStatus.data).inout[0][1]
+              parsedTx.inout[0][1] = parseThornodeStatus(resStatus.data).inout[0][1]
             }
 
-            if (!this.tx.outAsset) {
-              const m = this.tx.memo.split(':', 3)[1]
+            if (!parsedTx.outAsset) {
+              const m = parsedTx.memo.split(':', 3)[1]
 
-              this.tx.outAsset = shortAssetName(m)
+              parsedTx.outAsset = shortAssetName(m)
             }
           }
 
+          this.tx = parsedTx
           this.isLoading = false
           this.loadingPercentage = 100
           return
