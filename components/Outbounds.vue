@@ -21,10 +21,14 @@
         </div>
         <div class="extra-right">
           <small v-if="o.to_address" class="mono">To
-            <span class="clickable" @click="gotoAddr(o.to_address)">{{ formatAddress(o.to_address) }}</span>
+            <NuxtLink class="clickable" :to="{ path: `/address/${o.to_address}` }">
+              {{ formatAddress(o.to_address) }}
+            </NuxtLink>
           </small>
           <small v-if="o.in_hash && o.label !== 'migrate'" class="mono">In TxID
-            <span class="clickable" @click="gotoTx(o.in_hash)">{{ formatAddress(o.in_hash) }}</span>
+            <NuxtLink class="clickable" :to="{ path: `/tx/${o.in_hash}` }">
+              {{ formatAddress(o.in_hash) }}
+            </NuxtLink>
           </small>
           <div v-if="o.height">
             <small class="mono">ETA </small>

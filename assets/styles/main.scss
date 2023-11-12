@@ -60,6 +60,7 @@ input {
 }
 
 .clickable {
+  text-decoration: none;
   color: var(--primary-color);
   cursor: pointer;
 }
