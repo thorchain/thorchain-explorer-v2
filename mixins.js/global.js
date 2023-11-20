@@ -1,8 +1,8 @@
-import { bnOrZero, formatBN, AssetCurrencySymbol, isSynthAsset } from '@xchainjs/xchain-util'
+import { bnOrZero, formatBN, AssetCurrencySymbol, isSynthAsset, assetToString } from '@xchainjs/xchain-util'
 import compare from 'semver/functions/compare'
 import moment from 'moment'
 import { AssetImage } from '~/classes/assetImage'
-import { assetFromString } from '~/utils'
+import { assetFromString, parseMemoToTxType, shortAssetName } from '~/utils'
 import endpoints from '~/api/endpoints'
 
 export default {
@@ -131,7 +131,7 @@ export default {
       }
       this.$router.push({ path: `/tx/${hash}` })
     },
-    isValidTx(hash) {
+    isValidTx (hash) {
       if (hash === '0000000000000000000000000000000000000000000000000000000000000000') {
         return false
       }
@@ -309,6 +309,77 @@ export default {
     },
     numberSort (x, y, col, rowX, rowY) {
       return (+x < +y ? -1 : (+x > +y ? 1 : 0))
+    },
+    parseMemo (memo) {
+      // Driven from track repo
+      if (!memo) { return {} }
+
+      // SWAP:ASSET:DESTADDR:LIM/INTERVAL/QUANTITY:AFFILIATE:FEE
+      const parts = parseMemoToTxType(memo)
+      const [limit, interval, quantity] = parts[3] ? parts[3].split('/') : []
+
+      return {
+        type: parts[0] || null,
+        asset: parts[1] || null,
+        destAddr: parts[2] || null,
+        limit: limit || null, // null if not present
+        interval: parseInt(interval) || null, // null if not present
+        quantity: parseInt(quantity) || null, // null if not present
+        affiliate: parts[4] || null, // null if not present
+        fee: parts[5] || null // null if not present
+      }
+    },
+    parseMemoAsset (assetInString, pools) {
+      if (!assetInString) { return null }
+
+      // Upper case it as pools is in uppercase
+      assetInString = assetInString.toUpperCase()
+
+      // get asset from short
+      if (assetInString.split('.').length === 1) {
+        assetInString = shortAssetName(assetInString)
+      }
+
+      let asset = assetFromString(assetInString)
+
+      // TODO: make sure how ticker verifies here
+      if (asset.ticker) {
+        // attempt to fuzzy match address
+        if (pools && !(assetToString(asset) in pools)) {
+          pools.forEach((p) => {
+            const poolAsset = assetFromString(p.asset)
+            if (
+              poolAsset.asset.chain === asset.chain &&
+              poolAsset.asset.symbol === asset.symbol &&
+              poolAsset.asset.address.endsWith(asset.address)
+            ) {
+              asset = poolAsset
+            }
+          })
+        }
+      }
+
+      return asset
+    },
+    amountToUSD (asset, amount, pools) {
+      if (!asset || !amount || !pools) {
+        return
+      }
+
+      // update params
+      amount = parseInt(amount, 10) / 1e8
+      if (typeof asset === 'string') {
+        asset = assetFromString(asset)
+      }
+
+      // Synth price would be same as non synth asset
+      if (isSynthAsset(asset)) {
+        asset.synth = false
+      }
+
+      const pricePerAsset = +pools.find(p => p.asset === assetToString(asset))?.assetPriceUSD ?? 0
+
+      return amount * pricePerAsset
     }
   }
 }
