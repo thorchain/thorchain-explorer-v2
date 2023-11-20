@@ -4,12 +4,12 @@
       <div class="tx-header">
         <h3>
           Transaction
-          <span v-if="tx.type" class="bubble-container" style="margin-left: 0.2rem">{{ tx.type }}</span>
+          <!-- <span v-if="tx.type" class="bubble-container" style="margin-left: 0.2rem">{{ tx.type }}</span>
           <span v-if="tx.status" class="bubble-container blue" style="margin-left: 0.2rem">{{ tx.status }}</span>
-          <span v-if="tx.synth" class="bubble-container yellow" style="margin-left: 0.2rem">synth</span>
-          <template v-for="(l, i) in tx.label">
+          <span v-if="tx.synth" class="bubble-container yellow" style="margin-left: 0.2rem">synth</span> -->
+          <!-- <template v-for="(l, i) in tx.label">
             <span :key="i" class="bubble-container" style="margin-left: 0.2rem">{{ l }}</span>
-          </template>
+          </template> -->
         </h3>
       </div>
       <div class="utility">
@@ -21,11 +21,16 @@
           <CopyIcon class="icon small" />
         </div>
       </div>
-      <div v-if="tx.date" class="tx-date">
+
+      <tx-card v-for="(c, i) in cards" :key="i" :txData="c.details">
+
+      </tx-card>
+
+      <!-- <div v-if="tx.date" class="tx-date">
         <span class="sec-color">Submitted:</span> {{ tx.date.toLocaleString() }} ({{ fromNow(tx.date) }})
-      </div>
-      <div style="margin: .2rem 0" />
-      <div v-for="(txa, j) in tx.inout" :key="j" class="tx-wrapper">
+      </div> -->
+
+      <!-- <div v-for="(txa, j) in tx.inout" :key="j" class="tx-wrapper">
         <div v-if="tx" class="tx-container">
           <template v-for="(txs, i) in txa">
             <div v-if="i && txs.map(o => o.is).length > 0" :key="i + '-arrow'" class="arrow">
@@ -69,10 +74,12 @@
             </div>
           </template>
         </div>
-      </div>
+      </div> -->
+
       <streaming-swap v-if="txFormatted" :inbound-hash="txFormatted" :tx="tx" />
       <tx-stages v-if="txFormatted" :inbound-hash="txFormatted" />
-      <div v-if="tx" class="extra-details">
+
+      <!-- <div v-if="tx" class="extra-details">
         <stat-table :table-settings="extraDetail">
           <template #Pools>
             <div v-for="(p, i) in tx.pools" :key="i" class="pool-box">
@@ -85,7 +92,7 @@
             </div>
           </template>
         </stat-table>
-      </div>
+      </div> -->
     </template>
     <div v-else-if="isError" class="notify-card card-bg">
       <h3>{{ error.title }}</h3>
@@ -95,7 +102,7 @@
     <div v-else-if="isLoading && !isError">
       <div class="notify-card" style="width: 18.75rem">
         <h3>Searching transaction</h3>
-        <progress-bar :width="loadingPercentage" :extra-text="progressText + ' of queries'" />
+        <BounceLoader color="var(--font-color)" size="3rem" />
       </div>
     </div>
   </Page>
@@ -104,8 +111,10 @@
 <script>
 import moment from 'moment'
 import { mapGetters } from 'vuex'
+import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
 import streamingSwap from './components/streamingSwap.vue'
 import txStages from './components/txStages.vue'
+import txCard from './components/txCard.vue'
 import CopyIcon from '~/assets/images/copy.svg?inline'
 import DisconnectIcon from '~/assets/images/disconnect.svg?inline'
 import ArrowIcon from '~/assets/images/arrow-small-right.svg?inline'
@@ -116,8 +125,10 @@ export default {
     CopyIcon,
     ArrowIcon,
     DisconnectIcon,
+    BounceLoader,
     streamingSwap,
-    txStages
+    txStages,
+    txCard
   },
   data () {
     return {
@@ -125,7 +136,7 @@ export default {
       extraSwapDetails: undefined,
       isLoading: true,
       isError: false,
-      copyText: 'Copy Hash',
+      copyText: 'Copy',
       loadingPercentage: 0,
       progressText: '',
       txFormatted: undefined,
@@ -133,12 +144,13 @@ export default {
         title: 'Couldn\'t find the Transaction',
         message: 'Something bad happened.'
       },
-      intervalId: undefined
+      updateInterval: undefined
     }
   },
   computed: {
     ...mapGetters({
-      chainsHeight: 'getChainsHeight'
+      chainsHeight: 'getChainsHeight',
+      pools: 'getPools'
     }),
     extraDetail () {
       if (!this.tx) {
@@ -244,34 +256,100 @@ export default {
     }
   },
   async mounted () {
-    await this.updateTx()
+    let txHash = this.$route.params.txhash
+    if (txHash.toLowerCase().startsWith('0x')) {
+      txHash = txHash.slice(2)
+    }
+
+    await this.fetchTx(txHash)
 
     // if has no outbound
     if (this.tx?.status === 'pending') {
-      const inter = setInterval(async () => {
-        await this.updateTx()
+      const uI = setInterval(async () => {
+        await this.fetchTx(txHash)
         if (this.tx?.status !== 'pending') {
-          clearInterval(inter)
+          clearInterval(uI)
         }
       }, 60000)
 
-      this.intervalId = inter
+      this.updateInterval = uI
     }
   },
   destroyed () {
-    this.clearIntervalId(this.intervalId)
+    this.clearIntervalId(this.updateInterval)
   },
   methods: {
-    async updateTx () {
-      let txHash = this.$route.params.txhash
+    // TODO: check hash in saver with streaming
+    async fetchTx (hash) {
+      // Here the hash can be outbound but the inbound should be caught if it's not
+      // Get Midgard details
+      const md = (await this.$api.getTx(hash).catch((e) => {
+        if (e?.response?.status === 404) {
+          this.error.message = 'Transaction is not found in Midgard. Please make sure the correct transaction hash or account address is inserted.'
+        }
+      }))?.data
 
-      if (txHash.toLowerCase().startsWith('0x')) {
-        txHash = txHash.slice(2)
+      // See if the hash is outbound
+      const swapAction = md.actions.find(a => a.type === 'swap')
+      if (swapAction) {
+        hash = swapAction.in[0].txID
       }
 
-      this.txFormatted = txHash
+      // Get THORNode details
+      const thorRes = (await this.$api.getThornodeDetailTx(hash).catch((e) => {
+        if (e?.response?.status / 200 !== 1) {
+          this.error.message = 'Transaction is not found in Thornode. Please make sure the correct transaction hash or account address is inserted.'
+        }
+      }))
 
-      setInterval(() => {
+      // Assign header and data if available
+      let td, tdh
+      if (thorRes) {
+        td = thorRes.data
+        tdh = thorRes.headers
+      }
+
+      const ts = (await this.$api.getTxStatus(hash).catch((e) => {
+        if (e?.response?.status / 200 !== 1) {
+          this.error.message = 'Can\'t find transaction status. Please make sure the correct transaction hash or account address is inserted.'
+        }
+      }))?.data
+
+      // Native Transaction
+      let nt
+      if (!td) {
+        nt = (await this.$api.getNativeTx(hash).catch((e) => {
+          if (e?.response?.status === 404) {
+            this.error.message = 'Please make sure the correct transaction hash or account address is inserted.'
+            this.loading = false
+          }
+        }))?.data
+      }
+
+      if (nt) {
+        this.createNativeTx(nt)
+      } else {
+        this.createTxState(md, ts, tdh, this.pools)
+      }
+
+      this.isLoading = false
+      // TODO: add proper error handling
+    },
+    createTxState (midgardAction, thorTx, thorHeight, pools) {
+      let cards = []
+
+      midgardAction?.actions.forEach(m => {
+
+      })
+
+    },
+    createNativeTx (nativeTx) {
+
+    },
+    async mos (hash) {
+      this.txFormatted = hash
+
+      const pI = setInterval(() => {
         this.loadingPercentage = (this.loadingPercentage + 8) % 100
       }, 700)
 
@@ -281,14 +359,14 @@ export default {
         // Searching midgard database
         this.progressText = '1/3'
 
-        res = await this.$api.getTx(txHash).catch((e) => {
+        res = await this.$api.getTx(hash).catch((e) => {
           if (e?.response?.status === 404) {
-            this.error.message = 'Please make sure the correct transaction hash or account address is inserted.'
+            this.error.message = 'Transaction is not found in Midgard. Please make sure the correct transaction hash or account address is inserted.'
           }
         })
 
         if (res?.status / 200 === 1 && res.data.count !== '0') {
-          let parsedTx = parseMidgardTx(res.data)
+          const parsedTx = parseMidgardTx(res.data)
 
           // parse extra fees and details from thornode
           if (parsedTx.type === 'swap') {
@@ -335,7 +413,7 @@ export default {
               this.extraSwapDetails = undefined
             }
 
-            const resStatus = await this.$api.getTxStatus(txHash).catch((e) => {
+            const resStatus = await this.$api.getTxStatus(hash).catch((e) => {
               if (e?.response?.status === 404) {
                 this.error.message = 'Please make sure the correct transaction hash or account address is inserted.'
               }
@@ -361,7 +439,7 @@ export default {
         this.progressText = '2/3'
 
         // see if this tx is an observed tx
-        res = await this.$api.getTxStatus(txHash).catch((e) => {
+        res = await this.$api.getTxStatus(hash).catch((e) => {
           if (e?.response?.status === 404) {
             this.error.message = 'Please make sure the correct transaction hash or account address is inserted.'
           }
@@ -374,7 +452,7 @@ export default {
           return
         }
 
-        res = await this.$api.getNativeTx(txHash).catch((e) => {
+        res = await this.$api.getNativeTx(hash).catch((e) => {
           if (e?.response?.status === 404) {
             this.error.message = 'Please make sure the correct transaction hash or account address is inserted.'
           }
@@ -389,11 +467,10 @@ export default {
 
         this.progressText = '3/3'
 
-        res = await this.$api.getAddress(txHash, 0).catch((e) => {})
+        res = await this.$api.getAddress(hash, 0).catch((e) => {})
 
         if (res.status / 200 === 1) {
-          this.$router.push({ path: `/address/${this.$route.params.txhash}` })
-          return
+          this.$router.push({ path: `/address/${this.$route.params.hash}` })
         }
       } catch (error) {
         // Please make sure the correct transaction hash or account address is inserted.
