@@ -89,6 +89,13 @@ export default {
       })
       .catch(e => console.error(e))
 
+    this.$api
+      .getPools()
+      .then(({ data }) => {
+        this.$store.commit('setPools', data)
+      })
+      .catch(e => console.error(e))
+
     this.getChainsHeight()
 
     setInterval(() => {

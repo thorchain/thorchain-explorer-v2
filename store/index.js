@@ -6,7 +6,8 @@ export const state = () => ({
   nodesData: undefined,
   chainsHeight: undefined,
   fullscreen: false,
-  showSidebar: false
+  showSidebar: false,
+  pools: undefined
 })
 
 export const getters = {
@@ -33,6 +34,9 @@ export const getters = {
   },
   getChainsHeight (state) {
     return state.chainsHeight
+  },
+  getPools (state) {
+    return state.pools
   }
 }
 
@@ -63,5 +67,8 @@ export const mutations = {
   },
   setChainsHeight (state, action) {
     state.chainsHeight = action
+  },
+  setPools (state, action) {
+    state.pools = action
   }
 }
