@@ -3,7 +3,7 @@
     <div v-if="title || labels.length > 0" class="tx-header">
       <div class="tx-header-l">
         <span class="tx-title">
-          {{ title }}
+          {{ title | capitalize }}
         </span>
       </div>
       <div class="tx-header-r">
@@ -64,13 +64,15 @@
 
     <div class="accordions">
       <!-- inbound accordion -->
-      <slot name="accordion-in" />
+      <slot name="accordion-in-0" />
+      <slot name="accordion-in-1" />
 
       <!-- action accordion -->
       <slot name="accordion-action" />
 
       <!-- outbound accordion -->
-      <slot name="accordion-out" />
+      <slot name="accordion-out-0" />
+      <slot name="accordion-out-1" />
     </div>
   </div>
 </template>

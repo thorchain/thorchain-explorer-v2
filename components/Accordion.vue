@@ -1,19 +1,19 @@
 <template>
   <div class="accordion">
     <div :class="['accordion-info', {'not-collapsed': show}]" @click="toggleAccordion">
-      {{ title }}
+      {{ title | capitalize }}
       <angle-icon class="trigger" />
       <slot name="header-extra" />
     </div>
     <div :class="['accordion-inner', {'show': show}]" ref="aci">
-      <div v-for="s in stacks" :key="s.key" class="stack-item">
+      <div v-for="s in stacks.filter(s => s.is)" :key="s.key" class="stack-item">
         <template v-if="!s.slotName">
           <div class="key">
             {{ s.key }}
           </div>
-          <div class="value">
-            {{ s.value }}
-          </div>
+          <component :is="checkType(s.type)" class="value mono" :to="toLink(s.type, s.value)">
+            {{ s.formatter ? s.formatter(s.value) : s.value }}
+          </component>
         </template>
         <slot v-else :name="s.slotName" />
       </div>
@@ -44,6 +44,19 @@ export default {
         this.$refs.aci.style.maxHeight = `${this.$refs.aci.scrollHeight}px`
       } else {
         this.$refs.aci.style.maxHeight = null
+      }
+    },
+    checkType (type) {
+      if (type === 'address' || type === 'hash') {
+        return 'nuxt-link'
+      }
+      return 'div'
+    },
+    toLink (type, value) {
+      if (type === 'address') {
+        return `/address/${value}`
+      } else if (type === 'hash') {
+        return `/tx/${value}`
       }
     }
   }
@@ -108,6 +121,11 @@ export default {
 
         .value {
           color: var(--sec-font-color);
+        }
+
+        a.value {
+          color: var(--primary-color);
+          text-decoration: none;
         }
 
         &:last-of-type {
