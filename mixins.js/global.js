@@ -24,8 +24,11 @@ export default {
       }
     },
     assetToChain (assetStr) {
-      const { chain } = assetFromString(assetStr)
+      const { chain, synth } = assetFromString(assetStr)
       let asset = `${chain}.${chain}`
+      if (synth) {
+        return 'THOR.RUNE'
+      }
       switch (chain) {
         case 'GAIA':
           asset = 'GAIA.ATOM'
@@ -171,8 +174,12 @@ export default {
     },
     showAsset (assetStr) {
       try {
+        let del = '.'
         const asset = assetFromString(assetStr)
-        return asset.chain + '.' + asset.ticker
+        if (isSynthAsset(asset)) {
+          del = '/'
+        }
+        return asset.chain + del + asset.ticker
       } catch (error) {
         console.error("Can't get the asset:", assetStr)
       }

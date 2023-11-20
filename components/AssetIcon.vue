@@ -1,5 +1,5 @@
 <template>
-  <div class="icon-asset-container" :style="heightStyle">
+  <div :class="['icon-asset-container', ...classes]" :style="heightStyle">
     <img class="asset-icon" :src="assetImage(asset)" alt="asset-icon" @error="imgErr">
     <img v-if="showChainImage()" class="chain-asset-icon" :src="assetImage(chain? chain:assetToChain(asset))" alt="asset-chain-icon">
   </div>
@@ -10,7 +10,8 @@ export default {
   props: [
     'asset',
     'chain',
-    'height'
+    'height',
+    'classes'
   ],
   computed: {
     heightStyle () {
@@ -54,6 +55,10 @@ export default {
     position: absolute;
     right: -0.4rem;
     bottom: -0.4rem;
+  }
+
+  &.no-margin {
+    margin: 0;
   }
 }
 </style>
