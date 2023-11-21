@@ -119,7 +119,6 @@ import txStages from './components/txStages.vue'
 import txCard from './components/txCard.vue'
 import CopyIcon from '~/assets/images/copy.svg?inline'
 import DisconnectIcon from '~/assets/images/disconnect.svg?inline'
-import ArrowIcon from '~/assets/images/arrow-small-right.svg?inline'
 import { parseCosmosTx, parseMidgardTx, parseExtraSwap, parseThornodeStatus, shortAssetName, isInternalTx } from '~/utils'
 import Accordion from '~/components/Accordion.vue'
 
@@ -378,7 +377,7 @@ export default {
                   formatter: this.formatAddress
                 },
                 {
-                  key: 'Id',
+                  key: 'Hash',
                   value: a?.txid,
                   is: true,
                   type: 'hash',
@@ -413,6 +412,11 @@ export default {
                 is: accordions.action.streaming.interval
               },
               {
+                key: 'Liquidity Fee',
+                value: `${accordions.action.liquidityFee / 1e8} ${this.showAsset(accordions.out[0].asset)}`,
+                is: accordions.action.liquidityFee
+              },
+              {
                 key: 'Limit',
                 value: `${accordions.action.limit / 1e8}`,
                 is: accordions.action.limit
@@ -438,7 +442,7 @@ export default {
                   formatter: this.formatAddress
                 },
                 {
-                  key: 'Id',
+                  key: 'Hash',
                   value: a?.txid,
                   is: !isInternalTx(a?.txid),
                   type: 'hash',
@@ -462,69 +466,6 @@ export default {
       // Push as much as data gathered along all endpoint into cards!
       // Actions accordion, inbound accordion, outbound accordion
 
-      let cards = [
-        {
-          title: null,
-          in: [
-            // {
-            //   asset: null,
-            //   amount: null
-            // }
-          ],
-          out: [
-            // {
-            //   asset: null,
-            //   amount: null
-            // }
-          ]
-        }
-      ]
-
-      // action: limit, affiliateFeeBps, affiliateName, liquidityFee, slip, streaming, done
-      // action (add): liquidityUnits
-      // action (withdraw): liquidityUnits, asymmetry, basisPoint
-      // action (refund): affiliateName, affiliateFeeBps, refundReason
-      let accordions = {
-        in: [
-          // {
-          //   txid: null,
-          //   from: null,
-          //   asset: null,
-          //   amount: null, // in amount might be bigger than midgard's
-          //   done: false
-          // }
-        ],
-        action: {
-          limit: null,
-          affiliateName: null,
-          affiliateFee: null,
-          liquidityFee: null,
-          liquidityUnits: null,
-          refundReason: null,
-          basisPoint: null,
-          asymmetry: null,
-          swapSlip: null,
-          streaming: {
-            count: null,
-            interval: null,
-            quantity: null,
-            lastHeight: null
-          },
-          done: false
-        },
-        out: [
-          // {
-          //   txid: null,
-          //   to: null,
-          //   asset: null,
-          //   amount: null,
-          //   outboundFee: null,
-          //   observed: false
-          // }
-        ]
-      }
-
-      // TODO: check it for other types
       // Get out/in assets
       const memo = this.parseMemo(thorStatus.tx?.memo)
 
@@ -533,17 +474,16 @@ export default {
       // Swap
       // From track code
       if (memo.type === 'swap') {
-        ({ cards, accordions } = this.createSwapCard(thorStatus, midgardAction, memo))
+        const { cards, accordions } = this.createSwapState(thorStatus, midgardAction, memo)
+        this.cards = [this.createCard(cards, accordions)]
       } else if (memo.type === 'add' || memo.type === 'withdraw') {
         // TODO
       }
-
-      this.cards = [this.createCard(cards, accordions)]
     },
     createNativeTx (nativeTx) {
 
     },
-    createSwapCard (thorStatus, actions, memo) {
+    createSwapState (thorStatus, actions, memo) {
       // swap user addresses
       const userAddresses = new Set([
         thorStatus.tx.from_address.toLowerCase(),
@@ -585,7 +525,7 @@ export default {
         )
         : null
 
-      return {
+      const ret = {
         cards: {
           title: 'swap',
           in: [{
@@ -605,16 +545,16 @@ export default {
             amount: inAmount
           }],
           action: {
-            title: 'swap',
+            type: 'swap',
             limit: memo.limit,
             affiliateName: memo.affiliate,
-            affiliateFee: null, // Add on midgard
-            liquidityFee: null,
+            affiliateFee: parseInt(actions?.actions[0]?.metadata?.swap?.affiliateFee) || null,
+            liquidityFee: parseInt(actions?.actions[0]?.metadata?.swap?.liquidityFee) || null,
             liquidityUnits: null,
             refundReason: null,
             basisPoint: null,
             asymmetry: null,
-            swapSlip: null,
+            swapSlip: parseInt(actions?.actions[0]?.metadata?.swap?.swapSlip),
             streaming: {
               count: thorStatus.stages.swap_status?.streaming?.count,
               interval: thorStatus.stages.swap_status?.streaming?.interval || memo.interval,
@@ -646,140 +586,11 @@ export default {
             asset: this.parseMemoAsset(tx.coins[0].asset, this.pools),
             amount: parseInt(tx.coins[0].amount)
           }))]
-        }
+        },
+        inAsset
       }
-    },
-    async mos (hash) {
-      this.txFormatted = hash
 
-      const pI = setInterval(() => {
-        this.loadingPercentage = (this.loadingPercentage + 8) % 100
-      }, 700)
-
-      try {
-        let res
-
-        // Searching midgard database
-        this.progressText = '1/3'
-
-        res = await this.$api.getTx(hash).catch((e) => {
-          if (e?.response?.status === 404) {
-            this.error.message = 'Transaction is not found in Midgard. Please make sure the correct transaction hash or account address is inserted.'
-          }
-        })
-
-        if (res?.status / 200 === 1 && res.data.count !== '0') {
-          const parsedTx = parseMidgardTx(res.data)
-
-          // parse extra fees and details from thornode
-          if (parsedTx.type === 'swap') {
-            const inboundHash = parsedTx?.inout[0][0][0].txID
-            res = await this.$api.getThornodeDetailTx(inboundHash).catch((e) => {
-              this.isLoading = false
-              this.loadingPercentage = 100
-            })
-
-            const outTxs = parsedTx?.inout.map(a => a[1].length > 0)
-            if (outTxs && outTxs.length > 0 && outTxs.every(a => a === false) && res.data?.out_txs?.length > 0) {
-              parsedTx.inout[0][1] =
-              res.data?.out_txs.map(t => ({
-                is: t.coins[0]?.asset,
-                address: t?.to_address ?? '',
-                txID: t?.id ?? '',
-                asset: {
-                  name: t?.coins[0]?.asset,
-                  amount: t?.coins[0]?.amount / 10 ** 8
-                },
-                status: 'success',
-                type: 'swap'
-              }))
-            }
-
-            try {
-              if (parsedTx.label.includes('streaming')) {
-                parsedTx.inout = [parsedTx.inout[0]]
-                const getInTx = res.data.tx.tx
-                parsedTx.inout[0][0] = [{
-                  asset: {
-                    amount: getInTx.coins[0].amount / 1e8,
-                    name: getInTx.coins[0].asset
-                  },
-                  is: getInTx.coins[0].asset,
-                  address: getInTx.from_address,
-                  txID: getInTx.id,
-                  status: 'success',
-                  type: 'swap'
-                }]
-              }
-              this.extraSwapDetails = parseExtraSwap(res.data)
-            } catch (error) {
-              this.extraSwapDetails = undefined
-            }
-
-            const resStatus = await this.$api.getTxStatus(hash).catch((e) => {
-              if (e?.response?.status === 404) {
-                this.error.message = 'Please make sure the correct transaction hash or account address is inserted.'
-              }
-            })
-
-            if (resStatus?.status / 200 === 1 && (resStatus.data?.stages.outbound_signed?.completed === false)) {
-              parsedTx.inout[0][1] = parseThornodeStatus(resStatus.data).inout[0][1]
-            }
-
-            if (!parsedTx.outAsset) {
-              const m = parsedTx.memo.split(':', 3)[1]
-
-              parsedTx.outAsset = shortAssetName(m)
-            }
-          }
-
-          this.tx = parsedTx
-          this.isLoading = false
-          this.loadingPercentage = 100
-          return
-        }
-
-        this.progressText = '2/3'
-
-        // see if this tx is an observed tx
-        res = await this.$api.getTxStatus(hash).catch((e) => {
-          if (e?.response?.status === 404) {
-            this.error.message = 'Please make sure the correct transaction hash or account address is inserted.'
-          }
-        })
-
-        if (res?.status / 200 === 1 && (res.data?.inbound_observed?.started === true || res.data?.inbound_observed?.completed === true || res.data?.outbound_signed?.completed === false)) {
-          this.tx = parseThornodeStatus(res.data)
-          this.isLoading = false
-          this.loadingPercentage = 100
-          return
-        }
-
-        res = await this.$api.getNativeTx(hash).catch((e) => {
-          if (e?.response?.status === 404) {
-            this.error.message = 'Please make sure the correct transaction hash or account address is inserted.'
-          }
-        })
-
-        if (res?.status / 200 === 1) {
-          this.tx = parseCosmosTx(res.data)
-          this.isLoading = false
-          this.loadingPercentage = 100
-          return
-        }
-
-        this.progressText = '3/3'
-
-        res = await this.$api.getAddress(hash, 0).catch((e) => {})
-
-        if (res.status / 200 === 1) {
-          this.$router.push({ path: `/address/${this.$route.params.hash}` })
-        }
-      } catch (error) {
-        // Please make sure the correct transaction hash or account address is inserted.
-        console.error(error)
-        this.isError = true
-      }
+      return ret
     }
   }
 }

@@ -16,7 +16,7 @@
     <div class="tx-overall">
       <div class="tx-assets-status">
         <div class="tx-wrapper">
-          <div v-for="(o, i) in overall.in" :key="o.asset" class="tx-inbound">
+          <div v-for="(o, i) in overall.in" :key="i + '-o-in'" class="tx-inbound">
             <div class="tx-asset">
               <AssetIcon :classes="['no-margin']" :asset="o.asset" :height="'2rem'" />
             </div>
@@ -34,7 +34,7 @@
         </div>
 
         <div class="tx-wrapper">
-          <div v-for="(o, i) in overall.out" :key="o.asset" class="tx-outbound">
+          <div v-for="(o, i) in overall.out" :key="i + '-o-out'" class="tx-outbound">
             <div v-if="i < 1" class="simple-bar" />
             <div class="tx-asset">
               <AssetIcon :classes="['no-margin']" :asset="o.asset" :height="'2rem'" />
@@ -45,7 +45,7 @@
 
       <div class="tx-assets-info">
         <div class="tx-wrapper">
-          <div v-for="o in overall.in" :key="o.asset" class="asset-inbound">
+          <div v-for="(o, i) in overall.in" :key="i + '-in'" class="asset-inbound">
             <span class="mono sec-color">{{ o.amount | number('0,0.0000') }}</span>
             <small class="mono sec-color">{{ showAsset(o.asset) }}</small>
             <br><small>{{ o.amountUSD | currency }}</small>
@@ -53,7 +53,7 @@
         </div>
 
         <div class="tx-wrapper">
-          <div v-for="o in overall.out" :key="o.asset" class="asset-outbound">
+          <div v-for="(o, i) in overall.out" :key="i + '-out'" class="asset-outbound">
             <span class="mono sec-color">{{ o.amount | number('0,0.0000') }}</span>
             <small class="mono sec-color">{{ showAsset(o.asset) }}</small>
             <br><small>{{ o.amountUSD | currency }}</small>

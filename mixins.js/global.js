@@ -379,12 +379,14 @@ export default {
         asset = assetFromString(asset)
       }
 
+      const copyAsset = { ...asset }
+
       // Synth price would be same as non synth asset
-      if (isSynthAsset(asset)) {
-        asset.synth = false
+      if (isSynthAsset(copyAsset)) {
+        copyAsset.synth = false
       }
 
-      const pricePerAsset = +pools.find(p => p.asset === assetToString(asset))?.assetPriceUSD ?? 0
+      const pricePerAsset = +pools.find(p => p.asset === assetToString(copyAsset))?.assetPriceUSD ?? 0
 
       return amount * pricePerAsset
     }
