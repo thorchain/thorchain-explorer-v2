@@ -24,6 +24,7 @@ export default {
       }
     },
     assetToChain (assetStr) {
+      if (!assetStr) { return }
       const { chain, synth } = assetFromString(assetStr)
       let asset = `${chain}.${chain}`
       if (synth) {
@@ -174,6 +175,9 @@ export default {
     },
     showAsset (assetStr) {
       try {
+        if (typeof assetStr !== 'string') {
+          assetStr = assetToString(assetStr)
+        }
         let del = '.'
         const asset = assetFromString(assetStr)
         if (isSynthAsset(asset)) {
@@ -315,11 +319,12 @@ export default {
       if (!memo) { return {} }
 
       // SWAP:ASSET:DESTADDR:LIM/INTERVAL/QUANTITY:AFFILIATE:FEE
-      const parts = parseMemoToTxType(memo)
+      const type = parseMemoToTxType(memo)
+      const parts = memo.split(':')
       const [limit, interval, quantity] = parts[3] ? parts[3].split('/') : []
 
       return {
-        type: parts[0] || null,
+        type: type || null,
         asset: parts[1] || null,
         destAddr: parts[2] || null,
         limit: limit || null, // null if not present
@@ -342,17 +347,19 @@ export default {
 
       let asset = assetFromString(assetInString)
 
-      // TODO: make sure how ticker verifies here
-      if (asset.ticker) {
+      if (asset.address) {
         // attempt to fuzzy match address
         if (pools && !(assetToString(asset) in pools)) {
           pools.forEach((p) => {
             const poolAsset = assetFromString(p.asset)
             if (
-              poolAsset.asset.chain === asset.chain &&
-              poolAsset.asset.symbol === asset.symbol &&
-              poolAsset.asset.address.endsWith(asset.address)
+              poolAsset.chain === asset.chain &&
+              poolAsset.ticker === asset.ticker &&
+              poolAsset.address.endsWith(asset.address)
             ) {
+              if (isSynthAsset(asset)) {
+                poolAsset.synth = true
+              }
               asset = poolAsset
             }
           })

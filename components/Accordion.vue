@@ -9,7 +9,7 @@
       <div v-for="s in stacks.filter(s => s.is)" :key="s.key" class="stack-item">
         <template v-if="!s.slotName">
           <div class="key">
-            {{ s.key }}
+            {{ s.key | capitalize }}
           </div>
           <component :is="checkType(s.type)" class="value mono" :to="toLink(s.type, s.value)">
             {{ s.formatter ? s.formatter(s.value) : s.value }}
@@ -65,7 +65,7 @@ export default {
 
 <style lang="scss" scoped>
   .accordion {
-    margin: .3rem 1.5rem;
+    margin: .5rem 1.5rem;
 
     .accordion-info {
       display: flex;
@@ -117,7 +117,7 @@ export default {
       .stack-item {
         display: flex;
         justify-content: space-between;
-        padding: .25rem .5rem;
+        padding: .3rem 0;
 
         .value {
           color: var(--sec-font-color);

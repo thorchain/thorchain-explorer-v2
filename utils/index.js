@@ -31,6 +31,10 @@ export function momentTimeFormat (time) {
   return moment(time).format('MM/DD/YYYY hh:mm:ss A')
 }
 
+export function isInternalTx (hash) {
+  return hash === '0000000000000000000000000000000000000000000000000000000000000000' ?? false
+}
+
 export function parseCosmosTx (ntx) {
   const ret = []
   ntx.tx?.body?.messages?.forEach((el) => {
@@ -525,6 +529,10 @@ export function shortAssetName (name) {
 }
 
 export function assetFromString (s) {
+  if (typeof s === 'object') {
+    return s
+  }
+
   const isSynth = s.includes(SYNTH_DELIMITER)
   const delimiter = isSynth ? SYNTH_DELIMITER : NON_SYNTH_DELIMITER
   const data = s.split(delimiter)
@@ -535,6 +543,7 @@ export function assetFromString (s) {
   const chain = data[0]
   const symbol = data[1]
   const ticker = symbol.split('-')[0]
+  const address = symbol.split('-')[1] ?? ''
 
-  return { chain, symbol, ticker, synth: isSynth }
+  return { chain, symbol, ticker, address, synth: isSynth }
 }
