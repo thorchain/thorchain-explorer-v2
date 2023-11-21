@@ -120,13 +120,12 @@ import txCard from './components/txCard.vue'
 import CopyIcon from '~/assets/images/copy.svg?inline'
 import DisconnectIcon from '~/assets/images/disconnect.svg?inline'
 import ArrowIcon from '~/assets/images/arrow-small-right.svg?inline'
-import { parseCosmosTx, parseMidgardTx, parseExtraSwap, parseThornodeStatus, shortAssetName } from '~/utils'
+import { parseCosmosTx, parseMidgardTx, parseExtraSwap, parseThornodeStatus, shortAssetName, isInternalTx } from '~/utils'
 import Accordion from '~/components/Accordion.vue'
 
 export default {
   components: {
     CopyIcon,
-    ArrowIcon,
     DisconnectIcon,
     BounceLoader,
     streamingSwap,
@@ -379,7 +378,7 @@ export default {
                   formatter: this.formatAddress
                 },
                 {
-                  key: 'TxID',
+                  key: 'Id',
                   value: a?.txid,
                   is: true,
                   type: 'hash',
@@ -393,22 +392,30 @@ export default {
       }
 
       if (accordions.action) {
-        const stacks = []
-
         const accordionAction = {
           name: 'accordion-action',
           data: {
             title: accordions.action?.type ?? undefined,
             stacks: [
               {
-                key: 'Streaming',
+                key: 'Quantity',
+                value: `${accordions.action.streaming?.quantity} Swap`,
+                is: accordions.action.streaming.quantity
+              },
+              {
+                key: 'Stream',
                 value: `${accordions.action.streaming?.count} / ${accordions.action.streaming?.quantity}`,
-                is: accordions.action.streaming
+                is: accordions.action.streaming.count
               },
               {
                 key: 'Interval',
                 value: `${accordions.action.streaming?.interval} Block/Swap`,
-                is: accordions.action.streaming
+                is: accordions.action.streaming.interval
+              },
+              {
+                key: 'Limit',
+                value: `${accordions.action.limit / 1e8}`,
+                is: accordions.action.limit
               }
             ]
           }
@@ -416,29 +423,79 @@ export default {
         ret.accordions.push(accordionAction)
       }
 
+      if (accordions.out) {
+        accordions.out.forEach((a, i) => {
+          const accordionIn = {
+            name: `accordion-out-${i}`,
+            data: {
+              title: 'Outbound',
+              stacks: [
+                {
+                  key: 'Destination',
+                  value: a?.to,
+                  is: true,
+                  type: 'address',
+                  formatter: this.formatAddress
+                },
+                {
+                  key: 'Id',
+                  value: a?.txid,
+                  is: !isInternalTx(a?.txid),
+                  type: 'hash',
+                  formatter: this.formatAddress
+                },
+                {
+                  key: 'Outbound Fee',
+                  value: `${a.fee / 1e8} ${this.showAsset(a.asset)}`,
+                  is: a.fee
+                }
+              ]
+            }
+          }
+          ret.accordions.push(accordionIn)
+        })
+      }
+
       return ret
     },
     createTxState (midgardAction, thorTx, thorStatus, thorHeight, pools) {
       // Push as much as data gathered along all endpoint into cards!
-      // Should I abstract all type forms? 🤔
       // Actions accordion, inbound accordion, outbound accordion
 
-      const cards = []
+      let cards = [
+        {
+          title: null,
+          in: [
+            // {
+            //   asset: null,
+            //   amount: null
+            // }
+          ],
+          out: [
+            // {
+            //   asset: null,
+            //   amount: null
+            // }
+          ]
+        }
+      ]
 
       // action: limit, affiliateFeeBps, affiliateName, liquidityFee, slip, streaming, done
       // action (add): liquidityUnits
       // action (withdraw): liquidityUnits, asymmetry, basisPoint
       // action (refund): affiliateName, affiliateFeeBps, refundReason
-      const accordions = {
-        in: [{
-          txid: null,
-          from: null,
-          asset: null,
-          amount: null, // in amount might be bigger than midgard's
-          done: false
-        }],
+      let accordions = {
+        in: [
+          // {
+          //   txid: null,
+          //   from: null,
+          //   asset: null,
+          //   amount: null, // in amount might be bigger than midgard's
+          //   done: false
+          // }
+        ],
         action: {
-          target: null,
+          limit: null,
           affiliateName: null,
           affiliateFee: null,
           liquidityFee: null,
@@ -455,73 +512,142 @@ export default {
           },
           done: false
         },
-        out: [{
-          txid: null,
-          to: null,
-          asset: null,
-          amount: null,
-          outboundFee: null,
-          observed: false
-        }]
+        out: [
+          // {
+          //   txid: null,
+          //   to: null,
+          //   asset: null,
+          //   amount: null,
+          //   outboundFee: null,
+          //   observed: false
+          // }
+        ]
       }
 
-      const memoDetails = this.parseMemo(thorStatus.tx?.memo)
+      // TODO: check it for other types
+      // Get out/in assets
+      const memo = this.parseMemo(thorStatus.tx?.memo)
 
-      // Relay on midgard first for its actions
-      midgardAction?.actions.forEach((action) => {
-        const cardBase = {
-          title: this.camelCase(action.type),
-          in: action.in?.map(a => ({ asset: a.coins[0].asset, amount: a.coins[0].amount })),
-          out: action.out?.map(a => ({ asset: a.coins[0].asset, amount: a.coins[0].amount }))
-        }
+      // Get abstracts in
 
-        // set txid
-        accordions.in = action.in?.map(a => ({
-          txid: a.txID,
-          asset: a.coins[0].asset,
-          amount: a.coins[0].amount,
-          from: a.address,
-          done: true
-        }))
+      // Swap
+      // From track code
+      if (memo.type === 'swap') {
+        ({ cards, accordions } = this.createSwapCard(thorStatus, midgardAction, memo))
+      } else if (memo.type === 'add' || memo.type === 'withdraw') {
+        // TODO
+      }
 
-        accordions.out = action.out?.map(a => ({
-          txid: a.txID,
-          asset: a.coins[0].asset,
-          amount: a.coins[0].amount,
-          from: a.address,
-          done: true
-        }))
-
-        if (action.type === 'swap') {
-          accordions.action.type = 'Swap'
-
-          // Add streaming details if any
-          const swapMeta = action.metadata?.swap
-
-          accordions.action.liquidityFee = `${swapMeta.liquidityFee} RUNE`
-          accordions.action.affiliateFee = swapMeta.affiliateFee
-          accordions.action.swapSlip = swapMeta.swapSlip
-          accordions.action.target = swapMeta.swapTarget
-
-          // See if we have streaming
-          accordions.action.streaming = {
-            count: swapMeta.streamingSwapMeta.count,
-            quantity: swapMeta.streamingSwapMeta.quantity,
-            interval: swapMeta.streamingSwapMeta.interval,
-            lastHeight: swapMeta.streamingSwapMeta.lastHeight
-          }
-        }
-
-        const card = this.createCard(cardBase, accordions)
-        cards.push(card)
-      })
-
-      // Add extra info to the actions
-
-      this.cards = cards
+      this.cards = [this.createCard(cards, accordions)]
     },
     createNativeTx (nativeTx) {
 
+    },
+    createSwapCard (thorStatus, actions, memo) {
+      // swap user addresses
+      const userAddresses = new Set([
+        thorStatus.tx.from_address.toLowerCase(),
+        memo.destAddr?.toLowerCase()
+      ])
+      // Non affiliate outs
+      let outTxs = thorStatus.out_txs?.filter(tx =>
+        userAddresses.has(tx.to_address.toLowerCase())
+      )
+      if (!outTxs) {
+        outTxs = thorStatus.planned_out_txs
+          ?.filter(tx => userAddresses.has(tx.to_address.toLowerCase()))
+          .map(tx => ({
+            ...tx,
+            coins: [{ amount: tx.coin.amount, asset: tx.coin.asset }]
+          }))
+      }
+
+      // Add native in/out search
+      const inAsset = this.parseMemoAsset(thorStatus.tx.coins[0].asset, this.pools)
+      const inAmount = parseInt(thorStatus.tx.coins[0].amount)
+
+      const outAsset = this.parseMemoAsset(
+        outTxs?.length > 0 ? outTxs[0].coins[0].asset : memo.asset,
+        this.pools
+      )
+      const outAmount =
+        outTxs?.length > 0
+          ? parseInt(outTxs[0].coins[0].amount)
+          : 0
+
+      // Midgard
+      const outboundFee =
+        actions?.actions[0]?.metadata.swap?.networkFees[0]?.amount
+      const outboundFeeAsset = outboundFee
+        ? this.parseMemoAsset(
+          actions?.actions[0]?.metadata.swap?.networkFees[0].asset,
+          this.pools
+        )
+        : null
+
+      return {
+        cards: {
+          title: 'swap',
+          in: [{
+            asset: inAsset,
+            amount: inAmount
+          }],
+          out: [{
+            asset: outAsset,
+            amount: outAmount
+          }]
+        },
+        accordions: {
+          in: [{
+            txid: thorStatus.tx.id,
+            from: thorStatus.tx.from_address,
+            asset: inAsset,
+            amount: inAmount
+          }],
+          action: {
+            title: 'swap',
+            limit: memo.limit,
+            affiliateName: memo.affiliate,
+            affiliateFee: null, // Add on midgard
+            liquidityFee: null,
+            liquidityUnits: null,
+            refundReason: null,
+            basisPoint: null,
+            asymmetry: null,
+            swapSlip: null,
+            streaming: {
+              count: thorStatus.stages.swap_status?.streaming?.count,
+              interval: thorStatus.stages.swap_status?.streaming?.interval || memo.interval,
+              quantity: thorStatus.stages.swap_status?.streaming?.quantity || memo.quantity,
+              lastHeight: null // Add on midgard if available
+            },
+            done: thorStatus.stages.swap_finalised?.completed &&
+              !thorStatus.stages.swap_status?.pending
+          },
+          out: [{
+            txid: outTxs?.length > 0 ? outTxs[0]?.id : null,
+            to: (outTxs?.length > 0 && outTxs[0].to_address) || memo.destAddr,
+            asset: outAsset,
+            amount: parseInt(outAmount),
+            fee: outboundFee,
+            feeAsset: outboundFeeAsset,
+            delayBlocksRemaining:
+              thorStatus.stages.outbound_delay?.remaining_delay_blocks || 0,
+            done: thorStatus.stages.swap_finalised?.completed &&
+              !thorStatus.stages.swap_status?.pending &&
+              (thorStatus.stages.outbound_signed?.completed ||
+                outAsset.chain === 'THOR' ||
+                outAsset.synth)
+          }, ...outTxs.slice(1).map(tx => ({
+            txid: tx.id,
+            gas: tx.gas ? tx.gas[0].amount : null,
+            gasAsset: tx.gas ? this.parseMemoAsset(tx.gas[0].asset, this.pools) : null,
+            to: tx.to_address,
+            asset: this.parseMemoAsset(tx.coins[0].asset, this.pools),
+            amount: parseInt(tx.coins[0].amount)
+          }))]
+        }
+      }
     },
     async mos (hash) {
       this.txFormatted = hash
