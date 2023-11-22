@@ -139,13 +139,13 @@ export default {
           this.streamingDetail.tradeTarget = 0
         }
 
-        if (this.tx?.inAsset && this.tx?.outAsset) {
-          this.streamingDetail.depositedAsset = assetFromString(this.tx.inAsset)?.ticker ?? ''
-          this.streamingDetail.targetAsset = assetFromString(this.tx.outAsset)?.ticker ?? ''
-        } else {
-          this.streamingDetail.depositedAsset = ''
-          this.streamingDetail.targetAsset = ''
-        }
+        // if (this.tx?.inAsset && this.tx?.outAsset) {
+        //   this.streamingDetail.depositedAsset = assetFromString(this.tx.inAsset)?.ticker ?? ''
+        //   this.streamingDetail.targetAsset = assetFromString(this.tx.outAsset)?.ticker ?? ''
+        // } else {
+        //   this.streamingDetail.depositedAsset = ''
+        //   this.streamingDetail.targetAsset = ''
+        // }
 
         if (data.deposit) {
           this.streamingDetail.depositedAmt = this.$options.filters.number(+data.deposit / 1e8, '0,0.00')

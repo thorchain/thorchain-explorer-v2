@@ -4,12 +4,6 @@
       <div class="tx-header">
         <h3>
           Transaction
-          <!-- <span v-if="tx.type" class="bubble-container" style="margin-left: 0.2rem">{{ tx.type }}</span>
-          <span v-if="tx.status" class="bubble-container blue" style="margin-left: 0.2rem">{{ tx.status }}</span>
-          <span v-if="tx.synth" class="bubble-container yellow" style="margin-left: 0.2rem">synth</span> -->
-          <!-- <template v-for="(l, i) in tx.label">
-            <span :key="i" class="bubble-container" style="margin-left: 0.2rem">{{ l }}</span>
-          </template> -->
         </h3>
       </div>
       <div class="utility">
@@ -27,74 +21,7 @@
           <accordion :key="i + '.' + j" :data="s.data" />
         </template>
       </tx-card>
-
-      <!-- <div v-if="tx.date" class="tx-date">
-        <span class="sec-color">Submitted:</span> {{ tx.date.toLocaleString() }} ({{ fromNow(tx.date) }})
-      </div> -->
-
-      <!-- <div v-for="(txa, j) in tx.inout" :key="j" class="tx-wrapper">
-        <div v-if="tx" class="tx-container">
-          <template v-for="(txs, i) in txa">
-            <div v-if="i && txs.map(o => o.is).length > 0" :key="i + '-arrow'" class="arrow">
-              <ArrowIcon class="icon" />
-            </div>
-            <div :key="i" class="tx-contain">
-              <div v-for="(one_tx, j) in txs" :key="j">
-                <template v-if="one_tx.is">
-                  <div class="txid">
-                    <div :class="['bubble-container', i?'blue':'']">
-                      {{ i?'Out':'In' }}
-                    </div>
-                    <div v-if="one_tx.status === 'pending'" :class="['bubble-container', 'blue']">
-                      pending
-                    </div>
-                    <span class="tx-hash clickable" @click="gotoTx(one_tx.txID)">{{ one_tx.txID }}</span>
-                  </div>
-                  <div v-if="one_tx.asset && one_tx.asset.name" class="asset-icon-container">
-                    <img
-                      class="asset-icon"
-                      :src="assetImage(one_tx.asset.name)"
-                      alt="in-coin"
-                    >
-                    <span class="asset-text">
-                      {{ (+one_tx.asset.amount).toFixed(8) }} <span class="sec-color">{{ one_tx.asset.name }}</span>
-                    </span>
-                    <div v-if="checkSynth(one_tx.asset.name)" style="margin-left: .2rem" class="bubble-container yellow">
-                      synth
-                    </div>
-                    <div v-if="one_tx.label" style="margin-left: .3rem" class="bubble-container">
-                      {{ one_tx.label }}
-                    </div>
-                  </div>
-                  <div class="address">
-                    <span v-if="one_tx.address" class="clickable" @click="gotoAddr(one_tx.address)">{{ formatAddress(one_tx.address) }}</span>
-                    <ArrowIcon v-if="one_tx.outAddress" class="icon small" />
-                    <span v-if="one_tx.outAddress" class="clickable" @click="gotoAddr(one_tx.outAddress)">{{ formatAddress(one_tx.outAddress) }}</span>
-                  </div>
-                </template>
-              </div>
-            </div>
-          </template>
-        </div>
-      </div> -->
-
-      <streaming-swap v-if="txFormatted" :inbound-hash="txFormatted" :tx="tx" />
-      <tx-stages v-if="txFormatted" :inbound-hash="txFormatted" />
-
-      <!-- <div v-if="tx" class="extra-details">
-        <stat-table :table-settings="extraDetail">
-          <template #Pools>
-            <div v-for="(p, i) in tx.pools" :key="i" class="pool-box">
-              <img
-                class="asset-icon"
-                :src="assetImage(p)"
-                alt="in-coin"
-              >
-              <span>{{ p }}</span>
-            </div>
-          </template>
-        </stat-table>
-      </div> -->
+      <streaming-swap v-if="inboundHash" :inbound-hash="inboundHash" />
     </template>
     <div v-else-if="isError" class="notify-card card-bg">
       <h3>{{ error.title }}</h3>
@@ -119,7 +46,7 @@ import txStages from './components/txStages.vue'
 import txCard from './components/txCard.vue'
 import CopyIcon from '~/assets/images/copy.svg?inline'
 import DisconnectIcon from '~/assets/images/disconnect.svg?inline'
-import { parseCosmosTx, parseMidgardTx, parseExtraSwap, parseThornodeStatus, shortAssetName, isInternalTx } from '~/utils'
+import { isInternalTx } from '~/utils'
 import Accordion from '~/components/Accordion.vue'
 
 export default {
@@ -146,116 +73,16 @@ export default {
         title: 'Couldn\'t find the Transaction',
         message: 'Something bad happened.'
       },
-      updateInterval: undefined
+      updateInterval: undefined,
+      cards: [],
+      inboundHash: undefined
     }
   },
   computed: {
     ...mapGetters({
       chainsHeight: 'getChainsHeight',
       pools: 'getPools'
-    }),
-    extraDetail () {
-      if (!this.tx) {
-        return
-      }
-
-      let res = []
-      let tmp = []
-
-      if (this?.tx?.height) {
-        tmp = [{
-          name: 'Block Height',
-          value: this.tx.height
-        }]
-      }
-
-      tmp.push({
-        name: 'Type',
-        value: this.$options.filters.capitalize(this.tx?.type),
-        filter: true
-      })
-
-      res = [tmp]
-
-      if (this.tx.status) {
-        const fields = [
-          {
-            name: 'Status',
-            value: this.$options.filters.capitalize(this.tx.status),
-            filter: true
-          }
-        ]
-
-        if (this.extraSwapDetails && this.extraSwapDetails?.txOutDelay) {
-          fields.push(
-            {
-              name: 'Outbound Tx Delay',
-              value: moment.duration(this.extraSwapDetails?.txOutDelay, 'seconds').humanize(),
-              filter: true
-            }
-          )
-        }
-
-        res.push(fields)
-      }
-
-      if (this.tx.pools) {
-        res.push([
-          {
-            slotName: 'Pools',
-            name: 'Pools',
-            value: this.tx.pools.join('\n').trim(),
-            filter: true
-          }
-        ])
-      }
-
-      if (this.extraSwapDetails) {
-        res.push([
-          {
-            name: 'Inbound Gas Fees',
-            value: this.extraSwapDetails.inboundGases?.map(e => e.amount / 1e8 + ' ' + e.asset).join('\n').trim(),
-            filter: true
-          },
-          {
-            name: 'Outbound Gas Fees',
-            value: this.extraSwapDetails.outboundGases?.map(e => e.amount / 1e8 + ' ' + e.asset).join('\n').trim(),
-            filter: true
-          }
-        ], [
-          {
-            name: 'Affiliate Fee',
-            value: this.extraSwapDetails.affiliateFee?.map(e => e.amount / 1e8 + ' ' + e.asset).join('\n').trim(),
-            filter: true
-          },
-          {
-            name: 'Liquidity Fee',
-            value: (this.tx?.liqidityFee?.swap ?? 0) && this.tx.liqidityFee.swap.liquidityFee / 1e8 + ' THOR.RUNE',
-            filter: true
-          }
-        ])
-      } else if (this.tx.gas) {
-        res.push([
-          {
-            name: 'Gas Fees',
-            value: this.tx.gas.join('\n').trim(),
-            filter: true
-          }
-        ])
-      }
-
-      if (this.tx.memo) {
-        res.push([
-          {
-            name: 'Memo',
-            value: this.tx.memo,
-            filter: true
-          }
-        ])
-      }
-
-      return res
-    }
+    })
   },
   async mounted () {
     let txHash = this.$route.params.txhash
@@ -292,10 +119,13 @@ export default {
       }))?.data
 
       // See if the hash is outbound
-      const swapAction = md.actions.find(a => a.type === 'swap')
+      const swapAction = md.actions?.find(a => a.type === 'swap')
       if (swapAction) {
         hash = swapAction.in[0].txID
       }
+
+      // get inbound hash
+      this.inboundHash = hash
 
       // Get THORNode details
       const thorRes = (await this.$api.getThornodeDetailTx(hash).catch((e) => {
@@ -364,6 +194,7 @@ export default {
 
       if (accordions.in) {
         accordions.in.forEach((a, i) => {
+          const inboundStages = this.getInboundStages(a)
           const accordionIn = {
             name: `accordion-in-${i}`,
             data: {
@@ -382,6 +213,17 @@ export default {
                   is: true,
                   type: 'hash',
                   formatter: this.formatAddress
+                },
+                {
+                  key: 'Gas',
+                  value: `${a.gas / 1e8} ${this.showAsset(a.gasAsset)}`,
+                  is: a.gas && a.gasAsset
+                },
+                {
+                  key: 'Inbound Stage',
+                  value: inboundStages,
+                  type: 'bubble',
+                  is: inboundStages.length > 0
                 }
               ]
             }
@@ -399,27 +241,32 @@ export default {
               {
                 key: 'Quantity',
                 value: `${accordions.action.streaming?.quantity} Swap`,
-                is: accordions.action.streaming.quantity
+                is: accordions.action.streaming?.quantity
               },
               {
                 key: 'Stream',
                 value: `${accordions.action.streaming?.count} / ${accordions.action.streaming?.quantity}`,
-                is: accordions.action.streaming.count
+                is: accordions.action.streaming?.count
               },
               {
                 key: 'Interval',
                 value: `${accordions.action.streaming?.interval} Block/Swap`,
-                is: accordions.action.streaming.interval
+                is: accordions.action.streaming?.interval
               },
               {
                 key: 'Liquidity Fee',
-                value: `${accordions.action.liquidityFee / 1e8} ${this.showAsset(accordions.out[0].asset)}`,
+                value: `${accordions.action.liquidityFee / 1e8} ${this.showAsset(accordions.out[0]?.asset)}`,
                 is: accordions.action.liquidityFee
               },
               {
                 key: 'Limit',
-                value: `${accordions.action.limit / 1e8}`,
+                value: `${accordions.action.limit / 1e8} ${this.showAsset(accordions.action.limitAsset)}`,
                 is: accordions.action.limit
+              },
+              {
+                key: 'Liquidity Units',
+                value: `${accordions.action.liquidityUnits}`,
+                is: accordions.action.liquidityUnits
               }
             ]
           }
@@ -469,21 +316,80 @@ export default {
       // Get out/in assets
       const memo = this.parseMemo(thorStatus.tx?.memo)
 
-      // Get abstracts in
-
       // Swap
       // From track code
+      // TODO: check all kind of actions
       if (memo.type === 'swap') {
-        const { cards, accordions } = this.createSwapState(thorStatus, midgardAction, memo)
+        const { cards, accordions } = this.createSwapState(thorStatus, thorTx, midgardAction, memo)
         this.cards = [this.createCard(cards, accordions)]
-      } else if (memo.type === 'add' || memo.type === 'withdraw') {
-        // TODO
+      } else if (memo.type === 'add') {
+        const { cards, accordions } = this.createAddLiquidityState(thorStatus, midgardAction, thorTx)
+        this.cards = [this.createCard(cards, accordions)]
+      } else if (memo.type === 'withdraw') {
+        const { cards, accordions } = this.createAddLiquidityState(thorStatus, midgardAction, thorTx)
+        this.cards = [this.createCard(cards, accordions)]
       }
     },
     createNativeTx (nativeTx) {
 
     },
-    createSwapState (thorStatus, actions, memo) {
+    createAddLiquidityState (thorStatus, actions, thorTx) {
+      const inAsset = this.parseMemoAsset(thorStatus.tx.coins[0].asset, this.pools)
+      const inAmount = parseInt(thorStatus.tx.coins[0].amount)
+
+      return {
+        cards: {
+          title: 'add Liquidity',
+          in: [{
+            asset: inAsset,
+            amount: inAmount
+          }],
+          out: []
+        },
+        accordions: {
+          in: [{
+            txid: thorStatus.tx.id,
+            from: thorStatus.tx.from_address,
+            asset: inAsset,
+            amount: inAmount
+          }],
+          action: {
+            type: 'Add',
+            liquidityUnits: parseInt(actions?.actions[0]?.metadata?.addLiquidity?.liquidityUnits) || null,
+            done: thorStatus.stages.swap_finalised?.completed &&
+              !thorStatus.stages.swap_status?.pending
+          },
+          out: []
+        }
+      }
+    },
+    getInboundStages (inbound) {
+      const ret = []
+
+      if (inbound?.done) {
+        ret.push({
+          text: 'done'
+        })
+      }
+
+      if (inbound?.inboundConfCount) {
+        ret.push({
+          text: 'Confirm Counted'
+        })
+      }
+
+      if (inbound?.observationsCompleted) {
+        ret.push({
+          text: 'Observed'
+        })
+      }
+
+      return ret
+    },
+    createRemoveLiquidityState (thorStatus, actions, thorTx) {
+
+    },
+    createSwapState (thorStatus, thorTx, actions, memo) {
       // swap user addresses
       const userAddresses = new Set([
         thorStatus.tx.from_address.toLowerCase(),
@@ -515,6 +421,8 @@ export default {
           ? parseInt(outTxs[0].coins[0].amount)
           : 0
 
+      const outMemoAsset = this.parseMemoAsset(memo.asset)
+
       // Midgard
       const outboundFee =
         actions?.actions[0]?.metadata.swap?.networkFees[0]?.amount
@@ -525,9 +433,26 @@ export default {
         )
         : null
 
-      const ret = {
+      // Refunds
+      const outboundHasRefund = outTxs?.some(
+        tx => tx.refund || tx.memo?.toLowerCase().startsWith('refund')
+      )
+      // sometimes the outbound doesn't come out if the outbound is in native chain
+      const outboundHasSuccess = outTxs?.some(tx =>
+        tx.memo?.toLowerCase().startsWith('out')
+      )
+      const outboundRefundReason = actions?.actions.find(
+        action => action.type === 'refund'
+      )?.metadata.refund.reason
+
+      // only refund happened
+      const onlyRefund = actions?.actions.every(
+        action => action?.type === 'refund'
+      )
+
+      return {
         cards: {
-          title: 'swap',
+          title: onlyRefund ? 'refunded Swap' : 'swap',
           in: [{
             asset: inAsset,
             amount: inAmount
@@ -542,16 +467,27 @@ export default {
             txid: thorStatus.tx.id,
             from: thorStatus.tx.from_address,
             asset: inAsset,
-            amount: inAmount
+            amount: inAmount,
+            gas: thorStatus.tx.gas ? thorStatus.tx.gas[0].amount : null,
+            gasAsset: thorStatus.tx.gas
+              ? this.parseMemoAsset(thorStatus.tx.gas[0].asset, this.pools)
+              : null,
+            preObservations: thorStatus.stages?.inbound_observed?.pre_confirmation_count,
+            observations: thorStatus.stages?.inbound_observed?.final_count,
+            observationsCompleted: thorStatus.stages?.inbound_observed?.completed,
+            finalisedHeight: thorTx.finalised_height,
+            inboundConfCount: thorStatus?.stages?.inbound_confirmation_counted,
+            done: thorStatus.stages?.inbound_finalised?.completed
           }],
           action: {
-            type: 'swap',
+            type: onlyRefund ? 'refunded Swap' : 'swap',
             limit: memo.limit,
+            limitAsset: onlyRefund ? outMemoAsset : outAsset,
             affiliateName: memo.affiliate,
             affiliateFee: parseInt(actions?.actions[0]?.metadata?.swap?.affiliateFee) || null,
             liquidityFee: parseInt(actions?.actions[0]?.metadata?.swap?.liquidityFee) || null,
             liquidityUnits: null,
-            refundReason: null,
+            refundReason: outboundRefundReason,
             basisPoint: null,
             asymmetry: null,
             swapSlip: parseInt(actions?.actions[0]?.metadata?.swap?.swapSlip),
@@ -578,19 +514,9 @@ export default {
               (thorStatus.stages.outbound_signed?.completed ||
                 outAsset.chain === 'THOR' ||
                 outAsset.synth)
-          }, ...outTxs.slice(1).map(tx => ({
-            txid: tx.id,
-            gas: tx.gas ? tx.gas[0].amount : null,
-            gasAsset: tx.gas ? this.parseMemoAsset(tx.gas[0].asset, this.pools) : null,
-            to: tx.to_address,
-            asset: this.parseMemoAsset(tx.coins[0].asset, this.pools),
-            amount: parseInt(tx.coins[0].amount)
-          }))]
-        },
-        inAsset
+          }]
+        }
       }
-
-      return ret
     }
   }
 }

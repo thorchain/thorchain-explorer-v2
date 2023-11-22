@@ -525,7 +525,7 @@ export function shortAssetName (name) {
     return name
   }
 
-  return hashMapShorts[name] || name
+  return hashMapShorts[name.toLowerCase()] || name
 }
 
 export function assetFromString (s) {

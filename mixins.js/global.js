@@ -347,7 +347,7 @@ export default {
 
       let asset = assetFromString(assetInString)
 
-      if (asset.address) {
+      if (asset?.address) {
         // attempt to fuzzy match address
         if (pools && !(assetToString(asset) in pools)) {
           pools.forEach((p) => {
@@ -389,6 +389,72 @@ export default {
       const pricePerAsset = +pools.find(p => p.asset === assetToString(copyAsset))?.assetPriceUSD ?? 0
 
       return amount * pricePerAsset
+    },
+    assetColorPalette (asset) {
+      if (!asset) {
+        return null
+      }
+
+      // convert to string
+      if (typeof asset === 'string') {
+        asset = assetFromString(asset)
+      }
+
+      switch (asset.ticker.toUpperCase()) {
+        case 'USDT':
+          return '#27A17C'
+        case 'BNB':
+          return '#F1B90A'
+        case 'USDC':
+          return '#2775CA'
+        case 'ETH':
+          return '#F2F4F7'
+        case 'WBTC':
+          return '#F19440'
+        case 'BUSD':
+          return '#F0BB02'
+        case 'AVAX':
+          return '#E84142'
+        case 'ATOM':
+          return '#2F3148'
+        case 'BTC':
+        case 'BTCB':
+          return '#F7A035'
+        case 'DAI':
+          return '#FAB62B'
+        case 'LTC':
+          return '#335D9D'
+        case 'LUSD':
+          return '#745DDF'
+        case 'GUSD':
+          return '#161819'
+        case 'DOGE':
+          return '#BA9F32'
+        case 'BCH':
+          return '#4DCA48'
+        case 'TWT':
+          return '#FFFFFF'
+        case 'AAVE':
+          return '#6B8AB4'
+        case 'YFI':
+          return '#0163C9'
+        case 'SNX':
+          return '#0C032B'
+        case 'TGT':
+          return '#000000'
+        case 'FOX':
+          return '#1F2A4D'
+        case 'DPI':
+          return '#8150E6'
+        case 'XDEFI':
+          return '#163CD4'
+        case 'THOR':
+          return '#07AEFE'
+        case 'RUNE':
+          return '#1BE8C4'
+        default:
+          return null
+      }
     }
   }
 }
