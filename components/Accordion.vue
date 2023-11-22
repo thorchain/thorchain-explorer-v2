@@ -5,13 +5,18 @@
       <angle-icon class="trigger" />
       <slot name="header-extra" />
     </div>
-    <div :class="['accordion-inner', {'show': show}]" ref="aci">
+    <div ref="aci" :class="['accordion-inner', {'show': show}]">
       <div v-for="s in stacks.filter(s => s.is)" :key="s.key" class="stack-item">
         <template v-if="!s.slotName">
           <div class="key">
             {{ s.key | capitalize }}
           </div>
-          <component :is="checkType(s.type)" class="value mono" :to="toLink(s.type, s.value)">
+          <div v-if="s.type === 'bubble'" class="value mono bubble-wrapper">
+            <div v-for="(b, j) in s.value" :key="j" :class="['mini-bubble', ...s.class]">
+              {{ b.text | capitalize }}
+            </div>
+          </div>
+          <component :is="checkType(s.type)" v-else :class="['value mono']" :to="toLink(s.type, s.value)">
             {{ s.formatter ? s.formatter(s.value) : s.value }}
           </component>
         </template>
@@ -121,6 +126,11 @@ export default {
 
         .value {
           color: var(--sec-font-color);
+
+          &.bubble-wrapper {
+            display: flex;
+            gap: .5rem;
+          }
         }
 
         a.value {

@@ -1,5 +1,5 @@
 <template>
-  <div class="tx-card">
+  <div class="tx-card" :style="vars">
     <div v-if="title || labels.length > 0" class="tx-header">
       <div class="tx-header-l">
         <span class="tx-title">
@@ -108,14 +108,20 @@ export default {
         }
       }
     }
+  },
+  computed: {
+    vars () {
+      return {
+        '--left-border': this.assetColorPalette(this.overall.in[0].asset) ?? '#5CDFBD',
+        '--right-border': this.assetColorPalette(this.overall.out[0].asset) ?? '#3761F9'
+      }
+    }
   }
 
 }
 </script>
 
 <style lang="scss" scoped>
-$left-border: #5CDFBD;
-$right-border: #3761F9;
 $spinner-background: var(--card-bg-color);
 $border-size: 2px;
 .tx-card {
@@ -146,7 +152,7 @@ $border-size: 2px;
       display: flex;
 
       .tx-asset {
-        border: 2px solid $left-border;
+        border: 2px solid var(--left-border);
         border-radius: 100%;
       }
 
@@ -156,7 +162,7 @@ $border-size: 2px;
         height: 30px;
         width: 30px;
         position: relative;
-        background: linear-gradient(to left, $right-border, $left-border);
+        background: linear-gradient(to left, var(--right-border), var(--left-border));
 
         .tx-state {
           background: var(--card-bg-color);
@@ -176,7 +182,7 @@ $border-size: 2px;
             border-radius: 100%;
             margin: 0;
             padding: 3px;
-            fill: $left-border;
+            fill: var(--sec-font-color);
           }
         }
       }
@@ -184,7 +190,7 @@ $border-size: 2px;
       .simple-bar {
         width: 100%;
         height: $border-size;
-        background: $left-border;
+        background: var(--left-border);
       }
 
       .tx-wrapper {
@@ -201,8 +207,8 @@ $border-size: 2px;
       .tx-outbound {
         justify-content: end;
         .tx-asset, .simple-bar {
-          border-color: $right-border;
-          background: $right-border;
+          border-color: var(--right-border);
+          background: var(--right-border);
         }
       }
     }
@@ -239,7 +245,7 @@ $border-size: 2px;
 .simple-spinner {
   width: 26px;
   height: 26px;
-  border: 3px solid $left-border;
+  border: 3px solid var(--left-border);
   border-radius: 50%;
   border-top-color: $spinner-background;
   animation: spin 1s ease-in-out infinite;
