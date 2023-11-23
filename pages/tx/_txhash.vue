@@ -42,7 +42,6 @@ import moment from 'moment'
 import { mapGetters } from 'vuex'
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
 import streamingSwap from './components/streamingSwap.vue'
-import txStages from './components/txStages.vue'
 import txCard from './components/txCard.vue'
 import CopyIcon from '~/assets/images/copy.svg?inline'
 import DisconnectIcon from '~/assets/images/disconnect.svg?inline'
@@ -55,7 +54,6 @@ export default {
     DisconnectIcon,
     BounceLoader,
     streamingSwap,
-    txStages,
     txCard,
     Accordion
   },
@@ -90,13 +88,13 @@ export default {
       txHash = txHash.slice(2)
     }
 
-    await this.fetchTx(txHash)
+    const isPending = await this.fetchTx(txHash)
 
     // if has no outbound
-    if (this.tx?.status === 'pending') {
+    if (isPending) {
       const uI = setInterval(async () => {
         await this.fetchTx(txHash)
-        if (this.tx?.status !== 'pending') {
+        if (!isPending) {
           clearInterval(uI)
         }
       }, 60000)
@@ -165,7 +163,43 @@ export default {
       }
 
       this.isLoading = false
+      return this.isTxInPending(ts)
       // TODO: add proper error handling
+    },
+    isTxInPending (thorStatus) {
+      const memo = this.parseMemo(thorStatus.tx?.memo)
+
+      const userAddresses = new Set([
+        thorStatus.tx.from_address.toLowerCase(),
+        memo.destAddr?.toLowerCase()
+      ])
+
+      let outTxs = thorStatus.out_txs?.filter(tx =>
+        userAddresses.has(tx.to_address.toLowerCase())
+      )
+
+      if (!outTxs) {
+        outTxs = thorStatus.planned_out_txs
+          ?.filter(tx => userAddresses.has(tx.to_address.toLowerCase()))
+          .map(tx => ({
+            ...tx,
+            coins: [{ amount: tx.coin.amount, asset: tx.coin.asset }]
+          }))
+      }
+
+      const outAsset = this.parseMemoAsset(
+        outTxs?.length > 0 ? outTxs[0].coins[0].asset : memo.asset,
+        this.pools
+      )
+
+      const inboundFinalised = thorStatus.stages?.inbound_finalised?.completed
+      const actionFinalised = thorStatus.stages.swap_finalised?.completed &&
+        !thorStatus.stages.swap_status?.pending
+      const outboundFinalised = thorStatus.stages.outbound_signed?.completed ||
+        outAsset.chain === 'THOR' ||
+        outAsset.synth
+
+      return !inboundFinalised && !actionFinalised && !outboundFinalised
     },
     createCard (cardBase, accordions) {
       // What to show in the cards
@@ -178,6 +212,9 @@ export default {
               amount: a?.amount / 1e8,
               amountUSD: this.amountToUSD(a?.asset, a?.amount, this.pools)
             })),
+            middle: {
+              pending: cardBase.middle?.pending
+            },
             out: cardBase.out?.map(a => ({
               asset: a?.asset,
               amount: a?.amount / 1e8,
@@ -255,7 +292,7 @@ export default {
               },
               {
                 key: 'Liquidity Fee',
-                value: `${accordions.action.liquidityFee / 1e8} ${this.showAsset(accordions.out[0]?.asset)}`,
+                value: `${accordions.action.liquidityFee / 1e8} RUNE`,
                 is: accordions.action.liquidityFee
               },
               {
@@ -457,6 +494,14 @@ export default {
             asset: inAsset,
             amount: inAmount
           }],
+          middle: {
+            pending: !thorStatus.stages?.inbound_finalised?.completed ||
+              (!thorStatus.stages.swap_finalised?.completed &&
+                thorStatus.stages.swap_status?.pending) ||
+              !(thorStatus.stages.outbound_signed?.completed ||
+                outAsset.chain === 'THOR' ||
+                outAsset.synth)
+          },
           out: [{
             asset: outAsset,
             amount: outAmount

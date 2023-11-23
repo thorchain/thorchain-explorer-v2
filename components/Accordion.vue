@@ -18,6 +18,7 @@
           </div>
           <component :is="checkType(s.type)" v-else :class="['value mono']" :to="toLink(s.type, s.value)">
             {{ s.formatter ? s.formatter(s.value) : s.value }}
+            <arrow-icon v-if="checkType(s.type) === 'nuxt-link'" class="icon arrow-link" />
           </component>
         </template>
         <slot v-else :name="s.slotName" />
@@ -28,10 +29,12 @@
 
 <script>
 import AngleIcon from '~/assets/images/angle-down.svg?inline'
+import ArrowIcon from '@/assets/images/arrow.svg?inline'
 
 export default {
   components: {
-    AngleIcon
+    AngleIcon,
+    ArrowIcon
   },
   props: ['data'],
   data () {
@@ -125,6 +128,7 @@ export default {
         padding: .3rem 0;
 
         .value {
+          flex-wrap: wrap;
           color: var(--sec-font-color);
 
           &.bubble-wrapper {
@@ -134,8 +138,19 @@ export default {
         }
 
         a.value {
+          display: flex;
+          align-items: center;
           color: var(--primary-color);
           text-decoration: none;
+          gap: .2rem;
+
+          .arrow-link {
+            fill: var(--primary-color);
+            transform: rotate(45deg);
+            margin: 0;
+            height: 1rem;
+            width: 1rem;
+          }
         }
 
         &:last-of-type {
