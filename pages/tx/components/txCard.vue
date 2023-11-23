@@ -54,9 +54,9 @@
 
         <div class="tx-wrapper">
           <div v-for="(o, i) in overall.out" :key="i + '-out'" class="asset-outbound">
-            <span class="mono sec-color">{{ o.amount | number('0,0.0000') }}</span>
+            <span class="mono sec-color">{{ o.amount ? numberFormat(o.amount ) : '...' }}</span>
             <small class="mono sec-color">{{ showAsset(o.asset) }}</small>
-            <br><small>{{ o.amountUSD | currency }}</small>
+            <br><small>{{ o.amountUSD ? (o.amountUSD | currency) : '...' }}</small>
           </div>
         </div>
       </div>

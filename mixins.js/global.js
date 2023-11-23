@@ -334,6 +334,24 @@ export default {
         fee: parts[5] || null // null if not present
       }
     },
+    findAssetInPool (asset, pools) {
+      if (pools && !(assetToString(asset) in pools)) {
+        pools.forEach((p) => {
+          const poolAsset = assetFromString(p.asset)
+          if (
+            poolAsset.chain === asset.chain &&
+            poolAsset.ticker === asset.ticker &&
+            poolAsset.address.endsWith(asset.address)
+          ) {
+            if (isSynthAsset(asset)) {
+              poolAsset.synth = true
+            }
+            asset = poolAsset
+          }
+        })
+      }
+      return asset
+    },
     parseMemoAsset (assetInString, pools) {
       if (!assetInString) { return null }
 
@@ -349,21 +367,15 @@ export default {
 
       if (asset?.address) {
         // attempt to fuzzy match address
-        if (pools && !(assetToString(asset) in pools)) {
-          pools.forEach((p) => {
-            const poolAsset = assetFromString(p.asset)
-            if (
-              poolAsset.chain === asset.chain &&
-              poolAsset.ticker === asset.ticker &&
-              poolAsset.address.endsWith(asset.address)
-            ) {
-              if (isSynthAsset(asset)) {
-                poolAsset.synth = true
-              }
-              asset = poolAsset
-            }
-          })
-        }
+        asset = this.findAssetInPool(asset, pools)
+      } else if (
+        asset.chain === 'ETH' ||
+        asset.chain === 'AVAX' ||
+        asset.chain === 'BNB' ||
+        asset.chain === 'BSC'
+      ) {
+        // EVM assets can go without address
+        asset = this.findAssetInPool(asset, pools)
       }
 
       return asset
