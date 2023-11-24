@@ -77,10 +77,9 @@
 
 <script>
 import moment from 'moment'
-import { assetFromString } from '@xchainjs/xchain-util'
 
 export default {
-  props: ['inboundHash', 'tx', 'streamingMeta'],
+  props: ['inboundHash'],
   data () {
     return {
       streamingDetail: {
@@ -102,10 +101,6 @@ export default {
     }
   },
   mounted () {
-    if (this.streamingMeta) {
-      return
-    }
-
     this.updateStreamingDetail(this.inboundHash)
 
     this.intervalId = setInterval(() => {
@@ -117,35 +112,68 @@ export default {
   },
   methods: {
     async updateStreamingDetail (txid) {
-      const { data } = await this.$api.getStreamingSwap(txid)
-      this.streamingDetail.is = data && (+data?.in > 0)
+      const thorStatus = (await this.$api.getTxStatus(this.inboundHash))?.data
+      const isSwap = thorStatus.stages.swap_status?.streaming
 
-      if (data && data.count) {
-        this.streamingDetail.fill = data.count / data.quantity
-        this.streamingDetail.count = data.count
-        this.streamingDetail.quantity = data.quantity
-        this.streamingDetail.interval = data.interval
-        this.streamingDetail.remInterval = data.interval * (data.quantity - data.count)
+      console.log(isSwap)
+      if (isSwap) {
+        const { count, interval, quantity } = thorStatus.stages.swap_status?.streaming
+        this.streamingDetail.fill = count / quantity
+        this.streamingDetail.count = count
+        this.streamingDetail.quantity = quantity
+        this.streamingDetail.interval = interval
+        this.streamingDetail.remInterval = interval * (quantity - count)
         this.streamingDetail.remIntervalSec = moment.duration(this.streamingDetail.remInterval * 6, 'seconds').humanize()
-        if (data.count < data.quantity) {
+        if (count < quantity) {
           this.streamingDetail.status = 'On Going'
         } else {
           this.streamingDetail.status = 'Done'
         }
 
+        const { data } = await this.$api.getStreamingSwap(txid)
         if (data.trade_target) {
           this.streamingDetail.tradeTarget = this.$options.filters.number(+data.trade_target / 1e8, '0,0.00')
         } else {
           this.streamingDetail.tradeTarget = 0
         }
 
-        // if (this.tx?.inAsset && this.tx?.outAsset) {
-        //   this.streamingDetail.depositedAsset = assetFromString(this.tx.inAsset)?.ticker ?? ''
-        //   this.streamingDetail.targetAsset = assetFromString(this.tx.outAsset)?.ticker ?? ''
-        // } else {
-        //   this.streamingDetail.depositedAsset = ''
-        //   this.streamingDetail.targetAsset = ''
-        // }
+        const memo = this.parseMemo(thorStatus.tx?.memo)
+
+        // swap user addresses
+        const userAddresses = new Set([
+          thorStatus.tx.from_address.toLowerCase(),
+          memo.destAddr?.toLowerCase()
+        ])
+        // Non affiliate outs
+        let outTxs = thorStatus.out_txs?.filter(tx =>
+          userAddresses.has(tx.to_address.toLowerCase())
+        )
+        if (!outTxs) {
+          outTxs = thorStatus.planned_out_txs
+            ?.filter(tx => userAddresses.has(tx.to_address.toLowerCase()))
+            .map(tx => ({
+              ...tx,
+              coins: [{ amount: tx.coin.amount, asset: tx.coin.asset }]
+            }))
+        }
+
+        // Add native in/out search
+        const inAsset = this.parseMemoAsset(thorStatus.tx.coins[0].asset, this.pools)
+
+        const outAsset = this.parseMemoAsset(
+          outTxs?.length > 0 ? outTxs[0].coins[0].asset : memo.asset,
+          this.pools
+        )
+
+        const outMemoAsset = this.parseMemoAsset(memo.asset)
+
+        if (this.tx?.inAsset && this.tx?.outAsset) {
+          this.streamingDetail.depositedAsset = inAsset?.ticker ?? ''
+          this.streamingDetail.targetAsset = (outAsset?.ticker || outMemoAsset?.ticker) ?? ''
+        } else {
+          this.streamingDetail.depositedAsset = ''
+          this.streamingDetail.targetAsset = ''
+        }
 
         if (data.deposit) {
           this.streamingDetail.depositedAmt = this.$options.filters.number(+data.deposit / 1e8, '0,0.00')
@@ -164,6 +192,9 @@ export default {
         } else {
           this.streamingDetail.swappedOut = 0
         }
+
+        this.streamingDetail.is = true
+        console.log(this.streamingDetail)
       }
     }
   }

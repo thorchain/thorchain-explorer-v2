@@ -73,7 +73,8 @@ export default {
       },
       updateInterval: undefined,
       cards: [],
-      inboundHash: undefined
+      inboundHash: undefined,
+      thorStatus: undefined
     }
   },
   computed: {
@@ -162,6 +163,7 @@ export default {
         this.createTxState(md, td, ts, tdh, this.pools)
       }
 
+      this.thorStatus = ts
       this.isLoading = false
       return this.isTxInPending(ts)
       // TODO: add proper error handling
@@ -209,7 +211,7 @@ export default {
           overall: {
             in: cardBase.in?.map(a => ({
               asset: a?.asset,
-              amount: a?.amount / 1e8,
+              amount: a?.amount,
               amountUSD: this.amountToUSD(a?.asset, a?.amount, this.pools)
             })),
             middle: {
@@ -217,7 +219,7 @@ export default {
             },
             out: cardBase.out?.map(a => ({
               asset: a?.asset,
-              amount: a?.amount / 1e8,
+              amount: a?.amount,
               amountUSD: this.amountToUSD(a?.asset, a?.amount, this.pools)
             }))
           }
@@ -236,6 +238,7 @@ export default {
             name: `accordion-in-${i}`,
             data: {
               title: 'Inbound',
+              pending: !(a?.done),
               stacks: [
                 {
                   key: 'From',
@@ -270,14 +273,16 @@ export default {
       }
 
       if (accordions.action) {
+        // TODO: check this affiliate fee is zero
         const accordionAction = {
           name: 'accordion-action',
           data: {
             title: accordions.action?.type ?? undefined,
+            pending: !(accordions.action?.done),
             stacks: [
               {
                 key: 'Quantity',
-                value: `${accordions.action.streaming?.quantity} Swap`,
+                value: `${accordions.action.streaming?.quantity} Swaps`,
                 is: accordions.action.streaming?.quantity
               },
               {
@@ -304,6 +309,16 @@ export default {
                 key: 'Liquidity Units',
                 value: `${accordions.action.liquidityUnits}`,
                 is: accordions.action.liquidityUnits
+              },
+              {
+                key: 'Affiliate Name',
+                value: `${accordions.action.affiliateName}`,
+                is: accordions.action.affiliateName
+              },
+              {
+                key: 'Affiliate Basis',
+                value: `${accordions.action.affiliateFee}`,
+                is: accordions.action.affiliateName
               }
             ]
           }
@@ -313,15 +328,16 @@ export default {
 
       if (accordions.out) {
         accordions.out.forEach((a, i) => {
-          const accordionIn = {
+          const accordionOut = {
             name: `accordion-out-${i}`,
             data: {
               title: 'Outbound',
+              pending: !(a?.done),
               stacks: [
                 {
                   key: 'Destination',
                   value: a?.to,
-                  is: true,
+                  is: a?.to,
                   type: 'address',
                   formatter: this.formatAddress
                 },
@@ -332,15 +348,15 @@ export default {
                   type: 'hash',
                   formatter: this.formatAddress
                 },
-                {
+                ...((a.fees[0] ?? []) && a.fees.map((f, j) => ({
                   key: 'Outbound Fee',
-                  value: `${a.fee / 1e8} ${this.showAsset(a.asset)}`,
-                  is: a.fee
-                }
+                  value: `${f / 1e8} ${this.showAsset(a.feeAssets[j])}`,
+                  is: f
+                })))
               ]
             }
           }
-          ret.accordions.push(accordionIn)
+          ret.accordions.push(accordionOut)
         })
       }
 
@@ -363,7 +379,7 @@ export default {
         const { cards, accordions } = this.createAddLiquidityState(thorStatus, midgardAction, thorTx)
         this.cards = [this.createCard(cards, accordions)]
       } else if (memo.type === 'withdraw') {
-        const { cards, accordions } = this.createAddLiquidityState(thorStatus, midgardAction, thorTx)
+        const { cards, accordions } = this.createRemoveLiquidityState(thorStatus, midgardAction, thorTx)
         this.cards = [this.createCard(cards, accordions)]
       }
     },
@@ -424,7 +440,78 @@ export default {
       return ret
     },
     createRemoveLiquidityState (thorStatus, actions, thorTx) {
+      const inAsset = this.parseMemoAsset(thorStatus.tx.coins[0].asset, this.pools)
+      const inAmount = parseInt(thorStatus.tx.coins[0].amount)
+      const withdrawAction = actions?.actions?.find(a => a.type === 'withdraw')
 
+      const outboundFees =
+        withdrawAction?.metadata.withdraw?.networkFees.map(n => n?.amount) ?? []
+      const outboundFeeAssets = outboundFees?.length > 0
+        ? this.parseMemoAsset(
+          withdrawAction?.metadata.withdraw?.networkFees.map(n => n?.asset),
+          this.pools
+        )
+        : []
+
+      const userAddresses = new Set([
+        thorStatus.tx.from_address.toLowerCase()
+      ])
+      let outTxs = thorStatus.out_txs?.filter(tx =>
+        userAddresses.has(tx.to_address.toLowerCase())
+      )
+      if (!outTxs) {
+        outTxs = thorStatus.planned_out_txs
+          ?.filter(tx => userAddresses.has(tx.to_address.toLowerCase()))
+          .map(tx => ({
+            ...tx,
+            coins: [{ amount: tx.coin.amount, asset: tx.coin.asset }]
+          }))
+      }
+
+      const outAsset = this.parseMemoAsset(
+        outTxs[0].coins[0].asset,
+        this.pools
+      )
+      const outAmount =
+        outTxs?.length > 0
+          ? parseInt(outTxs[0].coins[0].amount)
+          : 0
+
+      return {
+        cards: {
+          title: 'Withdraw Liquidity',
+          in: [{
+            asset: inAsset,
+            amount: inAmount
+          }],
+          out: [{
+            asset: outAsset,
+            amount: outAmount
+          }]
+        },
+        accordions: {
+          in: [{
+            txid: thorStatus.tx.id,
+            from: thorStatus.tx.from_address,
+            asset: inAsset,
+            amount: inAmount,
+            done: true
+          }],
+          action: {
+            type: 'Withdraw',
+            liquidityUnits: parseInt(withdrawAction?.metadata?.withdraw?.liquidityUnits) || null,
+            done: thorStatus.stages.swap_finalised?.completed &&
+              !thorStatus.stages.swap_status?.pending
+          },
+          out: [{
+            fees: outboundFees,
+            feeAssets: outboundFeeAssets,
+            done: thorStatus.stages.outbound_signed?.completed ||
+              outAsset.chain === 'THOR' ||
+              outAsset.synth
+          }]
+        }
+      }
     },
     createSwapState (thorStatus, thorTx, actions, memo) {
       // swap user addresses
@@ -461,11 +548,12 @@ export default {
       const outMemoAsset = this.parseMemoAsset(memo.asset)
 
       // Midgard
-      const outboundFee =
-        actions?.actions[0]?.metadata.swap?.networkFees[0]?.amount
-      const outboundFeeAsset = outboundFee
+      // There are mutliple outbounds fee
+      const outboundFees =
+        actions?.actions[0]?.metadata.swap?.networkFees.map(n => n?.amount) ?? []
+      const outboundFeeAssets = outboundFees?.length > 0
         ? this.parseMemoAsset(
-          actions?.actions[0]?.metadata.swap?.networkFees[0].asset,
+          actions?.actions[0]?.metadata.swap?.networkFees.map(n => n?.asset),
           this.pools
         )
         : null
@@ -486,6 +574,12 @@ export default {
       const onlyRefund = actions?.actions.every(
         action => action?.type === 'refund'
       )
+
+      // TODO: add nice check with animation
+      // TODO: Why we needed this?
+      if (outAsset.chain !== 'THOR') {
+        console.log(outTxs)
+      }
 
       return {
         cards: {
@@ -529,7 +623,7 @@ export default {
             limit: memo.limit,
             limitAsset: onlyRefund ? outMemoAsset : outAsset,
             affiliateName: memo.affiliate,
-            affiliateFee: parseInt(actions?.actions[0]?.metadata?.swap?.affiliateFee) || null,
+            affiliateFee: parseInt(actions?.actions[0]?.metadata?.swap?.affiliateFee) || parseInt(memo.fee) || 0,
             liquidityFee: parseInt(actions?.actions[0]?.metadata?.swap?.liquidityFee) || null,
             liquidityUnits: null,
             refundReason: outboundRefundReason,
@@ -550,8 +644,8 @@ export default {
             to: (outTxs?.length > 0 && outTxs[0].to_address) || memo.destAddr,
             asset: outAsset,
             amount: parseInt(outAmount),
-            fee: outboundFee,
-            feeAsset: outboundFeeAsset,
+            fees: outboundFees,
+            feeAssets: outboundFeeAssets,
             delayBlocksRemaining:
               thorStatus.stages.outbound_delay?.remaining_delay_blocks || 0,
             done: thorStatus.stages.swap_finalised?.completed &&
