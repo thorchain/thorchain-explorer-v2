@@ -14,7 +14,7 @@
             style-class="vgt-table net-table"
             :pagination-options="{
               enabled: true,
-              perPage: 30,
+              perPage: 100,
               perPageDropdownEnabled: false,
             }"
             :sort-options="{
