@@ -89,12 +89,12 @@ export default {
       txHash = txHash.slice(2)
     }
 
-    const isPending = await this.fetchTx(txHash)
+    let isPending = await this.fetchTx(txHash)
 
     // if has no outbound
     if (isPending) {
       const uI = setInterval(async () => {
-        await this.fetchTx(txHash)
+        isPending = await this.fetchTx(txHash)
         if (!isPending) {
           clearInterval(uI)
         }

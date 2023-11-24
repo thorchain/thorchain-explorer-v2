@@ -42,13 +42,13 @@
       <div class="info-item">
         <span>Deposited / Swapped Input</span>
         <span>
-          {{ streamingDetail.depositedAmt }}
+          {{ streamingDetail.swappedIn }}
           <span style="color: var(--font-color); font-size: .75rem;">
             {{ streamingDetail.depositedAsset }}
           </span>
           /
           <span>
-            {{ streamingDetail.swappedIn }}
+            {{ streamingDetail.depositedAmt }}
             <span style="color: var(--font-color); font-size: .75rem;">
               {{ streamingDetail.depositedAsset }}
             </span>
@@ -115,7 +115,6 @@ export default {
       const thorStatus = (await this.$api.getTxStatus(this.inboundHash))?.data
       const isSwap = thorStatus.stages.swap_status?.streaming
 
-      console.log(isSwap)
       if (isSwap) {
         const { count, interval, quantity } = thorStatus.stages.swap_status?.streaming
         this.streamingDetail.fill = count / quantity
@@ -167,7 +166,7 @@ export default {
 
         const outMemoAsset = this.parseMemoAsset(memo.asset)
 
-        if (this.tx?.inAsset && this.tx?.outAsset) {
+        if (inAsset && outAsset) {
           this.streamingDetail.depositedAsset = inAsset?.ticker ?? ''
           this.streamingDetail.targetAsset = (outAsset?.ticker || outMemoAsset?.ticker) ?? ''
         } else {
@@ -194,7 +193,6 @@ export default {
         }
 
         this.streamingDetail.is = true
-        console.log(this.streamingDetail)
       }
     }
   }
