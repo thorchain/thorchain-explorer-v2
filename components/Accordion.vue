@@ -1,11 +1,16 @@
 <template>
   <div class="accordion">
     <div :class="['accordion-info', {'not-collapsed': show}]" @click="toggleAccordion">
-      {{ title | capitalize }}
-      <angle-icon class="trigger" />
-      <slot name="header-extra" />
+      <div class="accordion-info-left">
+        {{ title | capitalize }}
+        <angle-icon v-if="showAccordion" class="trigger" />
+      </div>
+      <div class="accordion-info-right">
+        <slot name="header-extra" />
+        <dot-live v-if="pending" />
+      </div>
     </div>
-    <div ref="aci" :class="['accordion-inner', {'show': show}]">
+    <div v-if="showAccordion" ref="aci" :class="['accordion-inner', {'show': show}]">
       <div v-for="s in stacks.filter(s => s.is)" :key="s.key" class="stack-item">
         <template v-if="!s.slotName">
           <div class="key">
@@ -40,9 +45,18 @@ export default {
   data () {
     return {
       title: this.data?.title ?? '',
+      pending: this.data?.pending ?? false,
       labels: this.data?.labels ?? [],
       stacks: this.data?.stacks ?? [],
       show: false
+    }
+  },
+  computed: {
+    showAccordion () {
+      if (this.stacks.length > 0) {
+        return true
+      }
+      return false
     }
   },
   methods: {
@@ -78,6 +92,7 @@ export default {
     .accordion-info {
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: .5rem;
       border-radius: .5rem;
       cursor: pointer;
@@ -100,6 +115,12 @@ export default {
         .trigger {
           transform: rotate(180deg);
         }
+      }
+
+      .accordion-info-left, .accordion-info-right {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
       }
     }
 

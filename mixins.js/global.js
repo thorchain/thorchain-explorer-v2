@@ -203,6 +203,9 @@ export default {
     formatCurrency (number) {
       return this.$options.filters.currency(number)
     },
+    formatBnCurrency (number) {
+      return `$${formatBN(bnOrZero(number))}`
+    },
     formatSmallCurrency (number) {
       return this.$options.filters.currency(number / 10 ** 8, '$', 2)
     },
@@ -354,6 +357,10 @@ export default {
     },
     parseMemoAsset (assetInString, pools) {
       if (!assetInString) { return null }
+
+      if (typeof assetInString === 'object') {
+        return assetInString
+      }
 
       // Upper case it as pools is in uppercase
       assetInString = assetInString.toUpperCase()

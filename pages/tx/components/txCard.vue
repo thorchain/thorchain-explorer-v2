@@ -46,17 +46,17 @@
       <div class="tx-assets-info">
         <div class="tx-wrapper">
           <div v-for="(o, i) in overall.in" :key="i + '-in'" class="asset-inbound">
-            <span class="mono sec-color">{{ o.amount | number('0,0.0000') }}</span>
+            <span class="mono sec-color">{{ baseAmountFormatOrZero(o.amount) }}</span>
             <small class="mono sec-color">{{ showAsset(o.asset) }}</small>
-            <br><small>{{ o.amountUSD | currency }}</small>
+            <br><small>{{ o.amountUSD ? formatBnCurrency(o.amountUSD) : '...' }}</small>
           </div>
         </div>
 
         <div class="tx-wrapper">
           <div v-for="(o, i) in overall.out" :key="i + '-out'" class="asset-outbound">
-            <span class="mono sec-color">{{ o.amount ? numberFormat(o.amount ) : '...' }}</span>
+            <span class="mono sec-color">{{ o.amount ? baseAmountFormatOrZero(o.amount) : '...' }}</span>
             <small class="mono sec-color">{{ showAsset(o.asset) }}</small>
-            <br><small>{{ o.amountUSD ? (o.amountUSD | currency) : '...' }}</small>
+            <br><small>{{ o.amountUSD ? formatBnCurrency(o.amountUSD) : '...' }}</small>
           </div>
         </div>
       </div>
@@ -112,8 +112,8 @@ export default {
   computed: {
     vars () {
       return {
-        '--left-border': this.assetColorPalette(this.overall.in[0].asset) ?? '#5CDFBD',
-        '--right-border': this.assetColorPalette(this.overall.out[0].asset) ?? '#3761F9'
+        '--left-border': this.assetColorPalette(this.overall.in[0]?.asset) ?? '#5CDFBD',
+        '--right-border': this.assetColorPalette(this.overall.out[0]?.asset) ?? '#3761F9'
       }
     }
   }
@@ -122,7 +122,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-$spinner-background: var(--card-bg-color);
 $border-size: 2px;
 .tx-card {
   width: 100%;
@@ -241,21 +240,8 @@ $border-size: 2px;
   }
 }
 
-// Spinner
 .simple-spinner {
-  width: 26px;
-  height: 26px;
-  border: 3px solid var(--left-border);
-  border-radius: 50%;
-  border-top-color: $spinner-background;
-  animation: spin 1s ease-in-out infinite;
-  -webkit-animation: spin 1s ease-in-out infinite;
-}
-
-@keyframes spin {
-  to { -webkit-transform: rotate(360deg); }
-}
-@-webkit-keyframes spin {
-  to { -webkit-transform: rotate(360deg); }
+  border-color: var(--left-border);
+  border-top-color: var(--card-bg-color);
 }
 </style>

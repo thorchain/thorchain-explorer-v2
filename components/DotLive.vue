@@ -1,14 +1,17 @@
 <template>
-  <div class="dot"></div>
+  <div class="dot" :style="vars"></div>
 </template>
 
 <script>
 export default {
   components: {
   },
-  props: [],
-  data () {
-    return {
+  props: ['color'],
+  computed: {
+    vars () {
+      return {
+        '--dot-color': this.color ?? 'var(--primary-color)'
+      }
     }
   }
 }
@@ -18,7 +21,7 @@ export default {
 .dot {
   width: .7rem;
   height: .7rem;
-  background: var(--primary-color);
+  background: var(--dot-color);
   border-radius: 50%;
   position: relative;
 }
@@ -44,7 +47,7 @@ export default {
   height: 100%;
   top: 0;
   left: 0;
-  background: var(--primary-color);
+  background: var(--dot-color);
   border-radius: 50%;
 }
 </style>

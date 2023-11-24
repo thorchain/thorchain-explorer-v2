@@ -32,6 +32,9 @@ export function momentTimeFormat (time) {
 }
 
 export function isInternalTx (hash) {
+  if (!hash) {
+    return true
+  }
   return hash === '0000000000000000000000000000000000000000000000000000000000000000' ?? false
 }
 
