@@ -1,4 +1,4 @@
-import { bnOrZero, formatBN, AssetCurrencySymbol, isSynthAsset, assetToString } from '@xchainjs/xchain-util'
+import { bnOrZero, formatBN, AssetCurrencySymbol, isSynthAsset, assetToString, eqAsset } from '@xchainjs/xchain-util'
 import compare from 'semver/functions/compare'
 import moment from 'moment'
 import { AssetImage } from '~/classes/assetImage'
@@ -405,9 +405,32 @@ export default {
         copyAsset.synth = false
       }
 
+      if (copyAsset.chain === 'THOR' && copyAsset.symbol === 'RUNE') {
+        return amount * this.usdPerRune(pools)
+      }
+
       const pricePerAsset = +pools.find(p => p.asset === assetToString(copyAsset))?.assetPriceUSD ?? 0
 
       return amount * pricePerAsset
+    },
+    usdPerRune (pools) {
+      let asset = 0
+      let rune = 0
+
+      const anchorPools = [
+        'ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48',
+        'ETH.USDT-0XDAC17F958D2EE523A2206206994597C13D831EC7',
+        'AVAX.USDC-0XB97EF9EF8734C71904D8002F8B6BC66DD9C48A6E',
+        'BNB.BUSD-BD1'
+      ]
+
+      pools.forEach((p) => {
+        if (anchorPools.includes(p.asset)) {
+          asset += parseInt(p.assetDepth)
+          rune += parseInt(p.runeDepth)
+        }
+      })
+      return asset / rune
     },
     assetColorPalette (asset) {
       if (!asset) {
@@ -473,6 +496,32 @@ export default {
           return '#1BE8C4'
         default:
           return null
+      }
+    },
+    blockMilliseconds (chain) {
+      switch (chain) {
+        case 'BTC':
+          return 600
+        case 'BCH':
+          return 600
+        case 'LTC':
+          return 150
+        case 'DOGE':
+          return 60
+        case 'ETH':
+          return 12
+        case 'THOR':
+          return 6
+        case 'GAIA':
+          return 6
+        case 'AVAX':
+          return 3
+        case 'BSC':
+          return 3
+        case 'BNB':
+          return 0.5
+        default:
+          return 0
       }
     }
   }
