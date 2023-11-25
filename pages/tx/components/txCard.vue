@@ -158,8 +158,8 @@ $border-size: 2px;
       .tx-state-wrapper {
         background: #385a94;
         border-radius: 50%;
-        height: 30px;
-        width: 30px;
+        height: 32px;
+        width: 32px;
         position: relative;
         background: linear-gradient(to left, var(--right-border), var(--left-border));
 

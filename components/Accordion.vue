@@ -11,7 +11,7 @@
       </div>
     </div>
     <div v-if="showAccordion" ref="aci" :class="['accordion-inner', {'show': show}]">
-      <div v-for="s in stacks.filter(s => s.is)" :key="s.key" class="stack-item">
+      <div v-for="(s,i) in (stacks.filter(s => s.is))" :key="i" class="stack-item">
         <template v-if="!s.slotName">
           <div class="key">
             {{ s.key | capitalize }}
@@ -41,13 +41,10 @@ export default {
     AngleIcon,
     ArrowIcon
   },
-  props: ['data'],
+  props: ['title', 'stacks', 'pending'],
   data () {
     return {
-      title: this.data?.title ?? '',
-      pending: this.data?.pending ?? false,
       labels: this.data?.labels ?? [],
-      stacks: this.data?.stacks ?? [],
       show: false
     }
   },
