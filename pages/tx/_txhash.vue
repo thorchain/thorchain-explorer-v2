@@ -142,8 +142,6 @@ export default {
         tdh = thorRes.headers
       }
 
-      this.thorHeight = parseInt(tdh['x-thorchain-height'])
-
       const ts = (await this.$api.getTxStatus(hash).catch((e) => {
         if (e?.response?.status / 200 !== 1) {
           this.error.message = 'Can\'t find transaction status. Please make sure the correct transaction hash or account address is inserted.'
@@ -161,16 +159,18 @@ export default {
         }))?.data
       }
 
-      if (nt) {
-        this.createNativeTx(nt)
-      } else {
-        this.createTxState(md, td, ts, tdh, this.pools)
-      }
-
       this.thorStatus = ts
       this.isLoading = false
-      return this.isTxInPending(ts)
+
       // TODO: add proper error handling
+      if (nt) {
+        this.createNativeTx(nt)
+        return false
+      } else {
+        this.thorHeight = parseInt(tdh['x-thorchain-height'])
+        this.createTxState(md, td, ts, tdh, this.pools)
+        return this.isTxInPending(ts)
+      }
     },
     isTxInPending (thorStatus) {
       const memo = this.parseMemo(thorStatus.tx?.memo)
@@ -284,6 +284,11 @@ export default {
             pending: !(accordions.action?.done),
             stacks: [
               {
+                key: 'Timestamp',
+                value: `${accordions.action?.timeStamp.format('LLL')} (${accordions.action?.timeStamp.fromNow()})`,
+                is: accordions.action?.timeStamp.isValid()
+              },
+              {
                 key: 'Quantity',
                 value: `${accordions.action.streaming?.quantity} Swaps`,
                 is: accordions.action.streaming?.quantity
@@ -325,6 +330,36 @@ export default {
               }
             ]
           }
+        }
+        if (accordions.action?.type === 'send') {
+          accordionAction?.data?.stacks.push(
+            {
+              key: 'Hash',
+              value: accordions.action?.txid,
+              is: accordions.action?.txid,
+              type: 'hash',
+              formatter: this.formatAddress
+            },
+            {
+              key: 'Memo',
+              value: accordions.action?.memo,
+              is: accordions.action?.memo
+            },
+            {
+              key: 'From',
+              value: accordions.action?.from,
+              is: accordions.action?.from,
+              type: 'address',
+              formatter: this.formatAddress
+            },
+            {
+              key: 'To',
+              value: accordions.action?.to,
+              is: accordions.action?.to,
+              type: 'address',
+              formatter: this.formatAddress
+            }
+          )
         }
         ret.accordions.push(accordionAction)
       }
@@ -399,11 +434,40 @@ export default {
       }
     },
     createNativeTx (nativeTx) {
+      const inAsset = this.getNativeAsset(nativeTx.tx?.body?.messages[0].amount[0].denom)
+      const inAmount = nativeTx.tx?.body?.messages[0].amount[0].amount
+      const timeStamp = moment(nativeTx?.tx_response.timestamp)
 
+      const cards = {
+        title: 'Send',
+        in: [{
+          asset: inAsset,
+          amount: inAmount
+        }],
+        out: []
+      }
+
+      const accordions = {
+        in: [],
+        action: {
+          type: 'send',
+          txid: nativeTx?.tx_response.txhash,
+          memo: nativeTx.tx?.body?.memo || null,
+          from: nativeTx.tx?.body?.messages[0].from_address,
+          to: nativeTx.tx?.body?.messages[0].to_address,
+          timeStamp,
+          done: true
+        },
+        out: []
+      }
+
+      this.$set(this, 'cards', [this.createCard(cards, accordions)])
     },
     createAddLiquidityState (thorStatus, actions, thorTx) {
       const inAsset = this.parseMemoAsset(thorStatus.tx.coins[0].asset, this.pools)
       const inAmount = parseInt(thorStatus.tx.coins[0].amount)
+      const addAction = actions?.actions?.find(a => a.type === 'add_liquidity')
+      const timeStamp = moment.unix(addAction?.date / 1e9)
 
       return {
         cards: {
@@ -423,6 +487,7 @@ export default {
           }],
           action: {
             type: 'Add',
+            timeStamp: timeStamp || null,
             liquidityUnits: parseInt(actions?.actions[0]?.metadata?.addLiquidity?.liquidityUnits) || null,
             done: thorStatus.stages.swap_finalised?.completed &&
               !thorStatus.stages.swap_status?.pending
@@ -467,6 +532,7 @@ export default {
           this.pools
         )
         : []
+      const timeStamp = moment.unix(withdrawAction?.date / 1e9)
 
       const userAddresses = new Set([
         thorStatus.tx.from_address.toLowerCase()
@@ -514,6 +580,7 @@ export default {
           }],
           action: {
             type: 'Withdraw',
+            timeStamp: timeStamp || null,
             liquidityUnits: parseInt(withdrawAction?.metadata?.withdraw?.liquidityUnits) || null,
             done: thorStatus.stages.swap_finalised?.completed &&
               !thorStatus.stages.swap_status?.pending
@@ -577,6 +644,7 @@ export default {
           this.pools
         )
         : null
+      let timeStamp = swapAction?.date
 
       // Refunds
       const outboundHasRefund = outTxs?.some(
@@ -595,11 +663,21 @@ export default {
         action => action?.type === 'refund'
       )
 
+      if (onlyRefund) {
+        const refundAction = actions?.actions?.find(a => a.type === 'refund')
+        timeStamp = refundAction?.date
+      }
+
       // TODO: add nice check with animation
       // TODO: add failed swaps from midgard
+      // TODO: Add refunded swap info
       // TODO: Why we needed this?
       if (outAsset.chain !== 'THOR') {
         console.log(outTxs)
+      }
+
+      if (timeStamp) {
+        timeStamp = moment.unix(timeStamp / 1e9)
       }
 
       return {
@@ -646,6 +724,7 @@ export default {
           }],
           action: {
             type: onlyRefund ? 'refunded Swap' : 'swap',
+            timeStamp: timeStamp || null,
             limit: memo.limit,
             limitAsset: onlyRefund ? outMemoAsset : outAsset,
             affiliateName: memo.affiliate,
