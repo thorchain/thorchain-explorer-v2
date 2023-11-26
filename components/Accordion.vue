@@ -56,6 +56,11 @@ export default {
       return false
     }
   },
+  mounted () {
+    if (this.pending) {
+      this.toggleAccordion()
+    }
+  },
   methods: {
     toggleAccordion () {
       this.show = !this.show
