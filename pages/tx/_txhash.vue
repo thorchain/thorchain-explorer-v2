@@ -715,10 +715,6 @@ export default {
       // TODO: add nice check with animation
       // TODO: add failed swaps from midgard
       // TODO: Add refunded swap info
-      // TODO: On outbound delays put the amount out
-      if (outAsset.chain !== 'THOR') {
-        console.log(outTxs)
-      }
 
       const outboundDelayRemaining =
         (thorStatus.stages.outbound_delay?.remaining_delay_seconds ?? 0) ||
