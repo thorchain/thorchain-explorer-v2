@@ -122,7 +122,6 @@ export default {
       e.target.src = require('~/assets/images/unknown.png')
     },
     since (date) {
-      console.log(date)
       return moment(date / 1e6).fromNow()
     }
   }

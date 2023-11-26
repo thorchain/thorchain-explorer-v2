@@ -142,8 +142,10 @@ export default {
 
       .stack-item {
         display: flex;
+        flex-wrap: wrap;
         justify-content: space-between;
         padding: .3rem 0;
+        gap: 5px;
 
         .value {
           flex-wrap: wrap;

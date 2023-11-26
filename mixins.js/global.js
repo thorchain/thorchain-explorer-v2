@@ -523,6 +523,29 @@ export default {
         default:
           return 0
       }
+    },
+    getNativeAsset (denom, pools) {
+      if (!denom) {
+        return
+      }
+
+      if (typeof denom === 'object') {
+        return denom
+      }
+
+      if (denom === 'rune') {
+        return assetFromString('THOR.RUNE')
+      }
+
+      pools.forEach((p) => {
+        const poolAsset = assetFromString(p.asset)
+        if (
+          poolAsset.ticker === denom.toUpperCase()
+        ) {
+          poolAsset.synth = true
+          return poolAsset
+        }
+      })
     }
   }
 }
