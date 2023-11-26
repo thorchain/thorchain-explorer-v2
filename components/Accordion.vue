@@ -17,7 +17,7 @@
             {{ s.key | capitalize }}
           </div>
           <div v-if="s.type === 'bubble'" class="value mono bubble-wrapper">
-            <div v-for="(b, j) in s.value" :key="j" :class="['mini-bubble', ...s.class]">
+            <div v-for="(b, j) in s.value" :key="j" :class="['mini-bubble', ...b.class]">
               {{ b.text | capitalize }}
             </div>
           </div>

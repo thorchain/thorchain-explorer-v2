@@ -498,7 +498,7 @@ export default {
           return null
       }
     },
-    blockMilliseconds (chain) {
+    blockSeconds (chain) {
       switch (chain) {
         case 'BTC':
           return 600
