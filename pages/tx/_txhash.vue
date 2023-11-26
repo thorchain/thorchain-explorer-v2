@@ -201,9 +201,10 @@ export default {
       const inboundFinalised = thorStatus.stages?.inbound_finalised?.completed
       const actionFinalised = thorStatus.stages.swap_finalised?.completed &&
         !thorStatus.stages.swap_status?.pending
-      const outboundFinalised = thorStatus.stages.outbound_signed?.completed ||
+      const outboundFinalised = (thorStatus.stages.outbound_signed?.completed ||
         outAsset.chain === 'THOR' ||
-        outAsset.synth
+        outAsset.synth) &&
+        (thorStatus.stages.outbound_delay?.completed ?? true)
 
       return !inboundFinalised || !actionFinalised || !outboundFinalised
     },
@@ -366,6 +367,7 @@ export default {
 
       if (accordions.out) {
         accordions.out.forEach((a, i) => {
+          const outboundStages = this.getOutboundStages(a)
           const accordionOut = {
             name: `accordion-out-${i}`,
             data: {
@@ -392,9 +394,20 @@ export default {
                   is: a?.gas
                 },
                 {
-                  key: 'Outbound Est',
-                  value: moment.duration(this.blockMilliseconds('THOR') * a.outboundETA, 'seconds').humanize(),
+                  key: 'Outbound Est.',
+                  value: moment.duration(this.blockSeconds('THOR') * a.outboundETA, 'seconds').humanize(),
                   is: a.outboundETA
+                },
+                {
+                  key: 'Outbound Delay Est.',
+                  value: moment.duration(a.outboundDelayRemaining, 'seconds').humanize(),
+                  is: !a.outboundETA && a.outboundDelayRemaining
+                },
+                {
+                  key: 'Outbound Stage',
+                  value: outboundStages,
+                  type: 'bubble',
+                  is: outboundStages.length > 0
                 }
               ]
             }
@@ -519,6 +532,36 @@ export default {
 
       return ret
     },
+    getOutboundStages (outbound) {
+      const ret = []
+
+      if (outbound?.done) {
+        ret.push(
+          {
+            text: 'done'
+          }
+        )
+      }
+
+      if (outbound?.outboundDelayRemaining) {
+        ret.push(
+          {
+            text: 'delayed',
+            class: 'yellow'
+          }
+        )
+      }
+
+      if (outbound?.outboundSigned) {
+        ret.push(
+          {
+            text: 'signed'
+          }
+        )
+      }
+
+      return ret
+    },
     createRemoveLiquidityState (thorStatus, actions, thorTx) {
       const inAsset = this.parseMemoAsset(thorStatus.tx.coins[0].asset, this.pools)
       const inAmount = parseInt(thorStatus.tx.coins[0].amount)
@@ -605,7 +648,8 @@ export default {
       let outTxs = thorStatus.out_txs?.filter(tx =>
         userAddresses.has(tx.to_address.toLowerCase())
       )
-      if (!outTxs) {
+      // TODO: fix this in track code
+      if (!outTxs || outTxs?.length === 0) {
         outTxs = thorStatus.planned_out_txs
           ?.filter(tx => userAddresses.has(tx.to_address.toLowerCase()))
           .map(tx => ({
@@ -633,7 +677,7 @@ export default {
       const outMemoAsset = this.parseMemoAsset(memo.asset)
 
       // Midgard
-      // There are multiple outbounds fee
+      // There are multiple outbound fee
       // also there might be refund involved
       const swapAction = actions?.actions?.find(a => a.type === 'swap')
       const outboundFees =
@@ -671,10 +715,14 @@ export default {
       // TODO: add nice check with animation
       // TODO: add failed swaps from midgard
       // TODO: Add refunded swap info
-      // TODO: Why we needed this?
+      // TODO: On outbound delays put the amount out
       if (outAsset.chain !== 'THOR') {
         console.log(outTxs)
       }
+
+      const outboundDelayRemaining =
+        (thorStatus.stages.outbound_delay?.remaining_delay_seconds ?? 0) ||
+        (thorStatus.stages.outbound_delay?.remaining_delay_blocks ?? 0) * this.blockSeconds('THOR')
 
       if (timeStamp) {
         timeStamp = moment.unix(timeStamp / 1e9)
@@ -693,7 +741,8 @@ export default {
                 thorStatus.stages.swap_status?.pending) ||
               !(thorStatus.stages.outbound_signed?.completed ||
                 outAsset.chain === 'THOR' ||
-                outAsset.synth)
+                outAsset.synth) ||
+              !(thorStatus.stages.outbound_delay?.completed ?? true)
           },
           out: [{
             asset: outAsset,
@@ -757,14 +806,18 @@ export default {
             feeAssets: outboundFeeAssets,
             delayBlocksRemaining:
               thorStatus.stages.outbound_delay?.remaining_delay_blocks || 0,
+            outboundDelayRemaining:
+              outboundDelayRemaining || 0,
             outboundETA:
               thorStatus.stages.outbound_signed?.blocks_since_scheduled ||
               Math.abs(thorStatus.stages.outbound_signed?.scheduled_outbound_height - this.thorHeight),
+            outboundSigned: thorStatus.stages.outbound_signed?.completed ?? false,
             done: thorStatus.stages.swap_finalised?.completed &&
               !thorStatus.stages.swap_status?.pending &&
               (thorStatus.stages.outbound_signed?.completed ||
                 outAsset.chain === 'THOR' ||
-                outAsset.synth)
+                outAsset.synth) &&
+              (thorStatus.stages.outbound_delay?.completed ?? true)
           },
           ...(outTxs?.slice(1).map(o => ({
             txid: o.id,
