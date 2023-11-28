@@ -91,7 +91,15 @@ export default {
       txHash = txHash.slice(2)
     }
 
-    let isPending = await this.fetchTx(txHash)
+    let isPending = false
+    try {
+      isPending = await this.fetchTx(txHash)
+    } catch (error) {
+      console.error(error)
+      this.isLoading = false
+      this.isError = true
+      return
+    }
 
     // if has no outbound
     if (isPending) {
@@ -167,7 +175,9 @@ export default {
         this.createNativeTx(nt)
         return false
       } else {
-        this.thorHeight = parseInt(tdh['x-thorchain-height'])
+        if (tdh) {
+          this.thorHeight = parseInt(tdh['X-Thorchain-Height'] ?? 0)
+        }
         this.createTxState(md, td, ts, tdh, this.pools)
         return this.isTxInPending(ts)
       }
