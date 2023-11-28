@@ -55,14 +55,6 @@ export const AssetImage = (assetStr) => {
         if (symbol !== 'ETH') {
           iconPath = getErcIconPath('ethereum', symbol, ticker)
 
-          // getter of icons for eth testnet
-          // if (environment.network === "testnet") {
-          //   iconPath = getTestnetTokeIconPath(
-          //     this.symbol,
-          //     this.ticker
-          //   );
-          // }
-
           if (ticker === 'ALCX') {
             iconPath = 'https://etherscan.io/token/images/Alchemix_32.png'
           } else if (ticker === 'TGT') {

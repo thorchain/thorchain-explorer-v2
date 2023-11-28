@@ -39,7 +39,7 @@
 
 <script>
 import moment from 'moment'
-import { orderBy } from 'lodash'
+import { orderBy, flatten } from 'lodash'
 import { mapGetters } from 'vuex'
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
 import streamingSwap from './components/streamingSwap.vue'
@@ -225,7 +225,10 @@ export default {
             out: cardBase.out?.map(a => ({
               asset: a?.asset,
               amount: a?.amount,
-              amountUSD: this.amountToUSD(a?.asset, a?.amount, this.pools)
+              amountUSD: this.amountToUSD(a?.asset, a?.amount, this.pools),
+              text: a?.text,
+              icon: a?.icon,
+              borderColor: a?.borderColor
             }))
           }
         },
@@ -391,7 +394,7 @@ export default {
                 {
                   key: 'Gas',
                   value: `${this.baseAmountFormatOrZero(a.gas)} ${this.showAsset(a.gasAsset)}`,
-                  is: a?.gas
+                  is: a?.gas && a?.gasAsset
                 },
                 {
                   key: 'Outbound Est.',
@@ -425,26 +428,88 @@ export default {
 
       return ret
     },
-    createTxState (midgardAction, thorTx, thorStatus, thorHeader, pools) {
+    async createTxState (midgardAction, thorTx, thorStatus, thorHeader, pools) {
       // Push as much as data gathered along all endpoint into cards!
       // Actions accordion, inbound accordion, outbound accordion
 
-      // Get out/in assets
+      // Parse by Memo like thornode
       const memo = this.parseMemo(thorStatus.tx?.memo)
 
-      // Swap
-      // From track code
-      // TODO: check all kind of actions
       if (memo.type === 'swap') {
         const { cards, accordions } = this.createSwapState(thorStatus, thorTx, midgardAction, memo, thorHeader)
         this.$set(this, 'cards', [this.createCard(cards, accordions)])
       } else if (memo.type === 'add') {
-        const { cards, accordions } = this.createAddLiquidityState(thorStatus, midgardAction, thorTx)
-        this.$set(this, 'cards', [this.createCard(cards, accordions)])
+        const finalCards = []
+        const { cards, accordions } = this.createAddLiquidityState(thorStatus, midgardAction, thorTx, memo)
+        finalCards.push(this.createCard(cards, accordions))
+        if (memo.asymmetry) {
+          const ts = (await this.getOtherActionHash(midgardAction, thorStatus))
+          const m = this.parseMemo(ts.tx?.memo)
+          const { cards, accordions } = this.createAddLiquidityState(ts, midgardAction, thorTx, m)
+          finalCards.push(this.createCard(cards, accordions))
+        }
+        this.$set(this, 'cards', finalCards)
       } else if (memo.type === 'withdraw') {
-        const { cards, accordions } = this.createRemoveLiquidityState(thorStatus, midgardAction, thorTx)
+        const { cards, accordions } = this.createRemoveLiquidityState(thorStatus, midgardAction, thorTx, memo)
         this.$set(this, 'cards', [this.createCard(cards, accordions)])
+      } else {
+        const finalCards = []
+        for (let i = 0; i < midgardAction?.actions?.length; i++) {
+          const { cards, accordions } = this.createAbstractState(thorStatus, midgardAction.actions[i], thorTx, memo)
+          finalCards.push(this.createCard(cards, accordions))
+        }
+        this.$set(this, 'cards', finalCards)
       }
+    },
+    createAbstractState (thorStatus, action, thorTx) {
+      const ins = action?.in.map(a => ({
+        asset: this.parseMemoAsset(a.coins[0]?.asset),
+        amount: a.coins[0].amount,
+        txid: a?.txID,
+        from: a?.address,
+        done: true
+      }))
+
+      const outs = action?.out.map(a => ({
+        asset: this.parseMemoAsset(a.coins[0]?.asset),
+        amount: a.coins[0].amount,
+        txid: a?.txID,
+        to: a?.address,
+        done: true
+      }))
+
+      return {
+        cards: {
+          title: 'Action',
+          in: ins,
+          middle: {
+            pending: false
+          },
+          out: outs
+        },
+        accordions: {
+          in: ins,
+          action: {
+            type: 'Action',
+            timeStamp: moment.unix(action?.date / 1e9) || null,
+            done: true
+          },
+          out: outs
+        }
+      }
+    },
+    async getOtherActionHash (actions, thorStatus) {
+      let hash = thorStatus.tx?.id
+
+      hash = actions.actions?.reduce((r, a) => ([...a.in.map(i => i.txID), ...a.out.map(o => o.txID), ...r]), []).find(a => a !== hash)
+
+      const ts = (await this.$api.getTxStatus(hash).catch((e) => {
+        if (e?.response?.status / 200 !== 1) {
+          this.error.message = 'Can\'t find transaction status. Please make sure the correct transaction hash or account address is inserted.'
+        }
+      }))?.data
+
+      return ts
     },
     createNativeTx (nativeTx) {
       const inAsset = this.getNativeAsset(nativeTx.tx?.body?.messages[0].amount[0].denom)
@@ -476,11 +541,21 @@ export default {
 
       this.$set(this, 'cards', [this.createCard(cards, accordions)])
     },
-    createAddLiquidityState (thorStatus, actions, thorTx) {
+    createAddLiquidityState (thorStatus, actions, thorTx, memo) {
+      const isSaver = this.parseMemoAsset(memo.asset).synth
+
       const inAsset = this.parseMemoAsset(thorStatus.tx.coins[0].asset, this.pools)
       const inAmount = parseInt(thorStatus.tx.coins[0].amount)
       const addAction = actions?.actions?.find(a => a.type === 'add_liquidity')
       const timeStamp = moment.unix(addAction?.date / 1e9)
+
+      const outboundDelayRemaining =
+        (thorStatus.stages.outbound_delay?.remaining_delay_seconds ?? 0) ||
+        (thorStatus.stages.outbound_delay?.remaining_delay_blocks ?? 0) * this.blockSeconds('THOR')
+
+      const pending = thorStatus.stages.swap_status?.pending || !thorStatus.stages.inbound_observed?.completed ||
+        !(thorStatus.stages.inbound_confirmation_counted?.completed ?? true) ||
+        !thorStatus.stages.inbound_finalised?.completed
 
       return {
         cards: {
@@ -489,21 +564,36 @@ export default {
             asset: inAsset,
             amount: inAmount
           }],
-          out: []
+          middle: {
+            pending
+          },
+          out: [{
+            text: isSaver ? 'THORChain Vault' : 'THORChain Pool',
+            icon: require('@/assets/images/vault.svg'),
+            borderColor: 'var(--border-color)'
+          }]
         },
         accordions: {
           in: [{
             txid: thorStatus.tx.id,
             from: thorStatus.tx.from_address,
             asset: inAsset,
-            amount: inAmount
+            amount: inAmount,
+            done: true
           }],
           action: {
             type: 'Add',
             timeStamp: timeStamp || null,
             liquidityUnits: parseInt(actions?.actions[0]?.metadata?.addLiquidity?.liquidityUnits) || null,
-            done: thorStatus.stages.swap_finalised?.completed &&
-              !thorStatus.stages.swap_status?.pending
+            affiliateName: memo.affiliate,
+            affiliateFee: parseInt(memo.fee),
+            outboundDelayRemaining:
+              outboundDelayRemaining || 0,
+            outboundETA:
+              thorStatus.stages.outbound_signed?.blocks_since_scheduled ||
+              Math.abs(thorStatus.stages.outbound_signed?.scheduled_outbound_height - this.thorHeight),
+            outboundSigned: thorStatus.stages.outbound_signed?.completed ?? false,
+            done: !thorStatus.stages.swap_status?.pending
           },
           out: []
         }
@@ -562,7 +652,7 @@ export default {
 
       return ret
     },
-    createRemoveLiquidityState (thorStatus, actions, thorTx) {
+    createRemoveLiquidityState (thorStatus, actions, thorTx, memo) {
       const inAsset = this.parseMemoAsset(thorStatus.tx.coins[0].asset, this.pools)
       const inAmount = parseInt(thorStatus.tx.coins[0].amount)
       const withdrawAction = actions?.actions?.find(a => a.type === 'withdraw')
@@ -601,6 +691,10 @@ export default {
           ? parseInt(outTxs[0].coins[0].amount)
           : 0
 
+      const outboundDelayRemaining =
+        (thorStatus.stages.outbound_delay?.remaining_delay_seconds ?? 0) ||
+        (thorStatus.stages.outbound_delay?.remaining_delay_blocks ?? 0) * this.blockSeconds('THOR')
+
       return {
         cards: {
           title: 'Withdraw Liquidity',
@@ -608,6 +702,9 @@ export default {
             asset: inAsset,
             amount: inAmount
           }],
+          middle: {
+            pending: this.isTxInPending(thorStatus)
+          },
           out: [{
             asset: outAsset,
             amount: outAmount
@@ -631,6 +728,12 @@ export default {
           out: [{
             fees: outboundFees,
             feeAssets: outboundFeeAssets,
+            outboundDelayRemaining:
+              outboundDelayRemaining || 0,
+            outboundETA:
+              thorStatus.stages.outbound_signed?.blocks_since_scheduled ||
+              Math.abs(thorStatus.stages.outbound_signed?.scheduled_outbound_height - this.thorHeight),
+            outboundSigned: thorStatus.stages.outbound_signed?.completed ?? false,
             done: thorStatus.stages.outbound_signed?.completed ||
               outAsset.chain === 'THOR' ||
               outAsset.synth
@@ -712,9 +815,12 @@ export default {
         timeStamp = refundAction?.date
       }
 
-      // TODO: add nice check with animation
+      // TODO: add nice check with animation (transition from pending to complete)
       // TODO: add failed swaps from midgard
       // TODO: Add refunded swap info
+      // TODO: fix the loading check/spinner on complete
+      // TODO: fix streaming card when finished
+      // TODO: sometimes the pools price is fetched after the status
 
       const outboundDelayRemaining =
         (thorStatus.stages.outbound_delay?.remaining_delay_seconds ?? 0) ||
@@ -732,13 +838,7 @@ export default {
             amount: inAmount
           }],
           middle: {
-            pending: !thorStatus.stages?.inbound_finalised?.completed ||
-              (!thorStatus.stages.swap_finalised?.completed &&
-                thorStatus.stages.swap_status?.pending) ||
-              !(thorStatus.stages.outbound_signed?.completed ||
-                outAsset.chain === 'THOR' ||
-                outAsset.synth) ||
-              !(thorStatus.stages.outbound_delay?.completed ?? true)
+            pending: this.isTxInPending(thorStatus)
           },
           out: [{
             asset: outAsset,

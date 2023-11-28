@@ -36,8 +36,11 @@
         <div class="tx-wrapper">
           <div v-for="(o, i) in overall.out" :key="i + '-o-out'" class="tx-outbound">
             <div v-if="i < 1" class="simple-bar" />
-            <div class="tx-asset">
+            <div v-if="o.asset" class="tx-asset">
               <AssetIcon :classes="['no-margin']" :asset="o.asset" :height="'2rem'" />
+            </div>
+            <div v-else class="tx-asset">
+              <img class="asset-icon custom-icon" :src="o.icon" :alt="o.text">
             </div>
           </div>
         </div>
@@ -54,9 +57,14 @@
 
         <div class="tx-wrapper">
           <div v-for="(o, i) in overall.out" :key="i + '-out'" class="asset-outbound">
-            <span class="mono sec-color">{{ o.amount ? baseAmountFormatOrZero(o.amount) : '...' }}</span>
-            <small class="mono sec-color">{{ showAsset(o.asset) }}</small>
-            <br><small>{{ o.amountUSD ? formatBnCurrency(o.amountUSD) : '...' }}</small>
+            <template v-if="o.text">
+              <span class="mono sec-color">{{ o.text }}</span>
+            </template>
+            <template v-else>
+              <span class="mono sec-color">{{ o.amount ? baseAmountFormatOrZero(o.amount) : '...' }}</span>
+              <small class="mono sec-color">{{ showAsset(o.asset) }}</small>
+              <br><small>{{ o.amountUSD ? formatBnCurrency(o.amountUSD) : '...' }}</small>
+            </template>
           </div>
         </div>
       </div>
@@ -95,17 +103,6 @@ export default {
           pending: false
         },
         out: this.txData?.overall?.out ?? []
-      },
-      accordion: {
-        in: {
-          stacks: this.txData?.accordion?.in?.stacks ?? []
-        },
-        action: {
-          stacks: this.txData?.accordion?.action?.stacks ?? []
-        },
-        out: {
-          stacks: this.txData?.accordion?.out?.stacks ?? []
-        }
       }
     }
   },
@@ -113,7 +110,7 @@ export default {
     vars () {
       return {
         '--left-border': this.assetColorPalette(this.overall.in[0]?.asset) ?? '#5CDFBD',
-        '--right-border': this.assetColorPalette(this.overall.out[0]?.asset) ?? '#3761F9'
+        '--right-border': this.overall.out[0]?.borderColor ? this.overall.out[0]?.borderColor : this.assetColorPalette(this.overall.out[0]?.asset) ?? '#3761F9'
       }
     }
   }
@@ -151,8 +148,15 @@ $border-size: 2px;
       display: flex;
 
       .tx-asset {
+        display: flex;
         border: 2px solid var(--left-border);
         border-radius: 100%;
+
+        .custom-icon {
+          margin: 0;
+          width: 2rem;
+          height: 2rem;
+        }
       }
 
       .tx-state-wrapper {
