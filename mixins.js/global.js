@@ -174,6 +174,9 @@ export default {
       return number ? this.$options.filters.number(+number, '0,0.0000') : '-'
     },
     showAsset (assetStr) {
+      if (!assetStr) {
+        return ''
+      }
       try {
         if (typeof assetStr !== 'string') {
           assetStr = assetToString(assetStr)
@@ -185,6 +188,7 @@ export default {
         }
         return asset.chain + del + asset.ticker
       } catch (error) {
+        console.error(error)
         console.error("Can't get the asset:", assetStr)
       }
     },
@@ -321,20 +325,49 @@ export default {
       // Driven from track repo
       if (!memo) { return {} }
 
-      // SWAP:ASSET:DESTADDR:LIM/INTERVAL/QUANTITY:AFFILIATE:FEE
+      // TXTYPE:STATE1:STATE2:STATE3:FINALMEMO
       const type = parseMemoToTxType(memo)
+
       const parts = memo.split(':')
-      const [limit, interval, quantity] = parts[3] ? parts[3].split('/') : []
+      if (type === 'swap') {
+        // SWAP:ASSET:DESTADDR:LIM/INTERVAL/QUANTITY:AFFILIATE:FEE
+        const [limit, interval, quantity] = parts[3] ? parts[3].split('/') : []
+        return {
+          type: type || null,
+          asset: parts[1] || null,
+          destAddr: parts[2] || null,
+          limit: limit || null,
+          interval: parseInt(interval) || null,
+          quantity: parseInt(quantity) || null,
+          affiliate: parts[4] || null,
+          fee: parts[5] || null
+        }
+      }
+
+      if (type === 'add') {
+        // ADD:ASSET:ASYM:AFFILIATE:FEE
+        return {
+          type: type || null,
+          asset: parts[1] || null,
+          asymmetry: parts[2] || false,
+          affiliate: parts[3] || null,
+          fee: parts[4] || null
+        }
+      }
+
+      if (type === 'withdraw') {
+        // WITHDRAW:ASSET:BPS:ASSET
+        return {
+          type: type || null,
+          asset: parts[1] || null,
+          bps: parts[2] || null,
+          withdrawAsset: parts[3] || null
+        }
+      }
 
       return {
         type: type || null,
-        asset: parts[1] || null,
-        destAddr: parts[2] || null,
-        limit: limit || null, // null if not present
-        interval: parseInt(interval) || null, // null if not present
-        quantity: parseInt(quantity) || null, // null if not present
-        affiliate: parts[4] || null, // null if not present
-        fee: parts[5] || null // null if not present
+        asset: parts[1] || null
       }
     },
     findAssetInPool (asset, pools) {
