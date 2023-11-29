@@ -1,6 +1,6 @@
 <template>
   <Page>
-    <template v-if="!isError && !isLoading">
+    <template v-if="!isError && !isLoading && pools">
       <div class="tx-header">
         <h3>
           Transaction
@@ -28,7 +28,7 @@
       <span>{{ error.message }}</span>
       <DisconnectIcon class="disconnect-icon" />
     </div>
-    <div v-else-if="isLoading && !isError">
+    <div v-else-if="isLoading && !isError & !pools">
       <div class="notify-card" style="width: 18.75rem">
         <h3>Searching transaction</h3>
         <BounceLoader color="var(--font-color)" size="3rem" />
