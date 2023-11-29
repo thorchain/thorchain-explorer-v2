@@ -176,7 +176,7 @@ export default {
         return false
       } else {
         if (tdh) {
-          this.thorHeight = parseInt(tdh['X-Thorchain-Height'] ?? 0)
+          this.thorHeight = parseInt(tdh['x-thorchain-height'] ?? 0)
         }
         this.createTxState(md, td, ts, tdh, this.pools)
         return this.isTxInPending(ts)
@@ -409,12 +409,12 @@ export default {
                 {
                   key: 'Outbound Est.',
                   value: moment.duration(this.blockSeconds('THOR') * a.outboundETA, 'seconds').humanize(),
-                  is: a.outboundETA
+                  is: !a.outboundDelayRemaining && a.outboundETA
                 },
                 {
                   key: 'Outbound Delay Est.',
                   value: moment.duration(a.outboundDelayRemaining, 'seconds').humanize(),
-                  is: !a.outboundETA && a.outboundDelayRemaining
+                  is: a.outboundDelayRemaining
                 },
                 {
                   key: 'Outbound Stage',
