@@ -39,7 +39,8 @@
 
 <script>
 import moment from 'moment'
-import { orderBy, flatten } from 'lodash'
+import { assetToString } from '@xchainjs/xchain-util'
+import { orderBy } from 'lodash'
 import { mapGetters } from 'vuex'
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
 import streamingSwap from './components/streamingSwap.vue'
@@ -755,11 +756,15 @@ export default {
       // swap user addresses
       const userAddresses = new Set([
         thorStatus.tx.from_address.toLowerCase(),
-        memo.destAddr?.toLowerCase()
+        memo.destAddr?.toLowerCase() // TODO: sometimes the memo destAddr will be THORName
       ])
       // Non affiliate outs
       let outTxs = thorStatus.out_txs?.filter(tx =>
-        userAddresses.has(tx.to_address.toLowerCase())
+        userAddresses.has(tx.to_address.toLowerCase()) ||
+        (
+          tx.coins[0].asset === assetToString(this.parseMemoAsset(memo.asset)) &&
+          tx.id !== '0000000000000000000000000000000000000000000000000000000000000000'
+        )
       )
       // TODO: fix this in track code
       if (!outTxs || outTxs?.length === 0) {
