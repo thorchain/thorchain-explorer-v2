@@ -93,20 +93,22 @@ export default {
     CheckIcon
   },
   props: ['txData'],
-  data () {
-    return {
-      title: this.txData?.title ?? '',
-      labels: this.txData?.labels ?? [],
-      overall: {
+  computed: {
+    title () {
+      return this.txData?.title ?? ''
+    },
+    labels () {
+      return this.txData?.labels ?? []
+    },
+    overall () {
+      return {
         in: this.txData?.overall?.in ?? [],
         middle: this.txData?.overall?.middle ?? {
           pending: false
         },
         out: this.txData?.overall?.out ?? []
       }
-    }
-  },
-  computed: {
+    },
     vars () {
       return {
         '--left-border': this.assetColorPalette(this.overall.in[0]?.asset) ?? '#5CDFBD',
