@@ -113,7 +113,7 @@ export default {
   methods: {
     async updateStreamingDetail (txid) {
       const thorStatus = (await this.$api.getTxStatus(this.inboundHash))?.data
-      const isSwap = thorStatus.stages.swap_status?.streaming
+      const isSwap = thorStatus.stages.swap_status?.streaming && thorStatus.stages.swap_status?.pending
 
       if (isSwap) {
         const { count, interval, quantity } = thorStatus.stages.swap_status?.streaming
@@ -192,7 +192,7 @@ export default {
           this.streamingDetail.swappedOut = 0
         }
 
-        this.streamingDetail.is = true
+        this.streamingDetail.is = thorStatus.stages.swap_status?.pending
       }
     }
   }

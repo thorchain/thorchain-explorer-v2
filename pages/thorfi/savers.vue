@@ -80,12 +80,11 @@
 <script>
 import { mapGetters } from 'vuex'
 import { forEach as eachLod } from 'lodash'
-import PieChart from '~/components/PieChart.vue'
 import ProgressIcon from '~/components/ProgressIcon.vue'
 import { formatAsset } from '~/utils'
 
 export default {
-  components: { PieChart, ProgressIcon },
+  components: { ProgressIcon },
   data () {
     return {
       error: false,
@@ -107,6 +106,12 @@ export default {
           field: 'saversDepth',
           type: 'number',
           formatFn: this.baseAmountFormat,
+          tdClass: 'mono'
+        },
+        {
+          label: 'Savers / Depth',
+          field: 'saversDepthRatio',
+          type: 'percentage',
           tdClass: 'mono'
         },
         {
@@ -181,6 +186,7 @@ export default {
         ret.push({
           ...s.savers,
           saversDepthUSD: (+s.savers.assetPriceUSD * +s.savers.saversDepth),
+          saversDepthRatio: (+s.savers.saversDepth) / (+s.savers.assetDepth),
           delta: {
             ...delta,
             saversDepthUSD: (+s.savers.saversDepth - +s.oldSavers.saversDepth) * +s.savers.assetPriceUSD
