@@ -25,7 +25,7 @@
             <span v-if="props.row[props.column.field][0]">
               <small>Deposited: </small>
               {{ props.row[props.column.field][0] | number('0,0.0000') }} <small>{{ showAsset(props.row.collateral_asset) }}</small></span>
-            <hr class="table-hr">
+            <hr v-if="props.row[props.column.field][1]" class="table-hr">
             <span v-if="props.row[props.column.field][1]" class="ellipsis">
               <small>Withdrawn: </small> {{ props.row[props.column.field][1] || props.row[props.column.field][1] === 0 ? ($options.filters.number(props.row[props.column.field][1], '0,0.0000')) : '-' }}
               <small class="ellipsis">{{ showAsset(props.row.collateral_asset) }}</small>
@@ -36,7 +36,7 @@
             <span v-if="props.row[props.column.field][0]">
               <small>Issued: </small>
               {{ props.row[props.column.field][0] | currency }}</span>
-            <hr class="table-hr">
+            <hr v-if="props.row[props.column.field][1]" class="table-hr">
             <span v-if="props.row[props.column.field][1]" class="ellipsis">
               <small>Repaid: </small>
               {{ props.row[props.column.field][1] || props.row[props.column.field][1] === 0 ? ($options.filters.currency(props.row[props.column.field][1])) : '-' }}
@@ -111,8 +111,8 @@ export default {
         ...p,
         collateral: [p.collateral_deposited / 1e8, p.collateral_withdrawn / 1e8],
         debt: [p.debt_issued_tor / 1e8, p.debt_repaid_tor / 1e8],
-        lastOpenLoan: moment.unix(p.last_open_loan_timestamp).fromNow(),
-        lastRepayLoan: moment.unix(p.last_repay_loan_timestamp).fromNow()
+        lastOpenLoan: p.last_open_loan_timestamp !== '0' ? moment.unix(p.last_open_loan_timestamp).fromNow() : '-',
+        lastRepayLoan: p.last_repay_loan_timestamp !== '0' ? moment.unix(p.last_repay_loan_timestamp).fromNow() : '-'
       }))
     }
   }
