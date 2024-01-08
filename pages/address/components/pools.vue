@@ -25,8 +25,15 @@
             </div>
           </div>
           <span v-else-if="props.column.field.startsWith('pool')" class="pool-cell ellipsis">
-            <span v-if="props.row[props.column.field][0]">{{ props.row[props.column.field][0] | number('0,0.00') }} <small>RUNE</small></span>
-            <span v-if="props.row[props.column.field][1]" class="ellipsis">
+            <span
+              v-if="props.row[props.column.field][0]"
+              v-tooltip="showPrice({poolPrice: runePrice}, props.row[props.column.field][0])"
+            >{{ props.row[props.column.field][0] | number('0,0.00') }} <small>RUNE</small></span>
+            <span
+              v-if="props.row[props.column.field][1]"
+              v-tooltip="showPrice(props.row, props.row[props.column.field][1])"
+              class="ellipsis"
+            >
               {{ props.row[props.column.field][1] || props.row[props.column.field][1] === 0 ? ($options.filters.number(props.row[props.column.field][1], '0,0.000000')) : '-' }}
               <small class="ellipsis">{{ showAsset(props.row.pool) }}</small>
             </span>
@@ -44,6 +51,7 @@
 
 <script>
 import moment from 'moment'
+import { mapGetters } from 'vuex'
 export default {
   props: ['address'],
   data () {
@@ -92,6 +100,11 @@ export default {
       ]
     }
   },
+  computed: {
+    ...mapGetters({
+      runePrice: 'getRunePrice'
+    })
+  },
   async mounted () {
     if (!this.address) {
       return
@@ -120,24 +133,19 @@ export default {
         poolWithdrawn: [p.runeWithdrawn / 100000000, p.assetWithdrawn / 100000000],
         dateFirstAdded: moment.unix(p.dateFirstAdded).fromNow(),
         share: 0,
-        poolShare: []
+        poolShare: [],
+        poolPrice: this.getPoolPrice(p)
       }))
     },
     parseSaverDetails (saverPools) {
-      const getSaverShare = (saverPool) => {
-        const poolDetail = this.pools.find(p => p.asset === saverPool.pool)
-        if (!poolDetail) {
-          return 0
-        }
-        return (+saverPool.saverUnits) / (+poolDetail.saversUnits)
-      }
       this.lps.push(...saverPools.map(p => ({
         ...p,
         poolAdded: [undefined, p.assetDeposit / 1e8],
         poolWithdrawn: [undefined, p.assetWithdrawn / 1e8],
         dateFirstAdded: moment.unix(p.dateFirstAdded).fromNow(),
-        share: getSaverShare(p),
+        share: this.getSaverShare(p),
         poolShare: [undefined, p.assetRedeem / 1e8],
+        poolPrice: this.getPoolPrice(p),
         label: 'saver'
       })))
     },
@@ -150,6 +158,26 @@ export default {
         this.lps[i].share = share
         this.lps[i].poolShare.push(+runeAmount / 10e7, +assetAmount / 10e7)
       })
+    },
+    getPoolPrice (saverPool) {
+      const poolDetail = this.pools.find(p => p.asset === saverPool.pool)
+      if (!poolDetail) {
+        return 0
+      }
+      return +poolDetail.assetPriceUSD
+    },
+    getSaverShare (saverPool) {
+      const poolDetail = this.pools.find(p => p.asset === saverPool.pool)
+      if (!poolDetail) {
+        return 0
+      }
+      return (+saverPool.saverUnits) / (+poolDetail.saversUnits)
+    },
+    showPrice (row, amount) {
+      if (!amount) {
+        return ''
+      }
+      return this.$options.filters.currency(amount * row.poolPrice)
     }
   }
 }
@@ -174,6 +202,8 @@ export default {
 }
 
 .pool-cell {
+  cursor: pointer;
+
   span {
     display: block;
     max-width: 200px;
