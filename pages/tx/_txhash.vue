@@ -96,6 +96,7 @@ export default {
     try {
       isPending = await this.fetchTx(txHash)
     } catch (error) {
+      this.gotoAddr(this.$route.params.txhash)
       console.error(error)
       this.isLoading = false
       this.isError = true
