@@ -48,6 +48,7 @@ export default {
   props: ['address'],
   data () {
     return {
+      type: 'saver',
       pools: [],
       lps: [],
       cols: [
@@ -63,7 +64,7 @@ export default {
           tdClass: 'mono'
         },
         {
-          label: 'Rune/Asset Share',
+          label: 'Rune/Asset Redeem',
           field: 'poolShare',
           type: 'number',
           formatFn: this.numberFormat,
@@ -128,15 +129,15 @@ export default {
         if (!poolDetail) {
           return 0
         }
-        return saverPool.saverUnits / poolDetail.saversUnits
+        return (+saverPool.saverUnits) / (+poolDetail.saversUnits)
       }
       this.lps.push(...saverPools.map(p => ({
         ...p,
-        poolAdded: [undefined, p.saverUnits / 1e8],
+        poolAdded: [undefined, p.assetDeposit / 1e8],
         poolWithdrawn: [undefined, p.assetWithdrawn / 1e8],
         dateFirstAdded: moment.unix(p.dateFirstAdded).fromNow(),
         share: getSaverShare(p),
-        poolShare: [undefined, p.assetBalance / 1e8],
+        poolShare: [undefined, p.assetRedeem / 1e8],
         label: 'saver'
       })))
     },
