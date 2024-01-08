@@ -26,7 +26,7 @@
         <span>
           {{ streamingDetail.remIntervalSec }}
           <span>
-            ( {{ streamingDetail.remInterval }} blocks)
+            ({{ streamingDetail.remInterval }} blocks)
           </span>
         </span>
       </div>
@@ -192,7 +192,10 @@ export default {
           this.streamingDetail.swappedOut = 0
         }
 
-        this.streamingDetail.is = thorStatus.stages.swap_status?.pending
+        this.streamingDetail.is = !thorStatus.stages.swap_finalised?.completed ||
+        thorStatus.stages.swap_status?.pending
+      } else {
+        this.streamingDetail.is = false
       }
     }
   }
