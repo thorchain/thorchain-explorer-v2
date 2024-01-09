@@ -411,12 +411,23 @@ export default {
                 {
                   key: 'Outbound Est.',
                   value: moment.duration(this.blockSeconds('THOR') * a.outboundETA, 'seconds').humanize(),
-                  is: !a.outboundDelayRemaining && a.outboundETA
+                  is: !a.outboundDelayRemaining && a.outboundETA > 0
                 },
                 {
                   key: 'Outbound Delay Est.',
                   value: moment.duration(a.outboundDelayRemaining, 'seconds').humanize(),
                   is: a.outboundDelayRemaining
+                },
+                {
+                  key: 'Outbound Delay Est.',
+                  value: [
+                    {
+                      text: 'Scheduled Passed',
+                      class: 'danger'
+                    }
+                  ],
+                  type: 'bubble',
+                  is: a.outboundETA < 0
                 },
                 {
                   key: 'Outbound Stage',
@@ -602,8 +613,7 @@ export default {
             outboundDelayRemaining:
               outboundDelayRemaining || 0,
             outboundETA:
-              thorStatus.stages.outbound_signed?.blocks_since_scheduled ||
-              Math.abs(thorStatus.stages.outbound_signed?.scheduled_outbound_height - this.thorHeight),
+              (thorStatus.stages.outbound_signed?.scheduled_outbound_height - this.thorHeight),
             outboundSigned: thorStatus.stages.outbound_signed?.completed ?? false,
             done: !thorStatus.stages.swap_status?.pending
           },
@@ -658,6 +668,13 @@ export default {
         ret.push(
           {
             text: 'signed'
+          }
+        )
+      } else {
+        ret.push(
+          {
+            text: 'not signed',
+            class: 'yellow'
           }
         )
       }
@@ -743,8 +760,7 @@ export default {
             outboundDelayRemaining:
               outboundDelayRemaining || 0,
             outboundETA:
-              thorStatus.stages.outbound_signed?.blocks_since_scheduled ||
-              Math.abs(thorStatus.stages.outbound_signed?.scheduled_outbound_height - this.thorHeight),
+              (thorStatus.stages.outbound_signed?.scheduled_outbound_height - this.thorHeight),
             outboundSigned: thorStatus.stages.outbound_signed?.completed ?? false,
             done: thorStatus.stages.outbound_signed?.completed ||
               outAsset.chain === 'THOR' ||
@@ -921,8 +937,7 @@ export default {
             outboundDelayRemaining:
               outboundDelayRemaining || 0,
             outboundETA:
-              thorStatus.stages.outbound_signed?.blocks_since_scheduled ||
-              Math.abs(thorStatus.stages.outbound_signed?.scheduled_outbound_height - this.thorHeight),
+              (thorStatus.stages.outbound_signed?.scheduled_outbound_height - this.thorHeight),
             outboundSigned: thorStatus.stages.outbound_signed?.completed ?? false,
             done: thorStatus.stages.swap_finalised?.completed &&
               !thorStatus.stages.swap_status?.pending &&

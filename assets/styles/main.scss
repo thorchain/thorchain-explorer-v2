@@ -526,6 +526,12 @@ input {
     border: 1px solid rgba(255, 156, 8, .25);
   }
 
+  &.danger {
+    color: #f04832;
+    background-color: transparent;
+    border: 1px solid rgba(255, 33, 8, 0.25);
+  }
+
   &.info {
     color: rgb(47, 138, 245);
     background-color: transparent;
