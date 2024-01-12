@@ -829,7 +829,25 @@ export default {
             smooth: true
           }
         ],
-        xAxis
+        xAxis,
+        {
+          legend: {
+            x: 'center',
+            y: 'bottom',
+            icon: 'rect',
+            textStyle: {
+              color: 'var(--font-color)'
+            },
+            data: ['Total Volume', 'to Asset Volume', 'to Rune Volume', 'Synth mint Volume', 'Synth redeem Volume'],
+            selected: {
+              'Total Volume': true,
+              'to Asset Volume': false,
+              'to Rune Volume': false,
+              'Synth mint Volume': false,
+              'Synth redeem Volume': false
+            }
+          },
+        }
       )
 
       const resCount = this.basicChartFormat(
