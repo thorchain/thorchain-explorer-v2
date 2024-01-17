@@ -147,7 +147,7 @@ export default {
       return [
         [
           {
-            name: 'Add/Remove liquidity is pasued',
+            name: 'Add/Remove liquidity is paused',
             value: this.mimir?.PAUSELP ? 'Yes' : 'No',
             filter: true
           }
