@@ -11,6 +11,16 @@
           </div>
         </div>
       </template>
+      <template #address>
+        <div v-if="owner">
+          <span class="s-header">
+            Owner
+          </span>
+          <NuxtLink class="clickable s-value" :to="{ path: `/address/${owner}` }">
+            {{ formatAddress(owner) }}
+          </NuxtLink>
+        </div>
+      </template>
     </stat-table>
     <div v-if="thornameAddresses.length > 0" class="simple-card">
       <div class="card-header">
@@ -33,6 +43,7 @@ export default {
   props: ['address'],
   data () {
     return {
+      owner: undefined,
       preferredAsset: undefined,
       thornames: [],
       thornameAddresses: []
@@ -53,8 +64,9 @@ export default {
             this.thornameAddresses = res.data?.aliases
 
             this.thornames.push([{
-              name: 'Affiliate Collector (RUNE)',
+              name: 'Affiliate Collector',
               value: (+res.data?.affiliate_collector_rune / 1e8) ?? 0,
+              filter: true,
               runeValue: true,
               usdValue: true
             }, {
@@ -62,9 +74,14 @@ export default {
               value: res.data?.expire_block_height
             }, {
               slotName: 'asset'
-            }])
+            }], [
+              {
+                slotName: 'address'
+              }
+            ])
 
             this.preferredAsset = res.data?.preferred_asset ?? 'N/A'
+            this.owner = res.data?.owner ?? 'N?A'
           }
         })
       })
