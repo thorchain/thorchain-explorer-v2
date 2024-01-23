@@ -112,10 +112,6 @@ export function getRevThorname (address) {
   return $axiosInstace.get(`thorname/rlookup/${address}`)
 }
 
-export function getThorname (name) {
-  return $axiosInstace.get(`thorname/lookup/${name}`)
-}
-
 export function getMemberDetails (address) {
   return $axiosInstace.get(`member/${address}`)
 }

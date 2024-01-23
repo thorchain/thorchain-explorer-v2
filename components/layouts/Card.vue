@@ -62,7 +62,6 @@ export default {
   word-wrap: break-word;
   border: 1px solid var(--border-color);
   background-color: var(--card-bg-color);
-  min-height: 330px;
 
   border-left: 0;
   border-right: 0;

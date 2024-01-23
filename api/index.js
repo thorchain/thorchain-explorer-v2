@@ -17,7 +17,6 @@ import {
   getPools,
   getNetwork,
   getPoolDepth,
-  getThorname,
   getMemberDetails,
   getSaverDetails,
   earningLastDay,
@@ -55,7 +54,8 @@ import {
   getTxStages,
   getTxStatus,
   getStreamingSwaps,
-  getScheduled
+  getScheduled,
+  getThorname
 } from './thornode.api'
 import {
   getTendermintLatestBlocks

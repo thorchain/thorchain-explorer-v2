@@ -25,22 +25,9 @@
         <div class="stat-wrapper mb-1">
           <Nav :active-mode.sync="activeMode" :nav-items="[{text: 'Balances', mode: 'balance'},{text: 'THORName', mode: 'thorname'}, {text: 'LPs/Savers', mode: 'pools'}, {text: 'Loans', mode: 'loans'}]" />
           <balance v-if="activeMode == 'balance'" :state="addressStat" :balance="balance" />
-          <template v-else-if="activeMode == 'thorname'">
-            <stat-table :table-settings="thornames" />
-            <div v-if="thornameAddresses.length > 0" class="simple-card">
-              <div class="card-header">
-                Thorname Addresses
-              </div>
-              <div class="card-body">
-                <div class="addresses-container">
-                  <div v-for="address in thornameAddresses" :key="address.chain" class="addresses">
-                    <img class="asset-icon" :src="assetImage(baseChainAsset(address.chain))">
-                    <span class="clickable mono" @click="gotoAddr(address.address)">{{ address.address.slice(0,8) }}...{{ address.address.slice(-8) }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </template>
+          <keep-alive>
+            <thorname v-if="activeMode == 'thorname'" :address="address" />
+          </keep-alive>
           <keep-alive>
             <pools v-if="activeMode == 'pools'" :address="address" />
           </keep-alive>
@@ -115,6 +102,7 @@
 <script>
 import QrcodeVue from 'qrcode.vue'
 import { mapGetters } from 'vuex'
+import Thorname from './components/thorname.vue'
 import Balance from './components/balance.vue'
 import Pools from './components/pools.vue'
 import Loans from './components/loans.vue'
@@ -129,6 +117,7 @@ export default {
     CopyIcon,
     ExpandIcon,
     QrcodeVue,
+    Thorname,
     Balance,
     Pools,
     Loans
@@ -258,7 +247,6 @@ export default {
     }
   },
   mounted () {
-    this.rlookThorname(this.address)
     this.checkIsVault(this.address)
   },
   methods: {
@@ -275,44 +263,6 @@ export default {
         })
         .finally(() => {
           this.loading = false
-        })
-    },
-    checkThornameAddresses (names) {
-      if (!names) {
-        return
-      }
-
-      names.forEach((n) => {
-        this.$api.getThorname(n).then((res) => {
-          if (this.thornameAddresses.length < res.data?.entries.length) {
-            this.thornameAddresses = res.data?.entries
-          }
-        })
-      })
-    },
-    rlookThorname (address) {
-      this.$api.getRevThorname(address)
-        .then((res) => {
-          const names = res?.data
-          this.thornames = names.map((n) => {
-            return [{
-              name: 'Address Name',
-              value: n,
-              filter: true
-            }]
-          })
-          this.checkThornameAddresses(names)
-        })
-        .catch((e) => {
-          if (e.response.status === 404) {
-            this.thornames = [[
-              {
-                name: 'Address Name',
-                value: 'Not assigned',
-                filter: true
-              }
-            ]]
-          } else { console.error(e) }
         })
     },
     checkIsVault (address) {

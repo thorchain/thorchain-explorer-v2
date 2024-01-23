@@ -735,3 +735,7 @@ input {
 @-webkit-keyframes spin {
   to { -webkit-transform: rotate(360deg); }
 }
+
+.no-min {
+  min-height: auto !important;
+}

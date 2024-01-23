@@ -34,7 +34,7 @@
                   </template>
                 </template>
               </template>
-              <slot v-else :name="colItem.slotName" />
+              <slot v-else :name="colItem.slotName" :val="colItem.value" />
               <span v-if="colItem.value && colItem.usdValue" class="usd-value">({{ colItem.value * runePrice | currency }})</span>
               <span v-if="colItem.extraText" class="usd-value">({{ colItem.extraText }})</span>
             </div>

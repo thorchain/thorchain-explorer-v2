@@ -129,3 +129,7 @@ export function getTxStages (txid) {
 export function getTxStatus (txid) {
   return $axiosInstace.get(endpoints[process.env.NETWORK].THORNODE_URL + `thorchain/tx/status/${txid}`)
 }
+
+export function getThorname (name) {
+  return $axiosInstace.get(endpoints[process.env.NETWORK].THORNODE_URL + `thorchain/thorname/${name}`)
+}
