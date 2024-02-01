@@ -25,7 +25,7 @@
         <span class="mono value">{{ totalInfo.day.swapCount | number('0,0') }}</span>
       </skeleton-item>
       <skeleton-item class="stat-item" :loading="loading">
-        <span class="title">24hr Average Fee:
+        <span class="title">24hr Fee Ratio:
           <unknown-icon v-tooltip="'Average Fee in basis point (Earnings / Volume)'" class="header-icon" />
         </span>
         <span class="mono value">{{ totalInfo.day.avgFee | number('0.00') }} BP</span>
@@ -50,7 +50,7 @@
         <span class="mono value">{{ totalInfo.week.swapCount | number('0,0') }}</span>
       </skeleton-item>
       <skeleton-item class="stat-item" :loading="loading">
-        <span class="title">7D Average Fee:</span>
+        <span class="title">7D Fee Ratio:</span>
         <span class="mono value">{{ totalInfo.week.avgFee | number('0.00') }} BP</span>
       </skeleton-item>
     </div>
@@ -73,7 +73,7 @@
         <span class="mono value">{{ totalInfo.month.swapCount | number('0,0') }}</span>
       </skeleton-item>
       <skeleton-item class="stat-item" :loading="loading">
-        <span class="title">30D Average Fee:</span>
+        <span class="title">30D Fee Ratio:</span>
         <span class="mono value">{{ totalInfo.month.avgFee | number('0.00') }} BP</span>
       </skeleton-item>
     </div>
@@ -96,7 +96,7 @@
         <span class="mono value">{{ totalInfo.year.swapCount | number('0,0') }}</span>
       </skeleton-item>
       <skeleton-item class="stat-item" :loading="loading">
-        <span class="title">Year Average Fee:</span>
+        <span class="title">Year Fee Ratio:</span>
         <span class="mono value">{{ totalInfo.year.avgFee | number('0.00') }} BP</span>
       </skeleton-item>
     </div>
@@ -218,7 +218,7 @@ export default {
       align-items: center;
       color: var(--sec-font-color);
       margin-right: .5rem;
-      font-size: .9rem;
+      font-size: .85rem;
 
       .header-icon {
         display: inline-block;
