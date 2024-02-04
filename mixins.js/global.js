@@ -49,8 +49,10 @@ export default {
       switch (chain) {
         case 'THOR':
           return 'THOR.RUNE'
-        case 'TERRA':
-          return 'TERRA.LUNA'
+        case 'GAIA':
+          return 'GAIA.ATOM'
+        case 'BSC':
+          return 'BSC.BNB'
         default:
           return `${chain}.${chain}`
       }

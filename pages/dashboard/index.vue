@@ -148,8 +148,30 @@
       <Card title="Earnings Volume">
         <VChart :option="earningsHistory" :loading="!earningsHistory" :autoresize="true" :loading-options="showLoading" />
       </Card>
-      <Card title="Liquidity Volume Change">
-        <VChart :option="volumeHistory" :loading="!volumeHistory" :autoresize="true" :loading-options="showLoading" />
+      <Card title="Chains Status" :is-loading="!inboundInfo">
+        <vue-good-table
+          :columns="inboundCols"
+          :rows="inboundInfo"
+          style-class="vgt-table net-table"
+        >
+          <template slot="table-row" slot-scope="props">
+            <div v-if="props.column.field == 'chain'" class="chain-col">
+              <asset-icon :asset="baseChainAsset(props.row.chain)" />
+              <span>
+                {{ props.formattedRow[props.column.field] }}
+              </span>
+            </div>
+            <span v-else>
+              <template v-if="props.row[props.column.field] > 1">
+                <danger-icon class="table-icon" style="fill: #EF5350;" v-tooltip="`Scheduled halt: ${props.row[props.column.field]}`" />
+              </template>
+              <template v-if="props.row[props.column.field] == 1">
+                <danger-icon class="table-icon" style="fill: #EF5350;" v-tooltip="`Mimir halt`" />
+              </template>
+              <span v-else class="mono" style="color: #81C784;">OK</span>
+            </span>
+          </template>
+        </vue-good-table>
       </Card>
     </div>
     <div class="break" />
@@ -258,8 +280,10 @@ import {
 import VChart from 'vue-echarts'
 import Chart from '~/assets/images/chart.svg?inline'
 import Circulate from '~/assets/images/stats.svg?inline'
-import Globe from '~/assets/images/world.svg?inline'
 import { blockTime } from '~/utils'
+
+import Globe from '~/assets/images/world.svg?inline'
+import DangerIcon from '@/assets/images/danger.svg?inline'
 
 use([
   SVGRenderer,
@@ -279,7 +303,8 @@ export default {
     Chart,
     Globe,
     Circulate,
-    BounceLoader
+    BounceLoader,
+    DangerIcon
   },
   data () {
     return {
@@ -302,7 +327,47 @@ export default {
       poolsOption: undefined,
       poolsData: undefined,
       totalValuePooled: undefined,
-      swapMode: 'swap-vol'
+      swapMode: 'swap-vol',
+      inboundInfo: undefined,
+      inboundCols: [
+        {
+          label: 'Chain',
+          field: 'chain',
+          type: 'text'
+        },
+        {
+          label: 'Scanning',
+          field: 'haltHeight',
+          type: 'number',
+          formatFn: this.numberFormat,
+          tdClass: 'mono center',
+          thClass: 'th-center'
+        },
+        {
+          label: 'Trading',
+          field: 'haltTradingHeight',
+          type: 'number',
+          formatFn: this.numberFormat,
+          tdClass: 'mono center',
+          thClass: 'th-center'
+        },
+        {
+          label: 'LP',
+          field: 'haltLPHeight',
+          type: 'number',
+          formatFn: this.numberFormat,
+          tdClass: 'mono center',
+          thClass: 'th-center'
+        },
+        {
+          label: 'Signing',
+          field: 'haltSigningHeight',
+          type: 'number',
+          formatFn: this.numberFormat,
+          tdClass: 'mono center',
+          thClass: 'th-center'
+        }
+      ]
     }
   },
   async fetch () {
@@ -685,6 +750,9 @@ export default {
     this.$api.getNodes().then(({ data }) => {
       this.nodes = data
     })
+
+    // Get inbound info
+    this.getNetworkStatus()
   },
   methods: {
     stringToPercentage (val) {
@@ -696,6 +764,50 @@ export default {
           this.network.nextChurnHeight - this.lastblock[0].thorchain
         )
       }
+    },
+    async getNetworkStatus () {
+      this.inboundInfo = (await this.$api.getInboundAddresses()).data
+      const mimirInfo = (await this.$api.getMimir()).data
+
+      this.inboundInfo = this.inboundInfo.map(chain => ({
+        ...chain,
+        haltHeight: Math.max(
+          ...Object.keys(mimirInfo)
+            .filter(
+              key =>
+                new RegExp(`.*HALT.*${chain.chain}CHAIN`).test(key) &&
+                mimirInfo[key] !== 0
+            )
+            .map(key => mimirInfo[key])
+        ),
+        haltTradingHeight: Math.max(
+          ...Object.keys(mimirInfo)
+            .filter(
+              key =>
+                new RegExp(`HALT${chain.chain}TRADING`).test(key) &&
+                mimirInfo[key] !== 0
+            )
+            .map(key => mimirInfo[key])
+        ),
+        haltSigningHeight: Math.max(
+          ...Object.keys(mimirInfo)
+            .filter(
+              key =>
+                new RegExp(`HALTSIGNING${chain.chain}`).test(key) &&
+                mimirInfo[key] !== 0
+            )
+            .map(key => mimirInfo[key])
+        ),
+        haltLPHeight: Math.max(
+          ...Object.keys(mimirInfo)
+            .filter(
+              key =>
+                new RegExp(`PAUSELP${chain.chain}`).test(key) &&
+                mimirInfo[key] !== 0
+            )
+            .map(key => mimirInfo[key])
+        )
+      }))
     },
     formatLPChange (d) {
       const xAxis = []
@@ -846,7 +958,7 @@ export default {
               'Synth mint Volume': false,
               'Synth redeem Volume': false
             }
-          },
+          }
         }
       )
 
@@ -1261,4 +1373,9 @@ export default {
   }
 }
 
+.chain-col {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
 </style>
