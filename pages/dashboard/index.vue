@@ -149,6 +149,9 @@
         <VChart :option="earningsHistory" :loading="!earningsHistory" :autoresize="true" :loading-options="showLoading" />
       </Card>
       <Card title="Chains Status" :is-loading="!inboundInfo">
+        <template #header>
+          <dot-live />
+        </template>
         <vue-good-table
           :columns="inboundCols"
           :rows="inboundInfo"
@@ -163,10 +166,10 @@
             </div>
             <span v-else>
               <template v-if="props.row[props.column.field] > 1">
-                <danger-icon class="table-icon" style="fill: #EF5350;" v-tooltip="`Scheduled halt: ${props.row[props.column.field]}`" />
+                <danger-icon v-tooltip="`Scheduled halt: ${props.row[props.column.field]}`" class="table-icon" style="fill: #EF5350;" />
               </template>
               <template v-if="props.row[props.column.field] == 1">
-                <danger-icon class="table-icon" style="fill: #EF5350;" v-tooltip="`Mimir halt`" />
+                <danger-icon v-tooltip="`Mimir halt`" class="table-icon" style="fill: #EF5350;" />
               </template>
               <span v-else class="mono" style="color: #81C784;">OK</span>
             </span>
@@ -753,6 +756,10 @@ export default {
 
     // Get inbound info
     this.getNetworkStatus()
+
+    setInterval(() => {
+      this.getNetworkStatus()
+    }, 10000)
   },
   methods: {
     stringToPercentage (val) {
@@ -766,10 +773,10 @@ export default {
       }
     },
     async getNetworkStatus () {
-      this.inboundInfo = (await this.$api.getInboundAddresses()).data
+      const ret = (await this.$api.getInboundAddresses()).data
       const mimirInfo = (await this.$api.getMimir()).data
 
-      this.inboundInfo = this.inboundInfo.map(chain => ({
+      this.inboundInfo = ret.map(chain => ({
         ...chain,
         haltHeight: Math.max(
           ...Object.keys(mimirInfo)
