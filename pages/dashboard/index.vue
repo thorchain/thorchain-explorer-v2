@@ -157,6 +157,23 @@
           :rows="inboundInfo"
           style-class="vgt-table net-table"
         >
+          <template slot="table-column" slot-scope="props">
+            <div v-if="props.column.field == 'haltHeight'" v-tooltip="'Scanning'">
+              <ScanIcon class="table-icon" style="color: var(--sec-font-color)" />
+            </div>
+            <div v-else-if="props.column.field == 'haltTradingHeight'" v-tooltip="'Trading'">
+              <SwapIcon class="table-icon" style="color: var(--sec-font-color)" />
+            </div>
+            <div v-else-if="props.column.field == 'haltLPHeight'" v-tooltip="'LP'">
+              <FinanceIcon class="table-icon" style="color: var(--sec-font-color)" />
+            </div>
+            <div v-else-if="props.column.field == 'haltSigningHeight'" v-tooltip="'Signing'">
+              <SignIcon class="table-icon" style="color: var(--sec-font-color)" />
+            </div>
+            <span v-else>
+              {{ props.column.label }}
+            </span>
+          </template>
           <template slot="table-row" slot-scope="props">
             <div v-if="props.column.field == 'chain'" class="chain-col">
               <asset-icon :asset="baseChainAsset(props.row.chain)" />
@@ -287,6 +304,10 @@ import { blockTime } from '~/utils'
 
 import Globe from '~/assets/images/world.svg?inline'
 import DangerIcon from '@/assets/images/danger.svg?inline'
+import SwapIcon from '~/assets/images/exchange-selected.svg?inline'
+import FinanceIcon from '~/assets/images/finance.svg?inline'
+import ScanIcon from '~/assets/images/scan.svg?inline'
+import SignIcon from '~/assets/images/sign.svg?inline'
 
 use([
   SVGRenderer,
@@ -307,7 +328,11 @@ export default {
     Globe,
     Circulate,
     BounceLoader,
-    DangerIcon
+    DangerIcon,
+    SwapIcon,
+    FinanceIcon,
+    SignIcon,
+    ScanIcon
   },
   data () {
     return {
