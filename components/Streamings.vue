@@ -39,10 +39,10 @@
             {{ $options.filters.percent(o.count / o.quantity) }}
           </small>
         </div>
-        <small style="margin-top: 5px">{{ o.interval }} Blocks / Swap 
+        <small style="margin-top: 5px">{{ o.interval }} Blocks / Swap
           <span class="sec-color"><small style="color: var(--font-color);">(ETA </small> {{ o.remaningETA }}
-          <small style="color: var(--font-color);">, Remainng swaps: {{ o.quantity - o.count }}</small>
-          <small style="color: var(--font-color);">)</small>
+            <small style="color: var(--font-color);">, Remainng swaps: {{ o.quantity - o.count }}</small>
+            <small style="color: var(--font-color);">)</small>
           </span>
         </small>
       </div>
@@ -60,9 +60,11 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+import { assetFromString } from '@xchainjs/xchain-util'
 import moment from 'moment'
-import streamingIcon from '@/assets/images/streaming.svg?inline'
 import { shortAssetName } from '~/utils'
+import streamingIcon from '@/assets/images/streaming.svg?inline'
 
 export default {
   components: { streamingIcon },
@@ -82,7 +84,10 @@ export default {
         (this.currentPage - 1) * this.perPage,
         this.currentPage * this.perPage
       )
-    }
+    },
+    ...mapGetters({
+      pools: 'getPools'
+    })
   },
   async mounted () {
     await this.updateStreamingSwap()
@@ -173,6 +178,23 @@ export default {
 
           swap.remaingIntervals = resData[i].interval * (resData[i].quantity - resData[i].count)
           swap.remaningETA = moment.duration(swap.remaingIntervals * 6, 'seconds').humanize()
+
+          // Match assets from pool
+          if (swap.outputAsset?.asset && this.pools) {
+            const a = this.pools.find((p) => {
+              const { ticker: pt, chain: ct } = assetFromString(p.asset)
+              const { ticker: t, chain: c } = assetFromString(swap.outputAsset?.asset)
+
+              if (pt.toUpperCase() === t.toUpperCase() && ct.toUpperCase() === c.toUpperCase()) {
+                return true
+              }
+              return false
+            })
+
+            if (a?.asset) {
+              swap.outputAsset.asset = a.asset
+            }
+          }
 
           swaps.push(swap)
         }
