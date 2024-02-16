@@ -181,19 +181,7 @@ export default {
 
           // Match assets from pool
           if (swap.outputAsset?.asset && this.pools) {
-            const a = this.pools.find((p) => {
-              const { ticker: pt, chain: ct } = assetFromString(p.asset)
-              const { ticker: t, chain: c } = assetFromString(swap.outputAsset?.asset)
-
-              if (pt.toUpperCase() === t.toUpperCase() && ct.toUpperCase() === c.toUpperCase()) {
-                return true
-              }
-              return false
-            })
-
-            if (a?.asset) {
-              swap.outputAsset.asset = a.asset
-            }
+            swap.outputAsset.asset = this.findAssetInPool(swap.outputAsset?.asset, this.pools)
           }
 
           swaps.push(swap)
