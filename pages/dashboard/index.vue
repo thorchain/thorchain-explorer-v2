@@ -185,7 +185,7 @@
               <template v-if="props.row[props.column.field] > 1">
                 <danger-icon v-tooltip="`Scheduled halt: ${props.row[props.column.field]}`" class="table-icon" style="fill: #EF5350;" />
               </template>
-              <template v-if="props.row[props.column.field] == 1">
+              <template v-else-if="props.row[props.column.field] == 1">
                 <danger-icon v-tooltip="`Mimir halt`" class="table-icon" style="fill: #EF5350;" />
               </template>
               <span v-else class="mono" style="color: #81C784;">OK</span>
