@@ -373,13 +373,15 @@ export default {
       }
     },
     findAssetInPool (asset, pools) {
-      if (pools && !(assetToString(asset) in pools)) {
+      if (typeof asset !== 'object') {
+        asset = assetFromString(asset)
+      }
+      if (pools) {
         pools.forEach((p) => {
           const poolAsset = assetFromString(p.asset)
           if (
             poolAsset.chain === asset.chain &&
-            poolAsset.ticker === asset.ticker &&
-            poolAsset.address.endsWith(asset.address)
+            poolAsset.ticker === asset.ticker
           ) {
             if (isSynthAsset(asset)) {
               poolAsset.synth = true
@@ -388,7 +390,7 @@ export default {
           }
         })
       }
-      return asset
+      return assetToString(asset)
     },
     parseMemoAsset (assetInString, pools) {
       if (!assetInString) { return null }
