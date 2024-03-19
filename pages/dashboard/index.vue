@@ -912,20 +912,23 @@ export default {
         total: []
       }
 
-      d?.intervals.forEach((interval) => {
+      d?.intervals.forEach((interval, index) => {
+        if (d?.intervals.length === index + 1) {
+          return
+        }
+
         xAxis.push(
           moment(
             Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
           ).format('MM/DD')
         )
         swapVolume?.total.push(
-          (+interval.totalVolume / 10 ** 8) *
-          Number.parseFloat(interval.runePriceUSD)
+          (+interval.totalVolumeUSD / 10 ** 2)
         )
-        swapVolume?.toAsset.push((+interval.toAssetVolume * +interval.runePriceUSD) / 10 ** 8)
-        swapVolume?.toRune.push((+interval.toRuneVolume * +interval.runePriceUSD) / 10 ** 8)
-        swapVolume?.synthMint.push((+interval.synthMintVolume * +interval.runePriceUSD) / 10 ** 8)
-        swapVolume?.synthRedeem.push((+interval.synthRedeemVolume * +interval.runePriceUSD) / 10 ** 8)
+        swapVolume?.toAsset.push((+interval.toAssetVolumeUSD) / 10 ** 2)
+        swapVolume?.toRune.push((+interval.toRuneVolumeUSD) / 10 ** 2)
+        swapVolume?.synthMint.push((+interval.synthMintVolumeUSD) / 10 ** 2)
+        swapVolume?.synthRedeem.push((+interval.synthRedeemVolumeUSD) / 10 ** 2)
 
         swapCount.synthRedeem.push((+interval.synthRedeemCount))
         swapCount.toAsset.push((+interval.toAssetCount))
