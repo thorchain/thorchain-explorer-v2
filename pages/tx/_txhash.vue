@@ -670,7 +670,7 @@ export default {
             text: 'signed'
           }
         )
-      } else {
+      } else if (outbound?.outboundSigned !== undefined) {
         ret.push(
           {
             text: 'not signed',
@@ -938,7 +938,7 @@ export default {
               outboundDelayRemaining || 0,
             outboundETA:
               (thorStatus.stages.outbound_signed?.scheduled_outbound_height - this.thorHeight),
-            outboundSigned: thorStatus.stages.outbound_signed?.completed ?? false,
+            outboundSigned: thorStatus.stages.outbound_signed?.completed ?? undefined,
             done: thorStatus.stages.swap_finalised?.completed &&
               !thorStatus.stages.swap_status?.pending &&
               (thorStatus.stages.outbound_signed?.completed ||
