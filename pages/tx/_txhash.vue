@@ -96,10 +96,15 @@ export default {
     try {
       isPending = await this.fetchTx(txHash)
     } catch (error) {
-      this.gotoAddr(this.$route.params.txhash)
+      if (txHash.length <= 45) {
+        const addrTxs = await this.$api.getAddress(txHash, 0)
+        if (addrTxs?.data?.actions?.length > 0) {
+          this.gotoAddr(this.$route.params.txhash)
+        }
+      }
       console.error(error)
-      this.isLoading = false
       this.isError = true
+      this.isLoading = false
       return
     }
 

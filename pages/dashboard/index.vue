@@ -619,13 +619,6 @@ export default {
             name: 'Withdraw Count',
             value: this.stats.withdrawCount ?? 0
           }
-        ],
-        [
-          {
-            name: 'Impermanent Loss Protection Paid',
-            value: this.stats.impermanentLossProtectionPaid / 10 ** 8 ?? 0,
-            usdValue: true
-          }
         ]
       ]
     }

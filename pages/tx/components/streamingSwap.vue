@@ -33,8 +33,8 @@
       <div class="info-item">
         <span>Trade Target</span>
         <span>
-          {{ streamingDetail.tradeTarget }}
-          <span style="color: var(--font-color); font-size: .75rem;">
+          {{ streamingDetail.tradeTarget == 0 ? "No trade target" : streamingDetail.tradeTarget }}
+          <span v-if="streamingDetail.tradeTarget != 0" style="color: var(--font-color); font-size: .75rem;">
             {{ streamingDetail.targetAsset }}
           </span>
         </span>
@@ -77,6 +77,7 @@
 
 <script>
 import moment from 'moment'
+import { assetFromString } from '~/utils'
 
 export default {
   props: ['inboundHash'],
@@ -157,12 +158,20 @@ export default {
         }
 
         // Add native in/out search
-        const inAsset = this.parseMemoAsset(thorStatus.tx.coins[0].asset, this.pools)
+        let inAsset = this.parseMemoAsset(thorStatus.tx.coins[0].asset, this.pools)
 
-        const outAsset = this.parseMemoAsset(
+        let outAsset = this.parseMemoAsset(
           outTxs?.length > 0 ? outTxs[0].coins[0].asset : memo.asset,
           this.pools
         )
+
+        if (typeof inAsset === 'string') {
+          inAsset = assetFromString(inAsset)
+        }
+
+        if (typeof outAsset === 'string') {
+          outAsset = assetFromString(outAsset)
+        }
 
         const outMemoAsset = this.parseMemoAsset(memo.asset)
 
