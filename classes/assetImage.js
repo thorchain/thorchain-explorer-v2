@@ -61,6 +61,8 @@ export const AssetImage = (assetStr) => {
             iconPath = require('~/assets/images/assets/tgt.png')
           } else if (ticker === 'XRUNE') {
             iconPath = 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x69fa0feE221AD11012BAb0FdB45d444D3D2Ce71c/logo.png'
+          } else if (ticker === 'VTHOR') {
+            iconPath = 'https://meta.viewblock.io/ETH.VTHOR-0X815C23ECA83261B6EC689B60CC4A58B54BC24D8D/logo'
           }
         }
         break
