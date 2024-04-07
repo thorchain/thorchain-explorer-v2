@@ -442,8 +442,8 @@ export function fillNodeData (nodes, el, chains, nodesExtra, lastBlockHeight, ra
   }
   let apy
   if (ratioReward) {
-    const churnsInYear = 365 / ((6 * churnInterval) / 60 / 60 / 24)
-    apy = ((((el.current_award / ratioReward) / 10 ** 8) * churnsInYear) / (el.total_bond / 10 ** 8)) ?? undefined
+    const churnsInYear = 365 / ((6 * churnInterval) / (60 * 60 * 24))
+    apy = (((el.current_award / ratioReward) * churnsInYear) / el.total_bond) ?? undefined
   }
   nodes.push({
     address: el.node_address,
