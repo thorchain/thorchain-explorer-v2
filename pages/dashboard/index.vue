@@ -54,7 +54,7 @@
               </div>
               <skeleton-item :loading="!runeVolume" class="value">
                 {{ runeVolume | number("0,0") }}
-                <span style="font-size: 0.75rem">RUNE</span>
+                <span style="font-size: 0.75rem">{{ runeCur() }}</span>
                 <span v-if="stats" class="extra">(${{
                   (runeVolume * stats.runePriceUSD) | number("0.00 a")
                 }})</span>
@@ -85,10 +85,14 @@
             <Chart class="stat-image" />
             <div class="item-detail">
               <div class="header">
-                Total Swap Volume
+                Total Swap Volume (30 D)
               </div>
-              <skeleton-item :loading="!totalTxs" class="value">
-                {{ totalTxs | number("0,0") }}
+              <skeleton-item :loading="!totalSwapVolumeUSD" class="value">
+                {{ normalFormat(totalSwapVolume) }}
+                <span style="font-size: 0.75rem">{{ runeCur() }}</span>
+                <span v-if="stats" class="extra">(${{
+                  (totalSwapVolumeUSD / 1e2) | number("0.00 a")
+                }})</span>
               </skeleton-item>
             </div>
           </div>
@@ -349,7 +353,7 @@ export default {
       lastHeight: undefined,
       blocks: undefined,
       txs: undefined,
-      totalTxs: undefined,
+      totalSwapVolumeUSD: undefined,
       totalAddresses: undefined,
       thorHeight: undefined,
       poolsOption: undefined,
@@ -647,7 +651,6 @@ export default {
           e => e.chain === 'BTC'
         ).thorchain
         this.txs = data?.txs?.actions
-        this.totalTxs = +data?.txs?.count
         this.totalAddresses = +data?.addresses?.pagination?.total
 
         this.$api.getPools().then(({ data }) => {
@@ -689,7 +692,6 @@ export default {
           .getTxs()
           .then((res) => {
             this.txs = res?.data?.actions
-            this.totalTxs = +res?.data?.count
           })
           .catch((error) => {
             console.error(error)
@@ -713,6 +715,8 @@ export default {
         this.volumeHistory = this.formatLPChange(data?.LPChange);
         ({ resVolume: this.swapHistory, resCount: this.swapHistoryCount } = this.formatSwap(data?.swaps))
         this.earningsHistory = this.formatEarnings(data?.earning)
+        this.totalSwapVolumeUSD = data.swaps?.meta?.totalVolumeUSD
+        this.totalSwapVolume = data.swaps?.meta?.totalVolume
       })
       .catch((error) => {
         console.error(error)
@@ -726,7 +730,11 @@ export default {
 
         this.$api
           .swapHistory()
-          .then(res => ({ resVolume: this.swapHistory, resCount: this.swapHistoryCount } = this.formatSwap(res.data)))
+          .then((res) => {
+            ({ resVolume: this.swapHistory, resCount: this.swapHistoryCount } = this.formatSwap(res.data))
+            this.totalSwapVolumeUSD = res?.meta?.totalVolumeUSD
+            this.totalSwapVolume = res?.meta?.totalVolume
+          })
           .catch((error) => {
             console.error(error)
           })
