@@ -24,7 +24,7 @@
               </div>
               <skeleton-item :loading="!runeSupply" class="value">
                 {{ runeSupply | number("0,0") }}
-                <span style="font-size: 0.75rem">RUNE</span>
+                <span style="font-size: 0.75rem">{{ runeCur() }}</span>
                 <span v-if="stats" class="extra">(${{
                   (runeSupply * stats.runePriceUSD) | number("0.00 a")
                 }})</span>
