@@ -88,7 +88,7 @@
                 Total Swap Volume (30 D)
               </div>
               <skeleton-item :loading="!totalSwapVolumeUSD" class="value">
-                {{ normalFormat(totalSwapVolume) }}
+                {{ normalFormat(totalSwapVolume / 1e8) }}
                 <span style="font-size: 0.75rem">{{ runeCur() }}</span>
                 <span v-if="stats" class="extra">(${{
                   (totalSwapVolumeUSD / 1e2) | number("0.00 a")
