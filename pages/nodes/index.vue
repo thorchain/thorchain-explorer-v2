@@ -22,6 +22,11 @@
           :autoresize="true"
           :loading-options="showLoading"
         />
+        <template v-if="statusMode == 'prov-dist'" #footer>
+          <p style="margin-left: 1rem;">
+            * This provider distribution might not be all correct as many bare metal nodes use proxy.
+          </p>
+        </template>
       </Card>
       <Card title="Churn Info">
         <VChart
@@ -781,7 +786,11 @@ export default {
     },
     updateChurnTime () {
       let churnTimeRemaining = +this.bondMetrics?.nextChurnHeight - this.lastBlockHeight
-      const chartTime = (this.churnInterval - (churnTimeRemaining)) / this.churnInterval
+      const churnHalted = this.mimirs?.HALTCHURNING
+      let chartTime = (this.churnInterval - (churnTimeRemaining)) / this.churnInterval
+      if (churnHalted) {
+        chartTime = 'Churn is paused'
+      }
 
       this.churnOption = {
         series: [
@@ -938,7 +947,10 @@ export default {
         },
         legend: {
           formatter: '{name}',
-          icon: 'circle'
+          icon: 'circle',
+          textStyle: {
+            color: 'var(--font-color)'
+          }
         },
         series: [
           {
