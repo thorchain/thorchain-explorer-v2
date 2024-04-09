@@ -357,6 +357,7 @@ export default {
       totalValuePooled: undefined,
       swapMode: 'swap-vol',
       inboundInfo: undefined,
+      mimirInfo: undefined,
       inboundCols: [
         {
           label: 'Chain',
@@ -503,7 +504,8 @@ export default {
           {
             name: 'Next Churn Height',
             value: this.network.nextChurnHeight,
-            extraText: this.nextChurnTime()
+            extraText: `${this.isChurnHalted() ? 'Churn paused' : this.nextChurnTime()}`,
+            extraTextClass: { 'danger-text': true }
           }
         ],
         [
@@ -790,47 +792,55 @@ export default {
         )
       }
     },
+    isChurnHalted () {
+      if (this.mimirInfo && this.mimirInfo.HALTCHURNING) {
+        return true
+      }
+
+      return false
+    },
     async getNetworkStatus () {
       const ret = (await this.$api.getInboundAddresses()).data
-      const mimirInfo = (await this.$api.getMimir()).data
+      const mi = (await this.$api.getMimir()).data
+      this.mimirInfo = mi
 
       this.inboundInfo = ret.map(chain => ({
         ...chain,
         haltHeight: Math.max(
-          ...Object.keys(mimirInfo)
+          ...Object.keys(mi)
             .filter(
               key =>
                 new RegExp(`.*HALT.*${chain.chain}CHAIN`).test(key) &&
-                mimirInfo[key] !== 0
+                mi[key] !== 0
             )
-            .map(key => mimirInfo[key])
+            .map(key => mi[key])
         ),
         haltTradingHeight: Math.max(
-          ...Object.keys(mimirInfo)
+          ...Object.keys(mi)
             .filter(
               key =>
                 new RegExp(`HALT${chain.chain}TRADING`).test(key) &&
-                mimirInfo[key] !== 0
+                mi[key] !== 0
             )
-            .map(key => mimirInfo[key])
+            .map(key => mi[key])
         ),
         haltSigningHeight: Math.max(
-          ...Object.keys(mimirInfo)
+          ...Object.keys(mi)
             .filter(
               key =>
                 new RegExp(`HALTSIGNING${chain.chain}`).test(key) &&
-                mimirInfo[key] !== 0
+                mi[key] !== 0
             )
-            .map(key => mimirInfo[key])
+            .map(key => mi[key])
         ),
         haltLPHeight: Math.max(
-          ...Object.keys(mimirInfo)
+          ...Object.keys(mi)
             .filter(
               key =>
                 new RegExp(`PAUSELP${chain.chain}`).test(key) &&
-                mimirInfo[key] !== 0
+                mi[key] !== 0
             )
-            .map(key => mimirInfo[key])
+            .map(key => mi[key])
         )
       }))
     },

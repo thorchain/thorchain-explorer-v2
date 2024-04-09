@@ -36,7 +36,7 @@
               </template>
               <slot v-else :name="colItem.slotName" :val="colItem.value" />
               <span v-if="colItem.value && colItem.usdValue" class="usd-value">({{ colItem.value * runePrice | currency }})</span>
-              <span v-if="colItem.extraText" class="usd-value">({{ colItem.extraText }})</span>
+              <span v-if="colItem.extraText" :class="{'usd-value': true, ...colItem.extraTextClass}">({{ colItem.extraText }})</span>
             </div>
           </div>
         </div>
@@ -146,6 +146,10 @@ export default {
         .usd-value {
           color: var(--font-color);
           font-size: .8rem;
+        }
+
+        .danger-text {
+          color: #f04832 !important;
         }
       }
 
