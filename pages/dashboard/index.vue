@@ -85,7 +85,7 @@
             <Chart class="stat-image" />
             <div class="item-detail">
               <div class="header">
-                Total Swap, Add, and Withdraw txs
+                Total Swap Volume
               </div>
               <skeleton-item :loading="!totalTxs" class="value">
                 {{ totalTxs | number("0,0") }}
