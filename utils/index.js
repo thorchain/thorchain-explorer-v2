@@ -445,6 +445,7 @@ export function fillNodeData (nodes, el, chains, nodesExtra, lastBlockHeight, ra
     const churnsInYear = 365 / ((6 * churnInterval) / (60 * 60 * 24))
     apy = (((el.current_award / ratioReward) * churnsInYear) / el.total_bond) ?? undefined
   }
+  console.log((10 ** 4 / el.slash_points))
   nodes.push({
     address: el.node_address,
     ip: el.ip_address,
@@ -459,7 +460,7 @@ export function fillNodeData (nodes, el, chains, nodesExtra, lastBlockHeight, ra
     location,
     age,
     apy,
-    score: ((1 / el.slash_points) * 10 ** 4).toFixed(0),
+    score: (1e4 / el.slash_points).toFixed(4),
     leave: el.requested_to_leave
   })
 }

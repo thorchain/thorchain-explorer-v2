@@ -29,6 +29,9 @@
         </template>
       </Card>
       <Card title="Churn Info">
+        <template #header>
+          <DangerIcon v-tooltip="'Churn is paused'" class="table-icon" style="fill: #EF5350;" />
+        </template>
         <VChart
           style="height: 250px"
           :option="churnOption"
@@ -467,7 +470,8 @@ export default {
       bondMetrics: undefined,
       mimirs: undefined,
       provDist: undefined,
-      intervalId: undefined
+      intervalId: undefined,
+      churnHalted: undefined
     }
   },
   computed: {
@@ -696,6 +700,7 @@ export default {
           //   })
           // }
         })
+        console.log(filteredNodes)
         this.providerFill(filteredNodes)
         if (this.favNodes) {
           const favNodesFilter = filteredNodes.filter(n => this.favNodes.includes(n.address))
@@ -722,6 +727,7 @@ export default {
   },
   mounted () {
     const mimirProm = this.$api.getMimir().then((res) => {
+      this.churnHalted = res.data.HALTCHURNING
       this.minBond = +res.data.MINIMUMBONDINRUNE
       this.churnInterval = +res.data.CHURNINTERVAL
     }).catch((e) => {
@@ -786,11 +792,7 @@ export default {
     },
     updateChurnTime () {
       let churnTimeRemaining = +this.bondMetrics?.nextChurnHeight - this.lastBlockHeight
-      const churnHalted = this.mimirs?.HALTCHURNING
-      let chartTime = (this.churnInterval - (churnTimeRemaining)) / this.churnInterval
-      if (churnHalted) {
-        chartTime = 'Churn is paused'
-      }
+      const chartTime = (this.churnInterval - (churnTimeRemaining)) / this.churnInterval
 
       this.churnOption = {
         series: [
@@ -825,9 +827,13 @@ export default {
             data: [
               {
                 value: chartTime,
-                name: '',
+                name: this.churnHalted ? 'Churn paused' : 'Next Churn',
+                itemStyle: {
+                  color: this.churnHalted ? '#f04832' : 'var(--font-color)'
+                },
                 title: {
-                  offsetCenter: ['0%', '0%']
+                  offsetCenter: ['0%', '0%'],
+                  color: this.churnHalted ? '#f04832' : 'var(--font-color)'
                 },
                 detail: {
                   offsetCenter: ['0%', '40%']
@@ -946,11 +952,7 @@ export default {
           show: false
         },
         legend: {
-          formatter: '{name}',
-          icon: 'circle',
-          textStyle: {
-            color: 'var(--font-color)'
-          }
+          show: false
         },
         series: [
           {
