@@ -85,7 +85,7 @@
             <Chart class="stat-image" />
             <div class="item-detail">
               <div class="header">
-                Total Swap Volume (30 D)
+                Total Swap Volume (30 Days)
               </div>
               <skeleton-item :loading="!totalSwapVolumeUSD" class="value">
                 {{ normalFormat(totalSwapVolume / 1e8) }}
