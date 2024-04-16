@@ -700,7 +700,6 @@ export default {
           //   })
           // }
         })
-        console.log(filteredNodes)
         this.providerFill(filteredNodes)
         if (this.favNodes) {
           const favNodesFilter = filteredNodes.filter(n => this.favNodes.includes(n.address))
