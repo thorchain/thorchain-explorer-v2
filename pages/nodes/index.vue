@@ -30,7 +30,7 @@
       </Card>
       <Card title="Churn Info">
         <template #header>
-          <DangerIcon v-tooltip="'Churn is paused'" class="table-icon" style="fill: #EF5350;" />
+          <DangerIcon v-if="churnHalted" v-tooltip="'Churn is paused'" class="table-icon" style="fill: #EF5350;" />
         </template>
         <VChart
           style="height: 250px"
@@ -829,11 +829,11 @@ export default {
                 value: chartTime,
                 name: this.churnHalted ? 'Churn paused' : 'Next Churn',
                 itemStyle: {
-                  color: this.churnHalted ? '#f04832' : 'var(--font-color)'
+                  color: this.churnHalted ? '#f04832' : 'var(--primary-color)'
                 },
                 title: {
                   offsetCenter: ['0%', '0%'],
-                  color: this.churnHalted ? '#f04832' : 'var(--font-color)'
+                  color: this.churnHalted ? '#f04832' : 'var(--primary-color)'
                 },
                 detail: {
                   offsetCenter: ['0%', '40%']
