@@ -509,7 +509,7 @@ export default {
             name: 'Next Churn Height',
             value: this.network.nextChurnHeight,
             extraText: `${this.isChurnHalted() ? 'Churn paused' : this.nextChurnTime()}`,
-            extraTextClass: { 'danger-text': true }
+            extraTextClass: { 'danger-text': this.isChurnHalted() }
           }
         ],
         [
