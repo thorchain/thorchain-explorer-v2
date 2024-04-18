@@ -83,7 +83,8 @@ export default {
   computed: {
     ...mapGetters({
       chainsHeight: 'getChainsHeight',
-      pools: 'getPools'
+      pools: 'getPools',
+      runePrice: 'getRunePrice'
     })
   },
   async mounted () {
@@ -111,11 +112,24 @@ export default {
     // if has no outbound
     if (isPending) {
       const uI = setInterval(async () => {
-        isPending = await this.fetchTx(txHash)
+        try {
+          isPending = await this.fetchTx(txHash)
+        } catch (error) {
+          if (txHash.length <= 45) {
+            const addrTxs = await this.$api.getAddress(txHash, 0)
+            if (addrTxs?.data?.actions?.length > 0) {
+              this.gotoAddr(this.$route.params.txhash)
+            }
+          }
+          console.error(error)
+          this.isError = true
+          this.isLoading = false
+          return
+        }
         if (!isPending) {
           clearInterval(uI)
         }
-      }, 10000)
+      }, 5000)
 
       this.updateInterval = uI
     }
@@ -126,6 +140,10 @@ export default {
   methods: {
     // TODO: check hash in saver with streaming
     async fetchTx (hash) {
+      if (!this.pools) {
+        return true
+      }
+
       // Here the hash can be outbound but the inbound should be caught if it's not
       // Get Midgard details
       const md = (await this.$api.getTx(hash).catch((e) => {
@@ -326,7 +344,7 @@ export default {
               },
               {
                 key: 'Liquidity Fee',
-                value: `${accordions.action.liquidityFee / 1e8} RUNE`,
+                value: `${accordions.action.liquidityFee / 1e8} RUNE (${this.formatSmallCurrency(accordions.action.liquidityFee * this.runePrice)})`,
                 is: accordions.action.liquidityFee
               },
               {
@@ -410,7 +428,7 @@ export default {
                 },
                 {
                   key: 'Gas',
-                  value: `${this.baseAmountFormatOrZero(a.gas)} ${this.showAsset(a.gasAsset)}`,
+                  value: `${this.baseAmountFormatOrZero(a.gas)} ${this.showAsset(a.gasAsset)} (${this.formatCurrency(this.amountToUSD(a?.gasAsset, a?.gas, this.pools))})`,
                   is: a?.gas && a?.gasAsset
                 },
                 {
