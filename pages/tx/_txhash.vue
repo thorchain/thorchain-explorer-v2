@@ -429,7 +429,7 @@ export default {
                 {
                   key: 'Gas',
                   value: `${this.baseAmountFormatOrZero(a.gas)} ${this.showAsset(a.gasAsset)} (${this.formatCurrency(this.amountToUSD(a?.gasAsset, a?.gas, this.pools))})`,
-                  is: a?.gas && a?.gasAsset
+                  is: a.fees?.length === 0 && a?.gas && a?.gasAsset
                 },
                 {
                   key: 'Outbound Est.',
@@ -464,7 +464,7 @@ export default {
           if (a.fees?.length > 0) {
             accordionOut.data?.stacks?.push(...a.fees.map((f, j) => ({
               key: 'Outbound Fee',
-              value: `${f / 1e8} ${this.showAsset(a.feeAssets[j])}`,
+              value: `${f / 1e8} ${this.showAsset(a.feeAssets[j])}` + (this.pools ? ` (${this.formatCurrency(this.amountToUSD(a.feeAssets[j], f, this.pools))})` : ''),
               is: f
             })))
           }
