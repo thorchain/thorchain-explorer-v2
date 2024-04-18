@@ -531,6 +531,12 @@ export default {
           return '#07AEFE'
         case 'RUNE':
           return '#1BE8C4'
+        case 'FLIP':
+          return '#FC92C5'
+        case 'VTHOR':
+          return '#65532F'
+        case 'USDP':
+          return '#88BA4F'
         default:
           return null
       }

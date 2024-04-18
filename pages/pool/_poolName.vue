@@ -4,7 +4,6 @@
       :is-link="true"
       :nav-items="[
         {link: `/pool/${poolName}`, text: 'Overview'},
-        {link: `/pool/${poolName}/tx`, text: 'Pool Txs'},
         {link: `/pool/${poolName}/lp`, text: 'LP Positions'},
       ]"
     />
