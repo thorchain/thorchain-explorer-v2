@@ -5,7 +5,6 @@
       :nav-items="[
         {link: `/insights`, text: 'Overview'},
         {link: `/insights/network`, text: 'Network'},
-        {link: `/insights/price`, text: 'Rune Price'},
         {link: `/insights/apr`, text: 'APR'},
       ]"
     />

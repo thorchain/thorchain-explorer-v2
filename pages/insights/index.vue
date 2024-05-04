@@ -95,9 +95,9 @@ export default {
       const tvb = []
       d.forEach((interval) => {
         xAxis.push(moment(interval.DAY).format('YY/MM/DD'))
-        tvp.push(interval.TOTAL_VALUE_POOLED)
-        tvl.push(interval.TOTAL_VALUE_LOCKED)
-        tvb.push(interval.TOTAL_VALUE_BONDED)
+        tvp.push(interval.total_value_pooled)
+        tvl.push(interval.total_value_locked)
+        tvb.push(interval.total_value_bonded)
       })
 
       const option = {
@@ -172,9 +172,9 @@ export default {
       const runePrice = []
       const determinPrice = []
       d.forEach((interval) => {
-        xAxis.push(moment(interval.DATE).format('YY/MM/DD HH:MM A'))
-        runePrice.push(interval.DAILY_RUNE_PRICE)
-        determinPrice.push(interval.DETERMINISTIC_RUNE_PRICE)
+        xAxis.push(moment(interval.date).format('YY/MM/DD HH:MM A'))
+        runePrice.push(interval.daily_rune_price)
+        determinPrice.push(interval.deterministic_rune_price)
       })
 
       const option = {
