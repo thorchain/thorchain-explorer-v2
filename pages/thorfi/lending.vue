@@ -32,7 +32,9 @@
               <span v-else-if="!props.row[props.column.field][0]">-</span>
             </span>
             <span v-else-if="props.column.field == 'collateral' || props.column.field == 'collateralAvailable'">
-              <span v-if="props.row.collateral">{{ props.formattedRow[props.column.field] }} <small>{{ props.row.pool }}</small></span>
+              <span v-if="props.row.collateral" :class="{'danger-text': props.row.fill >= 1 && props.column.field == 'collateralAvailable'}">
+                {{ props.formattedRow[props.column.field] }} <small>{{ props.row.pool }}</small>
+              </span>
               <span v-else>-</span>
             </span>
             <span v-else-if="props.column.field == 'debt'">
@@ -42,6 +44,9 @@
             <span v-else-if="props.column.field == 'availableRune'">
               <span v-if="props.row.debt">{{ props.formattedRow[props.column.field] }} <small>RUNE</small></span>
               <span v-else>-</span>
+            </span>
+            <span v-else-if="props.column.field == 'fill'">
+              <span :class="{'danger-text': props.row.fill >= 1}">{{ props.formattedRow[props.column.field] }}</span>
             </span>
           </template>
         </vue-good-table>
