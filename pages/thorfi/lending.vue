@@ -97,6 +97,12 @@ export default {
           type: 'number',
           formatFn: this.baseAmountFormat,
           tdClass: 'mono'
+        },
+        {
+          label: 'Fill',
+          field: 'fill',
+          type: 'percentage',
+          tdClass: 'mono'
         }
       ]
     }
@@ -213,6 +219,7 @@ export default {
       for (const p of lendingPools) {
         const { data: bs } = await this.$api.getBorrowers(p)
         const poolData = this.pools.find(e => e.asset === p)
+        const collateralPoolInRune = (poolData.loan_collateral * (+poolData.balance_rune / +poolData.balance_asset))
 
         if (!bs || poolData.loan_collateral === '0') {
           continue
@@ -242,7 +249,8 @@ export default {
           ...res,
           collateral: poolData.loan_collateral,
           pool: poolData.asset,
-          availableRune: (poolData.balance_rune / totalBalanceRune) * totalRuneForProtocol
+          availableRune: (poolData.balance_rune / totalBalanceRune) * totalRuneForProtocol,
+          fill: collateralPoolInRune / ((poolData.balance_rune / totalBalanceRune) * totalRuneForProtocol)
         })
       }
     } catch (error) {
