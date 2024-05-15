@@ -39,6 +39,10 @@
               <span v-if="props.row.debt">{{ formatSmallCurrency(props.row.debt) }} <small>TOR</small></span>
               <span v-else>-</span>
             </span>
+            <span v-else-if="props.column.field == 'availableRune'">
+              <span v-if="props.row.debt">{{ props.formattedRow[props.column.field] }} <small>RUNE</small></span>
+              <span v-else>-</span>
+            </span>
           </template>
         </vue-good-table>
       </div>
@@ -47,7 +51,6 @@
 </template>
 
 <script>
-import moment from 'moment'
 import endpoints from '~/api/endpoints'
 
 export default {
@@ -57,6 +60,8 @@ export default {
       polOverview: undefined,
       mimir: undefined,
       networkConst: undefined,
+      currentRuneSupply: undefined,
+      maxRuneSupply: 50000000000000000,
       pools: [],
       borrowers: [],
       cols: [
@@ -84,6 +89,13 @@ export default {
           field: 'borrowersCount',
           type: 'number',
           formatFn: this.normalFormat,
+          tdClass: 'mono'
+        },
+        {
+          label: 'Available Rune',
+          field: 'availableRune',
+          type: 'number',
+          formatFn: this.baseAmountFormat,
           tdClass: 'mono'
         }
       ]
@@ -167,15 +179,42 @@ export default {
     }
   },
   async mounted () {
-    const { data: pools } = await this.$api.getPools()
+    const { data: pools } = await this.$api.getThorPools()
     this.pools = pools
+
+    try {
+      const { data: mimirData } = await this.$api.getMimir()
+      this.mimir = mimirData
+
+      const { data: constantsData } = await this.$api.getConstants()
+      this.networkConst = constantsData
+    } catch (error) {
+      console.error(error)
+    }
+
+    // Get RUNE supply
+    const { data: supplies } = await this.$api.getSupplyRune()
+    for (const [, v] of Object.entries(supplies)) {
+      if (v.denom === 'rune') {
+        this.currentRuneSupply = +v.amount
+      }
+    }
+    if (process.env.NETWORK === 'stagenet') {
+      this.maxRuneSupply = +(this.mimir.MAXRUNESUPPLY) ?? 100000000000000
+    }
+    const totalRuneForProtocol = ((this.mimir.LENDINGLEVER ?? 3333) / 10000) * (this.maxRuneSupply - this.currentRuneSupply)
+
+    const totalBalanceRune = this.pools.filter(e => e.asset === 'BTC.BTC' || e.asset === 'ETH.ETH')
+      .map(e => e.balance_rune).reduce((a, c) => a + (+c), 0)
+
     const lendingPools = ['BTC.BTC', 'ETH.ETH', 'AVAX.AVAX', 'GAIA.ATOM', 'BNB.BNB', 'BCH.BCH', 'DOGE.DOGE']
 
     try {
       for (const p of lendingPools) {
         const { data: bs } = await this.$api.getBorrowers(p)
+        const poolData = this.pools.find(e => e.asset === p)
 
-        if (!bs) {
+        if (!bs && poolData.loan_collateral === 0) {
           continue
         }
 
@@ -186,11 +225,9 @@ export default {
         }))
 
         const res = bs.reduce((ac, cv, i, brs) => {
-          const collateral = +cv.collateral_current
           const debt = +cv.debt_current
 
           return {
-            collateral: ac.collateral + collateral,
             debt: ac.debt + debt,
             borrowersCount: ac.borrowersCount + 1
           }
@@ -203,44 +240,13 @@ export default {
 
         this.borrowers.push({
           ...res,
-          pool: bs[0].asset
+          collateral: poolData.loan_collateral,
+          pool: poolData.asset,
+          availableRune: (poolData.balance_rune / totalBalanceRune) * totalRuneForProtocol
         })
       }
     } catch (error) {
       console.error('borrower not found', error)
-    }
-
-    try {
-      const { data: mimirData } = await this.$api.getMimir()
-      this.mimir = mimirData
-
-      const { data: constantsData } = await this.$api.getConstants()
-      this.networkConst = constantsData
-    } catch (error) {
-      console.error(error)
-    }
-  },
-  methods: {
-    parseMemberDetails (pools) {
-      this.lps = pools.map(p => ({
-        ...p,
-        poolAdded: [p.runeAdded / 100000000, p.assetAdded / 100000000],
-        poolWithdrawn: [p.runeWithdrawn / 100000000, p.assetWithdrawn / 100000000],
-        dateFirstAdded: moment.unix(p.dateFirstAdded).fromNow(),
-        share: 0,
-        luvi: 0,
-        poolShare: []
-      }))
-    },
-    findShare (pools, memberDetails) {
-      memberDetails.forEach((m, i) => {
-        const poolDetail = pools.find(p => p.asset === m.pool)
-        const share = m.liquidityUnits / poolDetail.units
-        const runeAmount = share * poolDetail.runeDepth
-        const assetAmount = share * poolDetail.assetDepth
-        this.lps[i].share = share
-        this.lps[i].poolShare.push(+runeAmount / 10e7, +assetAmount / 10e7)
-      })
     }
   }
 }
