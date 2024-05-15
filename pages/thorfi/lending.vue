@@ -31,8 +31,8 @@
               <span v-if="props.row[props.column.field][1]" class="ellipsis">{{ props.row[props.column.field][1] || props.row[props.column.field][1] === 0 ? ($options.filters.number(props.row[props.column.field][1], '0,0.000000')) : '-' }} <small class="ellipsis">{{ props.row.pool }}</small></span>
               <span v-else-if="!props.row[props.column.field][0]">-</span>
             </span>
-            <span v-else-if="props.column.field == 'collateral'">
-              <span v-if="props.row.collateral">{{ props.row.collateral / 1e8 }} <small>{{ props.row.pool }}</small></span>
+            <span v-else-if="props.column.field == 'collateral' || props.column.field == 'collateralAvailable'">
+              <span v-if="props.row.collateral">{{ props.formattedRow[props.column.field] }} <small>{{ props.row.pool }}</small></span>
               <span v-else>-</span>
             </span>
             <span v-else-if="props.column.field == 'debt'">
@@ -92,16 +92,23 @@ export default {
           tdClass: 'mono'
         },
         {
-          label: 'Available Rune',
-          field: 'availableRune',
+          label: 'Collateral Available',
+          field: 'collateralAvailable',
           type: 'number',
           formatFn: this.baseAmountFormat,
           tdClass: 'mono'
         },
         {
-          label: 'Fill',
+          label: 'Lending Cap',
           field: 'fill',
           type: 'percentage',
+          tdClass: 'mono'
+        },
+        {
+          label: 'Available Rune',
+          field: 'availableRune',
+          type: 'number',
+          formatFn: this.baseAmountFormat,
           tdClass: 'mono'
         }
       ]
@@ -250,7 +257,8 @@ export default {
           collateral: poolData.loan_collateral,
           pool: poolData.asset,
           availableRune: (poolData.balance_rune / totalBalanceRune) * totalRuneForProtocol,
-          fill: collateralPoolInRune / ((poolData.balance_rune / totalBalanceRune) * totalRuneForProtocol)
+          fill: collateralPoolInRune / ((poolData.balance_rune / totalBalanceRune) * totalRuneForProtocol),
+          collateralAvailable: poolData.loan_collateral_remaining
         })
       }
     } catch (error) {
