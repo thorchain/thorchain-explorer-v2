@@ -214,7 +214,7 @@ export default {
         const { data: bs } = await this.$api.getBorrowers(p)
         const poolData = this.pools.find(e => e.asset === p)
 
-        if (!bs && poolData.loan_collateral === 0) {
+        if (!bs || poolData.loan_collateral === '0') {
           continue
         }
 
