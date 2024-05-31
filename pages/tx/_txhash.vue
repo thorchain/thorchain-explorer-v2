@@ -234,8 +234,11 @@ export default {
       )
 
       const inboundFinalised = thorStatus.stages?.inbound_finalised?.completed
-      const actionFinalised = thorStatus.stages.swap_finalised?.completed &&
-        !thorStatus.stages.swap_status?.pending
+      let actionFinalised = true
+      if (memo.type === 'swap') {
+        actionFinalised = thorStatus.stages.swap_finalised?.completed &&
+          !thorStatus.stages.swap_status?.pending
+      }
       const outboundFinalised = (thorStatus.stages.outbound_signed?.completed ||
         outAsset.chain === 'THOR' ||
         outAsset.synth) &&
@@ -719,19 +722,16 @@ export default {
         : []
       const timeStamp = moment.unix(withdrawAction?.date / 1e9)
 
-      const userAddresses = new Set([
-        thorStatus.tx.from_address.toLowerCase()
+      const outTxs = thorStatus.out_txs
+      const userTxs = new Set([
+        thorStatus.out_txs.map(t => t.id.toUpperCase())
       ])
-      let outTxs = thorStatus.out_txs?.filter(tx =>
-        userAddresses.has(tx.to_address.toLowerCase())
-      )
-      if (!outTxs) {
-        outTxs = thorStatus.planned_out_txs
-          ?.filter(tx => userAddresses.has(tx.to_address.toLowerCase()))
-          .map(tx => ({
-            ...tx,
-            coins: [{ amount: tx.coin.amount, asset: tx.coin.asset }]
-          }))
+
+      let hasOngoing = false
+      if (thorStatus.planned_out_txs > 0) {
+        hasOngoing = thorStatus.planned_out_txs?.some(tx => !userTxs.has(tx.to_address.toUpperCase()))
+        outTxs.push(
+          thorStatus.planned_out_txs?.filter(tx => !userTxs.has(tx.to_address.toUpperCase())))
       }
 
       const outAsset = this.parseMemoAsset(
@@ -760,7 +760,11 @@ export default {
           out: [{
             asset: outAsset,
             amount: outAmount
-          }]
+          },
+          ...(outTxs?.slice(1).map(o => ({
+            asset: this.parseMemoAsset(o.coins[0].asset, this.pools),
+            amount: parseInt(o.coins[0].amount)
+          })))]
         },
         accordions: {
           in: [{
@@ -774,8 +778,7 @@ export default {
             type: 'Withdraw',
             timeStamp: timeStamp || null,
             liquidityUnits: parseInt(withdrawAction?.metadata?.withdraw?.liquidityUnits) || null,
-            done: thorStatus.stages.swap_finalised?.completed &&
-              !thorStatus.stages.swap_status?.pending
+            done: !hasOngoing
           },
           out: [{
             fees: outboundFees,
@@ -786,9 +789,20 @@ export default {
               (thorStatus.stages.outbound_signed?.scheduled_outbound_height - this.thorHeight),
             outboundSigned: thorStatus.stages.outbound_signed?.completed ?? false,
             done: thorStatus.stages.outbound_signed?.completed ||
-              outAsset.chain === 'THOR' ||
-              outAsset.synth
-          }]
+              outAsset.chain === 'THOR'
+          },
+          ...(outTxs?.slice(1).map(o => ({
+            txid: o.id,
+            to: o.to_address,
+            asset: this.parseMemoAsset(o.coins[0].asset, this.pools),
+            amount: parseInt(o.coins[0].amount),
+            gas: o.gas ? o.gas[0].amount : null,
+            gasAsset: o.gas ? this.parseMemoAsset(o.gas[0].asset, this.pools) : null,
+            outboundSigned: thorStatus.stages.outbound_signed?.completed ?? false,
+            done: (thorStatus.stages.outbound_signed?.completed ||
+                outAsset.chain === 'THOR')
+          }))
+          )]
         }
       }
     },
