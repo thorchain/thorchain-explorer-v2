@@ -54,6 +54,10 @@ export function getPoolDetail (poolName) {
   return $axiosInstace.get(endpoints[process.env.NETWORK].THORNODE_URL + `thorchain/pool/${poolName}`)
 }
 
+export function getDerivedPoolDetail (poolName) {
+  return $axiosInstace.get(endpoints[process.env.NETWORK].THORNODE_URL + `thorchain/dpool/${poolName}`)
+}
+
 export function getAssets () {
   return $axiosInstace.get(endpoints[process.env.NETWORK].THORNODE_URL + 'cosmos/bank/v1beta1/supply')
 }

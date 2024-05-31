@@ -55,7 +55,8 @@ import {
   getTxStatus,
   getStreamingSwaps,
   getScheduled,
-  getThorname
+  getThorname,
+  getDerivedPoolDetail
 } from './thornode.api'
 import {
   getTendermintLatestBlocks
@@ -209,7 +210,8 @@ export default function ({ $axios }, inject) {
     getOldPoolsHistory,
     getScheduled,
     getSaversInfo,
-    getBorrowerDetails
+    getBorrowerDetails,
+    getDerivedPoolDetail
   }
 
   inject('api', api)
