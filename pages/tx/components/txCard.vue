@@ -28,6 +28,7 @@
           <div class="tx-state-wrapper">
             <div class="tx-state">
               <div v-if="overall.middle.pending" class="simple-spinner" />
+              <coin-icon v-else-if="overall.middle.send" class="icon tx-icon" />
               <check-icon v-else class="icon tx-icon" />
             </div>
           </div>
@@ -87,10 +88,12 @@
 
 <script>
 import CheckIcon from '~/assets/images/check.svg?inline'
+import CoinIcon from '~/assets/images/coins.svg?inline'
 
 export default {
   components: {
-    CheckIcon
+    CheckIcon,
+    CoinIcon
   },
   props: ['txData'],
   computed: {

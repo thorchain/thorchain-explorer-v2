@@ -41,7 +41,7 @@ export default {
     AngleIcon,
     ArrowIcon
   },
-  props: ['title', 'stacks', 'pending'],
+  props: ['title', 'stacks', 'pending', 'showAtFirst'],
   data () {
     return {
       labels: this.data?.labels ?? [],
@@ -57,7 +57,7 @@ export default {
     }
   },
   mounted () {
-    if (this.pending) {
+    if (this.pending || this.showAtFirst) {
       this.toggleAccordion()
     }
   },

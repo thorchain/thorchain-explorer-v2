@@ -18,7 +18,7 @@
 
       <tx-card v-for="(c, i) in cards" :key="i" :tx-data="c.details">
         <template v-for="(s, j) in c.accordions.filter(c => c.data.title)" #[s.name]>
-          <accordion :key="i + '.' + j" :title="s.data.title" :pending="s.data.pending" :stacks="s.data.stacks" />
+          <accordion :key="i + '.' + j" :title="s.data.title" :pending="s.data.pending" :stacks="s.data.stacks" :show-at-first="s.data.showAtFirst" />
         </template>
       </tx-card>
       <streaming-swap v-if="inboundHash" :inbound-hash="inboundHash" />
@@ -258,7 +258,8 @@ export default {
               amountUSD: this.amountToUSD(a?.asset, a?.amount, this.pools)
             })),
             middle: {
-              pending: cardBase.middle?.pending
+              pending: cardBase.middle?.pending,
+              send: cardBase.middle?.send ?? false
             },
             out: cardBase.out?.map(a => ({
               asset: a?.asset,
@@ -324,6 +325,7 @@ export default {
           data: {
             title: accordions.action?.type ?? undefined,
             pending: !(accordions.action?.done),
+            showAtFirst: accordions.action?.showAtFirst,
             stacks: [
               {
                 key: 'Timestamp',
@@ -571,6 +573,9 @@ export default {
           asset: inAsset,
           amount: inAmount
         }],
+        middle: {
+          send: true
+        },
         out: []
       }
 
@@ -583,7 +588,8 @@ export default {
           from: nativeTx.tx?.body?.messages[0].from_address,
           to: nativeTx.tx?.body?.messages[0].to_address,
           timeStamp,
-          done: true
+          done: true,
+          showAtFirst: true
         },
         out: []
       }
