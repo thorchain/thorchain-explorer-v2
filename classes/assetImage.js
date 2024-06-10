@@ -65,6 +65,10 @@ export const AssetImage = (assetStr) => {
             iconPath = 'https://meta.viewblock.io/ETH.VTHOR-0X815C23ECA83261B6EC689B60CC4A58B54BC24D8D/logo'
           } else if (ticker === 'FLIP') {
             iconPath = 'https://meta.viewblock.io/ETH.FLIP-0X826180541412D574CF1336D22C0C0A287822678A/logo'
+          } else if (ticker === 'LENDS') {
+            iconPath = 'https://etherscan.io/token/images/lends_32.png'
+          } else if (ticker === 'WSTETH') {
+            iconPath = 'https://etherscan.io/token/images/wsteth3_32.png'
           }
         }
         break
