@@ -82,6 +82,10 @@ export default {
     const synthCap = mimirData.MAXSYNTHPERPOOLDEPTH / 10000
     const synthUtils = []
     for (const asset of synthAssets.supply) {
+      // bnb chain is deprecated
+      if (asset.denom === 'bnb/bnb') {
+        continue
+      }
       const assetName = synthToAsset(asset.denom)
       const pool = pools.find(p => p.asset === assetName)
       synthUtils.push({
@@ -113,13 +117,15 @@ export default {
           label: 'Saver %',
           field: 'saverPercentage',
           type: 'percentage',
-          tdClass: 'mono'
+          tdClass: 'mono',
+          thClass: 'end'
         },
         {
           label: 'Utilisation',
           field: 'utilisation',
           type: 'percentage',
-          tdClass: 'mono'
+          tdClass: 'mono',
+          thClass: 'end'
         },
         {
           label: 'Supply',
@@ -159,5 +165,9 @@ export default {
   width: 1rem;
   fill: #606266;
   z-index: 2;
+}
+
+th.end .table-asset {
+  justify-content: flex-end;
 }
 </style>
