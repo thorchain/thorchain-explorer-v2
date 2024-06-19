@@ -1,7 +1,8 @@
-import { AssetCurrencySymbol, assetToString, isSynthAsset } from '@xchainjs/xchain-util'
+import { AssetCurrencySymbol, isSynthAsset } from '@xchainjs/xchain-util'
 import { compact, countBy } from 'lodash'
 import moment from 'moment'
 
+const TRADE_DELIMITER = '~'
 const SYNTH_DELIMITER = '/'
 const NON_SYNTH_DELIMITER = '.'
 
@@ -133,7 +134,7 @@ export function parseMidgardTx (tx) {
     height: firstTxAction.height,
     pools: firstTxAction.pools,
     status: status.includes('success') ? 'success' : status[0],
-    liqidityFee: firstTxAction.metadata,
+    liquidityFee: firstTxAction.metadata,
     synth: false,
     label: [],
     inAsset: '',
@@ -271,7 +272,9 @@ const memoToType = {
   '$+': 'loanOpen',
   'loan+': 'loanOpen',
   '$-': 'loanRepayment',
-  'loan-': 'loanRepayment'
+  'loan-': 'loanRepayment',
+  'trade+': 'tradeDeposit',
+  'trade-': 'tradeWithdraw'
 }
 
 export function parseMemoToTxType (memo) {
@@ -298,7 +301,7 @@ export function parseThornodeStatus (ttx) {
     height: inboundConf?.counting_start_height,
     pools: [ttx.tx.coins[0].asset],
     status: 'pending',
-    liqidityFee: undefined,
+    liquidityFee: undefined,
     synth: assetFromString(ttx.tx.coins[0].asset).synth,
     label: [],
     memo: txAction.memo,
@@ -387,6 +390,22 @@ export function synthToAsset (assetString) {
   return assetToString(asset)
 }
 
+export function assetToTrade (str) {
+  if (typeof str === 'object') {
+    str = assetToString(str)
+  }
+
+  return str.replace('.', '~')
+}
+
+export function tradeToAsset (str) {
+  if (typeof str === 'object') {
+    str = assetToString(str)
+  }
+
+  return str.replace('~', '.')
+}
+
 export function curFormat (number) {
   return this.$options.filters.currency(number)
 }
@@ -445,7 +464,6 @@ export function fillNodeData (nodes, el, chains, nodesExtra, lastBlockHeight, ra
     const churnsInYear = 365 / ((6 * churnInterval) / (60 * 60 * 24))
     apy = (((el.current_award / ratioReward) * churnsInYear) / el.total_bond) ?? undefined
   }
-  console.log((10 ** 4 / el.slash_points))
   nodes.push({
     address: el.node_address,
     ip: el.ip_address,
@@ -538,7 +556,9 @@ export function assetFromString (s) {
   }
 
   const isSynth = s.includes(SYNTH_DELIMITER)
-  const delimiter = isSynth ? SYNTH_DELIMITER : NON_SYNTH_DELIMITER
+  let delimiter = isSynth ? SYNTH_DELIMITER : NON_SYNTH_DELIMITER
+  const isTrade = s.includes(TRADE_DELIMITER)
+  delimiter = isTrade ? TRADE_DELIMITER : delimiter
   const data = s.split(delimiter)
   if (data.length <= 1 || data[1]?.length < 1) {
     return null
@@ -549,5 +569,11 @@ export function assetFromString (s) {
   const ticker = symbol.split('-')[0]
   const address = symbol.split('-')[1] ?? ''
 
-  return { chain, symbol, ticker, address, synth: isSynth }
+  return { chain, symbol, ticker, address, synth: isSynth, trade: isTrade }
+}
+
+export function assetToString ({chain, synth, trade, symbol}) {
+  let delimiter = synth ? SYNTH_DELIMITER : NON_SYNTH_DELIMITER
+  delimiter = trade ? TRADE_DELIMITER : delimiter
+  return `${chain}${delimiter}${symbol}`
 }

@@ -1,8 +1,8 @@
-import { bnOrZero, formatBN, AssetCurrencySymbol, isSynthAsset, assetToString, eqAsset } from '@xchainjs/xchain-util'
+import { bnOrZero, formatBN, AssetCurrencySymbol, isSynthAsset } from '@xchainjs/xchain-util'
 import compare from 'semver/functions/compare'
 import moment from 'moment'
 import { AssetImage } from '~/classes/assetImage'
-import { assetFromString, parseMemoToTxType, shortAssetName } from '~/utils'
+import { assetFromString, parseMemoToTxType, shortAssetName, assetToString } from '~/utils'
 import endpoints from '~/api/endpoints'
 
 export default {
@@ -187,6 +187,8 @@ export default {
         const asset = assetFromString(assetStr)
         if (isSynthAsset(asset)) {
           del = '/'
+        } else if (asset.trade) {
+          del = '~'
         }
         return asset.chain + del + asset.ticker
       } catch (error) {
@@ -367,6 +369,15 @@ export default {
         }
       }
 
+      if (type === 'tradeDeposit' || type === 'tradeWithdraw') {
+        // TRADE+:ADDRESS
+        return {
+          type,
+          asset: null,
+          address: parts[1]
+        }
+      }
+
       return {
         type: type || null,
         asset: parts[1] || null
@@ -385,6 +396,8 @@ export default {
           ) {
             if (isSynthAsset(asset)) {
               poolAsset.synth = true
+            } else if (asset.trade) {
+              poolAsset.trade = true
             }
             asset = poolAsset
           }

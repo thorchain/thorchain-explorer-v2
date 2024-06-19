@@ -47,7 +47,7 @@ import streamingSwap from './components/streamingSwap.vue'
 import txCard from './components/txCard.vue'
 import CopyIcon from '~/assets/images/copy.svg?inline'
 import DisconnectIcon from '~/assets/images/disconnect.svg?inline'
-import { isInternalTx } from '~/utils'
+import { assetToTrade, isInternalTx, tradeToAsset } from '~/utils'
 import Accordion from '~/components/Accordion.vue'
 
 export default {
@@ -240,8 +240,8 @@ export default {
           !thorStatus.stages.swap_status?.pending
       }
       const outboundFinalised = (thorStatus.stages.outbound_signed?.completed ||
-        outAsset.chain === 'THOR' ||
-        outAsset.synth) &&
+        outAsset?.chain === 'THOR' ||
+        outAsset?.synth) &&
         (thorStatus.stages.outbound_delay?.completed ?? true)
 
       return !inboundFinalised || !actionFinalised || !outboundFinalised
@@ -329,8 +329,8 @@ export default {
             stacks: [
               {
                 key: 'Timestamp',
-                value: `${accordions.action?.timeStamp.format('LLL')} (${accordions.action?.timeStamp.fromNow()})`,
-                is: accordions.action?.timeStamp.isValid()
+                value: `${accordions.action?.timeStamp?.format('LLL')} (${accordions.action?.timeStamp?.fromNow()})`,
+                is: accordions.action?.timeStamp?.isValid()
               },
               {
                 key: 'Quantity',
@@ -371,6 +371,16 @@ export default {
                 key: 'Affiliate Basis',
                 value: `${accordions.action.affiliateFee}`,
                 is: accordions.action.affiliateName
+              },
+              {
+                key: 'Block Height',
+                value: `${accordions.action?.height}`,
+                is: accordions.action?.height
+              },
+              {
+                key: 'Memo',
+                value: accordions.action?.memo,
+                is: accordions.action?.memo
               }
             ]
           }
@@ -383,11 +393,6 @@ export default {
               is: accordions.action?.txid,
               type: 'hash',
               formatter: this.formatAddress
-            },
-            {
-              key: 'Memo',
-              value: accordions.action?.memo,
-              is: accordions.action?.memo
             },
             {
               key: 'From',
@@ -503,6 +508,12 @@ export default {
       } else if (memo.type === 'withdraw') {
         const { cards, accordions } = this.createRemoveLiquidityState(thorStatus, midgardAction, thorTx, memo)
         this.$set(this, 'cards', [this.createCard(cards, accordions)])
+      } else if (memo.type === 'tradeWithdraw') {
+        const { cards, accordions } = this.createTradeWithdrawState(thorStatus, midgardAction, thorTx, memo)
+        this.$set(this, 'cards', [this.createCard(cards, accordions)])
+      } else if (memo.type === 'tradeDeposit') {
+        const { cards, accordions } = this.createTradeDepositState(thorStatus, midgardAction, thorTx, memo)
+        this.$set(this, 'cards', [this.createCard(cards, accordions)])
       } else {
         const finalCards = []
         for (let i = 0; i < midgardAction?.actions?.length; i++) {
@@ -510,6 +521,95 @@ export default {
           finalCards.push(this.createCard(cards, accordions))
         }
         this.$set(this, 'cards', finalCards)
+      }
+    },
+    createTradeDepositState (thorStatus, action, thorTx) {
+      const memo = this.parseMemo(thorStatus.tx?.memo)
+
+      const ast = this.parseMemoAsset(thorStatus.tx.coins[0].asset, this.pools)
+
+      const ins = [{
+        asset: ast,
+        amount: thorStatus.tx.coins[0].amount,
+        txid: thorStatus.tx?.id,
+        from: thorStatus.tx?.from_address,
+        gas: thorStatus.tx?.gas ? thorStatus.tx?.gas[0].amount : null,
+        gasAsset: thorStatus.tx?.gas ? this.parseMemoAsset(thorStatus.tx?.gas[0].asset, this.pools) : null,
+        done: true
+      }]
+
+      const outs = [{
+        asset: assetToTrade(ast),
+        amount: thorStatus.out_txs ? thorStatus.out_txs[0]?.coins[0].amount : thorStatus.tx.coins[0].amount,
+        txid: thorStatus.out_txs ? thorStatus.out_txs[0].id : null,
+        to: memo.address,
+        done: true
+      }]
+
+      return {
+        cards: {
+          title: 'Trade Account',
+          in: ins,
+          middle: {
+            pending: false
+          },
+          out: outs
+        },
+        accordions: {
+          in: ins,
+          action: {
+            type: 'Deposit',
+            memo: thorStatus.tx?.memo,
+            done: true
+          },
+          out: outs
+        }
+      }
+    },
+    createTradeWithdrawState (thorStatus, action, thorTx) {
+      const memo = this.parseMemo(thorStatus.tx?.memo)
+
+      const ast = this.parseMemoAsset(thorStatus.tx.coins[0].asset, this.pools)
+
+      const ins = [{
+        asset: assetToTrade(ast),
+        amount: thorStatus.tx.coins[0].amount,
+        txid: thorStatus.tx?.id,
+        from: thorStatus.tx?.from_address,
+        gas: thorStatus.tx?.gas ? thorStatus.tx?.gas[0].amount : null,
+        gasAsset: thorStatus.tx?.gas ? this.parseMemoAsset(thorStatus.tx?.gas[0].asset, this.pools) : null,
+        done: true
+      }]
+
+      const outs = [{
+        asset: tradeToAsset(ast),
+        amount: thorStatus.out_txs ? thorStatus.out_txs[0]?.coins[0].amount : thorStatus.tx.coins[0].amount,
+        txid: thorStatus.out_txs ? thorStatus.out_txs[0].id : null,
+        to: memo.address,
+        gas: thorStatus.out_txs ? thorStatus.out_txs[0].gas[0].amount : null,
+        gasAsset: thorStatus.out_txs ? this.parseMemoAsset(thorStatus.out_txs[0].gas[0].asset, this.pools) : null,
+        outboundSigned: thorStatus.stages.outbound_signed?.completed ?? false,
+        done: thorStatus.status === 'done'
+      }]
+
+      return {
+        cards: {
+          title: 'Trade Account',
+          in: ins,
+          middle: {
+            pending: false
+          },
+          out: outs
+        },
+        accordions: {
+          in: ins,
+          action: {
+            type: 'Withdraw',
+            memo: thorStatus.tx?.memo,
+            done: true
+          },
+          out: outs
+        }
       }
     },
     createAbstractState (thorStatus, action, thorTx) {
