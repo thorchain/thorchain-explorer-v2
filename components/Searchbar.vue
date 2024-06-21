@@ -149,7 +149,7 @@ export default {
         search.startsWith('COSMOS') ||
         (
           search.startsWith('0x') &&
-          search.length <= 40
+          search.length <= 43
         )
       ) {
         this.$router.push({ path: `/address/${this.searchQuery}` })
