@@ -24,7 +24,7 @@
       <template v-if="addrTxs">
         <div class="stat-wrapper mb-1">
           <Nav :active-mode.sync="activeMode" :nav-items="[{text: 'Balances', mode: 'balance'},{text: 'THORName', mode: 'thorname'}, {text: 'LPs/Savers', mode: 'pools'}, {text: 'Loans', mode: 'loans'}]" />
-          <balance v-if="activeMode == 'balance'" :state="addressStat" :balance="balance" />
+          <balance v-if="activeMode == 'balance' && !isVault" :state="addressStat" />
           <keep-alive>
             <thorname v-if="activeMode == 'thorname'" :address="address" />
           </keep-alive>
@@ -34,6 +34,7 @@
           <loans v-if="activeMode == 'loans'" :address="address" />
         </div>
         <template v-if="isVault">
+          <stat-table :table-settings="addressStat"></stat-table>
           <Card extra-class="mb-1" :navs="[{title: 'Chain Addresses', value: 'chain-addr'}, {title: 'Node Members', value: 'node-mmb'}]" :act-nav.sync="vaultMode">
             <div v-if="vaultMode == 'chain-addr'" key="chain-addr">
               <div class="addresses-container">
@@ -52,10 +53,7 @@
             </div>
           </Card>
           <div class="simple-card mb-1">
-            <div class="card-header">
-              Vault Balances
-            </div>
-            <div class="card-body">
+            <card title="Vault Balances">
               <vue-good-table
                 v-if="vaultInfo"
                 :columns="cols"
@@ -84,7 +82,7 @@
                   </span>
                 </template>
               </vue-good-table>
-            </div>
+            </card>
           </div>
         </template>
         <template>
@@ -102,6 +100,7 @@
 <script>
 import QrcodeVue from 'qrcode.vue'
 import { mapGetters } from 'vuex'
+import { compact } from 'lodash'
 import Thorname from './components/thorname.vue'
 import Balance from './components/balance.vue'
 import Pools from './components/pools.vue'
@@ -109,7 +108,7 @@ import Loans from './components/loans.vue'
 import WalletIcon from '~/assets/images/wallet.svg?inline'
 import CopyIcon from '~/assets/images/copy.svg?inline'
 import ExpandIcon from '~/assets/images/expand.svg?inline'
-import { formatAsset } from '~/utils'
+import { formatAsset, assetFromString } from '~/utils'
 
 export default {
   components: {
@@ -128,33 +127,42 @@ export default {
       console.error(e)
     })
     const count = addrTxs?.data?.count ?? 0
-    let balance = 0
     let otherBalances = []
+    let runeBalance
     if (address.match(/^[st]?thor.*/gmi)) {
       try {
         const balances = (await $api.getBalance(address)).data.result
-        const index = balances.findIndex((object) => {
-          return object.denom === 'rune'
+
+        const synthBalances = balances.map((item) => {
+          if (item.denom === 'rune') {
+            runeBalance = {
+              asset: assetFromString('THOR.RUNE'),
+              quantity: Number.parseFloat(item?.amount) / 10 ** 8 ?? 0
+            }
+            return false
+          }
+
+          return {
+            asset: assetFromString(item.denom.toUpperCase()),
+            quantity: (item?.amount / 10 ** 8).toFixed(8)
+          }
         })
 
-        if (index !== -1) {
-          balance = Number.parseFloat(balances[index]?.amount) / 10 ** 8 ?? 0
-          balances.splice(index, 1)
-        }
-
-        otherBalances = balances.map((item) => {
-          return [{
-            name: 'Synth ' + item.denom.toUpperCase(),
-            value: (item?.amount / 10 ** 8).toFixed(8),
-            filter: true
-          }]
+        let tradeBalances = (await $api.getTradeAssets(address)).data
+        tradeBalances = tradeBalances.map((item) => {
+          return {
+            asset: assetFromString(item.asset),
+            quantity: (item?.units / 10 ** 8).toFixed(8)
+          }
         })
+
+        otherBalances = compact([runeBalance, ...tradeBalances, ...synthBalances])
       } catch (e) {
         console.warn('can\'t get the balances')
       }
     }
 
-    return { address, addrTxs: addrTxs?.data, count, balance, otherBalances }
+    return { address, addrTxs: addrTxs?.data, count, otherBalances, runeBalance }
   },
   data () {
     return {
@@ -189,7 +197,7 @@ export default {
   },
   computed: {
     addressStat () {
-      const otherBalances = this.otherBalances ?? []
+      const balances = this.otherBalances ?? []
       let vaultInfo = []
       if (this.isVault) {
         vaultInfo = [
@@ -222,17 +230,7 @@ export default {
         ]
       }
       return [
-        [
-          {
-            slotName: 'Balance',
-            name: 'Balance'
-          },
-          {
-            name: 'Transactions',
-            value: this.count
-          }
-        ],
-        ...otherBalances,
+        ...balances,
         ...vaultInfo
       ]
     },

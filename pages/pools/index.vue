@@ -238,11 +238,6 @@ export default {
     curFormat (number) {
       return this.$options.filters.currency(number)
     },
-    formatAsset (asset) {
-      return asset.length > 10
-        ? asset.slice(0, 14) + '...'
-        : asset
-    },
     gotoPoolTable (params) {
       const ac = Array.from(document.querySelectorAll('.action-section'))
       const el = params.event.srcElement

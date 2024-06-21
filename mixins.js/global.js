@@ -25,9 +25,11 @@ export default {
     },
     assetToChain (assetStr) {
       if (!assetStr) { return }
-      const { chain, synth } = assetFromString(assetStr)
+      const { chain, synth, trade } = assetFromString(assetStr)
       let asset = `${chain}.${chain}`
       if (synth) {
+        return 'THOR.RUNE'
+      } else if (trade) {
         return 'THOR.RUNE'
       }
       switch (chain) {
@@ -36,6 +38,9 @@ export default {
           break
         case 'BSC':
           asset = 'BSC.BNB'
+          break
+        case 'THOR':
+          asset = 'THOR.RUNE'
           break
         default:
           break
@@ -436,6 +441,11 @@ export default {
       }
 
       return asset
+    },
+    formatAsset (asset) {
+      return asset.length > 10
+        ? asset.slice(0, 14) + '...'
+        : asset
     },
     amountToUSD (asset, amount, pools) {
       if (!asset || !amount || !pools) {

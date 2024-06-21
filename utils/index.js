@@ -572,7 +572,7 @@ export function assetFromString (s) {
   return { chain, symbol, ticker, address, synth: isSynth, trade: isTrade }
 }
 
-export function assetToString ({chain, synth, trade, symbol}) {
+export function assetToString ({ chain, synth, trade, symbol }) {
   let delimiter = synth ? SYNTH_DELIMITER : NON_SYNTH_DELIMITER
   delimiter = trade ? TRADE_DELIMITER : delimiter
   return `${chain}${delimiter}${symbol}`
