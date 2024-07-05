@@ -40,7 +40,7 @@
         </span>
       </div>
       <div class="info-item">
-        <span>Deposited / Swapped Input</span>
+        <span>Swapped / Deposited Input</span>
         <span>
           {{ streamingDetail.swappedIn }}
           <span style="color: var(--font-color); font-size: .75rem;">
@@ -56,7 +56,7 @@
         </span>
       </div>
       <div class="info-item">
-        <span>Swapped Output</span>
+        <span>Swapped Input / Output</span>
         <span>
           {{ streamingDetail.swappedIn }}
           <span style="color: var(--font-color); font-size: .75rem;">
