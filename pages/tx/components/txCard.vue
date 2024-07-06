@@ -10,6 +10,13 @@
         <div v-for="n in labels" :key="n" class="bubble-container">
           {{ n }}
         </div>
+        <div v-if="ifc" class="interface mono">
+          <span>
+            Executed by
+          </span>
+          <img v-if="ifc.icons && ifc.icons.url" :src="theme === 'dark' ? ifc.icons.urlDark : ifc.icons.url" class="interface-image" alt="interface image">
+          <span v-else>{{ ifc.name }}</span>
+        </div>
       </div>
     </div>
 
@@ -87,6 +94,7 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import CheckIcon from '~/assets/images/check.svg?inline'
 import CoinIcon from '~/assets/images/coins.svg?inline'
 
@@ -97,8 +105,14 @@ export default {
   },
   props: ['txData'],
   computed: {
+    ...mapGetters({
+      theme: 'getTheme'
+    }),
     title () {
       return this.txData?.title ?? ''
+    },
+    ifc () {
+      return this.txData?.interface ?? undefined
     },
     labels () {
       return this.txData?.labels ?? []
@@ -252,5 +266,17 @@ $border-size: 2px;
 .simple-spinner {
   border-color: var(--left-border);
   border-top-color: var(--card-bg-color);
+}
+
+.interface {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .interface-image {
+    display: inline-block;
+    max-width: 100px;
+    max-height: 25px;
+  }
 }
 </style>

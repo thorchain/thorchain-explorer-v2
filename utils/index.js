@@ -577,3 +577,58 @@ export function assetToString ({ chain, synth, trade, symbol }) {
   delimiter = trade ? TRADE_DELIMITER : delimiter
   return `${chain}${delimiter}${symbol}`
 }
+
+const interfaces = {
+  thorswap: {
+    name: 'THORSwap',
+    icon: 'thorswap'
+  },
+  shapeshift: {
+    name: 'Shapeshift',
+    icon: 'shapeshift'
+  },
+  trustwallet: {
+    name: 'Trust Wallet',
+    icon: 'trustwallet'
+  },
+  thorwallet: {
+    name: 'THORWallet',
+    icon: 'thorwallet'
+  },
+  xdefi: {
+    name: 'XDEFI',
+    icon: 'xdefi'
+  },
+  asgardex: {
+    name: 'ASGARDEX'
+  },
+  lifi: {
+    name: 'LIFI',
+    icon: 'lifi'
+  },
+  edge: {
+    name: 'Edge Wallet',
+    icon: 'edge'
+  }
+}
+
+export const affiliateMap = {
+  td: interfaces.trustwallet,
+  ti: interfaces.trustwallet,
+  tr: interfaces.trustwallet,
+  thor1a427q3v96psuj4fnughdw8glt5r7j38lj7rkp8: interfaces.thorwallet,
+  wr: interfaces.thorwallet,
+  tgt: interfaces.thorwallet,
+  thorwallet: interfaces.thorwallet,
+  thor160yye65pf9rzwrgqmtgav69n6zlsyfpgm9a7xk: interfaces.thorswap,
+  T: interfaces.thorswap,
+  t: interfaces.thorswap,
+  tl: interfaces.thorswap,
+  ts: interfaces.thorswap,
+  thor17suv0n437snv68axkx64whutkrvefv7pzq7xep: interfaces.thorswap,
+  ss: interfaces.shapeshift,
+  xdf: interfaces.xdefi,
+  dx: interfaces.asgardex,
+  lifi: interfaces.lifi,
+  ej: interfaces.edge
+}

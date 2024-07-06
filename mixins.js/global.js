@@ -2,7 +2,7 @@ import { bnOrZero, formatBN, AssetCurrencySymbol, isSynthAsset } from '@xchainjs
 import compare from 'semver/functions/compare'
 import moment from 'moment'
 import { AssetImage } from '~/classes/assetImage'
-import { assetFromString, parseMemoToTxType, shortAssetName, assetToString } from '~/utils'
+import { assetFromString, parseMemoToTxType, shortAssetName, assetToString, affiliateMap } from '~/utils'
 import endpoints from '~/api/endpoints'
 
 export default {
@@ -15,6 +15,7 @@ export default {
       }
     }
   },
+
   methods: {
     assetImage (assetStr) {
       try {
@@ -560,6 +561,8 @@ export default {
           return '#65532F'
         case 'USDP':
           return '#88BA4F'
+        case 'LINK':
+          return '#305DD4'
         default:
           return null
       }
@@ -612,6 +615,27 @@ export default {
           return poolAsset
         }
       })
+    },
+    mapAffiliateName (s) {
+      const ifc = affiliateMap[s]
+      if (!ifc) {
+        return undefined
+      }
+
+      const icons = {
+        url: undefined,
+        urlDark: undefined
+      }
+
+      if (ifc.icon) {
+        icons.url = require(`@/assets/images/${ifc.icon}.png`)
+        icons.urlDark = require(`@/assets/images/${ifc.icon}-dark.png`)
+      }
+
+      return {
+        name: ifc.name ?? ifc,
+        icons
+      }
     }
   }
 }

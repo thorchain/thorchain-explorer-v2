@@ -320,6 +320,10 @@ export default {
       }
 
       if (accordions.action) {
+        if (accordions.action.affiliateName) {
+          ret.details.interface = this.mapAffiliateName(accordions.action.affiliateName)
+        }
+
         const accordionAction = {
           name: 'accordion-action',
           data: {
