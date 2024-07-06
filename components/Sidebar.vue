@@ -46,9 +46,9 @@
       <div id="externalMenu">
         <transition name="fade-up">
           <div v-show="showExternalMenu" class="simple-card normal external-menu">
-            <a href="https://twitter.com/THORChain" target="_blank">
-              <TwitterLogo class="social-icon" />
-              <span>Twitter</span>
+            <a href="https://x.com/THORChain" target="_blank">
+              <XLogo class="social-icon" />
+              <span>X</span>
             </a>
             <a href="https://discord.gg/KjPVnGy5jR" target="_blank">
               <DiscordLogo class="social-icon" />
@@ -69,7 +69,7 @@
 import { mapMutations, mapGetters } from 'vuex'
 import ThorchainLogo from '~/assets/images/thorchain-logo.svg?inline'
 
-import TwitterLogo from '~/assets/images/twitter-brands.svg?inline'
+import XLogo from '~/assets/images/x.svg?inline'
 import DiscordLogo from '~/assets/images/discord-brands.svg?inline'
 import GithubLogo from '~/assets/images/github-brands.svg?inline'
 import Question from '~/assets/images/question.svg?inline'
@@ -104,7 +104,7 @@ import CrossIcon from '~/assets/images/cross.svg?inline'
 export default {
   name: 'SideBar',
   components: {
-    TwitterLogo,
+    XLogo,
     DiscordLogo,
     GithubLogo,
     appsSelected,
