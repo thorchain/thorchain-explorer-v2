@@ -12,7 +12,7 @@
         </div>
         <div v-if="ifc" class="interface mono">
           <span>
-            Executed by
+            Executed on
           </span>
           <img v-if="ifc.icons && ifc.icons.url" :src="theme === 'dark' ? ifc.icons.urlDark : ifc.icons.url" class="interface-image" alt="interface image">
           <span v-else>{{ ifc.name }}</span>
