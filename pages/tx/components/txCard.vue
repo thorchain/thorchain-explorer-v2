@@ -14,7 +14,13 @@
           <span>
             Executed on
           </span>
-          <img v-if="ifc.icons && ifc.icons.url" :src="theme === 'dark' ? ifc.icons.urlDark : ifc.icons.url" class="interface-image" alt="interface image">
+          <img
+            v-if="ifc.icons && ifc.icons.url"
+            :src="theme === 'dark' ? ifc.icons.urlDark : ifc.icons.url"
+            class="interface-image"
+            alt="interface image"
+            :title="ifc.name"
+          >
           <span v-else>{{ ifc.name }}</span>
         </div>
       </div>
