@@ -57,6 +57,7 @@ import {
   getScheduled,
   getThorname,
   getDerivedPoolDetail,
+  getTradeAsset,
   getTradeAssets
 } from './thornode.api'
 import {
@@ -213,6 +214,7 @@ export default function ({ $axios }, inject) {
     getSaversInfo,
     getBorrowerDetails,
     getDerivedPoolDetail,
+    getTradeAsset,
     getTradeAssets
   }
 

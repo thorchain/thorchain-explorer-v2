@@ -42,6 +42,15 @@
                   -
                 </span>
               </div>
+              <div v-else-if="props.column.field == 'trading'">
+                <span v-if="props.row.trading > 0">
+                  ${{ (props.row.trading * props.row.price) | number('0,0.00a') }}
+                  ({{  ((props.row.trading * props.row.price) / props.row.depth) | percent }})
+                </span>
+                <span v-else>
+                  -
+                </span>
+              </div>
               <div v-else-if="props.column.field == 'actions'" class="action-content">
                 <drop-modal name="swap" :index="props.row.originalIndex">
                   <template #button>
@@ -77,6 +86,7 @@ import { mapGetters } from 'vuex'
 import SwapIcon from '~/assets/images/swap.svg?inline'
 import FinanceIcon from '~/assets/images/finance-selected.svg?inline'
 import InterfacesJSON from '~/assets/wallets/index'
+import { tradeToAsset } from '~/utils'
 
 export default {
   components: { SwapIcon, FinanceIcon },
@@ -126,6 +136,13 @@ export default {
           field: 'depth',
           type: 'number',
           formatFn: this.formattedPrice,
+          tdClass: 'mono'
+        },
+        {
+          label: 'Trading Depth',
+          field: 'trading',
+          type: 'number',
+          formatFn: 'number',
           tdClass: 'mono'
         },
         {
@@ -191,9 +208,11 @@ export default {
       this.$api.getPools(period).then(async ({ data }) => {
         this.pools = data
         const pd = await this.getDVEs()
+        const { data: tradeAssets } = await this.$api.getTradeAssets()
 
         const ps = this.pools.map((p) => {
           const pe = pd?.day.pools.find(e => e.pool === p.asset)
+          const tradeAsset = tradeAssets.find(e => tradeToAsset(e.asset) === p.asset)
 
           return {
             status: p.status,
@@ -207,7 +226,8 @@ export default {
             depthToUnitsRatio: p.saversDepth ? this.$options.filters.number(+p.saversDepth / +p.saversUnits, '0.00000') : 0,
             earning24hr: pe ? (pe.earnings * this.runePrice) / 10 ** 8 : 0,
             estEarnings: pe ? (pe.earnings * this.runePrice * 365) / 10 ** 8 : 0,
-            collateral: (+p.totalCollateral / 1e8)
+            collateral: (+p.totalCollateral / 1e8),
+            trading: (+tradeAsset.depth / 1e8)
           }
         })
         this.sepPools(ps)

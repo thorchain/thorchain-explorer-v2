@@ -138,6 +138,10 @@ export function getThorname (name) {
   return $axiosInstace.get(endpoints[process.env.NETWORK].THORNODE_URL + `thorchain/thorname/${name}`)
 }
 
-export function getTradeAssets (address) {
+export function getTradeAsset (address) {
   return $axiosInstace.get(endpoints[process.env.NETWORK].THORNODE_URL + `thorchain/trade/account/${address}`)
+}
+
+export function getTradeAssets () {
+  return $axiosInstace.get(endpoints[process.env.NETWORK].THORNODE_URL + 'thorchain/trade/units')
 }
