@@ -11,16 +11,14 @@
           {{ n }}
         </div>
         <div v-if="ifc" class="interface mono">
-          <span>
-            Executed on
-          </span>
+          <small> executed on </small>
           <img
             v-if="ifc.icons && ifc.icons.url"
             :src="theme === 'dark' ? ifc.icons.urlDark : ifc.icons.url"
             class="interface-image"
             alt="interface image"
             :title="ifc.name"
-          >
+          />
           <span v-else>{{ ifc.name }}</span>
         </div>
       </div>
@@ -29,9 +27,17 @@
     <div class="tx-overall">
       <div class="tx-assets-status">
         <div class="tx-wrapper">
-          <div v-for="(o, i) in overall.in" :key="i + '-o-in'" class="tx-inbound">
+          <div
+            v-for="(o, i) in overall.in"
+            :key="i + '-o-in'"
+            class="tx-inbound"
+          >
             <div class="tx-asset">
-              <AssetIcon :classes="['no-margin']" :asset="o.asset" :height="'2rem'" />
+              <AssetIcon
+                :classes="['no-margin']"
+                :asset="o.asset"
+                :height="'2rem'"
+              />
             </div>
             <div v-if="i < 1" class="simple-bar" />
           </div>
@@ -48,13 +54,21 @@
         </div>
 
         <div class="tx-wrapper">
-          <div v-for="(o, i) in overall.out" :key="i + '-o-out'" class="tx-outbound">
+          <div
+            v-for="(o, i) in overall.out"
+            :key="i + '-o-out'"
+            class="tx-outbound"
+          >
             <div v-if="i < 1" class="simple-bar" />
             <div v-if="o.asset" class="tx-asset">
-              <AssetIcon :classes="['no-margin']" :asset="o.asset" :height="'2rem'" />
+              <AssetIcon
+                :classes="['no-margin']"
+                :asset="o.asset"
+                :height="'2rem'"
+              />
             </div>
             <div v-else class="tx-asset">
-              <img class="asset-icon custom-icon" :src="o.icon" :alt="o.text">
+              <img class="asset-icon custom-icon" :src="o.icon" :alt="o.text" />
             </div>
           </div>
         </div>
@@ -62,22 +76,38 @@
 
       <div class="tx-assets-info">
         <div class="tx-wrapper">
-          <div v-for="(o, i) in overall.in" :key="i + '-in'" class="asset-inbound">
-            <span class="mono sec-color">{{ baseAmountFormatOrZero(o.amount) }}</span>
+          <div
+            v-for="(o, i) in overall.in"
+            :key="i + '-in'"
+            class="asset-inbound"
+          >
+            <span class="mono sec-color">{{
+              baseAmountFormatOrZero(o.amount)
+            }}</span>
             <small class="mono sec-color">{{ showAsset(o.asset) }}</small>
-            <br><small>{{ o.amountUSD ? formatBnCurrency(o.amountUSD) : '...' }}</small>
+            <br /><small>{{
+              o.amountUSD ? formatBnCurrency(o.amountUSD) : "..."
+            }}</small>
           </div>
         </div>
 
         <div class="tx-wrapper">
-          <div v-for="(o, i) in overall.out" :key="i + '-out'" class="asset-outbound">
+          <div
+            v-for="(o, i) in overall.out"
+            :key="i + '-out'"
+            class="asset-outbound"
+          >
             <template v-if="o.text">
               <span class="mono sec-color">{{ o.text }}</span>
             </template>
             <template v-else>
-              <span class="mono sec-color">{{ o.amount ? baseAmountFormatOrZero(o.amount) : '...' }}</span>
+              <span class="mono sec-color">{{
+                o.amount ? baseAmountFormatOrZero(o.amount) : "..."
+              }}</span>
               <small class="mono sec-color">{{ showAsset(o.asset) }}</small>
-              <br><small>{{ o.amountUSD ? formatBnCurrency(o.amountUSD) : '...' }}</small>
+              <br /><small>{{
+                o.amountUSD ? formatBnCurrency(o.amountUSD) : "..."
+              }}</small>
             </template>
           </div>
         </div>
@@ -100,47 +130,49 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
-import CheckIcon from '~/assets/images/check.svg?inline'
-import CoinIcon from '~/assets/images/coins.svg?inline'
+import { mapGetters } from "vuex";
+import CheckIcon from "~/assets/images/check.svg?inline";
+import CoinIcon from "~/assets/images/coins.svg?inline";
 
 export default {
   components: {
     CheckIcon,
-    CoinIcon
+    CoinIcon,
   },
-  props: ['txData'],
+  props: ["txData"],
   computed: {
     ...mapGetters({
-      theme: 'getTheme'
+      theme: "getTheme",
     }),
-    title () {
-      return this.txData?.title ?? ''
+    title() {
+      return this.txData?.title ?? "";
     },
-    ifc () {
-      return this.txData?.interface ?? undefined
+    ifc() {
+      return this.txData?.interface ?? undefined;
     },
-    labels () {
-      return this.txData?.labels ?? []
+    labels() {
+      return this.txData?.labels ?? [];
     },
-    overall () {
+    overall() {
       return {
         in: this.txData?.overall?.in ?? [],
         middle: this.txData?.overall?.middle ?? {
-          pending: false
+          pending: false,
         },
-        out: this.txData?.overall?.out ?? []
-      }
+        out: this.txData?.overall?.out ?? [],
+      };
     },
-    vars () {
+    vars() {
       return {
-        '--left-border': this.assetColorPalette(this.overall.in[0]?.asset) ?? '#5CDFBD',
-        '--right-border': this.overall.out[0]?.borderColor ? this.overall.out[0]?.borderColor : this.assetColorPalette(this.overall.out[0]?.asset) ?? '#3761F9'
-      }
-    }
-  }
-
-}
+        "--left-border":
+          this.assetColorPalette(this.overall.in[0]?.asset) ?? "#5CDFBD",
+        "--right-border": this.overall.out[0]?.borderColor
+          ? this.overall.out[0]?.borderColor
+          : this.assetColorPalette(this.overall.out[0]?.asset) ?? "#3761F9",
+      };
+    },
+  },
+};
 </script>
 
 <style lang="scss" scoped>
@@ -150,7 +182,7 @@ $border-size: 2px;
   max-width: 640px;
   margin: auto;
   background-color: var(--card-bg-color);
-  border-radius: .5rem;
+  border-radius: 0.5rem;
   border: 1px solid var(--border-color);
 
   .tx-header {
@@ -190,7 +222,11 @@ $border-size: 2px;
         height: 32px;
         width: 32px;
         position: relative;
-        background: linear-gradient(to left, var(--right-border), var(--left-border));
+        background: linear-gradient(
+          to left,
+          var(--right-border),
+          var(--left-border)
+        );
 
         .tx-state {
           background: var(--card-bg-color);
@@ -225,16 +261,18 @@ $border-size: 2px;
         display: flex;
         flex: 1;
         flex-direction: column;
-        gap: .5rem;
+        gap: 0.5rem;
       }
-      .tx-inbound, .tx-outbound {
+      .tx-inbound,
+      .tx-outbound {
         display: flex;
         align-items: center;
       }
 
       .tx-outbound {
         justify-content: end;
-        .tx-asset, .simple-bar {
+        .tx-asset,
+        .simple-bar {
           border-color: var(--right-border);
           background: var(--right-border);
         }
@@ -246,13 +284,13 @@ $border-size: 2px;
       align-items: center;
       justify-content: space-between;
       margin-top: 1rem;
-      padding: 0 .5rem;
+      padding: 0 0.5rem;
 
       .tx-wrapper {
         display: flex;
         flex: 1;
         flex-direction: column;
-        gap: .5rem;
+        gap: 0.5rem;
 
         .asset-outbound {
           text-align: end;
@@ -265,7 +303,7 @@ $border-size: 2px;
   .accordions {
     display: flex;
     flex-direction: column;
-    margin-bottom: .5rem;
+    margin-bottom: 0.5rem;
   }
 }
 
