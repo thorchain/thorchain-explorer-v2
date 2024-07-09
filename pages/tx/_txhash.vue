@@ -291,6 +291,7 @@ export default {
                   key: 'From',
                   value: a?.from,
                   is: true,
+                  asset: a?.asset,
                   type: 'address',
                   formatter: this.formatAddress
                 },
@@ -430,6 +431,7 @@ export default {
                   key: 'Destination',
                   value: a?.to,
                   is: a?.to,
+                  asset: a?.asset,
                   type: 'address',
                   formatter: this.formatAddress
                 },

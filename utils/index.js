@@ -632,3 +632,26 @@ export const affiliateMap = {
   lifi: interfaces.lifi,
   ej: interfaces.edge
 }
+
+export function getExplorerAddressUrl (chain, query) {
+  switch (chain) {
+    case 'BCH':
+      return `https://www.blockchain.com/explorer/addresses/bch/${query}`
+    case 'BTC':
+      return `https://www.blockchain.com/explorer/addresses/btc/${query}`
+    case 'ETH':
+      return `https://etherscan.io/address/${query}`
+    case 'BSC':
+      return `https://bscscan.com/address/${query}`
+    case 'AVAX':
+      return `https://snowtrace.io/address/${query}`
+    case 'DOGE':
+      return `https://blockchair.com/dogecoin/address/${query}`
+    case 'GAIA':
+      return `https://www.mintscan.io/cosmos/address/${query}`
+    case 'LTC':
+      return `https://blockchair.com/litecoin/address/${query}`
+    default:
+      break
+  }
+}

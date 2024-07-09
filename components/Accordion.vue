@@ -21,10 +21,15 @@
               {{ b.text | capitalize }}
             </div>
           </div>
-          <component :is="checkType(s.type)" v-else :class="['value mono']" :to="toLink(s.type, s.value)">
-            {{ s.formatter ? s.formatter(s.value) : s.value }}
-            <arrow-icon v-if="checkType(s.type) === 'nuxt-link'" class="icon arrow-link" />
-          </component>
+          <div v-else :class="['value', {'link': isLink(s.type)}]">
+            <component :is="checkType(s.type)" :class="['value mono']" :to="toLink(s.type, s.value)">
+              {{ s.formatter ? s.formatter(s.value) : s.value }}
+              <arrow-icon v-if="checkType(s.type) === 'nuxt-link'" class="icon arrow-link" />
+            </component>
+            <a v-if="isLink(s.type) && s.asset" class="value" target="_blank" :href="getUrl(s.asset, s.value)" rel="noopener noreferrer">
+              <external class="icon external-link" />
+            </a>
+          </div>
         </template>
         <slot v-else :name="s.slotName" />
       </div>
@@ -35,11 +40,14 @@
 <script>
 import AngleIcon from '~/assets/images/angle-down.svg?inline'
 import ArrowIcon from '@/assets/images/arrow.svg?inline'
+import External from '@/assets/images/external.svg?inline'
+import { assetFromString, getExplorerAddressUrl } from '~/utils'
 
 export default {
   components: {
     AngleIcon,
-    ArrowIcon
+    ArrowIcon,
+    External
   },
   props: ['title', 'stacks', 'pending', 'showAtFirst'],
   data () {
@@ -76,11 +84,29 @@ export default {
       }
       return 'div'
     },
+    isLink (type) {
+      return type === 'address' || type === 'hash'
+    },
     toLink (type, value) {
       if (type === 'address') {
         return `/address/${value}`
       } else if (type === 'hash') {
         return `/tx/${value}`
+      }
+    },
+    getUrl (assetString, value) {
+      if (!assetString) {
+        return
+      }
+
+      try {
+        const { chain, trade, synth } = assetFromString(assetString)
+        if (synth || trade) {
+          return
+        }
+        return getExplorerAddressUrl(chain, value)
+      } catch (error) {
+        console.error('could\'t read the asset')
       }
     }
   }
@@ -154,28 +180,41 @@ export default {
         gap: 5px;
 
         .value {
+          display: flex;
           flex-wrap: wrap;
           color: var(--sec-font-color);
+          gap: 7px;
 
           &.bubble-wrapper {
             display: flex;
             gap: .5rem;
           }
-        }
 
-        a.value {
-          display: flex;
-          align-items: center;
-          color: var(--primary-color);
-          text-decoration: none;
-          gap: .2rem;
+          &.link {
+            display: flex;
 
-          .arrow-link {
-            fill: var(--primary-color);
-            transform: rotate(45deg);
-            margin: 0;
-            height: 1rem;
-            width: 1rem;
+            a {
+              color: var(--primary-color);
+              align-items: center;
+              text-decoration: none;
+              gap: .1rem;
+
+              .icon {
+                cursor: pointer;
+                fill: var(--primary-color);
+                margin: 0;
+                height: 1rem;
+                width: 1rem;
+              }
+
+              &:hover {
+                color: var(--sec-font-color);
+
+                .icon {
+                  fill: var(--sec-font-color);
+                }
+              }
+            }
           }
         }
 
