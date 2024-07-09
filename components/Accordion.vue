@@ -26,9 +26,12 @@
               {{ s.formatter ? s.formatter(s.value) : s.value }}
               <arrow-icon v-if="checkType(s.type) === 'nuxt-link'" class="icon arrow-link" />
             </component>
-            <a v-if="isLink(s.type) && s.asset" class="value" target="_blank" :href="getUrl(s.asset, s.value)" rel="noopener noreferrer">
-              <external class="icon external-link" />
-            </a>
+            <template v-if="isLink(s.type) && s.asset">
+              <span> | </span>
+              <a class="value" target="_blank" :href="getUrl(s.asset, s.value)" rel="noopener noreferrer">
+                <external class="icon external-link" />
+              </a>
+            </template>
           </div>
         </template>
         <slot v-else :name="s.slotName" />
