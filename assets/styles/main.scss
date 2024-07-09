@@ -43,6 +43,10 @@ input {
   display: flex;
   align-items: center;
   justify-content: center;
+
+  &.end {
+    justify-content: end;
+  }
 }
 
 .custom-popover {
@@ -517,6 +521,33 @@ input {
 .mini-bubble {
   font-size: .75rem;
   border-radius: 1rem;
+  color: rgb(3 84 63);
+  background-color: rgb(222 247 236);
+
+  &.big {
+    font-size: .85rem;
+  }
+
+  &.yellow {
+    color: rgb(114 59 19);
+    background-color: rgb(253 246 178);
+    border: 1px solid rgba(255, 156, 8, .25);
+  }
+
+  &.danger {
+    color: rgb(155 28 28);
+    background-color: rgb(253 232 232);
+    border: 1px solid rgba(255, 33, 8, 0.25);
+  }
+
+  &.info {
+    color: rgb(30 66 159);
+    background-color: rgb(225 239 254);
+    border: 1px solid rgba(47, 138, 245, .16);
+  }
+}
+
+[theme="dark"] .mini-bubble {
   color: #21C187;
   background-color: rgba(51, 119, 107, .25);
 

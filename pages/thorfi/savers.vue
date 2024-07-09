@@ -38,6 +38,23 @@
           }"
           @on-row-click="gotoSaver"
         >
+          <template slot="table-column" slot-scope="props">
+            <div v-if="props.column.field == 'saversDepthRatio'" v-tooltip="'Savers depth to the Asset Depth in the pool'" class="table-asset end">
+              {{ props.column.label }}
+              <info-icon class="header-icon" />
+            </div>
+            <div v-else-if="props.column.field == 'filled'" v-tooltip="'Savers depth to the max synth per pool depth threshold'" class="table-asset end">
+              {{ props.column.label }}
+              <info-icon class="header-icon" />
+            </div>
+            <div v-else-if="props.column.field == 'saversReturn'" v-tooltip="'This week savers yield based on its depth and units growth over an extended of a year'" class="table-asset end">
+              {{ props.column.label }}
+              <info-icon class="header-icon" />
+            </div>
+            <span v-else>
+              {{ props.column.label }}
+            </span>
+          </template>
           <template slot="table-row" slot-scope="props">
             <div v-if="props.column.field == 'asset'" v-tooltip="props.row.asset" class="cell-content">
               <AssetIcon :asset="props.row.asset" />
@@ -81,10 +98,11 @@
 import { mapGetters } from 'vuex'
 import { forEach as eachLod } from 'lodash'
 import ProgressIcon from '~/components/ProgressIcon.vue'
+import InfoIcon from '~/assets/images/info.svg?inline'
 import { formatAsset } from '~/utils'
 
 export default {
-  components: { ProgressIcon },
+  components: { ProgressIcon, InfoIcon },
   data () {
     return {
       error: false,

@@ -61,12 +61,12 @@
             </div>
           </span>
           <span v-else-if="props.column.field == 'type'">
-            <div :class="['bubble-container', {'blue': props.row.type == 'Yggdrasil'}]">
+            <div :class="['mini-bubble big', {'info': props.row.type == 'Yggdrasil'}]">
               <span>{{ props.row.type }}</span>
             </div>
           </span>
           <span v-else-if="props.column.field == 'status'">
-            <div :class="['bubble-container', {'yellow': props.row.status == 'Standby'}]">
+            <div :class="['mini-bubble big', {'yellow': props.row.status == 'Standby'}]">
               <span>{{ props.row.status }}</span>
             </div>
           </span>
