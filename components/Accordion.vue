@@ -1,10 +1,10 @@
 <template>
   <div class="accordion">
     <div :class="['accordion-info', {'not-collapsed': show}]" @click="toggleAccordion">
-      <div class="accordion-info-left">
+      <strong class="accordion-info-left">
         {{ title | capitalize }}
         <angle-icon v-if="showAccordion" class="trigger" />
-      </div>
+      </strong>
       <div class="accordion-info-right">
         <slot name="header-extra" />
         <dot-live v-if="pending" />
