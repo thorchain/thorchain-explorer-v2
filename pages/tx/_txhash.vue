@@ -303,6 +303,17 @@ export default {
                   formatter: this.formatAddress
                 },
                 {
+                  key: 'Pre confirmation Count',
+                  value: [{ text: `${a.preConfirmationCount} Nodes`, class: a.inboundObserved ? 'success' : 'yellow' }],
+                  type: 'bubble',
+                  is: a.preConfirmationCount > 0
+                },
+                {
+                  key: 'Inbound Confirmation Remaining',
+                  value: moment.duration(a.confirmationRemainingSeconds, 'seconds').humanize(),
+                  is: a.confirmationRemainingSeconds > 0
+                },
+                {
                   key: 'Gas',
                   value: `${a.gas / 1e8} ${this.showAsset(a.gasAsset)}`,
                   is: a.gas && a.gasAsset
@@ -334,7 +345,7 @@ export default {
             stacks: [
               {
                 key: 'Timestamp',
-                value: `${accordions.action?.timeStamp?.format('LLL')} (${accordions.action?.timeStamp?.fromNow()})`,
+                value: `${accordions.action?.timeStamp?.format('L LT')} (${accordions.action?.timeStamp?.fromNow()})`,
                 is: accordions.action?.timeStamp?.isValid()
               },
               {
@@ -834,9 +845,9 @@ export default {
         : []
       const timeStamp = moment.unix(withdrawAction?.date / 1e9)
 
-      const outTxs = thorStatus.out_txs
-      const userTxs = new Set([
-        thorStatus.out_txs.map(t => t.id.toUpperCase())
+      const outTxs = thorStatus?.out_txs ?? undefined
+      const userTxs = outTxs && new Set([
+        outTxs.map(t => t?.id?.toUpperCase())
       ])
 
       let hasOngoing = false
@@ -987,7 +998,7 @@ export default {
       )?.metadata.refund.reason
 
       // only refund happened
-      const onlyRefund = actions?.actions.every(
+      const onlyRefund = actions?.actions.length > 0 && actions?.actions.every(
         action => action?.type === 'refund'
       )
 
@@ -1045,7 +1056,13 @@ export default {
             observations: thorStatus.stages?.inbound_observed?.final_count,
             observationsCompleted: thorStatus.stages?.inbound_observed?.completed,
             finalisedHeight: thorTx.finalised_height,
-            inboundConfCount: thorStatus?.stages?.inbound_confirmation_counted,
+            inboundObserved:
+              thorStatus?.stages?.inbound_observed?.completed || false,
+            inboundConfCount: thorStatus?.stages?.inbound_confirmation_counted || 0,
+            preConfirmationCount:
+              thorStatus.stages?.inbound_observed?.pre_confirmation_count || 0,
+            confirmationRemainingSeconds:
+              thorStatus.stages?.inbound_confirmation_counted?.remaining_confirmation_seconds || 0,
             done: thorStatus.stages?.inbound_finalised?.completed
           }],
           action: {
