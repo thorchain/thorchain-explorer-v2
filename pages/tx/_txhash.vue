@@ -211,16 +211,16 @@ export default {
       const memo = this.parseMemo(thorStatus.tx?.memo)
 
       const userAddresses = new Set([
-        thorStatus.tx.from_address.toLowerCase(),
+        thorStatus?.tx?.from_address?.toLowerCase(),
         memo.destAddr?.toLowerCase()
       ])
 
-      let outTxs = thorStatus.out_txs?.filter(tx =>
-        userAddresses.has(tx.to_address.toLowerCase())
+      let outTxs = thorStatus?.out_txs?.filter(tx =>
+        userAddresses.has(tx?.to_address?.toLowerCase())
       )
 
       if (!outTxs) {
-        outTxs = thorStatus.planned_out_txs
+        outTxs = thorStatus?.planned_out_txs
           ?.filter(tx => userAddresses.has(tx.to_address.toLowerCase()))
           .map(tx => ({
             ...tx,
@@ -236,13 +236,13 @@ export default {
       const inboundFinalised = thorStatus.stages?.inbound_finalised?.completed
       let actionFinalised = true
       if (memo.type === 'swap') {
-        actionFinalised = thorStatus.stages.swap_finalised?.completed &&
+        actionFinalised = thorStatus?.stages.swap_finalised?.completed &&
           !thorStatus.stages.swap_status?.pending
       }
       const outboundFinalised = (thorStatus.stages.outbound_signed?.completed ||
         outAsset?.chain === 'THOR' ||
         outAsset?.synth) &&
-        (thorStatus.stages.outbound_delay?.completed ?? true)
+        (thorStatus.stages?.outbound_delay?.completed ?? true)
 
       return !inboundFinalised || !actionFinalised || !outboundFinalised
     },

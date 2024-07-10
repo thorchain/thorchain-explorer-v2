@@ -26,7 +26,7 @@
               {{ s.formatter ? s.formatter(s.value) : s.value }}
               <arrow-icon v-if="checkType(s.type) === 'nuxt-link'" class="icon arrow-link" />
             </component>
-            <template v-if="isLink(s.type) && s.asset">
+            <template v-if="isLink(s.type) && notTHOR(s.asset)">
               <span> | </span>
               <a class="value" target="_blank" :href="getUrl(s.asset, s.value)" rel="noopener noreferrer">
                 <external class="icon external-link" />
@@ -89,6 +89,14 @@ export default {
     },
     isLink (type) {
       return type === 'address' || type === 'hash'
+    },
+    notTHOR (asset) {
+      if (!asset) {
+        return false
+      }
+
+      asset = assetFromString(asset)
+      return asset.chain !== 'THOR' && !asset.synth && !asset.trade
     },
     toLink (type, value) {
       if (type === 'address') {
