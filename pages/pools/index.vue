@@ -44,8 +44,8 @@
               </div>
               <div v-else-if="props.column.field == 'trading'">
                 <span v-if="props.row.trading > 0">
-                  ${{ (props.row.trading * props.row.price) | number('0,0.00a') }}
-                  ({{  ((props.row.trading * props.row.price) / props.row.depth) | percent }})
+                  ${{ (props.row.trading) | number('0,0.00a') }}
+                  ({{  ((props.row.trading) / props.row.depth) | percent }})
                 </span>
                 <span v-else>
                   -
@@ -227,7 +227,7 @@ export default {
             earning24hr: pe ? (pe.earnings * this.runePrice) / 10 ** 8 : 0,
             estEarnings: pe ? (pe.earnings * this.runePrice * 365) / 10 ** 8 : 0,
             collateral: (+p.totalCollateral / 1e8),
-            trading: (+tradeAsset.depth / 1e8)
+            trading: (+tradeAsset.depth / 1e8) * p.assetPriceUSD
           }
         })
         this.sepPools(ps)
