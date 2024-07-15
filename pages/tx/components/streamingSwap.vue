@@ -5,39 +5,23 @@
       <dot-live />
     </div>
     <div class="card-body">
-      <div class="info-item">
-        <span>Status</span>
-        <div :class="['mini-bubble', {'yellow': streamingDetail.count < streamingDetail.quantity}]">
-          {{ streamingDetail.status }}
-        </div>
+      <div class="info-item center timer">
+        <strong class="mono">
+          {{ streamingDetail.remIntervalSec }}
+        </strong>
       </div>
       <div class="info-item">
-        <span>Fill</span>
+        <span>Progress</span>
         <span>
           <span style="color: var(--font-color); font-size: .75rem;">
             ({{ streamingDetail.count }}/{{ streamingDetail.quantity }})
           </span>
           {{ $options.filters.percent(streamingDetail.fill, 2) }}
+          <div :class="['mini-bubble', {'yellow': streamingDetail.count < streamingDetail.quantity}]">
+            {{ streamingDetail.status }}
+          </div>
         </span>
         <progress-bar :width="streamingDetail.fill * 100" height="4px" />
-      </div>
-      <div class="info-item">
-        <span>Remaining Intervals</span>
-        <span>
-          {{ streamingDetail.remIntervalSec }}
-          <span>
-            ({{ streamingDetail.remInterval }} blocks)
-          </span>
-        </span>
-      </div>
-      <div class="info-item">
-        <span>Trade Target</span>
-        <span>
-          {{ streamingDetail.tradeTarget == 0 ? "No trade target" : streamingDetail.tradeTarget }}
-          <span v-if="streamingDetail.tradeTarget != 0" style="color: var(--font-color); font-size: .75rem;">
-            {{ streamingDetail.targetAsset }}
-          </span>
-        </span>
       </div>
       <div class="info-item">
         <span>Swapped / Deposited Input</span>
@@ -71,6 +55,15 @@
           </span>
         </span>
       </div>
+      <span class="info-item">
+        <span>Remained Block</span>
+        <span>
+          {{ streamingDetail.remInterval }}
+          <span style="color: var(--font-color); font-size: .75rem;">
+            Blocks
+          </span>
+        </span>
+      </span>
     </div>
   </div>
 </template>
@@ -98,7 +91,9 @@ export default {
         swappedIn: 0,
         swappedOut: 0
       },
-      intervalId: undefined
+      intervalId: undefined,
+      countdownInterval: undefined,
+      durationSeconds: null
     }
   },
   mounted () {
@@ -108,10 +103,24 @@ export default {
       this.updateStreamingDetail(this.inboundHash)
     }, 10000)
   },
+  beforeDestroy() {
+    clearInterval(this.countdownInterval) 
+  },
   destroyed () {
     this.clearIntervalId(this.intervalId)
   },
   methods: {
+    updateCountdown() {
+      this.durationSeconds.subtract(1, 'seconds')
+      this.streamingDetail.remIntervalSec = this.createDurationText(this.durationSeconds)
+    },
+    createDurationText(duration) {
+      const hours = String(duration.hours()).padStart(2, '0');
+      const minutes = String(duration.minutes()).padStart(2, '0');
+      const seconds = String(duration.seconds()).padStart(2, '0'); 
+
+      return `${hours} : ${minutes} : ${seconds}`
+    },
     async updateStreamingDetail (txid) {
       const thorStatus = (await this.$api.getTxStatus(this.inboundHash))?.data
       const isSwap = thorStatus.stages.swap_status?.streaming && thorStatus.stages.swap_status?.pending
@@ -119,11 +128,19 @@ export default {
       if (isSwap) {
         const { count, interval, quantity } = thorStatus.stages.swap_status?.streaming
         this.streamingDetail.fill = count / quantity
+        if (!this.streamingDetail.count || count > this.streamingDetail.count) {
+          this.durationSeconds = moment.duration(interval * (quantity - count) * 6, 'seconds')
+          this.streamingDetail.remIntervalSec = this.createDurationText(this.durationSeconds)
+        }
         this.streamingDetail.count = count
         this.streamingDetail.quantity = quantity
         this.streamingDetail.interval = interval
         this.streamingDetail.remInterval = interval * (quantity - count)
-        this.streamingDetail.remIntervalSec = moment.duration(this.streamingDetail.remInterval * 6, 'seconds').humanize()
+
+        if (!this.countdownInterval) {
+          this.countdownInterval = setInterval(this.updateCountdown, 1000);
+        }
+
         if (count < quantity) {
           this.streamingDetail.status = 'On Going'
         } else {
@@ -237,6 +254,24 @@ export default {
   span {
     font-size: .9rem;
     color: var(--sec-font-color);
+  }
+
+  &.center {
+    justify-content: center;
+
+    strong {
+      font-size: 1.5rem;
+    }
+  }
+
+  &.timer {
+    strong {
+      display: block;
+      padding: .3rem .4rem;
+      border-radius: .4rem;
+      color: var(--primary-color);
+      background-color: #63fdd927;
+    }
   }
 }
 

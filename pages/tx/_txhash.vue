@@ -153,7 +153,7 @@ export default {
       }))?.data
 
       // See if the hash is outbound
-      const swapAction = md.actions?.find(a => a.type === 'swap')
+      const swapAction = md?.actions?.find(a => a.type === 'swap')
       if (swapAction) {
         hash = swapAction.in[0].txID
       }
@@ -360,7 +360,7 @@ export default {
               },
               {
                 key: 'Interval',
-                value: `${accordions.action.streaming?.interval} Block/Swap`,
+                value: `${moment.duration(accordions.action.streaming?.interval * 6, 's').as('seconds')} secs (${this.$options.filters.pluralize(accordions.action?.streaming?.interval, 'Block', { includeNumber: true })})`,
                 is: accordions.action.streaming?.interval
               },
               {
@@ -370,7 +370,7 @@ export default {
               },
               {
                 key: 'Limit',
-                value: `${accordions.action.limit / 1e8} ${this.showAsset(accordions.action.limitAsset)}`,
+                value: accordions.action.limit > 0 ? `${accordions.action.limit / 1e8} ${this.showAsset(accordions.action.limitAsset)}` : 'No target limit',
                 is: accordions.action.limit
               },
               {
@@ -379,13 +379,8 @@ export default {
                 is: accordions.action.liquidityUnits
               },
               {
-                key: 'Affiliate Name',
-                value: `${accordions.action.affiliateName}`,
-                is: accordions.action.affiliateName
-              },
-              {
-                key: 'Affiliate Basis',
-                value: `${accordions.action.affiliateFee}`,
+                key: 'Affiliate Name / Basis',
+                value: `${accordions.action.affiliateName} / ${accordions.action.affiliateFee}`,
                 is: accordions.action.affiliateName
               },
               {
