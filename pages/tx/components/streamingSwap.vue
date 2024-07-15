@@ -2,7 +2,9 @@
   <div v-if="streamingDetail.is" class="card streaming-card">
     <div class="card-header streaming-header">
       <span>Streaming Swap <sup class="header-sup">Live</sup></span>
-      <dot-live />
+      <div :class="['status-live', 'mini-bubble', {'yellow': streamingDetail.count < streamingDetail.quantity}]">
+        {{ streamingDetail.status }}
+      </div>
     </div>
     <div class="card-body">
       <div class="info-item center timer">
@@ -10,19 +12,17 @@
           {{ streamingDetail.remIntervalSec }}
         </strong>
       </div>
-      <div class="info-item">
+      <div class="info-item strong">
+        <progress-bar :width="streamingDetail.fill * 100" height="4px" />
         <span>Progress</span>
-        <span>
+        <span class="mono">
           <span style="color: var(--font-color); font-size: .75rem;">
             ({{ streamingDetail.count }}/{{ streamingDetail.quantity }})
           </span>
           {{ $options.filters.percent(streamingDetail.fill, 2) }}
-          <div :class="['mini-bubble', {'yellow': streamingDetail.count < streamingDetail.quantity}]">
-            {{ streamingDetail.status }}
-          </div>
         </span>
-        <progress-bar :width="streamingDetail.fill * 100" height="4px" />
       </div>
+      <hr class="info-hr">
       <div class="info-item">
         <span>Swapped / Deposited Input</span>
         <span>
@@ -273,10 +273,35 @@ export default {
       background-color: #63fdd927;
     }
   }
+
+  &.strong span {
+    font-size: 0.9rem;
+  }
 }
 
 .header-sup {
   font-size: .6rem;
   color: #F04832;
+}
+
+.info-hr {
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.status-live {
+  position: relative;
+  animation: bubblePulse 1300ms cubic-bezier(0.9, 0.7, 0.5, 0.9) infinite;
+
+  @keyframes bubblePulse {
+    0% {
+      color: #FFC700;
+      border-color: rgba(255, 156, 8, 0.25);
+    }
+    50% {
+      color: #ffe897;
+      border-color: rgba(255, 206, 132, 0.25);
+    }
+  }
 }
 </style>
