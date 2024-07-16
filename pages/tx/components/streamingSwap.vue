@@ -7,7 +7,8 @@
       </div>
     </div>
     <div class="card-body">
-      <div class="info-item center timer">
+      <div class="info-item timer">
+        <span>Remaning Time</span>
         <strong class="mono">
           {{ streamingDetail.remIntervalSec }}
         </strong>
@@ -119,7 +120,7 @@ export default {
       const minutes = String(duration.minutes()).padStart(2, '0');
       const seconds = String(duration.seconds()).padStart(2, '0'); 
 
-      return `${hours} : ${minutes} : ${seconds}`
+      return `${hours}:${minutes}:${seconds}`
     },
     async updateStreamingDetail (txid) {
       const thorStatus = (await this.$api.getTxStatus(this.inboundHash))?.data
@@ -256,19 +257,12 @@ export default {
     color: var(--sec-font-color);
   }
 
-  &.center {
-    justify-content: center;
-
-    strong {
-      font-size: 1.5rem;
-    }
-  }
-
   &.timer {
     strong {
       display: block;
-      padding: .3rem .4rem;
-      border-radius: .4rem;
+      font-size: .95rem;
+      padding: .2rem .3rem;
+      border-radius: .3rem;
       color: var(--primary-color);
       background-color: #63fdd927;
     }
