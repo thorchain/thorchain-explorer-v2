@@ -486,6 +486,7 @@ export default {
       display: flex;
       align-items: center;
       color: var(--font-color);
+      fill: var(--font-color);
       text-decoration: none;
       padding: 0.5rem;
       border-radius: 0.2rem;
@@ -496,7 +497,7 @@ export default {
 
       .social-icon {
         fill: inherit;
-        widows: 1rem;
+        width: 1rem;
         height: 1rem;
       }
 
