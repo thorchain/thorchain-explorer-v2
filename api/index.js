@@ -139,7 +139,9 @@ const responseInterceptor = (response) => {
 export default function ({ $axios }, inject) {
   axiosRetry($axios, { retries: 3, retryDelay: axiosRetry.exponentialDelay })
   $axios.interceptors.response.use(responseInterceptor, errorInterceptor)
-  $axios.defaults.headers.common['X-Client-ID'] = 'thorchain.net'
+  if (process.env.NETWORK === 'mainnet') {
+    $axios.defaults.headers.common['X-Client-ID'] = 'thorchain.net'
+  }
 
   // defining the inner Vue axios instace to the outer scope
   $axios.defaults.baseURL = endpoints[process.env.NETWORK].MIDGARD_BASE_URL
