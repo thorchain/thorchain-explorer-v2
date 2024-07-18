@@ -222,7 +222,14 @@ export default {
     }
 
     try {
-      const { data: polData } = await this.$api.getPol()
+      // TODO: needs to be changed after 134 mainnet release
+      let polData
+
+      if (process.env.NETWORK === 'stagenet') {
+        polData = (await this.$api.getRunePool()).data.pol
+      } else {
+        polData = (await this.$api.getPol()).data
+      }
       this.polOverview = polData
 
       const { data: mimirData } = await this.$api.getMimir()

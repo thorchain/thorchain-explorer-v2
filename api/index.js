@@ -58,7 +58,8 @@ import {
   getThorname,
   getDerivedPoolDetail,
   getTradeAsset,
-  getTradeAssets
+  getTradeAssets,
+  getRunePool
 } from './thornode.api'
 import {
   getTendermintLatestBlocks
@@ -215,7 +216,8 @@ export default function ({ $axios }, inject) {
     getBorrowerDetails,
     getDerivedPoolDetail,
     getTradeAsset,
-    getTradeAssets
+    getTradeAssets,
+    getRunePool
   }
 
   inject('api', api)

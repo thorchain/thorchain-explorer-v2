@@ -110,6 +110,10 @@ export function getPol () {
   return $axiosInstace.get(endpoints[process.env.NETWORK].THORNODE_URL + 'thorchain/pol')
 }
 
+export function getRunePool () {
+  return $axiosInstace.get(endpoints[process.env.NETWORK].THORNODE_URL + 'thorchain/runepool')
+}
+
 export function getBorrowers (pool) {
   return $axiosInstace.get(endpoints[process.env.NETWORK].THORNODE_URL + `thorchain/pool/${pool}/borrowers`)
 }
