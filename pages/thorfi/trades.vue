@@ -1,6 +1,16 @@
 <template>
     <Page>
         <Card :isLoading="!(rows && rows.length > 0)">
+            <template #header>
+                <button class="button-container full-screen-btn" @click="toggleUSD">
+                    <template v-if="usdDenom">
+                        Enable USD Format
+                    </template>
+                    <template v-else>
+                        Disable USD Format
+                    </template>
+                </button>
+            </template>
             <vue-good-table v-if="cols && rows.length > 0" 
                 :columns="cols" 
                 :rows="rows" 
@@ -42,12 +52,18 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import { formatAsset, tradeToAsset } from '~/utils'
 import InfoIcon from '~/assets/images/info.svg?inline'
 import { sumBy } from 'lodash'
 
 export default {
     components: { InfoIcon },
+    computed: {
+        ...mapGetters({
+            runePrice: 'getRunePrice'
+        })
+    },
     data() {
         return {
             cols: [
@@ -93,6 +109,7 @@ export default {
                 }
             ],
             rows: [],
+            usdDenom: false,
             error: false
         }
     },
@@ -116,7 +133,6 @@ export default {
                 const v = asgardCoins[i]
                 for (let j = 0; j < v.length; j++) {
                     const {asset, amount} = v[j]
-                    console.log(asset, amount)
                     if (!assetPerVault[asset]) {
                         assetPerVault[asset] = +amount
                     } else {
@@ -138,8 +154,6 @@ export default {
                     depthRatio: (asset.depth / pool?.balance_asset) ?? 0,
                 })
             }
-
-            console.log(ret)
 
             return ret
         }
