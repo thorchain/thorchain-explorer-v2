@@ -1,70 +1,72 @@
 <template>
   <Page>
-    <vue-good-table
-      v-if="cols && rows.length > 0"
-      :columns="cols"
-      :rows="rows"
-      style-class="vgt-table net-table"
-      :pagination-options="{
-        enabled: true,
-        perPage: 30,
-        perPageDropdownEnabled: false,
-      }"
-      :sort-options="{
-        enabled: true,
-        initialSortBy: {field: 'utilisation', type: 'desc'}
-      }"
-    >
-      <template slot="table-column" slot-scope="props">
-        <div v-if="props.column.field == 'saverPercentage'" v-tooltip="'Savers depth to the Synth Supply'" class="table-asset">
-          Saver %
-          <info-icon class="header-icon" />
-        </div>
-        <div v-else-if="props.column.field == 'utilisation'" v-tooltip="`Synth supply to the Pool Depth relative to the Synth cap (${(synthCap*100).toFixed(2)}%)`" class="table-asset">
-          Utilisation
-          <info-icon class="header-icon" />
-        </div>
-        <span v-else>
-          {{ props.column.label }}
-        </span>
-      </template>
-      <template slot="table-row" slot-scope="props">
-        <div v-if="props.column.field == 'asset'" v-tooltip="props.row.asset" class="cell-content">
-          <AssetIcon :asset="props.row.asset" chain="THOR.RUNE" />
-          <span>{{ props.formattedRow[props.column.field] }}</span>
-        </div>
-        <span v-else-if="props.column.field == 'synth'">
-          <span v-tooltip="props.row.synth">{{ props.formattedRow[props.column.field] }}</span>
-        </span>
-        <span v-else-if="props.column.field == 'supply'">
-          <span>{{ props.formattedRow[props.column.field] }}
-            <span class="extra-text">
-              {{ showAsset(props.row.asset) }}
+    <Card :isLoading="!(rows && rows.length > 0)">
+      <vue-good-table
+        v-if="cols && rows.length > 0"
+        :columns="cols"
+        :rows="rows"
+        style-class="vgt-table net-table"
+        :pagination-options="{
+          enabled: true,
+          perPage: 30,
+          perPageDropdownEnabled: false,
+        }"
+        :sort-options="{
+          enabled: true,
+          initialSortBy: {field: 'utilisation', type: 'desc'}
+        }"
+      >
+        <template slot="table-column" slot-scope="props">
+          <div v-if="props.column.field == 'saverPercentage'" v-tooltip="'Savers depth to the Synth Supply'" class="table-asset">
+            Saver %
+            <info-icon class="header-icon" />
+          </div>
+          <div v-else-if="props.column.field == 'utilisation'" v-tooltip="`Synth supply to the Pool Depth relative to the Synth cap (${(synthCap*100).toFixed(2)}%)`" class="table-asset">
+            Utilisation
+            <info-icon class="header-icon" />
+          </div>
+          <span v-else>
+            {{ props.column.label }}
+          </span>
+        </template>
+        <template slot="table-row" slot-scope="props">
+          <div v-if="props.column.field == 'asset'" v-tooltip="props.row.asset" class="cell-content">
+            <AssetIcon :asset="props.row.asset" chain="THOR.RUNE" />
+            <span>{{ props.formattedRow[props.column.field] }}</span>
+          </div>
+          <span v-else-if="props.column.field == 'synth'">
+            <span v-tooltip="props.row.synth">{{ props.formattedRow[props.column.field] }}</span>
+          </span>
+          <span v-else-if="props.column.field == 'supply'">
+            <span>{{ props.formattedRow[props.column.field] }}
+              <span class="extra-text">
+                {{ showAsset(props.row.asset) }}
+              </span>
             </span>
           </span>
-        </span>
-        <span v-else-if="props.column.field == 'saverUtilisation'">
-          <span v-if="props.row.saverUtilisation != 0">
-            {{ props.formattedRow[props.column.field] }}
+          <span v-else-if="props.column.field == 'saverUtilisation'">
+            <span v-if="props.row.saverUtilisation != 0">
+              {{ props.formattedRow[props.column.field] }}
+            </span>
+            <span v-else>
+              -
+            </span>
+          </span>
+          <span v-else-if="props.column.field == 'utilisation'">
+            <span v-if="props.row.utilisation < 1">
+              {{ props.formattedRow[props.column.field] }}
+              <span v-if="props.row.isPol == true" style="color: var(--primary-color)">(POL Cap)</span>
+            </span>
+            <span v-else style="color: var(--primary-color)">
+              Filled
+            </span>
           </span>
           <span v-else>
-            -
-          </span>
-        </span>
-        <span v-else-if="props.column.field == 'utilisation'">
-          <span v-if="props.row.utilisation < 1">
             {{ props.formattedRow[props.column.field] }}
-            <span v-if="props.row.isPol == true" style="color: var(--primary-color)">(POL Cap)</span>
           </span>
-          <span v-else style="color: var(--primary-color)">
-            Filled
-          </span>
-        </span>
-        <span v-else>
-          {{ props.formattedRow[props.column.field] }}
-        </span>
-      </template>
-    </vue-good-table>
+        </template>
+      </vue-good-table>
+    </Card>
   </Page>
 </template>
 
