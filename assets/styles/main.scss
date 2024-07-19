@@ -428,6 +428,18 @@ input {
   }
 }
 
+.btn-icon {
+  display: flex;
+  width: 1.2rem;
+  height: 1.2rem;
+  fill: var(--font-color);
+  cursor: pointer;
+
+  &:hover, &.active {
+    fill: var(--primary-color);
+  }
+}
+
 .table-wrapper-row {
   display: flex;
   align-items: center;

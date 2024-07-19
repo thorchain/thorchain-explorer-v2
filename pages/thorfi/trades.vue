@@ -1,13 +1,26 @@
 <template>
     <Page>
-        <Card :isLoading="!(rows && rows.length > 0)">
+        <div
+            v-show="tradingGeneralStats && tradingGeneralStats.length > 0"
+            class="trade-stat-header"
+        >
+            <div v-for="(stat, i) in tradingGeneralStats" :key="i" class="trade-stat-card">
+                <skeleton-item :loading="!stat.value" class="value">
+                    {{ stat.value }}
+                </skeleton-item>
+                <div class="name">
+                    {{ stat.name }}
+                </div>
+            </div>
+        </div>
+        <Card :isLoading="!(rows && rows.length > 0)" title="Trade Assets">
             <template #header>
                 <button class="button-container full-screen-btn" @click="toggleUSD">
                     <template v-if="usdDenom">
-                        Enable USD Format
+                        <usd-fill-icon class="btn-icon" />
                     </template>
                     <template v-else>
-                        Disable USD Format
+                        <usd-icon class="btn-icon" />
                     </template>
                 </button>
             </template>
@@ -35,9 +48,11 @@
                         <span>{{ props.formattedRow[props.column.field] }}</span>
                     </div>
                     <div v-else-if="props.column.field == 'depth' || props.column.field == 'vaultDepth'">
-                        <span>{{ props.formattedRow[props.column.field] }}
-                            <small>{{ showAsset(props.row.asset) }}</small>
+                        <span v-if="props.row[props.column.field]">
+                            <span v-if="usdDenom">$</span>{{ props.formattedRow[props.column.field] }}
+                            <small v-if="!usdDenom">{{ showAsset(props.row.asset) }}</small>
                         </span> 
+                        <span v-else>-</span>
                     </div>
                     <span v-else>
                         <span v-if="props.row[props.column.field]">
@@ -55,10 +70,11 @@
 import { mapGetters } from 'vuex'
 import { formatAsset, tradeToAsset } from '~/utils'
 import InfoIcon from '~/assets/images/info.svg?inline'
-import { sumBy } from 'lodash'
+import UsdIcon from '~/assets/images/usd.svg?inline'
+import UsdFillIcon from '~/assets/images/usd-fill.svg?inline'
 
 export default {
-    components: { InfoIcon },
+    components: { InfoIcon, UsdIcon, UsdFillIcon },
     computed: {
         ...mapGetters({
             runePrice: 'getRunePrice'
@@ -109,24 +125,27 @@ export default {
                 }
             ],
             rows: [],
+            tradingGeneralStats: [],
             usdDenom: false,
-            error: false
+            error: false,
+            tradeAssets: undefined,
+            pools: undefined,
+            asgard: undefined
         }
     },
     async mounted() {
         try {
-            this.rows = await this.updateTradeData()
+            this.tradeAssets = (await this.$api.getTradeAssets()).data
+            this.pools = (await this.$api.getThorPools()).data
+            this.asgard = (await this.$api.getAsgard()).data
+            this.rows = this.fillTradeData(this.tradeAssets, this.pools, this.asgard)
         } catch(e) {
             this.error = true
             console.error(e)
         }
     },
     methods: {
-        async updateTradeData() {
-            const { data: tradeAssets } = await this.$api.getTradeAssets()
-            const { data: pools } = await this.$api.getThorPools()
-            const { data: asgard } = await this.$api.getAsgard()
-
+        fillTradeData(tradeAssets, pools, asgard) {
             const assetPerVault = {}
             const asgardCoins = asgard.map(a => a.coins)
             for (let i = 0; i < asgardCoins.length; i++) {
@@ -141,22 +160,64 @@ export default {
                 }
             }
 
+            let totalTradeDepth = 0
+            let totalVaultDepth = 0
+            let totalPoolDepth = 0
             const ret = []
             for (const asset of tradeAssets) {
                 const assetName = tradeToAsset(asset.asset)
                 const pool = pools.find(p => p.asset === assetName)
                 const vaultDepth = assetPerVault[assetName]
 
+                // Ignore the assets that are not in pools
+                if (!pool) {
+                    continue
+                }
+
+                let assetPrice = 1
+                if (this.usdDenom) {
+                    assetPrice = (pool?.balance_rune / pool?.balance_asset) * this.runePrice
+                }
+
+                totalTradeDepth += (asset.depth / 1e8) * (pool?.balance_rune / pool?.balance_asset) * this.runePrice
+                totalVaultDepth += ((vaultDepth ?? 0) / 1e8) * (pool?.balance_rune / pool?.balance_asset) * this.runePrice
+                totalPoolDepth += (pool?.balance_rune / 1e8) * this.runePrice 
+
+
                 ret.push({
                     ...asset,
-                    vaultDepth: vaultDepth ?? 0,
+                    depth: (asset.depth * assetPrice) ?? 0,
+                    price: assetPrice,
+                    vaultDepth: (vaultDepth * assetPrice) ?? 0,
                     vaultRatio: (vaultDepth / pool?.balance_asset) ?? 0,
                     depthRatio: (asset.depth / pool?.balance_asset) ?? 0,
                 })
             }
 
+            this.tradingGeneralStats = [
+            {
+                name: 'Total Trade Depth',
+                value: this.$options.filters.currency(totalTradeDepth)
+            }, 
+            {
+                name: 'Total Vault Depth',
+                value: this.$options.filters.currency(totalVaultDepth)
+            },
+            {
+                name: 'Total Vault / Pool',
+                value: this.$options.filters.percent(totalVaultDepth / totalPoolDepth)
+            },
+            {
+                name: 'Total Trade / Pool',
+                value: this.$options.filters.percent(totalTradeDepth / totalPoolDepth)
+            }]
+
             return ret
-        }
+        },
+        toggleUSD() {   
+            this.usdDenom = !this.usdDenom
+            this.rows = this.fillTradeData(this.tradeAssets, this.pools, this.asgard)
+        } 
     }
 }
 </script>
@@ -172,5 +233,37 @@ export default {
 
 th.end .table-asset {
     justify-content: flex-end;
+}
+
+.trade-stat-header {
+  display: grid;
+  gap: 15px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-rows: auto;
+
+  .trade-stat-card {
+    padding: 2rem 0;
+    border-radius: 8px;
+    background-color: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    .value {
+      color: var(--sec-font-color);
+      font-size: 1.5rem;
+      text-align: center;
+      min-width: 80%;
+      margin-bottom: 8px;
+    }
+
+    .name {
+      color: var(--font-color);
+      text-align: center;
+    }
+  }
 }
 </style>
