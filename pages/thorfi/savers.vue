@@ -1,25 +1,6 @@
 <template>
   <div>
-    <div
-      v-show="networkEnv === 'mainnet' && saversGeneralStats && saversGeneralStats.length > 0"
-      class="savers-stat-header"
-    >
-      <div v-for="(stat, i) in saversGeneralStats" :key="i" class="savers-stat-card">
-        <div class="value">
-          {{ stat.value }}
-        </div>
-        <div v-if="stat.change" class="stat-change">
-          <progress-icon
-            :data-number="stat.change"
-            :is-down="stat.isDown"
-            size="1rem"
-          />
-        </div>
-        <div class="name">
-          {{ stat.name }}
-        </div>
-      </div>
-    </div>
+    <cardsheader :tableGeneralStats="saversGeneralStats" :showChange="true" />
     <Page>
       <Card :is-loading="saversRow.length <= 0">
         <vue-good-table
@@ -332,32 +313,6 @@ export default {
   }
 }
 
-.savers-stat-header {
-  display: grid;
-  gap: 15px;
-  margin-bottom: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  grid-template-rows: auto;
-
-  .savers-stat-card {
-    padding: 2rem 0;
-    border-radius: 8px;
-    background-color: var(--card-bg-color);
-    border: 1px solid var(--border-color);
-
-    .value {
-      color: var(--sec-font-color);
-      font-size: 1.5rem;
-      text-align: center;
-    }
-
-    .name {
-      color: var(--font-color);
-      text-align: center;
-    }
-  }
-}
-
 .savers-filled-card {
   display: flex;
   flex-direction: column;
@@ -387,11 +342,6 @@ export default {
   max-width: 300px;
 }
 
-.stat-change {
-  display: flex;
-  justify-content: center;
-  margin: .2rem 0;
-}
 
 .footer-stat {
   margin: 1.5rem 1rem 0 1rem;

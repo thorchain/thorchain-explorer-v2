@@ -1,18 +1,6 @@
 <template>
     <Page>
-        <div
-            v-show="tradingGeneralStats && tradingGeneralStats.length > 0"
-            class="trade-stat-header"
-        >
-            <div v-for="(stat, i) in tradingGeneralStats" :key="i" class="trade-stat-card">
-                <skeleton-item :loading="!stat.value" class="value">
-                    {{ stat.value }}
-                </skeleton-item>
-                <div class="name">
-                    {{ stat.name }}
-                </div>
-            </div>
-        </div>
+        <cardsheader :tableGeneralStats="tradingGeneralStats" />
         <Card :isLoading="!(rows && rows.length > 0)" title="Trade Assets">
             <template #header>
                 <button class="button-container full-screen-btn" @click="toggleUSD">
@@ -233,37 +221,5 @@ export default {
 
 th.end .table-asset {
     justify-content: flex-end;
-}
-
-.trade-stat-header {
-  display: grid;
-  gap: 15px;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  grid-template-rows: auto;
-
-  .trade-stat-card {
-    padding: 2rem 0;
-    border-radius: 8px;
-    background-color: var(--card-bg-color);
-    border: 1px solid var(--border-color);
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-
-    .value {
-      color: var(--sec-font-color);
-      font-size: 1.5rem;
-      text-align: center;
-      min-width: 80%;
-      margin-bottom: 8px;
-    }
-
-    .name {
-      color: var(--font-color);
-      text-align: center;
-    }
-  }
 }
 </style>
