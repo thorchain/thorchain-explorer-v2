@@ -1,36 +1,27 @@
 <template>
-  <div
-    v-show="tableGeneralStats && tableGeneralStats.length > 0"
-    :class="headerClass"
-  >
-    <div
-      v-for="(stat, i) in tableGeneralStats"
-      :key="i"
-      class="table-stat-card"
-    >
+  <div v-show="tableGeneralStats && tableGeneralStats.length > 0" class="header-class">
+    <div v-for="(stat, i) in tableGeneralStats" :key="i" class="table-stat-card">
       <div class="name">
         {{ stat.name }}
+        <unknown-icon v-if="stat.description" v-tooltip="stat.description" class="header-icon" />
       </div>
-      <unknown-icon
-        v-tooltip="'Used Capacity of THORChain Lending'"
-        class="header-icon"
-      />
       <div v-if="showChange && stat.change" class="stat-change">
-        <progress-icon
-          :data-number="stat.change"
-          :is-down="stat.isDown"
-          size="1rem"
-        />
+        <progress-icon :data-number="stat.change" :is-down="stat.isDown" size="1rem" />
       </div>
       <skeleton-item :loading="!stat.value" class="value">
-                    {{ stat.value }}
-                </skeleton-item>
+        {{ stat.value }}
+      </skeleton-item>
     </div>
   </div>
 </template>
 
 <script>
+import UnknownIcon from '~/assets/images/unknown.svg?inline'
+
 export default {
+  components: {
+    UnknownIcon
+  },
   props: {
     tableGeneralStats: {
       type: Array,
@@ -40,22 +31,17 @@ export default {
       type: Boolean,
       default: false,
     },
-  },
-  data() {
-    return {
-      headerClass: "headerClass",
-    };
-  },
+  }
 };
 </script>
 
 <style lang="scss">
-.headerClass {
+.header-class {
   display: grid;
   gap: 15px;
-  margin-bottom: 1rem;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   grid-template-rows: auto;
+
   .table-stat-card {
     padding: 2rem 0;
     border-radius: 8px;
@@ -78,6 +64,16 @@ export default {
     .name {
       color: var(--font-color);
       text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      .header-icon {
+        fill: var(--font-color);
+        margin-left: 10px;
+        height: 0.9rem;
+        width: 0.9rem;
+      }
     }
 
     .stat-change {

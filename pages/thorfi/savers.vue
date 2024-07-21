@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <cardsheader :tableGeneralStats="saversGeneralStats" :showChange="true" />
+  <Page>
+    <cards-header :tableGeneralStats="saversGeneralStats" :showChange="true" />
     <Page>
       <Card :is-loading="saversRow.length <= 0">
         <vue-good-table
@@ -72,7 +72,7 @@
         All of the stat changes are based on 24 hours period
       </small>
     </div>
-  </div>
+  </Page>
 </template>
 
 <script>

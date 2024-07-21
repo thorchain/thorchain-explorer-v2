@@ -89,13 +89,9 @@
 </template>
 
 <script>
-import UnknownIcon from '~/assets/images/unknown.svg?inline'
 import endpoints from '~/api/endpoints'
 
 export default {
-  components: {
-    UnknownIcon
-  },
   data () {
     return {
       reserveAddress: endpoints[process.env.NETWORK].MODULE_ADDR,

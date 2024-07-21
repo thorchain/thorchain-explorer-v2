@@ -1,6 +1,6 @@
 <template>
     <Page>
-        <cardsheader :tableGeneralStats="tradingGeneralStats" />
+        <cards-header :tableGeneralStats="tradingGeneralStats" />
         <Card :isLoading="!(rows && rows.length > 0)" title="Trade Assets">
             <template #header>
                 <button class="button-container full-screen-btn" @click="toggleUSD">
