@@ -11,6 +11,10 @@
       <div class="name">
         {{ stat.name }}
       </div>
+      <unknown-icon
+        v-tooltip="'Used Capacity of THORChain Lending'"
+        class="header-icon"
+      />
       <div v-if="showChange && stat.change" class="stat-change">
         <progress-icon
           :data-number="stat.change"
@@ -21,10 +25,6 @@
       <skeleton-item :loading="!stat.value" class="value">
                     {{ stat.value }}
                 </skeleton-item>
-      <unknown-icon
-        v-tooltip="'Used Capacity of THORChain Lending'"
-        class="header-icon"
-      />
     </div>
   </div>
 </template>
