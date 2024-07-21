@@ -345,8 +345,10 @@ export default {
                 },
                 {
                   key: 'Gas',
-                  value: `${a.gas / 1e8} ${this.showAsset(a.gasAsset)}`,
-                  is: a.gas && a.gasAsset
+                  value: `${a?.gas / 1e8} ${this.showAsset(a?.gasAsset)}` + (this.pools
+                    ? ` (${this.formatCurrency(this.amountToUSD(a?.gasAsset, a?.gas, this.pools))})`
+                    : ''),
+                  is: a?.gas && a?.gasAsset
                 },
                 {
                   key: 'Inbound Stage',
