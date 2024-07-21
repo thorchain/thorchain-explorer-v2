@@ -1,5 +1,5 @@
 <template>
-    <Page>
+    <div>
         <cards-header :tableGeneralStats="tradingGeneralStats" />
         <Card :isLoading="!(rows && rows.length > 0)" title="Trade Assets">
             <template #header>
@@ -12,19 +12,14 @@
                     </template>
                 </button>
             </template>
-            <vue-good-table v-if="cols && rows.length > 0" 
-                :columns="cols" 
-                :rows="rows" 
-                style-class="vgt-table net-table"
-                :pagination-options="{
+            <vue-good-table v-if="cols && rows.length > 0" :columns="cols" :rows="rows"
+                style-class="vgt-table net-table" :pagination-options="{
                     enabled: true,
                     perPage: 30,
                     perPageDropdownEnabled: false,
-                }" 
-                :sort-options="{
+                }" :sort-options="{
                     enabled: true
-                }"
-            >
+                }">
                 <template slot="table-column" slot-scope="props">
                     <span>
                         {{ props.column.label }}
@@ -39,7 +34,7 @@
                         <span v-if="props.row[props.column.field]">
                             <span v-if="usdDenom">$</span>{{ props.formattedRow[props.column.field] }}
                             <small v-if="!usdDenom">{{ showAsset(props.row.asset) }}</small>
-                        </span> 
+                        </span>
                         <span v-else>-</span>
                     </div>
                     <span v-else>
@@ -51,7 +46,7 @@
                 </template>
             </vue-good-table>
         </Card>
-    </Page>
+    </div>
 </template>
 
 <script>
@@ -113,7 +108,18 @@ export default {
                 }
             ],
             rows: [],
-            tradingGeneralStats: [],
+            tradingGeneralStats: [{
+                name: 'Total Trade Depth',
+            },
+            {
+                name: 'Total Vault Depth',
+            },
+            {
+                name: 'Total Vault / Pool',
+            },
+            {
+                name: 'Total Trade / Pool',
+            }],
             usdDenom: false,
             error: false,
             tradeAssets: undefined,
@@ -127,7 +133,7 @@ export default {
             this.pools = (await this.$api.getThorPools()).data
             this.asgard = (await this.$api.getAsgard()).data
             this.rows = this.fillTradeData(this.tradeAssets, this.pools, this.asgard)
-        } catch(e) {
+        } catch (e) {
             this.error = true
             console.error(e)
         }
@@ -139,7 +145,7 @@ export default {
             for (let i = 0; i < asgardCoins.length; i++) {
                 const v = asgardCoins[i]
                 for (let j = 0; j < v.length; j++) {
-                    const {asset, amount} = v[j]
+                    const { asset, amount } = v[j]
                     if (!assetPerVault[asset]) {
                         assetPerVault[asset] = +amount
                     } else {
@@ -169,7 +175,7 @@ export default {
 
                 totalTradeDepth += (asset.depth / 1e8) * (pool?.balance_rune / pool?.balance_asset) * this.runePrice
                 totalVaultDepth += ((vaultDepth ?? 0) / 1e8) * (pool?.balance_rune / pool?.balance_asset) * this.runePrice
-                totalPoolDepth += (pool?.balance_rune / 1e8) * this.runePrice 
+                totalPoolDepth += (pool?.balance_rune / 1e8) * this.runePrice
 
 
                 ret.push({
@@ -183,29 +189,29 @@ export default {
             }
 
             this.tradingGeneralStats = [
-            {
-                name: 'Total Trade Depth',
-                value: this.$options.filters.currency(totalTradeDepth)
-            }, 
-            {
-                name: 'Total Vault Depth',
-                value: this.$options.filters.currency(totalVaultDepth)
-            },
-            {
-                name: 'Total Vault / Pool',
-                value: this.$options.filters.percent(totalVaultDepth / totalPoolDepth)
-            },
-            {
-                name: 'Total Trade / Pool',
-                value: this.$options.filters.percent(totalTradeDepth / totalPoolDepth)
-            }]
+                {
+                    name: 'Total Trade Depth',
+                    value: this.$options.filters.currency(totalTradeDepth)
+                },
+                {
+                    name: 'Total Vault Depth',
+                    value: this.$options.filters.currency(totalVaultDepth)
+                },
+                {
+                    name: 'Total Vault / Pool',
+                    value: this.$options.filters.percent(totalVaultDepth / totalPoolDepth)
+                },
+                {
+                    name: 'Total Trade / Pool',
+                    value: this.$options.filters.percent(totalTradeDepth / totalPoolDepth)
+                }]
 
             return ret
         },
-        toggleUSD() {   
+        toggleUSD() {
             this.usdDenom = !this.usdDenom
             this.rows = this.fillTradeData(this.tradeAssets, this.pools, this.asgard)
-        } 
+        }
     }
 }
 </script>

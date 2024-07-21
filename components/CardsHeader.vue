@@ -5,7 +5,7 @@
         {{ stat.name }}
         <unknown-icon v-if="stat.description" v-tooltip="stat.description" class="header-icon" />
       </div>
-      <div v-if="showChange && stat.change" class="stat-change">
+      <div v-if="stat.change" class="stat-change">
         <progress-icon :data-number="stat.change" :is-down="stat.isDown" size="1rem" />
       </div>
       <skeleton-item :loading="!stat.value" class="value">
@@ -35,10 +35,11 @@ export default {
 };
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .header-class {
   display: grid;
   gap: 15px;
+  margin-bottom: 1rem;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   grid-template-rows: auto;
 
