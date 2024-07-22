@@ -11,7 +11,7 @@
         <span v-else>-</span>
       </template>
     </stat-table>
-    <stat-table header="providers" :table-settings="providersSettings">
+    <stat-table v-if="isStagenet" header="Providers" :table-settings="providersSettings">
       <template #providerspnl>
         <span v-if="providerspnl.value" :style="{ 'color': providerspnl.isDown ? 'red' : 'green' }">
           <span v-if="providerspnl.isDown">-</span>
@@ -22,7 +22,7 @@
         <span v-else>-</span>
       </template>
     </stat-table>
-    <stat-table header="reserve" :table-settings="reserveSettings">
+    <stat-table v-if="isStagenet" header="Reserve" :table-settings="reserveSettings">
       <template #reservepnl>
         <span v-if="reservepnl.value" :style="{ 'color': reservepnl.isDown ? 'red' : 'green' }">
           <span v-if="reservepnl.isDown">-</span>
@@ -59,7 +59,7 @@
                 <small>RUNE</small></span>
               <span v-if="props.row[props.column.field][1]" class="ellipsis">{{ props.row[props.column.field][1] ||
                 props.row[props.column.field][1] === 0 ? ($options.filters.number(props.row[props.column.field][1],
-                '0,0.000000')) : '-' }} <small class="ellipsis">{{ props.row.pool }}</small></span>
+                  '0,0.000000')) : '-' }} <small class="ellipsis">{{ props.row.pool }}</small></span>
               <span v-else-if="!props.row[props.column.field][0]">-</span>
             </span>
             <span v-else-if="props.column.field == 'share'">
@@ -136,6 +136,9 @@ export default {
     }
   },
   computed: {
+    isStagenet() {
+      return process.env.NETWORK === 'stagenet'
+    },
     pnl() {
       const pnl = (+this.polOverview?.value - +this.polOverview?.current_deposit)
 
@@ -147,14 +150,12 @@ export default {
     },
     reservepnl() {
       const pnl = (+this.reserveOverview?.value - +this.reserveOverview?.current_deposit)
-
       return {
         value: Math.abs(pnl) / 1e8,
         name: 'Current RUNE PnL',
         isDown: pnl <= 0
       }
     },
-
     providerspnl() {
       const pnl = this.providersOverview?.pnl
       return {
@@ -163,22 +164,29 @@ export default {
         isDown: pnl <= 0
       }
     },
-    
     polSettings() {
       return [
         [
           {
-            name: 'Current RUNE PnL',
+            name: 'Current PnL',
             slotName: 'pnl'
           },
           {
-            name: 'Overall RUNE deposited',
+            name: 'Current Deposited',
+            value: this.polOverview?.current_deposit / 1e8,
+            filter: true,
+            runeValue: true
+          }
+        ],
+        [
+          {
+            name: 'Overall Deposited',
             value: this.polOverview?.rune_deposited / 1e8,
             filter: true,
             runeValue: true
           },
           {
-            name: 'Overall RUNE Withdrawn',
+            name: 'Overall Withdrawn',
             value: this.polOverview?.rune_withdrawn / 1e8,
             filter: true,
             runeValue: true
@@ -190,53 +198,73 @@ export default {
       return [
         [
           {
-            name: 'Current RUNE PnL',
+            name: 'Current PnL',
             slotName: 'reservepnl'
-
           },
           {
             name: 'Current Deposit',
-            value: this.reserveOverview?.current_deposit /1e8 ,
+            value: this.reserveOverview?.current_deposit / 1e8,
             filter: true,
             runeValue: true
-          },
-          
+          }
+        ],
+        [
           {
             name: 'Reserve Units',
-            value: this.reserveOverview?.units / 1e8,
-            filter: true,
-            runeValue: true
+            value: this.reserveOverview?.units,
+          }
+        ],
+        [
+          {
+            name: 'Reserve Share',
+            value: this.$options.filters.percent(+this.reserveOverview?.value / +this.polOverview?.value, 3),
+            filter: true
           }
         ]
       ]
     },
-
-   providersSettings() {
+    providersSettings() {
+      console.log(this.providersOverview?.value / this.polOverview?.value)
       return [
         [
-        {
-          name: 'Current RUNE PnL',
+          {
+            name: 'Current RUNE PnL',
             slotName: 'providerspnl'
           },
-          
           {
             name: 'Current Deposit',
-            value: this.providersOverview?.current_deposit/1e8,
+            value: this.providersOverview?.current_deposit / 1e8,
             filter: true,
             runeValue: true
           },
-          
           {
             name: 'Pending Rune',
             value: this.providersOverview?.pending_rune / 1e8,
             filter: true,
             runeValue: true
           }
+        ],
+        [
+          {
+            name: 'Providers Units',
+            value: this.providersOverview?.units,
+            extraInfo: 'The units of RUNEPool owned by providers (including pending)'
+          },
+          {
+            name: 'Providers Pending Units',
+            value: this.providersOverview?.pending_units,
+            extraInfo: 'The units of RUNEPool owned by providers that remain pending'
+          }
+        ],
+        [
+          {
+            name: 'Provider Share',
+            value: this.$options.filters.percent(+this.providersOverview?.value / +this.polOverview?.value, 3),
+            filter: true
+          }
         ]
       ]
     },
-
-
     polMimirSettings() {
       if (!this.mimir) {
         return []
@@ -314,21 +342,11 @@ export default {
     }
 
     try {
-
-      let runePoolData;
-
       if (process.env.NETWORK === 'stagenet') {
-        runePoolData = (await this.$api.getRunePool()).data
-      
+        ({pol: this.polOverview, providers: this.providersOverview, reserve: this.reserveOverview} = (await this.$api.getRunePool()).data)
       } else {
-        runePoolData = (await this.$api.getPol()).data
-       
+        this.polOverview = (await this.$api.getPol()).data
       }
-
-      this.polOverview = runePoolData.pol
-      this.reserveOverview = runePoolData.reserve
-      this.providersOverview = runePoolData.providers
-
 
       const { data: mimirData } = await this.$api.getMimir()
       this.mimir = mimirData
