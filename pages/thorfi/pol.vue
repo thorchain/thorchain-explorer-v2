@@ -314,31 +314,20 @@ export default {
     }
 
     try {
-      // TODO: needs to be changed after 134 mainnet release
 
-      let polData;
+      let runePoolData;
 
       if (process.env.NETWORK === 'stagenet') {
-        polData = (await this.$api.getRunePool()).data
+        runePoolData = (await this.$api.getRunePool()).data
       
       } else {
-        polData = (await this.$api.getPol()).data
+        runePoolData = (await this.$api.getPol()).data
        
       }
 
-      this.polOverview = polData.pol
-      this.reserveOverview = polData.reserve
-      this.providersOverview = polData.providers
-
-      console.log('polOverview:', this.polOverview);
-console.log('reserveOverview:', this.reserveOverview);
-console.log('providersOverview:', this.providersOverview);
-      
-
-
-
-
-
+      this.polOverview = runePoolData.pol
+      this.reserveOverview = runePoolData.reserve
+      this.providersOverview = runePoolData.providers
 
 
       const { data: mimirData } = await this.$api.getMimir()
