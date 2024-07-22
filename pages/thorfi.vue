@@ -29,7 +29,7 @@ export default {
         },
         {
           link: '/thorfi/pol',
-          text: 'Protocol Owned Liquidity'
+          text: 'RunePool'
         },
         {
           link: '/thorfi/lending',

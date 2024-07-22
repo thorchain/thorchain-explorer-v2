@@ -1,6 +1,6 @@
 <template>
   <Page>
-    <stat-table header="Overview" :table-settings="polSettings">
+    <stat-table header="Protocol Owned Liquidity" :table-settings="polSettings">
       <template #pnl>
         <span v-if="pnl.value" :style="{'color': pnl.isDown ? 'red':'green'}">
           <span v-if="pnl.isDown">-</span>
