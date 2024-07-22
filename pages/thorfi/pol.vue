@@ -2,10 +2,32 @@
   <Page>
     <stat-table header="Protocol Owned Liquidity" :table-settings="polSettings">
       <template #pnl>
-        <span v-if="pnl.value" :style="{'color': pnl.isDown ? 'red':'green'}">
+        <span v-if="pnl.value" :style="{ 'color': pnl.isDown ? 'red' : 'green' }">
           <span v-if="pnl.isDown">-</span>
           <span v-if="!pnl.isDown">+</span>
           {{ pnl.value | number('0,0.00') }}
+          <small>RUNE</small>
+        </span>
+        <span v-else>-</span>
+      </template>
+    </stat-table>
+    <stat-table header="providers" :table-settings="providersSettings">
+      <template #providerspnl>
+        <span v-if="providerspnl.value" :style="{ 'color': providerspnl.isDown ? 'red' : 'green' }">
+          <span v-if="providerspnl.isDown">-</span>
+          <span v-if="!providerspnl.isDown">+</span>
+          {{ providerspnl.value | number('0,0.00') }}
+          <small>RUNE</small>
+        </span>
+        <span v-else>-</span>
+      </template>
+    </stat-table>
+    <stat-table header="reserve" :table-settings="reserveSettings">
+      <template #reservepnl>
+        <span v-if="reservepnl.value" :style="{ 'color': reservepnl.isDown ? 'red' : 'green' }">
+          <span v-if="reservepnl.isDown">-</span>
+          <span v-if="!reservepnl.isDown">+</span>
+          {{ reservepnl.value | number('0,0.00') }}
           <small>RUNE</small>
         </span>
         <span v-else>-</span>
@@ -17,16 +39,11 @@
         Pools
       </div>
       <div class="card-body">
-        <vue-good-table
-          :columns="cols"
-          :rows="lps"
-          style-class="vgt-table net-table"
-          :pagination-options="{
-            enabled: true,
-            perPage: 5,
-            perPageDropdownEnabled: false,
-          }"
-        >
+        <vue-good-table :columns="cols" :rows="lps" style-class="vgt-table net-table" :pagination-options="{
+          enabled: true,
+          perPage: 5,
+          perPageDropdownEnabled: false,
+        }">
           <template slot="table-row" slot-scope="props">
             <div v-if="props.column.field == 'pool'" class="asset-cell">
               <AssetIcon :asset="props.row.pool" />
@@ -38,8 +55,11 @@
               </div>
             </div>
             <span v-else-if="props.column.field.startsWith('pool')" class="pool-cell ellipsis">
-              <span v-if="props.row[props.column.field][0]">{{ props.row[props.column.field][0] | number('0,0.00') }} <small>RUNE</small></span>
-              <span v-if="props.row[props.column.field][1]" class="ellipsis">{{ props.row[props.column.field][1] || props.row[props.column.field][1] === 0 ? ($options.filters.number(props.row[props.column.field][1], '0,0.000000')) : '-' }} <small class="ellipsis">{{ props.row.pool }}</small></span>
+              <span v-if="props.row[props.column.field][0]">{{ props.row[props.column.field][0] | number('0,0.00') }}
+                <small>RUNE</small></span>
+              <span v-if="props.row[props.column.field][1]" class="ellipsis">{{ props.row[props.column.field][1] ||
+                props.row[props.column.field][1] === 0 ? ($options.filters.number(props.row[props.column.field][1],
+                '0,0.000000')) : '-' }} <small class="ellipsis">{{ props.row.pool }}</small></span>
               <span v-else-if="!props.row[props.column.field][0]">-</span>
             </span>
             <span v-else-if="props.column.field == 'share'">
@@ -58,10 +78,12 @@ import moment from 'moment'
 import endpoints from '~/api/endpoints'
 
 export default {
-  data () {
+  data() {
     return {
       reserveAddress: endpoints[process.env.NETWORK].MODULE_ADDR,
       polOverview: undefined,
+      reserveOverview: undefined,
+      providersOverview: undefined,
       networkConst: undefined,
       mimir: undefined,
       pools: [],
@@ -114,7 +136,7 @@ export default {
     }
   },
   computed: {
-    pnl () {
+    pnl() {
       const pnl = (+this.polOverview?.value - +this.polOverview?.current_deposit)
 
       return {
@@ -123,7 +145,26 @@ export default {
         isDown: pnl <= 0
       }
     },
-    polSettings () {
+    reservepnl() {
+      const pnl = (+this.reserveOverview?.value - +this.reserveOverview?.current_deposit)
+
+      return {
+        value: Math.abs(pnl) / 1e8,
+        name: 'Current RUNE PnL',
+        isDown: pnl <= 0
+      }
+    },
+
+    providerspnl() {
+      const pnl = this.providersOverview?.pnl
+      return {
+        value: Math.abs(pnl) / 1e8,
+        name: 'Current RUNE PnL',
+        isDown: pnl <= 0
+      }
+    },
+    
+    polSettings() {
       return [
         [
           {
@@ -145,7 +186,58 @@ export default {
         ]
       ]
     },
-    polMimirSettings () {
+    reserveSettings() {
+      return [
+        [
+          {
+            name: 'Current RUNE PnL',
+            slotName: 'reservepnl'
+
+          },
+          {
+            name: 'Current Deposit',
+            value: this.reserveOverview?.current_deposit /1e8 ,
+            filter: true,
+            runeValue: true
+          },
+          
+          {
+            name: 'Reserve Units',
+            value: this.reserveOverview?.units / 1e8,
+            filter: true,
+            runeValue: true
+          }
+        ]
+      ]
+    },
+
+   providersSettings() {
+      return [
+        [
+        {
+          name: 'Current RUNE PnL',
+            slotName: 'providerspnl'
+          },
+          
+          {
+            name: 'Current Deposit',
+            value: this.providersOverview?.current_deposit/1e8,
+            filter: true,
+            runeValue: true
+          },
+          
+          {
+            name: 'Pending Rune',
+            value: this.providersOverview?.pending_rune / 1e8,
+            filter: true,
+            runeValue: true
+          }
+        ]
+      ]
+    },
+
+
+    polMimirSettings() {
       if (!this.mimir) {
         return []
       }
@@ -203,7 +295,7 @@ export default {
       ]
     }
   },
-  async mounted () {
+  async mounted() {
     if (!this.reserveAddress) {
       return
     }
@@ -223,14 +315,31 @@ export default {
 
     try {
       // TODO: needs to be changed after 134 mainnet release
-      let polData
+
+      let polData;
 
       if (process.env.NETWORK === 'stagenet') {
-        polData = (await this.$api.getRunePool()).data.pol
+        polData = (await this.$api.getRunePool()).data
+      
       } else {
         polData = (await this.$api.getPol()).data
+       
       }
-      this.polOverview = polData
+
+      this.polOverview = polData.pol
+      this.reserveOverview = polData.reserve
+      this.providersOverview = polData.providers
+
+      console.log('polOverview:', this.polOverview);
+console.log('reserveOverview:', this.reserveOverview);
+console.log('providersOverview:', this.providersOverview);
+      
+
+
+
+
+
+
 
       const { data: mimirData } = await this.$api.getMimir()
       this.mimir = mimirData
@@ -242,7 +351,7 @@ export default {
     }
   },
   methods: {
-    parseMemberDetails (pools) {
+    parseMemberDetails(pools) {
       this.lps = pools.map(p => ({
         ...p,
         poolAdded: [p.runeAdded / 100000000, p.assetAdded / 100000000],
@@ -253,7 +362,7 @@ export default {
         poolShare: []
       }))
     },
-    findShare (pools, memberDetails) {
+    findShare(pools, memberDetails) {
       memberDetails.forEach((m, i) => {
         const poolDetail = pools.find(p => p.asset === m.pool)
         const share = m.liquidityUnits / poolDetail.units
