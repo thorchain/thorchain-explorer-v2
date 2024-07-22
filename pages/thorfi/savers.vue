@@ -1,53 +1,31 @@
 <template>
   <div>
-    <div
-      v-show="networkEnv === 'mainnet' && saversGeneralStats && saversGeneralStats.length > 0"
-      class="savers-stat-header"
-    >
-      <div v-for="(stat, i) in saversGeneralStats" :key="i" class="savers-stat-card">
-        <div class="value">
-          {{ stat.value }}
-        </div>
-        <div v-if="stat.change" class="stat-change">
-          <progress-icon
-            :data-number="stat.change"
-            :is-down="stat.isDown"
-            size="1rem"
-          />
-        </div>
-        <div class="name">
-          {{ stat.name }}
-        </div>
-      </div>
-    </div>
+    <cards-header :tableGeneralStats="saversGeneralStats" />
     <Page>
       <Card :is-loading="saversRow.length <= 0">
-        <vue-good-table
-          v-if="saversRow.length > 0"
-          :columns="saverCols"
-          :rows="saversRow"
-          style-class="vgt-table net-table"
-          :pagination-options="{
+        <vue-good-table v-if="saversRow.length > 0" :columns="saverCols" :rows="saversRow"
+          style-class="vgt-table net-table" :pagination-options="{
             enabled: true,
             perPage: 30,
             perPageDropdownEnabled: false,
-          }"
-          :sort-options="{
+          }" :sort-options="{
             enabled: true,
-            initialSortBy: networkEnv === 'mainnet' ? {field: 'saversDepthUSD', type: 'desc'} : {}
-          }"
-          @on-row-click="gotoSaver"
-        >
+            initialSortBy: networkEnv === 'mainnet' ? { field: 'saversDepthUSD', type: 'desc' } : {}
+          }" @on-row-click="gotoSaver">
           <template slot="table-column" slot-scope="props">
-            <div v-if="props.column.field == 'saversDepthRatio'" v-tooltip="'Savers depth to the Asset Depth in the pool'" class="table-asset end">
+            <div v-if="props.column.field == 'saversDepthRatio'"
+              v-tooltip="'Savers depth to the Asset Depth in the pool'" class="table-asset end">
               {{ props.column.label }}
               <info-icon class="header-icon" />
             </div>
-            <div v-else-if="props.column.field == 'filled'" v-tooltip="'Savers depth to the max synth per pool depth threshold'" class="table-asset end">
+            <div v-else-if="props.column.field == 'filled'"
+              v-tooltip="'Savers depth to the max synth per pool depth threshold'" class="table-asset end">
               {{ props.column.label }}
               <info-icon class="header-icon" />
             </div>
-            <div v-else-if="props.column.field == 'saversReturn'" v-tooltip="'This week savers yield based on its depth and units growth over an extended of a year'" class="table-asset end">
+            <div v-else-if="props.column.field == 'saversReturn'"
+              v-tooltip="'This week savers yield based on its depth and units growth over an extended of a year'"
+              class="table-asset end">
               {{ props.column.label }}
               <info-icon class="header-icon" />
             </div>
@@ -63,11 +41,9 @@
             <span v-else-if="props.column.field == 'saversDepth'">
               <span>
                 {{ props.formattedRow[props.column.field] }}
-                <progress-icon
-                  v-if="props.row.delta && props.row.delta[props.column.field]"
+                <progress-icon v-if="props.row.delta && props.row.delta[props.column.field]"
                   :data-number="smallBaseAmountFormat(props.row.delta[props.column.field])"
-                  :is-down="+props.row.delta[props.column.field] < 0"
-                />
+                  :is-down="+props.row.delta[props.column.field] < 0" />
                 <span class="extra-text" style="font-size: .6rem; font-weight: bold;">
                   {{ showAsset(props.row.asset) }}
                 </span>
@@ -75,11 +51,9 @@
             </span>
             <span v-else>
               {{ props.formattedRow[props.column.field] }}
-              <progress-icon
-                v-if="props.row.delta && props.row.delta[props.column.field]"
+              <progress-icon v-if="props.row.delta && props.row.delta[props.column.field]"
                 :data-number="getFormattedValue(props.column.field, props.row.delta[props.column.field])"
-                :is-down="+props.row.delta[props.column.field] < 0"
-              />
+                :is-down="+props.row.delta[props.column.field] < 0" />
             </span>
           </template>
         </vue-good-table>
@@ -103,7 +77,7 @@ import { formatAsset } from '~/utils'
 
 export default {
   components: { ProgressIcon, InfoIcon },
-  data () {
+  data() {
     return {
       error: false,
       saverCols: [
@@ -152,9 +126,22 @@ export default {
           tdClass: 'mono'
         }
       ],
+      saversGeneralStats: [
+        {
+          name: 'Total Savers',
+        },
+        {
+          name: 'Total Saved Value',
+        },
+        {
+          name: 'Total Earned',
+        },
+        {
+          name: 'APR Mean',
+        }
+      ],
       saversInfo: {},
       saversRow: [],
-      saversGeneralStats: [],
       totalSaversFilled: 0,
       totalSaversValue: undefined,
       totalSaverFormatter: undefined,
@@ -165,11 +152,11 @@ export default {
     ...mapGetters({
       runePrice: 'getRunePrice'
     }),
-    networkEnv () {
+    networkEnv() {
       return process.env.NETWORK
     }
   },
-  mounted () {
+  mounted() {
     // Disable column 5 if stagenet
     this.saverCols[5].hidden = this.networkEnv === 'stagenet'
 
@@ -191,7 +178,7 @@ export default {
     }).catch(err => console.error('didn\'t catch the max synth per asset depth', err))
   },
   methods: {
-    formatSaversInfo () {
+    formatSaversInfo() {
       const ret = []
       for (const asset of Object.keys(this.saversInfo)) {
         const s = this.saversInfo[asset]
@@ -214,7 +201,7 @@ export default {
 
       return ret
     },
-    getFormattedValue (field, value) {
+    getFormattedValue(field, value) {
       switch (field) {
         case 'saversDepthUSD':
           return this.smallBaseAmountFormatWithCur(+value)
@@ -225,7 +212,7 @@ export default {
           return +value
       }
     },
-    fillSaversTotal () {
+    fillSaversTotal() {
       const g = {
         saversCount: 0,
         totalUSDSaved: 0,
@@ -285,7 +272,7 @@ export default {
         }
       ]
     },
-    fillTotalSaversValue () {
+    fillTotalSaversValue() {
       this.totalSaversValue = this.saversRow.map(saver => ({
         value: saver?.saversDepthUSD,
         name: saver?.asset,
@@ -332,32 +319,6 @@ export default {
   }
 }
 
-.savers-stat-header {
-  display: grid;
-  gap: 15px;
-  margin-bottom: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  grid-template-rows: auto;
-
-  .savers-stat-card {
-    padding: 2rem 0;
-    border-radius: 8px;
-    background-color: var(--card-bg-color);
-    border: 1px solid var(--border-color);
-
-    .value {
-      color: var(--sec-font-color);
-      font-size: 1.5rem;
-      text-align: center;
-    }
-
-    .name {
-      color: var(--font-color);
-      text-align: center;
-    }
-  }
-}
-
 .savers-filled-card {
   display: flex;
   flex-direction: column;
@@ -387,11 +348,6 @@ export default {
   max-width: 300px;
 }
 
-.stat-change {
-  display: flex;
-  justify-content: center;
-  margin: .2rem 0;
-}
 
 .footer-stat {
   margin: 1.5rem 1rem 0 1rem;
