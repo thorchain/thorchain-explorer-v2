@@ -101,104 +101,98 @@
     </div>
     <div class="break" />
     <div class="chart-inner-container">
-      <Card :navs="[{title: 'Swap History Volume', value: 'swap-vol'}, {title: 'Swap History Count', value: 'swap-count'}]" :act-nav.sync="swapMode">
-        <VChart v-if="swapMode == 'swap-vol'" :option="swapHistory" :loading="!swapHistory" :autoresize="true" :loading-options="showLoading" />
-        <VChart v-if="swapMode == 'swap-count'" :option="swapHistoryCount" :loading="!swapHistoryCount" :autoresize="true" :loading-options="showLoading" />
+      <Card :navs="[{title: 'Swap Volume', value: 'swap-vol'}, {title: 'Earnings Volume', value: 'earnings-vol'}, {title: 'Swap Count', value: 'swap-count'}]" :act-nav.sync="swapMode">
+        <VChart v-if="swapMode == 'swap-vol'" :key="1" :option="swapHistory" :loading="!swapHistory" :autoresize="true" :loading-options="showLoading" />
+        <VChart v-if="swapMode == 'earnings-vol'" :key="2" :option="earningsHistory" :loading="!earningsHistory" :autoresize="true" :loading-options="showLoading" />
+        <VChart v-if="swapMode == 'swap-count'" :key="3" :option="swapHistoryCount" :loading="!swapHistoryCount" :autoresize="true" :loading-options="showLoading" />
       </Card>
-      <Card title="Pool Depth & Volume" class="pool-depth-container" :is-loading="!poolsOption">
-        <div class="pool-depth-chart">
-          <VChart :option="poolsOption" :autoresize="true" :loading-options="showLoading" style="width: 275px;height:250px;min-height: initial;" />
+      <Card :navs="[{title: 'Chain Status', value: 'chain-status'}, {title: 'Pools Volume', value: 'pools-vol'}]" :act-nav.sync="poolMode">
+        <div v-if="poolMode == 'pools-vol'" class="pool-depth-container" :key="1">
+          <div class="pool-depth-chart">
+            <VChart :option="poolsOption" :autoresize="true" :loading-options="showLoading" style="width: 275px;height:250px;min-height: initial;" />
+          </div>
+          <div v-if="poolsData" class="pool-depth-extra">
+            <table>
+              <thead>
+                <tr>
+                  <th>Pool Name</th>
+                  <th style="text-align: center;">
+                    Volume
+                  </th>
+                  <th>Depth</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="p in poolsData">
+                  <td>
+                    <div class="pool-name-container">
+                      <div class="data-color" :style="{backgroundColor: p.color}" />
+                      {{ p.name }}
+                    </div>
+                  </td>
+                  <td style="text-align: center;">
+                    ${{ p.vol | number('0,0 a') }}
+                  </td>
+                  <td style="text-align: center;">
+                    ${{ p.value | number('0,0 a') }}
+                  </td>
+                </tr>
+                <tr class="table-footer">
+                  <td colspan="2">
+                    Total value locked in pools:
+                  </td>
+                  <td style="text-align: center;">
+                    ${{ totalValuePooled | number('0,0 a') }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
-        <div v-if="poolsData" class="pool-depth-extra">
-          <table>
-            <thead>
-              <tr>
-                <th>Pool Name</th>
-                <th style="text-align: center;">
-                  Volume
-                </th>
-                <th>Depth</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="p in poolsData">
-                <td>
-                  <div class="pool-name-container">
-                    <div class="data-color" :style="{backgroundColor: p.color}" />
-                    {{ p.name }}
-                  </div>
-                </td>
-                <td style="text-align: center;">
-                  ${{ p.vol | number('0,0 a') }}
-                </td>
-                <td style="text-align: center;">
-                  ${{ p.value | number('0,0 a') }}
-                </td>
-              </tr>
-              <tr class="table-footer">
-                <td colspan="2">
-                  Total value locked in pools:
-                </td>
-                <td style="text-align: center;">
-                  ${{ totalValuePooled | number('0,0 a') }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </Card>
-    </div>
-    <div class="chart-inner-container">
-      <Card title="Earnings Volume">
-        <VChart :option="earningsHistory" :loading="!earningsHistory" :autoresize="true" :loading-options="showLoading" />
-      </Card>
-      <Card title="Chains Status" :is-loading="!inboundInfo">
-        <template #header>
-          <dot-live />
-        </template>
-        <vue-good-table
-          :columns="inboundCols"
-          :rows="inboundInfo"
-          style-class="vgt-table net-table"
-        >
-          <template slot="table-column" slot-scope="props">
-            <div v-if="props.column.field == 'haltHeight'" v-tooltip="'Scanning'">
-              <ScanIcon class="table-icon" style="color: var(--sec-font-color)" />
-            </div>
-            <div v-else-if="props.column.field == 'haltTradingHeight'" v-tooltip="'Trading'">
-              <SwapIcon class="table-icon" style="color: var(--sec-font-color)" />
-            </div>
-            <div v-else-if="props.column.field == 'haltLPHeight'" v-tooltip="'LP'">
-              <FinanceIcon class="table-icon" style="color: var(--sec-font-color)" />
-            </div>
-            <div v-else-if="props.column.field == 'haltSigningHeight'" v-tooltip="'Signing'">
-              <SignIcon class="table-icon" style="color: var(--sec-font-color)" />
-            </div>
-            <span v-else>
-              {{ props.column.label }}
-            </span>
-          </template>
-          <template slot="table-row" slot-scope="props">
-            <div v-if="props.column.field == 'chain'" class="chain-col">
-              <asset-icon :asset="baseChainAsset(props.row.chain)" />
-              <span>
-                {{ props.formattedRow[props.column.field] }}
+        <div v-if="poolMode == 'chain-status'" style="min-width: 100%" :key="2">
+          <vue-good-table
+            :columns="inboundCols"
+            :rows="inboundInfo"
+            style-class="vgt-table net-table"
+          >
+            <template slot="table-column" slot-scope="props">
+              <div v-if="props.column.field == 'haltHeight'" v-tooltip="'Scanning'">
+                <ScanIcon class="table-icon" style="color: var(--sec-font-color)" />
+              </div>
+              <div v-else-if="props.column.field == 'haltTradingHeight'" v-tooltip="'Trading'">
+                <SwapIcon class="table-icon" style="color: var(--sec-font-color)" />
+              </div>
+              <div v-else-if="props.column.field == 'haltLPHeight'" v-tooltip="'LP'">
+                <FinanceIcon class="table-icon" style="color: var(--sec-font-color)" />
+              </div>
+              <div v-else-if="props.column.field == 'haltSigningHeight'" v-tooltip="'Signing'">
+                <SignIcon class="table-icon" style="color: var(--sec-font-color)" />
+              </div>
+              <span v-else>
+                {{ props.column.label }}
               </span>
-            </div>
-            <span v-else>
-              <template v-if="props.row[props.column.field] > 1">
-                <danger-icon v-tooltip="`Scheduled halt: ${props.row[props.column.field]}`" class="table-icon" style="fill: #EF5350;" />
-              </template>
-              <template v-else-if="props.row[props.column.field] == 1">
-                <danger-icon v-tooltip="`Mimir halt`" class="table-icon" style="fill: #EF5350;" />
-              </template>
-              <span v-else class="mono" style="color: #81C784;">OK</span>
-            </span>
-          </template>
-        </vue-good-table>
+            </template>
+            <template slot="table-row" slot-scope="props">
+              <div v-if="props.column.field == 'chain'" class="chain-col">
+                <asset-icon :asset="baseChainAsset(props.row.chain)" />
+                <span>
+                  {{ props.formattedRow[props.column.field] }}
+                </span>
+              </div>
+              <span v-else>
+                <template v-if="props.row[props.column.field] > 1">
+                  <danger-icon v-tooltip="`Scheduled halt: ${props.row[props.column.field]}`" class="table-icon" style="fill: #EF5350;" />
+                </template>
+                <template v-else-if="props.row[props.column.field] == 1">
+                  <danger-icon v-tooltip="`Mimir halt`" class="table-icon" style="fill: #EF5350;" />
+                </template>
+                <span v-else class="mono" style="color: #81C784;">OK</span>
+              </span>
+            </template>
+          </vue-good-table>
+        </div>
       </Card>
     </div>
-    <div class="break" />
     <div class="cards-container">
       <outbounds />
       <streamings />
@@ -359,6 +353,7 @@ export default {
       poolsOption: undefined,
       poolsData: undefined,
       totalValuePooled: undefined,
+      poolMode: 'chain-status',
       swapMode: 'swap-vol',
       inboundInfo: undefined,
       mimirInfo: undefined,
@@ -908,18 +903,10 @@ export default {
       const xAxis = []
 
       const swapVolume = {
-        synthMint: [],
-        synthRedeem: [],
-        toRune: [],
-        toAsset: [],
         total: []
       }
 
       const swapCount = {
-        synthMint: [],
-        synthRedeem: [],
-        toRune: [],
-        toAsset: [],
         total: []
       }
 
@@ -936,15 +923,7 @@ export default {
         swapVolume?.total.push(
           (+interval.totalVolumeUSD / 10 ** 2)
         )
-        swapVolume?.toAsset.push((+interval.toAssetVolumeUSD) / 10 ** 2)
-        swapVolume?.toRune.push((+interval.toRuneVolumeUSD) / 10 ** 2)
-        swapVolume?.synthMint.push((+interval.synthMintVolumeUSD) / 10 ** 2)
-        swapVolume?.synthRedeem.push((+interval.synthRedeemVolumeUSD) / 10 ** 2)
 
-        swapCount.synthRedeem.push((+interval.synthRedeemCount))
-        swapCount.toAsset.push((+interval.toAssetCount))
-        swapCount.toRune.push((+interval.toRuneCount))
-        swapCount.synthMint.push((+interval.synthMintCount))
         swapCount.total.push((+interval.totalCount))
       })
 
@@ -957,53 +936,12 @@ export default {
             showSymbol: false,
             data: swapVolume?.total,
             smooth: true
-          },
-          {
-            type: 'bar',
-            name: 'to Asset Volume',
-            showSymbol: false,
-            data: swapVolume?.toAsset,
-            smooth: true
-          },
-          {
-            type: 'bar',
-            name: 'to Rune Volume',
-            showSymbol: false,
-            data: swapVolume?.toRune,
-            smooth: true
-          },
-          {
-            type: 'bar',
-            name: 'Synth mint Volume',
-            showSymbol: false,
-            data: swapVolume?.synthMint,
-            smooth: true
-          },
-          {
-            type: 'bar',
-            name: 'Synth redeem Volume',
-            showSymbol: false,
-            data: swapVolume?.synthRedeem,
-            smooth: true
           }
         ],
         xAxis,
         {
           legend: {
-            x: 'center',
-            y: 'bottom',
-            icon: 'rect',
-            textStyle: {
-              color: 'var(--font-color)'
-            },
-            data: ['Total Volume', 'to Asset Volume', 'to Rune Volume', 'Synth mint Volume', 'Synth redeem Volume'],
-            selected: {
-              'Total Volume': true,
-              'to Asset Volume': false,
-              'to Rune Volume': false,
-              'Synth mint Volume': false,
-              'Synth redeem Volume': false
-            }
+            show: false
           }
         }
       )
@@ -1018,36 +956,13 @@ export default {
             data: swapCount.total,
             smooth: true
           },
-          {
-            type: 'bar',
-            name: 'to Asset Count',
-            showSymbol: false,
-            data: swapCount.toAsset,
-            smooth: true
-          },
-          {
-            type: 'bar',
-            name: 'to Rune Count',
-            showSymbol: false,
-            data: swapCount.toRune,
-            smooth: true
-          },
-          {
-            type: 'bar',
-            name: 'Synth mint Count',
-            showSymbol: false,
-            data: swapCount.synthMint,
-            smooth: true
-          },
-          {
-            type: 'bar',
-            name: 'Synth redeem Count',
-            showSymbol: false,
-            data: swapCount.synthRedeem,
-            smooth: true
-          }
         ],
-        xAxis
+        xAxis,
+        {
+          legend: {
+            show: false
+          }
+        }
       )
 
       return { resVolume, resCount }
@@ -1348,72 +1263,70 @@ export default {
 }
 
 .pool-depth-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  padding-right: 1.5rem !important;
+  min-height: 100%;
 
-  .card-body {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-    padding-right: 1.5rem !important;
-
-    @include lg {
-      flex-wrap: wrap;
-      flex-direction: initial;
-
-      .pool-depth-chart {
-        min-width: 250px;
-      }
-    }
+  @include lg {
+    flex-wrap: wrap;
+    flex-direction: initial;
 
     .pool-depth-chart {
-      flex: 1;
+      min-width: 250px;
+    }
+  }
+
+  .pool-depth-chart {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .pool-depth-extra {
+    flex: 1;
+    margin-top: 1.5rem;
+
+    @include lg {
+      margin-top: 0;
+    }
+
+    .pool-name-container {
       display: flex;
-      justify-content: center;
       align-items: center;
     }
 
-    .pool-depth-extra {
-      flex: 1;
-      margin-top: 1.5rem;
+    table {
+      border-collapse: collapse;
+      margin: auto;
 
-      @include lg {
-        margin-top: 0;
-      }
-
-      .pool-name-container {
-        display: flex;
-        align-items: center;
-      }
-
-      table {
-        border-collapse: collapse;
-        margin: auto;
-
-        thead {
-          text-transform: uppercase;
-          border-bottom: 1px solid var(--border-color);
-
-          th {
-            padding-bottom: 7px;
-            font-size: 0.875rem;
-          }
-        }
+      thead {
+        text-transform: uppercase;
+        border-bottom: 1px solid var(--border-color);
 
         th {
-          font-weight: 700;
-          text-align: inherit;
-        }
-
-        tbody td {
-          font-weight: 700;
-          padding: 7px 0;
-          color: var(--sec-font-color);
+          padding-bottom: 7px;
           font-size: 0.875rem;
         }
+      }
 
-        .table-footer {
-          border-top: 1px solid var(--border-color);
-        }
+      th {
+        font-weight: 700;
+        text-align: inherit;
+      }
+
+      tbody td {
+        font-weight: 700;
+        padding: 7px 0;
+        color: var(--sec-font-color);
+        font-size: 0.875rem;
+      }
+
+      .table-footer {
+        border-top: 1px solid var(--border-color);
       }
     }
   }

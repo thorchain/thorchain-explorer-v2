@@ -140,6 +140,7 @@ export default {
   }
 
   .card-body {
+    flex: 1;
     padding: .75rem;
     .row-item {
       justify-content: space-between;

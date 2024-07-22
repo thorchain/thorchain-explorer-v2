@@ -1,3 +1,4 @@
+import { mapGetters } from "vuex";
 import { bnOrZero, formatBN, AssetCurrencySymbol, isSynthAsset } from '@xchainjs/xchain-util'
 import compare from 'semver/functions/compare'
 import moment from 'moment'
@@ -15,7 +16,9 @@ export default {
       }
     }
   },
-
+  ...mapGetters({
+    theme: "getTheme",
+  }),
   methods: {
     assetImage (assetStr) {
       try {
@@ -241,6 +244,11 @@ export default {
       this.$router.push(`/savers/${params.row.asset}`)
     },
     basicChartFormat (valueFormatter = undefined, series, xAxis, extraSettings = {}, globalFormatter) {
+      let colors = ['#63FDD9', '#00CCFF', '#F3BA2F', '#FF4954']
+      if (this.theme === 'light') {
+        colors = ['#3ca38b', '#00CCFF', '#F3BA2F', '#FF4954']
+      }
+
       return {
         title: {
           show: false
@@ -284,6 +292,7 @@ export default {
           left: '20px',
           right: '20px'
         },
+        color: colors,
         series,
         ...extraSettings
       }

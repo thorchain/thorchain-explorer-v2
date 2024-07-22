@@ -25,57 +25,6 @@
       header="Gas Fees"
       :icon-src="require('@/assets/images/gas.svg')"
     />
-    <Card v-show="outboundQueue" title="Outbound Queue" :img-src="require('~/assets/images/sign-out.svg')">
-      <vue-good-table
-        :columns="cols"
-        :rows="outboundQueue"
-        style-class="vgt-table net-table bordered"
-        :pagination-options="{
-          enabled: true,
-          perPage: 30,
-          perPageDropdownEnabled: false,
-        }"
-      >
-        <template slot="table-row" slot-scope="props">
-          <div v-if="props.column.field == 'coin.asset'" class="cell-content">
-            <img
-              class="table-asset-icon"
-              :src="assetImage(props.row.coin.asset)"
-              alt="asset-icon"
-            >
-            <span v-tooltip="props.row.coin.asset">{{
-              props.formattedRow[props.column.field]
-            }}</span>
-          </div>
-          <span v-else-if="props.column.field == 'coin.amount'">
-            <span>{{ props.formattedRow[props.column.field] }}
-              <span class="extra-text">
-                {{ showAsset(props.row.coin.asset) }}
-              </span>
-            </span>
-          </span>
-          <span
-            v-else-if="props.column.field == 'to_address'"
-            @click="gotoAddr(props.row.to_address)"
-          >
-            <span v-tooltip="props.row.to_address" class="clickable">{{
-              props.formattedRow[props.column.field]
-            }}</span>
-          </span>
-          <span
-            v-else-if="props.column.field == 'in_hash'"
-            @click="gotoTx(props.row.in_hash)"
-          >
-            <span v-tooltip="props.row.in_hash" class="clickable">{{
-              props.formattedRow[props.column.field]
-            }}</span>
-          </span>
-          <span v-else>
-            {{ props.formattedRow[props.column.field] }}
-          </span>
-        </template>
-      </vue-good-table>
-    </Card>
   </Page>
 </template>
 
