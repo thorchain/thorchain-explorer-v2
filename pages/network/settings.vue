@@ -1,11 +1,11 @@
 <template>
   <Page>
-    <stat-table :table-settings="outboundTxs" header="Outbound Transactions" :icon-src="require('@/assets/images/sign-out.svg')" />
-    <stat-table :table-settings="swapping" header="Swapping" :icon-src="require('@/assets/images/swap-icon.png')" />
-    <stat-table :table-settings="lpManagement" header="LP Management" :icon-src="require('@/assets/images/pi.png')" />
-    <stat-table :table-settings="chainManagement" header="Chain Management" :icon-src="require('@/assets/images/pi.png')" />
-    <stat-table :table-settings="nodeManagement" header="Node Management" :icon-src="require('@/assets/images/pi.png')" />
-    <stat-table :table-settings="economics" header="Economics" :icon-src="require('@/assets/images/pi.png')" />
+    <stat-table :table-settings="outboundTxs" header="Outbound Transactions" />
+    <stat-table :table-settings="swapping" header="Swapping" />
+    <stat-table :table-settings="lpManagement" header="LP Management" />
+    <stat-table :table-settings="chainManagement" header="Chain Management" />
+    <stat-table :table-settings="nodeManagement" header="Node Management" />
+    <stat-table :table-settings="economics" header="Economics" />
   </Page>
 </template>
 
@@ -17,14 +17,14 @@ const camelCase = e => e && e.replace(/([A-Z])/g, ' $1')
 
 export default {
   components: { StatTable },
-  data () {
+  data() {
     return {
       networkConst: [],
       mimir: undefined
     }
   },
   computed: {
-    outboundTxs () {
+    outboundTxs() {
       return [
         [
           {
@@ -57,7 +57,7 @@ export default {
         ]
       ]
     },
-    swapping () {
+    swapping() {
       return [
         [
           {
@@ -143,7 +143,7 @@ export default {
         ]
       ]
     },
-    lpManagement () {
+    lpManagement() {
       return [
         [
           {
@@ -210,7 +210,7 @@ export default {
         ]
       ]
     },
-    chainManagement () {
+    chainManagement() {
       return [
         [
           {
@@ -328,7 +328,7 @@ export default {
         ]
       ]
     },
-    nodeManagement () {
+    nodeManagement() {
       return [
         [
           // Can't find the maximum bond
@@ -449,7 +449,7 @@ export default {
         ]
       ]
     },
-    economics () {
+    economics() {
       return [
         [
           {
@@ -485,7 +485,7 @@ export default {
       ]
     }
   },
-  mounted () {
+  mounted() {
     this.$api.getConstants().then((res) => {
       this.networkConst = res.data
     }).catch((e) => {
@@ -501,5 +501,4 @@ export default {
 }
 </script>
 
-<style>
-</style>
+<style></style>
