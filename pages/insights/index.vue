@@ -1,12 +1,12 @@
 <template>
   <div class="container-page">
-    <Card title="🔒 Total Value Locked (from Flipside)">
+    <Card title="Total Value Locked (from Flipside)">
       <VChart v-if="tvlOption" class="chart" :option="tvlOption" :loading="!tvlOption" :autoresize="true" />
     </Card>
-    <Card title="💰 Rune Price History (from Flipside)">
+    <Card title="Rune Price History (from Flipside)">
       <VChart v-if="runePriceOption" :option="runePriceOption" :loading="!runePriceOption" :autoresize="true" />
     </Card>
-    <Card title="📊 Swap Count Chart (from Flipside)">
+    <Card title="Swap Count Chart (from Flipside)">
       <VChart v-if="swapCountChart" :option="swapCountChart" :loading="!swapCountChart" :autoresize="true" />
     </Card>
   </div>
