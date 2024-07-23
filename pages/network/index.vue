@@ -1,30 +1,23 @@
 <template>
   <Page>
-    <stat-table
-      :is-loading="!network || network.length == 0"
-      :table-settings="networkSettings"
-      header="Network Overview"
-      :icon-src="require('@/assets/images/database.svg')"
-    />
+    <stat-table :is-loading="!network || network.length == 0" :table-settings="networkSettings"
+      header="Network Overview" />
     <Card title="THORChain version upgrade progress">
-      <ProgressBar v-if="versionProgress" :width="versionProgress" :color="versionProgress == 100? '#81C784':false" />
+      <ProgressBar v-if="versionProgress" :width="versionProgress" :color="versionProgress == 100 ? '#81C784' : false" />
       <h3 style="text-align: center">
-        <span class="sec-color">{{ uptodateNodes?uptodateNodes.length:'*' }}</span> of <span class="sec-color">{{ activeNodes?activeNodes.length:'*' }}</span> nodes
-        upgraded to <span class="sec-color">{{ activeNodes?uptodateNodeVersion(activeNodes):'*' }}</span>
+        <span class="sec-color">{{ uptodateNodes ? uptodateNodes.length : '*' }}</span> of <span class="sec-color">{{
+          activeNodes ? activeNodes.length : '*' }}</span> nodes
+        upgraded to <span class="sec-color">{{ activeNodes ? uptodateNodeVersion(activeNodes) : '*' }}</span>
       </h3>
-      <p v-if="newStandByVersion || (uptodateNodes && uptodateNodes.length == 1)" style="text-align: center; color: var(--primary-color)">
+      <p v-if="newStandByVersion || (uptodateNodes && uptodateNodes.length == 1)"
+        style="text-align: center; color: var(--primary-color)">
         ✨ New version detected! ({{ newStandByVersion || uptodateNodeVersion(activeNodes) }})
       </p>
       <p v-if="versionProgress === 100" style="text-align: center; color: var(--primary-color)">
         ✅ All nodes are updated to the latest.
       </p>
     </Card>
-    <stat-table
-      :is-loading="!inAddresses"
-      :table-settings="gasSettings"
-      header="Gas Fees"
-      :icon-src="require('@/assets/images/gas.svg')"
-    />
+    <stat-table :is-loading="!inAddresses" :table-settings="gasSettings" header="Gas Fees" />
   </Page>
 </template>
 
@@ -36,7 +29,7 @@ import { formatAsset, blockTime } from '~/utils'
 
 export default {
   components: { StatTable },
-  data () {
+  data() {
     return {
       network: [],
       rune: [],
@@ -85,7 +78,7 @@ export default {
     }
   },
   computed: {
-    versionProgress () {
+    versionProgress() {
       if (!!this.nodes && this.blockchainVersion) {
         return Math.ceil(
           parseFloat(this.uptodateNodes.length / this.activeNodes.length) * 100
@@ -93,7 +86,7 @@ export default {
       }
       return 1
     },
-    networkSettings () {
+    networkSettings() {
       return [
         [
           {
@@ -200,7 +193,7 @@ export default {
         ]
       ]
     },
-    gasSettings () {
+    gasSettings() {
       const chains = this.inAddresses.map((e) => {
         return {
           name: `${e.chain} gas rate`,
@@ -212,7 +205,7 @@ export default {
       })
       return chunk(chains, 3)
     },
-    newStandByVersion () {
+    newStandByVersion() {
       if (!this.blockchainVersion || !this.nodes) { return }
       const currentVer = this.blockchainVersion.current
       const node = this.nodes?.filter(
@@ -222,7 +215,7 @@ export default {
       return null
     }
   },
-  mounted () {
+  mounted() {
     this.$api
       .getLastBlockHeight()
       .then(res => (this.lastblock = res.data))
@@ -248,10 +241,10 @@ export default {
       .getOutbound()
       .then(
         res =>
-          (this.outboundQueue = res.data.map(t => ({
-            ...t,
-            type: t.memo?.split(':')[0] ?? '-'
-          })))
+        (this.outboundQueue = res.data.map(t => ({
+          ...t,
+          type: t.memo?.split(':')[0] ?? '-'
+        })))
       )
       .catch((error) => {
         console.error(error)
@@ -281,20 +274,20 @@ export default {
       })
   },
   methods: {
-    nextChurnTime () {
+    nextChurnTime() {
       if (this.lastblock && this.network) {
         return blockTime(
           this.network.nextChurnHeight - this.lastblock[0].thorchain
         )
       }
     },
-    balanceAmount (number) {
+    balanceAmount(number) {
       return (+number / 1e8).toFixed(4)
     },
-    outAddressHash (txID) {
+    outAddressHash(txID) {
       return txID.slice(0, 6) + '...' + txID.slice(-6)
     },
-    uptodateNodeVersion (nodes) {
+    uptodateNodeVersion(nodes) {
       if (nodes && nodes.length > 0) {
         const nodesVersion = nodes.map(n => n.version)
         // TODO: should make sure all active nodes are vaild
