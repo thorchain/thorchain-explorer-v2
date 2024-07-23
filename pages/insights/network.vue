@@ -1,5 +1,5 @@
 <template>
-  <Card title="⏰ Churn History" :is-loading="!churnHistory">
+  <Card title="Churn History" :is-loading="!churnHistory">
     <vue-good-table
       v-if="churnHistory"
       :columns="cols"
