@@ -11,7 +11,7 @@
         <span v-else>-</span>
       </template>
     </stat-table>
-    <stat-table v-if="isStagenet" header="Providers" :table-settings="providersSettings">
+    <stat-table v-if="providersOverview" header="Providers" :table-settings="providersSettings">
       <template #providerspnl>
         <span v-if="providerspnl.value" :style="{ 'color': providerspnl.isDown ? 'red' : 'green' }">
           <span v-if="providerspnl.isDown">-</span>
@@ -22,7 +22,7 @@
         <span v-else>-</span>
       </template>
     </stat-table>
-    <stat-table v-if="isStagenet" header="Reserve" :table-settings="reserveSettings">
+    <stat-table v-if="reserveOverview" header="Reserve" :table-settings="reserveSettings">
       <template #reservepnl>
         <span v-if="reservepnl.value" :style="{ 'color': reservepnl.isDown ? 'red' : 'green' }">
           <span v-if="reservepnl.isDown">-</span>
@@ -136,9 +136,6 @@ export default {
     }
   },
   computed: {
-    isStagenet() {
-      return process.env.NETWORK === 'stagenet'
-    },
     pnl() {
       const pnl = (+this.polOverview?.value - +this.polOverview?.current_deposit)
 
@@ -342,9 +339,10 @@ export default {
     }
 
     try {
-      if (process.env.NETWORK === 'stagenet') {
+      try {
         ({pol: this.polOverview, providers: this.providersOverview, reserve: this.reserveOverview} = (await this.$api.getRunePool()).data)
-      } else {
+      } catch (error) {
+        console.error('the rune pool endpoint is not ready') 
         this.polOverview = (await this.$api.getPol()).data
       }
 
