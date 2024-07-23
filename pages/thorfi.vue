@@ -28,8 +28,8 @@ export default {
           text: 'Trade Assets'
         },
         {
-          link: '/thorfi/pol',
-          text: 'Protocol Owned Liquidity'
+          link: '/thorfi/runepool',
+          text: 'Rune Pool'
         },
         {
           link: '/thorfi/lending',
