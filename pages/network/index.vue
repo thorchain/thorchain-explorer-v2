@@ -11,10 +11,10 @@
       </h3>
       <p v-if="newStandByVersion || (uptodateNodes && uptodateNodes.length == 1)"
         style="text-align: center; color: var(--primary-color)">
-        ✨ New version detected! ({{ newStandByVersion || uptodateNodeVersion(activeNodes) }})
+         New version detected! ({{ newStandByVersion || uptodateNodeVersion(activeNodes) }})
       </p>
       <p v-if="versionProgress === 100" style="text-align: center; color: var(--primary-color)">
-        ✅ All nodes are updated to the latest.
+         All nodes are updated to the latest.
       </p>
     </Card>
     <stat-table :is-loading="!inAddresses" :table-settings="gasSettings" header="Gas Fees" />
