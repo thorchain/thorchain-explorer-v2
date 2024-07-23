@@ -139,7 +139,7 @@ export default {
           tdClass: 'mono'
         },
         {
-          label: 'Trading Depth',
+          label: 'Trade Asset Depth',
           field: 'trading',
           type: 'number',
           formatFn: 'number',
