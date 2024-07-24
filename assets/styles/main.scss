@@ -39,6 +39,14 @@ input {
   text-align: center !important;
 }
 
+.header-icon {
+  margin-left: 5px;
+  height: 1rem;
+  width: 1rem;
+  fill: #606266;
+  z-index: 2;
+}
+
 .table-asset {
   display: flex;
   align-items: center;
