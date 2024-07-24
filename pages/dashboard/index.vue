@@ -102,7 +102,7 @@
     <div class="break" />
     <div class="chart-inner-container">
       <Card :navs="[{title: 'Swap Volume', value: 'swap-vol'}, {title: 'Earnings Volume', value: 'earnings-vol'}, {title: 'Swap Count', value: 'swap-count'}]" :act-nav.sync="swapMode">
-        <VChart v-if="swapMode == 'swap-vol'" :key="1" :option="swapHistory" :loading="!swapHistory" :autoresize="true" :loading-options="showLoading" />
+        <VChart class="swap-volume-chart" v-if="swapMode == 'swap-vol'" :key="1" :option="swapHistory" :loading="!swapHistory" :autoresize="true" :loading-options="showLoading" />
         <VChart v-if="swapMode == 'earnings-vol'" :key="2" :option="earningsHistory" :loading="!earningsHistory" :autoresize="true" :loading-options="showLoading" />
         <VChart v-if="swapMode == 'swap-count'" :key="3" :option="swapHistoryCount" :loading="!swapHistoryCount" :autoresize="true" :loading-options="showLoading" />
       </Card>
@@ -1143,6 +1143,9 @@ export default {
 </script>
 
 <style lang="scss">
+.swap-volume-chart{
+  top: 3rem;
+}
 .overview-container {
   display: flex;
   justify-content: space-between;
