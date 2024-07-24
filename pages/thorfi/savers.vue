@@ -310,6 +310,9 @@ export default {
 </script>
 
 <style lang="scss">
+
+
+
 .pools-box {
   .nav-headers.box.pools-type-table {
     margin: 0 !important;

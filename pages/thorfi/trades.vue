@@ -217,13 +217,6 @@ export default {
 </script>
 
 <style lang="scss">
-.header-icon {
-    margin-left: 5px;
-    height: 1rem;
-    width: 1rem;
-    fill: #606266;
-    z-index: 2;
-}
 
 th.end .table-asset {
     justify-content: flex-end;
