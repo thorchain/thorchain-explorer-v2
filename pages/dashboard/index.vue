@@ -154,6 +154,7 @@
             :columns="inboundCols"
             :rows="inboundInfo"
             style-class="vgt-table net-table"
+            :sort-options="{enabled: false}"
           >
             <template slot="table-column" slot-scope="props">
               <div v-if="props.column.field == 'haltHeight'" v-tooltip="'Scanning'">
