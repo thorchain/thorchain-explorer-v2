@@ -474,6 +474,10 @@ export default {
       if (isSynthAsset(copyAsset)) {
         copyAsset.synth = false
       }
+      // Trade price would be same as non trade asset
+      if (asset.trade) {
+        copyAsset.trade = false
+      }
 
       if (copyAsset.chain === 'THOR' && copyAsset.symbol === 'RUNE') {
         return amount * this.usdPerRune(pools)
