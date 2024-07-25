@@ -250,11 +250,11 @@ export default {
   color: var(--font-color);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   margin: 0.5rem 0;
-}
 
-.custom-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  }
 }
 
 .overview-box {
@@ -271,16 +271,16 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-}
 
-.stats-container p {
-  margin: 0;
-  padding: 10px;
-  animation: slideIn 0.5s ease;
-}
+  p {
+    margin: 0;
+    padding: 10px;
+    animation: slideIn 0.5s ease;
 
-.stats-container p:first-child {
-  border-bottom: 1px solid var(--primary-color);
+    &:first-child {
+      border-bottom: 1px solid var(--primary-color);
+    }
+  }
 }
 
 .total-swaps {
@@ -292,7 +292,6 @@ export default {
   from {
     opacity: 0;
   }
-
   to {
     opacity: 1;
   }
@@ -303,13 +302,11 @@ export default {
     transform: translateX(-20px);
     opacity: 0;
   }
-
   to {
     transform: translateX(0);
     opacity: 1;
   }
 }
-
 .no-streaming {
   display: flex;
   flex-direction: column;
