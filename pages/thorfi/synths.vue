@@ -1,6 +1,6 @@
 <template>
   <Page>
-    <Card :isLoading="!(rows && rows.length > 0)">
+    <Card title="Synth Assets" :isLoading="!(rows && rows.length > 0)">
       <vue-good-table
         v-if="cols && rows.length > 0"
         :columns="cols"

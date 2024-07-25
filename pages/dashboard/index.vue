@@ -104,7 +104,7 @@
       <Card :navs="[{title: 'Swap Volume', value: 'swap-vol'}, {title: 'Earnings Volume', value: 'earnings-vol'}, {title: 'Swap Count', value: 'swap-count'}]" :act-nav.sync="swapMode">
         <VChart class="swap-volume-chart" v-if="swapMode == 'swap-vol'" :key="1" :option="swapHistory" :loading="!swapHistory" :autoresize="true" :loading-options="showLoading" />
         <VChart v-if="swapMode == 'earnings-vol'" :key="2" :option="earningsHistory" :loading="!earningsHistory" :autoresize="true" :loading-options="showLoading" />
-        <VChart v-if="swapMode == 'swap-count'" :key="3" :option="swapHistoryCount" :loading="!swapHistoryCount" :autoresize="true" :loading-options="showLoading" />
+        <VChart class="swap-volume-chart" v-if="swapMode == 'swap-count'" :key="3" :option="swapHistoryCount" :loading="!swapHistoryCount" :autoresize="true" :loading-options="showLoading" />
       </Card>
       <Card :navs="[{title: 'Chain Status', value: 'chain-status'}, {title: 'Pools Volume', value: 'pools-vol'}]" :act-nav.sync="poolMode">
         <div v-if="poolMode == 'pools-vol'" class="pool-depth-container" :key="1">
