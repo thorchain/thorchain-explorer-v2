@@ -3,6 +3,21 @@
     <template #header>
       <dot-live />
     </template>
+    <Card v-if="streamingSwaps.length > 0" class="custom-card">
+      <div class="overview-box">
+        <div class="stats-container">
+          <p>
+            Count: <span class="total-swaps">{{ streamingSwaps.length }}</span>
+          </p>
+          <p>
+            Total Amount:
+            <span class="total-swaps">{{
+              formatCurrency(totalSumAmount)
+            }}</span>
+          </p>
+        </div>
+      </div>
+    </Card>
     <div v-if="noStreaming" class="no-streaming">
       <streamingIcon class="streaming-icon large-icon" />
       <h3>There is no streaming swaps ongoing at the moment.</h3>
@@ -14,191 +29,287 @@
             <div v-if="o.inputAsset" class="asset-item">
               <asset-icon :asset="o.inputAsset.asset" />
               <span class="asset-name">
-                {{ $options.filters.number(o.inputAsset.amount / 1e8, '0,0.0000') }}
-                <small class="asset-text sec-color">{{ o.inputAsset.asset }}</small>
+                {{
+                  $options.filters.number(o.inputAsset.amount / 1e8, "0,0.0000")
+                }}
+                <small class="asset-text sec-color">{{
+                  o.inputAsset.asset
+                }}</small>
               </span>
             </div>
             →
             <div v-if="o.outputAsset" class="asset-item">
               <asset-icon :asset="o.outputAsset.asset" />
               <span class="asset-name">
-                <template v-if="o.outputAsset.amount">{{ $options.filters.number(o.outputAsset.amount / 1e8, '0,0.0000') }}</template>
-                <small class="asset-text sec-color">{{ o.outputAsset.asset }}</small>
+                <template v-if="o.outputAsset.amount">{{
+                  $options.filters.number(
+                    o.outputAsset.amount / 1e8,
+                    "0,0.0000"
+                  )
+                }}</template>
+                <small class="asset-text sec-color">{{
+                  o.outputAsset.asset
+                }}</small>
               </span>
             </div>
           </div>
-          <small v-if="o.tx_id" class="sec-color mono" style="margin-left: auto;">
+          <small v-if="o.tx_id" class="sec-color mono" style="margin-left: auto">
             <NuxtLink v-if="isValidTx(o.tx_id)" class="clickable" :to="{ path: `/tx/${o.tx_id}` }">
               {{ formatAddress(o.tx_id) }}
             </NuxtLink>
           </small>
         </div>
+
         <div class="extra-info">
           <progress-bar v-if="o.quantity > 0" :width="(o.count / o.quantity) * 100" height="4px" />
-          <small style="white-space: nowrap;">
+          <small style="white-space: nowrap">
             {{ $options.filters.percent(o.count / o.quantity) }}
           </small>
         </div>
+
         <small style="margin-top: 5px">{{ o.interval }} Blocks / Swap
-          <span class="sec-color"><small style="color: var(--font-color);">(ETA </small> {{ o.remaningETA }}
-            <small style="color: var(--font-color);">, Remainng swaps: {{ o.quantity - o.count }}</small>
-            <small style="color: var(--font-color);">)</small>
+          <span class="sec-color"><small style="color: var(--font-color)">(ETA </small>
+            {{ o.remaningETA }}
+            <small style="color: var(--font-color)">, Remaining swaps: {{ o.quantity - o.count }}</small>
+            <small style="color: var(--font-color)">)</small>
           </span>
         </small>
       </div>
-      <hr :key="i + '-hr'" class="hr-space">
+      <hr :key="i + '-hr'" class="hr-space" />
     </template>
+
     <template v-if="streamingSwaps.length > perPage" #footer>
-      <b-pagination
-        v-model="currentPage"
-        class="center"
-        :total-rows="streamingSwaps.length"
-        :per-page="perPage"
-      />
+      <b-pagination v-model="currentPage" class="center" :total-rows="streamingSwaps.length" :per-page="perPage" />
     </template>
   </Card>
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
-import { assetFromString } from '@xchainjs/xchain-util'
-import moment from 'moment'
-import { shortAssetName } from '~/utils'
-import streamingIcon from '@/assets/images/streaming.svg?inline'
+import { mapGetters } from "vuex";
+import { assetFromString } from "@xchainjs/xchain-util";
+import moment from "moment";
+import { shortAssetName } from "~/utils";
+import streamingIcon from "@/assets/images/streaming.svg?inline";
 
 export default {
   components: { streamingIcon },
-  data () {
+  data() {
     return {
       currentPage: 1,
       noStreaming: false,
       loading: true,
       streamingSwaps: [],
       intervalId: undefined,
-      perPage: 7
-    }
+      perPage: 7,
+      totalSumAmount: 0,
+    };
   },
   computed: {
-    filteredStreamingSwaps () {
+    filteredStreamingSwaps() {
       return this.streamingSwaps.slice(
         (this.currentPage - 1) * this.perPage,
         this.currentPage * this.perPage
-      )
+      );
     },
     ...mapGetters({
-      pools: 'getPools'
-    })
+      pools: "getPools",
+    }),
   },
-  async mounted () {
-    await this.updateStreamingSwap()
+  async mounted() {
+    await this.updateStreamingSwap();
 
-    // Update the component every 20 secs
     this.intervalId = setInterval(() => {
-      this.updateStreamingSwap(this.inboundHash)
-    }, 10000)
+      this.updateStreamingSwap(this.inboundHash);
+    }, 10000);
   },
-  destroyed () {
-    this.clearIntervalId(this.intervalId)
+  destroyed() {
+    clearInterval(this.intervalId);
   },
   methods: {
-    async updateStreamingSwap () {
-      this.noStreaming = false
-      const resData = (await this.$api.getStreamingSwaps()).data
+    async updateStreamingSwap() {
+      this.noStreaming = false;
+      this.totalSumAmount = 0;
+      const resData = (await this.$api.getStreamingSwaps()).data;
 
       if (!resData || resData.length === 0) {
-        this.noStreaming = true
-        this.streamingSwaps = []
-        this.loading = false
-        return
+        this.noStreaming = true;
+        this.streamingSwaps = [];
+        this.loading = false;
+        return;
       }
-
       try {
-        const swaps = []
+        const swaps = [];
+
         for (let i = 0; i < resData.length; i++) {
-          const swap = { ...resData[i] }
-          const swapDetails = (await this.$api.getTxStatus(resData[i].tx_id)).data
+          const swap = { ...resData[i] }; // Clone swap data
+          const swapDetails = (await this.$api.getTxStatus(resData[i].tx_id))
+            .data; // Fetch swap details
 
-          const txAsset = swapDetails?.tx
-          if (txAsset) {
+          const txAsset = swapDetails?.tx;
+          if (txAsset && txAsset.coins.length > 0) {
             swap.inputAsset = {
-              asset: txAsset?.coins[0].asset,
-              amount: txAsset?.coins[0].amount
-            }
+              asset: txAsset.coins[0].asset,
+              amount: txAsset.coins[0].amount,
+            };
+
+            const inputUsdValue = this.amountToUSD(
+              swap.inputAsset.asset,
+              swap.inputAsset.amount,
+              this.pools
+            );
+            this.totalSumAmount += inputUsdValue;
           }
 
-          let nonRUNE = false
+          let nonRUNE = false;
           if (!swap.outputAsset?.asset) {
-            const memo = swapDetails.tx?.memo
+            const memo = swapDetails.tx?.memo;
             if (memo) {
-              const m = swapDetails.tx?.memo.split(':', 3)[1]
-              const outAsset = shortAssetName(m)
-              if (outAsset !== 'THOR.RUNE') { nonRUNE = true }
-              swap.outputAsset = {
-                asset: outAsset
+              const m = swapDetails.tx?.memo.split(":", 3)[1];
+              const outAsset = shortAssetName(m);
+              if (outAsset !== "THOR.RUNE") {
+                nonRUNE = true;
               }
+              swap.outputAsset = {
+                asset: outAsset,
+              };
             }
           }
 
-          const outAsset = swapDetails?.out_txs
+          const outAsset = swapDetails?.out_txs;
           if (outAsset && outAsset.length > 0) {
-            const oa = outAsset.map(o => ({ asset: o.coins[0]?.asset, amount: o.coins[0].amount }))
-
+            const oa = outAsset.map((o) => ({
+              asset: o.coins[0]?.asset,
+              amount: o.coins[0].amount,
+            }));
             const tmpOut = {
               amount: 0,
-              asset: '',
-              new: false
-            }
-            if (oa.every(a => a.asset === 'THOR.RUNE') && !nonRUNE) {
-              tmpOut.amount = oa.reduce((a, b) => Math.max(+a, +b), -Infinity)
-              tmpOut.asset = oa[0].asset
-              tmpOut.new = true
+              asset: "",
+              new: false,
+            };
+            if (oa.every((a) => a.asset === "THOR.RUNE") && !nonRUNE) {
+              tmpOut.amount = oa.reduce((a, b) => Math.max(+a, +b), -Infinity);
+              tmpOut.asset = oa[0].asset;
+              tmpOut.new = true;
             } else {
-              const nonRuneAsset = oa.find(a => a.asset !== 'THOR.RUNE')
+              const nonRuneAsset = oa.find((a) => a.asset !== "THOR.RUNE");
               if (nonRuneAsset) {
-                tmpOut.amount = nonRuneAsset.amount
-                tmpOut.asset = nonRuneAsset.asset
-                tmpOut.new = true
+                tmpOut.amount = nonRuneAsset.amount;
+                tmpOut.asset = nonRuneAsset.asset;
+                tmpOut.new = true;
               }
-
               if (tmpOut.new) {
-                swap.outputAsset = { asset: tmpOut.asset, amount: tmpOut.amount }
+                swap.outputAsset = {
+                  asset: tmpOut.asset,
+                  amount: tmpOut.amount,
+                };
               }
             }
           }
 
-          const plannedAsset = swapDetails?.planned_out_txs
+          const plannedAsset = swapDetails?.planned_out_txs;
           if (plannedAsset && plannedAsset.length > 0) {
-            if (nonRUNE && plannedAsset[0].coin.asset !== 'THOR.RUNE') {
+            if (nonRUNE && plannedAsset[0].coin.asset !== "THOR.RUNE") {
               swap.outputAsset = {
                 asset: plannedAsset[0].coin?.asset,
-                amount: plannedAsset[0].coin?.amount
-              }
+                amount: plannedAsset[0].coin?.amount,
+              };
             }
           }
 
-          swap.remaingIntervals = resData[i].interval * (resData[i].quantity - resData[i].count)
-          swap.remaningETA = moment.duration(swap.remaingIntervals * 6, 'seconds').humanize()
+          swap.remaingIntervals =
+            resData[i].interval * (resData[i].quantity - resData[i].count);
+          swap.remaningETA = moment
+            .duration(swap.remaingIntervals * 6, "seconds")
+            .humanize();
 
-          // Match assets from pool
           if (swap.outputAsset?.asset && this.pools) {
-            swap.outputAsset.asset = this.findAssetInPool(swap.outputAsset?.asset, this.pools)
+            swap.outputAsset.asset = this.findAssetInPool(
+              swap.outputAsset?.asset,
+              this.pools
+            );
           }
-
-          swaps.push(swap)
+          swaps.push(swap);
         }
-        this.streamingSwaps = swaps
-        this.loading = false
+        this.streamingSwaps = swaps;
+        this.loading = false;
       } catch (error) {
-        console.error(error)
-        this.noStreaming = true
-        this.loading = false
+        console.error(error);
+        this.noStreaming = true;
+        this.loading = false;
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <style lang="scss">
+.custom-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  color: var(--font-color);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  margin: 0.5rem 0;
+}
+
+.custom-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.overview-box {
+  text-align: center;
+}
+
+.title {
+  font-weight: 600;
+  color: var(--font-color);
+  animation: fadeIn 0.5s ease;
+}
+
+.stats-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stats-container p {
+  margin: 0;
+  padding: 10px;
+  animation: slideIn 0.5s ease;
+}
+
+.stats-container p:first-child {
+  border-bottom: 1px solid var(--primary-color);
+}
+
+.total-swaps {
+  font-weight: bold;
+  color: #ffffff;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
 .no-streaming {
   display: flex;
   flex-direction: column;
@@ -258,7 +369,6 @@ export default {
     &::-webkit-scrollbar {
       display: none;
     }
-
   }
 
   .extra-info {
