@@ -298,7 +298,6 @@ input {
 }
 
 #main-content table.net-table {
-  border: 1px solid var(--border-color);
   border-color: var(--border-color) !important;
   background-color: var(--bg-color);
 
@@ -340,6 +339,8 @@ input {
 .vgt-wrap__footer {
   font-size: .875rem !important;
   border-top: none !important;
+  border: none !important;
+  border-top: 1px solid !important;
   border-color: var(--border-color) !important;
   background: var(--bg-color) !important;
 }
@@ -370,6 +371,8 @@ input {
 }
 
 .vgt-table {
+  border: none !important;
+
   .td-center {
     text-align: center;
   }
@@ -378,6 +381,10 @@ input {
     text-align: center;
     padding-right: 10.5px;
   }
+}
+
+#vgt-table > tbody > tr:last-child td {
+  border: none !important;
 }
 
 .vgt-wrap .vgt-global-search {

@@ -7,11 +7,6 @@
           :columns="cols"
           :rows="[...asgard]"
           style-class="vgt-table net-table"
-          :pagination-options="{
-            enabled: true,
-            perPage: 120,
-            perPageDropdownEnabled: false,
-          }"
         >
           <template slot="table-row" slot-scope="props">
             <span
