@@ -163,7 +163,7 @@
               <div v-else-if="props.column.field == 'haltTradingHeight'" v-tooltip="'Trading'">
                 <SwapIcon class="table-icon" style="color: var(--sec-font-color)" />
               </div>
-              <div v-else-if="props.column.field == 'haltLPHeight'" v-tooltip="'LP'">
+              <div v-else-if="props.column.field == 'haltLPHeight'" v-tooltip="'Liquidity Provider'">
                 <FinanceIcon class="table-icon" style="color: var(--sec-font-color)" />
               </div>
               <div v-else-if="props.column.field == 'haltSigningHeight'" v-tooltip="'Signing'">
