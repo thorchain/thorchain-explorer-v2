@@ -289,10 +289,9 @@ export default {
 <style lang="scss">
 .pools-box {
   .nav-headers.box.pools-type-table {
-    margin: 0 !important;
-    border: 1px solid var(--border-color);
-    border-bottom: 0;
-    border-radius: 7px 8px 0 0;
+    border: none !important;
+    margin: 8px 0 !important;
+    border-radius: 7px 8px;
   }
 }
 

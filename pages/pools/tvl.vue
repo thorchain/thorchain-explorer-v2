@@ -1,6 +1,6 @@
 <template>
   <div class="container-page tvl-page">
-    <Card>
+    <Card :is-loading="!tvlOption">
       <VChart v-if="tvlOption" class="chart" :option="tvlOption" :loading="!tvlOption" :autoresize="true" />
     </Card>
   </div>
