@@ -383,7 +383,7 @@ input {
   }
 }
 
-#vgt-table > tbody > tr:last-child td {
+.vgt-table:not(.node-table) > tbody > tr:last-child td {
   border: none !important;
 }
 
