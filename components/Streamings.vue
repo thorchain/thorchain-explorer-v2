@@ -10,9 +10,10 @@
             <span>
               Total Amount:
             </span>
-            <span class="total-swaps" style="padding-right: 1rem;">
+            <span v-if="totalSumAmount" class="total-swaps" style="padding-right: 1rem;">
               {{ formatCurrency(totalSumAmount) }}
             </span>
+            <span v-else>-</span>
           </div>
           <div>
             <span>
@@ -119,11 +120,14 @@ export default {
       pools: 'getPools'
     })
   },
-  async mounted () {
-    await this.updateStreamingSwap()
-
+  watch: {
+    pools (n, o) {
+      this.updateStreamingSwap()
+    }
+  },
+  mounted () {
     this.intervalId = setInterval(() => {
-      this.updateStreamingSwap(this.inboundHash)
+      this.updateStreamingSwap()
     }, 10000)
   },
   destroyed () {
