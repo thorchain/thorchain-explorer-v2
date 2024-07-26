@@ -6,15 +6,20 @@
     <Card v-if="streamingSwaps.length > 0" class="custom-card">
       <div class="overview-box">
         <div class="stats-container">
-          <p>
-            Count: <span class="total-swaps">{{ streamingSwaps.length }}</span>
-          </p>
-          <p>
-            Total Amount:
-            <span class="total-swaps">{{
-              formatCurrency(totalSumAmount)
-            }}</span>
-          </p>
+          <div>
+            <span>
+              Total Amount:
+            </span>
+            <span class="total-swaps" style="padding-right: 1rem;">
+              {{ formatCurrency(totalSumAmount) }}
+            </span>
+          </div>
+          <div>
+            <span>
+              Count:
+            </span>
+            <span class="total-swaps">{{ streamingSwaps.length }}</span>
+          </div>
         </div>
       </div>
     </Card>
@@ -75,7 +80,7 @@
           </span>
         </small>
       </div>
-      <hr :key="i + '-hr'" class="hr-space" />
+      <hr :key="i + '-hr'" class="hr-space">
     </template>
 
     <template v-if="streamingSwaps.length > perPage" #footer>
@@ -85,15 +90,14 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
-import { assetFromString } from "@xchainjs/xchain-util";
-import moment from "moment";
-import { shortAssetName } from "~/utils";
-import streamingIcon from "@/assets/images/streaming.svg?inline";
+import { mapGetters } from 'vuex'
+import moment from 'moment'
+import { shortAssetName } from '~/utils'
+import streamingIcon from '@/assets/images/streaming.svg?inline'
 
 export default {
   components: { streamingIcon },
-  data() {
+  data () {
     return {
       currentPage: 1,
       noStreaming: false,
@@ -101,155 +105,155 @@ export default {
       streamingSwaps: [],
       intervalId: undefined,
       perPage: 7,
-      totalSumAmount: 0,
-    };
+      totalSumAmount: 0
+    }
   },
   computed: {
-    filteredStreamingSwaps() {
+    filteredStreamingSwaps () {
       return this.streamingSwaps.slice(
         (this.currentPage - 1) * this.perPage,
         this.currentPage * this.perPage
-      );
+      )
     },
     ...mapGetters({
-      pools: "getPools",
-    }),
+      pools: 'getPools'
+    })
   },
-  async mounted() {
-    await this.updateStreamingSwap();
+  async mounted () {
+    await this.updateStreamingSwap()
 
     this.intervalId = setInterval(() => {
-      this.updateStreamingSwap(this.inboundHash);
-    }, 10000);
+      this.updateStreamingSwap(this.inboundHash)
+    }, 10000)
   },
-  destroyed() {
-    clearInterval(this.intervalId);
+  destroyed () {
+    clearInterval(this.intervalId)
   },
   methods: {
-    async updateStreamingSwap() {
-      this.noStreaming = false;
-      this.totalSumAmount = 0;
-      const resData = (await this.$api.getStreamingSwaps()).data;
+    async updateStreamingSwap () {
+      this.noStreaming = false
+      const resData = (await this.$api.getStreamingSwaps()).data
+
+      this.totalSumAmount = resData.reduce((a, c) => {
+        const inputUsdValue = this.amountToUSD(
+          c.source_asset,
+          c.deposit,
+          this.pools
+        )
+        return a + inputUsdValue
+      }, 0)
 
       if (!resData || resData.length === 0) {
-        this.noStreaming = true;
-        this.streamingSwaps = [];
-        this.loading = false;
-        return;
+        this.noStreaming = true
+        this.streamingSwaps = []
+        this.loading = false
+        return
       }
       try {
-        const swaps = [];
+        const swaps = []
 
         for (let i = 0; i < resData.length; i++) {
-          const swap = { ...resData[i] }; // Clone swap data
-          const swapDetails = (await this.$api.getTxStatus(resData[i].tx_id))
-            .data; // Fetch swap details
+          const swap = { ...resData[i] } // Clone swap data
+          const swapDetails = (await this.$api.getTxStatus(resData[i].tx_id)).data // Fetch swap details
 
-          const txAsset = swapDetails?.tx;
+          const txAsset = swapDetails?.tx
           if (txAsset && txAsset.coins.length > 0) {
             swap.inputAsset = {
               asset: txAsset.coins[0].asset,
-              amount: txAsset.coins[0].amount,
-            };
-
-            const inputUsdValue = this.amountToUSD(
-              swap.inputAsset.asset,
-              swap.inputAsset.amount,
-              this.pools
-            );
-            this.totalSumAmount += inputUsdValue;
-          }
-
-          let nonRUNE = false;
-          if (!swap.outputAsset?.asset) {
-            const memo = swapDetails.tx?.memo;
-            if (memo) {
-              const m = swapDetails.tx?.memo.split(":", 3)[1];
-              const outAsset = shortAssetName(m);
-              if (outAsset !== "THOR.RUNE") {
-                nonRUNE = true;
-              }
-              swap.outputAsset = {
-                asset: outAsset,
-              };
+              amount: txAsset.coins[0].amount
             }
           }
 
-          const outAsset = swapDetails?.out_txs;
+          let nonRUNE = false
+          if (!swap.outputAsset?.asset) {
+            const memo = swapDetails.tx?.memo
+            if (memo) {
+              const m = swapDetails.tx?.memo.split(':', 3)[1]
+              const outAsset = shortAssetName(m)
+              if (outAsset !== 'THOR.RUNE') {
+                nonRUNE = true
+              }
+              swap.outputAsset = {
+                asset: outAsset
+              }
+            }
+          }
+
+          const outAsset = swapDetails?.out_txs
           if (outAsset && outAsset.length > 0) {
-            const oa = outAsset.map((o) => ({
+            const oa = outAsset.map(o => ({
               asset: o.coins[0]?.asset,
-              amount: o.coins[0].amount,
-            }));
+              amount: o.coins[0].amount
+            }))
             const tmpOut = {
               amount: 0,
-              asset: "",
-              new: false,
-            };
-            if (oa.every((a) => a.asset === "THOR.RUNE") && !nonRUNE) {
-              tmpOut.amount = oa.reduce((a, b) => Math.max(+a, +b), -Infinity);
-              tmpOut.asset = oa[0].asset;
-              tmpOut.new = true;
+              asset: '',
+              new: false
+            }
+            if (oa.every(a => a.asset === 'THOR.RUNE') && !nonRUNE) {
+              tmpOut.amount = oa.reduce((a, b) => Math.max(+a, +b), -Infinity)
+              tmpOut.asset = oa[0].asset
+              tmpOut.new = true
             } else {
-              const nonRuneAsset = oa.find((a) => a.asset !== "THOR.RUNE");
+              const nonRuneAsset = oa.find(a => a.asset !== 'THOR.RUNE')
               if (nonRuneAsset) {
-                tmpOut.amount = nonRuneAsset.amount;
-                tmpOut.asset = nonRuneAsset.asset;
-                tmpOut.new = true;
+                tmpOut.amount = nonRuneAsset.amount
+                tmpOut.asset = nonRuneAsset.asset
+                tmpOut.new = true
               }
               if (tmpOut.new) {
                 swap.outputAsset = {
                   asset: tmpOut.asset,
-                  amount: tmpOut.amount,
-                };
+                  amount: tmpOut.amount
+                }
               }
             }
           }
 
-          const plannedAsset = swapDetails?.planned_out_txs;
+          const plannedAsset = swapDetails?.planned_out_txs
           if (plannedAsset && plannedAsset.length > 0) {
-            if (nonRUNE && plannedAsset[0].coin.asset !== "THOR.RUNE") {
+            if (nonRUNE && plannedAsset[0].coin.asset !== 'THOR.RUNE') {
               swap.outputAsset = {
                 asset: plannedAsset[0].coin?.asset,
-                amount: plannedAsset[0].coin?.amount,
-              };
+                amount: plannedAsset[0].coin?.amount
+              }
             }
           }
 
           swap.remaingIntervals =
-            resData[i].interval * (resData[i].quantity - resData[i].count);
+            resData[i].interval * (resData[i].quantity - resData[i].count)
           swap.remaningETA = moment
-            .duration(swap.remaingIntervals * 6, "seconds")
-            .humanize();
+            .duration(swap.remaingIntervals * 6, 'seconds')
+            .humanize()
 
           if (swap.outputAsset?.asset && this.pools) {
             swap.outputAsset.asset = this.findAssetInPool(
               swap.outputAsset?.asset,
               this.pools
-            );
+            )
           }
-          swaps.push(swap);
+          swaps.push(swap)
         }
-        this.streamingSwaps = swaps;
-        this.loading = false;
+        this.streamingSwaps = swaps
+        this.loading = false
       } catch (error) {
-        console.error(error);
-        this.noStreaming = true;
-        this.loading = false;
+        console.error(error)
+        this.noStreaming = true
+        this.loading = false
       }
-    },
-  },
-};
+    }
+  }
+}
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .custom-card {
-  background-color: #ffffff;
-  border-radius: 12px;
+  background-color: var(--bg-color);
+  border-radius: .5rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   color: var(--font-color);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  margin: 0.5rem 0;
+  margin-bottom: 1rem;
 
   &:hover {
     transform: translateY(-5px);
@@ -272,10 +276,32 @@ export default {
   flex-direction: column;
   align-items: center;
 
-  p {
+  @include md {
+    flex-direction: row;
+    justify-content: space-between;
+
+    div {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+
+      &:first-child {
+        flex: 2;
+        border-bottom: none !important;
+        border-right: 1px solid var(--primary-color);
+      }
+    }
+  }
+
+  div {
+    flex: 1;
+    padding: .4rem;
     margin: 0;
-    padding: 10px;
     animation: slideIn 0.5s ease;
+
+    @include md {
+      padding: 0;
+    }
 
     &:first-child {
       border-bottom: 1px solid var(--primary-color);
@@ -285,13 +311,14 @@ export default {
 
 .total-swaps {
   font-weight: bold;
-  color: #ffffff;
+  color: var(--sec-font-color);
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -302,11 +329,13 @@ export default {
     transform: translateX(-20px);
     opacity: 0;
   }
+
   to {
     transform: translateX(0);
     opacity: 1;
   }
 }
+
 .no-streaming {
   display: flex;
   flex-direction: column;
