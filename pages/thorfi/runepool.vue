@@ -2,40 +2,37 @@
   <Page>
     <stat-table header="Protocol Owned Liquidity" :table-settings="polSettings">
       <template #pnl>
-        <span v-if="pnl.value" :style="{ 'color': pnl.isDown ? 'red' : 'green' }">
+        <skeleton-item :loading="!pnl.value" :style="{ 'color': pnl.isDown ? 'red' : 'green' }">
           <span v-if="pnl.isDown">-</span>
           <span v-if="!pnl.isDown">+</span>
           {{ pnl.value | number('0,0.00') }}
           <small>RUNE</small>
-        </span>
-        <span v-else>-</span>
+        </skeleton-item>
       </template>
     </stat-table>
-    <stat-table v-if="providersOverview" header="Providers" :table-settings="providersSettings">
+    <stat-table header="Providers" :table-settings="providersSettings">
       <template #providerspnl>
-        <span v-if="providerspnl.value" :style="{ 'color': providerspnl.isDown ? 'red' : 'green' }">
+        <skeleton-item :loading="!providerspnl.value" :style="{ 'color': providerspnl.isDown ? 'red' : 'green' }">
           <span v-if="providerspnl.isDown">-</span>
           <span v-if="!providerspnl.isDown">+</span>
           {{ providerspnl.value | number('0,0.00') }}
           <small>RUNE</small>
-        </span>
-        <span v-else>-</span>
+        </skeleton-item>
       </template>
     </stat-table>
-    <stat-table v-if="reserveOverview" header="Reserve" :table-settings="reserveSettings">
+    <stat-table header="Reserve" :table-settings="reserveSettings">
       <template #reservepnl>
-        <span v-if="reservepnl.value" :style="{ 'color': reservepnl.isDown ? 'red' : 'green' }">
+        <skeleton-item :loading="!reservepnl.value" :style="{ 'color': reservepnl.isDown ? 'red' : 'green' }">
           <span v-if="reservepnl.isDown">-</span>
           <span v-if="!reservepnl.isDown">+</span>
           {{ reservepnl.value | number('0,0.00') }}
           <small>RUNE</small>
-        </span>
-        <span v-else>-</span>
+        </skeleton-item>
       </template>
     </stat-table>
-    <stat-table header="Mimirs" :table-settings="polMimirSettings" />
-    <Card title="Rune Pool">
-      <div>
+    <Card :navs="[{title: 'Rune Pools', value: 'rune-pools'}, {title: 'Mimirs', value: 'mimirs'}]" :act-nav.sync="cardMode">
+      <stat-table v-if="cardMode === 'mimirs'" :table-settings="polMimirSettings" />
+      <template v-else>
         <vue-good-table
           :columns="cols"
           :rows="lps"
@@ -73,13 +70,12 @@
             </span>
           </template>
         </vue-good-table>
-      </div>
+      </template>
     </Card>
   </Page>
 </template>
 
 <script>
-import moment from 'moment'
 import endpoints from '~/api/endpoints'
 
 export default {
@@ -91,6 +87,7 @@ export default {
       providersOverview: undefined,
       networkConst: undefined,
       mimir: undefined,
+      cardMode: 'rune-pools',
       pools: [],
       lps: [],
       cols: [
@@ -221,7 +218,7 @@ export default {
         [
           {
             name: 'Reserve Share',
-            value: this.$options.filters.percent(+this.reserveOverview?.value / +this.polOverview?.value, 3),
+            value: +this.reserveOverview?.value && this.$options.filters.percent(+this.reserveOverview?.value / +this.polOverview?.value, 3),
             filter: true
           }
         ]
@@ -262,7 +259,7 @@ export default {
         [
           {
             name: 'Provider Share',
-            value: this.$options.filters.percent(+this.providersOverview?.value / +this.polOverview?.value, 3),
+            value: +this.providersOverview?.value && this.$options.filters.percent(+this.providersOverview?.value / +this.polOverview?.value, 3),
             filter: true
           }
         ]
@@ -320,6 +317,33 @@ export default {
           {
             name: 'Enable POL on ETH',
             value: this.mimir['POL-ETH-ETH'] ? 'Yes' : 'No',
+            filter: true
+          },
+          {
+            name: 'Enable POL on AVAX',
+            value: this.mimir['POL-AVAX-AVAX'] ? 'Yes' : 'No',
+            filter: true
+          },
+          {
+            name: 'Enable POL on AVAX.USDC',
+            value: this.mimir['POL-AVAX-USDC-0XB97EF9EF8734C71904D8002F8B6BC66DD9C48A6E'] ? 'Yes' : 'No',
+            filter: true
+          }
+        ],
+        [
+          {
+            name: 'Enable POL on BCH',
+            value: this.mimir['POL-BCH-BCH'] ? 'Yes' : 'No',
+            filter: true
+          },
+          {
+            name: 'Enable POL on BSC.BNB',
+            value: this.mimir['POL-BSC-BNB'] ? 'Yes' : 'No',
+            filter: true
+          },
+          {
+            name: 'Enable POL on DOGE',
+            value: this.mimir['POL-DOGE-DOGE'] ? 'Yes' : 'No',
             filter: true
           }
         ]

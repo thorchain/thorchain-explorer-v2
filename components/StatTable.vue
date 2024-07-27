@@ -17,22 +17,18 @@
             </div>
             <div class="col-value value-item">
               <template v-if="!$slots[colItem.slotName]">
-                <template v-if="colItem.filter">
-                  <pre v-if="colItem.value && colItem.runeValue" class="rune-value">{{ colItem.value | number('0,0.00') }} <small>RUNE</small></pre>
-                  <pre v-else-if="colItem.value !== 0">{{ colItem.value || '-' }}</pre>
-                  <pre v-if="colItem.value === 0" :class="{'rune-value': colItem.runeValue}">0</pre>
-                </template>
-                <template v-else>
-                  <template v-if="colItem.value !== 0">
-                    {{ colItem.value | number('0,0') }}
-                  </template>
-                  <template v-else-if="colItem.value === 0">
-                    0
+                <skeleton-item custom-class="stat-loader" :loading="(!colItem.value && colItem.value !== 0) || (colItem.is === true)">
+                  <template v-if="colItem.filter">
+                    <pre v-if="colItem.value && colItem.runeValue" class="rune-value">{{ colItem.value | number('0,0.00') }} <small>RUNE</small></pre>
+                    <pre v-else-if="colItem.value !== 0">{{ colItem.value || '-' }}</pre>
+                    <pre v-if="colItem.value === 0" :class="{'rune-value': colItem.runeValue}">0</pre>
                   </template>
                   <template v-else>
-                    -
+                    <skeleton-item custom-class="stat-loader" :loading="colItem.value === undefined || colItem.value === NaN || colItem.value === null">
+                      {{ colItem.value | number('0,0') }}
+                    </skeleton-item>
                   </template>
-                </template>
+                </skeleton-item>
               </template>
               <slot v-else :name="colItem.slotName" :val="colItem.value" />
               <span v-if="colItem.value && colItem.usdValue" class="usd-value">({{ colItem.value * runePrice | currency }})</span>
@@ -185,5 +181,9 @@ pre.rune-value {
 .value-item {
   font-family: 'Roboto Mono';
   font-size: .8rem;
+}
+
+.stat-loader {
+  max-width: 150px;
 }
 </style>
