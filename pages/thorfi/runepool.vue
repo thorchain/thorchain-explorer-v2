@@ -135,6 +135,8 @@ export default {
         {
           label: 'First Added',
           field: 'dateFirstAdded',
+          formatFn: this.formatTimeNow,
+          sortFn: this.formatTimeSort,
           type: 'text'
         }
       ]
@@ -226,7 +228,6 @@ export default {
       ]
     },
     providersSettings () {
-      console.log(this.providersOverview?.value / this.polOverview?.value)
       return [
         [
           {
@@ -326,19 +327,8 @@ export default {
     }
   },
   async mounted () {
-    if (!this.reserveAddress) {
-      return
-    }
-    const { data: pools } = await this.$api.getPools()
-    this.pools = pools
     try {
-      const { data: { pools: memberDetails } } = await this.$api.getMemberDetails(this.reserveAddress)
-      this.parseMemberDetails(memberDetails)
-      this.findShare(pools, memberDetails)
-      for (const poolData of memberDetails) {
-        const { data: thorData } = await this.$api.getUserLpPosition(poolData.pool, this.reserveAddress)
-        this.lps.find(p => p.pool === poolData.pool).luvi = thorData.luvi_growth_pct
-      }
+      ({ data: this.lps } = await this.$api.getRunePoolsInfo())
     } catch (error) {
       console.error('member not found', error)
     }
@@ -358,29 +348,6 @@ export default {
       this.networkConst = constantsData
     } catch (error) {
       console.error(error)
-    }
-  },
-  methods: {
-    parseMemberDetails (pools) {
-      this.lps = pools.map(p => ({
-        ...p,
-        poolAdded: [p.runeAdded / 100000000, p.assetAdded / 100000000],
-        poolWithdrawn: [p.runeWithdrawn / 100000000, p.assetWithdrawn / 100000000],
-        dateFirstAdded: moment.unix(p.dateFirstAdded).fromNow(),
-        share: 0,
-        luvi: 0,
-        poolShare: []
-      }))
-    },
-    findShare (pools, memberDetails) {
-      memberDetails.forEach((m, i) => {
-        const poolDetail = pools.find(p => p.asset === m.pool)
-        const share = m.liquidityUnits / poolDetail.units
-        const runeAmount = share * poolDetail.runeDepth
-        const assetAmount = share * poolDetail.assetDepth
-        this.lps[i].share = share
-        this.lps[i].poolShare.push(+runeAmount / 10e7, +assetAmount / 10e7)
-      })
     }
   }
 }

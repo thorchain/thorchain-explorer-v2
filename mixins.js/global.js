@@ -232,6 +232,12 @@ export default {
     formatAddress (string) {
       if (string && string.length > 12) { return string.slice(0, 6) + '...' + string.slice(-6) } else { return string }
     },
+    formatTimeSort (x, y, col, rowX, rowY) {
+      return (+x < +y ? -1 : (+x > +y ? 1 : 0))
+    },
+    formatTimeNow (timestamp) {
+      return moment(timestamp * 1e3).fromNow()
+    },
     addressFormatV2 (string, number = 6, isOnlyLast = false) {
       if (!string) { return string }
       return (isOnlyLast ? '' : (string.slice(0, number) + '...')) + string.slice(-number)

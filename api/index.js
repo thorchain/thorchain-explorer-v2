@@ -73,7 +73,8 @@ import {
   getServerTx,
   getPoolsHistory,
   getOldPoolsHistory,
-  getSaversInfo
+  getSaversInfo,
+  getRunePoolsInfo
 } from './middleware.api'
 import {
   getChurnHistory,
@@ -219,7 +220,8 @@ export default function ({ $axios }, inject) {
     getDerivedPoolDetail,
     getTradeAsset,
     getTradeAssets,
-    getRunePool
+    getRunePool,
+    getRunePoolsInfo
   }
 
   inject('api', api)
