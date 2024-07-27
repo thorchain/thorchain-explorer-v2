@@ -15,7 +15,7 @@
               {{ colItem.name }}
               <unknown-icon class="header-icon" v-if="colItem.extraInfo" v-tooltip="colItem.extraInfo" />
             </div>
-            <div class="col-value">
+            <div class="col-value value-item">
               <template v-if="!$slots[colItem.slotName]">
                 <template v-if="colItem.filter">
                   <pre v-if="colItem.value && colItem.runeValue" class="rune-value">{{ colItem.value | number('0,0.00') }} <small>RUNE</small></pre>
@@ -178,6 +178,11 @@ pre {
 }
 
 pre.rune-value {
+  font-family: 'Roboto Mono';
+  font-size: .8rem;
+}
+
+.value-item {
   font-family: 'Roboto Mono';
   font-size: .8rem;
 }

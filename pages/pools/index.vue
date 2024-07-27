@@ -290,7 +290,7 @@ export default {
 .pools-box {
   .nav-headers.box.pools-type-table {
     border: none !important;
-    margin: 8px 0 !important;
+    margin-bottom: 1rem !important;
     border-radius: 7px 8px;
   }
 }

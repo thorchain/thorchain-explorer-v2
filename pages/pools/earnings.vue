@@ -12,7 +12,7 @@
           </template>
         </button>
       </template>
-      <div v-if="tableData.length > 0" class="pools-box">
+      <div v-if="tableData.length > 0" class="earning-box">
         <vue-good-table
           v-if="tableData.length > 0"
           :columns="poolCols"
@@ -253,7 +253,7 @@ export default {
 </script>
 
 <style lang="scss">
-.pools-box {
+.earning-box {
   .nav-headers.box.pools-type-table {
     margin: 0 !important;
     border: 1px solid var(--border-color);

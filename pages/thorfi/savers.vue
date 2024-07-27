@@ -310,10 +310,7 @@ export default {
 </script>
 
 <style lang="scss">
-
-
-
-.pools-box {
+.savers-box {
   .nav-headers.box.pools-type-table {
     margin: 0 !important;
     border: 1px solid var(--border-color);
