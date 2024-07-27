@@ -1,0 +1,13 @@
+<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+    <linearGradient id="grad1" x1="0%" x2="0%" y1="0%" y2="100%">
+        <stop offset="0%" stop-color="#23DCC8">
+            <animate attributeName="stop-color" values="23DCC8; #33FF99; #00CCFF;" dur="2s" repeatCount="indefinite"></animate>
+        </stop>
+        <stop offset="100%" stop-color="#00CCFF">
+            <animate attributeName="stop-color" values="#00CCFF; #33FF99; #23DCC8;" dur="2s" repeatCount="indefinite"></animate>
+        </stop>
+    </linearGradient>
+  </defs>
+    <path fill="url(#grad1)" fill-rule="evenodd" clip-rule="evenodd" d="M12.0001 21.9999C6.48012 21.9999 2.00012 17.5099 2.00012 11.9999C2.00012 6.47991 6.48012 1.99991 12.0001 1.99991C17.5101 1.99991 22.0001 6.47991 22.0001 11.9999C22.0001 17.5099 17.5101 21.9999 12.0001 21.9999ZM16.0001 10.0199C15.7001 9.72991 15.2301 9.72991 14.9401 10.0299L12.0001 12.9799L9.06012 10.0299C8.77012 9.72991 8.29012 9.72991 8.00012 10.0199C7.70012 10.3199 7.70012 10.7899 8.00012 11.0799L11.4701 14.5699C11.6101 14.7099 11.8001 14.7899 12.0001 14.7899C12.2001 14.7899 12.3901 14.7099 12.5301 14.5699L16.0001 11.0799C16.1501 10.9399 16.2201 10.7499 16.2201 10.5599C16.2201 10.3599 16.1501 10.1699 16.0001 10.0199Z"/>
+</svg>

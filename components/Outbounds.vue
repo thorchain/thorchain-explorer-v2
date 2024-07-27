@@ -3,41 +3,49 @@
     <template #header>
       <dot-live />
     </template>
-    <Card class="overview-card">
-      <div class="overview-box">
-        <div class="stats-container">
-          <div>
-            <span> Total Scheduled Amount: </span>
-            <span class="total-swaps" style="padding-right: 1rem">
-              {{ this.formatCurrency(totalScheduledValue) }}
-            </span>
+    <template v-if="!noOutnound">
+      <Card class="overview-card">
+        <div class="overview-box">
+          <div :class="'mini-bubble info'">
+            <span>Scheduled</span>
           </div>
-          <div>
-            <span> Scheduled count: </span>
-            <span class="total-swaps">{{ this.schData.length }}</span>
-          </div>
-        </div>
-      </div>
-    </Card>
-    <ArrowToDown class="arrow-down-icon" />
-    <Card class="overview-card">
-      <div class="overview-box">
-        <div class="stats-container">
-          <div>
-            <span>Total Amount: </span>
-            <span class="total-swaps" style="padding-right: 1rem">{{
-              this.formatCurrency(totalOutboundValue)
-            }}</span>
-          </div>
-          <div>
-            <span> Count: </span>
-            <span class="total-swaps">
-              {{ this.outData.length }}
-            </span>
+          <div class="stats-container">
+            <div>
+              <span>Amount: </span>
+              <span class="outbound-overall mono" style="padding-right: 1rem">
+                {{ formatCurrency(totalScheduledValue) }}
+              </span>
+            </div>
+            <div>
+              <span>Count: </span>
+              <span class="outbound-overall mono">{{ schData.length }}</span>
+            </div>
           </div>
         </div>
-      </div>
-    </Card>
+      </Card>
+      <ArrowToDown class="arrow-down-icon" />
+      <Card class="overview-card">
+        <div class="overview-box">
+          <div :class="'mini-bubble'">
+            <span>Ongoing</span>
+          </div>
+          <div class="stats-container">
+            <div>
+              <span>Amount: </span>
+              <span class="outbound-overall mono" style="padding-right: 1rem">{{
+                formatCurrency(totalOutboundValue)
+              }}</span>
+            </div>
+            <div>
+              <span>Count: </span>
+              <span class="outbound-overall mono">
+                {{ outData.length }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </Card>
+    </template>
     <div v-if="noOutnound" class="no-outbound">
       <scheduleIcon class="schedule-icon large-icon" />
       <h3>There is no outbound schedule inside THORChain.</h3>
@@ -55,8 +63,10 @@
           </div>
         </div>
         <div class="extra-right">
-          <small v-if="o.to_address" class="mono"
-            >To
+          <small
+            v-if="o.to_address"
+            class="mono"
+          >To
             <NuxtLink
               class="clickable"
               :to="{ path: `/address/${o.to_address}` }"
@@ -64,8 +74,10 @@
               {{ formatAddress(o.to_address) }}
             </NuxtLink>
           </small>
-          <small v-if="o.in_hash && o.label !== 'migrate'" class="mono"
-            >In TxID
+          <small
+            v-if="o.in_hash && o.label !== 'migrate'"
+            class="mono"
+          >In TxID
             <NuxtLink class="clickable" :to="{ path: `/tx/${o.in_hash}` }">
               {{ formatAddress(o.in_hash) }}
             </NuxtLink>
@@ -78,7 +90,7 @@
           </div>
         </div>
       </div>
-      <hr :key="i + '-hr'" class="hr-space" />
+      <hr :key="i + '-hr'" class="hr-space">
     </template>
     <template v-if="outbounds.length > 10" #footer>
       <b-pagination
@@ -92,14 +104,14 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
-import moment from "moment";
-import scheduleIcon from "@/assets/images/schedule.svg?inline";
-import ArrowToDown from "~/assets/images/arrow-to-down-left.svg?inline";
+import { mapGetters } from 'vuex'
+import moment from 'moment'
+import scheduleIcon from '@/assets/images/schedule.svg?inline'
+import ArrowToDown from '~/assets/images/arrow-down.svg?inline'
 
 export default {
-  components: { scheduleIcon,ArrowToDown },
-  data() {
+  components: { scheduleIcon, ArrowToDown },
+  data () {
     return {
       currentPage: 1,
       noOutnound: false,
@@ -107,112 +119,120 @@ export default {
       outbounds: [],
       intervalId: undefined,
       outData: [],
-      schData: [],
-    };
+      schData: []
+    }
   },
   computed: {
-    filteredOutbounds() {
+    filteredOutbounds () {
       return this.outbounds.slice(
         (this.currentPage - 1) * 10,
         this.currentPage * 10
-      );
+      )
     },
-    totalOutboundValue() {
+    totalOutboundValue () {
       return this.outData.reduce((total, o) => {
         return (
           total + this.amountToUSD(o.coin.asset, o.coin.amount, this.pools)
-        );
-      }, 0);
+        )
+      }, 0)
     },
-    totalScheduledValue() {
+    totalScheduledValue () {
       return this.schData.reduce((total, o) => {
         return (
           total + this.amountToUSD(o.coin.asset, o.coin.amount, this.pools)
-        );
-      }, 0);
+        )
+      }, 0)
     },
 
     ...mapGetters({
-      chainsHeight: "getChainsHeight",
-      pools: "getPools",
-    }),
+      chainsHeight: 'getChainsHeight',
+      pools: 'getPools'
+    })
   },
-  mounted() {
-    this.updateOutbounds();
+  mounted () {
+    this.updateOutbounds()
 
     // Update the component every 20 secs
     this.intervalId = setInterval(() => {
-      this.updateOutbounds();
-    }, 20000);
+      this.updateOutbounds()
+    }, 20000)
   },
-  destroyed() {
-    this.clearIntervalId(this.intervalId);
+  destroyed () {
+    this.clearIntervalId(this.intervalId)
   },
   methods: {
-    async updateOutbounds() {
-      this.noOutnound = false;
-      const resData = [];
-      this.outData = (await this.$api.getOutbound()).data;
-      this.schData = (await this.$api.getScheduled()).data;
+    async updateOutbounds () {
+      this.noOutnound = false
+      const resData = []
+      this.outData = (await this.$api.getOutbound()).data
+      this.schData = (await this.$api.getScheduled()).data
       resData.push(
-        ...this.outData.map((s) => ({
+        ...this.outData.map(s => ({
           ...s,
-          ...(s.memo.toUpperCase().includes("MIGRATE") && { label: "migrate" }),
+          ...(s.memo.toUpperCase().includes('MIGRATE') && { label: 'migrate' })
         })),
-        ...this.schData.map((s) => ({ ...s, label: "Scheduled" }))
-      );
+        ...this.schData.map(s => ({ ...s, label: 'Scheduled' }))
+      )
       if (!resData || resData?.length === 0) {
-        this.outbounds = [];
-        this.noOutnound = true;
-        this.loading = false;
-        return;
+        this.outbounds = []
+        this.noOutnound = true
+        this.loading = false
+        return
       }
-      this.outbounds = resData;
-      this.loading = false;
+      this.outbounds = resData
+      this.loading = false
     },
-    getOutboundEta(height) {
+    getOutboundEta (height) {
       if (this.chainsHeight) {
-        const remHeight = height - this.chainsHeight.THOR;
-        return moment.duration(remHeight * 6, "seconds").humanize();
+        const remHeight = height - this.chainsHeight.THOR
+        return moment.duration(remHeight * 6, 'seconds').humanize()
       }
-    },
-  },
-};
+    }
+  }
+}
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 
 .arrow-down-icon {
   width: 35px;
-  margin-left: auto; 
+  margin-left: auto;
   display: flex;
+  justify-content: center;
   position: relative;
-  position: relative;
-    left: 1rem;
-    bottom: 0.45rem;
+  right: calc(50% - 17.5px);
 }
 .overview-card {
   background-color: var(--bg-color);
   border-radius: 0.5rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   color: var(--font-color);
 
   &:first-of-type {
-    border-left: 3px solid var(--primary-color);
-    border-bottom: 3px solid var(--primary-color);
+    margin-bottom: 3px;
   }
 
   &:nth-of-type(2) {
-    border-right: 3px solid var(--primary-color);
-    border-bottom: 3px solid var(--primary-color);
-    margin: -0.5rem 0rem 1rem 0px;
+    margin-top: 3px;
+    margin-bottom: 1rem;
+  }
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
   }
 }
 
-
-
 .overview-box {
+  display: flex;
+  justify-content: space-between;
   text-align: center;
+  align-items: center;
+
+  .mini-bubble {
+    max-height: 20px;
+  }
 }
 
 .title {
@@ -229,6 +249,7 @@ export default {
   @include md {
     flex-direction: row;
     justify-content: space-between;
+    gap: 1rem;
 
     div {
       display: flex;
@@ -259,8 +280,7 @@ export default {
   }
 }
 
-.total-swaps {
-  font-weight: bold;
+.outbound-overall {
   color: var(--sec-font-color);
 }
 
