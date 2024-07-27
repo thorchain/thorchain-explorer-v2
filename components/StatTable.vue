@@ -170,7 +170,7 @@ export default {
 }
 
 pre {
-  font-family: 'ProductSans';
+  font-family: 'Roboto Mono';
   white-space: pre-wrap;
   word-wrap: break-word;
   word-break: break-all;
