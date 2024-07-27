@@ -3,6 +3,49 @@
     <template #header>
       <dot-live />
     </template>
+    <template v-if="!noOutnound">
+      <Card class="overview-card">
+        <div class="overview-box">
+          <div :class="'mini-bubble info'">
+            <span>Scheduled</span>
+          </div>
+          <div class="stats-container">
+            <div>
+              <span>Amount: </span>
+              <span class="outbound-overall mono" style="padding-right: 1rem">
+                {{ formatCurrency(totalScheduledValue) }}
+              </span>
+            </div>
+            <div>
+              <span>Count: </span>
+              <span class="outbound-overall mono">{{ schData.length }}</span>
+            </div>
+          </div>
+        </div>
+      </Card>
+      <ArrowToDown class="arrow-down-icon" />
+      <Card class="overview-card">
+        <div class="overview-box">
+          <div :class="'mini-bubble'">
+            <span>Ongoing</span>
+          </div>
+          <div class="stats-container">
+            <div>
+              <span>Amount: </span>
+              <span class="outbound-overall mono" style="padding-right: 1rem">{{
+                formatCurrency(totalOutboundValue)
+              }}</span>
+            </div>
+            <div>
+              <span>Count: </span>
+              <span class="outbound-overall mono">
+                {{ outData.length }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </Card>
+    </template>
     <div v-if="noOutnound" class="no-outbound">
       <scheduleIcon class="schedule-icon large-icon" />
       <h3>There is no outbound schedule inside THORChain.</h3>
@@ -12,7 +55,7 @@
         <div v-if="o.coin" class="asset-item">
           <asset-icon :asset="o.coin.asset" />
           <span class="asset-name">
-            {{ $options.filters.number(o.coin.amount / 1e8, '0,0.0000') }}
+            {{ $options.filters.number(o.coin.amount / 1e8, "0,0.0000") }}
             <small class="asset-text sec-color">{{ o.coin.asset }}</small>
           </span>
           <div v-if="o.label" class="mini-bubble info">
@@ -20,12 +63,21 @@
           </div>
         </div>
         <div class="extra-right">
-          <small v-if="o.to_address" class="mono">To
-            <NuxtLink class="clickable" :to="{ path: `/address/${o.to_address}` }">
+          <small
+            v-if="o.to_address"
+            class="mono"
+          >To
+            <NuxtLink
+              class="clickable"
+              :to="{ path: `/address/${o.to_address}` }"
+            >
               {{ formatAddress(o.to_address) }}
             </NuxtLink>
           </small>
-          <small v-if="o.in_hash && o.label !== 'migrate'" class="mono">In TxID
+          <small
+            v-if="o.in_hash && o.label !== 'migrate'"
+            class="mono"
+          >In TxID
             <NuxtLink class="clickable" :to="{ path: `/tx/${o.in_hash}` }">
               {{ formatAddress(o.in_hash) }}
             </NuxtLink>
@@ -55,16 +107,19 @@
 import { mapGetters } from 'vuex'
 import moment from 'moment'
 import scheduleIcon from '@/assets/images/schedule.svg?inline'
+import ArrowToDown from '~/assets/images/arrow-down.svg?inline'
 
 export default {
-  components: { scheduleIcon },
+  components: { scheduleIcon, ArrowToDown },
   data () {
     return {
       currentPage: 1,
       noOutnound: false,
       loading: true,
       outbounds: [],
-      intervalId: undefined
+      intervalId: undefined,
+      outData: [],
+      schData: []
     }
   },
   computed: {
@@ -74,8 +129,24 @@ export default {
         this.currentPage * 10
       )
     },
+    totalOutboundValue () {
+      return this.outData.reduce((total, o) => {
+        return (
+          total + this.amountToUSD(o.coin.asset, o.coin.amount, this.pools)
+        )
+      }, 0)
+    },
+    totalScheduledValue () {
+      return this.schData.reduce((total, o) => {
+        return (
+          total + this.amountToUSD(o.coin.asset, o.coin.amount, this.pools)
+        )
+      }, 0)
+    },
+
     ...mapGetters({
-      chainsHeight: 'getChainsHeight'
+      chainsHeight: 'getChainsHeight',
+      pools: 'getPools'
     })
   },
   mounted () {
@@ -93,11 +164,14 @@ export default {
     async updateOutbounds () {
       this.noOutnound = false
       const resData = []
-      const outData = (await this.$api.getOutbound()).data
-      const schData = (await this.$api.getScheduled()).data
+      this.outData = (await this.$api.getOutbound()).data
+      this.schData = (await this.$api.getScheduled()).data
       resData.push(
-        ...outData.map(s => ({ ...s, ...(s.memo.toUpperCase().includes('MIGRATE')) && { label: 'migrate' } })),
-        ...(schData.map(s => ({ ...s, label: 'Scheduled' })))
+        ...this.outData.map(s => ({
+          ...s,
+          ...(s.memo.toUpperCase().includes('MIGRATE') && { label: 'migrate' })
+        })),
+        ...this.schData.map(s => ({ ...s, label: 'Scheduled' }))
       )
       if (!resData || resData?.length === 0) {
         this.outbounds = []
@@ -110,7 +184,7 @@ export default {
     },
     getOutboundEta (height) {
       if (this.chainsHeight) {
-        const remHeight = (height - this.chainsHeight.THOR)
+        const remHeight = height - this.chainsHeight.THOR
         return moment.duration(remHeight * 6, 'seconds').humanize()
       }
     }
@@ -118,7 +192,120 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
+
+.arrow-down-icon {
+  width: 35px;
+  margin-left: auto;
+  display: flex;
+  justify-content: center;
+  position: relative;
+  right: calc(50% - 17.5px);
+}
+.overview-card {
+  background-color: var(--bg-color);
+  border-radius: 0.5rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  color: var(--font-color);
+
+  &:first-of-type {
+    margin-bottom: 3px;
+  }
+
+  &:nth-of-type(2) {
+    margin-top: 3px;
+    margin-bottom: 1rem;
+  }
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  }
+}
+
+.overview-box {
+  display: flex;
+  justify-content: space-between;
+  text-align: center;
+  align-items: center;
+
+  .mini-bubble {
+    max-height: 20px;
+  }
+}
+
+.title {
+  font-weight: 600;
+  color: var(--font-color);
+  animation: fadeIn 0.5s ease;
+}
+
+.stats-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  @include md {
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 1rem;
+
+    div {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+
+      &:first-child {
+        flex: 2;
+        border-bottom: none !important;
+        border-right: 1px solid var(--primary-color);
+      }
+    }
+  }
+
+  div {
+    flex: 1;
+    padding: 0.4rem;
+    margin: 0;
+    animation: slideIn 0.5s ease;
+
+    @include md {
+      padding: 0;
+    }
+
+    &:first-child {
+      border-bottom: 1px solid var(--primary-color);
+    }
+  }
+}
+
+.outbound-overall {
+  color: var(--sec-font-color);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
 .no-outbound {
   display: flex;
   flex-direction: column;
@@ -173,7 +360,7 @@ export default {
     }
 
     span {
-      font-size: .9rem;
+      font-size: 0.9rem;
     }
   }
 }

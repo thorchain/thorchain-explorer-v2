@@ -8,9 +8,9 @@
         <div class="stats-container">
           <div>
             <span>
-              Total Amount:
+              Amount:
             </span>
-            <span v-if="totalSumAmount" class="total-swaps" style="padding-right: 1rem;">
+            <span v-if="totalSumAmount" class="total-swaps mono" style="padding-right: 1rem;">
               {{ formatCurrency(totalSumAmount) }}
             </span>
             <span v-else>-</span>
@@ -19,7 +19,7 @@
             <span>
               Count:
             </span>
-            <span class="total-swaps">{{ streamingSwaps.length }}</span>
+            <span class="total-swaps mono">{{ streamingSwaps.length }}</span>
           </div>
         </div>
       </div>
