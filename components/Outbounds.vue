@@ -208,6 +208,7 @@ export default {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   color: var(--font-color);
+  border: 1px solid var(--border-color) !important;
 
   &:first-of-type {
     margin-bottom: 3px;

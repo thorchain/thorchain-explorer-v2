@@ -258,6 +258,7 @@ export default {
   color: var(--font-color);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   margin-bottom: 1rem;
+  border: 1px solid var(--border-color) !important;
 
   &:hover {
     transform: translateY(-5px);
@@ -314,7 +315,6 @@ export default {
 }
 
 .total-swaps {
-  font-weight: bold;
   color: var(--sec-font-color);
 }
 
