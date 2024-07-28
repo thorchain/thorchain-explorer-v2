@@ -58,7 +58,7 @@ import streamingSwap from './components/streamingSwap.vue'
 import txCard from './components/txCard.vue'
 import CopyIcon from '~/assets/images/copy.svg?inline'
 import DisconnectIcon from '~/assets/images/disconnect.svg?inline'
-import { assetToTrade, isInternalTx, tradeToAsset } from '~/utils'
+import { assetFromString, assetToTrade, isInternalTx, tradeToAsset } from '~/utils'
 import Accordion from '~/components/Accordion.vue'
 
 export default {
@@ -255,8 +255,9 @@ export default {
       )
 
       if (actions && actions.actions.length > 0) {
+        const ta = assetFromString(outAsset)
         const isRefund = actions.actions.some((e, i) => e.type === 'refund')
-        if (isRefund && (outAsset.synth || outAsset.trade)) {
+        if (isRefund && (ta.synth || ta.trade)) {
           return false
         }
       }
@@ -1183,7 +1184,7 @@ export default {
       let outAmount =
         outTxs?.length > 0 ? parseInt(outTxs[0].coins[0].amount) : 0
       if (!outAmount && actions?.actions?.length > 0) {
-        outAmount = parseInt(actions?.actions[0].out[0].coins[0].amount)
+        outAmount = parseInt(actions?.actions[0]?.out[0]?.coins[0].amount)
       }
 
       const outMemoAsset = this.parseMemoAsset(memo.asset)

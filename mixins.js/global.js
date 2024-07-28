@@ -424,7 +424,7 @@ export default {
           }
         })
       }
-      return assetToString(asset)
+      return asset
     },
     parseMemoAsset (assetInString, pools) {
       if (!assetInString) { return null }

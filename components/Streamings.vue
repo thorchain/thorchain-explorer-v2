@@ -53,9 +53,9 @@
                     "0,0.0000"
                   )
                 }}</template>
-                <small class="asset-text sec-color">{{
-                  o.outputAsset.asset
-                }}</small>
+                <small class="asset-text sec-color">
+                  {{ showAsset(o.outputAsset.asset) }}
+                </small>
               </span>
             </div>
           </div>
