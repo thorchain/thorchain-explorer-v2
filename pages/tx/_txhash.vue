@@ -228,7 +228,7 @@ export default {
         return this.isTxInPending(ts)
       }
     },
-    isTxInPending (thorStatus) {
+    isTxInPending (thorStatus, actions) {
       const memo = this.parseMemo(thorStatus.tx?.memo)
 
       const userAddresses = new Set([
@@ -254,6 +254,13 @@ export default {
         this.pools
       )
 
+      if (actions && actions.actions.length > 0) {
+        const isRefund = actions.actions.some((e, i) => e.type === 'refund')
+        if (isRefund && (outAsset.synth || outAsset.trade)) {
+          return false
+        }
+      }
+
       const inboundFinalised = thorStatus.stages?.inbound_finalised?.completed
       let actionFinalised = true
       if (memo.type === 'swap') {
@@ -264,7 +271,7 @@ export default {
       const outboundFinalised =
         (thorStatus.stages.outbound_signed?.completed ||
           outAsset?.chain === 'THOR' ||
-          outAsset?.synth) &&
+          outAsset?.synth || outAsset.trade) &&
         (thorStatus.stages?.outbound_delay?.completed ?? true)
 
       return !inboundFinalised || !actionFinalised || !outboundFinalised
@@ -282,7 +289,8 @@ export default {
             })),
             middle: {
               pending: cardBase.middle?.pending,
-              send: cardBase.middle?.send ?? false
+              send: cardBase.middle?.send ?? false,
+              fail: cardBase.middle?.fail ?? false
             },
             out: cardBase.out?.map(a => ({
               asset: a?.asset,
@@ -457,6 +465,11 @@ export default {
                 key: 'Memo',
                 value: accordions.action?.memo,
                 is: accordions.action?.memo
+              },
+              {
+                key: 'Refund Reseaon',
+                value: accordions.action?.refundReason,
+                is: accordions.action?.refundReason
               }
             ]
           }
@@ -1167,8 +1180,11 @@ export default {
         outTxs?.length > 0 ? outTxs[0].coins[0].asset : memo.asset,
         this.pools
       )
-      const outAmount =
+      let outAmount =
         outTxs?.length > 0 ? parseInt(outTxs[0].coins[0].amount) : 0
+      if (!outAmount && actions?.actions?.length > 0) {
+        outAmount = parseInt(actions?.actions[0].out[0].coins[0].amount)
+      }
 
       const outMemoAsset = this.parseMemoAsset(memo.asset)
 
@@ -1235,7 +1251,8 @@ export default {
             }
           ],
           middle: {
-            pending: this.isTxInPending(thorStatus)
+            pending: this.isTxInPending(thorStatus, actions),
+            fail: onlyRefund
           },
           out: [
             {
@@ -1339,7 +1356,7 @@ export default {
                 !thorStatus.stages.swap_status?.pending &&
                 (thorStatus.stages.outbound_signed?.completed ||
                   outAsset.chain === 'THOR' ||
-                  outAsset.synth) &&
+                  outAsset.synth || outAsset.trade) &&
                 (thorStatus.stages.outbound_delay?.completed ?? true)
             },
             ...outTxs?.slice(1).map(o => ({
@@ -1356,7 +1373,7 @@ export default {
                 !thorStatus.stages.swap_status?.pending &&
                 (thorStatus.stages.outbound_signed?.completed ||
                   outAsset.chain === 'THOR' ||
-                  outAsset.synth)
+                  outAsset.synth || outAsset.trade)
             }))
           ]
         }
