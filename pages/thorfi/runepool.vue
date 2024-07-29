@@ -30,55 +30,107 @@
         </skeleton-item>
       </template>
     </stat-table>
-    <Card :navs="[{title: 'Rune Pools', value: 'rune-pools'}, {title: 'Mimirs', value: 'mimirs'}]" :act-nav.sync="cardMode">
-      <stat-table v-if="cardMode === 'mimirs'" :table-settings="polMimirSettings" />
-      <template v-else>
-        <vue-good-table
-          :columns="cols"
-          :rows="lps"
-          style-class="vgt-table net-table"
-          :pagination-options="{
-            enabled: true,
-            perPage: 5,
-            perPageDropdownEnabled: false,
-          }"
-        >
-          <template slot="table-row" slot-scope="props">
-            <div v-if="props.column.field == 'pool'" class="asset-cell">
-              <AssetIcon :asset="props.row.pool" />
-              <span class="ellipsis">
-                {{ props.row.pool }}
-              </span>
-              <div v-if="props.row.label" class="bubble-container" style="margin-left: 10px">
-                {{ props.row.label }}
-              </div>
-            </div>
-            <span v-else-if="props.column.field.startsWith('pool')" class="pool-cell ellipsis">
-              <span v-if="props.row[props.column.field][0]">{{ props.row[props.column.field][0] | number('0,0.00') }}
-                <small>RUNE</small></span>
-              <span
-                v-if="props.row[props.column.field][1]"
-                class="ellipsis"
-              >{{ props.row[props.column.field][1] ||
-                 props.row[props.column.field][1] === 0 ? ($options.filters.number(props.row[props.column.field][1], '0,0.000000')) : '-' }}
-                <small class="ellipsis">{{ props.row.pool }}</small></span>
-              <span v-else-if="!props.row[props.column.field][0]">-</span>
-            </span>
-            <span v-else-if="props.column.field == 'share'">
-              <span v-if="props.row.share">{{ percentageFormat(props.row.share, 4) }}</span>
-              <span v-else>-</span>
-            </span>
-          </template>
-        </vue-good-table>
+    <Card
+  :navs="[
+    { title: 'Rune Pools', value: 'rune-pools' },
+    { title: 'Mimirs', value: 'mimirs' },
+    { title: 'Members', value: 'members' }
+  ]"
+  :act-nav.sync="cardMode"
+>
+  <stat-table v-if="cardMode === 'mimirs'" :table-settings="polMimirSettings" />
+  <template v-else-if="cardMode === 'rune-pools'">
+    <vue-good-table
+      :columns="cols"
+      :rows="lps"
+      style-class="vgt-table net-table"
+      :pagination-options="{
+        enabled: true,
+        perPage: 5,
+        perPageDropdownEnabled: false
+      }"
+    >
+      <template slot="table-row" slot-scope="props">
+        <div v-if="props.column.field == 'pool'" class="asset-cell">
+          <AssetIcon :asset="props.row.pool" />
+          <span class="ellipsis">
+            {{ props.row.pool }}
+          </span>
+          <div v-if="props.row.label" class="bubble-container" style="margin-left: 10px">
+            {{ props.row.label }}
+          </div>
+        </div>
+        <span v-else-if="props.column.field.startsWith('pool')" class="pool-cell ellipsis">
+          <span v-if="props.row[props.column.field][0]">
+            {{ props.row[props.column.field][0] | number('0,0.00') }}
+            <small>RUNE</small>
+          </span>
+          <span v-if="props.row[props.column.field][1]" class="ellipsis">
+            {{
+              props.row[props.column.field][1] ||
+              props.row[props.column.field][1] === 0
+                ? ($options.filters.number(props.row[props.column.field][1], '0,0.000000'))
+                : '-'
+            }}
+            <small class="ellipsis">{{ props.row.pool }}</small>
+          </span>
+          <span v-else-if="!props.row[props.column.field][0]">-</span>
+        </span>
+        <span v-else-if="props.column.field == 'share'">
+          <span v-if="props.row.share">{{ percentageFormat(props.row.share, 4) }}</span>
+          <span v-else>-</span>
+        </span>
       </template>
-    </Card>
+    </vue-good-table>
+  </template>
+
+  <template v-else-if="cardMode === 'members'">
+    <vue-good-table
+      :columns="memberCols"
+      :rows="members"
+      style-class="vgt-table net-table"
+      :pagination-options="{
+        enabled: true,
+        perPage: 5,
+        perPageDropdownEnabled: false
+      }"
+    >
+      <template slot="table-row" slot-scope="props">
+        <span v-if="props.column.field == 'address'">{{ props.row.address }}</span>
+        <span v-else-if="props.column.field == 'deposit_amount'">
+          {{ (props.row.deposit_amount / 1e8)}} <small>RUNE</small>
+        </span>
+        <span v-else-if="props.column.field == 'value'">
+          {{ (props.row.value / 1e8)}} <small>RUNE</small>
+        </span>
+        <span v-else-if="props.column.field == 'pnl'">
+          {{ (props.row.pnl / 1e8)}} <small>RUNE</small>
+          <progress-icon v-if="props.row.delta && props.row.delta[props.column.field]"
+            :data-number="getFormattedValue(props.column.field, props.row.delta[props.column.field])"
+            :is-down="+props.row.delta[props.column.field] < 0" />
+          <span class="extra-text" style="font-size: .6rem; font-weight: bold;">
+            {{ showAsset(props.row.asset) }}
+          </span>
+        </span>
+        <span v-else>
+          {{ props.formattedRow[props.column.field] }}
+          <progress-icon v-if="props.row.delta && props.row.delta[props.column.field]"
+            :data-number="getFormattedValue(props.column.field, props.row.delta[props.column.field])"
+            :is-down="+props.row.delta[props.column.field] < 0" />
+        </span>
+      </template>
+    </vue-good-table>
+  </template>
+</Card>
   </Page>
 </template>
 
 <script>
 import endpoints from '~/api/endpoints'
+import ProgressIcon from '~/components/ProgressIcon.vue'
 
 export default {
+  components: { ProgressIcon },
   data () {
     return {
       reserveAddress: endpoints[process.env.NETWORK].MODULE_ADDR,
@@ -90,6 +142,7 @@ export default {
       cardMode: 'rune-pools',
       pools: [],
       lps: [],
+      members: [],
       cols: [
         {
           label: 'Pool',
@@ -136,6 +189,34 @@ export default {
           sortFn: this.formatTimeSort,
           type: 'text'
         }
+      ],
+      memberCols: [
+        {
+          label: 'Address',
+          field: 'rune_address',
+          formatFn: this.formatAddress
+        },
+        {
+          label: 'Deposit',
+          field: 'deposit_amount',
+          type: 'number',
+          formatFn: this.numberFormat,
+          tdClass: 'mono'
+        },
+        {
+          label: 'PnL',
+          field: 'pnl',
+          type: 'number',
+          formatFn: this.numberFormat,
+          tdClass: 'mono'
+        },
+        {
+          label: 'Value',
+          field: 'value',
+          type: 'number',
+          formatFn: this.numberFormat,
+          tdClass: 'mono'
+        },
       ]
     }
   },
@@ -370,6 +451,9 @@ export default {
 
       const { data: constantsData } = await this.$api.getConstants()
       this.networkConst = constantsData
+
+      const { data: membersData } = await this.$api.getRunePoolProviders()
+      this.members = membersData
     } catch (error) {
       console.error(error)
     }

@@ -5,6 +5,9 @@ import { $axiosInstace } from './index'
 export function getMimir () {
   return $axiosInstace.get(endpoints[process.env.NETWORK].THORNODE_URL + 'thorchain/mimir')
 }
+export function getRunePoolProviders () {
+  return $axiosInstace.get(endpoints[process.env.NETWORK].THORNODE_URL + 'thorchain/rune_providers')
+}
 
 export function getBalance (address) {
   return $axiosInstace.get(endpoints[process.env.NETWORK].THORNODE_URL + `bank/balances/${address}`)
