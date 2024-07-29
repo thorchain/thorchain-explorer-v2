@@ -23,6 +23,7 @@ import {
   getBorrowerDetails
 } from './midgard.api'
 import {
+  getRunePoolProviders,
   getMimir,
   getBalance,
   getLastBlockHeight,
@@ -149,6 +150,7 @@ export default function ({ $axios }, inject) {
   $axiosInstace = $axios
 
   const api = {
+    getRunePoolProviders,
     getStats,
     getTxs,
     getConstants,
