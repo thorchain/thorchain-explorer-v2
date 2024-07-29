@@ -391,6 +391,7 @@ input {
  background: transparent;
  border: 1px solid var(--border-color);
  border-radius: 8px 8px 0 0;
+ padding: .5rem 1rem;
 
  form label {
   display: none;
@@ -408,7 +409,7 @@ input {
  }
 
  .vgt-pull-right {
-  display: none;
+  margin: 0;
  }
 
  .vgt-global-search__input {
