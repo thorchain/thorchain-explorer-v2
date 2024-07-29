@@ -46,11 +46,6 @@
         :columns="cols"
         :rows="lps"
         style-class="vgt-table net-table"
-        :pagination-options="{
-          enabled: true,
-          perPage: 5,
-          perPageDropdownEnabled: false
-        }"
       >
         <template slot="table-row" slot-scope="props">
           <div v-if="props.column.field == 'pool'" class="asset-cell">
