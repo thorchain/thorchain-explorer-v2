@@ -108,7 +108,6 @@
         :navs="[
           { title: 'Swap Volume', value: 'swap-vol' },
           { title: 'Earnings Volume', value: 'earnings-vol' },
-          { title: 'Swap Count', value: 'swap-count' },
         ]"
         :act-nav.sync="swapMode"
       >
@@ -126,15 +125,6 @@
           :key="2"
           :option="earningsHistory"
           :loading="!earningsHistory"
-          :autoresize="true"
-          :loading-options="showLoading"
-        />
-        <VChart
-          v-if="swapMode == 'swap-count'"
-          :key="3"
-          class="swap-volume-chart"
-          :option="swapHistoryCount"
-          :loading="!swapHistoryCount"
           :autoresize="true"
           :loading-options="showLoading"
         />
@@ -427,12 +417,12 @@ export default {
       stats: [],
       volumeHistory: undefined,
       swapHistory: undefined,
-      swapHistoryCount: undefined,
       earningsHistory: undefined,
       runeSupply: undefined,
       lastHeight: undefined,
       blocks: undefined,
       txs: undefined,
+      totalSwapVolume: undefined,
       totalSwapVolumeUSD: undefined,
       totalAddresses: undefined,
       thorHeight: undefined,
@@ -796,8 +786,7 @@ export default {
         }
 
         this.volumeHistory = this.formatLPChange(data?.LPChange)
-        ;({ resVolume: this.swapHistory, resCount: this.swapHistoryCount } =
-          this.formatSwap(data?.swaps))
+        ;({ resVolume: this.swapHistory } = this.formatSwap(data?.swaps))
         this.earningsHistory = this.formatEarnings(data?.earning)
         this.totalSwapVolumeUSD = data.swaps?.meta?.totalVolumeUSD
         this.totalSwapVolume = data.swaps?.meta?.totalVolume
@@ -815,8 +804,7 @@ export default {
         this.$api
           .swapHistory()
           .then((res) => {
-            ;({ resVolume: this.swapHistory, resCount: this.swapHistoryCount } =
-              this.formatSwap(res.data))
+            ;({ resVolume: this.swapHistory } = this.formatSwap(res.data))
             this.totalSwapVolumeUSD = res?.meta?.totalVolumeUSD
             this.totalSwapVolume = res?.meta?.totalVolume
           })
@@ -1010,12 +998,11 @@ export default {
           ).format('MM/DD')
         )
         swapVolume?.total.push(+interval.totalVolumeUSD / 10 ** 2)
-
-        swapCount.total.push(+interval.totalCount)
+        swapCount?.total.push(+interval.totalCount)
       })
 
       const resVolume = this.basicChartFormat(
-        (value) => `$ ${this.normalFormat(value)}`,
+        undefined,
         [
           {
             type: 'bar',
@@ -1030,29 +1017,29 @@ export default {
           legend: {
             show: false,
           },
+        },
+        (param) => {
+          console.log(swapCount)
+          return `
+          <div class="tooltip-header">
+            <div class="data-color" style="background-color: ${param[0].color}"></div>
+            ${param[0].name}
+          </div>
+          <div class="tooltip-body">
+            <span>
+              <span>Volume</span>
+              <b>$${this.$options.filters.number(param[0].value, '0,0.00')}</b>
+            </span>
+            <span>
+              <span>Count</span>
+              <b>${this.$options.filters.number(swapCount?.total[param[0].dataIndex], '0,0')}</b>
+            </span>
+          </div>
+        `
         }
       )
 
-      const resCount = this.basicChartFormat(
-        (value) => `${this.normalFormat(value)}`,
-        [
-          {
-            type: 'bar',
-            name: 'Total Count',
-            showSymbol: false,
-            data: swapCount.total,
-            smooth: true,
-          },
-        ],
-        xAxis,
-        {
-          legend: {
-            show: false,
-          },
-        }
-      )
-
-      return { resVolume, resCount }
+      return { resVolume }
     },
     formatTvl(d) {
       const xAxis = []
