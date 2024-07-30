@@ -1019,7 +1019,6 @@ export default {
           },
         },
         (param) => {
-          console.log(swapCount)
           return `
           <div class="tooltip-header">
             <div class="data-color" style="background-color: ${param[0].color}"></div>
