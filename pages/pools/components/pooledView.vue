@@ -5,7 +5,7 @@
         <span class="title">Total Pooled:</span>
         <span class="mono value">{{ totalInfo.pooled | currency }}</span>
       </skeleton-item>
-      <hr>
+      <hr />
       <skeleton-item class="stat-item" :loading="loading">
         <span class="title">24hr Volume:</span>
         <span class="mono value">{{ totalInfo.day.volume | currency }}</span>
@@ -15,23 +15,37 @@
         <span class="mono value">{{ totalInfo.day.earnings | currency }}</span>
       </skeleton-item>
       <skeleton-item class="stat-item" :loading="loading">
-        <span class="title">24hr Earnings APR:
-          <unknown-icon v-tooltip="'(Earnings / Pooled) * Period Per Year'" class="header-icon" />
+        <span class="title"
+          >24hr Earnings APR:
+          <unknown-icon
+            v-tooltip="'(Earnings / Pooled) * Period Per Year'"
+            class="header-icon"
+          />
         </span>
-        <span class="mono value">{{ totalInfo.day.earningsAPR | percent(2) }}</span>
+        <span class="mono value">{{
+          totalInfo.day.earningsAPR | percent(2)
+        }}</span>
       </skeleton-item>
       <skeleton-item class="stat-item" :loading="loading">
         <span class="title">24hr Swap Count:</span>
-        <span class="mono value">{{ totalInfo.day.swapCount | number('0,0') }}</span>
+        <span class="mono value">{{
+          totalInfo.day.swapCount | number('0,0')
+        }}</span>
       </skeleton-item>
       <skeleton-item class="stat-item" :loading="loading">
-        <span class="title">24hr Fee Ratio:
-          <unknown-icon v-tooltip="'Average Fee in basis point (Earnings / Volume)'" class="header-icon" />
+        <span class="title"
+          >24hr Fee Ratio:
+          <unknown-icon
+            v-tooltip="'Average Fee in basis point (Earnings / Volume)'"
+            class="header-icon"
+          />
         </span>
-        <span class="mono value">{{ totalInfo.day.avgFee | number('0.00') }} BP</span>
+        <span class="mono value"
+          >{{ totalInfo.day.avgFee | number('0.00') }} BP</span
+        >
       </skeleton-item>
     </div>
-    <hr>
+    <hr />
     <div class="stat-group">
       <skeleton-item class="stat-item" :loading="loading">
         <span class="title">7D Volume:</span>
@@ -43,18 +57,24 @@
       </skeleton-item>
       <skeleton-item class="stat-item" :loading="loading">
         <span class="title">7D Earnings APR:</span>
-        <span class="mono value">{{ totalInfo.week.earningsAPR | percent(2) }}</span>
+        <span class="mono value">{{
+          totalInfo.week.earningsAPR | percent(2)
+        }}</span>
       </skeleton-item>
       <skeleton-item class="stat-item" :loading="loading">
         <span class="title">7D Swap Count:</span>
-        <span class="mono value">{{ totalInfo.week.swapCount | number('0,0') }}</span>
+        <span class="mono value">{{
+          totalInfo.week.swapCount | number('0,0')
+        }}</span>
       </skeleton-item>
       <skeleton-item class="stat-item" :loading="loading">
         <span class="title">7D Fee Ratio:</span>
-        <span class="mono value">{{ totalInfo.week.avgFee | number('0.00') }} BP</span>
+        <span class="mono value"
+          >{{ totalInfo.week.avgFee | number('0.00') }} BP</span
+        >
       </skeleton-item>
     </div>
-    <hr>
+    <hr />
     <div class="stat-group">
       <skeleton-item class="stat-item" :loading="loading">
         <span class="title">30D Volume:</span>
@@ -62,22 +82,30 @@
       </skeleton-item>
       <skeleton-item class="stat-item" :loading="loading">
         <span class="title">30D Earnings:</span>
-        <span class="mono value">{{ totalInfo.month.earnings | currency }}</span>
+        <span class="mono value">{{
+          totalInfo.month.earnings | currency
+        }}</span>
       </skeleton-item>
       <skeleton-item class="stat-item" :loading="loading">
         <span class="title">30D Earnings APR:</span>
-        <span class="mono value">{{ totalInfo.month.earningsAPR | percent(2) }}</span>
+        <span class="mono value">{{
+          totalInfo.month.earningsAPR | percent(2)
+        }}</span>
       </skeleton-item>
       <skeleton-item class="stat-item" :loading="loading">
         <span class="title">30D Swap Count:</span>
-        <span class="mono value">{{ totalInfo.month.swapCount | number('0,0') }}</span>
+        <span class="mono value">{{
+          totalInfo.month.swapCount | number('0,0')
+        }}</span>
       </skeleton-item>
       <skeleton-item class="stat-item" :loading="loading">
         <span class="title">30D Fee Ratio:</span>
-        <span class="mono value">{{ totalInfo.month.avgFee | number('0.00') }} BP</span>
+        <span class="mono value"
+          >{{ totalInfo.month.avgFee | number('0.00') }} BP</span
+        >
       </skeleton-item>
     </div>
-    <hr>
+    <hr />
     <div class="stat-group">
       <skeleton-item class="stat-item" :loading="loading">
         <span class="title">Year Volume:</span>
@@ -89,15 +117,21 @@
       </skeleton-item>
       <skeleton-item class="stat-item" :loading="loading">
         <span class="title">Year Earnings APR:</span>
-        <span class="mono value">{{ totalInfo.year.earningsAPR | percent(2) }}</span>
+        <span class="mono value">{{
+          totalInfo.year.earningsAPR | percent(2)
+        }}</span>
       </skeleton-item>
       <skeleton-item class="stat-item" :loading="loading">
         <span class="title">Year Swap Count:</span>
-        <span class="mono value">{{ totalInfo.year.swapCount | number('0,0') }}</span>
+        <span class="mono value">{{
+          totalInfo.year.swapCount | number('0,0')
+        }}</span>
       </skeleton-item>
       <skeleton-item class="stat-item" :loading="loading">
         <span class="title">Year Fee Ratio:</span>
-        <span class="mono value">{{ totalInfo.year.avgFee | number('0.00') }} BP</span>
+        <span class="mono value"
+          >{{ totalInfo.year.avgFee | number('0.00') }} BP</span
+        >
       </skeleton-item>
     </div>
   </div>
@@ -109,7 +143,7 @@ import UnknownIcon from '~/assets/images/unknown.svg?inline'
 
 export default {
   components: { UnknownIcon },
-  data () {
+  data() {
     return {
       loading: true,
       totalInfo: {
@@ -119,43 +153,43 @@ export default {
           earnings: 0,
           earningsAPR: 0,
           swapCount: 0,
-          avgFee: 0
+          avgFee: 0,
         },
         week: {
           volume: 0,
           earnings: 0,
           earningsAPR: 0,
           swapCount: 0,
-          avgFee: 0
+          avgFee: 0,
         },
         month: {
           volume: 0,
           earnings: 0,
           earningsAPR: 0,
           swapCount: 0,
-          avgFee: 0
+          avgFee: 0,
         },
         year: {
           volume: 0,
           earnings: 0,
           earningsAPR: 0,
           swapCount: 0,
-          avgFee: 0
-        }
-      }
+          avgFee: 0,
+        },
+      },
     }
   },
   computed: {
     ...mapGetters({
-      runePrice: 'getRunePrice'
-    })
+      runePrice: 'getRunePrice',
+    }),
   },
-  async mounted () {
+  async mounted() {
     const pd = await this.getDVEs()
     this.getTotalInfo(pd)
   },
   methods: {
-    async getDVEs () {
+    async getDVEs() {
       try {
         const poolsDataDay = (await this.$api.getPoolsHistory()).data
         const poolsDataWeek = (await this.$api.getPoolsHistory('Week')).data
@@ -165,7 +199,7 @@ export default {
           day: poolsDataDay,
           week: poolsDataWeek,
           month: poolsDataMonth,
-          year: poolsDataYear
+          year: poolsDataYear,
         }
       } catch (error) {
         return undefined
@@ -173,20 +207,24 @@ export default {
         this.loading = false
       }
     },
-    getTotalInfo (poolDatum) {
+    getTotalInfo(poolDatum) {
       const updatePeriod = (period, ppy) => {
         poolDatum[period].pools.forEach((p) => {
           if (period === 'day') {
-            this.totalInfo.pooled += (+p.endRuneDepth * 2 * this.runePrice) / 1e8
+            this.totalInfo.pooled +=
+              (+p.endRuneDepth * 2 * this.runePrice) / 1e8
           }
 
-          this.totalInfo[period].volume += (+p.swapVolume * this.runePrice) / 1e8
-          this.totalInfo[period].earnings += (+p.earnings * this.runePrice) / 1e8
-          this.totalInfo[period].swapCount += (+p.swapCount)
+          this.totalInfo[period].volume +=
+            (+p.swapVolume * this.runePrice) / 1e8
+          this.totalInfo[period].earnings +=
+            (+p.earnings * this.runePrice) / 1e8
+          this.totalInfo[period].swapCount += +p.swapCount
         })
 
-        const ve = (this.totalInfo[period].earnings / this.totalInfo[period].volume)
-        const ep = (this.totalInfo[period].earnings / this.totalInfo.pooled)
+        const ve =
+          this.totalInfo[period].earnings / this.totalInfo[period].volume
+        const ep = this.totalInfo[period].earnings / this.totalInfo.pooled
 
         this.totalInfo[period].earningsAPR = ep * ppy
         this.totalInfo[period].avgFee = ve * 1e4
@@ -196,8 +234,8 @@ export default {
       updatePeriod('week', 52.1429)
       updatePeriod('month', 12)
       updatePeriod('year', 1)
-    }
-  }
+    },
+  },
 }
 </script>
 
@@ -217,13 +255,13 @@ export default {
       display: flex;
       align-items: center;
       color: var(--sec-font-color);
-      margin-right: .5rem;
-      font-size: .85rem;
+      margin-right: 0.5rem;
+      font-size: 0.85rem;
 
       .header-icon {
         display: inline-block;
-        height: .9rem;
-        width: .9rem;
+        height: 0.9rem;
+        width: 0.9rem;
         fill: var(--sec-font-color);
         margin-left: 5px;
       }
@@ -231,19 +269,18 @@ export default {
 
     .value {
       color: var(--primary-color);
-      font-size: .85rem;
+      font-size: 0.85rem;
     }
   }
 
   hr {
-    margin: .5rem 0;
+    margin: 0.5rem 0;
     opacity: 0.65;
     overflow: visible;
     height: 0;
     border: 0;
     border-top: 1px solid var(--border-color);
   }
-
 }
 
 @include md {
@@ -263,7 +300,7 @@ export default {
         position: absolute;
         right: 0;
         top: 0;
-        content: "";
+        content: '';
         display: block;
         height: calc(100% - 1rem);
         border-left: 0;

@@ -14,12 +14,14 @@
       >
         <template slot="table-row" slot-scope="props">
           <template v-if="props.column.field.includes('addr')">
-            <span v-if="props.row[props.column.field]" class="clickable" @click="gotoAddr(props.row[props.column.field])">
+            <span
+              v-if="props.row[props.column.field]"
+              class="clickable"
+              @click="gotoAddr(props.row[props.column.field])"
+            >
               {{ props.formattedRow[props.column.field] }}
             </span>
-            <span v-else>
-              Not Assigned
-            </span>
+            <span v-else> Not Assigned </span>
           </template>
           <span v-else>
             {{ props.formattedRow[props.column.field] }}
@@ -39,12 +41,12 @@ import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
 
 export default {
   components: {
-    BounceLoader
+    BounceLoader,
   },
-  async asyncData ({ params }) {
+  asyncData({ params }) {
     return { poolName: params.poolName }
   },
-  data () {
+  data() {
     return {
       lpPositions: [],
       loading: true,
@@ -52,78 +54,93 @@ export default {
       cols: [
         {
           label: 'Position',
-          field: 'position'
+          field: 'position',
         },
         {
           label: 'Rune address',
           field: 'rune_addr',
-          formatFn: this.formatAddress
+          formatFn: this.formatAddress,
         },
         {
           label: 'Asset address',
           field: 'asset_addr',
-          formatFn: this.formatAddress
+          formatFn: this.formatAddress,
         },
         {
           label: 'Rune added',
           field: 'rune_add',
           type: 'number',
-          formatFn: this.formatNumber
+          formatFn: this.formatNumber,
         },
         {
           label: 'Asset added',
           field: 'asset_add',
           type: 'number',
-          formatFn: this.formatNumber
+          formatFn: this.formatNumber,
         },
         {
           label: 'Last Height added',
           field: 'last_add_height',
           type: 'number',
-          formatFn: this.formatBlock
-        }
+          formatFn: this.formatBlock,
+        },
       ],
-      rows: []
+      rows: [],
     }
   },
-  mounted () {
-    this.$api.getLpPositions(this.$route.params.poolName).then((res) => {
-      this.lpPositions = this.formatLP(res?.data)
-    }).catch((e) => {
-      this.error = true
-      console.error(e)
-    })
+  mounted() {
+    this.$api
+      .getLpPositions(this.$route.params.poolName)
+      .then((res) => {
+        this.lpPositions = this.formatLP(res?.data)
+      })
+      .catch((e) => {
+        this.error = true
+        console.error(e)
+      })
       .finally(() => {
         this.loading = false
       })
   },
   methods: {
-    checkPostion (position) {
+    checkPostion(position) {
       let pos = ''
-      if ('asset_address' in position) { pos = 'Asymmetrical Asset' }
-      if ('rune_address' in position) { pos = 'Asymmetrical Rune' }
-      if ('asset_address' in position && 'rune_address' in position) { pos = 'Symmetrical' }
+      if ('asset_address' in position) {
+        pos = 'Asymmetrical Asset'
+      }
+      if ('rune_address' in position) {
+        pos = 'Asymmetrical Rune'
+      }
+      if ('asset_address' in position && 'rune_address' in position) {
+        pos = 'Symmetrical'
+      }
       return pos
     },
-    formatLP (pos) {
+    formatLP(pos) {
       for (const i in pos) {
         this.rows.push({
           position: this.checkPostion(pos[i]),
           rune_addr: pos[i]?.rune_address ? pos[i]?.rune_address : undefined,
           asset_addr: pos[i]?.asset_address ? pos[i]?.asset_address : undefined,
-          rune_add: pos[i]?.rune_deposit_value ? pos[i]?.rune_deposit_value / 10 ** 8 : 'Not Added',
-          asset_add: pos[i]?.asset_deposit_value ? pos[i]?.asset_deposit_value / 10 ** 8 : 'Not Added',
-          last_add_height: pos[i]?.last_add_height ? pos[i]?.last_add_height : ' '
+          rune_add: pos[i]?.rune_deposit_value
+            ? pos[i]?.rune_deposit_value / 10 ** 8
+            : 'Not Added',
+          asset_add: pos[i]?.asset_deposit_value
+            ? pos[i]?.asset_deposit_value / 10 ** 8
+            : 'Not Added',
+          last_add_height: pos[i]?.last_add_height
+            ? pos[i]?.last_add_height
+            : ' ',
         })
       }
     },
-    formatNumber (number) {
+    formatNumber(number) {
       return this.$options.filters.number(number, '0,0.0000')
     },
-    formatBlock (number) {
+    formatBlock(number) {
       return this.$options.filters.number(number, '0,0')
-    }
-  }
+    },
+  },
 }
 </script>
 

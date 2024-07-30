@@ -9,9 +9,9 @@ import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
 
 export default {
   components: {
-    BounceLoader
+    BounceLoader,
   },
-  props: ['extraClass']
+  props: ['extraClass'],
 }
 </script>
 

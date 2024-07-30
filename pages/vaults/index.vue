@@ -52,8 +52,8 @@
                       <div class="card-header">Nodes Member</div>
                       <div class="card-body grid-template">
                         <small
-                          class="mono"
                           v-for="node in props.row.membership"
+                          class="mono"
                         >
                           .{{ node.node_address.slice(-4) }}
                         </small>
@@ -95,9 +95,9 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
-import BounceLoader from "vue-spinner/src/BounceLoader.vue";
-import { runeCur } from "~/utils";
+import { mapGetters } from 'vuex'
+import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
+import { runeCur } from '~/utils'
 
 export default {
   components: {
@@ -107,55 +107,55 @@ export default {
     return {
       cols: [
         {
-          label: "Hash",
-          field: "hash",
+          label: 'Hash',
+          field: 'hash',
         },
         {
-          label: "Type",
-          field: "type",
+          label: 'Type',
+          field: 'type',
         },
         {
-          label: "Status",
-          field: "status",
+          label: 'Status',
+          field: 'status',
         },
         {
-          label: "Bond",
-          field: "bond",
-          type: "number",
+          label: 'Bond',
+          field: 'bond',
+          type: 'number',
         },
         {
-          label: "Total Value",
-          field: "total_value",
-          type: "number",
+          label: 'Total Value',
+          field: 'total_value',
+          type: 'number',
         },
         {
-          label: "Value/Bond",
-          field: "vb",
-          type: "percentage",
+          label: 'Value/Bond',
+          field: 'vb',
+          type: 'percentage',
         },
         {
-          label: "Node Members",
-          field: "membership_count",
-          type: "number",
+          label: 'Node Members',
+          field: 'membership_count',
+          type: 'number',
         },
         {
-          label: "Ins",
-          field: "ins",
-          type: "number",
+          label: 'Ins',
+          field: 'ins',
+          type: 'number',
           formatFn: this.numberFormat,
-          tdClass: "mono",
+          tdClass: 'mono',
         },
         {
-          label: "Outs",
-          field: "outs",
-          type: "number",
+          label: 'Outs',
+          field: 'outs',
+          type: 'number',
           formatFn: this.numberFormat,
-          tdClass: "mono",
+          tdClass: 'mono',
         },
       ],
       yggdrasil: [],
       asgard: [],
-    };
+    }
   },
   mounted() {
     // filter out yggdrasil
@@ -168,63 +168,63 @@ export default {
     this.$api
       .getAsgard()
       .then(async (res) => {
-        const poolsPrice = await this.formatPoolPrice();
-        const nodes = await this.formatNodes();
+        const poolsPrice = await this.formatPoolPrice()
+        const nodes = await this.formatNodes()
         this.asgard = await this.formatVaults(
           res?.data,
-          "Asgard",
+          'Asgard',
           poolsPrice,
           nodes
-        );
+        )
       })
       .catch((e) => {
-        console.error(e);
-      });
+        console.error(e)
+      })
   },
   methods: {
     formatStatus(status) {
-      if (status === "ActiveVault") {
-        return "Active";
+      if (status === 'ActiveVault') {
+        return 'Active'
       }
-      return status;
+      return status
     },
     async formatPoolPrice() {
-      const pools = await this.$api.getPools();
-      const poolsPrice = [];
-      pools.data.map((p) => (poolsPrice[p.asset] = p.assetPrice));
-      return poolsPrice;
+      const pools = await this.$api.getPools()
+      const poolsPrice = []
+      pools.data.map((p) => (poolsPrice[p.asset] = p.assetPrice))
+      return poolsPrice
     },
     async formatNodes() {
-      const nodes = await this.$api.getNodes();
-      const nodesFormat = [];
-      nodes.data.map((n) => (nodesFormat[n.pub_key_set?.secp256k1] = n));
-      return nodesFormat;
+      const nodes = await this.$api.getNodes()
+      const nodesFormat = []
+      nodes.data.map((n) => (nodesFormat[n.pub_key_set?.secp256k1] = n))
+      return nodesFormat
     },
     formatVaults(
       data,
-      type = "Yggdrasil",
+      type = 'Yggdrasil',
       poolsPrice = undefined,
       nodes = undefined
     ) {
-      const y = [];
+      const y = []
       for (const vault of data) {
-        let bond = vault?.bond / 1e8;
+        let bond = vault?.bond / 1e8
         let totalValue =
-          +vault?.total_value < 100 ? 0.1 : vault?.total_value / 1e8;
-        let vb;
-        if (type === "Asgard" && poolsPrice) {
-          totalValue = 0;
+          +vault?.total_value < 100 ? 0.1 : vault?.total_value / 1e8
+        let vb
+        if (type === 'Asgard' && poolsPrice) {
+          totalValue = 0
           vault.coins?.forEach((a) => {
-            totalValue += (+(poolsPrice[a.asset] || 0) * +a.amount) / 1e8;
-          });
-          bond = 0;
+            totalValue += (+(poolsPrice[a.asset] || 0) * +a.amount) / 1e8
+          })
+          bond = 0
           vault.membership?.forEach((m) => {
-            bond += nodes[m].total_bond / 1e8;
-          });
-          vb = totalValue / bond;
+            bond += nodes[m].total_bond / 1e8
+          })
+          vb = totalValue / bond
         }
         y.push({
-          hash: vault?.addresses.find((e) => e.chain === "THOR").address,
+          hash: vault?.addresses.find((e) => e.chain === 'THOR').address,
           type,
           status: this.formatStatus(vault?.status),
           ins: vault?.inbound_tx_count,
@@ -234,26 +234,26 @@ export default {
           membership: vault?.membership?.map((v) => nodes[v]),
           vb,
           outs: vault?.outbound_tx_count,
-        });
+        })
       }
-      return y;
+      return y
     },
     runeCur() {
-      return runeCur();
+      return runeCur()
     },
     curFormat(number) {
-      return this.$options.filters.currency(number);
+      return this.$options.filters.currency(number)
     },
     numberFormat(number) {
-      return this.$options.filters.number(number, "0,0");
+      return this.$options.filters.number(number, '0,0')
     },
   },
   computed: {
     ...mapGetters({
-      runePrice: "getRunePrice",
+      runePrice: 'getRunePrice',
     }),
   },
-};
+}
 </script>
 
 <style>

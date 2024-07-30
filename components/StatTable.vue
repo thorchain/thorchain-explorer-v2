@@ -1,5 +1,10 @@
 <template>
-  <Card :is-loading="isLoading || !(tableSettings && tableSettings.length > 0)" extra-class="stat-table" :title="header" :img-src="iconSrc">
+  <Card
+    :is-loading="isLoading || !(tableSettings && tableSettings.length > 0)"
+    extra-class="stat-table"
+    :title="header"
+    :img-src="iconSrc"
+  >
     <div class="stat-table-container">
       <div v-for="(row, ri) in tableSettings" :key="ri" class="stat-table-row">
         <div
@@ -8,31 +13,63 @@
           class="stat-table-group"
         >
           <div v-if="colItem.image" class="img-div">
-            <img :src="colItem.image" alt="item-icon">
+            <img :src="colItem.image" alt="item-icon" />
           </div>
           <div class="stat-table-item">
             <div class="col-header">
               {{ colItem.name }}
-              <unknown-icon class="header-icon" v-if="colItem.extraInfo" v-tooltip="colItem.extraInfo" />
+              <unknown-icon
+                v-if="colItem.extraInfo"
+                v-tooltip="colItem.extraInfo"
+                class="header-icon"
+              />
             </div>
             <div class="col-value value-item">
               <template v-if="!$slots[colItem.slotName]">
-                <skeleton-item custom-class="stat-loader" :loading="(!colItem.value && colItem.value !== 0) || (colItem.is === true)">
+                <skeleton-item
+                  custom-class="stat-loader"
+                  :loading="
+                    (!colItem.value && colItem.value !== 0) ||
+                    colItem.is === true
+                  "
+                >
                   <template v-if="colItem.filter">
-                    <pre v-if="colItem.value && colItem.runeValue" class="rune-value">{{ colItem.value | number('0,0.00') }} <small>RUNE</small></pre>
-                    <pre v-else-if="colItem.value !== 0">{{ colItem.value || '-' }}</pre>
-                    <pre v-if="colItem.value === 0" :class="{'rune-value': colItem.runeValue}">0</pre>
+                    <pre
+                      v-if="colItem.value && colItem.runeValue"
+                      class="rune-value">{{ colItem.value | number('0,0.00') }} <small>RUNE</small></pre>
+                    <pre v-else-if="colItem.value !== 0">{{
+                      colItem.value || '-'
+                    }}</pre>
+                    <pre
+                      v-if="colItem.value === 0"
+                      :class="{ 'rune-value': colItem.runeValue }"
+                    >
+0</pre
+                    >
                   </template>
                   <template v-else>
-                    <skeleton-item custom-class="stat-loader" :loading="colItem.value === undefined || colItem.value === NaN || colItem.value === null">
+                    <skeleton-item
+                      custom-class="stat-loader"
+                      :loading="
+                        colItem.value === undefined ||
+                        colItem.value === NaN ||
+                        colItem.value === null
+                      "
+                    >
                       {{ colItem.value | number('0,0') }}
                     </skeleton-item>
                   </template>
                 </skeleton-item>
               </template>
               <slot v-else :name="colItem.slotName" :val="colItem.value" />
-              <span v-if="colItem.value && colItem.usdValue" class="usd-value">({{ colItem.value * runePrice | currency }})</span>
-              <span v-if="colItem.extraText" :class="{'usd-value': true, ...colItem.extraTextClass}">({{ colItem.extraText }})</span>
+              <span v-if="colItem.value && colItem.usdValue" class="usd-value"
+                >({{ (colItem.value * runePrice) | currency }})</span
+              >
+              <span
+                v-if="colItem.extraText"
+                :class="{ 'usd-value': true, ...colItem.extraTextClass }"
+                >({{ colItem.extraText }})</span
+              >
             </div>
           </div>
         </div>
@@ -53,18 +90,18 @@ export default {
     iconSrc: String,
     header: String,
     tableSettings: Array,
-    isLoading: Boolean
+    isLoading: Boolean,
   },
   computed: {
     ...mapGetters({
-      runePrice: 'getRunePrice'
-    })
+      runePrice: 'getRunePrice',
+    }),
   },
   methods: {
-    runeCur () {
+    runeCur() {
       return AssetCurrencySymbol.RUNE
-    }
-  }
+    },
+  },
 }
 </script>
 
@@ -127,7 +164,7 @@ export default {
         display: inherit;
         img {
           border-radius: 50%;
-          margin-right: .5rem;
+          margin-right: 0.5rem;
           width: 1.5rem;
         }
       }
@@ -141,7 +178,7 @@ export default {
 
         .usd-value {
           color: var(--font-color);
-          font-size: .8rem;
+          font-size: 0.8rem;
         }
 
         .danger-text {
@@ -157,8 +194,8 @@ export default {
           margin-left: 5px;
           fill: var(--font-color);
           margin-right: 10px;
-          height: .9rem;
-          width: .9rem;
+          height: 0.9rem;
+          width: 0.9rem;
         }
       }
     }
@@ -175,12 +212,12 @@ pre {
 
 pre.rune-value {
   font-family: 'Roboto Mono';
-  font-size: .8rem;
+  font-size: 0.8rem;
 }
 
 .value-item {
   font-family: 'Roboto Mono';
-  font-size: .8rem;
+  font-size: 0.8rem;
 }
 
 .stat-loader {

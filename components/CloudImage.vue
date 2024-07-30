@@ -1,6 +1,10 @@
 <template>
   <div class="cloud-container">
-    <component :is="type" v-tooltip="$options.filters.capitalize(type)" class="asset-icon" />
+    <component
+      :is="type"
+      v-tooltip="$options.filters.capitalize(type)"
+      class="asset-icon"
+    />
   </div>
 </template>
 
@@ -21,11 +25,11 @@ export default {
     hetzner,
     digitalocean,
     vultr,
-    cloud
+    cloud,
   },
   props: ['name'],
   computed: {
-    type () {
+    type() {
       if (this.name.includes('Amazon')) {
         return 'amazon'
       } else if (this.name.includes('Google')) {
@@ -41,8 +45,8 @@ export default {
       } else {
         return 'cloud'
       }
-    }
-  }
+    },
+  },
 }
 </script>
 

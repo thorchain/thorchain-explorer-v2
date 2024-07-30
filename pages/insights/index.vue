@@ -1,13 +1,29 @@
 <template>
   <div class="container-page">
     <Card title="Total Value Locked (from Flipside)">
-      <VChart v-if="tvlOption" class="chart" :option="tvlOption" :loading="!tvlOption" :autoresize="true" />
+      <VChart
+        v-if="tvlOption"
+        class="chart"
+        :option="tvlOption"
+        :loading="!tvlOption"
+        :autoresize="true"
+      />
     </Card>
     <Card title="Rune Price History (from Flipside)">
-      <VChart v-if="runePriceOption" :option="runePriceOption" :loading="!runePriceOption" :autoresize="true" />
+      <VChart
+        v-if="runePriceOption"
+        :option="runePriceOption"
+        :loading="!runePriceOption"
+        :autoresize="true"
+      />
     </Card>
     <Card title="Swap Count Chart (from Flipside)">
-      <VChart v-if="swapCountChart" :option="swapCountChart" :loading="!swapCountChart" :autoresize="true" />
+      <VChart
+        v-if="swapCountChart"
+        :option="swapCountChart"
+        :loading="!swapCountChart"
+        :autoresize="true"
+      />
     </Card>
   </div>
 </template>
@@ -22,7 +38,7 @@ import {
   TitleComponent,
   TooltipComponent,
   LegendComponent,
-  GridComponent
+  GridComponent,
 } from 'echarts/components'
 import VChart from 'vue-echarts'
 import { runeCur } from '~/utils'
@@ -34,61 +50,70 @@ use([
   BarChart,
   TitleComponent,
   TooltipComponent,
-  LegendComponent
+  LegendComponent,
 ])
 
 export default {
   components: {
-    VChart
+    VChart,
   },
-  data () {
+  data() {
     return {
       churnHistory: undefined,
       cols: [
         {
           label: 'Churn Occurred',
-          field: 'timestamp'
+          field: 'timestamp',
         },
         {
           label: 'Block ID',
           field: 'BLOCK_ID',
           type: 'number',
           tdClass: 'mono',
-          formatFn: this.normalFormat
+          formatFn: this.normalFormat,
         },
         {
           label: 'Churn Length (days)',
           field: 'DAYS_SINCE_LAST_CHURN',
           type: 'number',
-          tdClass: 'mono'
-        }
+          tdClass: 'mono',
+        },
       ],
       tvlOption: undefined,
       runePriceOption: undefined,
-      swapCountChart: undefined
+      swapCountChart: undefined,
     }
   },
-  mounted () {
-    this.$api.getFlipTVL().then(({ data }) => {
-      this.flipTVLFormat(data)
-    }).catch((e) => {
-      console.error(e)
-    })
+  mounted() {
+    this.$api
+      .getFlipTVL()
+      .then(({ data }) => {
+        this.flipTVLFormat(data)
+      })
+      .catch((e) => {
+        console.error(e)
+      })
 
-    this.$api.getRunePrice().then(({ data }) => {
-      this.runePriceFormat(data)
-    }).catch((e) => {
-      console.error(e)
-    })
+    this.$api
+      .getRunePrice()
+      .then(({ data }) => {
+        this.runePriceFormat(data)
+      })
+      .catch((e) => {
+        console.error(e)
+      })
 
-    this.$api.getDailySwap().then(({ data }) => {
-      this.dailySwapFormat(data)
-    }).catch((e) => {
-      console.error(e)
-    })
+    this.$api
+      .getDailySwap()
+      .then(({ data }) => {
+        this.dailySwapFormat(data)
+      })
+      .catch((e) => {
+        console.error(e)
+      })
   },
   methods: {
-    flipTVLFormat (d) {
+    flipTVLFormat(d) {
       const xAxis = []
       const tvp = []
       const tvl = []
@@ -102,43 +127,43 @@ export default {
 
       const option = {
         title: {
-          show: false
+          show: false,
         },
         tooltip: {
           confine: true,
           trigger: 'axis',
-          valueFormatter: value => `${this.normalFormat(value)} ${runeCur()}`
+          valueFormatter: (value) => `${this.normalFormat(value)} ${runeCur()}`,
         },
         legend: {
           x: 'center',
           y: 'bottom',
           icon: 'rect',
           textStyle: {
-            color: 'var(--font-color)'
-          }
+            color: 'var(--font-color)',
+          },
         },
         xAxis: {
           data: xAxis.reverse(),
           boundaryGap: false,
           splitLine: {
-            show: false
+            show: false,
           },
           axisLine: {
             lineStyle: {
-              color: '#9f9f9f'
-            }
+              color: '#9f9f9f',
+            },
           },
           axisLabel: {
             color: '#9f9f9f',
-            fontFamily: 'ProductSans'
-          }
+            fontFamily: 'ProductSans',
+          },
         },
         yAxis: {
-          show: false
+          show: false,
         },
         grid: {
           left: '20px',
-          right: '20px'
+          right: '20px',
         },
         series: [
           {
@@ -146,28 +171,28 @@ export default {
             name: 'Total Value Locked (In Rune)',
             showSymbol: false,
             data: tvl.reverse(),
-            smooth: true
+            smooth: true,
           },
           {
             type: 'line',
             name: 'Total Value Pooled (In Rune)',
             showSymbol: false,
             data: tvp.reverse(),
-            smooth: true
+            smooth: true,
           },
           {
             type: 'line',
             name: 'Total Value Bonded (In Rune)',
             showSymbol: false,
             data: tvb.reverse(),
-            smooth: true
-          }
-        ]
+            smooth: true,
+          },
+        ],
       }
 
       this.tvlOption = option
     },
-    runePriceFormat (d) {
+    runePriceFormat(d) {
       const xAxis = []
       const runePrice = []
       const determinPrice = []
@@ -179,43 +204,43 @@ export default {
 
       const option = {
         title: {
-          show: false
+          show: false,
         },
         tooltip: {
           confine: true,
           trigger: 'axis',
-          valueFormatter: value => `$${value.toFixed(2)}`
+          valueFormatter: (value) => `$${value.toFixed(2)}`,
         },
         legend: {
           x: 'center',
           y: 'bottom',
           icon: 'rect',
           textStyle: {
-            color: 'var(--font-color)'
-          }
+            color: 'var(--font-color)',
+          },
         },
         xAxis: {
           data: xAxis,
           boundaryGap: false,
           splitLine: {
-            show: false
+            show: false,
           },
           axisLine: {
             lineStyle: {
-              color: '#9f9f9f'
-            }
+              color: '#9f9f9f',
+            },
           },
           axisLabel: {
             color: '#9f9f9f',
-            fontFamily: 'ProductSans'
-          }
+            fontFamily: 'ProductSans',
+          },
         },
         yAxis: {
-          show: false
+          show: false,
         },
         grid: {
           left: '20px',
-          right: '20px'
+          right: '20px',
         },
         series: [
           {
@@ -223,21 +248,21 @@ export default {
             name: 'Rune Price',
             showSymbol: false,
             data: runePrice,
-            smooth: true
+            smooth: true,
           },
           {
             type: 'line',
             name: 'Deterministic Rune Price',
             showSymbol: false,
             data: determinPrice,
-            smooth: true
-          }
-        ]
+            smooth: true,
+          },
+        ],
       }
 
       this.runePriceOption = option
     },
-    dailySwapFormat (d) {
+    dailySwapFormat(d) {
       const xAxis = []
       const swapCount = []
       const cumSwapCount = []
@@ -251,47 +276,47 @@ export default {
 
       const option = {
         title: {
-          show: false
+          show: false,
         },
         tooltip: {
           confine: true,
-          trigger: 'axis'
+          trigger: 'axis',
         },
         legend: {
           x: 'center',
           y: 'bottom',
           icon: 'rect',
           textStyle: {
-            color: 'var(--font-color)'
-          }
+            color: 'var(--font-color)',
+          },
         },
         xAxis: {
           data: xAxis,
           boundaryGap: false,
           splitLine: {
-            show: false
+            show: false,
           },
           axisLine: {
             lineStyle: {
-              color: '#9f9f9f'
-            }
+              color: '#9f9f9f',
+            },
           },
           axisLabel: {
             color: '#9f9f9f',
-            fontFamily: 'ProductSans'
-          }
+            fontFamily: 'ProductSans',
+          },
         },
         yAxis: [
           {
-            show: false
+            show: false,
           },
           {
-            show: false
-          }
+            show: false,
+          },
         ],
         grid: {
           left: '20px',
-          right: '20px'
+          right: '20px',
         },
         series: [
           {
@@ -300,7 +325,7 @@ export default {
             yAxisIndex: 0,
             showSymbol: false,
             data: swapCount,
-            smooth: true
+            smooth: true,
           },
           {
             type: 'bar',
@@ -308,7 +333,7 @@ export default {
             yAxisIndex: 0,
             showSymbol: false,
             data: uniqueSwapperCount,
-            smooth: true
+            smooth: true,
           },
           {
             type: 'line',
@@ -316,14 +341,14 @@ export default {
             yAxisIndex: 1,
             showSymbol: false,
             data: cumSwapCount,
-            smooth: true
-          }
-        ]
+            smooth: true,
+          },
+        ],
       }
 
       this.swapCountChart = option
-    }
-  }
+    },
+  },
 }
 </script>
 
@@ -336,8 +361,8 @@ export default {
 .legend-item {
   display: flex;
   align-items: center;
-  font-size: .8rem;
-  padding: 0 .1rem;
+  font-size: 0.8rem;
+  padding: 0 0.1rem;
 
   .legend-fill {
     width: 5px;

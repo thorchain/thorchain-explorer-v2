@@ -1,7 +1,13 @@
 <template>
   <div class="container-page tvl-page">
     <Card :is-loading="!tvlOption">
-      <VChart v-if="tvlOption" class="chart" :option="tvlOption" :loading="!tvlOption" :autoresize="true" />
+      <VChart
+        v-if="tvlOption"
+        class="chart"
+        :option="tvlOption"
+        :loading="!tvlOption"
+        :autoresize="true"
+      />
     </Card>
   </div>
 </template>
@@ -15,7 +21,7 @@ import {
   TitleComponent,
   TooltipComponent,
   LegendComponent,
-  GridComponent
+  GridComponent,
 } from 'echarts/components'
 import { mapGetters } from 'vuex'
 import VChart from 'vue-echarts'
@@ -27,30 +33,32 @@ use([
   LineChart,
   TitleComponent,
   TooltipComponent,
-  LegendComponent
+  LegendComponent,
 ])
 
 export default {
   name: 'TVLPool',
   components: {
-    VChart
+    VChart,
   },
-  data () {
+  data() {
     return {
-      tvlOption: undefined
+      tvlOption: undefined,
     }
   },
   computed: {
     ...mapGetters({
-      runePrice: 'getRunePrice'
-    })
+      runePrice: 'getRunePrice',
+    }),
   },
-  mounted () {
+  mounted() {
     this.updateDatum()
   },
   methods: {
-    async updateDatum () {
-      const { data: { intervals = [] } } = await this.$api.tvlHistory()
+    async updateDatum() {
+      const {
+        data: { intervals = [] },
+      } = await this.$api.tvlHistory()
 
       const pools = {}
       const xAxis = []
@@ -61,7 +69,7 @@ export default {
           }
 
           const { chain } = assetFromString(pd.pool)
-          const poolUSD = (pd.totalDepth / 1e8) * (+intervals[i].runePriceUSD)
+          const poolUSD = (pd.totalDepth / 1e8) * +intervals[i].runePriceUSD
           const chainColor = this.getChainColor(chain)
 
           if (chain in pools) {
@@ -81,27 +89,29 @@ export default {
               emphasis: {
                 focus: 'series',
                 itemStyle: {
-                  color: chainColor
-                }
+                  color: chainColor,
+                },
               },
               areaStyle: {
-                color: chainColor
+                color: chainColor,
               },
               lineStyle: {
-                color: chainColor
+                color: chainColor,
               },
               itemStyle: {
-                color: chainColor
+                color: chainColor,
               },
               data: [poolUSD],
-              smooth: true
+              smooth: true,
             }
           }
         })
 
         xAxis.push(
           moment(
-            Math.floor((~~intervals[i].endTime + ~~intervals[i].startTime) / 2) * 1e3
+            Math.floor(
+              (~~intervals[i].endTime + ~~intervals[i].startTime) / 2
+            ) * 1e3
           ).format('YY/MM/DD')
         )
       }
@@ -109,11 +119,13 @@ export default {
       const seriesPools = Object.values(pools)
 
       const formatter = (param) => {
-        return (`
+        return `
           <div class="tooltip-header">
             ${param[0].axisValue}
           </div>
-          ${param.map(p => (`
+          ${param
+            .map(
+              (p) => `
             <div class="tooltip-body">
               <div style="display: flex; align-items: center;">
                 <div class="data-color" style="background-color: ${p.color}"></div>
@@ -121,29 +133,40 @@ export default {
               </div>
               <b>$${this.$options.filters.number(p.value, '0,0.00 a')}</b>
             </div>
-          `)).join('')}
+          `
+            )
+            .join('')}
           <hr></hr>
           <div class="tooltip-body">
             <div style="display: flex; align-items: center;">
               <span>Total</span>
             </div>
-            <b>$${this.$options.filters.number(param.reduce((a, b) => a + b.value, 0), '0,0.00 a')}</b>
+            <b>$${this.$options.filters.number(
+              param.reduce((a, b) => a + b.value, 0),
+              '0,0.00 a'
+            )}</b>
           </div>
-        `)
+        `
       }
 
-      this.tvlOption = this.basicChartFormat(undefined, seriesPools, xAxis, {
-        legend: {
-          type: 'scroll',
-          pageIconColor: 'var(--primary-color)',
-          icon: 'rect',
-          textStyle: {
-            color: 'var(--sec-font-color)'
-          }
-        }
-      }, formatter)
-    }
-  }
+      this.tvlOption = this.basicChartFormat(
+        undefined,
+        seriesPools,
+        xAxis,
+        {
+          legend: {
+            type: 'scroll',
+            pageIconColor: 'var(--primary-color)',
+            icon: 'rect',
+            textStyle: {
+              color: 'var(--sec-font-color)',
+            },
+          },
+        },
+        formatter
+      )
+    },
+  },
 }
 </script>
 

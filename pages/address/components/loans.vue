@@ -1,8 +1,6 @@
 <template>
   <div class="simple-card">
-    <div class="card-header">
-      Loans
-    </div>
+    <div class="card-header">Loans</div>
     <div class="card-body">
       <vue-good-table
         :columns="cols"
@@ -15,31 +13,56 @@
         }"
       >
         <template slot="table-row" slot-scope="props">
-          <div v-if="props.column.field == 'collateral_asset'" class="asset-cell">
+          <div
+            v-if="props.column.field == 'collateral_asset'"
+            class="asset-cell"
+          >
             <AssetIcon :asset="props.row.collateral_asset" />
             <span class="ellipsis">
               {{ props.row.collateral_asset }}
             </span>
           </div>
-          <span v-else-if="props.column.field === 'collateral'" class="pool-cell ellipsis">
+          <span
+            v-else-if="props.column.field === 'collateral'"
+            class="pool-cell ellipsis"
+          >
             <span v-if="props.row[props.column.field][0]">
               <small>Deposited: </small>
-              {{ props.row[props.column.field][0] | number('0,0.0000') }} <small>{{ showAsset(props.row.collateral_asset) }}</small></span>
-            <hr v-if="props.row[props.column.field][1]" class="table-hr">
+              {{ props.row[props.column.field][0] | number('0,0.0000') }}
+              <small>{{ showAsset(props.row.collateral_asset) }}</small></span
+            >
+            <hr v-if="props.row[props.column.field][1]" class="table-hr" />
             <span v-if="props.row[props.column.field][1]" class="ellipsis">
-              <small>Withdrawn: </small> {{ props.row[props.column.field][1] || props.row[props.column.field][1] === 0 ? ($options.filters.number(props.row[props.column.field][1], '0,0.0000')) : '-' }}
-              <small class="ellipsis">{{ showAsset(props.row.collateral_asset) }}</small>
+              <small>Withdrawn: </small>
+              {{
+                props.row[props.column.field][1] ||
+                props.row[props.column.field][1] === 0
+                  ? $options.filters.number(
+                      props.row[props.column.field][1],
+                      '0,0.0000'
+                    )
+                  : '-'
+              }}
+              <small class="ellipsis">{{
+                showAsset(props.row.collateral_asset)
+              }}</small>
             </span>
             <span v-else-if="!props.row[props.column.field][0]">-</span>
           </span>
           <span v-else-if="props.column.field == 'debt'">
             <span v-if="props.row[props.column.field][0]">
               <small>Issued: </small>
-              {{ props.row[props.column.field][0] | currency }}</span>
-            <hr v-if="props.row[props.column.field][1]" class="table-hr">
+              {{ props.row[props.column.field][0] | currency }}</span
+            >
+            <hr v-if="props.row[props.column.field][1]" class="table-hr" />
             <span v-if="props.row[props.column.field][1]" class="ellipsis">
               <small>Repaid: </small>
-              {{ props.row[props.column.field][1] || props.row[props.column.field][1] === 0 ? ($options.filters.currency(props.row[props.column.field][1])) : '-' }}
+              {{
+                props.row[props.column.field][1] ||
+                props.row[props.column.field][1] === 0
+                  ? $options.filters.currency(props.row[props.column.field][1])
+                  : '-'
+              }}
             </span>
             <span v-else-if="!props.row[props.column.field][0]">-</span>
           </span>
@@ -53,27 +76,27 @@
 import moment from 'moment'
 export default {
   props: ['address'],
-  data () {
+  data() {
     return {
       bs: [],
       cols: [
         {
           label: 'Collateral Asset',
           field: 'collateral_asset',
-          formatFn: this.formatAsset
+          formatFn: this.formatAsset,
         },
         {
           label: 'Collateral Deposited/Withdraw',
           field: 'collateral',
           type: 'number',
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'Debt Issued/Repaid',
           field: 'debt',
           type: 'number',
           formatFn: this.numberFormat,
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'Last Open Loan',
@@ -81,7 +104,7 @@ export default {
           type: 'text',
           tdClass: 'center',
           thClass: 'center',
-          sortable: false
+          sortable: false,
         },
         {
           label: 'Last Repay Loan',
@@ -89,33 +112,44 @@ export default {
           type: 'text',
           tdClass: 'center',
           thClass: 'center',
-          sortable: false
-        }
-      ]
+          sortable: false,
+        },
+      ],
     }
   },
-  async mounted () {
+  async mounted() {
     if (!this.address) {
       return
     }
     try {
-      const { data: { pools: borrowerDetails } } = await this.$api.getBorrowerDetails(this.address)
+      const {
+        data: { pools: borrowerDetails },
+      } = await this.$api.getBorrowerDetails(this.address)
       this.parseBorrower(borrowerDetails)
     } catch (error) {
       console.error('member not found', error)
     }
   },
   methods: {
-    parseBorrower (b) {
-      this.bs = b.map(p => ({
+    parseBorrower(b) {
+      this.bs = b.map((p) => ({
         ...p,
-        collateral: [p.collateral_deposited / 1e8, p.collateral_withdrawn / 1e8],
+        collateral: [
+          p.collateral_deposited / 1e8,
+          p.collateral_withdrawn / 1e8,
+        ],
         debt: [p.debt_issued_tor / 1e8, p.debt_repaid_tor / 1e8],
-        lastOpenLoan: p.last_open_loan_timestamp !== '0' ? moment.unix(p.last_open_loan_timestamp).fromNow() : '-',
-        lastRepayLoan: p.last_repay_loan_timestamp !== '0' ? moment.unix(p.last_repay_loan_timestamp).fromNow() : '-'
+        lastOpenLoan:
+          p.last_open_loan_timestamp !== '0'
+            ? moment.unix(p.last_open_loan_timestamp).fromNow()
+            : '-',
+        lastRepayLoan:
+          p.last_repay_loan_timestamp !== '0'
+            ? moment.unix(p.last_repay_loan_timestamp).fromNow()
+            : '-',
       }))
-    }
-  }
+    },
+  },
 }
 </script>
 
@@ -133,7 +167,7 @@ export default {
 
   span {
     display: block;
-    font-size: .9rem;
+    font-size: 0.9rem;
   }
 }
 

@@ -18,7 +18,7 @@
             class="interface-image"
             alt="interface image"
             :title="ifc.name"
-          >
+          />
           <span v-else>{{ ifc.name }}</span>
         </div>
       </div>
@@ -48,7 +48,10 @@
             <div class="tx-state">
               <div v-if="overall.middle.pending" class="simple-spinner" />
               <coin-icon v-else-if="overall.middle.send" class="icon tx-icon" />
-              <warning-icon v-else-if="overall.middle.fail" class="icon tx-icon warn" />
+              <warning-icon
+                v-else-if="overall.middle.fail"
+                class="icon tx-icon warn"
+              />
               <check-icon v-else class="icon tx-icon" />
             </div>
           </div>
@@ -69,7 +72,7 @@
               />
             </div>
             <div v-else class="tx-asset">
-              <img class="asset-icon custom-icon" :src="o.icon" :alt="o.text">
+              <img class="asset-icon custom-icon" :src="o.icon" :alt="o.text" />
             </div>
           </div>
         </div>
@@ -86,8 +89,8 @@
               baseAmountFormatOrZero(o.amount)
             }}</span>
             <small class="mono sec-color">{{ showAsset(o.asset) }}</small>
-            <br><small>{{
-              o.amountUSD ? formatBnCurrency(o.amountUSD) : "..."
+            <br /><small>{{
+              o.amountUSD ? formatBnCurrency(o.amountUSD) : '...'
             }}</small>
           </div>
         </div>
@@ -103,11 +106,11 @@
             </template>
             <template v-else>
               <span class="mono sec-color">{{
-                o.amount ? baseAmountFormatOrZero(o.amount) : "..."
+                o.amount ? baseAmountFormatOrZero(o.amount) : '...'
               }}</span>
               <small class="mono sec-color">{{ showAsset(o.asset) }}</small>
-              <br><small>{{
-                o.amountUSD ? formatBnCurrency(o.amountUSD) : "..."
+              <br /><small>{{
+                o.amountUSD ? formatBnCurrency(o.amountUSD) : '...'
               }}</small>
             </template>
           </div>
@@ -140,41 +143,41 @@ export default {
   components: {
     CheckIcon,
     CoinIcon,
-    WarningIcon
+    WarningIcon,
   },
   props: ['txData'],
   computed: {
     ...mapGetters({
-      theme: 'getTheme'
+      theme: 'getTheme',
     }),
-    title () {
+    title() {
       return this.txData?.title ?? ''
     },
-    ifc () {
+    ifc() {
       return this.txData?.interface ?? undefined
     },
-    labels () {
+    labels() {
       return this.txData?.labels ?? []
     },
-    overall () {
+    overall() {
       return {
         in: this.txData?.overall?.in ?? [],
         middle: this.txData?.overall?.middle ?? {
-          pending: false
+          pending: false,
         },
-        out: this.txData?.overall?.out ?? []
+        out: this.txData?.overall?.out ?? [],
       }
     },
-    vars () {
+    vars() {
       return {
         '--left-border':
           this.assetColorPalette(this.overall.in[0]?.asset) ?? '#5CDFBD',
         '--right-border': this.overall.out[0]?.borderColor
           ? this.overall.out[0]?.borderColor
-          : this.assetColorPalette(this.overall.out[0]?.asset) ?? '#3761F9'
+          : (this.assetColorPalette(this.overall.out[0]?.asset) ?? '#3761F9'),
       }
-    }
-  }
+    },
+  },
 }
 </script>
 

@@ -3,48 +3,48 @@
   --app-background-color: #263137;
   --bg-color: #191c1e;
   --sidebar: #212121;
-  --font-color: #9F9F9F;
+  --font-color: #9f9f9f;
   --sec-font-color: #e6e6e6;
-  --primary-color: #63FDD9;
+  --primary-color: #63fdd9;
   --border-color: #263238;
   --card-bg-color: #161819;
   --gradient-left: #212121;
   --gradient-right: #263238;
-  --active-bg-color: #3E464B;
-  --color-light: hsl(0,0%,10%);
+  --active-bg-color: #3e464b;
+  --color-light: hsl(0, 0%, 10%);
   --darker-bg: hsl(0, 0%, 20%);
 }
 
-[theme="dark"] {
+[theme='dark'] {
   --app-background-color: #263137;
   --bg-color: #191c1e;
   --sidebar: #212121;
-  --font-color: #9F9F9F;
+  --font-color: #9f9f9f;
   --sec-font-color: #e6e6e6;
-  --primary-color: #63FDD9;
+  --primary-color: #63fdd9;
   --border-color: #263238;
   --card-bg-color: #161819;
   --gradient-left: #212121;
   --gradient-right: #263238;
-  --active-bg-color: #3E464B;
+  --active-bg-color: #3e464b;
   --bubble-font-color: #191c1e;
-  --color-light: hsl(0,0%,10%);
+  --color-light: hsl(0, 0%, 10%);
   --darker-bg: hsl(0, 0%, 20%);
 }
 
-[theme="light"] {
+[theme='light'] {
   --app-background-color: #263137;
-  --bg-color: #FFF;
-  --sidebar: #FFF;
-  --font-color:rgb(74, 85, 104);
+  --bg-color: #fff;
+  --sidebar: #fff;
+  --font-color: rgb(74, 85, 104);
   --sec-font-color: rgb(26, 32, 44);
   --primary-color: #3ca38b;
-  --border-color: #CCCCCC;
-  --card-bg-color: #FFF;
-  --gradient-left: #FFFFFF;
-  --gradient-right: #DEE4E7;
-  --active-bg-color: #CCCCCC;
+  --border-color: #cccccc;
+  --card-bg-color: #fff;
+  --gradient-left: #ffffff;
+  --gradient-right: #dee4e7;
+  --active-bg-color: #cccccc;
   --bubble-font-color: #191c1e;
-  --color-light: hsl(0,0%,98%);
+  --color-light: hsl(0, 0%, 98%);
   --darker-bg: hsl(0, 0%, 95%);
 }

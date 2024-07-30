@@ -1,14 +1,16 @@
 <template>
   <div
-    :class="['arrow-container', {'down': isDown}, {'netural': dataNumber == '0'}]"
-    :style="{'--font-size': extraStyles.fontSize}"
+    :class="[
+      'arrow-container',
+      { down: isDown },
+      { netural: dataNumber == '0' },
+    ]"
+    :style="{ '--font-size': extraStyles.fontSize }"
   >
     <template v-if="dataNumber != '0' || dataNumber != 0">
-      ({{ isDown ? '':'+' }}{{ filter(dataNumber) }}<arrow-icon />)
+      ({{ isDown ? '' : '+' }}{{ filter(dataNumber) }}<arrow-icon />)
     </template>
-    <template v-else>
-      ({{ filter(dataNumber) }} -)
-    </template>
+    <template v-else> ({{ filter(dataNumber) }} -) </template>
   </div>
 </template>
 
@@ -17,35 +19,35 @@ import ArrowIcon from '@/assets/images/arrow.svg?inline'
 
 export default {
   components: {
-    ArrowIcon
+    ArrowIcon,
   },
   props: {
     isDown: {
       type: [Boolean, Number],
-      required: true
+      required: true,
     },
     dataNumber: {
       type: [String, Number],
-      required: true
+      required: true,
     },
     size: {
       type: String,
-      default: '.7rem'
+      default: '.7rem',
     },
     filter: {
       type: Function,
-      default (value) {
+      default(value) {
         return value
-      }
-    }
+      },
+    },
   },
   computed: {
-    extraStyles () {
+    extraStyles() {
       return {
-        fontSize: this.size
+        fontSize: this.size,
       }
-    }
-  }
+    },
+  },
 }
 </script>
 
@@ -62,7 +64,7 @@ export default {
     height: var(--font-size);
     width: var(--font-size);
     fill: #76ff03;
-    margin-left: 0 .1rem;
+    margin-left: 0 0.1rem;
   }
 
   &.down {
@@ -81,10 +83,9 @@ export default {
       fill: #b0bec5;
     }
   }
-
 }
 
-[theme="light"] .arrow-container {
+[theme='light'] .arrow-container {
   color: #4caf50;
 
   svg {

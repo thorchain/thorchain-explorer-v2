@@ -1,6 +1,9 @@
 <template>
   <div class="accordion">
-    <div :class="['accordion-info', {'not-collapsed': show}]" @click="toggleAccordion">
+    <div
+      :class="['accordion-info', { 'not-collapsed': show }]"
+      @click="toggleAccordion"
+    >
       <strong class="accordion-info-left">
         {{ title | capitalize }}
         <angle-icon v-if="showAccordion" class="trigger" />
@@ -10,25 +13,49 @@
         <dot-live v-if="pending" />
       </div>
     </div>
-    <div v-if="showAccordion" ref="aci" :class="['accordion-inner', {'show': show}]">
-      <div v-for="(s,i) in (stacks.filter(s => s.is))" :key="i" class="stack-item">
+    <div
+      v-if="showAccordion"
+      ref="aci"
+      :class="['accordion-inner', { show: show }]"
+    >
+      <div
+        v-for="(s, i) in stacks.filter((s) => s.is)"
+        :key="i"
+        class="stack-item"
+      >
         <template v-if="!s.slotName">
           <div class="key">
             {{ s.key | capitalize }}
           </div>
           <div v-if="s.type === 'bubble'" class="value mono bubble-wrapper">
-            <div v-for="(b, j) in s.value" :key="j" :class="['mini-bubble', ...b.class]">
+            <div
+              v-for="(b, j) in s.value"
+              :key="j"
+              :class="['mini-bubble', ...b.class]"
+            >
               {{ b.text | capitalize }}
             </div>
           </div>
-          <div v-else :class="['value', {'link': isLink(s.type)}]">
-            <component :is="checkType(s.type)" :class="['value mono']" :to="toLink(s.type, s.value)">
+          <div v-else :class="['value', { link: isLink(s.type) }]">
+            <component
+              :is="checkType(s.type)"
+              :class="['value mono']"
+              :to="toLink(s.type, s.value)"
+            >
               {{ s.formatter ? s.formatter(s.value) : s.value }}
-              <arrow-icon v-if="checkType(s.type) === 'nuxt-link'" class="icon arrow-link" />
+              <arrow-icon
+                v-if="checkType(s.type) === 'nuxt-link'"
+                class="icon arrow-link"
+              />
             </component>
             <template v-if="isLink(s.type) && notTHOR(s.asset)">
               <span> | </span>
-              <a class="value" target="_blank" :href="getUrl(s.asset, s.value)" rel="noopener noreferrer">
+              <a
+                class="value"
+                target="_blank"
+                :href="getUrl(s.asset, s.value)"
+                rel="noopener noreferrer"
+              >
                 <external class="icon external-link" />
               </a>
             </template>
@@ -50,30 +77,30 @@ export default {
   components: {
     AngleIcon,
     ArrowIcon,
-    External
+    External,
   },
   props: ['title', 'stacks', 'pending', 'showAtFirst'],
-  data () {
+  data() {
     return {
       labels: this.data?.labels ?? [],
-      show: false
+      show: false,
     }
   },
   computed: {
-    showAccordion () {
+    showAccordion() {
       if (this.stacks.length > 0) {
         return true
       }
       return false
-    }
+    },
   },
-  mounted () {
+  mounted() {
     if (this.pending || this.showAtFirst) {
       this.toggleAccordion()
     }
   },
   methods: {
-    toggleAccordion () {
+    toggleAccordion() {
       this.show = !this.show
       if (this.show) {
         this.$refs.aci.style.maxHeight = `${this.$refs.aci.scrollHeight}px`
@@ -81,16 +108,16 @@ export default {
         this.$refs.aci.style.maxHeight = null
       }
     },
-    checkType (type) {
+    checkType(type) {
       if (type === 'address' || type === 'hash') {
         return 'nuxt-link'
       }
       return 'div'
     },
-    isLink (type) {
+    isLink(type) {
       return type === 'address' || type === 'hash'
     },
-    notTHOR (asset) {
+    notTHOR(asset) {
       if (!asset) {
         return false
       }
@@ -98,14 +125,14 @@ export default {
       asset = assetFromString(asset)
       return asset.chain !== 'THOR' && !asset.synth && !asset.trade
     },
-    toLink (type, value) {
+    toLink(type, value) {
       if (type === 'address') {
         return `/address/${value}`
       } else if (type === 'hash') {
         return `/tx/${value}`
       }
     },
-    getUrl (assetString, value) {
+    getUrl(assetString, value) {
       if (!assetString) {
         return
       }
@@ -117,126 +144,127 @@ export default {
         }
         return getExplorerAddressUrl(chain, value)
       } catch (error) {
-        console.error('could\'t read the asset')
+        console.error("could't read the asset")
       }
-    }
-  }
+    },
+  },
 }
 </script>
 
 <style lang="scss" scoped>
-  .accordion {
-    margin: .5rem 1.5rem;
+.accordion {
+  margin: 0.5rem 1.5rem;
 
-    .accordion-info {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: .5rem;
-      border-radius: .5rem;
-      cursor: pointer;
+  .accordion-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
 
-      &:hover {
-        color: var(--sec-font-color);
-
-        .trigger {
-          fill: var(--sec-font-color);
-        }
-      }
+    &:hover {
+      color: var(--sec-font-color);
 
       .trigger {
-        width: 1rem;
-        height: 1rem;
-        fill: var(--font-color);
-      }
-
-      &.not-collapsed {
-        .trigger {
-          transform: rotate(180deg);
-        }
-      }
-
-      .accordion-info-left, .accordion-info-right {
-        display: flex;
-        align-items: center;
-        gap: .5rem;
+        fill: var(--sec-font-color);
       }
     }
 
-    .accordion-inner {
-      font-size: .875rem;
-      overflow: hidden;
-      transition: all .3s ease-in-out;
+    .trigger {
+      width: 1rem;
+      height: 1rem;
+      fill: var(--font-color);
+    }
 
-      max-height: 0;
-      opacity: 0;
-      margin-top: 0;
-
-      display: flex;
-      flex-direction: column;
-
-      &.show {
-        margin-top: .5rem;
-        border-top: 1px solid var(--border-color);
-        border-bottom: 1px solid var(--border-color);
-        opacity: 1;
+    &.not-collapsed {
+      .trigger {
+        transform: rotate(180deg);
       }
+    }
 
-      .stack-item {
+    .accordion-info-left,
+    .accordion-info-right {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+  }
+
+  .accordion-inner {
+    font-size: 0.875rem;
+    overflow: hidden;
+    transition: all 0.3s ease-in-out;
+
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    &.show {
+      margin-top: 0.5rem;
+      border-top: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color);
+      opacity: 1;
+    }
+
+    .stack-item {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.3rem 0;
+      gap: 5px;
+
+      .value {
         display: flex;
         flex-wrap: wrap;
-        justify-content: space-between;
-        align-items: center;
-        padding: .3rem 0;
-        gap: 5px;
+        color: var(--sec-font-color);
+        gap: 7px;
 
-        .value {
+        &.bubble-wrapper {
           display: flex;
-          flex-wrap: wrap;
-          color: var(--sec-font-color);
-          gap: 7px;
+          gap: 0.5rem;
+        }
 
-          &.bubble-wrapper {
-            display: flex;
-            gap: .5rem;
-          }
+        &.link {
+          display: flex;
 
-          &.link {
-            display: flex;
+          a {
+            color: var(--primary-color);
+            align-items: center;
+            text-decoration: none;
+            gap: 0.1rem;
 
-            a {
-              color: var(--primary-color);
-              align-items: center;
-              text-decoration: none;
-              gap: .1rem;
+            .icon {
+              cursor: pointer;
+              fill: var(--primary-color);
+              margin: 0;
+              height: 1rem;
+              width: 1rem;
+            }
+
+            &:hover {
+              color: var(--sec-font-color);
 
               .icon {
-                cursor: pointer;
-                fill: var(--primary-color);
-                margin: 0;
-                height: 1rem;
-                width: 1rem;
-              }
-
-              &:hover {
-                color: var(--sec-font-color);
-
-                .icon {
-                  fill: var(--sec-font-color);
-                }
+                fill: var(--sec-font-color);
               }
             }
           }
         }
+      }
 
-        &:last-of-type {
-          padding-bottom: .5rem;
-        }
+      &:last-of-type {
+        padding-bottom: 0.5rem;
+      }
 
-        &:first-of-type {
-          padding-top: .5rem;
-        }
+      &:first-of-type {
+        padding-top: 0.5rem;
       }
     }
   }
+}
 </style>

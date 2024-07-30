@@ -11,12 +11,26 @@
       }"
     >
       <template slot="table-row" slot-scope="props">
-        <div v-if="props.column.field == 'asset'" v-tooltip="props.row.asset" class="cell-content">
+        <div
+          v-if="props.column.field == 'asset'"
+          v-tooltip="props.row.asset"
+          class="cell-content"
+        >
           <AssetIcon :asset="props.row.asset" />
           <span>{{ showAsset(props.row.asset) }}</span>
         </div>
-        <template v-else-if="props.column.field == 'price' || props.column.field == 'value'">
-          <span v-if="(props.row[props.column.field]) > 0 && !isNaN(props.row[props.column.field])" class="vgt-right-align">
+        <template
+          v-else-if="
+            props.column.field == 'price' || props.column.field == 'value'
+          "
+        >
+          <span
+            v-if="
+              props.row[props.column.field] > 0 &&
+              !isNaN(props.row[props.column.field])
+            "
+            class="vgt-right-align"
+          >
             ${{ props.row[props.column.field] | number('0,0.00') }}
           </span>
           <span v-else>-</span>
@@ -36,44 +50,44 @@ import { assetFromString } from '~/utils'
 
 export default {
   props: ['state'],
-  data () {
+  data() {
     return {
       tokenCols: [
         {
           label: 'Asset',
-          field: 'asset'
+          field: 'asset',
         },
         {
           label: 'Type',
-          field: 'type'
+          field: 'type',
         },
         {
           label: 'Quantity',
           field: 'quantity',
           type: 'number',
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'Price',
           field: 'price',
           type: 'number',
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'Value',
           field: 'value',
           type: 'number',
-          tdClass: 'mono'
-        }
-      ]
+          tdClass: 'mono',
+        },
+      ],
     }
   },
   computed: {
     ...mapGetters({
       runePrice: 'getRunePrice',
-      pools: 'getPools'
+      pools: 'getPools',
     }),
-    tokenRows () {
+    tokenRows() {
       if (!this.state) {
         return []
       }
@@ -85,17 +99,14 @@ export default {
         let poolAsset
         this.pools?.forEach((p) => {
           const pa = assetFromString(p.asset)
-          if (
-            pa.chain === e.asset.chain &&
-            pa.ticker === e.asset.ticker
-          ) {
+          if (pa.chain === e.asset.chain && pa.ticker === e.asset.ticker) {
             poolAsset = p
           }
         })
 
         if (e.asset.ticker === 'RUNE' && e.asset.chain === 'THOR') {
           poolAsset = {
-            assetPriceUSD: this.runePrice
+            assetPriceUSD: this.runePrice,
           }
         }
 
@@ -104,15 +115,15 @@ export default {
           quantity: e.quantity,
           price: bnOrZero(poolAsset?.assetPriceUSD).toFixed(2),
           value: bnOrZero(poolAsset?.assetPriceUSD * e.quantity).toFixed(2),
-          type: this.getAssetType(e.asset)
+          type: this.getAssetType(e.asset),
         })
       }
 
       return ret
-    }
+    },
   },
   methods: {
-    getAssetType (asset) {
+    getAssetType(asset) {
       if (asset.synth) {
         return 'Synth'
       } else if (asset.trade) {
@@ -120,11 +131,9 @@ export default {
       } else {
         return 'Native'
       }
-    }
-  }
+    },
+  },
 }
 </script>
 
-<style>
-
-</style>
+<style></style>

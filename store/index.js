@@ -7,68 +7,68 @@ export const state = () => ({
   chainsHeight: undefined,
   fullscreen: false,
   showSidebar: false,
-  pools: undefined
+  pools: undefined,
 })
 
 export const getters = {
-  getRunePrice (state) {
+  getRunePrice(state) {
     return state.runePrice ?? 0
   },
-  getTheme (state) {
+  getTheme(state) {
     return state.darkTheme ? 'dark' : 'light'
   },
-  getIsMenuOn (state) {
+  getIsMenuOn(state) {
     return state.showMenu
   },
-  getNetworkData (state) {
+  getNetworkData(state) {
     return state.networkData
   },
-  getNodesData (state) {
+  getNodesData(state) {
     return state.nodesData
   },
-  getFullScreen (state) {
+  getFullScreen(state) {
     return state.fullscreen
   },
-  getSidebar (state) {
+  getSidebar(state) {
     return state.showSidebar
   },
-  getChainsHeight (state) {
+  getChainsHeight(state) {
     return state.chainsHeight
   },
-  getPools (state) {
+  getPools(state) {
     return state.pools
-  }
+  },
 }
 
 export const mutations = {
-  setRunePrice (state, price) {
+  setRunePrice(state, price) {
     state.runePrice = price
   },
-  setTheme (state, isDarkTheme) {
+  setTheme(state, isDarkTheme) {
     const htmlElement = document.documentElement
     localStorage.setItem('theme', isDarkTheme ? 'dark' : 'light')
     htmlElement.setAttribute('theme', isDarkTheme ? 'dark' : 'light')
     state.darkTheme = isDarkTheme
   },
-  setNetworkData (state, networkData) {
+  setNetworkData(state, networkData) {
     state.networkData = networkData
   },
-  setNodesData (state, nodesData) {
+  setNodesData(state, nodesData) {
     state.nodesData = nodesData
   },
-  toggleMenu (state, action) {
+  toggleMenu(state, action) {
     state.showMenu = action !== undefined ? action : !state.showMenu
   },
-  toggleFullscreen (state, action) {
+  toggleFullscreen(state, action) {
     state.fullscreen = !state.fullscreen
   },
-  setSidebar (state, action) {
+  setSidebar(state, action) {
     state.showSidebar = action
   },
-  setChainsHeight (state, action) {
+  setChainsHeight(state, action) {
     state.chainsHeight = action
   },
-  setPools (state, action) {
+  setPools(state, action) {
     state.pools = action
-  }
+  },
 }

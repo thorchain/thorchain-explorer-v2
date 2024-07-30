@@ -2,12 +2,10 @@
 
 <script>
 export default {
-  asyncData ({ redirect }) {
+  asyncData({ redirect }) {
     return redirect('/dashboard')
-  }
+  },
 }
 </script>
 
-<style>
-
-</style>
+<style></style>

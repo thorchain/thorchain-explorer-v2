@@ -2,10 +2,19 @@
   <Page :error="error && !loading" :fluid="true">
     <div v-if="nodesQuery" class="grid-network">
       <stat-table :table-settings="topActiveBonds" header="Top Active Bonds" />
-      <stat-table :table-settings="topStandbyBonds" header="Top Standby Bonds" />
+      <stat-table
+        :table-settings="topStandbyBonds"
+        header="Top Standby Bonds"
+      />
     </div>
     <div class="chart-inner-container">
-      <Card :navs="[{title: 'Node Status', value: 'node-stat'}, {title: 'Provider Distribution', value: 'prov-dist'}]" :act-nav.sync="statusMode">
+      <Card
+        :navs="[
+          { title: 'Node Status', value: 'node-stat' },
+          { title: 'Provider Distribution', value: 'prov-dist' },
+        ]"
+        :act-nav.sync="statusMode"
+      >
         <VChart
           v-if="statusMode == 'node-stat'"
           key="node-stat"
@@ -23,14 +32,20 @@
           :loading-options="showLoading"
         />
         <template v-if="statusMode == 'prov-dist'" #footer>
-          <p style="margin-left: 1rem;">
-            * This provider distribution might not be all correct as many bare metal nodes use proxy.
+          <p style="margin-left: 1rem">
+            * This provider distribution might not be all correct as many bare
+            metal nodes use proxy.
           </p>
         </template>
       </Card>
       <Card title="Churn Info">
         <template #header>
-          <DangerIcon v-if="churnHalted" v-tooltip="'Churn is paused'" class="table-icon" style="fill: #EF5350;" />
+          <DangerIcon
+            v-if="churnHalted"
+            v-tooltip="'Churn is paused'"
+            class="table-icon"
+            style="fill: #ef5350"
+          />
         </template>
         <VChart
           style="height: 250px"
@@ -41,17 +56,24 @@
         />
       </Card>
     </div>
-    <Nav :active-mode.sync="mode" :nav-items="modes" style="margin-bottom: 0px;" />
+    <Nav
+      :active-mode.sync="mode"
+      :nav-items="modes"
+      style="margin-bottom: 0px"
+    />
     <KeepAlive>
-      <Card v-if="mode == 'active'" title="Active Nodes" :is-loading="!activeNodes">
+      <Card
+        v-if="mode == 'active'"
+        title="Active Nodes"
+        :is-loading="!activeNodes"
+      >
         <template #header>
-          <button class="button-container full-screen-btn" @click="toggleFullscreen">
-            <template v-if="fullscreen">
-              Default
-            </template>
-            <template v-else>
-              Full Screen
-            </template>
+          <button
+            class="button-container full-screen-btn"
+            @click="toggleFullscreen"
+          >
+            <template v-if="fullscreen"> Default </template>
+            <template v-else> Full Screen </template>
           </button>
         </template>
 
@@ -69,21 +91,37 @@
           }"
           :search-options="{
             enabled: true,
-            placeholder: 'Search node address, version, ip address, provider or etc.',
+            placeholder:
+              'Search node address, version, ip address, provider or etc.',
           }"
         >
           >
           <template slot="table-column" slot-scope="props">
-            <div v-if="props.column.field.includes('chains')" class="table-asset">
-              <img class="asset-chain" :src="assetImage(`${props.column.label}.${props.column.label}`)">
+            <div
+              v-if="props.column.field.includes('chains')"
+              class="table-asset"
+            >
+              <img
+                class="asset-chain"
+                :src="assetImage(`${props.column.label}.${props.column.label}`)"
+              />
             </div>
-            <div v-else-if="props.column.field == 'leave'" v-tooltip="'Provider'">
+            <div
+              v-else-if="props.column.field == 'leave'"
+              v-tooltip="'Provider'"
+            >
               <ExitIcon class="table-icon" />
             </div>
-            <div v-else-if="props.column.field == 'providers'" v-tooltip="'Provider'">
+            <div
+              v-else-if="props.column.field == 'providers'"
+              v-tooltip="'Provider'"
+            >
               <DollarIcon class="table-icon" />
             </div>
-            <div v-else-if="props.column.field == 'location'" v-tooltip="'Node Location'">
+            <div
+              v-else-if="props.column.field == 'location'"
+              v-tooltip="'Node Location'"
+            >
               <MarkerIcon class="table-icon" />
             </div>
             <span v-else>
@@ -93,14 +131,29 @@
           <template slot="table-row" slot-scope="props">
             <span v-if="props.column.field == 'address'" class="clickable">
               <div class="table-wrapper-row">
-                <span v-tooltip="props.row.address" @click="gotoNode(props.row.address)">
+                <span
+                  v-tooltip="props.row.address"
+                  @click="gotoNode(props.row.address)"
+                >
                   {{ addressFormat(props.row.address) }}
                 </span>
                 <div>
-                  <StaredIcon v-if="isFav(props.row.address)" class="table-icon" style="fill: #FFEE58" @click="delFav(props.row.address)" />
-                  <StarIcon v-else class="table-icon" @click="addFav(props.row.address)" />
+                  <StaredIcon
+                    v-if="isFav(props.row.address)"
+                    class="table-icon"
+                    style="fill: #ffee58"
+                    @click="delFav(props.row.address)"
+                  />
+                  <StarIcon
+                    v-else
+                    class="table-icon"
+                    @click="addFav(props.row.address)"
+                  />
                 </div>
-                <InfoIcon class="table-icon" @click="gotoNode(props.row.address)" />
+                <InfoIcon
+                  class="table-icon"
+                  @click="gotoNode(props.row.address)"
+                />
                 <div :id="`vote-${props.row.originalIndex}`">
                   <VoteIcon v-if="mimirs" class="table-icon" />
                 </div>
@@ -109,32 +162,49 @@
                   :target="`vote-${props.row.originalIndex}`"
                   custom-class="custom-popover"
                 >
-                  <div class="title" style="margin-bottom: 5px;">
+                  <div class="title" style="margin-bottom: 5px">
                     <strong>Node Votes</strong>
                   </div>
                   <template v-if="mimirs">
-                    <div v-for="(p,i) in mimirs[props.row.address]" :key="i" class="popover-table">
-                      <span class="key clickable" @click="goto('network/votes')">
+                    <div
+                      v-for="(p, i) in mimirs[props.row.address]"
+                      :key="i"
+                      class="popover-table"
+                    >
+                      <span
+                        class="key clickable"
+                        @click="goto('network/votes')"
+                      >
                         {{ p.key }}
                       </span>
                       <span class="vote-value">
                         {{ p.value }}
                       </span>
                     </div>
-                    <div v-if="!mimirs[props.row.address]">
-                      No Votes!
-                    </div>
+                    <div v-if="!mimirs[props.row.address]">No Votes!</div>
                   </template>
                 </b-popover>
-                <a style="height: 1rem" :href="gotoNodeUrl(props.row.address)" target="_blank">
+                <a
+                  style="height: 1rem"
+                  :href="gotoNodeUrl(props.row.address)"
+                  target="_blank"
+                >
                   <NetworkIcon class="table-icon" />
                 </a>
-                <LinkIcon class="table-icon" @click="gotoAddr(props.row.address)" />
+                <LinkIcon
+                  class="table-icon"
+                  @click="gotoAddr(props.row.address)"
+                />
                 <Copy :str-copy="props.row.address" />
               </div>
             </span>
             <span v-else-if="props.column.field == 'age'">
-              <span v-if="props.row.age" v-tooltip="props.row.age.text" style="cursor: pointer;">{{ props.row.age.number | number('0,0.00') }}</span>
+              <span
+                v-if="props.row.age"
+                v-tooltip="props.row.age.text"
+                style="cursor: pointer"
+                >{{ props.row.age.number | number('0,0.00') }}</span
+              >
               <span v-else>-</span>
             </span>
             <span v-else-if="props.column.field == 'isp'">
@@ -142,7 +212,13 @@
               <span v-else>-</span>
             </span>
             <span v-else-if="props.column.field == 'location'">
-              <div v-if="props.row.location" v-tooltip="`${props.row.location.code}, ${props.row.location.region}, ${props.row.location.city}`" class="countries">
+              <div
+                v-if="props.row.location"
+                v-tooltip="
+                  `${props.row.location.code}, ${props.row.location.region}, ${props.row.location.city}`
+                "
+                class="countries"
+              >
                 <VFlag :flag="props.row.location.code" />
                 <span class="location-name">{{ props.row.location.city }}</span>
               </div>
@@ -171,14 +247,22 @@
               </div>
             </span>
             <span v-else-if="props.column.field == 'leave'">
-              <div class="table-wrapper-row" style="justify-content: center;">
-                <CheckBoxIcon v-if="props.row.leave == true" class="table-icon" style="fill: #81C784;" />
+              <div class="table-wrapper-row" style="justify-content: center">
+                <CheckBoxIcon
+                  v-if="props.row.leave == true"
+                  class="table-icon"
+                  style="fill: #81c784"
+                />
                 <span v-else>-</span>
               </div>
             </span>
             <span v-else-if="props.column.field == 'providers'">
               <div
-                :id="props.row.providers.length?`popover-${props.row.originalIndex}`:false"
+                :id="
+                  props.row.providers.length
+                    ? `popover-${props.row.originalIndex}`
+                    : false
+                "
                 class="bubble-container grey"
               >
                 {{ props.row.providers.length }}
@@ -188,29 +272,61 @@
                 :target="`popover-${props.row.originalIndex}`"
                 custom-class="custom-popover"
               >
-                <div class="title" style="margin-bottom: 5px;">
+                <div class="title" style="margin-bottom: 5px">
                   <strong>Providers</strong>
                 </div>
-                <div v-for="(p,i) in props.row.providers" :key="i" class="popover-table">
+                <div
+                  v-for="(p, i) in props.row.providers"
+                  :key="i"
+                  class="popover-table"
+                >
                   <span class="clickable" @click="gotoAddr(p.bond_address)">
                     {{ addressFormat(p.bond_address) }}
                   </span>
                   <span class="text">
-                    {{ (p.bond/10**8)/(props.row.total_bond) | percent }}
+                    {{ (p.bond / 10 ** 8 / props.row.total_bond) | percent }}
                   </span>
-                  <div style="justify-content: end;" class="text">
+                  <div style="justify-content: end" class="text">
                     <span class="extra">{{ runeCur() }}</span>
-                    {{ numberFormat(p.bond/10**8) }}
+                    {{ numberFormat(p.bond / 10 ** 8) }}
                   </div>
                 </div>
               </b-popover>
             </span>
             <span v-else-if="props.column.field.includes('chains.')">
-              <span v-if="props.formattedRow[props.column.field] == 0" style="color: #81C784;">OK</span>
-              <span v-else-if="0 < props.formattedRow[props.column.field] && props.formattedRow[props.column.field] < 10000" style="color: #FFC107;">{{ props.formattedRow[props.column.field] }}</span>
-              <span v-else-if="0 > props.formattedRow[props.column.field] && props.formattedRow[props.column.field] > -10000" style="color: #EF5350;">{{ props.formattedRow[props.column.field] }}</span>
-              <DangerIcon v-else-if="props.formattedRow[props.column.field] > 10000" v-tooltip="`${props.formattedRow[props.column.field]}`" class="table-icon" style="fill: #FFC107;" />
-              <DangerIcon v-else v-tooltip="`${props.formattedRow[props.column.field]}`" class="table-icon" style="fill: #EF5350;" />
+              <span
+                v-if="props.formattedRow[props.column.field] == 0"
+                style="color: #81c784"
+                >OK</span
+              >
+              <span
+                v-else-if="
+                  0 < props.formattedRow[props.column.field] &&
+                  props.formattedRow[props.column.field] < 10000
+                "
+                style="color: #ffc107"
+                >{{ props.formattedRow[props.column.field] }}</span
+              >
+              <span
+                v-else-if="
+                  0 > props.formattedRow[props.column.field] &&
+                  props.formattedRow[props.column.field] > -10000
+                "
+                style="color: #ef5350"
+                >{{ props.formattedRow[props.column.field] }}</span
+              >
+              <DangerIcon
+                v-else-if="props.formattedRow[props.column.field] > 10000"
+                v-tooltip="`${props.formattedRow[props.column.field]}`"
+                class="table-icon"
+                style="fill: #ffc107"
+              />
+              <DangerIcon
+                v-else
+                v-tooltip="`${props.formattedRow[props.column.field]}`"
+                class="table-icon"
+                style="fill: #ef5350"
+              />
             </span>
             <span v-else>
               {{ props.formattedRow[props.column.field] }}
@@ -219,7 +335,12 @@
         </vue-good-table>
       </Card>
       <template v-for="(m, i) in otherNodes" v-else>
-        <Card v-if="mode == m.name" :key="i" :title="m.title" :is-loading="!m.cols">
+        <Card
+          v-if="mode == m.name"
+          :key="i"
+          :title="m.title"
+          :is-loading="!m.cols"
+        >
           <vue-good-table
             v-if="cols && m.cols"
             :key="2"
@@ -233,16 +354,21 @@
             }"
             :sort-options="{
               enabled: true,
-              initialSortBy: [
-                {field: 'total_bond', type: 'desc'}
-              ]
+              initialSortBy: [{ field: 'total_bond', type: 'desc' }],
             }"
           >
             <template slot="table-row" slot-scope="props">
               <span v-if="props.column.field == 'address'" class="clickable">
                 <div v-if="props.row.address" class="table-wrapper-row">
-                  <span v-tooltip="props.row.address" @click="gotoNode(props.row.address)">{{ addressFormat(props.row.address) }}</span>
-                  <InfoIcon class="table-icon" @click="gotoNode(props.row.address)" />
+                  <span
+                    v-tooltip="props.row.address"
+                    @click="gotoNode(props.row.address)"
+                    >{{ addressFormat(props.row.address) }}</span
+                  >
+                  <InfoIcon
+                    class="table-icon"
+                    @click="gotoNode(props.row.address)"
+                  />
                   <div :id="`vote-${props.row.originalIndex}`">
                     <VoteIcon v-if="mimirs" class="table-icon" />
                   </div>
@@ -251,27 +377,39 @@
                     :target="`vote-${props.row.originalIndex}`"
                     custom-class="custom-popover"
                   >
-                    <div class="title" style="margin-bottom: 5px;">
+                    <div class="title" style="margin-bottom: 5px">
                       <strong>Node Votes</strong>
                     </div>
                     <template v-if="mimirs">
-                      <div v-for="(p,j) in mimirs[props.row.address]" :key="j" class="popover-table">
-                        <span class="key clickable" @click="goto('network/votes')">
+                      <div
+                        v-for="(p, j) in mimirs[props.row.address]"
+                        :key="j"
+                        class="popover-table"
+                      >
+                        <span
+                          class="key clickable"
+                          @click="goto('network/votes')"
+                        >
                           {{ p.key }}
                         </span>
                         <span class="vote-value">
                           {{ p.value }}
                         </span>
                       </div>
-                      <div v-if="!mimirs[props.row.address]">
-                        No Votes!
-                      </div>
+                      <div v-if="!mimirs[props.row.address]">No Votes!</div>
                     </template>
                   </b-popover>
-                  <a style="height: 1rem" :href="gotoNodeUrl(props.row.address)" target="_blank">
+                  <a
+                    style="height: 1rem"
+                    :href="gotoNodeUrl(props.row.address)"
+                    target="_blank"
+                  >
                     <NetworkIcon class="table-icon" />
                   </a>
-                  <LinkIcon class="table-icon" @click="gotoAddr(props.row.address)" />
+                  <LinkIcon
+                    class="table-icon"
+                    @click="gotoAddr(props.row.address)"
+                  />
                   <Copy :str-copy="props.row.address" />
                 </div>
                 <span v-else class="not-clickable">No Address Set</span>
@@ -291,24 +429,28 @@
               <span v-else-if="props.column.field == 'status'">
                 <div
                   v-if="m.name !== 'eligible'"
-                  :class="['bubble-container', {
-                    'red': props.row.status === 'Disabled',
-                    'black': props.row.status === 'Unknown',
-                    'white': props.row.status === 'Whitelisted',
-                    'yellow': props.row.status === 'Standby',
-                  }]"
+                  :class="[
+                    'bubble-container',
+                    {
+                      red: props.row.status === 'Disabled',
+                      black: props.row.status === 'Unknown',
+                      white: props.row.status === 'Whitelisted',
+                      yellow: props.row.status === 'Standby',
+                    },
+                  ]"
                 >
                   <span>{{ props.row.status }}</span>
                 </div>
                 <template v-else>
-                  <div class="bubble-container blue">
-                    Eligible
-                  </div>
+                  <div class="bubble-container blue">Eligible</div>
                   <div
-                    :class="['bubble-container', {
-                      'green': props.row.status === 'Ready',
-                      'yellow': props.row.status === 'Standby'
-                    }]"
+                    :class="[
+                      'bubble-container',
+                      {
+                        green: props.row.status === 'Ready',
+                        yellow: props.row.status === 'Standby',
+                      },
+                    ]"
                   >
                     <span>{{ props.row.status }}</span>
                   </div>
@@ -341,10 +483,16 @@ import { GaugeChart, PieChart } from 'echarts/charts'
 import {
   TooltipComponent,
   LegendComponent,
-  GridComponent
+  GridComponent,
 } from 'echarts/components'
 import VChart from 'vue-echarts'
-import { addressFormat, blockTime, fillNodeData, observeredChains, availableChains } from '~/utils'
+import {
+  addressFormat,
+  blockTime,
+  fillNodeData,
+  observeredChains,
+  availableChains,
+} from '~/utils'
 import NetworkIcon from '@/assets/images/chart-network.svg?inline'
 import LinkIcon from '@/assets/images/link.svg?inline'
 import InfoIcon from '@/assets/images/info.svg?inline'
@@ -363,7 +511,7 @@ use([
   PieChart,
   GaugeChart,
   TooltipComponent,
-  LegendComponent
+  LegendComponent,
 ])
 
 export default {
@@ -380,9 +528,9 @@ export default {
     DollarIcon,
     VoteIcon,
     MarkerIcon,
-    VChart
+    VChart,
   },
-  data () {
+  data() {
     return {
       loading: true,
       mode: 'active',
@@ -392,7 +540,7 @@ export default {
         { text: 'Eligible', mode: 'eligible' },
         { text: 'StandBy', mode: 'standby' },
         { text: 'Whitelisted', mode: 'whitelisted' },
-        { text: 'Unknown', mode: 'unknown' }
+        { text: 'Unknown', mode: 'unknown' },
       ],
       nodesQuery: undefined,
       popoverText: 'Test',
@@ -401,66 +549,66 @@ export default {
         {
           name: 'eligible',
           title: 'Eligible',
-          cols: undefined
+          cols: undefined,
         },
         {
           name: 'standby',
           title: 'StandBy',
-          cols: undefined
+          cols: undefined,
         },
         {
           name: 'whitelisted',
           title: 'Whitelisted',
-          cols: undefined
+          cols: undefined,
         },
         {
           name: 'unknown',
           title: 'Unknown',
-          cols: undefined
-        }
+          cols: undefined,
+        },
       ],
       cols: [
         {
           label: 'Address',
           field: 'address',
           formatFn: this.addressFormat,
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'IP',
           field: 'ip',
-          sortable: false
+          sortable: false,
         },
         {
           label: 'Flag',
-          field: 'status'
+          field: 'status',
         },
         {
           label: 'Version',
           field: 'version',
           type: 'text',
-          sortFn: this.versionSort
+          sortFn: this.versionSort,
         },
         {
           label: 'Slash Point',
           field: 'slash',
           type: 'number',
           formatFn: this.numberFormat,
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'Current Award',
           field: 'award',
           type: 'number',
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'Bond',
           field: 'total_bond',
           type: 'number',
           formatFn: this.numberFormat,
-          tdClass: 'mono'
-        }
+          tdClass: 'mono',
+        },
       ],
       minBond: 30000000000000,
       lastBlockHeight: undefined,
@@ -471,33 +619,33 @@ export default {
       mimirs: undefined,
       provDist: undefined,
       intervalId: undefined,
-      churnHalted: undefined
+      churnHalted: undefined,
     }
   },
   computed: {
     ...mapGetters({
       runePrice: 'getRunePrice',
-      fullscreen: 'getFullScreen'
+      fullscreen: 'getFullScreen',
     }),
-    error () {
+    error() {
       return !this.nodesQuery
     },
-    nodeStatus () {
+    nodeStatus() {
       if (this.nodesQuery) {
         const nodes = this.categorizedNodes(this.nodesQuery)
         return {
           tooltip: {
-            trigger: 'item'
+            trigger: 'item',
           },
           legend: {
             show: true,
             textStyle: {
-              color: 'var(--font-color)'
+              color: 'var(--font-color)',
             },
-            formatter (name) {
-              const node = nodes?.find(n => n.name === name)
+            formatter(name) {
+              const node = nodes?.find((n) => n.name === name)
               return `${name}: ${node?.nodes?.length}`
-            }
+            },
           },
           series: [
             {
@@ -508,22 +656,22 @@ export default {
               itemStyle: {
                 borderRadius: 10,
                 borderColor: 'transparent',
-                borderWidth: 2
+                borderWidth: 2,
               },
               label: {
                 show: true,
                 color: 'var(--font-color)',
-                textBorderColor: 'transparent'
+                textBorderColor: 'transparent',
               },
-              data: nodes.map(n => ({ value: n.nodes.length, name: n.name }))
-            }
-          ]
+              data: nodes.map((n) => ({ value: n.nodes.length, name: n.name })),
+            },
+          ],
         }
       } else {
         return undefined
       }
     },
-    activeCols () {
+    activeCols() {
       if (!this.nodesQuery) {
         return this.cols
       }
@@ -536,29 +684,28 @@ export default {
           type: 'number',
           tdClass: 'center',
           thClass: 'center',
-          sortFn: this.aSort
+          sortFn: this.aSort,
         },
         {
           label: 'ISP',
           field: 'isp',
           type: 'text',
-          tdClass: 'center'
+          tdClass: 'center',
         },
         {
           label: 'Location',
           field: 'location',
           tdClass: 'center',
-          sortFn: this.cSort
+          sortFn: this.cSort,
         },
         ...this.cols.slice(1, 6),
         {
-
           label: 'Providers',
           field: 'providers',
           type: 'number',
           tdClass: 'mono center clickable',
           thClass: 'center',
-          sortFn: this.pSort
+          sortFn: this.pSort,
         },
         ...this.cols.slice(-1),
         {
@@ -566,123 +713,153 @@ export default {
           field: 'score',
           type: 'number',
           tdClass: 'mono center',
-          thClass: 'center'
+          thClass: 'center',
         },
         {
           label: 'Leave',
           field: 'leave',
-          tdClass: 'center'
+          tdClass: 'center',
         },
         {
           label: 'APY',
           field: 'apy',
           type: 'percentage',
           tdClass: 'mono center',
-          thClass: 'center'
+          thClass: 'center',
         },
-        ...(
-          availableChains(this.nodesQuery?.filter(n => n.status === 'Active'))?.sort().map(c => (
-            {
-              label: c,
-              field: `chains.${c}`,
-              type: 'number',
-              formatFn: this.numberFormat,
-              tdClass: 'mono center',
-              thClass: 'center'
-            }
-          ))
+        ...availableChains(
+          this.nodesQuery?.filter((n) => n.status === 'Active')
         )
+          ?.sort()
+          .map((c) => ({
+            label: c,
+            field: `chains.${c}`,
+            type: 'number',
+            formatFn: this.numberFormat,
+            tdClass: 'mono center',
+            thClass: 'center',
+          })),
       ]
     },
-    topActiveBonds () {
+    topActiveBonds() {
       return [
         [
           {
             name: 'Total Bond',
-            value: ((this.bondMetrics?.bondMetrics?.totalActiveBond ?? 0) / 10 ** 8),
-            usdValue: true
+            value:
+              (this.bondMetrics?.bondMetrics?.totalActiveBond ?? 0) / 10 ** 8,
+            usdValue: true,
           },
           {
             name: 'Average Bond',
-            value: ((this.bondMetrics?.bondMetrics?.averageActiveBond ?? 0) / 10 ** 8),
-            usdValue: true
+            value:
+              (this.bondMetrics?.bondMetrics?.averageActiveBond ?? 0) / 10 ** 8,
+            usdValue: true,
           },
           {
             name: 'Total Node Count',
-            value: this.bondMetrics?.activeNodeCount
-          }
+            value: this.bondMetrics?.activeNodeCount,
+          },
         ],
         [
           {
             name: 'Maximum Bond',
-            value: Math.floor(Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.maximumActiveBond) ?? 0) / 10 ** 8)),
-            usdValue: true
+            value: Math.floor(
+              Math.floor(
+                (Number.parseInt(
+                  this.bondMetrics?.bondMetrics?.maximumActiveBond
+                ) ?? 0) /
+                  10 ** 8
+              )
+            ),
+            usdValue: true,
           },
           {
             name: 'Median Bond',
-            value: Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.medianActiveBond) ?? 0) / 10 ** 8),
-            usdValue: true
+            value: Math.floor(
+              (Number.parseInt(
+                this.bondMetrics?.bondMetrics?.medianActiveBond
+              ) ?? 0) /
+                10 ** 8
+            ),
+            usdValue: true,
           },
           {
             name: 'Minimum Bond',
-            value: Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.minimumActiveBond) ?? 0) / 10 ** 8),
-            usdValue: true
-          }
+            value: Math.floor(
+              (Number.parseInt(
+                this.bondMetrics?.bondMetrics?.minimumActiveBond
+              ) ?? 0) /
+                10 ** 8
+            ),
+            usdValue: true,
+          },
         ],
         [
           {
             name: 'Max efficient bond',
             value: this.calculateHardCap(),
-            usdValue: true
-          }
-        ]
+            usdValue: true,
+          },
+        ],
       ]
     },
-    topStandbyBonds () {
+    topStandbyBonds() {
       return [
         [
           {
             name: 'Total Bond',
-            value: ((this.bondMetrics?.bondMetrics?.totalStandbyBond ?? 0) / 10 ** 8),
-            usdValue: true
+            value:
+              (this.bondMetrics?.bondMetrics?.totalStandbyBond ?? 0) / 10 ** 8,
+            usdValue: true,
           },
           {
             name: 'Average Bond',
-            value: ((this.bondMetrics?.bondMetrics?.averageStandbyBond ?? 0) / 10 ** 8),
-            usdValue: true
+            value:
+              (this.bondMetrics?.bondMetrics?.averageStandbyBond ?? 0) /
+              10 ** 8,
+            usdValue: true,
           },
           {
             name: 'Total Node Count',
-            value: this.bondMetrics?.standbyNodeCount
-          }
+            value: this.bondMetrics?.standbyNodeCount,
+          },
         ],
         [
           {
             name: 'Maximum Bond',
-            value: Math.floor((Number.parseInt(this.bondMetrics?.bondMetrics?.maximumStandbyBond) ?? 0) / 10 ** 8),
-            usdValue: true
+            value: Math.floor(
+              (Number.parseInt(
+                this.bondMetrics?.bondMetrics?.maximumStandbyBond
+              ) ?? 0) /
+                10 ** 8
+            ),
+            usdValue: true,
           },
           {
             name: 'Median Bond',
             value: this.calMedianBond(),
-            usdValue: true
+            usdValue: true,
           },
           {
             name: 'Minimum Bond',
-            value: ((this.bondMetrics?.bondMetrics?.minimumStandbyBond ?? 0) / 10 ** 8),
-            usdValue: true
-          }
-        ]
+            value:
+              (this.bondMetrics?.bondMetrics?.minimumStandbyBond ?? 0) /
+              10 ** 8,
+            usdValue: true,
+          },
+        ],
       ]
     },
-    activeNodes () {
+    activeNodes() {
       if (this.nodesQuery) {
-        const actNodes = this.nodesQuery?.filter(
-          e => e.status === 'Active'
-        )
+        const actNodes = this.nodesQuery?.filter((e) => e.status === 'Active')
         const filteredNodes = []
         const chains = observeredChains(actNodes)
-        const ratioReward = (this.churnInterval - (+this.bondMetrics?.nextChurnHeight - this.lastBlockHeight)) / this.churnInterval
+        const ratioReward =
+          (this.churnInterval -
+            (+this.bondMetrics?.nextChurnHeight - this.lastBlockHeight)) /
+          this.churnInterval
         actNodes.forEach((el) => {
           fillNodeData(
             filteredNodes,
@@ -702,8 +879,12 @@ export default {
         })
         this.providerFill(filteredNodes)
         if (this.favNodes) {
-          const favNodesFilter = filteredNodes.filter(n => this.favNodes.includes(n.address))
-          const nonFavNodesFilter = filteredNodes.filter(n => !this.favNodes.includes(n.address))
+          const favNodesFilter = filteredNodes.filter((n) =>
+            this.favNodes.includes(n.address)
+          )
+          const nonFavNodesFilter = filteredNodes.filter(
+            (n) => !this.favNodes.includes(n.address)
+          )
           return [...favNodesFilter, ...nonFavNodesFilter]
         }
         return filteredNodes
@@ -712,34 +893,43 @@ export default {
       }
     },
     favNodes: {
-      set (array) {
+      set(array) {
         this.localFavNodes = array
         localStorage.setItem('FavNodes', JSON.stringify(array))
       },
-      get () {
+      get() {
         if (process.browser) {
-          return this.localFavNodes ?? JSON.parse(localStorage.getItem('FavNodes'))
+          return (
+            this.localFavNodes ?? JSON.parse(localStorage.getItem('FavNodes'))
+          )
         }
         return []
-      }
-    }
+      },
+    },
   },
-  mounted () {
-    const mimirProm = this.$api.getMimir().then((res) => {
-      this.churnHalted = res.data.HALTCHURNING
-      this.minBond = +res.data.MINIMUMBONDINRUNE
-      this.churnInterval = +res.data.CHURNINTERVAL
-    }).catch((e) => {
-      console.error(e)
-    })
+  mounted() {
+    const mimirProm = this.$api
+      .getMimir()
+      .then((res) => {
+        this.churnHalted = res.data.HALTCHURNING
+        this.minBond = +res.data.MINIMUMBONDINRUNE
+        this.churnInterval = +res.data.CHURNINTERVAL
+      })
+      .catch((e) => {
+        console.error(e)
+      })
 
-    const netProm = this.$api.getNetwork().then((res) => {
-      this.bondMetrics = res.data
-    }).catch((e) => {
-      console.error(e)
-    })
+    const netProm = this.$api
+      .getNetwork()
+      .then((res) => {
+        this.bondMetrics = res.data
+      })
+      .catch((e) => {
+        console.error(e)
+      })
 
-    const lastProm = this.$api.getRPCLastBlockHeight()
+    const lastProm = this.$api
+      .getRPCLastBlockHeight()
       .then((res) => {
         this.lastBlockHeight = +res?.data?.block?.header?.height
       })
@@ -768,30 +958,37 @@ export default {
     })
   },
   methods: {
-    toggleFullscreen () {
+    toggleFullscreen() {
       this.$store.commit('toggleFullscreen')
     },
-    async updateNodes () {
+    async updateNodes() {
       let { data } = await this.$api.getNodes()
       data = data.sort((a, b) => a.node_address.localeCompare(b.node_address))
       this.nodesQuery = data
       this.fillExtraNodes(data)
     },
-    calculateHardCap () {
-      const actNodes = this.nodesQuery.filter(n => n.status === 'Active')
+    calculateHardCap() {
+      const actNodes = this.nodesQuery.filter((n) => n.status === 'Active')
       if (actNodes.length === 0) {
         return 0
       }
       actNodes.sort((a, b) => +a.total_bond - +b.total_bond)
-      const lowerNodes = actNodes.slice(0, Math.floor(actNodes.length * 2 / 3))
-      return Math.floor((Number.parseInt(lowerNodes.slice(-1)[0].total_bond) ?? 0) / 10 ** 8)
+      const lowerNodes = actNodes.slice(
+        0,
+        Math.floor((actNodes.length * 2) / 3)
+      )
+      return Math.floor(
+        (Number.parseInt(lowerNodes.slice(-1)[0].total_bond) ?? 0) / 10 ** 8
+      )
     },
-    destroyed () {
+    destroyed() {
       this.clearIntervalId(this.intervalId)
     },
-    updateChurnTime () {
-      let churnTimeRemaining = +this.bondMetrics?.nextChurnHeight - this.lastBlockHeight
-      const chartTime = (this.churnInterval - (churnTimeRemaining)) / this.churnInterval
+    updateChurnTime() {
+      let churnTimeRemaining =
+        +this.bondMetrics?.nextChurnHeight - this.lastBlockHeight
+      const chartTime =
+        (this.churnInterval - churnTimeRemaining) / this.churnInterval
 
       this.churnOption = {
         series: [
@@ -802,7 +999,7 @@ export default {
             min: 0,
             max: 1,
             pointer: {
-              show: false
+              show: false,
             },
             progress: {
               show: true,
@@ -811,36 +1008,36 @@ export default {
               clip: false,
               itemStyle: {
                 borderWidth: 1,
-                borderColor: '#464646'
-              }
+                borderColor: '#464646',
+              },
             },
             splitLine: {
-              show: false
+              show: false,
             },
             axisTick: {
-              show: false
+              show: false,
             },
             axisLabel: {
-              show: false
+              show: false,
             },
             data: [
               {
                 value: chartTime,
                 name: this.churnHalted ? 'Churn paused' : 'Next Churn',
                 itemStyle: {
-                  color: this.churnHalted ? '#f04832' : 'var(--primary-color)'
+                  color: this.churnHalted ? '#f04832' : 'var(--primary-color)',
                 },
                 title: {
                   offsetCenter: ['0%', '0%'],
-                  color: this.churnHalted ? '#f04832' : 'var(--primary-color)'
+                  color: this.churnHalted ? '#f04832' : 'var(--primary-color)',
                 },
                 detail: {
-                  offsetCenter: ['0%', '40%']
-                }
-              }
+                  offsetCenter: ['0%', '40%'],
+                },
+              },
             ],
             title: {
-              fontSize: 14
+              fontSize: 14,
             },
             detail: {
               width: 50,
@@ -850,18 +1047,19 @@ export default {
               valueAnimation: true,
               formatter: (value) => {
                 return blockTime((1 - value) * this.churnInterval)
-              }
-            }
-          }
-        ]
+              },
+            },
+          },
+        ],
       }
 
       setInterval(() => {
         churnTimeRemaining--
-        this.churnOption.series[0].data[0].value = 1 - (churnTimeRemaining / this.churnInterval)
+        this.churnOption.series[0].data[0].value =
+          1 - churnTimeRemaining / this.churnInterval
       }, 6000)
     },
-    categorizedNodes (nodes) {
+    categorizedNodes(nodes) {
       if (nodes) {
         const sortedNodes = []
 
@@ -869,24 +1067,24 @@ export default {
         nodesStatus.forEach((n) => {
           sortedNodes.push({
             name: n,
-            nodes: nodes?.filter(
-              e => e.status === n
-            )
+            nodes: nodes?.filter((e) => e.status === n),
           })
         })
 
         sortedNodes.push({
           name: 'Eligible',
           nodes: nodes?.filter(
-            e => e.status === 'Standby' && parseInt(e.total_bond) >= 30000000000000
-          )
+            (e) =>
+              e.status === 'Standby' && parseInt(e.total_bond) >= 30000000000000
+          ),
         })
 
         sortedNodes.push({
           name: 'StandBy',
           nodes: nodes?.filter(
-            e => e.status === 'Standby' && parseInt(e.total_bond) < 30000000000000
-          )
+            (e) =>
+              e.status === 'Standby' && parseInt(e.total_bond) < 30000000000000
+          ),
         })
 
         return sortedNodes
@@ -894,8 +1092,8 @@ export default {
         return undefined
       }
     },
-    provType (name) {
-      if (!name && !(name.isp)) {
+    provType(name) {
+      if (!name && !name.isp) {
         return ''
       } else if (name.isp?.includes('Amazon')) {
         return 'Amazon'
@@ -913,7 +1111,7 @@ export default {
         return name.isp
       }
     },
-    providerFill (nodes) {
+    providerFill(nodes) {
       if (!nodes) {
         return undefined
       }
@@ -922,12 +1120,12 @@ export default {
       for (const name in countByIsp) {
         pieIsp.push({
           name,
-          value: countByIsp[name]
+          value: countByIsp[name],
         })
       }
       this.provDist = {
-        formatter (param) {
-          return (`
+        formatter(param) {
+          return `
             <div class="tooltip-header">
               <div class="data-color" style="background-color: ${param.color}"></div>
               ${param.name}
@@ -942,16 +1140,16 @@ export default {
                 <b>${param.percent} %</b>
               </span>
             </div>
-          `)
+          `
         },
         tooltip: {
-          trigger: 'item'
+          trigger: 'item',
         },
         labelLine: {
-          show: false
+          show: false,
         },
         legend: {
-          show: false
+          show: false,
         },
         series: [
           {
@@ -962,78 +1160,81 @@ export default {
             itemStyle: {
               borderRadius: 10,
               borderColor: 'transparent',
-              borderWidth: 2
+              borderWidth: 2,
             },
             label: {
-              show: false
+              show: false,
             },
-            data: pieIsp
-          }
-        ]
+            data: pieIsp,
+          },
+        ],
       }
     },
-    fillENode (nodes) {
+    fillENode(nodes) {
       const filteredNodes = []
       nodes.forEach((el) => {
         fillNodeData(filteredNodes, el)
       })
       return filteredNodes
     },
-    fillExtraNodes (nodes) {
+    fillExtraNodes(nodes) {
       if (nodes) {
         let eliNodes = nodes?.filter(
-          e => (e.status === 'Standby' || e.status === 'Ready') && parseInt(e.total_bond) >= 30000000000000
+          (e) =>
+            (e.status === 'Standby' || e.status === 'Ready') &&
+            parseInt(e.total_bond) >= 30000000000000
         )
         eliNodes = this.fillENode(eliNodes)
         this.otherNodes[0].cols = eliNodes
 
         const stbNodes = nodes?.filter(
-          e => e.status === 'Standby' && parseInt(e.total_bond) < 30000000000000
+          (e) =>
+            e.status === 'Standby' && parseInt(e.total_bond) < 30000000000000
         )
         this.otherNodes[1].cols = this.fillENode(stbNodes)
 
-        const whNodes = nodes?.filter(
-          e => e.status === 'Whitelisted'
-        )
+        const whNodes = nodes?.filter((e) => e.status === 'Whitelisted')
         this.otherNodes[2].cols = this.fillENode(whNodes)
 
-        const rdNodes = nodes?.filter(
-          e => e.status === 'Unknown'
-        )
+        const rdNodes = nodes?.filter((e) => e.status === 'Unknown')
         this.otherNodes[3].cols = this.fillENode(rdNodes)
       } else {
         return undefined
       }
     },
-    numberFormat (number) {
+    numberFormat(number) {
       return this.$options.filters.number(number, '0,0')
     },
-    addressFormat (string) {
+    addressFormat(string) {
       return addressFormat(string, 4, true)
     },
-    curFormat (number) {
+    curFormat(number) {
       return this.$options.filters.currency(number)
     },
-    calMedianBond () {
-      const eNodes = this.bondMetrics?.standbyBonds.filter(b => b >= this.minBond)
-      return eNodes?.sort((a, b) => +a - +b)[Math.floor(eNodes.length / 2)] / 10 ** 8
+    calMedianBond() {
+      const eNodes = this.bondMetrics?.standbyBonds.filter(
+        (b) => b >= this.minBond
+      )
+      return (
+        eNodes?.sort((a, b) => +a - +b)[Math.floor(eNodes.length / 2)] / 10 ** 8
+      )
     },
-    pSort (x, y, col, rowX, rowY) {
-      return (x?.length < y?.length ? -1 : (x?.length > y?.length ? 1 : 0))
+    pSort(x, y, col, rowX, rowY) {
+      return x?.length < y?.length ? -1 : x?.length > y?.length ? 1 : 0
     },
-    cSort (x, y, col, rowX, rowY) {
-      return (x?.code < y?.code ? -1 : (x?.code > y?.code ? 1 : 0))
+    cSort(x, y, col, rowX, rowY) {
+      return x?.code < y?.code ? -1 : x?.code > y?.code ? 1 : 0
     },
-    aSort (x, y, col, rowX, rowY) {
-      return (x?.number < y?.number ? -1 : (x?.number > y?.number ? 1 : 0))
+    aSort(x, y, col, rowX, rowY) {
+      return x?.number < y?.number ? -1 : x?.number > y?.number ? 1 : 0
     },
-    isFav (address) {
+    isFav(address) {
       if (this.favNodes && this.favNodes.includes(address)) {
         return true
       }
       return false
     },
-    addFav (address) {
+    addFav(address) {
       let favNodes
       try {
         favNodes = this.favNodes || []
@@ -1045,7 +1246,7 @@ export default {
         this.favNodes = [...favNodes, address]
       }
     },
-    delFav (address) {
+    delFav(address) {
       const favNodes = this.favNodes
       _.remove(favNodes, (n) => {
         return n === address
@@ -1053,27 +1254,31 @@ export default {
       this.favNodes = [...favNodes]
     },
     // Can be wrapped on the server
-    formatMimirs (d) {
+    formatMimirs(d) {
       const mimirs = {}
       d.mimirs.forEach((v) => {
-        if (!v.value) { return }
+        if (!v.value) {
+          return
+        }
 
         if (v.signer in mimirs) {
           mimirs[v.signer].push({
             value: v.value,
-            key: v.key
+            key: v.key,
           })
         } else {
-          mimirs[v.signer] = [{
-            value: v.value,
-            key: v.key
-          }]
+          mimirs[v.signer] = [
+            {
+              value: v.value,
+              key: v.key,
+            },
+          ]
         }
       })
 
       return mimirs
-    }
-  }
+    },
+  },
 }
 </script>
 
@@ -1082,12 +1287,12 @@ export default {
   width: 100%;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(auto, 1fr));
-  grid-gap: .5rem;
-  gap: .5rem;
+  grid-gap: 0.5rem;
+  gap: 0.5rem;
 }
 
 .extra {
-  font-size: .7rem;
+  font-size: 0.7rem;
 }
 
 .popover-table {

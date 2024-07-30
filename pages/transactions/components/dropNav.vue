@@ -5,7 +5,7 @@
       :id="it.title"
       :key="it.title"
       :ref="it.title"
-      :class="['nav-box-item', {'active': isItemActive(it)}]"
+      :class="['nav-box-item', { active: isItemActive(it) }]"
       @mouseover="toggle(it, true)"
       @mouseleave="toggle(it, false)"
       @click="emitIfNoSubs(it)"
@@ -20,7 +20,7 @@
               <div
                 v-for="su in it.subItems"
                 :key="su.name"
-                :class="['nav-item', {'active': su.value === activeMode}]"
+                :class="['nav-item', { active: su.value === activeMode }]"
                 @click="emitAction(su.value)"
               >
                 <span>{{ su.name }}</span>
@@ -36,12 +36,12 @@
 <script>
 export default {
   props: ['items', 'activeMode'],
-  data () {
+  data() {
     return {
-      toggles: {}
+      toggles: {},
     }
   },
-  mounted () {
+  mounted() {
     // Create toggles
     for (let i = 0; i < this.items.length; i++) {
       this.$set(this.toggles, this.items[i].title, false)
@@ -49,7 +49,7 @@ export default {
     }
   },
   methods: {
-    toggle (item, flag = undefined) {
+    toggle(item, flag = undefined) {
       const st = item.title
       if (this.toggles[st] === undefined) {
         return
@@ -60,28 +60,31 @@ export default {
         this.toggles[st] = flag
       }
     },
-    closeDialogOnClick (item) {
+    closeDialogOnClick(item) {
       window.addEventListener('click', (e) => {
         if (!document.getElementById(item.title)?.contains(e.target)) {
           this.toggles[item.title] = false
         }
       })
     },
-    emitIfNoSubs (item) {
+    emitIfNoSubs(item) {
       if (item.subItems === undefined || item.subItems.length === 0) {
         this.emitAction(item.value)
       }
     },
-    emitAction (value) {
+    emitAction(value) {
       this.$emit('update:activeMode', value)
     },
-    isItemActive (it) {
-      if (this.activeMode === it.value || it.subItems?.map(s => s.value).includes(this.activeMode)) {
+    isItemActive(it) {
+      if (
+        this.activeMode === it.value ||
+        it.subItems?.map((s) => s.value).includes(this.activeMode)
+      ) {
         return true
       }
       return false
-    }
-  }
+    },
+  },
 }
 </script>
 
@@ -124,7 +127,7 @@ export default {
       border: 1px solid var(--border-color);
       border-radius: 0.5rem;
       min-width: 100px;
-      margin-top: .3rem;
+      margin-top: 0.3rem;
       left: 50%;
       transform: translateX(-50%);
 

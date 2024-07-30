@@ -1,5 +1,10 @@
 <template>
-  <VChart :option="options" :autoresize="true" :loading-options="showLoading" style="width: 275px;height:250px;min-height: initial;" />
+  <VChart
+    :option="options"
+    :autoresize="true"
+    :loading-options="showLoading"
+    style="width: 275px; height: 250px; min-height: initial"
+  />
 </template>
 
 <script>
@@ -10,7 +15,7 @@ import {
   TitleComponent,
   TooltipComponent,
   LegendComponent,
-  GridComponent
+  GridComponent,
 } from 'echarts/components'
 import VChart from 'vue-echarts'
 
@@ -20,20 +25,20 @@ use([
   TitleComponent,
   TooltipComponent,
   LegendComponent,
-  GridComponent
+  GridComponent,
 ])
 
 export default {
   components: {
-    VChart
+    VChart,
   },
   props: ['pieData', 'formatter', 'name'],
   computed: {
-    options () {
+    options() {
       return {
         formatter: this.formatter,
         tooltip: {
-          trigger: 'item'
+          trigger: 'item',
         },
         series: [
           {
@@ -44,19 +49,18 @@ export default {
             width: 275,
             height: 250,
             itemStyle: {
-              borderRadius: 5
+              borderRadius: 5,
             },
             label: {
-              show: false
+              show: false,
             },
-            data: this.pieData
-          }
-        ]
+            data: this.pieData,
+          },
+        ],
       }
-    }
-  }
+    },
+  },
 }
 </script>
 
-<style>
-</style>
+<style></style>

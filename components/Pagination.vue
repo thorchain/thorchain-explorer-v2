@@ -3,13 +3,13 @@
     <div class="nav-icons" @click="$emit('changePage', 0)">
       <angleDoubleLeft />
     </div>
-    <div class="nav-icons" @click="$emit('changePage', offset-limit)">
+    <div class="nav-icons" @click="$emit('changePage', offset - limit)">
       <angleLeft />
     </div>
     <div class="page">
-      Page {{ Number.parseInt(offset/limit)+1 }} of {{ finalPage }}
+      Page {{ Number.parseInt(offset / limit) + 1 }} of {{ finalPage }}
     </div>
-    <div class="nav-icons" @click="$emit('changePage', offset+limit)">
+    <div class="nav-icons" @click="$emit('changePage', offset + limit)">
       <angleRight />
     </div>
     <div class="nav-icons" @click="$emit('changePage', finalOffset)">
@@ -30,17 +30,17 @@ export default {
     angleDoubleLeft,
     angleLeft,
     angleRight,
-    angleDoubleRight
+    angleDoubleRight,
   },
   props: ['offset', 'count', 'limit'],
   computed: {
-    finalPage () {
+    finalPage() {
       return Math.floor(Number.parseInt(this.count) / this.limit) + 1
     },
-    finalOffset () {
+    finalOffset() {
       return Math.floor(Number.parseInt(this.count) / this.limit) * 10
-    }
-  }
+    },
+  },
 }
 </script>
 
@@ -54,9 +54,9 @@ export default {
     display: flex;
     align-items: center;
     cursor: pointer;
-    margin: 0 .5rem;
-    padding: .3rem;
-    border-radius: .2rem;
+    margin: 0 0.5rem;
+    padding: 0.3rem;
+    border-radius: 0.2rem;
 
     svg {
       fill: var(--font-color);
@@ -65,7 +65,7 @@ export default {
     }
 
     &:hover {
-        background-color: var(--bg-color);
+      background-color: var(--bg-color);
 
       svg {
         fill: var(--sec-font-color);
@@ -75,7 +75,7 @@ export default {
 
   .page {
     line-height: 1.8rem;
-    margin: 0 .7rem;
+    margin: 0 0.7rem;
   }
 }
 </style>

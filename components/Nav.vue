@@ -4,12 +4,15 @@
       {{ preText }}
     </span>
     <component
-      :is="isLink? 'nuxt-link':'div'"
+      :is="isLink ? 'nuxt-link' : 'div'"
       v-for="navItem in filteredNav"
       :key="navItem.mode"
-      :class="[{'active': activeMode && activeMode === navItem.mode}, 'nav-item']"
-      :to="isLink? navItem.link:false"
-      @click="!isLink? $emit('update:activeMode', navItem.mode):false"
+      :class="[
+        { active: activeMode && activeMode === navItem.mode },
+        'nav-item',
+      ]"
+      :to="isLink ? navItem.link : false"
+      @click="!isLink ? $emit('update:activeMode', navItem.mode) : false"
     >
       {{ navItem.text }}
     </component>
@@ -20,15 +23,22 @@
 export default {
   mode: {
     prop: 'activeMode',
-    event: 'update'
+    event: 'update',
   },
-  props: ['activeMode', 'navItems', 'isLink', 'extraClasses', 'preText', 'hide'],
+  props: [
+    'activeMode',
+    'navItems',
+    'isLink',
+    'extraClasses',
+    'preText',
+    'hide',
+  ],
+  emits: ['update'],
   computed: {
-    filteredNav () {
-      return this.navItems.filter(n => n.hide !== true)
-    }
+    filteredNav() {
+      return this.navItems.filter((n) => n.hide !== true)
+    },
   },
-  emits: ['update']
 }
 </script>
 
@@ -53,7 +63,8 @@ export default {
     text-decoration: none;
     border-radius: 0.3rem;
 
-    &.active, &.nuxt-link-exact-active {
+    &.active,
+    &.nuxt-link-exact-active {
       background-color: var(--active-bg-color);
       color: var(--sec-font-color);
     }
@@ -74,11 +85,11 @@ export default {
     border-width: 1px 0 1px 0;
 
     .nav-item {
-      &.active, &.nuxt-link-exact-active {
+      &.active,
+      &.nuxt-link-exact-active {
         color: var(--primary-color);
       }
     }
-
   }
 
   @include lg {

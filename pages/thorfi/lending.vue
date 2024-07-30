@@ -4,7 +4,10 @@
       <div class="stat-card">
         <div class="stat-header">
           Health Factor
-          <unknown-icon v-tooltip="'Total Burned in Rune / Total Collateral in Rune'" class="header-icon" />
+          <unknown-icon
+            v-tooltip="'Total Burned in Rune / Total Collateral in Rune'"
+            class="header-icon"
+          />
         </div>
         <skeleton-item :loading="!healthScore" class="stat-value">
           {{ healthScore | percent }}
@@ -13,25 +16,24 @@
       <div class="stat-card">
         <div class="stat-header">
           Lending Fill Percentage
-          <unknown-icon v-tooltip="'Used Capacity of THORChain Lending'" class="header-icon" />
+          <unknown-icon
+            v-tooltip="'Used Capacity of THORChain Lending'"
+            class="header-icon"
+          />
         </div>
         <skeleton-item :loading="!pctFull" class="stat-value">
           {{ pctFull | percent }}
         </skeleton-item>
       </div>
       <div class="stat-card">
-        <div class="stat-header">
-          Total Collateral
-        </div>
+        <div class="stat-header">Total Collateral</div>
         <skeleton-item :loading="!collateralValue" class="stat-value">
           {{ collateralValue | number('0a') }}
           <span class="mono">RUNE</span>
         </skeleton-item>
       </div>
       <div class="stat-card">
-        <div class="stat-header">
-          Total Debt
-        </div>
+        <div class="stat-header">Total Debt</div>
         <skeleton-item :loading="!totalDebt" class="stat-value">
           {{ totalDebt | number('0a') }}
           <span class="mono">RUNE</span>
@@ -56,31 +58,73 @@
             <span class="ellipsis">
               {{ props.row.pool }}
             </span>
-            <div v-if="props.row.label" class="bubble-container" style="margin-left: 10px">
+            <div
+              v-if="props.row.label"
+              class="bubble-container"
+              style="margin-left: 10px"
+            >
               {{ props.row.label }}
             </div>
           </div>
-          <span v-else-if="props.column.field.startsWith('pool')" class="pool-cell ellipsis">
-            <span v-if="props.row[props.column.field][0]">{{ props.row[props.column.field][0] | number('0,0.00') }} <small>RUNE</small></span>
-            <span v-if="props.row[props.column.field][1]" class="ellipsis">{{ props.row[props.column.field][1] || props.row[props.column.field][1] === 0 ? ($options.filters.number(props.row[props.column.field][1], '0,0.000000')) : '-' }} <small class="ellipsis">{{ props.row.pool }}</small></span>
+          <span
+            v-else-if="props.column.field.startsWith('pool')"
+            class="pool-cell ellipsis"
+          >
+            <span v-if="props.row[props.column.field][0]"
+              >{{ props.row[props.column.field][0] | number('0,0.00') }}
+              <small>RUNE</small></span
+            >
+            <span v-if="props.row[props.column.field][1]" class="ellipsis"
+              >{{
+                props.row[props.column.field][1] ||
+                props.row[props.column.field][1] === 0
+                  ? $options.filters.number(
+                      props.row[props.column.field][1],
+                      '0,0.000000'
+                    )
+                  : '-'
+              }}
+              <small class="ellipsis">{{ props.row.pool }}</small></span
+            >
             <span v-else-if="!props.row[props.column.field][0]">-</span>
           </span>
-          <span v-else-if="props.column.field == 'collateral' || props.column.field == 'collateralAvailable'">
-            <span v-if="props.row.collateral" :class="{'danger-text': props.row.fill >= 1 && props.column.field == 'collateralAvailable'}">
-              {{ props.formattedRow[props.column.field] }} <small>{{ props.row.pool }}</small>
+          <span
+            v-else-if="
+              props.column.field == 'collateral' ||
+              props.column.field == 'collateralAvailable'
+            "
+          >
+            <span
+              v-if="props.row.collateral"
+              :class="{
+                'danger-text':
+                  props.row.fill >= 1 &&
+                  props.column.field == 'collateralAvailable',
+              }"
+            >
+              {{ props.formattedRow[props.column.field] }}
+              <small>{{ props.row.pool }}</small>
             </span>
             <span v-else>-</span>
           </span>
           <span v-else-if="props.column.field == 'debt'">
-            <span v-if="props.row.debt">{{ formatSmallCurrency(props.row.debt) }} <small>TOR</small></span>
+            <span v-if="props.row.debt"
+              >{{ formatSmallCurrency(props.row.debt) }}
+              <small>TOR</small></span
+            >
             <span v-else>-</span>
           </span>
           <span v-else-if="props.column.field == 'availableRune'">
-            <span v-if="props.row.debt">{{ props.formattedRow[props.column.field] }} <small>RUNE</small></span>
+            <span v-if="props.row.debt"
+              >{{ props.formattedRow[props.column.field] }}
+              <small>RUNE</small></span
+            >
             <span v-else>-</span>
           </span>
           <span v-else-if="props.column.field == 'fill'">
-            <span :class="{'danger-text': props.row.fill >= 1}">{{ props.formattedRow[props.column.field] }}</span>
+            <span :class="{ 'danger-text': props.row.fill >= 1 }">{{
+              props.formattedRow[props.column.field]
+            }}</span>
           </span>
         </template>
       </vue-good-table>
@@ -92,7 +136,7 @@
 import endpoints from '~/api/endpoints'
 
 export default {
-  data () {
+  data() {
     return {
       reserveAddress: endpoints[process.env.NETWORK].MODULE_ADDR,
       polOverview: undefined,
@@ -107,54 +151,54 @@ export default {
         {
           label: 'Pool',
           field: 'pool',
-          formatFn: this.formatAsset
+          formatFn: this.formatAsset,
         },
         {
           label: 'Total Collateral',
           field: 'collateral',
           type: 'number',
           formatFn: this.baseAmountFormat,
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'Total Debt',
           field: 'debt',
           type: 'number',
           formatFn: this.baseAmountFormat,
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'Borrowers',
           field: 'borrowersCount',
           type: 'number',
           formatFn: this.normalFormat,
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'Collateral Available',
           field: 'collateralAvailable',
           type: 'number',
           formatFn: this.baseAmountFormat,
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'Lending Cap',
           field: 'fill',
           type: 'percentage',
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'Available Rune',
           field: 'availableRune',
           type: 'number',
           formatFn: this.baseAmountFormat,
-          tdClass: 'mono'
-        }
-      ]
+          tdClass: 'mono',
+        },
+      ],
     }
   },
   computed: {
-    lendingSettings () {
+    lendingSettings() {
       if (!this.mimir) {
         return []
       }
@@ -162,74 +206,98 @@ export default {
       return [
         [
           {
-            ...this.parseConstant('PauseLoans', { filter: v => v ? 'Yes' : 'No' }),
+            ...this.parseConstant('PauseLoans', {
+              filter: (v) => (v ? 'Yes' : 'No'),
+            }),
             filter: true,
-            extraInfo: 'Ability to pause opening/closing loans'
+            extraInfo: 'Ability to pause opening/closing loans',
           },
           {
             ...this.parseConstant('LoanRepaymentMaturity'),
-            extraInfo: 'Specifies how long a loan must be open before it can be closed'
-          }
+            extraInfo:
+              'Specifies how long a loan must be open before it can be closed',
+          },
         ],
         [
           {
-            ...this.parseConstant('MinCR', { filter: v => `${this.$options.filters.percent(v / 1e4, 2)}` }),
+            ...this.parseConstant('MinCR', {
+              filter: (v) => `${this.$options.filters.percent(v / 1e4, 2)}`,
+            }),
             name: 'Minimum Collateral Ratio',
-            filter: true
+            filter: true,
           },
           {
-            ...this.parseConstant('MaxCR', { filter: v => `${this.$options.filters.percent(v / 1e4, 2)}` }),
+            ...this.parseConstant('MaxCR', {
+              filter: (v) => `${this.$options.filters.percent(v / 1e4, 2)}`,
+            }),
             name: 'Maximum Collateral Ratio',
-            filter: true
+            filter: true,
           },
           {
-            ...this.parseConstant('LendingLever', { filter: v => `${this.$options.filters.percent(v / 1e4, 2)}` }),
-            extraInfo: 'Determines the risk profile the protocol is willing to take',
-            filter: true
-          }
+            ...this.parseConstant('LendingLever', {
+              filter: (v) => `${this.$options.filters.percent(v / 1e4, 2)}`,
+            }),
+            extraInfo:
+              'Determines the risk profile the protocol is willing to take',
+            filter: true,
+          },
         ],
         [
           {
-            ...this.parseConstant('LENDING-THOR-BTC', { filter: v => v ? 'Yes' : 'No' }),
+            ...this.parseConstant('LENDING-THOR-BTC', {
+              filter: (v) => (v ? 'Yes' : 'No'),
+            }),
             name: 'Enable Lending on BTC',
-            filter: true
+            filter: true,
           },
           {
-            ...this.parseConstant('LENDING-THOR-ETH', { filter: v => v ? 'Yes' : 'No' }),
+            ...this.parseConstant('LENDING-THOR-ETH', {
+              filter: (v) => (v ? 'Yes' : 'No'),
+            }),
             name: 'Enable Lending on ETH',
-            filter: true
+            filter: true,
           },
           {
-            ...this.parseConstant('LENDING-THOR-ATOM', { filter: v => v ? 'Yes' : 'No' }),
+            ...this.parseConstant('LENDING-THOR-ATOM', {
+              filter: (v) => (v ? 'Yes' : 'No'),
+            }),
             name: 'Enable Lending on ATOM',
-            filter: true
+            filter: true,
           },
           {
-            ...this.parseConstant('LENDING-THOR-AVAX', { filter: v => v ? 'Yes' : 'No' }),
+            ...this.parseConstant('LENDING-THOR-AVAX', {
+              filter: (v) => (v ? 'Yes' : 'No'),
+            }),
             name: 'Enable Lending on AVAX',
-            filter: true
-          }
+            filter: true,
+          },
         ],
         [
           {
-            ...this.parseConstant('LENDING-THOR-BNB', { filter: v => v ? 'Yes' : 'No' }),
+            ...this.parseConstant('LENDING-THOR-BNB', {
+              filter: (v) => (v ? 'Yes' : 'No'),
+            }),
             name: 'Enable Lending on BNB',
-            filter: true
+            filter: true,
           },
           {
-            ...this.parseConstant('LENDING-THOR-BCH', { filter: v => v ? 'Yes' : 'No' }),
+            ...this.parseConstant('LENDING-THOR-BCH', {
+              filter: (v) => (v ? 'Yes' : 'No'),
+            }),
             name: 'Enable Lending on BCH',
-            filter: true
+            filter: true,
           },
           {
-            ...this.parseConstant('LENDING-THOR-DOGE', { filter: v => v ? 'Yes' : 'No' }),
+            ...this.parseConstant('LENDING-THOR-DOGE', {
+              filter: (v) => (v ? 'Yes' : 'No'),
+            }),
             name: 'Enable Lending on DOGE',
-            filter: true
-          }
-        ]
+            filter: true,
+          },
+        ],
       ]
     },
-    healthScore () {
+    healthScore() {
       if (!this.borrowers || this.borrowers < 2) {
         return undefined
       }
@@ -238,9 +306,11 @@ export default {
       for (let i = 0; i < this.borrowers.length; i++) {
         totalCollateralInRune += this.borrowers[i].collateralPoolInRune
       }
-      return (this.maxRuneSupply - this.currentRuneSupply) / totalCollateralInRune
+      return (
+        (this.maxRuneSupply - this.currentRuneSupply) / totalCollateralInRune
+      )
     },
-    pctFull () {
+    pctFull() {
       if (!this.borrowers || this.borrowers < 2) {
         return undefined
       }
@@ -249,9 +319,13 @@ export default {
         totalCollateralInRune += this.borrowers[i].collateralPoolInRune
       }
 
-      return totalCollateralInRune / ((this.maxRuneSupply - this.currentRuneSupply) / (10000 / (this.mimir.LENDINGLEVER ?? 3333)))
+      return (
+        totalCollateralInRune /
+        ((this.maxRuneSupply - this.currentRuneSupply) /
+          (10000 / (this.mimir.LENDINGLEVER ?? 3333)))
+      )
     },
-    collateralValue () {
+    collateralValue() {
       let totalCollateralInRune = 0
       for (let i = 0; i < this.borrowers.length; i++) {
         totalCollateralInRune += this.borrowers[i].collateralPoolInRune
@@ -259,16 +333,16 @@ export default {
 
       return totalCollateralInRune / 1e8
     },
-    totalDebt () {
+    totalDebt() {
       let debtInRune = 0
       for (let i = 0; i < this.borrowers.length; i++) {
         debtInRune += this.borrowers[i].debtInRune
       }
 
       return debtInRune / 1e8
-    }
+    },
   },
-  async mounted () {
+  async mounted() {
     const { data: pools } = await this.$api.getThorPools()
     this.pools = pools
 
@@ -293,60 +367,80 @@ export default {
       }
     }
     if (process.env.NETWORK === 'stagenet') {
-      this.maxRuneSupply = +(this.mimir.MAXRUNESUPPLY) ?? 100000000000000
+      this.maxRuneSupply = +this.mimir.MAXRUNESUPPLY ?? 100000000000000
     }
-    const totalRuneForProtocol = ((this.mimir.LENDINGLEVER ?? 3333) / 10000) * (this.maxRuneSupply - this.currentRuneSupply)
+    const totalRuneForProtocol =
+      ((this.mimir.LENDINGLEVER ?? 3333) / 10000) *
+      (this.maxRuneSupply - this.currentRuneSupply)
 
-    const totalBalanceRune = this.pools.filter(e => e.asset === 'BTC.BTC' || e.asset === 'ETH.ETH')
-      .map(e => e.balance_rune).reduce((a, c) => a + (+c), 0)
+    const totalBalanceRune = this.pools
+      .filter((e) => e.asset === 'BTC.BTC' || e.asset === 'ETH.ETH')
+      .map((e) => e.balance_rune)
+      .reduce((a, c) => a + +c, 0)
 
-    const lendingPools = ['BTC.BTC', 'ETH.ETH', 'AVAX.AVAX', 'GAIA.ATOM', 'BNB.BNB', 'BCH.BCH', 'DOGE.DOGE']
+    const lendingPools = [
+      'BTC.BTC',
+      'ETH.ETH',
+      'AVAX.AVAX',
+      'GAIA.ATOM',
+      'BNB.BNB',
+      'BCH.BCH',
+      'DOGE.DOGE',
+    ]
 
     try {
       for (const p of lendingPools) {
         const { data: bs } = await this.$api.getBorrowers(p)
-        const poolData = this.pools.find(e => e.asset === p)
-        const collateralPoolInRune = (poolData.loan_collateral * (+poolData.balance_rune / +poolData.balance_asset))
+        const poolData = this.pools.find((e) => e.asset === p)
+        const collateralPoolInRune =
+          poolData.loan_collateral *
+          (+poolData.balance_rune / +poolData.balance_asset)
 
         if (!bs || poolData.loan_collateral === '0') {
           continue
         }
 
-        bs.map(b => ({
+        bs.map((b) => ({
           ...b,
           collateral: +b.collateral_current,
-          debt: +b.debt_current
+          debt: +b.debt_current,
         }))
 
-        const res = bs.reduce((ac, cv, i, brs) => {
-          const debt = +cv.debt_current
+        const res = bs.reduce(
+          (ac, cv, i, brs) => {
+            const debt = +cv.debt_current
 
-          return {
-            debt: ac.debt + debt,
-            borrowersCount: ac.borrowersCount + 1
+            return {
+              debt: ac.debt + debt,
+              borrowersCount: ac.borrowersCount + 1,
+            }
+          },
+          {
+            collateral: 0,
+            debt: 0,
+            borrowersCount: 0,
           }
-        },
-        {
-          collateral: 0,
-          debt: 0,
-          borrowersCount: 0
-        })
+        )
 
         this.borrowers.push({
           ...res,
           collateral: poolData.loan_collateral,
           pool: poolData.asset,
-          availableRune: (poolData.balance_rune / totalBalanceRune) * totalRuneForProtocol,
-          fill: collateralPoolInRune / ((poolData.balance_rune / totalBalanceRune) * totalRuneForProtocol),
+          availableRune:
+            (poolData.balance_rune / totalBalanceRune) * totalRuneForProtocol,
+          fill:
+            collateralPoolInRune /
+            ((poolData.balance_rune / totalBalanceRune) * totalRuneForProtocol),
           collateralPoolInRune,
-          debtInRune: res.debt * (this.torPool.balance_rune / this.torPool.balance_asset),
-          collateralAvailable: poolData.loan_collateral_remaining
+          debtInRune:
+            res.debt * (this.torPool.balance_rune / this.torPool.balance_asset),
+          collateralAvailable: poolData.loan_collateral_remaining,
         })
       }
     } catch (error) {
       console.error('borrower not found', error)
     }
-  }
+  },
 }
 </script>
 
@@ -364,7 +458,7 @@ export default {
 
   span {
     display: block;
-    font-size: .9rem;
+    font-size: 0.9rem;
   }
 }
 

@@ -7,38 +7,63 @@
             <div class="action bubble-container grey">
               {{ tx.type | capitalize }}
             </div>
-            <div :class="['action bubble-container blue', {'green': tx.status == 'success'}]" style="margin-top: .2rem;">
+            <div
+              :class="[
+                'action bubble-container blue',
+                { green: tx.status == 'success' },
+              ]"
+              style="margin-top: 0.2rem"
+            >
               {{ tx.status | capitalize }}
             </div>
             <div class="date">
-              {{ (new Date(tx.date/10**6)).toLocaleDateString() }}
+              {{ new Date(tx.date / 10 ** 6).toLocaleDateString() }}
             </div>
             <div class="time">
-              {{ (new Date(tx.date/10**6)).toLocaleTimeString() }}
+              {{ new Date(tx.date / 10 ** 6).toLocaleTimeString() }}
             </div>
-            <div class="since">
-              ({{ since(tx.date) }})
-            </div>
+            <div class="since">({{ since(tx.date) }})</div>
           </div>
           <div class="tx-content">
             <div class="tx-in">
               <div v-for="(t, j) in tx.in" :key="j" class="tx-contain">
                 <div>
-                  <div class="bubble-container">
-                    In
-                  </div>
-                  <div v-if="t.coins[0] && checkSynth(t.coins[0].asset)" class="bubble-container yellow">
+                  <div class="bubble-container">In</div>
+                  <div
+                    v-if="t.coins[0] && checkSynth(t.coins[0].asset)"
+                    class="bubble-container yellow"
+                  >
                     Synth
                   </div>
-                  <a v-if="t.txID" class="tx" @click="gotoTx(t.txID)">{{ showTx(t.txID) }}</a>
+                  <a v-if="t.txID" class="tx" @click="gotoTx(t.txID)">{{
+                    showTx(t.txID)
+                  }}</a>
                 </div>
                 <!-- in coin -->
-                <div v-if="t.coins[0]" style="display: flex; align-items: center;">
-                  <img class="asset-icon" :src="assetImage(t.coins[0].asset)" alt="in-coin" @error="imgErr">
-                  <span style="line-height: 1.2rem; margin-left: .4rem">{{ (t.coins[0].amount/1e8).toFixed(8) }} {{ t.coins[0].asset | shortSymbol }}</span>
+                <div
+                  v-if="t.coins[0]"
+                  style="display: flex; align-items: center"
+                >
+                  <img
+                    class="asset-icon"
+                    :src="assetImage(t.coins[0].asset)"
+                    alt="in-coin"
+                    @error="imgErr"
+                  />
+                  <span style="line-height: 1.2rem; margin-left: 0.4rem"
+                    >{{ (t.coins[0].amount / 1e8).toFixed(8) }}
+                    {{ t.coins[0].asset | shortSymbol }}</span
+                  >
                 </div>
                 <!-- address -->
-                <a v-if="t.address" class="address" @click="gotoAddr(t.address)">{{ t.address.slice(0,4)+'...'+t.address.slice(end=-4) }}</a>
+                <a
+                  v-if="t.address"
+                  class="address"
+                  @click="gotoAddr(t.address)"
+                  >{{
+                    t.address.slice(0, 4) + '...' + t.address.slice((end = -4))
+                  }}</a
+                >
               </div>
             </div>
             <!-- check pending status -->
@@ -47,20 +72,41 @@
               <div v-for="(t, j) in tx.out" :key="j" class="tx-contain">
                 <!-- out coin -->
                 <div>
-                  <div class="bubble-container blue">
-                    Out
-                  </div>
-                  <div v-if="checkSynth(t.coins[0] && t.coins[0].asset)" class="bubble-container yellow">
+                  <div class="bubble-container blue">Out</div>
+                  <div
+                    v-if="checkSynth(t.coins[0] && t.coins[0].asset)"
+                    class="bubble-container yellow"
+                  >
                     Synth
                   </div>
-                  <a v-if="t.txID" class="tx" @click="gotoTx(t.txID)">{{ showTx(t.txID) }}</a>
+                  <a v-if="t.txID" class="tx" @click="gotoTx(t.txID)">{{
+                    showTx(t.txID)
+                  }}</a>
                 </div>
-                <div v-if="t.coins[0]" style="display: flex; align-items: center;">
-                  <img class="asset-icon" :src="assetImage(t.coins[0].asset)" alt="out-coin" @error="imgErr">
-                  <span style="line-height: 1.2rem; margin-left: .4rem">{{ (t.coins[0].amount/1e8).toFixed(8) }} {{ t.coins[0].asset | shortSymbol }}</span>
+                <div
+                  v-if="t.coins[0]"
+                  style="display: flex; align-items: center"
+                >
+                  <img
+                    class="asset-icon"
+                    :src="assetImage(t.coins[0].asset)"
+                    alt="out-coin"
+                    @error="imgErr"
+                  />
+                  <span style="line-height: 1.2rem; margin-left: 0.4rem"
+                    >{{ (t.coins[0].amount / 1e8).toFixed(8) }}
+                    {{ t.coins[0].asset | shortSymbol }}</span
+                  >
                 </div>
                 <!-- address -->
-                <a v-if="t.address" class="address" @click="gotoAddr(t.address)">{{ t.address.slice(0,4)+'...'+t.address.slice(end=-4) }}</a>
+                <a
+                  v-if="t.address"
+                  class="address"
+                  @click="gotoAddr(t.address)"
+                  >{{
+                    t.address.slice(0, 4) + '...' + t.address.slice((end = -4))
+                  }}</a
+                >
               </div>
             </div>
           </div>
@@ -87,21 +133,31 @@ import rightArrow from '~/assets/images/arrow-small-right.svg?inline'
 export default {
   components: {
     rightArrow,
-    BounceLoader
+    BounceLoader,
   },
   filters: {
-    shortSymbol (assetStr) {
+    shortSymbol(assetStr) {
       if (assetStr?.includes('-')) {
         const assetStrSplit = assetStr.split('-')
-        if (assetStrSplit[1].length > 8) { return assetStrSplit[0] + '-' + assetStrSplit[1].slice(0, 4) + '...' + assetStrSplit[1].slice(-4) } else { return assetStr }
+        if (assetStrSplit[1].length > 8) {
+          return (
+            assetStrSplit[0] +
+            '-' +
+            assetStrSplit[1].slice(0, 4) +
+            '...' +
+            assetStrSplit[1].slice(-4)
+          )
+        } else {
+          return assetStr
+        }
       } else {
         return assetStr
       }
-    }
+    },
   },
   props: ['txs', 'loading'],
   methods: {
-    assetImage (assetStr) {
+    assetImage(assetStr) {
       try {
         return AssetImage(assetStr) ?? require('~/assets/images/unknown.png')
       } catch (e) {
@@ -109,22 +165,25 @@ export default {
         return require('~/assets/images/unknown.png')
       }
     },
-    showTx (txID) {
-      if (txID === '0000000000000000000000000000000000000000000000000000000000000000') {
+    showTx(txID) {
+      if (
+        txID ===
+        '0000000000000000000000000000000000000000000000000000000000000000'
+      ) {
         return 'Internal Tx'
       }
       return `${txID.slice(0, 4)}...${txID.slice(-4)}`
     },
-    gotoAddr (address) {
+    gotoAddr(address) {
       this.$router.push({ path: `/address/${address}` })
     },
-    imgErr (e) {
+    imgErr(e) {
       e.target.src = require('~/assets/images/unknown.png')
     },
-    since (date) {
+    since(date) {
       return moment(date / 1e6).fromNow()
-    }
-  }
+    },
+  },
 }
 </script>
 
@@ -138,7 +197,7 @@ export default {
 
   @include lg {
     border-width: 1px;
-    border-radius: .5rem;
+    border-radius: 0.5rem;
   }
 
   .loading {
@@ -161,8 +220,10 @@ export default {
       border-bottom: none;
     }
 
-    .since, .date, .time {
-      font-size: .875rem;
+    .since,
+    .date,
+    .time {
+      font-size: 0.875rem;
     }
 
     .tx-header {
@@ -174,7 +235,7 @@ export default {
       }
 
       .date {
-        margin-top: .5rem;
+        margin-top: 0.5rem;
       }
     }
 
@@ -182,19 +243,19 @@ export default {
       display: flex;
       flex: 1;
       border: 1px solid var(--border-color);
-      border-radius: .5rem;
+      border-radius: 0.5rem;
       margin-left: 2rem;
 
       > * {
         color: var(--sec-font-color);
-        padding: .7rem;
+        padding: 0.7rem;
         flex: 1 1 50%;
       }
 
       .tx {
         cursor: pointer;
         color: var(--primary-color);
-        margin-left: .2rem;
+        margin-left: 0.2rem;
         display: inline-block;
       }
 
@@ -235,7 +296,6 @@ export default {
         border-radius: 50%;
       }
     }
-
   }
 }
 
@@ -245,7 +305,8 @@ export default {
   gap: 10px;
 }
 
-.tx-out .tx-contain:not(:first-of-type), .tx-in .tx-contain:not(:first-of-type) {
+.tx-out .tx-contain:not(:first-of-type),
+.tx-in .tx-contain:not(:first-of-type) {
   border-top: 1px solid var(--border-color);
   padding-top: 0.8rem;
 }

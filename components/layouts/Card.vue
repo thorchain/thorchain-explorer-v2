@@ -1,21 +1,30 @@
 <template>
-  <div :class="['card-container', {'loading-container': isLoading}, extraClass]">
+  <div
+    :class="['card-container', { 'loading-container': isLoading }, extraClass]"
+  >
     <BounceLoader v-if="isLoading" color="var(--font-color)" size="3rem" />
     <template v-else>
-      <div v-if="title" :class="[{ 'has-extra': $slots.header }, 'card-header']">
+      <div
+        v-if="title"
+        :class="[{ 'has-extra': $slots.header }, 'card-header']"
+      >
         <div class="header-title-section">
-          <img v-if="imgSrc" class="stat-image" :src="imgSrc">
+          <img v-if="imgSrc" class="stat-image" :src="imgSrc" />
           <h2 class="card-header-title">
             {{ title }}
           </h2>
         </div>
         <slot name="header" />
       </div>
-      <div v-else-if="navs" class="card-header" :style="{padding: '0 1rem'}">
+      <div v-else-if="navs" class="card-header" :style="{ padding: '0 1rem' }">
         <div
           v-for="(nav, i) in navs"
           :key="i"
-          :class="['nav-section', 'card-header-title', {'active': actNav == nav.value}]"
+          :class="[
+            'nav-section',
+            'card-header-title',
+            { active: actNav == nav.value },
+          ]"
           @click="$emit('update:actNav', nav.value)"
         >
           {{ nav.title }}
@@ -37,19 +46,25 @@ import { mapMutations } from 'vuex'
 
 export default {
   components: {
-    BounceLoader
+    BounceLoader,
   },
-  props: ['imgSrc', 'title', 'isLoading', 'extraClass', 'fullscreen', 'navs', 'actNav'],
+  props: [
+    'imgSrc',
+    'title',
+    'isLoading',
+    'extraClass',
+    'fullscreen',
+    'navs',
+    'actNav',
+  ],
   emits: ['update'],
   methods: {
-    ...mapMutations([
-      'toggleFullscreen'
-    ])
+    ...mapMutations(['toggleFullscreen']),
   },
   mode: {
     prop: 'actNav',
-    event: 'update'
-  }
+    event: 'update',
+  },
 }
 </script>
 
@@ -107,7 +122,7 @@ export default {
       color: var(--font-color);
       border-bottom: 1px solid transparent;
       margin-right: 1rem;
-      padding: 1rem .1rem;
+      padding: 1rem 0.1rem;
 
       &.active {
         color: var(--sec-font-color);
@@ -141,7 +156,7 @@ export default {
 
   .card-body {
     flex: 1;
-    padding: .75rem;
+    padding: 0.75rem;
     .row-item {
       justify-content: space-between;
       display: flex;
@@ -152,12 +167,12 @@ export default {
         color: var(--sec-font-color);
 
         .header {
-          font-size: .975rem;
+          font-size: 0.975rem;
         }
 
         .timestamp {
           color: var(--font-color);
-          font-size: .75rem;
+          font-size: 0.75rem;
         }
       }
 
@@ -171,7 +186,7 @@ export default {
         > span {
           white-space: nowrap;
           word-break: keep-all;
-          font-size: .875rem;
+          font-size: 0.875rem;
           color: var(--sec-font-color);
 
           .value {
@@ -188,7 +203,7 @@ export default {
     .hr-space {
       margin-top: 0.75rem;
       margin-bottom: 0.75rem;
-      opacity: .75;
+      opacity: 0.75;
       height: 0;
       border: 0;
       border-top: 1px solid var(--border-color);

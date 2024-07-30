@@ -155,4 +155,4 @@ export const CoinIconsFromTrustWallet = {
   XRPBULL: 'XRPBULL-E7C',
   XTZ: 'XTZ-F7A',
   ZEBI: 'ZEBI-84F',
-};
+}

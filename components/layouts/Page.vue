@@ -1,9 +1,9 @@
 <template>
-  <div :class="['page-container', {'fluid': fluid}]">
+  <div :class="['page-container', { fluid: fluid }]">
     <slot v-if="!error" />
     <Card v-else>
       <div class="page-error-container">
-        <img src="@/assets/images/error.png" alt="error image">
+        <img src="@/assets/images/error.png" alt="error image" />
         <h3>Can't fetch the data, please try again later.</h3>
       </div>
     </Card>
@@ -12,7 +12,7 @@
 
 <script>
 export default {
-  props: ['error', 'fluid']
+  props: ['error', 'fluid'],
 }
 </script>
 

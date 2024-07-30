@@ -5,43 +5,43 @@ export default {
   head: {
     title: 'THORChain Network Explorer',
     htmlAttrs: {
-      lang: 'en'
+      lang: 'en',
     },
     meta: [
       { charset: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, height=device-height,  initial-scale=1.0, user-scalable=no;user-scalable=0;' },
+      {
+        name: 'viewport',
+        content:
+          'width=device-width, height=device-height,  initial-scale=1.0, user-scalable=no;user-scalable=0;',
+      },
       { hid: 'description', name: 'description', content: '' },
-      { name: 'format-detection', content: 'telephone=no' }
+      { name: 'format-detection', content: 'telephone=no' },
     ],
-    link: [
-      { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
-    ]
+    link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
   },
 
   loading: {
     color: 'var(--primary-color)',
-    height: '4px'
+    height: '4px',
   },
 
   router: {
-    extendRoutes (routes, resolve) {
+    extendRoutes(routes, resolve) {
       routes.push(
         {
           path: '/pools/savers',
-          redirect: '/thorfi/savers'
+          redirect: '/thorfi/savers',
         },
         {
           path: '/assets',
-          redirect: '/thorfi/synths'
+          redirect: '/thorfi/synths',
         }
       )
-    }
+    },
   },
 
   // Global CSS: https://go.nuxtjs.dev/config-css
-  css: [
-    '@/assets/styles/main.scss'
-  ],
+  css: ['@/assets/styles/main.scss'],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
@@ -49,21 +49,21 @@ export default {
     '@/plugins/vue-filters',
     '@/plugins/floating-vue',
     '@/plugins/vgt',
-    '@/api/index.js'
+    '@/api/index.js',
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
   components: [
     {
-      path: '~/components'
+      path: '~/components',
     },
     {
-      path: '~/components/layouts'
+      path: '~/components/layouts',
     },
     {
       path: '~/components/page_components',
-      ignore: '*.vue'
-    }
+      ignore: '*.vue',
+    },
   ],
 
   // Modules for dev and build (recommended): https://go.nuxtjs.dev/config-modules
@@ -72,28 +72,25 @@ export default {
     '@nuxtjs/style-resources',
     '@nuxtjs/dotenv',
     '@nuxtjs/svg',
-    '@nuxtjs/composition-api/module'
+    '@nuxtjs/composition-api/module',
   ],
 
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
     // https://go.nuxtjs.dev/axios
-    '@nuxtjs/axios'
+    '@nuxtjs/axios',
   ],
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
-    transpile: [/echarts/, /zrender/]
+    transpile: [/echarts/, /zrender/],
   },
 
   styleResources: {
-    scss: [
-      './assets/styles/_colors.scss',
-      '@/assets/styles/_breakpoints.scss'
-    ]
+    scss: ['./assets/styles/_colors.scss', '@/assets/styles/_breakpoints.scss'],
   },
 
   env: {
-    NETWORK: process.env.NETWORK || 'mainnet'
-  }
+    NETWORK: process.env.NETWORK || 'mainnet',
+  },
 }

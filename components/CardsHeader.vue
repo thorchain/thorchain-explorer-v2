@@ -1,12 +1,27 @@
 <template>
-  <div v-show="tableGeneralStats && tableGeneralStats.length > 0" class="header-class">
-    <div v-for="(stat, i) in tableGeneralStats" :key="i" class="table-stat-card">
+  <div
+    v-show="tableGeneralStats && tableGeneralStats.length > 0"
+    class="header-class"
+  >
+    <div
+      v-for="(stat, i) in tableGeneralStats"
+      :key="i"
+      class="table-stat-card"
+    >
       <div class="name">
         {{ stat.name }}
-        <unknown-icon v-if="stat.description" v-tooltip="stat.description" class="header-icon" />
+        <unknown-icon
+          v-if="stat.description"
+          v-tooltip="stat.description"
+          class="header-icon"
+        />
       </div>
       <div v-if="stat.change" class="stat-change">
-        <progress-icon :data-number="stat.change" :is-down="stat.isDown" size="1rem" />
+        <progress-icon
+          :data-number="stat.change"
+          :is-down="stat.isDown"
+          size="1rem"
+        />
       </div>
       <skeleton-item :loading="!stat.value" class="value">
         {{ stat.value }}
@@ -20,7 +35,7 @@ import UnknownIcon from '~/assets/images/unknown.svg?inline'
 
 export default {
   components: {
-    UnknownIcon
+    UnknownIcon,
   },
   props: {
     tableGeneralStats: {
@@ -31,8 +46,8 @@ export default {
       type: Boolean,
       default: false,
     },
-  }
-};
+  },
+}
 </script>
 
 <style lang="scss" scoped>

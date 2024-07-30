@@ -20,7 +20,7 @@ import {
   getMemberDetails,
   getSaverDetails,
   earningLastDay,
-  getBorrowerDetails
+  getBorrowerDetails,
 } from './midgard.api'
 import {
   getRunePoolProviders,
@@ -60,11 +60,9 @@ import {
   getDerivedPoolDetail,
   getTradeAsset,
   getTradeAssets,
-  getRunePool
+  getRunePool,
 } from './thornode.api'
-import {
-  getTendermintLatestBlocks
-} from './tendermint.api'
+import { getTendermintLatestBlocks } from './tendermint.api'
 import {
   getDashboardData,
   getDashboardPlots,
@@ -75,13 +73,13 @@ import {
   getPoolsHistory,
   getOldPoolsHistory,
   getSaversInfo,
-  getRunePoolsInfo
+  getRunePoolsInfo,
 } from './middleware.api'
 import {
   getChurnHistory,
   getFlipTVL,
   getRunePrice,
-  getDailySwap
+  getDailySwap,
 } from './insights.api'
 import endpoints from './endpoints'
 export var $axiosInstace
@@ -223,7 +221,7 @@ export default function ({ $axios }, inject) {
     getTradeAsset,
     getTradeAssets,
     getRunePool,
-    getRunePoolsInfo
+    getRunePoolsInfo,
   }
 
   inject('api', api)

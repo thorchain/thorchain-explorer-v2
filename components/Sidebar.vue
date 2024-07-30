@@ -1,5 +1,5 @@
 <template>
-  <div class="side-bar-container" :class="{'menu': menu}">
+  <div class="side-bar-container" :class="{ menu: menu }">
     <div class="header">
       <div class="logo-wrapper">
         <ThorchainLogo class="logo" />
@@ -45,7 +45,10 @@
       </div>
       <div id="externalMenu">
         <transition name="fade-up">
-          <div v-show="showExternalMenu" class="simple-card normal external-menu">
+          <div
+            v-show="showExternalMenu"
+            class="simple-card normal external-menu"
+          >
             <a href="https://x.com/THORChain" target="_blank">
               <XLogo class="social-icon" />
               <span>X</span>
@@ -54,7 +57,10 @@
               <DiscordLogo class="social-icon" />
               <span>Discord</span>
             </a>
-            <a href="https://github.com/thorchain/thorchain-explorer-v2" target="_blank">
+            <a
+              href="https://github.com/thorchain/thorchain-explorer-v2"
+              target="_blank"
+            >
               <GithubLogo class="social-icon" />
               <span>Github</span>
             </a>
@@ -126,9 +132,9 @@ export default {
     CrossIcon,
     chartSelected,
     chartUnselected,
-    Question
+    Question,
   },
-  data () {
+  data() {
     return {
       showExternalMenu: false,
       sidebarLists: [
@@ -136,63 +142,61 @@ export default {
           name: 'Overview',
           unicon: 'appsUnselected',
           icon: 'appsSelected',
-          link: '/dashboard'
+          link: '/dashboard',
         },
         {
           name: 'Nodes',
           unicon: 'layersUnselected',
           icon: 'layersSelected',
-          link: '/nodes'
+          link: '/nodes',
         },
         {
           name: 'Network',
           unicon: 'vectorUnselected',
           icon: 'vectorSelected',
-          link: '/network'
+          link: '/network',
         },
         {
           name: 'Transactions',
           unicon: 'exchangeUnselected',
           icon: 'exchangeSelected',
-          link: '/transactions'
+          link: '/transactions',
         },
         {
           name: 'Pools',
           unicon: 'swimmerUnselected',
           icon: 'swimmerSelected',
-          link: '/pools'
+          link: '/pools',
         },
         {
           name: 'THORFi',
           unicon: 'financeUnselected',
           icon: 'financeSelected',
-          link: '/thorfi'
+          link: '/thorfi',
         },
         {
           name: 'Vaults',
           unicon: 'shieldUnselected',
           icon: 'shieldSelected',
-          link: '/vaults'
+          link: '/vaults',
         },
-        (
-          process.env.NETWORK === 'mainnet'
-            ? {
-                name: 'Insights',
-                unicon: 'chartUnselected',
-                icon: 'chartSelected',
-                link: '/insights'
-              }
-            : false
-        )
-      ]
+        process.env.NETWORK === 'mainnet'
+          ? {
+              name: 'Insights',
+              unicon: 'chartUnselected',
+              icon: 'chartSelected',
+              link: '/insights',
+            }
+          : false,
+      ],
     }
   },
   computed: {
     ...mapGetters({
-      menu: 'getIsMenuOn'
-    })
+      menu: 'getIsMenuOn',
+    }),
   },
-  mounted () {
+  mounted() {
     window.addEventListener('click', (e) => {
       if (
         !document.getElementById('externalMenu')?.contains(e.target) &&
@@ -203,13 +207,11 @@ export default {
     })
   },
   methods: {
-    ...mapMutations([
-      'toggleMenu'
-    ]),
-    toggleExternal () {
+    ...mapMutations(['toggleMenu']),
+    toggleExternal() {
       this.showExternalMenu = !this.showExternalMenu
-    }
-  }
+    },
+  },
 }
 </script>
 
@@ -235,7 +237,7 @@ export default {
       justify-content: space-between;
       align-items: center;
       font-family: 'Exo 2';
-      font-size: .875rem;
+      font-size: 0.875rem;
 
       .logo {
         width: 1.5rem;
@@ -352,7 +354,7 @@ export default {
   @include lg {
     grid-template-columns: 1fr;
     grid-template-rows: 64px 1fr 64px;
-    grid-template-areas: "header" "sidebar" "footer";
+    grid-template-areas: 'header' 'sidebar' 'footer';
 
     .header {
       grid-area: header;
@@ -424,16 +426,18 @@ export default {
     }
 
     span {
-      font-family: "Exo 2";
+      font-family: 'Exo 2';
     }
   }
 
   @include olg {
     grid-template-columns: 4rem;
     grid-template-rows: 64px 1fr 64px;
-    grid-template-areas: "header" "sidebar" "footer";
+    grid-template-areas: 'header' 'sidebar' 'footer';
 
-    .sidebar-text, .footer-wrapper, .thorchain-name {
+    .sidebar-text,
+    .footer-wrapper,
+    .thorchain-name {
       display: none;
     }
 
@@ -492,7 +496,7 @@ export default {
       border-radius: 0.2rem;
       margin: 0 0.2rem;
       gap: 10px;
-      font-family: "Exo 2";
+      font-family: 'Exo 2';
       font-size: 0.8rem;
 
       .social-icon {
@@ -510,9 +514,9 @@ export default {
 
 .sidebar-popover {
   background: var(--bg-color);
-  padding: .5rem;
-  border-radius: .5rem;
-  margin-left: .5rem;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  margin-left: 0.5rem;
   border: 1px solid var(--border-color);
   display: none;
 

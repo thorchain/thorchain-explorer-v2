@@ -1,80 +1,67 @@
 <template>
-  <Card :is-loading="!pool" class="pool-container" :title="pool && pool.asset" :img-src="pool && assetImage(pool.asset)">
+  <Card
+    :is-loading="!pool"
+    class="pool-container"
+    :title="pool && pool.asset"
+    :img-src="pool && assetImage(pool.asset)"
+  >
     <template v-if="pool">
       <div class="pool-overview">
         <div class="pool-detail-header">
           <div class="item">
-            <div class="header">
-              Asset Price
-            </div>
+            <div class="header">Asset Price</div>
             <div class="value">
-              {{
-                (Number.parseFloat(pool.assetPriceUSD)) | currency
-              }}
+              {{ Number.parseFloat(pool.assetPriceUSD) | currency }}
             </div>
           </div>
           <div class="item">
-            <div class="header">
-              Pool APY
-            </div>
+            <div class="header">Pool APY</div>
             <div class="value">
               {{ Number.parseFloat(pool.poolAPY) | percent }}
             </div>
           </div>
           <div class="item">
-            <div class="header">
-              Status
-            </div>
+            <div class="header">Status</div>
             <div class="value">
               {{ pool.status | capitalize }}
             </div>
           </div>
           <div class="item">
-            <div class="header">
-              Asset Depth
-            </div>
+            <div class="header">Asset Depth</div>
             <div class="value">
-              {{ (pool.assetDepth / 10 ** 8) | number("0,0") }}
+              {{ (pool.assetDepth / 10 ** 8) | number('0,0') }}
               <span style="font-size: 0.7rem">{{
                 assetString(pool.asset)
               }}</span>
             </div>
           </div>
           <div class="item">
-            <div class="header">
-              Rune Depth
-            </div>
+            <div class="header">Rune Depth</div>
             <div class="value">
-              {{ (pool.runeDepth / 10 ** 8) | number("0,0") }}
+              {{ (pool.runeDepth / 10 ** 8) | number('0,0') }}
               <span style="font-size: 0.7rem">THOR.RUNE</span>
             </div>
           </div>
           <div class="item">
-            <div class="header">
-              Units
-            </div>
+            <div class="header">Units</div>
             <div class="value">
-              {{ (pool.units / 10 ** 8) | number("0,0.00") }}
+              {{ (pool.units / 10 ** 8) | number('0,0.00') }}
             </div>
           </div>
           <div v-if="poolDetail" class="item">
-            <div class="header">
-              Pending Inbound RUNE
-            </div>
+            <div class="header">Pending Inbound RUNE</div>
             <div class="value">
               {{
-                (poolDetail.pending_inbound_rune / 10 ** 8) | number("0,0.00")
+                (poolDetail.pending_inbound_rune / 10 ** 8) | number('0,0.00')
               }}
               <span style="font-size: 0.7rem">THOR.RUNE</span>
             </div>
           </div>
           <div v-if="poolDetail" class="item">
-            <div class="header">
-              Pending Inbound asset
-            </div>
+            <div class="header">Pending Inbound asset</div>
             <div class="value">
               {{
-                (poolDetail.pending_inbound_asset / 10 ** 8) | number("0,0.00")
+                (poolDetail.pending_inbound_asset / 10 ** 8) | number('0,0.00')
               }}
               <span style="font-size: 0.7rem">
                 {{ assetString(pool.asset) }}
@@ -82,15 +69,13 @@
             </div>
           </div>
           <div v-if="poolDetail" class="item">
-            <div class="header">
-              Synth Supply
-            </div>
+            <div class="header">Synth Supply</div>
             <div class="value">
-              {{ (poolDetail.synth_supply / 10 ** 8) | number("0,0.00") }}
+              {{ (poolDetail.synth_supply / 10 ** 8) | number('0,0.00') }}
             </div>
           </div>
         </div>
-        <div style="margin: 1rem 0;">
+        <div style="margin: 1rem 0">
           <VChart
             :option="volumeHistory"
             :loading="!volumeHistory"
@@ -126,7 +111,7 @@ import {
   TitleComponent,
   TooltipComponent,
   LegendComponent,
-  GridComponent
+  GridComponent,
 } from 'echarts/components'
 import VChart from 'vue-echarts'
 import { AssetImage } from '~/classes/assetImage'
@@ -137,36 +122,38 @@ use([
   LineChart,
   TitleComponent,
   TooltipComponent,
-  LegendComponent
+  LegendComponent,
 ])
 
 export default {
   components: {
-    VChart
+    VChart,
   },
-  async asyncData ({ params }) {
+  async asyncData({ params }) {
     return { poolName: params.poolName }
   },
   methods: {
-    assetImage (assetStr) {
+    assetImage(assetStr) {
       try {
         return AssetImage(assetStr) ?? require('~/assets/images/unknown.png')
       } catch (error) {
         return require('~/assets/images/unknown.png')
       }
     },
-    assetString (assetStr) {
+    assetString(assetStr) {
       const { chain, ticker } = assetFromString(assetStr)
       return `${chain}.${ticker}`
     },
-    formatVol (d) {
+    formatVol(d) {
       const xAxis = []
       const av = []
       const wv = []
       const tv = []
       d?.intervals.forEach((interval) => {
         xAxis.push(
-          moment(Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3).format('MM/DD')
+          moment(
+            Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
+          ).format('MM/DD')
         )
         av.push(
           (+interval.addLiquidityVolume * +interval.runePriceUSD) / 10 ** 8
@@ -182,40 +169,40 @@ export default {
       })
 
       return this.basicChartFormat(
-        value => `$ ${this.normalFormat(value)}`,
+        (value) => `$ ${this.normalFormat(value)}`,
         [
           {
             type: 'line',
             name: 'Total Liquidity Change',
             showSymbol: false,
             data: tv,
-            smooth: true
+            smooth: true,
           },
           {
             type: 'line',
             name: 'Add Liquidity Volume',
             showSymbol: false,
             data: av,
-            smooth: true
+            smooth: true,
           },
           {
             type: 'line',
             name: 'Withdraw Liquidity Volume',
             showSymbol: false,
             data: wv,
-            smooth: true
-          }
+            smooth: true,
+          },
         ],
         xAxis
       )
-    }
+    },
   },
   computed: {
     ...mapGetters({
-      runePrice: 'getRunePrice'
-    })
+      runePrice: 'getRunePrice',
+    }),
   },
-  mounted () {
+  mounted() {
     this.$api
       .getPoolStats(this.poolName)
       .then((res) => {
@@ -228,55 +215,55 @@ export default {
                 {
                   name: 'To Asset Fees',
                   value: Number.parseInt(res.data?.toAssetFees) / 10 ** 8,
-                  usdValue: true
+                  usdValue: true,
                 },
                 {
                   name: 'To RUNE Fees',
                   value: Number.parseInt(res.data?.toRuneFees) / 10 ** 8,
-                  usdValue: true
+                  usdValue: true,
                 },
                 {
                   name: 'Total Fees',
                   value: Number.parseInt(res.data?.totalFees) / 10 ** 8,
-                  usdValue: true
-                }
+                  usdValue: true,
+                },
               ],
               [
                 {
                   name: 'To Asset Count',
-                  value: Number.parseInt(res.data?.toAssetCount)
+                  value: Number.parseInt(res.data?.toAssetCount),
                 },
                 {
                   name: 'To RUNE Count',
-                  value: Number.parseInt(res.data?.toRuneCount)
+                  value: Number.parseInt(res.data?.toRuneCount),
                 },
                 {
                   name: 'Swap Count',
-                  value: Number.parseInt(res.data?.swapCount)
+                  value: Number.parseInt(res.data?.swapCount),
                 },
                 {
                   name: 'Unique Swapper Count',
-                  value: Number.parseInt(res.data?.uniqueSwapperCount)
-                }
+                  value: Number.parseInt(res.data?.uniqueSwapperCount),
+                },
               ],
               [
                 {
                   name: 'To Asset Volume',
                   value: Number.parseInt(res.data?.toAssetVolume) / 10 ** 8,
-                  usdValue: true
+                  usdValue: true,
                 },
                 {
                   name: 'To RUNE Volume',
                   value: Number.parseInt(res.data?.toRuneVolume) / 10 ** 8,
-                  usdValue: true
+                  usdValue: true,
                 },
                 {
                   name: 'Swap Volume',
                   value: Number.parseInt(res.data?.swapVolume) / 10 ** 8,
-                  usdValue: true
-                }
-              ]
-            ]
+                  usdValue: true,
+                },
+              ],
+            ],
           },
           {
             header: 'Deposit',
@@ -284,19 +271,19 @@ export default {
               [
                 {
                   name: 'Add Liquidity Count',
-                  value: Number.parseInt(res.data?.addLiquidityCount)
+                  value: Number.parseInt(res.data?.addLiquidityCount),
                 },
                 {
                   name: 'Unique Member Count',
-                  value: Number.parseInt(res.data?.uniqueMemberCount)
+                  value: Number.parseInt(res.data?.uniqueMemberCount),
                 },
                 {
                   name: 'Loss Protection Paid',
                   value:
                     Number.parseInt(res.data?.impermanentLossProtectionPaid) /
                     10 ** 8,
-                  usdValue: true
-                }
+                  usdValue: true,
+                },
               ],
               [
                 {
@@ -304,22 +291,22 @@ export default {
                   value:
                     Number.parseInt(res.data?.addAssetLiquidityVolume) /
                     10 ** 8,
-                  usdValue: true
+                  usdValue: true,
                 },
                 {
                   name: 'Add RUNE Liquidity Volume',
                   value:
                     Number.parseInt(res.data?.addRuneLiquidityVolume) / 10 ** 8,
-                  usdValue: true
+                  usdValue: true,
                 },
                 {
                   name: 'Add Liquidity Volume',
                   value:
                     Number.parseInt(res.data?.addLiquidityVolume) / 10 ** 8,
-                  usdValue: true
-                }
-              ]
-            ]
+                  usdValue: true,
+                },
+              ],
+            ],
           },
           {
             header: 'Withdraw',
@@ -327,33 +314,33 @@ export default {
               [
                 {
                   name: 'Withdraw Count',
-                  value: Number.parseInt(res.data?.withdrawCount)
-                }
+                  value: Number.parseInt(res.data?.withdrawCount),
+                },
               ],
               [
                 {
                   name: 'Withdraw Asset Volume',
                   value:
                     Number.parseInt(res.data?.withdrawAssetVolume) / 10 ** 8,
-                  usdValue: true
+                  usdValue: true,
                 },
                 {
                   name: 'Withdraw RUNE Volume',
                   value:
                     Number.parseInt(res.data?.withdrawRuneVolume) / 10 ** 8,
-                  usdValue: true
+                  usdValue: true,
                 },
                 {
                   name: 'Withdraw Volume',
                   value: Number.parseInt(res.data?.withdrawVolume) / 10 ** 8,
-                  usdValue: true
-                }
-              ]
-            ]
-          }
+                  usdValue: true,
+                },
+              ],
+            ],
+          },
         ]
       })
-      .catch(e => console.error(e))
+      .catch((e) => console.error(e))
 
     this.$api
       .getPoolDetail(this.poolName)
@@ -373,7 +360,7 @@ export default {
         console.error(e)
       })
   },
-  data () {
+  data() {
     return {
       pool: undefined,
       poolStats: [],
@@ -382,10 +369,10 @@ export default {
       showLoading: {
         color: 'var(--primary-color)',
         textColor: 'var(--primary-color)',
-        maskColor: 'var(--card-bg-color)'
-      }
+        maskColor: 'var(--card-bg-color)',
+      },
     }
-  }
+  },
 }
 </script>
 

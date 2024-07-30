@@ -13,24 +13,24 @@ import PooledView from './pools/components/pooledView.vue'
 
 export default {
   components: { PooledView },
-  data () {
+  data() {
     return {
       navItems: [
         {
           text: 'Pools',
-          link: '/pools'
+          link: '/pools',
         },
         {
           text: 'Pool Earnings',
-          link: '/pools/earnings'
+          link: '/pools/earnings',
         },
         {
           text: 'TVL by Chain',
-          link: '/pools/tvl'
-        }
-      ]
+          link: '/pools/tvl',
+        },
+      ],
     }
-  }
+  },
 }
 </script>
 
@@ -39,11 +39,11 @@ export default {
   margin-bottom: 1rem;
 
   a {
-    padding: .5rem .7rem;
-    margin: 0 .1rem;
+    padding: 0.5rem 0.7rem;
+    margin: 0 0.1rem;
     color: var(--font-color);
     text-decoration: none;
-    border-radius: .3rem;
+    border-radius: 0.3rem;
 
     &:first-of-type {
       margin-left: 0;

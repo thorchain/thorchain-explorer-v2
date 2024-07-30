@@ -7,18 +7,18 @@
       <div class="overview-box">
         <div class="stats-container">
           <div>
-            <span>
-              Amount:
-            </span>
-            <span v-if="totalSumAmount" class="total-swaps mono" style="padding-right: 1rem;">
+            <span> Amount: </span>
+            <span
+              v-if="totalSumAmount"
+              class="total-swaps mono"
+              style="padding-right: 1rem"
+            >
               {{ formatCurrency(totalSumAmount) }}
             </span>
             <span v-else>-</span>
           </div>
           <div>
-            <span>
-              Count:
-            </span>
+            <span> Count: </span>
             <span class="total-swaps mono">{{ streamingSwaps.length }}</span>
           </div>
         </div>
@@ -36,7 +36,7 @@
               <asset-icon :asset="o.inputAsset.asset" />
               <span class="asset-name">
                 {{
-                  $options.filters.number(o.inputAsset.amount / 1e8, "0,0.0000")
+                  $options.filters.number(o.inputAsset.amount / 1e8, '0,0.0000')
                 }}
                 <small class="asset-text sec-color">{{
                   o.inputAsset.asset
@@ -50,7 +50,7 @@
                 <template v-if="o.outputAsset.amount">{{
                   $options.filters.number(
                     o.outputAsset.amount / 1e8,
-                    "0,0.0000"
+                    '0,0.0000'
                   )
                 }}</template>
                 <small class="asset-text sec-color">
@@ -59,33 +59,54 @@
               </span>
             </div>
           </div>
-          <small v-if="o.tx_id" class="sec-color mono" style="margin-left: auto">
-            <NuxtLink v-if="isValidTx(o.tx_id)" class="clickable" :to="{ path: `/tx/${o.tx_id}` }">
+          <small
+            v-if="o.tx_id"
+            class="sec-color mono"
+            style="margin-left: auto"
+          >
+            <NuxtLink
+              v-if="isValidTx(o.tx_id)"
+              class="clickable"
+              :to="{ path: `/tx/${o.tx_id}` }"
+            >
               {{ formatAddress(o.tx_id) }}
             </NuxtLink>
           </small>
         </div>
 
         <div class="extra-info">
-          <progress-bar v-if="o.quantity > 0" :width="(o.count / o.quantity) * 100" height="4px" />
+          <progress-bar
+            v-if="o.quantity > 0"
+            :width="(o.count / o.quantity) * 100"
+            height="4px"
+          />
           <small style="white-space: nowrap">
             {{ $options.filters.percent(o.count / o.quantity) }}
           </small>
         </div>
 
-        <small style="margin-top: 5px">{{ o.interval }} Blocks / Swap
-          <span class="sec-color"><small style="color: var(--font-color)">(ETA </small>
+        <small style="margin-top: 5px"
+          >{{ o.interval }} Blocks / Swap
+          <span class="sec-color"
+            ><small style="color: var(--font-color)">(ETA </small>
             {{ o.remaningETA }}
-            <small style="color: var(--font-color)">, Remaining swaps: {{ o.quantity - o.count }}</small>
+            <small style="color: var(--font-color)"
+              >, Remaining swaps: {{ o.quantity - o.count }}</small
+            >
             <small style="color: var(--font-color)">)</small>
           </span>
         </small>
       </div>
-      <hr :key="i + '-hr'" class="hr-space">
+      <hr :key="i + '-hr'" class="hr-space" />
     </template>
 
     <template v-if="streamingSwaps.length > perPage" #footer>
-      <b-pagination v-model="currentPage" class="center" :total-rows="streamingSwaps.length" :per-page="perPage" />
+      <b-pagination
+        v-model="currentPage"
+        class="center"
+        :total-rows="streamingSwaps.length"
+        :per-page="perPage"
+      />
     </template>
   </Card>
 </template>
@@ -98,7 +119,7 @@ import streamingIcon from '@/assets/images/streaming.svg?inline'
 
 export default {
   components: { streamingIcon },
-  data () {
+  data() {
     return {
       currentPage: 1,
       noStreaming: false,
@@ -106,35 +127,35 @@ export default {
       streamingSwaps: [],
       intervalId: undefined,
       perPage: 7,
-      totalSumAmount: 0
+      totalSumAmount: 0,
     }
   },
   computed: {
-    filteredStreamingSwaps () {
+    filteredStreamingSwaps() {
       return this.streamingSwaps.slice(
         (this.currentPage - 1) * this.perPage,
         this.currentPage * this.perPage
       )
     },
     ...mapGetters({
-      pools: 'getPools'
-    })
+      pools: 'getPools',
+    }),
   },
   watch: {
-    pools (n, o) {
+    pools(n, o) {
       this.updateStreamingSwap()
-    }
+    },
   },
-  mounted () {
+  mounted() {
     this.intervalId = setInterval(() => {
       this.updateStreamingSwap()
     }, 10000)
   },
-  destroyed () {
+  destroyed() {
     clearInterval(this.intervalId)
   },
   methods: {
-    async updateStreamingSwap () {
+    async updateStreamingSwap() {
       this.noStreaming = false
       const resData = (await this.$api.getStreamingSwaps()).data
 
@@ -158,13 +179,14 @@ export default {
 
         for (let i = 0; i < resData.length; i++) {
           const swap = { ...resData[i] } // Clone swap data
-          const swapDetails = (await this.$api.getTxStatus(resData[i].tx_id)).data // Fetch swap details
+          const swapDetails = (await this.$api.getTxStatus(resData[i].tx_id))
+            .data // Fetch swap details
 
           const txAsset = swapDetails?.tx
           if (txAsset && txAsset.coins.length > 0) {
             swap.inputAsset = {
               asset: txAsset.coins[0].asset,
-              amount: txAsset.coins[0].amount
+              amount: txAsset.coins[0].amount,
             }
           }
 
@@ -178,28 +200,28 @@ export default {
                 nonRUNE = true
               }
               swap.outputAsset = {
-                asset: outAsset
+                asset: outAsset,
               }
             }
           }
 
           const outAsset = swapDetails?.out_txs
           if (outAsset && outAsset.length > 0) {
-            const oa = outAsset.map(o => ({
+            const oa = outAsset.map((o) => ({
               asset: o.coins[0]?.asset,
-              amount: o.coins[0].amount
+              amount: o.coins[0].amount,
             }))
             const tmpOut = {
               amount: 0,
               asset: '',
-              new: false
+              new: false,
             }
-            if (oa.every(a => a.asset === 'THOR.RUNE') && !nonRUNE) {
+            if (oa.every((a) => a.asset === 'THOR.RUNE') && !nonRUNE) {
               tmpOut.amount = oa.reduce((a, b) => Math.max(+a, +b), -Infinity)
               tmpOut.asset = oa[0].asset
               tmpOut.new = true
             } else {
-              const nonRuneAsset = oa.find(a => a.asset !== 'THOR.RUNE')
+              const nonRuneAsset = oa.find((a) => a.asset !== 'THOR.RUNE')
               if (nonRuneAsset) {
                 tmpOut.amount = nonRuneAsset.amount
                 tmpOut.asset = nonRuneAsset.asset
@@ -208,7 +230,7 @@ export default {
               if (tmpOut.new) {
                 swap.outputAsset = {
                   asset: tmpOut.asset,
-                  amount: tmpOut.amount
+                  amount: tmpOut.amount,
                 }
               }
             }
@@ -219,7 +241,7 @@ export default {
             if (nonRUNE && plannedAsset[0].coin.asset !== 'THOR.RUNE') {
               swap.outputAsset = {
                 asset: plannedAsset[0].coin?.asset,
-                amount: plannedAsset[0].coin?.amount
+                amount: plannedAsset[0].coin?.amount,
               }
             }
           }
@@ -245,18 +267,20 @@ export default {
         this.noStreaming = true
         this.loading = false
       }
-    }
-  }
+    },
+  },
 }
 </script>
 
 <style lang="scss" scoped>
 .custom-card {
   background-color: var(--bg-color);
-  border-radius: .5rem;
+  border-radius: 0.5rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   color: var(--font-color);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
   margin-bottom: 1rem;
   border: 1px solid var(--border-color) !important;
 
@@ -300,7 +324,7 @@ export default {
 
   div {
     flex: 1;
-    padding: .4rem;
+    padding: 0.4rem;
     margin: 0;
     animation: slideIn 0.5s ease;
 

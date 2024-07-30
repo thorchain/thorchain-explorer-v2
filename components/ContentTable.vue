@@ -25,8 +25,12 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(t, idx) in table.content" :key="idx" @click="$emit('gotoNode', table.addresses[idx])">
-            <td v-for="(item, i) in t" :key="idx+'t'+i">
+          <tr
+            v-for="(t, idx) in table.content"
+            :key="idx"
+            @click="$emit('gotoNode', table.addresses[idx])"
+          >
+            <td v-for="(item, i) in t" :key="idx + 't' + i">
               {{ item }}
             </td>
           </tr>
@@ -39,7 +43,7 @@
 <script>
 export default {
   name: 'ContentTable',
-  props: ['header', 'stats', 'table']
+  props: ['header', 'stats', 'table'],
 }
 </script>
 
@@ -47,7 +51,7 @@ export default {
 .table-wrapper {
   display: flex;
   flex-direction: column;
-  border-radius: .5rem;
+  border-radius: 0.5rem;
   background-color: var(--bg-color);
   border: 1px solid var(--border-color);
 

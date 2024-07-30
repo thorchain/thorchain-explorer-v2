@@ -8,8 +8,19 @@
         </h3>
       </div>
     </div>
-    <div v-show="networkEnv === 'mainnet' && saversGeneralStats && saversGeneralStats.length > 0" class="savers-stat-header">
-      <div v-for="(stat, i) in computedSaversGeneralStats" :key="i" class="savers-stat-card">
+    <div
+      v-show="
+        networkEnv === 'mainnet' &&
+        saversGeneralStats &&
+        saversGeneralStats.length > 0
+      "
+      class="savers-stat-header"
+    >
+      <div
+        v-for="(stat, i) in computedSaversGeneralStats"
+        :key="i"
+        class="savers-stat-card"
+      >
         <div class="value">
           {{ stat.value }}
         </div>
@@ -21,9 +32,7 @@
     </div>
     <Nav
       :is-link="true"
-      :nav-items="[
-        {link: `/savers/${poolName}`, text: 'Savers Overview'},
-      ]"
+      :nav-items="[{ link: `/savers/${poolName}`, text: 'Savers Overview' }]"
     />
     <div v-if="saversExtraData">
       <nuxt-child keep-alive :savers-data="saversExtraData" />
@@ -35,57 +44,68 @@
 import { mapGetters } from 'vuex'
 
 export default {
-  asyncData ({ params }) {
+  asyncData({ params }) {
     return { poolName: params.poolName }
   },
-  data () {
+  data() {
     return {
       error: false,
       saversGeneralStats: [],
-      saversExtraData: undefined
+      saversExtraData: undefined,
     }
   },
   computed: {
     ...mapGetters({
-      runePrice: 'getRunePrice'
+      runePrice: 'getRunePrice',
     }),
-    networkEnv () {
+    networkEnv() {
       return process.env.NETWORK
     },
-    computedSaversGeneralStats () {
-      return this.saversGeneralStats.filter(s => !s.hide)
-    }
+    computedSaversGeneralStats() {
+      return this.saversGeneralStats.filter((s) => !s.hide)
+    },
   },
-  async mounted () {
-    const saversExtraData = (await this.$api.getSaversInfo()).data[this.poolName]?.savers
-    if (!saversExtraData) { this.error = true }
+  async mounted() {
+    const saversExtraData = (await this.$api.getSaversInfo()).data[
+      this.poolName
+    ]?.savers
+    if (!saversExtraData) {
+      this.error = true
+    }
     this.saversExtraData = saversExtraData
     this.updateGeneralStats(saversExtraData)
   },
   methods: {
-    updateGeneralStats (saversExtraData) {
+    updateGeneralStats(saversExtraData) {
       this.saversGeneralStats = [
         {
           name: 'Total Earned',
-          value: this.$options.filters.currency((+saversExtraData.earned * +saversExtraData.assetPriceUSD) / 1e8),
-          hide: !saversExtraData.earned
+          value: this.$options.filters.currency(
+            (+saversExtraData.earned * +saversExtraData.assetPriceUSD) / 1e8
+          ),
+          hide: !saversExtraData.earned,
         },
         {
           name: 'Total Annualised Return',
-          value: this.$options.filters.percent(saversExtraData.saversReturn, 2)
+          value: this.$options.filters.percent(saversExtraData.saversReturn, 2),
         },
         {
           name: 'Savers Count',
-          value: this.$options.filters.number(saversExtraData.saversCount, '0,0')
+          value: this.$options.filters.number(
+            saversExtraData.saversCount,
+            '0,0'
+          ),
         },
         {
           name: 'Savers Depth',
-          value: this.$options.filters.currency(((saversExtraData.saversDepth * saversExtraData.assetPriceUSD) / 1e8)),
-          extraText: `(${this.$options.filters.number(saversExtraData.saversDepth / 1e8, '0,0.00')} <small>${saversExtraData.asset}</small>)`
-        }
+          value: this.$options.filters.currency(
+            (saversExtraData.saversDepth * saversExtraData.assetPriceUSD) / 1e8
+          ),
+          extraText: `(${this.$options.filters.number(saversExtraData.saversDepth / 1e8, '0,0.00')} <small>${saversExtraData.asset}</small>)`,
+        },
       ]
-    }
-  }
+    },
+  },
 }
 </script>
 
@@ -95,11 +115,11 @@ export default {
   margin-bottom: 1rem;
 
   a {
-    padding: .5rem .7rem;
-    margin: 0 .1rem;
+    padding: 0.5rem 0.7rem;
+    margin: 0 0.1rem;
     color: var(--font-color);
     text-decoration: none;
-    border-radius: .3rem;
+    border-radius: 0.3rem;
 
     &:first-of-type {
       margin-left: 0;
@@ -151,7 +171,7 @@ h3 {
     }
 
     .extra-text {
-      font-size: .9rem;
+      font-size: 0.9rem;
       text-align: center;
     }
   }
@@ -172,7 +192,7 @@ h3 {
 
   .card-container {
     border: 1px solid var(--border-color);
-    border-radius: .5rem;
+    border-radius: 0.5rem;
     margin: auto;
   }
 
