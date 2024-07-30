@@ -1,5 +1,5 @@
 <template>
-  <Page>
+  <div>
     <cards-header :table-general-stats="synthsGeneralStats" />
     <Card title="Synth Assets" :is-loading="!(rows && rows.length > 0)">
       <vue-good-table
@@ -87,7 +87,7 @@
         </template>
       </vue-good-table>
     </Card>
-  </Page>
+  </div>
 </template>
 
 <script>
@@ -165,32 +165,14 @@ export default {
     }
   },
   computed: {
-    totalSynthSupplyUSD() {
-      return this.synthUtils.reduce((total, o) => {
-        if (o.synth_supply > 0) {
-          return total + this.amountToUSD(o.asset, o.synth_supply, this.Pools)
-        } else {
-          return total
-        }
-      }, 0)
-    },
-    totalUtilisationUSD() {
-      return this.synthUtils.reduce((total, o) => {
-        if (o.savers_depth > 0) {
-          return total + this.amountToUSD(o.asset, o.savers_depth, this.Pools)
-        } else {
-          return total
-        }
-      }, 0)
-    },
-    totalSaverPercentage() {
-      return this.totalSynthSupplyUSD > 0
-        ? this.totalUtilisationUSD / this.totalSynthSupplyUSD
-        : 0
-    },
     ...mapGetters({
-      Pools: 'getPools',
+      midgardPools: 'getPools',
     }),
+  },
+  watch: {
+    midgardPools(pools) {
+      this.updateGeneralStats(pools)
+    },
   },
   mounted() {
     if (this.synthUtils && this.synthUtils.length > 0) {
@@ -204,25 +186,63 @@ export default {
         saverPercentage: +asset?.savers_depth / +asset?.synth_supply,
         supply: +asset?.synth_supply / 10 ** 8,
       }))
-      this.updateGeneralStats()
+
+      if (this.midgardPools) {
+        this.updateGeneralStats(this.midgardPools)
+      }
     }
   },
   methods: {
-    updateGeneralStats() {
+    updateGeneralStats(pools) {
+      const totalSynthSupply = this.synthUtils.reduce((total, o) => {
+        if (o.synth_supply > 0) {
+          return total + this.amountToUSD(o.asset, o.synth_supply, pools)
+        } else {
+          return total
+        }
+      }, 0)
+
+      const totalPoolDepth = this.synthUtils.reduce((total, o) => {
+        if (o.asset_depth > 0) {
+          return total + this.amountToUSD(o.asset, o.asset_depth * 2, pools)
+        } else {
+          return total
+        }
+      }, 0)
+
+      const totalSaversDepth = this.synthUtils.reduce((total, o) => {
+        if (o.savers_depth > 0) {
+          return total + this.amountToUSD(o.asset, o.savers_depth, pools)
+        } else {
+          return total
+        }
+      }, 0)
+
       this.synthsGeneralStats = [
         {
-          name: 'Total Synth Supply:',
-          value: this.$options.filters.currency(this.totalSynthSupplyUSD),
+          name: 'Total Synth Supply',
+          value: this.$options.filters.currency(totalSynthSupply),
+          description: 'Total synth asset in the protocol',
         },
         {
-          name: 'Total Utilisation:',
-          value: this.$options.filters.currency(this.totalUtilisationUSD),
+          name: 'Total Utilisation',
+          value: this.$options.filters.percent(
+            totalSynthSupply / totalPoolDepth
+          ),
+          description: 'Total Synth Supply (USD) / Total Pool Depth (USD)',
         },
         {
-          name: 'Total Saver Percentage:',
-          value: this.$options.filters.percent(this.totalSaverPercentage),
+          name: 'Total Saver Percentage',
+          value: this.$options.filters.percent(
+            totalSaversDepth / totalSynthSupply
+          ),
+          description: 'Total Savers Depth (USD) / Total Synth Supply (USD)',
         },
-        { name: 'POL Cap:', value: this.$options.filters.percent(this.polCap) },
+        {
+          name: 'POL Cap',
+          value: this.$options.filters.percent(this.polCap),
+          description: 'POL synth per pool depth + POL Buffer',
+        },
       ]
     },
   },
