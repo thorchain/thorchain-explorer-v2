@@ -67,16 +67,6 @@
         title="Active Nodes"
         :is-loading="!activeNodes"
       >
-        <template #header>
-          <button
-            class="button-container full-screen-btn"
-            @click="toggleFullscreen"
-          >
-            <template v-if="fullscreen"> Default </template>
-            <template v-else> Full Screen </template>
-          </button>
-        </template>
-
         <vue-good-table
           v-if="activeCols && activeNodes"
           :key="1"
@@ -625,7 +615,6 @@ export default {
   computed: {
     ...mapGetters({
       runePrice: 'getRunePrice',
-      fullscreen: 'getFullScreen',
     }),
     error() {
       return !this.nodesQuery
@@ -958,9 +947,6 @@ export default {
     })
   },
   methods: {
-    toggleFullscreen() {
-      this.$store.commit('toggleFullscreen')
-    },
     async updateNodes() {
       let { data } = await this.$api.getNodes()
       data = data.sort((a, b) => a.node_address.localeCompare(b.node_address))
