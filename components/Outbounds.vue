@@ -351,6 +351,10 @@ export default {
     flex-direction: column;
     margin-left: auto;
 
+    justify-content: center;
+    min-width: 177px;
+    min-height: 48px;
+
     small {
       text-wrap: nowrap;
       text-overflow: ellipsis;
