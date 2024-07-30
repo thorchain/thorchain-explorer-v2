@@ -1,13 +1,13 @@
 <template>
   <div class="toggle-container">
-    <input id="switch" type="checkbox" :checked="checked">
+    <input id="switch" type="checkbox" :checked="checked" />
     <label for="switch">Toggle</label>
   </div>
 </template>
 
 <script>
 export default {
-  props: ['checked']
+  props: ['checked'],
 }
 </script>
 
@@ -15,7 +15,7 @@ export default {
 .toggle-container {
   display: flex;
 
-  input[type=checkbox]{
+  input[type='checkbox'] {
     height: 0;
     width: 0;
     visibility: hidden;

@@ -1,9 +1,6 @@
 <template>
   <Page>
-    <Nav
-      :is-link="true"
-      :nav-items="routes"
-    />
+    <Nav :is-link="true" :nav-items="routes" />
     <div>
       <nuxt-child keep-alive />
     </div>
@@ -12,31 +9,31 @@
 
 <script>
 export default {
-  data () {
+  data() {
     return {
       routes: [
         {
           link: '/thorfi/savers',
-          text: 'Savers'
+          text: 'Savers',
         },
         {
           link: '/thorfi/synths',
-          text: 'Synths'
+          text: 'Synths',
         },
         {
           link: '/thorfi/trades',
-          text: 'Trade Assets'
+          text: 'Trade Assets',
         },
         {
           link: '/thorfi/runepool',
-          text: 'Rune Pool'
+          text: 'Rune Pool',
         },
         {
           link: '/thorfi/lending',
-          text: 'Lending'
-        }
-      ]
+          text: 'Lending',
+        },
+      ],
     }
-  }
+  },
 }
 </script>

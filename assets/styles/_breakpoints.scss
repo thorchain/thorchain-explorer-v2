@@ -46,7 +46,7 @@ $screen-xl-min: 1400px;
 
 // Custom devices
 @mixin rwd($screen) {
-  @media (min-width: $screen+"px") {
+  @media (min-width: $screen+'px') {
     @content;
   }
 }

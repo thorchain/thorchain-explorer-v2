@@ -7,62 +7,82 @@ const SYNTH_DELIMITER = '/'
 const NON_SYNTH_DELIMITER = '.'
 
 // Formats time in seconds into `dd:hh:mm hrs`
-export function formatTime (seconds) {
+export function formatTime(seconds) {
   seconds = Number(seconds)
   const d = Math.floor(seconds / (3600 * 24))
-  const h = Math.floor(seconds % (3600 * 24) / 3600)
-  const m = Math.floor(seconds % 3600 / 60)
+  const h = Math.floor((seconds % (3600 * 24)) / 3600)
+  const m = Math.floor((seconds % 3600) / 60)
   const s = Math.floor(seconds % 60)
 
-  const comms = c => (c > 0 ? ', ' : '')
+  const comms = (c) => (c > 0 ? ', ' : '')
 
   const dDisplay = d > 0 ? d + (d === 1 ? ' day' : ' days') : ''
   const hDisplay = h > 0 ? h + (h === 1 ? ' hour' : ' hours') : ''
   const mDisplay = m > 0 ? m + (m === 1 ? ' minute' : ' minutes') : ''
   const sDisplay = s > 0 ? s + (s === 1 ? ' second' : ' seconds') : ''
-  return dDisplay + comms(d && h) + hDisplay + comms((h && m) || (d && m)) + mDisplay + comms((m && s) || (d && s) || (h && s)) + sDisplay
+  return (
+    dDisplay +
+    comms(d && h) +
+    hDisplay +
+    comms((h && m) || (d && m)) +
+    mDisplay +
+    comms((m && s) || (d && s) || (h && s)) +
+    sDisplay
+  )
 }
 
-export function blockTime (blockHeight) {
-  const val = (blockHeight) * 6
+export function blockTime(blockHeight) {
+  const val = blockHeight * 6
   return formatTime(val)
 }
 
-export function momentTimeFormat (time) {
+export function momentTimeFormat(time) {
   return moment(time).format('MM/DD/YYYY hh:mm:ss A')
 }
 
-export function isInternalTx (hash) {
+export function isInternalTx(hash) {
   if (!hash) {
     return true
   }
-  return hash === '0000000000000000000000000000000000000000000000000000000000000000' ?? false
+  return (
+    hash ===
+      '0000000000000000000000000000000000000000000000000000000000000000' ??
+    false
+  )
 }
 
-export function parseCosmosTx (ntx) {
+export function parseCosmosTx(ntx) {
   const ret = []
   ntx.tx?.body?.messages?.forEach((el) => {
-    const assetName = `THOR.${el?.amount?.length > 0 && el.amount[0]?.denom}`.toLocaleUpperCase()
+    const assetName =
+      `THOR.${el?.amount?.length > 0 && el.amount[0]?.denom}`.toLocaleUpperCase()
     // Send messages
     switch (el['@type']) {
       case '/types.MsgSend':
-
         ret.push({
           type: 'Send',
-          inout: [[[{
-            is: el?.amount[0],
-            address: el.to_address,
-            outAddress: el.from_address,
-            txID: ntx?.tx_response?.txhash,
-            asset: {
-              name: assetName,
-              amount: el?.amount[0].amount / 10 ** 8
-            }
-          }]]],
+          inout: [
+            [
+              [
+                {
+                  is: el?.amount[0],
+                  address: el.to_address,
+                  outAddress: el.from_address,
+                  txID: ntx?.tx_response?.txhash,
+                  asset: {
+                    name: assetName,
+                    amount: el?.amount[0].amount / 10 ** 8,
+                  },
+                },
+              ],
+            ],
+          ],
           gas: [+ntx?.tx_response?.gas_used / 10 ** 8 + ' ' + assetName],
-          date: moment(ntx?.tx_response.timestamp).format('MM/DD/YYYY hh:mm:ss A'),
+          date: moment(ntx?.tx_response.timestamp).format(
+            'MM/DD/YYYY hh:mm:ss A'
+          ),
           height: +ntx?.tx_response.height,
-          memo: ntx.tx?.body?.memo
+          memo: ntx.tx?.body?.memo,
         })
         break
 
@@ -70,20 +90,26 @@ export function parseCosmosTx (ntx) {
       case '/types.MsgDeposit':
         ret.push({
           type: 'Deposit/Withdraw',
-          inout: [[{
-            is: el?.amount[0],
-            address: el.signer,
-            txID: ntx?.tx_response?.txhash,
-            asset: {
-              name: assetName,
-              amount: el?.amount[0].amount / 10 ** 8
-            }
-          }]],
+          inout: [
+            [
+              {
+                is: el?.amount[0],
+                address: el.signer,
+                txID: ntx?.tx_response?.txhash,
+                asset: {
+                  name: assetName,
+                  amount: el?.amount[0].amount / 10 ** 8,
+                },
+              },
+            ],
+          ],
           gas: [+ntx?.tx_response?.gas_used / 10 ** 8 + ' ' + assetName],
           memo: el.memo,
           txID: ntx?.tx_response?.txhash,
-          date: moment(ntx?.tx_response.timestamp).format('MM/DD/YYYY, hh:mm:ss A'),
-          height: +ntx?.tx_response.height
+          date: moment(ntx?.tx_response.timestamp).format(
+            'MM/DD/YYYY, hh:mm:ss A'
+          ),
+          height: +ntx?.tx_response.height,
         })
         break
 
@@ -95,12 +121,15 @@ export function parseCosmosTx (ntx) {
   return ret[0]
 }
 
-export function parseExtraSwap (ntx) {
-  const { tx: { tx: inboundTx }, out_txs: outTxs } = ntx
+export function parseExtraSwap(ntx) {
+  const {
+    tx: { tx: inboundTx },
+    out_txs: outTxs,
+  } = ntx
   let affiliateFee
   // has affiliate fee
   if (outTxs?.length > 1 && ntx.tx?.out_hashes?.length > 1) {
-    const thorTx = outTxs?.find(e => e.chain === 'THOR')
+    const thorTx = outTxs?.find((e) => e.chain === 'THOR')
     affiliateFee = thorTx?.coins
   }
 
@@ -109,28 +138,28 @@ export function parseExtraSwap (ntx) {
     inboundHeight: ntx.tx?.external_observed_height,
     inboundGases: inboundTx?.gas,
     inSigners: ntx.tx?.signers,
-    outboundGases: outTxs?.map(e => e.gas)?.flat(),
+    outboundGases: outTxs?.map((e) => e.gas)?.flat(),
     affiliateFee,
-    txOutDelay: (ntx.outbound_height - ntx.finalised_height) * 6
+    txOutDelay: (ntx.outbound_height - ntx.finalised_height) * 6,
   }
 }
 
-function checkSynth (asset) {
+function checkSynth(asset) {
   if (!asset) {
     return false
   }
   return isSynthAsset(assetFromString(asset))
 }
 
-export function parseMidgardTx (tx) {
+export function parseMidgardTx(tx) {
   // get action
   const firstTxAction = tx.actions[0]
-  const status = tx.actions.map(t => t.status)
+  const status = tx.actions.map((t) => t.status)
 
   const res = {
     type: firstTxAction.type,
     inout: [],
-    date: (new Date(firstTxAction?.date / 10 ** 6)),
+    date: new Date(firstTxAction?.date / 10 ** 6),
     height: firstTxAction.height,
     pools: firstTxAction.pools,
     status: status.includes('success') ? 'success' : status[0],
@@ -138,7 +167,7 @@ export function parseMidgardTx (tx) {
     synth: false,
     label: [],
     inAsset: '',
-    outAsset: ''
+    outAsset: '',
   }
 
   tx.actions.forEach((txa, i) => {
@@ -156,10 +185,10 @@ export function parseMidgardTx (tx) {
           txID: t?.txID ?? '',
           asset: {
             name: t?.coins[0]?.asset,
-            amount: t?.coins[0]?.amount / 10 ** 8
+            amount: t?.coins[0]?.amount / 10 ** 8,
           },
           status: txa?.status,
-          type: txa?.type
+          type: txa?.type,
         }
       }),
       txa?.out?.map((t) => {
@@ -179,12 +208,12 @@ export function parseMidgardTx (tx) {
           txID: t?.txID ?? '',
           asset: {
             name: t?.coins[0]?.asset,
-            amount: t?.coins[0]?.amount / 10 ** 8
+            amount: t?.coins[0]?.amount / 10 ** 8,
           },
           status: txa?.status,
-          type: txa?.type
+          type: txa?.type,
         }
-      })
+      }),
     ]
 
     // ignore noop txs
@@ -201,22 +230,33 @@ export function parseMidgardTx (tx) {
   })
 
   if (firstTxAction.metadata) {
-    res.gas = firstTxAction.metadata[firstTxAction.type]?.networkFees?.map(f => (f.amount / 10 ** 8 + ' ' + f.asset))
+    res.gas = firstTxAction.metadata[firstTxAction.type]?.networkFees?.map(
+      (f) => f.amount / 10 ** 8 + ' ' + f.asset
+    )
     res.memo = firstTxAction.metadata[firstTxAction.type]?.memo
     if (res.type === 'swap') {
-      const memos = tx.actions?.map(a => a.metadata?.swap?.memo)
-      res.memo = memos.find(m => m && m !== '' && m !== 'noop')
+      const memos = tx.actions?.map((a) => a.metadata?.swap?.memo)
+      res.memo = memos.find((m) => m && m !== '' && m !== 'noop')
     }
   }
 
-  const hasAddOrWithdraw = res.inout.find(t => !!((t[0][0].type === 'addLiquidity' || t[0][0].type === 'withdrawLiquidity')))
+  const hasAddOrWithdraw = res.inout.find(
+    (t) =>
+      !!(
+        t[0][0].type === 'addLiquidity' || t[0][0].type === 'withdrawLiquidity'
+      )
+  )
   const isStreamSwap = res.type === 'swap' && res.memo.match(/.+\/\d+/g)
-  const isLoanTx = res.type === 'swap' && ['loan-', 'loan+', '$-', '$+'].includes(res.memo.split(':')[0].toLowerCase())
+  const isLoanTx =
+    res.type === 'swap' &&
+    ['loan-', 'loan+', '$-', '$+'].includes(
+      res.memo.split(':')[0].toLowerCase()
+    )
   // merge two txs one with affilitate fee
   if (res.inout.length > 1 && !hasAddOrWithdraw && !isStreamSwap && !isLoanTx) {
-    const ins = res.inout.map(e => e[0][0])
-    const hash = ins.find(e => !!e.txID).txID
-    if (ins.every(e => e.txID === hash)) {
+    const ins = res.inout.map((e) => e[0][0])
+    const hash = ins.find((e) => !!e.txID).txID
+    if (ins.every((e) => e.txID === hash)) {
       if (res.inout[0][1].length > res.inout[1][1]) {
         res.inout[0][0][0].asset.amount += res.inout[1][0][0].asset.amount
         // minBy(res.inout[0][1], e => e.asset.amount).label = 'affiliate fee'
@@ -274,10 +314,10 @@ const memoToType = {
   '$-': 'loanRepayment',
   'loan-': 'loanRepayment',
   'trade+': 'tradeDeposit',
-  'trade-': 'tradeWithdraw'
+  'trade-': 'tradeWithdraw',
 }
 
-export function parseMemoToTxType (memo) {
+export function parseMemoToTxType(memo) {
   if (!memo) {
     return 'unknown'
   }
@@ -287,7 +327,7 @@ export function parseMemoToTxType (memo) {
   return memoToType[parsedMemo]
 }
 
-export function parseThornodeStatus (ttx) {
+export function parseThornodeStatus(ttx) {
   const inboundConf = ttx?.stages?.inbound_confirmation_counted
   const txAction = ttx?.tx
   const outTx = ttx?.out_txs
@@ -305,9 +345,9 @@ export function parseThornodeStatus (ttx) {
     synth: assetFromString(ttx.tx.coins[0].asset).synth,
     label: [],
     memo: txAction.memo,
-    gas: txAction?.gas?.map(g => g.amount / 1e8 + ' ' + g.asset),
+    gas: txAction?.gas?.map((g) => g.amount / 1e8 + ' ' + g.asset),
     inAsset: ttx.tx.coins[0].asset,
-    outAsset: ''
+    outAsset: '',
   }
 
   res.inout = [
@@ -316,34 +356,36 @@ export function parseThornodeStatus (ttx) {
         {
           is: txAction?.coins[0]?.asset,
           address: txAction?.from_address ?? '',
-          txID: txAction?.id === '0000000000000000000000000000000000000000000000000000000000000000' ? '' : txAction?.id,
+          txID:
+            txAction?.id ===
+            '0000000000000000000000000000000000000000000000000000000000000000'
+              ? ''
+              : txAction?.id,
           asset: {
             name: txAction?.coins[0]?.asset,
-            amount: txAction?.coins[0]?.amount / 10 ** 8
+            amount: txAction?.coins[0]?.amount / 10 ** 8,
           },
           status: 'Success',
-          type: txType
-        }
-      ]
-    ]
+          type: txType,
+        },
+      ],
+    ],
   ]
 
   if (outTx && outTx.length > 0) {
     const ts = []
     outTx.forEach((t) => {
-      ts.push(
-        {
-          is: t?.coins[0]?.asset,
-          address: t?.to_address ?? '',
-          txID: t?.id ?? '',
-          asset: {
-            name: t?.coins[0]?.asset,
-            amount: t?.coins[0]?.amount / 10 ** 8
-          },
-          status: 'Success',
-          type: txType
-        }
-      )
+      ts.push({
+        is: t?.coins[0]?.asset,
+        address: t?.to_address ?? '',
+        txID: t?.id ?? '',
+        asset: {
+          name: t?.coins[0]?.asset,
+          amount: t?.coins[0]?.amount / 10 ** 8,
+        },
+        status: 'Success',
+        type: txType,
+      })
 
       res.outAsset = t?.coin?.asset
     })
@@ -351,19 +393,17 @@ export function parseThornodeStatus (ttx) {
   } else if (plannedTx && plannedTx.length > 0) {
     const ts = []
     plannedTx.forEach((t) => {
-      ts.push(
-        {
-          is: t?.coin?.asset,
-          address: t?.to_address ?? '',
-          txID: '',
-          asset: {
-            name: t?.coin?.asset,
-            amount: t?.coin?.amount / 10 ** 8
-          },
-          status: 'pending',
-          type: txType
-        }
-      )
+      ts.push({
+        is: t?.coin?.asset,
+        address: t?.to_address ?? '',
+        txID: '',
+        asset: {
+          name: t?.coin?.asset,
+          amount: t?.coin?.amount / 10 ** 8,
+        },
+        status: 'pending',
+        type: txType,
+      })
 
       res.outAsset = t?.coin?.asset
     })
@@ -374,23 +414,27 @@ export function parseThornodeStatus (ttx) {
   return res
 }
 
-export function synthToAsset (assetString) {
+export function synthToAsset(assetString) {
   let asset = assetFromString(assetString.toUpperCase())
 
-  if (assetString === 'rune') { asset = assetFromString('THOR.RUNE') }
+  if (assetString === 'rune') {
+    asset = assetFromString('THOR.RUNE')
+  }
 
   if (!asset) {
     return
   }
 
-  if (!isSynthAsset(asset)) { return assetToString(asset) }
+  if (!isSynthAsset(asset)) {
+    return assetToString(asset)
+  }
 
   asset.synth = false
 
   return assetToString(asset)
 }
 
-export function assetToTrade (str) {
+export function assetToTrade(str) {
   if (typeof str === 'object') {
     str = assetToString(str)
   }
@@ -398,7 +442,7 @@ export function assetToTrade (str) {
   return str.replace('.', '~')
 }
 
-export function tradeToAsset (str) {
+export function tradeToAsset(str) {
   if (typeof str === 'object') {
     str = assetToString(str)
   }
@@ -406,46 +450,73 @@ export function tradeToAsset (str) {
   return str.replace('~', '.')
 }
 
-export function curFormat (number) {
+export function curFormat(number) {
   return this.$options.filters.currency(number)
 }
 
-export function formatAsset (asset) {
-  return asset.length > 10
-    ? asset.slice(0, 14) + '...'
-    : asset
+export function formatAsset(asset) {
+  return asset.length > 10 ? asset.slice(0, 14) + '...' : asset
 }
 
-export function addressFormat (string, number = 6, isOnlyLast = false) {
-  if (!string) { return string }
-  return (isOnlyLast ? '' : (string.slice(0, number) + '...')) + string.slice(-number)
+export function addressFormat(string, number = 6, isOnlyLast = false) {
+  if (!string) {
+    return string
+  }
+  return (
+    (isOnlyLast ? '' : string.slice(0, number) + '...') + string.slice(-number)
+  )
 }
 
 let supportedChains = []
 
-export function availableChains (nodes) {
-  return compact(nodes?.map(n => n.observe_chains?.map(({ chain }) => chain).filter(chain => chain !== 'TERRA' /* disable TERRA */)
-  )).reduce((a, b) => a?.length >= b?.length ? a : b, 0)
+export function availableChains(nodes) {
+  return compact(
+    nodes?.map((n) =>
+      n.observe_chains
+        ?.map(({ chain }) => chain)
+        .filter((chain) => chain !== 'TERRA' /* disable TERRA */)
+    )
+  ).reduce((a, b) => (a?.length >= b?.length ? a : b), 0)
 }
 
-export function observeredChains (nodes) {
+export function observeredChains(nodes) {
   supportedChains = availableChains(nodes)
   const majorityHeight = {}
   for (const chain of supportedChains) {
-    const heights = countBy(nodes.map(item => item.observe_chains).filter(item => item !== null).map(item => item.filter(i => i.chain === chain)[0]?.height ?? 0), (height) => {
-      return height
-    })
-    majorityHeight[chain] = Number(Object.keys(heights).reduce((a, b) => heights[a] > heights[b] ? a : b))
+    const heights = countBy(
+      nodes
+        .map((item) => item.observe_chains)
+        .filter((item) => item !== null)
+        .map((item) => item.filter((i) => i.chain === chain)[0]?.height ?? 0),
+      (height) => {
+        return height
+      }
+    )
+    majorityHeight[chain] = Number(
+      Object.keys(heights).reduce((a, b) => (heights[a] > heights[b] ? a : b))
+    )
   }
   return majorityHeight
 }
 
-export function fillNodeData (nodes, el, chains, nodesExtra, lastBlockHeight, ratioReward, churnInterval) {
-  if (!el) { return }
+export function fillNodeData(
+  nodes,
+  el,
+  chains,
+  nodesExtra,
+  lastBlockHeight,
+  ratioReward,
+  churnInterval
+) {
+  if (!el) {
+    return
+  }
   const chainsHeight = {}
   try {
     supportedChains.forEach((chain) => {
-      chainsHeight[chain] = ((el.observe_chains.filter(item => item?.chain === chain)[0]?.height ?? 0) - chains[chain])
+      chainsHeight[chain] =
+        (el.observe_chains.filter((item) => item?.chain === chain)[0]?.height ??
+          0) - chains[chain]
     })
   } catch (error) {}
   let isp
@@ -453,16 +524,23 @@ export function fillNodeData (nodes, el, chains, nodesExtra, lastBlockHeight, ra
   if (nodesExtra && el.ip_address) {
     const node = nodesExtra[el.ip_address]
     isp = node?.isp ?? undefined
-    location = { code: node?.countryCode, region: node?.regionName, city: node?.city } ?? undefined
+    location =
+      { code: node?.countryCode, region: node?.regionName, city: node?.city } ??
+      undefined
   }
   let age
   if (lastBlockHeight) {
-    age = { number: (((lastBlockHeight - el.status_since) * 6) / 60 / 60 / 24), text: blockTime(lastBlockHeight - el.status_since) }
+    age = {
+      number: ((lastBlockHeight - el.status_since) * 6) / 60 / 60 / 24,
+      text: blockTime(lastBlockHeight - el.status_since),
+    }
   }
   let apy
   if (ratioReward) {
     const churnsInYear = 365 / ((6 * churnInterval) / (60 * 60 * 24))
-    apy = (((el.current_award / ratioReward) * churnsInYear) / el.total_bond) ?? undefined
+    apy =
+      ((el.current_award / ratioReward) * churnsInYear) / el.total_bond ??
+      undefined
   }
   nodes.push({
     address: el.node_address,
@@ -479,16 +557,16 @@ export function fillNodeData (nodes, el, chains, nodesExtra, lastBlockHeight, ra
     age,
     apy,
     score: (1e4 / el.slash_points).toFixed(4),
-    leave: el.requested_to_leave
+    leave: el.requested_to_leave,
   })
 }
 
-export function runeCur () {
+export function runeCur() {
   return AssetCurrencySymbol.RUNE
 }
 
 // derived directly from thornode `chain.go`
-export function defaultCoinBase (chain) {
+export function defaultCoinBase(chain) {
   switch (chain) {
     case 'BTC':
       return 6.25
@@ -504,7 +582,7 @@ export function defaultCoinBase (chain) {
 }
 
 // derived directly from thornode `chain.go`
-export function approxBlockSeconds (chain) {
+export function approxBlockSeconds(chain) {
   switch (chain) {
     case 'BTC':
       return 600
@@ -539,10 +617,10 @@ const hashMapShorts = {
   e: 'ETH.ETH',
   g: 'GAIA.ATOM',
   l: 'LTC.LTC',
-  r: 'THOR.RUNE'
+  r: 'THOR.RUNE',
 }
 
-export function shortAssetName (name) {
+export function shortAssetName(name) {
   if (name.length !== 1) {
     return name
   }
@@ -550,7 +628,7 @@ export function shortAssetName (name) {
   return hashMapShorts[name.toLowerCase()] || name
 }
 
-export function assetFromString (s) {
+export function assetFromString(s) {
   if (typeof s === 'object') {
     return s
   }
@@ -572,7 +650,7 @@ export function assetFromString (s) {
   return { chain, symbol, ticker, address, synth: isSynth, trade: isTrade }
 }
 
-export function assetToString ({ chain, synth, trade, symbol }) {
+export function assetToString({ chain, synth, trade, symbol }) {
   let delimiter = synth ? SYNTH_DELIMITER : NON_SYNTH_DELIMITER
   delimiter = trade ? TRADE_DELIMITER : delimiter
   return `${chain}${delimiter}${symbol}`
@@ -581,35 +659,35 @@ export function assetToString ({ chain, synth, trade, symbol }) {
 const interfaces = {
   thorswap: {
     name: 'THORSwap',
-    icon: 'thorswap'
+    icon: 'thorswap',
   },
   shapeshift: {
     name: 'Shapeshift',
-    icon: 'shapeshift'
+    icon: 'shapeshift',
   },
   trustwallet: {
     name: 'Trust Wallet',
-    icon: 'trustwallet'
+    icon: 'trustwallet',
   },
   thorwallet: {
     name: 'THORWallet',
-    icon: 'thorwallet'
+    icon: 'thorwallet',
   },
   xdefi: {
     name: 'XDEFI',
-    icon: 'xdefi'
+    icon: 'xdefi',
   },
   asgardex: {
-    name: 'ASGARDEX'
+    name: 'ASGARDEX',
   },
   lifi: {
     name: 'LIFI',
-    icon: 'lifi'
+    icon: 'lifi',
   },
   edge: {
     name: 'Edge Wallet',
-    icon: 'edge'
-  }
+    icon: 'edge',
+  },
 }
 
 export const affiliateMap = {
@@ -630,10 +708,10 @@ export const affiliateMap = {
   xdf: interfaces.xdefi,
   dx: interfaces.asgardex,
   lifi: interfaces.lifi,
-  ej: interfaces.edge
+  ej: interfaces.edge,
 }
 
-export function getExplorerAddressUrl (chain, query) {
+export function getExplorerAddressUrl(chain, query) {
   switch (chain) {
     case 'BCH':
       return `https://www.blockchain.com/explorer/addresses/bch/${query}`

@@ -55,7 +55,7 @@
         <div v-if="o.coin" class="asset-item">
           <asset-icon :asset="o.coin.asset" />
           <span class="asset-name">
-            {{ $options.filters.number(o.coin.amount / 1e8, "0,0.0000") }}
+            {{ $options.filters.number(o.coin.amount / 1e8, '0,0.0000') }}
             <small class="asset-text sec-color">{{ o.coin.asset }}</small>
           </span>
           <div v-if="o.label" class="mini-bubble info">
@@ -63,10 +63,8 @@
           </div>
         </div>
         <div class="extra-right">
-          <small
-            v-if="o.to_address"
-            class="mono"
-          >To
+          <small v-if="o.to_address" class="mono"
+            >To
             <NuxtLink
               class="clickable"
               :to="{ path: `/address/${o.to_address}` }"
@@ -74,10 +72,8 @@
               {{ formatAddress(o.to_address) }}
             </NuxtLink>
           </small>
-          <small
-            v-if="o.in_hash && o.label !== 'migrate'"
-            class="mono"
-          >In TxID
+          <small v-if="o.in_hash && o.label !== 'migrate'" class="mono"
+            >In TxID
             <NuxtLink class="clickable" :to="{ path: `/tx/${o.in_hash}` }">
               {{ formatAddress(o.in_hash) }}
             </NuxtLink>
@@ -90,7 +86,7 @@
           </div>
         </div>
       </div>
-      <hr :key="i + '-hr'" class="hr-space">
+      <hr :key="i + '-hr'" class="hr-space" />
     </template>
     <template v-if="outbounds.length > 10" #footer>
       <b-pagination
@@ -111,7 +107,7 @@ import ArrowToDown from '~/assets/images/arrow-down.svg?inline'
 
 export default {
   components: { scheduleIcon, ArrowToDown },
-  data () {
+  data() {
     return {
       currentPage: 1,
       noOutnound: false,
@@ -119,37 +115,36 @@ export default {
       outbounds: [],
       intervalId: undefined,
       outData: [],
-      schData: []
+      schData: [],
     }
   },
   computed: {
-    filteredOutbounds () {
+    filteredOutbounds() {
       return this.outbounds.slice(
         (this.currentPage - 1) * 10,
         this.currentPage * 10
       )
     },
-    totalOutboundValue () {
+    totalOutboundValue() {
       return this.outData.reduce((total, o) => {
         return (
-          total + (this.amountToUSD(o.coin.asset, o.coin.amount, this.pools) || 0)
+          total +
+          (this.amountToUSD(o.coin.asset, o.coin.amount, this.pools) || 0)
         )
       }, 0)
     },
-    totalScheduledValue () {
+    totalScheduledValue() {
       return this.schData.reduce((total, o) => {
-        return (
-          total + this.amountToUSD(o.coin.asset, o.coin.amount, this.pools)
-        )
+        return total + this.amountToUSD(o.coin.asset, o.coin.amount, this.pools)
       }, 0)
     },
 
     ...mapGetters({
       chainsHeight: 'getChainsHeight',
-      pools: 'getPools'
-    })
+      pools: 'getPools',
+    }),
   },
-  mounted () {
+  mounted() {
     this.updateOutbounds()
 
     // Update the component every 20 secs
@@ -157,21 +152,21 @@ export default {
       this.updateOutbounds()
     }, 20000)
   },
-  destroyed () {
+  destroyed() {
     this.clearIntervalId(this.intervalId)
   },
   methods: {
-    async updateOutbounds () {
+    async updateOutbounds() {
       this.noOutnound = false
       const resData = []
       this.outData = (await this.$api.getOutbound()).data
       this.schData = (await this.$api.getScheduled()).data
       resData.push(
-        ...this.outData.map(s => ({
+        ...this.outData.map((s) => ({
           ...s,
-          ...(s.memo.toUpperCase().includes('MIGRATE') && { label: 'migrate' })
+          ...(s.memo.toUpperCase().includes('MIGRATE') && { label: 'migrate' }),
         })),
-        ...this.schData.map(s => ({ ...s, label: 'Scheduled' }))
+        ...this.schData.map((s) => ({ ...s, label: 'Scheduled' }))
       )
       if (!resData || resData?.length === 0) {
         this.outbounds = []
@@ -182,18 +177,17 @@ export default {
       this.outbounds = resData
       this.loading = false
     },
-    getOutboundEta (height) {
+    getOutboundEta(height) {
       if (this.chainsHeight) {
         const remHeight = height - this.chainsHeight.THOR
         return moment.duration(remHeight * 6, 'seconds').humanize()
       }
-    }
-  }
+    },
+  },
 }
 </script>
 
 <style lang="scss" scoped>
-
 .arrow-down-icon {
   width: 35px;
   margin-left: auto;
@@ -205,7 +199,9 @@ export default {
 .overview-card {
   background-color: var(--bg-color);
   border-radius: 0.5rem;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   color: var(--font-color);
   border: 1px solid var(--border-color) !important;

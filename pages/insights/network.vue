@@ -14,7 +14,7 @@
       <template slot="table-row" slot-scope="props">
         <span v-if="props.column.field == 'timestamp'">
           {{ timeFormat(props.row.timestamp) }}
-          <span style="font-size: .75rem;">
+          <span style="font-size: 0.75rem">
             ({{ fromNow(props.row.timestamp) }})
           </span>
         </span>
@@ -23,9 +23,7 @@
         </span>
       </template>
     </vue-good-table>
-    <span class="footer">
-      Powered By <strong>Multipartite</strong>
-    </span>
+    <span class="footer"> Powered By <strong>Multipartite</strong> </span>
   </Card>
 </template>
 
@@ -34,48 +32,52 @@ import moment from 'moment'
 import { momentTimeFormat } from '~/utils'
 
 export default {
-  data () {
+  data() {
     return {
       churnHistory: undefined,
       cols: [
         {
           label: 'Churn Occurred',
-          field: 'timestamp'
+          field: 'timestamp',
         },
         {
           label: 'Block ID',
           field: 'BLOCK_ID',
           type: 'number',
           tdClass: 'mono',
-          formatFn: this.normalFormat
+          formatFn: this.normalFormat,
         },
         {
           label: 'Churn Length (days)',
           field: 'DAYS_SINCE_LAST_CHURN',
           type: 'number',
-          tdClass: 'mono'
-        }
-      ]
+          tdClass: 'mono',
+        },
+      ],
     }
   },
-  mounted () {
-    this.$api.getChurnHistory().then(({ data }) => {
-      this.churnHistory = data.map(d => ({ ...d, timestamp: moment(d.BLOCK_TIMESTAMP) }))
-    }).catch((e) => {
-      console.error(e)
-    })
+  mounted() {
+    this.$api
+      .getChurnHistory()
+      .then(({ data }) => {
+        this.churnHistory = data.map((d) => ({
+          ...d,
+          timestamp: moment(d.BLOCK_TIMESTAMP),
+        }))
+      })
+      .catch((e) => {
+        console.error(e)
+      })
   },
   methods: {
-    timeFormat (time) {
+    timeFormat(time) {
       return momentTimeFormat(time)
     },
-    fromNow (time) {
+    fromNow(time) {
       return moment(time)?.fromNow()
-    }
-  }
+    },
+  },
 }
 </script>
 
-<style>
-
-</style>
+<style></style>

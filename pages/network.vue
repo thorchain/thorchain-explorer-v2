@@ -9,24 +9,24 @@
 
 <script>
 export default {
-  data () {
+  data() {
     return {
       navItems: [
         {
           text: 'Network',
-          link: '/network'
+          link: '/network',
         },
         {
           text: 'Network Settings',
-          link: '/network/settings'
+          link: '/network/settings',
         },
         {
           text: 'Mimir Votes',
-          link: '/network/votes'
-        }
-      ]
+          link: '/network/votes',
+        },
+      ],
     }
-  }
+  },
 }
 </script>
 
@@ -35,11 +35,11 @@ export default {
   margin-bottom: 1rem;
 
   a {
-    padding: .5rem .7rem;
-    margin: 0 .1rem;
+    padding: 0.5rem 0.7rem;
+    margin: 0 0.1rem;
     color: var(--font-color);
     text-decoration: none;
-    border-radius: .3rem;
+    border-radius: 0.3rem;
 
     &:first-of-type {
       margin-left: 0;

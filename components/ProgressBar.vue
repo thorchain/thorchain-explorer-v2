@@ -1,6 +1,9 @@
 <template>
   <div class="progress-wrapper" :style="vars">
-    <div class="progress-bar" :style="{'width': width + '%', backgroundColor: color}" />
+    <div
+      class="progress-bar"
+      :style="{ width: width + '%', backgroundColor: color }"
+    />
     <span v-if="extraText" class="progress-text">{{ extraText }}</span>
   </div>
 </template>
@@ -9,12 +12,12 @@
 export default {
   props: ['width', 'height', 'extraText', 'color'],
   computed: {
-    vars () {
+    vars() {
       return {
-        '--bar-height': this.height ?? '10px'
+        '--bar-height': this.height ?? '10px',
       }
-    }
-  }
+    },
+  },
 }
 </script>
 
@@ -39,7 +42,7 @@ export default {
     justify-content: center;
     color: var(--sec-font-color);
     margin-top: var(--bar-height);
-    font-size: .875rem;
+    font-size: 0.875rem;
   }
 }
 </style>

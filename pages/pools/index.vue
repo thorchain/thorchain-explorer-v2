@@ -3,7 +3,11 @@
     <!-- <Nav :active-mode.sync="period" :nav-items="periods" pre-text="APY Period :" /> -->
     <Card :is-loading="loading">
       <div v-if="pools && pools.length > 0" class="pools-box">
-        <Nav :active-mode.sync="tableMode" :nav-items="tableModeItems" :extra-classes="['pools-type-table']" />
+        <Nav
+          :active-mode.sync="tableMode"
+          :nav-items="tableModeItems"
+          :extra-classes="['pools-type-table']"
+        />
         <template v-for="(k, v, i) in tables">
           <vue-good-table
             v-if="k.data.length > 0"
@@ -19,12 +23,16 @@
             }"
             :sort-options="{
               enabled: true,
-              initialSortBy: {field: 'vd', type: 'desc'}
+              initialSortBy: { field: 'vd', type: 'desc' },
             }"
             @on-row-click="gotoPoolTable"
           >
             <template slot="table-row" slot-scope="props">
-              <div v-if="props.column.field == 'asset'" v-tooltip="props.row.asset" class="cell-content">
+              <div
+                v-if="props.column.field == 'asset'"
+                v-tooltip="props.row.asset"
+                class="cell-content"
+              >
                 <AssetIcon :asset="props.row.asset" />
                 <span>{{ props.formattedRow[props.column.field] }}</span>
               </div>
@@ -36,27 +44,34 @@
               </div>
               <div v-else-if="props.column.field == 'collateral'">
                 <span v-if="props.row.collateral > 0">
-                  ${{ (props.row.collateral * props.row.price) | number('0,0.00a') }}
+                  ${{
+                    (props.row.collateral * props.row.price) | number('0,0.00a')
+                  }}
                 </span>
-                <span v-else>
-                  -
-                </span>
+                <span v-else> - </span>
               </div>
               <div v-else-if="props.column.field == 'trading'">
                 <span v-if="props.row.trading > 0">
-                  ${{ (props.row.trading) | number('0,0.00a') }}
-                  ({{  ((props.row.trading) / props.row.depth) | percent }})
+                  ${{ props.row.trading | number('0,0.00a') }} ({{
+                    (props.row.trading / props.row.depth) | percent
+                  }})
                 </span>
-                <span v-else>
-                  -
-                </span>
+                <span v-else> - </span>
               </div>
-              <div v-else-if="props.column.field == 'actions'" class="action-content">
+              <div
+                v-else-if="props.column.field == 'actions'"
+                class="action-content"
+              >
                 <drop-modal name="swap" :index="props.row.originalIndex">
                   <template #button>
                     <swap-icon />
                   </template>
-                  <a v-for="ie in interfaces" :href="ie.swap_url || ie.info_url" target="_blank" class="interface">
+                  <a
+                    v-for="ie in interfaces"
+                    :href="ie.swap_url || ie.info_url"
+                    target="_blank"
+                    class="interface"
+                  >
                     <span>{{ ie.name }}</span>
                   </a>
                 </drop-modal>
@@ -64,7 +79,12 @@
                   <template #button>
                     <finance-icon class="finance-icon" />
                   </template>
-                  <a v-for="ie in interfaces.filter(e => e.earn_url)" :href="ie.earn_url" target="_blank" class="interface">
+                  <a
+                    v-for="ie in interfaces.filter((e) => e.earn_url)"
+                    :href="ie.earn_url"
+                    target="_blank"
+                    class="interface"
+                  >
                     <span>{{ ie.name }}</span>
                   </a>
                 </drop-modal>
@@ -90,7 +110,7 @@ import { tradeToAsset } from '~/utils'
 
 export default {
   components: { SwapIcon, FinanceIcon },
-  data () {
+  data() {
     return {
       loading: false,
       error: false,
@@ -104,169 +124,186 @@ export default {
         { text: '100 Days', mode: '100d' },
         { text: '6 Months', mode: '180d' },
         { text: '1 Year', mode: '365d' },
-        { text: 'All', mode: 'all' }
+        { text: 'All', mode: 'all' },
       ],
       tableModeItems: [
         { text: 'Active Pools', mode: 'active' },
-        { text: 'Staged/Suspended Pools', mode: 'staged' }
+        { text: 'Staged/Suspended Pools', mode: 'staged' },
       ],
       tableMode: 'active',
       poolCols: [
         {
           label: 'Asset',
           field: 'asset',
-          formatFn: this.formatAsset
+          formatFn: this.formatAsset,
         },
         {
           label: 'USD Price',
           field: 'price',
           type: 'number',
           formatFn: this.curFormat,
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'Volume 24H',
           field: 'volume',
           type: 'number',
           formatFn: this.formattedPrice,
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'Depth',
           field: 'depth',
           type: 'number',
           formatFn: this.formattedPrice,
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'Trade Asset Depth',
           field: 'trading',
           type: 'number',
           formatFn: 'number',
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'Volume/Depth',
           field: 'vd',
           type: 'percentage',
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'Est. Yr. Earnings',
           field: 'estEarnings',
           type: 'number',
           formatFn: this.formattedPrice,
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'Collateral',
           field: 'collateral',
           type: 'number',
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'Swap/Save/Borrow',
           field: 'actions',
           sortable: false,
-          thClass: 'th-center'
-        }
+          thClass: 'th-center',
+        },
       ],
       pools: undefined,
       tables: {
         activeRows: {
           data: [],
-          mode: 'active'
+          mode: 'active',
         },
         standbyRows: {
           data: [],
-          mode: 'staged'
-        }
+          mode: 'staged',
+        },
       },
-      interfaces: []
+      interfaces: [],
     }
   },
   computed: {
     ...mapGetters({
-      runePrice: 'getRunePrice'
-    })
+      runePrice: 'getRunePrice',
+    }),
   },
   watch: {
-    period (period) {
+    period(period) {
       this.updatePool(period)
-    }
+    },
   },
-  mounted () {
+  mounted() {
     this.loadInterfaces()
     this.updatePool(this.period)
   },
   methods: {
-    loadInterfaces () {
+    loadInterfaces() {
       this.interfaces = shuffle(InterfacesJSON)
     },
-    updatePool (period) {
+    updatePool(period) {
       this.loading = true
-      this.$api.getPools(period).then(async ({ data }) => {
-        this.pools = data
-        const pd = await this.getDVEs()
-        const { data: tradeAssets } = await this.$api.getTradeAssets()
+      this.$api
+        .getPools(period)
+        .then(async ({ data }) => {
+          this.pools = data
+          const pd = await this.getDVEs()
+          const { data: tradeAssets } = await this.$api.getTradeAssets()
 
-        const ps = this.pools.map((p) => {
-          const pe = pd?.day.pools.find(e => e.pool === p.asset)
-          const tradeAsset = tradeAssets.find(e => tradeToAsset(e.asset) === p.asset)
+          const ps = this.pools.map((p) => {
+            const pe = pd?.day.pools.find((e) => e.pool === p.asset)
+            const tradeAsset = tradeAssets.find(
+              (e) => tradeToAsset(e.asset) === p.asset
+            )
 
-          return {
-            status: p.status,
-            price: +p.assetPriceUSD,
-            depth: ((+p.assetDepth / 10 ** 8) * p.assetPriceUSD),
-            apy: p.annualPercentageRate,
-            volume: pe ? (+pe.swapVolume / 10 ** 8) * this.runePrice : (+p.volume24h / 10 ** 8) * this.runePrice,
-            vd: pe ? (+pe.swapVolume * this.runePrice) / (+p.assetDepth * +p.assetPriceUSD) : (+p.volume24h) / ((+p.assetDepth * +p.assetPrice)),
-            asset: p.asset,
-            saversDepth: (+p.saversDepth / 10 ** 8),
-            depthToUnitsRatio: p.saversDepth ? this.$options.filters.number(+p.saversDepth / +p.saversUnits, '0.00000') : 0,
-            earning24hr: pe ? (pe.earnings * this.runePrice) / 10 ** 8 : 0,
-            estEarnings: pe ? (pe.earnings * this.runePrice * 365) / 10 ** 8 : 0,
-            collateral: (+p.totalCollateral / 1e8),
-            trading: (+tradeAsset.depth / 1e8) * p.assetPriceUSD
-          }
+            return {
+              status: p.status,
+              price: +p.assetPriceUSD,
+              depth: (+p.assetDepth / 10 ** 8) * p.assetPriceUSD,
+              apy: p.annualPercentageRate,
+              volume: pe
+                ? (+pe.swapVolume / 10 ** 8) * this.runePrice
+                : (+p.volume24h / 10 ** 8) * this.runePrice,
+              vd: pe
+                ? (+pe.swapVolume * this.runePrice) /
+                  (+p.assetDepth * +p.assetPriceUSD)
+                : +p.volume24h / (+p.assetDepth * +p.assetPrice),
+              asset: p.asset,
+              saversDepth: +p.saversDepth / 10 ** 8,
+              depthToUnitsRatio: p.saversDepth
+                ? this.$options.filters.number(
+                    +p.saversDepth / +p.saversUnits,
+                    '0.00000'
+                  )
+                : 0,
+              earning24hr: pe ? (pe.earnings * this.runePrice) / 10 ** 8 : 0,
+              estEarnings: pe
+                ? (pe.earnings * this.runePrice * 365) / 10 ** 8
+                : 0,
+              collateral: +p.totalCollateral / 1e8,
+              trading: (+tradeAsset.depth / 1e8) * p.assetPriceUSD,
+            }
+          })
+          this.sepPools(ps)
+          this.loading = false
         })
-        this.sepPools(ps)
-        this.loading = false
-      }).catch((e) => {
-        console.error(e)
-      })
+        .catch((e) => {
+          console.error(e)
+        })
     },
-    async getDVEs () {
+    async getDVEs() {
       try {
         const poolsDataDay = (await this.$api.getPoolsHistory()).data
         return {
-          day: poolsDataDay
+          day: poolsDataDay,
         }
       } catch (error) {
         return undefined
       }
     },
-    normalNumberFormat (number, filter) {
+    normalNumberFormat(number, filter) {
       return number ? this.$options.filters.number(+number, '0,0.00') : '-'
     },
-    formattedPrice (number, filter) {
+    formattedPrice(number, filter) {
       return '$' + this.$options.filters.number(number, '0.00a')
     },
-    numberFormat (number, filter) {
+    numberFormat(number, filter) {
       return this.$options.filters.number(number, '0.00a')
     },
-    curFormat (number) {
+    curFormat(number) {
       return this.$options.filters.currency(number)
     },
-    gotoPoolTable (params) {
+    gotoPoolTable(params) {
       const ac = Array.from(document.querySelectorAll('.action-section'))
       const el = params.event.srcElement
-      if (ac?.some(l => l?.contains(el))) {
+      if (ac?.some((l) => l?.contains(el))) {
         return
       }
       this.gotoPool(params.row.asset)
     },
-    sepPools (pools) {
+    sepPools(pools) {
       if (!pools && pools.length <= 0) {
         return
       }
@@ -281,8 +318,8 @@ export default {
           this.tables.standbyRows.data.push(pools[i])
         }
       }
-    }
-  }
+    },
+  },
 }
 </script>
 
@@ -308,7 +345,7 @@ export default {
 
 .action-btn {
   cursor: pointer;
-  border-radius: .5rem;
+  border-radius: 0.5rem;
   border: none;
 
   svg {
@@ -338,7 +375,7 @@ export default {
       border-radius: 0.2rem;
       margin: 0 0.2rem;
       gap: 10px;
-      font-family: "Exo 2";
+      font-family: 'Exo 2';
       font-size: 0.9rem;
       text-wrap: nowrap;
 
@@ -375,7 +412,7 @@ a.interface {
   border-radius: 0.2rem;
   margin: 0.1rem 0.2rem;
   gap: 10px;
-  font-family: "Exo 2";
+  font-family: 'Exo 2';
   font-size: 0.9rem;
   text-wrap: nowrap;
 

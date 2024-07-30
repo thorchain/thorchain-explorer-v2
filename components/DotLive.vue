@@ -4,23 +4,22 @@
 
 <script>
 export default {
-  components: {
-  },
+  components: {},
   props: ['color'],
   computed: {
-    vars () {
+    vars() {
       return {
-        '--dot-color': this.color ?? 'var(--primary-color)'
+        '--dot-color': this.color ?? 'var(--primary-color)',
       }
-    }
-  }
+    },
+  },
 }
 </script>
 
 <style>
 .dot {
-  width: .7rem;
-  height: .7rem;
+  width: 0.7rem;
+  height: 0.7rem;
   background: var(--dot-color);
   border-radius: 50%;
   position: relative;

@@ -2,9 +2,18 @@
   <Page>
     <div v-if="txs && txs.actions" class="transactions-container">
       <!-- transactions component -->
-      <drop-nav :items="navItems" :active-mode="filter" @update:activeMode="(f) => changeFilter(f)" />
+      <drop-nav
+        :items="navItems"
+        :active-mode="filter"
+        @update:activeMode="(f) => changeFilter(f)"
+      />
       <transactions :txs="txs" :loading="loading" />
-      <pagination :limit="10" :offset="offset" :count="count" @changePage="getActions" />
+      <pagination
+        :limit="10"
+        :offset="offset"
+        :count="count"
+        @changePage="getActions"
+      />
     </div>
     <loading-card v-else />
   </Page>
@@ -18,7 +27,7 @@ import LoadingCard from '~/components/layouts/LoadingCard.vue'
 export default {
   name: 'TxsPage',
   components: { Transactions, LoadingCard, DropNav },
-  data () {
+  data() {
     return {
       txs: undefined,
       offset: undefined,
@@ -32,48 +41,49 @@ export default {
           subItems: [
             {
               name: 'All',
-              value: 'allSwap'
+              value: 'allSwap',
             },
             {
               name: 'Layer Ones',
-              value: 'layerOne'
+              value: 'layerOne',
             },
             {
               name: 'Non RUNE',
-              value: 'norune'
+              value: 'norune',
             },
             {
               name: 'Non synth',
-              value: 'nosynth'
-            }
-          ]
+              value: 'nosynth',
+            },
+          ],
         },
         {
           title: 'Savers / LP',
           subItems: [
             {
               name: 'Add',
-              value: 'addLiquidity'
+              value: 'addLiquidity',
             },
             {
               name: 'Withdraw',
-              value: 'withdraw'
-            }
-          ]
+              value: 'withdraw',
+            },
+          ],
         },
         { title: 'Donate', value: 'donate' },
-        { title: 'Refund', value: 'refund' }
-      ]
+        { title: 'Refund', value: 'refund' },
+      ],
     }
   },
-  mounted () {
+  mounted() {
     this.getActions(0)
   },
   methods: {
-    getActions (offset = 0, filter = undefined) {
+    getActions(offset = 0, filter = undefined) {
       this.loading = true
       this.offset = offset
-      this.$api.getTxs(this.offset, 10, filter)
+      this.$api
+        .getTxs(this.offset, 10, filter)
         .then((res) => {
           this.txs = res.data
           this.count = res.data.count
@@ -85,7 +95,7 @@ export default {
           this.loading = false
         })
     },
-    changeFilter (type) {
+    changeFilter(type) {
       let txsType = { type: undefined }
       switch (type) {
         case 'all':
@@ -121,10 +131,9 @@ export default {
       }
       this.filter = type
       this.getActions(0, txsType)
-    }
-  }
+    },
+  },
 }
 </script>
 
-<style>
-</style>
+<style></style>

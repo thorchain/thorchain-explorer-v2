@@ -11,11 +11,20 @@
       </div>
       <div>
         <span>Period:</span>
-        <Select :options="periodOptions" :option.sync="periodOption" name="period" />
+        <Select
+          :options="periodOptions"
+          :option.sync="periodOption"
+          name="period"
+        />
       </div>
     </div>
     <div class="chart-wrapper">
-      <VChart :option="aprChart" :loading="aprLoading" :autoresize="true" :loading-options="showLoading" />
+      <VChart
+        :option="aprChart"
+        :loading="aprLoading"
+        :autoresize="true"
+        :loading-options="showLoading"
+      />
     </div>
   </Card>
 </template>
@@ -30,7 +39,7 @@ import {
   TitleComponent,
   TooltipComponent,
   LegendComponent,
-  GridComponent
+  GridComponent,
 } from 'echarts/components'
 import VChart from 'vue-echarts'
 
@@ -42,78 +51,92 @@ use([
   LineChart,
   TitleComponent,
   TooltipComponent,
-  LegendComponent
+  LegendComponent,
 ])
 
 export default {
   components: {
-    VChart
+    VChart,
   },
-  data () {
+  data() {
     return {
       periodOption: {
         label: '30 days',
-        value: 30
+        value: 30,
       },
       periodOptions: [
         {
           label: '30 days',
-          value: 30
+          value: 30,
         },
         {
           label: '60 days',
-          value: 60
+          value: 60,
         },
         {
           label: '90 days',
-          value: 90
+          value: 90,
         },
         {
           label: '180 days',
-          value: 180
-        }
+          value: 180,
+        },
       ],
       poolOption: {
         label: 'BTC.BTC',
-        value: 'BTC.BTC'
+        value: 'BTC.BTC',
       },
       poolOptions: [],
       aprChart: undefined,
-      aprLoading: true
+      aprLoading: true,
     }
   },
   watch: {
-    poolOption (val) {
+    poolOption(val) {
       this.calPoolAPR()
     },
-    periodOption (val) {
+    periodOption(val) {
       this.calPoolAPR()
-    }
+    },
   },
-  mounted () {
+  mounted() {
     this.$api.getPools().then(({ data }) => {
-      this.poolOptions = compact(data.map((p) => {
-        if (p.status !== 'available') { return false }
-        return {
-          value: p.asset,
-          label: p.asset
-        }
-      }))
+      this.poolOptions = compact(
+        data.map((p) => {
+          if (p.status !== 'available') {
+            return false
+          }
+          return {
+            value: p.asset,
+            label: p.asset,
+          }
+        })
+      )
     })
 
     this.calPoolAPR()
   },
   methods: {
-    calPoolAPR () {
+    calPoolAPR() {
       this.aprLoading = true
-      this.getDepth(this.poolOption.value, this.periodOption.value).then((result) => {
-        this.aprLoading = false
-        this.aprFormat(result)
-      })
+      this.getDepth(this.poolOption.value, this.periodOption.value).then(
+        (result) => {
+          this.aprLoading = false
+          this.aprFormat(result)
+        }
+      )
     },
-    async getDepth (p, c) {
+    async getDepth(p, c) {
       let now = (await this.$api.getPoolDepth(p, 365)).data.intervals
-      const then = (await this.$api.getPoolDepth(p, 365, moment(~~now[0].startTime * 1e3).subtract(c, 'days').unix())).data.intervals.reverse()
+      const then = (
+        await this.$api.getPoolDepth(
+          p,
+          365,
+          moment(~~now[0].startTime * 1e3)
+            .subtract(c, 'days')
+            .unix()
+        )
+      ).data.intervals.reverse()
       now = now.reverse()
 
       const aprs = []
@@ -123,18 +146,17 @@ export default {
           const secondLuvi = now[i]?.luvi
 
           // calculating APR
-          const increase = 100 * (secondLuvi - firstLuvi) / firstLuvi
-          const apr = (365 * increase) / (c)
+          const increase = (100 * (secondLuvi - firstLuvi)) / firstLuvi
+          const apr = (365 * increase) / c
           aprs.unshift({
             increase: apr,
-            time:
-            moment(now[i].startTime * 1e3).format('YY/MM/DD')
+            time: moment(now[i].startTime * 1e3).format('YY/MM/DD'),
           })
         }
       }
       return aprs
     },
-    aprFormat (d) {
+    aprFormat(d) {
       const xAxis = []
       const apr = []
       d.forEach((t) => {
@@ -144,43 +166,43 @@ export default {
 
       const option = {
         title: {
-          show: false
+          show: false,
         },
         tooltip: {
           confine: true,
           trigger: 'axis',
-          valueFormatter: value => `${value.toFixed(2)} %`
+          valueFormatter: (value) => `${value.toFixed(2)} %`,
         },
         legend: {
           x: 'center',
           y: 'bottom',
           icon: 'rect',
           textStyle: {
-            color: 'var(--font-color)'
-          }
+            color: 'var(--font-color)',
+          },
         },
         xAxis: {
           data: xAxis,
           boundaryGap: false,
           splitLine: {
-            show: false
+            show: false,
           },
           axisLine: {
             lineStyle: {
-              color: '#9f9f9f'
-            }
+              color: '#9f9f9f',
+            },
           },
           axisLabel: {
             color: '#9f9f9f',
-            fontFamily: 'ProductSans'
-          }
+            fontFamily: 'ProductSans',
+          },
         },
         yAxis: {
-          show: false
+          show: false,
         },
         grid: {
           left: '20px',
-          right: '20px'
+          right: '20px',
         },
         series: [
           {
@@ -189,14 +211,14 @@ export default {
             showSymbol: false,
             data: apr,
             smooth: true,
-            areaStyle: {}
-          }
-        ]
+            areaStyle: {},
+          },
+        ],
       }
 
       this.aprChart = option
-    }
-  }
+    },
+  },
 }
 </script>
 

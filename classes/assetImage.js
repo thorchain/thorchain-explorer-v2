@@ -2,7 +2,7 @@ import { ethers } from 'ethers'
 import { CoinIconsFromTrustWallet } from '~/const/icon-list'
 import { assetFromString } from '~/utils'
 
-function getErcIconPath (chain, assetSymbol, assetTicker) {
+function getErcIconPath(chain, assetSymbol, assetTicker) {
   const assetAddress = assetSymbol.slice(assetTicker.length + 1)
   const strip0x = assetAddress.substr(2)
   const checkSummedAddress = ethers.utils.getAddress(strip0x)
@@ -27,7 +27,7 @@ export const AssetImage = (assetStr) => {
             'https://raw.githubusercontent.com/asgardex/thorchain_explorer/main/assets/images/thorchain-logo.png'
         } else {
           iconPath =
-          'https://raw.githubusercontent.com/asgardex/thorchain_explorer/main/assets/images/thorchain-logo.png'
+            'https://raw.githubusercontent.com/asgardex/thorchain_explorer/main/assets/images/thorchain-logo.png'
         }
         break
 
@@ -46,8 +46,7 @@ export const AssetImage = (assetStr) => {
           iconPath =
             'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/binance/info/logo.png'
         } else {
-          iconPath =
-          `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/binance/assets/${symbol}/logo.png`
+          iconPath = `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/binance/assets/${symbol}/logo.png`
         }
         break
 
@@ -60,11 +59,14 @@ export const AssetImage = (assetStr) => {
           } else if (ticker === 'TGT') {
             iconPath = require('~/assets/images/assets/tgt.png')
           } else if (ticker === 'XRUNE') {
-            iconPath = 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x69fa0feE221AD11012BAb0FdB45d444D3D2Ce71c/logo.png'
+            iconPath =
+              'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x69fa0feE221AD11012BAb0FdB45d444D3D2Ce71c/logo.png'
           } else if (ticker === 'VTHOR') {
-            iconPath = 'https://meta.viewblock.io/ETH.VTHOR-0X815C23ECA83261B6EC689B60CC4A58B54BC24D8D/logo'
+            iconPath =
+              'https://meta.viewblock.io/ETH.VTHOR-0X815C23ECA83261B6EC689B60CC4A58B54BC24D8D/logo'
           } else if (ticker === 'FLIP') {
-            iconPath = 'https://meta.viewblock.io/ETH.FLIP-0X826180541412D574CF1336D22C0C0A287822678A/logo'
+            iconPath =
+              'https://meta.viewblock.io/ETH.FLIP-0X826180541412D574CF1336D22C0C0A287822678A/logo'
           } else if (ticker === 'LENDS') {
             iconPath = 'https://etherscan.io/token/images/lends_32.png'
           } else if (ticker === 'WSTETH') {
@@ -79,8 +81,7 @@ export const AssetImage = (assetStr) => {
         break
 
       case 'DOGE':
-        iconPath =
-          require('~/assets/images/assets/dogecoin.png')
+        iconPath = require('~/assets/images/assets/dogecoin.png')
         break
 
       case 'TERRA':
@@ -101,7 +102,8 @@ export const AssetImage = (assetStr) => {
       case 'AVAX':
         if (symbol !== 'AVAX') {
           if (symbol === 'USDC') {
-            iconPath = 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png'
+            iconPath =
+              'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png'
           } else {
             iconPath = getErcIconPath('avalanchec', symbol, ticker)
           }

@@ -2,7 +2,13 @@
   <div v-if="streamingDetail.is" class="card streaming-card">
     <div class="card-header streaming-header">
       <span>Streaming Swap <sup class="header-sup">Live</sup></span>
-      <div :class="['status-live', 'mini-bubble', {'yellow': streamingDetail.count < streamingDetail.quantity}]">
+      <div
+        :class="[
+          'status-live',
+          'mini-bubble',
+          { yellow: streamingDetail.count < streamingDetail.quantity },
+        ]"
+      >
         {{ streamingDetail.status }}
       </div>
     </div>
@@ -17,24 +23,24 @@
         <progress-bar :width="streamingDetail.fill * 100" height="4px" />
         <span>Progress</span>
         <span class="mono">
-          <span style="color: var(--font-color); font-size: .75rem;">
+          <span style="color: var(--font-color); font-size: 0.75rem">
             ({{ streamingDetail.count }}/{{ streamingDetail.quantity }})
           </span>
           {{ $options.filters.percent(streamingDetail.fill, 2) }}
         </span>
       </div>
-      <hr class="info-hr">
+      <hr class="info-hr" />
       <div class="info-item">
         <span>Swapped / Deposited Input</span>
         <span>
           {{ streamingDetail.swappedIn }}
-          <span style="color: var(--font-color); font-size: .75rem;">
+          <span style="color: var(--font-color); font-size: 0.75rem">
             {{ streamingDetail.depositedAsset }}
           </span>
           /
           <span>
             {{ streamingDetail.depositedAmt }}
-            <span style="color: var(--font-color); font-size: .75rem;">
+            <span style="color: var(--font-color); font-size: 0.75rem">
               {{ streamingDetail.depositedAsset }}
             </span>
           </span>
@@ -44,13 +50,13 @@
         <span>Swapped Input / Output</span>
         <span>
           {{ streamingDetail.swappedIn }}
-          <span style="color: var(--font-color); font-size: .75rem;">
+          <span style="color: var(--font-color); font-size: 0.75rem">
             {{ streamingDetail.depositedAsset }}
           </span>
           →
           <span>
             {{ streamingDetail.swappedOut }}
-            <span style="color: var(--font-color); font-size: .75rem;">
+            <span style="color: var(--font-color); font-size: 0.75rem">
               {{ streamingDetail.targetAsset }}
             </span>
           </span>
@@ -60,7 +66,7 @@
         <span>Remained Block</span>
         <span>
           {{ streamingDetail.remInterval }}
-          <span style="color: var(--font-color); font-size: .75rem;">
+          <span style="color: var(--font-color); font-size: 0.75rem">
             Blocks
           </span>
         </span>
@@ -75,7 +81,7 @@ import { assetFromString } from '~/utils'
 
 export default {
   props: ['inboundHash'],
-  data () {
+  data() {
     return {
       streamingDetail: {
         is: false,
@@ -90,14 +96,14 @@ export default {
         depositedAmt: 0,
         depositedAsset: '',
         swappedIn: 0,
-        swappedOut: 0
+        swappedOut: 0,
       },
       intervalId: undefined,
       countdownInterval: undefined,
-      durationSeconds: null
+      durationSeconds: null,
     }
   },
-  mounted () {
+  mounted() {
     this.updateStreamingDetail(this.inboundHash)
 
     this.intervalId = setInterval(() => {
@@ -105,33 +111,43 @@ export default {
     }, 10000)
   },
   beforeDestroy() {
-    clearInterval(this.countdownInterval) 
+    clearInterval(this.countdownInterval)
   },
-  destroyed () {
+  destroyed() {
     this.clearIntervalId(this.intervalId)
   },
   methods: {
     updateCountdown() {
       this.durationSeconds.subtract(1, 'seconds')
-      this.streamingDetail.remIntervalSec = this.createDurationText(this.durationSeconds)
+      this.streamingDetail.remIntervalSec = this.createDurationText(
+        this.durationSeconds
+      )
     },
     createDurationText(duration) {
-      const hours = String(duration.hours()).padStart(2, '0');
-      const minutes = String(duration.minutes()).padStart(2, '0');
-      const seconds = String(duration.seconds()).padStart(2, '0'); 
+      const hours = String(duration.hours()).padStart(2, '0')
+      const minutes = String(duration.minutes()).padStart(2, '0')
+      const seconds = String(duration.seconds()).padStart(2, '0')
 
       return `${hours}:${minutes}:${seconds}`
     },
-    async updateStreamingDetail (txid) {
+    async updateStreamingDetail(txid) {
       const thorStatus = (await this.$api.getTxStatus(this.inboundHash))?.data
-      const isSwap = thorStatus.stages.swap_status?.streaming && thorStatus.stages.swap_status?.pending
+      const isSwap =
+        thorStatus.stages.swap_status?.streaming &&
+        thorStatus.stages.swap_status?.pending
 
       if (isSwap) {
-        const { count, interval, quantity } = thorStatus.stages.swap_status?.streaming
+        const { count, interval, quantity } =
+          thorStatus.stages.swap_status?.streaming
         this.streamingDetail.fill = count / quantity
         if (!this.streamingDetail.count || count > this.streamingDetail.count) {
-          this.durationSeconds = moment.duration(interval * (quantity - count) * 6, 'seconds')
-          this.streamingDetail.remIntervalSec = this.createDurationText(this.durationSeconds)
+          this.durationSeconds = moment.duration(
+            interval * (quantity - count) * 6,
+            'seconds'
+          )
+          this.streamingDetail.remIntervalSec = this.createDurationText(
+            this.durationSeconds
+          )
         }
         this.streamingDetail.count = count
         this.streamingDetail.quantity = quantity
@@ -139,7 +155,7 @@ export default {
         this.streamingDetail.remInterval = interval * (quantity - count)
 
         if (!this.countdownInterval) {
-          this.countdownInterval = setInterval(this.updateCountdown, 1000);
+          this.countdownInterval = setInterval(this.updateCountdown, 1000)
         }
 
         if (count < quantity) {
@@ -150,7 +166,10 @@ export default {
 
         const { data } = await this.$api.getStreamingSwap(txid)
         if (data.trade_target) {
-          this.streamingDetail.tradeTarget = this.$options.filters.number(+data.trade_target / 1e8, '0,0.00')
+          this.streamingDetail.tradeTarget = this.$options.filters.number(
+            +data.trade_target / 1e8,
+            '0,0.00'
+          )
         } else {
           this.streamingDetail.tradeTarget = 0
         }
@@ -160,23 +179,26 @@ export default {
         // swap user addresses
         const userAddresses = new Set([
           thorStatus.tx.from_address.toLowerCase(),
-          memo.destAddr?.toLowerCase()
+          memo.destAddr?.toLowerCase(),
         ])
         // Non affiliate outs
-        let outTxs = thorStatus.out_txs?.filter(tx =>
+        let outTxs = thorStatus.out_txs?.filter((tx) =>
           userAddresses.has(tx.to_address.toLowerCase())
         )
         if (!outTxs) {
           outTxs = thorStatus.planned_out_txs
-            ?.filter(tx => userAddresses.has(tx.to_address.toLowerCase()))
-            .map(tx => ({
+            ?.filter((tx) => userAddresses.has(tx.to_address.toLowerCase()))
+            .map((tx) => ({
               ...tx,
-              coins: [{ amount: tx.coin.amount, asset: tx.coin.asset }]
+              coins: [{ amount: tx.coin.amount, asset: tx.coin.asset }],
             }))
         }
 
         // Add native in/out search
-        let inAsset = this.parseMemoAsset(thorStatus.tx.coins[0].asset, this.pools)
+        let inAsset = this.parseMemoAsset(
+          thorStatus.tx.coins[0].asset,
+          this.pools
+        )
 
         let outAsset = this.parseMemoAsset(
           outTxs?.length > 0 ? outTxs[0].coins[0].asset : memo.asset,
@@ -195,37 +217,48 @@ export default {
 
         if (inAsset && outAsset) {
           this.streamingDetail.depositedAsset = inAsset?.ticker ?? ''
-          this.streamingDetail.targetAsset = (outAsset?.ticker || outMemoAsset?.ticker) ?? ''
+          this.streamingDetail.targetAsset =
+            (outAsset?.ticker || outMemoAsset?.ticker) ?? ''
         } else {
           this.streamingDetail.depositedAsset = ''
           this.streamingDetail.targetAsset = ''
         }
 
         if (data.deposit) {
-          this.streamingDetail.depositedAmt = this.$options.filters.number(+data.deposit / 1e8, '0,0.00')
+          this.streamingDetail.depositedAmt = this.$options.filters.number(
+            +data.deposit / 1e8,
+            '0,0.00'
+          )
         } else {
           this.streamingDetail.depositedAmt = 0
         }
 
         if (data.in) {
-          this.streamingDetail.swappedIn = this.$options.filters.number(+data.in / 1e8, '0,0.00')
+          this.streamingDetail.swappedIn = this.$options.filters.number(
+            +data.in / 1e8,
+            '0,0.00'
+          )
         } else {
           this.streamingDetail.swappedIn = 0
         }
 
         if (data.out) {
-          this.streamingDetail.swappedOut = this.$options.filters.number(+data.out / 1e8, '0,0.00')
+          this.streamingDetail.swappedOut = this.$options.filters.number(
+            +data.out / 1e8,
+            '0,0.00'
+          )
         } else {
           this.streamingDetail.swappedOut = 0
         }
 
-        this.streamingDetail.is = !thorStatus.stages.swap_finalised?.completed ||
-        thorStatus.stages.swap_status?.pending
+        this.streamingDetail.is =
+          !thorStatus.stages.swap_finalised?.completed ||
+          thorStatus.stages.swap_status?.pending
       } else {
         this.streamingDetail.is = false
       }
-    }
-  }
+    },
+  },
 }
 </script>
 
@@ -249,20 +282,20 @@ export default {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: .5rem;
+  gap: 0.5rem;
   margin: 10px 0;
 
   span {
-    font-size: .9rem;
+    font-size: 0.9rem;
     color: var(--sec-font-color);
   }
 
   &.timer {
     strong {
       display: block;
-      font-size: .95rem;
-      padding: .2rem .3rem;
-      border-radius: .3rem;
+      font-size: 0.95rem;
+      padding: 0.2rem 0.3rem;
+      border-radius: 0.3rem;
       color: var(--primary-color);
       background-color: #63fdd927;
     }
@@ -274,8 +307,8 @@ export default {
 }
 
 .header-sup {
-  font-size: .6rem;
-  color: #F04832;
+  font-size: 0.6rem;
+  color: #f04832;
 }
 
 .info-hr {
@@ -289,7 +322,7 @@ export default {
 
   @keyframes bubblePulse {
     0% {
-      color: #FFC700;
+      color: #ffc700;
       border-color: rgba(255, 156, 8, 0.25);
     }
     50% {

@@ -4,64 +4,71 @@
       <div class="network-stats base-container">
         <div class="stat-group">
           <div class="stat-item">
-            <img class="stat-image" src="~/assets/images/blockchain.png" alt="blockchain">
+            <img
+              class="stat-image"
+              src="~/assets/images/blockchain.png"
+              alt="blockchain"
+            />
             <div class="item-detail">
-              <div class="header">
-                Block Height
-              </div>
+              <div class="header">Block Height</div>
               <skeleton-item :loading="!thorHeight" class="value">
-                {{ thorHeight | number("0,0") }}
+                {{ thorHeight | number('0,0') }}
               </skeleton-item>
             </div>
           </div>
-          <hr>
+          <hr />
           <div class="stat-item">
             <!-- <globe class="stat-image" /> -->
             <Globe class="stat-image" />
             <div class="item-detail">
-              <div class="header">
-                RUNE Supply
-              </div>
+              <div class="header">RUNE Supply</div>
               <skeleton-item :loading="!runeSupply" class="value">
-                {{ runeSupply | number("0,0") }}
+                {{ runeSupply | number('0,0') }}
                 <span style="font-size: 0.75rem">{{ runeCur() }}</span>
-                <span v-if="stats" class="extra">(${{
-                  (runeSupply * stats.runePriceUSD) | number("0.00 a")
-                }})</span>
+                <span v-if="stats" class="extra"
+                  >(${{
+                    (runeSupply * stats.runePriceUSD) | number('0.00 a')
+                  }})</span
+                >
               </skeleton-item>
             </div>
           </div>
-          <hr>
+          <hr />
         </div>
         <div class="stat-group">
           <div class="stat-item">
-            <img class="stat-image" src="~/assets/images/coin.png" alt="rune-coin">
+            <img
+              class="stat-image"
+              src="~/assets/images/coin.png"
+              alt="rune-coin"
+            />
             <div class="item-detail">
-              <div class="header">
-                RUNE Price
-              </div>
-              <skeleton-item :loading="!(stats && stats.runePriceUSD)" class="value">
+              <div class="header">RUNE Price</div>
+              <skeleton-item
+                :loading="!(stats && stats.runePriceUSD)"
+                class="value"
+              >
                 {{ stats.runePriceUSD | currency }}
               </skeleton-item>
             </div>
           </div>
-          <hr>
+          <hr />
           <div class="stat-item">
             <circulate class="stat-image" />
             <div class="item-detail">
-              <div class="header">
-                Total Historical Volume (On Chain)
-              </div>
+              <div class="header">Total Historical Volume (On Chain)</div>
               <skeleton-item :loading="!runeVolume" class="value">
-                {{ runeVolume | number("0,0") }}
+                {{ runeVolume | number('0,0') }}
                 <span style="font-size: 0.75rem">{{ runeCur() }}</span>
-                <span v-if="stats" class="extra">(${{
-                  (runeVolume * stats.runePriceUSD) | number("0.00 a")
-                }})</span>
+                <span v-if="stats" class="extra"
+                  >(${{
+                    (runeVolume * stats.runePriceUSD) | number('0.00 a')
+                  }})</span
+                >
               </skeleton-item>
             </div>
           </div>
-          <hr>
+          <hr />
         </div>
         <div class="stat-group">
           <div class="stat-item">
@@ -70,29 +77,25 @@
               src="~/assets/images/book.png"
               style="width: 2rem; height: auto; padding: 0.3rem"
               alt="rune-coin"
-            >
+            />
             <div class="item-detail">
-              <div class="header">
-                Total Addresses
-              </div>
+              <div class="header">Total Addresses</div>
               <skeleton-item :loading="!totalAddresses" class="value">
-                {{ totalAddresses | number("0,0") }}
+                {{ totalAddresses | number('0,0') }}
               </skeleton-item>
             </div>
           </div>
-          <hr>
+          <hr />
           <div class="stat-item">
             <Chart class="stat-image" />
             <div class="item-detail">
-              <div class="header">
-                Total Swap Volume (30 Days)
-              </div>
+              <div class="header">Total Swap Volume (30 Days)</div>
               <skeleton-item :loading="!totalSwapVolumeUSD" class="value">
                 {{ normalFormat(totalSwapVolume / 1e8) }}
                 <span style="font-size: 0.75rem">{{ runeCur() }}</span>
-                <span v-if="stats" class="extra">(${{
-                  (totalSwapVolumeUSD / 1e2) | number("0.00 a")
-                }})</span>
+                <span v-if="stats" class="extra"
+                  >(${{ (totalSwapVolumeUSD / 1e2) | number('0.00 a') }})</span
+                >
               </skeleton-item>
             </div>
           </div>
@@ -101,24 +104,67 @@
     </div>
     <div class="break" />
     <div class="chart-inner-container">
-      <Card :navs="[{title: 'Swap Volume', value: 'swap-vol'}, {title: 'Earnings Volume', value: 'earnings-vol'}, {title: 'Swap Count', value: 'swap-count'}]" :act-nav.sync="swapMode">
-        <VChart class="swap-volume-chart" v-if="swapMode == 'swap-vol'" :key="1" :option="swapHistory" :loading="!swapHistory" :autoresize="true" :loading-options="showLoading" />
-        <VChart v-if="swapMode == 'earnings-vol'" :key="2" :option="earningsHistory" :loading="!earningsHistory" :autoresize="true" :loading-options="showLoading" />
-        <VChart class="swap-volume-chart" v-if="swapMode == 'swap-count'" :key="3" :option="swapHistoryCount" :loading="!swapHistoryCount" :autoresize="true" :loading-options="showLoading" />
+      <Card
+        :navs="[
+          { title: 'Swap Volume', value: 'swap-vol' },
+          { title: 'Earnings Volume', value: 'earnings-vol' },
+          { title: 'Swap Count', value: 'swap-count' },
+        ]"
+        :act-nav.sync="swapMode"
+      >
+        <VChart
+          v-if="swapMode == 'swap-vol'"
+          :key="1"
+          class="swap-volume-chart"
+          :option="swapHistory"
+          :loading="!swapHistory"
+          :autoresize="true"
+          :loading-options="showLoading"
+        />
+        <VChart
+          v-if="swapMode == 'earnings-vol'"
+          :key="2"
+          :option="earningsHistory"
+          :loading="!earningsHistory"
+          :autoresize="true"
+          :loading-options="showLoading"
+        />
+        <VChart
+          v-if="swapMode == 'swap-count'"
+          :key="3"
+          class="swap-volume-chart"
+          :option="swapHistoryCount"
+          :loading="!swapHistoryCount"
+          :autoresize="true"
+          :loading-options="showLoading"
+        />
       </Card>
-      <Card :navs="[{title: 'Chain Status', value: 'chain-status'}, {title: 'Pools Volume', value: 'pools-vol'}]" :act-nav.sync="poolMode">
-        <div v-if="poolMode == 'pools-vol'" class="pool-depth-container" :key="1">
+      <Card
+        :navs="[
+          { title: 'Chain Status', value: 'chain-status' },
+          { title: 'Pools Volume', value: 'pools-vol' },
+        ]"
+        :act-nav.sync="poolMode"
+      >
+        <div
+          v-if="poolMode == 'pools-vol'"
+          :key="1"
+          class="pool-depth-container"
+        >
           <div class="pool-depth-chart">
-            <VChart :option="poolsOption" :autoresize="true" :loading-options="showLoading" style="width: 275px;height:250px;min-height: initial;" />
+            <VChart
+              :option="poolsOption"
+              :autoresize="true"
+              :loading-options="showLoading"
+              style="width: 275px; height: 250px; min-height: initial"
+            />
           </div>
           <div v-if="poolsData" class="pool-depth-extra">
             <table>
               <thead>
                 <tr>
                   <th>Pool Name</th>
-                  <th style="text-align: center;">
-                    Volume
-                  </th>
+                  <th style="text-align: center">Volume</th>
                   <th>Depth</th>
                 </tr>
               </thead>
@@ -126,22 +172,23 @@
                 <tr v-for="p in poolsData">
                   <td>
                     <div class="pool-name-container">
-                      <div class="data-color" :style="{backgroundColor: p.color}" />
+                      <div
+                        class="data-color"
+                        :style="{ backgroundColor: p.color }"
+                      />
                       {{ p.name }}
                     </div>
                   </td>
-                  <td style="text-align: center;">
+                  <td style="text-align: center">
                     ${{ p.vol | number('0,0 a') }}
                   </td>
-                  <td style="text-align: center;">
+                  <td style="text-align: center">
                     ${{ p.value | number('0,0 a') }}
                   </td>
                 </tr>
                 <tr class="table-footer">
-                  <td colspan="2">
-                    Total value locked in pools:
-                  </td>
-                  <td style="text-align: center;">
+                  <td colspan="2">Total value locked in pools:</td>
+                  <td style="text-align: center">
                     ${{ totalValuePooled | number('0,0 a') }}
                   </td>
                 </tr>
@@ -149,25 +196,49 @@
             </table>
           </div>
         </div>
-        <div v-if="poolMode == 'chain-status'" style="min-width: 100%" :key="2">
+        <div v-if="poolMode == 'chain-status'" :key="2" style="min-width: 100%">
           <vue-good-table
             :columns="inboundCols"
             :rows="inboundInfo"
             style-class="vgt-table net-table"
-            :sort-options="{enabled: false}"
+            :sort-options="{ enabled: false }"
           >
             <template slot="table-column" slot-scope="props">
-              <div v-if="props.column.field == 'haltHeight'" v-tooltip="'Scanning'">
-                <ScanIcon class="table-icon" style="color: var(--sec-font-color)" />
+              <div
+                v-if="props.column.field == 'haltHeight'"
+                v-tooltip="'Scanning'"
+              >
+                <ScanIcon
+                  class="table-icon"
+                  style="color: var(--sec-font-color)"
+                />
               </div>
-              <div v-else-if="props.column.field == 'haltTradingHeight'" v-tooltip="'Trading'">
-                <SwapIcon class="table-icon" style="color: var(--sec-font-color)" />
+              <div
+                v-else-if="props.column.field == 'haltTradingHeight'"
+                v-tooltip="'Trading'"
+              >
+                <SwapIcon
+                  class="table-icon"
+                  style="color: var(--sec-font-color)"
+                />
               </div>
-              <div v-else-if="props.column.field == 'haltLPHeight'" v-tooltip="'Liquidity Provider'">
-                <FinanceIcon class="table-icon" style="color: var(--sec-font-color)" />
+              <div
+                v-else-if="props.column.field == 'haltLPHeight'"
+                v-tooltip="'Liquidity Provider'"
+              >
+                <FinanceIcon
+                  class="table-icon"
+                  style="color: var(--sec-font-color)"
+                />
               </div>
-              <div v-else-if="props.column.field == 'haltSigningHeight'" v-tooltip="'Signing'">
-                <SignIcon class="table-icon" style="color: var(--sec-font-color)" />
+              <div
+                v-else-if="props.column.field == 'haltSigningHeight'"
+                v-tooltip="'Signing'"
+              >
+                <SignIcon
+                  class="table-icon"
+                  style="color: var(--sec-font-color)"
+                />
               </div>
               <span v-else>
                 {{ props.column.label }}
@@ -182,12 +253,22 @@
               </div>
               <span v-else>
                 <template v-if="props.row[props.column.field] > 1">
-                  <danger-icon v-tooltip="`Scheduled halt: ${props.row[props.column.field]}`" class="table-icon" style="fill: #EF5350;" />
+                  <danger-icon
+                    v-tooltip="
+                      `Scheduled halt: ${props.row[props.column.field]}`
+                    "
+                    class="table-icon"
+                    style="fill: #ef5350"
+                  />
                 </template>
                 <template v-else-if="props.row[props.column.field] == 1">
-                  <danger-icon v-tooltip="`Mimir halt`" class="table-icon" style="fill: #EF5350;" />
+                  <danger-icon
+                    v-tooltip="`Mimir halt`"
+                    class="table-icon"
+                    style="fill: #ef5350"
+                  />
                 </template>
-                <span v-else class="mono" style="color: #81C784;">OK</span>
+                <span v-else class="mono" style="color: #81c784">OK</span>
               </span>
             </template>
           </vue-good-table>
@@ -202,9 +283,7 @@
       <div class="card">
         <div class="card-header">
           <div class="card-header-title">
-            <h2 style="color: var(--sec-font-color);">
-              Latest Blocks
-            </h2>
+            <h2 style="color: var(--sec-font-color)">Latest Blocks</h2>
           </div>
         </div>
         <div class="card-body">
@@ -213,21 +292,25 @@
               <div :key="i" class="row-item">
                 <div class="meta">
                   <span class="header">
-                    {{ b.height | number("0,0") }}
+                    {{ b.height | number('0,0') }}
                   </span>
                   <span class="timestamp">
                     {{ b.date }}
                   </span>
                 </div>
                 <div class="txs" style="width: 40%">
-                  <span>Tx Size: <span class="value">{{ b.txs }}</span></span>
-                  <span>Block Size:
+                  <span
+                    >Tx Size: <span class="value">{{ b.txs }}</span></span
+                  >
+                  <span
+                    >Block Size:
                     <span class="value">{{
-                      b.size | number("0,0")
-                    }}</span></span>
+                      b.size | number('0,0')
+                    }}</span></span
+                  >
                 </div>
               </div>
-              <hr :key="i + 'hr'" class="hr-space">
+              <hr :key="i + 'hr'" class="hr-space" />
             </template>
           </template>
           <div v-else class="loading">
@@ -238,9 +321,7 @@
       <div class="card">
         <div class="card-header">
           <div class="card-header-title">
-            <h2 style="color: var(--sec-font-color);">
-              Latest Transactions
-            </h2>
+            <h2 style="color: var(--sec-font-color)">Latest Transactions</h2>
           </div>
         </div>
         <div class="card-body">
@@ -249,24 +330,28 @@
               <div :key="i" class="row-item">
                 <div class="meta">
                   <span class="header">
-                    {{ t.height | number("0,0") }}
+                    {{ t.height | number('0,0') }}
                   </span>
                   <span class="timestamp">
                     {{ formatMoment(t.date) }}
                   </span>
                 </div>
                 <div class="txs">
-                  <span>TxID
+                  <span
+                    >TxID
                     <a class="value" @click="gotoTx(t.in && t.in[0].txID)">{{
                       showTx(t.in && t.in[0].txID)
-                    }}</a></span>
-                  <span>From
+                    }}</a></span
+                  >
+                  <span
+                    >From
                     <a class="value" @click="gotoAddr(t.in[0].address)">{{
                       t.in && t.in[0].address
-                    }}</a></span>
+                    }}</a></span
+                  >
                 </div>
               </div>
-              <hr :key="i + 'hr'" class="hr-space">
+              <hr :key="i + 'hr'" class="hr-space" />
             </template>
           </template>
           <div v-else class="loading">
@@ -294,7 +379,7 @@ import {
   TitleComponent,
   TooltipComponent,
   LegendComponent,
-  GridComponent
+  GridComponent,
 } from 'echarts/components'
 import VChart from 'vue-echarts'
 import Chart from '~/assets/images/chart.svg?inline'
@@ -316,7 +401,7 @@ use([
   PieChart,
   TitleComponent,
   TooltipComponent,
-  LegendComponent
+  LegendComponent,
 ])
 
 export default {
@@ -331,9 +416,9 @@ export default {
     SwapIcon,
     FinanceIcon,
     SignIcon,
-    ScanIcon
+    ScanIcon,
   },
-  data () {
+  data() {
     return {
       nodes: [],
       network: [],
@@ -362,7 +447,7 @@ export default {
         {
           label: 'Chain',
           field: 'chain',
-          type: 'text'
+          type: 'text',
         },
         {
           label: 'Scanning',
@@ -370,7 +455,7 @@ export default {
           type: 'number',
           formatFn: this.numberFormat,
           tdClass: 'mono center',
-          thClass: 'th-center'
+          thClass: 'th-center',
         },
         {
           label: 'Trading',
@@ -378,7 +463,7 @@ export default {
           type: 'number',
           formatFn: this.numberFormat,
           tdClass: 'mono center',
-          thClass: 'th-center'
+          thClass: 'th-center',
         },
         {
           label: 'LP',
@@ -386,7 +471,7 @@ export default {
           type: 'number',
           formatFn: this.numberFormat,
           tdClass: 'mono center',
-          thClass: 'th-center'
+          thClass: 'th-center',
         },
         {
           label: 'Signing',
@@ -394,20 +479,20 @@ export default {
           type: 'number',
           formatFn: this.numberFormat,
           tdClass: 'mono center',
-          thClass: 'th-center'
-        }
-      ]
+          thClass: 'th-center',
+        },
+      ],
     }
   },
-  async fetch () {
+  async fetch() {
     const resBlock = await this.$api.getRPCLastBlockHeight()
     this.lastHeight = +resBlock?.data?.block?.header?.height
   },
   computed: {
-    runeSymbol () {
+    runeSymbol() {
       return AssetCurrencySymbol.RUNE
     },
-    runeVolume () {
+    runeVolume() {
       return (
         (+this.stats?.swapVolume +
           +this.stats?.withdrawVolume +
@@ -415,10 +500,12 @@ export default {
         10 ** 8
       )
     },
-    networkSettings () {
+    networkSettings() {
       // From Thornode - https://gitlab.com/thorchain/thornode/-/blob/7016020ef3566e1e2855fee0a38e14fbfa069425/x/thorchain/helpers.go#L1008
       // Refactored for readability
-      const sbn = this.nodes.filter(n => n.status === 'Active').map(e => +e.total_bond)
+      const sbn = this.nodes
+        .filter((n) => n.status === 'Active')
+        .map((e) => +e.total_bond)
         .sort((a, b) => a - b)
 
       let t = (sbn.length * 2) / 3
@@ -452,15 +539,15 @@ export default {
             value: totalEffectiveBond,
             filter: true,
             runeValue: true,
-            usdValue: true
+            usdValue: true,
           },
           {
             name: 'Hard Cap',
             value: totalHardCap,
             filter: true,
             runeValue: true,
-            usdValue: true
-          }
+            usdValue: true,
+          },
         ],
         [
           {
@@ -468,52 +555,52 @@ export default {
             value:
               this.network.bondingAPY &&
               this.stringToPercentage(this.network.bondingAPY),
-            filter: true
+            filter: true,
           },
           {
             name: 'Liquidity APY',
             value:
               this.network.bondingAPY &&
               this.stringToPercentage(this.network.liquidityAPY),
-            filter: true
-          }
+            filter: true,
+          },
         ],
         [
           {
             name: 'Total Standby Bonded',
             value: +this.network.bondMetrics?.totalStandbyBond / 10 ** 8,
-            usdValue: true
+            usdValue: true,
           },
           {
             name: 'Total Active Bonded',
             value: +this.network.bondMetrics?.totalActiveBond / 10 ** 8,
-            usdValue: true
-          }
+            usdValue: true,
+          },
         ],
         [
           {
             name: 'Active Node Count',
-            value: this.network.activeNodeCount
+            value: this.network.activeNodeCount,
           },
           {
             name: 'Standby Node Count',
-            value: this.network.standbyNodeCount
-          }
+            value: this.network.standbyNodeCount,
+          },
         ],
         [
           {
             name: 'Next Churn Height',
             value: this.network.nextChurnHeight,
             extraText: `${this.isChurnHalted() ? 'Churn paused' : this.nextChurnTime()}`,
-            extraTextClass: { 'danger-text': this.isChurnHalted() }
-          }
+            extraTextClass: { 'danger-text': this.isChurnHalted() },
+          },
         ],
         [
           {
             name: 'Pool Activation Countdown',
             value: this.network.poolActivationCountdown,
-            extraText: blockTime(this.network.poolActivationCountdown)
-          }
+            extraText: blockTime(this.network.poolActivationCountdown),
+          },
         ],
         [
           {
@@ -521,118 +608,118 @@ export default {
             value:
               this.network.bondingAPY &&
               this.stringToPercentage(this.network.poolShareFactor),
-            filter: true
-          }
+            filter: true,
+          },
         ],
         [
           {
             name: 'Total Reserve',
             value: (this.network.totalReserve ?? 0) / 10 ** 8,
-            usdValue: true
-          }
+            usdValue: true,
+          },
         ],
         [
           {
             name: 'Total Pooled Rune',
             value: (this.network.totalPooledRune ?? 0) / 10 ** 8,
-            usdValue: true
-          }
-        ]
+            usdValue: true,
+          },
+        ],
       ]
     },
-    statsSettings () {
+    statsSettings() {
       return [
         [
           {
             name: 'RUNE Price USD',
             value: this.$options.filters.currency(this.stats.runePriceUSD),
-            filter: true
+            filter: true,
           },
           {
             name: 'RUNE Depth',
             value: Math.ceil(this.stats.runeDepth / 10 ** 8) ?? 0,
-            usdValue: true
-          }
+            usdValue: true,
+          },
         ],
         [
           {
             name: '24h Swap Count',
-            value: this.stats.swapCount24h ?? 0
+            value: this.stats.swapCount24h ?? 0,
           },
           {
             name: '30d Swap Count',
-            value: this.stats.swapCount30d ?? 0
+            value: this.stats.swapCount30d ?? 0,
           },
           {
             name: 'Total Swap Count',
-            value: this.stats.swapCount ?? 0
-          }
+            value: this.stats.swapCount ?? 0,
+          },
         ],
         [
           {
             name: 'Synth Burn Count',
-            value: this.stats.synthBurnCount ?? 0
+            value: this.stats.synthBurnCount ?? 0,
           },
           {
             name: 'Synth Mint Count',
-            value: this.stats.synthMintCount ?? 0
-          }
+            value: this.stats.synthMintCount ?? 0,
+          },
         ],
         [
           {
             name: 'Swap To Asset Count',
-            value: this.stats.toAssetCount ?? 0
+            value: this.stats.toAssetCount ?? 0,
           },
           {
             name: 'Swap To RUNE Count',
-            value: this.stats.toRuneCount ?? 0
-          }
+            value: this.stats.toRuneCount ?? 0,
+          },
         ],
         [
           {
             name: 'Swap Volume',
             value: this.stats?.swapVolume / 10 ** 8 ?? 0,
-            usdValue: true
+            usdValue: true,
           },
           {
             name: 'Switched RUNE',
             value: this.stats.switchedRune / 10 ** 8 ?? 0,
-            usdValue: true
-          }
+            usdValue: true,
+          },
         ],
         [
           {
             name: 'Add Liquidity Volume',
             value: this.stats.addLiquidityVolume / 10 ** 8 ?? 0,
-            usdValue: true
+            usdValue: true,
           },
           {
             name: 'Add Liquidity Count',
-            value: this.stats.addLiquidityCount ?? 0
-          }
+            value: this.stats.addLiquidityCount ?? 0,
+          },
         ],
         [
           {
             name: 'Withdraw Volume',
             value: this.stats.withdrawVolume / 10 ** 8 ?? 0,
-            usdValue: true
+            usdValue: true,
           },
           {
             name: 'Withdraw Count',
-            value: this.stats.withdrawCount ?? 0
-          }
-        ]
+            value: this.stats.withdrawCount ?? 0,
+          },
+        ],
       ]
-    }
+    },
   },
-  activated () {
+  activated() {
     // Call fetch again if last fetch more than 30 sec ago
     if (this.$fetchState.timestamp <= Date.now() - 6000) {
       this.$fetch()
     }
   },
   fetchOnServer: false,
-  mounted () {
+  mounted() {
     this.$api
       .getDashboardData()
       .then(({ data }) => {
@@ -644,7 +731,7 @@ export default {
         this.runeSupply = +data?.runeSupply?.amount?.amount / 10 ** 8
         this.lastblock = data?.lastBlockHeight
         this.thorHeight = data?.lastBlockHeight.find(
-          e => e.chain === 'BTC'
+          (e) => e.chain === 'BTC'
         ).thorchain
         this.txs = data?.txs?.actions
         this.totalAddresses = +data?.addresses?.pagination?.total
@@ -656,7 +743,7 @@ export default {
       .catch(async (e) => {
         await this.$api
           .getStats()
-          .then(res => (this.stats = res.data))
+          .then((res) => (this.stats = res.data))
           .catch((error) => {
             console.error(error)
           })
@@ -669,7 +756,7 @@ export default {
           .getLastBlockHeight()
           .then((res) => {
             this.lastblock = res.data
-            this.thorHeight = res.data.find(e => e.chain === 'BTC').thorchain
+            this.thorHeight = res.data.find((e) => e.chain === 'BTC').thorchain
           })
           .catch((error) => {
             console.error(error)
@@ -678,7 +765,7 @@ export default {
         this.$api
           .getSupplyRune()
           .then(
-            res => (this.runeSupply = +res?.data?.amount?.amount / 10 ** 8)
+            (res) => (this.runeSupply = +res?.data?.amount?.amount / 10 ** 8)
           )
           .catch((error) => {
             console.error(error)
@@ -695,7 +782,7 @@ export default {
 
         this.$api
           .getAddresses()
-          .then(res => (this.totalAddresses = +res?.data?.pagination?.total))
+          .then((res) => (this.totalAddresses = +res?.data?.pagination?.total))
           .catch((error) => {
             console.error(error)
           })
@@ -708,8 +795,9 @@ export default {
           throw new Error('Cant read the data')
         }
 
-        this.volumeHistory = this.formatLPChange(data?.LPChange);
-        ({ resVolume: this.swapHistory, resCount: this.swapHistoryCount } = this.formatSwap(data?.swaps))
+        this.volumeHistory = this.formatLPChange(data?.LPChange)
+        ;({ resVolume: this.swapHistory, resCount: this.swapHistoryCount } =
+          this.formatSwap(data?.swaps))
         this.earningsHistory = this.formatEarnings(data?.earning)
         this.totalSwapVolumeUSD = data.swaps?.meta?.totalVolumeUSD
         this.totalSwapVolume = data.swaps?.meta?.totalVolume
@@ -719,7 +807,7 @@ export default {
 
         this.$api
           .volumeHistory()
-          .then(res => (this.volumeHistory = this.formatLPChange(res.data)))
+          .then((res) => (this.volumeHistory = this.formatLPChange(res.data)))
           .catch((error) => {
             console.error(error)
           })
@@ -727,7 +815,8 @@ export default {
         this.$api
           .swapHistory()
           .then((res) => {
-            ({ resVolume: this.swapHistory, resCount: this.swapHistoryCount } = this.formatSwap(res.data))
+            ;({ resVolume: this.swapHistory, resCount: this.swapHistoryCount } =
+              this.formatSwap(res.data))
             this.totalSwapVolumeUSD = res?.meta?.totalVolumeUSD
             this.totalSwapVolume = res?.meta?.totalVolume
           })
@@ -737,14 +826,14 @@ export default {
 
         this.$api
           .tvlHistory()
-          .then(res => (this.tvlHistory = this.formatTvl(res.data)))
+          .then((res) => (this.tvlHistory = this.formatTvl(res.data)))
           .catch((error) => {
             console.error(error)
           })
 
         this.$api
           .earningsHistory()
-          .then(res => (this.earningsHistory = this.formatEarnings(res.data)))
+          .then((res) => (this.earningsHistory = this.formatEarnings(res.data)))
           .catch((error) => {
             console.error(error)
           })
@@ -757,7 +846,7 @@ export default {
         this.$api
           .getTendermintLatestBlocks()
           .then(
-            res =>
+            (res) =>
               (this.blocks = this.formatTendermintBlocks(
                 res?.data?.result.block_metas
               ))
@@ -786,69 +875,68 @@ export default {
     }, 10000)
   },
   methods: {
-    stringToPercentage (val) {
+    stringToPercentage(val) {
       return (Number.parseFloat(val ?? 0) * 100).toFixed(2).toString() + ' %'
     },
-    nextChurnTime () {
+    nextChurnTime() {
       if (this.lastblock && this.network) {
         return blockTime(
           this.network.nextChurnHeight - this.lastblock[0].thorchain
         )
       }
     },
-    isChurnHalted () {
+    isChurnHalted() {
       if (this.mimirInfo && this.mimirInfo.HALTCHURNING) {
         return true
       }
 
       return false
     },
-    async getNetworkStatus () {
+    async getNetworkStatus() {
       const ret = (await this.$api.getInboundAddresses()).data
       const mi = (await this.$api.getMimir()).data
       this.mimirInfo = mi
 
-      this.inboundInfo = ret.map(chain => ({
+      this.inboundInfo = ret.map((chain) => ({
         ...chain,
         haltHeight: Math.max(
           ...Object.keys(mi)
             .filter(
-              key =>
+              (key) =>
                 new RegExp(`.*HALT.*${chain.chain}CHAIN`).test(key) &&
                 mi[key] !== 0
             )
-            .map(key => mi[key])
+            .map((key) => mi[key])
         ),
         haltTradingHeight: Math.max(
           ...Object.keys(mi)
             .filter(
-              key =>
+              (key) =>
                 new RegExp(`HALT${chain.chain}TRADING`).test(key) &&
                 mi[key] !== 0
             )
-            .map(key => mi[key])
+            .map((key) => mi[key])
         ),
         haltSigningHeight: Math.max(
           ...Object.keys(mi)
             .filter(
-              key =>
+              (key) =>
                 new RegExp(`HALTSIGNING${chain.chain}`).test(key) &&
                 mi[key] !== 0
             )
-            .map(key => mi[key])
+            .map((key) => mi[key])
         ),
         haltLPHeight: Math.max(
           ...Object.keys(mi)
             .filter(
-              key =>
-                new RegExp(`PAUSELP${chain.chain}`).test(key) &&
-                mi[key] !== 0
+              (key) =>
+                new RegExp(`PAUSELP${chain.chain}`).test(key) && mi[key] !== 0
             )
-            .map(key => mi[key])
-        )
+            .map((key) => mi[key])
+        ),
       }))
     },
-    formatLPChange (d) {
+    formatLPChange(d) {
       const xAxis = []
       const lv = []
       const wv = []
@@ -868,47 +956,47 @@ export default {
         lv.push(
           ((+interval.addLiquidityVolume - +interval.withdrawVolume) *
             +interval.runePriceUSD) /
-          10 ** 8
+            10 ** 8
         )
       })
 
       return this.basicChartFormat(
-        value => `$ ${this.normalFormat(value)}`,
+        (value) => `$ ${this.normalFormat(value)}`,
         [
           {
             type: 'bar',
             name: 'Total Change',
             showSymbol: false,
             data: lv,
-            smooth: true
+            smooth: true,
           },
           {
             type: 'bar',
             name: 'Add Volume',
             showSymbol: false,
             data: alv,
-            smooth: true
+            smooth: true,
           },
           {
             type: 'bar',
             name: 'Withdraw Volume',
             showSymbol: false,
             data: wv,
-            smooth: true
-          }
+            smooth: true,
+          },
         ],
         xAxis
       )
     },
-    formatSwap (d) {
+    formatSwap(d) {
       const xAxis = []
 
       const swapVolume = {
-        total: []
+        total: [],
       }
 
       const swapCount = {
-        total: []
+        total: [],
       }
 
       d?.intervals.forEach((interval, index) => {
@@ -921,54 +1009,52 @@ export default {
             Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
           ).format('MM/DD')
         )
-        swapVolume?.total.push(
-          (+interval.totalVolumeUSD / 10 ** 2)
-        )
+        swapVolume?.total.push(+interval.totalVolumeUSD / 10 ** 2)
 
-        swapCount.total.push((+interval.totalCount))
+        swapCount.total.push(+interval.totalCount)
       })
 
       const resVolume = this.basicChartFormat(
-        value => `$ ${this.normalFormat(value)}`,
+        (value) => `$ ${this.normalFormat(value)}`,
         [
           {
             type: 'bar',
             name: 'Total Volume',
             showSymbol: false,
             data: swapVolume?.total,
-            smooth: true
-          }
+            smooth: true,
+          },
         ],
         xAxis,
         {
           legend: {
-            show: false
-          }
+            show: false,
+          },
         }
       )
 
       const resCount = this.basicChartFormat(
-        value => `${this.normalFormat(value)}`,
+        (value) => `${this.normalFormat(value)}`,
         [
           {
             type: 'bar',
             name: 'Total Count',
             showSymbol: false,
             data: swapCount.total,
-            smooth: true
+            smooth: true,
           },
         ],
         xAxis,
         {
           legend: {
-            show: false
-          }
+            show: false,
+          },
         }
       )
 
       return { resVolume, resCount }
     },
-    formatTvl (d) {
+    formatTvl(d) {
       const xAxis = []
       const tvp = []
       d?.intervals.forEach((interval) => {
@@ -979,25 +1065,25 @@ export default {
         )
         tvp.push(
           (+interval.totalValuePooled / 10 ** 8) *
-          Number.parseFloat(interval.runePriceUSD)
+            Number.parseFloat(interval.runePriceUSD)
         )
       })
 
       return this.basicChartFormat(
-        value => `$ ${this.normalFormat(value)}`,
+        (value) => `$ ${this.normalFormat(value)}`,
         [
           {
             type: 'line',
             name: 'Total Value Pooled',
             showSymbol: false,
             data: tvp,
-            smooth: true
-          }
+            smooth: true,
+          },
         ],
         xAxis
       )
     },
-    formatEarnings (d) {
+    formatEarnings(d) {
       const xAxis = []
       const le = []
       const be = []
@@ -1010,77 +1096,90 @@ export default {
         )
         le.push(
           (+interval.liquidityEarnings / 10 ** 8) *
-          Number.parseFloat(interval.runePriceUSD)
+            Number.parseFloat(interval.runePriceUSD)
         )
         be.push(
           (+interval.bondingEarnings / 10 ** 8) *
-          Number.parseFloat(interval.runePriceUSD)
+            Number.parseFloat(interval.runePriceUSD)
         )
       })
 
       return this.basicChartFormat(
-        value => `$ ${this.normalFormat(value)}`,
+        (value) => `$ ${this.normalFormat(value)}`,
         [
           {
             type: 'line',
             name: 'Liquidity Earning',
             showSymbol: false,
             data: le,
-            smooth: true
+            smooth: true,
           },
           {
             type: 'line',
             name: 'Bond Earning',
             showSymbol: false,
             data: be,
-            smooth: true
-          }
+            smooth: true,
+          },
         ],
         xAxis
       )
     },
-    formatTendermintBlocks (blocks) {
+    formatTendermintBlocks(blocks) {
       const blockJsons = []
       for (const block of blocks) {
         blockJsons.push({
           height: block?.header?.height,
           date: moment(block?.header?.time).fromNow(),
           txs: block?.num_txs,
-          size: block?.block_size
+          size: block?.block_size,
         })
       }
       return blockJsons.slice(0, 10)
     },
-    showTx (txID) {
-      if (txID === '0000000000000000000000000000000000000000000000000000000000000000') {
+    showTx(txID) {
+      if (
+        txID ===
+        '0000000000000000000000000000000000000000000000000000000000000000'
+      ) {
         return 'Internal Tx'
       }
       return txID
     },
-    formatMoment (time) {
+    formatMoment(time) {
       return moment(Number.parseInt(time / 10 ** 6)).fromNow()
     },
-    formatPoolsData (d) {
+    formatPoolsData(d) {
       const poolData = []
       const runePrice = this.stats.runePriceUSD
       let totalValuePooled = 0
       let otherPoolsVolume = 0
       let otherValuePooled = 0
-      const defaultColors = ['#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de', '#3ba272', '#fc8452', '#9a60b4', '#ea7ccc']
-      d.sort((a, b) => (+b.runeDepth) - (+a.runeDepth)).forEach((p, i) => {
-        const runeInPools = (+p.runeDepth)
-        const assetsInRune = (+p.assetDepth) * +p.assetPrice
+      const defaultColors = [
+        '#5470c6',
+        '#91cc75',
+        '#fac858',
+        '#ee6666',
+        '#73c0de',
+        '#3ba272',
+        '#fc8452',
+        '#9a60b4',
+        '#ea7ccc',
+      ]
+      d.sort((a, b) => +b.runeDepth - +a.runeDepth).forEach((p, i) => {
+        const runeInPools = +p.runeDepth
+        const assetsInRune = +p.assetDepth * +p.assetPrice
         totalValuePooled += ((runeInPools + assetsInRune) * runePrice) / 1e8
         if (i < 6) {
           const asset = assetFromString(p.asset)
           poolData.push({
             value: ((runeInPools + assetsInRune) * runePrice) / 1e8,
             name: `${asset.chain}.${asset.ticker}`,
-            vol: (+p.volume24h) * runePrice / 1e8,
-            color: defaultColors[i]
+            vol: (+p.volume24h * runePrice) / 1e8,
+            color: defaultColors[i],
           })
         } else if (i >= 6) {
-          otherPoolsVolume += (+p.volume24h) * runePrice / 1e8
+          otherPoolsVolume += (+p.volume24h * runePrice) / 1e8
           otherValuePooled += ((runeInPools + assetsInRune) * runePrice) / 1e8
 
           if (i === d.length - 1) {
@@ -1088,7 +1187,7 @@ export default {
               value: otherValuePooled,
               name: 'Other pools',
               vol: otherPoolsVolume,
-              color: defaultColors[6]
+              color: defaultColors[6],
             })
           }
         }
@@ -1114,7 +1213,7 @@ export default {
           `
         },
         tooltip: {
-          trigger: 'item'
+          trigger: 'item',
         },
         series: [
           {
@@ -1125,26 +1224,26 @@ export default {
             width: 275,
             height: 250,
             itemStyle: {
-              borderRadius: 5
+              borderRadius: 5,
             },
             label: {
-              show: false
+              show: false,
             },
-            data: poolData
-          }
-        ]
+            data: poolData,
+          },
+        ],
       }
 
       this.poolsOption = option
       this.poolsData = poolData
       this.totalValuePooled = totalValuePooled
-    }
-  }
+    },
+  },
 }
 </script>
 
 <style lang="scss">
-.swap-volume-chart{
+.swap-volume-chart {
   top: 3rem;
 }
 .overview-container {
@@ -1228,7 +1327,7 @@ export default {
         position: absolute;
         right: 0;
         top: 0;
-        content: "";
+        content: '';
         display: block;
         height: calc(100% - 1rem);
         border-left: 0;

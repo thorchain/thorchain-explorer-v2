@@ -1,15 +1,21 @@
 <template>
   <div>
     <div class="chart-edition savers-distro">
-      <Card title="Address Distribution" :is-loading="(!saverDetails || saverDetails.length == 0)" class="inner-pie-chart">
+      <Card
+        title="Address Distribution"
+        :is-loading="!saverDetails || saverDetails.length == 0"
+        class="inner-pie-chart"
+      >
         <pie-chart :pie-data="saverDetails" :formatter="totalSaverFormatter" />
       </Card>
-      <Card title="Savers Cap Filled" :is-loading="!saversData.filled" class="savers-filled-card">
-        <ProgressBar :width="(saversData.filled*100)" />
+      <Card
+        title="Savers Cap Filled"
+        :is-loading="!saversData.filled"
+        class="savers-filled-card"
+      >
+        <ProgressBar :width="saversData.filled * 100" />
         <h4>
-          {{
-            $options.filters.percent(saversData.filled, 2)
-          }}
+          {{ $options.filters.percent(saversData.filled, 2) }}
           Total Savers Filled
         </h4>
       </Card>
@@ -26,7 +32,7 @@
         }"
         :sort-options="{
           enabled: true,
-          initialSortBy: {field: 'asset_deposit_value', type: 'desc'}
+          initialSortBy: { field: 'asset_deposit_value', type: 'desc' },
         }"
       >
         <template slot="table-row" slot-scope="props">
@@ -58,10 +64,10 @@
 <script>
 export default {
   props: ['saversData'],
-  asyncData ({ params }) {
+  asyncData({ params }) {
     return { poolName: params.poolName }
   },
-  data () {
+  data() {
     return {
       loading: false,
       error: false,
@@ -70,62 +76,64 @@ export default {
           label: 'Address',
           field: 'asset_address',
           tdClass: 'mono clickable',
-          formatFn: this.formatAddress
+          formatFn: this.formatAddress,
         },
         {
           label: 'Member Deposit',
           field: 'asset_deposit_value',
           tdClass: 'mono',
           type: 'number',
-          formatFn: this.baseAmountFormatOrZero
+          formatFn: this.baseAmountFormatOrZero,
         },
         {
           label: 'Member Redeem',
           field: 'asset_redeem_value',
           tdClass: 'mono',
           type: 'number',
-          formatFn: this.baseAmountFormatOrZero
+          formatFn: this.baseAmountFormatOrZero,
         },
         {
           label: 'Earned',
           field: 'asset_earned',
           tdClass: 'mono',
           type: 'number',
-          formatFn: this.baseAmountFormatOrZero
+          formatFn: this.baseAmountFormatOrZero,
         },
         {
           label: 'Growth Percentage',
           field: 'growth_pct',
           tdClass: 'mono',
-          type: 'percentage'
+          type: 'percentage',
         },
         {
           label: 'Annualised Yield',
           field: 'APR',
           tdClass: 'mono',
-          type: 'percentage'
+          type: 'percentage',
         },
         {
           label: 'Last Height Added',
           field: 'last_add_height',
           tdClass: 'mono',
           type: 'number',
-          formatFn: this.normalFormat
-        }
+          formatFn: this.normalFormat,
+        },
       ],
       saverDetails: [],
-      lastBlockHeight: undefined
+      lastBlockHeight: undefined,
     }
   },
-  mounted () {
+  mounted() {
     this.updateSavers()
   },
   methods: {
-    async updateSavers () {
+    async updateSavers() {
       this.loading = true
 
       try {
-        this.lastBlockHeight = (await this.$api.getLastBlockHeight()).data?.find(e => e.chain === 'BTC')?.thorchain
+        this.lastBlockHeight = (
+          await this.$api.getLastBlockHeight()
+        ).data?.find((e) => e.chain === 'BTC')?.thorchain
       } catch (error) {
         this.error = true
         console.error(error)
@@ -134,13 +142,16 @@ export default {
       this.$api
         .getSavers(this.poolName)
         .then(({ data: savers }) => {
-          this.saverDetails = savers.map(saverDetail => ({
+          this.saverDetails = savers.map((saverDetail) => ({
             ...saverDetail,
-            asset_earned: saverDetail.asset_redeem_value - saverDetail.asset_deposit_value,
+            asset_earned:
+              saverDetail.asset_redeem_value - saverDetail.asset_deposit_value,
             APR: this.calcAPR(saverDetail),
             // for pie chart
-            value: (saverDetail.asset_redeem_value * this.saversData.assetPriceUSD) / 10 ** 8,
-            name: saverDetail.asset_address
+            value:
+              (saverDetail.asset_redeem_value * this.saversData.assetPriceUSD) /
+              10 ** 8,
+            name: saverDetail.asset_address,
           }))
         })
         .catch((e) => {
@@ -148,14 +159,19 @@ export default {
           console.error(e)
         })
     },
-    calcAPR (saverDetail) {
-      if (!this.lastBlockHeight) { return 0 }
-      const diffHeight = (this.lastBlockHeight - saverDetail.last_add_height)
+    calcAPR(saverDetail) {
+      if (!this.lastBlockHeight) {
+        return 0
+      }
+      const diffHeight = this.lastBlockHeight - saverDetail.last_add_height
       const periodPerYear = 5256000 / diffHeight
-      return ((saverDetail.asset_redeem_value / saverDetail.asset_deposit_value) - 1) * periodPerYear
+      return (
+        (saverDetail.asset_redeem_value / saverDetail.asset_deposit_value - 1) *
+        periodPerYear
+      )
     },
-    totalSaverFormatter (param) {
-      return (`
+    totalSaverFormatter(param) {
+      return `
         <div class="tooltip-header">
           <div class="data-color" style="background-color: ${param.color}"></div>
           ${this.formatAddress(param.name)}
@@ -166,13 +182,13 @@ export default {
             <b>$${this.$options.filters.number(param.value, '0,0.00 a')}</b>
           </span>
         </div>
-      `)
-    }
-  }
+      `
+    },
+  },
 }
 </script>
 
-<style lang='scss'>
+<style lang="scss">
 .address-link {
   text-decoration: none;
 }

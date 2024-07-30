@@ -1,34 +1,47 @@
-import { mapGetters } from "vuex";
-import { bnOrZero, formatBN, AssetCurrencySymbol, isSynthAsset } from '@xchainjs/xchain-util'
+import { mapGetters } from 'vuex'
+import {
+  bnOrZero,
+  formatBN,
+  AssetCurrencySymbol,
+  isSynthAsset,
+} from '@xchainjs/xchain-util'
 import compare from 'semver/functions/compare'
 import moment from 'moment'
 import { AssetImage } from '~/classes/assetImage'
-import { assetFromString, parseMemoToTxType, shortAssetName, assetToString, affiliateMap } from '~/utils'
+import {
+  assetFromString,
+  parseMemoToTxType,
+  shortAssetName,
+  assetToString,
+  affiliateMap,
+} from '~/utils'
 import endpoints from '~/api/endpoints'
 
 export default {
-  data () {
+  data() {
     return {
       showLoading: {
         color: 'var(--primary-color)',
         textColor: 'var(--primary-color)',
-        maskColor: 'var(--card-bg-color)'
-      }
+        maskColor: 'var(--card-bg-color)',
+      },
     }
   },
   ...mapGetters({
-    theme: "getTheme",
+    theme: 'getTheme',
   }),
   methods: {
-    assetImage (assetStr) {
+    assetImage(assetStr) {
       try {
         return AssetImage(assetStr) ?? require('~/assets/images/unknown.png')
       } catch (error) {
         return require('~/assets/images/unknown.png')
       }
     },
-    assetToChain (assetStr) {
-      if (!assetStr) { return }
+    assetToChain(assetStr) {
+      if (!assetStr) {
+        return
+      }
       const { chain, synth, trade } = assetFromString(assetStr)
       let asset = `${chain}.${chain}`
       if (synth) {
@@ -51,10 +64,10 @@ export default {
       }
       return asset
     },
-    imgErr (e) {
+    imgErr(e) {
       e.target.src = require('~/assets/images/unknown.png')
     },
-    baseChainAsset (chain) {
+    baseChainAsset(chain) {
       switch (chain) {
         case 'THOR':
           return 'THOR.RUNE'
@@ -66,20 +79,30 @@ export default {
           return `${chain}.${chain}`
       }
     },
-    goto (url) {
+    goto(url) {
       this.$router.push({ path: `${url}` })
     },
-    gotoAddr (address) {
+    gotoAddr(address) {
       this.$router.push({ path: `/address/${address}` })
     },
-    popRandomColor () {
-      const defaultColors = ['#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de', '#3ba272', '#fc8452', '#9a60b4', '#ea7ccc']
+    popRandomColor() {
+      const defaultColors = [
+        '#5470c6',
+        '#91cc75',
+        '#fac858',
+        '#ee6666',
+        '#73c0de',
+        '#3ba272',
+        '#fc8452',
+        '#9a60b4',
+        '#ea7ccc',
+      ]
       const rand = Math.random()
       const color = defaultColors[Math.floor(rand * defaultColors.length)]
       defaultColors.splice(Math.floor(rand * defaultColors.length), 1)
       return color
     },
-    getAssetColor (asset) {
+    getAssetColor(asset) {
       switch (asset) {
         case 'BTC.BTC':
           return '#EF8F1C'
@@ -109,7 +132,7 @@ export default {
           return this.popRandomColor()
       }
     },
-    getChainColor (asset) {
+    getChainColor(asset) {
       switch (asset) {
         case 'BTC':
           return '#EF8F1C'
@@ -131,60 +154,72 @@ export default {
           return this.popRandomColor()
       }
     },
-    isInternalTx (hash) {
-      if (hash === '0000000000000000000000000000000000000000000000000000000000000000') {
+    isInternalTx(hash) {
+      if (
+        hash ===
+        '0000000000000000000000000000000000000000000000000000000000000000'
+      ) {
         return true
       }
       return false
     },
-    gotoTx (hash) {
-      if (hash === '0000000000000000000000000000000000000000000000000000000000000000') {
+    gotoTx(hash) {
+      if (
+        hash ===
+        '0000000000000000000000000000000000000000000000000000000000000000'
+      ) {
         return
       }
       this.$router.push({ path: `/tx/${hash}` })
     },
-    isValidTx (hash) {
-      if (hash === '0000000000000000000000000000000000000000000000000000000000000000') {
+    isValidTx(hash) {
+      if (
+        hash ===
+        '0000000000000000000000000000000000000000000000000000000000000000'
+      ) {
         return false
       }
       return true
     },
-    gotoNode (signer) {
+    gotoNode(signer) {
       this.$router.push({ path: `/node/${signer}` })
     },
-    gotoPool (pool) {
+    gotoPool(pool) {
       this.$router.push({ path: `/pool/${pool}` })
     },
-    copy (address) {
-      navigator.clipboard.writeText(address).then(() => {
-        this.copyText = 'Copied'
-        setTimeout(() => {
-          this.copyText = 'Copy'
-        }, 2000)
-      }, (err) => {
-        console.error('Could not copy text: ', err)
-      })
+    copy(address) {
+      navigator.clipboard.writeText(address).then(
+        () => {
+          this.copyText = 'Copied'
+          setTimeout(() => {
+            this.copyText = 'Copy'
+          }, 2000)
+        },
+        (err) => {
+          console.error('Could not copy text: ', err)
+        }
+      )
     },
-    checkSynth (asset) {
+    checkSynth(asset) {
       if (!asset) {
         return false
       }
 
       return isSynthAsset(assetFromString(asset))
     },
-    fromNow (date) {
+    fromNow(date) {
       return moment(date).fromNow()
     },
-    percentageFormat (number, decimal) {
+    percentageFormat(number, decimal) {
       return number ? this.$options.filters.percent(number, decimal ?? 4) : '-'
     },
-    normalFormat (number) {
+    normalFormat(number) {
       return number ? this.$options.filters.number(+number, '0,0') : '-'
     },
-    numberFormat (number) {
+    numberFormat(number) {
       return number ? this.$options.filters.number(+number, '0,0.0000') : '-'
     },
-    showAsset (assetStr) {
+    showAsset(assetStr) {
       if (!assetStr) {
         return ''
       }
@@ -205,51 +240,72 @@ export default {
         console.error("Can't get the asset:", assetStr)
       }
     },
-    baseAmountFormat (number) {
-      return number ? this.$options.filters.number(+number / 10 ** 8, '0,0.0000') : '-'
+    baseAmountFormat(number) {
+      return number
+        ? this.$options.filters.number(+number / 10 ** 8, '0,0.0000')
+        : '-'
     },
-    baseAmountFormatOrZero (number) {
+    baseAmountFormatOrZero(number) {
       return formatBN(bnOrZero(number).div(1e8), 8)
     },
-    smallBaseAmountFormat (number) {
-      return number ? this.$options.filters.number(+number / 10 ** 8, '0,0.00a') : '-'
+    smallBaseAmountFormat(number) {
+      return number
+        ? this.$options.filters.number(+number / 10 ** 8, '0,0.00a')
+        : '-'
     },
-    smallBaseAmountFormatWithCur (number) {
+    smallBaseAmountFormatWithCur(number) {
       return number ? `$${this.smallBaseAmountFormat(number)}` : '-'
     },
-    formatCurrency (number) {
+    formatCurrency(number) {
       return this.$options.filters.currency(number)
     },
-    formatBnCurrency (number) {
+    formatBnCurrency(number) {
       return `$${formatBN(bnOrZero(number))}`
     },
-    formatSmallCurrency (number) {
+    formatSmallCurrency(number) {
       return this.$options.filters.currency(number / 10 ** 8, '$', 2)
     },
-    versionSort (x, y, col, rowX, rowY) {
-      return (compare(x, y))
+    versionSort(x, y, col, rowX, rowY) {
+      return compare(x, y)
     },
-    formatAddress (string) {
-      if (string && string.length > 12) { return string.slice(0, 6) + '...' + string.slice(-6) } else { return string }
+    formatAddress(string) {
+      if (string && string.length > 12) {
+        return string.slice(0, 6) + '...' + string.slice(-6)
+      } else {
+        return string
+      }
     },
-    formatTimeSort (x, y, col, rowX, rowY) {
-      return (+x < +y ? -1 : (+x > +y ? 1 : 0))
+    formatTimeSort(x, y, col, rowX, rowY) {
+      return +x < +y ? -1 : +x > +y ? 1 : 0
     },
-    formatTimeNow (timestamp) {
+    formatTimeNow(timestamp) {
       return moment(timestamp * 1e3).fromNow()
     },
-    addressFormatV2 (string, number = 6, isOnlyLast = false) {
-      if (!string) { return string }
-      return (isOnlyLast ? '' : (string.slice(0, number) + '...')) + string.slice(-number)
+    addressFormatV2(string, number = 6, isOnlyLast = false) {
+      if (!string) {
+        return string
+      }
+      return (
+        (isOnlyLast ? '' : string.slice(0, number) + '...') +
+        string.slice(-number)
+      )
     },
-    gotoNodeUrl (node) {
-      return (`${endpoints[process.env.NETWORK].THORNODE_URL}thorchain/node/${node}`)
+    gotoNodeUrl(node) {
+      return `${endpoints[process.env.NETWORK].THORNODE_URL}thorchain/node/${node}`
     },
-    gotoSaver (params) {
-      if (!params) { return }
+    gotoSaver(params) {
+      if (!params) {
+        return
+      }
       this.$router.push(`/savers/${params.row.asset}`)
     },
-    basicChartFormat (valueFormatter = undefined, series, xAxis, extraSettings = {}, globalFormatter) {
+    basicChartFormat(
+      valueFormatter = undefined,
+      series,
+      xAxis,
+      extraSettings = {},
+      globalFormatter
+    ) {
       let colors = ['#63FDD9', '#00CCFF', '#F3BA2F', '#FF4954']
       if (this.theme === 'light') {
         colors = ['#3ca38b', '#00CCFF', '#F3BA2F', '#FF4954']
@@ -257,58 +313,62 @@ export default {
 
       return {
         title: {
-          show: false
+          show: false,
         },
         tooltip: {
           confine: true,
           trigger: 'axis',
           valueFormatter,
-          formatter: globalFormatter
+          formatter: globalFormatter,
         },
         legend: {
           x: 'center',
           y: 'bottom',
           icon: 'rect',
           textStyle: {
-            color: 'var(--font-color)'
-          }
+            color: 'var(--font-color)',
+          },
         },
         xAxis: {
           data: xAxis,
           splitLine: {
-            show: false
+            show: false,
           },
           axisLine: {
             lineStyle: {
-              color: '#9f9f9f'
-            }
+              color: '#9f9f9f',
+            },
           },
           axisLabel: {
             color: '#9f9f9f',
-            fontFamily: 'ProductSans'
-          }
+            fontFamily: 'ProductSans',
+          },
         },
         yAxis: {
           show: false,
           splitLine: {
-            show: true
-          }
+            show: true,
+          },
         },
         grid: {
           left: '20px',
-          right: '20px'
+          right: '20px',
         },
         color: colors,
         series,
-        ...extraSettings
+        ...extraSettings,
       }
     },
-    camelCase (e) {
+    camelCase(e) {
       return e && e.replace(/([A-Z])/g, ' $1')
     },
-    parseConstant (key, options) {
+    parseConstant(key, options) {
       // make sure component has these data in it.
-      if (!this.mimir || !this.networkConst || !this.networkConst?.int_64_values) {
+      if (
+        !this.mimir ||
+        !this.networkConst ||
+        !this.networkConst?.int_64_values
+      ) {
         return {}
       }
 
@@ -332,23 +392,25 @@ export default {
         name: uniName,
         ...(options?.filter ? { value: options?.filter(value) } : { value }),
         ...(isMimir && { extraText: `${extraText ?? ''}Overwritten by Mimir` }),
-        ...(!isMimir && extraText && { extraText })
+        ...(!isMimir && extraText && { extraText }),
       }
     },
-    runeCur () {
+    runeCur() {
       return AssetCurrencySymbol.RUNE
     },
-    clearIntervalId (id) {
+    clearIntervalId(id) {
       if (id) {
         clearInterval(id)
       }
     },
-    numberSort (x, y, col, rowX, rowY) {
-      return (+x < +y ? -1 : (+x > +y ? 1 : 0))
+    numberSort(x, y, col, rowX, rowY) {
+      return +x < +y ? -1 : +x > +y ? 1 : 0
     },
-    parseMemo (memo) {
+    parseMemo(memo) {
       // Driven from track repo
-      if (!memo) { return {} }
+      if (!memo) {
+        return {}
+      }
 
       // TXTYPE:STATE1:STATE2:STATE3:FINALMEMO
       const type = parseMemoToTxType(memo)
@@ -365,7 +427,7 @@ export default {
           interval: parseInt(interval) || null,
           quantity: parseInt(quantity) || null,
           affiliate: parts[4] || null,
-          fee: parts[5] || null
+          fee: parts[5] || null,
         }
       }
 
@@ -376,7 +438,7 @@ export default {
           asset: parts[1] || null,
           asymmetry: parts[2] || false,
           affiliate: parts[3] || null,
-          fee: parts[4] || null
+          fee: parts[4] || null,
         }
       }
 
@@ -386,7 +448,7 @@ export default {
           type: type || null,
           asset: parts[1] || null,
           bps: parts[2] || null,
-          withdrawAsset: parts[3] || null
+          withdrawAsset: parts[3] || null,
         }
       }
 
@@ -395,16 +457,16 @@ export default {
         return {
           type,
           asset: null,
-          address: parts[1]
+          address: parts[1],
         }
       }
 
       return {
         type: type || null,
-        asset: parts[1] || null
+        asset: parts[1] || null,
       }
     },
-    findAssetInPool (asset, pools) {
+    findAssetInPool(asset, pools) {
       if (typeof asset !== 'object') {
         asset = assetFromString(asset)
       }
@@ -426,8 +488,10 @@ export default {
       }
       return asset
     },
-    parseMemoAsset (assetInString, pools) {
-      if (!assetInString) { return null }
+    parseMemoAsset(assetInString, pools) {
+      if (!assetInString) {
+        return null
+      }
 
       if (typeof assetInString === 'object') {
         return assetInString
@@ -458,12 +522,10 @@ export default {
 
       return asset
     },
-    formatAsset (asset) {
-      return asset.length > 10
-        ? asset.slice(0, 14) + '...'
-        : asset
+    formatAsset(asset) {
+      return asset.length > 10 ? asset.slice(0, 14) + '...' : asset
     },
-    amountToUSD (asset, amount, pools) {
+    amountToUSD(asset, amount, pools) {
       if (!asset || !amount || !pools) {
         return
       }
@@ -489,11 +551,13 @@ export default {
         return amount * this.usdPerRune(pools)
       }
 
-      const pricePerAsset = +pools.find(p => p.asset === assetToString(copyAsset))?.assetPriceUSD ?? 0
+      const pricePerAsset =
+        +pools.find((p) => p.asset === assetToString(copyAsset))
+          ?.assetPriceUSD ?? 0
 
       return amount * pricePerAsset
     },
-    usdPerRune (pools) {
+    usdPerRune(pools) {
       let asset = 0
       let rune = 0
 
@@ -501,7 +565,7 @@ export default {
         'ETH.USDC-0XA0B86991C6218B36C1D19D4A2E9EB0CE3606EB48',
         'ETH.USDT-0XDAC17F958D2EE523A2206206994597C13D831EC7',
         'AVAX.USDC-0XB97EF9EF8734C71904D8002F8B6BC66DD9C48A6E',
-        'BNB.BUSD-BD1'
+        'BNB.BUSD-BD1',
       ]
 
       pools.forEach((p) => {
@@ -512,7 +576,7 @@ export default {
       })
       return asset / rune
     },
-    assetColorPalette (asset) {
+    assetColorPalette(asset) {
       if (!asset) {
         return null
       }
@@ -586,7 +650,7 @@ export default {
           return null
       }
     },
-    blockSeconds (chain) {
+    blockSeconds(chain) {
       switch (chain) {
         case 'BTC':
           return 600
@@ -612,7 +676,7 @@ export default {
           return 0
       }
     },
-    getNativeAsset (denom, pools) {
+    getNativeAsset(denom, pools) {
       if (!denom) {
         return
       }
@@ -627,15 +691,13 @@ export default {
 
       pools.forEach((p) => {
         const poolAsset = assetFromString(p.asset)
-        if (
-          poolAsset.ticker === denom.toUpperCase()
-        ) {
+        if (poolAsset.ticker === denom.toUpperCase()) {
           poolAsset.synth = true
           return poolAsset
         }
       })
     },
-    mapAffiliateName (s) {
+    mapAffiliateName(s) {
       const ifc = affiliateMap[s]
       if (!ifc) {
         return undefined
@@ -643,7 +705,7 @@ export default {
 
       const icons = {
         url: undefined,
-        urlDark: undefined
+        urlDark: undefined,
       }
 
       if (ifc.icon) {
@@ -653,8 +715,8 @@ export default {
 
       return {
         name: ifc.name ?? ifc,
-        icons
+        icons,
       }
-    }
-  }
+    },
+  },
 }

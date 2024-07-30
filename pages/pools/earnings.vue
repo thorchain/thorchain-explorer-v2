@@ -3,13 +3,12 @@
     <Nav :active-mode.sync="period" :nav-items="periods" pre-text="Period :" />
     <Card :is-loading="loading" title="Pool Earnings">
       <template #header>
-        <button class="button-container full-screen-btn" @click="showChange = !showChange">
-          <template v-if="showChange">
-            Hide Changes
-          </template>
-          <template v-else>
-            Show Changes
-          </template>
+        <button
+          class="button-container full-screen-btn"
+          @click="showChange = !showChange"
+        >
+          <template v-if="showChange"> Hide Changes </template>
+          <template v-else> Show Changes </template>
         </button>
       </template>
       <div v-if="tableData.length > 0" class="earning-box">
@@ -20,11 +19,15 @@
           style-class="vgt-table net-table"
           :sort-options="{
             enabled: true,
-            initialSortBy: {field: 'swapVolume', type: 'desc'}
+            initialSortBy: { field: 'swapVolume', type: 'desc' },
           }"
         >
           <template slot="table-row" slot-scope="props">
-            <div v-if="props.column.field == 'pool'" v-tooltip="props.row.asset" class="cell-content">
+            <div
+              v-if="props.column.field == 'pool'"
+              v-tooltip="props.row.asset"
+              class="cell-content"
+            >
               <AssetIcon :asset="props.row.pool" />
               <span>{{ props.formattedRow[props.column.field] }}</span>
             </div>
@@ -32,44 +35,65 @@
               {{ props.formattedRow[props.column.field] }}
               <progress-icon
                 v-if="showChange"
-                :data-number="smallBaseAmountFormat(props.row.change.endAssetDepth)"
+                :data-number="
+                  smallBaseAmountFormat(props.row.change.endAssetDepth)
+                "
                 :is-down="props.row.change.endAssetDepth < 0"
               />
-              <span class="extra-text" style="font-size: .6rem; font-weight: bold;">
+              <span
+                class="extra-text"
+                style="font-size: 0.6rem; font-weight: bold"
+              >
                 {{ showAsset(props.row.pool) }}
               </span>
             </div>
             <div v-else-if="props.column.field === 'endRuneDepth'">
-              <span class="extra-text" style="font-size: .6rem; font-weight: bold;">
+              <span
+                class="extra-text"
+                style="font-size: 0.6rem; font-weight: bold"
+              >
                 {{ runeCur() }}
               </span>
               {{ props.formattedRow[props.column.field] }}
               <progress-icon
                 v-if="showChange"
-                :data-number="smallBaseAmountFormat(props.row.change.endRuneDepth)"
+                :data-number="
+                  smallBaseAmountFormat(props.row.change.endRuneDepth)
+                "
                 :is-down="props.row.change.endRuneDepth < 0"
               />
             </div>
             <div
               v-else-if="
                 props.column.field === 'swapFees' ||
-                  props.column.field === 'earnings' ||
-                  props.column.field === 'swapVolume' ||
-                  props.column.field === 'rewards' ||
-                  props.column.field === 'estEarnings'"
+                props.column.field === 'earnings' ||
+                props.column.field === 'swapVolume' ||
+                props.column.field === 'rewards' ||
+                props.column.field === 'estEarnings'
+              "
             >
-              $ {{ smallBaseAmountFormat(+props.row[props.column.field]* runePrice) }}
+              $
+              {{
+                smallBaseAmountFormat(
+                  +props.row[props.column.field] * runePrice
+                )
+              }}
               <progress-icon
                 v-if="showChange"
-                :data-number="smallBaseAmountFormat(+props.row.change[props.column.field]* runePrice)"
-                :is-down="+props.row.change[props.column.field]< 0"
+                :data-number="
+                  smallBaseAmountFormat(
+                    +props.row.change[props.column.field] * runePrice
+                  )
+                "
+                :is-down="+props.row.change[props.column.field] < 0"
               />
             </div>
             <div
               v-else-if="
                 props.column.field === 'feesEarnings' ||
-                  props.column.field === 'feesReward' ||
-                  props.column.field === 'poolAPR'"
+                props.column.field === 'feesReward' ||
+                props.column.field === 'poolAPR'
+              "
             >
               {{ props.formattedRow[props.column.field] }}
               <progress-icon
@@ -92,7 +116,7 @@
 import { mapGetters } from 'vuex'
 
 export default {
-  data () {
+  data() {
     return {
       loading: false,
       error: false,
@@ -102,119 +126,118 @@ export default {
         { text: '24 Hours', mode: 'day' },
         { text: '1 Week', mode: 'Week' },
         { text: '1 Month', mode: 'Month' },
-        { text: '1 Year', mode: 'Year' }
+        { text: '1 Year', mode: 'Year' },
       ],
       poolCols: [
         {
           label: 'Asset',
           field: 'pool',
-          formatFn: this.formatAsset
+          formatFn: this.formatAsset,
         },
         {
           label: 'Asset Depth',
           field: 'endAssetDepth',
           type: 'number',
           formatFn: this.smallBaseAmountFormat,
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'Rune Depth',
           field: 'endRuneDepth',
           type: 'number',
           formatFn: this.smallBaseAmountFormat,
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'Swap Volume',
           field: 'swapVolume',
           type: 'number',
           formatFn: this.baseAmountFormat,
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'Earnings',
           field: 'earnings',
           type: 'number',
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'Fees',
           field: 'swapFees',
           type: 'number',
           formatFn: this.smallBaseAmountFormat,
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'Rewards',
           field: 'rewards',
           type: 'number',
           formatFn: this.smallBaseAmountFormat,
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'Fees/Earnings',
           field: 'feesEarnings',
           type: 'percentage',
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'Fees/Reward',
           field: 'feesReward',
           type: 'percentage',
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'Est. Yr. Earnings',
           field: 'estEarnings',
           type: 'number',
           formatFn: this.baseAmountFormat,
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'Pool APR',
           field: 'poolAPR',
           type: 'percentage',
-          tdClass: 'mono'
-        }
+          tdClass: 'mono',
+        },
       ],
-      tableData: []
+      tableData: [],
     }
   },
   computed: {
     ...mapGetters({
-      runePrice: 'getRunePrice'
-    })
+      runePrice: 'getRunePrice',
+    }),
   },
   watch: {
-    period (period) {
+    period(period) {
       this.updatePool(period)
-    }
+    },
   },
-  mounted () {
+  mounted() {
     this.updatePool(this.period)
   },
   methods: {
-    async updatePool (period) {
+    async updatePool(period) {
       this.loading = true
       const poolsData = (await this.$api.getPoolsHistory(period)).data
       const oldPoolsData = (await this.$api.getOldPoolsHistory(period)).data
       this.createTableData(poolsData, oldPoolsData)
       this.loading = false
     },
-    formatAsset (asset) {
-      return asset.length > 10
-        ? asset.slice(0, 14) + '...'
-        : asset
+    formatAsset(asset) {
+      return asset.length > 10 ? asset.slice(0, 14) + '...' : asset
     },
-    getChange (newD, oldD) {
-      return (oldD ? (+newD - +oldD) : +newD)
+    getChange(newD, oldD) {
+      return oldD ? +newD - +oldD : +newD
     },
-    createTableData (poolsData, oldPoolsData) {
+    createTableData(poolsData, oldPoolsData) {
       this.tableData = poolsData.pools.map((p) => {
-        const o = oldPoolsData.pools.find(op => op.pool === p.pool)
+        const o = oldPoolsData.pools.find((op) => op.pool === p.pool)
         const pe = p.earnings * this.getPPY(this.period)
         const ea = pe / (+p.endRuneDepth * 2)
-        const oea = (o?.earnings * this.getPPY(this.period)) / (+p?.startRuneDepth * 2)
+        const oea =
+          (o?.earnings * this.getPPY(this.period)) / (+p?.startRuneDepth * 2)
         return {
           ...p,
           feesEarnings: p.swapFees / p.earnings,
@@ -228,15 +251,24 @@ export default {
             swapVolume: this.getChange(p.swapVolume, o?.swapVolume),
             swapFees: this.getChange(p.swapFees, o?.swapFees),
             rewards: this.getChange(p.rewards, o?.rewards),
-            feesEarnings: this.getChange((p.swapFees / p.earnings), (o?.swapFees / o?.earnings)),
-            feesReward: this.getChange((p.swapFees / p.rewards), (o?.swapFees / o?.rewards)),
-            estEarnings: this.getChange(pe, o?.earnings * this.getPPY(this.period)),
-            poolAPR: this.getChange(ea, oea)
-          }
+            feesEarnings: this.getChange(
+              p.swapFees / p.earnings,
+              o?.swapFees / o?.earnings
+            ),
+            feesReward: this.getChange(
+              p.swapFees / p.rewards,
+              o?.swapFees / o?.rewards
+            ),
+            estEarnings: this.getChange(
+              pe,
+              o?.earnings * this.getPPY(this.period)
+            ),
+            poolAPR: this.getChange(ea, oea),
+          },
         }
       })
     },
-    getPPY (period) {
+    getPPY(period) {
       switch (period) {
         case 'day':
           return 365
@@ -247,8 +279,8 @@ export default {
         case 'Week':
           return 52.1429
       }
-    }
-  }
+    },
+  },
 }
 </script>
 

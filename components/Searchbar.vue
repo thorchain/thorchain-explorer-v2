@@ -1,7 +1,11 @@
 <template>
   <div class="search-bar-container">
     <div class="left-section">
-      <div id="search-container" :class="[{'expanded': isSearch}]" @click="search()">
+      <div
+        id="search-container"
+        :class="[{ expanded: isSearch }]"
+        @click="search()"
+      >
         <input
           v-model="searchQuery"
           class="search-bar-input"
@@ -9,7 +13,7 @@
           placeholder="Search"
           @keyup.enter="find()"
           @blur="isSearch = false"
-        >
+        />
         <SearchIcon class="search-icon" @click="find()" />
       </div>
     </div>
@@ -19,21 +23,29 @@
           <span>{{ networkEnv | capitalize }}</span>
         </div>
         <transition name="fade">
-          <div
-            v-show="showDialog"
-            ref="netDialog"
-            class="network-dialog"
-          >
-            <a :class="{'active': networkEnv == 'mainnet'}" :disabled="networkEnv == 'mainnet'" :href="gotoInstance('mainnet', networkEnv == 'mainnet')">
+          <div v-show="showDialog" ref="netDialog" class="network-dialog">
+            <a
+              :class="{ active: networkEnv == 'mainnet' }"
+              :disabled="networkEnv == 'mainnet'"
+              :href="gotoInstance('mainnet', networkEnv == 'mainnet')"
+            >
               Mainnet
             </a>
-            <a :class="{'active': networkEnv == 'stagenet'}" :disabled="networkEnv == 'stagenet'" :href="gotoInstance('stagenet', networkEnv == 'stagenet')">
+            <a
+              :class="{ active: networkEnv == 'stagenet' }"
+              :disabled="networkEnv == 'stagenet'"
+              :href="gotoInstance('stagenet', networkEnv == 'stagenet')"
+            >
               Stagenet
             </a>
           </div>
         </transition>
       </div>
-      <div id="settings-container" ref="settingsContainer" class="settings-container">
+      <div
+        id="settings-container"
+        ref="settingsContainer"
+        class="settings-container"
+      >
         <div class="settings-icon-container" @click="toggleSettings">
           <SettingsIcon />
         </div>
@@ -42,8 +54,16 @@
             <div class="settings-card simple-card normal">
               <div class="settings-item" @click="changeTheme">
                 <span>Dark Theme</span>
-                <SunIcon v-if="theme === 'light'" class="social-icon" @click="changeTheme" />
-                <MoonIcon v-if="theme === 'dark'" class="social-icon" @click="changeTheme" />
+                <SunIcon
+                  v-if="theme === 'light'"
+                  class="social-icon"
+                  @click="changeTheme"
+                />
+                <MoonIcon
+                  v-if="theme === 'dark'"
+                  class="social-icon"
+                  @click="changeTheme"
+                />
               </div>
             </div>
           </div>
@@ -67,32 +87,32 @@ export default {
     SunIcon,
     MoonIcon,
     SearchIcon,
-    SettingsIcon
+    SettingsIcon,
   },
-  data () {
+  data() {
     return {
       searchQuery: '',
       isSearch: false,
       showDialog: false,
-      showSettings: false
+      showSettings: false,
     }
   },
   computed: {
     ...mapGetters({
       theme: 'getTheme',
       fullscreen: 'getFullScreen',
-      sidebar: 'getSidebar'
+      sidebar: 'getSidebar',
     }),
-    networkEnv () {
+    networkEnv() {
       return process.env.NETWORK
-    }
+    },
   },
   watch: {
-    $route (to, from) {
+    $route(to, from) {
       this.searchQuery = ''
-    }
+    },
   },
-  mounted () {
+  mounted() {
     window.addEventListener('click', (e) => {
       if (!document.getElementById('search-container')?.contains(e.target)) {
         this.isSearch = false
@@ -102,7 +122,10 @@ export default {
         this.showDialog = false
       }
 
-      if (!document.querySelector('.collapse-icon')?.contains(e.target) && !document.querySelector('.side-bar-container')?.contains(e.target)) {
+      if (
+        !document.querySelector('.collapse-icon')?.contains(e.target) &&
+        !document.querySelector('.side-bar-container')?.contains(e.target)
+      ) {
         this.$store.commit('setSidebar', false)
       }
 
@@ -115,10 +138,13 @@ export default {
     })
 
     this.createListener('network', 'netDialog', { topM: 45, leftM: 0 })
-    this.createListener('settingsContainer', 'settingsMenu', { topM: 45, leftM: -280 })
+    this.createListener('settingsContainer', 'settingsMenu', {
+      topM: 45,
+      leftM: -280,
+    })
   },
   methods: {
-    find () {
+    find() {
       if (!this.isSearch) {
         document.getElementsByClassName('search-bar-input')[0].focus()
         return
@@ -127,7 +153,9 @@ export default {
       if (search.length <= 30) {
         this.$api.getThorname(this.searchQuery).then((res) => {
           if (res.status / 200 === 1 && res.data?.aliases.length > 0) {
-            const thorchainAddr = res.data?.aliases?.find(el => el.chain === 'THOR').address
+            const thorchainAddr = res.data?.aliases?.find(
+              (el) => el.chain === 'THOR'
+            ).address
             this.$router.push({ path: `/address/${thorchainAddr}` })
           }
         })
@@ -147,37 +175,36 @@ export default {
         search.startsWith('TLTC') ||
         // COSMOS
         search.startsWith('COSMOS') ||
-        (
-          search.startsWith('0x') &&
-          search.length <= 43
-        )
+        (search.startsWith('0x') && search.length <= 43)
       ) {
         this.$router.push({ path: `/address/${this.searchQuery}` })
       } else {
         this.$router.push({ path: `/tx/${this.searchQuery}` })
       }
     },
-    changeTheme () {
+    changeTheme() {
       if (this.theme === 'dark') {
         this.$store.commit('setTheme', false)
       } else {
         this.$store.commit('setTheme', true)
       }
     },
-    search () {
+    search() {
       this.isSearch = true
     },
-    toggleDialog () {
+    toggleDialog() {
       this.showDialog = !this.showDialog
     },
-    toggleSettings () {
+    toggleSettings() {
       this.showSettings = !this.showSettings
     },
-    gotoInstance (instance, disabled) {
-      if (disabled) { return }
+    gotoInstance(instance, disabled) {
+      if (disabled) {
+        return
+      }
       return links[instance]
     },
-    followContainer (parentContainer, childContainer, { leftM, topM }) {
+    followContainer(parentContainer, childContainer, { leftM, topM }) {
       if (this.$refs[parentContainer]) {
         const left = this.$refs[parentContainer].getBoundingClientRect().left
         const top = this.$refs[parentContainer].getBoundingClientRect().top
@@ -185,20 +212,20 @@ export default {
         this.$refs[childContainer].style.top = `${top + topM}px`
       }
     },
-    createListener (parentContainer, childContainer, styles) {
+    createListener(parentContainer, childContainer, styles) {
       window.addEventListener('resize', () => {
         this.followContainer(parentContainer, childContainer, styles)
       })
 
       this.followContainer(parentContainer, childContainer, styles)
     },
-    toggleSidebar () {
+    toggleSidebar() {
       this.$store.commit('setSidebar', true)
     },
-    toggleFullscreen () {
+    toggleFullscreen() {
       this.$store.commit('toggleFullscreen')
-    }
-  }
+    },
+  },
 }
 </script>
 
@@ -236,7 +263,8 @@ export default {
       fill: var(--active-bg-color);
     }
 
-    &.expand-icon, &.collapse-icon {
+    &.expand-icon,
+    &.collapse-icon {
       display: none;
 
       @include lg {
@@ -259,8 +287,8 @@ export default {
 
     #network-wrapper {
       .network-container {
-        padding: .5rem 1rem;
-        border-radius: .5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
         background-color: var(--card-bg-color);
         border: 1px solid var(--border-color);
         width: 100px;
@@ -272,7 +300,6 @@ export default {
           text-align: center;
           color: var(--primary-color);
         }
-
       }
 
       .network-dialog {
@@ -281,7 +308,7 @@ export default {
         display: flex;
         flex-direction: column;
         border: 1px solid var(--border-color);
-        border-radius: .5rem;
+        border-radius: 0.5rem;
         width: 100px;
 
         a {
@@ -289,16 +316,16 @@ export default {
           background: var(--card-bg-color);
           color: var(--font-color);
           border: none;
-          padding: .5rem 1rem;
+          padding: 0.5rem 1rem;
           text-decoration: none;
           text-align: center;
 
           &:first-of-type {
-            border-radius: .5rem .5rem 0 0;
+            border-radius: 0.5rem 0.5rem 0 0;
           }
 
           &:last-of-type {
-            border-radius: 0 0 .5rem .5rem;
+            border-radius: 0 0 0.5rem 0.5rem;
           }
 
           &:hover {
@@ -322,38 +349,39 @@ export default {
     display: flex;
     position: relative;
     max-width: 600px;
-    transition: all .5s ease;
+    transition: all 0.5s ease;
 
     &.expanded {
       flex: 1;
 
       .search-icon {
-        right: .5rem;
+        right: 0.5rem;
       }
     }
 
     .search-bar-input {
       flex: 1;
-      font-size: .875rem;
+      font-size: 0.875rem;
       border-radius: 5px;
       height: 40px;
       color: var(--font-color);
       background-color: var(--darker-bg);
       width: 2.5rem;
 
-      &:focus, &:active {
+      &:focus,
+      &:active {
         outline: none;
       }
     }
 
     .search-icon {
       position: absolute;
-      padding: .2rem;
+      padding: 0.2rem;
       width: 1.4rem;
       height: 1.4rem;
       fill: var(--font-color);
-      right: calc(1rem - .4rem);
-      top: calc( 50% - .8rem );
+      right: calc(1rem - 0.4rem);
+      top: calc(50% - 0.8rem);
       cursor: pointer;
       background-color: var(--darker-bg);
     }
@@ -361,10 +389,10 @@ export default {
     span {
       display: none;
       pointer-events: none;
-      font-size: .875rem;
+      font-size: 0.875rem;
       position: absolute;
-      left: .7rem;
-      top: .8rem;
+      left: 0.7rem;
+      top: 0.8rem;
     }
 
     @include lg {
@@ -377,7 +405,6 @@ export default {
       }
     }
   }
-
 }
 
 #settingsMenu {

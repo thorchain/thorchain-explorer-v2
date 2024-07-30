@@ -1,125 +1,132 @@
 // axios instance
 import { $axiosInstace } from './index'
 
-export function getStats () {
+export function getStats() {
   return $axiosInstace.get('stats')
 }
 
-export function getTxs (offset = 0, limit = 10, OtherParams = undefined) {
+export function getTxs(offset = 0, limit = 10, OtherParams = undefined) {
   const params = {
     offset,
     limit,
-    ...OtherParams
+    ...OtherParams,
   }
 
   return $axiosInstace.get('actions', { params })
 }
 
-export function getTx (txid, limit = 10) {
+export function getTx(txid, limit = 10) {
   const params = {
     offset: 0,
     limit,
-    txid
+    txid,
   }
 
   return $axiosInstace.get('actions', { params })
 }
 
-export function getAddress (address, offset = 0, limit = 10) {
+export function getAddress(address, offset = 0, limit = 10) {
   const params = {
     offset,
     limit,
-    address
+    address,
   }
 
   return $axiosInstace.get('actions', { params })
 }
 
-export function getPoolTxs (poolName, offset = 0, limit = 10) {
+export function getPoolTxs(poolName, offset = 0, limit = 10) {
   const params = {
     offset,
     limit,
-    asset: poolName
+    asset: poolName,
   }
 
   return $axiosInstace.get('actions', { params })
 }
 
-export function getPools (period) {
+export function getPools(period) {
   return $axiosInstace.get(`pools?period=${period ?? '180d'}`)
 }
 
-export function getPoolStats (poolName) {
+export function getPoolStats(poolName) {
   return $axiosInstace.get(`pool/${poolName}/stats`)
 }
 
-export function getPoolDepth (poolName, count = 30, from = undefined) {
-  return $axiosInstace.get(`history/depths/${poolName}?interval=day&count=${count}` + (from ? `&from=${from}` : ''))
+export function getPoolDepth(poolName, count = 30, from = undefined) {
+  return $axiosInstace.get(
+    `history/depths/${poolName}?interval=day&count=${count}` +
+      (from ? `&from=${from}` : '')
+  )
 }
 
-export function volumeHistory () {
+export function volumeHistory() {
   return $axiosInstace.get('history/liquidity_changes?interval=day&count=30')
 }
 
-export function swapHistory () {
+export function swapHistory() {
   return $axiosInstace.get('history/swaps?interval=day&count=30')
 }
 
-export function tvlHistory () {
+export function tvlHistory() {
   return $axiosInstace.get('history/tvl?interval=day&count=90')
 }
 
-export function getLastTvl () {
+export function getLastTvl() {
   return $axiosInstace.get('history/tvl')
 }
 
-export function earningsHistory () {
+export function earningsHistory() {
   return $axiosInstace.get('history/earnings?interval=day&count=30')
 }
 
-export function earningLastDay () {
+export function earningLastDay() {
   return $axiosInstace.get('history/earnings?interval=day&count=2')
 }
 
-export function getPoolVolume (poolName) {
-  return $axiosInstace.get(`history/liquidity_changes?pool=${poolName}&interval=day&count=30`)
+export function getPoolVolume(poolName) {
+  return $axiosInstace.get(
+    `history/liquidity_changes?pool=${poolName}&interval=day&count=30`
+  )
 }
 
-export function getNetwork () {
+export function getNetwork() {
   return $axiosInstace.get('network')
 }
 
-export async function getLatestBlocks (latestBlock, count = 10) {
+export async function getLatestBlocks(latestBlock, count = 10) {
   if (!latestBlock) {
     return
   }
 
-  const axiosUrls = [...Array(latestBlock + 1).keys()].slice(-1 * count).map(b => `debug/block/${b}`)
+  const axiosUrls = [...Array(latestBlock + 1).keys()]
+    .slice(-1 * count)
+    .map((b) => `debug/block/${b}`)
 
-  const res = await Promise.all(axiosUrls.map(url => $axiosInstace.get(url))).then(
-    (data) => {
-      const datum = []
-      for (const d of data) {
-        datum.push(d.data)
-      }
-      return datum
+  const res = await Promise.all(
+    axiosUrls.map((url) => $axiosInstace.get(url))
+  ).then((data) => {
+    const datum = []
+    for (const d of data) {
+      datum.push(d.data)
     }
-  )
+    return datum
+  })
   return res
 }
 
-export function getRevThorname (address) {
+export function getRevThorname(address) {
   return $axiosInstace.get(`thorname/rlookup/${address}`)
 }
 
-export function getMemberDetails (address) {
+export function getMemberDetails(address) {
   return $axiosInstace.get(`member/${address}`)
 }
 
-export function getSaverDetails (address) {
+export function getSaverDetails(address) {
   return $axiosInstace.get(`saver/${address}`)
 }
 
-export function getBorrowerDetails (address) {
+export function getBorrowerDetails(address) {
   return $axiosInstace.get(`borrower/${address}`)
 }

@@ -1,7 +1,7 @@
 <template>
   <Page>
-    <cards-header :tableGeneralStats="synthsGeneralStats" />
-    <Card title="Synth Assets" :isLoading="!(rows && rows.length > 0)">
+    <cards-header :table-general-stats="synthsGeneralStats" />
+    <Card title="Synth Assets" :is-loading="!(rows && rows.length > 0)">
       <vue-good-table
         v-if="cols && rows.length > 0"
         :columns="cols"
@@ -91,28 +91,28 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
-import { formatAsset, synthToAsset } from "~/utils";
-import InfoIcon from "~/assets/images/info.svg?inline";
+import { mapGetters } from 'vuex'
+import { formatAsset, synthToAsset } from '~/utils'
+import InfoIcon from '~/assets/images/info.svg?inline'
 
 export default {
   components: { InfoIcon },
   async asyncData({ $api }) {
     const synthAssets = (await $api.getAssets().catch((e) => console.error(e)))
-      .data;
+      .data
     const pools = (await $api.getThorPools().catch((e) => console.error(e)))
-      .data;
-    const { data: mimirData } = await $api.getMimir();
+      .data
+    const { data: mimirData } = await $api.getMimir()
     const polCap =
-      (mimirData.POLTARGETSYNTHPERPOOLDEPTH + mimirData.POLBUFFER) / 10000;
-    const synthCap = mimirData.MAXSYNTHPERPOOLDEPTH / 10000;
-    const synthUtils = [];
+      (mimirData.POLTARGETSYNTHPERPOOLDEPTH + mimirData.POLBUFFER) / 10000
+    const synthCap = mimirData.MAXSYNTHPERPOOLDEPTH / 10000
+    const synthUtils = []
     for (const asset of synthAssets.supply) {
-      if (asset.denom === "bnb/bnb") {
-        continue;
+      if (asset.denom === 'bnb/bnb') {
+        continue
       }
-      const assetName = synthToAsset(asset.denom);
-      const pool = pools.find((p) => p.asset === assetName);
+      const assetName = synthToAsset(asset.denom)
+      const pool = pools.find((p) => p.asset === assetName)
       synthUtils.push({
         asset: assetName,
         synth: asset.denom,
@@ -121,113 +121,112 @@ export default {
         asset_depth: pool?.balance_asset,
         savers_depth: pool?.savers_depth,
         units: pool?.pool_units,
-      });
+      })
     }
-    return { pools, synthAssets, synthUtils, mimirData, polCap, synthCap };
+    return { pools, synthAssets, synthUtils, mimirData, polCap, synthCap }
   },
   data() {
     return {
       synthsGeneralStats: {},
       cols: [
         {
-          label: "Asset",
-          field: "asset",
+          label: 'Asset',
+          field: 'asset',
           formatFn: formatAsset,
         },
         {
-          label: "Synth",
-          field: "synth",
+          label: 'Synth',
+          field: 'synth',
           formatFn: formatAsset,
         },
         {
-          label: "Saver %",
-          field: "saverPercentage",
-          type: "percentage",
-          tdClass: "mono",
-          thClass: "end",
+          label: 'Saver %',
+          field: 'saverPercentage',
+          type: 'percentage',
+          tdClass: 'mono',
+          thClass: 'end',
         },
         {
-          label: "Utilisation",
-          field: "utilisation",
-          type: "percentage",
-          tdClass: "mono",
-          thClass: "end",
+          label: 'Utilisation',
+          field: 'utilisation',
+          type: 'percentage',
+          tdClass: 'mono',
+          thClass: 'end',
         },
         {
-          label: "Supply",
-          field: "supply",
-          type: "number",
-          tdClass: "mono",
+          label: 'Supply',
+          field: 'supply',
+          type: 'number',
+          tdClass: 'mono',
           formatFn: this.numberFormat,
         },
       ],
       rows: [],
-    };
+    }
   },
   computed: {
     totalSynthSupplyUSD() {
       return this.synthUtils.reduce((total, o) => {
         if (o.synth_supply > 0) {
-          return total + this.amountToUSD(o.asset, o.synth_supply, this.Pools);
+          return total + this.amountToUSD(o.asset, o.synth_supply, this.Pools)
         } else {
-          return total;
+          return total
         }
-      }, 0);
+      }, 0)
     },
     totalUtilisationUSD() {
       return this.synthUtils.reduce((total, o) => {
         if (o.savers_depth > 0) {
-          return total + this.amountToUSD(o.asset, o.savers_depth, this.Pools);
+          return total + this.amountToUSD(o.asset, o.savers_depth, this.Pools)
         } else {
-          return total;
+          return total
         }
-      }, 0);
+      }, 0)
     },
     totalSaverPercentage() {
       return this.totalSynthSupplyUSD > 0
         ? this.totalUtilisationUSD / this.totalSynthSupplyUSD
-        : 0;
+        : 0
     },
     ...mapGetters({
-      Pools: "getPools",
+      Pools: 'getPools',
     }),
   },
-  async mounted() {
+  mounted() {
     if (this.synthUtils && this.synthUtils.length > 0) {
-      this.rows = this.synthUtils.map(asset => ({
+      this.rows = this.synthUtils.map((asset) => ({
         asset: asset?.asset,
         synth: asset?.synth,
         utilisation:
           (+asset?.synth_supply / (+asset?.asset_depth * 2)) *
           (1 / this.synthCap),
-        isPol:
-          +asset?.synth_supply / (+asset?.asset_depth * 2) >= this.polCap,
+        isPol: +asset?.synth_supply / (+asset?.asset_depth * 2) >= this.polCap,
         saverPercentage: +asset?.savers_depth / +asset?.synth_supply,
         supply: +asset?.synth_supply / 10 ** 8,
-      }));
-      this.updateGeneralStats();
+      }))
+      this.updateGeneralStats()
     }
   },
   methods: {
     updateGeneralStats() {
       this.synthsGeneralStats = [
         {
-          name: "Total Synth Supply:",
+          name: 'Total Synth Supply:',
           value: this.$options.filters.currency(this.totalSynthSupplyUSD),
         },
         {
-          name: "Total Utilisation:",
+          name: 'Total Utilisation:',
           value: this.$options.filters.currency(this.totalUtilisationUSD),
         },
         {
-          name: "Total Saver Percentage:",
+          name: 'Total Saver Percentage:',
           value: this.$options.filters.percent(this.totalSaverPercentage),
         },
-        { name: "POL Cap:", value: this.$options.filters.percent(this.polCap) },
-      ];
+        { name: 'POL Cap:', value: this.$options.filters.percent(this.polCap) },
+      ]
     },
   },
-};
+}
 </script>
 
 <style lang="scss">

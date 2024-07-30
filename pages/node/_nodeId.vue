@@ -1,30 +1,34 @@
 <template>
   <Page>
     <div v-if="nodeSettings && nodeSettings.length > 0" class="node-container">
-      <stat-table
-        :header="`Node: ${nodeId}`"
-        :table-settings="nodeSettings"
-      >
+      <stat-table :header="`Node: ${nodeId}`" :table-settings="nodeSettings">
         <template #address>
           <span class="clickable">
             {{ address }}
           </span>
         </template>
       </stat-table>
-      <card title="Providers" style="margin-top: 1rem;" :loading="!node">
+      <card title="Providers" style="margin-top: 1rem" :loading="!node">
         <div v-if="node">
           <div class="providers-container">
-            <div v-for="p in node.bond_providers.providers" :key="p.bond_address" class="providers">
+            <div
+              v-for="p in node.bond_providers.providers"
+              :key="p.bond_address"
+              class="providers"
+            >
               <div>
                 <b>Address: </b>
-                <nuxt-link class="clickable" :to="{ path: `/address/${p.bond_address}` }">
+                <nuxt-link
+                  class="clickable"
+                  :to="{ path: `/address/${p.bond_address}` }"
+                >
                   {{ formatAddress(p.bond_address) }}
                 </nuxt-link>
               </div>
               <div>
                 <b>Bond: </b>
                 <span class="mono">
-                  {{ $options.filters.number((p.bond) / 1e8, '0,0.00') }}
+                  {{ $options.filters.number(p.bond / 1e8, '0,0.00') }}
                   {{ runeCur() }}
                 </span>
               </div>
@@ -32,10 +36,14 @@
           </div>
         </div>
       </card>
-      <card title="Signer Membership" style="margin-top: 1rem;" :loading="!node">
+      <card title="Signer Membership" style="margin-top: 1rem" :loading="!node">
         <div v-if="node">
           <div class="providers-container">
-            <div v-for="p in node.signer_membership" :key="p.signer_membership" class="providers">
+            <div
+              v-for="p in node.signer_membership"
+              :key="p.signer_membership"
+              class="providers"
+            >
               <div>
                 <span class="mono">
                   {{ formatAddress(p) }}
@@ -58,33 +66,33 @@ import StatTable from '~/components/StatTable.vue'
 
 export default {
   components: { StatTable, BounceLoader },
-  async asyncData ({ params }) {
+  async asyncData({ params }) {
     return { nodeId: params.nodeId }
   },
-  data () {
+  data() {
     return {
-      node: undefined
+      node: undefined,
     }
   },
   computed: {
-    nodeSettings () {
+    nodeSettings() {
       return [
         [
           {
             name: 'IP Address',
             value: this.node?.ip_address,
-            filter: true
+            filter: true,
           },
           {
             name: 'Version',
             value: this.node?.version,
-            filter: true
+            filter: true,
           },
           {
             name: 'Status',
             value: this.node?.status,
-            filter: true
-          }
+            filter: true,
+          },
         ],
         [
           {
@@ -92,111 +100,110 @@ export default {
             value: Number.parseInt(this.node?.total_bond) / 10 ** 8,
             filter: true,
             runeValue: true,
-            usdValue: true
+            usdValue: true,
           },
           {
             name: 'Slash Points',
-            value: Number.parseInt(this.node?.slash_points)
+            value: Number.parseInt(this.node?.slash_points),
           },
           {
             name: 'Current Reward',
             value: Number.parseInt(this.node?.current_award) / 10 ** 8,
             filter: true,
             runeValue: true,
-            usdValue: true
-          }
+            usdValue: true,
+          },
         ],
         [
           {
             name: 'Active Since (Block Height)',
-            value: Number.parseInt(this.node?.active_block_height)
+            value: Number.parseInt(this.node?.active_block_height),
           },
           {
             name: 'Status Since (Block Height)',
-            value: Number.parseInt(this.node?.status_since)
-          }
+            value: Number.parseInt(this.node?.status_since),
+          },
         ],
         [
           {
             name: 'Node operator address',
             value: this.node?.node_operator_address,
-            filter: true
-          }
+            filter: true,
+          },
         ],
         [
           {
             name: 'Public Keys: Secp256k1',
             value: this.node?.pub_key_set?.secp256k1,
-            filter: true
-          }
+            filter: true,
+          },
         ],
         [
           {
             name: 'Public Keys: Ed25519',
             value: this.node?.pub_key_set?.ed25519,
-            filter: true
-          }
+            filter: true,
+          },
         ],
         [
           {
             name: 'Requested To Leave',
             value: this.node?.requested_to_leave?.toString(),
-            filter: true
+            filter: true,
           },
           {
             name: 'Forced To Leave',
             value: this.node?.forced_to_leave?.toString(),
-            filter: true
+            filter: true,
           },
           {
             name: 'Leave Height',
             value: this.node?.leave_height?.toString(),
-            filter: true
-          }
+            filter: true,
+          },
         ],
         [
           {
             name: 'Jail Node Address',
             value: this.node?.jail?.node_address,
-            filter: true
+            filter: true,
           },
           {
             name: 'Jail Release Height',
             value: this.node?.jail?.release_height,
-            filter: true
+            filter: true,
           },
           {
             name: 'Jail Reason',
             value: this.node?.jail?.reason,
-            filter: true
-          }
+            filter: true,
+          },
         ],
         [
           {
             name: 'Preflight Status',
             value: this.node?.preflight_status?.status,
-            filter: true
+            filter: true,
           },
           {
             name: 'Preflight Reason',
             value: this.node?.preflight_status?.reason,
-            filter: true
+            filter: true,
           },
           {
             name: 'Preflight Code',
             value: this.node?.preflight_status?.code,
-            filter: true
-          }
-        ]
+            filter: true,
+          },
+        ],
       ]
-    }
+    },
   },
-  mounted () {
-    this.$api.getNode(this.nodeId)
-      .then(({ data }) => {
-        this.node = data
-      })
-  }
+  mounted() {
+    this.$api.getNode(this.nodeId).then(({ data }) => {
+      this.node = data
+    })
+  },
 }
 </script>
 
@@ -212,7 +219,7 @@ export default {
     display: flex;
     flex-direction: column;
     gap: 6px;
-    
+
     b {
       color: var(--sec-font-color);
     }

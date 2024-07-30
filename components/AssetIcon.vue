@@ -1,36 +1,41 @@
 <template>
   <div :class="['icon-asset-container', ...classes]" :style="heightStyle">
-    <img class="asset-icon" :src="assetImage(asset)" alt="asset-icon" @error="imgErr">
-    <img v-if="showChainImage()" class="chain-asset-icon" :src="assetImage(chain? chain:assetToChain(asset))" alt="asset-chain-icon">
+    <img
+      class="asset-icon"
+      :src="assetImage(asset)"
+      alt="asset-icon"
+      @error="imgErr"
+    />
+    <img
+      v-if="showChainImage()"
+      class="chain-asset-icon"
+      :src="assetImage(chain ? chain : assetToChain(asset))"
+      alt="asset-chain-icon"
+    />
   </div>
 </template>
 
 <script>
 export default {
-  props: [
-    'asset',
-    'chain',
-    'height',
-    'classes'
-  ],
+  props: ['asset', 'chain', 'height', 'classes'],
   computed: {
-    heightStyle () {
+    heightStyle() {
       return {
         '--asset-height': this.height ?? '1.5rem',
-        '--asset-width': this.height ?? '1.5rem'
+        '--asset-width': this.height ?? '1.5rem',
       }
-    }
+    },
   },
   methods: {
-    showChainImage () {
+    showChainImage() {
       if (this.chain) {
         return true
       } else if (this.assetToChain(this.asset) !== this.asset) {
         return true
       }
       return false
-    }
-  }
+    },
+  },
 }
 </script>
 

@@ -2,7 +2,10 @@
   <Page>
     <stat-table header="Protocol Owned Liquidity" :table-settings="polSettings">
       <template #pnl>
-        <skeleton-item :loading="!pnl.value" :style="{ 'color': pnl.isDown ? 'red' : 'green' }">
+        <skeleton-item
+          :loading="!pnl.value"
+          :style="{ color: pnl.isDown ? 'red' : 'green' }"
+        >
           <span v-if="pnl.isDown">-</span>
           <span v-if="!pnl.isDown">+</span>
           {{ pnl.value | number('0,0.00') }}
@@ -12,7 +15,10 @@
     </stat-table>
     <stat-table header="Providers" :table-settings="providersSettings">
       <template #providerspnl>
-        <skeleton-item :loading="!providerspnl.value" :style="{ 'color': providerspnl.isDown ? 'red' : 'green' }">
+        <skeleton-item
+          :loading="!providerspnl.value"
+          :style="{ color: providerspnl.isDown ? 'red' : 'green' }"
+        >
           <span v-if="providerspnl.isDown">-</span>
           <span v-if="!providerspnl.isDown">+</span>
           {{ providerspnl.value | number('0,0.00') }}
@@ -22,7 +28,10 @@
     </stat-table>
     <stat-table header="Reserve" :table-settings="reserveSettings">
       <template #reservepnl>
-        <skeleton-item :loading="!reservepnl.value" :style="{ 'color': reservepnl.isDown ? 'red' : 'green' }">
+        <skeleton-item
+          :loading="!reservepnl.value"
+          :style="{ color: reservepnl.isDown ? 'red' : 'green' }"
+        >
           <span v-if="reservepnl.isDown">-</span>
           <span v-if="!reservepnl.isDown">+</span>
           {{ reservepnl.value | number('0,0.00') }}
@@ -34,11 +43,15 @@
       :navs="[
         { title: 'Rune Pools', value: 'rune-pools' },
         { title: 'Mimirs', value: 'mimirs' },
-        { title: 'Members', value: 'members' }
+        { title: 'Members', value: 'members' },
       ]"
       :act-nav.sync="cardMode"
     >
-      <stat-table v-if="cardMode === 'mimirs'" :key="1" :table-settings="polMimirSettings" />
+      <stat-table
+        v-if="cardMode === 'mimirs'"
+        :key="1"
+        :table-settings="polMimirSettings"
+      />
 
       <vue-good-table
         v-else-if="cardMode === 'rune-pools'"
@@ -53,11 +66,18 @@
             <span class="ellipsis">
               {{ props.row.pool }}
             </span>
-            <div v-if="props.row.label" class="bubble-container" style="margin-left: 10px">
+            <div
+              v-if="props.row.label"
+              class="bubble-container"
+              style="margin-left: 10px"
+            >
               {{ props.row.label }}
             </div>
           </div>
-          <span v-else-if="props.column.field.startsWith('pool')" class="pool-cell ellipsis">
+          <span
+            v-else-if="props.column.field.startsWith('pool')"
+            class="pool-cell ellipsis"
+          >
             <span v-if="props.row[props.column.field][0]">
               {{ props.row[props.column.field][0] | number('0,0.00') }}
               <small>RUNE</small>
@@ -65,8 +85,11 @@
             <span v-if="props.row[props.column.field][1]" class="ellipsis">
               {{
                 props.row[props.column.field][1] ||
-                  props.row[props.column.field][1] === 0
-                  ? ($options.filters.number(props.row[props.column.field][1], '0,0.000000'))
+                props.row[props.column.field][1] === 0
+                  ? $options.filters.number(
+                      props.row[props.column.field][1],
+                      '0,0.000000'
+                    )
                   : '-'
               }}
               <small class="ellipsis">{{ props.row.pool }}</small>
@@ -74,7 +97,9 @@
             <span v-else-if="!props.row[props.column.field][0]">-</span>
           </span>
           <span v-else-if="props.column.field == 'share'">
-            <span v-if="props.row.share">{{ percentageFormat(props.row.share, 4) }}</span>
+            <span v-if="props.row.share">{{
+              percentageFormat(props.row.share, 4)
+            }}</span>
             <span v-else>-</span>
           </span>
         </template>
@@ -89,7 +114,7 @@
         :pagination-options="{
           enabled: true,
           perPage: 10,
-          perPageDropdownEnabled: false
+          perPageDropdownEnabled: false,
         }"
       >
         <template slot="table-row" slot-scope="props">
@@ -101,15 +126,21 @@
             {{ props.formattedRow[props.column.field] }}
           </NuxtLink>
           <span v-else-if="props.column.field == 'deposit_amount'">
-            {{ $options.filters.number(props.row.deposit_amount, '0,0.00') }} <small>RUNE</small>
+            {{ $options.filters.number(props.row.deposit_amount, '0,0.00') }}
+            <small>RUNE</small>
           </span>
           <span v-else-if="props.column.field == 'value'">
-            {{ $options.filters.number(props.row.value, '0,0.00') }} <small>RUNE</small>
+            {{ $options.filters.number(props.row.value, '0,0.00') }}
+            <small>RUNE</small>
             <progress-icon
               v-if="props.row.value"
               :data-number="props.row.pnl"
               :is-down="+props.row.pnl < 0"
-              :filter="(value) => {return $options.filters.number(value, '0,0.00')}"
+              :filter="
+                (value) => {
+                  return $options.filters.number(value, '0,0.00')
+                }
+              "
             />
           </span>
           <span v-else-if="props.column.field == 'mature'">
@@ -130,7 +161,7 @@ import { mapGetters } from 'vuex'
 import endpoints from '~/api/endpoints'
 
 export default {
-  data () {
+  data() {
     return {
       reserveAddress: endpoints[process.env.NETWORK].MODULE_ADDR,
       polOverview: undefined,
@@ -146,213 +177,226 @@ export default {
         {
           label: 'Pool',
           field: 'pool',
-          formatFn: this.formatAsset
+          formatFn: this.formatAsset,
         },
         {
           label: 'Liquidity Share',
           field: 'share',
           type: 'number',
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'Rune/Asset Share',
           field: 'poolShare',
           type: 'number',
           formatFn: this.numberFormat,
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'Rune Added',
           field: 'poolAdded',
           type: 'number',
           formatFn: this.numberFormat,
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'Rune Withdrawn',
           field: 'poolWithdrawn',
           type: 'number',
           formatFn: this.numberFormat,
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'LUVI Growth',
           field: 'luvi',
           type: 'percentage',
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'First Added',
           field: 'dateFirstAdded',
           formatFn: this.formatTimeNow,
           sortFn: this.formatTimeSort,
-          type: 'text'
-        }
+          type: 'text',
+        },
       ],
       memberCols: [
         {
           label: 'Address',
           field: 'rune_address',
           tdClass: 'mono',
-          formatFn: this.formatAddress
+          formatFn: this.formatAddress,
         },
         {
           label: 'Current Deposit',
           field: 'deposit_amount',
           type: 'number',
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'Value',
           field: 'value',
           type: 'number',
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'Mature',
           field: 'mature',
           type: 'boolean',
-          tdClass: 'mono'
+          tdClass: 'mono',
         },
         {
           label: 'Provider Share',
           field: 'share',
           type: 'percentage',
-          tdClass: 'mono'
-        }
-      ]
+          tdClass: 'mono',
+        },
+      ],
     }
   },
   computed: {
     ...mapGetters({
-      height: 'getChainsHeight'
+      height: 'getChainsHeight',
     }),
-    pnl () {
-      const pnl = (+this.polOverview?.value - +this.polOverview?.current_deposit)
+    pnl() {
+      const pnl = +this.polOverview?.value - +this.polOverview?.current_deposit
 
       return {
         value: Math.abs(pnl) / 1e8,
         name: 'Current RUNE PnL',
-        isDown: pnl <= 0
+        isDown: pnl <= 0,
       }
     },
-    reservepnl () {
-      const pnl = (+this.reserveOverview?.value - +this.reserveOverview?.current_deposit)
+    reservepnl() {
+      const pnl =
+        +this.reserveOverview?.value - +this.reserveOverview?.current_deposit
       return {
         value: Math.abs(pnl) / 1e8,
         name: 'Current RUNE PnL',
-        isDown: pnl <= 0
+        isDown: pnl <= 0,
       }
     },
-    providerspnl () {
+    providerspnl() {
       const pnl = this.providersOverview?.pnl
       return {
         value: Math.abs(pnl) / 1e8,
         name: 'Current RUNE PnL',
-        isDown: pnl <= 0
+        isDown: pnl <= 0,
       }
     },
-    polSettings () {
+    polSettings() {
       return [
         [
           {
             name: 'Current PnL',
-            slotName: 'pnl'
+            slotName: 'pnl',
           },
           {
             name: 'Current Deposited',
             value: this.polOverview?.current_deposit / 1e8,
             filter: true,
-            runeValue: true
-          }
+            runeValue: true,
+          },
         ],
         [
           {
             name: 'Overall Deposited',
             value: this.polOverview?.rune_deposited / 1e8,
             filter: true,
-            runeValue: true
+            runeValue: true,
           },
           {
             name: 'Overall Withdrawn',
             value: this.polOverview?.rune_withdrawn / 1e8,
             filter: true,
-            runeValue: true
-          }
-        ]
+            runeValue: true,
+          },
+        ],
       ]
     },
-    reserveSettings () {
+    reserveSettings() {
       return [
         [
           {
             name: 'Current PnL',
-            slotName: 'reservepnl'
+            slotName: 'reservepnl',
           },
           {
             name: 'Current Deposit',
             value: this.reserveOverview?.current_deposit / 1e8,
             filter: true,
-            runeValue: true
-          }
+            runeValue: true,
+          },
         ],
         [
           {
             name: 'Reserve Units',
-            value: this.reserveOverview?.units
-          }
+            value: this.reserveOverview?.units,
+          },
         ],
         [
           {
             name: 'Reserve Share',
-            value: +this.reserveOverview?.value && this.$options.filters.percent(+this.reserveOverview?.value / +this.polOverview?.value, 3),
-            filter: true
-          }
-        ]
+            value:
+              +this.reserveOverview?.value &&
+              this.$options.filters.percent(
+                +this.reserveOverview?.value / +this.polOverview?.value,
+                3
+              ),
+            filter: true,
+          },
+        ],
       ]
     },
-    providersSettings () {
+    providersSettings() {
       return [
         [
           {
             name: 'Current RUNE PnL',
-            slotName: 'providerspnl'
+            slotName: 'providerspnl',
           },
           {
             name: 'Current Deposit',
             value: this.providersOverview?.current_deposit / 1e8,
             filter: true,
-            runeValue: true
+            runeValue: true,
           },
           {
             name: 'Pending Rune',
             value: this.providersOverview?.pending_rune / 1e8,
             filter: true,
-            runeValue: true
-          }
+            runeValue: true,
+          },
         ],
         [
           {
             name: 'Providers Units',
             value: this.providersOverview?.units,
-            extraInfo: 'The units of RUNEPool owned by providers (including pending)'
+            extraInfo:
+              'The units of RUNEPool owned by providers (including pending)',
           },
           {
             name: 'Providers Pending Units',
             value: this.providersOverview?.pending_units,
-            extraInfo: 'The units of RUNEPool owned by providers that remain pending'
-          }
+            extraInfo:
+              'The units of RUNEPool owned by providers that remain pending',
+          },
         ],
         [
           {
             name: 'Provider Share',
-            value: +this.providersOverview?.value && this.$options.filters.percent(+this.providersOverview?.value / +this.polOverview?.value, 3),
-            filter: true
-          }
-        ]
+            value:
+              +this.providersOverview?.value &&
+              this.$options.filters.percent(
+                +this.providersOverview?.value / +this.polOverview?.value,
+                3
+              ),
+            filter: true,
+          },
+        ],
       ]
     },
-    polMimirSettings () {
+    polMimirSettings() {
       if (!this.mimir) {
         return []
       }
@@ -364,89 +408,107 @@ export default {
       return [
         [
           {
-            ...this.parseConstant('MaxSynthPerPoolDepth', { filter: v => this.$options.filters.percent(v / 1e4, 2) }),
+            ...this.parseConstant('MaxSynthPerPoolDepth', {
+              filter: (v) => this.$options.filters.percent(v / 1e4, 2),
+            }),
             name: 'Max Synth Utilisation per Pool',
-            filter: true
+            filter: true,
           },
           {
-            ...this.parseConstant('POLTargetSynthPerPoolDepth', { filter: v => this.$options.filters.percent(v / 1e4, 2) }),
+            ...this.parseConstant('POLTargetSynthPerPoolDepth', {
+              filter: (v) => this.$options.filters.percent(v / 1e4, 2),
+            }),
             name: 'POL Target Synth per Pool Depth',
             filter: true,
-            extraInfo: `POL will continue adding RUNE to a pool until the synth depth of that pool is ${this.$options.filters.percent(synthTargetPerPool, 2)}`
-          }
+            extraInfo: `POL will continue adding RUNE to a pool until the synth depth of that pool is ${this.$options.filters.percent(synthTargetPerPool, 2)}`,
+          },
         ],
         [
           {
-            ...this.parseConstant('POLBuffer', { filter: v => this.$options.filters.percent(v / 1e4, 2) }),
+            ...this.parseConstant('POLBuffer', {
+              filter: (v) => this.$options.filters.percent(v / 1e4, 2),
+            }),
             name: 'POL Buffer',
             filter: true,
-            extraInfo: `Synth utilization must be >${polBuffer * 100}% from the target synth per pool depth in order to add liquidity / remove liquidity. In this context, liquidity will be withdrawn below ${(synthTargetPerPool - polBuffer) * 100}% synth utilization and deposited above ${(synthTargetPerPool + polBuffer) * 100}% synth utilization.`
+            extraInfo: `Synth utilization must be >${polBuffer * 100}% from the target synth per pool depth in order to add liquidity / remove liquidity. In this context, liquidity will be withdrawn below ${(synthTargetPerPool - polBuffer) * 100}% synth utilization and deposited above ${(synthTargetPerPool + polBuffer) * 100}% synth utilization.`,
           },
           {
-            ...this.parseConstant('POLMaxPoolMovement', { filter: v => this.$options.filters.percent(v / 1e7, 4) }),
+            ...this.parseConstant('POLMaxPoolMovement', {
+              filter: (v) => this.$options.filters.percent(v / 1e7, 4),
+            }),
             name: 'POL Max Pool Movement',
             filter: true,
-            extraInfo: `POL will move the pool price at most ${PolMaxPoolMovement / 10}% in one block.`
+            extraInfo: `POL will move the pool price at most ${PolMaxPoolMovement / 10}% in one block.`,
           },
           {
-            ...this.parseConstant('POLMaxNetworkDeposit', { filter: v => v / 1e8 }),
+            ...this.parseConstant('POLMaxNetworkDeposit', {
+              filter: (v) => v / 1e8,
+            }),
             name: 'POL Max Network Deposit',
             filter: true,
-            runeValue: true
-          }
+            runeValue: true,
+          },
         ],
         [
           {
             name: 'Enable POL on BTC',
             value: this.mimir['POL-BTC-BTC'] ? 'Yes' : 'No',
-            filter: true
+            filter: true,
           },
           {
             name: 'Enable POL on ETH',
             value: this.mimir['POL-ETH-ETH'] ? 'Yes' : 'No',
-            filter: true
+            filter: true,
           },
           {
             name: 'Enable POL on AVAX',
             value: this.mimir['POL-AVAX-AVAX'] ? 'Yes' : 'No',
-            filter: true
+            filter: true,
           },
           {
             name: 'Enable POL on AVAX.USDC',
-            value: this.mimir['POL-AVAX-USDC-0XB97EF9EF8734C71904D8002F8B6BC66DD9C48A6E'] ? 'Yes' : 'No',
-            filter: true
-          }
+            value: this.mimir[
+              'POL-AVAX-USDC-0XB97EF9EF8734C71904D8002F8B6BC66DD9C48A6E'
+            ]
+              ? 'Yes'
+              : 'No',
+            filter: true,
+          },
         ],
         [
           {
             name: 'Enable POL on BCH',
             value: this.mimir['POL-BCH-BCH'] ? 'Yes' : 'No',
-            filter: true
+            filter: true,
           },
           {
             name: 'Enable POL on BSC.BNB',
             value: this.mimir['POL-BSC-BNB'] ? 'Yes' : 'No',
-            filter: true
+            filter: true,
           },
           {
             name: 'Enable POL on DOGE',
             value: this.mimir['POL-DOGE-DOGE'] ? 'Yes' : 'No',
-            filter: true
-          }
-        ]
+            filter: true,
+          },
+        ],
       ]
-    }
+    },
   },
-  async mounted () {
+  async mounted() {
     try {
-      ({ data: this.lps } = await this.$api.getRunePoolsInfo())
+      ;({ data: this.lps } = await this.$api.getRunePoolsInfo())
     } catch (error) {
       console.error('member not found', error)
     }
 
     try {
       try {
-        ({ pol: this.polOverview, providers: this.providersOverview, reserve: this.reserveOverview } = (await this.$api.getRunePool()).data)
+        ;({
+          pol: this.polOverview,
+          providers: this.providersOverview,
+          reserve: this.reserveOverview,
+        } = (await this.$api.getRunePool()).data)
       } catch (error) {
         console.error('the rune pool endpoint is not ready')
         this.polOverview = (await this.$api.getPol()).data
@@ -459,22 +521,24 @@ export default {
       let matureConstant = 1296000
       this.$api.getConstants().then(({ data }) => {
         this.networkConst = data
-        matureConstant = this.parseConstant('RUNEPoolDepositMaturityBlocks').value
+        matureConstant = this.parseConstant(
+          'RUNEPoolDepositMaturityBlocks'
+        ).value
       })
 
       const { data: membersData } = await this.$api.getRunePoolProviders()
-      this.members = membersData.map(e => ({
+      this.members = membersData.map((e) => ({
         ...e,
-        deposit_amount: ((+e.deposit_amount - +e.withdraw_amount) / 1e8),
-        pnl: (+e.pnl / 1e8),
-        value: (+e.value / 1e8),
-        mature: (+this.height - e.last_deposit_height) < matureConstant,
-        share: +e.units / +this.providersOverview?.units
+        deposit_amount: (+e.deposit_amount - +e.withdraw_amount) / 1e8,
+        pnl: +e.pnl / 1e8,
+        value: +e.value / 1e8,
+        mature: +this.height - e.last_deposit_height < matureConstant,
+        share: +e.units / +this.providersOverview?.units,
       }))
     } catch (error) {
       console.error(error)
     }
-  }
+  },
 }
 </script>
 
@@ -492,7 +556,7 @@ export default {
 
   span {
     display: block;
-    font-size: .9rem;
+    font-size: 0.9rem;
   }
 }
 

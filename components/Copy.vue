@@ -1,5 +1,9 @@
 <template>
-  <component :is="activeComponent" :class="['table-icon', {'active': activeComponent === 'CopiedIcon'}]" @click="onlyCopy(strCopy)" />
+  <component
+    :is="activeComponent"
+    :class="['table-icon', { active: activeComponent === 'CopiedIcon' }]"
+    @click="onlyCopy(strCopy)"
+  />
 </template>
 
 <script>
@@ -9,26 +13,29 @@ import CopiedIcon from '~/assets/images/copied.svg?inline'
 export default {
   components: {
     CopiedIcon,
-    CopyIcon
+    CopyIcon,
   },
   props: ['strCopy'],
-  data () {
+  data() {
     return {
-      activeComponent: 'CopyIcon'
+      activeComponent: 'CopyIcon',
     }
   },
   methods: {
-    onlyCopy (address) {
-      navigator.clipboard.writeText(address).then(() => {
-        this.activeComponent = 'CopiedIcon'
-        setTimeout(() => {
-          this.activeComponent = 'CopyIcon'
-        }, 2000)
-      }, (err) => {
-        console.error('Could not copy text: ', err)
-      })
-    }
-  }
+    onlyCopy(address) {
+      navigator.clipboard.writeText(address).then(
+        () => {
+          this.activeComponent = 'CopiedIcon'
+          setTimeout(() => {
+            this.activeComponent = 'CopyIcon'
+          }, 2000)
+        },
+        (err) => {
+          console.error('Could not copy text: ', err)
+        }
+      )
+    },
+  },
 }
 </script>
 

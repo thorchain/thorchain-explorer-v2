@@ -3,7 +3,12 @@
     <span v-if="!$slots['default']">{{ option.label }}</span>
     <slot v-else />
     <div v-show="showDialog" :ref="`${name}-dialog`" class="option-dialog">
-      <div v-for="(o, i) in options" :key="i" :class="['option-item', {'active': o.value == option.value}]" @click="handleSelect(o)">
+      <div
+        v-for="(o, i) in options"
+        :key="i"
+        :class="['option-item', { active: o.value == option.value }]"
+        @click="handleSelect(o)"
+      >
         <span>{{ o.label }}</span>
       </div>
     </div>
@@ -14,12 +19,12 @@
 export default {
   props: ['options', 'option', 'name'],
   emits: ['update:option'],
-  data () {
+  data() {
     return {
-      showDialog: false
+      showDialog: false,
     }
   },
-  mounted () {
+  mounted() {
     window.addEventListener('click', (e) => {
       if (!document.getElementById(this.name).contains(e.target)) {
         this.showDialog = false
@@ -27,13 +32,13 @@ export default {
     })
   },
   methods: {
-    handleSelect (o) {
+    handleSelect(o) {
       this.$emit('update:option', o)
     },
-    toggleDialog () {
+    toggleDialog() {
       this.showDialog = !this.showDialog
-    }
-  }
+    },
+  },
 }
 </script>
 

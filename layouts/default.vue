@@ -29,9 +29,9 @@ import global from '~/mixins.js/global'
 
 export default {
   name: 'DefaultLayout',
-  data () {
+  data() {
     return {
-      darkMode: false
+      darkMode: false,
     }
   },
   computed: {
@@ -39,19 +39,19 @@ export default {
       theme: 'getTheme',
       menu: 'getIsMenuOn',
       fullscreen: 'getFullScreen',
-      sidebar: 'getSidebar'
-    })
+      sidebar: 'getSidebar',
+    }),
   },
   watch: {
-    darkMode () {
+    darkMode() {
       if (this.darkMode) {
         this.$store.commit('setTheme', true)
       } else {
         this.$store.commit('setTheme', false)
       }
-    }
+    },
   },
-  mounted () {
+  mounted() {
     const htmlElement = document.documentElement
 
     const darkThemeMq = window.matchMedia('(prefers-color-scheme: dark)')
@@ -80,21 +80,21 @@ export default {
       .then(({ data }) => {
         this.$store.commit('setNodesData', data)
       })
-      .catch(e => console.error(e))
+      .catch((e) => console.error(e))
 
     this.$api
       .getNetwork()
       .then(({ data }) => {
         this.$store.commit('setNetworkData', data)
       })
-      .catch(e => console.error(e))
+      .catch((e) => console.error(e))
 
     this.$api
       .getPools()
       .then(({ data }) => {
         this.$store.commit('setPools', data)
       })
-      .catch(e => console.error(e))
+      .catch((e) => console.error(e))
 
     this.getChainsHeight()
 
@@ -112,15 +112,15 @@ export default {
     window.addEventListener('resize', changeHeight)
   },
   methods: {
-    getChainsHeight () {
+    getChainsHeight() {
       this.$api
         .getChainsHeight()
         .then(({ data }) => {
           this.$store.commit('setChainsHeight', data)
         })
-        .catch(e => console.error(e))
-    }
-  }
+        .catch((e) => console.error(e))
+    },
+  },
 }
 
 Vue.mixin(global)
@@ -135,11 +135,11 @@ Vue.mixin(global)
 
   grid-template-columns: 1fr;
   grid-template-rows: 64px 64px 1fr;
-  grid-template-areas: "sidebar" "header" "main";
+  grid-template-areas: 'sidebar' 'header' 'main';
 
   &.long-sidebar {
     grid-template-rows: 1fr;
-    grid-template-areas: "sidebar";
+    grid-template-areas: 'sidebar';
 
     #header,
     #main-content {
@@ -152,10 +152,11 @@ Vue.mixin(global)
     grid-template-columns: 4rem 1fr;
     grid-template-rows: 65px 1fr;
     grid-template-areas:
-      "sidebar header"
-      "sidebar main";
+      'sidebar header'
+      'sidebar main';
 
-    .page-container, .search-bar-container {
+    .page-container,
+    .search-bar-container {
       min-width: 100%;
     }
   }
@@ -163,7 +164,7 @@ Vue.mixin(global)
   @include xl {
     grid-template-columns: 220px 1fr;
     grid-template-rows: 64px 1fr;
-    grid-template-areas: "sidebar header" "sidebar main";
+    grid-template-areas: 'sidebar header' 'sidebar main';
   }
 
   #side-bar {

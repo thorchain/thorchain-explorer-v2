@@ -1,13 +1,14 @@
 <template>
-  <div class="action-section" ref="actRef" >
-    <button :class="['action-btn mini-bubble info', {'on': onCss}]" @click="toggle()" :id="`popover-${name}-${index}`">
+  <div ref="actRef" class="action-section">
+    <button
+      :id="`popover-${name}-${index}`"
+      :class="['action-btn mini-bubble info', { on: onCss }]"
+      @click="toggle()"
+    >
       <slot name="button" />
     </button>
-    <b-popover
-      :target="`popover-${name}-${index}`"
-      :show.sync="showModal"
-    >
-      <div :class="['simple-card', 'normal', 'drop-menu', {'right': right}]">
+    <b-popover :target="`popover-${name}-${index}`" :show.sync="showModal">
+      <div :class="['simple-card', 'normal', 'drop-menu', { right: right }]">
         <slot />
       </div>
     </b-popover>
@@ -16,16 +17,15 @@
 
 <script>
 export default {
-  components: {
-  },
+  components: {},
   props: ['right', 'name', 'index'],
-  data () {
+  data() {
     return {
       onCss: false,
-      showModal: false
+      showModal: false,
     }
   },
-  mounted () {
+  mounted() {
     window.addEventListener('click', (e) => {
       if (this.$refs.actRef?.contains(e.target) === false) {
         this.showModal = false
@@ -34,11 +34,11 @@ export default {
     })
   },
   methods: {
-    toggle () {
+    toggle() {
       this.showModal = !this.showModal
       this.onCss = !this.onCss
-    }
-  }
+    },
+  },
 }
 </script>
 
@@ -48,7 +48,7 @@ export default {
 
   .action-btn {
     cursor: pointer;
-    border-radius: .5rem;
+    border-radius: 0.5rem;
 
     &.on {
       background-color: var(--active-bg-color);
@@ -62,7 +62,7 @@ export default {
 }
 
 .drop-menu {
-  padding: .2rem;
+  padding: 0.2rem;
   display: flex;
   margin: 0.5rem;
 
@@ -75,7 +75,7 @@ export default {
     border-radius: 0.2rem;
     margin: 0 0.2rem;
     gap: 10px;
-    font-family: "Exo 2";
+    font-family: 'Exo 2';
     font-size: 0.9rem;
     text-wrap: nowrap;
 

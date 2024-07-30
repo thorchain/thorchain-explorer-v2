@@ -8,26 +8,26 @@ export default {
   computed: {
     customStyle() {
       return {
-        'height': this.height ?? '.5rem',
-        'width': this.height ?? 'auto'
+        height: this.height ?? '.5rem',
+        width: this.height ?? 'auto',
       }
-    }
+    },
   },
 }
 </script>
 
 <style lang="scss">
 .skeleton-container {
-  animation: skeleton 2s cubic-bezier(.4, 0, .6, 1) infinite;
+  animation: skeleton 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   background-color: var(--active-bg-color);
-  height: .5rem;
+  height: 0.5rem;
   border-radius: 1rem;
-  margin-top: .75rem;
+  margin-top: 0.75rem;
 }
 
 @keyframes skeleton {
   50% {
-    opacity: .5;
+    opacity: 0.5;
   }
 }
 </style>
