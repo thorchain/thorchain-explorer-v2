@@ -132,7 +132,7 @@ export default {
     totalOutboundValue () {
       return this.outData.reduce((total, o) => {
         return (
-          total + this.amountToUSD(o.coin.asset, o.coin.amount, this.pools)
+          total + (this.amountToUSD(o.coin.asset, o.coin.amount, this.pools) || 0)
         )
       }, 0)
     },
