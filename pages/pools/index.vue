@@ -166,6 +166,12 @@ export default {
           tdClass: 'mono',
         },
         {
+          label: 'Pol Share',
+          field: 'share',
+          type: 'number',
+          tdClass: 'mono',
+        },
+        {
           label: 'Volume/Depth',
           field: 'vd',
           type: 'percentage',
@@ -203,6 +209,7 @@ export default {
         },
       },
       interfaces: [],
+      runePoolData:[]
     }
   },
   computed: {
@@ -215,11 +222,13 @@ export default {
       this.updatePool(period)
     },
   },
-  mounted() {
+  async mounted() {
     this.loadInterfaces()
     this.updatePool(this.period)
-  },
+    this.runePoolData=  await this.$api.getRunePoolsInfo()
+   },
   methods: {
+
     loadInterfaces() {
       this.interfaces = shuffle(InterfacesJSON)
     },
@@ -303,6 +312,14 @@ export default {
       }
       this.gotoPool(params.row.asset)
     },
+    getLiquidityShareByAsset(asset){
+      for(const i in this.runePoolData.data){
+        if(asset == this.runePoolData.data[i].pool){
+          return this.$options.filters.percent(this.runePoolData.data[i].share)
+        }
+      }
+      return "-"
+    },
     sepPools(pools) {
       if (!pools && pools.length <= 0) {
         return
@@ -310,14 +327,16 @@ export default {
 
       this.tables.standbyRows.data = []
       this.tables.activeRows.data = []
-
-      for (const i in pools) {
-        if (pools[i].status === 'available') {
-          this.tables.activeRows.data.push(pools[i])
-        } else {
-          this.tables.standbyRows.data.push(pools[i])
-        }
-      }
+      
+      
+  for (const i in pools) {
+    if (pools[i].status === 'available') {
+      pools[i].share = this.getLiquidityShareByAsset(pools[i].asset); // Get share from store
+      this.tables.activeRows.data.push(pools[i]);
+    } else {
+      this.tables.standbyRows.data.push(pools[i]);
+    }
+  }
     },
   },
 }
