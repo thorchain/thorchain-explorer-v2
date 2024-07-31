@@ -2,7 +2,7 @@
   <div>
     <cards-header :table-general-stats="saversGeneralStats" />
     <Page>
-      <Card :is-loading="saversRow.length <= 0">
+      <Card title="Savers" :is-loading="saversRow.length <= 0">
         <vue-good-table
           v-if="saversRow.length > 0"
           :columns="saverCols"
