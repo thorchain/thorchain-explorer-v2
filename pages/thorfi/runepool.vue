@@ -13,32 +13,34 @@
         </skeleton-item>
       </template>
     </stat-table>
-    <stat-table header="Providers" :table-settings="providersSettings">
-      <template #providerspnl>
-        <skeleton-item
-          :loading="!providerspnl.value"
-          :style="{ color: providerspnl.isDown ? 'red' : 'green' }"
-        >
-          <span v-if="providerspnl.isDown">-</span>
-          <span v-if="!providerspnl.isDown">+</span>
-          {{ providerspnl.value | number('0,0.00') }}
-          <small>RUNE</small>
-        </skeleton-item>
-      </template>
-    </stat-table>
-    <stat-table header="Reserve" :table-settings="reserveSettings">
-      <template #reservepnl>
-        <skeleton-item
-          :loading="!reservepnl.value"
-          :style="{ color: reservepnl.isDown ? 'red' : 'green' }"
-        >
-          <span v-if="reservepnl.isDown">-</span>
-          <span v-if="!reservepnl.isDown">+</span>
-          {{ reservepnl.value | number('0,0.00') }}
-          <small>RUNE</small>
-        </skeleton-item>
-      </template>
-    </stat-table>
+    <div class="pol-actors">
+      <stat-table header="Providers" :table-settings="providersSettings">
+        <template #providerspnl>
+          <skeleton-item
+            :loading="!providerspnl.value"
+            :style="{ color: providerspnl.isDown ? 'red' : 'green' }"
+          >
+            <span v-if="providerspnl.isDown">-</span>
+            <span v-if="!providerspnl.isDown">+</span>
+            {{ providerspnl.value | number('0,0.00') }}
+            <small>RUNE</small>
+          </skeleton-item>
+        </template>
+      </stat-table>
+      <stat-table header="Reserve" :table-settings="reserveSettings">
+        <template #reservepnl>
+          <skeleton-item
+            :loading="!reservepnl.value"
+            :style="{ color: reservepnl.isDown ? 'red' : 'green' }"
+          >
+            <span v-if="reservepnl.isDown">-</span>
+            <span v-if="!reservepnl.isDown">+</span>
+            {{ reservepnl.value | number('0,0.00') }}
+            <small>RUNE</small>
+          </skeleton-item>
+        </template>
+      </stat-table>
+    </div>
     <Card
       :navs="[
         { title: 'Rune Pools', value: 'rune-pools' },
@@ -569,5 +571,12 @@ export default {
 
 .vgt-right-align .pool-cell span {
   margin-left: auto;
+}
+
+.pol-actors {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(470px, 1fr));
+  grid-template-rows: auto;
+  gap: 8px;
 }
 </style>
