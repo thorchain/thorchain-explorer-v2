@@ -16,11 +16,6 @@
             :columns="poolCols"
             :rows="k.data"
             style-class="vgt-table net-table"
-            :pagination-options="{
-              enabled: true,
-              perPage: 100,
-              perPageDropdownEnabled: false,
-            }"
             :sort-options="{
               enabled: true,
               initialSortBy: { field: 'vd', type: 'desc' },
@@ -54,6 +49,15 @@
                 <span v-if="props.row.trading > 0">
                   ${{ props.row.trading | number('0,0.00a') }} ({{
                     (props.row.trading / props.row.depth) | percent
+                  }})
+                </span>
+                <span v-else> - </span>
+              </div>
+              <div v-else-if="props.column.field == 'polShare'">
+                <span v-if="props.row.polShare > 0">
+                  {{ formattedPrice(props.row.polShare) }}
+                  ({{
+                    percentageFormat(props.row.polShare / props.row.depth, 0)
                   }})
                 </span>
                 <span v-else> - </span>
@@ -167,7 +171,7 @@ export default {
         },
         {
           label: 'Pol Share',
-          field: 'share',
+          field: 'polShare',
           type: 'number',
           tdClass: 'mono',
         },
@@ -209,7 +213,7 @@ export default {
         },
       },
       interfaces: [],
-      runePoolData:[]
+      runePoolData: [],
     }
   },
   computed: {
@@ -225,10 +229,9 @@ export default {
   async mounted() {
     this.loadInterfaces()
     this.updatePool(this.period)
-    this.runePoolData=  await this.$api.getRunePoolsInfo()
-   },
+    this.runePoolData = await this.$api.getRunePoolsInfo()
+  },
   methods: {
-
     loadInterfaces() {
       this.interfaces = shuffle(InterfacesJSON)
     },
@@ -312,13 +315,13 @@ export default {
       }
       this.gotoPool(params.row.asset)
     },
-    getLiquidityShareByAsset(asset){
-      for(const i in this.runePoolData.data){
-        if(asset == this.runePoolData.data[i].pool){
-          return this.$options.filters.percent(this.runePoolData.data[i].share)
+    getLiquidityShareByAsset(asset) {
+      for (const i in this.runePoolData.data) {
+        if (asset === this.runePoolData.data[i].pool) {
+          return this.runePoolData.data[i].share
         }
       }
-      return "-"
+      return 0
     },
     sepPools(pools) {
       if (!pools && pools.length <= 0) {
@@ -327,16 +330,16 @@ export default {
 
       this.tables.standbyRows.data = []
       this.tables.activeRows.data = []
-      
-      
-  for (const i in pools) {
-    if (pools[i].status === 'available') {
-      pools[i].share = this.getLiquidityShareByAsset(pools[i].asset); // Get share from store
-      this.tables.activeRows.data.push(pools[i]);
-    } else {
-      this.tables.standbyRows.data.push(pools[i]);
-    }
-  }
+
+      for (const i in pools) {
+        if (pools[i].status === 'available') {
+          pools[i].polShare =
+            this.getLiquidityShareByAsset(pools[i].asset) * pools[i].depth
+          this.tables.activeRows.data.push(pools[i])
+        } else {
+          this.tables.standbyRows.data.push(pools[i])
+        }
+      }
     },
   },
 }
