@@ -98,7 +98,23 @@ export default {
   components: { InfoIcon },
   data() {
     return {
-      synthsGeneralStats: {},
+      synthsGeneralStats: [
+        {
+          name: 'Total Synth Supply',
+        },
+        {
+          name: 'Total Utilisation',
+          
+        },
+        {
+          name: 'Total Saver Percentage',
+        
+        },
+        {
+          name: 'POL Cap',
+          
+        },
+      ],
       cols: [
         {
           label: 'Asset',
