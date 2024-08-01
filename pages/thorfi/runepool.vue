@@ -538,7 +538,9 @@ export default {
 
       this.lps = this.lps.map((e) => ({
         ...e,
-        polWeight: +e.runeDeposit / +this.polOverview?.current_deposit,
+        polWeight: e.rune_deposit_value
+          ? +e.rune_deposit_value / +this.polOverview?.current_deposit
+          : +e.runeDeposit / +this.polOverview?.current_deposit,
       }))
 
       this.$api.getMimir().then(({ data }) => {
