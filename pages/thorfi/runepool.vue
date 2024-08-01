@@ -147,7 +147,16 @@
           </span>
           <span v-else-if="props.column.field == 'mature'">
             <span v-if="props.row.mature" class="min-bubble">Yes</span>
-            <span v-if="!props.row.mature" class="mini-bubble danger">No</span>
+            <template v-else>
+              <span class="mini-bubble danger">No</span>
+              <small>({{ props.row.untilMature }})</small>
+            </template>
+          </span>
+          <span v-else-if="props.column.field == 'last_deposit_height'">
+            {{ props.formattedRow[props.column.field] }}
+            <small v-if="props.row.lastTimeDeposit">
+              ({{ props.row.lastTimeDeposit }})
+            </small>
           </span>
           <span v-else>
             {{ props.formattedRow[props.column.field] }}
@@ -159,6 +168,7 @@
 </template>
 
 <script>
+import moment from 'moment'
 import { mapGetters } from 'vuex'
 import endpoints from '~/api/endpoints'
 
@@ -259,6 +269,13 @@ export default {
           label: 'Provider Share',
           field: 'share',
           type: 'percentage',
+          tdClass: 'mono',
+        },
+        {
+          label: 'Lat Deposit Block',
+          field: 'last_deposit_height',
+          type: 'number',
+          formatFn: this.normalFormat,
           tdClass: 'mono',
         },
       ],
@@ -529,12 +546,8 @@ export default {
       })
 
       let matureConstant = 1296000
-      this.$api.getConstants().then(({ data }) => {
-        this.networkConst = data
-        matureConstant = this.parseConstant(
-          'RUNEPoolDepositMaturityBlocks'
-        ).value
-      })
+      this.networkConst = (await this.$api.getConstants()).data
+      matureConstant = this.parseConstant('RUNEPoolDepositMaturityBlocks').value
 
       const { data: membersData } = await this.$api.getRunePoolProviders()
       this.members = membersData.map((e) => ({
@@ -542,8 +555,17 @@ export default {
         deposit_amount: (+e.deposit_amount - +e.withdraw_amount) / 1e8,
         pnl: +e.pnl / 1e8,
         value: +e.value / 1e8,
-        mature: +this.height - e.last_deposit_height < matureConstant,
+        mature: +this.height.THOR - +e.last_deposit_height > matureConstant,
         share: +e.units / +this.providersOverview?.units,
+        lastTimeDeposit: moment
+          .duration((+this.height.THOR - +e.last_deposit_height) * 6, 's')
+          .humanize(),
+        untilMature: moment
+          .duration(
+            (+this.height.THOR - +e.last_deposit_height - matureConstant) * 6,
+            's'
+          )
+          .humanize(),
       }))
     } catch (error) {
       console.error(error)
