@@ -186,6 +186,14 @@ export default {
           field: 'share',
           type: 'number',
           tdClass: 'mono',
+          tooltip: 'The liquidity share of the pool that POL participated in',
+        },
+        {
+          label: 'POL Weight',
+          field: 'polWeight',
+          type: 'percentage',
+          tdClass: 'mono',
+          tooltip: 'The total share of the POL in the pool',
         },
         {
           label: 'Rune/Asset Share',
@@ -363,25 +371,20 @@ export default {
             filter: true,
             runeValue: true,
           },
-          {
-            name: 'Pending Rune',
-            value: this.providersOverview?.pending_rune / 1e8,
-            filter: true,
-            runeValue: true,
-          },
         ],
         [
+          {
+            name: 'Pending Rune / Units',
+            value: `${this.$options.filters.number(this.providersOverview?.pending_rune / 1e8, '0,0 a')} RUNE (${this.$options.filters.number(this.providersOverview?.pending_units, '0,0 a')})`,
+            filter: true,
+            extraInfo:
+              'The Rune / Units of RUNEPool owned by providers that remain pending',
+          },
           {
             name: 'Providers Units',
             value: this.providersOverview?.units,
             extraInfo:
               'The units of RUNEPool owned by providers (including pending)',
-          },
-          {
-            name: 'Providers Pending Units',
-            value: this.providersOverview?.pending_units,
-            extraInfo:
-              'The units of RUNEPool owned by providers that remain pending',
           },
         ],
         [
@@ -515,6 +518,11 @@ export default {
         console.error('the rune pool endpoint is not ready')
         this.polOverview = (await this.$api.getPol()).data
       }
+
+      this.lps = this.lps.map((e) => ({
+        ...e,
+        polWeight: +e.runeDeposit / +this.polOverview?.current_deposit,
+      }))
 
       this.$api.getMimir().then(({ data }) => {
         this.mimir = data
