@@ -290,6 +290,9 @@ export default {
     ...mapGetters({
       height: 'getChainsHeight',
     }),
+    tab() {
+      return this.$route.query.tab
+    },
     pnl() {
       const pnl = +this.polOverview?.value - +this.polOverview?.current_deposit
 
@@ -522,7 +525,23 @@ export default {
       ]
     },
   },
+  watch: {
+    cardMode(n, o) {
+      if (n !== o) {
+        this.$router.replace({ path: '/thorfi/runepool', query: { tab: n } })
+      }
+    },
+  },
   async mounted() {
+    if (this.tab) {
+      this.cardMode = this.tab
+    } else {
+      this.$router.replace({
+        path: '/thorfi/runepool',
+        query: { tab: 'rune-pools' },
+      })
+    }
+
     try {
       ;({ data: this.lps } = await this.$api.getRunePoolsInfo())
     } catch (error) {
