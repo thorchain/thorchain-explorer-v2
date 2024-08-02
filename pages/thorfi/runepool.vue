@@ -647,7 +647,7 @@ export default {
 
 .pol-actors {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(470px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   grid-template-rows: auto;
   gap: 8px;
 }
