@@ -76,6 +76,13 @@
               {{ props.row.label }}
             </div>
           </div>
+          <div v-else-if="props.column.field == 'luvi'">
+            <progress-icon
+              :data-number="props.row.luvi"
+              :filter="$options.filters.percent"
+              :is-down="+props.row.luvi < 0"
+            ></progress-icon>
+          </div>
           <span
             v-else-if="props.column.field.startsWith('pool')"
             class="pool-cell ellipsis"
@@ -145,15 +152,16 @@
               "
             />
           </span>
-          <span v-else-if="props.column.field == 'mature'">
-            <small
+          <span v-else-if="props.column.field == 'untilMature'">
+            <span
               :class="[
                 { 'not-mature': !props.row.mature, mature: props.row.mature },
               ]"
-              >{{ +height.THOR - +props.row.last_deposit_height }} /
-              {{ +props.row.matureConstant }}</small
-            >
-            <small>({{ props.row.untilMature }})</small>
+              >{{ +height.THOR - +props.row.last_deposit_height }}/<small
+                >{{ +props.row.matureConstant }}
+              </small>
+            </span>
+            <small>({{ +props.row.untilMature.toFixed(2) }})</small>
           </span>
           <span v-else-if="props.column.field == 'last_deposit_height'">
             {{ props.formattedRow[props.column.field] }}
@@ -264,8 +272,8 @@ export default {
         },
         {
           label: 'Mature',
-          field: 'mature',
-          type: 'boolean',
+          field: 'untilMature',
+          type: 'number',
           tdClass: 'mono',
           tooltip:
             'Is the deposit able to be withdrawn. The blocks passed from last deposit to the maturity block',
@@ -531,8 +539,11 @@ export default {
         this.$router.replace({ path: '/thorfi/runepool', query: { tab: n } })
       }
     },
+    height() {
+      this.updateRunePool()
+    },
   },
-  async mounted() {
+  mounted() {
     if (this.tab) {
       this.cardMode = this.tab
     } else {
@@ -541,61 +552,66 @@ export default {
         query: { tab: 'rune-pools' },
       })
     }
-
-    try {
-      ;({ data: this.lps } = await this.$api.getRunePoolsInfo())
-    } catch (error) {
-      console.error('member not found', error)
-    }
-
-    try {
+  },
+  methods: {
+    async updateRunePool() {
       try {
-        ;({
-          pol: this.polOverview,
-          providers: this.providersOverview,
-          reserve: this.reserveOverview,
-        } = (await this.$api.getRunePool()).data)
+        ;({ data: this.lps } = await this.$api.getRunePoolsInfo())
       } catch (error) {
-        console.error('the rune pool endpoint is not ready')
-        this.polOverview = (await this.$api.getPol()).data
+        console.error('member not found', error)
       }
 
-      this.lps = this.lps.map((e) => ({
-        ...e,
-        polWeight:
-          (+e.rune_deposit_value * 2) / +this.polOverview?.current_deposit,
-      }))
+      try {
+        try {
+          ;({
+            pol: this.polOverview,
+            providers: this.providersOverview,
+            reserve: this.reserveOverview,
+          } = (await this.$api.getRunePool()).data)
+        } catch (error) {
+          console.error('the rune pool endpoint is not ready')
+          this.polOverview = (await this.$api.getPol()).data
+        }
 
-      this.$api.getMimir().then(({ data }) => {
-        this.mimir = data
-      })
+        this.lps = this.lps.map((e) => ({
+          ...e,
+          polWeight:
+            (+e.rune_deposit_value * 2) / +this.polOverview?.current_deposit,
+        }))
 
-      let matureConstant = 1296000
-      this.networkConst = (await this.$api.getConstants()).data
-      matureConstant = this.parseConstant('RUNEPoolDepositMaturityBlocks').value
+        this.$api.getMimir().then(({ data }) => {
+          this.mimir = data
+        })
 
-      const { data: membersData } = await this.$api.getRunePoolProviders()
-      this.members = membersData.map((e) => ({
-        ...e,
-        deposit_amount: (+e.deposit_amount - +e.withdraw_amount) / 1e8,
-        pnl: +e.pnl / 1e8,
-        value: +e.value / 1e8,
-        mature: +this.height.THOR - +e.last_deposit_height > matureConstant,
-        matureConstant,
-        share: +e.units / +this.providersOverview?.units,
-        lastTimeDeposit: moment
-          .duration((+this.height.THOR - +e.last_deposit_height) * 6, 's')
-          .humanize(),
-        untilMature: moment
-          .duration(
-            (+this.height.THOR - +e.last_deposit_height - matureConstant) * 6,
-            's'
-          )
-          .humanize(),
-      }))
-    } catch (error) {
-      console.error(error)
-    }
+        let matureConstant = 1296000
+        this.networkConst = (await this.$api.getConstants()).data
+        matureConstant = this.parseConstant(
+          'RUNEPoolDepositMaturityBlocks'
+        ).value
+
+        const { data: membersData } = await this.$api.getRunePoolProviders()
+        this.members = membersData.map((e) => ({
+          ...e,
+          deposit_amount: (+e.deposit_amount - +e.withdraw_amount) / 1e8,
+          pnl: +e.pnl / 1e8,
+          value: +e.value / 1e8,
+          mature: +this.height.THOR - +e.last_deposit_height > matureConstant,
+          matureConstant,
+          share: +e.units / +this.providersOverview?.units,
+          lastTimeDeposit: moment
+            .duration((+this.height.THOR - +e.last_deposit_height) * 6, 's')
+            .humanize(),
+          untilMature: moment
+            .duration(
+              (+this.height.THOR - +e.last_deposit_height - matureConstant) * 6,
+              's'
+            )
+            .asDays(),
+        }))
+      } catch (error) {
+        console.error(error)
+      }
+    },
   },
 }
 </script>
