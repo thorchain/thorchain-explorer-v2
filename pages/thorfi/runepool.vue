@@ -146,11 +146,14 @@
             />
           </span>
           <span v-else-if="props.column.field == 'mature'">
-            <span v-if="props.row.mature" class="min-bubble">Yes</span>
-            <template v-else>
-              <span class="mini-bubble danger">No</span>
-              <small>({{ props.row.untilMature }})</small>
-            </template>
+            <small
+              :class="[
+                { 'not-mature': !props.row.mature, mature: props.row.mature },
+              ]"
+              >{{ +height.THOR - +props.row.last_deposit_height }} /
+              {{ +props.row.matureConstant }}</small
+            >
+            <small>({{ props.row.untilMature }})</small>
           </span>
           <span v-else-if="props.column.field == 'last_deposit_height'">
             {{ props.formattedRow[props.column.field] }}
@@ -264,6 +267,8 @@ export default {
           field: 'mature',
           type: 'boolean',
           tdClass: 'mono',
+          tooltip:
+            'Is the deposit able to be withdrawn. The blocks passed from last deposit to the maturity block',
         },
         {
           label: 'Provider Share',
@@ -557,6 +562,7 @@ export default {
         pnl: +e.pnl / 1e8,
         value: +e.value / 1e8,
         mature: +this.height.THOR - +e.last_deposit_height > matureConstant,
+        matureConstant,
         share: +e.units / +this.providersOverview?.units,
         lastTimeDeposit: moment
           .duration((+this.height.THOR - +e.last_deposit_height) * 6, 's')
@@ -609,5 +615,13 @@ export default {
   grid-template-columns: repeat(auto-fit, minmax(470px, 1fr));
   grid-template-rows: auto;
   gap: 8px;
+}
+
+.mature {
+  color: var(--primary-color);
+}
+
+.not-mature {
+  color: #f04832;
 }
 </style>
