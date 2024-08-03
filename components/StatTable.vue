@@ -24,7 +24,13 @@
                 class="header-icon"
               />
             </div>
-            <div class="col-value value-item">
+            <div
+              :class="[
+                'col-value',
+                'value-item',
+                { 'flex-item': colItem.progress && colItem.value },
+              ]"
+            >
               <template v-if="!$slots[colItem.slotName]">
                 <skeleton-item
                   custom-class="stat-loader"
@@ -70,6 +76,13 @@
                 :class="{ 'usd-value': true, ...colItem.extraTextClass }"
                 >({{ colItem.extraText }})</span
               >
+              <progress-icon
+                v-if="colItem.progress && colItem.value"
+                :data-number="colItem.progress.data"
+                :is-down="colItem.progress.down"
+                :filter="colItem.progress.filter"
+              >
+              </progress-icon>
             </div>
           </div>
         </div>
@@ -183,6 +196,11 @@ export default {
 
         .danger-text {
           color: #f04832 !important;
+        }
+
+        &.flex-item {
+          display: flex;
+          gap: 5px;
         }
       }
 

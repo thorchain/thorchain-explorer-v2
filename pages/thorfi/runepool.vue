@@ -10,6 +10,14 @@
           <span v-if="!pnl.isDown">+</span>
           {{ pnl.value | number('0,0.00') }}
           <small>RUNE</small>
+          <progress-icon
+            v-if="oldRunePool.pol"
+            :data-number="
+              normalFormat((polOverview.pnl - oldRunePool.pol.pnl) / 1e8)
+            "
+            :is-down="+polOverview.pnl < +oldRunePool.pol.pnl"
+          >
+          </progress-icon>
         </skeleton-item>
       </template>
     </stat-table>
@@ -24,6 +32,21 @@
             <span v-if="!providerspnl.isDown">+</span>
             {{ providerspnl.value | number('0,0.00') }}
             <small>RUNE</small>
+            <progress-icon
+              v-if="
+                providersOverview &&
+                providersOverview.pnl &&
+                oldRunePool.providers &&
+                oldRunePool.providers.pnl
+              "
+              :data-number="
+                normalFormat(
+                  (providersOverview.pnl - oldRunePool.providers.pnl) / 1e8
+                )
+              "
+              :is-down="+providersOverview.pnl < +oldRunePool.providers.pnl"
+            >
+            </progress-icon>
           </skeleton-item>
         </template>
       </stat-table>
@@ -37,6 +60,21 @@
             <span v-if="!reservepnl.isDown">+</span>
             {{ reservepnl.value | number('0,0.00') }}
             <small>RUNE</small>
+            <progress-icon
+              v-if="
+                reserveOverview &&
+                reserveOverview.pnl &&
+                oldRunePool.reserve &&
+                oldRunePool.reserve.pnl
+              "
+              :data-number="
+                normalFormat(
+                  (reserveOverview.pnl - oldRunePool.reserve.pnl) / 1e8
+                )
+              "
+              :is-down="+reserveOverview.pnl < +oldRunePool.reserve.pnl"
+            >
+            </progress-icon>
           </skeleton-item>
         </template>
       </stat-table>
@@ -161,7 +199,11 @@
                 >{{ +props.row.matureConstant }}
               </small>
             </span>
-            <small>({{ +props.row.untilMature.toFixed(2) }})</small>
+            <small
+              >({{
+                +props.row.untilMature && props.row.untilMature.toFixed(2)
+              }})</small
+            >
           </span>
           <span v-else-if="props.column.field == 'last_deposit_height'">
             {{ props.formattedRow[props.column.field] }}
@@ -175,10 +217,17 @@
         </template>
       </vue-good-table>
     </Card>
+    <div class="footer-stat">
+      <small>
+        <sup>*</sup>
+        All of the stat changes are based on 24 hours period
+      </small>
+    </div>
   </Page>
 </template>
 
 <script>
+import { isInteger } from 'lodash'
 import moment from 'moment'
 import { mapGetters } from 'vuex'
 import endpoints from '~/api/endpoints'
@@ -195,6 +244,7 @@ export default {
       cardMode: 'rune-pools',
       pools: [],
       lps: [],
+      oldRunePool: [],
       members: [],
       cols: [
         {
@@ -255,6 +305,7 @@ export default {
         {
           label: 'Address',
           field: 'rune_address',
+          type: 'text',
           tdClass: 'mono',
           formatFn: this.formatAddress,
         },
@@ -265,7 +316,7 @@ export default {
           tdClass: 'mono',
         },
         {
-          label: 'Value',
+          label: 'Current Value',
           field: 'value',
           type: 'number',
           tdClass: 'mono',
@@ -339,6 +390,16 @@ export default {
             value: this.polOverview?.current_deposit / 1e8,
             filter: true,
             runeValue: true,
+            progress: {
+              data:
+                (this.polOverview?.current_deposit -
+                  (this.oldRunePool?.pol?.current_deposit ?? 0)) /
+                1e8,
+              down:
+                this.polOverview?.current_deposit <
+                (this.oldRunePool?.pol?.current_deposit ?? 0),
+              filter: (v) => this.$options.filters.number(v, '0,0'),
+            },
           },
         ],
         [
@@ -347,12 +408,32 @@ export default {
             value: this.polOverview?.rune_deposited / 1e8,
             filter: true,
             runeValue: true,
+            progress: {
+              data:
+                (this.polOverview?.rune_deposited -
+                  (this.oldRunePool?.pol?.rune_deposited ?? 0)) /
+                1e8,
+              down:
+                this.polOverview?.rune_deposited <
+                (this.oldRunePool?.pol?.rune_deposited ?? 0),
+              filter: (v) => this.$options.filters.number(v, '0,0'),
+            },
           },
           {
             name: 'Overall Withdrawn',
             value: this.polOverview?.rune_withdrawn / 1e8,
             filter: true,
             runeValue: true,
+            progress: {
+              data:
+                (this.polOverview?.rune_withdrawn -
+                  (this.oldRunePool?.pol?.rune_withdrawn ?? 0)) /
+                1e8,
+              down:
+                this.polOverview?.rune_withdrawn <
+                (this.oldRunePool?.pol?.rune_withdrawn ?? 0),
+              filter: (v) => this.$options.filters.number(v, '0,0'),
+            },
           },
         ],
       ]
@@ -369,6 +450,16 @@ export default {
             value: this.reserveOverview?.current_deposit / 1e8,
             filter: true,
             runeValue: true,
+            progress: {
+              data:
+                (this.reserveOverview?.current_deposit -
+                  (this.oldRunePool?.reserve?.current_deposit ?? 0)) /
+                1e8,
+              down:
+                this.reserveOverview?.current_deposit <
+                (this.oldRunePool?.reserve?.current_deposit ?? 0),
+              filter: (v) => this.$options.filters.number(v, '0,0'),
+            },
           },
         ],
         [
@@ -387,6 +478,17 @@ export default {
                 3
               ),
             filter: true,
+            progress: {
+              data:
+                this.reserveOverview?.value / +this.polOverview?.value -
+                (this.oldRunePool?.reserve?.value /
+                  this.oldRunePool?.pol?.value ?? 0),
+              down:
+                this.reserveOverview?.value / +this.polOverview?.value <
+                (this.oldRunePool?.reserve?.value /
+                  this.oldRunePool?.pol?.value ?? 0),
+              filter: this.$options.filters.percent,
+            },
           },
         ],
       ]
@@ -395,7 +497,7 @@ export default {
       return [
         [
           {
-            name: 'Current RUNE PnL',
+            name: 'Current PnL',
             slotName: 'providerspnl',
           },
           {
@@ -403,6 +505,16 @@ export default {
             value: this.providersOverview?.current_deposit / 1e8,
             filter: true,
             runeValue: true,
+            progress: {
+              data:
+                (this.providersOverview?.current_deposit -
+                  (this.oldRunePool?.providers?.current_deposit ?? 0)) /
+                1e8,
+              down:
+                this.providersOverview?.current_deposit <
+                (this.oldRunePool?.providers?.current_deposit ?? 0),
+              filter: (v) => this.$options.filters.number(v, '0,0'),
+            },
           },
         ],
         [
@@ -412,6 +524,7 @@ export default {
             filter: true,
             extraInfo:
               'The Rune / Units of RUNEPool owned by providers that remain pending',
+            is: !isInteger(+this.providersOverview?.pending_rune),
           },
           {
             name: 'Providers Units',
@@ -430,6 +543,17 @@ export default {
                 3
               ),
             filter: true,
+            progress: {
+              data:
+                this.providersOverview?.value / +this.polOverview?.value -
+                (this.oldRunePool?.providers?.value /
+                  this.oldRunePool?.pol?.value ?? 0),
+              down:
+                this.providersOverview?.value / +this.polOverview?.value <
+                (this.oldRunePool?.providers?.value /
+                  this.oldRunePool?.pol?.value ?? 0),
+              filter: this.$options.filters.percent,
+            },
           },
         ],
       ]
@@ -562,16 +686,12 @@ export default {
       }
 
       try {
-        try {
-          ;({
-            pol: this.polOverview,
-            providers: this.providersOverview,
-            reserve: this.reserveOverview,
-          } = (await this.$api.getRunePool()).data)
-        } catch (error) {
-          console.error('the rune pool endpoint is not ready')
-          this.polOverview = (await this.$api.getPol()).data
-        }
+        ;({
+          pol: this.polOverview,
+          providers: this.providersOverview,
+          reserve: this.reserveOverview,
+        } = (await this.$api.getRunePool()).data)
+        ;({ data: this.oldRunePool } = await this.$api.getOldRunePools())
 
         this.lps = this.lps.map((e) => ({
           ...e,

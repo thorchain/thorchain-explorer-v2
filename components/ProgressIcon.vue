@@ -10,7 +10,7 @@
     <template v-if="dataNumber != '0' || dataNumber != 0">
       ({{ isDown ? '' : '+' }}{{ filter(dataNumber) }}<arrow-icon />)
     </template>
-    <template v-else> ({{ filter(dataNumber) }} -) </template>
+    <template v-else> ({{ filter(dataNumber) }}-) </template>
   </div>
 </template>
 
