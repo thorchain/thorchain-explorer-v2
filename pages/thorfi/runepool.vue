@@ -276,7 +276,7 @@ export default {
           type: 'number',
           tdClass: 'mono',
           tooltip:
-            'Is the deposit able to be withdrawn. The blocks passed from last deposit to the maturity block',
+            'The blocks passed from last deposit to the maturity block.\nThe remaining days for the deposit to be mature.',
         },
         {
           label: 'Provider Share',
