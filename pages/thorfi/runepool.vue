@@ -1,10 +1,15 @@
 <template>
   <Page>
-    <stat-table header="Protocol Owned Liquidity" :table-settings="polSettings">
+    <info-card :grid-settings="gridTest">
       <template #pnl>
         <skeleton-item
           :loading="!pnl.value"
-          :style="{ color: pnl.isDown ? 'red' : 'green' }"
+          :style="{
+            color: pnl.isDown ? 'red' : 'green',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+          }"
         >
           <span v-if="pnl.isDown">-</span>
           <span v-if="!pnl.isDown">+</span>
@@ -20,65 +25,8 @@
           </progress-icon>
         </skeleton-item>
       </template>
-    </stat-table>
-    <div class="pol-actors">
-      <stat-table header="Providers" :table-settings="providersSettings">
-        <template #providerspnl>
-          <skeleton-item
-            :loading="!providerspnl.value"
-            :style="{ color: providerspnl.isDown ? 'red' : 'green' }"
-          >
-            <span v-if="providerspnl.isDown">-</span>
-            <span v-if="!providerspnl.isDown">+</span>
-            {{ providerspnl.value | number('0,0.00') }}
-            <small>RUNE</small>
-            <progress-icon
-              v-if="
-                providersOverview &&
-                providersOverview.pnl &&
-                oldRunePool.providers &&
-                oldRunePool.providers.pnl
-              "
-              :data-number="
-                normalFormat(
-                  (providersOverview.pnl - oldRunePool.providers.pnl) / 1e8
-                )
-              "
-              :is-down="+providersOverview.pnl < +oldRunePool.providers.pnl"
-            >
-            </progress-icon>
-          </skeleton-item>
-        </template>
-      </stat-table>
-      <stat-table header="Reserve" :table-settings="reserveSettings">
-        <template #reservepnl>
-          <skeleton-item
-            :loading="!reservepnl.value"
-            :style="{ color: reservepnl.isDown ? 'red' : 'green' }"
-          >
-            <span v-if="reservepnl.isDown">-</span>
-            <span v-if="!reservepnl.isDown">+</span>
-            {{ reservepnl.value | number('0,0.00') }}
-            <small>RUNE</small>
-            <progress-icon
-              v-if="
-                reserveOverview &&
-                reserveOverview.pnl &&
-                oldRunePool.reserve &&
-                oldRunePool.reserve.pnl
-              "
-              :data-number="
-                normalFormat(
-                  (reserveOverview.pnl - oldRunePool.reserve.pnl) / 1e8
-                )
-              "
-              :is-down="+reserveOverview.pnl < +oldRunePool.reserve.pnl"
-            >
-            </progress-icon>
-          </skeleton-item>
-        </template>
-      </stat-table>
-    </div>
+    </info-card>
+
     <Card
       :navs="[
         { title: 'Rune Pools', value: 'rune-pools' },
@@ -242,6 +190,7 @@ export default {
       networkConst: undefined,
       mimir: undefined,
       cardMode: 'rune-pools',
+      gridTest: undefined,
       pools: [],
       lps: [],
       oldRunePool: [],
@@ -678,6 +627,164 @@ export default {
     }
   },
   methods: {
+    createStatsData(pol, providers, reserve, oldRunepool) {
+      const ret = [
+        {
+          title: 'Protocol Owned Liquidity',
+          rowStart: 1,
+          colStart: 1,
+          colSpan: 4,
+          items: [
+            {
+              name: 'Current PnL',
+              slotName: 'pnl',
+            },
+            {
+              name: 'Current Deposited',
+              value: pol?.current_deposit / 1e8,
+              filter: (v) => this.$options.filters.number(v, '0,0.00'),
+              progress: {
+                data:
+                  (pol?.current_deposit -
+                    (oldRunepool?.pol?.current_deposit ?? 0)) /
+                  1e8,
+                down:
+                  pol?.current_deposit <
+                  (oldRunepool?.pol?.current_deposit ?? 0),
+                filter: (v) => this.$options.filters.number(v, '0,0'),
+              },
+            },
+            {
+              name: 'Overall Deposited',
+              value: this.polOverview?.rune_deposited / 1e8,
+              filter: (v) => this.$options.filters.number(v, '0,0.00'),
+              progress: {
+                data:
+                  (this.polOverview?.rune_deposited -
+                    (this.oldRunePool?.pol?.rune_deposited ?? 0)) /
+                  1e8,
+                down:
+                  this.polOverview?.rune_deposited <
+                  (this.oldRunePool?.pol?.rune_deposited ?? 0),
+                filter: (v) => this.$options.filters.number(v, '0,0'),
+              },
+            },
+            {
+              name: 'Overall Withdrawn',
+              value: this.polOverview?.rune_withdrawn / 1e8,
+              filter: (v) => this.$options.filters.number(v, '0,0.00'),
+              progress: {
+                data:
+                  (this.polOverview?.rune_withdrawn -
+                    (this.oldRunePool?.pol?.rune_withdrawn ?? 0)) /
+                  1e8,
+                down:
+                  this.polOverview?.rune_withdrawn <
+                  (this.oldRunePool?.pol?.rune_withdrawn ?? 0),
+                filter: (v) => this.$options.filters.number(v, '0,0'),
+              },
+            },
+          ],
+        },
+        {
+          title: 'Providers',
+          rowStart: 2,
+          colStart: 1,
+          colSpan: 2,
+          items: [
+            {
+              name: 'Current PnL',
+              slotName: 'pnl',
+            },
+            {
+              name: 'Current Deposited',
+              value: providers?.current_deposit / 1e8,
+              filter: (v) => this.$options.filters.number(v, '0,0.00'),
+              progress: {
+                data:
+                  (providers?.current_deposit -
+                    (oldRunepool?.providers?.current_deposit ?? 0)) /
+                  1e8,
+                down:
+                  providers?.current_deposit <
+                  (oldRunepool?.providers?.current_deposit ?? 0),
+                filter: (v) => this.$options.filters.number(v, '0,0'),
+              },
+            },
+            {
+              name: 'Providers Units',
+              value: providers?.units,
+              filter: (v) => this.$options.filters.number(v, '0,0'),
+              extraInfo:
+                'The units of RUNEPool owned by providers (including pending)',
+            },
+            {
+              name: 'Provider Share',
+              value: +providers?.value / +this.polOverview?.value,
+              filter: (v) => this.$options.filters.percent(v, 3),
+              progress: {
+                data:
+                  providers?.value / +this.polOverview?.value -
+                  (this.oldRunePool?.providers?.value /
+                    this.oldRunePool?.pol?.value ?? 0),
+                down:
+                  providers?.value / +this.polOverview?.value <
+                  (this.oldRunePool?.providers?.value /
+                    this.oldRunePool?.pol?.value ?? 0),
+                filter: (v) => this.$options.filters.percent(v, 3),
+              },
+            },
+          ],
+        },
+        {
+          title: 'Reserve',
+          rowStart: 2,
+          colStart: 3,
+          colSpan: 2,
+          items: [
+            {
+              name: 'Current PnL',
+              slotName: 'pnl',
+            },
+            {
+              name: 'Current Deposited',
+              value: reserve?.current_deposit / 1e8,
+              filter: (v) => this.$options.filters.number(v, '0,0.00'),
+              progress: {
+                data:
+                  (reserve?.current_deposit -
+                    (oldRunepool?.reserve?.current_deposit ?? 0)) /
+                  1e8,
+                down:
+                  reserve?.current_deposit <
+                  (oldRunepool?.reserve?.current_deposit ?? 0),
+                filter: (v) => this.$options.filters.number(v, '0,0'),
+              },
+            },
+            {
+              name: 'Reserve Units',
+              value: reserve?.units,
+              filter: (v) => this.$options.filters.number(v, '0,0'),
+            },
+            {
+              name: 'Reserve Share',
+              value: +reserve?.value / +pol?.value,
+              filter: (v) => this.$options.filters.percent(v, 2),
+              progress: {
+                data:
+                  reserve?.value / +pol?.value -
+                  (oldRunepool?.reserve?.value / oldRunepool?.pol?.value ?? 0),
+                down:
+                  reserve?.value / +pol?.value <
+                  (oldRunepool?.reserve?.value / oldRunepool?.pol?.value ?? 0),
+                filter: (v) => this.$options.filters.percent(v, 3),
+              },
+            },
+          ],
+        },
+      ]
+      return ret
+    },
     async updateRunePool() {
       try {
         ;({ data: this.lps } = await this.$api.getRunePoolsInfo())
@@ -692,6 +799,13 @@ export default {
           reserve: this.reserveOverview,
         } = (await this.$api.getRunePool()).data)
         ;({ data: this.oldRunePool } = await this.$api.getOldRunePools())
+
+        this.gridTest = this.createStatsData(
+          this.polOverview,
+          this.providersOverview,
+          this.reserveOverview,
+          this.oldRunePool
+        )
 
         this.lps = this.lps.map((e) => ({
           ...e,
