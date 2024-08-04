@@ -21,6 +21,11 @@
             >
               <div class="item-name">
                 {{ item.name }}
+                <unknown-icon
+                  v-if="item.extraInfo"
+                  v-tooltip="item.extraInfo"
+                  class="header-icon"
+                />
               </div>
               <div class="item-value">
                 <template v-if="item.slotName">
@@ -33,6 +38,12 @@
                   <span v-else>
                     {{ item.value || '-' }}
                   </span>
+                  <progress-icon
+                    v-if="item.progress"
+                    :data-number="item.progress.data"
+                    :is-down="item.progress.down"
+                    :filter="item.progress.filter"
+                  />
                 </template>
               </div>
             </div>
@@ -45,9 +56,11 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import UnknownIcon from '~/assets/images/unknown.svg?inline'
 
 export default {
   name: 'InfoCard',
+  components: { UnknownIcon },
   props: {
     gridSettings: {
       type: Array,
@@ -94,6 +107,7 @@ export default {
       &:last-of-type {
         margin-bottom: 0;
         .flex-section {
+          padding-bottom: 0;
           border-bottom: none !important;
         }
       }
@@ -142,8 +156,13 @@ export default {
           }
 
           .item-name {
-            // color: var(--sec-font-color);
+            display: flex;
+
+            .header-icon {
+              height: 16px;
+            }
           }
+
           .item-value {
             color: var(--sec-font-color);
             font-family: 'Roboto Mono';
