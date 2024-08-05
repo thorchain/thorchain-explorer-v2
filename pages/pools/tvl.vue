@@ -26,7 +26,7 @@ import {
 import { mapGetters } from 'vuex'
 import VChart from 'vue-echarts'
 import { assetFromString } from '@xchainjs/xchain-util'
-import { sortBy } from 'lodash'
+import { sortBy, orderBy } from 'lodash'
 
 use([
   SVGRenderer,
@@ -127,11 +127,12 @@ export default {
       const seriesPools = Object.values(pools)
 
       const formatter = (param) => {
+        const pds = orderBy(param, ['value'], ['desc'])
         return `
           <div class="tooltip-header">
             ${param[0].axisValue}
           </div>
-          ${param
+          ${pds
             .map(
               (p) => `
             <div class="tooltip-body">
@@ -150,7 +151,7 @@ export default {
               <span>Total</span>
             </div>
             <b>$${this.$options.filters.number(
-              param.reduce((a, b) => a + b.value, 0),
+              pds.reduce((a, b) => a + b.value, 0),
               '0,0.00 a'
             )}</b>
           </div>
