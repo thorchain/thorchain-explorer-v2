@@ -554,14 +554,12 @@ export default {
             {
               name: 'Current PnL',
               slotName: 'pnl',
-              value: providers.value - +providers.current_deposit,
-              isDown: providers.value - +providers.current_deposit <= 0,
+              value: providers.pnl,
+              isDown: +providers.pnl <= 0,
               filter: (v) => this.$options.filters.number(v / 1e8, '0,0.00'),
               progress: {
-                data:
-                  (providers?.value - (oldRunePool?.providers?.value ?? 0)) /
-                  1e8,
-                down: providers?.value < (oldRunePool?.providers?.value ?? 0),
+                data: (providers?.pnl - oldRunePool?.providers?.pnl) / 1e8,
+                down: +providers?.pnl < +oldRunePool?.providers?.pnl,
                 filter: (v) => this.$options.filters.number(v, '0,0.00'),
               },
             },
@@ -575,13 +573,13 @@ export default {
                 'The amount rune deposited by providers (including pending)',
               progress: {
                 data:
-                  providers?.current_deposit +
-                  providers?.pending_rune -
-                  (oldRunePool?.providers?.current_deposit +
-                    oldRunePool?.providers?.pending_rune),
+                  +providers?.current_deposit +
+                  +providers?.pending_rune -
+                  (+oldRunePool?.providers?.current_deposit +
+                    +oldRunePool?.providers?.pending_rune),
                 down:
-                  providers?.current_deposit <
-                  (oldRunePool?.providers?.current_deposit ?? 0),
+                  +providers?.current_deposit <
+                  (+oldRunePool?.providers?.current_deposit ?? 0),
                 filter: (v) => this.$options.filters.number(v / 1e8, '0,0'),
               },
             },
@@ -618,13 +616,12 @@ export default {
             {
               name: 'Current PnL',
               slotName: 'pnl',
-              value: reserve.value - +reserve.current_deposit,
-              isDown: reserve.value - +reserve.current_deposit <= 0,
+              value: reserve.pnl,
+              isDown: +reserve.pnl <= 0,
               filter: (v) => this.$options.filters.number(v / 1e8, '0,0.00'),
               progress: {
-                data:
-                  (reserve?.value - (oldRunePool?.reserve?.value ?? 0)) / 1e8,
-                down: reserve?.value < (oldRunePool?.reserve?.value ?? 0),
+                data: (reserve?.pnl - oldRunePool?.reserve?.pnl) / 1e8,
+                down: +reserve?.pnl < +oldRunePool?.reserve?.pnl,
                 filter: (v) => this.$options.filters.number(v, '0,0.00'),
               },
             },
