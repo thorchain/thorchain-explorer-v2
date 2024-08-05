@@ -1154,15 +1154,17 @@ export default {
           userAddresses.has(tx.to_address.toLowerCase()) ||
           (tx.coins[0].asset ===
             assetToString(this.parseMemoAsset(memo.asset)) &&
-            tx.id !==
-              '0000000000000000000000000000000000000000000000000000000000000000')
+            (tx.id !==
+              '0000000000000000000000000000000000000000000000000000000000000000' ||
+              tx.id !== ''))
       )
       // get affiliate out if available
       const affiliateOut = thorStatus.out_txs?.filter(
         (tx) =>
           !userAddresses.has(tx.to_address.toLowerCase()) &&
-          tx.id ===
-            '0000000000000000000000000000000000000000000000000000000000000000'
+          (tx.id !==
+            '0000000000000000000000000000000000000000000000000000000000000000' ||
+            tx.id !== '')
       )
       // TODO: fix this in track code
       if (!outTxs || outTxs?.length === 0) {
@@ -1193,7 +1195,7 @@ export default {
       )
       let outAmount =
         outTxs?.length > 0 ? parseInt(outTxs[0].coins[0].amount) : 0
-      if (!outAmount && actions?.actions?.length > 0) {
+      if (!outAmount && actions?.actions?.length > 0 && outAsset.trade) {
         outAmount = parseInt(actions?.actions[0]?.out[0]?.coins[0].amount)
       }
 
