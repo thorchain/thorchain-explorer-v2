@@ -1,6 +1,6 @@
 <template>
   <Page>
-    <info-card :grid-settings="gridTest">
+    <info-card :grid-settings="infoCardData">
       <template #pnl="{ item }">
         <skeleton-item
           :loading="!item.value"
@@ -40,8 +40,8 @@
       <vue-good-table
         v-else-if="cardMode === 'rune-pools'"
         :key="2"
-        :columns="cols"
-        :rows="lps"
+        :columns="RunePoolsCols"
+        :rows="runePoolsRows"
         style-class="vgt-table net-table"
       >
         <template slot="table-row" slot-scope="props">
@@ -171,7 +171,6 @@
 </template>
 
 <script>
-import { isInteger } from 'lodash'
 import moment from 'moment'
 import { mapGetters } from 'vuex'
 import endpoints from '~/api/endpoints'
@@ -186,12 +185,73 @@ export default {
       networkConst: undefined,
       mimir: undefined,
       cardMode: 'rune-pools',
-      gridTest: undefined,
       pools: [],
-      lps: [],
+      runePoolsRows: [],
       oldRunePool: [],
       members: [],
-      cols: [
+      infoCardData: [
+        {
+          title: 'Protocol Owned Liquidity',
+          rowStart: 1,
+          colSpan: 1,
+          items: [
+            {
+              name: 'Current PnL',
+              slotName: 'pnl',
+            },
+            {
+              name: 'Current Deposited',
+            },
+            {
+              name: 'Overall Deposited',
+            },
+            {
+              name: 'Overall Withdrawn',
+            },
+          ],
+        },
+        {
+          title: 'Providers',
+          rowStart: 2,
+          colSpan: 1,
+          items: [
+            {
+              name: 'Current PnL',
+              slotName: 'pnl',
+            },
+            {
+              name: 'Current Deposited',
+            },
+            {
+              name: 'Providers Units',
+            },
+            {
+              name: 'Provider Share',
+            },
+          ],
+        },
+        {
+          title: 'Reserve',
+          rowStart: 2,
+          colSpan: 1,
+          items: [
+            {
+              name: 'Current PnL',
+              slotName: 'pnl',
+            },
+            {
+              name: 'Current Deposited',
+            },
+            {
+              name: 'Reserve Units',
+            },
+            {
+              name: 'Reserve Share',
+            },
+          ],
+        },
+      ],
+      RunePoolsCols: [
         {
           label: 'Pool',
           field: 'pool',
@@ -296,212 +356,6 @@ export default {
     }),
     tab() {
       return this.$route.query.tab
-    },
-    pnl() {
-      const pnl = +this.polOverview?.value - +this.polOverview?.current_deposit
-
-      return {
-        value: Math.abs(pnl) / 1e8,
-        name: 'Current RUNE PnL',
-        isDown: pnl <= 0,
-      }
-    },
-    reservepnl() {
-      const pnl =
-        +this.reserveOverview?.value - +this.reserveOverview?.current_deposit
-      return {
-        value: Math.abs(pnl) / 1e8,
-        name: 'Current RUNE PnL',
-        isDown: pnl <= 0,
-      }
-    },
-    providerspnl() {
-      const pnl = this.providersOverview?.pnl
-      return {
-        value: Math.abs(pnl) / 1e8,
-        name: 'Current RUNE PnL',
-        isDown: pnl <= 0,
-      }
-    },
-    polSettings() {
-      return [
-        [
-          {
-            name: 'Current PnL',
-            slotName: 'pnl',
-          },
-          {
-            name: 'Current Deposited',
-            value: this.polOverview?.current_deposit / 1e8,
-            filter: true,
-            runeValue: true,
-            progress: {
-              data:
-                (this.polOverview?.current_deposit -
-                  (this.oldRunePool?.pol?.current_deposit ?? 0)) /
-                1e8,
-              down:
-                this.polOverview?.current_deposit <
-                (this.oldRunePool?.pol?.current_deposit ?? 0),
-              filter: (v) => this.$options.filters.number(v, '0,0'),
-            },
-          },
-        ],
-        [
-          {
-            name: 'Overall Deposited',
-            value: this.polOverview?.rune_deposited / 1e8,
-            filter: true,
-            runeValue: true,
-            progress: {
-              data:
-                (this.polOverview?.rune_deposited -
-                  (this.oldRunePool?.pol?.rune_deposited ?? 0)) /
-                1e8,
-              down:
-                this.polOverview?.rune_deposited <
-                (this.oldRunePool?.pol?.rune_deposited ?? 0),
-              filter: (v) => this.$options.filters.number(v, '0,0'),
-            },
-          },
-          {
-            name: 'Overall Withdrawn',
-            value: this.polOverview?.rune_withdrawn / 1e8,
-            filter: true,
-            runeValue: true,
-            progress: {
-              data:
-                (this.polOverview?.rune_withdrawn -
-                  (this.oldRunePool?.pol?.rune_withdrawn ?? 0)) /
-                1e8,
-              down:
-                this.polOverview?.rune_withdrawn <
-                (this.oldRunePool?.pol?.rune_withdrawn ?? 0),
-              filter: (v) => this.$options.filters.number(v, '0,0'),
-            },
-          },
-        ],
-      ]
-    },
-    reserveSettings() {
-      return [
-        [
-          {
-            name: 'Current PnL',
-            slotName: 'reservepnl',
-          },
-          {
-            name: 'Current Deposit',
-            value: this.reserveOverview?.current_deposit / 1e8,
-            filter: true,
-            runeValue: true,
-            progress: {
-              data:
-                (this.reserveOverview?.current_deposit -
-                  (this.oldRunePool?.reserve?.current_deposit ?? 0)) /
-                1e8,
-              down:
-                this.reserveOverview?.current_deposit <
-                (this.oldRunePool?.reserve?.current_deposit ?? 0),
-              filter: (v) => this.$options.filters.number(v, '0,0'),
-            },
-          },
-        ],
-        [
-          {
-            name: 'Reserve Units',
-            value: this.reserveOverview?.units,
-          },
-        ],
-        [
-          {
-            name: 'Reserve Share',
-            value:
-              +this.reserveOverview?.value &&
-              this.$options.filters.percent(
-                +this.reserveOverview?.value / +this.polOverview?.value,
-                3
-              ),
-            filter: true,
-            progress: {
-              data:
-                this.reserveOverview?.value / +this.polOverview?.value -
-                (this.oldRunePool?.reserve?.value /
-                  this.oldRunePool?.pol?.value ?? 0),
-              down:
-                this.reserveOverview?.value / +this.polOverview?.value <
-                (this.oldRunePool?.reserve?.value /
-                  this.oldRunePool?.pol?.value ?? 0),
-              filter: this.$options.filters.percent,
-            },
-          },
-        ],
-      ]
-    },
-    providersSettings() {
-      return [
-        [
-          {
-            name: 'Current PnL',
-            slotName: 'providerspnl',
-          },
-          {
-            name: 'Current Deposit',
-            value: this.providersOverview?.current_deposit / 1e8,
-            filter: true,
-            runeValue: true,
-            progress: {
-              data:
-                (this.providersOverview?.current_deposit -
-                  (this.oldRunePool?.providers?.current_deposit ?? 0)) /
-                1e8,
-              down:
-                this.providersOverview?.current_deposit <
-                (this.oldRunePool?.providers?.current_deposit ?? 0),
-              filter: (v) => this.$options.filters.number(v, '0,0'),
-            },
-          },
-        ],
-        [
-          {
-            name: 'Pending Rune / Units',
-            value: `${this.$options.filters.number(this.providersOverview?.pending_rune / 1e8, '0,0 a')} RUNE (${this.$options.filters.number(this.providersOverview?.pending_units, '0,0 a')})`,
-            filter: true,
-            extraInfo:
-              'The Rune / Units of RUNEPool owned by providers that remain pending',
-            is: !isInteger(+this.providersOverview?.pending_rune),
-          },
-          {
-            name: 'Providers Units',
-            value: this.providersOverview?.units,
-            extraInfo:
-              'The units of RUNEPool owned by providers (including pending)',
-          },
-        ],
-        [
-          {
-            name: 'Provider Share',
-            value:
-              +this.providersOverview?.value &&
-              this.$options.filters.percent(
-                +this.providersOverview?.value / +this.polOverview?.value,
-                3
-              ),
-            filter: true,
-            progress: {
-              data:
-                this.providersOverview?.value / +this.polOverview?.value -
-                (this.oldRunePool?.providers?.value /
-                  this.oldRunePool?.pol?.value ?? 0),
-              down:
-                this.providersOverview?.value / +this.polOverview?.value <
-                (this.oldRunePool?.providers?.value /
-                  this.oldRunePool?.pol?.value ?? 0),
-              filter: this.$options.filters.percent,
-            },
-          },
-        ],
-      ]
     },
     polMimirSettings() {
       if (!this.mimir) {
@@ -816,7 +670,7 @@ export default {
     },
     async updateRunePool() {
       try {
-        ;({ data: this.lps } = await this.$api.getRunePoolsInfo())
+        ;({ data: this.runePoolsRows } = await this.$api.getRunePoolsInfo())
       } catch (error) {
         console.error('member not found', error)
       }
@@ -829,14 +683,14 @@ export default {
         } = (await this.$api.getRunePool()).data)
         ;({ data: this.oldRunePool } = await this.$api.getOldRunePools())
 
-        this.gridTest = this.createStatsData(
+        this.infoCardData = this.createStatsData(
           this.polOverview,
           this.providersOverview,
           this.reserveOverview,
           this.oldRunePool
         )
 
-        this.lps = this.lps.map((e) => ({
+        this.runePoolsRows = this.runePoolsRows.map((e) => ({
           ...e,
           polWeight:
             (+e.rune_deposit_value * 2) / +this.polOverview?.current_deposit,
