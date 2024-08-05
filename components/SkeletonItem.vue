@@ -1,5 +1,8 @@
 <template>
-  <component :is="loading ? 'skeleton-loader' : 'div'" :class="customClass">
+  <component
+    :is="loading ? 'skeleton-loader' : 'div'"
+    :class="loading ? customClass : false"
+  >
     <slot></slot>
   </component>
 </template>

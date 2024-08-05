@@ -27,25 +27,27 @@
                   class="header-icon"
                 />
               </div>
-              <div class="item-value">
-                <template v-if="item.slotName">
-                  <slot :name="item.slotName" :item="item" />
-                </template>
-                <template v-else>
-                  <span v-if="item.filter">
-                    {{ item.filter(item.value) }}
-                  </span>
-                  <span v-else>
-                    {{ item.value || '-' }}
-                  </span>
-                  <progress-icon
-                    v-if="item.progress"
-                    :data-number="item.progress.data"
-                    :is-down="item.progress.down"
-                    :filter="item.progress.filter"
-                  />
-                </template>
-              </div>
+              <skeleton-item :loading="!item.value" custom-class="info-loader">
+                <div v-if="item.value" class="item-value">
+                  <template v-if="item.slotName">
+                    <slot :name="item.slotName" :item="item" />
+                  </template>
+                  <template v-else>
+                    <span v-if="item.filter">
+                      {{ item.filter(item.value) }}
+                    </span>
+                    <span v-else>
+                      {{ item.value || '-' }}
+                    </span>
+                    <progress-icon
+                      v-if="item.progress"
+                      :data-number="item.progress.data"
+                      :is-down="item.progress.down"
+                      :filter="item.progress.filter"
+                    />
+                  </template>
+                </div>
+              </skeleton-item>
             </div>
           </div>
         </div>
@@ -122,6 +124,7 @@ export default {
     }
 
     h4 {
+      font-weight: bold;
       color: var(--sec-font-color);
       font-size: 1.1rem;
       margin: 0 0 0.5rem 0;
@@ -149,12 +152,18 @@ export default {
 
         .flex-item {
           display: flex;
+          align-items: center;
           flex-direction: column;
           justify-content: space-between;
           font-size: 0.9rem;
 
           @include md {
             flex-direction: row;
+          }
+
+          .info-loader {
+            margin-top: 0;
+            min-width: 200px;
           }
 
           .item-name {
