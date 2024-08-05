@@ -16,7 +16,7 @@
 import moment from 'moment'
 import { use } from 'echarts/core'
 import { SVGRenderer } from 'echarts/renderers'
-import { LineChart } from 'echarts/charts'
+import { BarChart } from 'echarts/charts'
 import {
   TitleComponent,
   TooltipComponent,
@@ -26,11 +26,12 @@ import {
 import { mapGetters } from 'vuex'
 import VChart from 'vue-echarts'
 import { assetFromString } from '@xchainjs/xchain-util'
+import { sortBy } from 'lodash'
 
 use([
   SVGRenderer,
   GridComponent,
-  LineChart,
+  BarChart,
   TitleComponent,
   TooltipComponent,
   LegendComponent,
@@ -63,12 +64,19 @@ export default {
       const pools = {}
       const xAxis = []
       for (let i = 0; i < intervals.length; i++) {
-        intervals[i]?.poolsDepth.forEach((pd) => {
+        const s = sortBy(intervals[i]?.poolsDepth, [
+          (o) => +o.totalDepth,
+        ]).reverse()
+
+        s.forEach((pd) => {
           if (+pd.totalDepth === 0) {
             return
           }
 
           const { chain } = assetFromString(pd.pool)
+          if (chain === 'BNB') {
+            return
+          }
           const poolUSD = (pd.totalDepth / 1e8) * +intervals[i].runePriceUSD
           const chainColor = this.getChainColor(chain)
 
@@ -82,7 +90,7 @@ export default {
           } else {
             pools[chain] = {
               name: chain,
-              type: 'line',
+              type: 'bar',
               stack: 'Total',
               showSymbol: false,
               symbol: 'circle',

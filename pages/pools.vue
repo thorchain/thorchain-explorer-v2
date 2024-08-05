@@ -18,7 +18,7 @@ export default {
       navItems: [
         {
           text: 'Pools',
-          link: '/pools',
+          link: '/pools/main',
         },
         {
           text: 'Pool Earnings',

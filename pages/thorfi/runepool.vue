@@ -481,7 +481,7 @@ export default {
     createStatsData(pol, providers, reserve, oldRunePool) {
       const ret = [
         {
-          title: 'Protocol Owned Liquidity',
+          title: 'Protocol Owned Liquidity *',
           rowStart: 1,
           colSpan: 1,
           items: [
@@ -548,7 +548,7 @@ export default {
           ],
         },
         {
-          title: 'Providers',
+          title: 'Providers *',
           rowStart: 2,
           colSpan: 1,
           items: [
@@ -610,7 +610,7 @@ export default {
           ],
         },
         {
-          title: 'Reserve',
+          title: 'Reserve *',
           rowStart: 2,
           colSpan: 1,
           items: [

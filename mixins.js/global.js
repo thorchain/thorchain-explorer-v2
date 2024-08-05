@@ -135,21 +135,22 @@ export default {
     getChainColor(asset) {
       switch (asset) {
         case 'BTC':
-          return '#EF8F1C'
+          return '#F7A035'
         case 'ETH':
-          return '#627EEA'
+          return '#F2F4F7'
         case 'LTC':
-          return '#335E9D'
+          return '#335D9D'
         case 'DOGE':
-          return '#BCA23E'
-        case 'BNB':
-          return '#F0BC18'
+          return '#BA9F32'
         case 'BCH':
           return '#4DCA48'
         case 'AVAX':
           return '#E84142'
         case 'GAIA':
-          return '#303249'
+          return '#2F3148'
+        case 'BNB':
+        case 'BSC':
+          return '#F1B90A'
         default:
           return this.popRandomColor()
       }
