@@ -29,6 +29,13 @@
   src: url('~assets/fonts/Product-Sans/Product Sans Bold.ttf')
     format('truetype');
 }
+@font-face {
+  font-family: 'ProductSans';
+  font-weight: bold;
+  font-style: italic;
+  src: url('~assets/fonts/Product-Sans/Product Sans Bold Italic.ttf')
+    format('truetype');
+}
 
 @font-face {
   font-family: 'Exo 2';
