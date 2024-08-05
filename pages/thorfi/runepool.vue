@@ -475,6 +475,7 @@ export default {
         query: { tab: 'rune-pools' },
       })
     }
+    this.updateRunePool()
   },
   methods: {
     createStatsData(pol, providers, reserve, oldRunePool) {
