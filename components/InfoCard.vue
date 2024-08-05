@@ -29,7 +29,7 @@
               </div>
               <div class="item-value">
                 <template v-if="item.slotName">
-                  <slot :name="item.slotName" />
+                  <slot :name="item.slotName" :item="item" />
                 </template>
                 <template v-else>
                   <span v-if="item.filter">
@@ -88,7 +88,9 @@ export default {
   },
   methods: {
     addStyle(item) {
-      return {}
+      return {
+        flex: item.colSpan,
+      }
     },
   },
 }
@@ -159,6 +161,7 @@ export default {
             display: flex;
 
             .header-icon {
+              fill: var(--font-color);
               height: 16px;
             }
           }
