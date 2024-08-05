@@ -1,5 +1,5 @@
 <template>
-  <card>
+  <card extra-class="info-card">
     <div class="flex-containers">
       <div
         v-for="(container, key, i) in flexContainers"
@@ -152,7 +152,6 @@ export default {
 
         .flex-item {
           display: flex;
-          align-items: center;
           flex-direction: column;
           justify-content: space-between;
           font-size: 0.9rem;
