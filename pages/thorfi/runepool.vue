@@ -567,7 +567,7 @@ export default {
             {
               name: 'Current Deposited',
               value:
-                (providers?.current_deposit + providers?.pending_rune) / 1e8,
+                (+providers?.current_deposit + +providers?.pending_rune) / 1e8,
               filter: (v) =>
                 `${this.runeCur()} ${this.$options.filters.number(v, '0,0.00')}`,
               extraInfo:
