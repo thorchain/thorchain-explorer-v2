@@ -188,6 +188,8 @@ export default {
       pools: [],
       runePoolsRows: [],
       oldRunePool: [],
+      providersInfo: [],
+      oldProvidersInfo: [],
       members: [],
       infoCardData: [
         {
@@ -227,6 +229,9 @@ export default {
             },
             {
               name: 'Provider Share',
+            },
+            {
+              name: 'Provider Count',
             },
           ],
         },
@@ -481,7 +486,7 @@ export default {
     createStatsData(pol, providers, reserve, oldRunePool) {
       const ret = [
         {
-          title: 'Protocol Owned Liquidity *',
+          title: 'RUNE Pool *',
           rowStart: 1,
           colSpan: 1,
           items: [
@@ -607,6 +612,20 @@ export default {
                 filter: (v) => this.$options.filters.percent(v, 3),
               },
             },
+            {
+              name: 'Providers Count',
+              value: this.providersInfo?.count,
+              filter: (v) => this.$options.filters.number(v, '0,0'),
+              progress: {
+                data:
+                  this.providersInfo?.count -
+                  (this.oldProvidersInfo?.count ?? 0),
+                down:
+                  this.providersInfo?.count <
+                  (this.oldProvidersInfo?.count ?? 0),
+                filter: (v) => this.$options.filters.number(v, '0,0'),
+              },
+            },
           ],
         },
         {
@@ -680,6 +699,10 @@ export default {
           reserve: this.reserveOverview,
         } = (await this.$api.getRunePool()).data)
         ;({ data: this.oldRunePool } = await this.$api.getOldRunePools())
+        ;({ data: this.providersInfo } =
+          await this.$api.getRunePoolProvidersInfo())
+        ;({ data: this.oldProvidersInfo } =
+          await this.$api.getOldRunePoolProvidersInfo())
 
         this.infoCardData = this.createStatsData(
           this.polOverview,

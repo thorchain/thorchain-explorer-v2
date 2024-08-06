@@ -153,11 +153,14 @@ export default {
         .flex-item {
           display: flex;
           flex-direction: column;
+          font-size: 0.75rem;
           justify-content: space-between;
-          font-size: 0.9rem;
 
-          @include md {
+          @include sm {
             flex-direction: row;
+            font-size: 1rem;
+            align-items: center;
+            font-size: 0.9rem;
           }
 
           .info-loader {
@@ -167,14 +170,22 @@ export default {
 
           .item-name {
             display: flex;
+            align-items: center;
 
             .header-icon {
               fill: var(--font-color);
-              height: 16px;
+              height: 12px;
+
+              @include md {
+                height: 16px;
+              }
             }
           }
 
           .item-value {
+            display: flex;
+            align-items: center;
+            gap: 5px;
             color: var(--sec-font-color);
             font-family: 'Roboto Mono';
           }

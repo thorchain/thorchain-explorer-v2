@@ -75,6 +75,8 @@ import {
   getSaversInfo,
   getRunePoolsInfo,
   getOldRunePools,
+  getOldRunePoolProvidersInfo,
+  getRunePoolProvidersInfo,
 } from './middleware.api'
 import {
   getChurnHistory,
@@ -224,6 +226,8 @@ export default function ({ $axios }, inject) {
     getRunePool,
     getRunePoolsInfo,
     getOldRunePools,
+    getOldRunePoolProvidersInfo,
+    getRunePoolProvidersInfo,
   }
 
   inject('api', api)

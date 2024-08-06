@@ -72,3 +72,15 @@ export function getOldRunePools() {
     endpoints[process.env.NETWORK].SERVER_URL + 'api/oldRunePool'
   )
 }
+
+export function getOldRunePoolProvidersInfo() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + 'api/oldRunePoolProviders'
+  )
+}
+
+export function getRunePoolProvidersInfo() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + 'api/runePoolProviders'
+  )
+}
