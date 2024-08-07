@@ -17,12 +17,13 @@ export default {
       {
         hid: 'description',
         name: 'description',
-        content: 'Explore the THORChain network with real-time metrics, interactive charts, and comprehensive data to make informed investment decisions.',
+        content:
+          'Explore the THORChain network with real-time metrics, interactive charts, and comprehensive data to make informed investment decisions.',
       },
       { name: 'format-detection', content: 'telephone=no' },
       {
         property: 'og:image',
-        content: '/assets/images/Meta-pic.png',
+        content: '/meta-card.png',
       },
     ],
     link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
