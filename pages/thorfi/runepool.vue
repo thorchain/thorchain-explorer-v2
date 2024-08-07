@@ -788,7 +788,6 @@ export default {
     transform: rotate(360deg);
   }
 }
-
 .ellipsis {
   overflow: hidden;
   white-space: nowrap;
