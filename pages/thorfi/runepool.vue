@@ -304,6 +304,13 @@ export default {
           tdClass: 'mono',
         },
         {
+          label: 'Last Added',
+          field: 'dateLastAdded',
+          formatFn: this.formatTimeNow,
+          sortFn: this.formatTimeSort,
+          type: 'text',
+        },
+        {
           label: 'First Added',
           field: 'dateFirstAdded',
           formatFn: this.formatTimeNow,
