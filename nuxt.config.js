@@ -18,11 +18,28 @@ export default {
         hid: 'description',
         name: 'description',
         content:
-          'Explore the THORChain network with its interactive charts, detailed tracking, and comprehensive data, ensuring you stay informed about all aspects of THORChain..',
+          'Explore the THORChain network with its interactive charts, detailed tracking, and comprehensive data, ensuring you stay informed about all aspects of THORChain.',
       },
       { name: 'format-detection', content: 'telephone=no' },
       {
         property: 'og:image',
+        content: '/meta-card.png',
+      },
+      {
+        hid: 'twitter:title',
+        name: 'twitter:title',
+        content:
+          'Explore the THORChain network with its interactive charts, detailed tracking, and comprehensive data, ensuring you stay informed about all aspects of THORChain.',
+      },
+      {
+        hid: 'twitter:description',
+        name: 'twitter:description',
+        content:
+          'Explore the THORChain network with its interactive charts, detailed tracking, and comprehensive data, ensuring you stay informed about all aspects of THORChain.',
+      },
+      {
+        hid: 'twitter:image',
+        name: 'twitter:image',
         content: '/meta-card.png',
       },
     ],
