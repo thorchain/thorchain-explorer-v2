@@ -1,6 +1,6 @@
 <template>
   <Page>
-    <info-card :grid-settings="infoCardData">
+    <info-card :options="infoCardData">
       <template #pnl="{ item }">
         <skeleton-item
           :loading="!item.value"
@@ -31,11 +31,21 @@
       ]"
       :act-nav.sync="cardMode"
     >
-      <stat-table
+      <info-card
         v-if="cardMode === 'mimirs'"
         :key="1"
-        :table-settings="polMimirSettings"
-      />
+        :inner="true"
+        :options="polMimirSettings"
+      >
+        <template #name="{ item }">
+          <asset-icon :asset="item.name" style="margin-bottom: 0.5rem" />
+        </template>
+        <template #asset="{ item }">
+          <div :class="['mini-bubble', { danger: item.value == 'No' }]">
+            {{ item.value }}
+          </div>
+        </template>
+      </info-card>
 
       <vue-good-table
         v-else-if="cardMode === 'rune-pools'"
@@ -199,7 +209,7 @@ export default {
           items: [
             {
               name: 'Current PnL',
-              slotName: 'pnl',
+              valueSlot: 'pnl',
             },
             {
               name: 'Current Deposited',
@@ -219,7 +229,7 @@ export default {
           items: [
             {
               name: 'Current PnL',
-              slotName: 'pnl',
+              valueSlot: 'pnl',
             },
             {
               name: 'Current Deposited',
@@ -242,7 +252,7 @@ export default {
           items: [
             {
               name: 'Current PnL',
-              slotName: 'pnl',
+              valueSlot: 'pnl',
             },
             {
               name: 'Current Deposited',
@@ -378,93 +388,73 @@ export default {
       const polBuffer = this.mimir?.POLBUFFER / 1e4
       const PolMaxPoolMovement = this.mimir?.POLMAXPOOLMOVEMENT / 1e4
 
+      const polItems = []
+      for (const key in this.mimir) {
+        if (key.startsWith('POL-')) {
+          const asset = key.slice(4).replace('-', '.')
+          polItems.push({
+            name: asset,
+            value: this.mimir[key] ? 'Yes' : 'No',
+            valueSlot: 'asset',
+            nameSlot: true,
+          })
+        }
+      }
+
       return [
-        [
-          {
-            ...this.parseConstant('MaxSynthPerPoolDepth', {
-              filter: (v) => this.$options.filters.percent(v / 1e4, 2),
-            }),
-            name: 'Max Synth Utilisation per Pool',
-            filter: true,
-          },
-          {
-            ...this.parseConstant('POLTargetSynthPerPoolDepth', {
-              filter: (v) => this.$options.filters.percent(v / 1e4, 2),
-            }),
-            name: 'POL Target Synth per Pool Depth',
-            filter: true,
-            extraInfo: `POL will continue adding RUNE to a pool until the synth depth of that pool is ${this.$options.filters.percent(synthTargetPerPool, 2)}`,
-          },
-        ],
-        [
-          {
-            ...this.parseConstant('POLBuffer', {
-              filter: (v) => this.$options.filters.percent(v / 1e4, 2),
-            }),
-            name: 'POL Buffer',
-            filter: true,
-            extraInfo: `Synth utilization must be >${polBuffer * 100}% from the target synth per pool depth in order to add liquidity / remove liquidity. In this context, liquidity will be withdrawn below ${(synthTargetPerPool - polBuffer) * 100}% synth utilization and deposited above ${(synthTargetPerPool + polBuffer) * 100}% synth utilization.`,
-          },
-          {
-            ...this.parseConstant('POLMaxPoolMovement', {
-              filter: (v) => this.$options.filters.percent(v / 1e7, 4),
-            }),
-            name: 'POL Max Pool Movement',
-            filter: true,
-            extraInfo: `POL will move the pool price at most ${PolMaxPoolMovement / 10}% in one block.`,
-          },
-          {
-            ...this.parseConstant('POLMaxNetworkDeposit', {
-              filter: (v) => v / 1e8,
-            }),
-            name: 'POL Max Network Deposit',
-            filter: true,
-            runeValue: true,
-          },
-        ],
-        [
-          {
-            name: 'Enable POL on BTC',
-            value: this.mimir['POL-BTC-BTC'] ? 'Yes' : 'No',
-            filter: true,
-          },
-          {
-            name: 'Enable POL on ETH',
-            value: this.mimir['POL-ETH-ETH'] ? 'Yes' : 'No',
-            filter: true,
-          },
-          {
-            name: 'Enable POL on AVAX',
-            value: this.mimir['POL-AVAX-AVAX'] ? 'Yes' : 'No',
-            filter: true,
-          },
-          {
-            name: 'Enable POL on AVAX.USDC',
-            value: this.mimir[
-              'POL-AVAX-USDC-0XB97EF9EF8734C71904D8002F8B6BC66DD9C48A6E'
-            ]
-              ? 'Yes'
-              : 'No',
-            filter: true,
-          },
-        ],
-        [
-          {
-            name: 'Enable POL on BCH',
-            value: this.mimir['POL-BCH-BCH'] ? 'Yes' : 'No',
-            filter: true,
-          },
-          {
-            name: 'Enable POL on BSC.BNB',
-            value: this.mimir['POL-BSC-BNB'] ? 'Yes' : 'No',
-            filter: true,
-          },
-          {
-            name: 'Enable POL on DOGE',
-            value: this.mimir['POL-DOGE-DOGE'] ? 'Yes' : 'No',
-            filter: true,
-          },
-        ],
+        {
+          title: 'Settings',
+          rowStart: 1,
+          colSpan: 1,
+          items: [
+            {
+              ...this.parseConstant('POLMaxNetworkDeposit'),
+              name: 'POL Max Network Deposit',
+              filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v / 1e8, '0,0')}`,
+            },
+            {
+              ...this.parseConstant('MINRUNEPOOLDEPTH'),
+              name: 'Min RUNEPool depth',
+              filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v / 1e8, '0,0')}`,
+            },
+            {
+              ...this.parseConstant('MaxSynthPerPoolDepth', {
+                filter: (v) => this.$options.filters.percent(v / 1e4, 2),
+              }),
+              name: 'Max Synth Utilisation per Pool',
+            },
+            {
+              ...this.parseConstant('POLTargetSynthPerPoolDepth', {
+                filter: (v) => this.$options.filters.percent(v / 1e4, 2),
+              }),
+              name: 'POL Target Synth per Pool Depth',
+              extraInfo: `POL will continue adding RUNE to a pool until the synth depth of that pool is ${this.$options.filters.percent(synthTargetPerPool, 2)}`,
+            },
+            {
+              ...this.parseConstant('POLBuffer', {
+                filter: (v) => this.$options.filters.percent(v / 1e4, 2),
+              }),
+              name: 'POL Buffer',
+              extraInfo: `Synth utilization must be >${polBuffer * 100}% from the target synth per pool depth in order to add liquidity / remove liquidity. In this context, liquidity will be withdrawn below ${(synthTargetPerPool - polBuffer) * 100}% synth utilization and deposited above ${(synthTargetPerPool + polBuffer) * 100}% synth utilization.`,
+            },
+            {
+              ...this.parseConstant('POLMaxPoolMovement', {
+                filter: (v) => this.$options.filters.percent(v / 1e7, 4),
+              }),
+              name: 'POL Max Pool Movement',
+              extraInfo: `POL will move the pool price at most ${PolMaxPoolMovement / 10}% in one block.`,
+            },
+          ],
+        },
+        {
+          title: 'RUNE Pools Status',
+          rowStart: 1,
+          colSpan: 1,
+          cluster: true,
+          items: polItems,
+        },
       ]
     },
   },
@@ -499,7 +489,7 @@ export default {
           items: [
             {
               name: 'Current PnL',
-              slotName: 'pnl',
+              valueSlot: 'pnl',
               value: pol.value - +pol.current_deposit,
               isDown: pol.value - +pol.current_deposit <= 0,
               filter: (v) => this.$options.filters.number(v / 1e8, '0,0.00'),
@@ -566,7 +556,7 @@ export default {
           items: [
             {
               name: 'Current PnL',
-              slotName: 'pnl',
+              valueSlot: 'pnl',
               value: providers.pnl,
               isDown: +providers.pnl <= 0,
               filter: (v) => this.$options.filters.number(v / 1e8, '0,0.00'),
@@ -642,7 +632,7 @@ export default {
           items: [
             {
               name: 'Current PnL',
-              slotName: 'pnl',
+              valueSlot: 'pnl',
               value: reserve.pnl,
               isDown: +reserve.pnl <= 0,
               filter: (v) => this.$options.filters.number(v / 1e8, '0,0.00'),
