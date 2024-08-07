@@ -12,14 +12,39 @@ export default {
       {
         name: 'viewport',
         content:
-          'width=device-width, height=device-height,  initial-scale=1.0, user-scalable=no;user-scalable=0;',
+          'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no;user-scalable=0;',
       },
-      { hid: 'description', name: 'description', content: '' },
+      {
+        hid: 'description',
+        name: 'description',
+        content:
+          'Explore the THORChain network with its interactive charts, detailed tracking, and comprehensive data, ensuring you stay informed about all aspects of THORChain.',
+      },
       { name: 'format-detection', content: 'telephone=no' },
+      {
+        property: 'og:image',
+        content: '/meta-card.png',
+      },
+      {
+        hid: 'twitter:title',
+        name: 'twitter:title',
+        content:
+          'Explore the THORChain network with its interactive charts, detailed tracking, and comprehensive data, ensuring you stay informed about all aspects of THORChain.',
+      },
+      {
+        hid: 'twitter:description',
+        name: 'twitter:description',
+        content:
+          'Explore the THORChain network with its interactive charts, detailed tracking, and comprehensive data, ensuring you stay informed about all aspects of THORChain.',
+      },
+      {
+        hid: 'twitter:image',
+        name: 'twitter:image',
+        content: '/meta-card.png',
+      },
     ],
     link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
   },
-
   loading: {
     color: 'var(--primary-color)',
     height: '4px',

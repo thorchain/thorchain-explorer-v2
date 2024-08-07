@@ -54,6 +54,9 @@ import StatTable from '~/components/StatTable.vue'
 import { formatAsset, blockTime } from '~/utils'
 
 export default {
+  head: {
+    title: 'THORChain Network Explorer | Network',
+  },
   components: { StatTable },
   data() {
     return {

@@ -763,6 +763,9 @@ export default {
       }
     },
   },
+  head: {
+    title: 'THORChain Network Explorer | RUNEPool',
+  },
 }
 </script>
 

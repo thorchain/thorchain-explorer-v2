@@ -1395,6 +1395,9 @@ export default {
       }
     },
   },
+  head: {
+    title: 'THORChain Network Explorer | TX',
+  },
 }
 </script>
 

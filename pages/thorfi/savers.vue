@@ -360,6 +360,9 @@ export default {
       }
     },
   },
+  head: {
+    title: 'THORChain Network Explorer | Savers',
+  },
 }
 </script>
 

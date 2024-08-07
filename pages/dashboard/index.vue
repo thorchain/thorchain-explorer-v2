@@ -361,7 +361,6 @@
 import { AssetCurrencySymbol, assetFromString } from '@xchainjs/xchain-util'
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
 import moment from 'moment'
-
 import { use } from 'echarts/core'
 import { SVGRenderer } from 'echarts/renderers'
 import { LineChart, BarChart, PieChart } from 'echarts/charts'
@@ -1224,6 +1223,9 @@ export default {
       this.poolsData = poolData
       this.totalValuePooled = totalValuePooled
     },
+  },
+  head: {
+    title: 'THORChain Network Explorer | Dashboard',  
   },
 }
 </script>

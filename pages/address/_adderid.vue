@@ -388,6 +388,9 @@ export default {
       }
     },
   },
+  head: {
+    title: `THORChain Network Explorer | Address`,
+  },
 }
 </script>
 

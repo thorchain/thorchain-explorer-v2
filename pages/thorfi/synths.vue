@@ -104,15 +104,12 @@ export default {
         },
         {
           name: 'Total Utilisation',
-          
         },
         {
           name: 'Total Saver Percentage',
-        
         },
         {
           name: 'POL Cap',
-          
         },
       ],
       cols: [
@@ -184,8 +181,7 @@ export default {
       this.synthCap = mimirData.MAXSYNTHPERPOOLDEPTH / 10000
 
       this.loadSynthUtils()
-    } catch (error) {
-    }
+    } catch (error) {}
   },
   methods: {
     async loadSynthUtils() {
@@ -215,7 +211,8 @@ export default {
           utilisation:
             (+asset?.synth_supply / (+asset?.asset_depth * 2)) *
             (1 / this.synthCap),
-          isPol: +asset?.synth_supply / (+asset?.asset_depth * 2) >= this.polCap,
+          isPol:
+            +asset?.synth_supply / (+asset?.asset_depth * 2) >= this.polCap,
           saverPercentage: +asset?.savers_depth / +asset?.synth_supply,
           supply: +asset?.synth_supply / 10 ** 8,
         }))
@@ -223,8 +220,7 @@ export default {
         if (this.midgardPools) {
           this.updateGeneralStats(this.midgardPools)
         }
-      } catch (error) {
-      }
+      } catch (error) {}
     },
     updateGeneralStats(pools) {
       const totalSynthSupply = this.synthUtils.reduce((total, o) => {
@@ -278,6 +274,9 @@ export default {
         },
       ]
     },
+  },
+  head: {
+    title: 'THORChain Network Explorer | Synths',
   },
 }
 </script>

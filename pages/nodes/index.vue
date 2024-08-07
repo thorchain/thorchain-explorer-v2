@@ -1265,6 +1265,9 @@ export default {
       return mimirs
     },
   },
+  head: {
+    title: 'THORChain Network Explorer | Nodes',
+  },
 }
 </script>
 

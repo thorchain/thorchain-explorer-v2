@@ -75,6 +75,9 @@ export default {
       ],
     }
   },
+  head: {
+    title: 'THORChain Network Explorer | Transaction',
+  },
   mounted() {
     this.getActions(0)
   },
