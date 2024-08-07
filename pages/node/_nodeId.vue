@@ -74,6 +74,9 @@ export default {
       node: undefined,
     }
   },
+  head: {
+    title: 'THORChain Network Explorer | Node',
+  },
   computed: {
     nodeSettings() {
       return [

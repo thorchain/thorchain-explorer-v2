@@ -75,6 +75,9 @@ export default {
       ],
     }
   },
+  head: {
+    title: 'THORChain Network Explorer | Transaction',
+  },
   mounted() {
     this.getActions(0)
   },
@@ -132,9 +135,6 @@ export default {
       this.filter = type
       this.getActions(0, txsType)
     },
-  },
-  head: {
-    title: 'THORChain Network Explorer | transactions',
   },
 }
 </script>

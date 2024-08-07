@@ -749,7 +749,7 @@ export default {
     },
   },
   head: {
-    title: 'THORChain Network Explorer | Runpool',
+    title: 'THORChain Network Explorer | RUNEPool',
   },
 }
 </script>

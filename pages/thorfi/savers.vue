@@ -361,7 +361,7 @@ export default {
     },
   },
   head: {
-    title: 'THORChain Network Explorer | Savares',
+    title: 'THORChain Network Explorer | Savers',
   },
 }
 </script>

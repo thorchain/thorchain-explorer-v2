@@ -254,7 +254,7 @@ export default {
     }),
   },
   head: {
-    title: 'THORChain Network Explorer | vaults',
+    title: 'THORChain Network Explorer | Vaults',
   },
 }
 </script>

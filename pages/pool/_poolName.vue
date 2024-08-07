@@ -16,6 +16,9 @@ export default {
   asyncData({ params }) {
     return { poolName: params.poolName }
   },
+  head: {
+    title: 'THORChain Network Explorer | Pool stats',
+  },
 }
 </script>
 

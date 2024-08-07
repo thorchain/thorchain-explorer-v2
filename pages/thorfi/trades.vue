@@ -68,12 +68,11 @@
 <script>
 import { mapGetters } from 'vuex'
 import { formatAsset, tradeToAsset } from '~/utils'
-import InfoIcon from '~/assets/images/info.svg?inline'
 import UsdIcon from '~/assets/images/usd.svg?inline'
 import UsdFillIcon from '~/assets/images/usd-fill.svg?inline'
 
 export default {
-  components: { InfoIcon, UsdIcon, UsdFillIcon },
+  components: { UsdIcon, UsdFillIcon },
   computed: {
     ...mapGetters({
       runePrice: 'getRunePrice',
