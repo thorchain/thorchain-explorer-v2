@@ -697,9 +697,6 @@ export default {
     },
     async updateRunePool() {
       this.isUpdating = true
-      setTimeout(() => {
-        this.isUpdating = false
-      }, 2000)
       try {
         ;({ data: this.runePoolsRows } = await this.$api.getRunePoolsInfo())
       } catch (error) {
@@ -760,6 +757,7 @@ export default {
             )
             .asDays(),
         }))
+        this.isUpdating = false
       } catch (error) {
         console.error(error)
       }
@@ -774,10 +772,11 @@ export default {
   height: 24px;
   transition: transform 0.5s ease-in-out;
   cursor: pointer;
-  fill: white;
+  fill: var(--font-color);
 }
 
 .spinning {
+  fill: var(--primary-color);
   animation: spin 1s linear infinite;
 }
 
@@ -789,6 +788,7 @@ export default {
     transform: rotate(360deg);
   }
 }
+
 .ellipsis {
   overflow: hidden;
   white-space: nowrap;
