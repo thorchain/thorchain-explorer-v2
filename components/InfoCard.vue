@@ -1,5 +1,5 @@
 <template>
-  <card extra-class="info-card">
+  <component :is="inner ? 'div' : 'card'" extra-class="info-card">
     <div class="flex-containers">
       <div
         v-for="(container, key, i) in flexContainers"
@@ -13,24 +13,29 @@
           :style="addStyle(section)"
         >
           <h4>{{ section.title }}</h4>
-          <div class="flex-items">
+          <div :class="['flex-items', { cluster: section.cluster }]">
             <div
               v-for="(item, colIndex) in section.items"
               :key="`item-${rowIndex}-${colIndex}`"
               class="flex-item"
             >
               <div class="item-name">
-                {{ item.name }}
-                <unknown-icon
-                  v-if="item.extraInfo"
-                  v-tooltip="item.extraInfo"
-                  class="header-icon"
-                />
+                <template v-if="hasSlot('name') && item.nameSlot">
+                  <slot name="name" :item="item" />
+                </template>
+                <template v-else>
+                  {{ item.name }}
+                  <unknown-icon
+                    v-if="item.extraInfo"
+                    v-tooltip="item.extraInfo"
+                    class="header-icon"
+                  />
+                </template>
               </div>
               <skeleton-item :loading="!item.value" custom-class="info-loader">
                 <div v-if="item.value" class="item-value">
-                  <template v-if="item.slotName">
-                    <slot :name="item.slotName" :item="item" />
+                  <template v-if="item.valueSlot">
+                    <slot :name="item.valueSlot" :item="item" />
                   </template>
                   <template v-else>
                     <span v-if="item.filter">
@@ -53,7 +58,7 @@
         </div>
       </div>
     </div>
-  </card>
+  </component>
 </template>
 
 <script>
@@ -64,10 +69,11 @@ export default {
   name: 'InfoCard',
   components: { UnknownIcon },
   props: {
-    gridSettings: {
+    options: {
       type: Array,
       default: () => [],
     },
+    inner: Boolean,
     isLoading: Boolean,
   },
   computed: {
@@ -76,12 +82,12 @@ export default {
     }),
     flexContainers() {
       const flexes = {}
-      for (let i = 0; i < this.gridSettings.length; i++) {
-        const index = this.gridSettings[i].rowStart
+      for (let i = 0; i < this.options.length; i++) {
+        const index = this.options[i].rowStart
         if (flexes[index]) {
-          flexes[index].push(this.gridSettings[i])
+          flexes[index].push(this.options[i])
         } else {
-          flexes[index] = [this.gridSettings[i]]
+          flexes[index] = [this.options[i]]
         }
       }
 
@@ -94,6 +100,9 @@ export default {
         flex: item.colSpan,
       }
     },
+    hasSlot(name = 'default') {
+      return !!this.$slots[name] || !!this.$scopedSlots[name]
+    },
   },
 }
 </script>
@@ -104,6 +113,7 @@ export default {
     display: flex;
     flex-wrap: wrap;
     min-width: 100%;
+    overflow: hidden;
 
     @include md {
       margin-bottom: 1rem;
@@ -147,8 +157,18 @@ export default {
       }
 
       .flex-items {
-        display: grid;
         gap: 0.3rem 0;
+        min-width: 320px;
+
+        &.cluster {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+
+          .flex-item {
+            justify-content: start;
+          }
+        }
 
         .flex-item {
           display: flex;
@@ -156,7 +176,7 @@ export default {
           font-size: 0.75rem;
           justify-content: space-between;
 
-          @include sm {
+          @include md {
             flex-direction: row;
             font-size: 1rem;
             align-items: center;
