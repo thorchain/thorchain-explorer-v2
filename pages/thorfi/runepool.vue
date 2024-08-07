@@ -748,6 +748,9 @@ export default {
       }
     },
   },
+  head: {
+    title: 'THORChain Network Explorer| Runpool',
+  },
 }
 </script>
 

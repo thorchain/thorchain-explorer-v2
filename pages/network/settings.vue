@@ -545,6 +545,9 @@ export default {
         console.error(e)
       })
   },
+  head: {
+    title: 'THORChain Network Explorer| Network Settings',
+  },
 }
 </script>
 

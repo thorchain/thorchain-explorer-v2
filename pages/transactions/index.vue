@@ -133,6 +133,9 @@ export default {
       this.getActions(0, txsType)
     },
   },
+  head: {
+    title: 'THORChain Network Explorer| transactions',
+  },
 }
 </script>
 

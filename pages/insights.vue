@@ -13,7 +13,11 @@
 </template>
 
 <script>
-export default {}
+export default {
+  head: {
+    title: 'THORChain Network Explorer| insights',
+  },
+}
 </script>
 
 <style lang="scss" scoped></style>

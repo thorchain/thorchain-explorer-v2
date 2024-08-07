@@ -253,6 +253,9 @@ export default {
       runePrice: 'getRunePrice',
     }),
   },
+  head: {
+    title: 'THORChain Network Explorer| vaults',
+  },
 }
 </script>
 

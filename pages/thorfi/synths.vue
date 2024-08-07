@@ -279,6 +279,9 @@ export default {
       ]
     },
   },
+  head: {
+    title: 'THORChain Network Explorer| Synths',
+  },
 }
 </script>
 

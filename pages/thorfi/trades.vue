@@ -242,6 +242,9 @@ export default {
       this.rows = this.fillTradeData(this.tradeAssets, this.pools, this.asgard)
     },
   },
+  head: {
+    title: 'THORChain Network Explorer| Trades',
+  },
 }
 </script>
 

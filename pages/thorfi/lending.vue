@@ -441,6 +441,14 @@ export default {
       console.error('borrower not found', error)
     }
   },
+  head: {
+    title: 'THORChain Network Explorer| Lending',
+    meta: [
+      { hid: 'description', name: 'description', content: '' },
+      { name: 'format-detection', content: 'telephone=no' },
+    ],
+    link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
+  },
 }
 </script>
 
