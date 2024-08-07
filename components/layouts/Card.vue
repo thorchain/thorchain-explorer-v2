@@ -17,18 +17,21 @@
         <slot name="header" />
       </div>
       <div v-else-if="navs" class="card-header" :style="{ padding: '0 1rem' }">
-        <div
-          v-for="(nav, i) in navs"
-          :key="i"
-          :class="[
-            'nav-section',
-            'card-header-title',
-            { active: actNav == nav.value },
-          ]"
-          @click="$emit('update:actNav', nav.value)"
-        >
-          {{ nav.title }}
+        <div class="nav-header">
+          <div
+            v-for="(nav, i) in navs"
+            :key="i"
+            :class="[
+              'nav-section',
+              'card-header-title',
+              { active: actNav == nav.value },
+            ]"
+            @click="$emit('update:actNav', nav.value)"
+          >
+            {{ nav.title }}
+          </div>
         </div>
+        <slot name="header" />
       </div>
       <div class="card-body">
         <slot />
@@ -96,9 +99,14 @@ export default {
     padding: 1rem;
     margin-bottom: 0;
     border-bottom: 1px solid var(--border-color);
+    justify-content: space-between;
 
     display: flex;
     align-items: center;
+    
+    .nav-header {
+      display: flex;
+    }
 
     .header-title-section {
       display: flex;
@@ -116,7 +124,6 @@ export default {
     &.has-extra {
       justify-content: space-between;
     }
-
     .nav-section {
       cursor: pointer;
       color: var(--font-color);

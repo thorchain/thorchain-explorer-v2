@@ -31,6 +31,14 @@
       ]"
       :act-nav.sync="cardMode"
     >
+      <template #header>
+        <RefreshIcon
+          class="refresh-icon"
+          :class="{ spinning: isUpdating }"
+          @click="updateRunePool"
+        />
+      </template>
+
       <info-card
         v-if="cardMode === 'mimirs'"
         :key="1"
@@ -184,10 +192,15 @@
 import moment from 'moment'
 import { mapGetters } from 'vuex'
 import endpoints from '~/api/endpoints'
+import RefreshIcon from '~/assets/images/refresh.svg?inline'
 
 export default {
+  components: { RefreshIcon },
+
   data() {
     return {
+      loading: false,
+      isUpdating: false,
       reserveAddress: endpoints[process.env.NETWORK].MODULE_ADDR,
       polOverview: undefined,
       reserveOverview: undefined,
@@ -683,6 +696,10 @@ export default {
       return ret
     },
     async updateRunePool() {
+      this.isUpdating = true
+      setTimeout(() => {
+        this.isUpdating = false
+      }, 2000)
       try {
         ;({ data: this.runePoolsRows } = await this.$api.getRunePoolsInfo())
       } catch (error) {
@@ -752,6 +769,26 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.refresh-icon {
+  width: 24px;
+  height: 24px;
+  transition: transform 0.5s ease-in-out;
+  cursor: pointer;
+  fill: white;
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
 .ellipsis {
   overflow: hidden;
   white-space: nowrap;
