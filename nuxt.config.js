@@ -18,7 +18,7 @@ export default {
         hid: 'description',
         name: 'description',
         content:
-          'Explore the THORChain network with real-time metrics, interactive charts, and comprehensive data to make informed investment decisions.',
+          'Explore the THORChain network with its interactive charts, detailed tracking, and comprehensive data, ensuring you stay informed about all aspects of THORChain..',
       },
       { name: 'format-detection', content: 'telephone=no' },
       {
