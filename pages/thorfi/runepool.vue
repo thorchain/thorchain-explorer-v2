@@ -409,7 +409,7 @@ export default {
           items: [
             {
               ...this.parseConstant('POLMaxNetworkDeposit'),
-              name: 'POL Max Network Deposit',
+              name: 'RUNEPool Max Network Deposit',
               filter: (v) =>
                 `${this.runeCur()} ${this.$options.filters.number(v / 1e8, '0,0')}`,
             },
@@ -429,22 +429,22 @@ export default {
               ...this.parseConstant('POLTargetSynthPerPoolDepth', {
                 filter: (v) => this.$options.filters.percent(v / 1e4, 2),
               }),
-              name: 'POL Target Synth per Pool Depth',
-              extraInfo: `POL will continue adding RUNE to a pool until the synth depth of that pool is ${this.$options.filters.percent(synthTargetPerPool, 2)}`,
+              name: 'RUNEPool Target Synth per Pool Depth',
+              extraInfo: `RUNEPool will continue adding RUNE to a pool until the synth depth of that pool is ${this.$options.filters.percent(synthTargetPerPool, 2)}`,
             },
             {
               ...this.parseConstant('POLBuffer', {
                 filter: (v) => this.$options.filters.percent(v / 1e4, 2),
               }),
-              name: 'POL Buffer',
+              name: 'RUNEPool Buffer',
               extraInfo: `Synth utilization must be >${polBuffer * 100}% from the target synth per pool depth in order to add liquidity / remove liquidity. In this context, liquidity will be withdrawn below ${(synthTargetPerPool - polBuffer) * 100}% synth utilization and deposited above ${(synthTargetPerPool + polBuffer) * 100}% synth utilization.`,
             },
             {
               ...this.parseConstant('POLMaxPoolMovement', {
                 filter: (v) => this.$options.filters.percent(v / 1e7, 4),
               }),
-              name: 'POL Max Pool Movement',
-              extraInfo: `POL will move the pool price at most ${PolMaxPoolMovement / 10}% in one block.`,
+              name: 'RUNEPool Max Pool Movement',
+              extraInfo: `RUNEPool will move the pool price at most ${PolMaxPoolMovement / 10}% in one block.`,
             },
           ],
         },
@@ -483,7 +483,7 @@ export default {
     createStatsData(pol, providers, reserve, oldRunePool) {
       const ret = [
         {
-          title: 'RUNE Pool *',
+          title: 'RUNEPool *',
           rowStart: 1,
           colSpan: 1,
           items: [
