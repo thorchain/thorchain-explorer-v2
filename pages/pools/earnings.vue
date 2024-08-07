@@ -282,7 +282,7 @@ export default {
     },
   },
   head: {
-    title: 'THORChain Network Explorer| Pools Earnings',
+    title: 'THORChain Network Explorer | Pools Earnings',
   },
 }
 </script>

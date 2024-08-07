@@ -1225,7 +1225,7 @@ export default {
     },
   },
   head: {
-    title: 'THORChain Network Explorer| Dashboard',  
+    title: 'THORChain Network Explorer | Dashboard',  
   },
 }
 </script>

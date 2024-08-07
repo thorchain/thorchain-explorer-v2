@@ -15,7 +15,7 @@
 <script>
 export default {
   head: {
-    title: 'THORChain Network Explorer| insights',
+    title: 'THORChain Network Explorer | insights',
   },
 }
 </script>

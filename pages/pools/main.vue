@@ -343,7 +343,7 @@ export default {
     },
   },
   head: {
-    title: 'THORChain Network Explorer| Pools',
+    title: 'THORChain Network Explorer | Pools',
   },
 }
 </script>

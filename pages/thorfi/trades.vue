@@ -243,7 +243,7 @@ export default {
     },
   },
   head: {
-    title: 'THORChain Network Explorer| Trades',
+    title: 'THORChain Network Explorer | Trades',
   },
 }
 </script>

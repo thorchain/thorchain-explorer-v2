@@ -134,7 +134,7 @@ export default {
     },
   },
   head: {
-    title: 'THORChain Network Explorer| transactions',
+    title: 'THORChain Network Explorer | transactions',
   },
 }
 </script>

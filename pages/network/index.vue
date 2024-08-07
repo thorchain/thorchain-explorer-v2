@@ -55,7 +55,7 @@ import { formatAsset, blockTime } from '~/utils'
 
 export default {
   head: {
-    title: 'THORChain Network Explorer| Network',
+    title: 'THORChain Network Explorer | Network',
   },
   components: { StatTable },
   data() {

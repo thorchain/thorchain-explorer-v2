@@ -546,7 +546,7 @@ export default {
       })
   },
   head: {
-    title: 'THORChain Network Explorer| Network Settings',
+    title: 'THORChain Network Explorer | Network Settings',
   },
 }
 </script>

@@ -280,7 +280,7 @@ export default {
     },
   },
   head: {
-    title: 'THORChain Network Explorer| Synths',
+    title: 'THORChain Network Explorer | Synths',
   },
 }
 </script>

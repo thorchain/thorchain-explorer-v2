@@ -366,7 +366,7 @@ export default {
     },
   },
   head: {
-    title: 'THORChain Network Explorer| Mimir votes',
+    title: 'THORChain Network Explorer | Mimir votes',
   },
 }
 </script>

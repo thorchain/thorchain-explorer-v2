@@ -177,7 +177,7 @@ export default {
     },
   },
   head: {
-    title: 'THORChain Network Explorer| Tvl',
+    title: 'THORChain Network Explorer | Tvl',
 }
 }
 </script>
