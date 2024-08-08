@@ -25,7 +25,14 @@
 
     <card>
       <div class="runepool-cap">
-        <span>RUNEPool Cap</span>
+        <div>
+          <span>RUNEPool Cap</span>
+          <unknown-icon
+            v-tooltip="
+              `This is the overall RUNE Pool deposited by reserve and providers. It isn't related to providers cap.`
+            "
+          ></unknown-icon>
+        </div>
         <skeleton-item
           :loading="!runepoolCap"
           :custom-class="['runepool-cap-loader']"
@@ -39,9 +46,9 @@
         </skeleton-item>
       </div>
       <skeleton-item :loading="!runepoolCap">
-        <progress-bar
+        <dist-chart
           v-if="runepoolCap"
-          :width="runepoolCap.progress"
+          :options="runepoolCap.bars"
           height="7px"
         />
       </skeleton-item>
@@ -505,16 +512,38 @@ export default {
       }
 
       const ret = {
-        progress: 100,
         current: +this.polOverview.current_deposit / 1e8,
         max: this.parseConstant('POLMaxNetworkDeposit').value / 1e8,
       }
 
-      if (ret.current < ret.max) {
-        ret.progress = (ret.current / ret.max) * 100
+      const bars = [
+        {
+          name: 'Providers',
+          value: +this.providersOverview.current_deposit / 1e8,
+        },
+        {
+          name: 'Reserve',
+          value: +this.reserveOverview.current_deposit / 1e8,
+        },
+      ]
+
+      if (
+        +this.polOverview.current_deposit <
+        this.parseConstant('POLMaxNetworkDeposit').value
+      ) {
+        bars.push({
+          name: 'Remaining Cap',
+          value:
+            (+this.polOverview.current_deposit -
+              this.parseConstant('POLMaxNetworkDeposit').value) /
+            1e8,
+        })
       }
 
-      return ret
+      return {
+        ...ret,
+        bars,
+      }
     },
   },
   watch: {
