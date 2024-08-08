@@ -27,6 +27,14 @@ export default {
       },
       { name: 'format-detection', content: 'telephone=no' },
       {
+        property: 'og:site_name',
+        content: 'THORChain Explorer',
+      },
+      {
+        property: 'og:type',
+        content: 'website',
+      },
+      {
         property: 'og:image',
         content: '/meta-card.png',
       },
@@ -43,9 +51,19 @@ export default {
           'Explore the THORChain network with its interactive charts, detailed tracking, and comprehensive data, ensuring you stay informed about all aspects of THORChain.',
       },
       {
+        hid: 'twitter:site',
+        name: 'twitter:site',
+        content: 'thorchain.net',
+      },
+      {
         hid: 'twitter:image',
         name: 'twitter:image',
         content: '/meta-card.png',
+      },
+      {
+        hid: 'twitter:card',
+        name: 'twitter:card',
+        content: 'summary_large_image',
       },
     ],
     link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
