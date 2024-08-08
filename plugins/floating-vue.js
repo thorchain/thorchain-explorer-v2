@@ -3,4 +3,6 @@ import FloatingVue from 'floating-vue'
 
 import 'floating-vue/dist/style.css'
 
-Vue.use(FloatingVue)
+Vue.use(FloatingVue, {
+  themes: { tooltip: { triggers: ['hover', 'focus', 'touch', 'click'] } },
+})
