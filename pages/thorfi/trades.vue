@@ -73,11 +73,6 @@ import UsdFillIcon from '~/assets/images/usd-fill.svg?inline'
 
 export default {
   components: { UsdIcon, UsdFillIcon },
-  computed: {
-    ...mapGetters({
-      runePrice: 'getRunePrice',
-    }),
-  },
   data() {
     return {
       cols: [
@@ -119,7 +114,7 @@ export default {
           type: 'number',
           tdClass: 'mono',
           thClass: 'end',
-          formatFn: this.numberFormat,
+          formatFn: this.baseAmountFormat,
         },
       ],
       rows: [],
@@ -143,6 +138,11 @@ export default {
       pools: undefined,
       asgard: undefined,
     }
+  },
+  computed: {
+    ...mapGetters({
+      runePrice: 'getRunePrice',
+    }),
   },
   async mounted() {
     try {
