@@ -173,14 +173,13 @@ export default {
         .flex-item {
           display: flex;
           flex-direction: column;
-          font-size: 0.75rem;
+          font-size: 0.9rem;
           justify-content: space-between;
 
           @include md {
             flex-direction: row;
             font-size: 1rem;
             align-items: center;
-            font-size: 0.9rem;
           }
 
           .info-loader {
