@@ -677,10 +677,10 @@ export default {
             },
             {
               name: 'Providers Units',
-              value: providers?.units + providers?.pending_units,
-              filter: (v) => this.$options.filters.number(v, '0,0'),
+              value: +providers?.units + +providers?.pending_units,
+              filter: (v) => this.$options.filters.number(v / 1e8, '0,0'),
               extraInfo:
-                'The units of RUNEPool owned by providers (including pending)',
+                'The units of RUNEPool owned by providers (including pending). divided by 1e8',
             },
             {
               name: 'Provider Share',
@@ -750,7 +750,9 @@ export default {
             {
               name: 'Reserve Units',
               value: reserve?.units,
-              filter: (v) => this.$options.filters.number(v, '0,0'),
+              extraInfo:
+                "As units are notionally based off RUNE, it's divided by 1e8",
+              filter: (v) => this.$options.filters.number(v / 1e8, '0,0'),
             },
             {
               name: 'Reserve Share',
