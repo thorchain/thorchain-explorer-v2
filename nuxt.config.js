@@ -10,6 +10,11 @@ export default {
     meta: [
       { charset: 'utf-8' },
       {
+        hid: 'og:title',
+        property: 'og:title',
+        content: 'THORChain Network Explorer',
+      },
+      {
         name: 'viewport',
         content:
           'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no;user-scalable=0;',
