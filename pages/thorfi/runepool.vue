@@ -23,6 +23,30 @@
       </template>
     </info-card>
 
+    <card>
+      <div class="runepool-cap">
+        <span>RUNEPool Cap</span>
+        <skeleton-item
+          :loading="!runepoolCap"
+          :custom-class="['runepool-cap-loader']"
+        >
+          <span v-if="runepoolCap">
+            {{ runeCur() }}{{ runepoolCap.current | number('0,0.00a') }} /
+            <small
+              >{{ runeCur() }}{{ runepoolCap.max | number('0,0.00a') }}</small
+            >
+          </span>
+        </skeleton-item>
+      </div>
+      <skeleton-item :loading="!runepoolCap">
+        <progress-bar
+          v-if="runepoolCap"
+          :width="runepoolCap.progress"
+          height="7px"
+        />
+      </skeleton-item>
+    </card>
+
     <Card
       :navs="[
         { title: 'Rune Pools', value: 'rune-pools' },
@@ -462,13 +486,35 @@ export default {
           ],
         },
         {
-          title: 'RUNE Pools Status',
+          title: 'RUNE Pools Enabled',
           rowStart: 1,
           colSpan: 1,
           cluster: true,
           items: polItems,
         },
       ]
+    },
+    runepoolCap() {
+      if (
+        !this.polOverview ||
+        !this.mimir ||
+        !this.networkConst ||
+        !this.networkConst?.int_64_values
+      ) {
+        return
+      }
+
+      const ret = {
+        progress: 100,
+        current: +this.polOverview.current_deposit / 1e8,
+        max: this.parseConstant('POLMaxNetworkDeposit').value / 1e8,
+      }
+
+      if (ret.current < ret.max) {
+        ret.progress = (ret.current / ret.max) * 100
+      }
+
+      return ret
     },
   },
   watch: {
@@ -832,5 +878,23 @@ export default {
 
 .not-mature {
   color: #f04832;
+}
+
+.runepool-cap {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+
+  span {
+    color: var(--sec-font-color);
+
+    small {
+      color: var(--font-color);
+    }
+  }
+}
+
+.runepool-cap-loader {
+  width: 200px !important;
 }
 </style>
