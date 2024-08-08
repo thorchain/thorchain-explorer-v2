@@ -537,6 +537,7 @@ export default {
             (+this.polOverview.current_deposit -
               this.parseConstant('POLMaxNetworkDeposit').value) /
             1e8,
+          color: 'var(--border-color)',
         })
       }
 
