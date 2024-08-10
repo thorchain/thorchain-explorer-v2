@@ -40,7 +40,13 @@
         </skeleton-item>
       </div>
     </div>
-    <stat-table header="Mimirs" :table-settings="lendingSettings" />
+    <info-card :options="lendingSettings">
+      <template #mini="{ item }">
+        <div :class="['mini-bubble', { danger: !item.value }]">
+          {{ item.filter(item.value) }}
+        </div>
+      </template>
+    </info-card>
     <Card title="Lending Pools">
       <vue-good-table
         :columns="cols"
@@ -134,8 +140,12 @@
 
 <script>
 import endpoints from '~/api/endpoints'
+import UnknownIcon from '~/assets/images/unknown.svg?inline'
 
 export default {
+  components: {
+    UnknownIcon,
+  },
   data() {
     return {
       reserveAddress: endpoints[process.env.NETWORK].MODULE_ADDR,
@@ -145,6 +155,48 @@ export default {
       currentRuneSupply: undefined,
       maxRuneSupply: 50000000000000000,
       torPool: undefined,
+      lendingSettings: [
+        {
+          title: 'Lending Settings',
+          rowStart: 1,
+          colSpan: 1,
+          items: [
+            {
+              name: 'Pause Loan',
+              extraInfo: 'Ability to pause opening/closing loans',
+            },
+            {
+              name: 'Loan Repayment Maturity',
+              extraInfo:
+                'Specifies how long a loan must be open before it can be closed',
+            },
+            {
+              name: 'Minimum Collateral Ratio',
+            },
+            {
+              name: 'Maximum Collateral Ratio',
+            },
+            {
+              name: 'Lending Lever',
+              extraInfo:
+                'Determines the risk profile the protocol is willing to take',
+            },
+          ],
+        },
+        {
+          title: 'Lending Assets',
+          rowStart: 1,
+          colSpan: 1,
+          items: [
+            {
+              name: 'Enable Lending on BTC',
+            },
+            {
+              name: 'Enable Lending on ETH',
+            },
+          ],
+        },
+      ],
       pools: [],
       borrowers: [],
       cols: [
@@ -197,106 +249,10 @@ export default {
       ],
     }
   },
+  head: {
+    title: 'THORChain Network Explorer | Lending',
+  },
   computed: {
-    lendingSettings() {
-      if (!this.mimir) {
-        return []
-      }
-
-      return [
-        [
-          {
-            ...this.parseConstant('PauseLoans', {
-              filter: (v) => (v ? 'Yes' : 'No'),
-            }),
-            filter: true,
-            extraInfo: 'Ability to pause opening/closing loans',
-          },
-          {
-            ...this.parseConstant('LoanRepaymentMaturity'),
-            extraInfo:
-              'Specifies how long a loan must be open before it can be closed',
-          },
-        ],
-        [
-          {
-            ...this.parseConstant('MinCR', {
-              filter: (v) => `${this.$options.filters.percent(v / 1e4, 2)}`,
-            }),
-            name: 'Minimum Collateral Ratio',
-            filter: true,
-          },
-          {
-            ...this.parseConstant('MaxCR', {
-              filter: (v) => `${this.$options.filters.percent(v / 1e4, 2)}`,
-            }),
-            name: 'Maximum Collateral Ratio',
-            filter: true,
-          },
-          {
-            ...this.parseConstant('LendingLever', {
-              filter: (v) => `${this.$options.filters.percent(v / 1e4, 2)}`,
-            }),
-            extraInfo:
-              'Determines the risk profile the protocol is willing to take',
-            filter: true,
-          },
-        ],
-        [
-          {
-            ...this.parseConstant('LENDING-THOR-BTC', {
-              filter: (v) => (v ? 'Yes' : 'No'),
-            }),
-            name: 'Enable Lending on BTC',
-            filter: true,
-          },
-          {
-            ...this.parseConstant('LENDING-THOR-ETH', {
-              filter: (v) => (v ? 'Yes' : 'No'),
-            }),
-            name: 'Enable Lending on ETH',
-            filter: true,
-          },
-          {
-            ...this.parseConstant('LENDING-THOR-ATOM', {
-              filter: (v) => (v ? 'Yes' : 'No'),
-            }),
-            name: 'Enable Lending on ATOM',
-            filter: true,
-          },
-          {
-            ...this.parseConstant('LENDING-THOR-AVAX', {
-              filter: (v) => (v ? 'Yes' : 'No'),
-            }),
-            name: 'Enable Lending on AVAX',
-            filter: true,
-          },
-        ],
-        [
-          {
-            ...this.parseConstant('LENDING-THOR-BNB', {
-              filter: (v) => (v ? 'Yes' : 'No'),
-            }),
-            name: 'Enable Lending on BNB',
-            filter: true,
-          },
-          {
-            ...this.parseConstant('LENDING-THOR-BCH', {
-              filter: (v) => (v ? 'Yes' : 'No'),
-            }),
-            name: 'Enable Lending on BCH',
-            filter: true,
-          },
-          {
-            ...this.parseConstant('LENDING-THOR-DOGE', {
-              filter: (v) => (v ? 'Yes' : 'No'),
-            }),
-            name: 'Enable Lending on DOGE',
-            filter: true,
-          },
-        ],
-      ]
-    },
     healthScore() {
       if (!this.borrowers || this.borrowers < 2) {
         return undefined
@@ -352,6 +308,8 @@ export default {
 
       const { data: constantsData } = await this.$api.getConstants()
       this.networkConst = constantsData
+
+      this.loadSettings()
 
       const { data: torPool } = await this.$api.getDerivedPoolDetail('THOR.TOR')
       this.torPool = torPool
@@ -441,8 +399,69 @@ export default {
       console.error('borrower not found', error)
     }
   },
-  head: {
-    title: 'THORChain Network Explorer | Lending',
+  methods: {
+    loadSettings() {
+      if (!this.mimir) {
+        return
+      }
+
+      this.lendingSettings = [
+        {
+          title: 'Lending Settings',
+          rowStart: 1,
+          colSpan: 1,
+          items: [
+            {
+              valueSlot: 'mini',
+              ...this.parseConstant('PauseLoans'),
+              filter: (v) => (v ? 'Yes' : 'No'),
+              extraInfo: 'Ability to pause opening/closing loans',
+            },
+            {
+              ...this.parseConstant('LoanRepaymentMaturity'),
+              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
+              extraInfo:
+                'Specifies how long a loan must be open before it can be closed',
+            },
+            {
+              ...this.parseConstant('MinCR'),
+              filter: (v) => `${this.$options.filters.percent(v / 1e4, 2)}`,
+              name: 'Minimum Collateral Ratio',
+            },
+            {
+              ...this.parseConstant('MaxCR'),
+              filter: (v) => `${this.$options.filters.percent(v / 1e4, 2)}`,
+              name: 'Maximum Collateral Ratio',
+            },
+            {
+              ...this.parseConstant('LendingLever'),
+              filter: (v) => `${this.$options.filters.percent(v / 1e4, 2)}`,
+              extraInfo:
+                'Determines the risk profile the protocol is willing to take',
+            },
+          ],
+        },
+        {
+          title: 'Lending Assets',
+          rowStart: 1,
+          colSpan: 1,
+          items: [
+            {
+              valueSlot: 'mini',
+              ...this.parseConstant('LENDING-THOR-BTC'),
+              filter: (v) => (v ? 'Yes' : 'No'),
+              name: 'Enable Lending on BTC',
+            },
+            {
+              valueSlot: 'mini',
+              ...this.parseConstant('LENDING-THOR-ETH'),
+              filter: (v) => (v ? 'Yes' : 'No'),
+              name: 'Enable Lending on ETH',
+            },
+          ],
+        },
+      ]
+    },
   },
 }
 </script>

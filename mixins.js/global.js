@@ -158,7 +158,8 @@ export default {
     isInternalTx(hash) {
       if (
         hash ===
-        '0000000000000000000000000000000000000000000000000000000000000000'
+          '0000000000000000000000000000000000000000000000000000000000000000' ||
+        hash === ''
       ) {
         return true
       }
@@ -167,7 +168,8 @@ export default {
     gotoTx(hash) {
       if (
         hash ===
-        '0000000000000000000000000000000000000000000000000000000000000000'
+          '0000000000000000000000000000000000000000000000000000000000000000' ||
+        hash === ''
       ) {
         return
       }
@@ -176,7 +178,8 @@ export default {
     isValidTx(hash) {
       if (
         hash ===
-        '0000000000000000000000000000000000000000000000000000000000000000'
+          '0000000000000000000000000000000000000000000000000000000000000000' ||
+        hash === ''
       ) {
         return false
       }
@@ -213,6 +216,9 @@ export default {
     },
     percentageFormat(number, decimal) {
       return number ? this.$options.filters.percent(number, decimal ?? 4) : '-'
+    },
+    unitFormat(number) {
+      return number ? this.$options.filters.number(+number / 1e8, '0,0') : '-'
     },
     normalFormat(number) {
       return number ? this.$options.filters.number(+number, '0,0') : '-'

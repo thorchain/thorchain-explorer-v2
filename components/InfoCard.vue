@@ -32,8 +32,14 @@
                   />
                 </template>
               </div>
-              <skeleton-item :loading="!item.value" custom-class="info-loader">
-                <div v-if="item.value" class="item-value">
+              <skeleton-item
+                :loading="!(typeof item.value === 'number') && !item.value"
+                custom-class="info-loader"
+              >
+                <div
+                  v-if="typeof item.value === 'number' || item.value"
+                  class="item-value"
+                >
                   <template v-if="item.valueSlot">
                     <slot :name="item.valueSlot" :item="item" />
                   </template>
