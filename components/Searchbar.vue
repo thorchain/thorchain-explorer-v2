@@ -238,7 +238,6 @@ export default {
   align-items: center;
   justify-content: space-between;
   overflow: hidden;
-  max-width: 90rem;
   margin: auto;
   gap: 15px;
 
@@ -352,6 +351,9 @@ export default {
     position: relative;
     max-width: 600px;
     transition: all 0.5s ease;
+    border: 1px solid var(--line);
+    border-radius: 5px; 
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 
     &.expanded {
       flex: 1;
@@ -367,7 +369,7 @@ export default {
       border-radius: 5px;
       height: 40px;
       color: var(--font-color);
-      background-color: var(--darker-bg);
+      background-color: var(--card-bg-color);
       width: 2.5rem;
 
       &:focus,
@@ -385,7 +387,6 @@ export default {
       right: calc(1rem - 0.4rem);
       top: calc(50% - 0.8rem);
       cursor: pointer;
-      background-color: var(--darker-bg);
     }
 
     span {
@@ -406,7 +407,7 @@ export default {
         display: block;
       }
     }
-  }
+}
 }
 
 #settingsMenu {
