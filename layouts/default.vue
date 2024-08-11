@@ -2,19 +2,18 @@
   <main
     id="default-layout"
     :class="{
-      'long-sidebar': menu,
+     'long-sidebar': menu,
       fullscreen: fullscreen,
       'show-sidebar': sidebar,
     }"
   >
-    <!-- Sidebar -->
-    <div id="side-bar">
-      <sidebar />
-    </div>
-    <!-- Searchbar -->
     <header id="header">
       <searchbar />
     </header>
+    <!-- Navbar -->
+    <nav id="navbar">
+      <sidebar />
+    </nav>
     <!-- Main content -->
     <main id="main-content">
       <Nuxt />
@@ -133,13 +132,16 @@ Vue.mixin(global)
   height: calc(var(--vh, 1vh) * 100);
   overflow: hidden;
 
-  grid-template-columns: 1fr;
-  grid-template-rows: 64px 64px 1fr;
-  grid-template-areas: 'sidebar' 'header' 'main';
+  grid-template-columns: 1fr; 
+  grid-template-rows: 64px 64px 1fr; 
+  grid-template-areas: 
+    'header'  
+    'navbar' 
+    'main'; 
 
   &.long-sidebar {
     grid-template-rows: 1fr;
-    grid-template-areas: 'sidebar';
+    grid-template-areas: 'navbar';
 
     #header,
     #main-content {
@@ -147,13 +149,13 @@ Vue.mixin(global)
     }
   }
 
-  // Only on medium screens
   @include olg {
-    grid-template-columns: 4rem 1fr;
-    grid-template-rows: 65px 1fr;
+    grid-template-columns: 1fr;
+    grid-template-rows: 64px 64px 1fr;
     grid-template-areas:
-      'sidebar header'
-      'sidebar main';
+      'header' 
+      'navbar'  
+      'main';  
 
     .page-container,
     .search-bar-container {
@@ -162,18 +164,34 @@ Vue.mixin(global)
   }
 
   @include xl {
-    grid-template-columns: 220px 1fr;
-    grid-template-rows: 64px 1fr;
-    grid-template-areas: 'sidebar header' 'sidebar main';
+    grid-template-columns: 1fr;
+    grid-template-rows: 64px 64px 1fr;
+    grid-template-areas: 
+      'header'  
+      'navbar'  
+      'main';  
   }
 
-  #side-bar {
-    display: grid;
-    grid-area: sidebar;
-    background-color: var(--sidebar);
-    opacity: 0.95; /* Black w/opacity/see-through */
+  #header {
+    display: flex;
+    align-items: center;
+    background: var( --color-light);
+    grid-area: header; 
     overflow: hidden;
-    border-top: 1px solid var(--border-color);
+    padding: 0 20px;
+    border-bottom: 0.5px solid var(--line);
+
+    @include lg {
+      padding: 0 64px;
+    }
+  }
+
+  #navbar {
+    display: grid;
+    grid-area: navbar;
+    background: var( --color-light);
+    white-space: nowrap;
+    padding: 0 31px;
 
     @include xl {
       border: none;
@@ -184,23 +202,9 @@ Vue.mixin(global)
     }
   }
 
-  #header {
-    display: flex;
-    align-items: center;
-    background: var(--sidebar);
-    grid-area: header;
-    border-bottom: 1px solid var(--border-color);
-    overflow: hidden;
-    padding: 0 20px;
-
-    @include lg {
-      padding: 0 64px;
-    }
-  }
-
   #main-content {
     overflow: auto;
-    grid-area: main;
+    grid-area: main; 
     padding: 32px 0;
 
     @include lg {
@@ -208,4 +212,5 @@ Vue.mixin(global)
     }
   }
 }
+
 </style>

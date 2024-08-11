@@ -1,5 +1,5 @@
 <template>
-  <div class="side-bar-container" :class="{ menu: menu }">
+  <div class="navbar-container" :class="{ menu: menu }">
     <div class="header">
       <div class="logo-wrapper">
         <ThorchainLogo class="logo" />
@@ -13,60 +13,21 @@
         <CrossIcon v-else class="icon" />
       </div>
     </div>
-    <div class="side-bar-lists">
-      <template v-for="(item, index) in sidebarLists">
+    <div class="navbar-lists">
+      <template v-for="(item, index) in navbarLists">
         <NuxtLink
           v-if="item"
-          :id="`sidebar-${item.name}`"
+          :id="`navbar-${item.name}`"
           :key="index"
           :to="item.link"
-          :class="['side-bar-item']"
+          :class="['navbar-item']"
           @click.native="toggleMenu(false)"
         >
-          <div class="side-bar-wrap">
-            <component :is="item.icon" class="icon selected" />
-            <component :is="item.unicon" class="icon unselected" />
-            <span class="sidebar-text">{{ item.name }}</span>
-            <b-popover
-              placement="right"
-              custom-class="sidebar-popover"
-              :target="`sidebar-${item.name}`"
-              triggers="hover"
-              :content="`${item.name}`"
-            />
+          <div class="navbar-wrap">
+            <span class="navbar-text">{{ item.name }}</span>
           </div>
         </NuxtLink>
       </template>
-    </div>
-    <div class="footer-wrapper">
-      <div class="footer-item" @click="toggleExternal">
-        <question />
-        <span>Extra Links</span>
-      </div>
-      <div id="externalMenu">
-        <transition name="fade-up">
-          <div
-            v-show="showExternalMenu"
-            class="simple-card normal external-menu"
-          >
-            <a href="https://x.com/THORChain" target="_blank">
-              <XLogo class="social-icon" />
-              <span>X</span>
-            </a>
-            <a href="https://discord.gg/KjPVnGy5jR" target="_blank">
-              <DiscordLogo class="social-icon" />
-              <span>Discord</span>
-            </a>
-            <a
-              href="https://github.com/thorchain/thorchain-explorer-v2"
-              target="_blank"
-            >
-              <GithubLogo class="social-icon" />
-              <span>Github</span>
-            </a>
-          </div>
-        </transition>
-      </div>
     </div>
   </div>
 </template>
@@ -74,7 +35,6 @@
 <script>
 import { mapMutations, mapGetters } from 'vuex'
 import ThorchainLogo from '~/assets/images/thorchain-logo.svg?inline'
-
 import XLogo from '~/assets/images/x.svg?inline'
 import DiscordLogo from '~/assets/images/discord-brands.svg?inline'
 import GithubLogo from '~/assets/images/github-brands.svg?inline'
@@ -108,7 +68,7 @@ import MenuIcon from '~/assets/images/menu-burger.svg?inline'
 import CrossIcon from '~/assets/images/cross.svg?inline'
 
 export default {
-  name: 'SideBar',
+  name: 'NavBar',
   components: {
     XLogo,
     DiscordLogo,
@@ -137,7 +97,7 @@ export default {
   data() {
     return {
       showExternalMenu: false,
-      sidebarLists: [
+      navbarLists: [
         {
           name: 'Overview',
           unicon: 'appsUnselected',
@@ -196,32 +156,23 @@ export default {
       menu: 'getIsMenuOn',
     }),
   },
-  mounted() {
-    window.addEventListener('click', (e) => {
-      if (
-        !document.getElementById('externalMenu')?.contains(e.target) &&
-        !document.getElementsByClassName('footer-item')[0]?.contains(e.target)
-      ) {
-        this.showExternalMenu = false
-      }
-    })
-  },
   methods: {
     ...mapMutations(['toggleMenu']),
-    toggleExternal() {
-      this.showExternalMenu = !this.showExternalMenu
-    },
   },
 }
 </script>
 
 <style lang="scss">
-.side-bar-container {
+.navbar-container {
   display: grid;
   grid-template-rows: 64px 1fr auto;
   min-height: 64px;
 
-  background-color: var(--color-light);
+  @include lg {
+    grid-template-columns: auto 1fr;
+    grid-template-rows: 64px 1fr;
+    grid-template-areas: 'header' 'navbar';
+  }
 
   .header {
     display: flex;
@@ -229,12 +180,10 @@ export default {
     justify-content: space-between;
     padding: 0 20px;
     min-height: 64px;
-
     border-bottom: 1px solid var(--border-color);
 
     .logo-wrapper {
       display: flex;
-      justify-content: space-between;
       align-items: center;
       font-family: 'Exo 2';
       font-size: 0.875rem;
@@ -251,51 +200,65 @@ export default {
         }
       }
     }
-  }
-
-  .footer-wrapper {
-    display: none;
-    padding: 18px 20px;
 
     @include lg {
-      display: block;
+      grid-area: header;
+      margin-bottom: 25px;
     }
   }
 
-  .side-bar-lists {
+  .navbar-lists {
     margin-top: 20px;
     display: none;
 
-    .side-bar-item {
+    @include lg {
+      display: flex;
+      flex-direction: row;
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+      margin: 1rem;
+      justify-content: flex-end;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+
+    .navbar-item {
       display: flex;
       align-items: center;
       text-decoration: none;
-      padding: 5px 20px;
+      padding: 10px 20px;
+      border-radius: 30px;
+      position: relative;
+      justify-content: center;
 
-      .icon {
-        display: none;
+      &:hover {
+        background-color: var(--darker-bg);
+        transform: translateY(-2px);
       }
 
       &.nuxt-link-active {
         span {
-          color: var(--font-color);
-          font-weight: bolder;
+          color: var(--primary-color);
+          font-weight: bold;
         }
       }
 
       span {
-        font-size: 2rem;
-        height: 2rem;
-        line-height: 2rem;
+        font-size: 14px;
+        height: 20px;
+        line-height: 20px;
         color: var(--sec-font-color);
         font-family: 'Exo 2';
+        transition: color 0.3s;
       }
 
-      .side-bar-wrap {
+      .navbar-wrap {
         display: flex;
         align-items: center;
-        padding: 12px 2rem;
-        border-radius: 3rem;
+        padding: 5px 20px;
+        border-radius: 30px;
 
         &:hover {
           background: var(--darker-bg);
@@ -303,35 +266,14 @@ export default {
       }
 
       @include lg {
-        .side-bar-wrap {
-          padding-right: 1.5rem;
-          padding-left: 1.5rem;
-        }
+        padding: 4px 0;
 
         span {
-          height: 1rem;
-          line-height: 1rem;
+          font-size: 14px;
         }
 
-        &.nuxt-link-active {
-          .selected {
-            display: block;
-          }
-
-          span {
-            color: var(--sec-font-color);
-            font-weight: bolder;
-          }
-
-          .icon {
-            fill: var(--sec-font-color);
-          }
-        }
-
-        &:not(.nuxt-link-active) {
-          .unselected {
-            display: block;
-          }
+        .icon {
+          width: 20px;
         }
       }
     }
@@ -351,177 +293,15 @@ export default {
     width: 1.5rem;
   }
 
-  @include lg {
-    grid-template-columns: 1fr;
-    grid-template-rows: 64px 1fr 64px;
-    grid-template-areas: 'header' 'sidebar' 'footer';
-
-    .header {
-      grid-area: header;
-      margin-bottom: 25px;
-    }
-
-    .side-bar-lists {
-      grid-area: sidebar;
-      display: flex;
-      flex-direction: column;
-
-      overflow: auto;
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-
-      &::-webkit-scrollbar {
-        display: none;
-      }
-
-      .side-bar-item {
-        padding: 4px 0;
-        padding-left: 20px;
-
-        span {
-          font-size: 14px;
-        }
-
-        .icon {
-          width: 20px;
-        }
-      }
-    }
-
-    .footer-wrapper {
-      grid-area: footer;
-      align-self: end;
-    }
-  }
-
   &.menu {
     .header {
       margin-bottom: 25px;
     }
 
-    .side-bar-lists {
+    .navbar-lists {
       display: flex;
       flex-direction: column;
     }
-
-    .footer-wrapper {
-      display: flex;
-    }
-  }
-
-  .footer-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-
-    &:hover {
-      background: var(--darker-bg);
-    }
-
-    svg {
-      height: 1rem;
-    }
-
-    span {
-      font-family: 'Exo 2';
-    }
-  }
-
-  @include olg {
-    grid-template-columns: 4rem;
-    grid-template-rows: 64px 1fr 64px;
-    grid-template-areas: 'header' 'sidebar' 'footer';
-
-    .sidebar-text,
-    .footer-wrapper,
-    .thorchain-name {
-      display: none;
-    }
-
-    .header {
-      padding: 0;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .side-bar-lists {
-      align-items: center;
-
-      .side-bar-item {
-        width: 100%;
-        padding: 0;
-
-        .side-bar-wrap {
-          justify-content: center;
-          width: 100%;
-          padding: 8px 12px;
-
-          &:hover {
-            border-radius: 0;
-          }
-        }
-
-        .icon {
-          margin: 0;
-        }
-
-        &.nuxt-link-active {
-          .side-bar-wrap svg {
-            fill: var(--primary-color);
-          }
-        }
-      }
-    }
-  }
-}
-
-#externalMenu {
-  .external-menu {
-    position: absolute;
-    min-width: 8.125rem;
-    bottom: 50px;
-    left: 20px;
-    padding: 0.2rem 0;
-
-    a {
-      display: flex;
-      align-items: center;
-      color: var(--font-color);
-      fill: var(--font-color);
-      text-decoration: none;
-      padding: 0.5rem;
-      border-radius: 0.2rem;
-      margin: 0 0.2rem;
-      gap: 10px;
-      font-family: 'Exo 2';
-      font-size: 0.8rem;
-
-      .social-icon {
-        fill: inherit;
-        width: 1rem;
-        height: 1rem;
-      }
-
-      &:hover {
-        background-color: var(--darker-bg);
-      }
-    }
-  }
-}
-
-.sidebar-popover {
-  background: var(--bg-color);
-  padding: 0.5rem;
-  border-radius: 0.5rem;
-  margin-left: 0.5rem;
-  border: 1px solid var(--border-color);
-  display: none;
-
-  @include olg {
-    display: block;
   }
 }
 </style>
