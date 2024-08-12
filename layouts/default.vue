@@ -129,7 +129,7 @@ Vue.mixin(global)
 #default-layout {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  min-height: 100vh;
 
   #header {
     top: 0;
