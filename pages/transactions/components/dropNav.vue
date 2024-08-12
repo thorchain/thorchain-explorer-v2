@@ -121,7 +121,7 @@ export default {
 
     .nav-box-dialog {
       position: absolute;
-      z-index: 1000;
+      z-index: 1001;
       display: flex;
       flex-direction: column;
       border: 1px solid var(--border-color);

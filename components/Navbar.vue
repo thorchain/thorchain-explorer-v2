@@ -164,23 +164,15 @@ export default {
 
 <style lang="scss">
 .navbar-container {
-  display: grid;
-  grid-template-rows: 64px 1fr auto;
-  min-height: 64px;
-
-  @include lg {
-    grid-template-columns: auto 1fr;
-    grid-template-rows: 64px 1fr;
-    grid-template-areas: 'header' 'navbar';
-  }
+  padding: 0.5rem 1.5rem;
+  transition: height 0.3s;
+  max-width: 90rem;
+  margin: auto;
 
   .header {
     display: flex;
-    align-items: center;
     justify-content: space-between;
-    padding: 0 20px;
-    min-height: 64px;
-    border-bottom: 1px solid var(--border-color);
+    align-items: center;
 
     .logo-wrapper {
       display: flex;
@@ -200,15 +192,16 @@ export default {
         }
       }
     }
+  }
 
-    @include lg {
-      grid-area: header;
-      margin-bottom: 25px;
-    }
+  @include lg {
+    padding: 0.5rem 0;
+    display: flex;
+    justify-content: space-between;
   }
 
   .navbar-lists {
-    margin-top: 20px;
+    margin-top: 1rem;
     display: none;
 
     @include lg {
@@ -216,8 +209,8 @@ export default {
       flex-direction: row;
       -ms-overflow-style: none;
       scrollbar-width: none;
-      margin: 1rem;
       justify-content: flex-end;
+      margin: 0;
 
       &::-webkit-scrollbar {
         display: none;
@@ -228,14 +221,13 @@ export default {
       display: flex;
       align-items: center;
       text-decoration: none;
-      padding: 10px 20px;
       border-radius: 30px;
       position: relative;
-      justify-content: center;
 
       &:hover {
-        background-color: var(--darker-bg);
-        transform: translateY(-2px);
+        span {
+          color: var(--primary-color);
+        }
       }
 
       &.nuxt-link-active {
@@ -257,16 +249,12 @@ export default {
       .navbar-wrap {
         display: flex;
         align-items: center;
-        padding: 5px 20px;
+        padding: 5px 0;
         border-radius: 30px;
-
-        &:hover {
-          background: var(--darker-bg);
-        }
       }
 
       @include lg {
-        padding: 4px 0;
+        padding: 0.6rem 1rem;
 
         span {
           font-size: 14px;
@@ -281,6 +269,7 @@ export default {
 
   .menu-wrapper {
     display: flex;
+    justify-content: center;
     align-items: center;
     cursor: pointer;
 
@@ -290,14 +279,11 @@ export default {
   }
 
   .icon {
+    margin: 0;
     width: 1.5rem;
   }
 
   &.menu {
-    .header {
-      margin-bottom: 25px;
-    }
-
     .navbar-lists {
       display: flex;
       flex-direction: column;
