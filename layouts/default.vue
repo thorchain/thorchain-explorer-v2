@@ -129,13 +129,7 @@ Vue.mixin(global)
 #default-layout {
   display: flex;
   flex-direction: column;
-
-  @include olg {
-    .page-container,
-    .search-bar-container {
-      min-width: 100%;
-    }
-  }
+  height: 100vh;
 
   #header {
     top: 0;
@@ -146,20 +140,30 @@ Vue.mixin(global)
     background: var(--color-light);
     grid-area: header;
     border-bottom: 1px solid var(--border-color);
+    padding: 0 1.5rem;
+
+    @include lg {
+      padding: 0.5rem 4rem;
+    }
   }
 
   #navbar {
     background: var(--color-light);
     border-bottom: 1px solid var(--border-color);
+    padding: 0 1.5rem;
+
+    @include lg {
+      padding: 0.5rem 4rem;
+    }
   }
 
   #main-content {
-    margin-bottom: 15rem;
+    padding-bottom: 10rem;
     padding-top: 32px;
     grid-area: main;
 
     @include lg {
-      padding: 32px 64px;
+      padding: 2rem 4rem;
     }
   }
 }

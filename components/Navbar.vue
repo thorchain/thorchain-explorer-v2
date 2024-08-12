@@ -164,7 +164,7 @@ export default {
 
 <style lang="scss">
 .navbar-container {
-  padding: 0.5rem 1.5rem;
+  padding: 0.5rem 0;
   transition: height 0.3s;
   max-width: 90rem;
   margin: auto;
@@ -195,7 +195,6 @@ export default {
   }
 
   @include lg {
-    padding: 0.5rem 0;
     display: flex;
     justify-content: space-between;
   }

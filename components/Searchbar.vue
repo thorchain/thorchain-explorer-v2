@@ -241,11 +241,7 @@ export default {
   margin: auto;
   gap: 15px;
   max-width: 90rem;
-  padding: 0.5rem 1.5rem;
-
-  @include lg {
-    padding: 0.5rem 0;
-  }
+  padding: 0.5rem 0;
 
   .settings-icon-container {
     display: flex;
