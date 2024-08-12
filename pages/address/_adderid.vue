@@ -434,7 +434,7 @@ export default {
       padding: 0.625rem;
       top: calc(100% + 0.625rem);
       position: absolute;
-      z-index: 2;
+      z-index: 999;
       border: 1px solid var(--border-color);
     }
   }

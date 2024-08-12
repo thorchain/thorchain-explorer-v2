@@ -2,7 +2,7 @@
   <main
     id="default-layout"
     :class="{
-     'long-sidebar': menu,
+      'long-sidebar': menu,
       fullscreen: fullscreen,
       'show-sidebar': sidebar,
     }"
@@ -12,7 +12,7 @@
     </header>
     <!-- Navbar -->
     <nav id="navbar">
-      <sidebar />
+      <navbar />
     </nav>
     <!-- Main content -->
     <main id="main-content">
@@ -127,90 +127,40 @@ Vue.mixin(global)
 
 <style lang="scss">
 #default-layout {
-  display: grid;
-  height: 100vh;
-  height: calc(var(--vh, 1vh) * 100);
-  overflow: hidden;
-
-  grid-template-columns: 1fr; 
-  grid-template-rows: 64px 64px 1fr; 
-  grid-template-areas: 
-    'header'  
-    'navbar' 
-    'main'; 
-
-  &.long-sidebar {
-    grid-template-rows: 1fr;
-    grid-template-areas: 'navbar';
-
-    #header,
-    #main-content {
-      display: none;
-    }
-  }
+  display: flex;
+  flex-direction: column;
 
   @include olg {
-    grid-template-columns: 1fr;
-    grid-template-rows: 64px 64px 1fr;
-    grid-template-areas:
-      'header' 
-      'navbar'  
-      'main';  
-
     .page-container,
     .search-bar-container {
       min-width: 100%;
     }
   }
 
-  @include xl {
-    grid-template-columns: 1fr;
-    grid-template-rows: 64px 64px 1fr;
-    grid-template-areas: 
-      'header'  
-      'navbar'  
-      'main';  
-  }
-
   #header {
+    top: 0;
+    position: sticky;
+    z-index: 1000;
     display: flex;
     align-items: center;
-    background: var( --color-light);
-    grid-area: header; 
-    overflow: hidden;
-    padding: 0 20px;
-    border-bottom: 0.5px solid var(--line);
-
-    @include lg {
-      padding: 0 64px;
-    }
+    background: var(--color-light);
+    grid-area: header;
+    border-bottom: 1px solid var(--border-color);
   }
 
   #navbar {
-    display: grid;
-    grid-area: navbar;
-    background: var( --color-light);
-    white-space: nowrap;
-    padding: 0 31px;
-
-    @include xl {
-      border: none;
-      border-right: 1px solid var(--border-color);
-      display: grid;
-      flex: 0 0 13.75rem;
-      height: 100%;
-    }
+    background: var(--color-light);
+    border-bottom: 1px solid var(--border-color);
   }
 
   #main-content {
-    overflow: auto;
-    grid-area: main; 
-    padding: 32px 0;
+    margin-bottom: 15rem;
+    padding-top: 32px;
+    grid-area: main;
 
     @include lg {
       padding: 32px 64px;
     }
   }
 }
-
 </style>

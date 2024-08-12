@@ -240,6 +240,12 @@ export default {
   overflow: hidden;
   margin: auto;
   gap: 15px;
+  max-width: 90rem;
+  padding: 0.5rem 1.5rem;
+
+  @include lg {
+    padding: 0.5rem 0;
+  }
 
   .settings-icon-container {
     display: flex;
@@ -352,7 +358,7 @@ export default {
     max-width: 600px;
     transition: all 0.5s ease;
     border: 1px solid var(--line);
-    border-radius: 5px; 
+    border-radius: 5px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 
     &.expanded {
@@ -370,7 +376,6 @@ export default {
       height: 40px;
       color: var(--font-color);
       background-color: var(--card-bg-color);
-      width: 2.5rem;
 
       &:focus,
       &:active {
@@ -407,7 +412,7 @@ export default {
         display: block;
       }
     }
-}
+  }
 }
 
 #settingsMenu {

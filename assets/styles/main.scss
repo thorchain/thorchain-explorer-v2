@@ -12,7 +12,6 @@ body,
 #__layout,
 main {
   font-size: 16px; //root font-size
-  overflow: hidden;
 }
 
 body {
@@ -52,7 +51,6 @@ input {
   height: 1rem;
   width: 1rem;
   fill: #606266;
-  z-index: 2;
 }
 
 .table-asset {
@@ -396,10 +394,10 @@ input {
 }
 
 .vgt-wrap .vgt-global-search {
- background: transparent;
- border: 1px solid var(--border-color);
- border-radius: 8px 8px 0 0;
- padding: .5rem 1rem;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 8px 8px 0 0;
+  padding: 0.5rem 1rem;
 
   form label {
     display: none;
