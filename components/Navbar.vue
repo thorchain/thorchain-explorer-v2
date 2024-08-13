@@ -200,8 +200,9 @@ export default {
   }
 
   .navbar-lists {
-    margin-top: 1rem;
-    display: none;
+    overflow: hidden;  
+    max-height: 0; 
+    transition: max-height 0.7s cubic-bezier(0.25, 0.1, 0.25, 1), opacity 1s ease;
 
     @include lg {
       display: flex;
@@ -210,6 +211,7 @@ export default {
       scrollbar-width: none;
       justify-content: flex-end;
       margin: 0;
+      max-height: none;  
 
       &::-webkit-scrollbar {
         display: none;
@@ -286,7 +288,9 @@ export default {
     .navbar-lists {
       display: flex;
       flex-direction: column;
+      max-height: 500px;  
     }
   }
 }
+
 </style>
