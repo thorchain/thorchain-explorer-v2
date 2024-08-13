@@ -42,33 +42,34 @@
         </transition>
       </div>
       <div
-        id="settings-container"
-        ref="settingsContainer"
-        class="settings-container"
-      >
-        <div class="settings-icon-container" @click="toggleSettings">
-          <SettingsIcon />
+  id="settings-container"
+  ref="settingsContainer"
+  class="settings-container"
+>
+  <div class="settings-icon-container" @click="toggleSettings">
+    <SettingsIcon />
+  </div>
+  <transition name="fade">
+    <div v-show="showSettings" id="settingsMenu" ref="settingsMenu">
+      <div class="settings-card simple-card normal">
+        <div class="settings-item" @click="changeTheme">
+          <span>{{ theme === 'light' ? 'Dark Theme' : 'Light Theme' }}</span>
+          <SunIcon
+            v-if="theme === 'light'"
+            class="social-icon"
+            @click="changeTheme"
+          />
+          <MoonIcon
+            v-if="theme === 'dark'"
+            class="social-icon"
+            @click="changeTheme"
+          />
         </div>
-        <transition name="fade">
-          <div v-show="showSettings" id="settingsMenu" ref="settingsMenu">
-            <div class="settings-card simple-card normal">
-              <div class="settings-item" @click="changeTheme">
-                <span>Dark Theme</span>
-                <SunIcon
-                  v-if="theme === 'light'"
-                  class="social-icon"
-                  @click="changeTheme"
-                />
-                <MoonIcon
-                  v-if="theme === 'dark'"
-                  class="social-icon"
-                  @click="changeTheme"
-                />
-              </div>
-            </div>
-          </div>
-        </transition>
       </div>
+    </div>
+  </transition>
+</div>
+
     </div>
   </div>
 </template>
