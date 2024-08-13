@@ -205,7 +205,7 @@ export default {
           tdClass: 'mono',
         },
       ],
-      lendingGeneralStats:[
+      lendingGeneralStats: [
         {
           name: 'Health Factor',
         },
@@ -257,141 +257,152 @@ export default {
       this.maxRuneSupply = +this.mimir.MAXRUNESUPPLY ?? 100000000000000
     }
     this.updateGeneralStats()
-
   },
   methods: {
     calculateTotalCollateral() {
-    if (!this.borrowers || this.borrowers.length === 0) {
-      return 0;
-    }
-    return this.borrowers.reduce((total, borrower) => total + borrower.collateralPoolInRune, 0);
+      if (!this.borrowers || this.borrowers.length === 0) {
+        return 0
+      }
+      return this.borrowers.reduce(
+        (total, borrower) => total + borrower.collateralPoolInRune,
+        0
+      )
+    },
+
+    healthScore() {
+      const totalCollateralInRune = this.calculateTotalCollateral()
+      if (
+        totalCollateralInRune === 0 ||
+        !this.currentRuneSupply ||
+        !this.maxRuneSupply
+      ) {
+        return undefined
+      }
+
+      return (
+        (this.maxRuneSupply - this.currentRuneSupply) / totalCollateralInRune
+      )
+    },
+
+    pctFull() {
+      const totalCollateralInRune = this.calculateTotalCollateral()
+      if (totalCollateralInRune === 0 || !this.mimir?.LENDINGLEVER) {
+        return undefined
+      }
+
+      const availableRune = this.maxRuneSupply - this.currentRuneSupply
+      const lendingCap = availableRune / (10000 / this.mimir.LENDINGLEVER)
+
+      return totalCollateralInRune / lendingCap
+    },
+
+    collateralValue() {
+      const totalCollateralInRune = this.calculateTotalCollateral()
+      return (totalCollateralInRune * this.runePrice) / 1e8
+    },
+
+    totalDebt() {
+      if (!this.borrowers || this.borrowers.length === 0) {
+        return 0
+      }
+
+      const totalDebtInRune = this.borrowers.reduce(
+        (total, borrower) => total + borrower.debtInRune,
+        0
+      )
+      return (totalDebtInRune * this.runePrice) / 1e8
+    },
+
+    updateGeneralStats() {
+      if (!this.borrowers || this.borrowers.length < 2) {
+        return
+      }
+
+      this.lendingGeneralStats = [
+        {
+          name: 'Health Factor',
+          value: this.$options.filters.percent(this.healthScore()),
+          description: 'Total Burned in Rune / Total Collateral in Rune',
+        },
+        {
+          name: 'Lending Fill Percentage',
+          value: this.$options.filters.percent(this.pctFull()),
+          description: 'Used Capacity of THORChain Lending',
+        },
+        {
+          name: 'Total Collateral',
+          value: this.$options.filters.currency(this.collateralValue()),
+        },
+        {
+          name: 'Total Debt',
+          value: this.$options.filters.currency(this.totalDebt()),
+        },
+      ]
+    },
+
+    loadSettings() {
+      if (!this.mimir) {
+        return
+      }
+
+      this.lendingSettings = [
+        {
+          title: 'Lending Settings',
+          rowStart: 1,
+          colSpan: 1,
+          items: [
+            {
+              valueSlot: 'mini',
+              ...this.parseConstant('PauseLoans'),
+              filter: (v) => (v ? 'Yes' : 'No'),
+              extraInfo: 'Ability to pause opening/closing loans',
+            },
+            {
+              ...this.parseConstant('LoanRepaymentMaturity'),
+              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
+              extraInfo:
+                'Specifies how long a loan must be open before it can be closed',
+            },
+            {
+              ...this.parseConstant('MinCR'),
+              filter: (v) => `${this.$options.filters.percent(v / 1e4, 2)}`,
+              name: 'Minimum Collateral Ratio',
+            },
+            {
+              ...this.parseConstant('MaxCR'),
+              filter: (v) => `${this.$options.filters.percent(v / 1e4, 2)}`,
+              name: 'Maximum Collateral Ratio',
+            },
+            {
+              ...this.parseConstant('LendingLever'),
+              filter: (v) => `${this.$options.filters.percent(v / 1e4, 2)}`,
+              extraInfo:
+                'Determines the risk profile the protocol is willing to take',
+            },
+          ],
+        },
+        {
+          title: 'Lending Assets',
+          rowStart: 1,
+          colSpan: 1,
+          items: [
+            {
+              valueSlot: 'mini',
+              ...this.parseConstant('LENDING-THOR-BTC'),
+              filter: (v) => (v ? 'Yes' : 'No'),
+              name: 'Enable Lending on BTC',
+            },
+            {
+              valueSlot: 'mini',
+              ...this.parseConstant('LENDING-THOR-ETH'),
+              filter: (v) => (v ? 'Yes' : 'No'),
+              name: 'Enable Lending on ETH',
+            },
+          ],
+        },
+      ]
+    },
   },
-
-  healthScore() {
-    const totalCollateralInRune = this.calculateTotalCollateral();
-    if (totalCollateralInRune === 0 || !this.currentRuneSupply || !this.maxRuneSupply) {
-      return undefined;
-    }
-
-    return (this.maxRuneSupply - this.currentRuneSupply) / totalCollateralInRune;
-  },
-
-  pctFull() {
-    const totalCollateralInRune = this.calculateTotalCollateral();
-    if (totalCollateralInRune === 0 || !this.mimir?.LENDINGLEVER) {
-      return undefined;
-    }
-
-    const availableRune = this.maxRuneSupply - this.currentRuneSupply;
-    const lendingCap = availableRune / (10000 / this.mimir.LENDINGLEVER);
-
-    return totalCollateralInRune / lendingCap;
-  },
-
-  collateralValue() {
-    const totalCollateralInRune = this.calculateTotalCollateral();
-    return totalCollateralInRune*this.runePrice / 1e8;
-  },
-
-  totalDebt() {
-    if (!this.borrowers || this.borrowers.length === 0) {
-      return 0;
-    }
-
-    const totalDebtInRune = this.borrowers.reduce((total, borrower) => total + borrower.debtInRune, 0);
-    return totalDebtInRune*this.runePrice / 1e8;
-  },
-
-  updateGeneralStats() {
-    if (!this.borrowers || this.borrowers.length < 2) {
-      return;
-    }
-
-    this.lendingGeneralStats = [
-      {
-        name: 'Health Factor',
-        value: this.$options.filters.percent(this.healthScore()),
-        description: 'Total Burned in Rune / Total Collateral in Rune',
-      },
-      {
-        name: 'Lending Fill Percentage',
-        value: this.$options.filters.percent(this.pctFull()),
-        description: 'Used Capacity of THORChain Lending',
-      },
-      {
-        name: 'Total Collateral',
-        value: this.$options.filters.currency(this.collateralValue()),
-      },
-      {
-        name: 'Total Debt',
-        value: this.$options.filters.currency(this.totalDebt()),
-      },
-    ];
-  },
-
-
-  loadSettings() {
-    if (!this.mimir) {
-      return;
-    }
-
-    this.lendingSettings = [
-      {
-        title: 'Lending Settings',
-        rowStart: 1,
-        colSpan: 1,
-        items: [
-          {
-            valueSlot: 'mini',
-            ...this.parseConstant('PauseLoans'),
-            filter: (v) => (v ? 'Yes' : 'No'),
-            extraInfo: 'Ability to pause opening/closing loans',
-          },
-          {
-            ...this.parseConstant('LoanRepaymentMaturity'),
-            filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
-            extraInfo: 'Specifies how long a loan must be open before it can be closed',
-          },
-          {
-            ...this.parseConstant('MinCR'),
-            filter: (v) => `${this.$options.filters.percent(v / 1e4, 2)}`,
-            name: 'Minimum Collateral Ratio',
-          },
-          {
-            ...this.parseConstant('MaxCR'),
-            filter: (v) => `${this.$options.filters.percent(v / 1e4, 2)}`,
-            name: 'Maximum Collateral Ratio',
-          },
-          {
-            ...this.parseConstant('LendingLever'),
-            filter: (v) => `${this.$options.filters.percent(v / 1e4, 2)}`,
-            extraInfo: 'Determines the risk profile the protocol is willing to take',
-          },
-        ],
-      },
-      {
-        title: 'Lending Assets',
-        rowStart: 1,
-        colSpan: 1,
-        items: [
-          {
-            valueSlot: 'mini',
-            ...this.parseConstant('LENDING-THOR-BTC'),
-            filter: (v) => (v ? 'Yes' : 'No'),
-            name: 'Enable Lending on BTC',
-          },
-          {
-            valueSlot: 'mini',
-            ...this.parseConstant('LENDING-THOR-ETH'),
-            filter: (v) => (v ? 'Yes' : 'No'),
-            name: 'Enable Lending on ETH',
-          },
-        ],
-      },
-    ];
-  },
-}
-
 }
 </script>
 
