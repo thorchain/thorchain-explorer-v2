@@ -1,45 +1,6 @@
 <template>
   <Page>
-    <div class="stat-template">
-      <div class="stat-card">
-        <div class="stat-header">
-          Health Factor
-          <unknown-icon
-            v-tooltip="'Total Burned in Rune / Total Collateral in Rune'"
-            class="header-icon"
-          />
-        </div>
-        <skeleton-item :loading="!healthScore" class="stat-value">
-          {{ healthScore | percent }}
-        </skeleton-item>
-      </div>
-      <div class="stat-card">
-        <div class="stat-header">
-          Lending Fill Percentage
-          <unknown-icon
-            v-tooltip="'Used Capacity of THORChain Lending'"
-            class="header-icon"
-          />
-        </div>
-        <skeleton-item :loading="!pctFull" class="stat-value">
-          {{ pctFull | percent }}
-        </skeleton-item>
-      </div>
-      <div class="stat-card">
-        <div class="stat-header">Total Collateral</div>
-        <skeleton-item :loading="!collateralValue" class="stat-value">
-          {{ collateralValue | number('0a') }}
-          <span class="mono">RUNE</span>
-        </skeleton-item>
-      </div>
-      <div class="stat-card">
-        <div class="stat-header">Total Debt</div>
-        <skeleton-item :loading="!totalDebt" class="stat-value">
-          {{ totalDebt | number('0a') }}
-          <span class="mono">RUNE</span>
-        </skeleton-item>
-      </div>
-    </div>
+    <cards-header :table-general-stats="lendingGeneralStats" />
     <info-card :options="lendingSettings">
       <template #mini="{ item }">
         <div :class="['mini-bubble', { danger: !item.value }]">
@@ -140,12 +101,9 @@
 
 <script>
 import endpoints from '~/api/endpoints'
-import UnknownIcon from '~/assets/images/unknown.svg?inline'
+import { mapGetters } from 'vuex'
 
 export default {
-  components: {
-    UnknownIcon,
-  },
   data() {
     return {
       reserveAddress: endpoints[process.env.NETWORK].MODULE_ADDR,
@@ -247,61 +205,32 @@ export default {
           tdClass: 'mono',
         },
       ],
+      lendingGeneralStats: [
+        {
+          name: 'Health Factor',
+        },
+        {
+          name: 'Lending Fill Percentage',
+        },
+        {
+          name: 'Total Collateral',
+        },
+        {
+          name: 'Total Debt',
+        },
+      ],
     }
   },
   head: {
     title: 'THORChain Network Explorer | Lending',
   },
   computed: {
-    healthScore() {
-      if (!this.borrowers || this.borrowers < 2) {
-        return undefined
-      }
-      let totalCollateralInRune = 0
-
-      for (let i = 0; i < this.borrowers.length; i++) {
-        totalCollateralInRune += this.borrowers[i].collateralPoolInRune
-      }
-      return (
-        (this.maxRuneSupply - this.currentRuneSupply) / totalCollateralInRune
-      )
-    },
-    pctFull() {
-      if (!this.borrowers || this.borrowers < 2) {
-        return undefined
-      }
-      let totalCollateralInRune = 0
-      for (let i = 0; i < this.borrowers.length; i++) {
-        totalCollateralInRune += this.borrowers[i].collateralPoolInRune
-      }
-
-      return (
-        totalCollateralInRune /
-        ((this.maxRuneSupply - this.currentRuneSupply) /
-          (10000 / (this.mimir.LENDINGLEVER ?? 3333)))
-      )
-    },
-    collateralValue() {
-      let totalCollateralInRune = 0
-      for (let i = 0; i < this.borrowers.length; i++) {
-        totalCollateralInRune += this.borrowers[i].collateralPoolInRune
-      }
-
-      return totalCollateralInRune / 1e8
-    },
-    totalDebt() {
-      let debtInRune = 0
-      for (let i = 0; i < this.borrowers.length; i++) {
-        debtInRune += this.borrowers[i].debtInRune
-      }
-
-      return debtInRune / 1e8
-    },
+    ...mapGetters({
+      midgardPools: 'getPools',
+      runePrice: 'getRunePrice',
+    }),
   },
   async mounted() {
-    const { data: pools } = await this.$api.getThorPools()
-    this.pools = pools
-
     try {
       const { data: mimirData } = await this.$api.getMimir()
       this.mimir = mimirData
@@ -309,10 +238,10 @@ export default {
       const { data: constantsData } = await this.$api.getConstants()
       this.networkConst = constantsData
 
-      this.loadSettings()
+      const { data: borrowersData } = await this.$api.getBorrowersInfo()
+      this.borrowers = borrowersData
 
-      const { data: torPool } = await this.$api.getDerivedPoolDetail('THOR.TOR')
-      this.torPool = torPool
+      this.loadSettings()
     } catch (error) {
       console.error(error)
     }
@@ -327,79 +256,90 @@ export default {
     if (process.env.NETWORK === 'stagenet') {
       this.maxRuneSupply = +this.mimir.MAXRUNESUPPLY ?? 100000000000000
     }
-    const totalRuneForProtocol =
-      ((this.mimir.LENDINGLEVER ?? 3333) / 10000) *
-      (this.maxRuneSupply - this.currentRuneSupply)
-
-    const totalBalanceRune = this.pools
-      .filter((e) => e.asset === 'BTC.BTC' || e.asset === 'ETH.ETH')
-      .map((e) => e.balance_rune)
-      .reduce((a, c) => a + +c, 0)
-
-    const lendingPools = [
-      'BTC.BTC',
-      'ETH.ETH',
-      'AVAX.AVAX',
-      'GAIA.ATOM',
-      'BNB.BNB',
-      'BCH.BCH',
-      'DOGE.DOGE',
-    ]
-
-    try {
-      for (const p of lendingPools) {
-        const { data: bs } = await this.$api.getBorrowers(p)
-        const poolData = this.pools.find((e) => e.asset === p)
-        const collateralPoolInRune =
-          poolData.loan_collateral *
-          (+poolData.balance_rune / +poolData.balance_asset)
-
-        if (!bs || poolData.loan_collateral === '0') {
-          continue
-        }
-
-        bs.map((b) => ({
-          ...b,
-          collateral: +b.collateral_current,
-          debt: +b.debt_current,
-        }))
-
-        const res = bs.reduce(
-          (ac, cv, i, brs) => {
-            const debt = +cv.debt_current
-
-            return {
-              debt: ac.debt + debt,
-              borrowersCount: ac.borrowersCount + 1,
-            }
-          },
-          {
-            collateral: 0,
-            debt: 0,
-            borrowersCount: 0,
-          }
-        )
-
-        this.borrowers.push({
-          ...res,
-          collateral: poolData.loan_collateral,
-          pool: poolData.asset,
-          availableRune:
-            (poolData.balance_rune / totalBalanceRune) * totalRuneForProtocol,
-          fill:
-            collateralPoolInRune /
-            ((poolData.balance_rune / totalBalanceRune) * totalRuneForProtocol),
-          collateralPoolInRune,
-          debtInRune:
-            res.debt * (this.torPool.balance_rune / this.torPool.balance_asset),
-          collateralAvailable: poolData.loan_collateral_remaining,
-        })
-      }
-    } catch (error) {
-      console.error('borrower not found', error)
-    }
+    this.updateGeneralStats()
   },
   methods: {
+    calculateTotalCollateral() {
+      if (!this.borrowers || this.borrowers.length === 0) {
+        return 0
+      }
+      return this.borrowers.reduce(
+        (total, borrower) => total + borrower.collateralPoolInRune,
+        0
+      )
+    },
+
+    healthScore() {
+      const totalCollateralInRune = this.calculateTotalCollateral()
+      if (
+        totalCollateralInRune === 0 ||
+        !this.currentRuneSupply ||
+        !this.maxRuneSupply
+      ) {
+        return undefined
+      }
+
+      return (
+        (this.maxRuneSupply - this.currentRuneSupply) / totalCollateralInRune
+      )
+    },
+
+    pctFull() {
+      const totalCollateralInRune = this.calculateTotalCollateral()
+      if (totalCollateralInRune === 0 || !this.mimir?.LENDINGLEVER) {
+        return undefined
+      }
+
+      const availableRune = this.maxRuneSupply - this.currentRuneSupply
+      const lendingCap = availableRune / (10000 / this.mimir.LENDINGLEVER)
+
+      return totalCollateralInRune / lendingCap
+    },
+
+    collateralValue() {
+      const totalCollateralInRune = this.calculateTotalCollateral()
+      return (totalCollateralInRune * this.runePrice) / 1e8
+    },
+
+    totalDebt() {
+      if (!this.borrowers || this.borrowers.length === 0) {
+        return 0
+      }
+
+      const totalDebtInRune = this.borrowers.reduce(
+        (total, borrower) => total + borrower.debtInRune,
+        0
+      )
+      return (totalDebtInRune * this.runePrice) / 1e8
+    },
+
+    updateGeneralStats() {
+      if (!this.borrowers || this.borrowers.length < 2) {
+        return
+      }
+
+      this.lendingGeneralStats = [
+        {
+          name: 'Health Factor',
+          value: this.$options.filters.percent(this.healthScore()),
+          description: 'Total Burned in Rune / Total Collateral in Rune',
+        },
+        {
+          name: 'Lending Fill Percentage',
+          value: this.$options.filters.percent(this.pctFull()),
+          description: 'Used Capacity of THORChain Lending',
+        },
+        {
+          name: 'Total Collateral',
+          value: this.$options.filters.currency(this.collateralValue()),
+        },
+        {
+          name: 'Total Debt',
+          value: this.$options.filters.currency(this.totalDebt()),
+        },
+      ]
+    },
+
     loadSettings() {
       if (!this.mimir) {
         return

@@ -53,7 +53,9 @@
           <div v-show="showSettings" id="settingsMenu" ref="settingsMenu">
             <div class="settings-card simple-card normal">
               <div class="settings-item" @click="changeTheme">
-                <span>Dark Theme</span>
+                <span>{{
+                  theme === 'light' ? 'Light Theme' : 'Dark Theme'
+                }}</span>
                 <SunIcon
                   v-if="theme === 'light'"
                   class="social-icon"
