@@ -84,3 +84,8 @@ export function getRunePoolProvidersInfo() {
     endpoints[process.env.NETWORK].SERVER_URL + 'api/runePoolProviders'
   )
 }
+export function getBorrowersInfo() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + 'api/borrowers'
+  )
+}
