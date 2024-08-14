@@ -164,7 +164,7 @@ export default {
 
 <style lang="scss">
 .navbar-container {
-  padding: 0.5rem 0;
+  padding: 0.25rem 0;
   transition: height 0.3s;
   max-width: 90rem;
   margin: auto;
@@ -257,7 +257,7 @@ export default {
       }
 
       @include lg {
-        padding: 0.6rem 1rem;
+        padding: 0.2rem 1rem;
 
         span {
           font-size: 14px;
@@ -283,10 +283,11 @@ export default {
 
   .icon {
     margin: 0;
-    width: 1.5rem;
-    border: 0.2px solid var(--font-color);
+    width: 20px;
+    background-color: var(--card-bg-color);
+    border: 1px solid var(--border-color);
     border-radius: 0.5rem;
-    padding: 0.25rem;
+    padding: 0.375rem 0.75rem;
     box-sizing: content-box;
   }
 
