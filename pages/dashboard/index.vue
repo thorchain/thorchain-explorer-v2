@@ -107,7 +107,7 @@
       <Card
         :navs="[
           { title: 'Swap Volume', value: 'swap-vol' },
-          { title: 'Earnings Volume', value: 'earnings-vol' },
+          { title: 'Pool Volume', value: 'pools-vol' },
         ]"
         :act-nav.sync="swapMode"
       >
@@ -120,24 +120,8 @@
           :autoresize="true"
           :loading-options="showLoading"
         />
-        <VChart
-          v-if="swapMode == 'earnings-vol'"
-          :key="2"
-          :option="earningsHistory"
-          :loading="!earningsHistory"
-          :autoresize="true"
-          :loading-options="showLoading"
-        />
-      </Card>
-      <Card
-        :navs="[
-          { title: 'Chain Status', value: 'chain-status' },
-          { title: 'Pools Volume', value: 'pools-vol' },
-        ]"
-        :act-nav.sync="poolMode"
-      >
         <div
-          v-if="poolMode == 'pools-vol'"
+          v-if="swapMode == 'pools-vol'"
           :key="1"
           class="pool-depth-container"
         >
@@ -186,6 +170,22 @@
             </table>
           </div>
         </div>
+      </Card>
+      <Card
+        :navs="[
+          { title: 'Earnings Volume', value: 'earnings-vol' },
+          { title: 'Chain Status', value: 'chain-status' },
+        ]"
+        :act-nav.sync="poolMode"
+      >
+        <VChart
+          v-if="poolMode == 'earnings-vol'"
+          :key="2"
+          :option="earningsHistory"
+          :loading="!earningsHistory"
+          :autoresize="true"
+          :loading-options="showLoading"
+        />
         <div v-if="poolMode == 'chain-status'" :key="2" style="min-width: 100%">
           <vue-good-table
             :columns="inboundCols"
@@ -428,7 +428,7 @@ export default {
       poolsOption: undefined,
       poolsData: undefined,
       totalValuePooled: undefined,
-      poolMode: 'chain-status',
+      poolMode: 'earnings-vol',
       swapMode: 'swap-vol',
       inboundInfo: undefined,
       mimirInfo: undefined,
@@ -476,6 +476,9 @@ export default {
   async fetch() {
     const resBlock = await this.$api.getRPCLastBlockHeight()
     this.lastHeight = +resBlock?.data?.block?.header?.height
+  },
+  head: {
+    title: 'THORChain Network Explorer | Dashboard',
   },
   computed: {
     runeSymbol() {
@@ -1223,9 +1226,6 @@ export default {
       this.poolsData = poolData
       this.totalValuePooled = totalValuePooled
     },
-  },
-  head: {
-    title: 'THORChain Network Explorer | Dashboard',  
   },
 }
 </script>

@@ -240,6 +240,10 @@ export default {
         }
       }
 
+      &:last-of-type {
+        padding-right: 0;
+      }
+
       span {
         font-size: 14px;
         height: 20px;

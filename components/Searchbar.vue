@@ -1,16 +1,16 @@
 <template>
-  <div class="search-bar-container">
+  <div
+    class="search-bar-container"
+    :class="{ expanded: innerWidth < 992 && isSearch }"
+  >
     <div class="left-section">
-      <div
-        id="search-container"
-        :class="{ expanded: isSearch }"
-        @click="search"
-      >
+      <div id="search-container" @click="search">
         <input
+          ref="searchInput"
           v-model="searchQuery"
           class="search-bar-input"
           type="text"
-          placeholder="Search"
+          :placeholder="isSearch || innerWidth > 992 ? 'Search' : false"
           @keyup.enter="find"
           @focus="isSearch = true"
           @blur="isSearch = false"
@@ -19,7 +19,7 @@
       </div>
     </div>
     <div class="right-section">
-      <div id="theme-container">
+      <div id="theme-wrapper">
         <div
           ref="themeContainer"
           class="theme-container"
@@ -91,6 +91,7 @@ export default {
       isSearch: false,
       showDialog: false,
       showSettings: false,
+      innerWidth: window.innerWidth,
     }
   },
   computed: {
@@ -110,16 +111,22 @@ export default {
   },
   mounted() {
     window.addEventListener('click', this.handleClickOutside)
-    this.createListener('network', 'netDialog', { topM: 45, leftM: -20 })
+    this.createListener('network', 'netDialog', { topM: 35 })
     this.createListener('themeContainer', 'themeDialog', {
-      topM: 45,
-      leftM: -15,
+      topM: 35,
+    })
+    this.$nextTick(() => {
+      window.addEventListener('resize', this.onResize)
     })
   },
   beforeDestroy() {
     window.removeEventListener('click', this.handleClickOutside)
+    window.removeEventListener('resize', this.onResize)
   },
   methods: {
+    onResize() {
+      this.innerWidth = window.innerWidth
+    },
     find() {
       if (!this.isSearch) {
         this.$refs.searchInput.focus()
@@ -158,7 +165,7 @@ export default {
     followContainer(parentContainer, childContainer, { leftM, topM }) {
       if (this.$refs[parentContainer]) {
         const rect = this.$refs[parentContainer].getBoundingClientRect()
-        this.$refs[childContainer].style.left = `${rect.left + leftM}px`
+        this.$refs[childContainer].style.right = `0px`
         this.$refs[childContainer].style.top = `${rect.top + topM}px`
       }
     },
@@ -169,23 +176,11 @@ export default {
       this.followContainer(parentContainer, childContainer, styles)
     },
     handleClickOutside(e) {
-      if (!this.$refs.searchContainer.contains(e.target)) {
-        this.isSearch = false
-      }
-      if (!this.$refs.networkWrapper.contains(e.target)) {
+      if (!this.$refs.network.contains(e.target)) {
         this.showDialog = false
       }
-      if (
-        !this.$refs.themeContainer.contains(e.target) &&
-        !this.$refs.themeDialog.contains(e.target)
-      ) {
+      if (!this.$refs.themeContainer.contains(e.target)) {
         this.showSettings = false
-      }
-      if (
-        !document.querySelector('.collapse-icon')?.contains(e.target) &&
-        !document.querySelector('.side-bar-container')?.contains(e.target)
-      ) {
-        this.$store.commit('setSidebar', false)
       }
     },
   },
@@ -198,11 +193,27 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  overflow: hidden;
   margin: auto;
   gap: 15px;
   max-width: 90rem;
   padding: 0.25rem 0;
+
+  &.expanded {
+    gap: 0;
+    .left-section {
+      #search-container {
+        flex: 1;
+      }
+    }
+
+    .right-section {
+      gap: 0;
+      #network-wrapper,
+      #theme-wrapper {
+        display: none;
+      }
+    }
+  }
 
   .left-section {
     flex: 1;
@@ -217,8 +228,12 @@ export default {
     align-items: center;
     gap: 10px;
 
-    #network-wrapper {
-      .network-container {
+    #network-wrapper,
+    #theme-wrapper {
+      position: relative;
+
+      .network-container,
+      .theme-container {
         height: 2.375rem;
         padding: 0.375rem 0.75rem;
         border-radius: 0.5rem;
@@ -243,79 +258,6 @@ export default {
           background-color: var(--darker-bg);
         }
       }
-
-      .network-dialog {
-        position: absolute;
-        z-index: 1000;
-        display: flex;
-        flex-direction: column;
-        border: 1px solid var(--border-color);
-        border-radius: 0.5rem;
-        width: 100px;
-        background: var(--card-bg-color);
-
-        a {
-          cursor: pointer;
-          background: var(--card-bg-color);
-          color: var(--font-color);
-          border: none;
-          padding: 0.5rem 1rem;
-          text-decoration: none;
-          text-align: center;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          transition: background-color 0.3s ease;
-
-          &:first-of-type {
-            border-radius: 0.5rem 0.5rem 0 0;
-          }
-
-          &:last-of-type {
-            border-radius: 0 0 0.5rem 0.5rem;
-          }
-
-          &:hover {
-            background: var(--darker-bg);
-            color: var(--primary-color);
-          }
-
-          &.active {
-            color: var(--primary-color);
-
-            &:hover {
-              background-color: var(--card-bg-color);
-            }
-          }
-        }
-      }
-    }
-
-    .theme-container {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 0.5rem;
-      cursor: pointer;
-      fill: var(--font-color);
-      border: 1px solid var(--border-color);
-      height: 2.375rem;
-      padding: 0.375rem 0.75rem;
-      background-color: var(--card-bg-color);
-      transition: background-color 0.3s ease;
-
-      .menu-icon {
-        width: 20px;
-      }
-
-      &:hover {
-        background-color: var(--darker-bg);
-      }
-
-      .theme-icon {
-        width: 1.3rem;
-        height: 1.3rem;
-      }
     }
   }
 
@@ -327,10 +269,7 @@ export default {
     border-radius: 0.5rem;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     overflow: hidden;
-
-    &.expanded {
-      flex: 1;
-    }
+    width: 46px;
 
     .search-bar-input {
       flex: 1;
@@ -341,7 +280,7 @@ export default {
       background-color: var(--card-bg-color);
       padding: 0 1rem;
       border-radius: 0.5rem;
-      transition: width 3s ease;
+      transition: width 0.3s ease;
 
       &:focus {
         outline: none;
@@ -351,12 +290,11 @@ export default {
 
     .search-icon {
       position: absolute;
-      padding: 0.2rem;
-      width: 1.4rem;
-      height: 1.4rem;
+      width: 20px;
+      height: 24px;
       fill: var(--font-color);
-      right: 0.5rem;
-      top: calc(50% - 0.7rem);
+      right: 0.8rem;
+      top: calc(50% - 0.8rem);
       cursor: pointer;
       transition: fill 0.3s ease;
 
@@ -375,6 +313,8 @@ export default {
     }
 
     @include lg {
+      width: 30rem;
+
       .search-bar-input {
         width: 100%;
       }
@@ -384,55 +324,50 @@ export default {
       }
     }
   }
+}
 
-  .theme-dialog {
-    position: absolute;
-    z-index: 1000;
-    display: flex;
-    flex-direction: column;
-    border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
-    width: 100px;
+.network-dialog,
+.theme-dialog {
+  position: absolute;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  width: 100px;
+  background: var(--card-bg-color);
+
+  a {
+    cursor: pointer;
     background: var(--card-bg-color);
-    transition: opacity 0.3s ease;
+    color: var(--font-color);
+    border: none;
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background-color 0.3s ease;
 
-    a {
-      cursor: pointer;
-      background: var(--card-bg-color);
-      color: var(--font-color);
-      border: none;
-      padding: 0.5rem 1rem;
-      text-decoration: none;
-      text-align: center;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: background-color 0.3s ease;
+    &:first-of-type {
+      border-radius: 0.5rem 0.5rem 0 0;
+    }
 
-      &:first-of-type {
-        border-radius: 0.5rem 0.5rem 0 0;
-      }
+    &:last-of-type {
+      border-radius: 0 0 0.5rem 0.5rem;
+    }
 
-      &:last-of-type {
-        border-radius: 0 0 0.5rem 0.5rem;
-      }
+    &:hover {
+      background: var(--darker-bg);
+      color: var(--primary-color);
+    }
+
+    &.active {
+      color: var(--primary-color);
 
       &:hover {
-        background: var(--darker-bg);
-        color: var(--primary-color);
-      }
-
-      &.active {
-        color: var(--primary-color);
-
-        &:hover {
-          background-color: var(--card-bg-color);
-        }
-      }
-
-      .theme-icon {
-        width: 1.3rem;
-        height: 1.3rem;
+        background-color: var(--card-bg-color);
       }
     }
   }
