@@ -19,19 +19,15 @@
       </div>
     </div>
     <div class="right-section">
-      <div
-        id="theme-container"
-        ref="themeContainer"
-        class="theme-container"
-        @click="toggleSettings"
-      >
-        <span v-if="theme === 'dark'">
-          <MoonIcon />
-        </span>
-        <span v-else>
-          <SunIcon />
-        </span>
-
+      <div id="theme-container">
+        <div
+          ref="themeContainer"
+          class="theme-container"
+          @click="toggleSettings"
+        >
+          <MoonIcon v-if="theme === 'dark'" class="menu-icon" />
+          <SunIcon v-else class="menu-icon" />
+        </div>
         <transition name="fade">
           <div v-show="showSettings" ref="themeDialog" class="theme-dialog">
             <a :class="{ active: theme === 'dark' }" @click="setTheme('dark')">
@@ -48,7 +44,7 @@
       </div>
       <div id="network-wrapper">
         <div ref="network" class="network-container" @click="toggleDialog">
-          <SettingsIcon />
+          <SettingsIcon class="menu-icon" />
         </div>
         <transition name="fade">
           <div v-show="showDialog" ref="netDialog" class="network-dialog">
@@ -115,7 +111,10 @@ export default {
   mounted() {
     window.addEventListener('click', this.handleClickOutside)
     this.createListener('network', 'netDialog', { topM: 45, leftM: -20 })
-    this.createListener('themeContainer', 'themeDialog', { topM: 45, leftM: -15 })
+    this.createListener('themeContainer', 'themeDialog', {
+      topM: 45,
+      leftM: -15,
+    })
   },
   beforeDestroy() {
     window.removeEventListener('click', this.handleClickOutside)
@@ -176,11 +175,16 @@ export default {
       if (!this.$refs.networkWrapper.contains(e.target)) {
         this.showDialog = false
       }
-      if (!this.$refs.themeContainer.contains(e.target) && !this.$refs.themeDialog.contains(e.target)) {
+      if (
+        !this.$refs.themeContainer.contains(e.target) &&
+        !this.$refs.themeDialog.contains(e.target)
+      ) {
         this.showSettings = false
       }
-      if (!document.querySelector('.collapse-icon')?.contains(e.target) &&
-        !document.querySelector('.side-bar-container')?.contains(e.target)) {
+      if (
+        !document.querySelector('.collapse-icon')?.contains(e.target) &&
+        !document.querySelector('.side-bar-container')?.contains(e.target)
+      ) {
         this.$store.commit('setSidebar', false)
       }
     },
@@ -198,7 +202,7 @@ export default {
   margin: auto;
   gap: 15px;
   max-width: 90rem;
-  padding: 0.5rem 0;
+  padding: 0.25rem 0;
 
   .left-section {
     flex: 1;
@@ -214,14 +218,20 @@ export default {
 
     #network-wrapper {
       .network-container {
-        padding: 0.75rem 1.3125rem;
+        height: 2.375rem;
+        padding: 0.375rem 0.75rem;
         border-radius: 0.5rem;
         background-color: var(--card-bg-color);
         border: 1px solid var(--border-color);
         display: flex;
+        align-items: center;
         justify-content: center;
         cursor: pointer;
         transition: background-color 0.3s ease;
+
+        .menu-icon {
+          width: 20px;
+        }
 
         span {
           text-align: center;
@@ -276,16 +286,11 @@ export default {
               background-color: var(--card-bg-color);
             }
           }
-
-          .theme-icon {
-            width: 1.3rem;
-            height: 1.3rem;
-          }
         }
       }
     }
 
-    #theme-container {
+    .theme-container {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -293,12 +298,22 @@ export default {
       cursor: pointer;
       fill: var(--font-color);
       border: 1px solid var(--border-color);
-      padding: 5px 18px;
+      height: 2.375rem;
+      padding: 0.375rem 0.75rem;
       background-color: var(--card-bg-color);
       transition: background-color 0.3s ease;
 
+      .menu-icon {
+        width: 20px;
+      }
+
       &:hover {
         background-color: var(--darker-bg);
+      }
+
+      .theme-icon {
+        width: 1.3rem;
+        height: 1.3rem;
       }
     }
   }
@@ -308,8 +323,8 @@ export default {
     position: relative;
     max-width: 600px;
     transition: all 0.5s ease;
-    border: 1px solid var(--line);
-    border-radius: 25px;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     overflow: hidden;
 
@@ -321,16 +336,16 @@ export default {
       flex: 1;
       font-size: 1rem;
       border: none;
-      height: 40px;
+      height: 38px;
       color: var(--font-color);
       background-color: var(--card-bg-color);
       padding: 0 1rem;
-      border-radius: 25px;
+      border-radius: 0.5rem;
       transition: width 0.3s ease;
 
       &:focus {
         outline: none;
-        background-color: var(--darker-bg);
+        background-color: var(--card-bg-color);
       }
     }
 
@@ -391,7 +406,7 @@ export default {
       text-align: center;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       transition: background-color 0.3s ease;
 
       &:first-of-type {
