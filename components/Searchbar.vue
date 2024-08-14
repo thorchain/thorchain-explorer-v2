@@ -19,6 +19,20 @@
       </div>
     </div>
     <div class="right-section">
+      <div class="header-info">
+        <div>
+          <small style="color: var(--sec-font-color)">RUNE Price:</small>
+          <small style="color: var(--primary-color)" class="mono">
+            {{ runePrice | currency }}
+          </small>
+        </div>
+        <div>
+          <small style="color: var(--sec-font-color)">Block height:</small>
+          <small style="color: var(--primary-color)" class="mono">
+            {{ chainsHeight['THOR'] | number('0,0') }}
+          </small>
+        </div>
+      </div>
       <div id="theme-wrapper">
         <div
           ref="themeContainer"
@@ -71,6 +85,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import { number } from 'echarts'
 import SearchIcon from '~/assets/images/search.svg?inline'
 import MoonIcon from '~/assets/images/moon-icon.svg?inline'
 import SunIcon from '~/assets/images/sun-icon.svg?inline'
@@ -99,6 +114,8 @@ export default {
       theme: 'getTheme',
       fullscreen: 'getFullScreen',
       sidebar: 'getSidebar',
+      runePrice: 'getRunePrice',
+      chainsHeight: 'getChainsHeight',
     }),
     networkEnv() {
       return process.env.NETWORK
@@ -212,6 +229,17 @@ export default {
       #theme-wrapper {
         display: none;
       }
+    }
+  }
+
+  .header-info {
+    display: none;
+    flex-direction: column;
+
+    @include lg {
+      display: flex;
+      align-items: end;
+      justify-content: center;
     }
   }
 
