@@ -159,7 +159,7 @@ export default {
       this.noStreaming = false
       const resData = (await this.$api.getStreamingSwaps()).data
 
-      this.totalSumAmount = resData.reduce((a, c) => {
+      this.totalSumAmount = resData?.reduce((a, c) => {
         const inputUsdValue = this.amountToUSD(
           c.source_asset,
           c.deposit,
@@ -217,7 +217,7 @@ export default {
               new: false,
             }
             if (oa.every((a) => a.asset === 'THOR.RUNE') && !nonRUNE) {
-              tmpOut.amount = oa.reduce((a, b) => Math.max(+a, +b), -Infinity)
+              tmpOut.amount = oa?.reduce((a, b) => Math.max(+a, +b), -Infinity)
               tmpOut.asset = oa[0].asset
               tmpOut.new = true
             } else {
