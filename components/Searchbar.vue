@@ -209,6 +209,7 @@ export default {
     display: flex;
     align-items: center;
     gap: 10px;
+    width: 100%;
   }
 
   .right-section {
@@ -321,7 +322,6 @@ export default {
   #search-container {
     display: flex;
     position: relative;
-    max-width: 600px;
     transition: all 0.5s ease;
     border: 1px solid var(--border-color);
     border-radius: 0.5rem;
@@ -341,7 +341,7 @@ export default {
       background-color: var(--card-bg-color);
       padding: 0 1rem;
       border-radius: 0.5rem;
-      transition: width 0.3s ease;
+      transition: width 3s ease;
 
       &:focus {
         outline: none;
