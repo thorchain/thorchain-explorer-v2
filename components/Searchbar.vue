@@ -29,7 +29,7 @@
         <div>
           <small style="color: var(--sec-font-color)">Block height:</small>
           <small style="color: var(--primary-color)" class="mono">
-            {{ chainsHeight['THOR'] | number('0,0') }}
+            {{ chainsHeight && chainsHeight['THOR'] | number('0,0') }}
           </small>
         </div>
       </div>

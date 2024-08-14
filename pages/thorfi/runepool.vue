@@ -5,7 +5,7 @@
         <skeleton-item
           :loading="!item.value"
           :style="{
-            color: item.isDown ? 'red' : 'green',
+            color: item.isDown ? '#ff1744' : '#76ff03',
             display: 'flex',
             alignItems: 'center',
             gap: '4px',
@@ -57,8 +57,8 @@
     <Card
       :navs="[
         { title: 'Rune Pools', value: 'rune-pools' },
-        { title: 'Mimirs', value: 'mimirs' },
         { title: 'Members', value: 'members' },
+        { title: 'Mimirs', value: 'mimirs' },
       ]"
       :act-nav.sync="cardMode"
     >
@@ -172,16 +172,19 @@
           <span v-else-if="props.column.field == 'value'">
             {{ $options.filters.number(props.row.value, '0,0.00') }}
             <small>RUNE</small>
-            <progress-icon
-              v-if="props.row.value"
-              :data-number="props.row.pnl"
-              :is-down="+props.row.pnl < 0"
-              :filter="
-                (value) => {
-                  return $options.filters.number(value, '0,0.00')
-                }
-              "
-            />
+          </span>
+          <span
+            v-else-if="props.column.field == 'pnl'"
+            :style="[{ color: +props.row.pnl < 0 ? '#ff1744' : '#76ff03' }]"
+          >
+            {{ $options.filters.number(props.row.pnl, '0,0.00') }}
+            <small>RUNE</small>
+          </span>
+          <span
+            v-else-if="props.column.field == 'ror'"
+            :style="[{ color: +props.row.ror < 0 ? '#ff1744' : '#76ff03' }]"
+          >
+            {{ props.formattedRow[props.column.field] }}
           </span>
           <span v-else-if="props.column.field == 'untilMature'">
             <span
@@ -381,7 +384,7 @@ export default {
           formatFn: this.formatAddress,
         },
         {
-          label: 'Current Deposit',
+          label: 'Deposited',
           field: 'deposit_amount',
           type: 'number',
           tdClass: 'mono',
@@ -391,6 +394,19 @@ export default {
           field: 'value',
           type: 'number',
           tdClass: 'mono',
+        },
+        {
+          label: 'PnL',
+          field: 'pnl',
+          type: 'number',
+          tdClass: 'mono',
+        },
+        {
+          label: 'RoR',
+          field: 'ror',
+          type: 'percentage',
+          tdClass: 'mono',
+          tooltip: 'Return of investment.',
         },
         {
           label: 'Mature',
@@ -411,6 +427,12 @@ export default {
           field: 'last_deposit_height',
           type: 'number',
           formatFn: this.normalFormat,
+          tdClass: 'mono',
+        },
+        {
+          label: 'Withdrawn',
+          field: 'withdraw_amount',
+          type: 'number',
           tdClass: 'mono',
         },
       ],
@@ -819,7 +841,8 @@ export default {
         const { data: membersData } = await this.$api.getRunePoolProviders()
         this.members = membersData.map((e) => ({
           ...e,
-          deposit_amount: (+e.deposit_amount - +e.withdraw_amount) / 1e8,
+          deposit_amount: +e.deposit_amount / 1e8,
+          withdraw_amount: +e.withdraw_amount / 1e8,
           pnl: +e.pnl / 1e8,
           value: +e.value / 1e8,
           mature: +this.height.THOR - +e.last_deposit_height > matureConstant,
@@ -834,6 +857,7 @@ export default {
               's'
             )
             .asDays(),
+          ror: +e.value / +e.deposit_amount - 1,
         }))
         this.isUpdating = false
       } catch (error) {
