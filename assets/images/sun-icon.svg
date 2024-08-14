@@ -1,1 +1,15 @@
-<svg viewBox="0 0 24 24" focusable="false" class="chakra-icon chakra-icon css-u7jf4w"><g stroke-linejoin="round" stroke-linecap="round" stroke-width="2" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="5"></circle><path d="M12 1v2"></path><path d="M12 21v2"></path><path d="M4.22 4.22l1.42 1.42"></path><path d="M18.36 18.36l1.42 1.42"></path><path d="M1 12h2"></path><path d="M21 12h2"></path><path d="M4.22 19.78l1.42-1.42"></path><path d="M18.36 5.64l1.42-1.42"></path></g></svg>
+<svg width="1.5em" height="1.5em" viewBox="-2.16 -2.16 28.32 28.32" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor">
+  <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+  <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+  <g id="SVGRepo_iconCarrier">
+    <circle cx="12" cy="12" r="5" fill="none" stroke="#4a5568" stroke-width="1.8"></circle>
+    <path d="M12 2V4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+    <path d="M12 20V22" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+    <path d="M4 12L2 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+    <path d="M22 12L20 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+    <path d="M19.7778 4.22266L17.5558 6.25424" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+    <path d="M4.22217 4.22266L6.44418 6.25424" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+    <path d="M6.44434 17.5557L4.22211 19.7779" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+    <path d="M19.7778 19.7773L17.5558 17.5551" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+  </g>
+</svg>

@@ -200,9 +200,11 @@ export default {
   }
 
   .navbar-lists {
-    overflow: hidden;  
-    max-height: 0; 
-    transition: max-height 0.7s cubic-bezier(0.25, 0.1, 0.25, 1), opacity 1s ease;
+    overflow: hidden;
+    max-height: 0;
+    transition:
+      max-height 0.7s cubic-bezier(0.25, 0.1, 0.25, 1),
+      opacity 1s ease;
 
     @include lg {
       display: flex;
@@ -211,7 +213,7 @@ export default {
       scrollbar-width: none;
       justify-content: flex-end;
       margin: 0;
-      max-height: none;  
+      max-height: none;
 
       &::-webkit-scrollbar {
         display: none;
@@ -282,15 +284,18 @@ export default {
   .icon {
     margin: 0;
     width: 1.5rem;
+    border: 0.2px solid var(--font-color);
+    border-radius: 0.5rem;
+    padding: 0.25rem;
+    box-sizing: content-box;
   }
 
   &.menu {
     .navbar-lists {
       display: flex;
       flex-direction: column;
-      max-height: 500px;  
+      max-height: 500px;
     }
   }
 }
-
 </style>
