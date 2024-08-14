@@ -3,71 +3,69 @@
     <div class="left-section">
       <div
         id="search-container"
-        :class="[{ expanded: isSearch }]"
-        @click="search()"
+        :class="{ expanded: isSearch }"
+        @click="search"
       >
         <input
           v-model="searchQuery"
           class="search-bar-input"
           type="text"
           placeholder="Search"
-          @keyup.enter="find()"
+          @keyup.enter="find"
+          @focus="isSearch = true"
           @blur="isSearch = false"
         />
-        <SearchIcon class="search-icon" @click="find()" />
+        <SearchIcon class="search-icon" @click="find" />
       </div>
     </div>
     <div class="right-section">
-      <div id="network-wrapper">
-        <div ref="network" class="network-container" @click="toggleDialog">
-          <span>{{ networkEnv | capitalize }}</span>
-        </div>
+      <div
+        id="theme-container"
+        ref="themeContainer"
+        class="theme-container"
+        @click="toggleSettings"
+      >
+        <span v-if="theme === 'dark'">
+          <MoonIcon />
+        </span>
+        <span v-else>
+          <SunIcon />
+        </span>
+
         <transition name="fade">
-          <div v-show="showDialog" ref="netDialog" class="network-dialog">
-            <a
-              :class="{ active: networkEnv == 'mainnet' }"
-              :disabled="networkEnv == 'mainnet'"
-              :href="gotoInstance('mainnet', networkEnv == 'mainnet')"
-            >
-              Mainnet
+          <div v-show="showSettings" ref="themeDialog" class="theme-dialog">
+            <a :class="{ active: theme === 'dark' }" @click="setTheme('dark')">
+              <MoonIcon class="theme-icon" /> Dark
             </a>
             <a
-              :class="{ active: networkEnv == 'stagenet' }"
-              :disabled="networkEnv == 'stagenet'"
-              :href="gotoInstance('stagenet', networkEnv == 'stagenet')"
+              :class="{ active: theme === 'light' }"
+              @click="setTheme('light')"
             >
-              Stagenet
+              <SunIcon class="theme-icon" /> Light
             </a>
           </div>
         </transition>
       </div>
-      <div
-        id="settings-container"
-        ref="settingsContainer"
-        class="settings-container"
-      >
-        <div class="settings-icon-container" @click="toggleSettings">
+      <div id="network-wrapper">
+        <div ref="network" class="network-container" @click="toggleDialog">
           <SettingsIcon />
         </div>
         <transition name="fade">
-          <div v-show="showSettings" id="settingsMenu" ref="settingsMenu">
-            <div class="settings-card simple-card normal">
-              <div class="settings-item" @click="changeTheme">
-                <span>{{
-                  theme === 'light' ? 'Light Theme' : 'Dark Theme'
-                }}</span>
-                <SunIcon
-                  v-if="theme === 'light'"
-                  class="social-icon"
-                  @click="changeTheme"
-                />
-                <MoonIcon
-                  v-if="theme === 'dark'"
-                  class="social-icon"
-                  @click="changeTheme"
-                />
-              </div>
-            </div>
+          <div v-show="showDialog" ref="netDialog" class="network-dialog">
+            <a
+              :class="{ active: networkEnv === 'mainnet' }"
+              :disabled="networkEnv === 'mainnet'"
+              :href="gotoInstance('mainnet', networkEnv === 'mainnet')"
+            >
+              Mainnet
+            </a>
+            <a
+              :class="{ active: networkEnv === 'stagenet' }"
+              :disabled="networkEnv === 'stagenet'"
+              :href="gotoInstance('stagenet', networkEnv === 'stagenet')"
+            >
+              Stagenet
+            </a>
           </div>
         </transition>
       </div>
@@ -115,40 +113,17 @@ export default {
     },
   },
   mounted() {
-    window.addEventListener('click', (e) => {
-      if (!document.getElementById('search-container')?.contains(e.target)) {
-        this.isSearch = false
-      }
-
-      if (!document.getElementById('network-wrapper')?.contains(e.target)) {
-        this.showDialog = false
-      }
-
-      if (
-        !document.querySelector('.collapse-icon')?.contains(e.target) &&
-        !document.querySelector('.side-bar-container')?.contains(e.target)
-      ) {
-        this.$store.commit('setSidebar', false)
-      }
-
-      if (
-        !document.getElementById('settings-container')?.contains(e.target) &&
-        !document.getElementById('settingsMenu')?.contains(e.target)
-      ) {
-        this.showSettings = false
-      }
-    })
-
-    this.createListener('network', 'netDialog', { topM: 45, leftM: 0 })
-    this.createListener('settingsContainer', 'settingsMenu', {
-      topM: 45,
-      leftM: -280,
-    })
+    window.addEventListener('click', this.handleClickOutside)
+    this.createListener('network', 'netDialog', { topM: 45, leftM: -20 })
+    this.createListener('themeContainer', 'themeDialog', { topM: 45, leftM: -15 })
+  },
+  beforeDestroy() {
+    window.removeEventListener('click', this.handleClickOutside)
   },
   methods: {
     find() {
       if (!this.isSearch) {
-        document.getElementsByClassName('search-bar-input')[0].focus()
+        this.$refs.searchInput.focus()
         return
       }
       const search = this.searchQuery.toUpperCase()
@@ -161,35 +136,12 @@ export default {
             this.$router.push({ path: `/address/${thorchainAddr}` })
           }
         })
-      } else if (
-        // THORCHAIN
-        search.startsWith('THOR') ||
-        search.startsWith('TTHOR') ||
-        search.startsWith('STHOR') ||
-        // BNB
-        search.startsWith('BNB') ||
-        search.startsWith('TBNB') ||
-        // BITCOIN
-        search.startsWith('BC1') ||
-        search.startsWith('TB1') ||
-        // LTC
-        search.startsWith('LTC') ||
-        search.startsWith('TLTC') ||
-        // COSMOS
-        search.startsWith('COSMOS') ||
-        (search.startsWith('0x') && search.length <= 43)
-      ) {
-        this.$router.push({ path: `/address/${this.searchQuery}` })
       } else {
-        this.$router.push({ path: `/tx/${this.searchQuery}` })
+        this.$router.push({ path: `/address/${this.searchQuery}` })
       }
     },
-    changeTheme() {
-      if (this.theme === 'dark') {
-        this.$store.commit('setTheme', false)
-      } else {
-        this.$store.commit('setTheme', true)
-      }
+    setTheme(theme) {
+      this.$store.commit('setTheme', theme === 'dark')
     },
     search() {
       this.isSearch = true
@@ -201,31 +153,36 @@ export default {
       this.showSettings = !this.showSettings
     },
     gotoInstance(instance, disabled) {
-      if (disabled) {
-        return
-      }
+      if (disabled) return
       return links[instance]
     },
     followContainer(parentContainer, childContainer, { leftM, topM }) {
       if (this.$refs[parentContainer]) {
-        const left = this.$refs[parentContainer].getBoundingClientRect().left
-        const top = this.$refs[parentContainer].getBoundingClientRect().top
-        this.$refs[childContainer].style.left = `${left + leftM}px`
-        this.$refs[childContainer].style.top = `${top + topM}px`
+        const rect = this.$refs[parentContainer].getBoundingClientRect()
+        this.$refs[childContainer].style.left = `${rect.left + leftM}px`
+        this.$refs[childContainer].style.top = `${rect.top + topM}px`
       }
     },
     createListener(parentContainer, childContainer, styles) {
       window.addEventListener('resize', () => {
         this.followContainer(parentContainer, childContainer, styles)
       })
-
       this.followContainer(parentContainer, childContainer, styles)
     },
-    toggleSidebar() {
-      this.$store.commit('setSidebar', true)
-    },
-    toggleFullscreen() {
-      this.$store.commit('toggleFullscreen')
+    handleClickOutside(e) {
+      if (!this.$refs.searchContainer.contains(e.target)) {
+        this.isSearch = false
+      }
+      if (!this.$refs.networkWrapper.contains(e.target)) {
+        this.showDialog = false
+      }
+      if (!this.$refs.themeContainer.contains(e.target) && !this.$refs.themeDialog.contains(e.target)) {
+        this.showSettings = false
+      }
+      if (!document.querySelector('.collapse-icon')?.contains(e.target) &&
+        !document.querySelector('.side-bar-container')?.contains(e.target)) {
+        this.$store.commit('setSidebar', false)
+      }
     },
   },
 }
@@ -243,39 +200,6 @@ export default {
   max-width: 90rem;
   padding: 0.5rem 0;
 
-  .settings-icon-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px;
-    border-radius: 50%;
-    cursor: pointer;
-
-    &:hover {
-      background-color: var(--darker-bg);
-    }
-  }
-
-  .social-icon {
-    fill: var(--font-color);
-    width: 1rem;
-    height: 1rem;
-    cursor: pointer;
-
-    &:hover {
-      fill: var(--active-bg-color);
-    }
-
-    &.expand-icon,
-    &.collapse-icon {
-      display: none;
-
-      @include lg {
-        display: block;
-      }
-    }
-  }
-
   .left-section {
     flex: 1;
     display: flex;
@@ -290,18 +214,22 @@ export default {
 
     #network-wrapper {
       .network-container {
-        padding: 0.5rem 1rem;
+        padding: 0.75rem 1.3125rem;
         border-radius: 0.5rem;
         background-color: var(--card-bg-color);
         border: 1px solid var(--border-color);
-        width: 100px;
         display: flex;
         justify-content: center;
         cursor: pointer;
+        transition: background-color 0.3s ease;
 
         span {
           text-align: center;
           color: var(--primary-color);
+        }
+
+        &:hover {
+          background-color: var(--darker-bg);
         }
       }
 
@@ -313,6 +241,7 @@ export default {
         border: 1px solid var(--border-color);
         border-radius: 0.5rem;
         width: 100px;
+        background: var(--card-bg-color);
 
         a {
           cursor: pointer;
@@ -322,6 +251,10 @@ export default {
           padding: 0.5rem 1rem;
           text-decoration: none;
           text-align: center;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          transition: background-color 0.3s ease;
 
           &:first-of-type {
             border-radius: 0.5rem 0.5rem 0 0;
@@ -343,7 +276,29 @@ export default {
               background-color: var(--card-bg-color);
             }
           }
+
+          .theme-icon {
+            width: 1.3rem;
+            height: 1.3rem;
+          }
         }
+      }
+    }
+
+    #theme-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      fill: var(--font-color);
+      border: 1px solid var(--border-color);
+      padding: 5px 18px;
+      background-color: var(--card-bg-color);
+      transition: background-color 0.3s ease;
+
+      &:hover {
+        background-color: var(--darker-bg);
       }
     }
   }
@@ -354,28 +309,28 @@ export default {
     max-width: 600px;
     transition: all 0.5s ease;
     border: 1px solid var(--line);
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 25px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
 
     &.expanded {
       flex: 1;
-
-      .search-icon {
-        right: 0.5rem;
-      }
     }
 
     .search-bar-input {
       flex: 1;
-      font-size: 0.875rem;
-      border-radius: 5px;
+      font-size: 1rem;
+      border: none;
       height: 40px;
       color: var(--font-color);
       background-color: var(--card-bg-color);
+      padding: 0 1rem;
+      border-radius: 25px;
+      transition: width 0.3s ease;
 
-      &:focus,
-      &:active {
+      &:focus {
         outline: none;
+        background-color: var(--darker-bg);
       }
     }
 
@@ -385,9 +340,14 @@ export default {
       width: 1.4rem;
       height: 1.4rem;
       fill: var(--font-color);
-      right: calc(1rem - 0.4rem);
-      top: calc(50% - 0.8rem);
+      right: 0.5rem;
+      top: calc(50% - 0.7rem);
       cursor: pointer;
+      transition: fill 0.3s ease;
+
+      &:hover {
+        fill: var(--primary-color);
+      }
     }
 
     span {
@@ -396,12 +356,12 @@ export default {
       font-size: 0.875rem;
       position: absolute;
       left: 0.7rem;
-      top: 0.8rem;
+      top: calc(50% - 0.4rem);
     }
 
     @include lg {
       .search-bar-input {
-        width: 100px;
+        width: 100%;
       }
 
       span {
@@ -409,40 +369,55 @@ export default {
       }
     }
   }
-}
 
-#settingsMenu {
-  display: flex;
-  position: absolute;
-  z-index: 1000;
+  .theme-dialog {
+    position: absolute;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    width: 100px;
+    background: var(--card-bg-color);
+    transition: opacity 0.3s ease;
 
-  .settings-card {
-    min-width: 320px;
-    padding: 0.5rem 0;
-
-    .settings-item {
+    a {
+      cursor: pointer;
+      background: var(--card-bg-color);
+      color: var(--font-color);
+      border: none;
+      padding: 0.5rem 1rem;
+      text-decoration: none;
+      text-align: center;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      padding: 0.5rem 1rem;
-      margin: 0 0.5rem;
-      border-radius: 4px;
-      cursor: pointer;
+      gap: 10px;
+      transition: background-color 0.3s ease;
 
-      span {
-        line-height: 24px;
+      &:first-of-type {
+        border-radius: 0.5rem 0.5rem 0 0;
+      }
+
+      &:last-of-type {
+        border-radius: 0 0 0.5rem 0.5rem;
       }
 
       &:hover {
-        background-color: var(--darker-bg);
+        background: var(--darker-bg);
+        color: var(--primary-color);
       }
-    }
 
-    .full-screen {
-      display: none;
+      &.active {
+        color: var(--primary-color);
 
-      @include lg {
-        display: flex;
+        &:hover {
+          background-color: var(--card-bg-color);
+        }
+      }
+
+      .theme-icon {
+        width: 1.3rem;
+        height: 1.3rem;
       }
     }
   }
