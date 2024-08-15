@@ -62,17 +62,7 @@ export default {
       this.darkMode = false
     }
 
-    this.$api
-      .getStats()
-      .then((res) => {
-        this.$store.commit(
-          'setRunePrice',
-          Number.parseFloat(res.data.runePriceUSD)
-        )
-      })
-      .catch((error) => {
-        console.error(error)
-      })
+    this.getRunePrice()
 
     this.$api
       .getNodes()
@@ -99,7 +89,8 @@ export default {
 
     setInterval(() => {
       this.getChainsHeight()
-    }, 60000)
+      this.getRunePrice()
+    }, 10000)
 
     const changeHeight = () => {
       const vh = window.innerHeight * 0.01
@@ -118,6 +109,19 @@ export default {
           this.$store.commit('setChainsHeight', data)
         })
         .catch((e) => console.error(e))
+    },
+    getRunePrice() {
+      this.$api
+        .getStats()
+        .then((res) => {
+          this.$store.commit(
+            'setRunePrice',
+            Number.parseFloat(res.data.runePriceUSD)
+          )
+        })
+        .catch((error) => {
+          console.error(error)
+        })
     },
   },
 }

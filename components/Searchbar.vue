@@ -24,17 +24,28 @@
     </div>
     <div class="right-section">
       <div class="header-info">
-        <div>
+        <div ref="header-info-1">
           <small style="color: var(--sec-font-color)">RUNE Price:</small>
-          <small style="color: var(--primary-color)" class="mono">
+          <small
+            v-if="runePrice"
+            :key="runePrice"
+            style="color: var(--primary-color)"
+            class="mono"
+          >
             {{ runePrice | currency }}
           </small>
+          <small v-else>-</small>
         </div>
-        <div>
+        <div ref="header-info-2">
           <small style="color: var(--sec-font-color)">Block height:</small>
-          <small style="color: var(--primary-color)" class="mono">
-            {{ chainsHeight && chainsHeight['THOR'] | number('0,0') }}
+          <small
+            v-if="chainsHeight && chainsHeight['THOR']"
+            style="color: var(--primary-color)"
+            class="mono"
+          >
+            {{ chainsHeight['THOR'] | number('0,0') }}
           </small>
+          <small v-else>-</small>
         </div>
       </div>
       <div id="theme-wrapper">
@@ -128,6 +139,10 @@ export default {
   watch: {
     $route(to, from) {
       this.searchQuery = ''
+    },
+    chainsHeight(n, o) {
+      this.animate('header-info-1', 'animate')
+      this.animate('header-info-2', 'animate')
     },
   },
   mounted() {
@@ -240,6 +255,34 @@ export default {
   .header-info {
     display: none;
     flex-direction: column;
+
+    > div {
+      -webkit-transition: all ease 1s;
+      transition: all ease 1s;
+
+      .mono {
+        -webkit-transition: all ease 0.4s;
+        transition: all ease 0.4s;
+        display: inline-block;
+      }
+
+      small {
+        -webkit-transition: all ease 0.4s;
+        transition: all ease 0.4s;
+      }
+
+      &.animate {
+        .mono {
+          color: var(--sec-font-color) !important;
+          -webkit-animation: jello-vertical 1s both;
+          animation: jello-vertical 1s both;
+        }
+
+        small {
+          color: var(--primary-color) !important;
+        }
+      }
+    }
 
     @include lg {
       display: flex;
@@ -403,6 +446,67 @@ export default {
         background-color: var(--card-bg-color);
       }
     }
+  }
+}
+
+@-webkit-keyframes jello-vertical {
+  0% {
+    -webkit-transform: scale3d(1, 1, 1);
+    transform: scale3d(1, 1, 1);
+  }
+  30% {
+    -webkit-transform: scale3d(0.75, 1.25, 1);
+    transform: scale3d(0.75, 1.25, 1);
+  }
+  40% {
+    -webkit-transform: scale3d(1.25, 0.75, 1);
+    transform: scale3d(1.25, 0.75, 1);
+  }
+  50% {
+    -webkit-transform: scale3d(0.85, 1.15, 1);
+    transform: scale3d(0.85, 1.15, 1);
+  }
+  65% {
+    -webkit-transform: scale3d(1.05, 0.95, 1);
+    transform: scale3d(1.05, 0.95, 1);
+  }
+  75% {
+    -webkit-transform: scale3d(0.95, 1.05, 1);
+    transform: scale3d(0.95, 1.05, 1);
+  }
+  100% {
+    -webkit-transform: scale3d(1, 1, 1);
+    transform: scale3d(1, 1, 1);
+  }
+}
+@keyframes jello-vertical {
+  0% {
+    -webkit-transform: scale3d(1, 1, 1);
+    transform: scale3d(1, 1, 1);
+  }
+  30% {
+    -webkit-transform: scale3d(0.75, 1.25, 1);
+    transform: scale3d(0.75, 1.25, 1);
+  }
+  40% {
+    -webkit-transform: scale3d(1.25, 0.75, 1);
+    transform: scale3d(1.25, 0.75, 1);
+  }
+  50% {
+    -webkit-transform: scale3d(0.85, 1.15, 1);
+    transform: scale3d(0.85, 1.15, 1);
+  }
+  65% {
+    -webkit-transform: scale3d(1.05, 0.95, 1);
+    transform: scale3d(1.05, 0.95, 1);
+  }
+  75% {
+    -webkit-transform: scale3d(0.95, 1.05, 1);
+    transform: scale3d(0.95, 1.05, 1);
+  }
+  100% {
+    -webkit-transform: scale3d(1, 1, 1);
+    transform: scale3d(1, 1, 1);
   }
 }
 </style>
