@@ -189,13 +189,6 @@ export default {
     }
   },
   mounted() {
-    // filter out yggdrasil
-    // this.$api.getYggdrasil().then(async (res) => {
-    //   this.yggdrasil = await this.formatVaults(res?.data, 'Yggdrasil')
-    // }).catch((e) => {
-    //   console.error(e)
-    // })
-
     this.$api
       .getAsgard()
       .then(async (res) => {
@@ -274,7 +267,7 @@ export default {
       nodes.data.map((n) => (nodesFormat[n.pub_key_set?.secp256k1] = n))
       return nodesFormat
     },
-    formatVaults(
+    async formatVaults(
       data,
       type = 'Yggdrasil',
       poolsPrice = undefined,
@@ -297,6 +290,10 @@ export default {
           })
           vb = totalValue / bond
         }
+        let height = this.chainsHeight
+        if (!this.chainsHeight) {
+          height = (await this.$api.getChainsHeight()).data
+        }
         y.push({
           hash: vault?.addresses.find((e) => e.chain === 'THOR').address,
           type,
@@ -310,9 +307,7 @@ export default {
           outs: vault?.outbound_tx_count,
           height: vault?.block_height,
           since: vault?.status_since - vault?.block_height,
-          age: this.chainsHeight?.THOR
-            ? this.chainsHeight?.THOR - vault?.block_height
-            : 0,
+          age: height?.THOR ? height?.THOR - vault?.block_height : 0,
         })
       }
       return y
