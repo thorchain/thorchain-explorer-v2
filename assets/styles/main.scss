@@ -823,3 +823,11 @@ input {
 .danger-text {
   color: #f04832 !important;
 }
+
+.hoverable {
+  cursor: pointer;
+
+  &:hover {
+    color: var(--primary-color);
+  }
+}

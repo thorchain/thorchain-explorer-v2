@@ -24,7 +24,7 @@
               <span
                 v-if="props.row.bond"
                 v-tooltip="curFormat(runePrice * props.row.bond)"
-                class="mono"
+                class="mono hoverable"
               >
                 <span class="extra">{{ runeCur() }}</span>
                 {{ numberFormat(props.row.bond) }}
@@ -35,7 +35,7 @@
               <span
                 v-if="props.row.total_value"
                 v-tooltip="curFormat(runePrice * props.row.total_value)"
-                class="mono"
+                class="mono hoverable"
               >
                 <span class="extra">{{ runeCur() }}</span>
                 {{ numberFormat(props.row.total_value) }}
@@ -45,7 +45,10 @@
             <span v-else-if="props.column.field == 'membership_count'">
               <div>
                 <v-tooltip>
-                  <span v-if="props.row.membership_count" class="mono">
+                  <span
+                    v-if="props.row.membership_count"
+                    class="mono clickable"
+                  >
                     {{ props.row.membership_count }}
                   </span>
                   <template slot="popper">
@@ -54,6 +57,7 @@
                       <div class="card-body grid-template">
                         <small
                           v-for="node in props.row.membership"
+                          :key="node"
                           class="mono"
                         >
                           .{{ node.node_address.slice(-4) }}
@@ -65,15 +69,11 @@
                 <span v-if="!props.row.membership_count"> - </span>
               </div>
             </span>
-            <span v-else-if="props.column.field == 'type'">
-              <div
-                :class="[
-                  'mini-bubble big',
-                  { info: props.row.type == 'Yggdrasil' },
-                ]"
-              >
-                <span>{{ props.row.type }}</span>
-              </div>
+            <span v-else-if="props.column.field == 'since'">
+              <span>{{ duration(props.row.since) }}</span>
+            </span>
+            <span v-else-if="props.column.field == 'age'">
+              <span>{{ duration(props.row.age) }}</span>
             </span>
             <span v-else-if="props.column.field == 'status'">
               <div
@@ -96,6 +96,7 @@
 </template>
 
 <script>
+import { duration } from 'moment'
 import { mapGetters } from 'vuex'
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
 import { runeCur } from '~/utils'
@@ -112,12 +113,15 @@ export default {
           field: 'hash',
         },
         {
-          label: 'Type',
-          field: 'type',
-        },
-        {
           label: 'Status',
           field: 'status',
+        },
+        {
+          label: 'Height',
+          field: 'height',
+          type: 'number',
+          formatFn: this.numberFormat,
+          tdClass: 'mono',
         },
         {
           label: 'Bond',
@@ -125,7 +129,7 @@ export default {
           type: 'number',
         },
         {
-          label: 'Total Value',
+          label: 'Balance',
           field: 'total_value',
           type: 'number',
         },
@@ -153,13 +157,25 @@ export default {
           formatFn: this.numberFormat,
           tdClass: 'mono',
         },
+        {
+          label: 'Status Since',
+          field: 'since',
+          type: 'number',
+          tdClass: 'mono',
+        },
+        {
+          label: 'Age',
+          field: 'age',
+          type: 'number',
+          tdClass: 'mono',
+        },
       ],
       vaultsGeneralStats: [
         {
           name: 'Bond',
         },
         {
-          name: 'Value',
+          name: 'Balance',
         },
         {
           name: 'Value/Bond',
@@ -198,6 +214,9 @@ export default {
       })
   },
   methods: {
+    duration(since) {
+      return duration(since * 6, 's').humanize()
+    },
     updateGeneralStats() {
       const totalBond = this.asgard.reduce((total, o) => {
         return total + o.bond * this.runePrice
@@ -289,6 +308,11 @@ export default {
           membership: vault?.membership?.map((v) => nodes[v]),
           vb,
           outs: vault?.outbound_tx_count,
+          height: vault?.block_height,
+          since: vault?.status_since - vault?.block_height,
+          age: this.chainsHeight?.THOR
+            ? this.chainsHeight?.THOR - vault?.block_height
+            : 0,
         })
       }
       return y
@@ -306,6 +330,7 @@ export default {
   computed: {
     ...mapGetters({
       runePrice: 'getRunePrice',
+      chainsHeight: 'getChainsHeight',
     }),
   },
   head: {
