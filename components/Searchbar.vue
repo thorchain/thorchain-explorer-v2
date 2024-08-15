@@ -132,6 +132,7 @@ export default {
   },
   mounted() {
     window.addEventListener('click', this.handleClickOutside)
+    window.addEventListener('touchstart', this.handleClickOutside)
     this.createListener('network', 'netDialog', { topM: 35 })
     this.createListener('themeContainer', 'themeDialog', {
       topM: 35,
