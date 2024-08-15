@@ -1,5 +1,6 @@
 <template>
   <Page>
+    <cards-header :table-general-stats="vaultsGeneralStats" />
     <Card title="Vaults">
       <template v-if="asgard.length > 0">
         <vue-good-table
@@ -153,6 +154,20 @@ export default {
           tdClass: 'mono',
         },
       ],
+      vaultsGeneralStats: [
+        {
+          name: 'Bond',
+        },
+        {
+          name: 'Value',
+        },
+        {
+          name: 'Value/Bond',
+        },
+        {
+          name: 'Ins/Outs',
+        },
+      ],
       yggdrasil: [],
       asgard: [],
     }
@@ -176,12 +191,52 @@ export default {
           poolsPrice,
           nodes
         )
+        this.updateGeneralStats()
       })
       .catch((e) => {
         console.error(e)
       })
   },
   methods: {
+    updateGeneralStats() {
+      const totalBond = this.asgard.reduce((total, o) => {
+        return total + o.bond * this.runePrice
+      }, 0)
+
+      const totalValue = this.asgard.reduce((total, o) => {
+        return total + o.total_value * this.runePrice
+      }, 0)
+
+      const valuePerBond = totalValue / totalBond
+
+      const totalIns = this.asgard.reduce((total, o) => {
+        return total + o.ins
+      }, 0)
+
+      const totalOuts = this.asgard.reduce((total, o) => {
+        return total + o.outs
+      }, 0)
+
+      this.vaultsGeneralStats = [
+        {
+          name: 'Bond',
+          value: this.$options.filters.currency(totalBond),
+        },
+        {
+          name: 'Value',
+          value: this.$options.filters.currency(totalValue),
+        },
+        {
+          name: 'Value/Bond',
+          value: this.$options.filters.percent(valuePerBond),
+        },
+        {
+          name: 'Ins/Outs',
+          value: `${this.$options.filters.number(totalIns)} / ${this.$options.filters.number(totalOuts)}`,
+        },
+      ]
+    },
+
     formatStatus(status) {
       if (status === 'ActiveVault') {
         return 'Active'
