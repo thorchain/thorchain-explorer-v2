@@ -26,15 +26,28 @@
       <div class="header-info">
         <div>
           <small style="color: var(--sec-font-color)">RUNE Price:</small>
-          <small style="color: var(--primary-color)" class="mono">
-            {{ runePrice | currency }}
-          </small>
+          <transition name="fade-scale" mode="out-in">
+            <small
+              :key="runePrice"
+              style="color: var(--primary-color)"
+              class="mono"
+            >
+              {{ runePrice | currency }}
+            </small>
+          </transition>
         </div>
         <div>
           <small style="color: var(--sec-font-color)">Block height:</small>
-          <small style="color: var(--primary-color)" class="mono">
-            {{ chainsHeight && chainsHeight['THOR'] | number('0,0') }}
-          </small>
+          <transition name="fade-scale" mode="out-in">
+            <small
+              v-if="chainsHeight && chainsHeight['THOR']"
+              :key="chainsHeight['THOR']"
+              style="color: var(--primary-color)"
+              class="mono"
+            >
+              {{ chainsHeight['THOR'] | number('0,0') }}
+            </small>
+          </transition>
         </div>
       </div>
       <div id="theme-wrapper">
@@ -239,7 +252,18 @@ export default {
   .header-info {
     display: none;
     flex-direction: column;
+    .fade-scale-enter-active,
+    .fade-scale-leave-active {
+      transition:
+        opacity 0.8s linear,
+        transform 0.8s linear;
+    }
 
+    .fade-scale-enter,
+    .fade-scale-leave-to {
+      opacity: 0;
+      transform: scale(1.5);
+    }
     @include lg {
       display: flex;
       align-items: end;
