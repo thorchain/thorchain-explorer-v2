@@ -298,7 +298,9 @@ export default {
       )
     },
     gotoNodeUrl(node) {
-      return `${endpoints[process.env.NETWORK].THORNODE_URL}thorchain/node/${node}`
+      return `${
+        endpoints[process.env.NETWORK].THORNODE_URL
+      }thorchain/node/${node}`
     },
     gotoSaver(params) {
       if (!params) {
@@ -724,6 +726,14 @@ export default {
         name: ifc.name ?? ifc,
         icons,
       }
+    },
+    animate(refName, className) {
+      var d = this.$refs[refName]
+      console.log(d)
+      d.classList.add(className)
+      setTimeout(function () {
+        d.classList.remove(className)
+      }, 2000)
     },
   },
 }

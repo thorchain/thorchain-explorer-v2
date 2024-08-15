@@ -24,30 +24,28 @@
     </div>
     <div class="right-section">
       <div class="header-info">
-        <div>
+        <div ref="header-info-1">
           <small style="color: var(--sec-font-color)">RUNE Price:</small>
-          <transition name="fade-scale" mode="out-in">
-            <small
-              :key="runePrice"
-              style="color: var(--primary-color)"
-              class="mono"
-            >
-              {{ runePrice | currency }}
-            </small>
-          </transition>
+          <small
+            v-if="runePrice"
+            :key="runePrice"
+            style="color: var(--primary-color)"
+            class="mono"
+          >
+            {{ runePrice | currency }}
+          </small>
+          <small v-else>-</small>
         </div>
-        <div>
+        <div ref="header-info-2">
           <small style="color: var(--sec-font-color)">Block height:</small>
-          <transition name="fade-scale" mode="out-in">
-            <small
-              v-if="chainsHeight && chainsHeight['THOR']"
-              :key="chainsHeight['THOR']"
-              style="color: var(--primary-color)"
-              class="mono"
-            >
-              {{ chainsHeight['THOR'] | number('0,0') }}
-            </small>
-          </transition>
+          <small
+            v-if="chainsHeight && chainsHeight['THOR']"
+            style="color: var(--primary-color)"
+            class="mono"
+          >
+            {{ chainsHeight['THOR'] | number('0,0') }}
+          </small>
+          <small v-else>-</small>
         </div>
       </div>
       <div id="theme-wrapper">
@@ -141,6 +139,10 @@ export default {
   watch: {
     $route(to, from) {
       this.searchQuery = ''
+    },
+    chainsHeight(n, o) {
+      this.animate('header-info-1', 'animate')
+      this.animate('header-info-2', 'animate')
     },
   },
   mounted() {
@@ -252,18 +254,35 @@ export default {
   .header-info {
     display: none;
     flex-direction: column;
-    .fade-scale-enter-active,
-    .fade-scale-leave-active {
-      transition:
-        opacity 0.8s linear,
-        transform 0.8s linear;
+
+    > div {
+      -webkit-transition: all ease 1s;
+      transition: all ease 1s;
+
+      .mono {
+        -webkit-transition: all ease 0.4s;
+        transition: all ease 0.4s;
+        display: inline-block;
+      }
+
+      small {
+        -webkit-transition: all ease 0.4s;
+        transition: all ease 0.4s;
+      }
+
+      &.animate {
+        .mono {
+          color: var(--sec-font-color) !important;
+          -webkit-animation: jello-vertical 1s both;
+          animation: jello-vertical 1s both;
+        }
+
+        small {
+          color: var(--primary-color) !important;
+        }
+      }
     }
 
-    .fade-scale-enter,
-    .fade-scale-leave-to {
-      opacity: 0;
-      transform: scale(1.5);
-    }
     @include lg {
       display: flex;
       align-items: end;
@@ -426,6 +445,67 @@ export default {
         background-color: var(--card-bg-color);
       }
     }
+  }
+}
+
+@-webkit-keyframes jello-vertical {
+  0% {
+    -webkit-transform: scale3d(1, 1, 1);
+    transform: scale3d(1, 1, 1);
+  }
+  30% {
+    -webkit-transform: scale3d(0.75, 1.25, 1);
+    transform: scale3d(0.75, 1.25, 1);
+  }
+  40% {
+    -webkit-transform: scale3d(1.25, 0.75, 1);
+    transform: scale3d(1.25, 0.75, 1);
+  }
+  50% {
+    -webkit-transform: scale3d(0.85, 1.15, 1);
+    transform: scale3d(0.85, 1.15, 1);
+  }
+  65% {
+    -webkit-transform: scale3d(1.05, 0.95, 1);
+    transform: scale3d(1.05, 0.95, 1);
+  }
+  75% {
+    -webkit-transform: scale3d(0.95, 1.05, 1);
+    transform: scale3d(0.95, 1.05, 1);
+  }
+  100% {
+    -webkit-transform: scale3d(1, 1, 1);
+    transform: scale3d(1, 1, 1);
+  }
+}
+@keyframes jello-vertical {
+  0% {
+    -webkit-transform: scale3d(1, 1, 1);
+    transform: scale3d(1, 1, 1);
+  }
+  30% {
+    -webkit-transform: scale3d(0.75, 1.25, 1);
+    transform: scale3d(0.75, 1.25, 1);
+  }
+  40% {
+    -webkit-transform: scale3d(1.25, 0.75, 1);
+    transform: scale3d(1.25, 0.75, 1);
+  }
+  50% {
+    -webkit-transform: scale3d(0.85, 1.15, 1);
+    transform: scale3d(0.85, 1.15, 1);
+  }
+  65% {
+    -webkit-transform: scale3d(1.05, 0.95, 1);
+    transform: scale3d(1.05, 0.95, 1);
+  }
+  75% {
+    -webkit-transform: scale3d(0.95, 1.05, 1);
+    transform: scale3d(0.95, 1.05, 1);
+  }
+  100% {
+    -webkit-transform: scale3d(1, 1, 1);
+    transform: scale3d(1, 1, 1);
   }
 }
 </style>
