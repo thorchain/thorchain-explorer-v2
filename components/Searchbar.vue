@@ -10,7 +10,11 @@
           v-model="searchQuery"
           class="search-bar-input"
           type="text"
-          :placeholder="isSearch || innerWidth > 992 ? 'Search' : false"
+          :placeholder="
+            isSearch || innerWidth > 992
+              ? 'Search by Address / Txn Hash / THORName'
+              : false
+          "
           @keyup.enter="find"
           @focus="isSearch = true"
           @blur="isSearch = false"
