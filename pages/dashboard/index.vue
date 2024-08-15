@@ -1,7 +1,7 @@
 <template>
   <Page>
     <div class="chart-container">
-      <div class="network-stats base-container">
+      <div class="network-stats container">
         <div class="stat-group">
           <div class="stat-item">
             <img
@@ -1231,6 +1231,12 @@ export default {
 </script>
 
 <style lang="scss">
+.container {
+  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-color);
+  border-width: 1px 0 1px 0;
+  color: var(--sec-font-color);
+}
 .swap-volume-chart {
   top: 3rem;
 }
@@ -1297,6 +1303,14 @@ export default {
     font-size: 2rem;
     line-height: 28px;
     width: 1.6rem;
+  }
+
+  .stat-group {
+    background-color: var(--bg-color);
+    border-radius: 8px;
+    padding: 15px;
+    flex: 1;
+    margin: 10px;
   }
 }
 
