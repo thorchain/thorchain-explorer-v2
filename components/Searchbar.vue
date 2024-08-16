@@ -8,7 +8,10 @@
         <input
           ref="searchInput"
           v-model="searchQuery"
-          class="search-bar-input"
+          :class="[
+            'search-bar-input',
+            { hidden: !(isSearch || innerWidth > 992) },
+          ]"
           type="text"
           :placeholder="
             isSearch || innerWidth > 992
@@ -370,15 +373,21 @@ export default {
       font-size: 1rem;
       border: none;
       height: 38px;
-      color: var(--font-color);
+      color: var(--sec-font-color);
       background-color: var(--card-bg-color);
       padding: 0 1rem;
       border-radius: 0.5rem;
       transition: width 0.3s ease;
+      padding-right: 2.7rem;
+      padding-left: 1rem;
 
       &:focus {
         outline: none;
         background-color: var(--card-bg-color);
+      }
+
+      &.hidden {
+        color: var(--card-bg-color);
       }
     }
 
@@ -391,6 +400,9 @@ export default {
       top: calc(50% - 0.8rem);
       cursor: pointer;
       transition: fill 0.3s ease;
+      box-sizing: content-box;
+      background: var(--card-bg-color);
+      padding-left: 0.5rem;
 
       &:hover {
         fill: var(--primary-color);
@@ -467,36 +479,6 @@ export default {
   }
 }
 
-@-webkit-keyframes jello-vertical {
-  0% {
-    -webkit-transform: scale3d(1, 1, 1);
-    transform: scale3d(1, 1, 1);
-  }
-  30% {
-    -webkit-transform: scale3d(0.75, 1.25, 1);
-    transform: scale3d(0.75, 1.25, 1);
-  }
-  40% {
-    -webkit-transform: scale3d(1.25, 0.75, 1);
-    transform: scale3d(1.25, 0.75, 1);
-  }
-  50% {
-    -webkit-transform: scale3d(0.85, 1.15, 1);
-    transform: scale3d(0.85, 1.15, 1);
-  }
-  65% {
-    -webkit-transform: scale3d(1.05, 0.95, 1);
-    transform: scale3d(1.05, 0.95, 1);
-  }
-  75% {
-    -webkit-transform: scale3d(0.95, 1.05, 1);
-    transform: scale3d(0.95, 1.05, 1);
-  }
-  100% {
-    -webkit-transform: scale3d(1, 1, 1);
-    transform: scale3d(1, 1, 1);
-  }
-}
 @keyframes jello-vertical {
   0% {
     -webkit-transform: scale3d(1, 1, 1);
