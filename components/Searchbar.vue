@@ -100,7 +100,6 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { number } from 'echarts'
 import SearchIcon from '~/assets/images/search.svg?inline'
 import MoonIcon from '~/assets/images/moon-icon.svg?inline'
 import SunIcon from '~/assets/images/sun-icon.svg?inline'
@@ -179,8 +178,27 @@ export default {
             this.$router.push({ path: `/address/${thorchainAddr}` })
           }
         })
-      } else {
+      } else if (
+        // THORCHAIN
+        search.startsWith('THOR') ||
+        search.startsWith('TTHOR') ||
+        search.startsWith('STHOR') ||
+        // BNB
+        search.startsWith('BNB') ||
+        search.startsWith('TBNB') ||
+        // BITCOIN
+        search.startsWith('BC1') ||
+        search.startsWith('TB1') ||
+        // LTC
+        search.startsWith('LTC') ||
+        search.startsWith('TLTC') ||
+        // COSMOS
+        search.startsWith('COSMOS') ||
+        (search.startsWith('0x') && search.length <= 43)
+      ) {
         this.$router.push({ path: `/address/${this.searchQuery}` })
+      } else {
+        this.$router.push({ path: `/tx/${this.searchQuery}` })
       }
     },
     setTheme(theme) {
