@@ -278,8 +278,8 @@ export default {
     flex-direction: column;
 
     > div {
-      -webkit-transition: all ease 1s;
-      transition: all ease 1s;
+      -webkit-transition: all ease 0.4;
+      transition: all ease 0.4;
 
       .mono {
         -webkit-transition: all ease 0.4s;
@@ -294,13 +294,8 @@ export default {
 
       &.animate {
         .mono {
-          color: var(--sec-font-color) !important;
           -webkit-animation: jello-vertical 1s both;
           animation: jello-vertical 1s both;
-        }
-
-        small {
-          color: var(--primary-color) !important;
         }
       }
     }
