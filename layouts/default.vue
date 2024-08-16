@@ -106,11 +106,12 @@ export default {
       this.$api
         .getChainsHeight()
         .then(async ({ data }) => {
-          this.$store.commit('setChainsHeight', data)
-          if (process.env.NETWORK === 'mainnet') {
-            const height = (await this.$api.getTHORLastBlock()).data
-            this.$store.commit('setTHORChainHeight', height)
-          }
+          const chainsHeight = data
+          const thorHeight = (await this.$api.getTHORLastBlock()).data
+          this.$store.commit('setChainsHeight', {
+            ...chainsHeight,
+            THOR: thorHeight,
+          })
         })
         .catch((e) => console.error(e))
     },

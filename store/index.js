@@ -68,11 +68,6 @@ export const mutations = {
   setChainsHeight(state, action) {
     state.chainsHeight = action
   },
-  setTHORChainHeight(state, action) {
-    if (state.chainsHeight) {
-      state.chainsHeight.THOR = action
-    }
-  },
   setPools(state, action) {
     state.pools = action
   },
