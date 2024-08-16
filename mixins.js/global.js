@@ -728,8 +728,7 @@ export default {
       }
     },
     animate(refName, className) {
-      var d = this.$refs[refName]
-      console.log(d)
+      const d = this.$refs[refName]
       d.classList.add(className)
       setTimeout(function () {
         d.classList.remove(className)
