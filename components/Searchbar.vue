@@ -378,7 +378,7 @@ export default {
       padding: 0 1rem;
       border-radius: 0.5rem;
       transition: width 0.3s ease;
-      padding-right: 2.7rem;
+      padding-right: 2.5rem;
       padding-left: 1rem;
 
       &:focus {
@@ -402,7 +402,7 @@ export default {
       transition: fill 0.3s ease;
       box-sizing: content-box;
       background: var(--card-bg-color);
-      padding-left: 0.5rem;
+      padding-left: 0.3rem;
 
       &:hover {
         fill: var(--primary-color);

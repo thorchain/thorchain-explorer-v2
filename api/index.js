@@ -78,7 +78,6 @@ import {
   getOldRunePoolProvidersInfo,
   getRunePoolProvidersInfo,
   getBorrowersInfo,
-
 } from './middleware.api'
 import {
   getChurnHistory,
@@ -86,6 +85,7 @@ import {
   getRunePrice,
   getDailySwap,
 } from './insights.api'
+import { getTHORLastBlock } from './infra'
 import endpoints from './endpoints'
 export var $axiosInstace
 
@@ -231,6 +231,7 @@ export default function ({ $axios }, inject) {
     getOldRunePoolProvidersInfo,
     getRunePoolProvidersInfo,
     getBorrowersInfo,
+    getTHORLastBlock,
   }
 
   inject('api', api)
