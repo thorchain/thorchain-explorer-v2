@@ -20,7 +20,7 @@ body {
     var(--gradient-left) 0% /*bottom-right color*/,
     var(--gradient-right) 100% /*top-left color*/
   );
-  font-family: "Roboto", sans-serif;
+  font-family:  "Roboto", system-ui, -apple-system, "Segoe UI", "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   font-style: normal;
   font-optical-sizing: auto;
   color: var(--font-color);
