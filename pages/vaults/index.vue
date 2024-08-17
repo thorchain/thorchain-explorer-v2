@@ -178,7 +178,7 @@ export default {
           name: 'Balance',
         },
         {
-          name: 'Value/Bond',
+          name: 'Balance/Bond',
         },
         {
           name: 'Ins/Outs',
@@ -235,11 +235,11 @@ export default {
           value: this.$options.filters.currency(totalBond),
         },
         {
-          name: 'Value',
+          name: 'Balance',
           value: this.$options.filters.currency(totalValue),
         },
         {
-          name: 'Value/Bond',
+          name: 'Balance/Bond',
           value: this.$options.filters.percent(valuePerBond),
         },
         {
