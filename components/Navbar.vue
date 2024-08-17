@@ -25,8 +25,27 @@
         >
           <div class="navbar-wrap">
             <span class="navbar-text">{{ item.name }}</span>
+            <span v-if="item.name === 'THORFi'" class="dropdown-icon"></span>
           </div>
         </NuxtLink>
+        <b-popover
+          v-if="item.submenu"
+          triggers="hover focus"
+          :target="`navbar-${item.name}`"
+          placement="bottom-start"
+          custom-class="popover"
+        >
+          <div class="submenu">
+            <NuxtLink
+              v-for="(subItem, subIndex) in item.submenu"
+              :key="subIndex"
+              :to="subItem.link"
+              class="submenu-item"
+            >
+              {{ subItem.name }}
+            </NuxtLink>
+          </div>
+        </b-popover>
       </template>
     </div>
   </div>
@@ -133,6 +152,28 @@ export default {
           unicon: 'financeUnselected',
           icon: 'financeSelected',
           link: '/thorfi',
+          submenu: [
+            {
+              name: 'Savers',
+              link: '/thorfi/savers',
+            },
+            {
+              name: 'Synths',
+              link: '/thorfi/Synths',
+            },
+            {
+              name: 'Trade Assets',
+              link: '/thorfi/trades',
+            },
+            {
+              name: 'Rune Pool',
+              link: '/thorfi/runepool',
+            },
+            {
+              name: 'Lending',
+              link: '/thorfi/lending',
+            },
+          ],
         },
         {
           name: 'Vaults',
@@ -269,6 +310,31 @@ export default {
 
         .icon {
           width: 20px;
+        }
+      }
+      .dropdown-icon {
+        position: relative;
+        display: inline-block;
+        margin-left: 0.5rem;
+
+        &::after {
+          content: '';
+          border: solid var(--sec-font-color);
+          border-width: 0 2px 2px 0;
+          display: inline-block;
+          padding: 2.8px;
+          transform: rotate(45deg);
+          vertical-align: middle;
+          margin-bottom: 6px;
+        }
+      }
+      &:hover {
+        span {
+          color: var(--primary-color);
+        }
+
+        .dropdown-icon::after {
+          border-color: var(--primary-color);
         }
       }
     }
