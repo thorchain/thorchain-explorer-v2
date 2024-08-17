@@ -70,7 +70,7 @@
               </div>
             </span>
             <span v-else-if="props.column.field == 'since'">
-              <span>{{ duration(props.row.since) }}</span>
+              <span>{{ props.row.since | number('0,0') }}</span>
             </span>
             <span v-else-if="props.column.field == 'age'">
               <span>{{ duration(props.row.age) }}</span>
@@ -243,7 +243,7 @@ export default {
           value: this.$options.filters.percent(valuePerBond),
         },
         {
-          name: 'Ins/Outs',
+          name: 'Ins / Outs',
           value: `${this.$options.filters.number(totalIns)} / ${this.$options.filters.number(totalOuts)}`,
         },
       ]
@@ -306,7 +306,7 @@ export default {
           vb,
           outs: vault?.outbound_tx_count,
           height: vault?.block_height,
-          since: vault?.status_since - vault?.block_height,
+          since: vault?.status_since,
           age: height?.THOR ? height?.THOR - vault?.block_height : 0,
         })
       }
