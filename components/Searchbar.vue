@@ -274,7 +274,6 @@ export default {
   }
 
   .header-info {
-    display: none;
     flex-direction: column;
 
     > div {
