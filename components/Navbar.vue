@@ -269,8 +269,10 @@ export default {
       position: relative;
 
       &:hover {
-        span {
+        span,
+        .dropdown-icon::after {
           color: var(--primary-color);
+          border-color: var(--primary-color);
         }
       }
 
@@ -278,6 +280,10 @@ export default {
         span {
           color: var(--primary-color);
           font-weight: bold;
+        }
+
+        .dropdown-icon::after {
+          border-color: var(--primary-color);
         }
       }
 
@@ -326,15 +332,7 @@ export default {
           transform: rotate(45deg);
           vertical-align: middle;
           margin-bottom: 6px;
-        }
-      }
-      &:hover {
-        span {
-          color: var(--primary-color);
-        }
-
-        .dropdown-icon::after {
-          border-color: var(--primary-color);
+          transition: border-color 0.3s;
         }
       }
     }
