@@ -1,30 +1,23 @@
 <template>
   <div class="container-page">
-    <Card title="Total Value Locked (from Flipside)">
-      <VChart
-        v-if="tvlOption"
-        class="chart"
-        :option="tvlOption"
-        :loading="!tvlOption"
-        :autoresize="true"
-      />
-    </Card>
-    <Card title="Rune Price History (from Flipside)">
-      <VChart
-        v-if="runePriceOption"
-        :option="runePriceOption"
-        :loading="!runePriceOption"
-        :autoresize="true"
-      />
-    </Card>
-    <Card title="Swap Count Chart (from Flipside)">
-      <VChart
-        v-if="swapCountChart"
-        :option="swapCountChart"
-        :loading="!swapCountChart"
-        :autoresize="true"
-      />
-    </Card>
+    <div class="swaps-insight">
+      <Card title="Swap Chart (from Flipside)">
+        <VChart
+          v-if="swapChartVolume"
+          :option="swapChartVolume"
+          :loading="!swapChartVolume"
+          :autoresize="true"
+        />
+      </Card>
+      <Card title="Swap Chart Normalized (from Flipside)">
+        <VChart
+          v-if="swapChartVolumeNorm"
+          :option="swapChartVolumeNorm"
+          :loading="!swapChartVolumeNorm"
+          :autoresize="true"
+        />
+      </Card>
+    </div>
   </div>
 </template>
 
@@ -41,7 +34,6 @@ import {
   GridComponent,
 } from 'echarts/components'
 import VChart from 'vue-echarts'
-import { runeCur } from '~/utils'
 
 use([
   SVGRenderer,
@@ -80,273 +72,189 @@ export default {
         },
       ],
       tvlOption: undefined,
-      runePriceOption: undefined,
-      swapCountChart: undefined,
+      swapChartVolumeNorm: undefined,
+      swapChartVolume: undefined,
     }
   },
   mounted() {
-    this.$api
-      .getFlipTVL()
-      .then(({ data }) => {
-        this.flipTVLFormat(data)
-      })
-      .catch((e) => {
-        console.error(e)
-      })
+    this.$api.getSwapsWeekly().then(({ data }) => {
+      this.dailySwapFormat(data)
+    })
 
-    this.$api
-      .getRunePrice()
-      .then(({ data }) => {
-        this.runePriceFormat(data)
-      })
-      .catch((e) => {
-        console.error(e)
-      })
+    this.$api.getStatsDaily().then(({ data }) => {})
 
-    this.$api
-      .getDailySwap()
-      .then(({ data }) => {
-        this.dailySwapFormat(data)
-      })
-      .catch((e) => {
-        console.error(e)
-      })
+    this.$api.getFeesRewardsMonthly().then(({ data }) => {})
   },
   methods: {
-    flipTVLFormat(d) {
-      const xAxis = []
-      const tvp = []
-      const tvl = []
-      const tvb = []
-      d.forEach((interval) => {
-        xAxis.push(moment(interval.DAY).format('YY/MM/DD'))
-        tvp.push(interval.total_value_pooled)
-        tvl.push(interval.total_value_locked)
-        tvb.push(interval.total_value_bonded)
-      })
-
-      const option = {
-        title: {
-          show: false,
-        },
-        tooltip: {
-          confine: true,
-          trigger: 'axis',
-          valueFormatter: (value) => `${this.normalFormat(value)} ${runeCur()}`,
-        },
-        legend: {
-          x: 'center',
-          y: 'bottom',
-          icon: 'rect',
-          textStyle: {
-            color: 'var(--font-color)',
-          },
-        },
-        xAxis: {
-          data: xAxis.reverse(),
-          boundaryGap: false,
-          splitLine: {
-            show: false,
-          },
-          axisLine: {
-            lineStyle: {
-              color: '#9f9f9f',
-            },
-          },
-          axisLabel: {
-            color: '#9f9f9f',
-            fontFamily: 'ProductSans',
-          },
-        },
-        yAxis: {
-          show: false,
-        },
-        grid: {
-          left: '20px',
-          right: '20px',
-        },
-        series: [
-          {
-            type: 'line',
-            name: 'Total Value Locked (In Rune)',
-            showSymbol: false,
-            data: tvl.reverse(),
-            smooth: true,
-          },
-          {
-            type: 'line',
-            name: 'Total Value Pooled (In Rune)',
-            showSymbol: false,
-            data: tvp.reverse(),
-            smooth: true,
-          },
-          {
-            type: 'line',
-            name: 'Total Value Bonded (In Rune)',
-            showSymbol: false,
-            data: tvb.reverse(),
-            smooth: true,
-          },
-        ],
-      }
-
-      this.tvlOption = option
-    },
-    runePriceFormat(d) {
-      const xAxis = []
-      const runePrice = []
-      const determinPrice = []
-      d.forEach((interval) => {
-        xAxis.push(moment(interval.date).format('YY/MM/DD HH:MM A'))
-        runePrice.push(interval.daily_rune_price)
-        determinPrice.push(interval.deterministic_rune_price)
-      })
-
-      const option = {
-        title: {
-          show: false,
-        },
-        tooltip: {
-          confine: true,
-          trigger: 'axis',
-          valueFormatter: (value) => `$${value.toFixed(2)}`,
-        },
-        legend: {
-          x: 'center',
-          y: 'bottom',
-          icon: 'rect',
-          textStyle: {
-            color: 'var(--font-color)',
-          },
-        },
-        xAxis: {
-          data: xAxis,
-          boundaryGap: false,
-          splitLine: {
-            show: false,
-          },
-          axisLine: {
-            lineStyle: {
-              color: '#9f9f9f',
-            },
-          },
-          axisLabel: {
-            color: '#9f9f9f',
-            fontFamily: 'ProductSans',
-          },
-        },
-        yAxis: {
-          show: false,
-        },
-        grid: {
-          left: '20px',
-          right: '20px',
-        },
-        series: [
-          {
-            type: 'line',
-            name: 'Rune Price',
-            showSymbol: false,
-            data: runePrice,
-            smooth: true,
-          },
-          {
-            type: 'line',
-            name: 'Deterministic Rune Price',
-            showSymbol: false,
-            data: determinPrice,
-            smooth: true,
-          },
-        ],
-      }
-
-      this.runePriceOption = option
-    },
     dailySwapFormat(d) {
       const xAxis = []
-      const swapCount = []
-      const cumSwapCount = []
-      const uniqueSwapperCount = []
-      d.forEach((interval) => {
-        xAxis.push(moment(interval.DATE).format('YY/MM/DD'))
-        swapCount.push(interval.SWAP_COUNT)
-        cumSwapCount.push(interval.SWAP_COUNT_CUMULATIVE)
-        uniqueSwapperCount.push(interval.UNIQUE_SWAPERS)
+      const taSwapVolume = []
+      const synthSwapVolume = []
+      const nativeSwapVolume = []
+      const affiliateFees = []
+      let totalVolume = []
+      d.forEach((interval, index) => {
+        if (index % 2 === 1) {
+          nativeSwapVolume[Math.floor(index / 2)] +=
+            interval.native_swap_volume_usd
+          synthSwapVolume[Math.floor(index / 2)] +=
+            interval.synth_swap_volume_usd
+          taSwapVolume[Math.floor(index / 2)] += interval.ta_swap_volume_usd
+          affiliateFees[Math.floor(index / 2)] +=
+            interval.total_affiliate_fees_usd
+          totalVolume[Math.floor(index / 2)] +=
+            interval.native_swap_volume_usd +
+            interval.synth_swap_volume_usd +
+            interval.ta_swap_volume_usd +
+            interval.total_affiliate_fees_usd
+          return
+        }
+        xAxis.push(moment(interval.date).format('YY/MM/DD'))
+        nativeSwapVolume.push(interval.native_swap_volume_usd)
+        synthSwapVolume.push(interval.synth_swap_volume_usd)
+        taSwapVolume.push(interval.ta_swap_volume_usd)
+        affiliateFees.push(interval.total_affiliate_fees_usd)
+        totalVolume.push(
+          interval.native_swap_volume_usd +
+            interval.synth_swap_volume_usd +
+            interval.ta_swap_volume_usd +
+            interval.total_affiliate_fees_usd
+        )
       })
 
-      const option = {
-        title: {
-          show: false,
+      totalVolume = totalVolume.reverse()
+
+      const series = [
+        {
+          name: 'Native Swap Volume',
+          type: 'bar',
+          stack: 'Total',
+          showSymbol: false,
+          symbol: 'circle',
+          emphasis: {
+            focus: 'series',
+          },
+          data: nativeSwapVolume.reverse(),
         },
-        tooltip: {
-          confine: true,
-          trigger: 'axis',
+        {
+          name: 'Trade Swap Volume',
+          type: 'bar',
+          stack: 'Total',
+          showSymbol: false,
+          symbol: 'circle',
+          emphasis: {
+            focus: 'series',
+          },
+          data: taSwapVolume.reverse(),
         },
-        legend: {
-          x: 'center',
-          y: 'bottom',
-          icon: 'rect',
-          textStyle: {
-            color: 'var(--font-color)',
+        {
+          name: 'Synth Swap Volume',
+          type: 'bar',
+          stack: 'Total',
+          showSymbol: false,
+          symbol: 'circle',
+          emphasis: {
+            focus: 'series',
           },
+          data: synthSwapVolume.reverse(),
         },
-        xAxis: {
-          data: xAxis,
-          boundaryGap: false,
-          splitLine: {
-            show: false,
+        {
+          name: 'Affiliate fees Volume',
+          type: 'bar',
+          stack: 'Total',
+          showSymbol: false,
+          symbol: 'circle',
+          emphasis: {
+            focus: 'series',
           },
-          axisLine: {
-            lineStyle: {
-              color: '#9f9f9f',
-            },
-          },
-          axisLabel: {
-            color: '#9f9f9f',
-            fontFamily: 'ProductSans',
-          },
+          data: affiliateFees.reverse(),
         },
-        yAxis: [
-          {
-            show: false,
-          },
-          {
-            show: false,
-          },
-        ],
-        grid: {
-          left: '20px',
-          right: '20px',
-        },
-        series: [
-          {
-            type: 'bar',
-            name: 'Swap Count',
-            yAxisIndex: 0,
-            showSymbol: false,
-            data: swapCount,
-            smooth: true,
-          },
-          {
-            type: 'bar',
-            name: 'Unique Swappers Count',
-            yAxisIndex: 0,
-            showSymbol: false,
-            data: uniqueSwapperCount,
-            smooth: true,
-          },
-          {
-            type: 'line',
-            name: 'Cumluative Swap Count',
-            yAxisIndex: 1,
-            showSymbol: false,
-            data: cumSwapCount,
-            smooth: true,
-          },
-        ],
+      ]
+
+      let colors = ['#63FDD9', '#00CCFF', '#F3BA2F', '#FF4954']
+      if (this.theme === 'light') {
+        colors = ['#3ca38b', '#00CCFF', '#F3BA2F', '#FF4954']
       }
 
-      this.swapCountChart = option
+      const formatter = (param) => {
+        console.log(param)
+        return `
+          <div class="tooltip-header">
+            ${param.name}
+          </div>
+          <div class="tooltip-body">
+            ${series
+              .map((p, i) => {
+                if (p.data[param.dataIndex] > 0) {
+                  return `
+                  <span style="color: ${param.seriesIndex === i ? param.color : 'rgb(102, 102, 102)'}">
+                    <span class="series-name-color">
+                      <div class="data-color" style="background-color: ${colors[i]}"></div>
+                      ${p.name}
+                    </span>
+                    <b>$${this.$options.filters.number(p.data[param.dataIndex], '0,0.00 a')}</b>
+                  </span>
+                `
+                } else {
+                  return ''
+                }
+              })
+              .join('\n')}
+            <span class="tooltip-total">
+              <span>Total</span>
+              <b>$${this.$options.filters.number(totalVolume[param.dataIndex], '0,0.00 a')}</b>
+            </span>
+          </div>
+        `
+      }
+
+      this.swapChartVolume = this.basicChartFormat(
+        undefined,
+        series,
+        xAxis.reverse(),
+        {
+          legend: {
+            type: 'scroll',
+            pageIconColor: 'var(--primary-color)',
+            icon: 'rect',
+            textStyle: {
+              color: 'var(--sec-font-color)',
+            },
+          },
+          tooltip: {
+            confine: true,
+            valueFormatter: (value) => `$ ${this.normalFormat(value)}`,
+            formatter,
+            className: 'custom-tooltip',
+          },
+        },
+        undefined
+      )
+
+      const normSeries = series.map((s, i) => {
+        return {
+          name: s.name,
+          type: 'bar',
+          stack: 'total',
+          data: s.data.map((d, j) => d / totalVolume[j]),
+        }
+      })
+
+      this.swapChartVolumeNorm = this.basicChartFormat(
+        (value) => `${this.percentageFormat(value, 2)}`,
+        normSeries,
+        xAxis,
+        {
+          legend: {
+            type: 'scroll',
+            pageIconColor: 'var(--primary-color)',
+            icon: 'rect',
+            textStyle: {
+              color: 'var(--sec-font-color)',
+            },
+          },
+        }
+      )
     },
   },
 }
@@ -381,5 +289,16 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.swaps-insight {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex-direction: column;
+
+  @include md {
+    flex-direction: row;
+  }
 }
 </style>
