@@ -305,7 +305,7 @@ export default {
           data: liquidityFees,
         },
         {
-          name: 'Trade Swap Volume',
+          name: 'Rewards',
           type: 'bar',
           stack: 'Total',
           showSymbol: false,
