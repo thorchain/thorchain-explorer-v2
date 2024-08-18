@@ -1,9 +1,5 @@
 <template>
   <div class="container-page">
-    <cards-header
-      :table-general-stats="insightStats"
-      style="margin-bottom: 0"
-    />
     <div class="two-insight">
       <Card title="Type Swap Chart">
         <template #header>
