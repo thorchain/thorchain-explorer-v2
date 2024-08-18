@@ -209,7 +209,10 @@ export default {
     },
     getTotalInfo(poolDatum) {
       const updatePeriod = (period, ppy) => {
-        poolDatum[period].pools.forEach((p) => {
+        if (!poolDatum) {
+          return
+        }
+        poolDatum[period]?.pools.forEach((p) => {
           if (period === 'day') {
             this.totalInfo.pooled +=
               (+p.endRuneDepth * 2 * this.runePrice) / 1e8
