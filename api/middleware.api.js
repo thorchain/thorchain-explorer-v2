@@ -108,3 +108,9 @@ export function getFeesRewardsMonthly() {
     endpoints[process.env.NETWORK].SERVER_URL + 'api/feesRewardsMonthly'
   )
 }
+
+export function getAffiliateSwapsByWallet() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + 'api/affiliateSwapsByWallet'
+  )
+}
