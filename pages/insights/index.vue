@@ -1,14 +1,24 @@
 <template>
   <div class="container-page">
+    <cards-header
+      :table-general-stats="insightStats"
+      style="margin-bottom: 0"
+    />
     <div class="two-insight">
-      <Card title="Swap Chart (from Flipside)">
+      <Card title="Type Swap Chart">
+        <template #header>
+          <flip-side style="fill: var(--sec-font-color)"></flip-side>
+        </template>
         <VChart
           :option="swapChartVolume"
           :loading="!swapChartVolume"
           :autoresize="true"
         />
       </Card>
-      <Card title="Swap Chart Normalized (from Flipside)">
+      <Card title="Swap Chart Normalized">
+        <template #header>
+          <flip-side style="fill: var(--sec-font-color)"></flip-side>
+        </template>
         <VChart
           :option="swapChartVolumeNorm"
           :loading="!swapChartVolumeNorm"
@@ -17,14 +27,20 @@
       </Card>
     </div>
     <div class="two-insight">
-      <Card title="Fees/Reward Chart (from Flipside)">
+      <Card title="Fees/Reward Chart">
+        <template #header>
+          <flip-side style="fill: var(--sec-font-color)"></flip-side>
+        </template>
         <VChart
           :option="feesRewardsChart"
           :loading="!feesRewardsChart"
           :autoresize="true"
         />
       </Card>
-      <Card title="Fees/Reward Chart Normalized (from Flipside)">
+      <Card title="Fees/Reward Chart Normalized">
+        <template #header>
+          <flip-side style="fill: var(--sec-font-color)"></flip-side>
+        </template>
         <VChart
           :option="feesRewardsChartNorm"
           :loading="!feesRewardsChartNorm"
@@ -32,6 +48,16 @@
         />
       </Card>
     </div>
+    <Card title="Top 20 Affiliate by Volume (30D)">
+      <template #header>
+        <flip-side style="fill: var(--sec-font-color)"></flip-side>
+      </template>
+      <VChart
+        :option="affiliateWalletChart"
+        :loading="!affiliateWalletChart"
+        :autoresize="true"
+      />
+    </Card>
   </div>
 </template>
 
@@ -49,6 +75,8 @@ import {
 } from 'echarts/components'
 import VChart from 'vue-echarts'
 
+import FlipSide from '~/assets/images/flipside.svg?inline'
+
 use([
   SVGRenderer,
   GridComponent,
@@ -62,6 +90,7 @@ use([
 export default {
   components: {
     VChart,
+    FlipSide,
   },
   data() {
     return {
@@ -90,6 +119,7 @@ export default {
       swapChartVolume: undefined,
       feesRewardsChart: undefined,
       feesRewardsChartNorm: undefined,
+      affiliateWalletChart: undefined,
     }
   },
   mounted() {
@@ -97,13 +127,78 @@ export default {
       this.swapsStats(data)
     })
 
-    this.$api.getStatsDaily().then(({ data }) => {})
-
     this.$api.getFeesRewardsMonthly().then(({ data }) => {
       this.feesRewards(data)
     })
+
+    this.$api.getAffiliateSwapsByWallet().then(({ data }) => {
+      this.affiliateWallets(data)
+    })
   },
   methods: {
+    affiliateWallets(d) {
+      const xAxis = []
+      const volume = []
+      d.forEach((interval, index) => {
+        if (interval.affiliate === 'No Affiliate') {
+          return
+        }
+        xAxis.push(interval.affiliate)
+        volume.push(interval.total_volume_usd)
+      })
+
+      let colors = ['#63FDD9', '#00CCFF', '#F3BA2F', '#FF4954']
+      if (this.theme === 'light') {
+        colors = ['#3ca38b', '#00CCFF', '#F3BA2F', '#FF4954']
+      }
+
+      const series = [
+        {
+          name: 'Volume',
+          type: 'bar',
+          stack: 'Total',
+          showSymbol: false,
+          symbol: 'circle',
+          emphasis: {
+            focus: 'series',
+          },
+          data: volume,
+          itemStyle: {
+            color(param) {
+              return colors[param.dataIndex % 4]
+            },
+          },
+        },
+      ]
+
+      this.affiliateWalletChart = this.basicChartFormat(
+        (value) => `$${this.$options.filters.number(value, '0,0.00 a')}`,
+        series,
+        xAxis,
+        {
+          legend: {
+            type: 'scroll',
+            pageIconColor: 'var(--primary-color)',
+            icon: 'rect',
+            textStyle: {
+              color: 'var(--sec-font-color)',
+            },
+          },
+          yAxis: [
+            {
+              type: 'value',
+              name: '',
+              position: 'right',
+              show: false,
+              splitLine: {
+                show: true,
+              },
+              max: 'dataMax',
+            },
+          ],
+        }
+      )
+    },
     focusFormatter(series, totalVolume, axis = false) {
       let colors = ['#63FDD9', '#00CCFF', '#F3BA2F', '#FF4954']
       if (this.theme === 'light') {
