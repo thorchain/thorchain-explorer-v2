@@ -299,9 +299,6 @@ export default {
           stack: 'Total',
           showSymbol: false,
           symbol: 'circle',
-          emphasis: {
-            focus: 'series',
-          },
           data: liquidityFees,
         },
         {
@@ -310,9 +307,6 @@ export default {
           stack: 'Total',
           showSymbol: false,
           symbol: 'circle',
-          emphasis: {
-            focus: 'series',
-          },
           data: rewards,
         },
       ]
@@ -454,9 +448,6 @@ export default {
           stack: 'Total',
           showSymbol: false,
           symbol: 'circle',
-          emphasis: {
-            focus: 'series',
-          },
           data: nativeSwapVolume.reverse(),
         },
         {
@@ -465,9 +456,6 @@ export default {
           stack: 'Total',
           showSymbol: false,
           symbol: 'circle',
-          emphasis: {
-            focus: 'series',
-          },
           data: taSwapVolume.reverse(),
         },
         {
