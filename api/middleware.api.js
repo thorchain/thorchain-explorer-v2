@@ -84,8 +84,27 @@ export function getRunePoolProvidersInfo() {
     endpoints[process.env.NETWORK].SERVER_URL + 'api/runePoolProviders'
   )
 }
+
 export function getBorrowersInfo() {
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].SERVER_URL + 'api/borrowers'
+  )
+}
+
+export function getSwapsWeekly() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + 'api/swapsWeekly'
+  )
+}
+
+export function getStatsDaily() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + 'api/statsDaily'
+  )
+}
+
+export function getFeesRewardsMonthly() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + 'api/feesRewardsMonthly'
   )
 }

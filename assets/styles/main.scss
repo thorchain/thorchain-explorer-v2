@@ -693,11 +693,23 @@ input {
     display: flex;
     gap: 8px;
     justify-content: space-between;
+    align-items: center;
   }
 }
 
+.series-name-color {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.tooltip-total {
+  padding-top: 3px;
+  margin-top: 5px;
+  border-top: 1px solid var(--border-color);
+}
+
 .data-color {
-  margin-right: 6px;
   width: 10px;
   height: 10px;
   border-radius: 50%;
