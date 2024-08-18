@@ -274,6 +274,9 @@ export default {
   }
 
   .header-info {
+    display: flex;
+    align-items: end;
+    justify-content: center;
     flex-direction: column;
 
     > div {
@@ -297,12 +300,6 @@ export default {
           animation: jello-vertical 1s both;
         }
       }
-    }
-
-    @include lg {
-      display: flex;
-      align-items: end;
-      justify-content: center;
     }
   }
 
