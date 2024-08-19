@@ -991,15 +991,23 @@ export default {
 
       d?.intervals.forEach((interval, index) => {
         if (d?.intervals.length === index + 1) {
-          return
+          if (+interval.totalVolumeUSD === 0) {
+            return
+          }
+          swapVolume?.total.push({
+            value: +interval.totalVolumeUSD / 10 ** 2,
+            itemStyle: {
+              color: '#F3BA2F',
+            },
+          })
+        } else {
+          swapVolume?.total.push(+interval.totalVolumeUSD / 10 ** 2)
         }
-
         xAxis.push(
           moment(
             Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
           ).format('MM/DD')
         )
-        swapVolume?.total.push(+interval.totalVolumeUSD / 10 ** 2)
         swapCount?.total.push(+interval.totalCount)
       })
 
