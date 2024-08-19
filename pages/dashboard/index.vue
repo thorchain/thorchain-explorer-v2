@@ -243,6 +243,10 @@
       <streamings />
     </div>
     <div class="cards-container">
+      <info-card :options="statsSettings" />
+      <info-card :options="networkSettings" />
+    </div>
+    <div class="cards-container">
       <div class="card">
         <div class="card-header">
           <div class="card-header-title">
@@ -322,10 +326,6 @@
           </div>
         </div>
       </div>
-    </div>
-    <div class="footer-stats">
-      <info-card :options="statsSettings" />
-      <info-card :options="networkSettings" />
     </div>
   </Page>
 </template>
@@ -528,13 +528,10 @@ export default {
           colSpan: 1,
           items: [
             {
-              name: 'Total Bond (Effective)',
-              value: totalEffectiveBond * this.runePrice,
-              filter: (v) => `${this.$options.filters.currency(v)}`,
-            },
-            {
-              name: 'Hard Cap',
-              value: totalHardCap * this.runePrice,
+              name: 'Total Active Bonded',
+              value:
+                (+this.network.bondMetrics?.totalActiveBond / 10 ** 8) *
+                this.runePrice,
               filter: (v) => `${this.$options.filters.currency(v)}`,
             },
             {
@@ -545,10 +542,13 @@ export default {
               filter: (v) => `${this.$options.filters.currency(v)}`,
             },
             {
-              name: 'Total Active Bonded',
-              value:
-                (+this.network.bondMetrics?.totalActiveBond / 10 ** 8) *
-                this.runePrice,
+              name: 'Total Bond (Effective)',
+              value: totalEffectiveBond * this.runePrice,
+              filter: (v) => `${this.$options.filters.currency(v)}`,
+            },
+            {
+              name: 'Hard Cap',
+              value: totalHardCap * this.runePrice,
               filter: (v) => `${this.$options.filters.currency(v)}`,
             },
             {
@@ -569,41 +569,18 @@ export default {
           items: [
             {
               name: 'Bonding APY',
-              value:
-                this.network.bondingAPY &&
-                this.stringToPercentage(this.network.bondingAPY),
+              value: this.network.bondingAPY,
+              filter: (v) => `${this.$options.filters.percent(v, 2)}`,
             },
             {
               name: 'Liquidity APY',
-              value:
-                this.network.bondingAPY &&
-                this.stringToPercentage(this.network.liquidityAPY),
+              value: this.network.liquidityAPY,
+              filter: (v) => `${this.$options.filters.percent(v, 2)}`,
             },
             {
               name: 'Pool Share Factor',
-              value:
-                this.network.bondingAPY &&
-                this.stringToPercentage(this.network.poolShareFactor),
-            },
-          ],
-        },
-        {
-          title: 'Churning',
-          rowStart: 2,
-          colSpan: 2,
-          items: [
-            {
-              name: 'Next Churn Height',
-              value: this.network.nextChurnHeight,
-              extraText: `${this.isChurnHalted() ? 'Churn paused' : this.nextChurnTime()}`,
-              extraTextClass: { 'danger-text': this.isChurnHalted() },
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
-            },
-            {
-              name: 'Pool Activation Countdown',
-              value: this.network.poolActivationCountdown,
-              extraText: blockTime(this.network.poolActivationCountdown),
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
+              value: this.network.poolShareFactor,
+              filter: (v) => `${this.$options.filters.percent(v, 2)}`,
             },
           ],
         },
@@ -645,12 +622,12 @@ export default {
           colSpan: 1,
           items: [
             {
-              name: '24h Swap Count',
+              name: 'Swap Count (24hr)',
               value: this.stats.swapCount24h ?? 0,
               filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
             },
             {
-              name: '30d Swap Count',
+              name: 'Swap Count (30D)',
               value: this.stats.swapCount30d ?? 0,
               filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
             },
@@ -659,63 +636,40 @@ export default {
               value: this.stats.swapCount ?? 0,
               filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
             },
-            {
-              name: 'Swap Volume',
-              value: (this.stats?.swapVolume / 10 ** 8) * this.runePrice,
-              filter: (v) => `${this.$options.filters.currency(v)}`,
-            },
           ],
         },
-
         {
-          title: 'Liquidity',
+          title: 'Value Locked',
           rowStart: 2,
           colSpan: 1,
           items: [
             {
-              name: 'Add Liquidity Volume',
-              value: (this.stats.addLiquidityVolume / 10 ** 8) * this.runePrice,
-              filter: (v) => `${this.$options.filters.currency(v)}`,
-            },
-            {
-              name: 'Add Liquidity Count',
-              value: this.stats.addLiquidityCount ?? 0,
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
-            },
-            {
-              name: 'Withdraw Volume',
-              value: (this.stats.withdrawVolume / 10 ** 8) * this.runePrice,
-              filter: (v) => `${this.$options.filters.currency(v)}`,
-            },
-            {
-              name: 'Withdraw Count',
-              value: this.stats.withdrawCount ?? 0,
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
-            },
-          ],
-        },
-        {
-          title: 'TVL',
-          rowStart: 3,
-          colSpan: 1,
-          items: [
-            {
-              name: 'Total Reserve',
+              name: 'Total Value in Reserve',
               value:
                 ((this.network.totalReserve ?? 0) / 10 ** 8) * this.runePrice,
               filter: (v) => `${this.$options.filters.currency(v)}`,
             },
             {
-              name: 'Total Pooled Rune',
+              name: 'Total Value in Pool',
               value:
-                ((this.network.totalPooledRune ?? 0) / 10 ** 8) *
+                ((this.network.totalPooledRune * 2 ?? 0) / 10 ** 8) *
                 this.runePrice,
               filter: (v) => `${this.$options.filters.currency(v)}`,
             },
+          ],
+        },
+        {
+          title: 'Churning',
+          rowStart: 3,
+          colSpan: 1,
+          items: [
             {
-              name: 'Total Bond (Effective)',
-              value: totalEffectiveBond * this.runePrice,
-              filter: (v) => `${this.$options.filters.currency(v)}`,
+              name: 'Next Churn Height',
+              value: `${this.isChurnHalted() ? 'Churn paused' : this.nextChurnTime()}`,
+            },
+            {
+              name: 'Pool Activation Countdown',
+              value: blockTime(this.network.poolActivationCountdown),
             },
           ],
         },
