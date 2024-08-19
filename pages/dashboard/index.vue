@@ -4,32 +4,22 @@
       <div class="network-stats">
         <div class="stat-group">
           <div class="stat-item">
-            <img
-              class="stat-image"
-              src="~/assets/images/blockchain.png"
-              alt="blockchain"
-            />
+            <exchange class="stat-image" />
             <div class="item-detail">
-              <div class="header">Block Height</div>
-              <skeleton-item :loading="!thorHeight" class="value">
-                {{ thorHeight | number('0,0') }}
+              <div class="header">Swap Volume (24hr)</div>
+              <skeleton-item :loading="!totalSwap24USD" class="value">
+                {{ (totalSwap24USD / 1e2) | currency() }}
               </skeleton-item>
             </div>
           </div>
           <hr />
           <div class="stat-item">
-            <!-- <globe class="stat-image" /> -->
-            <Globe class="stat-image" />
+            <Piggy class="stat-image" />
             <div class="item-detail">
-              <div class="header">RUNE Supply</div>
+              <div class="header">Bond | Pool APY</div>
               <skeleton-item :loading="!runeSupply" class="value">
-                {{ runeSupply | number('0,0') }}
-                <span style="font-size: 0.75rem">{{ runeCur() }}</span>
-                <span v-if="stats" class="extra"
-                  >(${{
-                    (runeSupply * stats.runePriceUSD) | number('0.00 a')
-                  }})</span
-                >
+                {{ network.bondingAPY | percent(2) }} |
+                {{ network.liquidityAPY | percent(2) }}
               </skeleton-item>
             </div>
           </div>
@@ -37,34 +27,26 @@
         </div>
         <div class="stat-group">
           <div class="stat-item">
-            <img
-              class="stat-image"
-              src="~/assets/images/coin.png"
-              alt="rune-coin"
-            />
+            <LockIcon class="stat-image" />
             <div class="item-detail">
-              <div class="header">RUNE Price</div>
+              <div class="header">Total Value Locked (Pool + Bond)</div>
               <skeleton-item
-                :loading="!(stats && stats.runePriceUSD)"
+                :loading="!(totalValuePooled && network && network.bondMetrics)"
                 class="value"
               >
-                {{ stats.runePriceUSD | currency }}
+                <template v-if="network && network.bondMetrics">
+                  {{ tvl | currency }}
+                </template>
               </skeleton-item>
             </div>
           </div>
           <hr />
           <div class="stat-item">
-            <circulate class="stat-image" />
+            <money class="stat-image" />
             <div class="item-detail">
-              <div class="header">Total Historical Volume (On Chain)</div>
+              <div class="header">Income (24hr)</div>
               <skeleton-item :loading="!runeVolume" class="value">
-                {{ runeVolume | number('0,0') }}
-                <span style="font-size: 0.75rem">{{ runeCur() }}</span>
-                <span v-if="stats" class="extra"
-                  >(${{
-                    (runeVolume * stats.runePriceUSD) | number('0.00 a')
-                  }})</span
-                >
+                {{ earnings24USD | currency() }}
               </skeleton-item>
             </div>
           </div>
@@ -72,12 +54,7 @@
         </div>
         <div class="stat-group">
           <div class="stat-item">
-            <img
-              class="stat-image"
-              src="~/assets/images/book.png"
-              style="width: 2rem; height: auto; padding: 0.3rem"
-              alt="rune-coin"
-            />
+            <book class="stat-image" />
             <div class="item-detail">
               <div class="header">Total Addresses</div>
               <skeleton-item :loading="!totalAddresses" class="value">
@@ -87,15 +64,11 @@
           </div>
           <hr />
           <div class="stat-item">
-            <Chart class="stat-image" />
+            <churn class="stat-image" />
             <div class="item-detail">
-              <div class="header">Total Swap Volume (30 Days)</div>
+              <div class="header">Next Churn Time (Local)</div>
               <skeleton-item :loading="!totalSwapVolumeUSD" class="value">
-                {{ normalFormat(totalSwapVolume / 1e8) }}
-                <span style="font-size: 0.75rem">{{ runeCur() }}</span>
-                <span v-if="stats" class="extra"
-                  >(${{ (totalSwapVolumeUSD / 1e2) | number('0.00 a') }})</span
-                >
+                {{ isChurnHalted() ? 'Churn paused' : nextChurnTime() }}
               </skeleton-item>
             </div>
           </div>
@@ -371,16 +344,20 @@ import {
   GridComponent,
 } from 'echarts/components'
 import VChart from 'vue-echarts'
-import Chart from '~/assets/images/chart.svg?inline'
-import Circulate from '~/assets/images/stats.svg?inline'
+import { mapGetters } from 'vuex'
 import { blockTime } from '~/utils'
 
-import Globe from '~/assets/images/world.svg?inline'
+import Churn from '~/assets/images/churn.svg?inline'
+import LockIcon from '~/assets/images/lock.svg?inline'
+import Exchange from '~/assets/images/exchange.svg?inline'
+import Book from '~/assets/images/book.svg?inline'
+import Piggy from '~/assets/images/piggy.svg?inline'
 import DangerIcon from '@/assets/images/danger.svg?inline'
 import SwapIcon from '~/assets/images/exchange-selected.svg?inline'
 import FinanceIcon from '~/assets/images/finance.svg?inline'
 import ScanIcon from '~/assets/images/scan.svg?inline'
 import SignIcon from '~/assets/images/sign.svg?inline'
+import Money from '~/assets/images/money.svg?inline'
 
 use([
   SVGRenderer,
@@ -397,15 +374,18 @@ export default {
   name: 'OverviewPage',
   components: {
     VChart,
-    Chart,
-    Globe,
-    Circulate,
+    Piggy,
     BounceLoader,
     DangerIcon,
     SwapIcon,
     FinanceIcon,
     SignIcon,
     ScanIcon,
+    Exchange,
+    LockIcon,
+    Book,
+    Money,
+    Churn,
   },
   data() {
     return {
@@ -422,6 +402,8 @@ export default {
       blocks: undefined,
       txs: undefined,
       totalSwapVolume: undefined,
+      totalSwap24USD: undefined,
+      earnings24USD: undefined,
       totalSwapVolumeUSD: undefined,
       totalAddresses: undefined,
       thorHeight: undefined,
@@ -481,6 +463,21 @@ export default {
     title: 'THORChain Network Explorer | Dashboard',
   },
   computed: {
+    ...mapGetters({
+      runePrice: 'getRunePrice',
+    }),
+    tvl() {
+      if (!this.network.bondMetrics || !this.totalValuePooled) {
+        return
+      }
+      return (
+        ((+this.network.totalPooledRune +
+          +this.network.bondMetrics.totalStandbyBond +
+          +this.network.bondMetrics.totalActiveBond) *
+          this.runePrice) /
+        1e8
+      )
+    },
     runeSymbol() {
       return AssetCurrencySymbol.RUNE
     },
@@ -790,6 +787,14 @@ export default {
         this.volumeHistory = this.formatLPChange(data?.LPChange)
         ;({ resVolume: this.swapHistory } = this.formatSwap(data?.swaps))
         this.earningsHistory = this.formatEarnings(data?.earning)
+        this.earnings24USD =
+          (+data?.earning?.intervals[data?.earning?.intervals.length - 1]
+            .earnings /
+            1e8) *
+          +data?.earning?.intervals[data?.earning?.intervals.length - 1]
+            .runePriceUSD
+        this.totalSwap24USD =
+          data.swaps?.intervals[data.swaps?.intervals.length - 1].totalVolumeUSD
         this.totalSwapVolumeUSD = data.swaps?.meta?.totalVolumeUSD
         this.totalSwapVolume = data.swaps?.meta?.totalVolume
       })
@@ -870,9 +875,12 @@ export default {
     },
     nextChurnTime() {
       if (this.lastblock && this.network) {
-        return blockTime(
-          this.network.nextChurnHeight - this.lastblock[0].thorchain
-        )
+        return moment()
+          .add(
+            (this.network.nextChurnHeight - this.lastblock[0].thorchain) * 6,
+            's'
+          )
+          .format('MM/DD LT')
       }
     },
     isChurnHalted() {
@@ -1027,6 +1035,18 @@ export default {
           legend: {
             show: false,
           },
+          yAxis: [
+            {
+              type: 'value',
+              name: '',
+              position: 'right',
+              show: false,
+              splitLine: {
+                show: true,
+              },
+              max: 'dataMax',
+            },
+          ],
         },
         (param) => {
           return `
@@ -1321,7 +1341,14 @@ export default {
       margin-right: 0.75rem;
       width: 2rem;
       height: 2rem;
-      fill: #9f9f9f;
+      fill: var(--sec-font-color);
+    }
+
+    .item-detail {
+      .value {
+        font-weight: bold;
+        color: var(--sec-font-color);
+      }
     }
   }
 
