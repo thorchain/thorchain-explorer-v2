@@ -324,13 +324,14 @@
       </div>
     </div>
     <div class="footer-stats">
-      <stat-table header="Stats" :table-settings="statsSettings" />
-      <stat-table header="Network" :table-settings="networkSettings" />
+      <info-card :options="statsSettings" />
+      <info-card :options="networkSettings" />
     </div>
   </Page>
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import { AssetCurrencySymbol, assetFromString } from '@xchainjs/xchain-util'
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
 import moment from 'moment'
@@ -344,7 +345,6 @@ import {
   GridComponent,
 } from 'echarts/components'
 import VChart from 'vue-echarts'
-import { mapGetters } from 'vuex'
 import { blockTime } from '~/utils'
 
 import Churn from '~/assets/images/churn.svg?inline'
@@ -522,182 +522,203 @@ export default {
       totalHardCap = totalHardCap / 1e8
 
       return [
-        [
-          {
-            name: 'Total Bond (Effective)',
-            value: totalEffectiveBond,
-            filter: true,
-            runeValue: true,
-            usdValue: true,
-          },
-          {
-            name: 'Hard Cap',
-            value: totalHardCap,
-            filter: true,
-            runeValue: true,
-            usdValue: true,
-          },
-        ],
-        [
-          {
-            name: 'Bonding APY',
-            value:
-              this.network.bondingAPY &&
-              this.stringToPercentage(this.network.bondingAPY),
-            filter: true,
-          },
-          {
-            name: 'Liquidity APY',
-            value:
-              this.network.bondingAPY &&
-              this.stringToPercentage(this.network.liquidityAPY),
-            filter: true,
-          },
-        ],
-        [
-          {
-            name: 'Total Standby Bonded',
-            value: +this.network.bondMetrics?.totalStandbyBond / 10 ** 8,
-            usdValue: true,
-          },
-          {
-            name: 'Total Active Bonded',
-            value: +this.network.bondMetrics?.totalActiveBond / 10 ** 8,
-            usdValue: true,
-          },
-        ],
-        [
-          {
-            name: 'Active Node Count',
-            value: this.network.activeNodeCount,
-          },
-          {
-            name: 'Standby Node Count',
-            value: this.network.standbyNodeCount,
-          },
-        ],
-        [
-          {
-            name: 'Next Churn Height',
-            value: this.network.nextChurnHeight,
-            extraText: `${this.isChurnHalted() ? 'Churn paused' : this.nextChurnTime()}`,
-            extraTextClass: { 'danger-text': this.isChurnHalted() },
-          },
-        ],
-        [
-          {
-            name: 'Pool Activation Countdown',
-            value: this.network.poolActivationCountdown,
-            extraText: blockTime(this.network.poolActivationCountdown),
-          },
-        ],
-        [
-          {
-            name: 'Pool Share Factor',
-            value:
-              this.network.bondingAPY &&
-              this.stringToPercentage(this.network.poolShareFactor),
-            filter: true,
-          },
-        ],
-        [
-          {
-            name: 'Total Reserve',
-            value: (this.network.totalReserve ?? 0) / 10 ** 8,
-            usdValue: true,
-          },
-        ],
-        [
-          {
-            name: 'Total Pooled Rune',
-            value: (this.network.totalPooledRune ?? 0) / 10 ** 8,
-            usdValue: true,
-          },
-        ],
+        {
+          title: 'Nodes',
+          rowStart: 1,
+          colSpan: 1,
+          items: [
+            {
+              name: 'Total Bond (Effective)',
+              value: totalEffectiveBond * this.runePrice,
+              filter: (v) => `${this.$options.filters.currency(v)}`,
+            },
+            {
+              name: 'Hard Cap',
+              value: totalHardCap * this.runePrice,
+              filter: (v) => `${this.$options.filters.currency(v)}`,
+            },
+            {
+              name: 'Total Standby Bonded',
+              value:
+                (+this.network.bondMetrics?.totalStandbyBond / 10 ** 8) *
+                this.runePrice,
+              filter: (v) => `${this.$options.filters.currency(v)}`,
+            },
+            {
+              name: 'Total Active Bonded',
+              value:
+                (+this.network.bondMetrics?.totalActiveBond / 10 ** 8) *
+                this.runePrice,
+              filter: (v) => `${this.$options.filters.currency(v)}`,
+            },
+            {
+              name: 'Active Node Count',
+              value: this.network.activeNodeCount,
+            },
+            {
+              name: 'Standby Node Count',
+              value: this.network.standbyNodeCount,
+            },
+          ],
+        },
+
+        {
+          title: 'APYs',
+          rowStart: 2,
+          colSpan: 1,
+          items: [
+            {
+              name: 'Bonding APY',
+              value:
+                this.network.bondingAPY &&
+                this.stringToPercentage(this.network.bondingAPY),
+            },
+            {
+              name: 'Liquidity APY',
+              value:
+                this.network.bondingAPY &&
+                this.stringToPercentage(this.network.liquidityAPY),
+            },
+            {
+              name: 'Pool Share Factor',
+              value:
+                this.network.bondingAPY &&
+                this.stringToPercentage(this.network.poolShareFactor),
+            },
+          ],
+        },
+        {
+          title: 'Churning',
+          rowStart: 2,
+          colSpan: 2,
+          items: [
+            {
+              name: 'Next Churn Height',
+              value: this.network.nextChurnHeight,
+              extraText: `${this.isChurnHalted() ? 'Churn paused' : this.nextChurnTime()}`,
+              extraTextClass: { 'danger-text': this.isChurnHalted() },
+              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
+            },
+            {
+              name: 'Pool Activation Countdown',
+              value: this.network.poolActivationCountdown,
+              extraText: blockTime(this.network.poolActivationCountdown),
+              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
+            },
+          ],
+        },
       ]
     },
     statsSettings() {
+      const sbn = this.nodes
+        .filter((n) => n.status === 'Active')
+        .map((e) => +e.total_bond)
+        .sort((a, b) => a - b)
+
+      let t = (sbn.length * 2) / 3
+      if (sbn.length % 3 === 0) {
+        t -= 1
+      }
+
+      const bondHardCap = sbn[t]
+
+      let totalEffectiveBond = 0
+      for (const i in sbn) {
+        let bond = sbn[i]
+        if (bond > bondHardCap) {
+          bond = bondHardCap
+        }
+
+        totalEffectiveBond += bond
+      }
+      totalEffectiveBond = totalEffectiveBond / 1e8
+
+      let totalHardCap = 0
+      for (let i = 0; i <= t; i++) {
+        totalHardCap += sbn[i]
+      }
+      totalHardCap = totalHardCap / 1e8
       return [
-        [
-          {
-            name: 'RUNE Price USD',
-            value: this.$options.filters.currency(this.stats.runePriceUSD),
-            filter: true,
-          },
-          {
-            name: 'RUNE Depth',
-            value: Math.ceil(this.stats.runeDepth / 10 ** 8) ?? 0,
-            usdValue: true,
-          },
-        ],
-        [
-          {
-            name: '24h Swap Count',
-            value: this.stats.swapCount24h ?? 0,
-          },
-          {
-            name: '30d Swap Count',
-            value: this.stats.swapCount30d ?? 0,
-          },
-          {
-            name: 'Total Swap Count',
-            value: this.stats.swapCount ?? 0,
-          },
-        ],
-        [
-          {
-            name: 'Synth Burn Count',
-            value: this.stats.synthBurnCount ?? 0,
-          },
-          {
-            name: 'Synth Mint Count',
-            value: this.stats.synthMintCount ?? 0,
-          },
-        ],
-        [
-          {
-            name: 'Swap To Asset Count',
-            value: this.stats.toAssetCount ?? 0,
-          },
-          {
-            name: 'Swap To RUNE Count',
-            value: this.stats.toRuneCount ?? 0,
-          },
-        ],
-        [
-          {
-            name: 'Swap Volume',
-            value: this.stats?.swapVolume / 10 ** 8 ?? 0,
-            usdValue: true,
-          },
-          {
-            name: 'Switched RUNE',
-            value: this.stats.switchedRune / 10 ** 8 ?? 0,
-            usdValue: true,
-          },
-        ],
-        [
-          {
-            name: 'Add Liquidity Volume',
-            value: this.stats.addLiquidityVolume / 10 ** 8 ?? 0,
-            usdValue: true,
-          },
-          {
-            name: 'Add Liquidity Count',
-            value: this.stats.addLiquidityCount ?? 0,
-          },
-        ],
-        [
-          {
-            name: 'Withdraw Volume',
-            value: this.stats.withdrawVolume / 10 ** 8 ?? 0,
-            usdValue: true,
-          },
-          {
-            name: 'Withdraw Count',
-            value: this.stats.withdrawCount ?? 0,
-          },
-        ],
+        {
+          title: 'Swap',
+          rowStart: 1,
+          colSpan: 1,
+          items: [
+            {
+              name: '24h Swap Count',
+              value: this.stats.swapCount24h ?? 0,
+              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
+            },
+            {
+              name: '30d Swap Count',
+              value: this.stats.swapCount30d ?? 0,
+              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
+            },
+            {
+              name: 'Total Swap Count',
+              value: this.stats.swapCount ?? 0,
+              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
+            },
+            {
+              name: 'Swap Volume',
+              value: (this.stats?.swapVolume / 10 ** 8) * this.runePrice,
+              filter: (v) => `${this.$options.filters.currency(v)}`,
+            },
+          ],
+        },
+
+        {
+          title: 'Liquidity',
+          rowStart: 2,
+          colSpan: 1,
+          items: [
+            {
+              name: 'Add Liquidity Volume',
+              value: (this.stats.addLiquidityVolume / 10 ** 8) * this.runePrice,
+              filter: (v) => `${this.$options.filters.currency(v)}`,
+            },
+            {
+              name: 'Add Liquidity Count',
+              value: this.stats.addLiquidityCount ?? 0,
+              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
+            },
+            {
+              name: 'Withdraw Volume',
+              value: (this.stats.withdrawVolume / 10 ** 8) * this.runePrice,
+              filter: (v) => `${this.$options.filters.currency(v)}`,
+            },
+            {
+              name: 'Withdraw Count',
+              value: this.stats.withdrawCount ?? 0,
+              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
+            },
+          ],
+        },
+        {
+          title: 'TVL',
+          rowStart: 3,
+          colSpan: 1,
+          items: [
+            {
+              name: 'Total Reserve',
+              value:
+                ((this.network.totalReserve ?? 0) / 10 ** 8) * this.runePrice,
+              filter: (v) => `${this.$options.filters.currency(v)}`,
+            },
+            {
+              name: 'Total Pooled Rune',
+              value:
+                ((this.network.totalPooledRune ?? 0) / 10 ** 8) *
+                this.runePrice,
+              filter: (v) => `${this.$options.filters.currency(v)}`,
+            },
+            {
+              name: 'Total Bond (Effective)',
+              value: totalEffectiveBond * this.runePrice,
+              filter: (v) => `${this.$options.filters.currency(v)}`,
+            },
+          ],
+        },
       ]
     },
   },
