@@ -265,11 +265,8 @@ export default {
     }
 
     .right-section {
+      display: none;
       gap: 0;
-      #network-wrapper,
-      #theme-wrapper {
-        display: none;
-      }
     }
   }
 
