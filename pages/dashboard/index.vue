@@ -345,7 +345,7 @@ import {
   GridComponent,
 } from 'echarts/components'
 import VChart from 'vue-echarts'
-import { blockTime } from '~/utils'
+import { blockTime, formatTime } from '~/utils'
 
 import Churn from '~/assets/images/churn.svg?inline'
 import LockIcon from '~/assets/images/lock.svg?inline'
@@ -665,7 +665,7 @@ export default {
           items: [
             {
               name: 'Next Churn Height',
-              value: `${this.isChurnHalted() ? 'Churn paused' : this.nextChurnTime()}`,
+              value: `${this.isChurnHalted() ? 'Churn paused' : this.$options.filters.number(this.network.nextChurnHeight, '0,0')}`,
             },
             {
               name: 'Pool Activation Countdown',
