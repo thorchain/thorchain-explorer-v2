@@ -1110,7 +1110,32 @@ export default {
             smooth: true,
           },
         ],
-        xAxis
+        xAxis,
+        undefined,
+        (param) => {
+  return `
+    <div class="tooltip-header">
+      <div class="data-color" style="background-color: ${param[0].color}"></div>
+      ${param[0].name}
+    </div>
+    <div class="tooltip-body">
+      <span>
+        <span>Liquidity Earning</span>
+        <b>$${this.$options.filters.number(param[0].value, '0,0')}</b>
+      </span>
+      <span>
+        <span>Bond Earning</span>
+        <b>$${this.$options.filters.number(param[1].value, '0,0')}</b>
+      </span>
+      <span style="border-top: 1px solid var(--border-color); margin: 2px 0;"></span>
+      <span>
+        <span>Total Earning</span>
+        <b>$${this.$options.filters.number(param[0].value + param[1].value, '0,0')}</b>
+      </span>
+    </div>
+  `
+}
+
       )
     },
     formatTendermintBlocks(blocks) {
