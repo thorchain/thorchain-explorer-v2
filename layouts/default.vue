@@ -53,14 +53,14 @@ export default {
   mounted() {
     const htmlElement = document.documentElement
 
-    const darkThemeMq = window.matchMedia('(prefers-color-scheme: dark)')
-    if (darkThemeMq.matches) {
-      htmlElement.setAttribute('theme', 'dark')
-      this.darkMode = true
-    } else {
-      htmlElement.setAttribute('theme', 'light')
-      this.darkMode = false
-    }
+    const savedTheme =
+      localStorage.getItem('theme') ||
+      (window.matchMedia('(prefers-color-scheme: dark)').matches
+        ? 'dark'
+        : 'light')
+
+    htmlElement.setAttribute('theme', savedTheme)
+    this.darkMode = false
 
     this.getRunePrice()
 
