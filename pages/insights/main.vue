@@ -178,12 +178,7 @@ export default {
         xAxis,
         {
           legend: {
-            type: 'scroll',
-            pageIconColor: 'var(--primary-color)',
-            icon: 'rect',
-            textStyle: {
-              color: 'var(--sec-font-color)',
-            },
+            show: false,
           },
           yAxis: [
             {
