@@ -1,7 +1,7 @@
 <template>
   <Page>
     <div class="chart-container">
-      <div class="network-stats base-container">
+      <div class="network-stats">
         <div class="stat-group">
           <div class="stat-item">
             <img
@@ -991,15 +991,23 @@ export default {
 
       d?.intervals.forEach((interval, index) => {
         if (d?.intervals.length === index + 1) {
-          return
+          if (+interval.totalVolumeUSD === 0) {
+            return
+          }
+          swapVolume?.total.push({
+            value: +interval.totalVolumeUSD / 10 ** 2,
+            itemStyle: {
+              color: '#F3BA2F',
+            },
+          })
+        } else {
+          swapVolume?.total.push(+interval.totalVolumeUSD / 10 ** 2)
         }
-
         xAxis.push(
           moment(
             Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
           ).format('MM/DD')
         )
-        swapVolume?.total.push(+interval.totalVolumeUSD / 10 ** 2)
         swapCount?.total.push(+interval.totalCount)
       })
 
@@ -1231,6 +1239,12 @@ export default {
 </script>
 
 <style lang="scss">
+.container {
+  border: 1px solid var(--border-color);
+  border: 1px solid var(--border-color);
+  border-width: 1px 0 1px 0;
+  color: var(--sec-font-color);
+}
 .swap-volume-chart {
   top: 3rem;
 }
@@ -1258,6 +1272,10 @@ export default {
 }
 
 .network-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+
   .stat-item {
     display: flex;
     align-items: center;
@@ -1298,12 +1316,24 @@ export default {
     line-height: 28px;
     width: 1.6rem;
   }
+
+  .stat-group {
+    border: 1px solid var(--border-color);
+    min-width: 280px;
+    background-color: var(--bg-color);
+    border-radius: 8px;
+    padding: 15px;
+    flex: 1;
+  }
+}
+
+.stat-group hr:last-child {
+  display: none;
 }
 
 @include md {
   .network-stats {
     padding: 0;
-    display: flex;
     justify-content: space-between;
 
     .stat-group {
@@ -1311,25 +1341,9 @@ export default {
       padding: 1rem;
       flex: 1;
 
-      &::after {
-        position: absolute;
-        right: 0;
-        top: 0;
-        content: '';
-        display: block;
-        height: calc(100% - 1rem);
-        border-left: 0;
-        border-right: 1px solid var(--border-color);
-        margin: 0.5rem 0;
-      }
-
       &:last-of-type::after {
         display: none;
       }
-    }
-
-    .stat-group hr:last-child {
-      display: none;
     }
   }
 }

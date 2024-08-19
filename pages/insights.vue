@@ -4,7 +4,6 @@
       :is-link="true"
       :nav-items="[
         { link: `/insights`, text: 'Overview' },
-        { link: `/insights/network`, text: 'Network' },
         { link: `/insights/apr`, text: 'APR' },
       ]"
     />

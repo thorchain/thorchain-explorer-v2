@@ -1,5 +1,6 @@
 <template>
   <Page>
+    <cards-header :table-general-stats="vaultsGeneralStats" />
     <Card title="Vaults">
       <template v-if="asgard.length > 0">
         <vue-good-table
@@ -23,7 +24,7 @@
               <span
                 v-if="props.row.bond"
                 v-tooltip="curFormat(runePrice * props.row.bond)"
-                class="mono"
+                class="mono hoverable"
               >
                 <span class="extra">{{ runeCur() }}</span>
                 {{ numberFormat(props.row.bond) }}
@@ -34,7 +35,7 @@
               <span
                 v-if="props.row.total_value"
                 v-tooltip="curFormat(runePrice * props.row.total_value)"
-                class="mono"
+                class="mono hoverable"
               >
                 <span class="extra">{{ runeCur() }}</span>
                 {{ numberFormat(props.row.total_value) }}
@@ -44,7 +45,10 @@
             <span v-else-if="props.column.field == 'membership_count'">
               <div>
                 <v-tooltip>
-                  <span v-if="props.row.membership_count" class="mono">
+                  <span
+                    v-if="props.row.membership_count"
+                    class="mono clickable"
+                  >
                     {{ props.row.membership_count }}
                   </span>
                   <template slot="popper">
@@ -53,6 +57,7 @@
                       <div class="card-body grid-template">
                         <small
                           v-for="node in props.row.membership"
+                          :key="node"
                           class="mono"
                         >
                           .{{ node.node_address.slice(-4) }}
@@ -64,15 +69,11 @@
                 <span v-if="!props.row.membership_count"> - </span>
               </div>
             </span>
-            <span v-else-if="props.column.field == 'type'">
-              <div
-                :class="[
-                  'mini-bubble big',
-                  { info: props.row.type == 'Yggdrasil' },
-                ]"
-              >
-                <span>{{ props.row.type }}</span>
-              </div>
+            <span v-else-if="props.column.field == 'since'">
+              <span>{{ props.row.since | number('0,0') }}</span>
+            </span>
+            <span v-else-if="props.column.field == 'age'">
+              <span>{{ duration(props.row.age) }}</span>
             </span>
             <span v-else-if="props.column.field == 'status'">
               <div
@@ -95,6 +96,7 @@
 </template>
 
 <script>
+import { duration } from 'moment'
 import { mapGetters } from 'vuex'
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
 import { runeCur } from '~/utils'
@@ -111,12 +113,15 @@ export default {
           field: 'hash',
         },
         {
-          label: 'Type',
-          field: 'type',
-        },
-        {
           label: 'Status',
           field: 'status',
+        },
+        {
+          label: 'Height',
+          field: 'height',
+          type: 'number',
+          formatFn: this.numberFormat,
+          tdClass: 'mono',
         },
         {
           label: 'Bond',
@@ -124,7 +129,7 @@ export default {
           type: 'number',
         },
         {
-          label: 'Total Value',
+          label: 'Balance',
           field: 'total_value',
           type: 'number',
         },
@@ -152,19 +157,38 @@ export default {
           formatFn: this.numberFormat,
           tdClass: 'mono',
         },
+        {
+          label: 'Status Since',
+          field: 'since',
+          type: 'number',
+          tdClass: 'mono',
+        },
+        {
+          label: 'Age',
+          field: 'age',
+          type: 'number',
+          tdClass: 'mono',
+        },
+      ],
+      vaultsGeneralStats: [
+        {
+          name: 'Bond',
+        },
+        {
+          name: 'Balance',
+        },
+        {
+          name: 'Balance/Bond',
+        },
+        {
+          name: 'Ins/Outs',
+        },
       ],
       yggdrasil: [],
       asgard: [],
     }
   },
   mounted() {
-    // filter out yggdrasil
-    // this.$api.getYggdrasil().then(async (res) => {
-    //   this.yggdrasil = await this.formatVaults(res?.data, 'Yggdrasil')
-    // }).catch((e) => {
-    //   console.error(e)
-    // })
-
     this.$api
       .getAsgard()
       .then(async (res) => {
@@ -176,12 +200,55 @@ export default {
           poolsPrice,
           nodes
         )
+        this.updateGeneralStats()
       })
       .catch((e) => {
         console.error(e)
       })
   },
   methods: {
+    duration(since) {
+      return duration(since * 6, 's').humanize()
+    },
+    updateGeneralStats() {
+      const totalBond = this.asgard.reduce((total, o) => {
+        return total + o.bond * this.runePrice
+      }, 0)
+
+      const totalValue = this.asgard.reduce((total, o) => {
+        return total + o.total_value * this.runePrice
+      }, 0)
+
+      const valuePerBond = totalValue / totalBond
+
+      const totalIns = this.asgard.reduce((total, o) => {
+        return total + o.ins
+      }, 0)
+
+      const totalOuts = this.asgard.reduce((total, o) => {
+        return total + o.outs
+      }, 0)
+
+      this.vaultsGeneralStats = [
+        {
+          name: 'Bond',
+          value: this.$options.filters.currency(totalBond),
+        },
+        {
+          name: 'Balance',
+          value: this.$options.filters.currency(totalValue),
+        },
+        {
+          name: 'Balance/Bond',
+          value: this.$options.filters.percent(valuePerBond),
+        },
+        {
+          name: 'Ins / Outs',
+          value: `${this.$options.filters.number(totalIns)} / ${this.$options.filters.number(totalOuts)}`,
+        },
+      ]
+    },
+
     formatStatus(status) {
       if (status === 'ActiveVault') {
         return 'Active'
@@ -200,7 +267,7 @@ export default {
       nodes.data.map((n) => (nodesFormat[n.pub_key_set?.secp256k1] = n))
       return nodesFormat
     },
-    formatVaults(
+    async formatVaults(
       data,
       type = 'Yggdrasil',
       poolsPrice = undefined,
@@ -223,6 +290,10 @@ export default {
           })
           vb = totalValue / bond
         }
+        let height = this.chainsHeight
+        if (!this.chainsHeight) {
+          height = (await this.$api.getChainsHeight()).data
+        }
         y.push({
           hash: vault?.addresses.find((e) => e.chain === 'THOR').address,
           type,
@@ -234,6 +305,9 @@ export default {
           membership: vault?.membership?.map((v) => nodes[v]),
           vb,
           outs: vault?.outbound_tx_count,
+          height: vault?.block_height,
+          since: vault?.status_since,
+          age: height?.THOR ? height?.THOR - vault?.block_height : 0,
         })
       }
       return y
@@ -251,6 +325,7 @@ export default {
   computed: {
     ...mapGetters({
       runePrice: 'getRunePrice',
+      chainsHeight: 'getChainsHeight',
     }),
   },
   head: {

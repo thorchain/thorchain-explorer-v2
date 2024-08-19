@@ -33,6 +33,7 @@
       <template v-if="addrTxs">
         <div class="stat-wrapper mb-1">
           <Nav
+            v-if="!isVault"
             :active-mode.sync="activeMode"
             :nav-items="[
               { text: 'Balances', mode: 'balance' },
@@ -54,12 +55,16 @@
           <loans v-if="activeMode == 'loans'" :address="address" />
         </div>
         <template v-if="isVault">
-          <stat-table :table-settings="addressStat"></stat-table>
+          <info-card
+            :options="addressStat"
+            style="margin-bottom: 8px"
+          ></info-card>
           <Card
             extra-class="mb-1"
             :navs="[
               { title: 'Chain Addresses', value: 'chain-addr' },
               { title: 'Node Members', value: 'node-mmb' },
+              { title: 'Routers', value: 'routers' },
             ]"
             :act-nav.sync="vaultMode"
           >
@@ -95,6 +100,19 @@
                     class="clickable mono"
                     @click="gotoAddr(address.address)"
                     >{{ address.slice(0, 8) }}...{{ address.slice(-8) }}</span
+                  >
+                </div>
+              </div>
+            </div>
+            <div v-if="vaultMode == 'routers'" key="routers">
+              <div class="addresses-container">
+                <div v-for="r in routers" :key="r.chain" class="addresses">
+                  <img
+                    class="asset-icon"
+                    :src="assetImage(baseChainAsset(r.chain))"
+                  />
+                  <span class="clickable mono" @click="gotoAddr(r.router)"
+                    >{{ r.router.slice(0, 8) }}...{{ r.router.slice(-8) }}</span
                   >
                 </div>
               </div>
@@ -254,6 +272,7 @@ export default {
       activeMode: 'balance',
       isVault: false,
       chainAddresses: [],
+      routers: [],
       vaultInfo: undefined,
       thornameAddresses: [],
       vaultType: 'Asgard',
@@ -268,46 +287,69 @@ export default {
         {
           label: 'Balance',
           field: 'amount',
+          type: 'number',
+          tdClass: 'mono',
           formatFn: this.baseAmountFormat,
         },
+        {
+          label: 'Price',
+          field: 'price',
+          type: 'number',
+          tdClass: 'mono',
+          formatFn: this.formatCurrency,
+        },
+        {
+          label: 'Value',
+          field: 'value',
+          type: 'number',
+          tdClass: 'mono',
+          formatFn: this.formatCurrency,
+        },
       ],
+      pools: undefined,
     }
   },
   computed: {
     addressStat() {
       const balances = this.otherBalances ?? []
-      let vaultInfo = []
       if (this.isVault) {
-        vaultInfo = [
-          [
-            {
-              name: 'Vault type',
-              value: this.vaultType,
-              filter: true,
-            },
-            {
-              name: 'Status',
-              value: this.vaultInfo?.status,
-              filter: true,
-            },
-            {
-              name: 'Inbound Txs',
-              value: this.vaultInfo?.inbound_tx_count,
-            },
-            {
-              name: 'Outbound Txs',
-              value: this.vaultInfo?.outbound_tx_count,
-            },
-          ],
-          [
-            {
-              name: 'Block Height',
-              value: this.vaultInfo?.block_height,
-            },
-          ],
+        return [
+          {
+            title: 'Overall Info',
+            rowStart: 1,
+            colSpan: 1,
+            items: [
+              {
+                name: 'Block Height',
+                value: this.vaultInfo?.block_height,
+                filter: (v) => this.$options.filters.number(v, '0,0'),
+              },
+              {
+                name: 'Status',
+                value: this.formatStatus(this.vaultInfo?.status),
+              },
+            ],
+          },
+          {
+            title: 'Ins/Outs',
+            rowStart: 1,
+            colSpan: 1,
+            items: [
+              {
+                name: 'Inbound Txs',
+                value: this.vaultInfo?.inbound_tx_count,
+                filter: (v) => this.$options.filters.number(v, '0,0'),
+              },
+              {
+                name: 'Outbound Txs',
+                value: this.vaultInfo?.outbound_tx_count,
+                filter: (v) => this.$options.filters.number(v, '0,0'),
+              },
+            ],
+          },
         ]
       }
-      return [...balances, ...vaultInfo]
+      return balances
     },
     ...mapGetters({
       runePrice: 'getRunePrice',
@@ -323,6 +365,12 @@ export default {
     this.checkIsVault(this.address)
   },
   methods: {
+    formatStatus(status) {
+      if (status === 'ActiveVault') {
+        return 'Active'
+      }
+      return status
+    },
     getActions(offset = 0) {
       this.loading = true
       this.offset = offset
@@ -342,7 +390,7 @@ export default {
     checkIsVault(address) {
       this.$api
         .getAsgard()
-        .then(({ data }) => {
+        .then(async ({ data }) => {
           for (const vaultIndex in data) {
             if (
               data[vaultIndex].addresses
@@ -352,25 +400,18 @@ export default {
               this.isVault = true
               this.vaultType = 'Asgard'
               this.chainAddresses = data[vaultIndex].addresses
+              this.routers = data[vaultIndex].routers
               this.vaultInfo = data[vaultIndex]
+              if (!this.pools) {
+                this.pools = (await this.$api.getPools()).data
+              }
+              this.vaultInfo.coins = this.vaultInfo.coins.map((c) => ({
+                ...c,
+                amount: +c.amount < 1e3 ? 0 : c.amount,
+                price: this.amountToUSD(c.asset, 1e8, this.pools),
+                value: this.amountToUSD(c.asset, +c.amount, this.pools),
+              }))
               this.fillNodesAddresses()
-            }
-          }
-        })
-        .catch((e) => console.error(e))
-      this.$api
-        .getYggdrasil()
-        .then(({ data }) => {
-          for (const vaultIndex in data) {
-            if (
-              data[vaultIndex].addresses
-                .map((a) => a.address.toUpperCase())
-                .includes(address.toUpperCase())
-            ) {
-              this.isVault = true
-              this.vaultType = 'Yggdrasil'
-              this.chainAddresses = data[vaultIndex].addresses
-              this.vaultInfo = data[vaultIndex]
             }
           }
         })

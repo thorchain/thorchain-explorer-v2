@@ -265,21 +265,20 @@ export default {
     }
 
     .right-section {
+      display: none;
       gap: 0;
-      #network-wrapper,
-      #theme-wrapper {
-        display: none;
-      }
     }
   }
 
   .header-info {
-    display: none;
+    display: flex;
+    align-items: end;
+    justify-content: center;
     flex-direction: column;
 
     > div {
-      -webkit-transition: all ease 1s;
-      transition: all ease 1s;
+      -webkit-transition: all ease 0.4;
+      transition: all ease 0.4;
 
       .mono {
         -webkit-transition: all ease 0.4s;
@@ -294,21 +293,10 @@ export default {
 
       &.animate {
         .mono {
-          color: var(--sec-font-color) !important;
           -webkit-animation: jello-vertical 1s both;
           animation: jello-vertical 1s both;
         }
-
-        small {
-          color: var(--primary-color) !important;
-        }
       }
-    }
-
-    @include lg {
-      display: flex;
-      align-items: end;
-      justify-content: center;
     }
   }
 
@@ -378,7 +366,7 @@ export default {
       padding: 0 1rem;
       border-radius: 0.5rem;
       transition: width 0.3s ease;
-      padding-right: 2.7rem;
+      padding-right: 2.5rem;
       padding-left: 1rem;
 
       &:focus {
@@ -402,7 +390,7 @@ export default {
       transition: fill 0.3s ease;
       box-sizing: content-box;
       background: var(--card-bg-color);
-      padding-left: 0.5rem;
+      padding-left: 0.3rem;
 
       &:hover {
         fill: var(--primary-color);

@@ -20,7 +20,9 @@ body {
     var(--gradient-left) 0% /*bottom-right color*/,
     var(--gradient-right) 100% /*top-left color*/
   );
-  font-family: 'ProductSans';
+  font-family:  "Roboto", system-ui, -apple-system, "Segoe UI", "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  font-style: normal;
+  font-optical-sizing: auto;
   color: var(--font-color);
   background-color: var(--bg-color);
 }
@@ -549,7 +551,7 @@ input {
 .bubble-container,
 .mini-bubble {
   display: inline-flex;
-  font-weight: 100;
+  font-weight: bold;
   font-size: 0.85rem;
   padding: 2px 6px;
   justify-content: center;
@@ -717,6 +719,7 @@ input {
   justify-content: center;
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 5px;
+  gap: 5px;
 }
 
 .tooltip-body {
@@ -730,11 +733,23 @@ input {
     display: flex;
     gap: 8px;
     justify-content: space-between;
+    align-items: center;
   }
 }
 
+.series-name-color {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.tooltip-total {
+  padding-top: 3px;
+  margin-top: 5px;
+  border-top: 1px solid var(--border-color);
+}
+
 .data-color {
-  margin-right: 6px;
   width: 10px;
   height: 10px;
   border-radius: 50%;
@@ -861,4 +876,12 @@ input {
 
 .danger-text {
   color: #f04832 !important;
+}
+
+.hoverable {
+  cursor: pointer;
+
+  &:hover {
+    color: var(--primary-color);
+  }
 }
