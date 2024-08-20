@@ -294,6 +294,8 @@ export default {
       text-decoration: none;
       border-radius: 30px;
       position: relative;
+      padding-top: 0.2rem;
+
 
       &:hover {
         span,
