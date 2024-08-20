@@ -1020,11 +1020,11 @@ export const darkTheme = {
   tooltip: {
     axisPointer: {
       lineStyle: {
-        color: '#cccccc',
+        color: '#e6e6e6',
         width: 1,
       },
       crossStyle: {
-        color: '#cccccc',
+        color: '#e6e6e6',
         width: 1,
       },
     },

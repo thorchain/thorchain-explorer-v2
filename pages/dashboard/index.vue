@@ -953,10 +953,16 @@ export default {
             value: +interval.totalVolumeUSD / 10 ** 2,
             itemStyle: {
               color: '#F3BA2F',
+              borderRadius: [8, 8, 0, 0],
             },
           })
         } else {
-          swapVolume?.total.push(+interval.totalVolumeUSD / 10 ** 2)
+          swapVolume?.total.push({
+            value: +interval.totalVolumeUSD / 10 ** 2,
+            itemStyle: {
+              borderRadius: [8, 8, 0, 0],
+            },
+          })
         }
         xAxis.push(
           moment(
@@ -991,7 +997,6 @@ export default {
               splitLine: {
                 show: true,
               },
-              max: 'dataMax',
             },
           ],
         },
@@ -1089,26 +1094,26 @@ export default {
         undefined,
         (param) => {
           return `
-    <div class="tooltip-header">
-      <div class="data-color" style="background-color: ${param[0].color}"></div>
-      ${param[0].name}
-    </div>
-    <div class="tooltip-body">
-      <span>
-        <span>Liquidity Earning</span>
-        <b>$${this.$options.filters.number(param[0].value, '0,0')}</b>
-      </span>
-      <span>
-        <span>Bond Earning</span>
-        <b>$${this.$options.filters.number(param[1].value, '0,0')}</b>
-      </span>
-      <span style="border-top: 1px solid var(--border-color); margin: 2px 0;"></span>
-      <span>
-        <span>Total Earning</span>
-        <b>$${this.$options.filters.number(param[0].value + param[1].value, '0,0')}</b>
-      </span>
-    </div>
-  `
+            <div class="tooltip-header">
+              <div class="data-color" style="background-color: ${param[0].color}"></div>
+              ${param[0].name}
+            </div>
+            <div class="tooltip-body">
+              <span>
+                <span>Liquidity Earning</span>
+                <b>$${this.$options.filters.number(param[0].value, '0,0')}</b>
+              </span>
+              <span>
+                <span>Bond Earning</span>
+                <b>$${this.$options.filters.number(param[1].value, '0,0')}</b>
+              </span>
+              <span style="border-top: 1px solid var(--border-color); margin: 2px 0;"></span>
+              <span>
+                <span>Total Earning</span>
+                <b>$${this.$options.filters.number(param[0].value + param[1].value, '0,0')}</b>
+              </span>
+            </div>
+          `
         }
       )
     },
@@ -1235,9 +1240,6 @@ export default {
   border: 1px solid var(--border-color);
   border-width: 1px 0 1px 0;
   color: var(--sec-font-color);
-}
-.swap-volume-chart {
-  top: 3rem;
 }
 .overview-container {
   display: flex;
