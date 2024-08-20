@@ -21,27 +21,15 @@
           :key="index"
           :to="item.link"
           :class="['navbar-item']"
-          @click.native="handleNavClick(item)"
         >
           <div class="navbar-wrap">
             <span class="navbar-text">{{ item.name }}</span>
             <span v-if="item.submenu" class="dropdown-icon"></span>
           </div>
         </NuxtLink>
-        <div v-if="item.submenu && isSubmenuOpen(item)" class="submenu">
-          <NuxtLink
-            v-for="(subItem, subIndex) in item.submenu"
-            :key="subIndex"
-            :to="subItem.link"
-            class="submenu-item"
-            @click.native="toggleMenu(false)"
-          >
-            {{ subItem.name }}
-          </NuxtLink>
-        </div>
         <b-popover
           v-if="item.submenu"
-          triggers="hover focus"
+          triggers="hover"
           :target="`navbar-${item.name}`"
           placement="bottom-start"
           custom-class="popover"
@@ -127,7 +115,6 @@ export default {
   data() {
     return {
       showExternalMenu: false,
-      openSubmenu: null,
       navbarLists: [
         {
           name: 'Overview',
@@ -211,21 +198,6 @@ export default {
   },
   methods: {
     ...mapMutations(['toggleMenu']),
-    handleNavClick(item) {
-      const isMobile = window.innerWidth < 980
-      if (item.submenu) {
-        if (isMobile) {
-          this.openSubmenu = this.openSubmenu === item ? null : item
-          this.toggleMenu(true) 
-        }
-      } else {
-        this.toggleMenu(false)
-      }
-    },
-   isSubmenuOpen(item) {
-  const isMobile = window.innerWidth < 980; 
-  return isMobile && this.openSubmenu === item;
-}
   },
 }
 </script>
@@ -343,42 +315,6 @@ export default {
         .icon {
           width: 20px;
         }
-      }
-      .dropdown-icon {
-        position: relative;
-        display: inline-block;
-        margin-left: 0.5rem;
-
-        &::after {
-          content: '';
-          border: solid var(--sec-font-color);
-          border-width: 0 2px 2px 0;
-          display: inline-block;
-          padding: 2.8px;
-          transform: rotate(45deg);
-          vertical-align: middle;
-          margin-bottom: 6px;
-          transition: border-color 0.3s;
-        }
-      }
-    }
-
-    .submenu {
-      padding: 0.5rem 0;
-      background-color: var(--background-color);
-      display: flex;
-      flex-direction: column;
-
-      .submenu-item {
-        padding: 0.5rem 1rem;
-        text-decoration: none;
-        color: var(--font-color);
-        transition: background-color 0.3s;
-
-        &:hover {
-          background-color: var(--darker-bg);
-        border-radius: 0.3rem;
-        color: var(--primary-color);        }
       }
     }
   }
