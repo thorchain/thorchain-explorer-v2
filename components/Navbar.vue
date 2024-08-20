@@ -236,6 +236,24 @@ export default {
   @include lg {
     display: flex;
     justify-content: space-between;
+
+    .dropdown-icon {
+      position: relative;
+      display: inline-block;
+      margin-left: 0.5rem;
+
+      &::after {
+        content: '';
+        border: solid var(--sec-font-color);
+        border-width: 0 2px 2px 0;
+        display: inline-block;
+        padding: 2.8px;
+        transform: rotate(45deg);
+        vertical-align: middle;
+        margin-bottom: 6px;
+        transition: border-color 0.3s;
+      }
+    }
   }
 
   .navbar-lists {
