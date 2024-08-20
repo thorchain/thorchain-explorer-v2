@@ -199,7 +199,7 @@ export default {
   methods: {
     ...mapMutations(['toggleMenu']),
     handleResize() {
-      if (window.innerWidth > 1024 && this.menu) {
+      if (window.innerWidth > 900 && this.menu) {
         this.toggleMenu()
       }
     },
