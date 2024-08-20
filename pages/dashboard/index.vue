@@ -75,7 +75,6 @@
         </div>
       </div>
     </div>
-    <div class="break" />
     <div class="chart-inner-container">
       <Card
         :navs="[
