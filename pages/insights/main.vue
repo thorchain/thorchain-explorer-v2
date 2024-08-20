@@ -10,6 +10,7 @@
           :loading="!swapChartVolume"
           :autoresize="true"
           :loading-options="showLoading"
+          :theme="chartTheme"
         />
       </Card>
       <Card title="Swap Chart Normalized">
@@ -21,6 +22,7 @@
           :loading="!swapChartVolumeNorm"
           :autoresize="true"
           :loading-options="showLoading"
+          :theme="chartTheme"
         />
       </Card>
     </div>
@@ -34,6 +36,7 @@
           :loading="!feesRewardsChart"
           :autoresize="true"
           :loading-options="showLoading"
+          :theme="chartTheme"
         />
       </Card>
       <Card title="Fees/Reward Chart Normalized">
@@ -45,6 +48,7 @@
           :loading="!feesRewardsChartNorm"
           :autoresize="true"
           :loading-options="showLoading"
+          :theme="chartTheme"
         />
       </Card>
     </div>
@@ -57,6 +61,7 @@
         :loading="!affiliateWalletChart"
         :autoresize="true"
         :loading-options="showLoading"
+        :theme="chartTheme"
       />
     </Card>
   </div>

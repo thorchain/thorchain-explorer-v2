@@ -22,6 +22,7 @@
           :loading="!nodeStatus"
           :autoresize="true"
           :loading-options="showLoading"
+          :theme="chartTheme"
         />
         <VChart
           v-if="statusMode == 'prov-dist'"
@@ -53,6 +54,7 @@
           :loading="!(churnInterval && bondMetrics && lastBlockHeight)"
           :autoresize="true"
           :loading-options="showLoading"
+          :theme="chartTheme"
         />
       </Card>
     </div>

@@ -14,6 +14,8 @@ import {
   shortAssetName,
   assetToString,
   affiliateMap,
+  darkTheme,
+  lightTheme,
 } from '~/utils'
 import endpoints from '~/api/endpoints'
 
@@ -27,9 +29,15 @@ export default {
       },
     }
   },
-  ...mapGetters({
-    theme: 'getTheme',
-  }),
+  computed: {
+    chartTheme() {
+      const isDark = this.$store.state.darkTheme
+      if (isDark) {
+        return darkTheme
+      }
+      return lightTheme
+    },
+  },
   methods: {
     assetImage(assetStr) {
       try {
@@ -315,11 +323,6 @@ export default {
       extraSettings = {},
       globalFormatter
     ) {
-      let colors = ['#63FDD9', '#00CCFF', '#F3BA2F', '#FF4954']
-      if (this.theme === 'light') {
-        colors = ['#3ca38b', '#00CCFF', '#F3BA2F', '#FF4954']
-      }
-
       return {
         title: {
           show: false,
@@ -343,13 +346,7 @@ export default {
           splitLine: {
             show: false,
           },
-          axisLine: {
-            lineStyle: {
-              color: '#9f9f9f',
-            },
-          },
           axisLabel: {
-            color: '#9f9f9f',
             fontFamily: 'ProductSans',
           },
         },
@@ -363,7 +360,6 @@ export default {
           left: '20px',
           right: '20px',
         },
-        color: colors,
         series,
         ...extraSettings,
       }

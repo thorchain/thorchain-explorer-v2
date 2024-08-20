@@ -6,6 +6,7 @@
         :loading="!votingChart"
         :autoresize="true"
         :loading-options="showLoading"
+        :theme="chartTheme"
       />
     </Card>
     <Card :is-loading="!currentVoting" title="Mimir Voting Overview">
