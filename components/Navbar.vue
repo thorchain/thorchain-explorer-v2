@@ -267,11 +267,15 @@ export default {
     }
   }
 
+  &.menu .navbar-lists {
+    padding: 12px 0;
+  }
+
   .navbar-lists {
     overflow: hidden;
     max-height: 0;
     transition:
-      max-height 0.7s cubic-bezier(0.25, 0.1, 0.25, 1),
+      all 0.7s cubic-bezier(0.25, 0.1, 0.25, 1),
       opacity 1s ease;
 
     @include lg {
