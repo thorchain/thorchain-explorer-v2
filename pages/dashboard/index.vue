@@ -8,7 +8,7 @@
             <div class="item-detail">
               <div class="header">Swap Volume (24hr)</div>
               <skeleton-item :loading="!totalSwap24USD" class="value">
-                {{ (totalSwap24USD / 1e2) | currency() }}
+                {{ (totalSwap24USD / 1e2) | currency('$', 0) }}
               </skeleton-item>
             </div>
           </div>
@@ -35,7 +35,7 @@
                 class="value"
               >
                 <template v-if="network && network.bondMetrics">
-                  {{ tvl | currency }}
+                  {{ tvl | currency('$', 0) }}
                 </template>
               </skeleton-item>
             </div>
@@ -46,7 +46,7 @@
             <div class="item-detail">
               <div class="header">Income (24hr)</div>
               <skeleton-item :loading="!runeVolume" class="value">
-                {{ earnings24USD | currency() }}
+                {{ earnings24USD | currency('$', 0) }}
               </skeleton-item>
             </div>
           </div>
@@ -1116,7 +1116,7 @@ export default {
         xAxis,
         undefined,
         (param) => {
-  return `
+          return `
     <div class="tooltip-header">
       <div class="data-color" style="background-color: ${param[0].color}"></div>
       ${param[0].name}
@@ -1137,8 +1137,7 @@ export default {
       </span>
     </div>
   `
-}
-
+        }
       )
     },
     formatTendermintBlocks(blocks) {
