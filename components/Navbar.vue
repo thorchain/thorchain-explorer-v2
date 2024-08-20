@@ -198,7 +198,18 @@ export default {
   },
   methods: {
     ...mapMutations(['toggleMenu']),
+    handleResize() {
+      if (window.innerWidth > 1024 && this.menu) {
+        this.toggleMenu();
+      }
+    }
   },
+  mounted() {
+    window.addEventListener('resize', this.handleResize);
+  },
+  beforeDestroy() {
+    window.removeEventListener('resize', this.handleResize);
+  }
 }
 </script>
 
