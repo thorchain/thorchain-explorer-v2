@@ -44,7 +44,7 @@
           <div class="stat-item">
             <money class="stat-image" />
             <div class="item-detail">
-              <div class="header">Income (24hr)</div>
+              <div class="header">Earnings (24hr)</div>
               <skeleton-item :loading="!runeVolume" class="value">
                 {{ earnings24USD | currency('$', 0) }}
               </skeleton-item>
