@@ -120,10 +120,6 @@
                 <tr v-for="p in poolsData">
                   <td>
                     <div class="pool-name-container">
-                      <div
-                        class="data-color"
-                        :style="{ backgroundColor: p.color }"
-                      />
                       {{ p.name }}
                     </div>
                   </td>
@@ -135,7 +131,9 @@
                   </td>
                 </tr>
                 <tr class="table-footer">
-                  <td colspan="2">Total value locked in pools:</td>
+                  <td colspan="2" style="padding-right: 8px">
+                    Total value locked in pools:
+                  </td>
                   <td style="text-align: center">
                     ${{ totalValuePooled | number('0,0 a') }}
                   </td>
