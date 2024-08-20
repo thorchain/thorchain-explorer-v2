@@ -144,10 +144,7 @@
         </div>
       </Card>
       <Card
-        :navs="[
-          { title: 'Earnings Volume', value: 'earnings-vol' },
-          { title: 'Chain Status', value: 'chain-status' },
-        ]"
+        :navs="[{ title: 'Earnings Volume', value: 'earnings-vol' }]"
         :act-nav.sync="poolMode"
       >
         <VChart
@@ -159,83 +156,6 @@
           :loading-options="showLoading"
           :theme="chartTheme"
         />
-        <div v-if="poolMode == 'chain-status'" :key="2" style="min-width: 100%">
-          <vue-good-table
-            :columns="inboundCols"
-            :rows="inboundInfo"
-            style-class="vgt-table net-table"
-            :sort-options="{ enabled: false }"
-          >
-            <template slot="table-column" slot-scope="props">
-              <div
-                v-if="props.column.field == 'haltHeight'"
-                v-tooltip="'Scanning'"
-              >
-                <ScanIcon
-                  class="table-icon"
-                  style="color: var(--sec-font-color)"
-                />
-              </div>
-              <div
-                v-else-if="props.column.field == 'haltTradingHeight'"
-                v-tooltip="'Trading'"
-              >
-                <SwapIcon
-                  class="table-icon"
-                  style="color: var(--sec-font-color)"
-                />
-              </div>
-              <div
-                v-else-if="props.column.field == 'haltLPHeight'"
-                v-tooltip="'Liquidity Provider'"
-              >
-                <FinanceIcon
-                  class="table-icon"
-                  style="color: var(--sec-font-color)"
-                />
-              </div>
-              <div
-                v-else-if="props.column.field == 'haltSigningHeight'"
-                v-tooltip="'Signing'"
-              >
-                <SignIcon
-                  class="table-icon"
-                  style="color: var(--sec-font-color)"
-                />
-              </div>
-              <span v-else>
-                {{ props.column.label }}
-              </span>
-            </template>
-            <template slot="table-row" slot-scope="props">
-              <div v-if="props.column.field == 'chain'" class="chain-col">
-                <asset-icon :asset="baseChainAsset(props.row.chain)" />
-                <span>
-                  {{ props.formattedRow[props.column.field] }}
-                </span>
-              </div>
-              <span v-else>
-                <template v-if="props.row[props.column.field] > 1">
-                  <danger-icon
-                    v-tooltip="
-                      `Scheduled halt: ${props.row[props.column.field]}`
-                    "
-                    class="table-icon"
-                    style="fill: #ef5350"
-                  />
-                </template>
-                <template v-else-if="props.row[props.column.field] == 1">
-                  <danger-icon
-                    v-tooltip="`Mimir halt`"
-                    class="table-icon"
-                    style="fill: #ef5350"
-                  />
-                </template>
-                <span v-else class="mono" style="color: #81c784">OK</span>
-              </span>
-            </template>
-          </vue-good-table>
-        </div>
       </Card>
     </div>
     <div class="cards-container">
@@ -327,6 +247,66 @@
         </div>
       </div>
     </div>
+    <card class="chain-status">
+      <vue-good-table
+        :columns="inboundCols"
+        :rows="inboundInfo"
+        style-class="vgt-table net-table"
+        :sort-options="{ enabled: false }"
+      >
+        <template slot="table-column" slot-scope="props">
+          <div v-if="props.column.field == 'haltHeight'" v-tooltip="'Scanning'">
+            <div class="status-header">Scanning</div>
+          </div>
+          <div
+            v-else-if="props.column.field == 'haltTradingHeight'"
+            v-tooltip="'Trading'"
+          >
+            <div class="status-header">Swaps</div>
+          </div>
+          <div
+            v-else-if="props.column.field == 'haltLPHeight'"
+            v-tooltip="'Liquidity Provider'"
+          >
+            <div class="status-header">LPs</div>
+          </div>
+          <div
+            v-else-if="props.column.field == 'haltSigningHeight'"
+            v-tooltip="'Signing'"
+          >
+            <div class="status-header">Signing</div>
+          </div>
+          <span v-else class="status-header">
+            {{ props.column.label }}
+          </span>
+        </template>
+        <template slot="table-row" slot-scope="props">
+          <div v-if="props.column.field == 'chain'" class="chain-col">
+            <asset-icon :asset="baseChainAsset(props.row.chain)" />
+            <span>
+              {{ props.formattedRow[props.column.field] }}
+            </span>
+          </div>
+          <span v-else>
+            <template v-if="props.row[props.column.field] > 1">
+              <danger-icon
+                v-tooltip="`Scheduled halt: ${props.row[props.column.field]}`"
+                class="table-icon"
+                style="fill: var(--red)"
+              />
+            </template>
+            <template v-else-if="props.row[props.column.field] == 1">
+              <danger-icon
+                v-tooltip="`Mimir halt`"
+                class="table-icon"
+                style="fill: var(--red)"
+              />
+            </template>
+            <span v-else class="mono" style="color: var(--green)">OK</span>
+          </span>
+        </template>
+      </vue-good-table>
+    </card>
   </Page>
 </template>
 
@@ -345,7 +325,7 @@ import {
   GridComponent,
 } from 'echarts/components'
 import VChart from 'vue-echarts'
-import { blockTime, formatTime } from '~/utils'
+import { blockTime } from '~/utils'
 
 import Churn from '~/assets/images/churn.svg?inline'
 import LockIcon from '~/assets/images/lock.svg?inline'
@@ -353,10 +333,6 @@ import Exchange from '~/assets/images/exchange.svg?inline'
 import Book from '~/assets/images/book.svg?inline'
 import Piggy from '~/assets/images/piggy.svg?inline'
 import DangerIcon from '@/assets/images/danger.svg?inline'
-import SwapIcon from '~/assets/images/exchange-selected.svg?inline'
-import FinanceIcon from '~/assets/images/finance.svg?inline'
-import ScanIcon from '~/assets/images/scan.svg?inline'
-import SignIcon from '~/assets/images/sign.svg?inline'
 import Money from '~/assets/images/money.svg?inline'
 
 use([
@@ -377,10 +353,6 @@ export default {
     Piggy,
     BounceLoader,
     DangerIcon,
-    SwapIcon,
-    FinanceIcon,
-    SignIcon,
-    ScanIcon,
     Exchange,
     LockIcon,
     Book,
@@ -1467,5 +1439,11 @@ export default {
   display: flex;
   gap: 5px;
   align-items: center;
+}
+
+.chain-status {
+  .status-header {
+    color: var(--sec-font-color);
+  }
 }
 </style>

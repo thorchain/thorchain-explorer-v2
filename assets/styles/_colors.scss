@@ -13,6 +13,8 @@
   --active-bg-color: #3e464b;
   --color-light: hsl(0, 0%, 10%);
   --darker-bg: hsl(0, 0%, 20%);
+  --green: #81c784;
+  --red: rgb(155 28 28);
 }
 
 [theme='dark'] {
@@ -30,7 +32,9 @@
   --bubble-font-color: #191c1e;
   --color-light: hsl(0, 0%, 10%);
   --darker-bg: hsl(0, 0%, 20%);
-  --line:#4b4b4b
+  --line:#4b4b4b;
+  --green: #21c187;
+  --red: #f04832;
 }
 
 [theme='light'] {
@@ -48,4 +52,6 @@
   --bubble-font-color: #191c1e;
   --color-light: hsl(0, 0%, 98%);
   --darker-bg: hsl(0, 0%, 95%);
+  --green: #81c784;
+  --red: rgb(155 28 28);
 }
