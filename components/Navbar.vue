@@ -158,7 +158,7 @@ export default {
             },
             {
               name: 'Synths',
-              link: '/thorfi/Synths',
+              link: '/thorfi/synths',
             },
             {
               name: 'Trade Assets',
@@ -200,16 +200,16 @@ export default {
     ...mapMutations(['toggleMenu']),
     handleResize() {
       if (window.innerWidth > 1024 && this.menu) {
-        this.toggleMenu();
+        this.toggleMenu()
       }
-    }
+    },
   },
   mounted() {
-    window.addEventListener('resize', this.handleResize);
+    window.addEventListener('resize', this.handleResize)
   },
   beforeDestroy() {
-    window.removeEventListener('resize', this.handleResize);
-  }
+    window.removeEventListener('resize', this.handleResize)
+  },
 }
 </script>
 
@@ -295,7 +295,6 @@ export default {
       border-radius: 30px;
       position: relative;
       padding-top: 0.2rem;
-
 
       &:hover {
         span,
