@@ -95,12 +95,6 @@ export default {
               stack: 'Total',
               showSymbol: false,
               symbol: 'circle',
-              emphasis: {
-                focus: 'series',
-                itemStyle: {
-                  color: chainColor,
-                },
-              },
               areaStyle: {
                 color: chainColor,
               },

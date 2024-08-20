@@ -334,9 +334,9 @@ export default {
           formatter: globalFormatter,
         },
         legend: {
-          x: 'center',
-          y: 'bottom',
-          icon: 'rect',
+          x: 'right',
+          y: 'top',
+          icon: 'circle',
           textStyle: {
             color: 'var(--font-color)',
           },
@@ -357,8 +357,10 @@ export default {
           },
         },
         grid: {
-          left: '20px',
-          right: '20px',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          containLabel: false,
         },
         series,
         ...extraSettings,

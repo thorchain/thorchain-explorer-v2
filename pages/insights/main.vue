@@ -194,7 +194,6 @@ export default {
               splitLine: {
                 show: true,
               },
-              max: 'dataMax',
             },
           ],
         }
@@ -335,7 +334,6 @@ export default {
               splitLine: {
                 show: true,
               },
-              max: 'dataMax',
             },
           ],
         },
@@ -512,7 +510,6 @@ export default {
               splitLine: {
                 show: true,
               },
-              max: 'dataMax',
             },
           ],
         },
