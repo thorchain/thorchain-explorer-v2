@@ -15,12 +15,14 @@ main {
 }
 
 body {
-  background: linear-gradient(
-    to left top,
-    var(--gradient-left) 0% /*bottom-right color*/,
-    var(--gradient-right) 100% /*top-left color*/
-  );
-  font-family:  "Roboto", system-ui, -apple-system, "Segoe UI", "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  background: linear-gradient(to left top,
+      var(--gradient-left) 0%
+      /*bottom-right color*/
+      ,
+      var(--gradient-right) 100%
+      /*top-left color*/
+    );
+  font-family: "Roboto", system-ui, -apple-system, "Segoe UI", "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   font-style: normal;
   font-optical-sizing: auto;
   color: var(--font-color);
@@ -47,6 +49,58 @@ input {
 .center {
   text-align: center !important;
 }
+
+.popover {
+  display: none;
+}
+
+@include lg {
+  .popover {
+    display: block;
+  }
+
+  .submenu {
+    display: block;
+    background-color: var(--card-bg-color);
+    border-radius: 0 0 0.5rem 0.5rem;
+    z-index: 1000;
+    padding: 0.5rem 0.375rem;
+    min-width: 9rem;
+    border-top: var(--primary-color) 2px solid;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    position: relative;
+    top: 0.75rem;
+    animation: slideDown 0.3s ease forwards;
+
+    @keyframes slideDown {
+      0% {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  }
+
+  .submenu-item {
+    display: block;
+    padding: 0.75rem;
+    white-space: nowrap;
+    text-decoration: none;
+    color: var(--sec-font-color);
+
+    &:hover {
+      background-color: var(--darker-bg);
+      border-radius: 0.3rem;
+      color: var(--primary-color);
+    }
+  }
+
+}
+
 
 .header-icon {
   margin-left: 5px;
@@ -188,6 +242,7 @@ input {
 
   .card-body {
     padding: 0.75rem;
+
     .row-item {
       justify-content: space-between;
       display: flex;
@@ -214,7 +269,7 @@ input {
         overflow: hidden;
         width: 66%;
 
-        > span {
+        >span {
           overflow: hidden;
           text-overflow: ellipsis;
 
@@ -391,7 +446,7 @@ input {
   }
 }
 
-.vgt-table:not(.node-table) > tbody > tr:last-child td {
+.vgt-table:not(.node-table)>tbody>tr:last-child td {
   border-bottom: none !important;
 }
 
@@ -654,7 +709,7 @@ input {
     flex-direction: row;
   }
 
-  > div {
+  >div {
     @include lg {
       width: calc(50% - 10px);
     }
@@ -690,7 +745,7 @@ input {
   flex-direction: column;
   gap: 5px;
 
-  > span {
+  >span {
     display: flex;
     gap: 8px;
     justify-content: space-between;
@@ -738,6 +793,7 @@ input {
   transition: all 0.2s;
   transform: translateY(0);
 }
+
 .fade-enter,
 .fade-leave-to {
   opacity: 0;
@@ -749,6 +805,7 @@ input {
   transition: all 0.2s;
   transform: translateY(0);
 }
+
 .fade-up-enter,
 .fade-up-leave-to {
   opacity: 0;
@@ -825,6 +882,7 @@ input {
     -webkit-transform: rotate(360deg);
   }
 }
+
 @-webkit-keyframes spin {
   to {
     -webkit-transform: rotate(360deg);

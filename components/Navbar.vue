@@ -21,12 +21,30 @@
           :key="index"
           :to="item.link"
           :class="['navbar-item']"
-          @click.native="toggleMenu(false)"
         >
           <div class="navbar-wrap">
             <span class="navbar-text">{{ item.name }}</span>
+            <span v-if="item.submenu" class="dropdown-icon"></span>
           </div>
         </NuxtLink>
+        <b-popover
+          v-if="item.submenu"
+          triggers="hover"
+          :target="`navbar-${item.name}`"
+          placement="bottom-start"
+          custom-class="popover"
+        >
+          <div class="submenu">
+            <NuxtLink
+              v-for="(subItem, subIndex) in item.submenu"
+              :key="subIndex"
+              :to="subItem.link"
+              class="submenu-item"
+            >
+              {{ subItem.name }}
+            </NuxtLink>
+          </div>
+        </b-popover>
       </template>
     </div>
   </div>
@@ -133,6 +151,28 @@ export default {
           unicon: 'financeUnselected',
           icon: 'financeSelected',
           link: '/thorfi',
+          submenu: [
+            {
+              name: 'Savers',
+              link: '/thorfi/savers',
+            },
+            {
+              name: 'Synths',
+              link: '/thorfi/synths',
+            },
+            {
+              name: 'Trade Assets',
+              link: '/thorfi/trades',
+            },
+            {
+              name: 'Rune Pool',
+              link: '/thorfi/runepool',
+            },
+            {
+              name: 'Lending',
+              link: '/thorfi/lending',
+            },
+          ],
         },
         {
           name: 'Vaults',
@@ -158,17 +198,27 @@ export default {
   },
   methods: {
     ...mapMutations(['toggleMenu']),
+    handleResize() {
+      if (window.innerWidth > 900 && this.menu) {
+        this.toggleMenu()
+      }
+    },
+  },
+  mounted() {
+    window.addEventListener('resize', this.handleResize)
+  },
+  beforeDestroy() {
+    window.removeEventListener('resize', this.handleResize)
   },
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .navbar-container {
   padding: 0.25rem 0;
   transition: height 0.3s;
   max-width: 90rem;
   margin: auto;
-
   .header {
     display: flex;
     justify-content: space-between;
@@ -197,13 +247,35 @@ export default {
   @include lg {
     display: flex;
     justify-content: space-between;
+
+    .dropdown-icon {
+      position: relative;
+      display: inline-block;
+      margin-left: 0.5rem;
+
+      &::after {
+        content: '';
+        border: solid var(--sec-font-color);
+        border-width: 0 2px 2px 0;
+        display: inline-block;
+        padding: 2.8px;
+        transform: rotate(45deg);
+        vertical-align: middle;
+        margin-bottom: 6px;
+        transition: border-color 0.3s;
+      }
+    }
+  }
+
+  &.menu .navbar-lists {
+    padding: 12px 0;
   }
 
   .navbar-lists {
     overflow: hidden;
     max-height: 0;
     transition:
-      max-height 0.7s cubic-bezier(0.25, 0.1, 0.25, 1),
+      all 0.7s cubic-bezier(0.25, 0.1, 0.25, 1),
       opacity 1s ease;
 
     @include lg {
@@ -226,10 +298,13 @@ export default {
       text-decoration: none;
       border-radius: 30px;
       position: relative;
+      padding-top: 0.2rem;
 
       &:hover {
-        span {
+        span,
+        .dropdown-icon::after {
           color: var(--primary-color);
+          border-color: var(--primary-color);
         }
       }
 
@@ -237,6 +312,10 @@ export default {
         span {
           color: var(--primary-color);
           font-weight: bold;
+        }
+
+        .dropdown-icon::after {
+          border-color: var(--primary-color);
         }
       }
 
