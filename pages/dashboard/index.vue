@@ -91,6 +91,7 @@
           :loading="!swapHistory"
           :autoresize="true"
           :loading-options="showLoading"
+          :theme="chartTheme"
         />
         <div
           v-if="swapMode == 'pools-vol'"
@@ -103,6 +104,7 @@
               :autoresize="true"
               :loading-options="showLoading"
               style="width: 275px; height: 250px; min-height: initial"
+              :theme="chartTheme"
             />
           </div>
           <div v-if="poolsData" class="pool-depth-extra">
@@ -157,6 +159,7 @@
           :loading="!earningsHistory"
           :autoresize="true"
           :loading-options="showLoading"
+          :theme="chartTheme"
         />
         <div v-if="poolMode == 'chain-status'" :key="2" style="min-width: 100%">
           <vue-good-table

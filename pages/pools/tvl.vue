@@ -7,6 +7,7 @@
         :option="tvlOption"
         :loading="!tvlOption"
         :autoresize="true"
+        :theme="chartTheme"
       />
     </Card>
   </div>

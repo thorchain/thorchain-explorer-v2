@@ -80,6 +80,7 @@
             :option="volumeHistory"
             :loading="!volumeHistory"
             :loading-options="showLoading"
+            :theme="chartTheme"
           />
         </div>
         <div class="pool-detail-container">

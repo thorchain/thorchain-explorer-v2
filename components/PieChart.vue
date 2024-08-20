@@ -4,6 +4,7 @@
     :autoresize="true"
     :loading-options="showLoading"
     style="width: 275px; height: 250px; min-height: initial"
+    :theme="chartTheme"
   />
 </template>
 
