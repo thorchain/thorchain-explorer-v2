@@ -688,6 +688,10 @@ const interfaces = {
     name: 'Edge Wallet',
     icon: 'edge',
   },
+  okx: {
+    name: 'OKX',
+    icon: 'okx',
+  },
 }
 
 export const affiliateMap = {
@@ -709,6 +713,7 @@ export const affiliateMap = {
   dx: interfaces.asgardex,
   lifi: interfaces.lifi,
   ej: interfaces.edge,
+  okw: interfaces.okx,
 }
 
 export function getExplorerAddressUrl(chain, query) {
