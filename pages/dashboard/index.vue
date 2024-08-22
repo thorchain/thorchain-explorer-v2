@@ -325,6 +325,7 @@ import {
   GridComponent,
 } from 'echarts/components'
 import VChart from 'vue-echarts'
+import { range } from 'lodash'
 import { blockTime } from '~/utils'
 
 import Churn from '~/assets/images/churn.svg?inline'
@@ -944,6 +945,8 @@ export default {
         total: [],
       }
 
+      let EODVolume = 0
+
       d?.intervals.forEach((interval, index) => {
         if (d?.intervals.length === index + 1) {
           if (+interval.totalVolumeUSD === 0) {
@@ -953,9 +956,10 @@ export default {
             value: +interval.totalVolumeUSD / 10 ** 2,
             itemStyle: {
               color: '#F3BA2F',
-              borderRadius: [8, 8, 0, 0],
+              borderRadius: [0, 0, 0, 0],
             },
           })
+          EODVolume = interval.EODVolume / 1e2
         } else {
           swapVolume?.total.push({
             value: +interval.totalVolumeUSD / 10 ** 2,
@@ -972,14 +976,35 @@ export default {
         swapCount?.total.push(+interval.totalCount)
       })
 
+      const EODSwap = range(0, swapVolume.total.length - 1, 0)
+
+      EODSwap.push({
+        value: EODVolume,
+        itemStyle: {
+          color: 'transparent',
+          borderColor: '#F3BA2F',
+          borderWidth: 1,
+          borderRadius: [8, 8, 0, 0],
+        },
+      })
+
       const resVolume = this.basicChartFormat(
         undefined,
         [
           {
             type: 'bar',
             name: 'Total Volume',
+            stack: 'Total',
             showSymbol: false,
             data: swapVolume?.total,
+            smooth: true,
+          },
+          {
+            type: 'bar',
+            name: 'EOD Volume',
+            stack: 'Total',
+            showSymbol: false,
+            data: EODSwap,
             smooth: true,
           },
         ],
@@ -1008,9 +1033,15 @@ export default {
           </div>
           <div class="tooltip-body">
             <span>
-              <span>Volume</span>
+              <span>Volume
+              </span>
               <b>$${this.$options.filters.number(param[0].value, '0,0.00')}</b>
             </span>
+            ${
+              EODSwap[param[0].dataIndex] !== 0
+                ? `<span><span>Volume (EOD)</span><b>$${this.$options.filters.number(param[0].value + EODSwap[param[0].dataIndex].value, '0,0.00')}</b></span>`
+                : ''
+            }
             <span>
               <span>Count</span>
               <b>${this.$options.filters.number(swapCount?.total[param[0].dataIndex], '0,0')}</b>
