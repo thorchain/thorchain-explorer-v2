@@ -2,11 +2,7 @@
   <Page>
     <div v-if="txs && txs.actions" class="transactions-container">
       <!-- transactions component -->
-      <drop-nav
-        :items="navItems"
-        :active-mode="filter"
-        @update:activeMode="(f) => changeFilter(f)"
-      />
+      <advanced-filter />
       <transactions :txs="txs" :loading="loading" />
       <pagination
         :limit="10"
@@ -20,13 +16,13 @@
 </template>
 
 <script>
-import DropNav from './components/dropNav.vue'
+import advancedFilter from './components/advancedFilter.vue';
 import Transactions from '~/components/Transactions.vue'
 import LoadingCard from '~/components/layouts/LoadingCard.vue'
 
 export default {
   name: 'TxsPage',
-  components: { Transactions, LoadingCard, DropNav },
+  components: { Transactions, LoadingCard, advancedFilter },
   data() {
     return {
       txs: undefined,
