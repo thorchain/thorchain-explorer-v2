@@ -278,7 +278,7 @@ export default {
         (thorStatus.stages.outbound_signed?.completed ||
           outAsset?.chain === 'THOR' ||
           outAsset?.synth ||
-          outAsset.trade) &&
+          outAsset?.trade) &&
         (thorStatus.stages?.outbound_delay?.completed ?? true)
 
       return !inboundFinalised || !actionFinalised || !outboundFinalised
