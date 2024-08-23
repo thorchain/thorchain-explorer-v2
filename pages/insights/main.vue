@@ -52,18 +52,32 @@
         />
       </Card>
     </div>
-    <Card title="Top 20 Affiliate by Volume (30D)">
-      <template #header>
-        <flip-side style="fill: var(--sec-font-color)"></flip-side>
-      </template>
-      <VChart
-        :option="affiliateWalletChart"
-        :loading="!affiliateWalletChart"
-        :autoresize="true"
-        :loading-options="showLoading"
-        :theme="chartTheme"
-      />
-    </Card>
+    <div class="two-insight">
+      <Card title="Top 20 Affiliate by Volume (30D)">
+        <template #header>
+          <flip-side style="fill: var(--sec-font-color)"></flip-side>
+        </template>
+        <VChart
+          :option="affiliateVolumeChart"
+          :loading="!affiliateVolumeChart"
+          :autoresize="true"
+          :loading-options="showLoading"
+          :theme="chartTheme"
+        />
+      </Card>
+      <Card title="Top 20 Affiliate earned by Wallet (30D)">
+        <template #header>
+          <flip-side style="fill: var(--sec-font-color)"></flip-side>
+        </template>
+        <VChart
+          :option="affiliateChart"
+          :loading="!affiliateChart"
+          :autoresize="true"
+          :loading-options="showLoading"
+          :theme="chartTheme"
+        />
+      </Card>
+    </div>
   </div>
 </template>
 
@@ -125,7 +139,8 @@ export default {
       swapChartVolume: undefined,
       feesRewardsChart: undefined,
       feesRewardsChartNorm: undefined,
-      affiliateWalletChart: undefined,
+      affiliateVolumeChart: undefined,
+      affiliateChart: undefined,
     }
   },
   mounted() {
@@ -139,6 +154,10 @@ export default {
 
     this.$api.getAffiliateSwapsByWallet().then(({ data }) => {
       this.affiliateWallets(data)
+    })
+
+    this.$api.getAffiliateByWallet().then(({ data }) => {
+      this.affiliateEarningsWallets(data)
     })
   },
   methods: {
@@ -177,7 +196,61 @@ export default {
         },
       ]
 
-      this.affiliateWalletChart = this.basicChartFormat(
+      this.affiliateVolumeChart = this.basicChartFormat(
+        (value) => `$${this.$options.filters.number(value, '0,0.00 a')}`,
+        series,
+        xAxis,
+        {
+          legend: {
+            show: false,
+          },
+          yAxis: [
+            {
+              type: 'value',
+              name: '',
+              position: 'right',
+              show: false,
+              splitLine: {
+                show: true,
+              },
+            },
+          ],
+        }
+      )
+    },
+    affiliateEarningsWallets(d) {
+      const xAxis = []
+      const volume = []
+      d.forEach((interval, index) => {
+        xAxis.push(interval.affiliate)
+        volume.push(interval.affiliate_fees_usd)
+      })
+
+      let colors = ['#63FDD9', '#00CCFF', '#F3BA2F', '#FF4954']
+      if (this.theme === 'light') {
+        colors = ['#3ca38b', '#00CCFF', '#F3BA2F', '#FF4954']
+      }
+
+      const series = [
+        {
+          name: 'Volume',
+          type: 'bar',
+          stack: 'Total',
+          showSymbol: false,
+          symbol: 'circle',
+          emphasis: {
+            focus: 'series',
+          },
+          data: volume,
+          itemStyle: {
+            color(param) {
+              return colors[param.dataIndex % 4]
+            },
+          },
+        },
+      ]
+
+      this.affiliateChart = this.basicChartFormat(
         (value) => `$${this.$options.filters.number(value, '0,0.00 a')}`,
         series,
         xAxis,

@@ -82,6 +82,7 @@ import {
   getStatsDaily,
   getFeesRewardsMonthly,
   getAffiliateSwapsByWallet,
+  getAffiliateByWallet,
 } from './middleware.api'
 import {
   getChurnHistory,
@@ -240,6 +241,7 @@ export default function ({ $axios }, inject) {
     getStatsDaily,
     getFeesRewardsMonthly,
     getAffiliateSwapsByWallet,
+    getAffiliateByWallet,
   }
 
   inject('api', api)
