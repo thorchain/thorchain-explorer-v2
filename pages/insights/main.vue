@@ -1,6 +1,6 @@
 <template>
   <div class="container-page">
-    <div class="two-insight">
+    <div class="chart-inner-container">
       <Card title="Type Swap Chart">
         <template #header>
           <flip-side style="fill: var(--sec-font-color)"></flip-side>
@@ -26,7 +26,7 @@
         />
       </Card>
     </div>
-    <div class="two-insight">
+    <div class="chart-inner-container">
       <Card title="Fees/Reward Chart">
         <template #header>
           <flip-side style="fill: var(--sec-font-color)"></flip-side>
@@ -52,7 +52,7 @@
         />
       </Card>
     </div>
-    <div class="two-insight">
+    <div class="chart-inner-container">
       <Card title="Top 20 Affiliate by Volume (30D)">
         <template #header>
           <flip-side style="fill: var(--sec-font-color)"></flip-side>
@@ -390,14 +390,6 @@ export default {
         series,
         xAxis,
         {
-          legend: {
-            type: 'scroll',
-            pageIconColor: 'var(--primary-color)',
-            icon: 'rect',
-            textStyle: {
-              color: 'var(--sec-font-color)',
-            },
-          },
           yAxis: [
             {
               type: 'value',
@@ -441,14 +433,6 @@ export default {
         normSeries,
         xAxis,
         {
-          legend: {
-            type: 'scroll',
-            pageIconColor: 'var(--primary-color)',
-            icon: 'rect',
-            textStyle: {
-              color: 'var(--sec-font-color)',
-            },
-          },
           yAxis: [
             {
               type: 'value',
@@ -560,14 +544,6 @@ export default {
         series,
         xAxis.reverse(),
         {
-          legend: {
-            type: 'scroll',
-            pageIconColor: 'var(--primary-color)',
-            icon: 'rect',
-            textStyle: {
-              color: 'var(--sec-font-color)',
-            },
-          },
           tooltip: {
             confine: true,
             valueFormatter: (value) => `$ ${this.normalFormat(value)}`,
@@ -603,14 +579,6 @@ export default {
         normSeries,
         xAxis,
         {
-          legend: {
-            type: 'scroll',
-            pageIconColor: 'var(--primary-color)',
-            icon: 'rect',
-            textStyle: {
-              color: 'var(--sec-font-color)',
-            },
-          },
           yAxis: [
             {
               type: 'value',
@@ -659,16 +627,5 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 10px;
-}
-
-.two-insight {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  flex-direction: column;
-
-  @include md {
-    flex-direction: row;
-  }
 }
 </style>

@@ -334,6 +334,7 @@ export default {
           formatter: globalFormatter,
         },
         legend: {
+          type: 'scroll',
           x: 'right',
           y: 'top',
           icon: 'circle',
