@@ -474,7 +474,9 @@ export function availableChains(nodes) {
     nodes?.map((n) =>
       n.observe_chains
         ?.map(({ chain }) => chain)
-        .filter((chain) => chain !== 'TERRA' /* disable TERRA */)
+        .filter(
+          (chain) => chain !== 'TERRA' && chain !== 'BNB' /* disable TERRA */
+        )
     )
   ).reduce((a, b) => (a?.length >= b?.length ? a : b), 0)
 }
