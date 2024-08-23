@@ -1042,8 +1042,7 @@ export default {
           </div>
           <div class="tooltip-body">
             <span>
-              <span>Volume
-              </span>
+              <span>Volume</span>
               <b>$${this.$options.filters.number(param[0].value, '0,0.00')}</b>
             </span>
             ${
