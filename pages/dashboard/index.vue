@@ -672,6 +672,7 @@ export default {
         ).thorchain
         this.txs = data?.txs?.actions
         this.totalAddresses = +data?.addresses?.pagination?.total
+        this.totalSwap24USD = +data?.stats?.volume24USD
 
         this.$api.getPools().then(({ data }) => {
           this.formatPoolsData(data)
@@ -741,8 +742,6 @@ export default {
             1e8) *
           +data?.earning?.intervals[data?.earning?.intervals.length - 1]
             .runePriceUSD
-        this.totalSwap24USD =
-          data.swaps?.intervals[data.swaps?.intervals.length - 1].totalVolumeUSD
         this.totalSwapVolumeUSD = data.swaps?.meta?.totalVolumeUSD
         this.totalSwapVolume = data.swaps?.meta?.totalVolume
       })
