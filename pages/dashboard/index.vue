@@ -959,7 +959,16 @@ export default {
               borderRadius: [0, 0, 0, 0],
             },
           })
-          EODVolume = interval.EODVolume / 1e2
+          if (+interval.totalCount < +d?.intervals[index - 1].totalCount / 10) {
+            EODVolume =
+              d?.intervals
+                .slice(-4, -1)
+                .reduce((a, c) => a + +c.totalVolumeUSD, 0) /
+                (1e2 * 3) -
+              +interval.totalVolumeUSD / 1e2
+          } else {
+            EODVolume = interval.EODVolume / 1e2
+          }
         } else {
           swapVolume?.total.push({
             value: +interval.totalVolumeUSD / 10 ** 2,
