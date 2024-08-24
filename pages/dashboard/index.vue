@@ -667,9 +667,6 @@ export default {
         this.stats = data?.stats
         this.runeSupply = +data?.runeSupply?.amount?.amount / 10 ** 8
         this.lastblock = data?.lastBlockHeight
-        this.thorHeight = data?.lastBlockHeight.find(
-          (e) => e.chain === 'BTC'
-        ).thorchain
         this.txs = data?.txs?.actions
         this.totalAddresses = +data?.addresses?.pagination?.total
         this.totalSwap24USD = +data?.stats?.volume24USD
@@ -958,7 +955,7 @@ export default {
               borderRadius: [0, 0, 0, 0],
             },
           })
-          if (+interval.totalCount < +d?.intervals[index - 1].totalCount / 10) {
+          if (+interval.totalCount < +d?.intervals[index - 1].totalCount / 3) {
             EODVolume =
               d?.intervals
                 .slice(-4, -1)
