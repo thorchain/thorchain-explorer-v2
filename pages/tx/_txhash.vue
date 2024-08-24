@@ -620,7 +620,11 @@ export default {
       // Actions accordion, inbound accordion, outbound accordion
 
       // Parse by Memo like thornode
-      const memo = this.parseMemo(thorStatus.tx?.memo)
+      const memo = this.parseMemo(thorTx.tx?.tx?.memo)
+      if (memo.type === 'outbound') {
+        this.gotoTx(memo.hash)
+        return
+      }
 
       if (memo.type === 'swap') {
         const { cards, accordions } = this.createSwapState(

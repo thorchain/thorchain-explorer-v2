@@ -469,6 +469,14 @@ export default {
         }
       }
 
+      if (type === 'outbound') {
+        // OUT:hash
+        return {
+          type,
+          hash: parts[1],
+        }
+      }
+
       return {
         type: type || null,
         asset: parts[1] || null,
