@@ -2,20 +2,24 @@
   <Page>
     <template v-if="!isError && !isLoading && pools">
       <div class="tx-header">
-        <h3>Transaction</h3>
-      </div>
-      <div class="utility">
-        <div class="tx-id clickable" @click="gotoTx($route.params.txhash)">
-          {{ $route.params.txhash }}
+        <div class="item">
+          <span>
+            {{ $route.params.txhash.slice(0, 4) }}...{{
+              $route.params.txhash.slice(-4)
+            }}
+          </span>
+          <Copy :str-copy="$route.params.txhash" />
         </div>
-        <div
-          class="icon-wrapper"
-          style="margin: 0"
-          @click="copy($route.params.txhash)"
+        <div id="qrcode" class="item">
+          <qr-icon class="qr-icon"></qr-icon>
+        </div>
+        <b-popover
+          triggers="hover focus"
+          target="qrcode"
+          custom-class="custom-popover"
         >
-          <span class="icon-name">{{ copyText }}</span>
-          <CopyIcon class="icon small" />
-        </div>
+          <qrcode-vue :value="$route.params.txhash"></qrcode-vue>
+        </b-popover>
       </div>
 
       <tx-card v-for="(c, i) in cards" :key="i" :tx-data="c.details">
@@ -54,10 +58,11 @@ import { assetToString } from '@xchainjs/xchain-util'
 import { orderBy } from 'lodash'
 import { mapGetters } from 'vuex'
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
+import QrcodeVue from 'qrcode.vue'
 import streamingSwap from './components/streamingSwap.vue'
 import txCard from './components/txCard.vue'
-import CopyIcon from '~/assets/images/copy.svg?inline'
 import DisconnectIcon from '~/assets/images/disconnect.svg?inline'
+import QrIcon from '~/assets/images/qr.svg?inline'
 import {
   assetFromString,
   assetToTrade,
@@ -68,12 +73,13 @@ import Accordion from '~/components/Accordion.vue'
 
 export default {
   components: {
-    CopyIcon,
+    QrIcon,
     DisconnectIcon,
     BounceLoader,
     streamingSwap,
     txCard,
     Accordion,
+    QrcodeVue,
   },
   data() {
     return {
@@ -1402,6 +1408,55 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.tx-header {
+  display: flex;
+  width: 100%;
+  max-width: 640px;
+  gap: 8px;
+  margin: auto;
+  align-items: center;
+  justify-content: center;
+
+  @include md {
+    justify-content: flex-start;
+  }
+
+  .item {
+    background-color: var(--card-bg-color);
+    padding: 0.5rem;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+
+    span {
+      color: var(--sec-font-color);
+      line-height: 15px;
+    }
+
+    &:hover {
+      span {
+        color: var(--primary-color);
+      }
+
+      * {
+        fill: var(--primary-color);
+      }
+    }
+
+    * {
+      fill: var(--sec-font-color);
+    }
+  }
+}
+
+.qr-icon {
+  fill: var(--font-color);
+  width: 16px;
+  height: 16px;
+}
+
 .tx-wrapper {
   position: relative;
 
@@ -1467,14 +1522,6 @@ export default {
   }
 }
 
-.tx-header {
-  h3 {
-    display: flex;
-    align-items: center;
-    margin-top: 0;
-  }
-}
-
 .icon {
   fill: var(--sec-font-color);
   height: 1.5rem;
@@ -1497,8 +1544,7 @@ export default {
 }
 
 .utility,
-.tx-date,
-.tx-header {
+.tx-date {
   padding: 0 1rem;
 }
 
