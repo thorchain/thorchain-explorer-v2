@@ -448,6 +448,11 @@ export default {
                 is: accordions.action.liquidityFee,
               },
               {
+                key: 'Swap Slip',
+                value: `${this.percentageFormat(accordions.action.swapSlip / 1e4, 2)}`,
+                is: accordions.action.swapSlip,
+              },
+              {
                 key: 'Interface Fee',
                 value: `${
                   affiliateOutAmount / 1e8
