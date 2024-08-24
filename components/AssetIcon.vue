@@ -17,12 +17,14 @@
 
 <script>
 export default {
-  props: ['asset', 'chain', 'height', 'classes'],
+  props: ['asset', 'chain', 'height', 'classes', 'chainHeight'],
   computed: {
     heightStyle() {
       return {
         '--asset-height': this.height ?? '1.5rem',
         '--asset-width': this.height ?? '1.5rem',
+        '--chain-asset-height': this.chainHeight ?? '0.9rem',
+        '--chain-asset-width': this.chainHeight ?? '0.9rem',
       }
     },
   },
@@ -54,12 +56,12 @@ export default {
   }
 
   .chain-asset-icon {
-    width: 0.9rem;
-    height: 0.9rem;
+    width: var(--chain-asset-width);
+    height: var(--chain-asset-height);
     border-radius: 50%;
     position: absolute;
-    right: -0.4rem;
-    bottom: -0.4rem;
+    right: calc(var(--chain-asset-width) * -1 / 2);
+    bottom: calc(var(--chain-asset-width) * -1 / 2);
   }
 
   &.no-margin {

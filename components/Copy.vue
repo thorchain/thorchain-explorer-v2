@@ -1,18 +1,16 @@
 <template>
-  <component
-    :is="activeComponent"
-    :class="['table-icon', { active: activeComponent === 'CopiedIcon' }]"
+  <copy-icon
+    ref="copy"
+    :class="['table-icon', 'copy-icon']"
     @click="onlyCopy(strCopy)"
   />
 </template>
 
 <script>
-import CopyIcon from '~/assets/images/file.svg?inline'
-import CopiedIcon from '~/assets/images/copied.svg?inline'
+import CopyIcon from '~/assets/images/clone.svg?inline'
 
 export default {
   components: {
-    CopiedIcon,
     CopyIcon,
   },
   props: ['strCopy'],
@@ -25,10 +23,7 @@ export default {
     onlyCopy(address) {
       navigator.clipboard.writeText(address).then(
         () => {
-          this.activeComponent = 'CopiedIcon'
-          setTimeout(() => {
-            this.activeComponent = 'CopyIcon'
-          }, 2000)
+          this.animate('copy', 'animate', 1000)
         },
         (err) => {
           console.error('Could not copy text: ', err)
@@ -39,8 +34,41 @@ export default {
 }
 </script>
 
-<style>
-.copy-container {
-  height: 1rem;
+<style lang="scss" scoped>
+.animate {
+  fill: var(--primary-color);
+  -webkit-animation: jello-vertical 1s both;
+  animation: jello-vertical 1s both;
+}
+
+@keyframes jello-vertical {
+  0% {
+    -webkit-transform: scale3d(1, 1, 1);
+    transform: scale3d(1, 1, 1);
+  }
+  30% {
+    -webkit-transform: scale3d(0.75, 1.25, 1);
+    transform: scale3d(0.75, 1.25, 1);
+  }
+  40% {
+    -webkit-transform: scale3d(1.25, 0.75, 1);
+    transform: scale3d(1.25, 0.75, 1);
+  }
+  50% {
+    -webkit-transform: scale3d(0.85, 1.15, 1);
+    transform: scale3d(0.85, 1.15, 1);
+  }
+  65% {
+    -webkit-transform: scale3d(1.05, 0.95, 1);
+    transform: scale3d(1.05, 0.95, 1);
+  }
+  75% {
+    -webkit-transform: scale3d(0.95, 1.05, 1);
+    transform: scale3d(0.95, 1.05, 1);
+  }
+  100% {
+    -webkit-transform: scale3d(1, 1, 1);
+    transform: scale3d(1, 1, 1);
+  }
 }
 </style>

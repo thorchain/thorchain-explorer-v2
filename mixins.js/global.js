@@ -522,6 +522,9 @@ export default {
       }
 
       let asset = assetFromString(assetInString)
+      if (!asset) {
+        return
+      }
 
       if (asset?.address) {
         // attempt to fuzzy match address
@@ -734,12 +737,12 @@ export default {
         icons,
       }
     },
-    animate(refName, className) {
+    animate(refName, className, duration = 2000) {
       const d = this.$refs[refName]
       d.classList.add(className)
       setTimeout(function () {
         d.classList.remove(className)
-      }, 2000)
+      }, duration)
     },
   },
 }
