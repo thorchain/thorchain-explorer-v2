@@ -3,7 +3,7 @@
     <template v-if="!isError && !isLoading && pools">
       <div class="tx-header">
         <div class="item">
-          <span>
+          <span class="mono">
             {{ $route.params.txhash.slice(0, 4) }}...{{
               $route.params.txhash.slice(-4)
             }}
@@ -776,6 +776,9 @@ export default {
               )
             : null,
           outboundSigned: thorStatus.stages.outbound_signed?.completed ?? false,
+          outboundETA:
+            thorStatus.stages.outbound_signed?.scheduled_outbound_height -
+            this.thorHeight,
           done: thorStatus.status === 'done',
         },
       ]
@@ -785,7 +788,7 @@ export default {
           title: 'Trade Account',
           in: ins,
           middle: {
-            pending: false,
+            pending: this.isTxInPending(thorStatus, action),
           },
           out: outs,
         },
