@@ -42,13 +42,13 @@
           </div>
 
           <div class="input-row">
-            <SelectFilter
+            <select-filter
               :options="getOptions('type')"
               :default="filters.type"
               :label="filterLabels.type"
               @update:selectedOption="selectOption('type', $event)"
             />
-            <SelectFilter
+            <select-filter
               :options="getOptions('txType')"
               :default="filters.txType"
               :label="filterLabels.txType"
@@ -58,15 +58,14 @@
         </div>
 
         <div class="button-group">
-            <button
-              @click="submitForm"
-              :disabled="!isFormValid()"
-              :class="{ 'disabled-btn': !isFormValid() }"
-            >
-              Submit
-            </button>
-          </div>
-
+          <button
+            @click="submitForm"
+            :disabled="!isFormValid()"
+            :class="{ 'disabled-btn': !isFormValid() }"
+          >
+            Submit
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -130,17 +129,15 @@ export default {
     },
 
     isFormValid() {
-  const valid = (
-    this.filters.addresses.length > 0 ||
-    this.filters.txId.length > 0 ||
-    this.filters.affiliate.length > 0 ||
-    this.filters.asset.length > 0 ||
-    this.filters.type !== 'All' ||     
-    this.filters.txType !== 'All' 
-  )
-  return valid;
-}
-
+      const valid =
+        this.filters.addresses.length > 0 ||
+        this.filters.txId.length > 0 ||
+        this.filters.affiliate.length > 0 ||
+        this.filters.asset.length > 0 ||
+        this.filters.type !== 'All' ||
+        this.filters.txType !== 'All'
+      return valid
+    },
   },
 }
 </script>
@@ -238,7 +235,6 @@ export default {
   justify-content: space-between;
   gap: 15px;
 }
-
 
 .button-group {
   display: flex;
