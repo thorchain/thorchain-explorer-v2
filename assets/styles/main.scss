@@ -50,12 +50,12 @@ input {
   text-align: center !important;
 }
 
-.popover {
+.nav-popover {
   display: none;
 }
 
 @include lg {
-  .popover {
+  .nav-popover {
     display: block;
   }
 

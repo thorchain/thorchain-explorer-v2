@@ -32,7 +32,7 @@
           triggers="hover"
           :target="`navbar-${item.name}`"
           placement="bottom-start"
-          custom-class="popover"
+          custom-class="nav-popover"
         >
           <div class="submenu">
             <NuxtLink

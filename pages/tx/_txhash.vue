@@ -8,13 +8,15 @@
               $route.params.txhash.slice(-4)
             }}
           </span>
+        </div>
+        <div class="item">
           <Copy :str-copy="$route.params.txhash" />
         </div>
         <div id="qrcode" class="item">
           <qr-icon class="qr-icon"></qr-icon>
         </div>
         <b-popover
-          triggers="hover focus"
+          triggers="click"
           target="qrcode"
           custom-class="custom-popover"
         >
