@@ -42,7 +42,7 @@ import moment from 'moment'
 import TransactionStatus from './transactions/TransactionStatus.vue'
 import TransactionAction from './transactions/TransactionAction.vue'
 import Address from './transactions/Address.vue'
-import Hash from './transactions/Address.vue'
+import Hash from './transactions/Hash.vue'
 import { AssetImage } from '~/classes/assetImage'
 
 export default {
