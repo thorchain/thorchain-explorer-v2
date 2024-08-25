@@ -3,7 +3,7 @@
     <div class="chart-container">
       <div class="network-stats">
         <div class="stat-group">
-          <div class="stat-item">
+          <nuxt-link to="/insights" class="stat-item stat-item-link">
             <exchange class="stat-image" />
             <div class="item-detail">
               <div class="header">Swap Volume (24hr)</div>
@@ -11,9 +11,10 @@
                 {{ (totalSwap24USD / 1e2) | currency('$', 0) }}
               </skeleton-item>
             </div>
-          </div>
+            <arrow-right-icon class="arrow-icon" />
+          </nuxt-link>
           <hr />
-          <div class="stat-item">
+          <nuxt-link to="/pools" class="stat-item stat-item-link">
             <Piggy class="stat-image" />
             <div class="item-detail">
               <div class="header">Bond | Pool APY</div>
@@ -22,11 +23,12 @@
                 {{ network.liquidityAPY | percent(2) }}
               </skeleton-item>
             </div>
-          </div>
+            <arrow-right-icon class="arrow-icon" />
+          </nuxt-link>
           <hr />
         </div>
         <div class="stat-group">
-          <div class="stat-item">
+          <nuxt-link to="/pools/tvl" class="stat-item stat-item-link">
             <LockIcon class="stat-image" />
             <div class="item-detail">
               <div class="header">Total Value Locked (Pool + Bond)</div>
@@ -39,9 +41,10 @@
                 </template>
               </skeleton-item>
             </div>
-          </div>
+            <arrow-right-icon class="arrow-icon" />
+          </nuxt-link>
           <hr />
-          <div class="stat-item">
+          <nuxt-link to="/insights" class="stat-item stat-item-link">
             <money class="stat-image" />
             <div class="item-detail">
               <div class="header">Earnings (24hr)</div>
@@ -49,7 +52,8 @@
                 {{ earnings24USD | currency('$', 0) }}
               </skeleton-item>
             </div>
-          </div>
+            <arrow-right-icon class="arrow-icon" />
+          </nuxt-link>
           <hr />
         </div>
         <div class="stat-group">
@@ -140,6 +144,12 @@
                 </tr>
               </tbody>
             </table>
+            <router-link to="/pools" class="view-all-link">
+              <button class="view-all-button">
+                View All
+                <arrow-right-icon class="arrow-icon" />
+              </button>
+            </router-link>
           </div>
         </div>
       </Card>
@@ -330,11 +340,13 @@ import { blockTime } from '~/utils'
 
 import Churn from '~/assets/images/churn.svg?inline'
 import LockIcon from '~/assets/images/lock.svg?inline'
+import ArrowRightIcon from '~/assets/images/arrow-right.svg?inline'
 import Exchange from '~/assets/images/exchange.svg?inline'
 import Book from '~/assets/images/book.svg?inline'
 import Piggy from '~/assets/images/piggy.svg?inline'
 import DangerIcon from '@/assets/images/danger.svg?inline'
 import Money from '~/assets/images/money.svg?inline'
+import External from '@/assets/images/external.svg?inline'
 
 use([
   SVGRenderer,
@@ -359,6 +371,8 @@ export default {
     Book,
     Money,
     Churn,
+    ArrowRightIcon,
+    External,
   },
   data() {
     return {
@@ -1333,6 +1347,33 @@ export default {
         color: var(--sec-font-color);
       }
     }
+
+    &.stat-item-link {
+      text-decoration: none;
+
+      .arrow-icon {
+        display: none;
+        fill: var(--sec-font-color);
+        height: 1.5rem;
+        width: 1.5rem;
+        margin-left: auto;
+        transform: rotate(-45deg);
+        align-self: flex-start;
+      }
+
+      &:hover {
+        .header {
+          color: var(--sec-font-color);
+        }
+        .value {
+          color: var(--primary-color);
+        }
+        .arrow-icon {
+          display: block;
+          fill: var(--primary-color);
+        }
+      }
+    }
   }
 
   hr {
@@ -1470,8 +1511,45 @@ export default {
       }
     }
   }
-}
+  .view-all-link {
+    display: flex;
+    justify-content: center;
+    margin-top: 16px;
+    width: 100%;
+    text-align: center;
+    text-decoration: none;
+  }
 
+  .view-all-button {
+    background-color: var(--bg-color);
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 8px;
+    color: var(--font-color);
+    cursor: pointer;
+    width: 80%;
+    font-size: 14px;
+    font-weight: 500;
+
+    .arrow-icon {
+      fill: var(--sec-font-color);
+      width: 1.2rem;
+      height: 1.2rem;
+      margin-left: 6px;
+    }
+
+    &:hover {
+      color: var(--primary-color);
+      background-color: var(--active-bg-color);
+      .arrow-icon {
+        fill: var(--primary-color);
+      }
+    }
+  }
+}
 .chain-col {
   display: flex;
   gap: 5px;
