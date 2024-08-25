@@ -3,53 +3,63 @@
     <div class="chart-container">
       <div class="network-stats">
         <div class="stat-group">
-          <div class="stat-item">
-            <exchange class="stat-image" />
-            <div class="item-detail">
-              <div class="header">Swap Volume (24hr)</div>
-              <skeleton-item :loading="!totalSwap24USD" class="value">
-                {{ (totalSwap24USD / 1e2) | currency('$', 0) }}
-              </skeleton-item>
+          <router-link to="/pools" class="stat-item-link">
+            <div class="stat-item">
+              <exchange class="stat-image" />
+              <div class="item-detail">
+                <div class="header">Swap Volume (24hr)</div>
+                <skeleton-item :loading="!totalSwap24USD" class="value">
+                  {{ (totalSwap24USD / 1e2) | currency('$', 0) }}
+                </skeleton-item>
+              </div>
             </div>
-          </div>
+          </router-link>
           <hr />
-          <div class="stat-item">
-            <Piggy class="stat-image" />
-            <div class="item-detail">
-              <div class="header">Bond | Pool APY</div>
-              <skeleton-item :loading="!runeSupply" class="value">
-                {{ network.bondingAPY | percent(2) }} |
-                {{ network.liquidityAPY | percent(2) }}
-              </skeleton-item>
+          <router-link to="/pools" class="stat-item-link">
+            <div class="stat-item">
+              <Piggy class="stat-image" />
+              <div class="item-detail">
+                <div class="header">Bond | Pool APY</div>
+                <skeleton-item :loading="!runeSupply" class="value">
+                  {{ network.bondingAPY | percent(2) }} |
+                  {{ network.liquidityAPY | percent(2) }}
+                </skeleton-item>
+              </div>
             </div>
-          </div>
+          </router-link>
           <hr />
         </div>
         <div class="stat-group">
-          <div class="stat-item">
-            <LockIcon class="stat-image" />
-            <div class="item-detail">
-              <div class="header">Total Value Locked (Pool + Bond)</div>
-              <skeleton-item
-                :loading="!(totalValuePooled && network && network.bondMetrics)"
-                class="value"
-              >
-                <template v-if="network && network.bondMetrics">
-                  {{ tvl | currency('$', 0) }}
-                </template>
-              </skeleton-item>
+          <router-link to="/pools/tvl" class="stat-item-link">
+            <div class="stat-item">
+              <LockIcon class="stat-image" />
+              <div class="item-detail">
+                <div class="header">Total Value Locked (Pool + Bond)</div>
+                <skeleton-item
+                  :loading="
+                    !(totalValuePooled && network && network.bondMetrics)
+                  "
+                  class="value"
+                >
+                  <template v-if="network && network.bondMetrics">
+                    {{ tvl | currency('$', 0) }}
+                  </template>
+                </skeleton-item>
+              </div>
             </div>
-          </div>
+          </router-link>
           <hr />
-          <div class="stat-item">
-            <money class="stat-image" />
-            <div class="item-detail">
-              <div class="header">Earnings (24hr)</div>
-              <skeleton-item :loading="!runeVolume" class="value">
-                {{ earnings24USD | currency('$', 0) }}
-              </skeleton-item>
+          <router-link to="/insights" class="stat-item-link">
+            <div class="stat-item">
+              <money class="stat-image" />
+              <div class="item-detail">
+                <div class="header">Earnings (24hr)</div>
+                <skeleton-item :loading="!runeVolume" class="value">
+                  {{ earnings24USD | currency('$', 0) }}
+                </skeleton-item>
+              </div>
             </div>
-          </div>
+          </router-link>
           <hr />
         </div>
         <div class="stat-group">
@@ -140,6 +150,12 @@
                 </tr>
               </tbody>
             </table>
+            <router-link to="/pools" class="view-all-link">
+              <button class="view-all-button">
+                View All
+                <ArrowRightIcon class="arrow-icon" />
+              </button>
+            </router-link>
           </div>
         </div>
       </Card>
@@ -330,6 +346,7 @@ import { blockTime } from '~/utils'
 
 import Churn from '~/assets/images/churn.svg?inline'
 import LockIcon from '~/assets/images/lock.svg?inline'
+import ArrowRightIcon from '~/assets/images/arrow-right.svg?inline'
 import Exchange from '~/assets/images/exchange.svg?inline'
 import Book from '~/assets/images/book.svg?inline'
 import Piggy from '~/assets/images/piggy.svg?inline'
@@ -359,6 +376,7 @@ export default {
     Book,
     Money,
     Churn,
+    ArrowRightIcon,
   },
   data() {
     return {
@@ -1304,10 +1322,16 @@ export default {
   flex-wrap: wrap;
   gap: 8px;
 
+  .stat-item-link {
+    text-decoration: none;
+  }
   .stat-item {
     display: flex;
     align-items: center;
 
+    &:hover {
+      transform: scale(1.01);
+    }
     .header {
       color: var(--font-color);
       font-size: 0.875rem;
@@ -1470,8 +1494,43 @@ export default {
       }
     }
   }
-}
+  .view-all-link {
+    display: flex;
+    justify-content: center;
+    margin-top: 16px;
+    width: 100%;
+    text-align: center;
+    text-decoration: none;
+  }
 
+  .view-all-button {
+    background-color: var(--bg-color);
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 8px;
+    color: var(--font-color);
+    cursor: pointer;
+    width: 80%;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.6s ease;
+
+    &:hover {
+      color: var(--sec-font-color);
+      background-color: var(--active-bg-color);
+      transform: scale3d(1.05, 1.03, 1);
+    }
+    .arrow-icon {
+      width: 1.2rem;
+      height: 1.2rem;
+      margin-left: 6px;
+    }
+  }
+}
 .chain-col {
   display: flex;
   gap: 5px;
