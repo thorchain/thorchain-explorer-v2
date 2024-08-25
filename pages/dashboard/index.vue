@@ -3,63 +3,57 @@
     <div class="chart-container">
       <div class="network-stats">
         <div class="stat-group">
-          <router-link to="/pools" class="stat-item-link">
-            <div class="stat-item">
-              <exchange class="stat-image" />
-              <div class="item-detail">
-                <div class="header">Swap Volume (24hr)</div>
-                <skeleton-item :loading="!totalSwap24USD" class="value">
-                  {{ (totalSwap24USD / 1e2) | currency('$', 0) }}
-                </skeleton-item>
-              </div>
+          <nuxt-link to="/pools" class="stat-item stat-item-link">
+            <exchange class="stat-image" />
+            <div class="item-detail">
+              <div class="header">Swap Volume (24hr)</div>
+              <skeleton-item :loading="!totalSwap24USD" class="value">
+                {{ (totalSwap24USD / 1e2) | currency('$', 0) }}
+              </skeleton-item>
             </div>
-          </router-link>
+            <arrow-right-icon class="arrow-icon" />
+          </nuxt-link>
           <hr />
-          <router-link to="/pools" class="stat-item-link">
-            <div class="stat-item">
-              <Piggy class="stat-image" />
-              <div class="item-detail">
-                <div class="header">Bond | Pool APY</div>
-                <skeleton-item :loading="!runeSupply" class="value">
-                  {{ network.bondingAPY | percent(2) }} |
-                  {{ network.liquidityAPY | percent(2) }}
-                </skeleton-item>
-              </div>
+          <nuxt-link to="/pools" class="stat-item stat-item-link">
+            <Piggy class="stat-image" />
+            <div class="item-detail">
+              <div class="header">Bond | Pool APY</div>
+              <skeleton-item :loading="!runeSupply" class="value">
+                {{ network.bondingAPY | percent(2) }} |
+                {{ network.liquidityAPY | percent(2) }}
+              </skeleton-item>
             </div>
-          </router-link>
+            <arrow-right-icon class="arrow-icon" />
+          </nuxt-link>
           <hr />
         </div>
         <div class="stat-group">
-          <router-link to="/pools/tvl" class="stat-item-link">
-            <div class="stat-item">
-              <LockIcon class="stat-image" />
-              <div class="item-detail">
-                <div class="header">Total Value Locked (Pool + Bond)</div>
-                <skeleton-item
-                  :loading="
-                    !(totalValuePooled && network && network.bondMetrics)
-                  "
-                  class="value"
-                >
-                  <template v-if="network && network.bondMetrics">
-                    {{ tvl | currency('$', 0) }}
-                  </template>
-                </skeleton-item>
-              </div>
+          <nuxt-link to="/pools/tvl" class="stat-item stat-item-link">
+            <LockIcon class="stat-image" />
+            <div class="item-detail">
+              <div class="header">Total Value Locked (Pool + Bond)</div>
+              <skeleton-item
+                :loading="!(totalValuePooled && network && network.bondMetrics)"
+                class="value"
+              >
+                <template v-if="network && network.bondMetrics">
+                  {{ tvl | currency('$', 0) }}
+                </template>
+              </skeleton-item>
             </div>
-          </router-link>
+            <arrow-right-icon class="arrow-icon" />
+          </nuxt-link>
           <hr />
-          <router-link to="/insights" class="stat-item-link">
-            <div class="stat-item">
-              <money class="stat-image" />
-              <div class="item-detail">
-                <div class="header">Earnings (24hr)</div>
-                <skeleton-item :loading="!runeVolume" class="value">
-                  {{ earnings24USD | currency('$', 0) }}
-                </skeleton-item>
-              </div>
+          <nuxt-link to="/insights" class="stat-item stat-item-link">
+            <money class="stat-image" />
+            <div class="item-detail">
+              <div class="header">Earnings (24hr)</div>
+              <skeleton-item :loading="!runeVolume" class="value">
+                {{ earnings24USD | currency('$', 0) }}
+              </skeleton-item>
             </div>
-          </router-link>
+            <arrow-right-icon class="arrow-icon" />
+          </nuxt-link>
           <hr />
         </div>
         <div class="stat-group">
@@ -153,7 +147,7 @@
             <router-link to="/pools" class="view-all-link">
               <button class="view-all-button">
                 View All
-                <ArrowRightIcon class="arrow-icon" />
+                <arrow-right-icon class="arrow-icon" />
               </button>
             </router-link>
           </div>
@@ -352,6 +346,7 @@ import Book from '~/assets/images/book.svg?inline'
 import Piggy from '~/assets/images/piggy.svg?inline'
 import DangerIcon from '@/assets/images/danger.svg?inline'
 import Money from '~/assets/images/money.svg?inline'
+import External from '@/assets/images/external.svg?inline'
 
 use([
   SVGRenderer,
@@ -377,6 +372,7 @@ export default {
     Money,
     Churn,
     ArrowRightIcon,
+    External,
   },
   data() {
     return {
@@ -1322,16 +1318,10 @@ export default {
   flex-wrap: wrap;
   gap: 8px;
 
-  .stat-item-link {
-    text-decoration: none;
-  }
   .stat-item {
     display: flex;
     align-items: center;
 
-    &:hover {
-      transform: scale(1.01);
-    }
     .header {
       color: var(--font-color);
       font-size: 0.875rem;
@@ -1355,6 +1345,33 @@ export default {
       .value {
         font-weight: bold;
         color: var(--sec-font-color);
+      }
+    }
+
+    &.stat-item-link {
+      text-decoration: none;
+
+      .arrow-icon {
+        display: none;
+        fill: var(--sec-font-color);
+        height: 1.5rem;
+        width: 1.5rem;
+        margin-left: auto;
+        transform: rotate(-45deg);
+        align-self: flex-start;
+      }
+
+      &:hover {
+        .header {
+          color: var(--sec-font-color);
+        }
+        .value {
+          color: var(--primary-color);
+        }
+        .arrow-icon {
+          display: block;
+          fill: var(--primary-color);
+        }
       }
     }
   }
@@ -1506,7 +1523,6 @@ export default {
   .view-all-button {
     background-color: var(--bg-color);
     border-radius: 0.5rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     border: 1px solid var(--border-color);
     display: flex;
     align-items: center;
@@ -1517,17 +1533,20 @@ export default {
     width: 80%;
     font-size: 14px;
     font-weight: 500;
-    transition: all 0.6s ease;
 
-    &:hover {
-      color: var(--sec-font-color);
-      background-color: var(--active-bg-color);
-      transform: scale3d(1.05, 1.03, 1);
-    }
     .arrow-icon {
+      fill: var(--sec-font-color);
       width: 1.2rem;
       height: 1.2rem;
       margin-left: 6px;
+    }
+
+    &:hover {
+      color: var(--primary-color);
+      background-color: var(--active-bg-color);
+      .arrow-icon {
+        fill: var(--primary-color);
+      }
     }
   }
 }
