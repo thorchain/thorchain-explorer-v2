@@ -2,7 +2,7 @@
   <div>
     <button class="advanced-filter" @click="toggleModal">
       <FilterIcon class="filter-icon" />
-      Advanced
+      Advanced Filter
     </button>
     <div v-if="isModalVisible" class="modal-overlay">
       <div class="modal-content">
@@ -189,14 +189,15 @@ export default {
   display: flex;
   align-items: center;
   padding: 10px 8px;
-  font-size: 14px;
+  font-size: 0.875rem;
   background-color: var(--card-bg-color);
-  color: var(--sec-font-color);
+  color: var(--font-color);
   border: 1px solid var(--border-color);
-  border-radius: 0.5rem;
+  border-radius: 0.3rem;
   cursor: pointer;
   width: auto;
   margin: 0.5rem;
+  font-weight: 450;
   transition:
     background-color 0.3s ease,
     transform 0.3s ease;
@@ -209,7 +210,9 @@ export default {
 
   &:hover {
     background-color: var(--active-bg-color);
-    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+    color: var(--sec-font-color);
   }
 }
 
