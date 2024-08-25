@@ -2,11 +2,9 @@
   <Page>
     <template v-if="!isError && !isLoading && pools">
       <div class="tx-header">
-        <div class="item">
+        <div class="item tx-id">
           <span class="mono">
-            {{ $route.params.txhash.slice(0, 4) }}...{{
-              $route.params.txhash.slice(-4)
-            }}
+            {{ $route.params.txhash }}
           </span>
         </div>
         <div class="item">
@@ -1443,6 +1441,9 @@ export default {
     align-items: center;
     gap: 8px;
     margin: 0;
+    flex-grow: 1;
+    max-width: 100%;
+    min-width: 32px;
 
     span {
       color: var(--sec-font-color);
@@ -1572,6 +1573,10 @@ export default {
 }
 
 .tx-id {
-  word-break: break-all;
+  flex-shrink: 5;
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 </style>
