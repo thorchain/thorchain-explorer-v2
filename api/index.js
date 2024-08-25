@@ -84,6 +84,7 @@ import {
   getAffiliateSwapsByWallet,
   getAffiliateByWallet,
   getAffiliateDaily,
+  getActions,
 } from './middleware.api'
 import {
   getChurnHistory,
@@ -244,6 +245,7 @@ export default function ({ $axios }, inject) {
     getAffiliateSwapsByWallet,
     getAffiliateByWallet,
     getAffiliateDaily,
+    getActions,
   }
 
   inject('api', api)

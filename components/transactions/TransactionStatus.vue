@@ -10,6 +10,7 @@
       <swap-icon v-if="row.type === 'swap'" class="status-icon" />
       <refund-icon v-else-if="row.type === 'refund'" class="status-icon" />
       <dove-icon v-else-if="row.type === 'send'" class="status-icon" />
+      <piggy-icon v-else-if="row.type === 'addLiquidity'" class="status-icon" />
       <span class="type-name">
         {{ typeName(row.type) }}
       </span>
@@ -21,9 +22,10 @@
 import SwapIcon from '~/assets/images/transform.svg?inline'
 import DoveIcon from '~/assets/images/dove.svg?inline'
 import RefundIcon from '~/assets/images/refund.svg?inline'
+import PiggyIcon from '~/assets/images/piggy.svg?inline'
 
 export default {
-  components: { SwapIcon, DoveIcon, RefundIcon },
+  components: { SwapIcon, DoveIcon, RefundIcon, PiggyIcon },
   props: {
     row: {
       type: Object,

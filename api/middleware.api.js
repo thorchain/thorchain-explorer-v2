@@ -126,3 +126,10 @@ export function getAffiliateDaily() {
     endpoints[process.env.NETWORK].SERVER_URL + 'api/affiliateDaily'
   )
 }
+
+export function getActions(params) {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + 'actions',
+    { params }
+  )
+}

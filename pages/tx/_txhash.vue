@@ -32,7 +32,7 @@
             :title="s.data.title"
             :pending="s.data.pending"
             :stacks="s.data.stacks"
-            :show-at-first="s.data.showAtFirst"
+            :show-at-first="true"
           />
         </template>
       </tx-card>

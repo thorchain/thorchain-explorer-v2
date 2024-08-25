@@ -209,7 +209,7 @@ export default {
   },
   async asyncData({ params, $api }) {
     const address = params.adderid
-    const addrTxs = await $api.getAddress(address, 0).catch((e) => {
+    const addrTxs = await $api.getActions({ address, offset: 0 }).catch((e) => {
       console.error(e)
     })
     const count = addrTxs?.data?.count ?? 0
@@ -375,7 +375,7 @@ export default {
       this.loading = true
       this.offset = offset
       this.$api
-        .getAddress(this.address, this.offset)
+        .getActions({ address: this.address, offset })
         .then((res) => {
           this.addrTxs = res.data
           this.count = res.data.count
