@@ -401,6 +401,22 @@ export default {
           affiliateOutAmount = accordions.action.affiliateOut[0].coins[0].amount
         }
 
+        let liquidityFeeName = 'Liquidity Fee'
+        let totalLiquidityFees = accordions.action?.liquidityFee
+        if (
+          accordions.action.streaming?.count <
+          accordions.action.streaming?.quantity
+        ) {
+          liquidityFeeName = 'Liquidity Fee (est)'
+          const one =
+            +accordions.action?.liquidityFee /
+            accordions.action.streaming?.count
+          totalLiquidityFees +=
+            one *
+            (+accordions.action.streaming?.quantity -
+              +accordions.action.streaming?.count)
+        }
+
         const accordionAction = {
           name: 'accordion-action',
           data: {
@@ -437,11 +453,11 @@ export default {
                 is: accordions.action.streaming?.interval,
               },
               {
-                key: 'Liquidity Fee',
+                key: liquidityFeeName,
                 value: `${
-                  accordions.action.liquidityFee / 1e8
+                  totalLiquidityFees / 1e8
                 } RUNE (${this.formatSmallCurrency(
-                  accordions.action.liquidityFee * this.runePrice
+                  totalLiquidityFees * this.runePrice
                 )})`,
                 is: accordions.action.liquidityFee,
               },
