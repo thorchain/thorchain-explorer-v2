@@ -1,19 +1,12 @@
 <template>
   <div class="pagination-container">
-    <div class="nav-icons" @click="$emit('changePage', 0)">
-      <angleDoubleLeft />
-    </div>
     <div class="nav-icons" @click="$emit('changePage', offset - limit)">
-      <angleLeft />
-    </div>
-    <div class="page">
-      Page {{ Number.parseInt(offset / limit) + 1 }} of {{ finalPage }}
+      <angle-left />
+      Prev Page
     </div>
     <div class="nav-icons" @click="$emit('changePage', offset + limit)">
-      <angleRight />
-    </div>
-    <div class="nav-icons" @click="$emit('changePage', finalOffset)">
-      <angleDoubleRight />
+      Next Page
+      <angle-right />
     </div>
   </div>
 </template>
@@ -47,35 +40,53 @@ export default {
 <style lang="scss">
 .pagination-container {
   display: flex;
-  justify-content: center;
-  margin-top: 1rem;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
 
   .nav-icons {
     display: flex;
     align-items: center;
+    justify-content: center;
     cursor: pointer;
-    margin: 0 0.5rem;
-    padding: 0.3rem;
-    border-radius: 0.2rem;
+    margin: 0 0.3rem;
+    padding: 10px 8px;
+    border-radius: 0.25rem;
+    background-color: var(--card-bg-color);
+    color: var(--font-color);
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition:
+      background-color 0.3s ease,
+      transform 0.2s ease;
 
     svg {
       fill: var(--font-color);
-      width: 1.2rem;
-      height: 1.2rem;
+      width: 0.75rem;
+      height: 0.75rem;
+      margin: 0 0.2rem;
     }
 
     &:hover {
-      background-color: var(--bg-color);
+      background-color: var(--active-bg-color);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      color: var(--sec-font-color);
+      transform: translateY(-2px);
+    }
 
-      svg {
-        fill: var(--sec-font-color);
-      }
+    &:active {
+      transform: translateY(1px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
     }
   }
 
   .page {
-    line-height: 1.8rem;
-    margin: 0 0.7rem;
+    color: var(--font-color);
+    line-height: 2rem;
+    margin: 0 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
   }
 }
 </style>
