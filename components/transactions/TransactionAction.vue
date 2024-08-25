@@ -1,22 +1,30 @@
 <template>
   <div>
     <div v-if="row && row.type === 'swap'" class="action-cell">
-      <span v-for="(ops, i) in row.in" :key="'in-' + i" class="mini-bubble">
+      <span
+        v-for="(ops, i) in row.in"
+        :key="'in-' + i"
+        class="mini-bubble customized"
+      >
         <asset-icon
           :asset="ops.coins[0].asset"
-          :height="'16px'"
-          :chain-height="'13px'"
+          :height="'1.2rem'"
+          :chain-height="'1rem'"
         />
         <span class="asset-name">{{
           (ops.coins[0].amount / 1e8) | number('0,0.0000')
         }}</span>
       </span>
       <right-arrow class="action-type" />
-      <span v-for="(ops, i) in row.out" :key="'out-' + i" class="mini-bubble">
+      <span
+        v-for="(ops, i) in row.out"
+        :key="'out-' + i"
+        class="mini-bubble customized"
+      >
         <asset-icon
           :asset="ops.coins[0].asset"
-          :height="'16px'"
-          :chain-height="'13px'"
+          :height="'1.2rem'"
+          :chain-height="'1rem'"
         ></asset-icon>
         <span class="asset-name">{{
           (ops.coins[0].amount / 1e8) | number('0,0.0000')
@@ -24,17 +32,29 @@
       </span>
       <span
         v-if="row.out == undefined || row.out.length === 0"
-        class="mini-bubble info"
+        class="mini-bubble customized info"
         >Pending</span
       >
     </div>
     <div v-else-if="row && row.type === 'withdraw'" class="action-cell">
+      <div class="mini-bubble">
+        <asset-icon
+          :height="'1.2rem'"
+          :chain-height="'1rem'"
+          :asset="row.pools[0]"
+        />
+        <vault-icon class="action-icon" />
+      </div>
       <right-arrow class="action-type" />
-      <span v-for="(ops, i) in row.out" :key="'out-' + i" class="mini-bubble">
+      <span
+        v-for="(ops, i) in row.out"
+        :key="'out-' + i"
+        class="mini-bubble customized"
+      >
         <asset-icon
           :asset="ops.coins[0].asset"
-          :height="'16px'"
-          :chain-height="'13px'"
+          :height="'1.2rem'"
+          :chain-height="'1rem'"
         ></asset-icon>
         <span class="asset-name">{{
           (ops.coins[0].amount / 1e8) | number('0,0.0000')
@@ -42,26 +62,75 @@
       </span>
     </div>
     <div v-else-if="row && row.type === 'addLiquidity'" class="action-cell">
-      <span v-for="(ops, i) in row.in" :key="'in-' + i" class="mini-bubble">
+      <span
+        v-for="(ops, i) in row.in"
+        :key="'in-' + i"
+        class="mini-bubble customized"
+      >
         <asset-icon
           :asset="ops.coins[0].asset"
-          :height="'16px'"
-          :chain-height="'13px'"
+          :height="'1.2rem'"
+          :chain-height="'1rem'"
         ></asset-icon>
         <span class="asset-name">{{
           (ops.coins[0].amount / 1e8) | number('0,0.0000')
         }}</span>
       </span>
-      <right-arrow />
+      <right-arrow class="action-type" />
+      <div class="mini-bubble">
+        <asset-icon
+          :height="'1.2rem'"
+          :chain-height="'1rem'"
+          :asset="row.pools[0]"
+        />
+        <vault-icon class="action-icon" />
+      </div>
+    </div>
+    <div v-else-if="row && row.type === 'refund'" class="action-cell">
+      <span
+        v-for="(ops, i) in row.in"
+        :key="'in-' + i"
+        class="mini-bubble customized"
+      >
+        <asset-icon
+          :asset="ops.coins[0].asset"
+          :height="'1.2rem'"
+          :chain-height="'1rem'"
+        ></asset-icon>
+        <span class="asset-name">{{
+          (ops.coins[0].amount / 1e8) | number('0,0.0000')
+        }}</span>
+      </span>
+      <redo-icon class="action-type" />
+    </div>
+    <div v-else-if="row && row.type === 'send'" class="action-cell">
+      <span
+        v-for="(ops, i) in row.in"
+        :key="'in-' + i"
+        class="mini-bubble customized"
+      >
+        <asset-icon
+          :asset="ops.coins[0].asset"
+          :height="'1.2rem'"
+          :chain-height="'1rem'"
+        ></asset-icon>
+        <span class="asset-name">{{
+          (ops.coins[0].amount / 1e8) | number('0,0.0000')
+        }}</span>
+      </span>
+      <dove-icon class="action-type" />
     </div>
   </div>
 </template>
 
 <script>
-import RightArrow from '~/assets/images/arrow-small-right.svg?inline'
+import RightArrow from '~/assets/images/arrow-right.svg?inline'
+import VaultIcon from '~/assets/images/safe.svg?inline'
+import RedoIcon from '~/assets/images/refresh.svg?inline'
+import DoveIcon from '~/assets/images/dove.svg?inline'
 
 export default {
-  components: { RightArrow },
+  components: { RightArrow, VaultIcon, RedoIcon, DoveIcon },
   props: {
     row: {
       type: Object,
@@ -74,10 +143,15 @@ export default {
 <style lang="scss" scoped>
 .action-cell {
   display: flex;
+  align-items: center;
 
   .mini-bubble {
     display: flex;
     align-items: center;
+
+    &.customized {
+      padding: 4px 6px;
+    }
   }
 
   .asset-name {
@@ -86,14 +160,18 @@ export default {
 
   .action-type {
     box-sizing: content-box;
-    border-radius: 50%;
-    height: 0.9rem;
-    width: 0.9rem;
+    height: 1rem;
+    width: 1rem;
     fill: var(--sec-font-color);
-    background: var(--border-color);
     padding: 4px;
-    margin: 0 -3px;
-    z-index: 2;
+  }
+
+  .action-icon {
+    box-sizing: content-box;
+    border-radius: 5px;
+    height: 1.2rem;
+    width: 1.2rem;
+    padding: 4px 0;
   }
 }
 </style>

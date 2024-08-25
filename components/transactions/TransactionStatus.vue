@@ -1,17 +1,19 @@
 <template>
-  <div
-    v-if="row"
-    :class="[
-      'mini-bubble',
-      { yellow: row.type === 'refund', info: row.type === 'send' },
-    ]"
-  >
-    <swap-icon v-if="row.type === 'swap'" class="status-icon" />
-    <refund-icon v-else-if="row.type === 'refund'" class="status-icon" />
-    <dove-icon v-else-if="row.type === 'send'" class="status-icon" />
-    <span>
-      {{ row.type | capitalize }}
-    </span>
+  <div class="customized">
+    <div
+      v-if="row"
+      :class="[
+        'mini-bubble',
+        { yellow: row.type === 'refund', info: row.type === 'send' },
+      ]"
+    >
+      <swap-icon v-if="row.type === 'swap'" class="status-icon" />
+      <refund-icon v-else-if="row.type === 'refund'" class="status-icon" />
+      <dove-icon v-else-if="row.type === 'send'" class="status-icon" />
+      <span class="type-name">
+        {{ typeName(row.type) }}
+      </span>
+    </div>
   </div>
 </template>
 
@@ -28,13 +30,37 @@ export default {
       default: () => {},
     },
   },
+  methods: {
+    typeName(type) {
+      switch (type) {
+        case 'addLiquidity':
+          return 'Add LP'
+        case 'withdraw':
+          return 'Remove LP'
+        default:
+          return this.$options.filters.capitalize(type)
+      }
+    },
+  },
 }
 </script>
 
 <style lang="scss" scoped>
+.customized {
+  display: flex;
+
+  .mini-bubble {
+    padding: 4px 6px;
+  }
+  .type-name {
+    font-size: 0.9rem;
+    line-height: 0.875rem;
+  }
+}
+
 .status-icon {
-  height: 12px;
-  width: 12px;
+  height: 1.1rem;
+  width: 1.1rem;
   fill: inherit;
   margin-right: 0.5rem;
 }

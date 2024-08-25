@@ -261,6 +261,7 @@ $border-size: 2px;
             fill: var(--sec-font-color);
 
             &.warn {
+              padding: 0;
               fill: rgb(155 28 28);
             }
           }
@@ -338,5 +339,9 @@ $border-size: 2px;
     max-width: 100px;
     max-height: 25px;
   }
+}
+
+[theme='dark'] .tx-icon.warn {
+  fill: #f04832 !important;
 }
 </style>
