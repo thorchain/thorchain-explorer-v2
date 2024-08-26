@@ -45,6 +45,14 @@ export default {
       },
     }
   },
+  watch: {
+    default(newVal) {
+      this.selected = newVal || 'Select'
+    }
+  },
+  mounted() {
+    this.selected = this.default || 'Select'
+  },
   methods: {
     toggleDropdown() {
       this.isOpen = !this.isOpen
