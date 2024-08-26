@@ -119,8 +119,43 @@ export default {
 
     getOptions(key) {
       return key === 'type'
-        ? ['All', 'Type 1', 'Type 2']
-        : ['All', 'TxType 1', 'TxType 2']
+        ? [
+            'All',
+            'swap',
+            'addLiquidity',
+            'withdraw',
+            'donate',
+            'refund',
+            'switch',
+            'thorname',
+            'runePoolDeposit',
+            'runePoolWithdraw',
+          ]
+        : [
+            'All',
+            'unknown',
+            'add',
+            'withdraw',
+            'swap',
+            'limitOrder',
+            'outbound',
+            'donate',
+            'bond',
+            'unbond',
+            'leave',
+            'yggdrasilFund',
+            'yggdrasilReturn',
+            'reserve',
+            'refund',
+            'migrate',
+            'ragnarok',
+            'switch',
+            'noOp',
+            'consolidate',
+            'thorname',
+            'loanOpen',
+            'loanRepayment',
+          ]
     },
 
     isFormValid() {

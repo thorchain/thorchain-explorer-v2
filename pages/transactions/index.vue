@@ -59,7 +59,7 @@ export default {
           }),
         ...(params.type &&
           params.type !== 'All' && {
-            txType: params.type,
+            type: params.type,
           }),
       }
       this.hasFilters = true
