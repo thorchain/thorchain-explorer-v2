@@ -7,7 +7,7 @@
         v-if="allowTags"
         v-for="(tag, index) in tags"
         :key="index"
-        class="tag"
+        :class="['mini-bubble']"
       >
         {{ tag }}
         <span class="remove-tag" @click="removeTag(index)">&times;</span>
@@ -114,23 +114,11 @@ export default {
     font-size: 14px;
   }
 
-  .tag {
-    display: flex;
-    align-items: center;
-    padding: 6px 12px;
-    background-color: var(--primary-color);
-    color: var(--bubble-font-color);
-    border-radius: 12px;
-    font-size: 14px;
-    margin: 2px;
-    white-space: nowrap;
-  }
-
   .remove-tag {
     margin-left: 8px;
-    font-size: 14px;
+    font-size: 10px;
     cursor: pointer;
-    color: var(--gradient-left);
+    color: var(--sec-font-color);
     transition: color 0.3s ease;
   }
 
