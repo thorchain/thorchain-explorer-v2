@@ -7,15 +7,11 @@
         <AngleIcon class="dropdown-icon" />
       </div>
     </div>
-    <div
-      v-if="isOpen"
-      :style="dropdownStyles"
-      class="dropdown-options"
-    >
+    <div v-if="isOpen" :style="dropdownStyles" class="dropdown-options">
       <div
-        class="dropdown-option"
         v-for="option in options"
         :key="option"
+        class="dropdown-option"
         @click="selectOption(option)"
       >
         {{ option }}
@@ -124,6 +120,8 @@ export default {
     margin-top: 0.5rem;
     padding: 0.5rem 0;
     box-sizing: border-box;
+    max-height: 400px;
+    overflow: auto;
   }
 
   .dropdown-option {
