@@ -70,7 +70,6 @@ export default {
   props: ['txs', 'loading'],
   data() {
     return {
-      actions: [],
       actionsColumn: [
         {
           label: 'Transaction Hash',
@@ -110,8 +109,13 @@ export default {
       ],
     }
   },
-  mounted() {
-    this.actions = this.formatActions(this.txs)
+  computed: {
+    actions() {
+      if (!this.txs) {
+        return []
+      }
+      return this.formatActions(this.txs)
+    },
   },
   methods: {
     formatActions(txs) {

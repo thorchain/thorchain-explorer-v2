@@ -15,14 +15,14 @@
             <input-filter
               :tags="filters.addresses"
               placeholder="Enter Addresses"
-              @update:tags="updateTags('addresses', $event)"
               :label="filterLabels.addresses"
+              @update:tags="updateTags('addresses', $event)"
             />
             <input-filter
               :tags="filters.txId"
               placeholder="Enter TX IDs"
-              @update:tags="updateTags('txId', $event)"
               :label="filterLabels.txId"
+              @update:tags="updateTags('txId', $event)"
             />
           </div>
 
@@ -30,14 +30,14 @@
             <input-filter
               :tags="filters.affiliate"
               placeholder="Enter Affiliate"
-              @update:tags="updateTags('affiliate', $event)"
               :label="filterLabels.affiliate"
+              @update:tags="updateTags('affiliate', $event)"
             />
             <input-filter
               :tags="filters.asset"
               placeholder="Enter Asset"
-              @update:tags="updateTags('asset', $event)"
               :label="filterLabels.asset"
+              @update:tags="updateTags('asset', $event)"
             />
           </div>
 
@@ -59,9 +59,9 @@
 
         <div class="button-group">
           <button
-            @click="submitForm"
             :disabled="!isFormValid()"
             :class="{ 'disabled-btn': !isFormValid() }"
+            @click="submitForm"
           >
             Submit
           </button>
@@ -158,7 +158,6 @@ export default {
 
 .modal-content {
   background: var(--card-bg-color);
-  padding: 20px;
   border-radius: 0.5rem;
   text-align: left;
   color: var(--sec-font-color);
@@ -169,6 +168,10 @@ export default {
   gap: 15px;
   overflow-y: auto;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+
+  > div {
+    padding: 20px;
+  }
 }
 
 .modal-header {

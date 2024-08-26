@@ -1,10 +1,10 @@
 <template>
   <div class="pagination-container">
-    <div class="nav-icons" @click="$emit('changePage', offset - limit)">
+    <div class="nav-icons" @click="$emit('prevPage')">
       <angle-left />
       Prev Page
     </div>
-    <div class="nav-icons" @click="$emit('changePage', offset + limit)">
+    <div class="nav-icons" @click="$emit('nextPage')">
       Next Page
       <angle-right />
     </div>
@@ -12,28 +12,16 @@
 </template>
 
 <script>
-import angleDoubleLeft from '@/assets/images/angle-double-left.svg?inline'
 import angleLeft from '@/assets/images/angle-left.svg?inline'
 import angleRight from '@/assets/images/angle-right.svg?inline'
-import angleDoubleRight from '@/assets/images/angle-double-right.svg?inline'
 
 export default {
   name: 'Pagination',
   components: {
-    angleDoubleLeft,
     angleLeft,
     angleRight,
-    angleDoubleRight,
   },
-  props: ['offset', 'count', 'limit'],
-  computed: {
-    finalPage() {
-      return Math.floor(Number.parseInt(this.count) / this.limit) + 1
-    },
-    finalOffset() {
-      return Math.floor(Number.parseInt(this.count) / this.limit) * 10
-    },
-  },
+  computed: {},
 }
 </script>
 
