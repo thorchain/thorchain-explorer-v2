@@ -81,6 +81,7 @@
             perPageDropdown: [25, 50, 100, 200],
             perPageDropdownEnabled: true,
           }"
+          :line-numbers="true"
           :search-options="{
             enabled: true,
             placeholder:
