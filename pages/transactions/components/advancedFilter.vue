@@ -14,28 +14,22 @@
           <div class="input-row">
             <input-filter
               :tags="filters.addresses"
-              placeholder="Enter Addresses"
+              placeholder="Enter Addresses, press enter"
               :label="filterLabels.addresses"
               @update:tags="updateTags('addresses', $event)"
-            />
-            <input-filter
-              :tags="filters.txId"
-              placeholder="Enter TX IDs"
-              :label="filterLabels.txId"
-              @update:tags="updateTags('txId', $event)"
             />
           </div>
 
           <div class="input-row">
             <input-filter
               :tags="filters.affiliate"
-              placeholder="Enter Affiliate"
+              placeholder="Enter Affiliate, press enter"
               :label="filterLabels.affiliate"
               @update:tags="updateTags('affiliate', $event)"
             />
             <input-filter
               :tags="filters.asset"
-              placeholder="Enter Asset"
+              placeholder="Enter Asset, press enter"
               :label="filterLabels.asset"
               @update:tags="updateTags('asset', $event)"
             />
@@ -117,8 +111,9 @@ export default {
 
     submitForm() {
       if (this.isFormValid()) {
-        console.log(this.filters)
-        this.toggleModal()
+        // Emit the applied filters to the parent component
+        this.$emit('applyFilters', this.filters)
+        this.toggleModal() // Close the modal after submission
       }
     },
 

@@ -2,7 +2,7 @@
   <Page>
     <div class="transactions-container">
       <!-- transactions component -->
-      <advanced-filter />
+      <advanced-filter @applyFilters="applyFilters" />
       <transactions :txs="txs" :loading="loading" />
       <pagination @nextPage="goNext" @prevPage="goPrev" />
     </div>
@@ -23,6 +23,8 @@ export default {
       limit: 30,
       nextPageToken: undefined,
       prevPageToken: undefined,
+      filters: {},
+      hasFilters: false,
     }
   },
   head: {
@@ -39,8 +41,38 @@ export default {
     goPrev() {
       this.getActions({ limit: this.limit, prevPageToken: this.prevPageToken })
     },
+    applyFilters(params) {
+      this.filters = {
+        ...(params.asset &&
+          params.asset.length > 0 && { asset: params.asset.join(',') }),
+        ...(params.affiliate &&
+          params.affiliate.length > 0 && {
+            affiliate: params.affiliate.join(','),
+          }),
+        ...(params.addresses &&
+          params.addresses.length > 0 && {
+            addresses: params.addresses.join(','),
+          }),
+        ...(params.txType &&
+          params.txType !== 'All' && {
+            txType: params.txType,
+          }),
+        ...(params.type &&
+          params.type !== 'All' && {
+            txType: params.type,
+          }),
+      }
+      this.hasFilters = true
+      this.getActions({ limit: this.limit })
+    },
     getActions(params) {
       this.loading = true
+      if (this.hasFilters) {
+        params = {
+          ...params,
+          ...this.filters,
+        }
+      }
       this.$api
         .getActions(params)
         .then((res) => {

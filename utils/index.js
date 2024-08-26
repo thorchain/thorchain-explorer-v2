@@ -700,6 +700,7 @@ export const affiliateMap = {
   td: interfaces.trustwallet,
   ti: interfaces.trustwallet,
   tr: interfaces.trustwallet,
+  te: interfaces.trustwallet,
   thor1a427q3v96psuj4fnughdw8glt5r7j38lj7rkp8: interfaces.thorwallet,
   wr: interfaces.thorwallet,
   tgt: interfaces.thorwallet,
