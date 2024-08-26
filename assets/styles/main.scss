@@ -91,13 +91,24 @@ input {
     white-space: nowrap;
     text-decoration: none;
     color: var(--sec-font-color);
-
+    margin-top:5px;
+  
+    &.active,
+    &.nuxt-link-exact-active,
+    &.nuxt-link-active {
+      background-color: var(--darker-bg);
+      border-radius: 0.3rem;
+      color: var(--primary-color);
+      margin-bottom:5px;
+    }
+  
     &:hover {
       background-color: var(--darker-bg);
       border-radius: 0.3rem;
       color: var(--primary-color);
     }
   }
+  
 
 }
 
