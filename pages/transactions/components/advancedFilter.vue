@@ -59,6 +59,12 @@
           >
             Submit
           </button>
+          <button 
+          :disabled="!isFormValid()"
+            :class="{ 'disabled-btn': !isFormValid() }"
+          @click="resetForm">
+            Reset
+          </button>
         </div>
       </div>
     </div>
@@ -111,11 +117,21 @@ export default {
 
     submitForm() {
       if (this.isFormValid()) {
-        // Emit the applied filters to the parent component
         this.$emit('applyFilters', this.filters)
-        this.toggleModal() // Close the modal after submission
+        this.toggleModal() 
       }
     },
+
+    resetForm() {
+  this.filters = {
+    addresses: [],
+    txId: [],
+    asset: [],
+    type: 'All',
+    txType: 'All',
+    affiliate: [],
+  }
+},
 
     getOptions(key) {
       return key === 'type'
@@ -279,26 +295,31 @@ export default {
   border-top: 1px solid var(--border-color);
 
   button {
-    background-color: var(--primary-color);
-    color: var(--bubble-font-color);
-    border: none;
-    border-radius: 6px;
+    background-color: var(--bg-color);
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     padding: 10px 20px;
-    font-size: 16px;
+    color: var(--font-color);
     cursor: pointer;
-    transition:
-      background-color 0.3s ease,
-      box-shadow 0.3s ease;
-    outline: none;
+    font-size: 14px;
+    font-weight: 500;
+    margin-left:0.5rem ;
+
 
     &:hover {
+      color: var(--primary-color);
+      background-color: var(--active-bg-color);
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    }
+
+        }
   }
 
   button:disabled,
   .disabled-btn {
-    background-color: var(--primary-color);
+    background-color: var(--bg-color);
     cursor: not-allowed;
   }
 }
