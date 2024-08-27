@@ -53,14 +53,8 @@ export default {
           params.addresses.length > 0 && {
             address: params.addresses.join(','),
           }),
-        ...(params.txType &&
-          params.txType !== 'All' && {
-            txType: params.txType,
-          }),
-        ...(params.type &&
-          params.type !== 'All' && {
-            type: params.type,
-          }),
+        ...(params.txType && params.txType.length > 0 && { txType: params.txType.join(',') }),
+        ...(params.type && params.type.length > 0 && { type: params.type.join(',') }),
       }
       this.hasFilters = true
       this.getActions({ limit: this.limit })

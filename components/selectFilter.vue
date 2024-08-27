@@ -3,7 +3,17 @@
     <label>{{ label }}</label>
     <div ref="dropdownButton" class="custom-dropdown">
       <div class="dropdown-button" @click="toggleDropdown">
-        {{ selected }}
+        <div class="selected-options">
+          <span
+            v-for="option in selectedOptions"
+            :key="option"
+            :class="['mini-bubble']"
+          >
+            {{ option }}
+            <span class="remove-tag" @click.stop="removeOption(option)">x</span>
+          </span>
+          <span v-if="selectedOptions.length === 0">All</span>
+        </div>
         <AngleIcon class="dropdown-icon" />
       </div>
     </div>
@@ -12,7 +22,8 @@
         v-for="option in options"
         :key="option"
         class="dropdown-option"
-        @click="selectOption(option)"
+        :class="{ selected: selectedOptions.includes(option) }"
+        @click="toggleOption(option)"
       >
         {{ option }}
       </div>
@@ -31,12 +42,12 @@ export default {
   props: {
     label: String,
     options: Array,
-    default: String,
+    default: Array,
   },
   data() {
     return {
       isOpen: false,
-      selected: this.default || 'Select',
+      selectedOptions: this.default || [],
       dropdownStyles: {
         position: 'fixed',
         top: '0px',
@@ -47,11 +58,11 @@ export default {
   },
   watch: {
     default(newVal) {
-      this.selected = newVal || 'Select'
-    }
+      this.selectedOptions = newVal || []
+    },
   },
   mounted() {
-    this.selected = this.default || 'Select'
+    this.selectedOptions = this.default || []
   },
   methods: {
     toggleDropdown() {
@@ -69,10 +80,22 @@ export default {
         width: `${buttonRect.width}px`,
       }
     },
-    selectOption(option) {
-      this.selected = option
-      this.isOpen = false
-      this.$emit('update:selectedOption', option)
+    toggleOption(option) {
+      if (this.selectedOptions.includes(option)) {
+        this.removeOption(option)
+      } else {
+        this.addOption(option)
+      }
+    },
+    addOption(option) {
+      this.selectedOptions.push(option)
+      this.$emit('update:selectedOptions', this.selectedOptions)
+    },
+    removeOption(option) {
+      this.selectedOptions = this.selectedOptions.filter(
+        (opt) => opt !== option
+      )
+      this.$emit('update:selectedOptions', this.selectedOptions)
     },
   },
 }
@@ -83,7 +106,28 @@ export default {
   flex: 1;
   min-width: 0;
   position: relative;
-
+  .selected-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .mini-bubble {
+    font-size: 12px;
+    height: 30x;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 1px;
+  }
+  .remove-tag {
+    margin-left: 8px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  .dropdown-option.selected {
+    border-radius: 0.3rem;
+    color: var(--primary-color);
+  }
   label {
     display: block;
     margin-bottom: 8px;
