@@ -41,13 +41,13 @@
               :options="getOptions('type')"
               :default="filters.type"
               :label="filterLabels.type"
-              @update:selectedOption="selectOption('type', $event)"
+              @update:selectedOptions="selectOption('type', $event)"
             />
             <select-filter
               :options="getOptions('txType')"
               :default="filters.txType"
               :label="filterLabels.txType"
-              @update:selectedOption="selectOption('txType', $event)"
+              @update:selectedOptions="selectOption('txType', $event)"
             />
           </div>
         </div>
@@ -61,9 +61,8 @@
             Submit
           </button>
           <button 
-          :disabled="!isFormValid()"
-            :class="{ 'disabled-btn': !isFormValid() }"
-          @click="resetForm">
+            @click="resetForm"
+          >
             Clear
           </button>
         </div>
@@ -72,13 +71,9 @@
   </div>
 </template>
 
-
-
-
 <script>
 import CrossIcon from '~/assets/images/cross.svg?inline'
 import FilterIcon from '~/assets/images/filter.svg?inline'
-
 export default {
   name: 'Filter',
   components: {
@@ -93,8 +88,8 @@ export default {
         addresses: [],
         txId: [],
         asset: [],
-        type: 'All',
-        txType: 'All',
+        type: [],
+        txType: [],
         affiliate: [],
       },
       filterLabels: {
@@ -114,8 +109,8 @@ export default {
       if (this.filters.txId.length > 0) count++
       if (this.filters.affiliate.length > 0) count++
       if (this.filters.asset.length > 0) count++
-      if (this.filters.type !== 'All') count++
-      if (this.filters.txType !== 'All') count++
+      if (this.filters.type.length > 0) count++
+      if (this.filters.txType.length > 0) count++
       return count
     }
   },
@@ -124,8 +119,8 @@ export default {
       this.isModalVisible = !this.isModalVisible
     },
 
-    selectOption(key, value) {
-      this.filters[key] = value
+    selectOption(key, options) {
+      this.filters[key] = options
     },
 
     updateTags(type, tags) {
@@ -135,8 +130,8 @@ export default {
     submitForm() {
       if (this.isFormValid()) {
         this.$emit('applyFilters', this.filters)
-        this.showBadge = true 
-        this.toggleModal() 
+        this.showBadge = true
+        this.toggleModal()
       }
     },
 
@@ -145,18 +140,17 @@ export default {
         addresses: [],
         txId: [],
         asset: [],
-        type: 'All',
-        txType: 'All',
+        type: [],
+        txType: [],
         affiliate: [],
       }
       this.showBadge = false
-      this.$emit('clearfilter') 
+      this.$emit('clearfilter')
     },
 
     getOptions(key) {
       return key === 'type'
         ? [
-            'All',
             'swap',
             'addLiquidity',
             'withdraw',
@@ -168,7 +162,6 @@ export default {
             'runePoolWithdraw',
           ]
         : [
-            'All',
             'unknown',
             'add',
             'withdraw',
@@ -200,15 +193,13 @@ export default {
         this.filters.txId.length > 0 ||
         this.filters.affiliate.length > 0 ||
         this.filters.asset.length > 0 ||
-        this.filters.type !== 'All' ||
-        this.filters.txType !== 'All'
+        this.filters.type.length > 0 ||
+        this.filters.txType.length > 0
       return valid
     },
   },
 }
 </script>
-
-
 
 <style lang="scss" scoped>
 .modal-overlay {
