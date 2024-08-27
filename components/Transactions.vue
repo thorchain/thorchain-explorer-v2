@@ -116,11 +116,6 @@ export default {
           formatFn: (v) => this.addressFormatV2(v),
         },
         {
-          label: '',
-          field: 'interaction',
-          sortable: false,
-        },
-        {
           label: 'To',
           field: 'to',
           tdClass: 'mono',
