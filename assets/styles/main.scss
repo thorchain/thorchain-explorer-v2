@@ -96,7 +96,6 @@ input {
     &.active,
     &.nuxt-link-exact-active,
     &.nuxt-link-active {
-      background-color: var(--darker-bg);
       border-radius: 0.3rem;
       color: var(--primary-color);
       margin-bottom:5px;
