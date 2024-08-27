@@ -150,6 +150,7 @@ export default {
         affiliate: [],
       }
       this.showBadge = false
+      this.$emit('clearfilter') 
     },
 
     getOptions(key) {

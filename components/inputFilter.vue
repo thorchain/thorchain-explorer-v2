@@ -122,7 +122,7 @@ export default {
   align-items: center;
   justify-content: center;
   margin-left: 1px;
-    padding: 0 1rem;}
+;}
 
   .remove-tag {
     margin-left: 8px;
