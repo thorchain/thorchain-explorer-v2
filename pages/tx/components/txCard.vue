@@ -47,7 +47,7 @@
           <div class="tx-state-wrapper">
             <div class="tx-state">
               <div v-if="overall.middle.pending" class="simple-spinner" />
-              <coin-icon v-else-if="overall.middle.send" class="icon tx-icon" />
+              <send-icon v-else-if="overall.middle.send" class="icon tx-icon" />
               <warning-icon
                 v-else-if="overall.middle.fail"
                 class="icon tx-icon warn"
@@ -141,13 +141,13 @@
 <script>
 import { mapGetters } from 'vuex'
 import CheckIcon from '~/assets/images/check.svg?inline'
-import CoinIcon from '~/assets/images/coins.svg?inline'
+import SendIcon from '~/assets/images/arrow-right.svg?inline'
 import WarningIcon from '~/assets/images/warning.svg?inline'
 
 export default {
   components: {
     CheckIcon,
-    CoinIcon,
+    SendIcon,
     WarningIcon,
   },
   props: ['txData'],
