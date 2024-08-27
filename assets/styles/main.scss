@@ -937,3 +937,10 @@ input {
     color: var(--primary-color);
   }
 }
+
+// Transaction table wrapping
+.vgt-wrap {
+  tbody {
+    white-space: nowrap !important;
+  }
+}
