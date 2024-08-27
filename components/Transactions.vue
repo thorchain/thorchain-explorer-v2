@@ -17,6 +17,7 @@
           <Address
             v-if="props.column.field === 'from' || props.column.field === 'to'"
             :param="props.row[props.column.field]"
+            :disable="owner && owner === props.row[props.column.field]"
           />
           <Hash
             v-if="props.column.field === 'hash'"
@@ -28,6 +29,17 @@
         </div>
         <div v-else-if="props.column.field === 'action'">
           <transaction-action :row="props.row"></transaction-action>
+        </div>
+        <div v-else-if="props.column.field === 'interaction'">
+          <span
+            v-if="owner && owner === props.row.from"
+            class="mini-bubble info"
+            >OUT</span
+          >
+          <span v-else-if="owner && owner === props.row.to" class="mini-bubble"
+            >IN</span
+          >
+          <right-arrow v-else class="interaction-icon" />
         </div>
         <span v-else>
           {{ props.formattedRow[props.column.field] }}
@@ -43,10 +55,17 @@ import TransactionStatus from './transactions/TransactionStatus.vue'
 import TransactionAction from './transactions/TransactionAction.vue'
 import Address from './transactions/Address.vue'
 import Hash from './transactions/Hash.vue'
+import RightArrow from '~/assets/images/arrow-right.svg?inline'
 import { AssetImage } from '~/classes/assetImage'
 
 export default {
-  components: { TransactionStatus, TransactionAction, Address, Hash },
+  components: {
+    TransactionStatus,
+    TransactionAction,
+    Address,
+    Hash,
+    RightArrow,
+  },
   filters: {
     shortSymbol(assetStr) {
       if (assetStr?.includes('-')) {
@@ -67,7 +86,7 @@ export default {
       }
     },
   },
-  props: ['txs', 'loading'],
+  props: ['txs', 'owner', 'loading'],
   data() {
     return {
       actionsColumn: [
@@ -95,6 +114,11 @@ export default {
           field: 'from',
           tdClass: 'mono',
           formatFn: (v) => this.addressFormatV2(v),
+        },
+        {
+          label: '',
+          field: 'interaction',
+          sortable: false,
         },
         {
           label: 'To',
@@ -159,7 +183,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .loading {
   height: 10rem;
   align-items: center;
@@ -267,5 +291,13 @@ export default {
 .tx-in .tx-contain:not(:first-of-type) {
   border-top: 1px solid var(--border-color);
   padding-top: 0.8rem;
+}
+
+.interaction-icon {
+  box-sizing: content-box;
+  height: 1rem;
+  width: 1rem;
+  fill: var(--sec-font-color);
+  padding: 4px;
 }
 </style>

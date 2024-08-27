@@ -118,7 +118,16 @@
           (ops.coins[0].amount / 1e8) | number('0,0.0000')
         }}</span>
       </span>
-      <dove-icon class="action-type" />
+      <right-arrow class="action-type" />
+      <span
+        v-for="(ops, i) in row.out"
+        :key="'out-' + i"
+        class="mini-bubble info customized"
+      >
+        <small class="asset-name">{{
+          addressFormatV2(ops.address, 6, true)
+        }}</small>
+      </span>
     </div>
   </div>
 </template>
@@ -127,10 +136,9 @@
 import RightArrow from '~/assets/images/arrow-right.svg?inline'
 import VaultIcon from '~/assets/images/safe.svg?inline'
 import RedoIcon from '~/assets/images/refresh.svg?inline'
-import DoveIcon from '~/assets/images/dove.svg?inline'
 
 export default {
-  components: { RightArrow, VaultIcon, RedoIcon, DoveIcon },
+  components: { RightArrow, VaultIcon, RedoIcon },
   props: {
     row: {
       type: Object,
@@ -155,7 +163,12 @@ export default {
   }
 
   .asset-name {
+    font-size: 0.9rem;
     line-height: 14px;
+  }
+
+  small.asset-name {
+    font-size: 0.775rem;
   }
 
   .action-type {
