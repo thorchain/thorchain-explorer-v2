@@ -165,6 +165,7 @@
           <transactions
             v-if="addrTxs && addrTxs.actions"
             :txs="addrTxs"
+            :owner="address"
             :loading="loading"
           />
           <pagination

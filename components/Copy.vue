@@ -20,8 +20,8 @@ export default {
     }
   },
   methods: {
-    onlyCopy(address) {
-      navigator.clipboard.writeText(address).then(
+    onlyCopy(strCopy) {
+      navigator.clipboard.writeText(strCopy).then(
         () => {
           this.animate('copy', 'animate', 1000)
         },
