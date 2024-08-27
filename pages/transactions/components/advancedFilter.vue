@@ -3,6 +3,7 @@
     <button class="advanced-filter" @click="toggleModal">
       <FilterIcon class="filter-icon" />
       Advanced Filter
+      <span v-if="showBadge && filledFilterCount > 0" :class="'mini-bubble'">{{ filledFilterCount }}</span>
     </button>
     <div v-if="isModalVisible" class="modal-overlay">
       <div class="modal-content">
@@ -71,6 +72,9 @@
   </div>
 </template>
 
+
+
+
 <script>
 import CrossIcon from '~/assets/images/cross.svg?inline'
 import FilterIcon from '~/assets/images/filter.svg?inline'
@@ -84,6 +88,7 @@ export default {
   data() {
     return {
       isModalVisible: false,
+      showBadge: false,
       filters: {
         addresses: [],
         txId: [],
@@ -102,6 +107,18 @@ export default {
       },
     }
   },
+  computed: {
+    filledFilterCount() {
+      let count = 0
+      if (this.filters.addresses.length > 0) count++
+      if (this.filters.txId.length > 0) count++
+      if (this.filters.affiliate.length > 0) count++
+      if (this.filters.asset.length > 0) count++
+      if (this.filters.type !== 'All') count++
+      if (this.filters.txType !== 'All') count++
+      return count
+    }
+  },
   methods: {
     toggleModal() {
       this.isModalVisible = !this.isModalVisible
@@ -118,20 +135,22 @@ export default {
     submitForm() {
       if (this.isFormValid()) {
         this.$emit('applyFilters', this.filters)
+        this.showBadge = true 
         this.toggleModal() 
       }
     },
 
     resetForm() {
-  this.filters = {
-    addresses: [],
-    txId: [],
-    asset: [],
-    type: 'All',
-    txType: 'All',
-    affiliate: [],
-  }
-},
+      this.filters = {
+        addresses: [],
+        txId: [],
+        asset: [],
+        type: 'All',
+        txType: 'All',
+        affiliate: [],
+      }
+      this.showBadge = false
+    },
 
     getOptions(key) {
       return key === 'type'
@@ -188,7 +207,9 @@ export default {
 }
 </script>
 
-<style lang="scss">
+
+
+<style lang="scss" scoped>
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -265,8 +286,14 @@ export default {
   }
 }
 
-.advanced-filter:hover {
-  background-color: var(--active-bg-color);
+.mini-bubble {
+  font-size: 12px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 6px;
 }
 
 .close-btn {
@@ -308,13 +335,11 @@ export default {
     font-weight: 500;
     margin-left:0.5rem ;
 
-
     &:hover {
       color: var(--primary-color);
       background-color: var(--active-bg-color);
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-
-        }
+    }
   }
 
   button:disabled,
