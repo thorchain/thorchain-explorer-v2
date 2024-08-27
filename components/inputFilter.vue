@@ -114,6 +114,16 @@ export default {
     font-size: 14px;
   }
 
+  .mini-bubble {
+  font-size: 12px;
+  width: 100%;
+  height: 30x;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 1px;
+    padding: 0 1rem;}
+
   .remove-tag {
     margin-left: 8px;
     font-size: 10px;
