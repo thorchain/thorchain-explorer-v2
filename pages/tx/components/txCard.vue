@@ -72,7 +72,7 @@
               />
             </div>
             <div v-else class="tx-asset">
-              <img class="asset-icon custom-icon" :src="o.icon" :alt="o.text" />
+              <component :is="o.icon" class="asset-icon custom-icon" />
             </div>
           </div>
         </div>
@@ -103,6 +103,11 @@
           >
             <template v-if="o.text">
               <span class="mono sec-color">{{ o.text }}</span>
+            </template>
+            <template v-else-if="o.address">
+              <nuxt-link class="mono clickable" :to="o.address">{{
+                addressFormatV2(o.address)
+              }}</nuxt-link>
             </template>
             <template v-else>
               <span class="mono sec-color">{{
@@ -174,7 +179,7 @@ export default {
           this.assetColorPalette(this.overall.in[0]?.asset) ?? '#5CDFBD',
         '--right-border': this.overall.out[0]?.borderColor
           ? this.overall.out[0]?.borderColor
-          : (this.assetColorPalette(this.overall.out[0]?.asset) ?? '#3761F9'),
+          : (this.assetColorPalette(this.overall.out[0]?.asset) ?? '#00ccff'),
       }
     },
   },
@@ -219,6 +224,7 @@ $border-size: 2px;
           margin: 0;
           width: 2rem;
           height: 2rem;
+          fill: #212121;
         }
       }
 

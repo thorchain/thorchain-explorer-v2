@@ -210,23 +210,10 @@ export default {
         })
       )?.data
 
-      // Native Transaction
-      let nt
-      if (!td) {
-        nt = (
-          await this.$api.getNativeTx(hash).catch((e) => {
-            if (e?.response?.status === 404) {
-              this.error.message =
-                'Please make sure the correct transaction hash or account address is inserted.'
-              this.loading = false
-            }
-          })
-        )?.data
-      }
-
       this.thorStatus = ts
       this.isLoading = false
 
+      const nt = md?.actions?.find((a) => a.type === 'send')
       // TODO: add proper error handling
       if (nt) {
         this.createNativeTx(nt)
@@ -311,6 +298,7 @@ export default {
               amountUSD: this.amountToUSD(a?.asset, a?.amount, this.pools),
               text: a?.text,
               icon: a?.icon,
+              address: a?.address,
               borderColor: a?.borderColor,
             })),
           },
@@ -501,6 +489,7 @@ export default {
                 key: 'Block Height',
                 value: `${accordions.action?.height}`,
                 is: accordions.action?.height,
+                formatter: this.normalFormat,
               },
               {
                 key: 'Memo',
@@ -537,6 +526,11 @@ export default {
               is: accordions.action?.to,
               type: 'address',
               formatter: this.formatAddress,
+            },
+            {
+              key: 'Memo',
+              value: accordions.action?.memo,
+              is: accordions.action?.memo,
             }
           )
         }
@@ -889,11 +883,9 @@ export default {
       return ts
     },
     createNativeTx(nativeTx) {
-      const inAsset = this.getNativeAsset(
-        nativeTx.tx?.body?.messages[0].amount[0].denom
-      )
-      const inAmount = nativeTx.tx?.body?.messages[0].amount[0].amount
-      const timeStamp = moment(nativeTx?.tx_response.timestamp)
+      const inAsset = nativeTx?.in[0]?.coins[0]?.asset
+      const inAmount = nativeTx?.in[0]?.coins[0]?.amount
+      const timeStamp = moment(nativeTx.date / 1e6)
 
       const cards = {
         title: 'Send',
@@ -906,17 +898,23 @@ export default {
         middle: {
           send: true,
         },
-        out: [],
+        out: [
+          {
+            icon: require('@/assets/images/user.svg?inline'),
+            address: nativeTx?.out[0]?.address,
+          },
+        ],
       }
 
       const accordions = {
         in: [],
         action: {
           type: 'send',
-          txid: nativeTx?.tx_response.txhash,
-          memo: nativeTx.tx?.body?.memo || null,
-          from: nativeTx.tx?.body?.messages[0].from_address,
-          to: nativeTx.tx?.body?.messages[0].to_address,
+          txid: nativeTx?.in[0]?.txID,
+          memo: nativeTx.metadata?.send?.memo || '',
+          from: nativeTx?.in[0]?.address,
+          to: nativeTx?.out[0]?.address,
+          height: nativeTx?.height,
           timeStamp,
           done: true,
           showAtFirst: true,
@@ -965,7 +963,7 @@ export default {
           out: [
             {
               text: isSaver ? 'THORChain Vault' : 'THORChain Pool',
-              icon: require('@/assets/images/vault.svg'),
+              icon: require('@/assets/images/vault.svg?inline'),
               borderColor: 'var(--border-color)',
             },
           ],
