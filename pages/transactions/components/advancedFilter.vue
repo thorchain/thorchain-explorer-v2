@@ -64,7 +64,7 @@
           :disabled="!isFormValid()"
             :class="{ 'disabled-btn': !isFormValid() }"
           @click="resetForm">
-            Reset
+            Clear
           </button>
         </div>
       </div>
