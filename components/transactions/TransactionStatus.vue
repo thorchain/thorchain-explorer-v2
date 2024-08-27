@@ -4,7 +4,10 @@
       v-if="row"
       :class="[
         'mini-bubble',
-        { yellow: row.type === 'refund', info: row.type === 'send' },
+        {
+          yellow: row.type === 'refund',
+          info: row.type === 'send' || row.type === 'withdraw',
+        },
       ]"
     >
       <swap-icon v-if="row.type === 'swap'" class="status-icon" />
