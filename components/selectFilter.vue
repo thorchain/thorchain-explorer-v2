@@ -25,6 +25,7 @@
         :class="{ selected: selectedOptions.includes(option) }"
         @click="toggleOption(option)"
       >
+        <checkIcon v-if="selectedOptions.includes(option)" class="checkmark" />
         {{ option }}
       </div>
     </div>
@@ -33,11 +34,13 @@
 
 <script>
 import AngleIcon from '~/assets/images/angle-down.svg?inline'
+import checkIcon from '~/assets/images/check-mark.svg?inline'
 
 export default {
   name: 'SelectFilter',
   components: {
     AngleIcon,
+    checkIcon,
   },
   props: {
     label: String,
@@ -175,9 +178,9 @@ export default {
     max-height: 400px;
     overflow: auto;
   }
-
   .dropdown-option {
-    padding: 12px 16px;
+    position: relative;
+    padding: 12px 34px;
     font-size: 16px;
     color: var(--sec-font-color);
     cursor: pointer;
@@ -187,6 +190,15 @@ export default {
       background-color: var(--active-bg-color);
       border-radius: 0.3rem;
       color: var(--primary-color);
+    }
+
+    .checkmark {
+      width: 1.2rem;
+      height: 1.2rem;
+      position: absolute;
+      left: 8px;
+      color: var(--primary-color);
+      border: none;
     }
   }
 }
