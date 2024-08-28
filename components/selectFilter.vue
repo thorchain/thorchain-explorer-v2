@@ -215,8 +215,6 @@ export default {
     border-radius: 5px;
   }
 
-  .dropdown-options::-webkit-scrollbar-thumb:hover {
-    background: #555;
-  }
+
 }
 </style>
