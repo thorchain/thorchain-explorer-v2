@@ -148,11 +148,11 @@
             :loading="loading"
           />
           <pagination
-            v-if="addrTxs && addrTxs.actions && count"
-            :limit="10"
-            :offset="offset"
-            :count="count"
-            @changePage="getActions"
+            v-if="addrTxs && addrTxs.actions"
+            :is-first-page="!prevPageToken"
+            @nextPage="goNext"
+            @prevPage="goPrev"
+            @firstPage="goFirst"
           />
         </template>
       </template>
@@ -164,7 +164,6 @@
 </template>
 
 <script>
-import QrcodeVue from 'qrcode.vue'
 import { mapGetters } from 'vuex'
 import { compact } from 'lodash'
 import Thorname from './components/thorname.vue'
@@ -172,17 +171,11 @@ import Balance from './components/balance.vue'
 import Pools from './components/pools.vue'
 import Loans from './components/loans.vue'
 import WalletIcon from '~/assets/images/wallet.svg?inline'
-import CopyIcon from '~/assets/images/copy.svg?inline'
-import ExpandIcon from '~/assets/images/expand.svg?inline'
 import { formatAsset, assetFromString } from '~/utils'
-import UtilityBox from '~/components/UtilityBox.vue'
 
 export default {
   components: {
     WalletIcon,
-    CopyIcon,
-    ExpandIcon,
-    QrcodeVue,
     Thorname,
     Balance,
     Pools,
@@ -190,7 +183,7 @@ export default {
   },
   async asyncData({ params, $api }) {
     const address = params.adderid
-    const addrTxs = await $api.getActions({ address, offset: 0 }).catch((e) => {
+    const addrTxs = await $api.getActions({ address, limit: 30 }).catch((e) => {
       console.error(e)
     })
     const count = addrTxs?.data?.count ?? 0
@@ -243,13 +236,14 @@ export default {
   },
   data() {
     return {
-      offset: 0,
       count: undefined,
       loading: false,
       balance: undefined,
       copyText: 'Copy',
       showQR: false,
       thornames: undefined,
+      nextPageToken: undefined,
+      prevPageToken: undefined,
       activeMode: 'balance',
       isVault: false,
       chainAddresses: [],
@@ -346,20 +340,35 @@ export default {
     this.checkIsVault(this.address)
   },
   methods: {
+    goNext() {
+      this.getActions({
+        limit: 30,
+        address: this.address,
+        nextPageToken: this.nextPageToken,
+      })
+    },
+    goPrev() {
+      this.getActions({
+        limit: 30,
+        address: this.address,
+        prevPageToken: this.prevPageToken,
+      })
+    },
     formatStatus(status) {
       if (status === 'ActiveVault') {
         return 'Active'
       }
       return status
     },
-    getActions(offset = 0) {
+    getActions(params) {
       this.loading = true
-      this.offset = offset
       this.$api
-        .getActions({ address: this.address, offset })
+        .getActions(params)
         .then((res) => {
           this.addrTxs = res.data
           this.count = res.data.count
+          this.nextPageToken = res.data.meta.nextPageToken
+          this.prevPageToken = res.data.meta.prevPageToken
         })
         .catch((error) => {
           console.error(error)
