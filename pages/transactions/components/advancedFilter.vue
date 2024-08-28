@@ -293,6 +293,10 @@ export default {
   width: 1.5rem;
   height: 2rem;
   color: var(--sec-font-color);
+
+  &:hover {
+    color: var(--primary-color); 
+  }
 }
 
 .input-fields {
