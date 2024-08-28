@@ -7,28 +7,7 @@
       </div>
       <div class="address-name">
         <span style="color: var(--primary-color)">{{ address }}</span>
-        <div
-          class="icon-wrapper"
-          style="margin-left: 0.7rem"
-          @click="copy(address)"
-        >
-          <span class="icon-name">{{ copyText }}</span>
-          <CopyIcon class="icon small" />
-        </div>
-        <div
-          class="icon-wrapper qr-wrapper"
-          style="margin-left: 0.7rem"
-          @mouseover="showQR = true"
-          @mouseleave="showQR = false"
-        >
-          <span class="icon-name">QR</span>
-          <ExpandIcon class="icon small" />
-          <transition name="fade">
-            <div v-show="showQR" class="qr-show">
-              <qrcode-vue :value="address" />
-            </div>
-          </transition>
-        </div>
+        <UtilityBox :value="address" />
       </div>
       <template v-if="addrTxs">
         <div class="stat-wrapper mb-1">
@@ -196,6 +175,7 @@ import WalletIcon from '~/assets/images/wallet.svg?inline'
 import CopyIcon from '~/assets/images/copy.svg?inline'
 import ExpandIcon from '~/assets/images/expand.svg?inline'
 import { formatAsset, assetFromString } from '~/utils'
+import UtilityBox from '~/components/UtilityBox.vue'
 
 export default {
   components: {
@@ -448,22 +428,23 @@ export default {
     }
   }
 
-  .icon-wrapper {
+  .utility-wrapper {
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
     padding: 0.4rem;
     border-radius: 0.3rem;
+    background-color: var(--bg-color);
 
-    &:hover {
-      background-color: var(--active-bg-color);
-    }
+    .divider {
+      margin: 0 8px;
 
-    .icon-name {
-      color: var(--sec-font-color);
-      font-size: 0.625rem;
-      margin-right: 0.3rem;
+      &::after {
+        display: block;
+        content: ' ';
+        border-right: 1px solid var(--border-color);
+        height: 16px;
+      }
     }
   }
 
