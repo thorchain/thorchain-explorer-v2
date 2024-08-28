@@ -5,7 +5,6 @@
     <div :class="['tags-input', tagsWrapClass]">
       <div
         v-for="(tag, index) in tags"
-        v-if="allowTags"
         :key="index"
         :class="['mini-bubble']"
       >
@@ -17,15 +16,27 @@
         v-model="inputValue"
         type="text"
         :placeholder="placeholder"
+        @focus="handleFocus"
+        @blur="handleBlur"
         @keyup.enter="addTag"
+      />
+      <EnterIcon
+        class="enter-icon"
+        :class="enterIconClass"
+        @click="addTag"
       />
     </div>
   </div>
 </template>
 
 <script>
+import EnterIcon from '~/assets/images/arrow-turn-down-right.svg?inline'
+
 export default {
   name: 'InputFilter',
+  components: {
+    EnterIcon,
+  },
   props: {
     label: {
       type: String,
@@ -47,26 +58,35 @@ export default {
   data() {
     return {
       inputValue: '',
+      isFocused: false,
     }
   },
   computed: {
     tagsWrapClass() {
-      return this.tags.length > 2 ? 'wrap' : 'no-wrap'
+      return this.tags.length > 0 ? 'wrap' : 'no-wrap'
+    },
+    enterIconClass() {
+      return this.isFocused ? 'enter-icon-visible' : 'enter-icon-hidden'
     },
   },
   methods: {
-    addTag() {
-      const trimmedValue = this.inputValue.trim()
-      if (this.allowTags && trimmedValue && !this.tags.includes(trimmedValue)) {
-        this.$emit('update:tags', [...this.tags, trimmedValue])
-        this.inputValue = ''
-      }
-    },
     removeTag(index) {
       this.$emit(
         'update:tags',
         this.tags.filter((_, i) => i !== index)
       )
+    },
+    addTag() {
+      if (this.inputValue.trim()) {
+        this.$emit('update:tags', [...this.tags, this.inputValue.trim()])
+        this.inputValue = ''
+      }
+    },
+    handleFocus() {
+      this.isFocused = true
+    },
+    handleBlur() {
+      this.isFocused = false
     },
   },
 }
@@ -88,12 +108,13 @@ export default {
 
   .tags-input {
     display: flex;
-    padding: 4px;
+    padding-right: 1.3rem; 
     background-color: var(--bg-color);
     border-radius: 6px;
     border: 1px solid var(--border-color);
     max-height: 100px;
     overflow-y: auto;
+    position: relative;
     align-items: center;
 
     ::-webkit-scrollbar {
@@ -115,6 +136,30 @@ export default {
     font-size: 14px;
   }
 
+  .enter-icon {
+    width: 1.3rem;
+    height: 1.3rem;
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%) scaleX(-1);
+    font-size: 18px;
+    color: var(--sec-font-color);
+    cursor: pointer;
+    pointer-events: all;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border: 1px solid var(--sec-font-color);
+    border-radius: 0.5rem;
+    padding: 4px;
+    box-sizing: border-box;
+    background-color: var(--bg-color);
+  }
+
+  .enter-icon-visible {
+    opacity: 1;
+  }
+  
   .mini-bubble {
     font-size: 12px;
     height: 25px;
@@ -122,6 +167,7 @@ export default {
     align-items: center;
     justify-content: center;
     margin-left: 1px;
+    margin-top: 1.5px;
   }
 
   .remove-tag {
