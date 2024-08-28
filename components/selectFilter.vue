@@ -34,7 +34,7 @@
 
 <script>
 import AngleIcon from '~/assets/images/angle-down.svg?inline'
-import checkIcon from '~/assets/images/check-mark.svg?inline'
+import checkIcon from '~/assets/images/check.svg?inline'
 
 export default {
   name: 'SelectFilter',
@@ -193,11 +193,12 @@ export default {
     }
 
     .checkmark {
-      width: 1.2rem;
-      height: 1.2rem;
+      width: 0.8rem;
+      height: 0.8rem;
       position: absolute;
-      left: 8px;
-      color: var(--primary-color);
+      left: 12px;
+      top: calc(50% - 0.4rem);
+      fill: var(--primary-color);
       border: none;
     }
   }

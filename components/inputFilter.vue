@@ -4,20 +4,20 @@
 
     <div :class="['tags-input', tagsWrapClass]">
       <div
-        v-if="allowTags"
         v-for="(tag, index) in tags"
+        v-if="allowTags"
         :key="index"
         :class="['mini-bubble']"
       >
-        {{ tag }}
+        {{ formatAddress(tag) }}
         <span class="remove-tag" @click="removeTag(index)">&times;</span>
       </div>
 
       <input
-        type="text"
         v-model="inputValue"
-        @keyup.enter="addTag"
+        type="text"
         :placeholder="placeholder"
+        @keyup.enter="addTag"
       />
     </div>
   </div>
@@ -94,6 +94,7 @@ export default {
     border: 1px solid var(--border-color);
     max-height: 100px;
     overflow-y: auto;
+    align-items: center;
 
     ::-webkit-scrollbar {
       display: none;
@@ -115,14 +116,13 @@ export default {
   }
 
   .mini-bubble {
-  font-size: 12px;
-  width: 100%;
-  height: 30x;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: 1px;
-;}
+    font-size: 12px;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 1px;
+  }
 
   .remove-tag {
     margin-left: 8px;
