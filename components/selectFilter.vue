@@ -175,7 +175,7 @@ export default {
     margin-top: 0.5rem;
     padding: 0.5rem 0;
     box-sizing: border-box;
-    max-height: 400px;
+    max-height: 200px;
     overflow: auto;
   }
   .dropdown-option {
