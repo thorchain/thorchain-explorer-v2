@@ -3,6 +3,7 @@
     <div class="transactions-container">
       <!-- transactions component -->
       <advanced-filter
+        class="top-bar"
         @applyFilters="applyFilters"
         @clearfilter="clearFilters"
       />
@@ -95,4 +96,9 @@ export default {
 }
 </script>
 
-<style></style>
+<style lang="scss" scoped>
+.top-bar {
+  display: flex;
+  justify-content: flex-end;
+}
+</style>
