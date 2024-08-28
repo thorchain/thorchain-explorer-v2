@@ -203,20 +203,20 @@ export default {
     }
   }
   .dropdown-options::-webkit-scrollbar {
-  width: 8px;
-}
+    width: 8px;
+  }
 
-.dropdown-options::-webkit-scrollbar-track {
-  background-color: var(--border-color);
-}
+  .dropdown-options::-webkit-scrollbar-track {
+    background-color: var(--border-color);
+  }
 
-.dropdown-options::-webkit-scrollbar-thumb {
-  background-color: var(--active-bg-color);
-  border-radius: 5px
-}
+  .dropdown-options::-webkit-scrollbar-thumb {
+    background-color: var(--active-bg-color);
+    border-radius: 5px;
+  }
 
-.dropdown-options::-webkit-scrollbar-thumb:hover {
-  background: #555;
-}
+  .dropdown-options::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
 }
 </style>
