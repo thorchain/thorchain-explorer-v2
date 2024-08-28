@@ -9,7 +9,7 @@
       >
         {{ addressFormatV2(param) }}
       </nuxt-link>
-      <copy :sty-copy="param"></copy>
+      <copy :str-copy="param"></copy>
     </template>
     <span v-else>-</span>
   </div>
