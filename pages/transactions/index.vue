@@ -2,7 +2,10 @@
   <Page>
     <div class="transactions-container">
       <!-- transactions component -->
-      <advanced-filter @applyFilters="applyFilters" @clearfilter="clearFilters" />
+      <advanced-filter
+        @applyFilters="applyFilters"
+        @clearfilter="clearFilters"
+      />
       <transactions :txs="txs" :loading="loading" />
       <pagination @nextPage="goNext" @prevPage="goPrev" />
     </div>
@@ -53,8 +56,10 @@ export default {
           params.addresses.length > 0 && {
             address: params.addresses.join(','),
           }),
-        ...(params.txType && params.txType.length > 0 && { txType: params.txType.join(',') }),
-        ...(params.type && params.type.length > 0 && { type: params.type.join(',') }),
+        ...(params.txType &&
+          params.txType.length > 0 && { txType: params.txType.join(',') }),
+        ...(params.type &&
+          params.type.length > 0 && { type: params.type.join(',') }),
       }
       this.hasFilters = true
       this.getActions({ limit: this.limit })

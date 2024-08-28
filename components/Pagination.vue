@@ -21,6 +21,13 @@ export default {
     angleLeft,
     angleRight,
   },
+  props: {
+    isFirstPage: {
+      type: [Boolean],
+      required: false,
+      default: true,
+    },
+  },
   computed: {},
 }
 </script>
@@ -32,6 +39,13 @@ export default {
   align-items: center;
   padding: 0.5rem;
   border-radius: 0.5rem;
+
+  .divider {
+    margin: 0 5px;
+    height: 30px;
+    width: 1px;
+    background-color: var(--border-color);
+  }
 
   .nav-icons {
     display: flex;
