@@ -5,8 +5,8 @@
       Advanced Filter
       <span v-if="showBadge && filledFilterCount > 0" :class="'mini-bubble'">{{ filledFilterCount }}</span>
     </button>
-    <div v-if="isModalVisible" class="modal-overlay">
-      <div class="modal-content">
+    <div v-if="isModalVisible" class="modal-overlay" @click="handleOverlayClick">
+      <div class="modal-content" @click.stop>
         <div class="modal-header">
           <h3>Advanced Filters</h3>
           <CrossIcon class="close-btn" @click="toggleModal" />
@@ -74,6 +74,7 @@
 <script>
 import CrossIcon from '~/assets/images/cross.svg?inline'
 import FilterIcon from '~/assets/images/filter.svg?inline'
+
 export default {
   name: 'Filter',
   components: {
@@ -117,6 +118,12 @@ export default {
   methods: {
     toggleModal() {
       this.isModalVisible = !this.isModalVisible
+    },
+
+    handleOverlayClick(event) {
+      if (event.target === event.currentTarget) {
+        this.toggleModal()
+      }
     },
 
     selectOption(key, options) {
