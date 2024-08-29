@@ -21,6 +21,7 @@ import {
   getSaverDetails,
   earningLastDay,
   getBorrowerDetails,
+  getMidgardActions,
 } from './midgard.api'
 import {
   getRunePoolProviders,
@@ -246,6 +247,7 @@ export default function ({ $axios }, inject) {
     getAffiliateByWallet,
     getAffiliateDaily,
     getActions,
+    getMidgardActions,
   }
 
   inject('api', api)

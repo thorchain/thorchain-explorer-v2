@@ -5,6 +5,10 @@ export function getStats() {
   return $axiosInstace.get('stats')
 }
 
+export function getMidgardActions(params) {
+  return $axiosInstace.get('actions', { params })
+}
+
 export function getTxs(offset = 0, limit = 10, OtherParams = undefined) {
   const params = {
     offset,

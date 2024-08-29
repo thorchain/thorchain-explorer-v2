@@ -183,9 +183,11 @@ export default {
   },
   async asyncData({ params, $api }) {
     const address = params.adderid
-    const addrTxs = await $api.getActions({ address, limit: 30 }).catch((e) => {
-      console.error(e)
-    })
+    const addrTxs = await $api
+      .getMidgardActions({ address, limit: 30 })
+      .catch((e) => {
+        console.error(e)
+      })
     const count = addrTxs?.data?.count ?? 0
     let otherBalances = []
     let runeBalance
@@ -363,7 +365,7 @@ export default {
     getActions(params) {
       this.loading = true
       this.$api
-        .getActions(params)
+        .getMidgardActions(params)
         .then((res) => {
           this.addrTxs = res.data
           this.count = res.data.count
