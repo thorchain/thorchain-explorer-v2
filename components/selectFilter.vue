@@ -10,7 +10,7 @@
             :class="['mini-bubble']"
           >
             {{ option }}
-            <span class="remove-tag" @click.stop="removeOption(option)">x</span>
+            <CrrosIcon class="remove-tag" @click.stop="removeOption(option)"/>
           </span>
           <span v-if="selectedOptions.length === 0">All</span>
         </div>
@@ -35,12 +35,15 @@
 <script>
 import AngleIcon from '~/assets/images/angle-down.svg?inline'
 import checkIcon from '~/assets/images/check.svg?inline'
+import CrrosIcon from '~/assets/images/cross.svg?inline'
+
 
 export default {
   name: 'SelectFilter',
   components: {
     AngleIcon,
     checkIcon,
+    CrrosIcon
   },
   props: {
     label: String,
@@ -109,6 +112,7 @@ export default {
   flex: 1;
   min-width: 0;
   position: relative;
+
   .selected-options {
     display: flex;
     flex-wrap: wrap;
@@ -116,16 +120,17 @@ export default {
   }
   .mini-bubble {
     font-size: 12px;
-    height: 30x;
+    height: 17px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-left: 1px;
   }
   .remove-tag {
+    color: var(--sec-font-color);
     margin-left: 8px;
     cursor: pointer;
-    font-weight: bold;
+    width: 0.5rem;
+    height: 0.5rem;
   }
   .dropdown-option.selected {
     border-radius: 0.3rem;
@@ -143,10 +148,9 @@ export default {
 
     .dropdown-button {
       width: 100%;
-      padding: 12px 16px;
+      padding: 12px 10px;
       font-size: 16px;
       border: none;
-      border-bottom: 2px solid var(--border-color);
       border-radius: 6px;
       background-color: var(--bg-color);
       color: var(--sec-font-color);
