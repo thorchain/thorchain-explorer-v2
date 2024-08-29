@@ -3,39 +3,34 @@
     <label>{{ label }}</label>
 
     <div :class="['tags-input', tagsWrapClass]">
-      <div
-        v-for="(tag, index) in tags"
-        :key="index"
-        :class="['mini-bubble']"
-      >
+      <div v-for="(tag, index) in tags" :key="index" :class="['mini-bubble']">
         {{ formatAddress(tag) }}
-        <span class="remove-tag" @click="removeTag(index)">&times;</span>
+        <CrrosIcon class="remove-tag" @click="removeTag(index)" />
       </div>
-
-      <input
-        v-model="inputValue"
-        type="text"
-        :placeholder="placeholder"
-        @focus="handleFocus"
-        @blur="handleBlur"
-        @keyup.enter="addTag"
-      />
-      <EnterIcon
-        class="enter-icon"
-        :class="enterIconClass"
-        @click="addTag"
-      />
+      <div id="input-container">
+        <input
+          v-model="inputValue"
+          type="text"
+          :placeholder="placeholder"
+          @focus="handleFocus"
+          @blur="handleBlur"
+          @keyup.enter="addTag"
+        />
+        <EnterIcon class="enter-icon" :class="enterIconClass" @click="addTag" />
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import EnterIcon from '~/assets/images/arrow-turn-down-right.svg?inline'
+import CrrosIcon from '~/assets/images/cross.svg?inline'
 
 export default {
   name: 'InputFilter',
   components: {
     EnterIcon,
+    CrrosIcon,
   },
   props: {
     label: {
@@ -63,7 +58,7 @@ export default {
   },
   computed: {
     tagsWrapClass() {
-      return this.tags.length > 0 ? 'wrap' : 'no-wrap'
+      return this.tags.length > 2 ? 'wrap' : 'no-wrap'
     },
     enterIconClass() {
       return this.isFocused ? 'enter-icon-visible' : 'enter-icon-hidden'
@@ -108,7 +103,6 @@ export default {
 
   .tags-input {
     display: flex;
-    padding-right: 1.3rem; 
     background-color: var(--bg-color);
     border-radius: 6px;
     border: 1px solid var(--border-color);
@@ -122,62 +116,67 @@ export default {
     }
     scrollbar-width: none;
     -ms-overflow-style: none;
-  }
 
-  input {
-    flex-grow: 1;
-    min-width: 150px;
-    padding: 6px;
-    border: none;
-    background-color: transparent;
-    color: var(--sec-font-color);
-    outline: none;
-    margin: 2px;
-    font-size: 14px;
-  }
+    #input-container {
+      display: inline-flex;
+      align-items: center;
+      flex-grow: 1;
+      position: relative;
 
-  .enter-icon {
-    width: 1.3rem;
-    height: 1.3rem;
-    position: absolute;
-    right: 8px;
-    top: 50%;
-    transform: translateY(-50%) scaleX(-1);
-    font-size: 18px;
-    color: var(--sec-font-color);
-    cursor: pointer;
-    pointer-events: all;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    border: 1px solid var(--sec-font-color);
-    border-radius: 0.5rem;
-    padding: 4px;
-    box-sizing: border-box;
-    background-color: var(--bg-color);
-  }
+      input {
+        flex-grow: 1;
+        height: 38px;
+        color: var(--sec-font-color);
+        background-color: var(--card-bg-color);
+        border-radius: 0.5rem;
+        border: none;
+        padding: 0.5rem;
+        font-size: 14px;
+        background-color: transparent;
+        outline: none;
+      }
 
-  .enter-icon-visible {
-    opacity: 1;
+      .enter-icon {
+        cursor: pointer;
+        width: 1.3rem;
+        height: 1.3rem;
+        transform: scaleX(-1);
+        pointer-events: all;
+        color: var(--sec-font-color);
+        margin-left: 0.5rem;
+        transition: color 0.2s;
+        pointer-events: all;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        border: 1px solid var(--sec-font-color);
+        border-radius: 0.5rem;
+        padding: 4px;
+        background-color: var(--bg-color);
+      }
+
+      .enter-icon-visible {
+        opacity: 1;
+      }
+    }
   }
-  
   .mini-bubble {
     font-size: 12px;
-    height: 25px;
+    height: 17px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-left: 1px;
-    margin-top: 1.5px;
+    margin-left: 6px;
+    margin-top: 2px;
+    height: auto;
   }
-
   .remove-tag {
     margin-left: 8px;
-    font-size: 10px;
     cursor: pointer;
     color: var(--sec-font-color);
     transition: color 0.3s ease;
+    width: 0.5rem;
+    height: 0.5rem;
   }
-
   .wrap {
     flex-wrap: wrap;
   }
