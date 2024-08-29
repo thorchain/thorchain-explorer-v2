@@ -2,18 +2,69 @@
   <Page>
     <div class="transactions-container">
       <!-- transactions component -->
-      <advanced-filter
-        class="top-bar"
-        @applyFilters="applyFilters"
-        @clearfilter="clearFilters"
-      />
-      <transactions :txs="txs" :loading="loading" />
+      <div class="top-bar">
+        <div class="action-types">
+          <div
+            :class="['action-type', { active: isLayerOne }]"
+            @click="
+              applyFilters({
+                type: ['swap'],
+                asset: ['nosynth', 'notrade', 'norune'],
+              })
+            "
+          >
+            L1 Swaps
+          </div>
+          <div
+            :class="['action-type', { active: isTrade }]"
+            @click="applyFilters({ type: ['swap'], asset: ['trade'] })"
+          >
+            Trade Swaps
+          </div>
+          <div
+            :class="['action-type', { active: isSynth }]"
+            @click="applyFilters({ type: ['swap'], asset: ['synth'] })"
+          >
+            Synth Swaps
+          </div>
+          <div
+            :class="['action-type', { active: isLP }]"
+            @click="applyFilters({ type: ['addLiquidity', 'withdraw'] })"
+          >
+            LP / Savers
+          </div>
+          <div
+            :class="['action-type', { active: isSend }]"
+            @click="applyFilters({ type: ['send'] })"
+          >
+            Send
+          </div>
+          <div
+            :class="['action-type', { active: isRefund }]"
+            @click="applyFilters({ type: ['refund'] })"
+          >
+            Refund
+          </div>
+        </div>
+
+        <advanced-filter
+          @applyFilters="applyFilters"
+          @clearfilter="clearFilters"
+        />
+      </div>
+      <div>
+        <div v-if="error" class="error-container">
+          Can't Fetch the actions! Please Try again Later.
+        </div>
+        <transactions v-else :txs="txs" :loading="loading" />
+      </div>
       <pagination @nextPage="goNext" @prevPage="goPrev" />
     </div>
   </Page>
 </template>
 
 <script>
+import { isEqual } from 'lodash'
 import advancedFilter from './components/advancedFilter.vue'
 import Transactions from '~/components/Transactions.vue'
 
@@ -29,12 +80,65 @@ export default {
       prevPageToken: undefined,
       filters: {},
       hasFilters: false,
+      error: false,
     }
   },
   head: {
     title: 'THORChain Network Explorer | Transaction',
   },
-  computed: {},
+  computed: {
+    isLayerOne() {
+      if (this.filters && this.filters.asset) {
+        return (
+          isEqual(this.filters.asset, 'nosynth,notrade,norune') &&
+          isEqual(this.filters.type, 'swap')
+        )
+      }
+
+      return false
+    },
+    isTrade() {
+      if (this.filters && this.filters.asset) {
+        return (
+          isEqual(this.filters.asset, 'trade') &&
+          isEqual(this.filters.type, 'swap')
+        )
+      }
+
+      return false
+    },
+    isSynth() {
+      if (this.filters && this.filters.asset) {
+        return (
+          isEqual(this.filters.asset, 'synth') &&
+          isEqual(this.filters.type, 'swap')
+        )
+      }
+
+      return false
+    },
+    isLP() {
+      if (this.filters && this.filters.type) {
+        return isEqual(this.filters.type, 'addLiquidity,withdraw')
+      }
+
+      return false
+    },
+    isSend() {
+      if (this.filters && this.filters.type) {
+        return isEqual(this.filters.type, 'send')
+      }
+
+      return false
+    },
+    isRefund() {
+      if (this.filters && this.filters.type) {
+        return isEqual(this.filters.type, 'refund')
+      }
+
+      return false
+    },
+  },
   mounted() {
     this.getActions({ limit: this.limit })
   },
@@ -84,8 +188,10 @@ export default {
           this.txs = res.data
           this.nextPageToken = res.data.meta.nextPageToken
           this.prevPageToken = res.data.meta.prevPageToken
+          this.error = false
         })
         .catch((error) => {
+          this.error = true
           console.error(error)
         })
         .finally(() => {
@@ -99,6 +205,53 @@ export default {
 <style lang="scss" scoped>
 .top-bar {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+
+  .action-types {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0.5rem;
+    gap: 5px;
+  }
+
+  .action-type {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 10px 8px;
+    border-radius: 0.25rem;
+    background-color: var(--card-bg-color);
+    color: var(--font-color);
+    border: none;
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition:
+      background-color 0.3s ease,
+      transform 0.2s ease;
+
+    &.active {
+      color: var(--primary-color);
+    }
+
+    svg {
+      fill: var(--font-color);
+      width: 0.75rem;
+      height: 0.75rem;
+      margin: 0 0.2rem;
+    }
+
+    &:hover {
+      background-color: var(--active-bg-color);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      color: var(--sec-font-color);
+      transform: translateY(-2px);
+    }
+
+    &:active {
+      transform: translateY(1px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+    }
+  }
 }
 </style>
