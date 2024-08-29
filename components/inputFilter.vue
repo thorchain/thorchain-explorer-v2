@@ -138,7 +138,7 @@ export default {
 
       .enter-icon {
         cursor: pointer;
-        width: 1.3rem;
+        width: 1.7rem;
         height: 1.3rem;
         transform: scaleX(-1);
         pointer-events: all;
@@ -148,10 +148,15 @@ export default {
         pointer-events: all;
         opacity: 0;
         transition: opacity 0.3s ease;
-        border: 1px solid var(--sec-font-color);
-        border-radius: 0.5rem;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
         padding: 4px;
         background-color: var(--bg-color);
+
+
+        &:hover {
+          color: var(--primary-color);
+        }
       }
 
       .enter-icon-visible {
@@ -159,6 +164,7 @@ export default {
       }
     }
   }
+
   .mini-bubble {
     font-size: 12px;
     height: 17px;
@@ -169,6 +175,7 @@ export default {
     margin-top: 2px;
     height: auto;
   }
+
   .remove-tag {
     margin-left: 8px;
     cursor: pointer;
@@ -176,6 +183,7 @@ export default {
     width: 0.5rem;
     height: 0.5rem;
   }
+
   .wrap {
     flex-wrap: wrap;
   }
