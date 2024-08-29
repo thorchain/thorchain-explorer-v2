@@ -129,6 +129,7 @@ export default {
     font-size: 12px;
     height: 17px;
     margin-top: 2px;
+    margin-left: 2px;
   }
   .remove-tag {
     color: var(--sec-font-color);
