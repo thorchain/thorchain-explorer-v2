@@ -47,7 +47,7 @@
           <nuxt-link to="/insights" class="stat-item stat-item-link">
             <money class="stat-image" />
             <div class="item-detail">
-              <div class="header">Earnings (24hr)</div>
+              <div class="header">Protocol Earnings (24hr)</div>
               <skeleton-item :loading="!runeVolume" class="value">
                 {{ earnings24USD | currency('$', 0) }}
               </skeleton-item>
@@ -68,11 +68,11 @@
           </div>
           <hr />
           <div class="stat-item">
-            <churn class="stat-image" />
+            <stack-dollar class="stat-image" />
             <div class="item-detail">
-              <div class="header">Next Churn Time (Local)</div>
-              <skeleton-item :loading="!totalSwapVolumeUSD" class="value">
-                {{ isChurnHalted() ? 'Churn paused' : nextChurnTime() }}
+              <div class="header">Total Earnings (24hr)</div>
+              <skeleton-item :loading="!totalEarning24" class="value">
+                {{ totalEarning24 | currency('$', 0) }}
               </skeleton-item>
             </div>
           </div>
@@ -338,7 +338,7 @@ import VChart from 'vue-echarts'
 import { range } from 'lodash'
 import { blockTime } from '~/utils'
 
-import Churn from '~/assets/images/churn.svg?inline'
+import StackDollar from '~/assets/images/sack-dollar.svg?inline'
 import LockIcon from '~/assets/images/lock.svg?inline'
 import ArrowRightIcon from '~/assets/images/arrow-right.svg?inline'
 import Exchange from '~/assets/images/exchange.svg?inline'
@@ -370,7 +370,7 @@ export default {
     LockIcon,
     Book,
     Money,
-    Churn,
+    StackDollar,
     ArrowRightIcon,
     External,
   },
@@ -379,6 +379,7 @@ export default {
       nodes: [],
       network: [],
       rune: '',
+      affiliateDaily: undefined,
       lastblock: undefined,
       stats: [],
       volumeHistory: undefined,
@@ -391,6 +392,7 @@ export default {
       totalSwapVolume: undefined,
       totalSwap24USD: undefined,
       earnings24USD: undefined,
+      totalEarning24: undefined,
       totalSwapVolumeUSD: undefined,
       totalAddresses: undefined,
       thorHeight: undefined,
@@ -452,6 +454,7 @@ export default {
   computed: {
     ...mapGetters({
       runePrice: 'getRunePrice',
+      chainsHeight: 'getChainsHeight',
     }),
     tvl() {
       if (!this.network.bondMetrics || !this.totalValuePooled) {
@@ -651,8 +654,15 @@ export default {
           colSpan: 1,
           items: [
             {
-              name: 'Next Churn Height',
-              value: `${this.isChurnHalted() ? 'Churn paused' : this.$options.filters.number(this.network.nextChurnHeight, '0,0')}`,
+              name: 'Next Churn Countdown',
+              value: `${
+                this.isChurnHalted()
+                  ? 'Churn paused'
+                  : this.chainsHeight &&
+                    blockTime(
+                      this.network.nextChurnHeight - this.chainsHeight.THOR
+                    )
+              }`,
             },
             {
               name: 'Pool Activation Countdown',
@@ -739,20 +749,25 @@ export default {
 
     this.$api
       .getDashboardPlots()
-      .then(({ data }) => {
+      .then(async ({ data }) => {
         if (!data) {
           throw new Error('Cant read the data')
         }
 
         this.volumeHistory = this.formatLPChange(data?.LPChange)
         ;({ resVolume: this.swapHistory } = this.formatSwap(data?.swaps))
-        this.earningsHistory = this.formatEarnings(data?.earning)
+
+        this.earningsHistory = await this.formatEarnings(data?.earning)
         this.earnings24USD =
           (+data?.earning?.intervals[data?.earning?.intervals.length - 1]
             .earnings /
             1e8) *
           +data?.earning?.intervals[data?.earning?.intervals.length - 1]
             .runePriceUSD
+        this.totalEarning24 =
+          this.earnings24USD +
+          this.affiliateDaily[this.affiliateDaily.length - 2]
+            .daily_affiliate_fees_usd
         this.totalSwapVolumeUSD = data.swaps?.meta?.totalVolumeUSD
         this.totalSwapVolume = data.swaps?.meta?.totalVolume
       })
@@ -786,7 +801,10 @@ export default {
 
         this.$api
           .earningsHistory()
-          .then((res) => (this.earningsHistory = this.formatEarnings(res.data)))
+          .then(
+            async (res) =>
+              (this.earningsHistory = await this.formatEarnings(res.data))
+          )
           .catch((error) => {
             console.error(error)
           })
@@ -820,6 +838,10 @@ export default {
       this.nodes = data
     })
 
+    this.$api.getAffiliateDaily().then(({ data }) => {
+      this.affiliateDaily = data
+    })
+
     // Get inbound info
     this.getNetworkStatus()
 
@@ -830,16 +852,6 @@ export default {
   methods: {
     stringToPercentage(val) {
       return (Number.parseFloat(val ?? 0) * 100).toFixed(2).toString() + ' %'
-    },
-    nextChurnTime() {
-      if (this.lastblock && this.network) {
-        return moment()
-          .add(
-            (this.network.nextChurnHeight - this.lastblock[0].thorchain) * 6,
-            's'
-          )
-          .format('MM/DD LT')
-      }
     },
     isChurnHalted() {
       if (this.mimirInfo && this.mimirInfo.HALTCHURNING) {
@@ -1100,17 +1112,22 @@ export default {
         xAxis
       )
     },
-    formatEarnings(d) {
+    async formatEarnings(d) {
       const xAxis = []
       const le = []
       const be = []
+      const af = []
+
+      if (process.env.NETWORK === 'mainnet') {
+        this.affiliateDaily = (await this.$api.getAffiliateDaily()).data
+      }
+
       d?.intervals.pop()
-      d?.intervals.forEach((interval) => {
-        xAxis.push(
-          moment(
-            Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
-          ).format('MM/DD')
+      d?.intervals.forEach((interval, index) => {
+        const date = moment(
+          Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
         )
+        xAxis.push(date.format('MM/DD'))
         le.push(
           (+interval.liquidityEarnings / 10 ** 8) *
             Number.parseFloat(interval.runePriceUSD)
@@ -1119,6 +1136,8 @@ export default {
           (+interval.bondingEarnings / 10 ** 8) *
             Number.parseFloat(interval.runePriceUSD)
         )
+        const j = index
+        af.push(this.affiliateDaily[j + 1].daily_affiliate_fees_usd)
       })
 
       return this.basicChartFormat(
@@ -1138,6 +1157,13 @@ export default {
             data: be,
             smooth: true,
           },
+          this.affiliateDaily && {
+            type: 'line',
+            name: 'Affiliate Earning',
+            showSymbol: false,
+            data: af,
+            smooth: true,
+          },
         ],
         xAxis,
         undefined,
@@ -1148,18 +1174,21 @@ export default {
               ${param[0].name}
             </div>
             <div class="tooltip-body">
-              <span>
-                <span>Liquidity Earning</span>
-                <b>$${this.$options.filters.number(param[0].value, '0,0')}</b>
-              </span>
-              <span>
-                <span>Bond Earning</span>
-                <b>$${this.$options.filters.number(param[1].value, '0,0')}</b>
-              </span>
+              ${param
+                .map(
+                  (p) => `<span>
+                  <span>${p.seriesName}</span>
+                  <b>$${this.$options.filters.number(p.value, '0,0')}</b>
+                </span>`
+                )
+                .join('')}
               <span style="border-top: 1px solid var(--border-color); margin: 2px 0;"></span>
               <span>
                 <span>Total Earning</span>
-                <b>$${this.$options.filters.number(param[0].value + param[1].value, '0,0')}</b>
+                <b>$${this.$options.filters.number(
+                  param.reduce((a, c) => a + c.value, 0),
+                  '0,0'
+                )}</b>
               </span>
             </div>
           `
