@@ -17,8 +17,12 @@
               />
             </span>
           </span>
-          <span v-else :class="['mini-bubble']">
+          <span v-else :class="['mini-bubble', 'multiple-selected']">
             {{ selectedOptions.length }} selected
+            <CrrosIcon
+              class="remove-tag"
+              @click.stop="clearSelections"
+            />
           </span>
           <span v-if="selectedOptions.length === 0">All</span>
         </div>
@@ -39,6 +43,7 @@
     </div>
   </div>
 </template>
+
 
 <script>
 import AngleIcon from '~/assets/images/angle-down.svg?inline'
@@ -110,6 +115,10 @@ export default {
       )
       this.$emit('update:selectedOptions', this.selectedOptions)
     },
+    clearSelections() {
+    this.selectedOptions = [];
+    this.$emit('update:selectedOptions', this.selectedOptions);
+  },
   },
 }
 </script>
