@@ -173,7 +173,6 @@ export default {
     margin-left: 8px;
     cursor: pointer;
     color: var(--sec-font-color);
-    transition: color 0.3s ease;
     width: 0.5rem;
     height: 0.5rem;
   }

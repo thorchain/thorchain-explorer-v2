@@ -4,13 +4,21 @@
     <div ref="dropdownButton" class="custom-dropdown">
       <div class="dropdown-button" @click="toggleDropdown">
         <div class="selected-options">
-          <span
-            v-for="option in selectedOptions"
-            :key="option"
-            :class="['mini-bubble']"
-          >
-            {{ option }}
-            <CrrosIcon class="remove-tag" @click.stop="removeOption(option)"/>
+          <span v-if="selectedOptions.length <= 3">
+            <span
+              v-for="option in selectedOptions"
+              :key="option"
+              :class="['mini-bubble']"
+            >
+              {{ option }}
+              <CrrosIcon
+                class="remove-tag"
+                @click.stop="removeOption(option)"
+              />
+            </span>
+          </span>
+          <span v-else :class="['mini-bubble']">
+            {{ selectedOptions.length }} selected
           </span>
           <span v-if="selectedOptions.length === 0">All</span>
         </div>
@@ -37,13 +45,12 @@ import AngleIcon from '~/assets/images/angle-down.svg?inline'
 import checkIcon from '~/assets/images/check.svg?inline'
 import CrrosIcon from '~/assets/images/cross.svg?inline'
 
-
 export default {
   name: 'SelectFilter',
   components: {
     AngleIcon,
     checkIcon,
-    CrrosIcon
+    CrrosIcon,
   },
   props: {
     label: String,
@@ -121,9 +128,7 @@ export default {
   .mini-bubble {
     font-size: 12px;
     height: 17px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    margin-top: 2px;
   }
   .remove-tag {
     color: var(--sec-font-color);
