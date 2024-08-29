@@ -11,15 +11,8 @@
           <Copy :str-copy="$route.params.txhash" />
         </div>
         <div id="qrcode" class="item">
-          <qr-icon class="qr-icon"></qr-icon>
+          <qr-btn></qr-btn>
         </div>
-        <b-popover
-          triggers="click"
-          target="qrcode"
-          custom-class="custom-popover"
-        >
-          <qrcode-vue :value="$route.params.txhash"></qrcode-vue>
-        </b-popover>
       </div>
 
       <tx-card v-for="(c, i) in cards" :key="i" :tx-data="c.details">
