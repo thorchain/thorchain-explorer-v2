@@ -166,6 +166,9 @@ export default {
       this.filters = {
         ...(params.asset &&
           params.asset.length > 0 && { asset: params.asset.join(',') }),
+
+        ...(params.toHeight && { height: params.toHeight }),
+        ...(params.fromHeight && { fromHeight: params.fromHeight }),
         ...(params.affiliate &&
           params.affiliate.length > 0 && {
             affiliate: params.affiliate.join(','),
