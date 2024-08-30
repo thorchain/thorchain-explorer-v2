@@ -765,10 +765,18 @@ export default {
             1e8) *
           +data?.earning?.intervals[data?.earning?.intervals.length - 1]
             .runePriceUSD
+
+        const affiliate = this.affiliateDaily.find((d) => {
+          return moment(d.date).isSame(
+            moment.unix(
+              data?.earning?.intervals[data?.earning?.intervals.length - 1]
+                .startTime
+            ),
+            'day'
+          )
+        })
         this.totalEarning24 =
-          this.earnings24USD +
-          this.affiliateDaily[this.affiliateDaily.length - 2]
-            .daily_affiliate_fees_usd
+          this.earnings24USD + affiliate.daily_affiliate_fees_usd
         this.totalSwapVolumeUSD = data.swaps?.meta?.totalVolumeUSD
         this.totalSwapVolume = data.swaps?.meta?.totalVolume
       })
