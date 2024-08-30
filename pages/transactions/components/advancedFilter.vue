@@ -37,6 +37,27 @@
           </div>
 
           <div class="input-row">
+            <div class="input-group">
+              <label for="fromHeight">{{ filterLabels.fromHeight }}</label>
+              <input
+                id="fromHeight"
+                v-model="filters.fromHeight"
+                type="text"
+                placeholder="Enter fromHeight, press enter"
+              />
+            </div>
+            <div class="input-group">
+              <label for="toHeight">{{ filterLabels.toHeight }}</label>
+              <input
+                id="toHeight"
+                v-model="filters.toHeight"
+                type="text"
+                placeholder="Enter toHeight, press enter"
+              />
+            </div>
+          </div>
+
+          <div class="input-row">
             <select-filter
               :options="getOptions('type')"
               :default="filters.type"
@@ -92,6 +113,8 @@ export default {
         type: [],
         txType: [],
         affiliate: [],
+        toHeight: '',
+        fromHeight: '',
       },
       filterLabels: {
         addresses: 'Addresses',
@@ -100,6 +123,8 @@ export default {
         type: 'Type',
         txType: 'TxType',
         affiliate: 'Affiliate',
+        toHeight: 'To Height',
+        fromHeight: 'From Height',
       },
     }
   },
@@ -112,6 +137,8 @@ export default {
       if (this.filters.asset.length > 0) count++
       if (this.filters.type.length > 0) count++
       if (this.filters.txType.length > 0) count++
+      if (this.filters.toHeight) count++
+      if (this.filters.fromHeight) count++
       return count
     }
   },
@@ -150,6 +177,8 @@ export default {
         type: [],
         txType: [],
         affiliate: [],
+        toHeight: '',
+        fromHeight: '',
       }
       this.showBadge = false
       this.$emit('clearfilter')
@@ -201,7 +230,9 @@ export default {
         this.filters.affiliate.length > 0 ||
         this.filters.asset.length > 0 ||
         this.filters.type.length > 0 ||
-        this.filters.txType.length > 0
+        this.filters.txType.length > 0 ||
+        this.filters.toHeight.trim() !== '' ||
+        this.filters.fromHeight.trim() !== ''
       return valid
     },
   },
@@ -316,6 +347,47 @@ export default {
   display: flex;
   justify-content: space-between;
   gap: 15px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex-grow: 1;
+  width: 100%;
+
+  label {
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--sec-font-color);
+    margin-bottom: 8px;
+  }
+
+  input {
+    height: 38px;
+    color: var(--sec-font-color) !important;
+    background-color: var(--bg-color) !important;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color) !important;
+    padding: 0.5rem;
+    font-size: 14px;
+    outline: none;
+    flex-grow: 1;
+  }
+
+  input:-webkit-autofill,
+  input:-moz-autofill,
+  input:-ms-autofill {
+    background-color: var(--bg-color) !important;
+    color: var(--sec-font-color) !important;
+    caret-color: var(--sec-font-color);
+  }
+
+  input:-webkit-autofill {
+    -webkit-text-fill-color: var(--sec-font-color) !important;
+    transition: background-color 5000s ease-in-out 0s;
+    caret-color: var(--sec-font-color);
+  }
 }
 
 .button-group {
