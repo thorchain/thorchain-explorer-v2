@@ -133,3 +133,9 @@ export function getActions(params) {
     { params }
   )
 }
+
+export function getCoinMarketInfo() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + 'api/coinmarketCap'
+  )
+}

@@ -1,60 +1,78 @@
 <template>
   <Page>
-    <stat-table
-      :is-loading="!network || network.length == 0"
-      :table-settings="networkSettings"
-      header="Network Overview"
-    />
-    <Card title="THORChain version upgrade progress">
-      <ProgressBar
-        v-if="versionProgress"
-        :width="versionProgress"
-        :color="versionProgress == 100 ? '#81C784' : false"
-      />
-      <h3 style="text-align: center">
-        <span class="sec-color">{{
-          uptodateNodes ? uptodateNodes.length : '*'
-        }}</span>
-        of
-        <span class="sec-color">{{
-          activeNodes ? activeNodes.length : '*'
-        }}</span>
-        nodes upgraded to
-        <span class="sec-color">{{
-          activeNodes ? uptodateNodeVersion(activeNodes) : '*'
-        }}</span>
-      </h3>
-      <p
-        v-if="newStandByVersion || (uptodateNodes && uptodateNodes.length == 1)"
-        style="text-align: center; color: var(--primary-color)"
-      >
-        ✨ New version detected! ({{
-          newStandByVersion || uptodateNodeVersion(activeNodes)
-        }})
-      </p>
-      <p
-        v-if="versionProgress === 100"
-        style="text-align: center; color: var(--primary-color)"
-      >
-        All nodes are updated to the latest.
-      </p>
-    </Card>
-    <stat-table
-      :is-loading="!inAddresses"
-      :table-settings="gasSettings"
-      header="Gas Fees"
-    />
+    <info-card :options="networkOverview">
+      <template #name="{ item }">
+        <asset-icon :asset="item.name" />
+        {{ item.chain }}
+      </template>
+      <template #asset="{ item }">
+        <span>
+          {{ item.value | number('0,0') }}
+        </span>
+      </template>
+      <template #blocktime="{ item }">
+        <span style="font-family: 'Roboto'">
+          {{ item.filter(item.value) }}
+        </span>
+      </template>
+    </info-card>
+    <div class="cards-container">
+      <Card title="THORChain version upgrade progress">
+        <ProgressBar
+          v-if="versionProgress"
+          :width="versionProgress"
+          :color="versionProgress == 100 ? '#81C784' : false"
+        />
+        <h3 style="text-align: center">
+          <span class="sec-color">{{
+            uptodateNodes ? uptodateNodes.length : '*'
+          }}</span>
+          of
+          <span class="sec-color">{{
+            activeNodes ? activeNodes.length : '*'
+          }}</span>
+          nodes upgraded to
+          <span class="sec-color">{{
+            activeNodes ? uptodateNodeVersion(activeNodes) : '*'
+          }}</span>
+        </h3>
+        <p
+          v-if="
+            newStandByVersion || (uptodateNodes && uptodateNodes.length == 1)
+          "
+          style="text-align: center; color: var(--primary-color)"
+        >
+          ✨ New version detected! ({{
+            newStandByVersion || uptodateNodeVersion(activeNodes)
+          }})
+        </p>
+        <p
+          v-if="versionProgress === 100"
+          style="text-align: center; color: var(--primary-color)"
+        >
+          All nodes are updated to the latest. ✅
+        </p>
+      </Card>
+      <info-card :options="gasSettings">
+        <template #name="{ item }">
+          <asset-icon :asset="item.name" />
+          <span style="margin-right: 10px">{{ item.chain }}</span>
+        </template>
+        <template #asset="{ item }">
+          <span>
+            {{ item.value | number('0,0') }}
+          </span>
+        </template>
+      </info-card>
+    </div>
   </Page>
 </template>
 
 <script>
-import { chunk } from 'lodash'
 import { gt, rsort, valid } from 'semver'
-import StatTable from '~/components/StatTable.vue'
 import { formatAsset, blockTime } from '~/utils'
 
 export default {
-  components: { StatTable },
   data() {
     return {
       network: [],
@@ -66,6 +84,8 @@ export default {
       nodes: undefined,
       activeNodes: undefined,
       uptodateNodes: undefined,
+      thorVersion: undefined,
+      coinMarketInfo: undefined,
       inAddresses: [],
       cols: [
         {
@@ -115,124 +135,215 @@ export default {
       }
       return 1
     },
-    networkSettings() {
+    networkOverview() {
+      const observed = this.lastblock?.map((b) => ({
+        name: this.baseChainAsset(b.chain),
+        chain: b.chain,
+        value: b.last_observed_in,
+        valueSlot: 'asset',
+        nameSlot: true,
+        filter: (v) => this.$options.filters.number(v, '0,0'),
+      }))
+
       return [
-        [
-          {
-            name: 'Current Blockchain version',
-            value: this.blockchainVersion?.current,
-            filter: true,
-          },
-        ],
-        [
-          {
-            name: 'Bonding APY',
-            value: this.$options.filters.percent(this.network.bondingAPY, 2),
-            filter: true,
-          },
-          {
-            name: 'Liquidity APY',
-            value: this.$options.filters.percent(this.network.liquidityAPY, 2),
-            filter: true,
-          },
-        ],
-        [
-          {
-            name: 'Next Churn Height',
-            value: this.network.nextChurnHeight,
-            extraText: this.nextChurnTime(),
-          },
-          {
-            name: 'Pool Activation Countdown',
-            value: this.network.poolActivationCountdown,
-            extraText: blockTime(+this.network.poolActivationCountdown),
-          },
-          {
-            name: 'Pool Share Factor',
-            value: this.$options.filters.percent(this.network.poolShareFactor),
-            filter: true,
-          },
-        ],
-        [
-          {
-            name: 'Total Reserve',
-            value: (this.network.totalReserve ?? 0) / 10 ** 8,
-            usdValue: true,
-          },
-          {
-            name: 'Total Pooled Rune',
-            value: (this.network.totalPooledRune ?? 0) / 10 ** 8,
-            usdValue: true,
-          },
-        ],
-        [
-          {
-            name: 'Block Reward / Day',
-            value:
-              (this.network.blockRewards?.blockReward / 10 ** 8 ?? 0) *
-              (5256000 / 365),
-            usdValue: true,
-          },
-          {
-            name: 'Block Bond Reward / Day',
-            value:
-              (this.network.blockRewards?.bondReward / 10 ** 8 ?? 0) *
-              (5256000 / 365),
-            usdValue: true,
-          },
-          {
-            name: 'Block Pool Reward / Day',
-            value:
-              (this.network.blockRewards?.poolReward / 10 ** 8 ?? 0) *
-              (5256000 / 365),
-            usdValue: true,
-          },
-          {
-            name: 'Block Reward / Node / Month',
-            value:
-              (this.network.blockRewards?.bondReward /
-                10 ** 8 /
-                this.network.activeNodeCount ?? 0) *
-              (5256000 / 12),
-            usdValue: true,
-          },
-        ],
-        [
-          {
-            name: 'Total Bond Units',
-            value: this.thorNetwork?.total_bond_units,
-          },
-          {
-            name: 'Total Bond Reward',
-            value: this.thorNetwork?.bond_reward_rune / 10 ** 8,
-            usdValue: true,
-          },
-        ],
-        [
-          {
-            name: 'Total Burned BEP2 RUNE',
-            value: this.thorNetwork?.burned_bep_2_rune / 10 ** 8,
-            usdValue: true,
-          },
-          {
-            name: 'Total Burned ERC20 RUNE',
-            value: this.thorNetwork?.burned_erc_20_rune / 10 ** 8,
-            usdValue: true,
-          },
-        ],
+        {
+          title: 'Network Overview',
+          rowStart: 1,
+          colSpan: 1,
+          items: [
+            {
+              name: 'Blockchain Version',
+              value: this.blockchainVersion?.current,
+            },
+            {
+              name: 'Version Age',
+              value:
+                this.lastblock &&
+                this.lastblock[0].thorchain -
+                  this.thorVersion?.next_since_height,
+              filter: (v) => blockTime(v, true),
+              valueSlot: 'blocktime',
+            },
+            {
+              name: 'Active / Standby Nodes',
+              value:
+                this.network &&
+                `${this.network?.activeNodeCount} / ${this.network?.standbyNodeCount}`,
+            },
+            {
+              name: 'TOR Price in RUNE',
+              value: this.thorNetwork?.tor_price_in_rune,
+              filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v / 1e8, '0,0.00000')}`,
+            },
+            {
+              name: 'Vaults Migrating',
+              value: this.thorNetwork?.vaults_migrating ? 'Yes' : 'No',
+            },
+          ],
+        },
+        {
+          title: 'CoinMarketCap',
+          rowStart: 1,
+          colSpan: 1,
+          items: [
+            {
+              name: 'Circulating Supply',
+              value: this.coinMarketInfo?.self_reported_circulating_supply,
+              filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+            },
+            {
+              name: 'Market Cap',
+              value: this.coinMarketInfo?.self_reported_market_cap,
+              filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+            },
+            {
+              name: 'FDV',
+              value: this.coinMarketInfo?.quote?.USD.fully_diluted_market_cap,
+              filter: (v) => this.$options.filters.currency(v),
+            },
+            {
+              name: 'TVL Ratio',
+              value: this.coinMarketInfo?.tvl_ratio,
+              filter: (v) => this.$options.filters.number(v, '0.0000'),
+            },
+            {
+              name: 'Market Volume (24H)',
+              value: this.coinMarketInfo?.quote?.USD.volume_24h,
+              filter: (v) => this.$options.filters.currency(v),
+            },
+          ],
+        },
+        {
+          title: 'Block Rewards',
+          rowStart: 2,
+          colSpan: 1,
+          items: [
+            {
+              name: 'Block Bond Reward Per Day',
+              value:
+                (this.network.blockRewards?.bondReward / 10 ** 8 ?? 0) *
+                (5256000 / 365),
+              filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+            },
+            {
+              name: 'Block Pool Reward Per Day',
+              value:
+                (this.network.blockRewards?.poolReward / 10 ** 8 ?? 0) *
+                (5256000 / 365),
+              filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+            },
+            {
+              name: 'Block Reward Per Day',
+              value:
+                (this.network.blockRewards?.blockReward / 10 ** 8 ?? 0) *
+                (5256000 / 365),
+              filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+            },
+          ],
+        },
+        {
+          title: 'Chain Observed TIP',
+          rowStart: 2,
+          colSpan: 1,
+          items: observed,
+        },
+        {
+          title: 'Allocations',
+          rowStart: 3,
+          colSpan: 1,
+          items: [
+            {
+              name: 'Total Pooled RUNE',
+              value: this.network?.totalPooledRune,
+              filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v / 1e8, '0,0')}`,
+            },
+            {
+              name: 'Total Bonded RUNE',
+              value:
+                +this.network?.bondMetrics?.totalActiveBond +
+                +this.network?.bondMetrics?.totalActiveBond,
+              filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v / 1e8, '0,0')}`,
+            },
+            {
+              name: 'Total Reserved RUNE',
+              value: this.network?.totalReserve,
+              filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v / 1e8, '0,0')}`,
+            },
+          ],
+        },
+        {
+          title: 'Burned',
+          rowStart: 3,
+          colSpan: 1,
+          items: [
+            {
+              name: 'Total Burned BEP2 RUNE',
+              value: this.thorNetwork?.burned_bep_2_rune,
+              filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v / 1e8, '0,0')}`,
+            },
+            {
+              name: 'Total Burned ERC20 RUNE',
+              value: this.thorNetwork?.burned_erc_20_rune,
+              filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v / 1e8, '0,0')}`,
+            },
+          ],
+        },
+        {
+          title: 'Yields',
+          rowStart: 3,
+          colSpan: 1,
+          items: [
+            {
+              name: 'Bond APY',
+              value: this.network.bondingAPY,
+              filter: (v) => this.$options.filters.percent(v, 2),
+            },
+            {
+              name: 'Liquidity APY',
+              value: this.network.liquidityAPY,
+              filter: (v) => this.$options.filters.percent(v, 2),
+            },
+            {
+              name: 'Pool Share Factor',
+              value: this.network.poolShareFactor,
+              filter: (v) => this.$options.filters.percent(v, 2),
+            },
+          ],
+        },
       ]
     },
     gasSettings() {
       const chains = this.inAddresses.map((e) => {
         return {
-          name: `${e.chain} gas rate`,
+          name: this.baseChainAsset(e.chain),
+          chain: e.chain,
           value: e.gas_rate,
-          image: this.assetImage(`${e.chain}.${e.chain}`),
-          extraText: e.gas_rate_units,
-          filter: true,
+          valueSlot: 'asset',
+          nameSlot: true,
+          filter: (v) => this.$options.filters.number(v, '0,0'),
         }
       })
-      return chunk(chains, 3)
+
+      return [
+        {
+          title: 'Gas Fee Rate',
+          rowStart: 1,
+          colSpan: 1,
+          cluster: true,
+          items: chains,
+        },
+      ]
     },
     newStandByVersion() {
       if (!this.blockchainVersion || !this.nodes) {
@@ -286,6 +397,20 @@ export default {
     this.$api
       .getBlockChainVersion()
       .then((res) => (this.blockchainVersion = res.data))
+      .catch((error) => {
+        console.error(error)
+      })
+
+    this.$api
+      .getThorVersion()
+      .then((res) => (this.thorVersion = res.data))
+      .catch((error) => {
+        console.error(error)
+      })
+
+    this.$api
+      .getCoinMarketInfo()
+      .then((res) => (this.coinMarketInfo = res.data))
       .catch((error) => {
         console.error(error)
       })

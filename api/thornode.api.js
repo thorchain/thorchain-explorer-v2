@@ -236,3 +236,9 @@ export function getTradeAssets() {
     endpoints[process.env.NETWORK].THORNODE_URL + 'thorchain/trade/units'
   )
 }
+
+export function getThorVersion() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].THORNODE_URL + 'thorchain/version'
+  )
+}

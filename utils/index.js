@@ -7,7 +7,7 @@ const SYNTH_DELIMITER = '/'
 const NON_SYNTH_DELIMITER = '.'
 
 // Formats time in seconds into `dd:hh:mm hrs`
-export function formatTime(seconds) {
+export function formatTime(seconds, hour) {
   seconds = Number(seconds)
   const d = Math.floor(seconds / (3600 * 24))
   const h = Math.floor((seconds % (3600 * 24)) / 3600)
@@ -18,22 +18,22 @@ export function formatTime(seconds) {
 
   const dDisplay = d > 0 ? d + (d === 1 ? ' day' : ' days') : ''
   const hDisplay = h > 0 ? h + (h === 1 ? ' hour' : ' hours') : ''
+  let strBuild = dDisplay + comms(d && h) + hDisplay
   const mDisplay = m > 0 ? m + (m === 1 ? ' minute' : ' minutes') : ''
   const sDisplay = s > 0 ? s + (s === 1 ? ' second' : ' seconds') : ''
-  return (
-    dDisplay +
-    comms(d && h) +
-    hDisplay +
-    comms((h && m) || (d && m)) +
-    mDisplay +
-    comms((m && s) || (d && s) || (h && s)) +
-    sDisplay
-  )
+  if (!hour) {
+    strBuild +=
+      comms((h && m) || (d && m)) +
+      mDisplay +
+      comms((m && s) || (d && s) || (h && s)) +
+      sDisplay
+  }
+  return strBuild
 }
 
-export function blockTime(blockHeight) {
+export function blockTime(blockHeight, hour) {
   const val = blockHeight * 6
-  return formatTime(val)
+  return formatTime(val, hour)
 }
 
 export function momentTimeFormat(time) {

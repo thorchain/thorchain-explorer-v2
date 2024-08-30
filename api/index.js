@@ -62,6 +62,7 @@ import {
   getTradeAsset,
   getTradeAssets,
   getRunePool,
+  getThorVersion,
 } from './thornode.api'
 import { getTendermintLatestBlocks } from './tendermint.api'
 import {
@@ -86,6 +87,7 @@ import {
   getAffiliateByWallet,
   getAffiliateDaily,
   getActions,
+  getCoinMarketInfo,
 } from './middleware.api'
 import {
   getChurnHistory,
@@ -248,6 +250,8 @@ export default function ({ $axios }, inject) {
     getAffiliateDaily,
     getActions,
     getMidgardActions,
+    getThorVersion,
+    getCoinMarketInfo,
   }
 
   inject('api', api)

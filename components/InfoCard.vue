@@ -148,7 +148,7 @@ export default {
 
     .flex-section {
       flex: 1;
-      padding: 0 0.7rem;
+      margin: 0 0.7rem;
       padding-bottom: 0.7rem;
       margin-bottom: 0.7rem;
       border-bottom: 1px solid var(--border-color);
@@ -157,9 +157,9 @@ export default {
         margin-bottom: 0;
         border-bottom: 1px solid var(--border-color);
 
-        &:nth-of-type(even) {
-          border-left: 1px solid var(--border-color);
-        }
+        // &:nth-of-type(even) {
+        //   border-left: 1px solid var(--border-color);
+        // }
       }
 
       .flex-items {
