@@ -336,6 +336,7 @@ import {
 } from 'echarts/components'
 import VChart from 'vue-echarts'
 import { range } from 'lodash'
+import { data } from 'qrcode.vue'
 import { blockTime } from '~/utils'
 
 import StackDollar from '~/assets/images/sack-dollar.svg?inline'
@@ -1136,8 +1137,10 @@ export default {
           (+interval.bondingEarnings / 10 ** 8) *
             Number.parseFloat(interval.runePriceUSD)
         )
-        const j = index
-        af.push(this.affiliateDaily[j + 1].daily_affiliate_fees_usd)
+        const affiliate = this.affiliateDaily.find((d) => {
+          return moment(d.date).isSame(date, 'day')
+        })
+        af.push(affiliate.daily_affiliate_fees_usd)
       })
 
       return this.basicChartFormat(
