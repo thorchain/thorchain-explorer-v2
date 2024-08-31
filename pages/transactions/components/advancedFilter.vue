@@ -38,6 +38,7 @@
               :tags="filters.asset"
               placeholder="Enter Asset, press enter"
               :label="filterLabels.asset"
+              :suggestions="pools"
               @update:tags="updateTags('asset', $event)"
             />
           </div>
@@ -95,6 +96,7 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import CrossIcon from '~/assets/images/cross.svg?inline'
 import FilterIcon from '~/assets/images/filter.svg?inline'
 
