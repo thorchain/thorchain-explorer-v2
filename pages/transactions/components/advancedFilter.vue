@@ -3,9 +3,15 @@
     <button class="advanced-filter" @click="toggleModal">
       <FilterIcon class="filter-icon" />
       Advanced Filter
-      <span v-if="showBadge && filledFilterCount > 0" :class="'mini-bubble'">{{ filledFilterCount }}</span>
+      <span v-if="showBadge && filledFilterCount > 0" :class="'mini-bubble'">{{
+        filledFilterCount
+      }}</span>
     </button>
-    <div v-if="isModalVisible" class="modal-overlay" @click="handleOverlayClick">
+    <div
+      v-if="isModalVisible"
+      class="modal-overlay"
+      @click="handleOverlayClick"
+    >
       <div class="modal-content" @click.stop>
         <div class="modal-header">
           <h3>Advanced Filters</h3>
@@ -32,8 +38,8 @@
               :tags="filters.asset"
               placeholder="Enter Asset, press enter"
               :label="filterLabels.asset"
+              :suggestions="pools"
               @update:tags="updateTags('asset', $event)"
-              :suggestions="pools" 
             />
           </div>
 
@@ -82,11 +88,7 @@
           >
             Submit
           </button>
-          <button 
-            @click="resetForm"
-          >
-            Clear
-          </button>
+          <button @click="resetForm">Clear</button>
         </div>
       </div>
     </div>
@@ -94,9 +96,9 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import CrossIcon from '~/assets/images/cross.svg?inline'
 import FilterIcon from '~/assets/images/filter.svg?inline'
-import { mapGetters } from 'vuex'
 
 export default {
   name: 'Filter',
@@ -338,7 +340,7 @@ export default {
   color: var(--sec-font-color);
 
   &:hover {
-    color: var(--primary-color); 
+    color: var(--primary-color);
   }
 }
 
@@ -413,7 +415,7 @@ export default {
     cursor: pointer;
     font-size: 14px;
     font-weight: 500;
-    margin-left:0.5rem ;
+    margin-left: 0.5rem;
 
     &:hover {
       color: var(--primary-color);
