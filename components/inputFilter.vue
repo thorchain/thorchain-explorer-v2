@@ -12,6 +12,7 @@
           v-model="inputValue"
           type="text"
           :placeholder="placeholder"
+          @input="debouncedOnInput"
           @focus="handleFocus"
           @blur="handleBlur"
           @keyup.enter="addTag"
@@ -19,10 +20,21 @@
         <EnterIcon class="enter-icon" :class="enterIconClass" @click="addTag" />
       </div>
     </div>
+    <ul v-if="showSuggestions && filteredOptions.length" class="suggestions">
+      <li
+        v-for="option in filteredOptions"
+        :key="option.asset"
+        @mousedown.prevent="selectOption(option.asset)"
+      >
+        <asset-icon :asset="option.asset" class="asset-icon" />
+        {{ option.asset }}
+      </li>
+    </ul>
   </div>
 </template>
 
 <script>
+import debounce from 'lodash/debounce'
 import EnterIcon from '~/assets/images/arrow-turn-down-right.svg?inline'
 import CrrosIcon from '~/assets/images/cross.svg?inline'
 
@@ -45,6 +57,10 @@ export default {
       type: String,
       default: '',
     },
+    suggestions: {
+      type: Array,
+      default: () => [],
+    },
     allowTags: {
       type: Boolean,
       default: true,
@@ -54,6 +70,7 @@ export default {
     return {
       inputValue: '',
       isFocused: false,
+      showSuggestions: false,
     }
   },
   computed: {
@@ -62,6 +79,15 @@ export default {
     },
     enterIconClass() {
       return this.isFocused ? 'enter-icon-visible' : 'enter-icon-hidden'
+    },
+    filteredOptions() {
+      const query = this.inputValue.toLowerCase()
+      if (query.length < 2) {
+        return []
+      }
+      return this.suggestions.filter((option) =>
+        option.asset.toLowerCase().includes(query)
+      )
     },
   },
   methods: {
@@ -72,22 +98,40 @@ export default {
       )
     },
     addTag() {
-      if (this.inputValue.trim()) {
-        this.$emit('update:tags', [...this.tags, this.inputValue.trim()])
+      const trimmedValue = this.inputValue.trim()
+      if (trimmedValue && !this.tags.includes(trimmedValue)) {
+        this.$emit('update:tags', [...this.tags, trimmedValue])
         this.inputValue = ''
+        this.showSuggestions = false
       }
     },
+
+    debouncedOnInput: debounce(function () {
+      this.showSuggestions = true
+    }, 300),
+
     handleFocus() {
       this.isFocused = true
+      if (this.inputValue.trim().length > 2) {
+        this.showSuggestions = true
+      }
     },
     handleBlur() {
-      this.isFocused = false
+  this.isFocused = false;
+  this.showSuggestions = false;
+},
+    selectOption(asset) {
+      if (!this.tags.includes(asset)) {
+        this.$emit('update:tags', [...this.tags, asset])
+        this.inputValue = ''
+        this.showSuggestions = false
+      }
     },
   },
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .form-group {
   flex: 1;
   min-width: 0;
@@ -190,6 +234,67 @@ export default {
 
   .no-wrap {
     flex-wrap: nowrap;
+  }
+  .suggestions {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background-color: var(--bg-color);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+    margin-top: 2px;
+    padding: 0.5rem 0;
+    z-index: 1000;
+    overflow: auto;
+    max-height: 200px;
+    animation: slideDown 0.3s ease forwards;
+
+@keyframes slideDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+    ul {
+      list-style: none;
+    }
+    li {
+      display: flex;
+      flex-direction: row;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: var(--sec-font-color);
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+
+      &:hover {
+        color: var(--primary-color);
+      }
+      .asset-icon {
+        margin-right: 15px;
+      }
+    }
+  }
+
+  .suggestions::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  .suggestions::-webkit-scrollbar-track {
+    background-color: var(--border-color);
+  }
+
+  .suggestions::-webkit-scrollbar-thumb {
+    background-color: var(--active-bg-color);
+    border-radius: 5px;
   }
 }
 </style>

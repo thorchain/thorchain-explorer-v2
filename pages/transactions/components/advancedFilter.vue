@@ -33,6 +33,7 @@
               placeholder="Enter Asset, press enter"
               :label="filterLabels.asset"
               @update:tags="updateTags('asset', $event)"
+              :suggestions="pools" 
             />
           </div>
 
@@ -95,6 +96,7 @@
 <script>
 import CrossIcon from '~/assets/images/cross.svg?inline'
 import FilterIcon from '~/assets/images/filter.svg?inline'
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'Filter',
@@ -140,7 +142,10 @@ export default {
       if (this.filters.toHeight) count++
       if (this.filters.fromHeight) count++
       return count
-    }
+    },
+    ...mapGetters({
+      pools: 'getPools',
+    }),
   },
   methods: {
     toggleModal() {
