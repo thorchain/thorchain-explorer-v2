@@ -82,6 +82,7 @@
           <div class="input-row">
             <date-picker
               v-model="dateValue"
+              placeholder="Select date range"
               value-type="timestamp"
               :range="true"
             />
