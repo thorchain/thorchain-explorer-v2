@@ -5,6 +5,12 @@
       <div class="top-bar">
         <div class="action-types">
           <div
+            :class="['action-type', { active: isAll }]"
+            @click="resetFilters"
+          >
+            All
+          </div>
+          <div
             :class="['action-type', { active: isLayerOne }]"
             @click="
               applyFilters({
@@ -44,12 +50,6 @@
             @click="applyFilters({ type: ['refund'] })"
           >
             Refund
-          </div>
-          <div
-            :class="['action-type', { active: isAll }]"
-            @click="resetFilters"
-          >
-            All
           </div>
         </div>
 
@@ -144,6 +144,13 @@ export default {
 
       return false
     },
+    isAll() {
+      if (Object.keys(this.filters).length === 0) {
+        return true
+      }
+
+      return false
+    },
   },
   mounted() {
     this.getActions({ limit: this.limit })
@@ -205,16 +212,8 @@ export default {
         })
     },
     resetFilters() {
-  Object.keys(this.$data).forEach(key => {
-    if (key.startsWith('is')) {
-      this[key] = false;
-    }
-  });
-  this.isAll = true;
-  
-  this.clearFilters();
-}
-
+      this.clearFilters()
+    },
   },
 }
 </script>

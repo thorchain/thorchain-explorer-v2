@@ -3,9 +3,15 @@
     <button class="advanced-filter" @click="toggleModal">
       <FilterIcon class="filter-icon" />
       Advanced Filter
-      <span v-if="showBadge && filledFilterCount > 0" :class="'mini-bubble'">{{ filledFilterCount }}</span>
+      <span v-if="showBadge && filledFilterCount > 0" :class="'mini-bubble'">{{
+        filledFilterCount
+      }}</span>
     </button>
-    <div v-if="isModalVisible" class="modal-overlay" @click="handleOverlayClick">
+    <div
+      v-if="isModalVisible"
+      class="modal-overlay"
+      @click="handleOverlayClick"
+    >
       <div class="modal-content" @click.stop>
         <div class="modal-header">
           <h3>Advanced Filters</h3>
@@ -60,11 +66,7 @@
           >
             Submit
           </button>
-          <button 
-            @click="resetForm"
-          >
-            Clear
-          </button>
+          <button @click="resetForm">Clear</button>
         </div>
       </div>
     </div>
@@ -113,7 +115,7 @@ export default {
       if (this.filters.type.length > 0) count++
       if (this.filters.txType.length > 0) count++
       return count
-    }
+    },
   },
   methods: {
     toggleModal() {
@@ -302,7 +304,7 @@ export default {
   color: var(--sec-font-color);
 
   &:hover {
-    color: var(--primary-color); 
+    color: var(--primary-color);
   }
 }
 
@@ -336,7 +338,7 @@ export default {
     cursor: pointer;
     font-size: 14px;
     font-weight: 500;
-    margin-left:0.5rem ;
+    margin-left: 0.5rem;
 
     &:hover {
       color: var(--primary-color);
