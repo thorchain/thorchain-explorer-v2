@@ -17,7 +17,7 @@
       </span>
       <right-arrow class="action-type" />
       <span
-        v-for="(ops, i) in row.out"
+        v-for="(ops, i) in row.out.filter((o) => !o.affiliate)"
         :key="'out-' + i"
         class="mini-bubble customized"
       >
@@ -31,7 +31,11 @@
         }}</span>
       </span>
       <span
-        v-if="row.out == undefined || row.out.length === 0"
+        v-if="
+          row.out == undefined ||
+          row.out.length === 0 ||
+          row.status === 'pending'
+        "
         class="mini-bubble customized info"
         >Pending</span
       >
