@@ -78,6 +78,14 @@
               @update:selectedOptions="selectOption('txType', $event)"
             />
           </div>
+
+          <div class="input-row">
+            <date-picker
+              v-model="dateValue"
+              value-type="timestamp"
+              :range="true"
+            />
+          </div>
         </div>
 
         <div class="button-group">
@@ -97,6 +105,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import DatePicker from 'vue2-datepicker'
 import CrossIcon from '~/assets/images/cross.svg?inline'
 import FilterIcon from '~/assets/images/filter.svg?inline'
 
@@ -105,6 +114,7 @@ export default {
   components: {
     CrossIcon,
     FilterIcon,
+    DatePicker,
   },
   data() {
     return {
@@ -130,6 +140,7 @@ export default {
         toHeight: 'To Height',
         fromHeight: 'From Height',
       },
+      dateValue: null,
     }
   },
   computed: {

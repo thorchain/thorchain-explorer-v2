@@ -1,0 +1,57 @@
+@import './colors';
+
+$namespace: 'mx' !default;
+
+$default-color: #e6e6e6;
+$primary-color: #63fdd9;
+
+$today-color: mix(#191c1e, $primary-color, 10%) !default;
+
+$popup-z-index: 2001 !default;
+
+$input-border-color: #263238 !default;
+$input-color: #e6e6e6 !default;
+$input-hover-border-color: #3e464b !default;
+
+$border-color: #263238 !default;
+
+$calendar-active-color: #191c1e !default;
+$calendar-active-background-color: $primary-color !default;
+
+$calendar-hover-color: $default-color !default;
+$calendar-hover-background-color: mix(#191c1e, $calendar-active-background-color, 95%) !default;
+
+$calendar-in-range-color: $default-color !default;
+$calendar-in-range-background-color: mix(#191c1e, $calendar-active-background-color, 85%) !default;
+
+$time-active-color: $primary-color !default;
+$time-active-background-color: transparent !default;
+
+$time-hover-color: $default-color !default;
+$time-hover-background-color: mix(#191c1e, $calendar-active-background-color, 95%) !default;
+
+$input-border-radius: 4px !default;
+$sidebar-margin-left: 100px !default;
+
+/* Customize the datepicker's appearance */
+@import '~vue2-datepicker/scss/index.scss';
+
+.mx-input {
+    background-color: var(--bg-color);
+}
+
+.mx-datepicker svg {
+    fill: var(--sec-font-color);
+}
+
+.mx-datepicker-main {
+    background-color: var(--bg-color);
+}
+
+.mx-table-date .cell.not-current-month {
+    color: var(--font-color);
+}
+
+.mx-datepicker-range {
+    width: 100%;
+}
