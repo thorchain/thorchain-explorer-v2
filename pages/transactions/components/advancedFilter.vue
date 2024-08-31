@@ -80,12 +80,16 @@
           </div>
 
           <div class="input-row">
-            <date-picker
-              v-model="dateValue"
-              placeholder="Select date range"
-              value-type="timestamp"
-              :range="true"
-            />
+            <div class="input-group">
+              <label for="date">{{ filterLabels.date }}</label>
+              <date-picker
+                id="date"
+                v-model="dateValue"
+                placeholder="Select date range"
+                value-type="timestamp"
+                :range="true"
+              />
+            </div>
           </div>
         </div>
 
@@ -140,6 +144,7 @@ export default {
         affiliate: 'Affiliate',
         toHeight: 'To Height',
         fromHeight: 'From Height',
+        date: 'Date Range',
       },
       dateValue: null,
     }
