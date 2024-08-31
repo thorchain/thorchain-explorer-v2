@@ -38,6 +38,9 @@ $sidebar-margin-left: 100px !default;
 
 .mx-input {
     background-color: var(--bg-color);
+    border: 1px solid var(--border-color) !important;
+    padding: 8px;
+    height: 38px;
 }
 
 .mx-datepicker svg {
