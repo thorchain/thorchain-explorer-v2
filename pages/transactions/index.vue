@@ -45,6 +45,12 @@
           >
             Refund
           </div>
+          <div
+            :class="['action-type', { active: isAll }]"
+            @click="resetFilters"
+          >
+            All
+          </div>
         </div>
 
         <advanced-filter
@@ -201,6 +207,17 @@ export default {
           this.loading = false
         })
     },
+    resetFilters() {
+  Object.keys(this.$data).forEach(key => {
+    if (key.startsWith('is')) {
+      this[key] = false;
+    }
+  });
+  this.isAll = true;
+  
+  this.clearFilters();
+}
+
   },
 }
 </script>
