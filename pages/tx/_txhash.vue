@@ -51,11 +51,9 @@ import { assetToString } from '@xchainjs/xchain-util'
 import { orderBy } from 'lodash'
 import { mapGetters } from 'vuex'
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
-import QrcodeVue from 'qrcode.vue'
 import streamingSwap from './components/streamingSwap.vue'
 import txCard from './components/txCard.vue'
 import DisconnectIcon from '~/assets/images/disconnect.svg?inline'
-import QrIcon from '~/assets/images/qr.svg?inline'
 import {
   assetFromString,
   assetToTrade,
@@ -66,13 +64,11 @@ import Accordion from '~/components/Accordion.vue'
 
 export default {
   components: {
-    QrIcon,
     DisconnectIcon,
     BounceLoader,
     streamingSwap,
     txCard,
     Accordion,
-    QrcodeVue,
   },
   data() {
     return {
