@@ -163,8 +163,8 @@ export default {
       if (this.filters.toHeight) count++
       if (this.filters.fromHeight) count++
       if (
-        this.filters.dateValue[0] !== null &&
-        this.filters.dateValue[1] !== null
+        this.filters.dateValue.length > 0 &&
+        this.filters.dateValue[0] != null
       )
         count++
       return count
@@ -300,7 +300,7 @@ export default {
         this.filters.txType.length > 0 ||
         this.filters.toHeight.trim() !== '' ||
         this.filters.fromHeight.trim() !== '' ||
-        this.filters.dateValue.length > 0
+        (this.filters.dateValue.length > 0 && this.filters.dateValue[0] != null)
 
       if (
         (this.filters.toHeight.trim() !== '' ||
