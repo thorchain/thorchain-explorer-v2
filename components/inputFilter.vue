@@ -232,7 +232,7 @@ export default {
   }
 
   .no-wrap {
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
   }
   .suggestions {
     position: absolute;
@@ -267,14 +267,17 @@ export default {
     li {
       display: flex;
       flex-direction: row;
+      align-items: center;
       padding: 12px 16px;
       font-size: 13px;
       color: var(--sec-font-color);
       cursor: pointer;
       transition: background-color 0.3s ease;
+      line-height: 1.5;
 
       &:hover {
         color: var(--primary-color);
+        background-color: var(--active-bg-color);
       }
       .asset-icon {
         margin-right: 15px;
