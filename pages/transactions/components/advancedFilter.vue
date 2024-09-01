@@ -51,6 +51,7 @@
                 v-model="filters.fromHeight"
                 type="text"
                 placeholder="Enter fromHeight, press enter"
+                :disabled="isDateFilled"
               />
             </div>
             <div class="input-group">
@@ -60,6 +61,7 @@
                 v-model="filters.toHeight"
                 type="text"
                 placeholder="Enter toHeight, press enter"
+                :disabled="isDateFilled"
               />
             </div>
           </div>
@@ -88,6 +90,7 @@
                 placeholder="Select date range"
                 value-type="timestamp"
                 :range="true"
+                :disabled="isHeightFilled"
               />
             </div>
           </div>
@@ -133,7 +136,7 @@ export default {
         affiliate: [],
         toHeight: '',
         fromHeight: '',
-        dateValue: [],
+        dateValue: [null, null],
       },
       filterLabels: {
         addresses: 'Addresses',
@@ -159,8 +162,23 @@ export default {
       if (this.filters.txType.length > 0) count++
       if (this.filters.toHeight) count++
       if (this.filters.fromHeight) count++
-      if (this.filters.dateValue.length > 0) count++
+      if (
+        this.filters.dateValue[0] !== null &&
+        this.filters.dateValue[1] !== null
+      )
+        count++
       return count
+    },
+    isHeightFilled() {
+      return (
+        this.filters.toHeight.trim() !== '' ||
+        this.filters.fromHeight.trim() !== ''
+      )
+    },
+    isDateFilled() {
+      return (
+        this.filters.dateValue[0] !== null && this.filters.dateValue[1] !== null
+      )
     },
     assets() {
       const pools = this.$store.state.pools
@@ -195,6 +213,7 @@ export default {
     submitForm() {
       if (this.isFormValid()) {
         this.$emit('applyFilters', this.filters)
+        console.log('Date Value:', this.filters.dateValue)
         this.showBadge = true
         this.toggleModal()
       }
@@ -210,7 +229,7 @@ export default {
         affiliate: [],
         toHeight: '',
         fromHeight: '',
-        dateValue: [],
+        dateValue: [null, null],
       }
       this.submittedCount = this.filledFilterCount
       this.$emit('clearfilter')
@@ -226,7 +245,7 @@ export default {
         affiliate: [],
         toHeight: '',
         fromHeight: '',
-        dateValue: [],
+        dateValue: [null, null],
         ...filter,
       }
       this.submittedCount = this.filledFilterCount
@@ -324,7 +343,7 @@ export default {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
 
   > div {
-    padding: 20px;
+    padding: 18px;
   }
 }
 
