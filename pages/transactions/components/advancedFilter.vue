@@ -159,7 +159,7 @@ export default {
       if (this.filters.txType.length > 0) count++
       if (this.filters.toHeight) count++
       if (this.filters.fromHeight) count++
-      if (this.filters.dateValue) count++
+      if (this.filters.dateValue.length > 0) count++
       return count
     },
     assets() {
