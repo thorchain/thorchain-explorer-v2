@@ -40,12 +40,17 @@
         >Pending</span
       >
     </div>
-    <div v-else-if="row && row.type === 'withdraw'" class="action-cell">
+    <div
+      v-else-if="
+        row && (row.type === 'withdraw' || row.type === 'runePoolWithdraw')
+      "
+      class="action-cell"
+    >
       <div class="mini-bubble">
         <asset-icon
           :height="'1.2rem'"
           :chain-height="'1rem'"
-          :asset="row.pools[0]"
+          :asset="row.pools[0] || row.out[0].coins[0].asset"
         />
         <vault-icon class="action-icon" />
       </div>
@@ -65,7 +70,12 @@
         }}</span>
       </span>
     </div>
-    <div v-else-if="row && row.type === 'addLiquidity'" class="action-cell">
+    <div
+      v-else-if="
+        row && (row.type === 'addLiquidity' || row.type === 'runePoolDeposit')
+      "
+      class="action-cell"
+    >
       <span
         v-for="(ops, i) in row.in"
         :key="'in-' + i"
@@ -85,7 +95,7 @@
         <asset-icon
           :height="'1.2rem'"
           :chain-height="'1rem'"
-          :asset="row.pools[0]"
+          :asset="row.pools[0] || row.in[0].coins[0].asset"
         />
         <vault-icon class="action-icon" />
       </div>
@@ -131,6 +141,41 @@
         <small class="asset-name">{{
           addressFormatV2(ops.address, 6, true)
         }}</small>
+      </span>
+    </div>
+    <div v-else-if="row && row.type === 'trade'" class="action-cell">
+      <span
+        v-for="(ops, i) in row.in"
+        :key="'in-' + i"
+        class="mini-bubble customized"
+      >
+        <asset-icon
+          :asset="ops.coins[0].asset"
+          :height="'1.2rem'"
+          :chain-height="'1rem'"
+        ></asset-icon>
+        <span class="asset-name">{{
+          (ops.coins[0].amount / 1e8) | number('0,0.0000')
+        }}</span>
+      </span>
+      <right-arrow class="action-type" />
+      <div class="mini-bubble">
+        <vault-icon class="action-icon" />
+      </div>
+      <right-arrow class="action-type" />
+      <span
+        v-for="(ops, i) in row.out"
+        :key="'out-' + i"
+        class="mini-bubble customized"
+      >
+        <asset-icon
+          :asset="ops.coins[0].asset"
+          :height="'1.2rem'"
+          :chain-height="'1rem'"
+        ></asset-icon>
+        <span class="asset-name">{{
+          (ops.coins[0].amount / 1e8) | number('0,0.0000')
+        }}</span>
       </span>
     </div>
   </div>
