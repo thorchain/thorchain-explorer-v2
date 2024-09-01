@@ -169,6 +169,7 @@ export default {
       border-radius: 6px;
       background-color: var(--bg-color);
       color: var(--sec-font-color);
+      border: 1px solid var(--border-color);
       cursor: pointer;
       display: flex;
       justify-content: space-between;
