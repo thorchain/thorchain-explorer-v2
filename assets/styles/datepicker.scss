@@ -56,6 +56,10 @@ $sidebar-margin-left: 100px !default;
     color: var(--font-color);
 }
 
+[theme='light'] .mx-table-date .cell.not-current-month {
+    color: #e6e6e6;
+}
+
 .mx-datepicker-range {
     width: 100%;
 }
