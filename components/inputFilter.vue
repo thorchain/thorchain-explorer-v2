@@ -23,11 +23,11 @@
     <ul v-if="showSuggestions && filteredOptions.length" class="suggestions">
       <li
         v-for="option in filteredOptions"
-        :key="option.asset"
-        @mousedown.prevent="selectOption(option.asset)"
+        :key="option"
+        @mousedown.prevent="selectOption(option)"
       >
-        <asset-icon :asset="option.asset" class="asset-icon" />
-        {{ option.asset }}
+        <asset-icon :asset="option" class="asset-icon" />
+        {{ formatAsset(option) }}
       </li>
     </ul>
   </div>
@@ -86,7 +86,7 @@ export default {
         return []
       }
       return this.suggestions.filter((option) =>
-        option.asset.toLowerCase().includes(query)
+        option.toLowerCase().includes(query)
       )
     },
   },
@@ -117,9 +117,9 @@ export default {
       }
     },
     handleBlur() {
-  this.isFocused = false;
-  this.showSuggestions = false;
-},
+      this.isFocused = false
+      this.showSuggestions = false
+    },
     selectOption(asset) {
       if (!this.tags.includes(asset)) {
         this.$emit('update:tags', [...this.tags, asset])
@@ -197,7 +197,6 @@ export default {
         padding: 4px;
         background-color: var(--bg-color);
 
-
         &:hover {
           color: var(--primary-color);
         }
@@ -250,17 +249,17 @@ export default {
     max-height: 200px;
     animation: slideDown 0.3s ease forwards;
 
-@keyframes slideDown {
-  0% {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
+    @keyframes slideDown {
+      0% {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
 
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
 
     ul {
       list-style: none;
