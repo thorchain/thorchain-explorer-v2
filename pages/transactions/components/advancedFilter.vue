@@ -133,7 +133,7 @@ export default {
         affiliate: [],
         toHeight: '',
         fromHeight: '',
-        dateValue: '',
+        dateValue: [],
       },
       filterLabels: {
         addresses: 'Addresses',
@@ -210,6 +210,7 @@ export default {
         affiliate: [],
         toHeight: '',
         fromHeight: '',
+        dateValue: [],
       }
       this.submittedCount = this.filledFilterCount
       this.$emit('clearfilter')
@@ -225,6 +226,7 @@ export default {
         affiliate: [],
         toHeight: '',
         fromHeight: '',
+        dateValue: [],
         ...filter,
       }
       this.submittedCount = this.filledFilterCount
@@ -284,7 +286,7 @@ export default {
       if (
         (this.filters.toHeight.trim() !== '' ||
           this.filters.fromHeight.trim() !== '') &&
-        this.filters.dateValue.length > 0
+        this.filters.dateValue?.length > 0
       )
         return false
 
