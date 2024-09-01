@@ -84,7 +84,7 @@
               <label for="date">{{ filterLabels.date }}</label>
               <date-picker
                 id="date"
-                v-model="dateValue"
+                v-model="filters.dateValue"
                 placeholder="Select date range"
                 value-type="timestamp"
                 :range="true"
@@ -133,6 +133,7 @@ export default {
         affiliate: [],
         toHeight: '',
         fromHeight: '',
+        dateValue: '',
       },
       filterLabels: {
         addresses: 'Addresses',
@@ -145,7 +146,6 @@ export default {
         fromHeight: 'From Height',
         date: 'Date Range',
       },
-      dateValue: null,
     }
   },
   computed: {
@@ -159,6 +159,7 @@ export default {
       if (this.filters.txType.length > 0) count++
       if (this.filters.toHeight) count++
       if (this.filters.fromHeight) count++
+      if (this.filters.dateValue) count++
       return count
     },
     assets() {
@@ -277,7 +278,16 @@ export default {
         this.filters.type.length > 0 ||
         this.filters.txType.length > 0 ||
         this.filters.toHeight.trim() !== '' ||
-        this.filters.fromHeight.trim() !== ''
+        this.filters.fromHeight.trim() !== '' ||
+        this.filters.dateValue.length > 0
+
+      if (
+        (this.filters.toHeight.trim() !== '' ||
+          this.filters.fromHeight.trim() !== '') &&
+        this.filters.dateValue.length > 0
+      )
+        return false
+
       return valid
     },
   },
