@@ -3,8 +3,8 @@
     <button class="advanced-filter" @click="toggleModal">
       <FilterIcon class="filter-icon" />
       Advanced Filter
-      <span v-if="showBadge && filledFilterCount > 0" :class="'mini-bubble'">{{
-        filledFilterCount
+      <span v-if="submittedCount > 0" :class="'mini-bubble'">{{
+        submittedCount
       }}</span>
     </button>
     <div
@@ -123,7 +123,7 @@ export default {
   data() {
     return {
       isModalVisible: false,
-      showBadge: false,
+      submittedCount: 0,
       filters: {
         addresses: [],
         txId: [],
@@ -210,8 +210,23 @@ export default {
         toHeight: '',
         fromHeight: '',
       }
-      this.showBadge = false
+      this.submittedCount = this.filledFilterCount
       this.$emit('clearfilter')
+    },
+
+    resetFilter(filter) {
+      this.filters = {
+        addresses: [],
+        txId: [],
+        asset: [],
+        type: [],
+        txType: [],
+        affiliate: [],
+        toHeight: '',
+        fromHeight: '',
+        ...filter,
+      }
+      this.submittedCount = this.filledFilterCount
     },
 
     getOptions(key) {
