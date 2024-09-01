@@ -38,7 +38,7 @@
               :tags="filters.asset"
               placeholder="Enter Asset, press enter"
               :label="filterLabels.asset"
-              :suggestions="pools"
+              :suggestions="assets"
               @update:tags="updateTags('asset', $event)"
             />
           </div>
@@ -109,7 +109,6 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
 import DatePicker from 'vue2-datepicker'
 import CrossIcon from '~/assets/images/cross.svg?inline'
 import FilterIcon from '~/assets/images/filter.svg?inline'
@@ -161,6 +160,16 @@ export default {
       if (this.filters.toHeight) count++
       if (this.filters.fromHeight) count++
       return count
+    },
+    assets() {
+      const pools = this.$store.state.pools
+      if (pools) {
+        return pools
+          .map((p) => p.asset)
+          .flatMap((a) => [a, a.replace('.', '/'), a.replace('.', '~')])
+      }
+
+      return []
     },
   },
   methods: {

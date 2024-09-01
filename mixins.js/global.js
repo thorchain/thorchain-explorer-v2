@@ -542,6 +542,9 @@ export default {
       return asset
     },
     formatAsset(asset) {
+      if (!asset) {
+        return asset
+      }
       return asset.length > 10 ? asset.slice(0, 14) + '...' : asset
     },
     amountToUSD(asset, amount, pools) {
