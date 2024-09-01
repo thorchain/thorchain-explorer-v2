@@ -257,66 +257,6 @@
         </div>
       </div>
     </div>
-    <card class="chain-status">
-      <vue-good-table
-        :columns="inboundCols"
-        :rows="inboundInfo"
-        style-class="vgt-table net-table"
-        :sort-options="{ enabled: false }"
-      >
-        <template slot="table-column" slot-scope="props">
-          <div v-if="props.column.field == 'haltHeight'" v-tooltip="'Scanning'">
-            <div class="status-header">Scanning</div>
-          </div>
-          <div
-            v-else-if="props.column.field == 'haltTradingHeight'"
-            v-tooltip="'Trading'"
-          >
-            <div class="status-header">Swaps</div>
-          </div>
-          <div
-            v-else-if="props.column.field == 'haltLPHeight'"
-            v-tooltip="'Liquidity Provider'"
-          >
-            <div class="status-header">LPs</div>
-          </div>
-          <div
-            v-else-if="props.column.field == 'haltSigningHeight'"
-            v-tooltip="'Signing'"
-          >
-            <div class="status-header">Signing</div>
-          </div>
-          <span v-else class="status-header">
-            {{ props.column.label }}
-          </span>
-        </template>
-        <template slot="table-row" slot-scope="props">
-          <div v-if="props.column.field == 'chain'" class="chain-col">
-            <asset-icon :asset="baseChainAsset(props.row.chain)" />
-            <span>
-              {{ props.formattedRow[props.column.field] }}
-            </span>
-          </div>
-          <span v-else>
-            <template v-if="props.row[props.column.field] > 1">
-              <danger-icon
-                v-tooltip="`Scheduled halt: ${props.row[props.column.field]}`"
-                class="table-icon"
-                style="fill: var(--red)"
-              />
-            </template>
-            <template v-else-if="props.row[props.column.field] == 1">
-              <danger-icon
-                v-tooltip="`Mimir halt`"
-                class="table-icon"
-                style="fill: var(--red)"
-              />
-            </template>
-            <span v-else class="mono" style="color: var(--green)">OK</span>
-          </span>
-        </template>
-      </vue-good-table>
-    </card>
   </Page>
 </template>
 
@@ -336,7 +276,6 @@ import {
 } from 'echarts/components'
 import VChart from 'vue-echarts'
 import { range } from 'lodash'
-import { data } from 'qrcode.vue'
 import { blockTime } from '~/utils'
 
 import StackDollar from '~/assets/images/sack-dollar.svg?inline'
@@ -404,45 +343,6 @@ export default {
       swapMode: 'swap-vol',
       inboundInfo: undefined,
       mimirInfo: undefined,
-      inboundCols: [
-        {
-          label: 'Chain',
-          field: 'chain',
-          type: 'text',
-        },
-        {
-          label: 'Scanning',
-          field: 'haltHeight',
-          type: 'number',
-          formatFn: this.numberFormat,
-          tdClass: 'mono center',
-          thClass: 'th-center',
-        },
-        {
-          label: 'Trading',
-          field: 'haltTradingHeight',
-          type: 'number',
-          formatFn: this.numberFormat,
-          tdClass: 'mono center',
-          thClass: 'th-center',
-        },
-        {
-          label: 'LP',
-          field: 'haltLPHeight',
-          type: 'number',
-          formatFn: this.numberFormat,
-          tdClass: 'mono center',
-          thClass: 'th-center',
-        },
-        {
-          label: 'Signing',
-          field: 'haltSigningHeight',
-          type: 'number',
-          formatFn: this.numberFormat,
-          tdClass: 'mono center',
-          thClass: 'th-center',
-        },
-      ],
     }
   },
   async fetch() {
@@ -870,48 +770,8 @@ export default {
       return false
     },
     async getNetworkStatus() {
-      const ret = (await this.$api.getInboundAddresses()).data
       const mi = (await this.$api.getMimir()).data
       this.mimirInfo = mi
-
-      this.inboundInfo = ret.map((chain) => ({
-        ...chain,
-        haltHeight: Math.max(
-          ...Object.keys(mi)
-            .filter(
-              (key) =>
-                new RegExp(`.*HALT.*${chain.chain}CHAIN`).test(key) &&
-                mi[key] !== 0
-            )
-            .map((key) => mi[key])
-        ),
-        haltTradingHeight: Math.max(
-          ...Object.keys(mi)
-            .filter(
-              (key) =>
-                new RegExp(`HALT${chain.chain}TRADING`).test(key) &&
-                mi[key] !== 0
-            )
-            .map((key) => mi[key])
-        ),
-        haltSigningHeight: Math.max(
-          ...Object.keys(mi)
-            .filter(
-              (key) =>
-                new RegExp(`HALTSIGNING${chain.chain}`).test(key) &&
-                mi[key] !== 0
-            )
-            .map((key) => mi[key])
-        ),
-        haltLPHeight: Math.max(
-          ...Object.keys(mi)
-            .filter(
-              (key) =>
-                new RegExp(`PAUSELP${chain.chain}`).test(key) && mi[key] !== 0
-            )
-            .map((key) => mi[key])
-        ),
-      }))
     },
     formatLPChange(d) {
       const xAxis = []
