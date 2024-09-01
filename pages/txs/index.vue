@@ -40,6 +40,14 @@
             LP / Savers
           </div>
           <div
+            :class="['action-type', { active: isRunePool }]"
+            @click="
+              applyFilters({ type: ['runePoolDeposit', 'runePoolWithdraw'] })
+            "
+          >
+            RUNEPool
+          </div>
+          <div
             :class="['action-type', { active: isSend }]"
             @click="applyFilters({ type: ['send'] })"
           >
@@ -148,6 +156,13 @@ export default {
     isAll() {
       if (Object.keys(this.filters).length === 0) {
         return true
+      }
+
+      return false
+    },
+    isRunePool() {
+      if (this.filters && this.filters.type) {
+        return isEqual(this.filters.type, 'runePoolDeposit,runePoolWithdraw')
       }
 
       return false
