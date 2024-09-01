@@ -213,7 +213,6 @@ export default {
     submitForm() {
       if (this.isFormValid()) {
         this.$emit('applyFilters', this.filters)
-        console.log('Date Value:', this.filters.dateValue)
         this.showBadge = true
         this.toggleModal()
       }

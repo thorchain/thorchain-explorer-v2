@@ -197,11 +197,13 @@ export default {
         ...(params.type &&
           params.type.length > 0 && { type: params.type.join(',') }),
         ...(params.dateValue &&
-          params.dateValue.length > 0 && {
+          params.dateValue.length > 0 &&
+          params.dateValue[0] != null && {
             fromTimestamp: params.dateValue[0] / 1e3,
           }),
         ...(params.dateValue &&
-          params.dateValue.length > 1 && {
+          params.dateValue.length > 1 &&
+          params.dateValue[1] != null && {
             timestamp: params.dateValue[1] / 1e3,
           }),
       }
