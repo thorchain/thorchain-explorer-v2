@@ -38,6 +38,7 @@ $sidebar-margin-left: 100px !default;
 @import '~vue2-datepicker/scss/index.scss';
 
 .mx-input {
+    color: var(--sec-font-color);
     background-color: var(--bg-color);
     border: 1px solid var(--border-color) !important;
     padding: 8px;
@@ -52,8 +53,6 @@ $sidebar-margin-left: 100px !default;
     color: var(--sec-font-color);
     background-color: var(--bg-color);
 }
-
-
 
 [theme='light'] .mx-table-date .cell.not-current-month {
     color: #e6e6e6;
