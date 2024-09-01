@@ -54,6 +54,7 @@
         </div>
 
         <advanced-filter
+          ref="advancedFilter"
           @applyFilters="applyFilters"
           @clearfilter="clearFilters"
         />
@@ -182,6 +183,7 @@ export default {
         ...(params.type &&
           params.type.length > 0 && { type: params.type.join(',') }),
       }
+      this.$refs.advancedFilter.resetFilter(params)
       this.hasFilters = true
       this.getActions({ limit: this.limit })
     },
@@ -215,6 +217,7 @@ export default {
         })
     },
     resetFilters() {
+      this.$refs.advancedFilter.resetFilter({})
       this.clearFilters()
     },
   },
