@@ -1,14 +1,28 @@
 <template>
   <Page>
     <info-card :options="networkOverview">
-      <template #name="{ item }">
-        <asset-icon :asset="item.name" />
-        {{ item.chain }}
-      </template>
-      <template #asset="{ item }">
-        <span>
-          {{ item.value | number('0,0') }}
-        </span>
+      <template #chains="{ items }">
+        <table class="chain-table">
+          <tr>
+            <th>Chain</th>
+            <th>Observed Tips</th>
+            <th>Fee Rate</th>
+          </tr>
+          <tr v-for="it in items" :key="it.chain">
+            <td>
+              <div class="asset-cell">
+                <asset-icon :asset="it.name" />
+                {{ it.chain }}
+              </div>
+            </td>
+            <td style="color: var(--sec-font-color); font-weight: bold">
+              {{ it.value | number('0,0') }}
+            </td>
+            <td style="color: var(--sec-font-color); font-weight: bold">
+              {{ it.gasRate | number('0,0') }}
+            </td>
+          </tr>
+        </table>
       </template>
       <template #blocktime="{ item }">
         <span style="font-family: 'Roboto'">
@@ -16,55 +30,40 @@
         </span>
       </template>
     </info-card>
-    <div class="cards-container">
-      <Card title="THORChain version upgrade progress">
-        <ProgressBar
-          v-if="versionProgress"
-          :width="versionProgress"
-          :color="versionProgress == 100 ? '#81C784' : false"
-        />
-        <h3 style="text-align: center">
-          <span class="sec-color">{{
-            uptodateNodes ? uptodateNodes.length : '*'
-          }}</span>
-          of
-          <span class="sec-color">{{
-            activeNodes ? activeNodes.length : '*'
-          }}</span>
-          nodes upgraded to
-          <span class="sec-color">{{
-            activeNodes ? uptodateNodeVersion(activeNodes) : '*'
-          }}</span>
-        </h3>
-        <p
-          v-if="
-            newStandByVersion || (uptodateNodes && uptodateNodes.length == 1)
-          "
-          style="text-align: center; color: var(--primary-color)"
-        >
-          ✨ New version detected! ({{
-            newStandByVersion || uptodateNodeVersion(activeNodes)
-          }})
-        </p>
-        <p
-          v-if="versionProgress === 100"
-          style="text-align: center; color: var(--primary-color)"
-        >
-          All nodes are updated to the latest. ✅
-        </p>
-      </Card>
-      <info-card :options="gasSettings">
-        <template #name="{ item }">
-          <asset-icon :asset="item.name" />
-          <span style="margin-right: 10px">{{ item.chain }}</span>
-        </template>
-        <template #asset="{ item }">
-          <span>
-            {{ item.value | number('0,0') }}
-          </span>
-        </template>
-      </info-card>
-    </div>
+    <Card title="THORChain version upgrade progress">
+      <ProgressBar
+        v-if="versionProgress"
+        :width="versionProgress"
+        :color="versionProgress == 100 ? '#81C784' : false"
+      />
+      <h3 style="text-align: center">
+        <span class="sec-color">{{
+          uptodateNodes ? uptodateNodes.length : '*'
+        }}</span>
+        of
+        <span class="sec-color">{{
+          activeNodes ? activeNodes.length : '*'
+        }}</span>
+        nodes upgraded to
+        <span class="sec-color">{{
+          activeNodes ? uptodateNodeVersion(activeNodes) : '*'
+        }}</span>
+      </h3>
+      <p
+        v-if="newStandByVersion || (uptodateNodes && uptodateNodes.length == 1)"
+        style="text-align: center; color: var(--primary-color)"
+      >
+        ✨ New version detected! ({{
+          newStandByVersion || uptodateNodeVersion(activeNodes)
+        }})
+      </p>
+      <p
+        v-if="versionProgress === 100"
+        style="text-align: center; color: var(--primary-color)"
+      >
+        All nodes are updated to the latest. ✅
+      </p>
+    </Card>
     <card class="chain-status">
       <vue-good-table
         :columns="inboundCols"
@@ -145,7 +144,6 @@ export default {
       activeNodes: undefined,
       uptodateNodes: undefined,
       thorVersion: undefined,
-      coinMarketInfo: undefined,
       inAddresses: [],
       cols: [
         {
@@ -235,14 +233,18 @@ export default {
       return 1
     },
     networkOverview() {
-      const observed = this.lastblock?.map((b) => ({
-        name: this.baseChainAsset(b.chain),
-        chain: b.chain,
-        value: b.last_observed_in,
-        valueSlot: 'asset',
-        nameSlot: true,
-        filter: (v) => this.$options.filters.number(v, '0,0'),
-      }))
+      const observed = this.lastblock?.map((b) => {
+        const chain = this.inAddresses.find((e) => e.chain === b.chain)
+        return {
+          name: this.baseChainAsset(b.chain),
+          chain: b.chain,
+          value: b.last_observed_in,
+          gasRate: chain?.gas_rate,
+          valueSlot: 'asset',
+          nameSlot: true,
+          filter: (v) => this.$options.filters.number(v, '0,0'),
+        }
+      })
 
       return [
         {
@@ -282,42 +284,8 @@ export default {
           ],
         },
         {
-          title: 'CoinMarketCap',
-          rowStart: 1,
-          colSpan: 1,
-          items: [
-            {
-              name: 'Circulating Supply',
-              value: this.coinMarketInfo?.self_reported_circulating_supply,
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
-            },
-            {
-              name: 'Market Cap',
-              value: this.coinMarketInfo?.self_reported_market_cap,
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
-            },
-            {
-              name: 'FDV',
-              value: this.coinMarketInfo?.quote?.USD.fully_diluted_market_cap,
-              filter: (v) => this.$options.filters.currency(v),
-            },
-            {
-              name: 'TVL Ratio',
-              value: this.coinMarketInfo?.tvl_ratio,
-              filter: (v) => this.$options.filters.number(v, '0.0000'),
-            },
-            {
-              name: 'Market Volume (24H)',
-              value: this.coinMarketInfo?.quote?.USD.volume_24h,
-              filter: (v) => this.$options.filters.currency(v),
-            },
-          ],
-        },
-        {
           title: 'Block Rewards',
-          rowStart: 2,
+          rowStart: 1,
           colSpan: 1,
           items: [
             {
@@ -347,14 +315,8 @@ export default {
           ],
         },
         {
-          title: 'Chain Observed TIP',
-          rowStart: 2,
-          colSpan: 1,
-          items: observed,
-        },
-        {
           title: 'Allocations',
-          rowStart: 3,
+          rowStart: 2,
           colSpan: 1,
           items: [
             {
@@ -377,13 +339,9 @@ export default {
               filter: (v) =>
                 `${this.runeCur()} ${this.$options.filters.number(v / 1e8, '0,0')}`,
             },
-          ],
-        },
-        {
-          title: 'Burned',
-          rowStart: 3,
-          colSpan: 1,
-          items: [
+            {
+              header: 'Burned',
+            },
             {
               name: 'Total Burned BEP2 RUNE',
               value: this.thorNetwork?.burned_bep_2_rune,
@@ -396,13 +354,9 @@ export default {
               filter: (v) =>
                 `${this.runeCur()} ${this.$options.filters.number(v / 1e8, '0,0')}`,
             },
-          ],
-        },
-        {
-          title: 'Yields',
-          rowStart: 3,
-          colSpan: 1,
-          items: [
+            {
+              header: 'Yields',
+            },
             {
               name: 'Bond APY',
               value: this.network.bondingAPY,
@@ -420,27 +374,12 @@ export default {
             },
           ],
         },
-      ]
-    },
-    gasSettings() {
-      const chains = this.inAddresses.map((e) => {
-        return {
-          name: this.baseChainAsset(e.chain),
-          chain: e.chain,
-          value: e.gas_rate,
-          valueSlot: 'asset',
-          nameSlot: true,
-          filter: (v) => this.$options.filters.number(v, '0,0'),
-        }
-      })
-
-      return [
         {
-          title: 'Gas Fee Rate',
-          rowStart: 1,
+          title: 'Chains',
+          rowStart: 2,
           colSpan: 1,
-          cluster: true,
-          items: chains,
+          allSlot: 'chains',
+          items: observed,
         },
       ]
     },
@@ -548,13 +487,6 @@ export default {
         console.error(error)
       })
 
-    this.$api
-      .getCoinMarketInfo()
-      .then((res) => (this.coinMarketInfo = res.data))
-      .catch((error) => {
-        console.error(error)
-      })
-
     this.$api.getNetwork().then(({ data }) => {
       this.network = data
     })
@@ -600,5 +532,27 @@ export default {
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   grid-gap: 0.5rem;
   gap: 0.5rem;
+}
+
+.chain-table {
+  width: 100%;
+
+  th {
+    text-align: left;
+  }
+
+  th {
+    color: var(--sec-font-color);
+    text-wrap: nowrap;
+  }
+
+  td {
+    color: var(--font-color);
+    text-wrap: nowrap;
+  }
+
+  .asset-cell {
+    display: flex;
+  }
 }
 </style>
