@@ -170,7 +170,7 @@ export default {
           tdClass: 'mono',
         },
         {
-          label: 'Pol Share',
+          label: 'RUNEPool Share',
           field: 'polShare',
           type: 'number',
           tdClass: 'mono',
