@@ -12,55 +12,74 @@
           class="flex-section"
           :style="addStyle(section)"
         >
-          <h4>{{ section.title }}</h4>
-          <div :class="['flex-items', { cluster: section.cluster }]">
-            <div
-              v-for="(item, colIndex) in section.items"
-              :key="`item-${rowIndex}-${colIndex}`"
-              class="flex-item"
-            >
-              <div class="item-name">
-                <template v-if="hasSlot('name') && item.nameSlot">
-                  <slot name="name" :item="item" />
-                </template>
+          <template v-if="section.allSlot">
+            <slot :name="section.allSlot" :items="section.items" />
+          </template>
+          <template v-else>
+            <h4>{{ section.title }}</h4>
+            <div :class="['flex-items', { cluster: section.cluster }]">
+              <div
+                v-for="(item, colIndex) in section.items"
+                :key="`item-${rowIndex}-${colIndex}`"
+                class="flex-item"
+                :style="[
+                  {
+                    borderTop: item.header
+                      ? '1px solid var(--border-color)'
+                      : false,
+                    marginTop: item.header ? '8px' : false,
+                    paddingTop: item.header ? '8px' : false,
+                  },
+                ]"
+              >
+                <h4 v-if="item.header">
+                  {{ item.header }}
+                </h4>
                 <template v-else>
-                  {{ item.name }}
-                  <unknown-icon
-                    v-if="item.extraInfo"
-                    v-tooltip="item.extraInfo"
-                    class="header-icon"
-                  />
+                  <div class="item-name">
+                    <template v-if="hasSlot('name') && item.nameSlot">
+                      <slot name="name" :item="item" />
+                    </template>
+                    <template v-else>
+                      {{ item.name }}
+                      <unknown-icon
+                        v-if="item.extraInfo"
+                        v-tooltip="item.extraInfo"
+                        class="header-icon"
+                      />
+                    </template>
+                  </div>
+                  <skeleton-item
+                    :loading="!(typeof item.value === 'number') && !item.value"
+                    custom-class="info-loader"
+                  >
+                    <div
+                      v-if="typeof item.value === 'number' || item.value"
+                      class="item-value"
+                    >
+                      <template v-if="item.valueSlot">
+                        <slot :name="item.valueSlot" :item="item" />
+                      </template>
+                      <template v-else>
+                        <span v-if="item.filter">
+                          {{ item.filter(item.value) }}
+                        </span>
+                        <span v-else>
+                          {{ item.value || '-' }}
+                        </span>
+                        <progress-icon
+                          v-if="item.progress"
+                          :data-number="item.progress.data"
+                          :is-down="item.progress.down"
+                          :filter="item.progress.filter"
+                        />
+                      </template>
+                    </div>
+                  </skeleton-item>
                 </template>
               </div>
-              <skeleton-item
-                :loading="!(typeof item.value === 'number') && !item.value"
-                custom-class="info-loader"
-              >
-                <div
-                  v-if="typeof item.value === 'number' || item.value"
-                  class="item-value"
-                >
-                  <template v-if="item.valueSlot">
-                    <slot :name="item.valueSlot" :item="item" />
-                  </template>
-                  <template v-else>
-                    <span v-if="item.filter">
-                      {{ item.filter(item.value) }}
-                    </span>
-                    <span v-else>
-                      {{ item.value || '-' }}
-                    </span>
-                    <progress-icon
-                      v-if="item.progress"
-                      :data-number="item.progress.data"
-                      :is-down="item.progress.down"
-                      :filter="item.progress.filter"
-                    />
-                  </template>
-                </div>
-              </skeleton-item>
             </div>
-          </div>
+          </template>
         </div>
       </div>
     </div>
