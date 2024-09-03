@@ -223,7 +223,9 @@ export default {
         this.mapAffiliateName(row.metadata.swap.affiliateAddress)
 
       if (!detail) {
-        return
+        return {
+          name: row.metadata?.swap.affiliateAddress,
+        }
       }
 
       return {
