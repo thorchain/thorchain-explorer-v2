@@ -179,7 +179,7 @@ export default {
       this.getActions({ limit: this.limit, prevPageToken: this.prevPageToken })
     },
     applyFilters(params) {
-      this.filters = {
+      const query = {
         ...(params.asset &&
           params.asset.length > 0 && { asset: params.asset.join(',') }),
         ...(params.toHeight && { height: params.toHeight }),
@@ -197,16 +197,20 @@ export default {
         ...(params.type &&
           params.type.length > 0 && { type: params.type.join(',') }),
         ...(params.dateValue &&
-          params.dateValue.length > 0 &&
-          params.dateValue[0] != null && {
+          params.dateValue[0] != null &&
+          params.dateValue[0] !== '' && {
             fromTimestamp: params.dateValue[0] / 1e3,
           }),
         ...(params.dateValue &&
-          params.dateValue.length > 1 &&
-          params.dateValue[1] != null && {
+          params.dateValue[1] != null &&
+          params.dateValue[1] !== '' && {
             timestamp: params.dateValue[1] / 1e3,
           }),
+        ...(params.query && { query: params.query }),
       }
+
+      this.filters = query
+      this.$router.replace({ path: '/txs', query })
       this.$refs.advancedFilter.resetFilter(params)
       this.hasFilters = true
       this.getActions({ limit: this.limit })
