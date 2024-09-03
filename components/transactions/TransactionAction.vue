@@ -39,6 +39,16 @@
         class="mini-bubble customized info"
         >Pending</span
       >
+      <div
+        v-if="affiliateWallet(row)"
+        class="mini-bubble customized info executed"
+      >
+        <small>by </small>
+        <img
+          :src="affiliateWallet(row).icon"
+          :alt="affiliateWallet(row).name"
+        />
+      </div>
     </div>
     <div
       v-else-if="
@@ -182,6 +192,7 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import RightArrow from '~/assets/images/arrow-right.svg?inline'
 import VaultIcon from '~/assets/images/safe.svg?inline'
 import RedoIcon from '~/assets/images/refresh.svg?inline'
@@ -192,6 +203,30 @@ export default {
     row: {
       type: Object,
       default: () => {},
+    },
+  },
+  computed: {
+    ...mapGetters({
+      theme: 'getTheme',
+    }),
+  },
+  methods: {
+    affiliateWallet(row) {
+      if (!row.metadata?.swap.affiliateAddress) {
+        return
+      }
+      const detail =
+        row.metadata.swap.affiliateAddress &&
+        this.mapAffiliateName(row.metadata.swap.affiliateAddress)
+
+      if (!(detail && detail?.icons?.url)) {
+        return
+      }
+
+      return {
+        icon: this.theme === 'dark' ? detail.icons.urlDark : detail.icons.url,
+        name: detail.name,
+      }
     },
   },
 }
@@ -234,6 +269,13 @@ export default {
     height: 1.2rem;
     width: 1.2rem;
     padding: 4px 0;
+  }
+
+  .executed {
+    margin-left: 10px;
+    img {
+      height: 15px;
+    }
   }
 }
 </style>
