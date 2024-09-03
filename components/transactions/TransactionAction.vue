@@ -286,7 +286,7 @@ export default {
     margin-left: 10px;
     gap: 3px;
     img {
-      height: 20px;
+      height: 1.2rem;
     }
   }
 }
