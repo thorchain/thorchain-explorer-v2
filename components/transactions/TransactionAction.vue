@@ -43,11 +43,13 @@
         v-if="affiliateWallet(row)"
         class="mini-bubble customized info executed"
       >
-        <small>by </small>
+        <user-gear class="action-type small" />
         <img
+          v-if="affiliateWallet(row).icon"
           :src="affiliateWallet(row).icon"
           :alt="affiliateWallet(row).name"
         />
+        <span v-else>{{ affiliateWallet(row).name }}</span>
       </div>
     </div>
     <div
@@ -196,9 +198,10 @@ import { mapGetters } from 'vuex'
 import RightArrow from '~/assets/images/arrow-right.svg?inline'
 import VaultIcon from '~/assets/images/safe.svg?inline'
 import RedoIcon from '~/assets/images/refresh.svg?inline'
+import UserGear from '~/assets/images/user-gear.svg?inline'
 
 export default {
-  components: { RightArrow, VaultIcon, RedoIcon },
+  components: { RightArrow, VaultIcon, RedoIcon, UserGear },
   props: {
     row: {
       type: Object,
@@ -219,7 +222,7 @@ export default {
         row.metadata.swap.affiliateAddress &&
         this.mapAffiliateName(row.metadata.swap.affiliateAddress)
 
-      if (!(detail && detail?.icons?.url)) {
+      if (!detail) {
         return
       }
 
@@ -261,6 +264,11 @@ export default {
     width: 1rem;
     fill: var(--sec-font-color);
     padding: 4px;
+
+    &.small {
+      height: 0.8rem;
+      width: 0.8re;
+    }
   }
 
   .action-icon {
@@ -272,9 +280,13 @@ export default {
   }
 
   .executed {
+    color: var(--sec-font-color);
+    border-color: var(--border-color);
+    background-color: transparent;
     margin-left: 10px;
+    gap: 3px;
     img {
-      height: 15px;
+      height: 20px;
     }
   }
 }

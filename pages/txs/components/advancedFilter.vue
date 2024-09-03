@@ -250,6 +250,26 @@ export default {
       this.submittedCount = this.filledFilterCount
     },
 
+    queryToFilter(query) {
+      const filters = {}
+      for (const k in query) {
+        filters[k] = query[k].split(',')
+      }
+      this.filters = {
+        addresses: [],
+        txId: [],
+        asset: [],
+        type: [],
+        txType: [],
+        affiliate: [],
+        toHeight: '',
+        fromHeight: '',
+        dateValue: [null, null],
+        ...filters,
+      }
+      this.submittedCount = this.filledFilterCount
+    },
+
     getOptions(key) {
       return key === 'type'
         ? [

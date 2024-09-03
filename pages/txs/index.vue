@@ -79,7 +79,7 @@
 </template>
 
 <script>
-import { isEqual } from 'lodash'
+import { isEqual, pick } from 'lodash'
 import advancedFilter from './components/advancedFilter.vue'
 import Transactions from '~/components/Transactions.vue'
 
@@ -169,9 +169,31 @@ export default {
     },
   },
   mounted() {
-    this.getActions({ limit: this.limit })
+    let params = {}
+    if (this.$route.query) {
+      const query = this.checkQuery(this.$route.query)
+      this.$router.replace({ path: '/txs', query })
+      this.filters = query
+      this.$refs.advancedFilter.queryToFilter(this.$route.query)
+      params = this.$route.query
+      this.hasFilters = true
+    }
+    this.getActions({ limit: this.limit, ...params })
   },
   methods: {
+    checkQuery(queries) {
+      return pick(queries, [
+        'address',
+        'asset',
+        'height',
+        'fromHeight',
+        'affiliate',
+        'txType',
+        'type',
+        'fromTimestamp',
+        'timestamp',
+      ])
+    },
     goNext() {
       this.getActions({ limit: this.limit, nextPageToken: this.nextPageToken })
     },
@@ -206,7 +228,6 @@ export default {
           params.dateValue[1] !== '' && {
             timestamp: params.dateValue[1] / 1e3,
           }),
-        ...(params.query && { query: params.query }),
       }
 
       this.filters = query
@@ -218,6 +239,7 @@ export default {
     clearFilters() {
       this.filters = {}
       this.hasFilters = false
+      this.$router.replace({ path: '/txs' })
       this.getActions({ limit: this.limit })
     },
     getActions(params) {

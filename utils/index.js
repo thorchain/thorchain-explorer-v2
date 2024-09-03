@@ -694,6 +694,14 @@ const interfaces = {
     name: 'OKX',
     icon: 'okx',
   },
+  oneKey: {
+    name: 'One Key',
+    icon: 'onekey',
+  },
+  symbiosis: {
+    name: 'Symbiosis',
+    icon: 'symbiosis',
+  },
 }
 
 export const affiliateMap = {
@@ -717,6 +725,8 @@ export const affiliateMap = {
   lifi: interfaces.lifi,
   ej: interfaces.edge,
   okw: interfaces.okx,
+  oky: interfaces.oneKey,
+  sy: interfaces.symbiosis,
 }
 
 export function getExplorerAddressUrl(chain, query) {
