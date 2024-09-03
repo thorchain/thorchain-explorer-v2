@@ -1008,30 +1008,38 @@ export default {
         const affiliate = this.affiliateDaily.find((d) => {
           return moment(d.date).isSame(date, 'day')
         })
-        af.push(affiliate.daily_affiliate_fees_usd)
+        af.push({
+          value: affiliate.daily_affiliate_fees_usd,
+          itemStyle: {
+    borderRadius: [8, 8, 0, 0],
+  },
+        })
       })
 
       return this.basicChartFormat(
         (value) => `$ ${this.normalFormat(value)}`,
         [
           {
-            type: 'line',
+            type: 'bar',
             name: 'Liquidity Earning',
             showSymbol: false,
+            stack: 'Total',
             data: le,
             smooth: true,
           },
           {
-            type: 'line',
+            type: 'bar',
             name: 'Bond Earning',
+            stack: 'Total',
             showSymbol: false,
             data: be,
             smooth: true,
           },
           this.affiliateDaily && {
-            type: 'line',
+            type: 'bar',
             name: 'Affiliate Earning',
             showSymbol: false,
+            stack: 'Total',
             data: af,
             smooth: true,
           },
