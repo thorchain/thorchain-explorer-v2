@@ -174,8 +174,8 @@ export default {
       const query = this.checkQuery(this.$route.query)
       this.$router.replace({ path: '/txs', query })
       this.filters = query
-      this.$refs.advancedFilter.queryToFilter(this.$route.query)
-      params = this.$route.query
+      params = query
+      this.$refs.advancedFilter.queryToFilter(query)
       this.hasFilters = true
     }
     this.getActions({ limit: this.limit, ...params })
