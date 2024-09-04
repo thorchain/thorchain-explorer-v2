@@ -153,8 +153,12 @@
         style-class="vgt-table net-table"
         :pagination-options="{
           enabled: true,
-          perPage: 10,
+          perPage: 30,
           perPageDropdownEnabled: false,
+        }"
+        :search-options="{
+          enabled: true,
+          placeholder: 'Search',
         }"
       >
         <template slot="table-row" slot-scope="props">
@@ -205,6 +209,12 @@
             {{ props.formattedRow[props.column.field] }}
             <small v-if="props.row.lastTimeDeposit">
               ({{ props.row.lastTimeDeposit }})
+            </small>
+          </span>
+          <span v-else-if="props.column.field == 'last_withdraw_height'">
+            {{ props.formattedRow[props.column.field] }}
+            <small v-if="props.row.last_withdraw_height">
+              ({{ props.row.lastTimeWithdraw }})
             </small>
           </span>
           <span v-else>
@@ -423,8 +433,15 @@ export default {
           tdClass: 'mono',
         },
         {
-          label: 'Lat Deposit Block',
+          label: 'Last Deposit Block',
           field: 'last_deposit_height',
+          type: 'number',
+          formatFn: this.normalFormat,
+          tdClass: 'mono',
+        },
+        {
+          label: 'Last Withdraw Block',
+          field: 'last_withdraw_height',
           type: 'number',
           formatFn: this.normalFormat,
           tdClass: 'mono',
@@ -851,13 +868,18 @@ export default {
           lastTimeDeposit: moment
             .duration((+this.height.THOR - +e.last_deposit_height) * 6, 's')
             .humanize(),
+          lastTimeWithdraw: moment
+            .duration((+this.height.THOR - +e.last_withdraw_height) * 6, 's')
+            .humanize(),
           untilMature: moment
             .duration(
               (+this.height.THOR - +e.last_deposit_height - matureConstant) * 6,
               's'
             )
             .asDays(),
-          ror: +e.value / +e.deposit_amount - 1,
+          ror: +e.value
+            ? +e.value / +e.deposit_amount - 1
+            : +e.withdraw_amount / +e.deposit_amount - 1,
         }))
         this.isUpdating = false
       } catch (error) {
