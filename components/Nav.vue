@@ -64,8 +64,7 @@ export default {
     border-radius: 0.3rem;
 
     &.active,
-    &.nuxt-link-exact-active,
-    &.nuxt-link-active {
+    &.nuxt-link-exact-active {
       background-color: var(--active-bg-color);
       color: var(--sec-font-color);
     }
@@ -87,8 +86,7 @@ export default {
 
     .nav-item {
       &.active,
-      &.nuxt-link-exact-active,
-      &.nuxt-link-active {
+      &.nuxt-link-exact-active {
         color: var(--primary-color);
       }
     }
