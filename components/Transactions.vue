@@ -145,7 +145,7 @@ export default {
             t.in.find((e) => e.txID)?.txID || t.out.find((e) => e.txID)?.txID,
           age: this.since(t.date),
           from: t.in.find((e) => e.address)?.address,
-          to: t.out.find((e) => e.address)?.address,
+          to: t.out.find((e) => !e.affiliate && e.address)?.address,
         }
       })
 
