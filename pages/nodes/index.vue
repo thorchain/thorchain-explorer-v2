@@ -105,12 +105,7 @@
             >
               <ExitIcon class="table-icon" />
             </div>
-            <div
-              v-else-if="props.column.field == 'providers'"
-              v-tooltip="'Provider'"
-            >
-              <DollarIcon class="table-icon" />
-            </div>
+            <div v-else-if="props.column.field == 'providers'">Operator</div>
             <div
               v-else-if="props.column.field == 'location'"
               v-tooltip="'Node Location'"
@@ -252,14 +247,18 @@
                 <span v-else>-</span>
               </div>
             </span>
+            <span v-else-if="props.column.field == 'fee'">
+              <span>{{ props.formattedRow[props.column.field] }}</span>
+            </span>
             <span v-else-if="props.column.field == 'providers'">
+              <span>{{ props.row.operator.slice(-4) }}</span>
               <div
                 :id="
                   props.row.providers.length
                     ? `popover-${props.row.originalIndex}`
                     : false
                 "
-                class="bubble-container grey"
+                class="bubble-container grey clickable"
               >
                 {{ props.row.providers.length }}
               </div>
@@ -600,6 +599,12 @@ export default {
           tdClass: 'mono',
         },
         {
+          label: 'Fee',
+          field: 'fee',
+          type: 'percentage',
+          tdClass: 'mono',
+        },
+        {
           label: 'Bond',
           field: 'total_bond',
           type: 'number',
@@ -694,12 +699,12 @@ export default {
           tdClass: 'center',
           sortFn: this.cSort,
         },
-        ...this.cols.slice(1, 6),
+        ...this.cols.slice(1, 7),
         {
           label: 'Providers',
           field: 'providers',
           type: 'number',
-          tdClass: 'mono center clickable',
+          tdClass: 'mono center',
           thClass: 'center',
           sortFn: this.pSort,
         },

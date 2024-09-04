@@ -563,6 +563,8 @@ export function fillNodeData(
     apy,
     score: (1e4 / el.slash_points).toFixed(4),
     leave: el.requested_to_leave,
+    fee: el.bond_providers?.node_operator_fee / 1e4,
+    operator: el?.node_operator_address,
   })
 }
 
