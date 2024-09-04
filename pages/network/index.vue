@@ -240,8 +240,6 @@ export default {
           chain: b.chain,
           value: b.last_observed_in,
           gasRate: chain?.gas_rate,
-          valueSlot: 'asset',
-          nameSlot: true,
           filter: (v) => this.$options.filters.number(v, '0,0'),
         }
       })

@@ -138,7 +138,7 @@ export default {
           name: 'Transactions',
           unicon: 'exchangeUnselected',
           icon: 'exchangeSelected',
-          link: '/transactions',
+          link: '/txs',
         },
         {
           name: 'Pools',
