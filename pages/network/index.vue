@@ -535,4 +535,16 @@ export default {
     display: flex;
   }
 }
+
+.chain-col {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.chain-status {
+  .status-header {
+    color: var(--sec-font-color);
+  }
+}
 </style>

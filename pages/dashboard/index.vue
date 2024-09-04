@@ -1011,8 +1011,8 @@ export default {
         af.push({
           value: affiliate.daily_affiliate_fees_usd,
           itemStyle: {
-    borderRadius: [8, 8, 0, 0],
-  },
+            borderRadius: [8, 8, 0, 0],
+          },
         })
       })
 
@@ -1456,17 +1456,6 @@ export default {
         fill: var(--primary-color);
       }
     }
-  }
-}
-.chain-col {
-  display: flex;
-  gap: 5px;
-  align-items: center;
-}
-
-.chain-status {
-  .status-header {
-    color: var(--sec-font-color);
   }
 }
 </style>
