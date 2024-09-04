@@ -481,7 +481,6 @@ import {
   GridComponent,
 } from 'echarts/components'
 import VChart from 'vue-echarts'
-import { props } from 'qrcode.vue'
 import {
   addressFormat,
   blockTime,

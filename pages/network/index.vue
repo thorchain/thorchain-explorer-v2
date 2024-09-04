@@ -79,7 +79,7 @@
             v-else-if="props.column.field == 'haltTradingHeight'"
             v-tooltip="'Trading'"
           >
-            <div class="status-header">Swaps</div>
+            <div class="status-header">Trading</div>
           </div>
           <div
             v-else-if="props.column.field == 'haltLPHeight'"

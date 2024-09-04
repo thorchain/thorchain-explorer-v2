@@ -205,6 +205,7 @@ export default {
             flex-direction: row;
             font-size: 1rem;
             align-items: center;
+            padding: 4px 0;
           }
 
           .info-loader {

@@ -6,7 +6,7 @@
 
 <script>
 import StatTable from '~/components/StatTable.vue'
-import { blockTime } from '~/utils'
+import { blockTime, runeCur } from '~/utils'
 
 const camelCase = (e) => e && e.replace(/([A-Z])/g, ' $1')
 
@@ -17,6 +17,9 @@ export default {
       networkConst: [],
       mimir: undefined,
     }
+  },
+  head: {
+    title: 'THORChain Network Explorer | Network Settings',
   },
   computed: {
     networkSettings() {
@@ -46,7 +49,6 @@ export default {
               value:
                 this.networkConst?.int_64_values?.MinTxOutVolumeThreshold /
                 10 ** 8,
-              usdValue: true,
               filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
             },
             {
@@ -64,47 +66,21 @@ export default {
             },
 
             {
-              header: 'Swappings',
+              header: 'Trading',
             },
             {
               name: 'All Trading are Halted',
-              value: this.mimir?.HALTTRADING ? 'Yes' : 'No',
+              value: this.mimir?.HALTTRADING
+                ? this.mimir?.HALTTRADING > 1
+                  ? this.mimir?.HALTTRADING
+                  : 'Yes'
+                : 'No',
+              extraInfo: 'The block height Trading will be halted',
             },
 
             {
-              name: 'BTC Trading is Halted',
-              value: this.mimir?.HALTBTCTRADING ? 'Yes' : 'No',
+              header: 'Synths',
             },
-            {
-              name: 'ETH Trading is Halted',
-              value: this.mimir?.HALTETHTRADING ? 'Yes' : 'No',
-            },
-            {
-              name: 'BNB Trading is Halted',
-              value: this.mimir?.HALTBNBTRADING ? 'Yes' : 'No',
-            },
-            {
-              name: 'DOGE Trading is Halted',
-              value: this.mimir?.HALTDOGETRADING ? 'Yes' : 'No',
-            },
-
-            {
-              name: 'BCH Trading is Halted',
-              value: this.mimir?.HALTBCHTRADING ? 'Yes' : 'No',
-            },
-            {
-              name: 'GAIA Trading is Halted',
-              value: this.mimir?.HALTGAIATRADING ? 'Yes' : 'No',
-            },
-            {
-              name: 'LTC Trading is Halted',
-              value: this.mimir?.HALTLTCTRADING ? 'Yes' : 'No',
-            },
-            {
-              name: 'AVAX Trading is Halted',
-              value: this.mimir?.HALTAVAXTRADING ? 'Yes' : 'No',
-            },
-
             {
               name: camelCase('MaxSwapsPerBlock'),
               value: this.networkConst?.int_64_values?.MaxSwapsPerBlock,
@@ -139,41 +115,11 @@ export default {
             },
             {
               name: 'Observations on all chains are paused',
-              value: this.mimir?.HALTCHAINGLOBAL ? 'Yes' : 'No',
-            },
-
-            {
-              name: 'BTC CHAIN is paused',
-              value: this.mimir?.HALTBTCCHAIN ? 'Yes' : 'No',
-            },
-            {
-              name: 'ETH CHAIN is paused',
-              value: this.mimir?.HALTETHCHAIN ? 'Yes' : 'No',
-            },
-            {
-              name: 'BNB CHAIN is paused',
-              value: this.mimir?.HALTBNBCHAIN ? 'Yes' : 'No',
-            },
-            {
-              name: 'DOGE CHAIN is paused',
-              value: this.mimir?.HALTDOGECHAIN ? 'Yes' : 'No',
-            },
-
-            {
-              name: 'BCH CHAIN is paused',
-              value: this.mimir?.HALTBCHCHAIN ? 'Yes' : 'No',
-            },
-            {
-              name: 'GAIA CHAIN is paused',
-              value: this.mimir?.HALTGAIACHAIN ? 'Yes' : 'No',
-            },
-            {
-              name: 'LTC CHAIN is paused',
-              value: this.mimir?.HALTLTCCHAIN ? 'Yes' : 'No',
-            },
-            {
-              name: 'AVAX CHAIN is paused',
-              value: this.mimir?.HALTAVAXCHAIN ? 'Yes' : 'No',
+              value: this.mimir?.HALTCHAINGLOBAL
+                ? this.mimir?.HALTCHAINGLOBAL > 1
+                  ? this.mimir?.HALTCHAINGLOBAL
+                  : 'Yes'
+                : 'No',
             },
 
             {
@@ -194,6 +140,7 @@ export default {
             },
             {
               ...this.parseConstant('MinimumNodesForBFT'),
+              name: 'Minimum Nodes For BFT',
             },
 
             {
@@ -201,39 +148,34 @@ export default {
               value:
                 this.networkConst?.int_64_values?.NativeTransactionFee /
                 10 ** 8,
-              usdValue: true,
+              filter: (v) => `${runeCur()} ${v}`,
+            },
+
+            {
+              header: 'THORName',
             },
             {
               name: 'TNS Fee On Sale',
               value: this.networkConst?.int_64_values?.TNSFeeOnSale,
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `${runeCur()} ${this.baseAmountFormatOrZero(v)}`,
             },
             {
               name: 'TNS Fee Per Block',
               value: this.networkConst?.int_64_values?.TNSFeePerBlock,
+              filter: (v) => `${runeCur()} ${this.baseAmountFormatOrZero(v)}`,
             },
             {
               name: 'TNS Register Fee',
               value: this.networkConst?.int_64_values?.TNSRegisterFee,
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `${runeCur()} ${this.baseAmountFormatOrZero(v)}`,
             },
 
             {
-              name: 'Solvency Check',
-              value: this.mimir?.STOPSOLVENCYCHECK ? 'Disabled' : 'Enabled',
+              header: 'LP Management',
             },
             {
-              name: 'BNB Solvency Check',
-              value: this.mimir?.STOPSOLVENCYCHECKBNB ? 'Disabled' : 'Enabled',
-            },
-            {
-              name: 'ETH Solvency Check',
-              value: this.mimir?.STOPSOLVENCYCHECKETH ? 'Disabled' : 'Enabled',
-            },
-            {
-              // Is this In RUNE
-              name: 'Permitted Solvency Gap',
-              value: this.networkConst?.int_64_values?.PermittedSolvencyGap,
+              name: 'Add/Remove liquidity is paused',
+              value: this.mimir?.PAUSELP ? 'Yes' : 'No',
             },
           ],
         },
@@ -273,106 +215,47 @@ export default {
               filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
               usdValue: true,
             },
-
-            {
-              header: 'LP Management',
-            },
-
-            {
-              name: 'Add/Remove liquidity is paused',
-              value: this.mimir?.PAUSELP ? 'Yes' : 'No',
-            },
-
-            {
-              name: 'BTC LP is paused',
-              value: this.mimir?.PAUSELPBTC ? 'Yes' : 'No',
-            },
-            {
-              name: 'ETH LP is paused',
-              value: this.mimir?.PAUSELPETH ? 'Yes' : 'No',
-            },
-            {
-              name: 'BNB LP is paused',
-              value: this.mimir?.PAUSELPBNB ? 'Yes' : 'No',
-            },
-            {
-              name: 'DOGE LP is paused',
-              value: this.mimir?.PAUSELPDOGE ? 'Yes' : 'No',
-            },
-
-            {
-              name: 'BCH LP is paused',
-              value: this.mimir?.PAUSELPBCH ? 'Yes' : 'No',
-            },
-            {
-              name: 'GAIA LP is paused',
-              value: this.mimir?.PAUSELPGAIA ? 'Yes' : 'No',
-            },
-            {
-              name: 'LTC LP is paused',
-              value: this.mimir?.PAUSELPLTC ? 'Yes' : 'No',
-            },
-            {
-              name: 'AVAX LP is paused',
-              value: this.mimir?.PAUSELPAVAX ? 'Yes' : 'No',
-            },
-
             {
               ...this.parseConstant('LiquidityLockUpBlocks'),
             },
 
-            // Impermanent Loss Protection
-
             {
-              ...this.parseConstant('FullImpLossProtectionBlocks', {
-                extraInfo: (v) => blockTime(v),
-              }),
-              name: 'Impermanent Loss Protection (Block)',
-              extraInfo: 'Overwritten by Mimir',
+              header: 'Solvency',
+            },
+            {
+              name: 'Solvency Check',
+              value: this.mimir?.STOPSOLVENCYCHECK ? 'Disabled' : 'Enabled',
+            },
+            {
+              name: 'BNB Solvency Check',
+              value: this.mimir?.STOPSOLVENCYCHECKBNB ? 'Disabled' : 'Enabled',
+            },
+            {
+              name: 'ETH Solvency Check',
+              value: this.mimir?.STOPSOLVENCYCHECKETH ? 'Disabled' : 'Enabled',
+            },
+            {
+              // Is this In RUNE
+              name: 'Permitted Solvency Gap',
+              value: this.networkConst?.int_64_values?.PermittedSolvencyGap,
             },
 
             {
               header: 'Node Management',
             },
+
             {
               ...this.parseConstant('MinimumBondInRune', {
                 filter: (v) =>
-                  `${this.$options.filters.number(v / 1e8, '0,0')}`,
+                  `${runeCur()} ${this.$options.filters.number(v / 1e8, '0,0')}`,
               }),
               extraInfo: 'Overwritten by Mimir',
+            },
+            {
+              name: 'Asgard Size',
+              value: this.networkConst?.int_64_values?.AsgardSize,
             },
             this.parseConstant('ValidatorMaxRewardRatio'),
-
-            // Yggdrasil Management
-
-            {
-              ...this.parseConstant('YggFundLimit', {
-                filter: (v) => this.$options.filters.percent(v / 100),
-              }),
-              extraInfo: 'Overwritten by Mimir',
-            },
-            {
-              ...this.parseConstant('YggFundRetry', {
-                extraInfo: `${blockTime(this.mimir?.YGGFUNDRETRY)}, `,
-              }),
-              extraInfo: 'Overwritten by Mimir',
-            },
-            {
-              ...this.parseConstant('YggFundLimit', {
-                filter: (v) => (v ? 'Disabled' : 'Enabled'),
-              }),
-              extraInfo: 'Overwritten by Mimir',
-            },
-
-            {
-              ...this.parseConstant('MinimumNodesForYggdrasil'),
-            },
-
-            {
-              name: camelCase('LackOfObservationPenalty'),
-              value: this.networkConst?.int_64_values?.LackOfObservationPenalty,
-              extraInfo: 'Slashes',
-            },
             {
               name: camelCase('SigningTransactionPeriod'),
               value: this.networkConst?.int_64_values?.SigningTransactionPeriod,
@@ -381,27 +264,39 @@ export default {
               ),
             },
             {
-              name: camelCase('DoubleSignMaxAge'),
-              value: this.networkConst?.int_64_values?.DoubleSignMaxAge,
-              extraInfo: blockTime(
-                this.networkConst?.int_64_values?.DoubleSignMaxAge
-              ),
-            },
-            {
               name: camelCase('FailKeysignSlashPoints'),
               value: this.networkConst?.int_64_values?.FailKeysignSlashPoints,
-              extraInfo: 'Slashes',
+              filter: (v) => `${v} slashes`,
             },
             {
               name: camelCase('FailKeygenSlashPoints'),
               value: this.networkConst?.int_64_values?.FailKeygenSlashPoints,
-              extraInfo: 'Slashes',
+              filter: (v) => `${v} slashes`,
             },
 
             {
               name: camelCase('ObserveSlashPoints'),
               value: this.networkConst?.int_64_values?.ObserveSlashPoints,
-              extraInfo: 'Slashes',
+              filter: (v) => `${v} slashes`,
+            },
+            {
+              name: camelCase('LackOfObservationPenalty'),
+              value: this.networkConst?.int_64_values?.LackOfObservationPenalty,
+              filter: (v) => `${v} slashes`,
+            },
+            {
+              name: camelCase('MinSlashPointsForBadValidator'),
+              value:
+                this.networkConst?.int_64_values?.MinSlashPointsForBadValidator,
+              filter: (v) => `${v} slashes`,
+            },
+            {
+              name: camelCase('DoubleSignMaxAge'),
+              value: this.networkConst?.int_64_values?.DoubleSignMaxAge,
+              extraInfo: blockTime(
+                this.networkConst?.int_64_values?.DoubleSignMaxAge
+              ),
+              filter: (v) => `${v} blocks`,
             },
             {
               name: camelCase('ObservationDelayFlexibility'),
@@ -410,6 +305,7 @@ export default {
               extraInfo: blockTime(
                 this.networkConst?.int_64_values?.ObservationDelayFlexibility
               ),
+              filter: (v) => `${v} blocks`,
             },
             {
               name: camelCase('JailTimeKeygen'),
@@ -417,7 +313,7 @@ export default {
               extraInfo: blockTime(
                 this.networkConst?.int_64_values?.JailTimeKeygen
               ),
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0')} blocks`,
             },
             {
               name: camelCase('JailTimeKeysign'),
@@ -425,17 +321,11 @@ export default {
               extraInfo: blockTime(
                 this.networkConst?.int_64_values?.JailTimeKeysign
               ),
+              filter: (v) => `${this.$options.filters.number(v, '0,0')} blocks`,
             },
 
             {
-              name: 'Asgard Size',
-              value: this.networkConst?.int_64_values?.AsgardSize,
-            },
-            {
-              name: camelCase('MinSlashPointsForBadValidator'),
-              value:
-                this.networkConst?.int_64_values?.MinSlashPointsForBadValidator,
-              extraInfo: 'Slashes',
+              header: 'Churning',
             },
             {
               name: camelCase('ChurnInterval'),
@@ -456,7 +346,7 @@ export default {
 
             {
               ...this.parseConstant('DesiredValidatorSet', {}),
-              extraInfo: 'Max number of validatorsOverwritten by Mimir',
+              extraInfo: 'Max number of validators, Overwritten by Mimir',
             },
             {
               ...this.parseConstant('FundMigrationInterval'),
@@ -492,9 +382,6 @@ export default {
       .catch((e) => {
         console.error(e)
       })
-  },
-  head: {
-    title: 'THORChain Network Explorer | Network Settings',
   },
 }
 </script>
