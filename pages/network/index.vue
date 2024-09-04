@@ -315,21 +315,21 @@ export default {
               filter: (v) =>
                 `${this.runeCur()} ${this.$options.filters.number(v / 1e8, '0,0')}`,
             },
-            {
-              header: 'Burned',
-            },
-            {
-              name: 'Total Burned BEP2 RUNE',
-              value: this.thorNetwork?.burned_bep_2_rune,
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v / 1e8, '0,0')}`,
-            },
-            {
-              name: 'Total Burned ERC20 RUNE',
-              value: this.thorNetwork?.burned_erc_20_rune,
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v / 1e8, '0,0')}`,
-            },
+            // {
+            //   header: 'Burned',
+            // },
+            // {
+            //   name: 'Total Burned BEP2 RUNE',
+            //   value: this.thorNetwork?.burned_bep_2_rune,
+            //   filter: (v) =>
+            //     `${this.runeCur()} ${this.$options.filters.number(v / 1e8, '0,0')}`,
+            // },
+            // {
+            //   name: 'Total Burned ERC20 RUNE',
+            //   value: this.thorNetwork?.burned_erc_20_rune,
+            //   filter: (v) =>
+            //     `${this.runeCur()} ${this.$options.filters.number(v / 1e8, '0,0')}`,
+            // },
             {
               header: 'Yields',
             },
