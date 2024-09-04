@@ -201,7 +201,10 @@
               <span v-else>-</span>
             </span>
             <span v-else-if="props.column.field == 'isp'">
-              <cloud-image v-if="props.row.isp" :name="props.row.isp" />
+              <cloud-image
+                v-if="props.row.isp"
+                :name="[props.row.isp, props.row.org]"
+              />
               <span v-else>-</span>
             </span>
             <span v-else-if="props.column.field == 'location'">
@@ -479,6 +482,7 @@ import {
   GridComponent,
 } from 'echarts/components'
 import VChart from 'vue-echarts'
+import { props } from 'qrcode.vue'
 import {
   addressFormat,
   blockTime,

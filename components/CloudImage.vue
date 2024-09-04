@@ -2,49 +2,80 @@
   <div class="cloud-container">
     <component
       :is="type"
-      v-tooltip="$options.filters.capitalize(type)"
+      v-if="type"
+      v-tooltip="$options.filters.capitalize(name[0])"
       class="asset-icon"
+    />
+    <img
+      v-else
+      v-tooltip="$options.filters.capitalize(name[0])"
+      :src="imagePath"
+      class="asset-image"
     />
   </div>
 </template>
 
 <script>
-import google from '@/assets/images/clouds/google.svg?inline'
-import amazon from '@/assets/images/clouds/amazon.svg?inline'
-import azure from '@/assets/images/clouds/azure.svg?inline'
-import hetzner from '@/assets/images/clouds/hetzner.svg?inline'
-import digitalocean from '@/assets/images/clouds/digitalocean.svg?inline'
-import vultr from '@/assets/images/clouds/vultr.svg?inline'
-import cloud from '@/assets/images/clouds/cloud.svg?inline'
-
 export default {
-  components: {
-    google,
-    amazon,
-    azure,
-    hetzner,
-    digitalocean,
-    vultr,
-    cloud,
-  },
   props: ['name'],
   computed: {
     type() {
-      if (this.name.includes('Amazon')) {
-        return 'amazon'
-      } else if (this.name.includes('Google')) {
-        return 'google'
-      } else if (this.name.includes('Microsoft')) {
-        return 'azure'
-      } else if (this.name.includes('Hetzner')) {
-        return 'hetzner'
-      } else if (this.name.includes('DigitalOcean')) {
-        return 'digitalocean'
-      } else if (this.name.includes('The Constant Company')) {
-        return 'vultr'
-      } else {
-        return 'cloud'
+      const name = this.name.map((e) => e.toLowerCase())
+      let host = this.findOrg(name[0])
+      if (host === undefined) {
+        host = this.findOrg(name[1])
       }
+
+      if (host === undefined) {
+        return require('@/assets/images/clouds/cloud.svg?inline')
+      }
+
+      return host
+    },
+    imagePath() {
+      const name = this.name[0].toLowerCase()
+      if (name.includes('routerhosting')) {
+        return require('@/assets/images/clouds/cloudzy.png')
+      } else if (name.includes('leaseweb')) {
+        return require('@/assets/images/clouds/leaseweb.png')
+      }
+
+      return ''
+    },
+  },
+  methods: {
+    findOrg(name) {
+      if (name.includes('amazon')) {
+        return require('@/assets/images/clouds/amazon.svg?inline')
+      } else if (name.includes('google')) {
+        return require('@/assets/images/clouds/google.svg?inline')
+      } else if (name.includes('microsoft')) {
+        return require('@/assets/images/clouds/azure.svg?inline')
+      } else if (name.includes('hetzner')) {
+        return require('@/assets/images/clouds/hetzner.svg?inline')
+      } else if (name.includes('digitalocean')) {
+        return require('@/assets/images/clouds/digitalocean.svg?inline')
+      } else if (
+        name.includes('the constant company') ||
+        name.includes('vultr') ||
+        name.includes('choopa')
+      ) {
+        return require('@/assets/images/clouds/vultr.svg?inline')
+      } else if (name.includes('hostinger')) {
+        return require('@/assets/images/clouds/hostinger.svg?inline')
+      } else if (name.includes('cogent')) {
+        return require('@/assets/images/clouds/cogent.svg?inline')
+      } else if (name.includes('datacamp')) {
+        return require('@/assets/images/clouds/datacamp.svg?inline')
+      } else if (name.includes('ovh')) {
+        return require('@/assets/images/clouds/ovh.svg?inline')
+      } else if (name.includes('comcast')) {
+        return require('@/assets/images/clouds/comcast.svg?inline')
+      } else if (name.includes('routerhosting') || name.includes('leaseweb')) {
+        return false
+      }
+
+      return undefined
     },
   },
 }
@@ -58,6 +89,10 @@ export default {
   .asset-icon {
     margin: 0;
     border-radius: 0;
+  }
+
+  .asset-image {
+    width: 1.5rem;
   }
 }
 </style>

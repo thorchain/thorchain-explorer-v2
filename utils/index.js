@@ -522,10 +522,12 @@ export function fillNodeData(
     })
   } catch (error) {}
   let isp
+  let org
   let location
   if (nodesExtra && el.ip_address) {
     const node = nodesExtra[el.ip_address]
     isp = node?.isp ?? undefined
+    org = node?.org ?? undefined
     location =
       { code: node?.countryCode, region: node?.regionName, city: node?.city } ??
       undefined
@@ -555,6 +557,7 @@ export function fillNodeData(
     total_bond: el.total_bond / 10 ** 8 < 0.01 ? 0 : el.total_bond / 10 ** 8,
     chains: chainsHeight,
     isp,
+    org,
     location,
     age,
     apy,
