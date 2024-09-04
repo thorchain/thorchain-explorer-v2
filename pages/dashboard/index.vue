@@ -284,7 +284,7 @@ import ArrowRightIcon from '~/assets/images/arrow-right.svg?inline'
 import Exchange from '~/assets/images/exchange.svg?inline'
 import Book from '~/assets/images/book.svg?inline'
 import Piggy from '~/assets/images/piggy.svg?inline'
-import DangerIcon from '@/assets/images/danger.svg?inline'
+
 import Money from '~/assets/images/money.svg?inline'
 import External from '@/assets/images/external.svg?inline'
 

@@ -399,8 +399,12 @@ export default {
       return {
         name: uniName,
         ...(options?.filter ? { value: options?.filter(value) } : { value }),
-        ...(isMimir && { extraText: `${extraText ?? ''}Overwritten by Mimir` }),
-        ...(!isMimir && extraText && { extraText }),
+        ...(isMimir && { extraInfo: 'Overwritten by Mimir' }),
+        ...(isMimir &&
+          extraText && {
+            extraInfo: `${extraText}, Overwritten by Mimir`,
+          }),
+        ...(!isMimir && extraText && { extraInfo: extraText }),
       }
     },
     runeCur() {

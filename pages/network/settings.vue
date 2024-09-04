@@ -30,38 +30,31 @@ export default {
           colSpan: 1,
           items: [
             {
-              name: camelCase('OutboundTransactionFee'),
-              value:
-                this.networkConst?.int_64_values?.OutboundTransactionFee /
-                10 ** 8,
-              usdValue: true,
+              ...this.parseConstant('OutboundTransactionFee'),
+              filter: (v) => `${runeCur()} ${this.baseAmountFormatOrZero(v)}`,
             },
             {
-              name: camelCase('MaxTxOutOffset'),
-              value: this.networkConst?.int_64_values?.MaxTxOutOffset,
-              extraInfo: blockTime(
-                this.networkConst?.int_64_values?.MaxTxOutOffset
-              ),
+              ...this.parseConstant('MaxTxOutOffset', {
+                extraText: blockTime(
+                  this.networkConst?.int_64_values?.MaxTxOutOffset
+                ),
+              }),
               filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
             },
             {
-              name: camelCase('MinTxOutVolumeThreshold'),
-              value:
-                this.networkConst?.int_64_values?.MinTxOutVolumeThreshold /
-                10 ** 8,
+              ...this.parseConstant('MinTxOutVolumeThreshold'),
+              filter: (v) => `${this.baseAmountFormatOrZero(v)}`,
+            },
+            {
+              ...this.parseConstant('TxOutDelayMax', {
+                extraText: blockTime(
+                  this.networkConst?.int_64_values?.TxOutDelayMax
+                ),
+              }),
               filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
             },
             {
-              name: camelCase('TxOutDelayMax'),
-              value: this.networkConst?.int_64_values?.TxOutDelayMax,
-              extraInfo: blockTime(
-                this.networkConst?.int_64_values?.TxOutDelayMax
-              ),
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
-            },
-            {
-              name: camelCase('TxOutDelayRate'),
-              value: this.networkConst?.int_64_values?.TxOutDelayRate,
+              ...this.parseConstant('TxOutDelayRate'),
               filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
             },
 
@@ -75,19 +68,19 @@ export default {
                   ? this.mimir?.HALTTRADING
                   : 'Yes'
                 : 'No',
-              extraInfo: 'The block height Trading will be halted',
+              ...(this.mimir?.HALTTRADING > 1 && {
+                extraInfo: 'The block height Trading will be halted',
+              }),
             },
 
             {
               header: 'Synths',
             },
             {
-              name: camelCase('MaxSwapsPerBlock'),
-              value: this.networkConst?.int_64_values?.MaxSwapsPerBlock,
+              ...this.parseConstant('MaxSwapsPerBlock'),
             },
             {
-              name: camelCase('MinSwapsPerBlock'),
-              value: this.networkConst?.int_64_values?.MinSwapsPerBlock,
+              ...this.parseConstant('MinSwapsPerBlock'),
             },
 
             // Synths
@@ -96,7 +89,6 @@ export default {
               ...this.parseConstant('MaxSynthPerPoolDepth', {
                 filter: (v) => this.$options.filters.percent(v / 1e4, 2),
               }),
-              extraInfo: 'Overwritten by Mimir',
             },
             {
               name: 'Synth Burning',
@@ -123,15 +115,14 @@ export default {
             },
 
             {
-              name: camelCase('NodePauseChainBlocks'),
-              value: this.networkConst?.int_64_values?.NodePauseChainBlocks,
-              extraInfo: blockTime(
-                this.networkConst?.int_64_values?.NodePauseChainBlocks
-              ),
+              ...this.parseConstant('NodePauseChainBlocks', {
+                extraText: blockTime(
+                  this.networkConst?.int_64_values?.NodePauseChainBlocks
+                ),
+              }),
             },
             {
-              name: camelCase('BlocksPerYear'),
-              value: this.networkConst?.int_64_values?.BlocksPerYear,
+              ...this.parseConstant('BlocksPerYear'),
               filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
             },
             {
@@ -142,31 +133,24 @@ export default {
               ...this.parseConstant('MinimumNodesForBFT'),
               name: 'Minimum Nodes For BFT',
             },
-
             {
-              name: camelCase('NativeTransactionFee'),
-              value:
-                this.networkConst?.int_64_values?.NativeTransactionFee /
-                10 ** 8,
-              filter: (v) => `${runeCur()} ${v}`,
+              ...this.parseConstant('NativeTransactionFee'),
+              filter: (v) => `${runeCur()} ${this.baseAmountFormatOrZero(v)}`,
             },
 
             {
               header: 'THORName',
             },
             {
-              name: 'TNS Fee On Sale',
-              value: this.networkConst?.int_64_values?.TNSFeeOnSale,
+              ...this.parseConstant('TNSFeeOnSale'),
               filter: (v) => `${runeCur()} ${this.baseAmountFormatOrZero(v)}`,
             },
             {
-              name: 'TNS Fee Per Block',
-              value: this.networkConst?.int_64_values?.TNSFeePerBlock,
+              ...this.parseConstant('TNSFeePerBlock'),
               filter: (v) => `${runeCur()} ${this.baseAmountFormatOrZero(v)}`,
             },
             {
-              name: 'TNS Register Fee',
-              value: this.networkConst?.int_64_values?.TNSRegisterFee,
+              ...this.parseConstant('TNSRegisterFee'),
               filter: (v) => `${runeCur()} ${this.baseAmountFormatOrZero(v)}`,
             },
 
@@ -185,35 +169,24 @@ export default {
           colSpan: 1,
           items: [
             {
-              name: camelCase('EmissionCurve'),
-              value: this.mimir?.EMISSIONCURVE,
-              extraInfo: 'Overwritten by Mimir',
+              ...this.parseConstant('EmissionCurve'),
             },
             {
-              name: camelCase('IncentiveCurve'),
-              value: this.networkConst?.int_64_values?.IncentiveCurve,
+              ...this.parseConstant('MaxAvailablePools'),
             },
             {
-              name: camelCase('MaxAvailablePools'),
-              value: this.networkConst?.int_64_values?.MaxAvailablePools,
-            },
-
-            {
-              ...this.parseConstant('MinRunePoolDepth', {}),
-              extraInfo: 'Overwritten by Mimir',
+              ...this.parseConstant('MinRunePoolDepth'),
               filter: (v) => `${this.$options.filters.number(v / 1e8, '0,0')}`,
             },
             {
-              name: camelCase('PoolCycle'),
-              value: this.mimir?.POOLCYCLE,
-              extraInfo: `${blockTime(this.mimir?.POOLCYCLE)}, Overwritten by Mimir`,
+              ...this.parseConstant('PoolCycle', {
+                extraText: blockTime(this.mimir?.POOLCYCLE),
+              }),
               filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
             },
             {
-              name: camelCase('StagedPoolCost'),
-              value: this.networkConst?.int_64_values?.StagedPoolCost / 10 ** 8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
-              usdValue: true,
+              ...this.parseConstant('StagedPoolCost'),
+              filter: (v) => `${this.$options.filters.number(v / 1e8, '0,0')}`,
             },
             {
               ...this.parseConstant('LiquidityLockUpBlocks'),
@@ -236,91 +209,81 @@ export default {
             },
             {
               // Is this In RUNE
-              name: 'Permitted Solvency Gap',
-              value: this.networkConst?.int_64_values?.PermittedSolvencyGap,
+              ...this.parseConstant('PermittedSolvencyGap'),
             },
 
             {
               header: 'Node Management',
             },
-
             {
-              ...this.parseConstant('MinimumBondInRune', {
-                filter: (v) =>
-                  `${runeCur()} ${this.$options.filters.number(v / 1e8, '0,0')}`,
+              ...this.parseConstant('MinimumBondInRune'),
+              filter: (v) =>
+                `${runeCur()} ${this.$options.filters.number(v / 1e8, '0,0')}`,
+            },
+            {
+              ...this.parseConstant('AsgardSize'),
+            },
+            {
+              ...this.parseConstant('ValidatorMaxRewardRatio'),
+            },
+            {
+              ...this.parseConstant('SigningTransactionPeriod', {
+                extraText: blockTime(
+                  this.networkConst?.int_64_values?.SigningTransactionPeriod
+                ),
               }),
-              extraInfo: 'Overwritten by Mimir',
             },
             {
-              name: 'Asgard Size',
-              value: this.networkConst?.int_64_values?.AsgardSize,
-            },
-            this.parseConstant('ValidatorMaxRewardRatio'),
-            {
-              name: camelCase('SigningTransactionPeriod'),
-              value: this.networkConst?.int_64_values?.SigningTransactionPeriod,
-              extraInfo: blockTime(
-                this.networkConst?.int_64_values?.SigningTransactionPeriod
-              ),
-            },
-            {
-              name: camelCase('FailKeysignSlashPoints'),
+              ...this.parseConstant('FailKeysignSlashPoints'),
               value: this.networkConst?.int_64_values?.FailKeysignSlashPoints,
               filter: (v) => `${v} slashes`,
             },
             {
-              name: camelCase('FailKeygenSlashPoints'),
-              value: this.networkConst?.int_64_values?.FailKeygenSlashPoints,
-              filter: (v) => `${v} slashes`,
-            },
-
-            {
-              name: camelCase('ObserveSlashPoints'),
-              value: this.networkConst?.int_64_values?.ObserveSlashPoints,
+              ...this.parseConstant('FailKeygenSlashPoints'),
               filter: (v) => `${v} slashes`,
             },
             {
-              name: camelCase('LackOfObservationPenalty'),
-              value: this.networkConst?.int_64_values?.LackOfObservationPenalty,
+              ...this.parseConstant('ObserveSlashPoints'),
               filter: (v) => `${v} slashes`,
             },
             {
-              name: camelCase('MinSlashPointsForBadValidator'),
-              value:
-                this.networkConst?.int_64_values?.MinSlashPointsForBadValidator,
+              ...this.parseConstant('LackOfObservationPenalty'),
               filter: (v) => `${v} slashes`,
             },
             {
-              name: camelCase('DoubleSignMaxAge'),
-              value: this.networkConst?.int_64_values?.DoubleSignMaxAge,
-              extraInfo: blockTime(
-                this.networkConst?.int_64_values?.DoubleSignMaxAge
-              ),
+              ...this.parseConstant('MinSlashPointsForBadValidator'),
+              filter: (v) => `${v} slashes`,
+            },
+            {
+              ...this.parseConstant('DoubleSignMaxAge', {
+                extraText: blockTime(
+                  this.networkConst?.int_64_values?.DoubleSignMaxAge
+                ),
+              }),
               filter: (v) => `${v} blocks`,
             },
             {
-              name: camelCase('ObservationDelayFlexibility'),
-              value:
-                this.networkConst?.int_64_values?.ObservationDelayFlexibility,
-              extraInfo: blockTime(
-                this.networkConst?.int_64_values?.ObservationDelayFlexibility
-              ),
+              ...this.parseConstant('ObservationDelayFlexibility', {
+                extraText: blockTime(
+                  this.networkConst?.int_64_values?.ObservationDelayFlexibility
+                ),
+              }),
               filter: (v) => `${v} blocks`,
             },
             {
-              name: camelCase('JailTimeKeygen'),
-              value: this.networkConst?.int_64_values?.JailTimeKeygen,
-              extraInfo: blockTime(
-                this.networkConst?.int_64_values?.JailTimeKeygen
-              ),
+              ...this.parseConstant('JailTimeKeygen', {
+                extraText: blockTime(
+                  this.networkConst?.int_64_values?.JailTimeKeygen
+                ),
+              }),
               filter: (v) => `${this.$options.filters.number(v, '0,0')} blocks`,
             },
             {
-              name: camelCase('JailTimeKeysign'),
-              value: this.networkConst?.int_64_values?.JailTimeKeysign,
-              extraInfo: blockTime(
-                this.networkConst?.int_64_values?.JailTimeKeysign
-              ),
+              ...this.parseConstant('JailTimeKeysign', {
+                extraText: blockTime(
+                  this.networkConst?.int_64_values?.JailTimeKeysign
+                ),
+              }),
               filter: (v) => `${this.$options.filters.number(v, '0,0')} blocks`,
             },
 
@@ -328,24 +291,22 @@ export default {
               header: 'Churning',
             },
             {
-              name: camelCase('ChurnInterval'),
-              value: this.mimir?.CHURNINTERVAL,
-              extraInfo: blockTime(this.mimir?.CHURNINTERVAL),
+              ...this.parseConstant('ChurnInterval', {
+                extraText: blockTime(this.mimir?.CHURNINTERVAL),
+              }),
               filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
             },
             {
-              ...this.parseConstant('HaltChurning', {
-                filter: (v) => (v ? 'Yes' : 'No'),
-              }),
+              ...this.parseConstant('HaltChurning'),
               name: 'Churning is halted',
+              filter: (v) => (v ? 'Yes' : 'No'),
             },
             {
-              name: 'Max node to churn out for lower version',
               ...this.parseConstant('MaxNodeToChurnOutForLowVersion'),
             },
 
             {
-              ...this.parseConstant('DesiredValidatorSet', {}),
+              ...this.parseConstant('DesiredValidatorSet'),
               extraInfo: 'Max number of validators, Overwritten by Mimir',
             },
             {
