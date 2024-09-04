@@ -18,7 +18,7 @@
             style-class="vgt-table net-table"
             :sort-options="{
               enabled: true,
-              initialSortBy: { field: 'vd', type: 'desc' },
+              initialSortBy: { field: 'depth', type: 'desc' },
             }"
             @on-row-click="gotoPoolTable"
           >
