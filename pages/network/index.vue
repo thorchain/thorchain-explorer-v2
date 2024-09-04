@@ -71,32 +71,6 @@
         style-class="vgt-table net-table"
         :sort-options="{ enabled: false }"
       >
-        <template slot="table-column" slot-scope="props">
-          <div v-if="props.column.field == 'haltHeight'" v-tooltip="'Scanning'">
-            <div class="status-header">Scanning</div>
-          </div>
-          <div
-            v-else-if="props.column.field == 'haltTradingHeight'"
-            v-tooltip="'Trading'"
-          >
-            <div class="status-header">Trading</div>
-          </div>
-          <div
-            v-else-if="props.column.field == 'haltLPHeight'"
-            v-tooltip="'Liquidity Provider'"
-          >
-            <div class="status-header">LPs</div>
-          </div>
-          <div
-            v-else-if="props.column.field == 'haltSigningHeight'"
-            v-tooltip="'Signing'"
-          >
-            <div class="status-header">Signing</div>
-          </div>
-          <span v-else class="status-header">
-            {{ props.column.label }}
-          </span>
-        </template>
         <template slot="table-row" slot-scope="props">
           <div v-if="props.column.field == 'chain'" class="chain-col">
             <asset-icon :asset="baseChainAsset(props.row.chain)" />
@@ -130,8 +104,12 @@
 <script>
 import { gt, rsort, valid } from 'semver'
 import { formatAsset, blockTime } from '~/utils'
+import DangerIcon from '@/assets/images/danger.svg?inline'
 
 export default {
+  components: {
+    DangerIcon,
+  },
   data() {
     return {
       network: [],
@@ -452,6 +430,10 @@ export default {
               )
               .map((key) => mi[key])
           ),
+          ...(chain.halted === true && { haltHeight: 1, haltSigningHeight: 1 }),
+          ...(chain.global_trading_paused === true && { haltTradingHeight: 1 }),
+          ...(chain.chain_trading_paused === true && { haltTradingHeight: 1 }),
+          ...(chain.chain_lp_actions_paused === true && { haltLPHeight: 1 }),
         }))
       })
       .catch((error) => {
