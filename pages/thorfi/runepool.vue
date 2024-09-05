@@ -167,7 +167,7 @@
             class="clickable"
             :to="{ path: `/address/${props.row.rune_address}` }"
           >
-            {{ props.formattedRow[props.column.field] }}
+            {{ formatAddress(props.row.rune_address) }}
           </NuxtLink>
           <span v-else-if="props.column.field == 'deposit_amount'">
             {{ $options.filters.number(props.row.deposit_amount, '0,0.00') }}
@@ -391,7 +391,6 @@ export default {
           field: 'rune_address',
           type: 'text',
           tdClass: 'mono',
-          formatFn: this.formatAddress,
         },
         {
           label: 'Deposited',
