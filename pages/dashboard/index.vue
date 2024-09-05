@@ -305,7 +305,6 @@ export default {
     VChart,
     Piggy,
     BounceLoader,
-    DangerIcon,
     Exchange,
     LockIcon,
     Book,
@@ -928,7 +927,9 @@ export default {
         (param) => {
           return `
           <div class="tooltip-header">
-            <div class="data-color" style="background-color: ${param[0].color}"></div>
+            <div class="data-color" style="background-color: ${
+              param[0].color
+            }"></div>
             ${param[0].name}
           </div>
           <div class="tooltip-body">
@@ -938,12 +939,18 @@ export default {
             </span>
             ${
               EODSwap[param[0].dataIndex] !== 0
-                ? `<span><span>Volume (EOD)</span><b>$${this.$options.filters.number(param[0].value + EODSwap[param[0].dataIndex].value, '0,0.00')}</b></span>`
+                ? `<span><span>Volume (EOD)</span><b>$${this.$options.filters.number(
+                    param[0].value + EODSwap[param[0].dataIndex].value,
+                    '0,0.00'
+                  )}</b></span>`
                 : ''
             }
             <span>
               <span>Count</span>
-              <b>${this.$options.filters.number(swapCount?.total[param[0].dataIndex], '0,0')}</b>
+              <b>${this.$options.filters.number(
+                swapCount?.total[param[0].dataIndex],
+                '0,0'
+              )}</b>
             </span>
           </div>
         `
@@ -1049,7 +1056,9 @@ export default {
         (param) => {
           return `
             <div class="tooltip-header">
-              <div class="data-color" style="background-color: ${param[0].color}"></div>
+              <div class="data-color" style="background-color: ${
+                param[0].color
+              }"></div>
               ${param[0].name}
             </div>
             <div class="tooltip-body">
@@ -1146,7 +1155,9 @@ export default {
         formatter: (param) => {
           return `
             <div class="tooltip-header">
-              <div class="data-color" style="background-color: ${param.color}"></div>
+              <div class="data-color" style="background-color: ${
+                param.color
+              }"></div>
               ${param.name}
             </div>
             <div class="tooltip-body">
@@ -1156,7 +1167,10 @@ export default {
               </span>
               <span>
                 <span>Volume</span>
-                <b>$${this.$options.filters.number(poolData[param.dataIndex].vol, '0,0 a')}</b>
+                <b>$${this.$options.filters.number(
+                  poolData[param.dataIndex].vol,
+                  '0,0 a'
+                )}</b>
               </span>
             </div>
           `
