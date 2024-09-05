@@ -1,14 +1,16 @@
 <template>
   <Page>
-    <Card v-if="votingChart && currentVoting">
-      <VChart
-        :option="votingChart"
-        :loading="!votingChart"
-        :autoresize="true"
-        :loading-options="showLoading"
-        :theme="chartTheme"
-      />
-    </Card>
+    <div class="card-container">
+      <Card v-if="votingChart && currentVoting">
+        <VChart
+          :option="votingChart"
+          :loading="!votingChart"
+          :autoresize="true"
+          :loading-options="showLoading"
+          :theme="chartTheme"
+        />
+      </Card>
+    </div>
     <Card :is-loading="!currentVoting" title="Mimir Voting Overview">
       <vue-good-table
         v-if="votesCols && currentVoting"
@@ -200,6 +202,9 @@ export default {
                   type: 'bar',
                   stack: 'total',
                   data: initData,
+                  itemStyle: {
+                    borderRadius: [2, 2, 0, 0],
+                  },
                 })
               } else {
                 types[vIndex].data[index] = v.count
@@ -259,7 +264,9 @@ export default {
             },
           },
           grid: {
-            left: '23%',
+            left: '2%',
+            height: '90%',
+            containLabel: true,
           },
           legend: {
             show: false,
@@ -373,6 +380,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.card-container {
+  height: 900px !important;
+}
+
 .data-color {
   margin-right: 6px;
   width: 10px;
