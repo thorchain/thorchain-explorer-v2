@@ -1,29 +1,6 @@
 <template>
   <Page>
     <info-card :options="networkOverview">
-      <template #chains="{ items }">
-        <table class="chain-table">
-          <tr>
-            <th>Chain</th>
-            <th>Observed Tips</th>
-            <th>Fee Rate</th>
-          </tr>
-          <tr v-for="it in items" :key="it.chain">
-            <td>
-              <div class="asset-cell">
-                <asset-icon :asset="it.name" />
-                {{ it.chain }}
-              </div>
-            </td>
-            <td style="color: var(--sec-font-color); font-weight: bold">
-              {{ it.value | number('0,0') }}
-            </td>
-            <td style="color: var(--sec-font-color); font-weight: bold">
-              {{ it.gasRate | number('0,0') }}
-            </td>
-          </tr>
-        </table>
-      </template>
       <template #blocktime="{ item }">
         <span style="font-family: 'Roboto'">
           {{ item.filter(item.value) }}
@@ -79,21 +56,38 @@
             </span>
           </div>
           <span v-else>
-            <template v-if="props.row[props.column.field] > 1">
-              <danger-icon
-                v-tooltip="`Scheduled halt: ${props.row[props.column.field]}`"
-                class="table-icon"
-                style="fill: var(--red)"
-              />
+            <template v-if="props.column.field === 'gas_rate'">
+              {{
+                props.row[props.column.field] > 1
+                  ? props.row[props.column.field]
+                  : 'OK' | number('0,0')
+              }}
             </template>
-            <template v-else-if="props.row[props.column.field] == 1">
-              <danger-icon
-                v-tooltip="`Mimir halt`"
-                class="table-icon"
-                style="fill: var(--red)"
-              />
+            <template v-if="props.column.field === 'last_observed_in'">
+              {{
+                props.row[props.column.field] > 1
+                  ? props.row[props.column.field]
+                  : 'OK' | number('0,0')
+              }}
             </template>
-            <span v-else class="mono" style="color: var(--green)">OK</span>
+
+            <template v-else>
+              <template v-if="props.row[props.column.field] > 1">
+                <danger-icon
+                  v-tooltip="`Scheduled halt: ${props.row[props.column.field]}`"
+                  class="table-icon"
+                  style="fill: var(--red)"
+                />
+              </template>
+              <template v-else-if="props.row[props.column.field] == 1">
+                <danger-icon
+                  v-tooltip="`Mimir halt`"
+                  class="table-icon"
+                  style="fill: var(--red)"
+                />
+              </template>
+              <span v-else class="mono" style="color: var(--green)">OK</span>
+            </template>
           </span>
         </template>
       </vue-good-table>
@@ -195,6 +189,22 @@ export default {
           tdClass: 'mono center',
           thClass: 'th-center',
         },
+        {
+          label: 'Observed Tips',
+          field: 'last_observed_in',
+          type: 'number',
+          formatFn: this.numberFormat,
+          tdClass: 'mono center',
+          thClass: 'th-center',
+        },
+        {
+          label: 'Fee Rate',
+          field: 'gas_rate',
+          type: 'number',
+          formatFn: this.numberFormat,
+          tdClass: 'mono center',
+          thClass: 'th-center',
+        },
       ],
     }
   },
@@ -257,6 +267,29 @@ export default {
               name: 'Vaults Migrating',
               value: this.thorNetwork?.vaults_migrating ? 'Yes' : 'No',
             },
+            {
+              header: 'Allocations',
+            },
+            {
+              name: 'Total Pooled RUNE',
+              value: this.network?.totalPooledRune,
+              filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v / 1e8, '0,0')}`,
+            },
+            {
+              name: 'Total Bonded RUNE',
+              value:
+                +this.network?.bondMetrics?.totalActiveBond +
+                +this.network?.bondMetrics?.totalActiveBond,
+              filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v / 1e8, '0,0')}`,
+            },
+            {
+              name: 'Total Reserved RUNE',
+              value: this.network?.totalReserve,
+              filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v / 1e8, '0,0')}`,
+            },
           ],
         },
         {
@@ -288,48 +321,6 @@ export default {
               filter: (v) =>
                 `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
             },
-          ],
-        },
-        {
-          title: 'Allocations',
-          rowStart: 2,
-          colSpan: 1,
-          items: [
-            {
-              name: 'Total Pooled RUNE',
-              value: this.network?.totalPooledRune,
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v / 1e8, '0,0')}`,
-            },
-            {
-              name: 'Total Bonded RUNE',
-              value:
-                +this.network?.bondMetrics?.totalActiveBond +
-                +this.network?.bondMetrics?.totalActiveBond,
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v / 1e8, '0,0')}`,
-            },
-            {
-              name: 'Total Reserved RUNE',
-              value: this.network?.totalReserve,
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v / 1e8, '0,0')}`,
-            },
-            // {
-            //   header: 'Burned',
-            // },
-            // {
-            //   name: 'Total Burned BEP2 RUNE',
-            //   value: this.thorNetwork?.burned_bep_2_rune,
-            //   filter: (v) =>
-            //     `${this.runeCur()} ${this.$options.filters.number(v / 1e8, '0,0')}`,
-            // },
-            // {
-            //   name: 'Total Burned ERC20 RUNE',
-            //   value: this.thorNetwork?.burned_erc_20_rune,
-            //   filter: (v) =>
-            //     `${this.runeCur()} ${this.$options.filters.number(v / 1e8, '0,0')}`,
-            // },
             {
               header: 'Yields',
             },
@@ -349,13 +340,6 @@ export default {
               filter: (v) => this.$options.filters.percent(v, 2),
             },
           ],
-        },
-        {
-          title: 'Chains',
-          rowStart: 2,
-          colSpan: 1,
-          allSlot: 'chains',
-          items: observed,
         },
       ]
     },
@@ -430,6 +414,9 @@ export default {
               )
               .map((key) => mi[key])
           ),
+          last_observed_in:
+            this.lastblock?.find((b) => b.chain === chain.chain)
+              ?.last_observed_in ?? 0,
           ...(chain.halted === true && { haltHeight: 1, haltSigningHeight: 1 }),
           ...(chain.global_trading_paused === true && { haltTradingHeight: 1 }),
           ...(chain.chain_trading_paused === true && { haltTradingHeight: 1 }),
