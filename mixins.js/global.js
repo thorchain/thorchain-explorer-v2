@@ -231,6 +231,9 @@ export default {
     normalFormat(number) {
       return number ? this.$options.filters.number(+number, '0,0') : '-'
     },
+    decimalFormat(number) {
+      return (number / 1e8).toFixed(20).match(/^-?\d*\.?0*\d{0,1}/)[0]
+    },
     numberFormat(number) {
       return number ? this.$options.filters.number(+number, '0,0.0000') : '-'
     },
