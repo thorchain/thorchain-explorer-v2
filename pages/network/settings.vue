@@ -31,7 +31,7 @@ export default {
           items: [
             {
               ...this.parseConstant('OutboundTransactionFee'),
-              filter: (v) => `${runeCur()} ${this.baseAmountFormatOrZero(v)}`,
+              filter: (v) => `${runeCur()} ${this.decimalFormat(v)}`,
             },
             {
               ...this.parseConstant('MaxTxOutOffset', {
@@ -39,11 +39,11 @@ export default {
                   this.networkConst?.int_64_values?.MaxTxOutOffset
                 ),
               }),
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `${this.normalFormat(v, '0,0')}`,
             },
             {
               ...this.parseConstant('MinTxOutVolumeThreshold'),
-              filter: (v) => `${this.baseAmountFormatOrZero(v)}`,
+              filter: (v) => `${this.normalFormat(v / 1e8)}`,
             },
             {
               ...this.parseConstant('TxOutDelayMax', {
@@ -135,7 +135,7 @@ export default {
             },
             {
               ...this.parseConstant('NativeTransactionFee'),
-              filter: (v) => `${runeCur()} ${this.baseAmountFormatOrZero(v)}`,
+              filter: (v) => `${runeCur()} ${this.decimalFormat(v)}`,
             },
 
             {
@@ -144,17 +144,17 @@ export default {
             {
               ...this.parseConstant('TNSFeeOnSale'),
               name: 'Fee On Sale',
-              filter: (v) => `${runeCur()} ${this.baseAmountFormatOrZero(v)}`,
+              filter: (v) => `${runeCur()} ${this.decimalFormat(v)}`,
             },
             {
               ...this.parseConstant('TNSFeePerBlock'),
               name: 'Fee Per Block',
-              filter: (v) => `${runeCur()} ${this.baseAmountFormatOrZero(v)}`,
+              filter: (v) => `${runeCur()} ${this.decimalFormat(v)}`,
             },
             {
               ...this.parseConstant('TNSRegisterFee'),
               name: 'Register Fee',
-              filter: (v) => `${runeCur()} ${this.baseAmountFormatOrZero(v)}`,
+              filter: (v) => `${runeCur()} ${this.unitFormat(v)}`,
             },
           ],
         },
@@ -289,10 +289,8 @@ export default {
               header: 'Churning',
             },
             {
-              ...this.parseConstant('ChurnInterval', {
-                extraText: blockTime(this.mimir?.CHURNINTERVAL),
-              }),
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
+              ...this.parseConstant('ChurnInterval'),
+              filter: (v) => `${blockTime(this.mimir?.CHURNINTERVAL)}`,
             },
             {
               ...this.parseConstant('HaltChurning'),
