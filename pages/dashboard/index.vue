@@ -675,7 +675,7 @@ export default {
           )
         })
         this.totalEarning24 =
-          this.earnings24USD + affiliate.daily_affiliate_fees_usd
+          this.earnings24USD + (affiliate?.daily_affiliate_fees_usd ?? 0)
         this.totalSwapVolumeUSD = data.swaps?.meta?.totalVolumeUSD
         this.totalSwapVolume = data.swaps?.meta?.totalVolume
       })
@@ -1012,11 +1012,11 @@ export default {
           (+interval.bondingEarnings / 10 ** 8) *
             Number.parseFloat(interval.runePriceUSD)
         )
-        const affiliate = this.affiliateDaily.find((d) => {
+        const affiliate = this.affiliateDaily?.find((d) => {
           return moment(d.date).isSame(date, 'day')
         })
         af.push({
-          value: affiliate.daily_affiliate_fees_usd,
+          value: affiliate?.daily_affiliate_fees_usd,
           itemStyle: {
             borderRadius: [8, 8, 0, 0],
           },
