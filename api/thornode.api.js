@@ -50,6 +50,20 @@ export function getThornodeDetailTx(txID) {
   )
 }
 
+export function getThornodeArchiveTx(txID) {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].ARCHIVE_THORNODE +
+      `thorchain/tx/details/${txID}`
+  )
+}
+
+export function getTxArchiveStatus(txID) {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].ARCHIVE_THORNODE +
+      `thorchain/tx/status/${txID}`
+  )
+}
+
 export function getThorNetwork() {
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].THORNODE_URL + 'thorchain/network'

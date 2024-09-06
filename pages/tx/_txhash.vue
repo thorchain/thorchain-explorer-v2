@@ -48,7 +48,7 @@
 <script>
 import moment from 'moment'
 import { assetToString } from '@xchainjs/xchain-util'
-import { orderBy } from 'lodash'
+import { orderBy, compact } from 'lodash'
 import { mapGetters } from 'vuex'
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
 import streamingSwap from './components/streamingSwap.vue'
@@ -176,12 +176,23 @@ export default {
       this.inboundHash = hash
 
       // Get THORNode details
-      const thorRes = await this.$api.getThornodeDetailTx(hash).catch((e) => {
+      let archival = false
+      let thorRes = await this.$api.getThornodeDetailTx(hash).catch((e) => {
         if (e?.response?.status / 200 !== 1) {
           this.error.message =
             'Transaction is not found in Thornode. Please make sure the correct transaction hash or account address is inserted.'
         }
       })
+
+      if (!thorRes) {
+        thorRes = await this.$api.getThornodeArchiveTx(hash).catch((e) => {
+          if (e?.response?.status / 200 !== 1) {
+            this.error.message =
+              'Transaction is not found in Thornode. Please make sure the correct transaction hash or account address is inserted.'
+          }
+        })
+        archival = true
+      }
 
       // Assign header and data if available
       let td, tdh
@@ -190,7 +201,7 @@ export default {
         tdh = thorRes.headers
       }
 
-      const ts = (
+      let ts = (
         await this.$api.getTxStatus(hash).catch((e) => {
           if (e?.response?.status / 200 !== 1) {
             this.error.message =
@@ -198,6 +209,17 @@ export default {
           }
         })
       )?.data
+
+      if (archival) {
+        ts = (
+          await this.$api.getTxArchiveStatus(hash).catch((e) => {
+            if (e?.response?.status / 200 !== 1) {
+              this.error.message =
+                "Can't find transaction status. Please make sure the correct transaction hash or account address is inserted."
+            }
+          })
+        )?.data
+      }
 
       this.thorStatus = ts
       this.isLoading = false
@@ -253,7 +275,7 @@ export default {
       let actionFinalised = true
       if (memo.type === 'swap') {
         actionFinalised =
-          thorStatus?.stages.swap_finalised?.completed &&
+          thorStatus?.stages.swap_finalised?.completed ||
           !thorStatus.stages.swap_status?.pending
       }
       const outboundFinalised =
@@ -263,6 +285,7 @@ export default {
           outAsset?.trade) &&
         (thorStatus.stages?.outbound_delay?.completed ?? true)
 
+      console.log(thorStatus)
       return !inboundFinalised || !actionFinalised || !outboundFinalised
     },
     createCard(cardBase, accordions) {
@@ -622,7 +645,7 @@ export default {
       // Actions accordion, inbound accordion, outbound accordion
 
       // Parse by Memo like thornode
-      const memo = this.parseMemo(thorTx.tx?.tx?.memo)
+      const memo = this.parseMemo(thorTx?.tx?.tx?.memo)
       if (memo.type === 'outbound') {
         this.gotoTx(memo.hash)
         return
@@ -1358,7 +1381,7 @@ export default {
               lastHeight: null, // Add on midgard if available
             },
             done:
-              thorStatus.stages.swap_finalised?.completed &&
+              thorStatus.stages.swap_finalised?.completed ||
               !thorStatus.stages.swap_status?.pending,
           },
           out: [
@@ -1386,7 +1409,6 @@ export default {
               outboundSigned:
                 thorStatus.stages.outbound_signed?.completed ?? undefined,
               done:
-                thorStatus.stages.swap_finalised?.completed &&
                 !thorStatus.stages.swap_status?.pending &&
                 (thorStatus.stages.outbound_signed?.completed ||
                   outAsset.chain === 'THOR' ||
@@ -1404,7 +1426,6 @@ export default {
                 ? this.parseMemoAsset(o.gas[0].asset, this.pools)
                 : null,
               done:
-                thorStatus.stages.swap_finalised?.completed &&
                 !thorStatus.stages.swap_status?.pending &&
                 (thorStatus.stages.outbound_signed?.completed ||
                   outAsset.chain === 'THOR' ||

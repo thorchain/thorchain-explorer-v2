@@ -119,7 +119,7 @@ export default {
           type: 'number',
           formatFn: this.numberFormat,
           tdClass: 'mono center',
-          thClass: 'th-center',
+          thClass: 'th-center monitor-cell',
         },
         {
           label: 'Trading',
@@ -127,7 +127,7 @@ export default {
           type: 'number',
           formatFn: this.numberFormat,
           tdClass: 'mono center',
-          thClass: 'th-center',
+          thClass: 'th-center monitor-cell',
         },
         {
           label: 'LP',
@@ -135,7 +135,7 @@ export default {
           type: 'number',
           formatFn: this.numberFormat,
           tdClass: 'mono center',
-          thClass: 'th-center',
+          thClass: 'th-center monitor-cell',
         },
         {
           label: 'Signing',
@@ -143,7 +143,7 @@ export default {
           type: 'number',
           formatFn: this.numberFormat,
           tdClass: 'mono center',
-          thClass: 'th-center',
+          thClass: 'th-center monitor-cell',
         },
         {
           label: 'Observed Tips',
@@ -477,5 +477,9 @@ export default {
   .status-header {
     color: var(--sec-font-color);
   }
+}
+
+.monitor-cell {
+  width: 100px !important;
 }
 </style>
