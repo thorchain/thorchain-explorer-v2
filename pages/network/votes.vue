@@ -40,7 +40,7 @@
         </template>
       </vue-good-table>
     </Card>
-    <Card v-for="(v, k, i) in mimirVotes" :key="i" :title="`${k} Voters`">
+    <!-- <Card v-for="(v, k, i) in mimirVotes" :key="i" :title="`${k} Voters`">
       <vue-good-table
         v-if="cols && v.length > 0"
         :columns="cols"
@@ -64,7 +64,7 @@
           </span>
         </template>
       </vue-good-table>
-    </Card>
+    </Card> -->
   </Page>
 </template>
 

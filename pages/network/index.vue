@@ -55,40 +55,29 @@
               {{ props.formattedRow[props.column.field] }}
             </span>
           </div>
-          <span v-else>
-            <template v-if="props.column.field === 'gas_rate'">
-              {{
-                props.row[props.column.field] > 1
-                  ? props.row[props.column.field]
-                  : 'OK' | number('0,0')
-              }}
+          <template v-else-if="props.column.field === 'gas_rate'">
+            {{ props.formattedRow[props.column.field] }}
+          </template>
+          <template v-else-if="props.column.field === 'last_observed_in'">
+            {{ props.formattedRow[props.column.field] }}
+          </template>
+          <template v-else>
+            <template v-if="props.row[props.column.field] > 1">
+              <danger-icon
+                v-tooltip="`Scheduled halt: ${props.row[props.column.field]}`"
+                class="table-icon"
+                style="fill: var(--red)"
+              />
             </template>
-            <template v-if="props.column.field === 'last_observed_in'">
-              {{
-                props.row[props.column.field] > 1
-                  ? props.row[props.column.field]
-                  : 'OK' | number('0,0')
-              }}
+            <template v-else-if="props.row[props.column.field] == 1">
+              <danger-icon
+                v-tooltip="`Mimir halt`"
+                class="table-icon"
+                style="fill: var(--red)"
+              />
             </template>
-
-            <template v-else>
-              <template v-if="props.row[props.column.field] > 1">
-                <danger-icon
-                  v-tooltip="`Scheduled halt: ${props.row[props.column.field]}`"
-                  class="table-icon"
-                  style="fill: var(--red)"
-                />
-              </template>
-              <template v-else-if="props.row[props.column.field] == 1">
-                <danger-icon
-                  v-tooltip="`Mimir halt`"
-                  class="table-icon"
-                  style="fill: var(--red)"
-                />
-              </template>
-              <span v-else class="mono" style="color: var(--green)">OK</span>
-            </template>
-          </span>
+            <span v-else class="mono" style="color: var(--green)">OK</span>
+          </template>
         </template>
       </vue-good-table>
     </card>
@@ -97,7 +86,7 @@
 
 <script>
 import { gt, rsort, valid } from 'semver'
-import { formatAsset, blockTime } from '~/utils'
+import { blockTime } from '~/utils'
 import DangerIcon from '@/assets/images/danger.svg?inline'
 
 export default {
@@ -116,41 +105,8 @@ export default {
       activeNodes: undefined,
       uptodateNodes: undefined,
       thorVersion: undefined,
+      inboundInfo: undefined,
       inAddresses: [],
-      cols: [
-        {
-          label: 'Asset',
-          field: 'coin.asset',
-          formatFn: formatAsset,
-        },
-        {
-          label: 'Chain',
-          field: 'chain',
-        },
-        {
-          label: 'Type',
-          field: 'type',
-        },
-        {
-          label: 'Balance',
-          field: 'coin.amount',
-          formatFn: this.balanceAmount,
-        },
-        {
-          label: 'Gas Rate',
-          field: 'gas_rate',
-        },
-        {
-          label: 'Inbound TxID',
-          field: 'in_hash',
-          formatFn: this.outAddressHash,
-        },
-        {
-          label: 'To Address',
-          field: 'to_address',
-          formatFn: this.outAddressHash,
-        },
-      ],
       inboundCols: [
         {
           label: 'Chain',
@@ -193,7 +149,7 @@ export default {
           label: 'Observed Tips',
           field: 'last_observed_in',
           type: 'number',
-          formatFn: this.numberFormat,
+          formatFn: this.normalFormat,
           tdClass: 'mono center',
           thClass: 'th-center',
         },
@@ -201,7 +157,7 @@ export default {
           label: 'Fee Rate',
           field: 'gas_rate',
           type: 'number',
-          formatFn: this.numberFormat,
+          formatFn: this.normalFormat,
           tdClass: 'mono center',
           thClass: 'th-center',
         },
@@ -221,17 +177,6 @@ export default {
       return 1
     },
     networkOverview() {
-      const observed = this.lastblock?.map((b) => {
-        const chain = this.inAddresses.find((e) => e.chain === b.chain)
-        return {
-          name: this.baseChainAsset(b.chain),
-          chain: b.chain,
-          value: b.last_observed_in,
-          gasRate: chain?.gas_rate,
-          filter: (v) => this.$options.filters.number(v, '0,0'),
-        }
-      })
-
       return [
         {
           title: 'Network Overview',
@@ -383,7 +328,8 @@ export default {
             ...Object.keys(mi)
               .filter(
                 (key) =>
-                  new RegExp(`.*HALT.*${chain.chain}CHAIN`).test(key) &&
+                  (new RegExp(`.*HALT.*${chain.chain}CHAIN`).test(key) ||
+                    key === 'HALTCHAINGLOBAL') &&
                   mi[key] !== 0
               )
               .map((key) => mi[key])
@@ -392,7 +338,8 @@ export default {
             ...Object.keys(mi)
               .filter(
                 (key) =>
-                  new RegExp(`HALT${chain.chain}TRADING`).test(key) &&
+                  (new RegExp(`HALT${chain.chain}TRADING`).test(key) ||
+                    key === 'HALTTRADING') &&
                   mi[key] !== 0
               )
               .map((key) => mi[key])
@@ -401,7 +348,8 @@ export default {
             ...Object.keys(mi)
               .filter(
                 (key) =>
-                  new RegExp(`HALTSIGNING${chain.chain}`).test(key) &&
+                  (new RegExp(`HALTSIGNING${chain.chain}`).test(key) ||
+                    key === 'HALTSIGNING') &&
                   mi[key] !== 0
               )
               .map((key) => mi[key])
@@ -417,10 +365,6 @@ export default {
           last_observed_in:
             this.lastblock?.find((b) => b.chain === chain.chain)
               ?.last_observed_in ?? 0,
-          ...(chain.halted === true && { haltHeight: 1, haltSigningHeight: 1 }),
-          ...(chain.global_trading_paused === true && { haltTradingHeight: 1 }),
-          ...(chain.chain_trading_paused === true && { haltTradingHeight: 1 }),
-          ...(chain.chain_lp_actions_paused === true && { haltLPHeight: 1 }),
         }))
       })
       .catch((error) => {

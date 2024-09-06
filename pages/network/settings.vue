@@ -143,23 +143,18 @@ export default {
             },
             {
               ...this.parseConstant('TNSFeeOnSale'),
+              name: 'Fee On Sale',
               filter: (v) => `${runeCur()} ${this.baseAmountFormatOrZero(v)}`,
             },
             {
               ...this.parseConstant('TNSFeePerBlock'),
+              name: 'Fee Per Block',
               filter: (v) => `${runeCur()} ${this.baseAmountFormatOrZero(v)}`,
             },
             {
               ...this.parseConstant('TNSRegisterFee'),
+              name: 'Register Fee',
               filter: (v) => `${runeCur()} ${this.baseAmountFormatOrZero(v)}`,
-            },
-
-            {
-              header: 'LP Management',
-            },
-            {
-              name: 'Add/Remove liquidity is paused',
-              value: this.mimir?.PAUSELP ? 'Yes' : 'No',
             },
           ],
         },
@@ -191,7 +186,10 @@ export default {
             {
               ...this.parseConstant('LiquidityLockUpBlocks'),
             },
-
+            {
+              name: 'Add/Remove liquidity is paused',
+              value: this.mimir?.PAUSELP ? 'Yes' : 'No',
+            },
             {
               header: 'Solvency',
             },
