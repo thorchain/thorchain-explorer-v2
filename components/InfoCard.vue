@@ -50,7 +50,7 @@
                     </template>
                   </div>
                   <skeleton-item
-                    :loading="!(typeof item.value === 'number') && !item.value"
+                    :loading="isReady(item)"
                     custom-class="info-loader"
                   >
                     <div
@@ -127,6 +127,13 @@ export default {
     },
     hasSlot(name = 'default') {
       return !!this.$slots[name] || !!this.$scopedSlots[name]
+    },
+    isReady(item) {
+      isNaN(item.value)
+      if (!(typeof item.value === 'string') && isNaN(item.value)) {
+        return true
+      }
+      return !(typeof item.value === 'number') && !item.value
     },
   },
 }
