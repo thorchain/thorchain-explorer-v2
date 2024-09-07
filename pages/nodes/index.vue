@@ -54,86 +54,46 @@
         />
       </Card>
     </div>
-    <Nav
-      :active-mode.sync="mode"
-      :nav-items="modes"
-      style="margin-bottom: 0px"
-    />
-    <KeepAlive>
+    <card>
+      <node-table :rows="activeNodes" :cols="activeCols" />
+    </card>
+    <card>
+      <node-table :rows="stbNodes" :cols="activeCols" />
+    </card>
+    <card>
+      <node-table :rows="whiteListedNodes" :cols="activeCols" />
+    </card>
+    <!-- <template v-for="(m, i) in otherNodes" v-else>
       <Card
-        v-if="mode == 'active'"
-        title="Active Nodes"
-        :is-loading="!activeNodes"
+        v-if="mode == m.name"
+        :key="i"
+        :title="m.title"
+        :is-loading="!m.cols"
       >
         <vue-good-table
-          v-if="activeCols && activeNodes"
-          :key="1"
-          :columns="activeCols"
-          :rows="activeNodes"
-          style-class="vgt-table net-table bordered condensed"
+          v-if="cols && m.cols"
+          :key="2"
+          :columns="cols"
+          :rows="m.cols"
+          style-class="vgt-table net-table bordered"
           :pagination-options="{
             enabled: true,
-            perPage: 200,
-            perPageDropdown: [25, 50, 100, 200],
-            perPageDropdownEnabled: true,
+            perPage: 50,
+            perPageDropdownEnabled: false,
           }"
-          :line-numbers="true"
-          :search-options="{
+          :sort-options="{
             enabled: true,
-            placeholder:
-              'Search node address, version, ip address, provider or etc.',
+            initialSortBy: [{ field: 'total_bond', type: 'desc' }],
           }"
         >
-          >
-          <template slot="table-column" slot-scope="props">
-            <div
-              v-if="props.column.field.includes('chains')"
-              class="table-asset"
-            >
-              <img
-                class="asset-chain"
-                :src="assetImage(`${props.column.label}.${props.column.label}`)"
-              />
-            </div>
-            <div
-              v-else-if="props.column.field == 'leave'"
-              v-tooltip="'Provider'"
-            >
-              <ExitIcon class="table-icon" />
-            </div>
-            <div v-else-if="props.column.field == 'providers'">Operator</div>
-            <div
-              v-else-if="props.column.field == 'location'"
-              v-tooltip="'Node Location'"
-            >
-              <MarkerIcon class="table-icon" />
-            </div>
-            <span v-else>
-              {{ props.column.label }}
-            </span>
-          </template>
           <template slot="table-row" slot-scope="props">
             <span v-if="props.column.field == 'address'" class="clickable">
-              <div class="table-wrapper-row">
+              <div v-if="props.row.address" class="table-wrapper-row">
                 <span
                   v-tooltip="props.row.address"
                   @click="gotoNode(props.row.address)"
+                  >{{ addressFormat(props.row.address) }}</span
                 >
-                  {{ addressFormat(props.row.address) }}
-                </span>
-                <div>
-                  <StaredIcon
-                    v-if="isFav(props.row.address)"
-                    class="table-icon"
-                    style="fill: #ffee58"
-                    @click="delFav(props.row.address)"
-                  />
-                  <StarIcon
-                    v-else
-                    class="table-icon"
-                    @click="addFav(props.row.address)"
-                  />
-                </div>
                 <InfoIcon
                   class="table-icon"
                   @click="gotoNode(props.row.address)"
@@ -151,8 +111,8 @@
                   </div>
                   <template v-if="mimirs">
                     <div
-                      v-for="(p, i) in mimirs[props.row.address]"
-                      :key="i"
+                      v-for="(p, j) in mimirs[props.row.address]"
+                      :key="j"
                       class="popover-table"
                     >
                       <span
@@ -181,39 +141,12 @@
                 />
                 <Copy :str-copy="props.row.address" />
               </div>
-            </span>
-            <span v-else-if="props.column.field == 'age'">
-              <span
-                v-if="props.row.age"
-                v-tooltip="props.row.age.text"
-                style="cursor: pointer"
-                >{{ props.row.age.number | number('0,0.00') }}</span
-              >
-              <span v-else>-</span>
-            </span>
-            <span v-else-if="props.column.field == 'isp'">
-              <cloud-image
-                v-if="props.row.isp"
-                :name="[props.row.isp, props.row.org]"
-              />
-              <span v-else>-</span>
-            </span>
-            <span v-else-if="props.column.field == 'location'">
-              <div
-                v-if="props.row.location"
-                v-tooltip="
-                  `${props.row.location.code}, ${props.row.location.region}, ${props.row.location.city}`
-                "
-                class="countries"
-              >
-                <VFlag :flag="props.row.location.code" />
-                <span class="location-name">{{ props.row.location.city }}</span>
-              </div>
+              <span v-else class="not-clickable">No Address Set</span>
             </span>
             <span v-else-if="props.column.field == 'total_bond'">
               <span v-tooltip="curFormat(runePrice * props.row.total_bond)">
                 <span class="extra">{{ runeCur() }}</span>
-                {{ numberFormat(props.row.total_bond) }}
+                {{ normalFormat(props.row.total_bond) }}
               </span>
             </span>
             <span v-else-if="props.column.field == 'award'">
@@ -223,101 +156,41 @@
               </span>
             </span>
             <span v-else-if="props.column.field == 'status'">
-              <div :class="'bubble-container'">
+              <div
+                v-if="m.name !== 'eligible'"
+                :class="[
+                  'bubble-container',
+                  {
+                    red: props.row.status === 'Disabled',
+                    black: props.row.status === 'Unknown',
+                    white: props.row.status === 'Whitelisted',
+                    yellow: props.row.status === 'Standby',
+                  },
+                ]"
+              >
                 <span>{{ props.row.status }}</span>
               </div>
+              <template v-else>
+                <div class="bubble-container blue">Eligible</div>
+                <div
+                  :class="[
+                    'bubble-container',
+                    {
+                      green: props.row.status === 'Ready',
+                      yellow: props.row.status === 'Standby',
+                    },
+                  ]"
+                >
+                  <span>{{ props.row.status }}</span>
+                </div>
+              </template>
             </span>
             <span v-else-if="props.column.field == 'ip'">
-              <div class="table-wrapper-row">
+              <div v-if="props.row.ip" class="table-wrapper-row">
                 <span>{{ props.row.ip }}</span>
                 <Copy :str-copy="props.row.ip" />
               </div>
-            </span>
-            <span v-else-if="props.column.field == 'leave'">
-              <div class="table-wrapper-row" style="justify-content: center">
-                <CheckBoxIcon
-                  v-if="props.row.leave == true"
-                  class="table-icon"
-                  style="fill: #81c784"
-                />
-                <span v-else>-</span>
-              </div>
-            </span>
-            <span v-else-if="props.column.field == 'fee'">
-              <span>{{ props.formattedRow[props.column.field] }}</span>
-            </span>
-            <span v-else-if="props.column.field == 'providers'">
-              <span>{{ props.row.operator.slice(-4) }}</span>
-              <div
-                :id="
-                  props.row.providers.length
-                    ? `popover-${props.row.originalIndex}`
-                    : false
-                "
-                class="bubble-container grey clickable"
-              >
-                {{ props.row.providers.length }}
-              </div>
-              <b-popover
-                triggers="hover focus"
-                :target="`popover-${props.row.originalIndex}`"
-                custom-class="custom-popover"
-              >
-                <div class="title" style="margin-bottom: 5px">
-                  <strong>Providers</strong>
-                </div>
-                <div
-                  v-for="(p, i) in props.row.providers"
-                  :key="i"
-                  class="popover-table"
-                >
-                  <span class="clickable" @click="gotoAddr(p.bond_address)">
-                    {{ addressFormat(p.bond_address) }}
-                  </span>
-                  <span class="text">
-                    {{ (p.bond / 10 ** 8 / props.row.total_bond) | percent }}
-                  </span>
-                  <div style="justify-content: end" class="text">
-                    <span class="extra">{{ runeCur() }}</span>
-                    {{ numberFormat(p.bond / 10 ** 8) }}
-                  </div>
-                </div>
-              </b-popover>
-            </span>
-            <span v-else-if="props.column.field.includes('chains.')">
-              <span
-                v-if="props.formattedRow[props.column.field] == 0"
-                style="color: #81c784"
-                >OK</span
-              >
-              <span
-                v-else-if="
-                  0 < props.formattedRow[props.column.field] &&
-                  props.formattedRow[props.column.field] < 10000
-                "
-                style="color: #ffc107"
-                >{{ props.formattedRow[props.column.field] }}</span
-              >
-              <span
-                v-else-if="
-                  0 > props.formattedRow[props.column.field] &&
-                  props.formattedRow[props.column.field] > -10000
-                "
-                style="color: #ef5350"
-                >{{ props.formattedRow[props.column.field] }}</span
-              >
-              <DangerIcon
-                v-else-if="props.formattedRow[props.column.field] > 10000"
-                v-tooltip="`${props.formattedRow[props.column.field]}`"
-                class="table-icon"
-                style="fill: #ffc107"
-              />
-              <DangerIcon
-                v-else
-                v-tooltip="`${props.formattedRow[props.column.field]}`"
-                class="table-icon"
-                style="fill: #ef5350"
-              />
+              <div v-else />
             </span>
             <span v-else>
               {{ props.formattedRow[props.column.field] }}
@@ -325,143 +198,7 @@
           </template>
         </vue-good-table>
       </Card>
-      <template v-for="(m, i) in otherNodes" v-else>
-        <Card
-          v-if="mode == m.name"
-          :key="i"
-          :title="m.title"
-          :is-loading="!m.cols"
-        >
-          <vue-good-table
-            v-if="cols && m.cols"
-            :key="2"
-            :columns="cols"
-            :rows="m.cols"
-            style-class="vgt-table net-table bordered"
-            :pagination-options="{
-              enabled: true,
-              perPage: 50,
-              perPageDropdownEnabled: false,
-            }"
-            :sort-options="{
-              enabled: true,
-              initialSortBy: [{ field: 'total_bond', type: 'desc' }],
-            }"
-          >
-            <template slot="table-row" slot-scope="props">
-              <span v-if="props.column.field == 'address'" class="clickable">
-                <div v-if="props.row.address" class="table-wrapper-row">
-                  <span
-                    v-tooltip="props.row.address"
-                    @click="gotoNode(props.row.address)"
-                    >{{ addressFormat(props.row.address) }}</span
-                  >
-                  <InfoIcon
-                    class="table-icon"
-                    @click="gotoNode(props.row.address)"
-                  />
-                  <div :id="`vote-${props.row.originalIndex}`">
-                    <VoteIcon v-if="mimirs" class="table-icon" />
-                  </div>
-                  <b-popover
-                    triggers="hover focus"
-                    :target="`vote-${props.row.originalIndex}`"
-                    custom-class="custom-popover"
-                  >
-                    <div class="title" style="margin-bottom: 5px">
-                      <strong>Node Votes</strong>
-                    </div>
-                    <template v-if="mimirs">
-                      <div
-                        v-for="(p, j) in mimirs[props.row.address]"
-                        :key="j"
-                        class="popover-table"
-                      >
-                        <span
-                          class="key clickable"
-                          @click="goto('network/votes')"
-                        >
-                          {{ p.key }}
-                        </span>
-                        <span class="vote-value">
-                          {{ p.value }}
-                        </span>
-                      </div>
-                      <div v-if="!mimirs[props.row.address]">No Votes!</div>
-                    </template>
-                  </b-popover>
-                  <a
-                    style="height: 1rem"
-                    :href="gotoNodeUrl(props.row.address)"
-                    target="_blank"
-                  >
-                    <NetworkIcon class="table-icon" />
-                  </a>
-                  <LinkIcon
-                    class="table-icon"
-                    @click="gotoAddr(props.row.address)"
-                  />
-                  <Copy :str-copy="props.row.address" />
-                </div>
-                <span v-else class="not-clickable">No Address Set</span>
-              </span>
-              <span v-else-if="props.column.field == 'total_bond'">
-                <span v-tooltip="curFormat(runePrice * props.row.total_bond)">
-                  <span class="extra">{{ runeCur() }}</span>
-                  {{ numberFormat(props.row.total_bond) }}
-                </span>
-              </span>
-              <span v-else-if="props.column.field == 'award'">
-                <span v-tooltip="curFormat(runePrice * props.row.award)">
-                  <span class="extra">{{ runeCur() }}</span>
-                  {{ props.row.award }}
-                </span>
-              </span>
-              <span v-else-if="props.column.field == 'status'">
-                <div
-                  v-if="m.name !== 'eligible'"
-                  :class="[
-                    'bubble-container',
-                    {
-                      red: props.row.status === 'Disabled',
-                      black: props.row.status === 'Unknown',
-                      white: props.row.status === 'Whitelisted',
-                      yellow: props.row.status === 'Standby',
-                    },
-                  ]"
-                >
-                  <span>{{ props.row.status }}</span>
-                </div>
-                <template v-else>
-                  <div class="bubble-container blue">Eligible</div>
-                  <div
-                    :class="[
-                      'bubble-container',
-                      {
-                        green: props.row.status === 'Ready',
-                        yellow: props.row.status === 'Standby',
-                      },
-                    ]"
-                  >
-                    <span>{{ props.row.status }}</span>
-                  </div>
-                </template>
-              </span>
-              <span v-else-if="props.column.field == 'ip'">
-                <div v-if="props.row.ip" class="table-wrapper-row">
-                  <span>{{ props.row.ip }}</span>
-                  <Copy :str-copy="props.row.ip" />
-                </div>
-                <div v-else />
-              </span>
-              <span v-else>
-                {{ props.formattedRow[props.column.field] }}
-              </span>
-            </template>
-          </vue-good-table>
-        </Card>
-      </template>
-    </KeepAlive>
+    </template> -->
   </Page>
 </template>
 
@@ -477,24 +214,9 @@ import {
   GridComponent,
 } from 'echarts/components'
 import VChart from 'vue-echarts'
-import {
-  addressFormat,
-  blockTime,
-  fillNodeData,
-  observeredChains,
-  availableChains,
-} from '~/utils'
-import NetworkIcon from '@/assets/images/chart-network.svg?inline'
-import LinkIcon from '@/assets/images/link.svg?inline'
-import InfoIcon from '@/assets/images/info.svg?inline'
-import StarIcon from '@/assets/images/star.svg?inline'
-import StaredIcon from '@/assets/images/stared.svg?inline'
+import NodeTable from './component/nodeTable.vue'
+import { blockTime, fillNodeData, availableChains } from '~/utils'
 import DangerIcon from '@/assets/images/danger.svg?inline'
-import ExitIcon from '@/assets/images/sign-out.svg?inline'
-import CheckBoxIcon from '@/assets/images/checkbox.svg?inline'
-import DollarIcon from '@/assets/images/dollar.svg?inline'
-import VoteIcon from '@/assets/images/vote.svg?inline'
-import MarkerIcon from '@/assets/images/marker.svg?inline'
 
 use([
   SVGRenderer,
@@ -508,18 +230,9 @@ use([
 export default {
   name: 'NodesPage',
   components: {
-    NetworkIcon,
-    LinkIcon,
-    InfoIcon,
-    StarIcon,
-    StaredIcon,
     DangerIcon,
-    ExitIcon,
-    CheckBoxIcon,
-    DollarIcon,
-    VoteIcon,
-    MarkerIcon,
     VChart,
+    NodeTable,
   },
   data() {
     return {
@@ -562,35 +275,33 @@ export default {
         {
           label: 'Address',
           field: 'address',
-          formatFn: this.addressFormat,
+          formatFn: this.addressFormatV2,
           tdClass: 'mono',
-        },
-        {
-          label: 'IP',
-          field: 'ip',
-          sortable: false,
         },
         {
           label: 'Flag',
           field: 'status',
+          tdClass: 'center',
         },
         {
           label: 'Version',
           field: 'version',
           type: 'text',
+          tdClass: 'center',
           sortFn: this.versionSort,
         },
         {
           label: 'Slash Point',
           field: 'slash',
           type: 'number',
-          formatFn: this.numberFormat,
+          formatFn: this.normalFormat,
           tdClass: 'mono',
         },
         {
           label: 'Current Award',
           field: 'award',
           type: 'number',
+          formatFn: this.normalFormat,
           tdClass: 'mono',
         },
         {
@@ -603,7 +314,7 @@ export default {
           label: 'Bond',
           field: 'total_bond',
           type: 'number',
-          formatFn: this.numberFormat,
+          formatFn: this.normalFormat,
           tdClass: 'mono',
         },
       ],
@@ -672,6 +383,18 @@ export default {
         return this.cols
       }
 
+      const chains = availableChains(
+        this.nodesQuery?.filter((n) => n.status === 'Active')
+      )
+        ?.sort()
+        .map((c) => ({
+          label: c,
+          field: `behind.${c}`,
+          type: 'number',
+          tdClass: 'mono center',
+          thClass: 'center',
+        }))
+
       return [
         this.cols[0],
         {
@@ -694,7 +417,7 @@ export default {
           tdClass: 'center',
           sortFn: this.cSort,
         },
-        ...this.cols.slice(1, 7),
+        ...this.cols.slice(1, 6),
         {
           label: 'Providers',
           field: 'providers',
@@ -723,18 +446,7 @@ export default {
           tdClass: 'mono center',
           thClass: 'center',
         },
-        ...availableChains(
-          this.nodesQuery?.filter((n) => n.status === 'Active')
-        )
-          ?.sort()
-          .map((c) => ({
-            label: c,
-            field: `chains.${c}`,
-            type: 'number',
-            formatFn: this.numberFormat,
-            tdClass: 'mono center',
-            thClass: 'center',
-          })),
+        ...chains,
       ]
     },
     topBonds() {
@@ -875,38 +587,46 @@ export default {
       if (this.nodesQuery) {
         const actNodes = this.nodesQuery?.filter((e) => e.status === 'Active')
         const filteredNodes = []
-        const chains = observeredChains(actNodes)
-        const ratioReward =
-          (this.churnInterval -
-            (+this.bondMetrics?.nextChurnHeight - this.lastBlockHeight)) /
-          this.churnInterval
+
         actNodes.forEach((el) => {
-          fillNodeData(
-            filteredNodes,
-            el,
-            chains,
-            this.nodesExtra,
-            this.lastBlockHeight,
-            ratioReward,
-            this.churnInterval
-          )
-          // if (this.lastBlockHeight) {
-          //   this.lastBlockHeight.forEach(chain => {
-          //     filteredNodes[chain.chain] =
-          //       chain
-          //   })
-          // }
+          fillNodeData(filteredNodes, el)
         })
         this.providerFill(filteredNodes)
-        if (this.favNodes) {
-          const favNodesFilter = filteredNodes.filter((n) =>
-            this.favNodes.includes(n.address)
-          )
-          const nonFavNodesFilter = filteredNodes.filter(
-            (n) => !this.favNodes.includes(n.address)
-          )
-          return [...favNodesFilter, ...nonFavNodesFilter]
-        }
+
+        return filteredNodes
+      } else {
+        return undefined
+      }
+    },
+    stbNodes() {
+      if (this.nodesQuery) {
+        const actNodes = this.nodesQuery?.filter(
+          (e) => e.status === 'Standby' && e.preflight_status.status === 'Ready'
+        )
+        const filteredNodes = []
+
+        actNodes.forEach((el) => {
+          fillNodeData(filteredNodes, el)
+        })
+
+        return filteredNodes
+      } else {
+        return undefined
+      }
+    },
+    whiteListedNodes() {
+      if (this.nodesQuery) {
+        const actNodes = this.nodesQuery?.filter(
+          (e) =>
+            (e.status !== 'Standby' && e.status !== 'Active') ||
+            (e.status === 'Standby' && e.preflight_status.status !== 'Ready')
+        )
+        const filteredNodes = []
+
+        actNodes.forEach((el) => {
+          fillNodeData(filteredNodes, el)
+        })
+
         return filteredNodes
       } else {
         return undefined
@@ -965,10 +685,6 @@ export default {
       this.updateNodes()
     }, 30 * 1e3)
 
-    this.$api.getExraNodesInfo().then(({ data }) => {
-      this.nodesExtra = data
-    })
-
     this.$api.getMimirVotes().then(({ data }) => {
       this.mimirs = this.formatMimirs(data)
     })
@@ -979,10 +695,9 @@ export default {
   },
   methods: {
     async updateNodes() {
-      let { data } = await this.$api.getNodes()
-      data = data.sort((a, b) => a.node_address.localeCompare(b.node_address))
-      this.nodesQuery = data
-      this.fillExtraNodes(data)
+      const { data: nodesInfo } = await this.$api.getNodesInfo()
+      this.nodesQuery = nodesInfo
+      this.fillExtraNodes(nodesInfo)
     },
     calculateHardCap() {
       const actNodes = this.nodesQuery.filter((n) => n.status === 'Active')
@@ -1219,15 +934,6 @@ export default {
         return undefined
       }
     },
-    numberFormat(number) {
-      return this.$options.filters.number(number, '0,0')
-    },
-    addressFormat(string) {
-      return addressFormat(string, 4, true)
-    },
-    curFormat(number) {
-      return this.$options.filters.currency(number)
-    },
     calMedianBond() {
       const eNodes = this.bondMetrics?.standbyBonds.filter(
         (b) => b >= this.minBond
@@ -1245,31 +951,7 @@ export default {
     aSort(x, y, col, rowX, rowY) {
       return x?.number < y?.number ? -1 : x?.number > y?.number ? 1 : 0
     },
-    isFav(address) {
-      if (this.favNodes && this.favNodes.includes(address)) {
-        return true
-      }
-      return false
-    },
-    addFav(address) {
-      let favNodes
-      try {
-        favNodes = this.favNodes || []
-      } catch (e) {
-        this.favNodes = []
-      }
 
-      if (address) {
-        this.favNodes = [...favNodes, address]
-      }
-    },
-    delFav(address) {
-      const favNodes = this.favNodes
-      _.remove(favNodes, (n) => {
-        return n === address
-      })
-      this.favNodes = [...favNodes]
-    },
     // Can be wrapped on the server
     formatMimirs(d) {
       const mimirs = {}
@@ -1313,51 +995,5 @@ export default {
 
 .extra {
   font-size: 0.7rem;
-}
-
-.popover-table {
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
-
-  > * {
-    display: flex;
-    flex: 1;
-    align-items: center;
-    gap: 5px;
-  }
-
-  .text {
-    color: var(--font-color);
-  }
-
-  .vote-value {
-    justify-content: end;
-  }
-}
-
-.asset-chain {
-  height: 1.2rem;
-  border-radius: 50%;
-}
-
-.countries {
-  display: flex;
-  cursor: pointer;
-  gap: 10px;
-  align-items: center;
-  justify-content: center;
-}
-
-.full-screen-btn {
-  display: none;
-
-  @include lg {
-    display: block;
-  }
-}
-
-.location-name {
-  display: none;
 }
 </style>

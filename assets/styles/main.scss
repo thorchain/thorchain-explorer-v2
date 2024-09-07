@@ -944,3 +944,14 @@ input {
     white-space: nowrap !important;
   }
 }
+
+#main-content table.net-table tbody tr.table-row {
+  &:hover {
+    background-color: var(--darker-bg);
+  }
+
+  &.highlight td {
+    color: var(--highlight) !important;
+    font-weight: bold;
+  }
+}

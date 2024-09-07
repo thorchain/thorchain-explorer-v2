@@ -501,50 +501,9 @@ export function observeredChains(nodes) {
   return majorityHeight
 }
 
-export function fillNodeData(
-  nodes,
-  el,
-  chains,
-  nodesExtra,
-  lastBlockHeight,
-  ratioReward,
-  churnInterval
-) {
+export function fillNodeData(nodes, el) {
   if (!el) {
     return
-  }
-  const chainsHeight = {}
-  try {
-    supportedChains.forEach((chain) => {
-      chainsHeight[chain] =
-        (el.observe_chains.filter((item) => item?.chain === chain)[0]?.height ??
-          0) - chains[chain]
-    })
-  } catch (error) {}
-  let isp
-  let org
-  let location
-  if (nodesExtra && el.ip_address) {
-    const node = nodesExtra[el.ip_address]
-    isp = node?.isp ?? undefined
-    org = node?.org ?? undefined
-    location =
-      { code: node?.countryCode, region: node?.regionName, city: node?.city } ??
-      undefined
-  }
-  let age
-  if (lastBlockHeight) {
-    age = {
-      number: ((lastBlockHeight - el.status_since) * 6) / 60 / 60 / 24,
-      text: blockTime(lastBlockHeight - el.status_since),
-    }
-  }
-  let apy
-  if (ratioReward) {
-    const churnsInYear = 365 / ((6 * churnInterval) / (60 * 60 * 24))
-    apy =
-      ((el.current_award / ratioReward) * churnsInYear) / el.total_bond ??
-      undefined
   }
   nodes.push({
     address: el.node_address,
@@ -555,13 +514,15 @@ export function fillNodeData(
     award: (Number.parseFloat(el.current_award) / 10 ** 8).toFixed(2),
     providers: el.bond_providers?.providers,
     total_bond: el.total_bond / 10 ** 8 < 0.01 ? 0 : el.total_bond / 10 ** 8,
-    chains: chainsHeight,
-    isp,
-    org,
-    location,
-    age,
-    apy,
-    score: (1e4 / el.slash_points).toFixed(4),
+    behind: el.behind,
+    age: el.age,
+    apy: el.apy,
+    location:
+      { code: el?.countryCode, region: el?.regionName, city: el?.city } ??
+      undefined,
+    isp: el.isp,
+    org: el.org,
+    score: el.slash_points ? (1e4 / el.slash_points).toFixed(4) : 0,
     leave: el.requested_to_leave,
     fee: el.bond_providers?.node_operator_fee / 1e4,
     operator: el?.node_operator_address,

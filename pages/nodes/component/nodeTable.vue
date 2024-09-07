@@ -1,0 +1,328 @@
+<template>
+  <vue-good-table
+    v-if="rows"
+    :key="1"
+    :columns="cols"
+    :rows="rows"
+    style-class="vgt-table net-table bordered condensed node-table"
+    :line-numbers="true"
+    :row-style-class="rowClassCallback"
+  >
+    <template slot="table-column" slot-scope="props">
+      <div v-if="props.column.field.includes('chains')" class="table-asset">
+        <img
+          class="asset-chain"
+          :src="assetImage(`${props.column.label}.${props.column.label}`)"
+        />
+      </div>
+      <div v-else-if="props.column.field == 'leave'" v-tooltip="'Provider'">
+        <ExitIcon class="table-icon" />
+      </div>
+      <div v-else-if="props.column.field == 'providers'">Operator</div>
+      <div
+        v-else-if="props.column.field == 'location'"
+        v-tooltip="'Node Location'"
+      >
+        <MarkerIcon class="table-icon" />
+      </div>
+      <span v-else>
+        {{ props.column.label }}
+      </span>
+    </template>
+    <template slot="table-row" slot-scope="props">
+      <span v-if="props.column.field == 'address'" class="clickable">
+        <div class="table-wrapper-row">
+          <nuxt-link
+            v-tooltip="props.row.address"
+            class="item-link"
+            :to="`/address/${props.row.address}`"
+          >
+            {{ addressFormatV2(props.row.address, 4, true) }}
+          </nuxt-link>
+          <Copy :str-copy="props.row.address" />
+          <div>
+            <StaredIcon
+              v-if="isFav(props.row.address)"
+              class="table-icon"
+              style="fill: #ffee58"
+              @click="delFav(props.row.address)"
+            />
+            <StarIcon
+              v-else
+              class="table-icon"
+              @click="addFav(props.row.address)"
+            />
+          </div>
+          <InfoIcon class="table-icon" @click="gotoNode(props.row.address)" />
+          <a
+            style="height: 1rem"
+            :href="gotoNodeUrl(props.row.address)"
+            target="_blank"
+          >
+            <JsonIcon class="table-icon" />
+          </a>
+          <Ip :str-copy="props.row.ip" />
+        </div>
+      </span>
+      <span v-else-if="props.column.field == 'age'">
+        <span
+          v-if="props.row.age"
+          v-tooltip="props.row.age.text"
+          style="cursor: pointer"
+          >{{ props.row.age.number | number('0,0.00') }}</span
+        >
+        <span v-else>-</span>
+      </span>
+      <span v-else-if="props.column.field == 'isp'">
+        <cloud-image
+          v-if="props.row.isp"
+          :name="[props.row.isp, props.row.org]"
+        />
+        <span v-else>-</span>
+      </span>
+      <span v-else-if="props.column.field == 'location'">
+        <div
+          v-if="props.row.location"
+          v-tooltip="`${props.row.location.code}, ${props.row.location.city}`"
+          class="countries"
+        >
+          <VFlag :flag="props.row.location.code" />
+        </div>
+      </span>
+      <span v-else-if="props.column.field == 'total_bond'" class="hoverable">
+        <span v-tooltip="formatCurrency(runePrice * props.row.total_bond)">
+          <span class="extra">{{ runeCur() }}</span>
+          {{ numberFormat(props.row.total_bond) }}
+        </span>
+      </span>
+      <span v-else-if="props.column.field == 'award'" class="hoverable">
+        <span v-tooltip="formatCurrency(runePrice * props.row.award)">
+          <span class="extra">{{ runeCur() }}</span>
+          {{ props.row.award }}
+        </span>
+      </span>
+      <span v-else-if="props.column.field == 'status'">
+        <div :class="'bubble-container'">
+          <span>{{ props.row.status }}</span>
+        </div>
+      </span>
+      <span v-else-if="props.column.field == 'ip'">
+        <div v-if="props.row.ip" class="table-wrapper-row">
+          <span>{{ props.row.ip }}</span>
+          <Copy :str-copy="props.row.ip" />
+        </div>
+        <span v-else>-</span>
+      </span>
+      <span v-else-if="props.column.field == 'leave'">
+        <div class="table-wrapper-row" style="justify-content: center">
+          <CheckBoxIcon
+            v-if="props.row.leave == true"
+            class="table-icon"
+            style="fill: #81c784"
+          />
+          <span v-else>-</span>
+        </div>
+      </span>
+      <span v-else-if="props.column.field == 'fee'">
+        <span>{{ props.formattedRow[props.column.field] }}</span>
+      </span>
+      <span v-else-if="props.column.field == 'providers'">
+        <span>{{ props.row.operator.slice(-4) }}</span>
+        <div
+          :id="props.row.providers.length ? `popover-${props.row.ip}` : false"
+          class="bubble-container grey clickable"
+        >
+          {{ props.row.providers.length }}
+        </div>
+        <b-popover
+          triggers="hover focus"
+          :target="`popover-${props.row.ip}`"
+          custom-class="custom-popover"
+        >
+          <div class="title" style="margin-bottom: 5px">
+            <strong>Providers</strong>
+          </div>
+          <div
+            v-for="(p, i) in props.row.providers"
+            :key="i"
+            class="popover-table"
+          >
+            <span class="clickable" @click="gotoAddr(p.bond_address)">
+              {{ formatAddress(p.bond_address) }}
+            </span>
+            <span class="text">
+              {{ (p.bond / 10 ** 8 / props.row.total_bond) | percent }}
+            </span>
+            <div style="justify-content: end" class="text">
+              <span class="extra">{{ runeCur() }}</span>
+              {{ numberFormat(p.bond / 10 ** 8) }}
+            </div>
+          </div>
+        </b-popover>
+      </span>
+      <span v-else-if="props.column.field.includes('behind.')">
+        <span
+          v-if="props.formattedRow[props.column.field] == 0"
+          style="color: #81c784"
+          >OK</span
+        >
+        <span
+          v-else-if="
+            0 < props.formattedRow[props.column.field] &&
+            props.formattedRow[props.column.field] < 10000
+          "
+          style="color: #ffc107"
+          >{{ props.formattedRow[props.column.field] }}</span
+        >
+        <span
+          v-else-if="
+            0 > props.formattedRow[props.column.field] &&
+            props.formattedRow[props.column.field] > -10000
+          "
+          style="color: #ef5350"
+          >{{ props.formattedRow[props.column.field] }}</span
+        >
+        <DangerIcon
+          v-else-if="props.formattedRow[props.column.field] > 10000"
+          v-tooltip="`${props.formattedRow[props.column.field]}`"
+          class="table-icon"
+          style="fill: #ffc107"
+        />
+        <DangerIcon
+          v-else
+          v-tooltip="`${props.formattedRow[props.column.field]}`"
+          class="table-icon"
+          style="fill: #ef5350"
+        />
+      </span>
+      <span v-else>
+        {{ props.formattedRow[props.column.field] }}
+      </span>
+    </template>
+  </vue-good-table>
+</template>
+<script>
+import { mapGetters } from 'vuex'
+import { remove } from 'lodash'
+import JsonIcon from '@/assets/images/json.svg?inline'
+import InfoIcon from '@/assets/images/info.svg?inline'
+import StarIcon from '@/assets/images/star.svg?inline'
+import StaredIcon from '@/assets/images/stared.svg?inline'
+import ExitIcon from '@/assets/images/sign-out.svg?inline'
+import CheckBoxIcon from '@/assets/images/checkbox.svg?inline'
+import VoteIcon from '@/assets/images/vote.svg?inline'
+import DangerIcon from '@/assets/images/danger.svg?inline'
+import MarkerIcon from '@/assets/images/marker.svg?inline'
+
+export default {
+  components: {
+    JsonIcon,
+    InfoIcon,
+    StarIcon,
+    StaredIcon,
+    ExitIcon,
+    CheckBoxIcon,
+    VoteIcon,
+    MarkerIcon,
+    DangerIcon,
+  },
+  props: ['rows', 'cols'],
+  data() {
+    return {
+      favs: [],
+    }
+  },
+  computed: {
+    ...mapGetters({
+      runePrice: 'getRunePrice',
+    }),
+  },
+  methods: {
+    rowClassCallback(row) {
+      return this.isFav(row.address) ? 'highlight table-row' : 'table-row'
+    },
+    addFav(address) {
+      let favs
+      try {
+        favs = this.favs || []
+      } catch (e) {
+        this.favs = []
+      }
+
+      if (address) {
+        this.favs = [...favs, address]
+      }
+    },
+    delFav(address) {
+      const favs = this.favs
+      remove(favs, (n) => {
+        return n === address
+      })
+      this.favs = [...favs]
+    },
+    isFav(address) {
+      if (this.favs && this.favs.includes(address)) {
+        return true
+      }
+      return false
+    },
+  },
+}
+</script>
+
+<style lang="scss" scoped>
+.asset-chain {
+  height: 1.2rem;
+  border-radius: 50%;
+}
+
+.popover-table {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+
+  > * {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .text {
+    color: var(--font-color);
+  }
+
+  .vote-value {
+    justify-content: end;
+  }
+}
+
+.countries {
+  display: flex;
+  cursor: pointer;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+}
+
+.grid-network {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(auto, 1fr));
+  grid-gap: 0.5rem;
+  gap: 0.5rem;
+}
+
+.extra {
+  font-size: 0.7rem;
+}
+
+.node-table {
+  font-size: 80% !important;
+}
+
+.item-link {
+  text-decoration: none;
+  color: var(--primary-color);
+}
+</style>

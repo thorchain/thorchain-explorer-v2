@@ -154,3 +154,9 @@ export function getTopSwaps() {
     endpoints[process.env.NETWORK].SERVER_URL + 'api/swaps'
   )
 }
+
+export function getNodesInfo() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + 'api/nodesInfo'
+  )
+}
