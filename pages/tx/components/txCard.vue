@@ -224,7 +224,7 @@ $border-size: 2px;
           margin: 0;
           width: 2rem;
           height: 2rem;
-          fill: #212121;
+          fill: var(--sec-font-color);
         }
       }
 
