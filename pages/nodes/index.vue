@@ -1,58 +1,7 @@
 <template>
   <Page :error="error && !loading" :fluid="true">
-    <div v-if="nodesQuery" class="grid-network">
+    <div class="grid-network">
       <info-card :options="topBonds" />
-    </div>
-    <div class="chart-inner-container">
-      <Card
-        :navs="[
-          { title: 'Node Status', value: 'node-stat' },
-          { title: 'Provider Distribution', value: 'prov-dist' },
-        ]"
-        :act-nav.sync="statusMode"
-      >
-        <VChart
-          v-if="statusMode == 'node-stat'"
-          key="node-stat"
-          :option="nodeStatus"
-          :loading="!nodeStatus"
-          :autoresize="true"
-          :loading-options="showLoading"
-          :theme="chartTheme"
-        />
-        <VChart
-          v-if="statusMode == 'prov-dist'"
-          key="prov-stat"
-          :option="provDist"
-          :loading="!provDist"
-          :autoresize="true"
-          :loading-options="showLoading"
-        />
-        <template v-if="statusMode == 'prov-dist'" #footer>
-          <p style="margin-left: 1rem">
-            * This provider distribution might not be all correct as many bare
-            metal nodes use proxy.
-          </p>
-        </template>
-      </Card>
-      <Card title="Churn Info">
-        <template #header>
-          <DangerIcon
-            v-if="churnHalted"
-            v-tooltip="'Churn is paused'"
-            class="table-icon"
-            style="fill: #ef5350"
-          />
-        </template>
-        <VChart
-          style="height: 250px"
-          :option="churnOption"
-          :loading="!(churnInterval && bondMetrics && lastBlockHeight)"
-          :autoresize="true"
-          :loading-options="showLoading"
-          :theme="chartTheme"
-        />
-      </Card>
     </div>
     <card>
       <node-table :rows="activeNodes" :cols="activeCols" />
@@ -63,142 +12,6 @@
     <card>
       <node-table :rows="whiteListedNodes" :cols="activeCols" />
     </card>
-    <!-- <template v-for="(m, i) in otherNodes" v-else>
-      <Card
-        v-if="mode == m.name"
-        :key="i"
-        :title="m.title"
-        :is-loading="!m.cols"
-      >
-        <vue-good-table
-          v-if="cols && m.cols"
-          :key="2"
-          :columns="cols"
-          :rows="m.cols"
-          style-class="vgt-table net-table bordered"
-          :pagination-options="{
-            enabled: true,
-            perPage: 50,
-            perPageDropdownEnabled: false,
-          }"
-          :sort-options="{
-            enabled: true,
-            initialSortBy: [{ field: 'total_bond', type: 'desc' }],
-          }"
-        >
-          <template slot="table-row" slot-scope="props">
-            <span v-if="props.column.field == 'address'" class="clickable">
-              <div v-if="props.row.address" class="table-wrapper-row">
-                <span
-                  v-tooltip="props.row.address"
-                  @click="gotoNode(props.row.address)"
-                  >{{ addressFormat(props.row.address) }}</span
-                >
-                <InfoIcon
-                  class="table-icon"
-                  @click="gotoNode(props.row.address)"
-                />
-                <div :id="`vote-${props.row.originalIndex}`">
-                  <VoteIcon v-if="mimirs" class="table-icon" />
-                </div>
-                <b-popover
-                  triggers="hover focus"
-                  :target="`vote-${props.row.originalIndex}`"
-                  custom-class="custom-popover"
-                >
-                  <div class="title" style="margin-bottom: 5px">
-                    <strong>Node Votes</strong>
-                  </div>
-                  <template v-if="mimirs">
-                    <div
-                      v-for="(p, j) in mimirs[props.row.address]"
-                      :key="j"
-                      class="popover-table"
-                    >
-                      <span
-                        class="key clickable"
-                        @click="goto('network/votes')"
-                      >
-                        {{ p.key }}
-                      </span>
-                      <span class="vote-value">
-                        {{ p.value }}
-                      </span>
-                    </div>
-                    <div v-if="!mimirs[props.row.address]">No Votes!</div>
-                  </template>
-                </b-popover>
-                <a
-                  style="height: 1rem"
-                  :href="gotoNodeUrl(props.row.address)"
-                  target="_blank"
-                >
-                  <NetworkIcon class="table-icon" />
-                </a>
-                <LinkIcon
-                  class="table-icon"
-                  @click="gotoAddr(props.row.address)"
-                />
-                <Copy :str-copy="props.row.address" />
-              </div>
-              <span v-else class="not-clickable">No Address Set</span>
-            </span>
-            <span v-else-if="props.column.field == 'total_bond'">
-              <span v-tooltip="curFormat(runePrice * props.row.total_bond)">
-                <span class="extra">{{ runeCur() }}</span>
-                {{ normalFormat(props.row.total_bond) }}
-              </span>
-            </span>
-            <span v-else-if="props.column.field == 'award'">
-              <span v-tooltip="curFormat(runePrice * props.row.award)">
-                <span class="extra">{{ runeCur() }}</span>
-                {{ props.row.award }}
-              </span>
-            </span>
-            <span v-else-if="props.column.field == 'status'">
-              <div
-                v-if="m.name !== 'eligible'"
-                :class="[
-                  'bubble-container',
-                  {
-                    red: props.row.status === 'Disabled',
-                    black: props.row.status === 'Unknown',
-                    white: props.row.status === 'Whitelisted',
-                    yellow: props.row.status === 'Standby',
-                  },
-                ]"
-              >
-                <span>{{ props.row.status }}</span>
-              </div>
-              <template v-else>
-                <div class="bubble-container blue">Eligible</div>
-                <div
-                  :class="[
-                    'bubble-container',
-                    {
-                      green: props.row.status === 'Ready',
-                      yellow: props.row.status === 'Standby',
-                    },
-                  ]"
-                >
-                  <span>{{ props.row.status }}</span>
-                </div>
-              </template>
-            </span>
-            <span v-else-if="props.column.field == 'ip'">
-              <div v-if="props.row.ip" class="table-wrapper-row">
-                <span>{{ props.row.ip }}</span>
-                <Copy :str-copy="props.row.ip" />
-              </div>
-              <div v-else />
-            </span>
-            <span v-else>
-              {{ props.formattedRow[props.column.field] }}
-            </span>
-          </template>
-        </vue-good-table>
-      </Card>
-    </template> -->
   </Page>
 </template>
 
@@ -450,137 +263,130 @@ export default {
       ]
     },
     topBonds() {
-     return[
-          {
+      return [
+        {
           title: 'Top Active Bonds',
           rowStart: 1,
           colSpan: 1,
           items: [
-             {
-            name: 'Total Bond',
-            value:
-              (this.bondMetrics?.bondMetrics?.totalActiveBond ?? 0) / 10 ** 8,
-            usdValue: true,
-            filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
-          },
-          {
-            name: 'Average Bond',
-            value:
-              (this.bondMetrics?.bondMetrics?.averageActiveBond ?? 0) / 10 ** 8,
+            {
+              name: 'Total Node Count',
+              value: this.bondMetrics?.activeNodeCount,
+            },
+            {
+              name: 'Total Bond',
+              value: this.bondMetrics?.bondMetrics?.totalActiveBond / 10 ** 8,
+              usdValue: true,
               filter: (v) =>
                 `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
-            usdValue: true,
-          },
-          {
-            name: 'Total Node Count',
-            value: this.bondMetrics?.activeNodeCount,
-          },
-          {
-            name: 'Maximum Bond',
-            value: Math.floor(
-              Math.floor(
+            },
+            {
+              name: 'Average Bond',
+              value: this.bondMetrics?.bondMetrics?.averageActiveBond / 10 ** 8,
+              filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+              usdValue: true,
+            },
+            {
+              name: 'Maximum Bond',
+              value: Math.floor(
+                Math.floor(
+                  (Number.parseInt(
+                    this.bondMetrics?.bondMetrics?.maximumActiveBond
+                  ) ?? 0) /
+                    10 ** 8
+                )
+              ),
+              filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+              usdValue: true,
+            },
+            {
+              name: 'Median Bond',
+              value: Math.floor(
                 (Number.parseInt(
-                  this.bondMetrics?.bondMetrics?.maximumActiveBond
+                  this.bondMetrics?.bondMetrics?.medianActiveBond
                 ) ?? 0) /
                   10 ** 8
-              )
-            ),
-            filter: (v) =>
+              ),
+              filter: (v) =>
                 `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
-            usdValue: true,
-          },
-          {
-            name: 'Median Bond',
-            value: Math.floor(
-              (Number.parseInt(
-                this.bondMetrics?.bondMetrics?.medianActiveBond
-              ) ?? 0) /
-                10 ** 8
-            ),
-            filter: (v) =>
+              usdValue: true,
+            },
+            {
+              name: 'Minimum Bond',
+              value: Math.floor(
+                (Number.parseInt(
+                  this.bondMetrics?.bondMetrics?.minimumActiveBond
+                ) ?? 0) /
+                  10 ** 8
+              ),
+              filter: (v) =>
                 `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
-            usdValue: true,
-          },
-          {
-            name: 'Minimum Bond',
-            value: Math.floor(
-              (Number.parseInt(
-                this.bondMetrics?.bondMetrics?.minimumActiveBond
-              ) ?? 0) /
-                10 ** 8
-            ) ,
-            filter: (v) =>
+              usdValue: true,
+            },
+            {
+              name: 'Max efficient bond',
+              value: this.calculateHardCap(),
+              filter: (v) =>
                 `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
-            usdValue: true,
-          },
-          {
-            name: 'Max efficient bond',
-            value: this.calculateHardCap(),
-            filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
-            usdValue: true,
-          },
-        ]
-
+              usdValue: true,
+            },
+          ],
         },
         {
           title: 'Top Standby Bonds',
           rowStart: 1,
           colSpan: 1,
           items: [
-          {
-            name: 'Total Bond',
-            value:
-              (this.bondMetrics?.bondMetrics?.totalStandbyBond ?? 0) / 10 ** 8,
+            {
+              name: 'Total Node Count',
+              value: this.bondMetrics?.standbyNodeCount,
+            },
+            {
+              name: 'Total Bond',
+              value: this.bondMetrics?.bondMetrics?.totalStandbyBond / 10 ** 8,
               filter: (v) =>
                 `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
-            usdValue: true,
-          },
-          {
-            name: 'Average Bond',
-            value:
-              (this.bondMetrics?.bondMetrics?.averageStandbyBond ?? 0) /
-              10 ** 8,
+              usdValue: true,
+            },
+            {
+              name: 'Average Bond',
+              value:
+                this.bondMetrics?.bondMetrics?.averageStandbyBond / 10 ** 8,
               filter: (v) =>
                 `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
-            usdValue: true,
-          },
-          {
-            name: 'Total Node Count',
-            value: this.bondMetrics?.standbyNodeCount,
-          },
-        
-          {
-            name: 'Maximum Bond',
-            value: Math.floor(
-              (Number.parseInt(
-                this.bondMetrics?.bondMetrics?.maximumStandbyBond
-              ) ?? 0) /
-                10 ** 8
-            ),
-            filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
-            usdValue: true,
-          },
-          {
-            name: 'Median Bond',
-            value: this.calMedianBond(),
-            filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
-            usdValue: true,
-          },
-          {
-            name: 'Minimum Bond',
-            value:
-              (this.bondMetrics?.bondMetrics?.minimumStandbyBond ?? 0) /
-              10 ** 8,
+              usdValue: true,
+            },
+            {
+              name: 'Maximum Bond',
+              value: Math.floor(
+                (Number.parseInt(
+                  this.bondMetrics?.bondMetrics?.maximumStandbyBond
+                ) ?? 0) /
+                  10 ** 8
+              ),
               filter: (v) =>
                 `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
-            usdValue: true,
-          },
-        ],
-        }
+              usdValue: true,
+            },
+            {
+              name: 'Median Bond',
+              value: this.calMedianBond(),
+              filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+              usdValue: true,
+            },
+            {
+              name: 'Minimum Bond',
+              value:
+                this.bondMetrics?.bondMetrics?.minimumStandbyBond / 10 ** 8,
+              filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+              usdValue: true,
+            },
+          ],
+        },
       ]
     },
     activeNodes() {
@@ -591,7 +397,6 @@ export default {
         actNodes.forEach((el) => {
           fillNodeData(filteredNodes, el)
         })
-        this.providerFill(filteredNodes)
 
         return filteredNodes
       } else {
@@ -700,17 +505,21 @@ export default {
       this.fillExtraNodes(nodesInfo)
     },
     calculateHardCap() {
-      const actNodes = this.nodesQuery.filter((n) => n.status === 'Active')
-      if (actNodes.length === 0) {
+      if (!this.nodesQuery) {
+        return null
+      }
+
+      const actNodes = this.nodesQuery?.filter((n) => n.status === 'Active')
+      if (actNodes?.length === 0) {
         return 0
       }
-      actNodes.sort((a, b) => +a.total_bond - +b.total_bond)
-      const lowerNodes = actNodes.slice(
+      actNodes?.sort((a, b) => +a.total_bond - +b.total_bond)
+      const lowerNodes = actNodes?.slice(
         0,
         Math.floor((actNodes.length * 2) / 3)
       )
       return Math.floor(
-        (Number.parseInt(lowerNodes.slice(-1)[0].total_bond) ?? 0) / 10 ** 8
+        (Number.parseInt(lowerNodes?.slice(-1)[0].total_bond) ?? 0) / 10 ** 8
       )
     },
     destroyed() {
@@ -822,84 +631,6 @@ export default {
         return sortedNodes
       } else {
         return undefined
-      }
-    },
-    provType(name) {
-      if (!name && !name.isp) {
-        return ''
-      } else if (name.isp?.includes('Amazon')) {
-        return 'Amazon'
-      } else if (name.isp?.includes('Google')) {
-        return 'Google'
-      } else if (name.isp?.includes('Microsoft')) {
-        return 'Azure'
-      } else if (name.isp?.includes('Hetzner')) {
-        return 'Hetzner'
-      } else if (name.isp?.includes('DigitalOcean')) {
-        return 'Digital Ocean'
-      } else if (name.isp?.includes('The Constant Company')) {
-        return 'Vultr'
-      } else {
-        return name.isp
-      }
-    },
-    providerFill(nodes) {
-      if (!nodes) {
-        return undefined
-      }
-      const countByIsp = _.countBy(nodes, this.provType)
-      const pieIsp = []
-      for (const name in countByIsp) {
-        pieIsp.push({
-          name,
-          value: countByIsp[name],
-        })
-      }
-      this.provDist = {
-        formatter(param) {
-          return `
-            <div class="tooltip-header">
-              <div class="data-color" style="background-color: ${param.color}"></div>
-              ${param.name}
-            </div>
-            <div class="tooltip-body">
-              <span>
-                <span>Count</span>
-                <b>${param.value}</b>
-              </span>
-              <span class="right-sec">
-                <span>Distribution</span>
-                <b>${param.percent} %</b>
-              </span>
-            </div>
-          `
-        },
-        tooltip: {
-          trigger: 'item',
-        },
-        labelLine: {
-          show: false,
-        },
-        legend: {
-          show: false,
-        },
-        series: [
-          {
-            name: 'Provider Distribution',
-            type: 'pie',
-            radius: ['40%', '50%'],
-            avoidLabelOverlap: false,
-            itemStyle: {
-              borderRadius: 10,
-              borderColor: 'transparent',
-              borderWidth: 2,
-            },
-            label: {
-              show: false,
-            },
-            data: pieIsp,
-          },
-        ],
       }
     },
     fillENode(nodes) {

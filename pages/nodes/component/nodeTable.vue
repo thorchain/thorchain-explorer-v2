@@ -9,7 +9,7 @@
     :row-style-class="rowClassCallback"
   >
     <template slot="table-column" slot-scope="props">
-      <div v-if="props.column.field.includes('chains')" class="table-asset">
+      <div v-if="props.column.field.includes('behind')" class="table-asset">
         <img
           class="asset-chain"
           :src="assetImage(`${props.column.label}.${props.column.label}`)"
@@ -124,10 +124,10 @@
       </span>
       <span v-else-if="props.column.field == 'leave'">
         <div class="table-wrapper-row" style="justify-content: center">
-          <CheckBoxIcon
+          <ExitIcon
             v-if="props.row.leave == true"
             class="table-icon"
-            style="fill: #81c784"
+            style="fill: var(--red)"
           />
           <span v-else>-</span>
         </div>
@@ -151,22 +151,24 @@
           <div class="title" style="margin-bottom: 5px">
             <strong>Providers</strong>
           </div>
-          <div
-            v-for="(p, i) in props.row.providers"
-            :key="i"
-            class="popover-table"
-          >
-            <span class="clickable" @click="gotoAddr(p.bond_address)">
-              {{ formatAddress(p.bond_address) }}
-            </span>
-            <span class="text">
-              {{ (p.bond / 10 ** 8 / props.row.total_bond) | percent }}
-            </span>
-            <div style="justify-content: end" class="text">
-              <span class="extra">{{ runeCur() }}</span>
-              {{ numberFormat(p.bond / 10 ** 8) }}
-            </div>
-          </div>
+          <table style="min-width: 500px">
+            <tr v-for="(p, i) in props.row.providers" :key="i">
+              <td>
+                <nuxt-link class="clickable" :to="`/address/${p.bond_address}`">
+                  {{ formatAddress(p.bond_address) }}
+                </nuxt-link>
+              </td>
+              <td>
+                <span>
+                  {{ (p.bond / 10 ** 8 / props.row.total_bond) | percent }}
+                </span>
+              </td>
+              <td>
+                <span class="extra">{{ runeCur() }}</span>
+                {{ numberFormat(p.bond / 10 ** 8) }}
+              </td>
+            </tr>
+          </table>
         </b-popover>
       </span>
       <span v-else-if="props.column.field.includes('behind.')">
@@ -213,13 +215,11 @@
 <script>
 import { mapGetters } from 'vuex'
 import { remove } from 'lodash'
-import { props } from 'qrcode.vue'
 import JsonIcon from '@/assets/images/json.svg?inline'
 import InfoIcon from '@/assets/images/info.svg?inline'
 import StarIcon from '@/assets/images/star.svg?inline'
 import StaredIcon from '@/assets/images/stared.svg?inline'
 import ExitIcon from '@/assets/images/sign-out.svg?inline'
-import CheckBoxIcon from '@/assets/images/checkbox.svg?inline'
 import VoteIcon from '@/assets/images/vote.svg?inline'
 import DangerIcon from '@/assets/images/danger.svg?inline'
 import MarkerIcon from '@/assets/images/marker.svg?inline'
@@ -231,7 +231,6 @@ export default {
     StarIcon,
     StaredIcon,
     ExitIcon,
-    CheckBoxIcon,
     VoteIcon,
     MarkerIcon,
     DangerIcon,
