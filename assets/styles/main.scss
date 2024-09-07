@@ -670,6 +670,7 @@ input {
     background-color: rgb(225 239 254);
     border: 1px solid rgba(47, 138, 245, 0.16);
   }
+  
 }
 
 [theme='dark'] .mini-bubble {
@@ -696,6 +697,22 @@ input {
     fill: rgb(47, 138, 245);
     background-color: transparent;
     border: 1px solid rgba(47, 138, 245, 0.16);
+  }
+
+  &.white {
+    border: 1px solid #eee;
+    background-color: #eee;
+    color: #000;
+  }
+
+  &.black {
+    color: #fff;
+    background-color: #000;
+  }
+
+  &.grey {
+    color: var(--font-color);
+    background-color: var(--active-bg-color);
   }
 }
 
