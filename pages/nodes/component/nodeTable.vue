@@ -102,7 +102,16 @@
         </span>
       </span>
       <span v-else-if="props.column.field == 'status'">
-        <div :class="'bubble-container'">
+        <div
+          :class="[
+            'mini-bubble',
+            {
+              yellow: props.row.status == 'Standby',
+              danger: props.row.status == 'Disabled',
+              white: props.row.status == 'Whitelisted',
+            },
+          ]"
+        >
           <span>{{ props.row.status }}</span>
         </div>
       </span>
@@ -204,6 +213,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import { remove } from 'lodash'
+import { props } from 'qrcode.vue'
 import JsonIcon from '@/assets/images/json.svg?inline'
 import InfoIcon from '@/assets/images/info.svg?inline'
 import StarIcon from '@/assets/images/star.svg?inline'
