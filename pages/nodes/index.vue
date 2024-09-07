@@ -1,11 +1,7 @@
 <template>
   <Page :error="error && !loading" :fluid="true">
     <div v-if="nodesQuery" class="grid-network">
-      <stat-table :table-settings="topActiveBonds" header="Top Active Bonds" />
-      <stat-table
-        :table-settings="topStandbyBonds"
-        header="Top Standby Bonds"
-      />
+      <info-card :options="topBonds" />
     </div>
     <div class="chart-inner-container">
       <Card
@@ -741,27 +737,33 @@ export default {
           })),
       ]
     },
-    topActiveBonds() {
-      return [
-        [
+    topBonds() {
+     return[
           {
+          title: 'Top Active Bonds',
+          rowStart: 1,
+          colSpan: 1,
+          items: [
+             {
             name: 'Total Bond',
             value:
               (this.bondMetrics?.bondMetrics?.totalActiveBond ?? 0) / 10 ** 8,
             usdValue: true,
+            filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
           },
           {
             name: 'Average Bond',
             value:
               (this.bondMetrics?.bondMetrics?.averageActiveBond ?? 0) / 10 ** 8,
+              filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
             usdValue: true,
           },
           {
             name: 'Total Node Count',
             value: this.bondMetrics?.activeNodeCount,
           },
-        ],
-        [
           {
             name: 'Maximum Bond',
             value: Math.floor(
@@ -772,6 +774,8 @@ export default {
                   10 ** 8
               )
             ),
+            filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
             usdValue: true,
           },
           {
@@ -782,6 +786,8 @@ export default {
               ) ?? 0) /
                 10 ** 8
             ),
+            filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
             usdValue: true,
           },
           {
@@ -791,26 +797,32 @@ export default {
                 this.bondMetrics?.bondMetrics?.minimumActiveBond
               ) ?? 0) /
                 10 ** 8
-            ),
+            ) ,
+            filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
             usdValue: true,
           },
-        ],
-        [
           {
             name: 'Max efficient bond',
             value: this.calculateHardCap(),
+            filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
             usdValue: true,
           },
-        ],
-      ]
-    },
-    topStandbyBonds() {
-      return [
-        [
+        ]
+
+        },
+        {
+          title: 'Top Standby Bonds',
+          rowStart: 1,
+          colSpan: 1,
+          items: [
           {
             name: 'Total Bond',
             value:
               (this.bondMetrics?.bondMetrics?.totalStandbyBond ?? 0) / 10 ** 8,
+              filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
             usdValue: true,
           },
           {
@@ -818,14 +830,15 @@ export default {
             value:
               (this.bondMetrics?.bondMetrics?.averageStandbyBond ?? 0) /
               10 ** 8,
+              filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
             usdValue: true,
           },
           {
             name: 'Total Node Count',
             value: this.bondMetrics?.standbyNodeCount,
           },
-        ],
-        [
+        
           {
             name: 'Maximum Bond',
             value: Math.floor(
@@ -834,11 +847,15 @@ export default {
               ) ?? 0) /
                 10 ** 8
             ),
+            filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
             usdValue: true,
           },
           {
             name: 'Median Bond',
             value: this.calMedianBond(),
+            filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
             usdValue: true,
           },
           {
@@ -846,9 +863,12 @@ export default {
             value:
               (this.bondMetrics?.bondMetrics?.minimumStandbyBond ?? 0) /
               10 ** 8,
+              filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
             usdValue: true,
           },
         ],
+        }
       ]
     },
     activeNodes() {
