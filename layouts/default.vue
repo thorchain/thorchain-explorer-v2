@@ -151,7 +151,7 @@ Vue.mixin(global)
     padding: 0 1.5rem;
 
     @include lg {
-      padding: 0.5rem 4rem;
+      padding: 0.5rem 3rem;
     }
   }
 
@@ -161,7 +161,7 @@ Vue.mixin(global)
     padding: 0 1.5rem;
 
     @include lg {
-      padding: 0.5rem 4rem;
+      padding: 0.5rem 3rem;
     }
   }
 
@@ -171,7 +171,7 @@ Vue.mixin(global)
     grid-area: main;
 
     @include lg {
-      padding: 2rem 4rem;
+      padding: 2rem 3rem;
     }
   }
 }
