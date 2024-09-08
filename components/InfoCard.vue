@@ -129,7 +129,6 @@ export default {
       return !!this.$slots[name] || !!this.$scopedSlots[name]
     },
     isReady(item) {
-      isNaN(item.value)
       if (!(typeof item.value === 'string') && isNaN(item.value)) {
         return true
       }

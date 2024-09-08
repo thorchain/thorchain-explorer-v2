@@ -3,14 +3,18 @@
     <div class="grid-network">
       <info-card :options="topBonds" />
     </div>
-    <card>
+    <card :is-loading="!activeNodes">
       <node-table :rows="activeNodes" :cols="activeCols" name="active-nodes" />
     </card>
-    <card>
+    <card :is-loading="!stbNodes">
       <node-table :rows="stbNodes" :cols="activeCols" name="rdy-nodes" />
     </card>
-    <card>
-      <node-table :rows="whiteListedNodes" :cols="activeCols" name="other-nodes" />
+    <card :is-loading="!whiteListedNodes">
+      <node-table
+        :rows="whiteListedNodes"
+        :cols="otherNodes"
+        name="other-nodes"
+      />
     </card>
   </Page>
 </template>
@@ -62,28 +66,6 @@ export default {
       nodesQuery: undefined,
       popoverText: 'Test',
       nodesExtra: undefined,
-      otherNodes: [
-        {
-          name: 'eligible',
-          title: 'Eligible',
-          cols: undefined,
-        },
-        {
-          name: 'standby',
-          title: 'StandBy',
-          cols: undefined,
-        },
-        {
-          name: 'whitelisted',
-          title: 'Whitelisted',
-          cols: undefined,
-        },
-        {
-          name: 'unknown',
-          title: 'Unknown',
-          cols: undefined,
-        },
-      ],
       cols: [
         {
           label: 'Address',
@@ -265,6 +247,45 @@ export default {
           thClass: 'center',
         },
         ...chains,
+      ]
+    },
+    otherNodes() {
+      if (!this.nodesQuery) {
+        return this.cols
+      }
+
+      return [
+        this.cols[0],
+        {
+          label: 'Age',
+          field: 'age',
+          type: 'number',
+          tdClass: 'center',
+          thClass: 'center',
+          sortFn: this.aSort,
+        },
+        {
+          label: 'ISP',
+          field: 'isp',
+          type: 'text',
+          tdClass: 'center',
+        },
+        {
+          label: 'Location',
+          field: 'location',
+          tdClass: 'center',
+          sortFn: this.cSort,
+        },
+        ...this.cols.slice(1, 4),
+        {
+          label: 'Providers',
+          field: 'providers',
+          type: 'number',
+          tdClass: 'mono center',
+          thClass: 'center',
+          sortFn: this.pSort,
+        },
+        ...this.cols.slice(-1),
       ]
     },
     topBonds() {

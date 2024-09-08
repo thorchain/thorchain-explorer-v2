@@ -962,14 +962,20 @@ input {
   }
 }
 
-#main-content table.net-table tbody tr.table-row {
-  &:hover {
-    background-color: var(--darker-bg);
+#main-content table.net-table tbody {
+  tr.table-row:hover th.line-number {
+      background-color: var(--darker-bg) !important;
   }
 
-  &.highlight td {
-    color: var(--highlight) !important;
-    font-weight: bold;
+  tr.table-row {
+    &:hover {
+      background-color: var(--darker-bg) !important;
+    }
+  
+    &.highlight td {
+      color: var(--highlight) !important;
+      font-weight: bold;
+    }
   }
 }
 

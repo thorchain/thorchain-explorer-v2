@@ -238,12 +238,12 @@ export default {
     VoteIcon,
     MarkerIcon,
     DangerIcon,
-    HighlightList
+    HighlightList,
   },
   props: ['rows', 'cols', 'name'],
   data() {
     return {
-      favs: []
+      favs: [],
     }
   },
   computed: {
@@ -251,13 +251,13 @@ export default {
       runePrice: 'getRunePrice',
     }),
   },
-  mounted() {
-    this.favs = JSON.parse(localStorage.getItem(this.name))
-  },
   watch: {
     favs(array) {
       localStorage.setItem(this.name, JSON.stringify(array))
     },
+  },
+  mounted() {
+    this.favs = JSON.parse(localStorage.getItem(this.name)) || []
   },
   methods: {
     rowClassCallback(row) {
