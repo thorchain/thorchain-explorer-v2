@@ -22,33 +22,12 @@
 <script>
 import { mapGetters } from 'vuex'
 import _ from 'lodash'
-import { use } from 'echarts/core'
-import { SVGRenderer } from 'echarts/renderers'
-import { GaugeChart, PieChart } from 'echarts/charts'
-import {
-  TooltipComponent,
-  LegendComponent,
-  GridComponent,
-} from 'echarts/components'
-import VChart from 'vue-echarts'
 import NodeTable from './component/nodeTable.vue'
 import { blockTime, fillNodeData, availableChains } from '~/utils'
-import DangerIcon from '@/assets/images/danger.svg?inline'
-
-use([
-  SVGRenderer,
-  GridComponent,
-  PieChart,
-  GaugeChart,
-  TooltipComponent,
-  LegendComponent,
-])
 
 export default {
   name: 'NodesPage',
   components: {
-    DangerIcon,
-    VChart,
     NodeTable,
   },
   data() {
@@ -432,7 +411,9 @@ export default {
     stbNodes() {
       if (this.nodesQuery) {
         const actNodes = this.nodesQuery?.filter(
-          (e) => e.status === 'Standby' && e.preflight_status.status === 'Ready'
+          (e) =>
+            (e.status === 'Standby' && e.preflight_status.status === 'Ready') ||
+            e.status === 'Ready'
         )
         const filteredNodes = []
 
@@ -449,8 +430,9 @@ export default {
       if (this.nodesQuery) {
         const actNodes = this.nodesQuery?.filter(
           (e) =>
-            (e.status !== 'Standby' && e.status !== 'Active') ||
-            (e.status === 'Standby' && e.preflight_status.status !== 'Ready')
+            e.status !== 'Standby' &&
+            e.status !== 'Active' &&
+            e.status !== 'Ready'
         )
         const filteredNodes = []
 

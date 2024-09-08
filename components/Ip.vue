@@ -1,7 +1,7 @@
 <template>
   <ip-icon
     ref="copy"
-    :class="['table-icon', 'copy-icon']"
+    :class="['table-icon', 'copy-icon', { disabled: !strCopy }]"
     @click="onlyCopy(strCopy)"
   />
 </template>
@@ -21,6 +21,10 @@ export default {
   },
   methods: {
     onlyCopy(strCopy) {
+      if (!strCopy) {
+        return
+      }
+
       navigator.clipboard.writeText(strCopy).then(
         () => {
           this.animate('copy', 'animate', 1000)
@@ -39,6 +43,10 @@ export default {
   fill: var(--primary-color);
   -webkit-animation: jello-vertical 1s both;
   animation: jello-vertical 1s both;
+}
+
+.disabled {
+  fill: var(--red);
 }
 
 @keyframes jello-vertical {
