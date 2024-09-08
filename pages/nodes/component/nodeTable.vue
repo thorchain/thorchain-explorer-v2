@@ -19,6 +19,9 @@
         <ExitIcon class="table-icon" />
       </div>
       <div v-else-if="props.column.field == 'providers'">Operator</div>
+      <span v-else-if="props.column.field == 'highlight'">
+        <HighlightList class="table-icon"></HighlightList>
+      </span>
       <div
         v-else-if="props.column.field == 'location'"
         v-tooltip="'Node Location'"
@@ -40,19 +43,6 @@
             {{ addressFormatV2(props.row.address, 4, true) }}
           </nuxt-link>
           <Copy :str-copy="props.row.address" />
-          <div>
-            <StaredIcon
-              v-if="isFav(props.row.address)"
-              class="table-icon"
-              style="fill: #ffee58"
-              @click="delFav(props.row.address)"
-            />
-            <StarIcon
-              v-else
-              class="table-icon"
-              @click="addFav(props.row.address)"
-            />
-          </div>
           <InfoIcon class="table-icon" @click="gotoNode(props.row.address)" />
           <a
             style="height: 1rem"
@@ -63,6 +53,19 @@
           </a>
           <Ip :str-copy="props.row.ip" />
         </div>
+      </span>
+      <span v-else-if="props.column.field == 'highlight'">
+        <StaredIcon
+          v-if="isFav(props.row.address)"
+          class="table-icon"
+          style="fill: #ffee58"
+          @click="delFav(props.row.address)"
+        />
+        <StarIcon
+          v-else
+          class="table-icon"
+          @click="addFav(props.row.address)"
+        />
       </span>
       <span v-else-if="props.column.field == 'age'">
         <span
@@ -217,12 +220,13 @@ import { mapGetters } from 'vuex'
 import { remove } from 'lodash'
 import JsonIcon from '@/assets/images/json.svg?inline'
 import InfoIcon from '@/assets/images/info.svg?inline'
-import StarIcon from '@/assets/images/star.svg?inline'
-import StaredIcon from '@/assets/images/stared.svg?inline'
+import StarIcon from '@/assets/images/bookmark.svg?inline'
+import StaredIcon from '@/assets/images/bookmarked.svg?inline'
 import ExitIcon from '@/assets/images/sign-out.svg?inline'
 import VoteIcon from '@/assets/images/vote.svg?inline'
 import DangerIcon from '@/assets/images/danger.svg?inline'
 import MarkerIcon from '@/assets/images/marker.svg?inline'
+import HighlightList from '@/assets/images/highlight-list.svg?inline'
 
 export default {
   components: {
@@ -234,11 +238,12 @@ export default {
     VoteIcon,
     MarkerIcon,
     DangerIcon,
+    HighlightList
   },
-  props: ['rows', 'cols'],
+  props: ['rows', 'cols', 'name'],
   data() {
     return {
-      favs: [],
+      favs: []
     }
   },
   computed: {
@@ -246,20 +251,21 @@ export default {
       runePrice: 'getRunePrice',
     }),
   },
+  mounted() {
+    this.favs = JSON.parse(localStorage.getItem(this.name))
+  },
+  watch: {
+    favs(array) {
+      localStorage.setItem(this.name, JSON.stringify(array))
+    },
+  },
   methods: {
     rowClassCallback(row) {
       return this.isFav(row.address) ? 'highlight table-row' : 'table-row'
     },
     addFav(address) {
-      let favs
-      try {
-        favs = this.favs || []
-      } catch (e) {
-        this.favs = []
-      }
-
       if (address) {
-        this.favs = [...favs, address]
+        this.favs = [...this.favs, address]
       }
     },
     delFav(address) {

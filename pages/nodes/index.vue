@@ -4,13 +4,13 @@
       <info-card :options="topBonds" />
     </div>
     <card>
-      <node-table :rows="activeNodes" :cols="activeCols" />
+      <node-table :rows="activeNodes" :cols="activeCols" name="active-nodes" />
     </card>
     <card>
-      <node-table :rows="stbNodes" :cols="activeCols" />
+      <node-table :rows="stbNodes" :cols="activeCols" name="rdy-nodes" />
     </card>
     <card>
-      <node-table :rows="whiteListedNodes" :cols="activeCols" />
+      <node-table :rows="whiteListedNodes" :cols="activeCols" name="other-nodes" />
     </card>
   </Page>
 </template>
@@ -104,14 +104,14 @@ export default {
           sortFn: this.versionSort,
         },
         {
-          label: 'Slash Point',
+          label: 'Slash',
           field: 'slash',
           type: 'number',
           formatFn: this.normalFormat,
           tdClass: 'mono',
         },
         {
-          label: 'Current Award',
+          label: 'Award',
           field: 'award',
           type: 'number',
           formatFn: this.normalFormat,
@@ -134,7 +134,6 @@ export default {
       minBond: 30000000000000,
       lastBlockHeight: undefined,
       churnInterval: undefined,
-      localFavNodes: undefined,
       churnOption: undefined,
       bondMetrics: undefined,
       mimirs: undefined,
@@ -209,6 +208,12 @@ export default {
         }))
 
       return [
+        {
+          label: 'Highlight',
+          field: 'highlight',
+          tdClass: 'center',
+          thClass: 'center',
+        },
         this.cols[0],
         {
           label: 'Age',
@@ -436,20 +441,6 @@ export default {
       } else {
         return undefined
       }
-    },
-    favNodes: {
-      set(array) {
-        this.localFavNodes = array
-        localStorage.setItem('FavNodes', JSON.stringify(array))
-      },
-      get() {
-        if (process.browser) {
-          return (
-            this.localFavNodes ?? JSON.parse(localStorage.getItem('FavNodes'))
-          )
-        }
-        return []
-      },
     },
   },
   mounted() {
