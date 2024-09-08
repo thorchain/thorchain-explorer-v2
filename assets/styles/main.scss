@@ -92,7 +92,7 @@ input {
     text-decoration: none;
     color: var(--sec-font-color);
     margin-top:5px;
-  
+
     &.active,
     &.nuxt-link-exact-active,
     &.nuxt-link-active {
@@ -100,14 +100,14 @@ input {
       color: var(--primary-color);
       margin-bottom:5px;
     }
-  
+
     &:hover {
       background-color: var(--darker-bg);
       border-radius: 0.3rem;
       color: var(--primary-color);
     }
   }
-  
+
 
 }
 
@@ -670,7 +670,7 @@ input {
     background-color: rgb(225 239 254);
     border: 1px solid rgba(47, 138, 245, 0.16);
   }
-  
+
 }
 
 [theme='dark'] .mini-bubble {
@@ -970,5 +970,38 @@ input {
   &.highlight td {
     color: var(--highlight) !important;
     font-weight: bold;
+  }
+}
+
+#vgt-table > thead > tr > th {
+  padding-right: 0.75rem;
+
+  &.sortable {
+    button {
+      &::after, &::before {
+        display: none;
+      }
+    }
+
+    &.sorting {
+      padding-right: 1.5rem;
+      span {
+        color: var(--primary-color);
+      }
+    }
+
+    &.sorting-asc {
+      button::after {
+        margin-top: -3px;
+        display: block;
+      }
+    }
+
+    &.sorting-desc {
+      button::before {
+        margin-top: -3px;
+        display: block;
+      }
+    }
   }
 }
