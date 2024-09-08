@@ -962,14 +962,14 @@ input {
   }
 }
 
-#main-content table.net-table tbody {
-  tr.table-row:hover th.line-number {
-      background-color: var(--darker-bg) !important;
-  }
-
+#vgt-table.net-table tbody {
   tr.table-row {
     &:hover {
       background-color: var(--darker-bg) !important;
+
+      th {
+        background-color: var(--darker-bg) !important;
+      }
     }
   
     &.highlight td {
@@ -977,6 +977,7 @@ input {
       font-weight: bold;
     }
   }
+
 }
 
 #vgt-table > thead > tr > th {
