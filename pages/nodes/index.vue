@@ -53,9 +53,10 @@ export default {
           tdClass: 'mono',
         },
         {
-          label: 'Flag',
+          label: 'Status',
           field: 'status',
           tdClass: 'center',
+          thClass: 'center',
         },
         {
           label: 'Version',
@@ -177,6 +178,12 @@ export default {
         },
         this.cols[0],
         {
+          label: 'Churn',
+          field: 'churn',
+          tdClass: 'center',
+          thClass: 'center',
+        },
+        {
           label: 'Age',
           field: 'age',
           type: 'number',
@@ -189,11 +196,13 @@ export default {
           field: 'isp',
           type: 'text',
           tdClass: 'center',
+          thClass: 'center',
         },
         {
           label: 'Location',
           field: 'location',
           tdClass: 'center',
+          thClass: 'center',
           sortFn: this.cSort,
         },
         ...this.cols.slice(1, 6),
