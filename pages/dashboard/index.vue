@@ -1066,7 +1066,7 @@ export default {
                 .map(
                   (p) => `<span>
                   <span>${p.seriesName}</span>
-                  <b>$${p.value ? this.$options.filters.number(p.value, '0,0') : '0'}</b>
+                  <b>$${p.value ? this.$options.filters.number(p.value, '0,0') : '-'}</b>
                 </span>`
                 )
                 .join('')}
