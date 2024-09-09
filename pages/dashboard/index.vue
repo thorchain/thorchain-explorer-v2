@@ -1066,7 +1066,7 @@ export default {
                 .map(
                   (p) => `<span>
                   <span>${p.seriesName}</span>
-                  <b>$${this.$options.filters.number(p.value, '0,0')}</b>
+                  <b>$${p.value ? this.$options.filters.number(p.value, '0,0') : '0'}</b>
                 </span>`
                 )
                 .join('')}
@@ -1074,7 +1074,7 @@ export default {
               <span>
                 <span>Total Earning</span>
                 <b>$${this.$options.filters.number(
-                  param.reduce((a, c) => a + c.value, 0),
+                  param.reduce((a, c) => a + (c.value ? c.value : 0), 0),
                   '0,0'
                 )}</b>
               </span>
