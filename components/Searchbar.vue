@@ -50,6 +50,18 @@
           </small>
           <small v-else>-</small>
         </div>
+        <!-- Move churn values here -->
+        <div
+          v-if="shouldShowChurnValues"
+          class="header-churn-container animate"
+        >
+          <small style="color: var(--sec-font-color)">Churn:</small>
+          <div class="header-churn-values">
+            <small v-for="value in churnValues" :key="value" class="mono">
+              {{ value }}
+            </small>
+          </div>
+        </div>
       </div>
       <div id="theme-wrapper">
         <div
@@ -133,9 +145,13 @@ export default {
       sidebar: 'getSidebar',
       runePrice: 'getRunePrice',
       chainsHeight: 'getChainsHeight',
+      churnValues: 'getChurnValues',
     }),
     networkEnv() {
       return process.env.NETWORK
+    },
+    shouldShowChurnValues() {
+      return this.$route.path === '/nodes'
     },
   },
   watch: {
@@ -300,6 +316,38 @@ export default {
     }
   }
 
+  .header-churn-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: row;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+
+    .header-churn-values {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary-color);
+      padding-left: 5px;
+    }
+    &.animate {
+      .mono {
+        -webkit-animation: jello-vertical 1s both;
+        animation: jello-vertical 1s both;
+      }
+      @keyframes jello-vertical {
+        0%,
+        100% {
+          transform: none;
+        }
+        50% {
+          transform: scaleY(1.1);
+        }
+      }
+    }
+  }
+
   .left-section {
     flex: 1;
     display: flex;
@@ -345,7 +393,6 @@ export default {
       }
     }
   }
-
   #search-container {
     display: flex;
     position: relative;

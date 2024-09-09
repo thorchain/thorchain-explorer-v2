@@ -107,6 +107,7 @@ export default {
   computed: {
     ...mapGetters({
       runePrice: 'getRunePrice',
+      churnValues: 'getChurnValues', 
     }),
     error() {
       return !this.nodesQuery
@@ -498,10 +499,18 @@ export default {
     })
 
     Promise.all([lastProm, netProm, mimirProm]).then((_) => {
+      this. calculateChurnValues()
       this.updateChurnTime()
     })
   },
   methods: {
+    
+    calculateChurnValues() {
+  const churnValue = 1 - ((this.bondMetrics?.nextChurnHeight - this.lastBlockHeight) / this.churnInterval);
+  const formattedChurnValue = this.$options.filters.percent(churnValue, '0,0.000');
+  
+  this.$store.commit('setChurnValues', [formattedChurnValue]);
+},
     async updateNodes() {
       const { data: nodesInfo } = await this.$api.getNodesInfo()
       this.nodesQuery = nodesInfo
