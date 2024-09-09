@@ -58,7 +58,7 @@
         <StaredIcon
           v-if="isFav(props.row.address)"
           class="table-icon"
-          style="fill: #ffee58"
+          style="fill: var(--highlight)"
           @click="delFav(props.row.address)"
         />
         <StarIcon
