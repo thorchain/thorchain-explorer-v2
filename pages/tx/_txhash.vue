@@ -29,7 +29,11 @@
           />
         </template>
       </tx-card>
-      <streaming-swap v-if="inboundHash" :inbound-hash="inboundHash" />
+      <streaming-swap
+        v-if="inboundHash"
+        :inbound-hash="inboundHash"
+        :quote="quote"
+      />
     </template>
     <div v-else-if="isError" class="notify-card card-bg">
       <h3>{{ error.title }}</h3>
@@ -47,7 +51,6 @@
 
 <script>
 import moment from 'moment'
-import { assetToString } from '@xchainjs/xchain-util'
 import { orderBy, compact } from 'lodash'
 import { mapGetters } from 'vuex'
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
@@ -59,6 +62,7 @@ import {
   assetToTrade,
   isInternalTx,
   tradeToAsset,
+  assetToString,
 } from '~/utils'
 import Accordion from '~/components/Accordion.vue'
 
@@ -89,6 +93,7 @@ export default {
       inboundHash: undefined,
       thorStatus: undefined,
       thorHeight: 0,
+      quote: undefined,
     }
   },
   computed: {
@@ -285,7 +290,6 @@ export default {
           outAsset?.trade) &&
         (thorStatus.stages?.outbound_delay?.completed ?? true)
 
-      console.log(thorStatus)
       return !inboundFinalised || !actionFinalised || !outboundFinalised
     },
     createCard(cardBase, accordions) {
@@ -298,6 +302,7 @@ export default {
               asset: a?.asset,
               amount: a?.amount,
               amountUSD: this.amountToUSD(a?.asset, a?.amount, this.pools),
+              filter: a?.filter,
             })),
             middle: {
               pending: cardBase.middle?.pending,
@@ -312,6 +317,7 @@ export default {
               icon: a?.icon,
               address: a?.address,
               borderColor: a?.borderColor,
+              filter: a?.filter,
             })),
           },
         },
@@ -652,7 +658,37 @@ export default {
       }
 
       if (memo.type === 'swap') {
-        const { cards, accordions } = this.createSwapState(
+        const inAsset = this.parseMemoAsset(
+          thorStatus.tx.coins[0].asset,
+          this.pools
+        )
+        const inAmount = parseInt(thorStatus.tx.coins[0].amount)
+        const outAsset = this.parseMemoAsset(memo.asset, this.pools)
+        try {
+          this.quote = (
+            await this.$api.getQuote({
+              amount: inAmount,
+              from_asset: assetToString(inAsset),
+              to_asset: assetToString(outAsset),
+              destination: memo.destAddr,
+              streaming_interval:
+                thorStatus.stages.swap_status?.streaming?.interval ||
+                memo.interval,
+              affiliate: memo.affiliate,
+              affiliate_bps:
+                parseInt(
+                  midgardAction?.actions[0]?.metadata?.swap?.affiliateFee
+                ) ||
+                parseInt(memo.fee) ||
+                0,
+              height: midgardAction?.actions[0].height,
+            })
+          ).data
+        } catch (error) {
+          console.error(error)
+        }
+
+        const { cards, accordions } = await this.createSwapState(
           thorStatus,
           thorTx,
           midgardAction,
@@ -1186,7 +1222,7 @@ export default {
         },
       }
     },
-    createSwapState(thorStatus, thorTx, actions, memo, thorHeader) {
+    createSwapState(thorStatus, thorTx, actions, memo, thorHeader, quote) {
       // swap user addresses
       const userAddresses = new Set([
         thorStatus.tx.from_address.toLowerCase(),
@@ -1314,7 +1350,8 @@ export default {
           out: [
             {
               asset: outAsset,
-              amount: outAmount,
+              amount: outAmount || +this.quote.expected_amount_out,
+              filter: (v) => `~ ${this.baseAmountFormatOrZero(v)}`,
             },
             ...outTxs?.slice(1).map((o) => ({
               asset: this.parseMemoAsset(o.coins[0].asset, this.pools),

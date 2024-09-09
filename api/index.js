@@ -90,6 +90,7 @@ import {
   getAffiliateDaily,
   getActions,
   getCoinMarketInfo,
+  getQuote,
 } from './middleware.api'
 import {
   getChurnHistory,
@@ -256,6 +257,7 @@ export default function ({ $axios }, inject) {
     getMidgardActions,
     getThorVersion,
     getCoinMarketInfo,
+    getQuote,
   }
 
   inject('api', api)

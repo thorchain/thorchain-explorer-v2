@@ -29,6 +29,12 @@
           {{ $options.filters.percent(streamingDetail.fill, 2) }}
         </span>
       </div>
+      <span v-if="quoteQuality" class="info-item">
+        <span>Execution Quality</span>
+        <span>
+          {{ quoteQuality | percent(2) }}
+        </span>
+      </span>
       <hr class="info-hr" />
       <div class="info-item">
         <span>Swapped / Deposited Input</span>
@@ -80,7 +86,7 @@ import moment from 'moment'
 import { assetFromString } from '~/utils'
 
 export default {
-  props: ['inboundHash'],
+  props: ['inboundHash', 'quote'],
   data() {
     return {
       streamingDetail: {
@@ -97,11 +103,25 @@ export default {
         depositedAsset: '',
         swappedIn: 0,
         swappedOut: 0,
+        streamingData: undefined,
       },
       intervalId: undefined,
       countdownInterval: undefined,
       durationSeconds: null,
     }
+  },
+  computed: {
+    quoteQuality() {
+      if (!this.quote || !this.streamingData) {
+        return
+      }
+
+      const quoteQuality =
+        this.quote.expected_amount_out / this.streamingData.deposit
+      const quality = this.streamingData.out / this.streamingData.in
+
+      return 1 - (quoteQuality - quality) / quoteQuality
+    },
   },
   mounted() {
     this.updateStreamingDetail(this.inboundHash)
@@ -165,6 +185,8 @@ export default {
         }
 
         const { data } = await this.$api.getStreamingSwap(txid)
+        this.streamingData = data
+
         if (data.trade_target) {
           this.streamingDetail.tradeTarget = this.$options.filters.number(
             +data.trade_target / 1e8,
