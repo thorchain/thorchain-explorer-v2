@@ -972,9 +972,12 @@ input {
       }
     }
   
-    &.highlight td {
-      color: var(--highlight) !important;
-      font-weight: bold;
+    &.highlight {
+      td, th, td span span {
+        fill: var(--highlight) !important;
+        color: var(--highlight) !important;
+        font-weight: bold;
+      }
     }
   }
 
