@@ -91,6 +91,7 @@ import {
   getActions,
   getCoinMarketInfo,
   getNodesInfo,
+  getQuote,
 } from './middleware.api'
 import {
   getChurnHistory,
@@ -258,6 +259,7 @@ export default function ({ $axios }, inject) {
     getThorVersion,
     getCoinMarketInfo,
     getNodesInfo,
+    getQuote,
   }
 
   inject('api', api)

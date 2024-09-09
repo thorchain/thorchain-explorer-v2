@@ -145,3 +145,12 @@ export function getNodesInfo() {
     endpoints[process.env.NETWORK].SERVER_URL + 'api/nodesInfo'
   )
 }
+
+export function getQuote(params) {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + 'quote',
+    {
+      params,
+    }
+  )
+}
