@@ -50,8 +50,8 @@
           </small>
           <small v-else>-</small>
         </div>
-        <!-- Move churn values here -->
-        <div
+      </div>
+      <div
           v-if="shouldShowChurnValues"
           class="header-churn-container animate"
         >
@@ -62,7 +62,6 @@
             </small>
           </div>
         </div>
-      </div>
       <div id="theme-wrapper">
         <div
           ref="themeContainer"
@@ -321,8 +320,8 @@ export default {
     align-items: center;
     justify-content: center;
     flex-direction: row;
-    padding-left: 0.5rem;
-    padding-right: 0.5rem;
+    padding-right: 10px;
+    padding-top:20px;
 
     .header-churn-values {
       display: flex;
