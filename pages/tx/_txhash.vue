@@ -1351,7 +1351,7 @@ export default {
             {
               asset: outAsset,
               amount: outAmount || +this.quote.expected_amount_out,
-              filter: (v) => `~ ${this.baseAmountFormatOrZero(v)}`,
+              filter: outAmount ? undefined : (v) => `~ ${this.baseAmountFormatOrZero(v)}`,
             },
             ...outTxs?.slice(1).map((o) => ({
               asset: this.parseMemoAsset(o.coins[0].asset, this.pools),
