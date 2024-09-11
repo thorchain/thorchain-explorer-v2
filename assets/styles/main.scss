@@ -15,14 +15,25 @@ main {
 }
 
 body {
-  background: linear-gradient(to left top,
-      var(--gradient-left) 0%
-      /*bottom-right color*/
-      ,
-      var(--gradient-right) 100%
-      /*top-left color*/
-    );
-  font-family: "Roboto", system-ui, -apple-system, "Segoe UI", "Helvetica Neue", "Noto Sans", "Liberation Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  background: linear-gradient(
+    to left top,
+    var(--gradient-left) 0% /*bottom-right color*/,
+    var(--gradient-right) 100% /*top-left color*/
+  );
+  font-family:
+    'Roboto',
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    'Helvetica Neue',
+    'Noto Sans',
+    'Liberation Sans',
+    Arial,
+    sans-serif,
+    'Apple Color Emoji',
+    'Segoe UI Emoji',
+    'Segoe UI Symbol',
+    'Noto Color Emoji';
   font-style: normal;
   font-optical-sizing: auto;
   color: var(--font-color);
@@ -91,14 +102,14 @@ input {
     white-space: nowrap;
     text-decoration: none;
     color: var(--sec-font-color);
-    margin-top:5px;
+    margin-top: 5px;
 
     &.active,
     &.nuxt-link-exact-active,
     &.nuxt-link-active {
       border-radius: 0.3rem;
       color: var(--primary-color);
-      margin-bottom:5px;
+      margin-bottom: 5px;
     }
 
     &:hover {
@@ -107,10 +118,7 @@ input {
       color: var(--primary-color);
     }
   }
-
-
 }
-
 
 .header-icon {
   margin-left: 5px;
@@ -279,7 +287,7 @@ input {
         overflow: hidden;
         width: 66%;
 
-        >span {
+        > span {
           overflow: hidden;
           text-overflow: ellipsis;
 
@@ -456,7 +464,7 @@ input {
   }
 }
 
-.vgt-table:not(.node-table)>tbody>tr:last-child td {
+.vgt-table:not(.node-table) > tbody > tr:last-child td {
   border-bottom: none !important;
 }
 
@@ -670,7 +678,6 @@ input {
     background-color: rgb(225 239 254);
     border: 1px solid rgba(47, 138, 245, 0.16);
   }
-
 }
 
 [theme='dark'] .mini-bubble {
@@ -759,7 +766,7 @@ input {
     flex-direction: row;
   }
 
-  >div {
+  > div {
     @include lg {
       width: calc(50% - 10px);
     }
@@ -795,7 +802,7 @@ input {
   flex-direction: column;
   gap: 5px;
 
-  >span {
+  > span {
     display: flex;
     gap: 8px;
     justify-content: space-between;
@@ -971,16 +978,17 @@ input {
         background-color: var(--darker-bg) !important;
       }
     }
-  
+
     &.highlight {
-      td, th, td span span {
+      td,
+      th,
+      td span span {
         fill: var(--highlight) !important;
         color: var(--highlight) !important;
         font-weight: bold;
       }
     }
   }
-
 }
 
 #vgt-table > thead > tr > th {
@@ -988,7 +996,8 @@ input {
 
   &.sortable {
     button {
-      &::after, &::before {
+      &::after,
+      &::before {
         display: none;
       }
     }
@@ -1014,4 +1023,8 @@ input {
       }
     }
   }
+}
+
+#vgt-table > thead > tr > th.no-padding {
+  padding: 0;
 }

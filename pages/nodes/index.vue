@@ -21,9 +21,8 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import _ from 'lodash'
 import NodeTable from './component/nodeTable.vue'
-import { blockTime, fillNodeData, availableChains } from '~/utils'
+import { fillNodeData, availableChains } from '~/utils'
 
 export default {
   name: 'NodesPage',
@@ -35,64 +34,9 @@ export default {
       loading: true,
       mode: 'active',
       statusMode: 'node-stat',
-      modes: [
-        { text: 'Active', mode: 'active' },
-        { text: 'Eligible', mode: 'eligible' },
-        { text: 'StandBy', mode: 'standby' },
-        { text: 'Whitelisted', mode: 'whitelisted' },
-        { text: 'Unknown', mode: 'unknown' },
-      ],
       nodesQuery: undefined,
       popoverText: 'Test',
       nodesExtra: undefined,
-      cols: [
-        {
-          label: 'Address',
-          field: 'address',
-          formatFn: this.addressFormatV2,
-          tdClass: 'mono',
-        },
-        {
-          label: 'Status',
-          field: 'status',
-          tdClass: 'center',
-          thClass: 'center',
-        },
-        {
-          label: 'Version',
-          field: 'version',
-          type: 'text',
-          tdClass: 'center',
-          sortFn: this.versionSort,
-        },
-        {
-          label: 'Slash',
-          field: 'slash',
-          type: 'number',
-          formatFn: this.normalFormat,
-          tdClass: 'mono',
-        },
-        {
-          label: 'Award',
-          field: 'award',
-          type: 'number',
-          formatFn: this.normalFormat,
-          tdClass: 'mono',
-        },
-        {
-          label: 'Fee',
-          field: 'fee',
-          type: 'percentage',
-          tdClass: 'mono',
-        },
-        {
-          label: 'Bond',
-          field: 'total_bond',
-          type: 'number',
-          formatFn: this.normalFormat,
-          tdClass: 'mono',
-        },
-      ],
       minBond: 30000000000000,
       lastBlockHeight: undefined,
       churnInterval: undefined,
@@ -107,51 +51,10 @@ export default {
   computed: {
     ...mapGetters({
       runePrice: 'getRunePrice',
-      churnValues: 'getChurnValues', 
+      chainsHeight: 'getChainsHeight',
     }),
     error() {
       return !this.nodesQuery
-    },
-    nodeStatus() {
-      if (this.nodesQuery) {
-        const nodes = this.categorizedNodes(this.nodesQuery)
-        return {
-          tooltip: {
-            trigger: 'item',
-          },
-          legend: {
-            show: true,
-            textStyle: {
-              color: 'var(--font-color)',
-            },
-            formatter(name) {
-              const node = nodes?.find((n) => n.name === name)
-              return `${name}: ${node?.nodes?.length}`
-            },
-          },
-          series: [
-            {
-              name: 'Node type',
-              type: 'pie',
-              radius: ['40%', '50%'],
-              avoidLabelOverlap: false,
-              itemStyle: {
-                borderRadius: 10,
-                borderColor: 'transparent',
-                borderWidth: 2,
-              },
-              label: {
-                show: true,
-                color: 'var(--font-color)',
-                textBorderColor: 'transparent',
-              },
-              data: nodes.map((n) => ({ value: n.nodes.length, name: n.name })),
-            },
-          ],
-        }
-      } else {
-        return undefined
-      }
     },
     activeCols() {
       if (!this.nodesQuery) {
@@ -167,7 +70,7 @@ export default {
           field: `behind.${c}`,
           type: 'number',
           tdClass: 'mono center',
-          thClass: 'center',
+          thClass: 'center no-padding',
         }))
 
       return [
@@ -177,12 +80,11 @@ export default {
           tdClass: 'center',
           thClass: 'center',
         },
-        this.cols[0],
         {
-          label: 'Churn',
-          field: 'churn',
-          tdClass: 'center',
-          thClass: 'center',
+          label: 'Address',
+          field: 'address',
+          formatFn: this.addressFormatV2,
+          tdClass: 'mono',
         },
         {
           label: 'Age',
@@ -206,7 +108,25 @@ export default {
           thClass: 'center',
           sortFn: this.cSort,
         },
-        ...this.cols.slice(1, 6),
+        {
+          label: 'Status',
+          field: 'status',
+          tdClass: 'center',
+          thClass: 'center',
+        },
+        {
+          label: 'Version',
+          field: 'version',
+          type: 'text',
+          tdClass: 'center',
+          sortFn: this.versionSort,
+        },
+        {
+          label: 'Fee',
+          field: 'fee',
+          type: 'percentage',
+          tdClass: 'mono',
+        },
         {
           label: 'Providers',
           field: 'providers',
@@ -215,11 +135,38 @@ export default {
           thClass: 'center',
           sortFn: this.pSort,
         },
-        ...this.cols.slice(-1),
+        {
+          label: 'Award',
+          field: 'award',
+          type: 'number',
+          formatFn: this.normalFormat,
+          tdClass: 'mono',
+        },
+        {
+          label: 'Bond',
+          field: 'total_bond',
+          type: 'number',
+          formatFn: this.normalFormat,
+          tdClass: 'mono',
+        },
+        {
+          label: 'Slash',
+          field: 'slash',
+          type: 'number',
+          formatFn: this.normalFormat,
+          tdClass: 'mono',
+        },
         {
           label: 'Score',
           field: 'score',
           type: 'number',
+          tdClass: 'mono center',
+          thClass: 'center',
+        },
+        {
+          label: 'APY',
+          field: 'apy',
+          type: 'percentage',
           tdClass: 'mono center',
           thClass: 'center',
         },
@@ -229,10 +176,9 @@ export default {
           tdClass: 'center',
         },
         {
-          label: 'APY',
-          field: 'apy',
-          type: 'percentage',
-          tdClass: 'mono center',
+          label: 'Churn',
+          field: 'churn',
+          tdClass: 'center',
           thClass: 'center',
         },
         ...chains,
@@ -244,7 +190,12 @@ export default {
       }
 
       return [
-        this.cols[0],
+        {
+          label: 'Address',
+          field: 'address',
+          formatFn: this.addressFormatV2,
+          tdClass: 'mono',
+        },
         {
           label: 'Age',
           field: 'age',
@@ -252,6 +203,12 @@ export default {
           tdClass: 'center',
           thClass: 'center',
           sortFn: this.aSort,
+        },
+        {
+          label: 'Status',
+          field: 'status',
+          tdClass: 'center',
+          thClass: 'center',
         },
         {
           label: 'ISP',
@@ -265,7 +222,19 @@ export default {
           tdClass: 'center',
           sortFn: this.cSort,
         },
-        ...this.cols.slice(1, 4),
+        {
+          label: 'Version',
+          field: 'version',
+          type: 'text',
+          tdClass: 'center',
+          sortFn: this.versionSort,
+        },
+        {
+          label: 'Fee',
+          field: 'fee',
+          type: 'percentage',
+          tdClass: 'mono',
+        },
         {
           label: 'Providers',
           field: 'providers',
@@ -274,13 +243,12 @@ export default {
           thClass: 'center',
           sortFn: this.pSort,
         },
-        ...this.cols.slice(-1),
       ]
     },
     topBonds() {
       return [
         {
-          title: 'Top Active Bonds',
+          title: 'Active Bonds',
           rowStart: 1,
           colSpan: 1,
           items: [
@@ -350,7 +318,7 @@ export default {
           ],
         },
         {
-          title: 'Top Standby Bonds',
+          title: 'Standby Bonds',
           rowStart: 1,
           colSpan: 1,
           items: [
@@ -409,6 +377,8 @@ export default {
         const actNodes = this.nodesQuery?.filter((e) => e.status === 'Active')
         const filteredNodes = []
 
+        // bond, slash, oldest
+
         actNodes.forEach((el) => {
           fillNodeData(filteredNodes, el)
         })
@@ -420,11 +390,16 @@ export default {
     },
     stbNodes() {
       if (this.nodesQuery) {
+        const activeVersion = this.nodesQuery.find(
+          (e) => e.status === 'Active'
+        ).version
+
         const actNodes = this.nodesQuery?.filter(
           (e) =>
-            (e.status === 'Standby' && e.preflight_status.status === 'Ready') ||
-            e.status === 'Ready'
+            (e.status === 'Standby' || e.status === 'Ready') &&
+            e.version === activeVersion
         )
+
         const filteredNodes = []
 
         actNodes.forEach((el) => {
@@ -456,6 +431,23 @@ export default {
       }
     },
   },
+  watch: {
+    chainsHeight(n, o) {
+      if (!this.bondMetrics || !this.churnInterval) {
+        return
+      }
+
+      const churnValue =
+        1 - (this.bondMetrics?.nextChurnHeight - n.THOR) / this.churnInterval
+
+      const formattedChurnValue = this.$options.filters.percent(
+        churnValue,
+        '0,0.000'
+      )
+
+      this.$store.commit('setChurnValues', [formattedChurnValue])
+    },
+  },
   mounted() {
     const mimirProm = this.$api
       .getMimir()
@@ -477,44 +469,20 @@ export default {
         console.error(e)
       })
 
-    const lastProm = this.$api
-      .getRPCLastBlockHeight()
-      .then((res) => {
-        this.lastBlockHeight = +res?.data?.block?.header?.height
-      })
-      .catch((error) => {
-        console.error(error)
-      })
-
     this.updateNodes().then((_) => {
       this.loading = false
     })
 
     this.intervalId = setInterval(() => {
       this.updateNodes()
-    }, 30 * 1e3)
+    }, 10 * 1e3)
 
-    this.$api.getMimirVotes().then(({ data }) => {
-      this.mimirs = this.formatMimirs(data)
-    })
-
-    Promise.all([lastProm, netProm, mimirProm]).then((_) => {
-      this. calculateChurnValues()
-      this.updateChurnTime()
-    })
+    Promise.all([netProm, mimirProm]).then((_) => {})
   },
   methods: {
-    
-    calculateChurnValues() {
-  const churnValue = 1 - ((this.bondMetrics?.nextChurnHeight - this.lastBlockHeight) / this.churnInterval);
-  const formattedChurnValue = this.$options.filters.percent(churnValue, '0,0.000');
-  
-  this.$store.commit('setChurnValues', [formattedChurnValue]);
-},
     async updateNodes() {
       const { data: nodesInfo } = await this.$api.getNodesInfo()
       this.nodesQuery = nodesInfo
-      this.fillExtraNodes(nodesInfo)
     },
     calculateHardCap() {
       if (!this.nodesQuery) {
@@ -537,146 +505,6 @@ export default {
     destroyed() {
       this.clearIntervalId(this.intervalId)
     },
-    updateChurnTime() {
-      let churnTimeRemaining =
-        +this.bondMetrics?.nextChurnHeight - this.lastBlockHeight
-      const chartTime =
-        (this.churnInterval - churnTimeRemaining) / this.churnInterval
-
-      this.churnOption = {
-        series: [
-          {
-            type: 'gauge',
-            startAngle: 180,
-            endAngle: 0,
-            min: 0,
-            max: 1,
-            pointer: {
-              show: false,
-            },
-            progress: {
-              show: true,
-              overlap: false,
-              roundCap: true,
-              clip: false,
-              itemStyle: {
-                borderWidth: 1,
-                borderColor: '#464646',
-              },
-            },
-            splitLine: {
-              show: false,
-            },
-            axisTick: {
-              show: false,
-            },
-            axisLabel: {
-              show: false,
-            },
-            data: [
-              {
-                value: chartTime,
-                name: this.churnHalted ? 'Churn paused' : 'Next Churn',
-                itemStyle: {
-                  color: this.churnHalted ? '#f04832' : 'var(--primary-color)',
-                },
-                title: {
-                  offsetCenter: ['0%', '0%'],
-                  color: this.churnHalted ? '#f04832' : 'var(--primary-color)',
-                },
-                detail: {
-                  offsetCenter: ['0%', '40%'],
-                },
-              },
-            ],
-            title: {
-              fontSize: 14,
-            },
-            detail: {
-              width: 50,
-              height: 14,
-              fontSize: 14,
-              color: 'auto',
-              valueAnimation: true,
-              formatter: (value) => {
-                return blockTime((1 - value) * this.churnInterval)
-              },
-            },
-          },
-        ],
-      }
-
-      setInterval(() => {
-        churnTimeRemaining--
-        this.churnOption.series[0].data[0].value =
-          1 - churnTimeRemaining / this.churnInterval
-      }, 6000)
-    },
-    categorizedNodes(nodes) {
-      if (nodes) {
-        const sortedNodes = []
-
-        const nodesStatus = ['Active', 'Ready', 'Whitelisted', 'Unknown']
-        nodesStatus.forEach((n) => {
-          sortedNodes.push({
-            name: n,
-            nodes: nodes?.filter((e) => e.status === n),
-          })
-        })
-
-        sortedNodes.push({
-          name: 'Eligible',
-          nodes: nodes?.filter(
-            (e) =>
-              e.status === 'Standby' && parseInt(e.total_bond) >= 30000000000000
-          ),
-        })
-
-        sortedNodes.push({
-          name: 'StandBy',
-          nodes: nodes?.filter(
-            (e) =>
-              e.status === 'Standby' && parseInt(e.total_bond) < 30000000000000
-          ),
-        })
-
-        return sortedNodes
-      } else {
-        return undefined
-      }
-    },
-    fillENode(nodes) {
-      const filteredNodes = []
-      nodes.forEach((el) => {
-        fillNodeData(filteredNodes, el)
-      })
-      return filteredNodes
-    },
-    fillExtraNodes(nodes) {
-      if (nodes) {
-        let eliNodes = nodes?.filter(
-          (e) =>
-            (e.status === 'Standby' || e.status === 'Ready') &&
-            parseInt(e.total_bond) >= 30000000000000
-        )
-        eliNodes = this.fillENode(eliNodes)
-        this.otherNodes[0].cols = eliNodes
-
-        const stbNodes = nodes?.filter(
-          (e) =>
-            e.status === 'Standby' && parseInt(e.total_bond) < 30000000000000
-        )
-        this.otherNodes[1].cols = this.fillENode(stbNodes)
-
-        const whNodes = nodes?.filter((e) => e.status === 'Whitelisted')
-        this.otherNodes[2].cols = this.fillENode(whNodes)
-
-        const rdNodes = nodes?.filter((e) => e.status === 'Unknown')
-        this.otherNodes[3].cols = this.fillENode(rdNodes)
-      } else {
-        return undefined
-      }
-    },
     calMedianBond() {
       const eNodes = this.bondMetrics?.standbyBonds.filter(
         (b) => b >= this.minBond
@@ -693,32 +521,6 @@ export default {
     },
     aSort(x, y, col, rowX, rowY) {
       return x?.number < y?.number ? -1 : x?.number > y?.number ? 1 : 0
-    },
-
-    // Can be wrapped on the server
-    formatMimirs(d) {
-      const mimirs = {}
-      d.mimirs.forEach((v) => {
-        if (!v.value) {
-          return
-        }
-
-        if (v.signer in mimirs) {
-          mimirs[v.signer].push({
-            value: v.value,
-            key: v.key,
-          })
-        } else {
-          mimirs[v.signer] = [
-            {
-              value: v.value,
-              key: v.key,
-            },
-          ]
-        }
-      })
-
-      return mimirs
     },
   },
   head: {

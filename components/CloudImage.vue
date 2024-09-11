@@ -71,6 +71,8 @@ export default {
         return require('@/assets/images/clouds/ovh.svg?inline')
       } else if (name.includes('comcast')) {
         return require('@/assets/images/clouds/comcast.svg?inline')
+      } else if (name.includes('ionos')) {
+        return require('@/assets/images/clouds/ionos.svg?inline')
       } else if (name.includes('routerhosting') || name.includes('leaseweb')) {
         return false
       }
