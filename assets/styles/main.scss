@@ -519,7 +519,7 @@ input {
 .table-icon {
   width: 1rem;
   height: 1rem;
-  fill: var(--font-color);
+  fill: currentColor;
   cursor: pointer;
 
   &:hover,
@@ -982,7 +982,9 @@ input {
     &.highlight {
       td,
       th,
-      td span span {
+      td span span,
+      .table-wrapper-row,
+      a {
         fill: var(--highlight) !important;
         color: var(--highlight) !important;
         font-weight: bold;
@@ -1027,4 +1029,8 @@ input {
 
 #vgt-table > thead > tr > th.no-padding {
   padding: 0;
+}
+
+a {
+  color: var(--sec-font-color);
 }
