@@ -36,11 +36,11 @@
       </span>
     </template>
     <template slot="table-row" slot-scope="props">
-      <span v-if="props.column.field == 'address'" class="clickable">
+      <span v-if="props.column.field == 'address'">
         <div class="table-wrapper-row">
           <nuxt-link
             v-tooltip="props.row.address"
-            class="item-link"
+            class="clickable"
             :to="`/address/${props.row.address}`"
           >
             {{ addressFormatV2(props.row.address, 4, true) }}
@@ -52,7 +52,7 @@
             :href="gotoNodeUrl(props.row.address)"
             target="_blank"
           >
-            <JsonIcon class="table-icon" />
+            <JsonIcon class="table-icon item-link" />
           </a>
           <Ip :str-copy="props.row.ip" />
         </div>
@@ -355,7 +355,10 @@ export default {
 
 .item-link {
   text-decoration: none;
-  color: var(--primary-color);
+  color: inherit;
+  &:hover {
+    color: var(--primary-color);
+  }
 }
 
 .provider-table {
