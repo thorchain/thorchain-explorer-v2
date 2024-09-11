@@ -28,6 +28,9 @@
       >
         <MarkerIcon class="table-icon" />
       </div>
+      <div v-else-if="props.column.field == 'churn'">
+        <ranking-icon class="table-icon" />
+      </div>
       <span v-else>
         {{ props.column.label }}
       </span>
@@ -154,21 +157,26 @@
           <div class="title" style="margin-bottom: 5px">
             <strong>Providers</strong>
           </div>
-          <table style="min-width: 500px">
-            <tr v-for="(p, i) in props.row.providers" :key="i">
+          <table class="provider-table">
+            <tr v-for="(p, i) in filterProviders(props.row.providers)" :key="i">
               <td>
-                <nuxt-link class="clickable" :to="`/address/${p.bond_address}`">
-                  {{ formatAddress(p.bond_address) }}
+                <nuxt-link
+                  class="clickable mono"
+                  :to="`/address/${p.bond_address}`"
+                >
+                  {{ addressFormatV2(p.bond_address, 4, true) }}
                 </nuxt-link>
               </td>
-              <td>
-                <span>
+              <td class="mono">
+                <small>
+                  {{ runeCur() }}
+                </small>
+                {{ $options.filters.number(p.bond / 10 ** 8, '0,0') }}
+              </td>
+              <td style="text-align: right">
+                <span class="mono">
                   {{ (p.bond / 10 ** 8 / props.row.total_bond) | percent }}
                 </span>
-              </td>
-              <td>
-                <span class="extra">{{ runeCur() }}</span>
-                {{ numberFormat(p.bond / 10 ** 8) }}
               </td>
             </tr>
           </table>
@@ -217,7 +225,7 @@
 </template>
 <script>
 import { mapGetters } from 'vuex'
-import { remove } from 'lodash'
+import { remove, orderBy, compact } from 'lodash'
 import JsonIcon from '@/assets/images/json.svg?inline'
 import InfoIcon from '@/assets/images/info.svg?inline'
 import StarIcon from '@/assets/images/bookmark.svg?inline'
@@ -226,6 +234,7 @@ import ExitIcon from '@/assets/images/sign-out.svg?inline'
 import VoteIcon from '@/assets/images/vote.svg?inline'
 import DangerIcon from '@/assets/images/danger.svg?inline'
 import MarkerIcon from '@/assets/images/marker.svg?inline'
+import RankingIcon from '@/assets/images/ranking.svg?inline'
 import HighlightList from '@/assets/images/highlight-list.svg?inline'
 
 export default {
@@ -236,6 +245,7 @@ export default {
     StaredIcon,
     ExitIcon,
     VoteIcon,
+    RankingIcon,
     MarkerIcon,
     DangerIcon,
     HighlightList,
@@ -260,6 +270,13 @@ export default {
     this.favs = JSON.parse(localStorage.getItem(this.name)) || []
   },
   methods: {
+    filterProviders(arr) {
+      return orderBy(
+        arr.map((a) => ({ ...a, bond: +a.bond })),
+        ['bond'],
+        ['desc']
+      )
+    },
     rowClassCallback(row) {
       return this.isFav(row.address) ? 'highlight table-row' : 'table-row'
     },
@@ -339,5 +356,17 @@ export default {
 .item-link {
   text-decoration: none;
   color: var(--primary-color);
+}
+
+.provider-table {
+  td {
+    &:first-of-type {
+      padding-right: 1rem;
+    }
+
+    &:last-of-type {
+      padding-left: 1rem;
+    }
+  }
 }
 </style>

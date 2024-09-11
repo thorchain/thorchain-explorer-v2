@@ -27,6 +27,17 @@
     </div>
     <div class="right-section">
       <div class="header-info">
+        <div v-if="shouldShowChurnValues" ref="churn-info">
+          <small style="color: var(--sec-font-color)">Churn:</small>
+          <small
+            v-for="value in churnValues"
+            :key="value"
+            style="color: var(--primary-color)"
+            class="mono"
+          >
+            {{ value }}
+          </small>
+        </div>
         <div ref="header-info-1">
           <small style="color: var(--sec-font-color)">RUNE Price:</small>
           <small
@@ -51,17 +62,6 @@
           <small v-else>-</small>
         </div>
       </div>
-      <div
-          v-if="shouldShowChurnValues"
-          class="header-churn-container animate"
-        >
-          <small style="color: var(--sec-font-color)">Churn:</small>
-          <div class="header-churn-values">
-            <small v-for="value in churnValues" :key="value" class="mono">
-              {{ value }}
-            </small>
-          </div>
-        </div>
       <div id="theme-wrapper">
         <div
           ref="themeContainer"
@@ -160,6 +160,9 @@ export default {
     chainsHeight(n, o) {
       this.animate('header-info-1', 'animate')
       this.animate('header-info-2', 'animate')
+    },
+    churnValues(n, o) {
+      this.animate('churn-info', 'animate')
     },
   },
   mounted() {
@@ -290,6 +293,12 @@ export default {
     align-items: end;
     justify-content: center;
     flex-direction: column;
+    font-size: 0.8rem;
+
+    .break {
+      flex-basis: 100%;
+      width: 0;
+    }
 
     > div {
       -webkit-transition: all ease 0.4;
@@ -310,38 +319,6 @@ export default {
         .mono {
           -webkit-animation: jello-vertical 1s both;
           animation: jello-vertical 1s both;
-        }
-      }
-    }
-  }
-
-  .header-churn-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: row;
-    padding-right: 10px;
-    padding-top:20px;
-
-    .header-churn-values {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--primary-color);
-      padding-left: 5px;
-    }
-    &.animate {
-      .mono {
-        -webkit-animation: jello-vertical 1s both;
-        animation: jello-vertical 1s both;
-      }
-      @keyframes jello-vertical {
-        0%,
-        100% {
-          transform: none;
-        }
-        50% {
-          transform: scaleY(1.1);
         }
       }
     }
