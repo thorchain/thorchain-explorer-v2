@@ -235,12 +235,12 @@
 </template>
 <script>
 import { mapGetters } from 'vuex'
-import { remove, orderBy, compact } from 'lodash'
+import { remove, orderBy } from 'lodash'
 import JsonIcon from '@/assets/images/json.svg?inline'
 import InfoIcon from '@/assets/images/info.svg?inline'
 import StarIcon from '@/assets/images/bookmark.svg?inline'
 import StaredIcon from '@/assets/images/bookmarked.svg?inline'
-import ExitIcon from '@/assets/images/sign-out.svg?inline'
+import ExitIcon from '@/assets/images/arrow-down-square.svg?inline'
 import VoteIcon from '@/assets/images/vote.svg?inline'
 import DangerIcon from '@/assets/images/danger.svg?inline'
 import MarkerIcon from '@/assets/images/marker.svg?inline'
