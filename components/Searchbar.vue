@@ -27,16 +27,16 @@
     </div>
     <div class="right-section">
       <div class="header-info">
-        <div v-if="shouldShowChurnValues" ref="churn-info">
-          <small style="color: var(--sec-font-color)">Churn:</small>
+        <div ref="churn-info">
+          <small style="color: var(--sec-font-color)">Churn Value:</small>
           <small
-            v-for="value in churnValues"
-            :key="value"
+            v-if="extraHeaderInfo.length"
             style="color: var(--primary-color)"
             class="mono"
           >
-            {{ value }}
+            {{ extraHeaderInfo[0].filter }}
           </small>
+          <small v-else>-</small>
         </div>
         <div ref="header-info-1">
           <small style="color: var(--sec-font-color)">RUNE Price:</small>
@@ -144,13 +144,10 @@ export default {
       sidebar: 'getSidebar',
       runePrice: 'getRunePrice',
       chainsHeight: 'getChainsHeight',
-      churnValues: 'getChurnValues',
+      extraHeaderInfo: 'getExtraHeaderInfo',
     }),
     networkEnv() {
       return process.env.NETWORK
-    },
-    shouldShowChurnValues() {
-      return this.$route.path === '/nodes'
     },
   },
   watch: {
@@ -161,7 +158,7 @@ export default {
       this.animate('header-info-1', 'animate')
       this.animate('header-info-2', 'animate')
     },
-    churnValues(n, o) {
+    extraHeaderInfo(n, o) {
       this.animate('churn-info', 'animate')
     },
   },

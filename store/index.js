@@ -8,7 +8,7 @@ export const state = () => ({
   fullscreen: false,
   showSidebar: false,
   pools: undefined,
-  churnValues: [],
+  extraHeaderInfo: [],
 })
 
 export const getters = {
@@ -39,8 +39,8 @@ export const getters = {
   getPools(state) {
     return state.pools
   },
-  getChurnValues(state) {
-    return state.churnValues
+  getExtraHeaderInfo(state) {
+    return state.extraHeaderInfo
   },
 }
 
@@ -75,7 +75,7 @@ export const mutations = {
   setPools(state, action) {
     state.pools = action
   },
-  setChurnValues(state, values) {
-    state.churnValues = values
+  setExtraHeaderInfo(state, values) {
+    state.extraHeaderInfo = values
   },
 }

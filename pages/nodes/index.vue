@@ -501,9 +501,11 @@ export default {
         '0,0.000'
       )
 
-      this.$store.commit('setChurnValues', [formattedChurnValue])
-    },
+    this.$store.commit('setExtraHeaderInfo', [
+      { name: 'extraHeaderInfo', value: churnValue, filter: formattedChurnValue },
+    ]);
   },
+},
   mounted() {
     const mimirProm = this.$api
       .getMimir()
@@ -537,6 +539,26 @@ export default {
     Promise.all([netProm, mimirProm]).then((_) => {})
   },
   methods: {
+
+    calculateChurnValue() {
+    const churnValue =
+      1 - ((this.bondMetrics?.nextChurnHeight - this.chainsHeight.THOR) / this.churnInterval);
+
+    const churnArray = [
+      {
+        name: 'extraHeaderInfo',
+        value: churnValue,
+        filter: this.$options.filters.percent(
+          churnValue,
+          '0,0.000'
+        ),
+      },
+    ];
+
+    this.$store.commit('setExtraHeaderInfo', churnArray);
+  },
+
+    
     async updateNodes() {
       const { data: nodesInfo } = await this.$api.getNodesInfo()
       this.nodesQuery = nodesInfo
