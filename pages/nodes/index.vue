@@ -451,7 +451,7 @@ export default {
           const el = stbNodes[i]
           fillNodeData(filteredNodes, el)
           if (churnInNumbers > churnNodes) {
-            if (el.jail && el.jail.release_height > this.chainsHeight.THOR) {
+            if (el.jail && el.jail.release_height > this.chainsHeight?.THOR) {
               continue
             }
             filteredNodes[i].churn = {
