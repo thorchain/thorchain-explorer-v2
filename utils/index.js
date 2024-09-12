@@ -522,6 +522,7 @@ export function fillNodeData(nodes, el) {
       undefined,
     isp: el.isp,
     org: el.org,
+    jail: el.jail,
     score: el.slash_points ? (1e4 / el.slash_points).toFixed(4) : 0,
     leave: el.requested_to_leave,
     fee: el.bond_providers?.node_operator_fee / 1e4,

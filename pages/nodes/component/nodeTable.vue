@@ -182,6 +182,17 @@
           </table>
         </b-popover>
       </span>
+      <div v-else-if="props.column.field == 'churn'" class="churn-wrapper">
+        <component
+          :is="
+            rows[props.row.originalIndex].churn &&
+            rows[props.row.originalIndex].churn.icon
+          "
+          v-if="props.row.churn && props.row.churn.icon"
+          v-tooltip="props.row.churn.name"
+          class="table-icon"
+        />
+      </div>
       <span v-else-if="props.column.field.includes('behind.')">
         <span
           v-if="props.formattedRow[props.column.field] == 0"
@@ -298,6 +309,12 @@ export default {
       }
       return false
     },
+    mos(props) {
+      if (!props.row.churn?.icon) {
+        return
+      }
+      return require(props.row.churn?.icon)
+    },
   },
 }
 </script>
@@ -371,5 +388,11 @@ export default {
       padding-left: 1rem;
     }
   }
+}
+
+.churn-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>
