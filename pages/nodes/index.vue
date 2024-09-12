@@ -21,6 +21,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import { orderBy } from 'lodash'
 import NodeTable from './component/nodeTable.vue'
 import { fillNodeData, availableChains } from '~/utils'
 
@@ -38,6 +39,7 @@ export default {
       popoverText: 'Test',
       nodesExtra: undefined,
       minBond: 30000000000000,
+      newNodesChurn: 2,
       lastBlockHeight: undefined,
       churnInterval: undefined,
       churnOption: undefined,
@@ -178,7 +180,6 @@ export default {
         {
           label: 'Churn',
           field: 'churn',
-          tdClass: 'center',
           thClass: 'center',
         },
         ...chains,
@@ -374,13 +375,54 @@ export default {
     },
     activeNodes() {
       if (this.nodesQuery) {
-        const actNodes = this.nodesQuery?.filter((e) => e.status === 'Active')
+        if (!this.nodesQuery) {
+          return
+        }
+        const actNodes = this.nodesQuery.filter((e) => e.status === 'Active')
         const filteredNodes = []
 
         // bond, slash, oldest
+        let lowestBond = null
+        let highestSlash = 0
+        let oldest = 0
+        for (let i = 0; i < actNodes.length; i++) {
+          const el = actNodes[i]
+          if (+el.slash_points > highestSlash) {
+            highestSlash = +el.slash_points
+          }
 
-        actNodes.forEach((el) => {
+          if (el.age.number > oldest) {
+            oldest = el.age.number
+          }
+
+          if (!lowestBond || lowestBond > +el.total_bond) {
+            lowestBond = +el.total_bond
+          }
+        }
+
+        actNodes.forEach((el, index) => {
           fillNodeData(filteredNodes, el)
+          // add churn data
+          if (+el.total_bond === lowestBond) {
+            filteredNodes[index].churn = {
+              name: 'Lowest Bond',
+              icon: require('@/assets/images/cheap.svg?inline'),
+            }
+          }
+
+          if (el.age.number === oldest) {
+            filteredNodes[index].churn = {
+              name: 'Oldest',
+              icon: require('@/assets/images/old.svg?inline'),
+            }
+          }
+
+          if (+el.slash_points === highestSlash) {
+            filteredNodes[index].churn = {
+              name: 'Highest Slashes',
+              icon: require('@/assets/images/angry.svg?inline'),
+            }
+          }
         })
 
         return filteredNodes
@@ -394,17 +436,31 @@ export default {
           (e) => e.status === 'Active'
         ).version
 
-        const actNodes = this.nodesQuery?.filter(
+        let stbNodes = this.nodesQuery?.filter(
           (e) =>
             (e.status === 'Standby' || e.status === 'Ready') &&
             e.version === activeVersion
         )
 
-        const filteredNodes = []
+        stbNodes = orderBy(stbNodes, [(o) => +o.total_bond], ['desc'])
 
-        actNodes.forEach((el) => {
+        const filteredNodes = []
+        const churnInNumbers = 3 + this.newNodesChurn
+        let churnNodes = 0
+        for (let i = 0; i < stbNodes.length; i++) {
+          const el = stbNodes[i]
           fillNodeData(filteredNodes, el)
-        })
+          if (churnInNumbers > churnNodes) {
+            if (el.jail && el.jail.release_height > this.chainsHeight.THOR) {
+              continue
+            }
+            filteredNodes[i].churn = {
+              name: 'Churning In',
+              icon: require('@/assets/images/circle-up.svg?inline'),
+            }
+            churnNodes++
+          }
+        }
 
         return filteredNodes
       } else {
@@ -455,6 +511,7 @@ export default {
         this.churnHalted = res.data.HALTCHURNING
         this.minBond = +res.data.MINIMUMBONDINRUNE
         this.churnInterval = +res.data.CHURNINTERVAL
+        this.newNodesChurn = +res.data.NUMBEROFNEWNODESPERCHURN
       })
       .catch((e) => {
         console.error(e)
