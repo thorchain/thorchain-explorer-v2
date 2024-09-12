@@ -135,7 +135,6 @@
             class="table-icon"
             style="fill: var(--red)"
           />
-          <span v-else>-</span>
         </div>
       </span>
       <span v-else-if="props.column.field == 'fee'">
