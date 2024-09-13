@@ -3,7 +3,7 @@
     <div class="chart-container">
       <div class="network-stats">
         <div class="stat-group">
-          <nuxt-link to="/insights" class="stat-item stat-item-link">
+          <nuxt-link to="/swaps" class="stat-item stat-item-link">
             <exchange class="stat-image" />
             <div class="item-detail">
               <div class="header">Swap Volume (24hr)</div>
