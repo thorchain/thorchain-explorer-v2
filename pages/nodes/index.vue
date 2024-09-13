@@ -538,24 +538,11 @@ export default {
 
     Promise.all([netProm, mimirProm]).then((_) => {})
   },
+  destroyed() {
+    this.$store.commit('resetExtraHeaderInfo')
+    this.clearIntervalId(this.intervalId)
+  },
   methods: {
-    calculateChurnValue() {
-      const churnValue =
-        1 -
-        (this.bondMetrics?.nextChurnHeight - this.chainsHeight.THOR) /
-          this.churnInterval
-
-      const churnArray = [
-        {
-          name: 'extraHeaderInfo',
-          value: churnValue,
-          filter: this.$options.filters.percent(churnValue, '0,0.000'),
-        },
-      ]
-
-      this.$store.commit('setExtraHeaderInfo', churnArray)
-    },
-
     async updateNodes() {
       const { data: nodesInfo } = await this.$api.getNodesInfo()
       this.nodesQuery = nodesInfo
@@ -577,9 +564,6 @@ export default {
       return Math.floor(
         (Number.parseInt(lowerNodes?.slice(-1)[0].total_bond) ?? 0) / 10 ** 8
       )
-    },
-    destroyed() {
-      this.clearIntervalId(this.intervalId)
     },
     calMedianBond() {
       const eNodes = this.bondMetrics?.standbyBonds.filter(
