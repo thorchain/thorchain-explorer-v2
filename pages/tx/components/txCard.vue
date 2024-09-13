@@ -111,7 +111,11 @@
             </template>
             <template v-else>
               <span class="mono sec-color">{{
-                o.amount ? baseAmountFormatOrZero(o.amount) : '...'
+                o.amount
+                  ? o.filter
+                    ? o.filter(o.amount)
+                    : baseAmountFormatOrZero(o.amount)
+                  : '...'
               }}</span>
               <small class="mono sec-color">{{ showAsset(o.asset) }}</small>
               <br /><small>{{

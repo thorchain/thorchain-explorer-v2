@@ -87,6 +87,9 @@
         ]"
         :act-nav.sync="swapMode"
       >
+        <template #header>
+          <nuxt-link to="/swaps" class="swaps-nav">TOP Swaps (24H)</nuxt-link>
+        </template>
         <VChart
           v-if="swapMode == 'swap-vol'"
           :key="1"
@@ -1066,7 +1069,7 @@ export default {
                 .map(
                   (p) => `<span>
                   <span>${p.seriesName}</span>
-                  <b>$${this.$options.filters.number(p.value, '0,0')}</b>
+                  <b>$${p.value ? this.$options.filters.number(p.value, '0,0') : '-'}</b>
                 </span>`
                 )
                 .join('')}
@@ -1074,7 +1077,7 @@ export default {
               <span>
                 <span>Total Earning</span>
                 <b>$${this.$options.filters.number(
-                  param.reduce((a, c) => a + c.value, 0),
+                  param.reduce((a, c) => a + (c.value ? c.value : 0), 0),
                   '0,0'
                 )}</b>
               </span>
@@ -1469,6 +1472,29 @@ export default {
       .arrow-icon {
         fill: var(--primary-color);
       }
+    }
+  }
+}
+
+.swaps-nav {
+  background-color: var(--bg-color);
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 8px;
+  color: var(--font-color);
+  cursor: pointer;
+  font-size: 14px;
+  text-decoration: none;
+  font-weight: 500;
+
+  &:hover {
+    color: var(--primary-color);
+    background-color: var(--active-bg-color);
+    .arrow-icon {
+      fill: var(--primary-color);
     }
   }
 }
