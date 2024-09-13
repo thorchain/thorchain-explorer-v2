@@ -747,12 +747,24 @@ export default {
         icons,
       }
     },
-    animate(refName, className, duration = 2000) {
-      const d = this.$refs[refName]
-      d.classList.add(className)
+    addAnimate(d, className, duration) {
+      d.classList?.add(className)
       setTimeout(function () {
         d.classList.remove(className)
       }, duration)
+    },
+    animate(refName, className, duration = 2000) {
+      const d = this.$refs[refName]
+      if (!d) {
+        return
+      }
+      if (Array.isArray(d)) {
+        d.forEach((c) => {
+          this.addAnimate(c, className, duration)
+        })
+      } else {
+        this.addAnimate(d, className, duration)
+      }
     },
   },
 }

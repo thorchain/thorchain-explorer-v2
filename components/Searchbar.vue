@@ -27,17 +27,19 @@
     </div>
     <div class="right-section">
       <div class="header-info">
-        <div ref="churn-info">
-          <small style="color: var(--sec-font-color)">Churn Value:</small>
-          <small
-            v-if="extraHeaderInfo.length"
-            style="color: var(--primary-color)"
-            class="mono"
-          >
-            {{ extraHeaderInfo[0].filter }}
-          </small>
-          <small v-else>-</small>
-        </div>
+        <template v-for="(e, i) in extraHeaderInfo">
+          <div :key="i" ref="churn-info">
+            <small style="color: var(--sec-font-color)">{{ e.name }}:</small>
+            <small
+              v-if="e.value"
+              style="color: var(--primary-color)"
+              class="mono"
+            >
+              {{ e.filter(e.value) }}
+            </small>
+            <small v-else>-</small>
+          </div>
+        </template>
         <div ref="header-info-1">
           <small style="color: var(--sec-font-color)">RUNE Price:</small>
           <small
