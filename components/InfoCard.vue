@@ -61,6 +61,14 @@
                         <slot :name="item.valueSlot" :item="item" />
                       </template>
                       <template v-else>
+                        <template v-if="item.usdValue">
+                          <span
+                            v-if="item.value && runePrice"
+                            class="usd-value"
+                          >
+                            ({{ (runePrice * item.value) | currency }})
+                          </span>
+                        </template>
                         <span v-if="item.filter">
                           {{ item.filter(item.value) }}
                         </span>
@@ -139,6 +147,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.usd-value {
+  font-size: 0.9rem;
+  margin-right: 12px;
+}
 .flex-containers {
   .flex-container {
     display: flex;
