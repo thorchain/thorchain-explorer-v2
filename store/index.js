@@ -78,4 +78,7 @@ export const mutations = {
   setExtraHeaderInfo(state, values) {
     state.extraHeaderInfo = values
   },
+  resetExtraHeaderInfo(state) {
+    state.extraHeaderInfo = []
+  },
 }
