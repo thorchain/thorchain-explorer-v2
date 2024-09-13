@@ -490,20 +490,7 @@ export default {
   },
   watch: {
     chainsHeight(n, o) {
-      if (!this.bondMetrics || !this.churnInterval) {
-        return
-      }
-
-      const churnValue =
-        1 - (this.bondMetrics?.nextChurnHeight - n.THOR) / this.churnInterval
-
-      this.$store.commit('setExtraHeaderInfo', [
-        {
-          name: 'Churn',
-          value: churnValue,
-          filter: (v) => this.$options.filters.percent(v, '0,0.000'),
-        },
-      ])
+      this.churnProgress()
     },
   },
   mounted() {
@@ -536,7 +523,9 @@ export default {
       this.updateNodes()
     }, 10 * 1e3)
 
-    Promise.all([netProm, mimirProm]).then((_) => {})
+    Promise.all([netProm, mimirProm]).then((_) => {
+      this.churnProgress()
+    })
   },
   destroyed() {
     this.$store.commit('resetExtraHeaderInfo')
@@ -546,6 +535,24 @@ export default {
     async updateNodes() {
       const { data: nodesInfo } = await this.$api.getNodesInfo()
       this.nodesQuery = nodesInfo
+    },
+    churnProgress() {
+      if (!this.bondMetrics || !this.churnInterval) {
+        return
+      }
+
+      const churnValue =
+        1 -
+        (this.bondMetrics?.nextChurnHeight - this.chainsHeight.THOR) /
+          this.churnInterval
+
+      this.$store.commit('setExtraHeaderInfo', [
+        {
+          name: 'Churn',
+          value: churnValue,
+          filter: (v) => this.$options.filters.percent(v, '0,0.000'),
+        },
+      ])
     },
     calculateHardCap() {
       if (!this.nodesQuery) {
