@@ -62,12 +62,9 @@
                       </template>
                       <template v-else>
                         <template v-if="item.usdValue">
-                          <span
-                            v-if="item.value && runePrice"
-                            class="usd-value"
-                          >
-                            ({{ (runePrice * item.value) | currency }})
-                          </span>
+                          <small v-if="item.value && runePrice">
+                            ({{ (runePrice * item.value) | currency }}) -
+                          </small>
                         </template>
                         <span v-if="item.filter">
                           {{ item.filter(item.value) }}
