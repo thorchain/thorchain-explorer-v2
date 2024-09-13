@@ -80,7 +80,7 @@ export default {
           label: 'Highlight',
           field: 'highlight',
           tdClass: 'center',
-          thClass: 'center',
+          thClass: 'center no-padding',
         },
         {
           label: 'Address',
@@ -176,11 +176,12 @@ export default {
           label: 'Leave',
           field: 'leave',
           tdClass: 'center',
+          thClass: 'center',
         },
         {
           label: 'Churn',
           field: 'churn',
-          thClass: 'center',
+          thClass: 'center no-padding',
         },
         ...chains,
       ]
