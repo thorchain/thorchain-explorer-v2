@@ -981,7 +981,7 @@ export default {
       )
       const inAmount = parseInt(thorStatus.tx.coins[0].amount)
       const addAction = actions?.actions?.find(
-        (a) => a.type === 'add_liquidity'
+        (a) => a.type === 'addLiquidity' && a.in[0].address !== ''
       )
       const timeStamp = moment.unix(addAction?.date / 1e9)
 
@@ -1030,9 +1030,8 @@ export default {
             type: 'Add',
             timeStamp: timeStamp || null,
             liquidityUnits:
-              parseInt(
-                actions?.actions[0]?.metadata?.addLiquidity?.liquidityUnits
-              ) || null,
+              parseInt(addAction?.metadata?.addLiquidity?.liquidityUnits) ||
+              null,
             affiliateName: memo.affiliate,
             affiliateFee: parseInt(memo.fee),
             outboundDelayRemaining: outboundDelayRemaining || 0,
@@ -1351,7 +1350,9 @@ export default {
             {
               asset: outAsset,
               amount: outAmount || +this.quote.expected_amount_out,
-              filter: outAmount ? undefined : (v) => `~ ${this.baseAmountFormatOrZero(v)}`,
+              filter: outAmount
+                ? undefined
+                : (v) => `~ ${this.baseAmountFormatOrZero(v)}`,
             },
             ...outTxs?.slice(1).map((o) => ({
               asset: this.parseMemoAsset(o.coins[0].asset, this.pools),
