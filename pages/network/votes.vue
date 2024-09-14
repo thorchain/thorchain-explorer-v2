@@ -22,6 +22,10 @@
           perPage: 30,
           perPageDropdownEnabled: false,
         }"
+        :sort-options="{
+          enabled: true,
+          initialSortBy: { field: 'result' },
+        }"
       >
         <template slot="table-row" slot-scope="props">
           <div v-if="props.column.field == 'result'" class="cell-content">
