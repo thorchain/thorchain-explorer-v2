@@ -169,32 +169,33 @@ export default {
         let votesLength = 0
         for (const m of Object.keys(this.mimirs)) {
           if (Object.keys(this.mimirVotes).includes(m)) {
-            if (this.mimirVotes[m].every((v) => v.value == undefined)) {
+            if (this.mimirVotes[m].every((v) => v.value === undefined)) {
               continue
             }
             votesLength++
           }
         }
+        console.log(this.mimirVotes)
         let index = 0
         for (const m of Object.keys(this.mimirs)) {
           if (Object.keys(this.mimirVotes).includes(m)) {
             const hVotes = this.getVoteHighestBid(this.mimirVotes[m])
-            if (this.mimirVotes[m].every((v) => v.value == undefined)) {
+            if (this.mimirVotes[m].every((v) => v.value === undefined)) {
               continue
             }
-            if (hVotes.values.length == 0) {
+            if (hVotes.values.length === 0) {
               votesLength--
               continue
             }
             xaxis.push(m)
             hVotes.values.forEach((v) => {
-              if (v.value == 'undefined') {
+              if (v.value === 'undefined') {
                 return
               }
               const vIndex = types?.findIndex(
-                (t) => t.name?.toString() == v.value?.toString()
+                (t) => t.name?.toString() === v.value?.toString()
               )
-              if (vIndex == -1) {
+              if (vIndex === -1) {
                 const initData = _.times(votesLength, _.constant(0))
                 initData[index] = v.count
                 types.push({
@@ -212,14 +213,14 @@ export default {
             })
             mimrsVoteConstants.push({
               vote: m,
-              currentVal: this.mimirs[m] == -1 ? '-' : this.mimirs[m],
+              currentVal: this.mimirs[m] === -1 ? '-' : this.mimirs[m],
               highestValue: hVotes.value,
               consensus: hVotes.consensus,
               votePassed: hVotes.votePassed,
               remainingVotes:
                 +this.network?.activeNodeCount - hVotes.votePassed,
               result:
-                +this.mimirs[m] == +hVotes.value ? 'Passed' : 'In Progress',
+                +this.mimirs[m] === +hVotes.value ? 'Passed' : 'In Progress',
               votedValues: hVotes.values,
             })
             index++
@@ -325,6 +326,10 @@ export default {
     formatVotes(mimirs) {
       const votes = {}
       for (const i in mimirs) {
+        // if the value if undefined it's zero
+        if (!mimirs[i].value) {
+          mimirs[i].value = 0
+        }
         if (!(mimirs[i].key in votes)) {
           votes[mimirs[i].key] = [
             {
