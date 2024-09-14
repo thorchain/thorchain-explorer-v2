@@ -681,7 +681,7 @@ export default {
                 ) ||
                 parseInt(memo.fee) ||
                 0,
-              height: midgardAction?.actions[0].height,
+              height: midgardAction?.actions[0]?.height,
             })
           ).data
         } catch (error) {
