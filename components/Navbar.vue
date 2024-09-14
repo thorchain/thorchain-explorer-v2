@@ -46,6 +46,57 @@
           </div>
         </b-popover>
       </template>
+      <div v-if="menu" class="navbar-item" @click="toggleDropdown">
+        <div class="navbar-wrap">
+          <span class="navbar-text">Appearance & Settings</span>
+        </div>
+        <div v-if="isDropdownOpen" class="dropdown-menu">
+          <div id="theme-wrapper" class="dropdown-item">
+            <div class="theme-container">
+              <div class="theme-option" @click="setTheme('dark')">
+                <MoonIcon
+                  :class="{ active: theme === 'dark' }"
+                  class="menu-icon"
+                />
+                <div>Dark</div>
+              </div>
+              <div class="theme-option" @click="setTheme('light')">
+                <SunIcon
+                  :class="{ active: theme === 'light' }"
+                  class="menu-icon"
+                />
+                <div>Light</div>
+              </div>
+            </div>
+            <div class="line"></div>
+            <div class="network-container">
+              <div class="icon-label-container">
+                <SettingsIcon class="menu-icon" />
+                <div class="network-label-group">
+                  <a
+                    :class="{
+                      active:
+                        networkEnv === 'mainnet' || networkEnv === 'stagenet',
+                    }"
+                    :href="gotoInstance('mainnet', networkEnv === 'mainnet')"
+                  >
+                    Mainnet
+                  </a>
+                  <a
+                    :class="{
+                      active:
+                        networkEnv === 'mainnet' || networkEnv === 'stagenet',
+                    }"
+                    :href="gotoInstance('stagenet', networkEnv === 'stagenet')"
+                  >
+                    Stagenet
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -84,6 +135,10 @@ import chartUnselected from '~/assets/images/chart-unselected.svg?inline'
 
 import MenuIcon from '~/assets/images/menu-burger.svg?inline'
 import CrossIcon from '~/assets/images/cross.svg?inline'
+import MoonIcon from '~/assets/images/moon-icon.svg?inline'
+import SunIcon from '~/assets/images/sun-icon.svg?inline'
+import SettingsIcon from '~/assets/images/settings.svg?inline'
+import links from '~/const/links'
 
 export default {
   name: 'NavBar',
@@ -111,10 +166,15 @@ export default {
     chartSelected,
     chartUnselected,
     Question,
+    SunIcon,
+    MoonIcon,
+    SettingsIcon,
   },
   data() {
     return {
       showExternalMenu: false,
+      showSettings: false,
+      isDropdownOpen: false,
       navbarLists: [
         {
           name: 'Overview',
@@ -194,7 +254,14 @@ export default {
   computed: {
     ...mapGetters({
       menu: 'getIsMenuOn',
+      theme: 'getTheme',
     }),
+    theme() {
+      return this.$store.getters.getTheme
+    },
+    networkEnv() {
+      return process.env.NETWORK
+    },
   },
   methods: {
     ...mapMutations(['toggleMenu']),
@@ -202,8 +269,34 @@ export default {
       if (window.innerWidth > 900 && this.menu) {
         this.toggleMenu()
       }
+      if (this.isDropdownOpen) {
+        const navbarLists = this.$el.querySelector('.navbar-lists')
+        navbarLists.style.height = 'auto'
+      }
+    },
+    toggleDropdown() {
+      this.isDropdownOpen = !this.isDropdownOpen
+
+      const navbarLists = this.$el.querySelector('.navbar-lists')
+
+      if (this.isDropdownOpen) {
+        navbarLists.style.height = '500px'
+      } else {
+        navbarLists.style.height = 'auto'
+      }
+    },
+    toggleSettings() {
+      this.showSettings = !this.showSettings
+    },
+    setTheme(theme) {
+      this.$store.commit('setTheme', theme === 'dark')
+    },
+    gotoInstance(instance, disabled) {
+      if (disabled) return
+      return links[instance]
     },
   },
+
   mounted() {
     window.addEventListener('resize', this.handleResize)
   },
@@ -379,6 +472,145 @@ export default {
       display: flex;
       flex-direction: column;
       max-height: 500px;
+    }
+    .navbar-text {
+      cursor: pointer;
+      &.active,
+      &.nuxt-link-exact-active,
+      &.nuxt-link-active {
+        border-radius: 0.3rem;
+        color: var(--primary-color);
+        margin-bottom: 5px;
+      }
+
+      &:hover {
+        border-radius: 0.3rem;
+        color: var(--primary-color);
+      }
+    }
+    .network-dialog,
+    .theme-dialog {
+      position: absolute;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--border-color);
+      border-radius: 0.5rem;
+      width: 100px;
+      background: var(--card-bg-color);
+
+      a {
+        cursor: pointer;
+        background: var(--card-bg-color);
+        color: var(--font-color);
+        border: none;
+        padding: 0.5rem 1rem;
+        text-decoration: none;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: background-color 0.3s ease;
+
+        &:first-of-type {
+          border-radius: 0.5rem 0.5rem 0 0;
+        }
+
+        &:last-of-type {
+          border-radius: 0 0 0.5rem 0.5rem;
+        }
+
+        &:hover {
+          background: var(--darker-bg);
+          color: var(--primary-color);
+        }
+
+        &.active {
+          color: var(--primary-color);
+
+          &:hover {
+            background-color: var(--card-bg-color);
+          }
+        }
+      }
+    }
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      border: 1px solid var(--border-color);
+      width: 100%;
+      max-width: 100%;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      padding: 0.3rem;
+      z-index: 1000;
+      transform: translateY(0);
+      transition:
+        opacity 0.3s ease,
+        transform 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      margin-top: 0.5rem;
+
+      .theme-option {
+        display: flex;
+        font-size: 13px;
+        color: var(--sec-font-color);
+        text-decoration: none;
+        padding: 5px;
+        margin: 5px;
+
+        &:hover {
+          color: var(--primary-color);
+          cursor: pointer;
+          transition: background-color 0.3s ease;
+        }
+
+        .menu-icon {
+          margin-right: 8px;
+        }
+      }
+
+      .line {
+        height: 0.5px;
+        background-color: var(--line);
+        margin: 10px 0;
+        width: 100%;
+      }
+
+      .network-container {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        padding: 5px;
+        margin: 5px;
+      }
+
+      .icon-label-container {
+        display: flex;
+        align-items: center;
+      }
+
+      .network-label-group {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: var(--sec-font-color);
+        margin-left: 10px;
+      }
+
+      .network-label-group a {
+        text-decoration: none;
+        color: var(--sec-font-color);
+        margin-bottom: 8px;
+        font-size: 13px;
+
+        &:hover {
+          color: var(--primary-color);
+          transition: background-color 0.3s ease;
+        }
+      }
     }
   }
 }
