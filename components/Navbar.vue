@@ -189,10 +189,25 @@ export default {
           link: '/nodes',
         },
         {
-          name: 'Network',
+          name: 'Networks',
           unicon: 'vectorUnselected',
           icon: 'vectorSelected',
           link: '/network',
+          submenu: [
+          {
+          name: 'Network',
+          link: '/network',
+        },
+        {
+          name: 'Network Settings',
+          link: '/network/settings',
+        },
+        {
+          name: 'Mimir Votes',
+          link: '/network/votes',
+        },
+          ],
+        
         },
         {
           name: 'Transactions',
@@ -205,7 +220,21 @@ export default {
           unicon: 'swimmerUnselected',
           icon: 'swimmerSelected',
           link: '/pools',
+          submenu: [
+          {
+          name: 'Pools',
+          link: '/pools/main',
         },
+        {
+          name: 'Pool Earnings',
+          link: '/pools/earnings',
+        },
+        {
+          name: 'TVL by Chain',
+          link: '/pools/tvl',
+        },
+          ],
+         },
         {
           name: 'THORFi',
           unicon: 'financeUnselected',
