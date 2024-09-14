@@ -454,26 +454,25 @@ export default {
             },
           ],
         },
-
         {
-          title: 'APYs',
-          rowStart: 2,
+          title: 'Churning',
+          rowStart: 3,
           colSpan: 1,
           items: [
             {
-              name: 'Bonding APY',
-              value: this.network.bondingAPY,
-              filter: (v) => `${this.$options.filters.percent(v, 2)}`,
+              name: 'Next Churn Countdown',
+              value: `${
+                this.isChurnHalted()
+                  ? 'Churn paused'
+                  : this.chainsHeight &&
+                    blockTime(
+                      this.network.nextChurnHeight - this.chainsHeight.THOR
+                    )
+              }`,
             },
             {
-              name: 'Liquidity APY',
-              value: this.network.liquidityAPY,
-              filter: (v) => `${this.$options.filters.percent(v, 2)}`,
-            },
-            {
-              name: 'Pool Share Factor',
-              value: this.network.poolShareFactor,
-              filter: (v) => `${this.$options.filters.percent(v, 2)}`,
+              name: 'Pool Activation Countdown',
+              value: blockTime(this.network.poolActivationCountdown),
             },
           ],
         },
@@ -549,27 +548,10 @@ export default {
                 this.runePrice,
               filter: (v) => `${this.$options.filters.currency(v)}`,
             },
-          ],
-        },
-        {
-          title: 'Churning',
-          rowStart: 3,
-          colSpan: 1,
-          items: [
             {
-              name: 'Next Churn Countdown',
-              value: `${
-                this.isChurnHalted()
-                  ? 'Churn paused'
-                  : this.chainsHeight &&
-                    blockTime(
-                      this.network.nextChurnHeight - this.chainsHeight.THOR
-                    )
-              }`,
-            },
-            {
-              name: 'Pool Activation Countdown',
-              value: blockTime(this.network.poolActivationCountdown),
+              name: 'Pool Share Factor',
+              value: this.network.poolShareFactor,
+              filter: (v) => `${this.$options.filters.percent(v, 2)}`,
             },
           ],
         },
