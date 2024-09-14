@@ -48,50 +48,47 @@
       </template>
       <div v-if="menu" class="navbar-item" @click="toggleDropdown">
         <div class="navbar-wrap">
-          <span class="navbar-text">Appearance & Settings</span>
+          <span class="navbar-text">Appearance & Network</span>
         </div>
         <div v-if="isDropdownOpen" class="dropdown-menu">
           <div id="theme-wrapper" class="dropdown-item">
-            <div class="theme-container">
-              <div class="theme-option" @click="setTheme('dark')">
-                <MoonIcon
-                  :class="{ active: theme === 'dark' }"
-                  class="menu-icon"
-                />
+            <div class="settings-container">
+              <div
+                :class="['settings-option', { active: theme === 'dark' }]"
+                @click="setTheme('dark')"
+              >
+                <MoonIcon class="menu-icon" />
                 <div>Dark</div>
               </div>
-              <div class="theme-option" @click="setTheme('light')">
-                <SunIcon
-                  :class="{ active: theme === 'light' }"
-                  class="menu-icon"
-                />
+              <div
+                :class="['settings-option', { active: theme === 'light' }]"
+                @click="setTheme('light')"
+              >
+                <SunIcon class="menu-icon" />
                 <div>Light</div>
               </div>
             </div>
             <div class="line"></div>
-            <div class="network-container">
-              <div class="icon-label-container">
-                <SettingsIcon class="menu-icon" />
-                <div class="network-label-group">
-                  <a
-                    :class="{
-                      active:
-                        networkEnv === 'mainnet' || networkEnv === 'stagenet',
-                    }"
-                    :href="gotoInstance('mainnet', networkEnv === 'mainnet')"
-                  >
-                    Mainnet
-                  </a>
-                  <a
-                    :class="{
-                      active:
-                        networkEnv === 'mainnet' || networkEnv === 'stagenet',
-                    }"
-                    :href="gotoInstance('stagenet', networkEnv === 'stagenet')"
-                  >
-                    Stagenet
-                  </a>
-                </div>
+            <div class="settings-container">
+              <div class="settings-option" @click="setTheme('dark')">
+                <a
+                  :class="{
+                    active: networkEnv === 'mainnet',
+                  }"
+                  :href="gotoInstance('mainnet', networkEnv === 'mainnet')"
+                >
+                  Mainnet
+                </a>
+              </div>
+              <div class="settings-option" @click="setTheme('light')">
+                <a
+                  :class="{
+                    active: networkEnv === 'stagenet',
+                  }"
+                  :href="gotoInstance('stagenet', networkEnv === 'stagenet')"
+                >
+                  Stagenet
+                </a>
               </div>
             </div>
           </div>
@@ -194,20 +191,19 @@ export default {
           icon: 'vectorSelected',
           link: '/network',
           submenu: [
-          {
-          name: 'Network',
-          link: '/network',
-        },
-        {
-          name: 'Network Settings',
-          link: '/network/settings',
-        },
-        {
-          name: 'Mimir Votes',
-          link: '/network/votes',
-        },
+            {
+              name: 'Network',
+              link: '/network',
+            },
+            {
+              name: 'Network Settings',
+              link: '/network/settings',
+            },
+            {
+              name: 'Mimir Votes',
+              link: '/network/votes',
+            },
           ],
-        
         },
         {
           name: 'Transactions',
@@ -221,20 +217,20 @@ export default {
           icon: 'swimmerSelected',
           link: '/pools',
           submenu: [
-          {
-          name: 'Pools',
-          link: '/pools/main',
-        },
-        {
-          name: 'Pool Earnings',
-          link: '/pools/earnings',
-        },
-        {
-          name: 'TVL by Chain',
-          link: '/pools/tvl',
-        },
+            {
+              name: 'Pools',
+              link: '/pools/main',
+            },
+            {
+              name: 'Pool Earnings',
+              link: '/pools/earnings',
+            },
+            {
+              name: 'TVL by Chain',
+              link: '/pools/tvl',
+            },
           ],
-         },
+        },
         {
           name: 'THORFi',
           unicon: 'financeUnselected',
@@ -582,8 +578,9 @@ export default {
       flex-direction: column;
       margin-top: 0.5rem;
 
-      .theme-option {
+      .settings-option {
         display: flex;
+        align-items: center;
         font-size: 13px;
         color: var(--sec-font-color);
         text-decoration: none;
@@ -596,14 +593,27 @@ export default {
           transition: background-color 0.3s ease;
         }
 
+        &.active {
+          color: var(--primary-color);
+        }
+
+        a {
+          text-decoration: none;
+
+          &.active {
+            color: var(--primary-color);
+          }
+        }
+
         .menu-icon {
+          fill: currentColor;
           margin-right: 8px;
         }
       }
 
       .line {
         height: 0.5px;
-        background-color: var(--line);
+        background-color: var(--border-color);
         margin: 10px 0;
         width: 100%;
       }
