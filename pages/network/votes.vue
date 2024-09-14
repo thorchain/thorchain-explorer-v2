@@ -330,6 +330,11 @@ export default {
         if (!mimirs[i].value) {
           mimirs[i].value = 0
         }
+        // filter out old mimirs
+        const filteredMimirs = ['KILLSWITCHSTART']
+        if (filteredMimirs.includes(mimirs[i].key)) {
+          continue
+        }
         if (!(mimirs[i].key in votes)) {
           votes[mimirs[i].key] = [
             {
