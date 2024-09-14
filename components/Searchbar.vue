@@ -64,7 +64,7 @@
           <small v-else>-</small>
         </div>
       </div>
-      <div id="theme-wrapper">
+      <div v-show="innerWidth >= 990" id="theme-wrapper">
         <div
           ref="themeContainer"
           class="theme-container"
@@ -87,7 +87,7 @@
           </div>
         </transition>
       </div>
-      <div id="network-wrapper">
+      <div v-show="innerWidth >= 990" id="network-wrapper">
         <div ref="network" class="network-container" @click="toggleDialog">
           <SettingsIcon class="menu-icon" />
         </div>
@@ -162,6 +162,12 @@ export default {
     },
     extraHeaderInfo(n, o) {
       this.animate('churn-info', 'animate')
+    },
+    innerWidth(newWidth) {
+      if (newWidth < 900) {
+        this.showDialog = false
+        this.showSettings = false
+      }
     },
   },
   mounted() {
