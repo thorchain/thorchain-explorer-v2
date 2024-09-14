@@ -73,7 +73,7 @@
       <span v-else-if="props.column.field == 'age'">
         <span
           v-if="props.row.age"
-          v-tooltip="props.row.age.text"
+          v-tooltip="props.row.age.info"
           style="cursor: pointer"
           >{{ props.row.age.number | number('0,0.00') }}</span
         >
