@@ -7,7 +7,7 @@
       <node-table :rows="activeNodes" :cols="activeCols" name="active-nodes" />
     </card>
     <card :is-loading="!stbNodes">
-      <node-table :rows="stbNodes" :cols="activeCols" name="rdy-nodes" />
+      <node-table :rows="stbNodes" :cols="stbCols" name="rdy-nodes" />
     </card>
     <card :is-loading="!whiteListedNodes">
       <node-table
@@ -81,6 +81,138 @@ export default {
           field: 'highlight',
           tdClass: 'center',
           thClass: 'center no-padding',
+          sortFn: (x, y, col, rowX, rowY) =>
+            this.highlightSort(x, y, col, rowX, rowY, 'active-nodes'),
+        },
+        {
+          label: 'Address',
+          field: 'address',
+          formatFn: this.addressFormatV2,
+          tdClass: 'mono',
+        },
+        {
+          label: 'Age',
+          field: 'age',
+          type: 'number',
+          tdClass: 'center',
+          thClass: 'center',
+          sortFn: this.aSort,
+        },
+        {
+          label: 'ISP',
+          field: 'isp',
+          type: 'text',
+          tdClass: 'center',
+          thClass: 'center',
+        },
+        {
+          label: 'Location',
+          field: 'location',
+          tdClass: 'center',
+          thClass: 'center',
+          sortFn: this.cSort,
+        },
+        {
+          label: 'Status',
+          field: 'status',
+          tdClass: 'center',
+          thClass: 'center',
+        },
+        {
+          label: 'Version',
+          field: 'version',
+          type: 'text',
+          tdClass: 'center',
+          sortFn: this.versionSort,
+        },
+        {
+          label: 'Fee',
+          field: 'fee',
+          type: 'percentage',
+          tdClass: 'mono',
+        },
+        {
+          label: 'Providers',
+          field: 'providers',
+          type: 'number',
+          tdClass: 'mono center',
+          thClass: 'center',
+          sortFn: this.pSort,
+        },
+        {
+          label: 'Award',
+          field: 'award',
+          type: 'number',
+          formatFn: this.normalFormat,
+          tdClass: 'mono',
+        },
+        {
+          label: 'Bond',
+          field: 'total_bond',
+          type: 'number',
+          formatFn: this.normalFormat,
+          tdClass: 'mono',
+        },
+        {
+          label: 'Slash',
+          field: 'slash',
+          type: 'number',
+          formatFn: this.normalFormat,
+          tdClass: 'mono',
+        },
+        {
+          label: 'Score',
+          field: 'score',
+          type: 'number',
+          tdClass: 'mono center',
+          thClass: 'center',
+        },
+        {
+          label: 'APY',
+          field: 'apy',
+          type: 'percentage',
+          tdClass: 'mono center',
+          thClass: 'center',
+        },
+        {
+          label: 'Leave',
+          field: 'leave',
+          tdClass: 'center',
+          thClass: 'center',
+        },
+        {
+          label: 'Churn',
+          field: 'churn',
+          thClass: 'center no-padding',
+        },
+        ...chains,
+      ]
+    },
+    stbCols() {
+      if (!this.nodesQuery) {
+        return this.cols
+      }
+
+      const chains = availableChains(
+        this.nodesQuery?.filter((n) => n.status === 'Active')
+      )
+        ?.sort()
+        .map((c) => ({
+          label: c,
+          field: `behind.${c}`,
+          type: 'number',
+          tdClass: 'mono center',
+          thClass: 'center no-padding',
+        }))
+
+      return [
+        {
+          label: 'Highlight',
+          field: 'highlight',
+          tdClass: 'center',
+          thClass: 'center no-padding',
+          sortFn: (x, y, col, rowX, rowY) =>
+            this.highlightSort(x, y, col, rowX, rowY, 'rdy-nodes'),
         },
         {
           label: 'Address',
@@ -598,6 +730,13 @@ export default {
     },
     aSort(x, y, col, rowX, rowY) {
       return x?.number < y?.number ? -1 : x?.number > y?.number ? 1 : 0
+    },
+    highlightSort(x, y, col, rowX, rowY, name) {
+      const favs = JSON.parse(localStorage.getItem(name)) || []
+      if (!favs) {
+        return 0
+      }
+      return favs.includes(rowX.address) ? 1 : -1
     },
   },
   head: {
