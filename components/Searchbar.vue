@@ -33,20 +33,22 @@
             <small
               v-if="e.value"
               style="color: var(--primary-color)"
-              class="mono"
+              :class="e.extraClass"
             >
               {{ e.filter(e.value) }}
             </small>
             <small v-else>-</small>
           </div>
         </template>
+      </div>
+      <div class="header-info">
         <div ref="header-info-1">
           <small style="color: var(--sec-font-color)">RUNE Price:</small>
           <small
             v-if="runePrice"
             :key="runePrice"
             style="color: var(--primary-color)"
-            class="mono"
+            class="mono value"
           >
             {{ runePrice | currency }}
           </small>
@@ -57,7 +59,7 @@
           <small
             v-if="chainsHeight && chainsHeight['THOR']"
             style="color: var(--primary-color)"
-            class="mono"
+            class="mono value"
           >
             {{ chainsHeight['THOR'] | number('0,0') }}
           </small>
@@ -300,6 +302,10 @@ export default {
     flex-direction: column;
     font-size: 0.8rem;
 
+    @include md {
+      font-size: 0.9rem;
+    }
+
     .break {
       flex-basis: 100%;
       width: 0;
@@ -309,7 +315,7 @@ export default {
       -webkit-transition: all ease 0.4;
       transition: all ease 0.4;
 
-      .mono {
+      .value {
         -webkit-transition: all ease 0.4s;
         transition: all ease 0.4s;
         display: inline-block;
@@ -321,7 +327,7 @@ export default {
       }
 
       &.animate {
-        .mono {
+        .value {
           -webkit-animation: jello-vertical 1s both;
           animation: jello-vertical 1s both;
         }
@@ -340,7 +346,9 @@ export default {
   .right-section {
     display: flex;
     align-items: center;
-    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: end;
+    gap: 0 8px;
 
     #network-wrapper,
     #theme-wrapper {
