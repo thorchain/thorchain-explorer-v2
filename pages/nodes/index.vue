@@ -23,7 +23,7 @@
 import { mapGetters } from 'vuex'
 import { orderBy } from 'lodash'
 import NodeTable from './component/nodeTable.vue'
-import { fillNodeData, availableChains } from '~/utils'
+import { fillNodeData, availableChains, blockTime } from '~/utils'
 
 export default {
   name: 'NodesPage',
@@ -546,11 +546,21 @@ export default {
         (this.bondMetrics?.nextChurnHeight - this.chainsHeight.THOR) /
           this.churnInterval
 
+      const churnTime =
+        this.bondMetrics?.nextChurnHeight - this.chainsHeight.THOR
+
       this.$store.commit('setExtraHeaderInfo', [
+        {
+          name: 'Churn Time',
+          value: churnTime,
+          filter: (v) => blockTime(v, true),
+          extraClass: ['value'],
+        },
         {
           name: 'Churn',
           value: churnValue,
           filter: (v) => this.$options.filters.percent(v, '0,0.000'),
+          extraClass: ['mono', 'value'],
         },
       ])
     },
