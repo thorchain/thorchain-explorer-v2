@@ -54,7 +54,7 @@
           >
             <JsonIcon class="table-icon item-link" />
           </a>
-          <Ip :str-copy="props.row.ip" />
+          <Ip v-tooltip="props.row.ip" :str-copy="props.row.ip" />
         </div>
       </span>
       <span v-else-if="props.column.field == 'highlight'">
@@ -236,6 +236,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import { remove, orderBy } from 'lodash'
+import { props } from 'qrcode.vue'
 import JsonIcon from '@/assets/images/json.svg?inline'
 import InfoIcon from '@/assets/images/info.svg?inline'
 import StarIcon from '@/assets/images/bookmark.svg?inline'
