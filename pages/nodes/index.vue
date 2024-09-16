@@ -536,14 +536,12 @@ export default {
         actNodes.forEach((el, index) => {
           fillNodeData(filteredNodes, el)
 
-          let release_height = el.jail.release_height
-          let chainHeight = this.chainsHeight?.THOR
+          const chainHeight = this.chainsHeight?.THOR
 
-          if (release_height > chainHeight) {
+          if (el.jail.release_height > chainHeight) {
             filteredNodes[index].churn = {
-              name: 'Jail',
+              name: el.jail.reason,
               icon: require('@/assets/images/handcuffs.svg?inline'),
-              tooltip: 'failed to perform keysign' 
             }
           }
 
@@ -596,12 +594,11 @@ export default {
           const el = stbNodes[i]
           fillNodeData(filteredNodes, el)
 
-          let release_height = el.jail?.release_height
-          let chainHeight = this.chainsHeight?.THOR
+          const chainHeight = this.chainsHeight?.THOR
 
-          if ( release_height > chainHeight) {
+          if (el.jail?.release_height > chainHeight) {
             filteredNodes[i].churn = {
-              name: 'Failed To Perform Keysign',
+              name: el.jail?.reason,
               icon: require('@/assets/images/handcuffs.svg?inline'),
             }
             continue
