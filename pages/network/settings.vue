@@ -32,6 +32,7 @@ export default {
             {
               ...this.parseConstant('OutboundTransactionFee'),
               filter: (v) => `${runeCur()} ${this.decimalFormat(v)}`,
+              usdValue: true,
             },
             {
               ...this.parseConstant('MaxTxOutOffset', {
@@ -136,6 +137,7 @@ export default {
             {
               ...this.parseConstant('NativeTransactionFee'),
               filter: (v) => `${runeCur()} ${this.decimalFormat(v)}`,
+              usdValue: true,
             },
 
             {
@@ -145,16 +147,19 @@ export default {
               ...this.parseConstant('TNSFeeOnSale'),
               name: 'Fee On Sale',
               filter: (v) => `${runeCur()} ${this.decimalFormat(v)}`,
+              usdValue: true,
             },
             {
               ...this.parseConstant('TNSFeePerBlock'),
               name: 'Fee Per Block',
               filter: (v) => `${runeCur()} ${this.decimalFormat(v)}`,
+              usdValue: true,
             },
             {
               ...this.parseConstant('TNSRegisterFee'),
               name: 'Register Fee',
               filter: (v) => `${runeCur()} ${this.unitFormat(v)}`,
+              usdValue: true,
             },
           ],
         },
@@ -215,8 +220,8 @@ export default {
             },
             {
               ...this.parseConstant('MinimumBondInRune'),
-              filter: (v) =>
-                `${runeCur()} ${this.$options.filters.number(v / 1e8, '0,0')}`,
+              filter: (v) => `${this.$options.filters.number(v/1e8, '0,0')}`,
+              usdValue: true,
             },
             {
               ...this.parseConstant('AsgardSize'),
