@@ -538,33 +538,35 @@ export default {
 
           const chainHeight = this.chainsHeight?.THOR
 
+          filteredNodes[index].churn = []
+
           if (el.jail?.release_height > chainHeight) {
-            filteredNodes[index].churn = {
+            filteredNodes[index].churn.push({
               name: el.jail.reason,
               icon: require('@/assets/images/handcuffs.svg?inline'),
-            }
+            })
           }
 
-          // add churn data
+          // Add churn data
           if (+el.total_bond === lowestBond) {
-            filteredNodes[index].churn = {
+            filteredNodes[index].churn.push({
               name: 'Lowest Bond',
               icon: require('@/assets/images/cheap.svg?inline'),
-            }
+            })
           }
 
           if (el.age.number === oldest) {
-            filteredNodes[index].churn = {
+            filteredNodes[index].churn.push({
               name: 'Oldest',
               icon: require('@/assets/images/old.svg?inline'),
-            }
+            })
           }
 
           if (+el.slash_points === highestSlash) {
-            filteredNodes[index].churn = {
+            filteredNodes[index].churn.push({
               name: 'Highest Slashes',
               icon: require('@/assets/images/angry.svg?inline'),
-            }
+            })
           }
         })
 
@@ -596,11 +598,13 @@ export default {
 
           const chainHeight = this.chainsHeight?.THOR
 
+          filteredNodes[i].churn = []
+
           if (el.jail?.release_height > chainHeight) {
-            filteredNodes[i].churn = {
+            filteredNodes[i].churn.push({
               name: el.jail?.reason,
               icon: require('@/assets/images/handcuffs.svg?inline'),
-            }
+            })
             continue
           }
 
@@ -608,10 +612,10 @@ export default {
             if (el.jail && el.jail.release_height > this.chainsHeight?.THOR) {
               continue
             }
-            filteredNodes[i].churn = {
+            filteredNodes[i].churn.push({
               name: 'Churning In',
               icon: require('@/assets/images/circle-up.svg?inline'),
-            }
+            })
             churnNodes++
           }
         }
