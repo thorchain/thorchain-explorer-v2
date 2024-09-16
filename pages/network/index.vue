@@ -204,10 +204,10 @@ export default {
             },
             {
               name: 'TOR Price in RUNE',
-              value: this.thorNetwork?.tor_price_in_rune,
+              value: this.thorNetwork?.tor_price_in_rune / 1e8,
               filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v ,  '0,0')}`,
-                usdValue: true,
+                `${this.runeCur()} ${this.$options.filters.number(v, '0,0.0000')}`,
+              usdValue: true,
             },
             {
               name: 'Vaults Migrating',
@@ -218,7 +218,7 @@ export default {
             },
             {
               name: 'Total Pooled RUNE',
-              value: (this.network?.totalPooledRune / 10**8),
+              value: this.network?.totalPooledRune / 10 ** 8,
               filter: (v) =>
                 `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
               usdValue: true,
@@ -229,7 +229,7 @@ export default {
                 +this.network?.bondMetrics?.totalActiveBond / 10 ** 8 +
                 +this.network?.bondMetrics?.totalActiveBond / 10 ** 8,
               filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v , '0,0')}`,
+                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
               usdValue: true,
             },
             {
