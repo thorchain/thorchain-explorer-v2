@@ -1,17 +1,19 @@
 <template>
   <Page>
-    <info-card :options="networkSettings" />
+    <info-card :options="networkSettings">
+      <template #usd="{ item }">
+        <small>({{ ((item.value / 1e8) * runePrice) | currency() }})</small>-
+        {{ item.filter(item.value) }}
+      </template>
+    </info-card>
   </Page>
 </template>
 
 <script>
-import StatTable from '~/components/StatTable.vue'
+import { mapGetters } from 'vuex'
 import { blockTime, runeCur } from '~/utils'
 
-const camelCase = (e) => e && e.replace(/([A-Z])/g, ' $1')
-
 export default {
-  components: { StatTable },
   data() {
     return {
       networkConst: [],
@@ -22,6 +24,9 @@ export default {
     title: 'THORChain Network Explorer | Network Settings',
   },
   computed: {
+    ...mapGetters({
+      runePrice: 'getRunePrice',
+    }),
     networkSettings() {
       return [
         {
@@ -32,7 +37,7 @@ export default {
             {
               ...this.parseConstant('OutboundTransactionFee'),
               filter: (v) => `${runeCur()} ${this.decimalFormat(v)}`,
-              usdValue: true,
+              valueSlot: 'usd',
             },
             {
               ...this.parseConstant('MaxTxOutOffset', {
@@ -137,7 +142,7 @@ export default {
             {
               ...this.parseConstant('NativeTransactionFee'),
               filter: (v) => `${runeCur()} ${this.decimalFormat(v)}`,
-              usdValue: true,
+              valueSlot: 'usd',
             },
 
             {
@@ -147,19 +152,17 @@ export default {
               ...this.parseConstant('TNSFeeOnSale'),
               name: 'Fee On Sale',
               filter: (v) => `${runeCur()} ${this.decimalFormat(v)}`,
-              usdValue: true,
             },
             {
               ...this.parseConstant('TNSFeePerBlock'),
               name: 'Fee Per Block',
               filter: (v) => `${runeCur()} ${this.decimalFormat(v)}`,
-              usdValue: true,
             },
             {
               ...this.parseConstant('TNSRegisterFee'),
               name: 'Register Fee',
               filter: (v) => `${runeCur()} ${this.unitFormat(v)}`,
-              usdValue: true,
+              valueSlot: 'usd',
             },
           ],
         },
@@ -220,8 +223,9 @@ export default {
             },
             {
               ...this.parseConstant('MinimumBondInRune'),
-              filter: (v) => `${this.$options.filters.number(v/1e8, '0,0')}`,
-              usdValue: true,
+              filter: (v) =>
+                `${runeCur()} ${this.$options.filters.number(v / 1e8, '0,0')}`,
+              valueSlot: 'usd',
             },
             {
               ...this.parseConstant('AsgardSize'),
