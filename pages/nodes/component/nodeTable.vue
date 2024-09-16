@@ -185,7 +185,7 @@
         <div
           v-for="(churnItem, index) in rows[props.row.originalIndex].churn"
           :key="index"
-          class="churn-item icon-spacing"
+          class="churn-item"
         >
           <component
             :is="churnItem.icon"
@@ -397,12 +397,6 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-.icon-spacing {
-  margin-right: 8px;
-}
-
-.churn-item:last-child {
-  margin-right: 0;
+  gap: 8px;
 }
 </style>
