@@ -538,7 +538,7 @@ export default {
 
           const chainHeight = this.chainsHeight?.THOR
 
-          if (el.jail.release_height > chainHeight) {
+          if (el.jail?.release_height > chainHeight) {
             filteredNodes[index].churn = {
               name: el.jail.reason,
               icon: require('@/assets/images/handcuffs.svg?inline'),
