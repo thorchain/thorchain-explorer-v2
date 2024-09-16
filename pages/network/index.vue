@@ -274,6 +274,16 @@ export default {
               usdValue: true,
             },
             {
+              name: 'Block Reward Per Day Per Node',
+              value:
+                ((this.network.blockRewards?.bondReward / 10 ** 8 ?? 0) *
+                  (5256000 / 365)) /
+                +this.network?.activeNodeCount,
+              filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+              usdValue: true,
+            },
+            {
               header: 'Yields',
             },
             {
