@@ -182,16 +182,19 @@
         </b-popover>
       </span>
       <div v-else-if="props.column.field == 'churn'" class="churn-wrapper">
-        <component
-          :is="
-            rows[props.row.originalIndex].churn &&
-            rows[props.row.originalIndex].churn.icon
-          "
-          v-if="props.row.churn && props.row.churn.icon"
-          v-tooltip="props.row.churn.name"
-          class="table-icon"
-        />
+        <div
+          v-for="(churnItem, index) in rows[props.row.originalIndex].churn"
+          :key="index"
+          class="churn-item icon-spacing"
+        >
+          <component
+            :is="churnItem.icon"
+            v-tooltip="churnItem.name"
+            class="table-icon"
+          />
+        </div>
       </div>
+
       <span v-else-if="props.column.field.includes('behind.')">
         <span
           v-if="props.formattedRow[props.column.field] == 0"
@@ -394,5 +397,12 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+.icon-spacing {
+  margin-right: 8px;
+}
+
+.churn-item:last-child {
+  margin-right: 0;
 }
 </style>
