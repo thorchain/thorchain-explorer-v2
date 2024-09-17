@@ -6,7 +6,7 @@
           <nuxt-link to="/swaps" class="stat-item stat-item-link">
             <exchange class="stat-image" />
             <div class="item-detail">
-              <div class="header">Swap Volume (24hr)</div>
+              <div class="header">Volume (24hr)</div>
               <skeleton-item :loading="!totalSwap24USD" class="value">
                 {{ (totalSwap24USD / 1e2) | currency('$', 0) }}
               </skeleton-item>
@@ -47,9 +47,9 @@
           <nuxt-link to="/insights" class="stat-item stat-item-link">
             <money class="stat-image" />
             <div class="item-detail">
-              <div class="header">Protocol Earnings (24hr)</div>
+              <div class="header">Swaps (24hr)</div>
               <skeleton-item :loading="!runeVolume" class="value">
-                {{ earnings24USD | currency('$', 0) }}
+                {{ stats.swapCount24h | number('0,0') }}
               </skeleton-item>
             </div>
             <arrow-right-icon class="arrow-icon" />
@@ -517,11 +517,6 @@ export default {
           rowStart: 1,
           colSpan: 1,
           items: [
-            {
-              name: 'Swap Count (24hr)',
-              value: this.stats.swapCount24h ?? 0,
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
-            },
             {
               name: 'Swap Count (30D)',
               value: this.stats.swapCount30d ?? 0,
