@@ -497,7 +497,9 @@ export default {
         if (!this.nodesQuery) {
           return
         }
-        const actNodes = this.nodesQuery.filter((e) => e.status === 'Active')
+        let actNodes = this.nodesQuery.filter((e) => e.status === 'Active')
+
+        actNodes = orderBy(actNodes, [(o) => +o.slash_points])
         const filteredNodes = []
 
         // bond, slash, oldest

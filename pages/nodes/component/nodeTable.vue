@@ -143,14 +143,16 @@
       <span v-else-if="props.column.field == 'providers'">
         <span>{{ props.row.operator.slice(-4) }}</span>
         <div
-          :id="props.row.providers.length ? `popover-${props.row.ip}` : false"
+          :id="
+            props.row.providers.length ? `popover-${props.row.address}` : false
+          "
           class="bubble-container grey clickable"
         >
           {{ props.row.providers.length }}
         </div>
         <b-popover
           triggers="hover focus"
-          :target="`popover-${props.row.ip}`"
+          :target="`popover-${props.row.address}`"
           custom-class="custom-popover"
         >
           <div class="title" style="margin-bottom: 5px">
