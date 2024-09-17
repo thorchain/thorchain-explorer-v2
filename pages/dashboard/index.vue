@@ -318,6 +318,8 @@ export default {
   },
   data() {
     return {
+      oldRunePool: [],
+      polOverview: undefined,
       nodes: [],
       network: [],
       rune: '',
@@ -348,6 +350,7 @@ export default {
     }
   },
   async fetch() {
+    await this.updateRunePool()
     const resBlock = await this.$api.getRPCLastBlockHeight()
     this.lastHeight = +resBlock?.data?.block?.header?.height
   },
@@ -479,6 +482,7 @@ export default {
       ]
     },
     statsSettings() {
+      const pol = this.polOverview
       const sbn = this.nodes
         .filter((n) => n.status === 'Active')
         .map((e) => +e.total_bond)
@@ -552,6 +556,20 @@ export default {
               name: 'Pool Share Factor',
               value: this.network.poolShareFactor,
               filter: (v) => `${this.$options.filters.percent(v, 2)}`,
+            },
+            {
+              name: 'Total Value in RUNEPool',
+              value: pol?.current_deposit / 1e8 || 0,
+              filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v, '0,0.00')}`,
+              usdValue: true,
+            },
+            {
+              name: 'RUNEPool Share of Pools',
+              value: this.totalRuneAssetShare,
+              filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v, '0,0.00')}`,
+              usdValue: true,
             },
           ],
         },
@@ -743,6 +761,24 @@ export default {
     }, 10000)
   },
   methods: {
+    async updateRunePool() {
+      try {
+        const { data } = await this.$api.getRunePool()
+        this.polOverview = data.pol || {}
+
+        const { data: runePoolsData } = await this.$api.getRunePoolsInfo()
+        this.runeAssetShare = runePoolsData.map((pool) => ({
+          ...pool,
+          poolShare: pool.poolShare[0],
+        }))
+
+        this.totalRuneAssetShare = this.runeAssetShare
+          .map((e) => e.poolShare)
+          .reduce((total, o) => total + (o || 0), 0)
+      } catch (error) {
+        console.error('Error updating RUNE pool data:', error)
+      }
+    },
     stringToPercentage(val) {
       return (Number.parseFloat(val ?? 0) * 100).toFixed(2).toString() + ' %'
     },
