@@ -178,7 +178,7 @@ export default {
           label: 'Leave',
           field: 'leave',
           tdClass: 'center',
-          thClass: 'center',
+          thClass: 'center no-padding',
         },
         {
           label: 'Churn',
@@ -270,13 +270,6 @@ export default {
           sortFn: this.pSort,
         },
         {
-          label: 'Award',
-          field: 'award',
-          type: 'number',
-          formatFn: this.normalFormat,
-          tdClass: 'mono',
-        },
-        {
           label: 'Bond',
           field: 'total_bond',
           type: 'number',
@@ -291,24 +284,10 @@ export default {
           tdClass: 'mono',
         },
         {
-          label: 'Score',
-          field: 'score',
-          type: 'number',
-          tdClass: 'mono center',
-          thClass: 'center',
-        },
-        {
-          label: 'APY',
-          field: 'apy',
-          type: 'percentage',
-          tdClass: 'mono center',
-          thClass: 'center',
-        },
-        {
           label: 'Leave',
           field: 'leave',
           tdClass: 'center',
-          thClass: 'center',
+          thClass: 'center no-padding',
         },
         {
           label: 'Churn',
