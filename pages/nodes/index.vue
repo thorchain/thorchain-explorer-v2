@@ -613,17 +613,22 @@ export default {
     },
     whiteListedNodes() {
       if (this.nodesQuery) {
-        const actNodes = this.nodesQuery?.filter(
+        let whtNodes = this.nodesQuery?.filter(
           (e) =>
             !(
               e.status === 'Standby' && e.preflight_status.status === 'Ready'
             ) &&
             e.status !== 'Active' &&
-            e.status !== 'Ready'
+            e.status !== 'Ready' &&
+            e.status !== 'Disabled' &&
+            e.age.number < 300
         )
+
+        whtNodes = orderBy(whtNodes, [(o) => +o.total_bond], ['desc'])
+
         const filteredNodes = []
 
-        actNodes.forEach((el) => {
+        whtNodes.forEach((el) => {
           fillNodeData(filteredNodes, el)
         })
 
