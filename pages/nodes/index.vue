@@ -356,6 +356,13 @@ export default {
           thClass: 'center',
           sortFn: this.pSort,
         },
+        {
+          label: 'Bond',
+          field: 'total_bond',
+          type: 'number',
+          formatFn: this.normalFormat,
+          tdClass: 'mono',
+        },
       ]
     },
     topBonds() {
@@ -608,7 +615,9 @@ export default {
       if (this.nodesQuery) {
         const actNodes = this.nodesQuery?.filter(
           (e) =>
-            e.status !== 'Standby' &&
+            !(
+              e.status === 'Standby' && e.preflight_status.status === 'Ready'
+            ) &&
             e.status !== 'Active' &&
             e.status !== 'Ready'
         )
