@@ -554,17 +554,14 @@ export default {
             },
             {
               name: 'Total Value in RUNEPool',
-              value: pol?.current_deposit / 1e8 || 0,
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0.00')}`,
-              usdValue: true,
+              value: (pol?.current_deposit / 1e8) * this.runePrice || 0,
+              filter: (v) => `${this.$options.filters.currency(v)}`,
             },
             {
               name: 'RUNEPool Share of Pools',
-              value: this.totalRuneAssetShare,
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0.00')}`,
-              usdValue: true,
+              value:
+                this.totalRuneAssetShare / (this.network.totalPooledRune / 1e8),
+              filter: (v) => `${this.$options.filters.percent(v, 2)}`,
             },
           ],
         },
