@@ -468,6 +468,10 @@ input {
   border-bottom: none !important;
 }
 
+.vgt-table.node-table .table-row {
+  height: 42px;
+}
+
 .vgt-wrap .vgt-global-search {
   background: transparent;
   border: 1px solid var(--border-color);
