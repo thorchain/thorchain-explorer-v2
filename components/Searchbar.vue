@@ -3,7 +3,7 @@
     class="search-bar-container"
     :class="{ expanded: innerWidth < 992 && isSearch }"
   >
-    <div class="left-section">
+    <div class="left-section" v-if="!isOverviewPage">
       <div id="search-container" @click="search">
         <input
           ref="searchInput"
@@ -150,6 +150,9 @@ export default {
       chainsHeight: 'getChainsHeight',
       extraHeaderInfo: 'getExtraHeaderInfo',
     }),
+    isOverviewPage() {
+      return this.$route.path === '/dashboard';
+    },
     networkEnv() {
       return process.env.NETWORK
     },
@@ -286,6 +289,8 @@ export default {
     .left-section {
       #search-container {
         flex: 1;
+        display: flex;
+
       }
     }
 
@@ -349,6 +354,7 @@ export default {
     flex-wrap: wrap;
     justify-content: end;
     gap: 0 8px;
+    flex: 1;
 
     #network-wrapper,
     #theme-wrapper {
