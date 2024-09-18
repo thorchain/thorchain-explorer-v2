@@ -1,22 +1,27 @@
 <template>
   <page>
-    <div class="search-container">
-      <div id="search-bar-container">
-        <input
-          ref="searchInput"
-          v-model="searchQuery"
-          class="search-input"
-          type="text"
-          placeholder="Search by Address / Txn Hash / THORName"
-          @keyup.enter="find"
-          @focus="isSearch = true"
-          @blur="isSearch = false"
-        />
-        <SearchIcon class="search-icon" @click="find" />
-      </div>
-    </div>
-
     <div class="chart-container">
+      <div class="background-container">
+        <div class="search-bar">
+          <div class="title-search">The THORChain Blockchain Explorer</div>
+          <div class="search-container">
+            <div id="search-bar-container">
+              <input
+                ref="searchInput"
+                v-model="searchQuery"
+                class="search-input"
+                type="text"
+                placeholder="Search by Address / Txn Hash / THORName"
+                @keyup.enter="find"
+                @focus="isSearch = true"
+                @blur="isSearch = false"
+              />
+              <SearchIcon class="search-icon" @click="find" />
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="network-stats">
         <div class="stat-group">
           <nuxt-link to="/swaps" class="stat-item stat-item-link">
@@ -320,6 +325,7 @@ use([
 
 export default {
   name: 'OverviewPage',
+  layout: 'dashboard',
   components: {
     SearchIcon,
     VChart,
@@ -1285,76 +1291,91 @@ export default {
 </script>
 
 <style lang="scss">
-.search-container {
-  display: flex;
+.background-container {
+ /* background-image: url('@/assets/images/background.png');
+  background-size: cover;*/
   justify-content: flex-start;
   align-items: center;
   padding: 1rem;
-  max-width: 100%;
+  width: 100%;
+  height: 20rem;
 
-  #search-bar-container {
+  .title-search {
+    font-size: 16px;
+    padding: 9px;
+    color: var(--sec-font-color);
+  }
+  .search-container {
     display: flex;
-    position: relative;
-    width: 100%;
-    max-width: 40rem;
-    border: 2px solid var(--border-color);
-    border-radius: 0.75rem;
-    background-color: var(--card-bg-color);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-    transition: all 0.3s ease;
-    padding: 0.5rem;
+    justify-content: flex-start;
+    align-items: center;
+    max-width: 100%;
 
-    &:hover {
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    }
-
-    .search-input {
-      font-size: 14px;
-      padding-right: 2.5rem;
-      padding-left: 0.75rem;
-      flex: 1;
-      border: none;
-      height: 40px;
+    #search-bar-container {
+      display: flex;
+      position: relative;
+      width: 100%;
+      max-width: 30rem;
+      border: 2px solid var(--border-color);
       border-radius: 0.75rem;
-      color: var(--sec-font-color);
-      background-color: var(--input-bg-color);
-      border: 1px solid var(--border-color);
+      background-color: var(--card-bg-color);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
       transition: all 0.3s ease;
-
-      &:focus {
-        outline: none;
-        border-color: var(--primary-color);
-      }
-    }
-
-    .search-icon {
-      position: absolute;
-      right: 1rem;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 24px;
-      height: 24px;
-      fill: var(--font-color);
-      cursor: pointer;
-      transition: fill 0.3s ease;
+      padding: 0.3rem;
 
       &:hover {
-        fill: var(--primary-color);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
       }
-    }
-
-    @include lg {
-      width: 90%;
-
       .search-input {
-        font-size: 1.1rem;
-        padding-right: 3rem;
-        padding-left: 1rem;
+        font-size: 14px;
+        padding-right: 2.5rem;
+        padding-left: 0.75rem;
+        flex: 1;
+        border: none;
+        height: 40px;
+        border-radius: 0.75rem;
+        color: var(--sec-font-color);
+        background-color: var(--input-bg-color);
+        border: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+
+        &:focus {
+          outline: none;
+          border-color: var(--primary-color);
+        }
+      }
+
+      .search-icon {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 24px;
+        height: 24px;
+        fill: var(--font-color);
+        cursor: pointer;
+        transition: fill 0.3s ease;
+
+        &:hover {
+          fill: var(--primary-color);
+        }
+      }
+
+      @include lg {
+        width: 90%;
+
+        .search-input {
+          font-size: 1.1rem;
+          padding-right: 3rem;
+          padding-left: 1rem;
+        }
       }
     }
   }
+  .search-bar {
+    padding-top: 6rem;
+  }
 }
-
 .container {
   border: 1px solid var(--border-color);
   border-width: 1px 0 1px 0;
