@@ -195,6 +195,7 @@
             class="table-icon"
           />
         </div>
+        <span v-if="rows[props.row.originalIndex].churn.length === 0">-</span>
       </div>
 
       <span v-else-if="props.column.field.includes('behind.')">
@@ -294,7 +295,24 @@ export default {
       )
     },
     rowClassCallback(row) {
-      return this.isFav(row.address) ? 'highlight table-row' : 'table-row'
+      const classes = ['table-row']
+      if (this.isFav(row.address)) {
+        classes.push('highlight')
+      }
+
+      if (row.churn?.length > 0) {
+        if (
+          row.churn.some((e) => e.type === 'churn-out' || e.type === 'leave')
+        ) {
+          classes.push('churning-out')
+        }
+
+        if (row.churn.some((e) => e.type === 'churn-in')) {
+          classes.push('churning-in')
+        }
+      }
+
+      return classes.join(' ')
     },
     addFav(address) {
       if (address) {

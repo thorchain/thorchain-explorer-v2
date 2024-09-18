@@ -48,6 +48,7 @@ export default {
       provDist: undefined,
       intervalId: undefined,
       churnHalted: undefined,
+      churnProgressValue: 0,
     }
   },
   computed: {
@@ -91,12 +92,9 @@ export default {
           tdClass: 'mono',
         },
         {
-          label: 'Age',
-          field: 'age',
-          type: 'number',
-          tdClass: 'center',
-          thClass: 'center',
-          sortFn: this.aSort,
+          label: 'Churn',
+          field: 'churn',
+          thClass: 'center min-padding',
         },
         {
           label: 'ISP',
@@ -174,18 +172,15 @@ export default {
           tdClass: 'mono center',
           thClass: 'center',
         },
-        {
-          label: 'Leave',
-          field: 'leave',
-          tdClass: 'center',
-          thClass: 'center no-padding',
-        },
-        {
-          label: 'Churn',
-          field: 'churn',
-          thClass: 'center no-padding',
-        },
         ...chains,
+        {
+          label: 'Age',
+          field: 'age',
+          type: 'number',
+          tdClass: 'center',
+          thClass: 'center',
+          sortFn: this.aSort,
+        },
       ]
     },
     stbCols() {
@@ -221,12 +216,9 @@ export default {
           tdClass: 'mono',
         },
         {
-          label: 'Age',
-          field: 'age',
-          type: 'number',
-          tdClass: 'center',
-          thClass: 'center',
-          sortFn: this.aSort,
+          label: 'Churn',
+          field: 'churn',
+          thClass: 'center min-padding',
         },
         {
           label: 'ISP',
@@ -283,18 +275,15 @@ export default {
           formatFn: this.normalFormat,
           tdClass: 'mono',
         },
-        {
-          label: 'Leave',
-          field: 'leave',
-          tdClass: 'center',
-          thClass: 'center no-padding',
-        },
-        {
-          label: 'Churn',
-          field: 'churn',
-          thClass: 'center no-padding',
-        },
         ...chains,
+        {
+          label: 'Age',
+          field: 'age',
+          type: 'number',
+          tdClass: 'center',
+          thClass: 'center',
+          sortFn: this.aSort,
+        },
       ]
     },
     otherNodes() {
@@ -532,6 +521,7 @@ export default {
             filteredNodes[index].churn.push({
               name: el.jail.reason,
               icon: require('@/assets/images/handcuffs.svg?inline'),
+              type: 'jail',
             })
           }
 
@@ -540,6 +530,10 @@ export default {
             filteredNodes[index].churn.push({
               name: 'Lowest Bond',
               icon: require('@/assets/images/cheap.svg?inline'),
+              type:
+                this.churnProgressValue > 0.5
+                  ? 'churn-out'
+                  : 'churn-out-candidate',
             })
           }
 
@@ -547,6 +541,10 @@ export default {
             filteredNodes[index].churn.push({
               name: 'Oldest',
               icon: require('@/assets/images/old.svg?inline'),
+              type:
+                this.churnProgressValue > 0.5
+                  ? 'churn-out'
+                  : 'churn-out-candidate',
             })
           }
 
@@ -554,6 +552,18 @@ export default {
             filteredNodes[index].churn.push({
               name: 'Highest Slashes',
               icon: require('@/assets/images/angry.svg?inline'),
+              type:
+                this.churnProgressValue > 0.5
+                  ? 'churn-out'
+                  : 'churn-out-candidate',
+            })
+          }
+
+          if (el.requested_to_leave) {
+            filteredNodes[index].churn.push({
+              name: 'Requested to leave',
+              icon: require('@/assets/images/arrow-down-square.svg?inline'),
+              type: 'leave',
             })
           }
         })
@@ -592,6 +602,7 @@ export default {
             filteredNodes[i].churn.push({
               name: el.jail?.reason,
               icon: require('@/assets/images/handcuffs.svg?inline'),
+              type: 'jail',
             })
             continue
           }
@@ -603,6 +614,10 @@ export default {
             filteredNodes[i].churn.push({
               name: 'Churning In',
               icon: require('@/assets/images/circle-up.svg?inline'),
+              type:
+                this.churnProgressValue > 0.5
+                  ? 'churn-in'
+                  : 'churn-in-candidate',
             })
             churnNodes++
           }
@@ -697,6 +712,8 @@ export default {
         1 -
         (this.bondMetrics?.nextChurnHeight - this.chainsHeight.THOR) /
           this.churnInterval
+
+      this.churnProgressValue = churnValue
 
       const churnTime =
         this.bondMetrics?.nextChurnHeight - this.chainsHeight.THOR

@@ -994,6 +994,22 @@ input {
         font-weight: bold;
       }
     }
+
+    &.churning-out {
+      background-color: var(--red-bg);
+
+      th {
+        background-color: var(--red-bg);
+      }
+    }
+
+    &.churning-in {
+      background-color: var(--blue-bg);
+
+      th {
+        background-color: var(--blue-bg);
+      }
+    }
   }
 }
 
@@ -1034,6 +1050,10 @@ input {
 #vgt-table > thead > tr > th.no-padding {
   padding: 0;
   width: 32px !important;
+}
+
+#vgt-table > thead > tr > th.min-padding {
+  padding: 0 5px;
 }
 
 a {
