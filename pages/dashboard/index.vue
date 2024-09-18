@@ -1,5 +1,21 @@
 <template>
-  <Page>
+  <page>
+    <div class="search-container">
+      <div id="search-bar-container">
+        <input
+          ref="searchInput"
+          v-model="searchQuery"
+          class="search-input"
+          type="text"
+          placeholder="Search by Address / Txn Hash / THORName"
+          @keyup.enter="find"
+          @focus="isSearch = true"
+          @blur="isSearch = false"
+        />
+        <SearchIcon class="search-icon" @click="find" />
+      </div>
+    </div>
+
     <div class="chart-container">
       <div class="network-stats">
         <div class="stat-group">
@@ -260,7 +276,7 @@
         </div>
       </div>
     </div>
-  </Page>
+  </page>
 </template>
 
 <script>
@@ -280,7 +296,6 @@ import {
 import VChart from 'vue-echarts'
 import { range } from 'lodash'
 import { blockTime } from '~/utils'
-
 import StackDollar from '~/assets/images/sack-dollar.svg?inline'
 import LockIcon from '~/assets/images/lock.svg?inline'
 import ArrowRightIcon from '~/assets/images/arrow-right.svg?inline'
@@ -290,6 +305,7 @@ import Piggy from '~/assets/images/piggy.svg?inline'
 
 import Chart from '~/assets/images/chart.svg?inline'
 import External from '@/assets/images/external.svg?inline'
+import SearchIcon from '~/assets/images/search.svg?inline'
 
 use([
   SVGRenderer,
@@ -305,6 +321,7 @@ use([
 export default {
   name: 'OverviewPage',
   components: {
+    SearchIcon,
     VChart,
     Piggy,
     BounceLoader,
@@ -318,6 +335,8 @@ export default {
   },
   data() {
     return {
+      searchQuery: '',
+      isSearch: false,
       oldRunePool: [],
       polOverview: undefined,
       nodes: [],
@@ -568,6 +587,11 @@ export default {
       ]
     },
   },
+  watch: {
+    $route(to, from) {
+      this.searchQuery = ''
+    },
+  },
   activated() {
     // Call fetch again if last fetch more than 30 sec ago
     if (this.$fetchState.timestamp <= Date.now() - 6000) {
@@ -753,6 +777,48 @@ export default {
     }, 10000)
   },
   methods: {
+    find() {
+      if (!this.isSearch) {
+        this.$refs.searchInput.focus()
+        return
+      }
+      const search = this.searchQuery.toUpperCase()
+      if (search.length <= 30) {
+        this.$api.getThorname(this.searchQuery).then((res) => {
+          if (res.status / 200 === 1 && res.data?.aliases.length > 0) {
+            const thorchainAddr = res.data?.aliases?.find(
+              (el) => el.chain === 'THOR'
+            ).address
+            this.$router.push({ path: `/address/${thorchainAddr}` })
+          }
+        })
+      } else if (
+        // THORCHAIN
+        search.startsWith('THOR') ||
+        search.startsWith('TTHOR') ||
+        search.startsWith('STHOR') ||
+        // BNB
+        search.startsWith('BNB') ||
+        search.startsWith('TBNB') ||
+        // BITCOIN
+        search.startsWith('BC1') ||
+        search.startsWith('TB1') ||
+        // LTC
+        search.startsWith('LTC') ||
+        search.startsWith('TLTC') ||
+        // COSMOS
+        search.startsWith('COSMOS') ||
+        (search.startsWith('0x') && search.length <= 43)
+      ) {
+        this.$router.push({ path: `/address/${this.searchQuery}` })
+      } else {
+        this.$router.push({ path: `/tx/${this.searchQuery}` })
+      }
+    },
+    search() {
+      this.isSearch = true
+    },
+
     async updateRunePool() {
       try {
         const { data } = await this.$api.getRunePool()
@@ -1219,8 +1285,77 @@ export default {
 </script>
 
 <style lang="scss">
+.search-container {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 1rem;
+  max-width: 100%;
+
+  #search-bar-container {
+    display: flex;
+    position: relative;
+    width: 100%;
+    max-width: 40rem;
+    border: 2px solid var(--border-color);
+    border-radius: 0.75rem;
+    background-color: var(--card-bg-color);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+    padding: 0.5rem;
+
+    &:hover {
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .search-input {
+      font-size: 14px;
+      padding-right: 2.5rem;
+      padding-left: 0.75rem;
+      flex: 1;
+      border: none;
+      height: 40px;
+      border-radius: 0.75rem;
+      color: var(--sec-font-color);
+      background-color: var(--input-bg-color);
+      border: 1px solid var(--border-color);
+      transition: all 0.3s ease;
+
+      &:focus {
+        outline: none;
+        border-color: var(--primary-color);
+      }
+    }
+
+    .search-icon {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 24px;
+      height: 24px;
+      fill: var(--font-color);
+      cursor: pointer;
+      transition: fill 0.3s ease;
+
+      &:hover {
+        fill: var(--primary-color);
+      }
+    }
+
+    @include lg {
+      width: 90%;
+
+      .search-input {
+        font-size: 1.1rem;
+        padding-right: 3rem;
+        padding-left: 1rem;
+      }
+    }
+  }
+}
+
 .container {
-  border: 1px solid var(--border-color);
   border: 1px solid var(--border-color);
   border-width: 1px 0 1px 0;
   color: var(--sec-font-color);
