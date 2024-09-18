@@ -29,7 +29,7 @@
         <MarkerIcon class="table-icon" />
       </div>
       <div v-else-if="props.column.field == 'churn'">
-        <ranking-icon class="table-icon" />
+        <recycle-icon class="table-icon" />
       </div>
       <span v-else>
         {{ props.column.label }}
@@ -242,7 +242,6 @@
 <script>
 import { mapGetters } from 'vuex'
 import { remove, orderBy } from 'lodash'
-import { props } from 'qrcode.vue'
 import JsonIcon from '@/assets/images/json.svg?inline'
 import InfoIcon from '@/assets/images/info.svg?inline'
 import StarIcon from '@/assets/images/bookmark.svg?inline'
@@ -251,7 +250,7 @@ import ExitIcon from '@/assets/images/arrow-down-square.svg?inline'
 import VoteIcon from '@/assets/images/vote.svg?inline'
 import DangerIcon from '@/assets/images/danger.svg?inline'
 import MarkerIcon from '@/assets/images/marker.svg?inline'
-import RankingIcon from '@/assets/images/ranking.svg?inline'
+import RecycleIcon from '@/assets/images/recycle.svg?inline'
 import HighlightList from '@/assets/images/highlight-list.svg?inline'
 
 export default {
@@ -262,7 +261,7 @@ export default {
     StaredIcon,
     ExitIcon,
     VoteIcon,
-    RankingIcon,
+    RecycleIcon,
     MarkerIcon,
     DangerIcon,
     HighlightList,
