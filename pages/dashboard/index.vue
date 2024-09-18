@@ -88,7 +88,7 @@
         :act-nav.sync="swapMode"
       >
         <template #header>
-          <nuxt-link to="/swaps" class="swaps-nav">TOP Swaps (24H)</nuxt-link>
+          <nuxt-link to="/swaps" class="swaps-nav">TOP Swaps (24hr)</nuxt-link>
         </template>
         <VChart
           v-if="swapMode == 'swap-vol'"
