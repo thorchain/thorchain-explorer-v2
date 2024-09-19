@@ -18,8 +18,8 @@
         <NuxtLink
           v-if="item && !(item.submenu && isMobile)"
           :id="`navbar-${item.name}`"
-          :to="item.link"
           :key="index"
+          :to="item.link"
           class="navbar-item"
         >
           <div class="navbar-wrap">
@@ -30,7 +30,8 @@
         <div
           v-if="item.submenu && isMobile"
           :id="`menu-item-${index}`"
-          class="navbar-item"
+          :key="`item-${index}`"
+          :class="['navbar-item', { active: $route.path.includes(item.link) }]"
           @click="toggleSubmenu(index)"
         >
           <div class="navbar-wrap">
@@ -51,6 +52,7 @@
         </div>
         <b-popover
           v-if="item.submenu && !isMobile"
+          :key="`popover-menu-${index}`"
           triggers="hover"
           :target="`navbar-${item.name}`"
           placement="bottom-start"
@@ -525,6 +527,16 @@ export default {
         .dropdown-icon::after {
           color: var(--primary-color);
           border-color: var(--primary-color);
+        }
+      }
+
+      &.active {
+        span {
+          color: var(--primary-color);
+
+          &::after {
+            border-color: var(--primary-color);
+          }
         }
       }
 
