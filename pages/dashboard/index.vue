@@ -1,27 +1,6 @@
 <template>
   <page>
     <div class="chart-container">
-      <div class="background-container">
-        <div class="search-bar">
-          <div class="title-search">The THORChain Blockchain Explorer</div>
-          <div class="search-container">
-            <div id="search-bar-container">
-              <input
-                ref="searchInput"
-                v-model="searchQuery"
-                class="search-input"
-                type="text"
-                placeholder="Search by Address / Txn Hash / THORName"
-                @keyup.enter="find"
-                @focus="isSearch = true"
-                @blur="isSearch = false"
-              />
-              <SearchIcon class="search-icon" @click="find" />
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div class="network-stats">
         <div class="stat-group">
           <nuxt-link to="/swaps" class="stat-item stat-item-link">
@@ -325,7 +304,6 @@ use([
 
 export default {
   name: 'OverviewPage',
-  layout: 'dashboard',
   components: {
     SearchIcon,
     VChart,
@@ -339,6 +317,8 @@ export default {
     ArrowRightIcon,
     External,
   },
+  layout: 'dashboard',
+  layout: 'dashboard',
   data() {
     return {
       searchQuery: '',
@@ -1292,7 +1272,7 @@ export default {
 
 <style lang="scss">
 .background-container {
- /* background-image: url('@/assets/images/background.png');
+  /* background-image: url('@/assets/images/background.png');
   background-size: cover;*/
   justify-content: flex-start;
   align-items: center;
