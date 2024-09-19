@@ -289,7 +289,6 @@ import Piggy from '~/assets/images/piggy.svg?inline'
 
 import Chart from '~/assets/images/chart.svg?inline'
 import External from '@/assets/images/external.svg?inline'
-import SearchIcon from '~/assets/images/search.svg?inline'
 
 use([
   SVGRenderer,
@@ -305,7 +304,6 @@ use([
 export default {
   name: 'OverviewPage',
   components: {
-    SearchIcon,
     VChart,
     Piggy,
     BounceLoader,
@@ -318,11 +316,8 @@ export default {
     External,
   },
   layout: 'dashboard',
-  layout: 'dashboard',
   data() {
     return {
-      searchQuery: '',
-      isSearch: false,
       oldRunePool: [],
       polOverview: undefined,
       nodes: [],
@@ -763,48 +758,6 @@ export default {
     }, 10000)
   },
   methods: {
-    find() {
-      if (!this.isSearch) {
-        this.$refs.searchInput.focus()
-        return
-      }
-      const search = this.searchQuery.toUpperCase()
-      if (search.length <= 30) {
-        this.$api.getThorname(this.searchQuery).then((res) => {
-          if (res.status / 200 === 1 && res.data?.aliases.length > 0) {
-            const thorchainAddr = res.data?.aliases?.find(
-              (el) => el.chain === 'THOR'
-            ).address
-            this.$router.push({ path: `/address/${thorchainAddr}` })
-          }
-        })
-      } else if (
-        // THORCHAIN
-        search.startsWith('THOR') ||
-        search.startsWith('TTHOR') ||
-        search.startsWith('STHOR') ||
-        // BNB
-        search.startsWith('BNB') ||
-        search.startsWith('TBNB') ||
-        // BITCOIN
-        search.startsWith('BC1') ||
-        search.startsWith('TB1') ||
-        // LTC
-        search.startsWith('LTC') ||
-        search.startsWith('TLTC') ||
-        // COSMOS
-        search.startsWith('COSMOS') ||
-        (search.startsWith('0x') && search.length <= 43)
-      ) {
-        this.$router.push({ path: `/address/${this.searchQuery}` })
-      } else {
-        this.$router.push({ path: `/tx/${this.searchQuery}` })
-      }
-    },
-    search() {
-      this.isSearch = true
-    },
-
     async updateRunePool() {
       try {
         const { data } = await this.$api.getRunePool()
