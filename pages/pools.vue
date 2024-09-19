@@ -1,8 +1,8 @@
 <template>
   <Page>
+    <Header :title="routes.find((e) => e.link === $route.path).text" />
     <div class="pools-page-container">
       <pooled-view></pooled-view>
-      <Nav is-link="true" :nav-items="navItems" />
       <nuxt-child />
     </div>
   </Page>
@@ -15,7 +15,7 @@ export default {
   components: { PooledView },
   data() {
     return {
-      navItems: [
+      routes: [
         {
           text: 'Pools',
           link: '/pools/main',
