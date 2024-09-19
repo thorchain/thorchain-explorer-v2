@@ -1,6 +1,6 @@
 <template>
   <Page>
-    <Nav :is-link="true" :nav-items="routes" />
+    <Header :title="routes.find((e) => e.link === $route.path).text" />
     <div>
       <nuxt-child keep-alive />
     </div>

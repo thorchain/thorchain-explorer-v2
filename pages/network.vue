@@ -1,7 +1,7 @@
 <template>
   <Page>
-    <div class="network-page-container">
-      <Nav is-link="true" :nav-items="navItems" />
+    <Header :title="routes.find((e) => e.link === $route.path).text" />
+    <div>
       <nuxt-child />
     </div>
   </Page>
@@ -11,7 +11,7 @@
 export default {
   data() {
     return {
-      navItems: [
+      routes: [
         {
           text: 'Network',
           link: '/network',
