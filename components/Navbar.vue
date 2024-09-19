@@ -16,19 +16,41 @@
     <div class="navbar-lists">
       <template v-for="(item, index) in navbarLists">
         <NuxtLink
-          v-if="item"
+          v-if="item && !(item.submenu && isMobile)"
           :id="`navbar-${item.name}`"
-          :key="index"
           :to="item.link"
-          :class="['navbar-item']"
+          :key="index"
+          class="navbar-item"
         >
           <div class="navbar-wrap">
             <span class="navbar-text">{{ item.name }}</span>
             <span v-if="item.submenu" class="dropdown-icon"></span>
           </div>
         </NuxtLink>
+        <div
+          v-if="item.submenu && isMobile"
+          :id="`menu-item-${index}`"
+          class="navbar-item"
+          @click="toggleSubmenu(index)"
+        >
+          <div class="navbar-wrap">
+            <span class="navbar-text">{{ item.name }}</span>
+            <span class="dropdown-icon"></span>
+          </div>
+          <div :id="`submenu-${index}`" class="submenu">
+            <NuxtLink
+              v-for="(subItem, subIndex) in item.submenu"
+              :key="subIndex"
+              :to="subItem.link"
+              class="submenu-item"
+              :class="{ active: isActive(subItem) }"
+            >
+              {{ subItem.name }}
+            </NuxtLink>
+          </div>
+        </div>
         <b-popover
-          v-if="item.submenu"
+          v-if="item.submenu && !isMobile"
           triggers="hover"
           :target="`navbar-${item.name}`"
           placement="bottom-start"
@@ -169,9 +191,13 @@ export default {
   },
   data() {
     return {
+      isThorfiDropdownOpen: false,
+      isMobile: window.innerWidth <= 990,
+      openSubmenus: {},
       showExternalMenu: false,
       showSettings: false,
       isDropdownOpen: false,
+
       navbarLists: [
         {
           name: 'Overview',
@@ -294,24 +320,32 @@ export default {
       if (window.innerWidth > 900 && this.menu) {
         this.toggleMenu()
       }
-      if (this.isDropdownOpen) {
-        const navbarLists = this.$el.querySelector('.navbar-lists')
-        navbarLists.style.height = 'auto'
-      }
+      this.isMobile = window.innerWidth <= 990
     },
     toggleDropdown() {
       this.isDropdownOpen = !this.isDropdownOpen
-
       const navbarLists = this.$el.querySelector('.navbar-lists')
-
-      if (this.isDropdownOpen) {
-        navbarLists.style.height = '500px'
-      } else {
-        navbarLists.style.height = 'auto'
-      }
+      navbarLists.style.height = this.isDropdownOpen ? '500px' : 'auto'
     },
-    toggleSettings() {
-      this.showSettings = !this.showSettings
+
+    toggleSubmenu(index) {
+      this.$set(this.openSubmenus, index, !this.openSubmenus[index])
+      this.$nextTick(() => {
+        const submenu = this.$el.querySelector(`#submenu-${index}`)
+        if (submenu) {
+          submenu.classList.toggle('open', this.openSubmenus[index])
+        }
+      })
+    },
+    isActive(item) {
+      return (
+        this.$route.path === item.link ||
+        (item.submenu &&
+          item.submenu.some((subItem) => this.$route.path === subItem.link))
+      )
+    },
+    isSubmenuOpen(index) {
+      return !!this.openSubmenus[index]
     },
     setTheme(theme) {
       this.$store.commit('setTheme', theme === 'dark')
@@ -337,6 +371,57 @@ export default {
   transition: height 0.3s;
   max-width: 90rem;
   margin: auto;
+
+  .submenu {
+    display: none;
+    flex-direction: column;
+    transition: height 0.3s ease;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    padding: 0.3rem;
+    z-index: 1000;
+    transform: translateY(0);
+    transition:
+      opacity 0.3s ease,
+      transform 0.3s ease;
+    margin-top: 0.5rem;
+    max-width: 56rem;
+    .submenu-item {
+      font-size: 14px;
+      padding: 10px;
+      text-decoration: none;
+      &:hover {
+        color: var(--primary-color);
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      &.active {
+        color: var(--primary-color);
+      }
+    }
+  }
+  .submenu.open {
+    display: flex;
+  }
+  .navbar-lists::-webkit-scrollbar,
+  .submenu::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .navbar-lists::-webkit-scrollbar-track,
+  .submenu::-webkit-scrollbar-track {
+    background-color: var(--border-color);
+  }
+
+  .navbar-lists::-webkit-scrollbar-thumb,
+  .submenu::-webkit-scrollbar-thumb {
+    background-color: var(--active-bg-color);
+    border-radius: 5px;
+  }
+
   .header {
     display: flex;
     justify-content: space-between;
@@ -359,6 +444,24 @@ export default {
           width: 1.75rem;
         }
       }
+    }
+  }
+
+  .dropdown-icon {
+    position: relative;
+    display: inline-block;
+    margin-left: 0.5rem;
+
+    &::after {
+      content: '';
+      border: solid var(--sec-font-color);
+      border-width: 0 2px 2px 0;
+      display: inline-block;
+      padding: 2.8px;
+      transform: rotate(45deg);
+      vertical-align: middle;
+      margin-bottom: 6px;
+      transition: border-color 0.3s;
     }
   }
 
@@ -411,7 +514,6 @@ export default {
     }
 
     .navbar-item {
-      display: flex;
       align-items: center;
       text-decoration: none;
       border-radius: 30px;
@@ -497,7 +599,9 @@ export default {
       display: flex;
       flex-direction: column;
       max-height: 500px;
+      overflow: auto;
     }
+
     .navbar-text {
       cursor: pointer;
       &.active,
@@ -513,6 +617,7 @@ export default {
         color: var(--primary-color);
       }
     }
+
     .network-dialog,
     .theme-dialog {
       position: absolute;
@@ -559,6 +664,7 @@ export default {
         }
       }
     }
+
     .dropdown-menu {
       position: absolute;
       top: 100%;
