@@ -22,11 +22,15 @@
           <div id="search-bar-container">
             <input
               ref="searchInput"
+              v-model="searchQuery"
               class="search-input"
               type="text"
               placeholder="Search by Address / Txn Hash / THORName"
+              @keyup.enter="find"
+              @focus="isSearch = true"
+              @blur="isSearch = false"
             />
-            <SearchIcon class="search-icon" />
+            <SearchIcon class="search-icon" @click="find" />
           </div>
         </div>
       </div>
@@ -42,11 +46,17 @@
 import Vue from 'vue'
 import { mapGetters } from 'vuex'
 import global from '~/mixins.js/global'
+import SearchIcon from '~/assets/images/search.svg?inline'
 
 export default {
   name: 'DefaultLayout',
+  components: {
+    SearchIcon,
+  },
   data() {
     return {
+      searchQuery: '',
+      isSearch: false,
       darkMode: false,
     }
   },
@@ -118,6 +128,47 @@ export default {
     window.addEventListener('resize', changeHeight)
   },
   methods: {
+    find() {
+      if (!this.isSearch) {
+        this.$refs.searchInput.focus()
+        return
+      }
+      const search = this.searchQuery.toUpperCase()
+      if (search.length <= 30) {
+        this.$api.getThorname(this.searchQuery).then((res) => {
+          if (res.status / 200 === 1 && res.data?.aliases.length > 0) {
+            const thorchainAddr = res.data?.aliases?.find(
+              (el) => el.chain === 'THOR'
+            ).address
+            this.$router.push({ path: `/address/${thorchainAddr}` })
+          }
+        })
+      } else if (
+        // THORCHAIN
+        search.startsWith('THOR') ||
+        search.startsWith('TTHOR') ||
+        search.startsWith('STHOR') ||
+        // BNB
+        search.startsWith('BNB') ||
+        search.startsWith('TBNB') ||
+        // BITCOIN
+        search.startsWith('BC1') ||
+        search.startsWith('TB1') ||
+        // LTC
+        search.startsWith('LTC') ||
+        search.startsWith('TLTC') ||
+        // COSMOS
+        search.startsWith('COSMOS') ||
+        (search.startsWith('0x') && search.length <= 43)
+      ) {
+        this.$router.push({ path: `/address/${this.searchQuery}` })
+      } else {
+        this.$router.push({ path: `/tx/${this.searchQuery}` })
+      }
+    },
+    search() {
+      this.isSearch = true
+    },
     getChainsHeight() {
       this.$api
         .getChainsHeight()
