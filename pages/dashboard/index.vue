@@ -4,7 +4,7 @@
       <div class="network-stats">
         <div class="stat-group">
           <nuxt-link to="/swaps" class="stat-item stat-item-link">
-            <exchange class="stat-image" />
+            <chart class="stat-image" />
             <div class="item-detail">
               <div class="header">Volume (24hr)</div>
               <skeleton-item :loading="!totalSwap24USD" class="value">
@@ -14,13 +14,12 @@
             <arrow-right-icon class="arrow-icon" />
           </nuxt-link>
           <hr />
-          <nuxt-link to="/pools" class="stat-item stat-item-link">
-            <Piggy class="stat-image" />
+          <nuxt-link to="/insights" class="stat-item stat-item-link">
+            <exchange class="stat-image" />
             <div class="item-detail">
-              <div class="header">Bond | Pool APY</div>
-              <skeleton-item :loading="!runeSupply" class="value">
-                {{ network.bondingAPY | percent(2) }} |
-                {{ network.liquidityAPY | percent(2) }}
+              <div class="header">Swaps (24hr)</div>
+              <skeleton-item :loading="!runeVolume" class="value">
+                {{ stats.swapCount24h | number('0,0') }}
               </skeleton-item>
             </div>
             <arrow-right-icon class="arrow-icon" />
@@ -44,12 +43,13 @@
             <arrow-right-icon class="arrow-icon" />
           </nuxt-link>
           <hr />
-          <nuxt-link to="/insights" class="stat-item stat-item-link">
-            <money class="stat-image" />
+          <nuxt-link to="/pools" class="stat-item stat-item-link">
+            <Piggy class="stat-image" />
             <div class="item-detail">
-              <div class="header">Swaps (24hr)</div>
-              <skeleton-item :loading="!runeVolume" class="value">
-                {{ stats.swapCount24h | number('0,0') }}
+              <div class="header">Bond | Pool APY</div>
+              <skeleton-item :loading="!runeSupply" class="value">
+                {{ network.bondingAPY | percent(2) }} |
+                {{ network.liquidityAPY | percent(2) }}
               </skeleton-item>
             </div>
             <arrow-right-icon class="arrow-icon" />
@@ -288,7 +288,7 @@ import Exchange from '~/assets/images/exchange.svg?inline'
 import Book from '~/assets/images/book.svg?inline'
 import Piggy from '~/assets/images/piggy.svg?inline'
 
-import Money from '~/assets/images/money.svg?inline'
+import Chart from '~/assets/images/chart.svg?inline'
 import External from '@/assets/images/external.svg?inline'
 
 use([
@@ -311,7 +311,7 @@ export default {
     Exchange,
     LockIcon,
     Book,
-    Money,
+    Chart,
     StackDollar,
     ArrowRightIcon,
     External,
