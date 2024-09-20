@@ -1,6 +1,6 @@
 <template>
   <main
-    id="default-layout"
+    id="dashboard-layout"
     :class="{
       'long-sidebar': menu,
       fullscreen: fullscreen,
@@ -57,6 +57,7 @@ export default {
       searchQuery: '',
       isSearch: false,
       darkMode: false,
+      updateInterval: undefined,
     }
   },
   computed: {
@@ -112,7 +113,7 @@ export default {
 
     this.getChainsHeight()
 
-    setInterval(() => {
+    this.updateInterval = setInterval(() => {
       this.getChainsHeight()
       this.getRunePrice()
     }, 10000)
@@ -125,6 +126,9 @@ export default {
     changeHeight()
 
     window.addEventListener('resize', changeHeight)
+  },
+  destroyed() {
+    clearInterval(this.updateInterval)
   },
   methods: {
     find() {
@@ -297,7 +301,7 @@ Vue.mixin(global)
   }
 }
 
-#default-layout {
+#dashboard-layout {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
