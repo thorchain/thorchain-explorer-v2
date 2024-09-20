@@ -14,7 +14,7 @@
     <nav id="navbar">
       <navbar />
     </nav>
-    <div class='background-container'>
+    <div class="background-container">
       <div class="search-bar">
         <div class="title-search">The THORChain Blockchain Explorer</div>
         <div class="search-container">
@@ -201,14 +201,100 @@ Vue.mixin(global)
 </script>
 
 <style lang="scss">
- .background-container {
-  background: url('@/assets/images/Asset5.svg');
-  background-color: var(--background);
+.background-container {
+  justify-content: flex-start;
+  align-items: center;
+  padding: 1rem;
+  width: 100%;
+  height: 16rem;
+
+  background: url('@/assets/images/background.svg');
+  background-color: transparent;
   background-size: cover;
   background-blend-mode: overlay;
   padding: 20px;
-  border-radius:0px 0px 15px 15px;
+  margin-bottom: -3rem;
+
+  .title-search {
+    font-size: 16px;
+    padding: 9px;
+    color: var(--sec-font-color);
+  }
+
+  .search-container {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    max-width: 100%;
+
+    #search-bar-container {
+      display: flex;
+      position: relative;
+      width: 100%;
+      max-width: 30rem;
+      border: 2px solid var(--border-color);
+      border-radius: 0.75rem;
+      background-color: var(--card-bg-color);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+      transition: all 0.3s ease;
+      padding: 0.3rem;
+
+      &:hover {
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      }
+      .search-input {
+        font-size: 14px;
+        padding-right: 2.5rem;
+        padding-left: 0.75rem;
+        flex: 1;
+        border: none;
+        height: 40px;
+        border-radius: 0.75rem;
+        color: var(--sec-font-color);
+        background-color: var(--input-bg-color);
+        border: 1px solid var(--border-color);
+        transition: all 0.3s ease;
+
+        &:focus {
+          outline: none;
+          border-color: var(--primary-color);
+        }
+      }
+
+      .search-icon {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 24px;
+        height: 24px;
+        fill: var(--font-color);
+        cursor: pointer;
+        transition: fill 0.3s ease;
+
+        &:hover {
+          fill: var(--primary-color);
+        }
+      }
+
+      @include lg {
+        width: 90%;
+
+        .search-input {
+          font-size: 1.1rem;
+          padding-right: 3rem;
+          padding-left: 1rem;
+        }
+      }
+    }
+  }
+  .search-bar {
+    padding-top: 2rem;
+    margin: auto;
+    max-width: 90rem;
+  }
 }
+
 #default-layout {
   display: flex;
   flex-direction: column;
@@ -242,11 +328,11 @@ Vue.mixin(global)
 
   #main-content {
     padding-bottom: 10rem;
-    padding-top: 32px;
     grid-area: main;
 
     @include lg {
-      padding: 2rem 3rem;
+      padding: 0 3rem;
+      padding-bottom: 2rem;
     }
   }
 }
