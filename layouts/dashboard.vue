@@ -14,8 +14,7 @@
     <nav id="navbar">
       <navbar />
     </nav>
-    <!-- Yasi -->
-    <div class="background-container">
+    <div class='background-container'>
       <div class="search-bar">
         <div class="title-search">The THORChain Blockchain Explorer</div>
         <div class="search-container">
@@ -202,6 +201,14 @@ Vue.mixin(global)
 </script>
 
 <style lang="scss">
+ .background-container {
+  background: url('@/assets/images/Asset5.svg');
+  background-color: var(--background);
+  background-size: cover;
+  background-blend-mode: overlay;
+  padding: 20px;
+  border-radius:0px 0px 15px 15px;
+}
 #default-layout {
   display: flex;
   flex-direction: column;
