@@ -17,6 +17,7 @@
   --red: rgb(155 28 28);
   --red-bg: rgba(155, 28, 28, 0.169);
   --blue-bg: rgba(45, 28, 155, 0.169);
+  --background:#42ae95;
 }
 
 [theme='dark'] {
@@ -40,6 +41,7 @@
   --red-bg: #e93d2715;
   --blue-bg: #272de915;
   --highlight: #03a9f4;
+  --background:#42ae95;
 }
 
 [theme='light'] {
@@ -62,4 +64,5 @@
   --red-bg: rgba(155, 28, 28, 0.169);
   --blue-bg: rgba(45, 28, 155, 0.169);
   --highlight: #ffccbc;
+  --background:#57d1b5;
 }
