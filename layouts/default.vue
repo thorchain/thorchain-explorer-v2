@@ -39,6 +39,7 @@ export default {
       menu: 'getIsMenuOn',
       fullscreen: 'getFullScreen',
       sidebar: 'getSidebar',
+      updateInterval: undefined,
     }),
   },
   watch: {
@@ -86,7 +87,7 @@ export default {
 
     this.getChainsHeight()
 
-    setInterval(() => {
+    this.updateInterval = setInterval(() => {
       this.getChainsHeight()
       this.getRunePrice()
     }, 10000)
@@ -99,6 +100,9 @@ export default {
     changeHeight()
 
     window.addEventListener('resize', changeHeight)
+  },
+  destroyed() {
+    clearInterval(this.updateInterval)
   },
   methods: {
     getChainsHeight() {
