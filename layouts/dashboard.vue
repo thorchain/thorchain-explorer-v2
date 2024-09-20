@@ -16,7 +16,7 @@
     </nav>
     <div class="background-container">
       <div class="search-bar">
-        <div class="title-search">The THORChain Blockchain Explorer</div>
+        <div class="title-search">THORChain Blockchain Explorer</div>
         <div class="search-container">
           <div id="search-bar-container">
             <input
@@ -209,13 +209,14 @@ Vue.mixin(global)
   height: 16rem;
 
   background: url('@/assets/images/background.svg');
-  background-color: transparent;
+  background-color: var(--background);
   background-size: cover;
   background-blend-mode: overlay;
   padding: 20px;
-  margin-bottom: -3rem;
+  margin-bottom: -4.5rem;
 
   .title-search {
+    font-weight: bold;
     font-size: 16px;
     padding: 9px;
     color: var(--sec-font-color);
