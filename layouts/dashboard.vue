@@ -216,10 +216,11 @@ Vue.mixin(global)
   margin-bottom: -4.5rem;
 
   .title-search {
+    font-family: 'Exo 2';
     font-weight: bold;
     font-size: 16px;
     padding: 9px;
-    color: var(--sec-font-color);
+    color: white;
   }
 
   .search-container {
