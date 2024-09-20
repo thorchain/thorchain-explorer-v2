@@ -1,5 +1,5 @@
 <template>
-  <page>
+  <Page>
     <div class="chart-container">
       <div class="network-stats">
         <div class="stat-group">
@@ -260,7 +260,7 @@
         </div>
       </div>
     </div>
-  </page>
+  </Page>
 </template>
 
 <script>
@@ -566,11 +566,6 @@ export default {
           ],
         },
       ]
-    },
-  },
-  watch: {
-    $route(to, from) {
-      this.searchQuery = ''
     },
   },
   activated() {
