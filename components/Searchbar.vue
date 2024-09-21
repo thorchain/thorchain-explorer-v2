@@ -3,7 +3,7 @@
     class="search-bar-container"
     :class="{ expanded: innerWidth < 992 && isSearch }"
   >
-    <div class="left-section" v-if="!isOverviewPage">
+    <div v-if="!isOverviewPage" class="left-section">
       <div id="search-container" @click="search">
         <input
           ref="searchInput"
@@ -151,7 +151,7 @@ export default {
       extraHeaderInfo: 'getExtraHeaderInfo',
     }),
     isOverviewPage() {
-      return this.$route.path === '/dashboard';
+      return this.$route.path === '/dashboard'
     },
     networkEnv() {
       return process.env.NETWORK
@@ -290,7 +290,6 @@ export default {
       #search-container {
         flex: 1;
         display: flex;
-
       }
     }
 
@@ -362,8 +361,9 @@ export default {
 
       .network-container,
       .theme-container {
-        height: 2.375rem;
-        padding: 0.375rem 0.75rem;
+        width: 38px;
+        height: 38px;
+
         border-radius: 0.5rem;
         background-color: var(--card-bg-color);
         border: 1px solid var(--border-color);
