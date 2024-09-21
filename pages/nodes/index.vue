@@ -98,6 +98,7 @@ export default {
         {
           label: 'ISP',
           field: 'isp',
+          width: '50px',
           type: 'text',
           tdClass: 'center',
           thClass: 'center',
@@ -105,6 +106,7 @@ export default {
         {
           label: 'Location',
           field: 'location',
+          width: '50px',
           tdClass: 'center',
           thClass: 'center',
           sortFn: this.cSort,
@@ -112,6 +114,7 @@ export default {
         {
           label: 'Status',
           field: 'status',
+          width: '70px',
           tdClass: 'center',
           thClass: 'center',
         },
@@ -119,12 +122,14 @@ export default {
           label: 'Version',
           field: 'version',
           type: 'text',
+          width: '80px',
           tdClass: 'center',
           sortFn: this.versionSort,
         },
         {
           label: 'Fee',
           field: 'fee',
+          width: '80px',
           type: 'percentage',
           tdClass: 'mono',
         },
@@ -132,6 +137,7 @@ export default {
           label: 'Providers',
           field: 'providers',
           type: 'number',
+          width: '80px',
           tdClass: 'mono center',
           thClass: 'center',
           sortFn: this.pSort,
@@ -721,7 +727,7 @@ export default {
         {
           name: 'Churn Time',
           value: churnTime,
-          filter: (v) => blockTime(v, true),
+          filter: (v) => (v > 600 ? blockTime(v, true) : `${v} Blocks`),
           extraClass: ['value'],
         },
         {

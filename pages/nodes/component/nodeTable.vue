@@ -15,10 +15,12 @@
           :src="assetImage(`${props.column.label}.${props.column.label}`)"
         />
       </div>
-      <div v-else-if="props.column.field == 'leave'" v-tooltip="'Provider'">
-        <ExitIcon class="table-icon" />
+      <div
+        v-else-if="props.column.field == 'providers'"
+        style="max-width: 80px"
+      >
+        Operator
       </div>
-      <div v-else-if="props.column.field == 'providers'">Operator</div>
       <span v-else-if="props.column.field == 'highlight'">
         <HighlightList class="table-icon"></HighlightList>
       </span>
@@ -421,5 +423,11 @@ export default {
   align-items: center;
   justify-content: center;
   gap: 8px;
+}
+
+.providers {
+  max-width: 80px;
+  width: 80px;
+  min-width: 80px;
 }
 </style>
