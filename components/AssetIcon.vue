@@ -30,6 +30,10 @@ export default {
   },
   methods: {
     showChainImage() {
+      if (this.chain === false) {
+        return false
+      }
+
       if (this.chain) {
         return true
       } else if (this.assetToChain(this.asset) !== this.asset) {
