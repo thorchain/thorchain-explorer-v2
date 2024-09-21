@@ -142,18 +142,25 @@
       <span v-else-if="props.column.field == 'fee'">
         <span>{{ props.formattedRow[props.column.field] }}</span>
       </span>
+      <span v-else-if="props.column.field == 'score'">
+        <span>{{
+          props.formattedRow[props.column.field] | number('0,0.00')
+        }}</span>
+      </span>
       <span v-else-if="props.column.field == 'providers'">
         <v-menu>
-          <div>
-            <span>{{ props.row.operator.slice(-4) }}</span>
-            <div class="bubble-container grey clickable">
+          <div class="hoverable">
+            <nuxt-link
+              class="clickable mono"
+              target="_blank"
+              :to="`/address/${props.row.operator}`"
+              >{{ props.row.operator.slice(-4) }}</nuxt-link
+            >
+            <div class="bubble-container grey">
               {{ props.row.providers.length }}
             </div>
           </div>
           <template #popper>
-            <div class="title" style="margin-bottom: 5px">
-              <strong>Providers</strong>
-            </div>
             <table class="provider-table">
               <tr>
                 <th>Address</th>
@@ -166,7 +173,7 @@
               >
                 <td>
                   <nuxt-link
-                    class="clickable mono"
+                    class="hoverable mono"
                     target="_blank"
                     :to="`/address/${p.bond_address}`"
                   >
@@ -186,6 +193,14 @@
                 </td>
               </tr>
             </table>
+            <hr />
+            <div style="margin-top: 5px">
+              <strong>Operator: </strong>
+              <span class="mono"
+                >{{ props.row.operator.slice(-4) }} -
+                {{ props.formattedRow['fee'] }}</span
+              >
+            </div>
           </template>
         </v-menu>
       </span>
@@ -248,6 +263,8 @@
 <script>
 import { mapGetters } from 'vuex'
 import { remove, orderBy } from 'lodash'
+import { number } from 'echarts'
+import { props } from 'qrcode.vue'
 import JsonIcon from '@/assets/images/json.svg?inline'
 import InfoIcon from '@/assets/images/info.svg?inline'
 import StarIcon from '@/assets/images/bookmark.svg?inline'

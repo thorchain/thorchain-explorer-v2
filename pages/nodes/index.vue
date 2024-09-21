@@ -1,5 +1,5 @@
 <template>
-  <Page :error="error && !loading" :fluid="true">
+  <Page :error="error && !loading">
     <div class="grid-network">
       <info-card :options="topBonds" />
     </div>
@@ -228,6 +228,7 @@ export default {
         {
           label: 'ISP',
           field: 'isp',
+          width: '50px',
           type: 'text',
           tdClass: 'center',
           thClass: 'center',
@@ -235,6 +236,7 @@ export default {
         {
           label: 'Location',
           field: 'location',
+          width: '50px',
           tdClass: 'center',
           thClass: 'center',
           sortFn: this.cSort,
@@ -242,12 +244,14 @@ export default {
         {
           label: 'Status',
           field: 'status',
+          width: '70px',
           tdClass: 'center',
           thClass: 'center',
         },
         {
           label: 'Version',
           field: 'version',
+          width: '80px',
           type: 'text',
           tdClass: 'center',
           sortFn: this.versionSort,
@@ -255,12 +259,14 @@ export default {
         {
           label: 'Fee',
           field: 'fee',
+          width: '80px',
           type: 'percentage',
           tdClass: 'mono',
         },
         {
           label: 'Providers',
           field: 'providers',
+          width: '80px',
           type: 'number',
           tdClass: 'mono center',
           thClass: 'center',
@@ -304,34 +310,23 @@ export default {
           tdClass: 'mono',
         },
         {
-          label: 'Age',
-          field: 'age',
-          type: 'number',
-          tdClass: 'center',
-          thClass: 'center',
-          sortFn: this.aSort,
-        },
-        {
-          label: 'Status',
-          field: 'status',
-          tdClass: 'center',
-          thClass: 'center',
-        },
-        {
           label: 'ISP',
           field: 'isp',
+          width: '50px',
           type: 'text',
           tdClass: 'center',
         },
         {
           label: 'Location',
           field: 'location',
+          width: '50px',
           tdClass: 'center',
           sortFn: this.cSort,
         },
         {
           label: 'Version',
           field: 'version',
+          width: '80px',
           type: 'text',
           tdClass: 'center',
           sortFn: this.versionSort,
@@ -339,12 +334,14 @@ export default {
         {
           label: 'Fee',
           field: 'fee',
+          width: '80px',
           type: 'percentage',
           tdClass: 'mono',
         },
         {
           label: 'Providers',
           field: 'providers',
+          width: '80px',
           type: 'number',
           tdClass: 'mono center',
           thClass: 'center',
@@ -356,6 +353,14 @@ export default {
           type: 'number',
           formatFn: this.normalFormat,
           tdClass: 'mono',
+        },
+        {
+          label: 'Age',
+          field: 'age',
+          type: 'number',
+          tdClass: 'center',
+          thClass: 'center',
+          sortFn: this.aSort,
         },
       ]
     },

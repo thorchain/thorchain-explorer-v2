@@ -154,6 +154,10 @@ input {
   text-decoration: none;
   color: var(--primary-color);
   cursor: pointer;
+
+  &:hover {
+    color: var(--active-primary-color);
+  }
 }
 
 .sec-color {
@@ -958,6 +962,7 @@ input {
 }
 
 .hoverable {
+  text-decoration: none;
   cursor: pointer;
 
   &:hover {
