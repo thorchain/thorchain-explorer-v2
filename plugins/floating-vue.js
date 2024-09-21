@@ -14,12 +14,8 @@ Vue.use(FloatingVue, {
     },
     menu: {
       placement: 'top',
-      triggers: ['hover', 'touch', 'pointer'],
+      triggers: ['click', 'hover', 'touch', 'pointer'],
       distance: 8,
-      delay: {
-        show: 0,
-        hide: 0,
-      },
     },
   },
 })
