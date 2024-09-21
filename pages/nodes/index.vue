@@ -36,7 +36,6 @@ export default {
       mode: 'active',
       statusMode: 'node-stat',
       nodesQuery: undefined,
-      popoverText: 'Test',
       nodesExtra: undefined,
       minBond: 30000000000000,
       newNodesChurn: 2,

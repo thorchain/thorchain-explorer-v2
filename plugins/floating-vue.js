@@ -8,19 +8,18 @@ Vue.use(FloatingVue, {
   themes: {
     tooltip: {
       placement: 'top',
+      triggers: ['click', 'hover', 'touch', 'pointer'],
       distance: 8,
       autoHide: true,
     },
     menu: {
-      $extend: 'tooltip',
-      triggers: ['click', 'hover', 'touch', 'pointer'],
+      placement: 'top',
+      triggers: ['hover', 'touch', 'pointer'],
+      distance: 8,
       delay: {
         show: 0,
         hide: 0,
       },
-    },
-    dropdown: {
-      $extend: 'menu',
     },
   },
 })
