@@ -367,8 +367,7 @@ export default {
         return
       }
       return (
-        ((+this.network.totalPooledRune +
-          +this.network.bondMetrics.totalStandbyBond +
+        ((+this.network.totalPooledRune * 2 +
           +this.network.bondMetrics.totalActiveBond) *
           this.runePrice) /
         1e8
