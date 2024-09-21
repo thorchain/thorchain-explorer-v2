@@ -213,7 +213,6 @@ export default {
 
 .title-balance {
   font-weight: bold;
-  text-transform: uppercase;
 }
 
 .thor-rune-details {
@@ -332,7 +331,6 @@ strong {
     align-items: center;
     padding: 12px;
     font-size: 14px;
-    cursor: pointer;
     transition: background-color 0.3s ease;
     border-bottom: 1px solid var(--border-color);
 
