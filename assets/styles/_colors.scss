@@ -2,6 +2,7 @@
 :root {
   --app-background-color: #263137;
   --bg-color: #191c1e;
+  --bgt-color: rgba(255, 255, 255, 0.7);
   --sidebar: #212121;
   --font-color: #9f9f9f;
   --sec-font-color: #e6e6e6;
@@ -17,12 +18,13 @@
   --red: rgb(155 28 28);
   --red-bg: rgba(155, 28, 28, 0.169);
   --blue-bg: rgba(45, 28, 155, 0.169);
-  --background:#42ae95;
+  --background: #42ae95;
 }
 
 [theme='dark'] {
   --app-background-color: #263137;
-  --bg-color: #191c1e;
+  --bg-color: rgb(25, 28, 30);
+  --bgt-color: rgba(25, 28, 30, 0.7);
   --sidebar: #212121;
   --font-color: #9f9f9f;
   --sec-font-color: #e6e6e6;
@@ -41,12 +43,13 @@
   --red-bg: #e93d2715;
   --blue-bg: #272de915;
   --highlight: #03a9f4;
-  --background:#1c4e43;
+  --background: #1c4e43;
 }
 
 [theme='light'] {
   --app-background-color: #263137;
   --bg-color: #fff;
+  --bgt-color: rgba(255, 255, 255, 0.7);
   --sidebar: #fff;
   --font-color: rgb(74, 85, 104);
   --sec-font-color: rgb(26, 32, 44);
@@ -64,5 +67,5 @@
   --red-bg: rgba(155, 28, 28, 0.169);
   --blue-bg: rgba(45, 28, 155, 0.169);
   --highlight: #ffccbc;
-  --background:#3ca38b;
+  --background: #3ca38b;
 }

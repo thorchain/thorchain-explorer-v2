@@ -9,13 +9,15 @@
 .v-popper--theme-dropdown .v-popper__inner,
 .v-popper--theme-menu .v-popper__inner,
 .v-popper--theme-tooltip .v-popper__inner {
+  font-family: 'Roboto';
   font-size: 0.9rem;
   color: var(--sec-font-color);
-  background: var(--bg-color);
+  background-color: var(--bgt-color);
   padding: 10px;
   border: 1px var(--border-color) solid;
   border-radius: 8px;
   outline: none;
+  backdrop-filter: blur(5px);
   margin: 1px;
 }
 
