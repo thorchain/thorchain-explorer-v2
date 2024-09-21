@@ -141,47 +141,51 @@
         <span>{{ props.formattedRow[props.column.field] }}</span>
       </span>
       <span v-else-if="props.column.field == 'providers'">
-        <span>{{ props.row.operator.slice(-4) }}</span>
-        <div
-          :id="
-            props.row.providers.length ? `popover-${props.row.address}` : false
-          "
-          class="bubble-container grey clickable"
-        >
-          {{ props.row.providers.length }}
-        </div>
-        <b-popover
-          triggers="hover focus"
-          :target="`popover-${props.row.address}`"
-          custom-class="custom-popover"
-        >
-          <div class="title" style="margin-bottom: 5px">
-            <strong>Providers</strong>
+        <v-menu>
+          <div>
+            <span>{{ props.row.operator.slice(-4) }}</span>
+            <div class="bubble-container grey clickable">
+              {{ props.row.providers.length }}
+            </div>
           </div>
-          <table class="provider-table">
-            <tr v-for="(p, i) in filterProviders(props.row.providers)" :key="i">
-              <td>
-                <nuxt-link
-                  class="clickable mono"
-                  :to="`/address/${p.bond_address}`"
-                >
-                  {{ addressFormatV2(p.bond_address, 4, true) }}
-                </nuxt-link>
-              </td>
-              <td class="mono">
-                <small>
-                  {{ runeCur() }}
-                </small>
-                {{ $options.filters.number(p.bond / 10 ** 8, '0,0') }}
-              </td>
-              <td style="text-align: right">
-                <span class="mono">
-                  {{ (p.bond / 10 ** 8 / props.row.total_bond) | percent }}
-                </span>
-              </td>
-            </tr>
-          </table>
-        </b-popover>
+          <template #popper>
+            <div class="title" style="margin-bottom: 5px">
+              <strong>Providers</strong>
+            </div>
+            <table class="provider-table">
+              <tr>
+                <th>Address</th>
+                <th>Bond</th>
+                <th style="text-align: right">Share</th>
+              </tr>
+              <tr
+                v-for="(p, i) in filterProviders(props.row.providers)"
+                :key="i"
+              >
+                <td>
+                  <nuxt-link
+                    class="clickable mono"
+                    target="_blank"
+                    :to="`/address/${p.bond_address}`"
+                  >
+                    {{ addressFormatV2(p.bond_address, 4, true) }}
+                  </nuxt-link>
+                </td>
+                <td class="mono">
+                  <small>
+                    {{ runeCur() }}
+                  </small>
+                  {{ $options.filters.number(p.bond / 10 ** 8, '0,0') }}
+                </td>
+                <td style="text-align: right">
+                  <span class="mono">
+                    {{ (p.bond / 10 ** 8 / props.row.total_bond) | percent }}
+                  </span>
+                </td>
+              </tr>
+            </table>
+          </template>
+        </v-menu>
       </span>
       <div v-else-if="props.column.field == 'churn'" class="churn-wrapper">
         <div
