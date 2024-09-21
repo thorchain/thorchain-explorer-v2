@@ -1,166 +1,166 @@
 <template>
-  <Page>
-    <div class="address-container">
-      <div class="address-header">
-        <WalletIcon class="icon" />
-        <span>{{ isVault ? vaultType : 'Address' }}</span>
-      </div>
-      <div class="address-name">
-        <span style="color: var(--primary-color)">{{ address }}</span>
-        <UtilityBox :value="address" />
-      </div>
-      <template v-if="addrTxs">
-        <div class="stat-wrapper mb-1">
-          <Nav
-            v-if="!isVault"
-            :active-mode.sync="activeMode"
-            :nav-items="[
-              { text: 'Balances', mode: 'balance' },
-              { text: 'THORName', mode: 'thorname' },
-              { text: 'LPs/Savers', mode: 'pools' },
-              { text: 'Loans', mode: 'loans' },
-            ]"
-          />
-          <balance
-            v-if="activeMode == 'balance' && !isVault"
-            :state="addressStat"
-          />
-          <keep-alive>
-            <thorname v-if="activeMode == 'thorname'" :address="address" />
-          </keep-alive>
-          <keep-alive>
-            <pools v-if="activeMode == 'pools'" :address="address" />
-          </keep-alive>
-          <loans v-if="activeMode == 'loans'" :address="address" />
-        </div>
-        <template v-if="isVault">
-          <info-card
-            :options="addressStat"
-            style="margin-bottom: 8px"
-          ></info-card>
-          <Card
-            extra-class="mb-1"
-            :navs="[
-              { title: 'Chain Addresses', value: 'chain-addr' },
-              { title: 'Node Members', value: 'node-mmb' },
-              { title: 'Routers', value: 'routers' },
-            ]"
-            :act-nav.sync="vaultMode"
-          >
-            <div v-if="vaultMode == 'chain-addr'" key="chain-addr">
-              <div class="addresses-container">
-                <div
-                  v-for="address in chainAddresses"
-                  :key="address.chain"
-                  class="addresses"
-                >
-                  <img
-                    class="asset-icon"
-                    :src="assetImage(baseChainAsset(address.chain))"
-                  />
-                  <span
-                    class="clickable mono"
-                    @click="gotoAddr(address.address)"
-                    >{{ address.address.slice(0, 8) }}...{{
-                      address.address.slice(-8)
-                    }}</span
-                  >
-                </div>
-              </div>
+  <div class="address-container">
+    <div class="address-header">
+      <WalletIcon class="icon" />
+      <span>{{ isVault ? vaultType : 'Address' }}</span>
+    </div>
+    <div class="address-name">
+      <span style="color: var(--primary-color)">{{ address }}</span>
+      <UtilityBox :value="address" />
+    </div>
+    <template v-if="addrTxs">
+      <div class="stat-wrapper mb-1">
+        <div class="balance-nav-container">
+          <card>
+            <balance :state="addressStat" />
+          </card>
+          <Card class="nav-content-container">
+            <div class="nav">
+              <Nav
+                v-if="!isVault"
+                :active-mode.sync="activeMode"
+                :nav-items="[
+                  { text: 'LPs/Savers', mode: 'pools' },
+                  { text: 'THORName', mode: 'thorname' },
+                  { text: 'Loans', mode: 'loans' },
+                ]"
+              />
             </div>
-            <div v-if="vaultMode == 'node-mmb'" key="node-mmb">
-              <div class="addresses-container">
-                <div
-                  v-for="address in nodeAddresses"
-                  :key="address.chain"
-                  class="addresses"
-                >
-                  <span
-                    class="clickable mono"
-                    @click="gotoAddr(address.address)"
-                    >{{ address.slice(0, 8) }}...{{ address.slice(-8) }}</span
-                  >
-                </div>
-              </div>
-            </div>
-            <div v-if="vaultMode == 'routers'" key="routers">
-              <div class="addresses-container">
-                <div v-for="r in routers" :key="r.chain" class="addresses">
-                  <img
-                    class="asset-icon"
-                    :src="assetImage(baseChainAsset(r.chain))"
-                  />
-                  <span class="clickable mono" @click="gotoAddr(r.router)"
-                    >{{ r.router.slice(0, 8) }}...{{ r.router.slice(-8) }}</span
-                  >
-                </div>
-              </div>
+            <div class="content">
+              <keep-alive>
+                <thorname v-if="activeMode == 'thorname'" :address="address" />
+              </keep-alive>
+              <keep-alive>
+                <pools v-if="activeMode == 'pools'" :address="address" />
+              </keep-alive>
+              <loans v-if="activeMode == 'loans'" :address="address" />
             </div>
           </Card>
-          <div class="simple-card mb-1">
-            <card title="Vault Balances">
-              <vue-good-table
-                v-if="vaultInfo"
-                :columns="cols"
-                :rows="vaultInfo.coins"
-                style-class="vgt-table net-table vgt-compact"
-                :pagination-options="{
-                  enabled: true,
-                  perPage: 30,
-                  perPageDropdownEnabled: false,
-                }"
+        </div>
+      </div>
+      <template v-if="isVault">
+        <info-card
+          :options="addressStat"
+          style="margin-bottom: 8px"
+        ></info-card>
+        <Card
+          extra-class="mb-1"
+          :navs="[
+            { title: 'Chain Addresses', value: 'chain-addr' },
+            { title: 'Node Members', value: 'node-mmb' },
+            { title: 'Routers', value: 'routers' },
+          ]"
+          :act-nav.sync="vaultMode"
+        >
+          <div v-if="vaultMode == 'chain-addr'" key="chain-addr">
+            <div class="addresses-container">
+              <div
+                v-for="address in chainAddresses"
+                :key="address.chain"
+                class="addresses"
               >
-                <template slot="table-row" slot-scope="props">
-                  <div
-                    v-if="props.column.field == 'asset'"
-                    v-tooltip="props.row.asset"
-                    class="cell-content clickable"
-                    @click="gotoPool(props.row.asset)"
-                  >
-                    <img
-                      class="table-asset-icon"
-                      :src="assetImage(props.row.asset)"
-                      alt="asset-icon"
-                    />
-                    <span>{{ props.formattedRow[props.column.field] }}</span>
-                  </div>
-                  <span v-else-if="props.column.field == 'amount'">
-                    <span
-                      >{{ props.formattedRow[props.column.field] }}
-                      <span class="extra-text">
-                        {{ showAsset(props.row.asset) }}
-                      </span>
+                <img
+                  class="asset-icon"
+                  :src="assetImage(baseChainAsset(address.chain))"
+                />
+                <span class="clickable mono" @click="gotoAddr(address.address)"
+                  >{{ address.address.slice(0, 8) }}...{{
+                    address.address.slice(-8)
+                  }}</span
+                >
+              </div>
+            </div>
+          </div>
+          <div v-if="vaultMode == 'node-mmb'" key="node-mmb">
+            <div class="addresses-container">
+              <div
+                v-for="address in nodeAddresses"
+                :key="address.chain"
+                class="addresses"
+              >
+                <span class="clickable mono" @click="gotoAddr(address.address)"
+                  >{{ address.slice(0, 8) }}...{{ address.slice(-8) }}</span
+                >
+              </div>
+            </div>
+          </div>
+          <div v-if="vaultMode == 'routers'" key="routers">
+            <div class="addresses-container">
+              <div v-for="r in routers" :key="r.chain" class="addresses">
+                <img
+                  class="asset-icon"
+                  :src="assetImage(baseChainAsset(r.chain))"
+                />
+                <span class="clickable mono" @click="gotoAddr(r.router)"
+                  >{{ r.router.slice(0, 8) }}...{{ r.router.slice(-8) }}</span
+                >
+              </div>
+            </div>
+          </div>
+        </Card>
+        <div class="simple-card mb-1">
+          <card title="Vault Balances">
+            <vue-good-table
+              v-if="vaultInfo"
+              :columns="cols"
+              :rows="vaultInfo.coins"
+              style-class="vgt-table net-table vgt-compact"
+              :pagination-options="{
+                enabled: true,
+                perPage: 30,
+                perPageDropdownEnabled: false,
+              }"
+            >
+              <template slot="table-row" slot-scope="props">
+                <div
+                  v-if="props.column.field == 'asset'"
+                  v-tooltip="props.row.asset"
+                  class="cell-content clickable"
+                  @click="gotoPool(props.row.asset)"
+                >
+                  <img
+                    class="table-asset-icon"
+                    :src="assetImage(props.row.asset)"
+                    alt="asset-icon"
+                  />
+                  <span>{{ props.formattedRow[props.column.field] }}</span>
+                </div>
+                <span v-else-if="props.column.field == 'amount'">
+                  <span
+                    >{{ props.formattedRow[props.column.field] }}
+                    <span class="extra-text">
+                      {{ showAsset(props.row.asset) }}
                     </span>
                   </span>
-                  <span v-else>
-                    {{ props.formattedRow[props.column.field] }}
-                  </span>
-                </template>
-              </vue-good-table>
-            </card>
-          </div>
-        </template>
-        <template>
-          <transactions
-            v-if="addrTxs && addrTxs.actions"
-            :txs="addrTxs"
-            :owner="address"
-            :loading="loading"
-          />
-          <pagination
-            v-if="addrTxs && addrTxs.actions"
-            :is-first-page="!prevPageToken"
-            @nextPage="goNext"
-            @prevPage="goPrev"
-            @firstPage="goFirst"
-          />
-        </template>
+                </span>
+                <span v-else>
+                  {{ props.formattedRow[props.column.field] }}
+                </span>
+              </template>
+            </vue-good-table>
+          </card>
+        </div>
       </template>
-      <div v-else-if="!addrTxs" class="error-container">
-        Can't Fetch the Address! Please Try again Later.
-      </div>
+      <template>
+        <transactions
+          v-if="addrTxs && addrTxs.actions"
+          :txs="addrTxs"
+          :owner="address"
+          :loading="loading"
+        />
+        <pagination
+          v-if="addrTxs && addrTxs.actions"
+          :is-first-page="!prevPageToken"
+          @nextPage="goNext"
+          @prevPage="goPrev"
+          @firstPage="goFirst"
+        />
+      </template>
+    </template>
+    <div v-else-if="!addrTxs" class="error-container">
+      Can't Fetch the Address! Please Try again Later.
     </div>
-  </Page>
+  </div>
 </template>
 
 <script>
@@ -246,7 +246,7 @@ export default {
       thornames: undefined,
       nextPageToken: undefined,
       prevPageToken: undefined,
-      activeMode: 'balance',
+      activeMode: 'pools',
       isVault: false,
       chainAddresses: [],
       routers: [],
@@ -438,7 +438,15 @@ export default {
       width: 0.8rem;
     }
   }
+  .balance-nav-container {
+    gap: 1rem;
+    display: flex;
+    justify-content: space-between;
+  }
 
+  .content {
+    margin-top: 1rem;
+  }
   .utility-wrapper {
     display: flex;
     align-items: center;
