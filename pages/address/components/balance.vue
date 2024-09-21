@@ -5,14 +5,18 @@
       <div class="balance-container">
         <div class="balance-label">RUNE BALANCE</div>
         <div class="balance-value">
-          <span v-if="runeToken.price > 0 && !isNaN(runeToken.price)">
+          <span
+            v-if="runeToken && runeToken.price > 0 && !isNaN(runeToken.price)"
+          >
             {{ runeToken.price | number('0,0.00') }} RUNE
           </span>
           <span v-else>-</span>
         </div>
         <div class="balance-label">RUNE VALUE</div>
         <div class="balance-value">
-          <span v-if="runeToken.price > 0 && !isNaN(runeToken.price)">
+          <span
+            v-if="runeToken && runeToken.price > 0 && !isNaN(runeToken.price)"
+          >
             {{ (runeToken.price * runePrice) | currency }}
           </span>
           <span v-else>-</span>
@@ -54,7 +58,11 @@
           >
             <div class="token-info">
               <div class="token-name">
-                <asset-icon :asset="token.asset" class="asset-icon" />
+                <asset-icon
+                  :asset="token.asset"
+                  :chain="false"
+                  class="asset-icon"
+                />
                 <div>{{ showAsset(token.asset) }}</div>
               </div>
               <div class="token-quantity">
@@ -85,15 +93,15 @@ import { assetFromString } from '~/utils'
 import AngleIcon from '~/assets/images/angle-down.svg?inline'
 
 export default {
+  components: {
+    AngleIcon,
+  },
+  props: ['state'],
   data() {
     return {
       selectedToken: null,
       isOpen: false,
     }
-  },
-  props: ['state'],
-  components: {
-    AngleIcon,
   },
   computed: {
     ...mapGetters({
@@ -124,7 +132,7 @@ export default {
           }
         })
 
-        if (e.asset.ticker === 'RUNE' && e.asset.chain === 'THOR') {
+        if (e.asset?.ticker === 'RUNE' && e.asset?.chain === 'THOR') {
           poolAsset = {
             assetPriceUSD: this.runePrice,
           }
@@ -169,9 +177,9 @@ export default {
       return asset.ticker
     },
     getAssetType(asset) {
-      if (asset.synth) {
+      if (asset?.synth) {
         return 'Synth'
-      } else if (asset.trade) {
+      } else if (asset?.trade) {
         return 'Trade'
       } else {
         return 'Native'
@@ -244,7 +252,7 @@ strong {
   display: flex;
   gap: 12px;
   flex-direction: column;
-  position: relative; 
+  position: relative;
 }
 
 .custom-dropdown {
@@ -289,7 +297,7 @@ strong {
   position: absolute;
   width: 100%;
   box-sizing: border-box;
-  left: 0; 
+  left: 0;
   min-width: 100%;
 
   &::-webkit-scrollbar {
@@ -376,5 +384,4 @@ strong {
   border-radius: 5px;
   margin: 5px 10px;
 }
-
 </style>

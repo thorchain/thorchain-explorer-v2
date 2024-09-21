@@ -1,5 +1,5 @@
 <template>
-  <div class="address-container">
+  <page class="address-container">
     <div class="address-header">
       <WalletIcon class="icon" />
       <span>{{ isVault ? vaultType : 'Address' }}</span>
@@ -9,15 +9,12 @@
       <UtilityBox :value="address" />
     </div>
     <template v-if="addrTxs">
-      <div class="stat-wrapper mb-1">
-        <div class="balance-nav-container">
-          <card>
+      <template v-if="!isVault">
+        <div class="stat-wrapper mb-1">
+          <div class="balance-nav-container">
             <balance :state="addressStat" />
-          </card>
-          <Card class="nav-content-container">
             <div class="nav">
               <Nav
-                v-if="!isVault"
                 :active-mode.sync="activeMode"
                 :nav-items="[
                   { text: 'LPs/Savers', mode: 'pools' },
@@ -33,11 +30,13 @@
               <keep-alive>
                 <pools v-if="activeMode == 'pools'" :address="address" />
               </keep-alive>
-              <loans v-if="activeMode == 'loans'" :address="address" />
+              <keep-alive>
+                <loans v-if="activeMode == 'loans'" :address="address" />
+              </keep-alive>
             </div>
-          </Card>
+          </div>
         </div>
-      </div>
+      </template>
       <template v-if="isVault">
         <info-card
           :options="addressStat"
@@ -160,7 +159,7 @@
     <div v-else-if="!addrTxs" class="error-container">
       Can't Fetch the Address! Please Try again Later.
     </div>
-  </div>
+  </page>
 </template>
 
 <script>
