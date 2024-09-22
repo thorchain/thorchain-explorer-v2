@@ -284,7 +284,7 @@ button[disabled] {
 
   .dropdown-button {
     width: 100%;
-    padding: 14px 12px;
+    padding: 10px 12px;
     font-size: 16px;
     border: none;
     border-radius: 6px;
