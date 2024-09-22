@@ -966,7 +966,20 @@ input {
   cursor: pointer;
 
   &:hover {
+    fill: var(--primary-color);
     color: var(--primary-color);
+  }
+}
+
+.external-link {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  .asset-icon {
+    fill: currentColor;
+    width: 0.7rem;
+    height: 0.7rem;
   }
 }
 
