@@ -1,26 +1,7 @@
 <template>
   <div>
-    <info-card :options="thornames" :inner="true">
-      <template #asset>
-        <div v-if="preferredAsset">
-          <span class="s-header"> Preferred Asset </span>
-          <div class="s-value">
-            {{ showAsset(preferredAsset) }}
-          </div>
-        </div>
-      </template>
-      <template #address>
-        <div v-if="owner">
-          <span class="s-header"> Owner </span>
-          <NuxtLink
-            class="clickable s-value"
-            :to="{ path: `/address/${owner}` }"
-          >
-            {{ formatAddress(owner) }}
-          </NuxtLink>
-        </div>
-      </template>
-    </info-card>
+    <info-card :options="thornames" :inner="true"></info-card>
+    <span v-if="!thornames || thornames.length == 0">NO THORName</span>
     <div v-if="thornameAddresses.length > 0">
       <div class="addresses-container">
         <div
@@ -76,9 +57,6 @@ export default {
               },
             ],
           })
-
-          this.preferredAsset = res.data?.preferred_asset ?? 'N/A'
-          this.owner = res.data?.owner ?? 'N?A'
         })
       })
     },
