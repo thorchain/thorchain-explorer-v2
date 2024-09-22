@@ -173,11 +173,12 @@
               >
                 <td>
                   <nuxt-link
-                    class="hoverable mono"
+                    class="hoverable mono external-link"
                     target="_blank"
                     :to="`/address/${p.bond_address}`"
                   >
                     {{ addressFormatV2(p.bond_address, 4, true) }}
+                    <external-icon class="asset-icon" />
                   </nuxt-link>
                 </td>
                 <td class="mono">
@@ -231,7 +232,7 @@
             props.formattedRow[props.column.field] < 10000
           "
           style="color: #ffc107"
-          >{{ props.formattedRow[props.column.field] }}</span
+          >-{{ props.formattedRow[props.column.field] }}</span
         >
         <span
           v-else-if="
@@ -239,7 +240,7 @@
             props.formattedRow[props.column.field] > -10000
           "
           style="color: #ef5350"
-          >{{ props.formattedRow[props.column.field] }}</span
+          >-{{ props.formattedRow[props.column.field] }}</span
         >
         <DangerIcon
           v-else-if="props.formattedRow[props.column.field] > 10000"
@@ -263,8 +264,6 @@
 <script>
 import { mapGetters } from 'vuex'
 import { remove, orderBy } from 'lodash'
-import { number } from 'echarts'
-import { props } from 'qrcode.vue'
 import JsonIcon from '@/assets/images/json.svg?inline'
 import InfoIcon from '@/assets/images/info.svg?inline'
 import StarIcon from '@/assets/images/bookmark.svg?inline'
@@ -274,6 +273,7 @@ import VoteIcon from '@/assets/images/vote.svg?inline'
 import DangerIcon from '@/assets/images/danger.svg?inline'
 import MarkerIcon from '@/assets/images/marker.svg?inline'
 import RecycleIcon from '@/assets/images/recycle.svg?inline'
+import ExternalIcon from '@/assets/images/external.svg?inline'
 import HighlightList from '@/assets/images/highlight-list.svg?inline'
 
 export default {
@@ -288,6 +288,7 @@ export default {
     MarkerIcon,
     DangerIcon,
     HighlightList,
+    ExternalIcon,
   },
   props: ['rows', 'cols', 'name'],
   data() {
