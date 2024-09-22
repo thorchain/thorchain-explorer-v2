@@ -1,82 +1,100 @@
 <template>
   <card>
-    <span class="title-balance">Balances</span>
     <div v-if="state">
       <div class="balance-container">
-        <div class="balance-label">RUNE BALANCE</div>
-        <div class="balance-value">
-          <span
-            v-if="runeToken && runeToken.price > 0 && !isNaN(runeToken.price)"
-          >
-            {{ runeToken.price | number('0,0.00') }} RUNE
-          </span>
-          <span v-else>-</span>
+        <span class="title-balance">Balances</span>
+        <div class="balance-label">
+          <span>RUNE BALANCE</span>
+          <div class="balance-content">
+            <asset-icon
+              v-if="runeToken && runeToken.price > 0 && !isNaN(runeToken.price)"
+              :asset="{ ticker: 'RUNE', chain: 'THOR' }"
+              :chain="false"
+              class="asset-icon"
+            />
+            <span
+              class="mono"
+              v-if="runeToken && runeToken.price > 0 && !isNaN(runeToken.price)"
+            >
+              {{ runeToken.price | number('0,0.00') }} RUNE
+            </span>
+            <span v-else>-</span>
+          </div>
         </div>
-        <div class="balance-label">RUNE VALUE</div>
-        <div class="balance-value">
-          <span
-            v-if="runeToken && runeToken.price > 0 && !isNaN(runeToken.price)"
-          >
-            {{ (runeToken.price * runePrice) | currency }}
-          </span>
-          <span v-else>-</span>
-        </div>
-      </div>
 
-      <div class="dropdown-container">
-        <label for="token-dropdown">Token Holdings</label>
-        <div ref="dropdownButton" class="custom-dropdown">
-          <div class="dropdown-button" @click="toggleDropdown">
-            <div class="selected-options">
-              <span v-if="selectedToken">
-                {{ showAsset(selectedToken.asset) }}
-              </span>
+        <div class="balance-label">
+          <span>RUNE VALUE</span>
+          <div class="balance-content">
+            <span
+              class="mono"
+              v-if="runeToken && runeToken.price > 0 && !isNaN(runeToken.price)"
+            >
+              {{ (runeToken.price * runePrice) | currency }}
+            </span>
+            <span v-else>-</span>
+          </div>
+        </div>
+        <div class="dropdown-container">
+          <label for="token-dropdown">Token Holdings</label>
+          <div ref="dropdownButton" class="custom-dropdown">
+            <button
+              class="dropdown-button"
+              @click="toggleDropdown"
+              :disabled="totalValue.count === 0"
+            >
               <div class="selected-options">
                 <span v-if="selectedToken">
                   {{ showAsset(selectedToken.asset) }}
                 </span>
-                <span v-else
-                  >{{ totalValue.total | number('0,0.000') }} ({{
-                    totalValue.count
-                  }})</span
-                >
+                <div class="selected-options">
+                  <span v-if="selectedToken">
+                    {{ showAsset(selectedToken.asset) }}
+                  </span>
+                  <span v-else class="total-value">
+                    {{ totalValue.total | number('0,0.000') }}
+                  </span>
+                  <span class="count-value">
+                    ({{ totalValue.count }} Tokens)
+                  </span>
+                </div>
               </div>
-            </div>
-            <AngleIcon class="dropdown-icon" />
+              <AngleIcon class="dropdown-icon" />
+            </button>
           </div>
-        </div>
-      </div>
-      <div v-if="isOpen" class="dropdown-options">
-        <div v-for="(tokens, type) in groupedTokens" :key="type">
-          <div class="token-group-header">
-            {{ type }} Assets ({{ tokens.length }})
-          </div>
-          <div
-            v-for="token in tokens"
-            :key="token.asset"
-            class="dropdown-option"
-          >
-            <div class="token-info">
-              <div class="token-name">
-                <asset-icon
-                  :asset="token.asset"
-                  :chain="false"
-                  class="asset-icon"
-                />
-                <div>{{ showAsset(token.asset) }}</div>
-              </div>
-              <div class="token-quantity">
-                {{ token.quantity }} {{ token.asset.ticker }}
-              </div>
-            </div>
 
-            <div class="token-value">
-              <span v-if="token.price > 0 && !isNaN(token.price)">
-                ${{ token.value | number('0,0.00') }}
-              </span>
-              <span v-else>-</span>
-              <div class="token-price">
-                @{{ token.price | number('0,0.0000') }}
+          <div v-if="isOpen" class="dropdown-options">
+            <div v-for="(tokens, type) in groupedTokens" :key="type">
+              <div class="token-group-header">
+                {{ type }} Assets ({{ tokens.length }})
+              </div>
+              <div
+                v-for="token in tokens"
+                :key="token.asset"
+                class="dropdown-option"
+              >
+                <div class="token-info">
+                  <div class="token-name">
+                    <asset-icon
+                      :asset="token.asset"
+                      :chain="false"
+                      class="asset-icon"
+                    />
+                    <div>{{ showAsset(token.asset) }}</div>
+                  </div>
+                  <div class="token-quantity">
+                    {{ token.quantity }} {{ token.asset.ticker }}
+                  </div>
+                </div>
+
+                <div class="token-value">
+                  <span v-if="token.price > 0 && !isNaN(token.price)">
+                    ${{ token.value | number('0,0.00') }}
+                  </span>
+                  <span v-else>-</span>
+                  <div class="token-price">
+                    @{{ token.price | number('0,0.0000') }}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -200,69 +218,72 @@ export default {
 .balance-container {
   display: flex;
   flex-direction: column;
-  margin-top: 34px;
+  gap: 24px;
 
   .balance-label {
-    font-size: 12px;
-    color: var(--secondary-text-color);
     text-transform: uppercase;
     letter-spacing: 1px;
-    margin-bottom: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 12px;
   }
-
   .balance-value {
     display: flex;
     align-items: center;
     font-size: 16px;
     font-weight: bold;
-    margin-bottom: 34px;
+    align-items: center;
+  }
+  .balance-content {
+    display: flex;
   }
 }
 
 .title-balance {
   font-weight: bold;
 }
-
+.mono {
+  font-size: 14px !important;
+  color: var(--sec-font-color);
+}
 .thor-rune-details {
-  padding: 10px;
-  margin-bottom: 20px;
+  padding: 12px;
+  margin-bottom: 24px;
 }
 
 .token-details {
-  margin-top: 8px;
-  padding: 8px;
+  margin-top: 10px;
+  padding: 10px;
   background-color: var(--bg-color-light);
   border-radius: 6px;
 }
 
 .detail-item {
   font-size: 16px;
-  padding: 8px;
+  padding: 10px;
 }
 
-strong {
-  font-weight: bold;
+button[disabled] {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
-
 .dropdown-container {
   font-size: 12px;
-  color: var(--secondary-text-color);
-  text-transform: uppercase;
   letter-spacing: 1px;
   display: flex;
-  gap: 12px;
+  gap: 5px;
   flex-direction: column;
   position: relative;
 }
 
 .custom-dropdown {
   position: relative;
-  margin-bottom: 10px;
   display: inline-block;
 
   .dropdown-button {
     width: 100%;
-    padding: 12px 10px;
+    padding: 14px 12px;
     font-size: 16px;
     border: none;
     border-radius: 6px;
@@ -298,7 +319,7 @@ strong {
   width: 100%;
   box-sizing: border-box;
   left: 0;
-  min-width: 100%;
+  top: 108%;
 
   &::-webkit-scrollbar {
     width: 8px;
@@ -317,10 +338,11 @@ strong {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px;
+    padding: 10px;
     font-size: 14px;
     transition: background-color 0.3s ease;
     border-bottom: 1px solid var(--border-color);
+    margin: 0px 12px;
 
     &:last-child {
       border-bottom: none;
@@ -329,7 +351,6 @@ strong {
     &:hover {
       background-color: var(--active-bg-color);
       border-radius: 0.3rem;
-      color: var(--primary-color);
     }
 
     .token-info {
@@ -337,17 +358,15 @@ strong {
       flex-direction: column;
 
       .token-name {
+        color: var(--sec-font-color);
         font-size: 12px;
         display: flex;
-        gap: 0.5rem;
-        padding-bottom: 1rem;
-        flex-direction: row;
+        padding-bottom: 6px;
         align-items: center;
       }
 
       .token-quantity {
         font-size: 12px;
-        color: var(--secondary-text-color);
       }
     }
 
@@ -355,33 +374,42 @@ strong {
       text-align: right;
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: 6px;
+      font-size: 12px;
 
       .token-price {
         font-size: 12px;
-        color: var(--secondary-text-color);
       }
     }
   }
 }
 
-.asset-icon {
-  width: 16px !important;
-  height: 16px !important;
+::v-deep .asset-icon {
+  width: 14px !important;
+  height: 14px !important;
 
   svg {
-    width: 30%;
-    height: 30%;
+    width: 14px !important;
+    height: 14px !important;
   }
+}
+
+.total-value {
+  font-size: 15px;
+  font-weight: bold;
+}
+
+.count-value {
+  color: var(--bs-secondary-color);
+  font-size: 14px;
 }
 
 .token-group-header {
   font-weight: bold;
   padding: 10px;
   font-size: 14px;
-  background-color: var(--border-color);
   color: var(--sec-font-color);
   border-radius: 5px;
-  margin: 5px 10px;
+  margin: 0px 12px;
 }
 </style>
