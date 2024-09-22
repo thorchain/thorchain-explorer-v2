@@ -65,31 +65,10 @@ export default {
         .getRevThorname(address)
         .then((res) => {
           const names = res?.data
-          this.thornames = names.map((n) => {
-            return [
-              {
-                name: 'Address Name',
-                value: n,
-                filter: true,
-              },
-            ]
-          })
           this.checkThornameAddresses(names)
         })
         .catch((e) => {
-          if (e.response.status === 404) {
-            this.thornames = [
-              [
-                {
-                  name: 'Address Name',
-                  value: 'Not assigned',
-                  filter: true,
-                },
-              ],
-            ]
-          } else {
-            console.error(e)
-          }
+          console.error(e)
         })
     },
   },
