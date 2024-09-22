@@ -324,6 +324,13 @@ export default {
           sortFn: this.cSort,
         },
         {
+          label: 'Status',
+          field: 'status',
+          width: '70px',
+          tdClass: 'center',
+          thClass: 'center',
+        },
+        {
           label: 'Version',
           field: 'version',
           width: '80px',
