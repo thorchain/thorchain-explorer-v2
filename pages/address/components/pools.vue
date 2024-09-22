@@ -1,74 +1,69 @@
 <template>
-  <div class="simple-card">
-    <div class="card-header">Liquidity Pools</div>
-    <div class="card-body">
-      <vue-good-table
-        :columns="cols"
-        :rows="lps"
-        style-class="vgt-table net-table"
-        :pagination-options="{
-          enabled: true,
-          perPage: 5,
-          perPageDropdownEnabled: false,
-        }"
+  <vue-good-table
+    :columns="cols"
+    :rows="lps"
+    style-class="vgt-table net-table"
+    :pagination-options="{
+      enabled: true,
+      perPage: 5,
+      perPageDropdownEnabled: false,
+    }"
+  >
+    <template slot="table-row" slot-scope="props">
+      <div v-if="props.column.field == 'pool'" class="asset-cell">
+        <AssetIcon :asset="props.row.pool" />
+        <span class="ellipsis">
+          {{ props.row.pool }}
+        </span>
+        <div
+          v-if="props.row.label"
+          class="bubble-container"
+          style="margin-left: 10px"
+        >
+          {{ props.row.label }}
+        </div>
+      </div>
+      <span
+        v-else-if="props.column.field.startsWith('pool')"
+        class="pool-cell ellipsis"
       >
-        <template slot="table-row" slot-scope="props">
-          <div v-if="props.column.field == 'pool'" class="asset-cell">
-            <AssetIcon :asset="props.row.pool" />
-            <span class="ellipsis">
-              {{ props.row.pool }}
-            </span>
-            <div
-              v-if="props.row.label"
-              class="bubble-container"
-              style="margin-left: 10px"
-            >
-              {{ props.row.label }}
-            </div>
-          </div>
-          <span
-            v-else-if="props.column.field.startsWith('pool')"
-            class="pool-cell ellipsis"
-          >
-            <span
-              v-if="props.row[props.column.field][0]"
-              v-tooltip="
-                showPrice(
-                  { poolPrice: runePrice },
-                  props.row[props.column.field][0]
+        <span
+          v-if="props.row[props.column.field][0]"
+          v-tooltip="
+            showPrice(
+              { poolPrice: runePrice },
+              props.row[props.column.field][0]
+            )
+          "
+          >{{ props.row[props.column.field][0] | number('0,0.00') }}
+          <small>RUNE</small></span
+        >
+        <span
+          v-if="props.row[props.column.field][1]"
+          v-tooltip="showPrice(props.row, props.row[props.column.field][1])"
+          class="ellipsis"
+        >
+          {{
+            props.row[props.column.field][1] ||
+            props.row[props.column.field][1] === 0
+              ? $options.filters.number(
+                  props.row[props.column.field][1],
+                  '0,0.000000'
                 )
-              "
-              >{{ props.row[props.column.field][0] | number('0,0.00') }}
-              <small>RUNE</small></span
-            >
-            <span
-              v-if="props.row[props.column.field][1]"
-              v-tooltip="showPrice(props.row, props.row[props.column.field][1])"
-              class="ellipsis"
-            >
-              {{
-                props.row[props.column.field][1] ||
-                props.row[props.column.field][1] === 0
-                  ? $options.filters.number(
-                      props.row[props.column.field][1],
-                      '0,0.000000'
-                    )
-                  : '-'
-              }}
-              <small class="ellipsis">{{ showAsset(props.row.pool) }}</small>
-            </span>
-            <span v-else-if="!props.row[props.column.field][0]">-</span>
-          </span>
-          <span v-else-if="props.column.field == 'share'">
-            <span v-if="props.row.share">{{
-              percentageFormat(props.row.share, 4)
-            }}</span>
-            <span v-else>-</span>
-          </span>
-        </template>
-      </vue-good-table>
-    </div>
-  </div>
+              : '-'
+          }}
+          <small class="ellipsis">{{ showAsset(props.row.pool) }}</small>
+        </span>
+        <span v-else-if="!props.row[props.column.field][0]">-</span>
+      </span>
+      <span v-else-if="props.column.field == 'share'">
+        <span v-if="props.row.share">{{
+          percentageFormat(props.row.share, 4)
+        }}</span>
+        <span v-else>-</span>
+      </span>
+    </template>
+  </vue-good-table>
 </template>
 
 <script>

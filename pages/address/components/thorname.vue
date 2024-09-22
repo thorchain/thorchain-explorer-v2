@@ -1,6 +1,6 @@
-<template v-else-if="activeMode == 'thorname'">
+<template>
   <div>
-    <stat-table :table-settings="thornames">
+    <info-card :options="thornames" :inner="true">
       <template #asset>
         <div v-if="preferredAsset">
           <span class="s-header"> Preferred Asset </span>
@@ -20,26 +20,23 @@
           </NuxtLink>
         </div>
       </template>
-    </stat-table>
-    <div v-if="thornameAddresses.length > 0" class="simple-card">
-      <div class="card-header">Thorname Addresses</div>
-      <div class="card-body">
-        <div class="addresses-container">
-          <div
-            v-for="address in thornameAddresses"
-            :key="address.chain"
-            class="addresses"
+    </info-card>
+    <div v-if="thornameAddresses.length > 0">
+      <div class="addresses-container">
+        <div
+          v-for="address in thornameAddresses"
+          :key="address.chain"
+          class="addresses"
+        >
+          <img
+            class="asset-icon"
+            :src="assetImage(baseChainAsset(address.chain))"
+          />
+          <span class="clickable mono" @click="gotoAddr(address.address)"
+            >{{ address.address.slice(0, 8) }}...{{
+              address.address.slice(-8)
+            }}</span
           >
-            <img
-              class="asset-icon"
-              :src="assetImage(baseChainAsset(address.chain))"
-            />
-            <span class="clickable mono" @click="gotoAddr(address.address)"
-              >{{ address.address.slice(0, 8) }}...{{
-                address.address.slice(-8)
-              }}</span
-            >
-          </div>
         </div>
       </div>
     </div>
@@ -68,36 +65,20 @@ export default {
 
       names.forEach((n) => {
         this.$api.getThorname(n).then((res) => {
-          if (this.thornameAddresses.length < res.data?.aliases.length) {
-            this.thornameAddresses = res.data?.aliases
+          this.thornames.push({
+            title: '',
+            rowStart: 1,
+            colSpan: 1,
+            items: [
+              {
+                name: 'Name',
+                value: res.data.name,
+              },
+            ],
+          })
 
-            this.thornames.push(
-              [
-                {
-                  name: 'Affiliate Collector',
-                  value: +res.data?.affiliate_collector_rune / 1e8 ?? 0,
-                  filter: true,
-                  runeValue: true,
-                  usdValue: true,
-                },
-                {
-                  name: 'Expire Block Height',
-                  value: res.data?.expire_block_height,
-                },
-                {
-                  slotName: 'asset',
-                },
-              ],
-              [
-                {
-                  slotName: 'address',
-                },
-              ]
-            )
-
-            this.preferredAsset = res.data?.preferred_asset ?? 'N/A'
-            this.owner = res.data?.owner ?? 'N?A'
-          }
+          this.preferredAsset = res.data?.preferred_asset ?? 'N/A'
+          this.owner = res.data?.owner ?? 'N?A'
         })
       })
     },

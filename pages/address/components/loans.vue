@@ -1,75 +1,67 @@
 <template>
-  <div class="simple-card">
-    <div class="card-header">Loans</div>
-    <div class="card-body">
-      <vue-good-table
-        :columns="cols"
-        :rows="bs"
-        style-class="vgt-table net-table"
-        :pagination-options="{
-          enabled: true,
-          perPage: 5,
-          perPageDropdownEnabled: false,
-        }"
+  <vue-good-table
+    :columns="cols"
+    :rows="bs"
+    style-class="vgt-table net-table"
+    :pagination-options="{
+      enabled: true,
+      perPage: 5,
+      perPageDropdownEnabled: false,
+    }"
+  >
+    <template slot="table-row" slot-scope="props">
+      <div v-if="props.column.field == 'collateral_asset'" class="asset-cell">
+        <AssetIcon :asset="props.row.collateral_asset" />
+        <span class="ellipsis">
+          {{ props.row.collateral_asset }}
+        </span>
+      </div>
+      <span
+        v-else-if="props.column.field === 'collateral'"
+        class="pool-cell ellipsis"
       >
-        <template slot="table-row" slot-scope="props">
-          <div
-            v-if="props.column.field == 'collateral_asset'"
-            class="asset-cell"
-          >
-            <AssetIcon :asset="props.row.collateral_asset" />
-            <span class="ellipsis">
-              {{ props.row.collateral_asset }}
-            </span>
-          </div>
-          <span
-            v-else-if="props.column.field === 'collateral'"
-            class="pool-cell ellipsis"
-          >
-            <span v-if="props.row[props.column.field][0]">
-              <small>Deposited: </small>
-              {{ props.row[props.column.field][0] | number('0,0.0000') }}
-              <small>{{ showAsset(props.row.collateral_asset) }}</small></span
-            >
-            <hr v-if="props.row[props.column.field][1]" class="table-hr" />
-            <span v-if="props.row[props.column.field][1]" class="ellipsis">
-              <small>Withdrawn: </small>
-              {{
-                props.row[props.column.field][1] ||
-                props.row[props.column.field][1] === 0
-                  ? $options.filters.number(
-                      props.row[props.column.field][1],
-                      '0,0.0000'
-                    )
-                  : '-'
-              }}
-              <small class="ellipsis">{{
-                showAsset(props.row.collateral_asset)
-              }}</small>
-            </span>
-            <span v-else-if="!props.row[props.column.field][0]">-</span>
-          </span>
-          <span v-else-if="props.column.field == 'debt'">
-            <span v-if="props.row[props.column.field][0]">
-              <small>Issued: </small>
-              {{ props.row[props.column.field][0] | currency }}</span
-            >
-            <hr v-if="props.row[props.column.field][1]" class="table-hr" />
-            <span v-if="props.row[props.column.field][1]" class="ellipsis">
-              <small>Repaid: </small>
-              {{
-                props.row[props.column.field][1] ||
-                props.row[props.column.field][1] === 0
-                  ? $options.filters.currency(props.row[props.column.field][1])
-                  : '-'
-              }}
-            </span>
-            <span v-else-if="!props.row[props.column.field][0]">-</span>
-          </span>
-        </template>
-      </vue-good-table>
-    </div>
-  </div>
+        <span v-if="props.row[props.column.field][0]">
+          <small>Deposited: </small>
+          {{ props.row[props.column.field][0] | number('0,0.0000') }}
+          <small>{{ showAsset(props.row.collateral_asset) }}</small></span
+        >
+        <hr v-if="props.row[props.column.field][1]" class="table-hr" />
+        <span v-if="props.row[props.column.field][1]" class="ellipsis">
+          <small>Withdrawn: </small>
+          {{
+            props.row[props.column.field][1] ||
+            props.row[props.column.field][1] === 0
+              ? $options.filters.number(
+                  props.row[props.column.field][1],
+                  '0,0.0000'
+                )
+              : '-'
+          }}
+          <small class="ellipsis">{{
+            showAsset(props.row.collateral_asset)
+          }}</small>
+        </span>
+        <span v-else-if="!props.row[props.column.field][0]">-</span>
+      </span>
+      <span v-else-if="props.column.field == 'debt'">
+        <span v-if="props.row[props.column.field][0]">
+          <small>Issued: </small>
+          {{ props.row[props.column.field][0] | currency }}</span
+        >
+        <hr v-if="props.row[props.column.field][1]" class="table-hr" />
+        <span v-if="props.row[props.column.field][1]" class="ellipsis">
+          <small>Repaid: </small>
+          {{
+            props.row[props.column.field][1] ||
+            props.row[props.column.field][1] === 0
+              ? $options.filters.currency(props.row[props.column.field][1])
+              : '-'
+          }}
+        </span>
+        <span v-else-if="!props.row[props.column.field][0]">-</span>
+      </span>
+    </template>
+  </vue-good-table>
 </template>
 
 <script>
