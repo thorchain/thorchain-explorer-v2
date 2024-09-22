@@ -163,7 +163,7 @@
           <template #popper>
             <table class="provider-table">
               <tr>
-                <th>Address</th>
+                <th style="text-align: left">Address</th>
                 <th>Bond</th>
                 <th style="text-align: right">Share</th>
               </tr>

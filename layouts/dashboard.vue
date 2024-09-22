@@ -139,10 +139,16 @@ export default {
       const search = this.searchQuery.toUpperCase()
       if (search.length <= 30) {
         this.$api.getThorname(this.searchQuery).then((res) => {
-          if (res.status / 200 === 1 && res.data?.aliases.length > 0) {
-            const thorchainAddr = res.data?.aliases?.find(
+          if (
+            res.status / 200 === 1 &&
+            (res.data?.aliases.length > 0 || res.data.owner)
+          ) {
+            let thorchainAddr = res.data?.aliases?.find(
               (el) => el.chain === 'THOR'
-            ).address
+            )?.address
+            if (!thorchainAddr) {
+              thorchainAddr = res.data.owner
+            }
             this.$router.push({ path: `/address/${thorchainAddr}` })
           }
         })
