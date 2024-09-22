@@ -12,7 +12,7 @@
       <template v-if="!isVault">
         <div class="stat-wrapper mb-1">
           <div class="balance-nav-container">
-            <balance :state="addressStat" />
+            <balance class="card-balance" :state="addressStat" />
             <div class="nav">
               <Nav
                 :active-mode.sync="activeMode"
@@ -22,7 +22,6 @@
                   { text: 'Loans', mode: 'loans' },
                 ]"
               />
-            </div>
             <div class="content">
               <keep-alive>
                 <thorname v-if="activeMode == 'thorname'" :address="address" />
@@ -34,6 +33,7 @@
                 <loans v-if="activeMode == 'loans'" :address="address" />
               </keep-alive>
             </div>
+          </div>
           </div>
         </div>
       </template>
@@ -442,9 +442,12 @@ export default {
     display: flex;
     justify-content: space-between;
   }
+  .card-balance{
+    padding: 3px;
+  }
 
   .content {
-    margin-top: 1rem;
+    margin-top: 0.5rem;
   }
   .utility-wrapper {
     display: flex;
