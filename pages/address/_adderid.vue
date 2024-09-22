@@ -13,16 +13,14 @@
         <div class="stat-wrapper mb-1">
           <div class="balance-nav-container">
             <balance class="card-balance" :state="addressStat" />
-            <div class="nav">
-              <Nav
-                :active-mode.sync="activeMode"
-                :nav-items="[
-                  { text: 'LPs/Savers', mode: 'pools' },
-                  { text: 'THORName', mode: 'thorname' },
-                  { text: 'Loans', mode: 'loans' },
-                ]"
-              />
-            <div class="content">
+            <Card
+              :navs="[
+                { title: 'LP/Savers', value: 'pools' },
+                { title: 'Thorname', value: 'thorname' },
+                { title: 'Loans', value: 'loans' },
+              ]"
+              :act-nav.sync="activeMode"
+            >
               <keep-alive>
                 <thorname v-if="activeMode == 'thorname'" :address="address" />
               </keep-alive>
@@ -32,8 +30,7 @@
               <keep-alive>
                 <loans v-if="activeMode == 'loans'" :address="address" />
               </keep-alive>
-            </div>
-          </div>
+            </Card>
           </div>
         </div>
       </template>
@@ -97,7 +94,7 @@
             </div>
           </div>
         </Card>
-        <div class="simple-card mb-1">
+        <div>
           <card title="Vault Balances">
             <vue-good-table
               v-if="vaultInfo"
@@ -437,12 +434,16 @@ export default {
       width: 0.8rem;
     }
   }
+  .nav {
+    flex: 1;
+  }
   .balance-nav-container {
     gap: 1rem;
     display: flex;
     justify-content: space-between;
+    flex-wrap: wrap;
   }
-  .card-balance{
+  .card-balance {
     padding: 3px;
   }
 
@@ -509,6 +510,12 @@ export default {
     font-weight: bold;
     color: var(--font-color);
     padding: 0 0.8rem;
+
+    span {
+      text-overflow: ellipsis;
+      max-width: 70%;
+      overflow: hidden;
+    }
   }
 }
 

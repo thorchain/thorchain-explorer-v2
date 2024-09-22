@@ -80,6 +80,7 @@ export default {
   word-wrap: break-word;
   border: 1px solid var(--border-color);
   background-color: var(--card-bg-color);
+  max-width: 100%;
 
   border-left: 0;
   border-right: 0;
@@ -103,7 +104,7 @@ export default {
 
     display: flex;
     align-items: center;
-    
+
     .nav-header {
       display: flex;
     }
