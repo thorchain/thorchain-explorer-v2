@@ -4,7 +4,7 @@
       <div class="balance-container">
         <span class="title-balance">Balances</span>
         <div class="balance-label">
-          <span>RUNE BALANCE</span>
+          <span>RUNE Balance</span>
           <div class="balance-content">
             <asset-icon
               v-if="runeToken && runeToken.price > 0 && !isNaN(runeToken.price)"
@@ -13,34 +13,34 @@
               class="asset-icon"
             />
             <span
-              class="mono"
               v-if="runeToken && runeToken.price > 0 && !isNaN(runeToken.price)"
+              class="mono"
             >
-              {{ runeToken.price | number('0,0.00') }} RUNE
+              {{ runeToken.quantity }} RUNE
             </span>
             <span v-else>-</span>
           </div>
         </div>
 
         <div class="balance-label">
-          <span>RUNE VALUE</span>
+          <span>RUNE Value</span>
           <div class="balance-content">
             <span
-              class="mono"
               v-if="runeToken && runeToken.price > 0 && !isNaN(runeToken.price)"
+              class="mono"
             >
-              {{ (runeToken.price * runePrice) | currency }}
+              {{ (runeToken.price * runeToken.quantity) | currency }}
             </span>
             <span v-else>-</span>
           </div>
         </div>
         <div class="dropdown-container">
-          <label for="token-dropdown">Token Holdings</label>
+          <label for="token-dropdown">Asset Holdings</label>
           <div ref="dropdownButton" class="custom-dropdown">
             <button
               class="dropdown-button"
-              @click="toggleDropdown"
               :disabled="totalValue.count === 0"
+              @click="toggleDropdown"
             >
               <div class="selected-options">
                 <span v-if="selectedToken">
@@ -221,7 +221,6 @@ export default {
   gap: 24px;
 
   .balance-label {
-    text-transform: uppercase;
     letter-spacing: 1px;
     display: flex;
     flex-direction: column;
