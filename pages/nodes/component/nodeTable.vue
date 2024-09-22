@@ -234,14 +234,15 @@
           style="color: #ffc107"
           >-{{ props.formattedRow[props.column.field] }}</span
         >
-        <span
+        <DangerIcon
           v-else-if="
             0 > props.formattedRow[props.column.field] &&
             props.formattedRow[props.column.field] > -10000
           "
+          v-tooltip="'Disabled'"
+          class="table-icon"
           style="color: #ef5350"
-          >-{{ props.formattedRow[props.column.field] }}</span
-        >
+        />
         <DangerIcon
           v-else-if="props.formattedRow[props.column.field] > 10000"
           v-tooltip="`${props.formattedRow[props.column.field]}`"
