@@ -1,6 +1,6 @@
 <template>
   <card>
-    <div v-if="state">
+    <template v-if="state">
       <div class="balance-container">
         <span class="title-balance">Balances</span>
         <div class="balance-label">
@@ -100,7 +100,7 @@
           </div>
         </div>
       </div>
-    </div>
+    </template>
   </card>
 </template>
 
@@ -218,6 +218,7 @@ export default {
 .balance-container {
   display: flex;
   flex-direction: column;
+  height: 100%;
   gap: 24px;
 
   .balance-label {
@@ -274,6 +275,7 @@ button[disabled] {
   gap: 5px;
   flex-direction: column;
   position: relative;
+  margin-top: auto;
 }
 
 .custom-dropdown {
@@ -407,6 +409,7 @@ button[disabled] {
   font-weight: bold;
   padding: 10px;
   font-size: 14px;
+  background-color: var(--border-color);
   color: var(--sec-font-color);
   border-radius: 5px;
   margin: 0px 12px;
