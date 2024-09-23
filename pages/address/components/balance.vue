@@ -62,20 +62,34 @@
             </button>
           </div>
 
-          <div v-if="isOpen" class="dropdown-modal">
-            <input
-              v-model="searchQuery"
-              type="text"
-              placeholder="Search for Token Name"
-              class="search-input"
-            />
-            <div class="dropdown-options">
-              <div class="options-container">
-                <div
-                  v-if="filteredTokens(otherTokens).length === 0"
-                  class="no-results"
-                >
-                  Could not find any matches!
+          <div v-if="isOpen" class="dropdown-options">
+            <div v-for="group in sortedGroupedTokens" :key="group.type">
+              <div class="token-group-header">
+                {{ group.type }} Assets ({{ group.tokens.length }})
+                <div class="sort-controls">
+                  <span @click="changeSort(group.type)">
+                    <span v-if="sortDirection[group.type] === 'desc'">▼</span>
+                    <span v-if="sortDirection[group.type] === 'asc'">▲</span>
+                  </span>
+                </div>
+              </div>
+              <div
+                v-for="token in group.tokens"
+                :key="token.asset"
+                class="dropdown-option"
+              >
+                <div class="token-info">
+                  <div class="token-name">
+                    <asset-icon
+                      :asset="token.asset"
+                      :chain="false"
+                      class="asset-icon"
+                    />
+                    <div>{{ showAsset(token.asset) }}</div>
+                  </div>
+                  <div class="token-quantity">
+                    {{ token.quantity }} {{ token.asset.ticker }}
+                  </div>
                 </div>
 
                 <div v-for="group in sortedGroupedTokens" :key="group.type">
@@ -511,6 +525,7 @@ button[disabled] {
   background-color: var(--border-color);
   color: var(--sec-font-color);
   border-radius: 5px;
+  margin: 0px 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
