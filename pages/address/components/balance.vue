@@ -63,12 +63,18 @@
           </div>
 
           <div v-if="isOpen" class="dropdown-options">
-            <div v-for="(tokens, type) in groupedTokens" :key="type">
+            <div v-for="group in sortedGroupedTokens" :key="group.type">
               <div class="token-group-header">
-                {{ type }} Assets ({{ tokens.length }})
+                {{ group.type }} Assets ({{ group.tokens.length }})
+                <div class="sort-controls">
+                  <span @click="changeSort(group.type)">
+                    <span v-if="sortDirection[group.type] === 'desc'">▼</span>
+                    <span v-if="sortDirection[group.type] === 'asc'">▲</span>
+                  </span>
+                </div>
               </div>
               <div
-                v-for="token in tokens"
+                v-for="token in group.tokens"
                 :key="token.asset"
                 class="dropdown-option"
               >
@@ -107,6 +113,7 @@
 <script>
 import { bnOrZero } from '@xchainjs/xchain-util'
 import { mapGetters } from 'vuex'
+import { orderBy } from 'lodash'
 import { assetFromString } from '~/utils'
 import AngleIcon from '~/assets/images/angle-down.svg?inline'
 
@@ -119,6 +126,12 @@ export default {
     return {
       selectedToken: null,
       isOpen: false,
+      sortField: 'value',
+      sortDirection: {
+        Native: 'desc',
+        Trade: 'desc',
+        Synth: 'desc',
+      },
     }
   },
   computed: {
@@ -126,6 +139,19 @@ export default {
       runePrice: 'getRunePrice',
       pools: 'getPools',
     }),
+    sortedGroupedTokens() {
+      return Object.entries(this.groupedTokens).map(([type, tokens]) => {
+        return {
+          type,
+          tokens: orderBy(
+            tokens,
+            [(token) => parseFloat(token.value)],
+            [this.sortDirection[type]]
+          ),
+        }
+      })
+    },
+
     totalValue() {
       const total = this.otherTokens.reduce(
         (sum, token) => sum + Number(token.value),
@@ -209,6 +235,10 @@ export default {
     selectToken(token) {
       this.selectedToken = token
       this.isOpen = false
+    },
+    changeSort(type) {
+      this.sortDirection[type] =
+        this.sortDirection[type] === 'asc' ? 'desc' : 'asc'
     },
   },
 }
@@ -384,7 +414,6 @@ button[disabled] {
     }
   }
 }
-
 ::v-deep .asset-icon {
   width: 14px !important;
   height: 14px !important;
@@ -413,5 +442,15 @@ button[disabled] {
   color: var(--sec-font-color);
   border-radius: 5px;
   margin: 0px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.sort-controls span {
+  cursor: pointer;
+  position: relative;
+  font-size: 10px;
+  padding-right: 2px;
+  color: var(--primary-color);
 }
 </style>
