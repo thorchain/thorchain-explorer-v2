@@ -62,65 +62,68 @@
             </button>
           </div>
 
-          <div v-if="isOpen" class="dropdown-options">
-            <div class="options-container">
-              <input
-                type="text"
-                v-model="searchQuery"
-                placeholder="Search for Token Name"
-                class="search-input"
-              />
+          <div v-if="isOpen" class="dropdown-modal">
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Search for Token Name"
+              class="search-input"
+            />
+            <div class="dropdown-options">
+              <div class="options-container">
+                <div
+                  v-if="filteredTokens(otherTokens).length === 0"
+                  class="no-results"
+                >
+                  Could not find any matches!
+                </div>
 
-              <div
-                v-if="filteredTokens(otherTokens).length === 0"
-                class="no-results"
-              >
-                Could not find any matches!
-              </div>
-
-              <div v-for="group in sortedGroupedTokens" :key="group.type">
-                <div v-if="filteredTokens(group.tokens).length > 0">
-                  <div class="token-group-header">
-                    {{ group.type }} Assets ({{
-                      filteredTokens(group.tokens).length
-                    }})
-                    <div class="sort-controls">
-                      <span @click="changeSort(group.type)">
-                        <span v-if="sortDirection[group.type] === 'desc'"
-                          >▼</span
-                        >
-                        <span v-if="sortDirection[group.type] === 'asc'"
-                          >▲</span
-                        >
-                      </span>
-                    </div>
-                  </div>
-
-                  <div
-                    v-for="token in filteredTokens(group.tokens)"
-                    :key="token.asset"
-                    class="dropdown-option"
-                  >
-                    <div class="token-info">
-                      <div class="token-name">
-                        <asset-icon
-                          :asset="token.asset"
-                          :chain="false"
-                          class="asset-icon"
-                        />
-                        <div>{{ showAsset(token.asset) }}</div>
-                      </div>
-                      <div class="token-quantity">
-                        {{ token.quantity }} {{ token.asset.ticker }}
+                <div v-for="group in sortedGroupedTokens" :key="group.type">
+                  <div v-if="filteredTokens(group.tokens).length > 0">
+                    <div class="token-group-header">
+                      {{ group.type }} Assets ({{
+                        filteredTokens(group.tokens).length
+                      }})
+                      <div class="sort-controls">
+                        <span @click="changeSort(group.type)">
+                          <span v-if="sortDirection[group.type] === 'desc'"
+                            >▼</span
+                          >
+                          <span v-if="sortDirection[group.type] === 'asc'"
+                            >▲</span
+                          >
+                        </span>
                       </div>
                     </div>
-                    <div class="token-value">
-                      <span v-if="token.price > 0 && !isNaN(token.price)">
-                        ${{ token.value | number('0,0.00') }}
-                      </span>
-                      <span v-else>-</span>
-                      <div class="token-price">
-                        @{{ token.price | number('0,0.0000') }}
+
+                    <div
+                      v-for="token in filteredTokens(group.tokens)"
+                      :key="token.asset"
+                      class="dropdown-option"
+                    >
+                      <div class="token-info">
+                        <div class="token-name">
+                          <asset-icon
+                            :asset="token.asset"
+                            :chain="false"
+                            class="asset-icon"
+                          />
+                          <span style="line-height: 1">{{
+                            showAsset(token.asset)
+                          }}</span>
+                        </div>
+                        <div class="token-quantity">
+                          {{ token.quantity }} {{ token.asset.ticker }}
+                        </div>
+                      </div>
+                      <div class="token-value">
+                        <span v-if="token.price > 0 && !isNaN(token.price)">
+                          ${{ token.value | number('0,0.00') }}
+                        </span>
+                        <span v-else>-</span>
+                        <div class="token-price">
+                          @{{ token.price | number('0,0.0000') }}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -242,9 +245,6 @@ export default {
   },
 
   methods: {
-    showAsset(asset) {
-      return asset.ticker
-    },
     getAssetType(asset) {
       if (asset?.synth) {
         return 'Synth'
@@ -259,7 +259,7 @@ export default {
     },
     filteredTokens(tokens) {
       return tokens.filter((token) => {
-        const nameMatch = token.asset.ticker
+        const nameMatch = this.showAsset(token.asset)
           .toLowerCase()
           .includes(this.searchQuery.toLowerCase())
         const valueMatch = token.value.toString().includes(this.searchQuery)
@@ -343,11 +343,14 @@ button[disabled] {
   margin-top: auto;
 
   .search-input {
+    flex: 1;
     padding: 8px;
+    color: var(--sec-font-color);
     background-color: var(--bg-color);
     border: 1px solid var(--border-color) !important;
     border-radius: 0.5rem;
-    margin: 8px 0px;
+    margin: 8px 12px;
+    margin-right: 20px;
     display: flex;
     outline: none;
     font-size: 0.9062rem;
@@ -394,18 +397,24 @@ button[disabled] {
   }
 }
 
-.dropdown-options {
+.dropdown-modal {
+  display: flex;
+  flex-direction: column;
   background-color: var(--bg-color);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  z-index: 1000;
   border-radius: 0.5rem;
-  max-height: 312px;
-  overflow-y: auto;
+  z-index: 1000;
   position: absolute;
   width: 100%;
   box-sizing: border-box;
   left: 0;
   top: 108%;
+  padding-bottom: 8px;
+}
+
+.dropdown-options {
+  max-height: 350px;
+  overflow-y: auto;
 
   &::-webkit-scrollbar {
     width: 8px;
