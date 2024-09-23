@@ -180,11 +180,15 @@ export default {
   },
   async asyncData({ params, $api }) {
     const address = params.adderid
+
     const addrTxs = await $api
       .getMidgardActions({ address, limit: 30 })
       .catch((e) => {
         console.error(e)
       })
+
+    const nextPageToken = addrTxs?.data?.meta.nextPageToken
+    const prevPageToken = addrTxs?.data?.meta.nextPageToken
     const count = addrTxs?.data?.count ?? 0
     let otherBalances = []
     let runeBalance
@@ -231,6 +235,8 @@ export default {
       count,
       otherBalances,
       runeBalance,
+      nextPageToken,
+      prevPageToken,
     }
   },
   data() {
