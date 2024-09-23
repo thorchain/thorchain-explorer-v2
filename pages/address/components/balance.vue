@@ -63,82 +63,64 @@
           </div>
 
           <div v-if="isOpen" class="dropdown-options">
-            <div v-for="group in sortedGroupedTokens" :key="group.type">
-              <div class="token-group-header">
-                {{ group.type }} Assets ({{ group.tokens.length }})
-                <div class="sort-controls">
-                  <span @click="changeSort(group.type)">
-                    <span v-if="sortDirection[group.type] === 'desc'">▼</span>
-                    <span v-if="sortDirection[group.type] === 'asc'">▲</span>
-                  </span>
-                </div>
-              </div>
-              <div
-                v-for="token in group.tokens"
-                :key="token.asset"
-                class="dropdown-option"
-              >
-                <div class="token-info">
-                  <div class="token-name">
-                    <asset-icon
-                      :asset="token.asset"
-                      :chain="false"
-                      class="asset-icon"
-                    />
-                    <div>{{ showAsset(token.asset) }}</div>
-                  </div>
-                  <div class="token-quantity">
-                    {{ token.quantity }} {{ token.asset.ticker }}
-                  </div>
-                </div>
+            <div class="options-container">
+              <input
+                v-model="searchQuery"
+                type="text"
+                placeholder="Search for Token Name"
+                class="search-input"
+              />
 
-                <div v-for="group in sortedGroupedTokens" :key="group.type">
-                  <div v-if="filteredTokens(group.tokens).length > 0">
-                    <div class="token-group-header">
-                      {{ group.type }} Assets ({{
-                        filteredTokens(group.tokens).length
-                      }})
-                      <div class="sort-controls">
-                        <span @click="changeSort(group.type)">
-                          <span v-if="sortDirection[group.type] === 'desc'"
-                            >▼</span
-                          >
-                          <span v-if="sortDirection[group.type] === 'asc'"
-                            >▲</span
-                          >
-                        </span>
+              <div
+                v-if="filteredTokens(otherTokens).length === 0"
+                class="no-results"
+              >
+                Could not find any matches!
+              </div>
+
+              <div v-for="group in sortedGroupedTokens" :key="group.type">
+                <div v-if="filteredTokens(group.tokens).length > 0">
+                  <div class="token-group-header">
+                    {{ group.type }} Assets ({{
+                      filteredTokens(group.tokens).length
+                    }})
+                    <div class="sort-controls">
+                      <span @click="changeSort(group.type)">
+                        <span v-if="sortDirection[group.type] === 'desc'"
+                          >▼</span
+                        >
+                        <span v-if="sortDirection[group.type] === 'asc'"
+                          >▲</span
+                        >
+                      </span>
+                    </div>
+                  </div>
+
+                  <div
+                    v-for="token in filteredTokens(group.tokens)"
+                    :key="token.asset"
+                    class="dropdown-option"
+                  >
+                    <div class="token-info">
+                      <div class="token-name">
+                        <asset-icon
+                          :asset="token.asset"
+                          :chain="false"
+                          class="asset-icon"
+                        />
+                        <div>{{ showAsset(token.asset) }}</div>
+                      </div>
+                      <div class="token-quantity">
+                        {{ token.quantity }} {{ token.asset.ticker }}
                       </div>
                     </div>
-
-                    <div
-                      v-for="token in filteredTokens(group.tokens)"
-                      :key="token.asset"
-                      class="dropdown-option"
-                    >
-                      <div class="token-info">
-                        <div class="token-name">
-                          <asset-icon
-                            :asset="token.asset"
-                            :chain="false"
-                            class="asset-icon"
-                          />
-                          <span style="line-height: 1">{{
-                            showAsset(token.asset)
-                          }}</span>
-                        </div>
-                        <div class="token-quantity">
-                          {{ toZeroFormat(token.quantity) }}
-                          {{ token.asset.ticker }}
-                        </div>
-                      </div>
-                      <div class="token-value">
-                        <span v-if="token.price > 0 && !isNaN(token.price)">
-                          ${{ token.value | number('0,0.00') }}
-                        </span>
-                        <span v-else>-</span>
-                        <div class="token-price">
-                          @{{ token.price | number('0,0.0000') }}
-                        </div>
+                    <div class="token-value">
+                      <span v-if="token.price > 0 && !isNaN(token.price)">
+                        ${{ token.value | number('0,0.00') }}
+                      </span>
+                      <span v-else>-</span>
+                      <div class="token-price">
+                        @{{ token.price | number('0,0.0000') }}
                       </div>
                     </div>
                   </div>
@@ -525,7 +507,6 @@ button[disabled] {
   background-color: var(--border-color);
   color: var(--sec-font-color);
   border-radius: 5px;
-  margin: 0px 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
