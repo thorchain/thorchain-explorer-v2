@@ -63,42 +63,66 @@
           </div>
 
           <div v-if="isOpen" class="dropdown-options">
-            <div v-for="group in sortedGroupedTokens" :key="group.type">
-              <div class="token-group-header">
-                {{ group.type }} Assets ({{ group.tokens.length }})
-                <div class="sort-controls">
-                  <span @click="changeSort(group.type)">
-                    <span v-if="sortDirection[group.type] === 'desc'">▼</span>
-                    <span v-if="sortDirection[group.type] === 'asc'">▲</span>
-                  </span>
-                </div>
-              </div>
-              <div
-                v-for="token in group.tokens"
-                :key="token.asset"
-                class="dropdown-option"
-              >
-                <div class="token-info">
-                  <div class="token-name">
-                    <asset-icon
-                      :asset="token.asset"
-                      :chain="false"
-                      class="asset-icon"
-                    />
-                    <div>{{ showAsset(token.asset) }}</div>
-                  </div>
-                  <div class="token-quantity">
-                    {{ token.quantity }} {{ token.asset.ticker }}
-                  </div>
-                </div>
+            <div class="options-container">
+              <input
+                type="text"
+                v-model="searchQuery"
+                placeholder="Search for Token Name"
+                class="search-input"
+              />
 
-                <div class="token-value">
-                  <span v-if="token.price > 0 && !isNaN(token.price)">
-                    ${{ token.value | number('0,0.00') }}
-                  </span>
-                  <span v-else>-</span>
-                  <div class="token-price">
-                    @{{ token.price | number('0,0.0000') }}
+              <div
+                v-if="filteredTokens(otherTokens).length === 0"
+                class="no-results"
+              >
+                Could not find any matches!
+              </div>
+
+              <div v-for="group in sortedGroupedTokens" :key="group.type">
+                <div v-if="filteredTokens(group.tokens).length > 0">
+                  <div class="token-group-header">
+                    {{ group.type }} Assets ({{
+                      filteredTokens(group.tokens).length
+                    }})
+                    <div class="sort-controls">
+                      <span @click="changeSort(group.type)">
+                        <span v-if="sortDirection[group.type] === 'desc'"
+                          >▼</span
+                        >
+                        <span v-if="sortDirection[group.type] === 'asc'"
+                          >▲</span
+                        >
+                      </span>
+                    </div>
+                  </div>
+
+                  <div
+                    v-for="token in filteredTokens(group.tokens)"
+                    :key="token.asset"
+                    class="dropdown-option"
+                  >
+                    <div class="token-info">
+                      <div class="token-name">
+                        <asset-icon
+                          :asset="token.asset"
+                          :chain="false"
+                          class="asset-icon"
+                        />
+                        <div>{{ showAsset(token.asset) }}</div>
+                      </div>
+                      <div class="token-quantity">
+                        {{ token.quantity }} {{ token.asset.ticker }}
+                      </div>
+                    </div>
+                    <div class="token-value">
+                      <span v-if="token.price > 0 && !isNaN(token.price)">
+                        ${{ token.value | number('0,0.00') }}
+                      </span>
+                      <span v-else>-</span>
+                      <div class="token-price">
+                        @{{ token.price | number('0,0.0000') }}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -132,6 +156,7 @@ export default {
         Trade: 'desc',
         Synth: 'desc',
       },
+      searchQuery: '',
     }
   },
   computed: {
@@ -232,6 +257,16 @@ export default {
     toggleDropdown() {
       this.isOpen = !this.isOpen
     },
+    filteredTokens(tokens) {
+      return tokens.filter((token) => {
+        const nameMatch = token.asset.ticker
+          .toLowerCase()
+          .includes(this.searchQuery.toLowerCase())
+        const valueMatch = token.value.toString().includes(this.searchQuery)
+        const priceMatch = token.price.toString().includes(this.searchQuery)
+        return nameMatch || valueMatch || priceMatch
+      })
+    },
     selectToken(token) {
       this.selectedToken = token
       this.isOpen = false
@@ -306,6 +341,27 @@ button[disabled] {
   flex-direction: column;
   position: relative;
   margin-top: auto;
+
+  .search-input {
+    padding: 8px;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color) !important;
+    border-radius: 0.5rem;
+    margin: 8px 0px;
+    display: flex;
+    outline: none;
+    font-size: 0.9062rem;
+    font-weight: 450;
+    &:focus {
+      border-color: transparent;
+      box-shadow: 0 0 0 0.15rem rgba(255, 255, 255, 0.1);
+    }
+  }
+}
+.options-container {
+  display: flex;
+  flex-direction: column;
+  margin: 0px 12px;
 }
 
 .custom-dropdown {
@@ -343,7 +399,6 @@ button[disabled] {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   z-index: 1000;
   border-radius: 0.5rem;
-  padding: 0.5rem 0;
   max-height: 312px;
   overflow-y: auto;
   position: absolute;
@@ -373,7 +428,6 @@ button[disabled] {
     font-size: 14px;
     transition: background-color 0.3s ease;
     border-bottom: 1px solid var(--border-color);
-    margin: 0px 12px;
 
     &:last-child {
       border-bottom: none;
@@ -423,6 +477,12 @@ button[disabled] {
     height: 14px !important;
   }
 }
+.no-results {
+  padding: 10px;
+  text-align: center;
+  color: var(--bs-secondary-color);
+  font-size: 14px;
+}
 
 .total-value {
   font-size: 15px;
@@ -441,7 +501,6 @@ button[disabled] {
   background-color: var(--border-color);
   color: var(--sec-font-color);
   border-radius: 5px;
-  margin: 0px 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
