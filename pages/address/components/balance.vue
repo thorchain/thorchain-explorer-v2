@@ -113,7 +113,8 @@
                           }}</span>
                         </div>
                         <div class="token-quantity">
-                          {{ token.quantity }} {{ token.asset.ticker }}
+                          {{ toZeroFormat(token.quantity) }}
+                          {{ token.asset.ticker }}
                         </div>
                       </div>
                       <div class="token-value">
