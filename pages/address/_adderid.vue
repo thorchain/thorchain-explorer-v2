@@ -14,6 +14,7 @@
           <div class="balance-nav-container">
             <balance class="card-balance" :state="addressStat" />
             <Card
+              extra-class="node-address-card"
               :navs="[
                 { title: 'LP/Savers', value: 'pools' },
                 { title: 'Thorname', value: 'thorname' },
@@ -438,15 +439,24 @@ export default {
     flex: 1;
   }
   .balance-nav-container {
-    gap: 1rem;
     display: flex;
-    justify-content: space-between;
     flex-wrap: wrap;
-  }
-  .card-balance {
-    padding: 3px;
+    justify-content: space-between;
+    gap: 1rem;
+    max-width: auto;
   }
 
+  .card-balance,
+  .node-address-card {
+    flex: 1 1 calc(50% - 1rem);
+  }
+
+  @include lg {
+    .card-balance,
+    .node-address-card {
+      flex: 1 1 calc(20% - 1rem);
+    }
+  }
   .content {
     margin-top: 0.5rem;
   }

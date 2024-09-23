@@ -35,7 +35,7 @@
           </div>
         </div>
         <div class="dropdown-container">
-          <label for="token-dropdown">Asset Holdings</label>
+          <label for="token-dropdown">Other Asset Holdings</label>
           <div ref="dropdownButton" class="custom-dropdown">
             <button
               class="dropdown-button"
@@ -314,7 +314,7 @@ button[disabled] {
   z-index: 1000;
   border-radius: 0.5rem;
   padding: 0.5rem 0;
-  max-height: 200px;
+  max-height: 312px;
   overflow-y: auto;
   position: absolute;
   width: 100%;
