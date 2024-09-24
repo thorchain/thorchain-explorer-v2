@@ -15,12 +15,6 @@
           :src="assetImage(`${props.column.label}.${props.column.label}`)"
         />
       </div>
-      <div
-        v-else-if="props.column.field == 'providers'"
-        style="max-width: 80px"
-      >
-        Operator
-      </div>
       <span v-else-if="props.column.field == 'highlight'">
         <HighlightList class="table-icon"></HighlightList>
       </span>
@@ -147,7 +141,7 @@
           props.formattedRow[props.column.field] | number('0,0.00')
         }}</span>
       </span>
-      <span v-else-if="props.column.field == 'providers'">
+      <span v-else-if="props.column.field == 'operator'">
         <v-menu>
           <div class="hoverable">
             <nuxt-link
