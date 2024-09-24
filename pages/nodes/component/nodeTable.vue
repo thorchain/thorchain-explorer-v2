@@ -205,15 +205,32 @@
           :key="index"
           class="churn-item"
         >
-          <component
-            :is="churnItem.icon"
-            v-tooltip="churnItem.name"
-            class="table-icon"
-          />
+          <v-menu>
+            <component :is="churnItem.icon" class="table-icon" />
+            <template #popper>
+              <span v-if="churnItem.type !== 'jail'">
+                {{ churnItem.name }}
+              </span>
+              <div v-else>
+                <strong>{{ churnItem.name.reason | capitalize }}</strong>
+                <div style="margin-top: 0.5rem; padding: 4px">
+                  <div>
+                    <span>Released Height:</span>
+                    <span>{{
+                      churnItem.name.release_height | number('0,0')
+                    }}</span>
+                  </div>
+                  <div v-if="churnItem.name.releaseTime">
+                    <span>Released Time:</span>
+                    <span>{{ churnItem.name.releaseTime }}</span>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </v-menu>
         </div>
         <span v-if="rows[props.row.originalIndex].churn.length === 0">-</span>
       </div>
-
       <span v-else-if="props.column.field.includes('behind.')">
         <span
           v-if="props.formattedRow[props.column.field] == 0"
