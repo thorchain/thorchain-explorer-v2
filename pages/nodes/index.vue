@@ -134,13 +134,12 @@ export default {
           tdClass: 'mono',
         },
         {
-          label: 'Providers',
-          field: 'providers',
-          type: 'number',
-          width: '80px',
+          label: 'Operator',
+          field: 'operator',
+          type: 'text',
+          width: '90px',
           tdClass: 'mono center',
           thClass: 'center',
-          sortFn: this.pSort,
         },
         {
           label: 'Award',
@@ -264,13 +263,12 @@ export default {
           tdClass: 'mono',
         },
         {
-          label: 'Providers',
-          field: 'providers',
-          width: '80px',
-          type: 'number',
+          label: 'Operator',
+          field: 'operator',
+          type: 'text',
+          width: '90px',
           tdClass: 'mono center',
           thClass: 'center',
-          sortFn: this.pSort,
         },
         {
           label: 'Bond',
@@ -346,13 +344,12 @@ export default {
           tdClass: 'mono',
         },
         {
-          label: 'Providers',
-          field: 'providers',
-          width: '80px',
-          type: 'number',
+          label: 'Operator',
+          field: 'operator',
+          type: 'text',
+          width: '100px',
           tdClass: 'mono center',
           thClass: 'center',
-          sortFn: this.pSort,
         },
         {
           label: 'Bond',
@@ -775,9 +772,6 @@ export default {
       return (
         eNodes?.sort((a, b) => +a - +b)[Math.floor(eNodes.length / 2)] / 10 ** 8
       )
-    },
-    pSort(x, y, col, rowX, rowY) {
-      return x?.length < y?.length ? -1 : x?.length > y?.length ? 1 : 0
     },
     cSort(x, y, col, rowX, rowY) {
       return x?.code < y?.code ? -1 : x?.code > y?.code ? 1 : 0
