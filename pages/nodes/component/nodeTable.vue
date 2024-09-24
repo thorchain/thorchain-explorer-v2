@@ -221,7 +221,7 @@
                     }}</span>
                   </div>
                   <div v-if="churnItem.name.releaseTime">
-                    <span>Released Time:</span>
+                    <span>Release Time:</span>
                     <span>{{ churnItem.name.releaseTime }}</span>
                   </div>
                 </div>
