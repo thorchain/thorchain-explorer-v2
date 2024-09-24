@@ -1,6 +1,6 @@
 <template>
   <Page>
-    <h2>Top Swaps (24hr)</h2>
+    <Header title="Top Swaps (24hr)" />
     <transactions :txs="swaps" :loading="!swaps" />
   </Page>
 </template>
