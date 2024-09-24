@@ -22,6 +22,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import { orderBy } from 'lodash'
+import moment from 'moment'
 import NodeTable from './component/nodeTable.vue'
 import { fillNodeData, availableChains, blockTime } from '~/utils'
 
@@ -533,7 +534,15 @@ export default {
 
           if (el.jail?.release_height > chainHeight) {
             filteredNodes[index].churn.push({
-              name: el.jail.reason,
+              name: {
+                ...el.jail,
+                releaseTime: moment
+                  .duration(
+                    (el.jail?.release_height - chainHeight) * 6,
+                    'seconds'
+                  )
+                  .humanize(),
+              },
               icon: require('@/assets/images/handcuffs.svg?inline'),
               type: 'jail',
             })
@@ -614,7 +623,15 @@ export default {
 
           if (el.jail?.release_height > chainHeight) {
             filteredNodes[i].churn.push({
-              name: el.jail?.reason,
+              name: {
+                ...el.jail,
+                releaseTime: moment
+                  .duration(
+                    (el.jail?.release_height - chainHeight) * 6,
+                    'seconds'
+                  )
+                  .humanize(),
+              },
               icon: require('@/assets/images/handcuffs.svg?inline'),
               type: 'jail',
             })
