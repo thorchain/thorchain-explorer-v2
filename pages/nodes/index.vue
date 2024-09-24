@@ -625,6 +625,9 @@ export default {
             if (el.jail && el.jail.release_height > this.chainsHeight?.THOR) {
               continue
             }
+            if (+el.total_bond < this.minBond) {
+              continue
+            }
             filteredNodes[i].churn.push({
               name: 'Churning In',
               icon: require('@/assets/images/circle-up.svg?inline'),
