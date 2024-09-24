@@ -86,12 +86,14 @@
                       }})
                       <div class="sort-controls">
                         <span @click="changeSort(group.type)">
-                          <span v-if="sortDirection[group.type] === 'desc'"
-                            >▼</span
-                          >
-                          <span v-if="sortDirection[group.type] === 'asc'"
-                            >▲</span
-                          >
+                          <ArrowDownIcon
+                            v-if="sortDirection[group.type] === 'desc'"
+                            class="arrow-icon"
+                          />
+                          <ArrowUpIcon
+                            v-if="sortDirection[group.type] === 'asc'"
+                            class="arrow-icon"
+                          />
                         </span>
                       </div>
                     </div>
@@ -143,10 +145,14 @@ import { mapGetters } from 'vuex'
 import { orderBy } from 'lodash'
 import { assetFromString } from '~/utils'
 import AngleIcon from '~/assets/images/angle-down.svg?inline'
+import ArrowDownIcon from '~/assets/images/arrow-down-.svg?inline'
+import ArrowUpIcon from '~/assets/images/arrow-up-.svg?inline'
 
 export default {
   components: {
     AngleIcon,
+    ArrowDownIcon,
+    ArrowUpIcon,
   },
   props: ['state'],
   data() {
@@ -417,7 +423,7 @@ button[disabled] {
   overflow-y: auto;
 
   &::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
   }
 
   &::-webkit-scrollbar-track {
@@ -425,8 +431,9 @@ button[disabled] {
   }
 
   &::-webkit-scrollbar-thumb {
-    background-color: var(--active-bg-color);
-    border-radius: 5px;
+    background-color: var(--font-color);
+    opacity: 50%;
+    border-radius: 3px;
   }
 
   .dropdown-option {
@@ -517,8 +524,11 @@ button[disabled] {
 .sort-controls span {
   cursor: pointer;
   position: relative;
-  font-size: 10px;
+  display: flex;
+  align-items: center;
   padding-right: 2px;
-  color: var(--primary-color);
+}
+.arrow-icon {
+  fill: var(--primary-color);
 }
 </style>
