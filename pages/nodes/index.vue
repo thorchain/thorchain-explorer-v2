@@ -1,5 +1,5 @@
 <template>
-  <Page :error="error && !loading">
+  <Page :error="error && !loading" :fluid="true">
     <div class="grid-network">
       <info-card :options="topBonds" />
     </div>

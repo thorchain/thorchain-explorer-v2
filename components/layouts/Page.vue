@@ -26,7 +26,7 @@ export default {
   margin: auto;
 
   &.fluid {
-    max-width: none;
+    max-width: 100rem;
   }
 }
 

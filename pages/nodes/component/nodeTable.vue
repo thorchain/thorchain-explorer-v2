@@ -243,7 +243,7 @@
             props.formattedRow[props.column.field] < 10000
           "
           style="color: #ffc107"
-          >-{{ props.formattedRow[props.column.field] }}</span
+          >-{{ props.formattedRow[props.column.field] | number('0a') }}</span
         >
         <DangerIcon
           v-else-if="
