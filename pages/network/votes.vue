@@ -183,12 +183,20 @@ export default {
         let index = 0
         for (const m of Object.keys(this.mimirs)) {
           if (Object.keys(this.mimirVotes).includes(m)) {
+            if (m.toLowerCase().includes('ragnarok')) {
+              continue
+            }
             const hVotes = this.getVoteHighestBid(this.mimirVotes[m])
             if (this.mimirVotes[m].every((v) => v.value === undefined)) {
               continue
             }
             if (hVotes.values.length === 0) {
               votesLength--
+              continue
+            }
+            const consensusPercent = hVotes.consensus * 100
+            const isPassed = +this.mimirs[m] === +hVotes.value
+            if (isPassed && consensusPercent < 30) {
               continue
             }
             xaxis.push(m)
@@ -233,35 +241,60 @@ export default {
         let option = this.basicChartFormat(undefined, types, xaxis)
         option = {
           ...option,
-          formatter: (param) => {
-            return `
-            <div class="tooltip-header">
-              ${param[0].axisValue}
-            </div>
-            <div class="tooltip-body">
-              <span>
-                <span>Value</span>
-                <span>Count</span>
-              </span>
-            </div>
-            ${param
-              .map((p) => {
-                if (p.value > 0) {
-                  return `
-                <div class="tooltip-body">
-                  <span>
-                    <span>${p.seriesName}</span>
-                    <b>${p.value}</b>
-                  </span>
-                </div>
+          tooltip: {
+            trigger: 'axis',
+            formatter: (param) => {
+              const totalActiveNodes = this.network?.activeNodeCount || 0
+              const totalVoted = param.reduce((acc, p) => acc + p.value, 0)
+              const missingVotes = Math.max(0, totalActiveNodes - totalVoted)
+              const tooltipContent = `
+      <div class="tooltip-header" style="text-align:center; font-weight:bold; margin-bottom:5px;">
+        ${param[0].axisValue}
+      </div>
+      <table class="tooltip-table" style="width:100%; border-collapse:collapse; font-size:12px;">
+        <thead>
+          <tr>
+            <th style="padding: 5px; text-align:left;">Value</th>
+            <th style="padding: 5px; text-align:center;">Count</th>
+            <th style="padding: 5px; text-align:center;">Consensus</th>
+            <th style="padding: 5px; text-align:center;">Votes Needed</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${param
+            .map((p) => {
+              if (p.value > 0) {
+                const consensusNeeded = Math.ceil(totalActiveNodes * 0.66)
+                const consensus = this.$options.filters.percent(
+                  p.value / totalActiveNodes,
+                  2
+                )
+
+                const votesNeeded = Math.max(0, consensusNeeded - p.value)
+
+                return `
+                  <tr>
+                    <td style="padding: 5px; text-align:left; color:#333;">${p.seriesName}</td>
+                    <td style="padding: 5px; text-align:center; color:#333;">${p.value}</td>
+                    <td style="padding: 5px; text-align:center; color:#333;">${consensus}</td>
+                    <td style="padding: 5px; text-align:center; color:#333;">${votesNeeded}</td>
+                  </tr>
+                    
                 `
-                } else {
-                  return ''
-                }
-              })
-              .join('\n')}
-            `
+              }
+              return ''
+            })
+            .join('')}
+        </tbody>
+      </table>
+      <hr style="margin: 10px 0; border: 1px solid #ddd;">
+      <div style="text-align:center; font-size:12px; color:#333;">
+        <b>Voted:</b> ${totalVoted} - <b>Missing votes:</b> ${missingVotes}</div>
+    `
+              return tooltipContent
+            },
           },
+
           title: {
             text: 'Mimir Voting Chart',
             textStyle: {
@@ -296,8 +329,10 @@ export default {
             },
           },
         }
+
         // eslint-disable-next-line vue/no-side-effects-in-computed-properties
         this.votingChart = option
+
         return mimrsVoteConstants
       }
       return []
