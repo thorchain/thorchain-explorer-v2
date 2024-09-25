@@ -231,6 +231,11 @@
         </div>
         <span v-if="rows[props.row.originalIndex].churn.length === 0">-</span>
       </div>
+      <span v-else-if="props.column.field === 'version'">
+        <span :class="[{ upgraded: isUpgrading(props.row.version) }]">
+          {{ props.formattedRow[props.column.field] }}
+        </span>
+      </span>
       <span v-else-if="props.column.field.includes('behind.')">
         <span
           v-if="props.formattedRow[props.column.field] == 0"
@@ -276,6 +281,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import { remove, orderBy } from 'lodash'
+import { rcompare } from 'semver'
 import JsonIcon from '@/assets/images/json.svg?inline'
 import InfoIcon from '@/assets/images/info.svg?inline'
 import StarIcon from '@/assets/images/bookmark.svg?inline'
@@ -322,6 +328,22 @@ export default {
     this.favs = JSON.parse(localStorage.getItem(this.name)) || []
   },
   methods: {
+    isUpgrading(ver) {
+      if (this.name !== 'active-nodes' || !this.rows) {
+        return false
+      }
+
+      const onlyUnique = (value, index, array) => {
+        return array.indexOf(value) === index
+      }
+
+      const nodesVersion = this.rows.map((r) => r.version).sort(rcompare)
+      const versions = nodesVersion.filter(onlyUnique)
+      if (versions.length > 1 && ver === versions[0]) {
+        return true
+      }
+      return false
+    },
     filterProviders(arr) {
       return orderBy(
         arr.map((a) => ({ ...a, bond: +a.bond })),
@@ -459,5 +481,9 @@ export default {
   max-width: 80px;
   width: 80px;
   min-width: 80px;
+}
+
+.upgraded {
+  color: var(--active-primary-color);
 }
 </style>
