@@ -1,7 +1,7 @@
 <template>
   <Page>
     <div class="card-container">
-      <Card v-if="votingChart && currentVoting">
+      <Card v-if="votingChart">
         <VChart
           :option="votingChart"
           :loading="!votingChart"
@@ -166,7 +166,7 @@ export default {
   },
   computed: {
     currentVoting() {
-      if (this.mimirVotes && this.mimirs) {
+      if (this.mimirVotes && this.mimirs && this.nodes) {
         const mimrsVoteConstants = []
         const xaxis = []
         const types = []
@@ -179,7 +179,6 @@ export default {
             votesLength++
           }
         }
-        console.log(this.mimirVotes)
         let index = 0
         for (const m of Object.keys(this.mimirs)) {
           if (Object.keys(this.mimirVotes).includes(m)) {
@@ -215,9 +214,6 @@ export default {
                   type: 'bar',
                   stack: 'total',
                   data: initData,
-                  itemStyle: {
-                    borderRadius: [2, 2, 0, 0],
-                  },
                 })
               } else {
                 types[vIndex].data[index] = v.count
@@ -277,7 +273,7 @@ export default {
                     <td style="padding: 5px; text-align:left; color:#333;">${p.seriesName}</td>
                     <td style="padding: 5px; text-align:center; color:#333;">${p.value}</td>
                     <td style="padding: 5px; text-align:center; color:#333;">${consensus}</td>
-                    <td style="padding: 5px; text-align:center; color:#333;">${votesNeeded}</td>
+                    <td style="padding: 5px; text-align:center; color:#333;">${votesNeeded === 0 ? '✅' : votesNeeded}</td>
                   </tr>
                     
                 `
@@ -303,7 +299,7 @@ export default {
           },
           grid: {
             left: '2%',
-            height: '90%',
+            height: '80%',
             containLabel: true,
           },
           legend: {
@@ -318,13 +314,13 @@ export default {
           yAxis: {
             type: 'category',
             data: xaxis,
-            boundaryGap: ['20%', '40%'],
+            boundaryGap: ['20%', '10%'],
             axisLabel: {
               interval: 0,
               nameTextStyle: {
                 padding: 20,
                 margin: 20,
-                align: 'right',
+                align: 'center',
               },
             },
           },
@@ -430,9 +426,8 @@ export default {
 
 <style lang="scss" scoped>
 .card-container {
-  height: 900px !important;
+  max-height: 900px;
 }
-
 .data-color {
   margin-right: 6px;
   width: 10px;
