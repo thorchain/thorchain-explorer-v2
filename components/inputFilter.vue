@@ -295,8 +295,8 @@ export default {
   }
 
   .suggestions::-webkit-scrollbar-thumb {
-    background-color: var(--active-bg-color);
-    border-radius: 5px;
+    background-color: var(--font-color);
+    border-radius: 3px;
   }
 }
 </style>

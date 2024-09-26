@@ -223,7 +223,7 @@ export default {
     }
   }
   .dropdown-options::-webkit-scrollbar {
-    width: 8px;
+    width: 5px;
   }
 
   .dropdown-options::-webkit-scrollbar-track {
@@ -231,8 +231,8 @@ export default {
   }
 
   .dropdown-options::-webkit-scrollbar-thumb {
-    background-color: var(--active-bg-color);
-    border-radius: 5px;
+    background-color: var(--font-color);
+    border-radius: 3px;
   }
 
 
