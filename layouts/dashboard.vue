@@ -219,7 +219,6 @@ Vue.mixin(global)
   height: 16rem;
 
   background: url('@/assets/images/background.svg');
-  background-color: var(--background);
   background-size: cover;
   background-blend-mode: overlay;
   padding: 10px;
@@ -234,7 +233,8 @@ Vue.mixin(global)
     font-weight: bold;
     font-size: 16px;
     padding: 9px;
-    color: white;
+    color: var(--sec-font-color);
+    padding-left: 2.4rem;
   }
 
   .search-container {
@@ -242,6 +242,7 @@ Vue.mixin(global)
     justify-content: flex-start;
     align-items: center;
     max-width: 100%;
+    padding-left: 2rem;
 
     #search-bar-container {
       display: flex;
