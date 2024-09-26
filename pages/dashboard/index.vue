@@ -335,8 +335,8 @@ export default {
       txs: undefined,
       totalSwapVolume: undefined,
       totalSwap24USD: undefined,
+      affiliateEarning: 0,
       earnings24USD: undefined,
-      totalEarning24: undefined,
       totalSwapVolumeUSD: undefined,
       totalAddresses: undefined,
       thorHeight: undefined,
@@ -362,6 +362,9 @@ export default {
       runePrice: 'getRunePrice',
       chainsHeight: 'getChainsHeight',
     }),
+    totalEarning24() {
+      return this.earnings24USD + this.affiliateEarning
+    },
     tvl() {
       if (!this.network.bondMetrics || !this.totalValuePooled) {
         return
@@ -588,6 +591,8 @@ export default {
         this.txs = data?.txs?.actions
         this.totalAddresses = +data?.addresses?.pagination?.total
         this.totalSwap24USD = +data?.stats?.volume24USD
+        this.earnings24USD =
+          (data?.stats.earnings24 / 1e8) * +data?.stats.runePriceUSD
 
         this.$api.getPools().then(({ data }) => {
           this.formatPoolsData(data)
@@ -652,24 +657,6 @@ export default {
         ;({ resVolume: this.swapHistory } = this.formatSwap(data?.swaps))
 
         this.earningsHistory = await this.formatEarnings(data?.earning)
-        this.earnings24USD =
-          (+data?.earning?.intervals[data?.earning?.intervals.length - 1]
-            .earnings /
-            1e8) *
-          +data?.earning?.intervals[data?.earning?.intervals.length - 1]
-            .runePriceUSD
-
-        const affiliate = this.affiliateDaily.find((d) => {
-          return moment(d.date).isSame(
-            moment.unix(
-              data?.earning?.intervals[data?.earning?.intervals.length - 1]
-                .startTime
-            ),
-            'day'
-          )
-        })
-        this.totalEarning24 =
-          this.earnings24USD + (affiliate?.daily_affiliate_fees_usd ?? 0)
         this.totalSwapVolumeUSD = data.swaps?.meta?.totalVolumeUSD
         this.totalSwapVolume = data.swaps?.meta?.totalVolume
       })
@@ -742,6 +729,7 @@ export default {
 
     this.$api.getAffiliateDaily().then(({ data }) => {
       this.affiliateDaily = data
+      this.affiliateEarning = data[data.length - 1]?.daily_affiliate_fees_usd
     })
 
     // Get inbound info
@@ -793,7 +781,7 @@ export default {
         xAxis.push(
           moment(
             Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
-          ).format('MM/DD')
+          ).format('dddd, MMM D')
         )
         alv.push(
           (+interval.addLiquidityVolume * +interval.runePriceUSD) / 10 ** 8
@@ -882,7 +870,7 @@ export default {
         xAxis.push(
           moment(
             Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
-          ).format('MM/DD')
+          ).format('dddd, MMM D')
         )
         swapCount?.total.push(+interval.totalCount)
       })
@@ -978,7 +966,7 @@ export default {
         xAxis.push(
           moment(
             Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
-          ).format('MM/DD')
+          ).format('dddd, MMM D')
         )
         tvp.push(
           (+interval.totalValuePooled / 10 ** 8) *
@@ -1005,17 +993,17 @@ export default {
       const le = []
       const be = []
       const af = []
+      const EODEarning = []
 
       if (process.env.NETWORK === 'mainnet') {
         this.affiliateDaily = (await this.$api.getAffiliateDaily()).data
       }
 
-      d?.intervals.pop()
       d?.intervals.forEach((interval, index) => {
         const date = moment(
           Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
         )
-        xAxis.push(date.format('MM/DD'))
+        xAxis.push(date.format('dddd, MMM D'))
         le.push(
           (+interval.liquidityEarnings / 10 ** 8) *
             Number.parseFloat(interval.runePriceUSD)
@@ -1033,6 +1021,42 @@ export default {
             borderRadius: [8, 8, 0, 0],
           },
         })
+
+        if (d?.intervals.length === index + 1) {
+          const affiliateEOD = affiliate?.daily_affiliate_fees_usd
+
+          EODEarning.push({
+            value:
+              ((+interval.EODBondEarnings + +interval.EODLiquidityEarnings) *
+                +interval.runePriceUSD) /
+                1e8 +
+              affiliateEOD,
+            itemStyle: {
+              color: 'transparent',
+              borderColor: '#f3ba2f',
+              borderWidth: 1,
+              borderRadius: [8, 8, 0, 0],
+            },
+          })
+
+          af[index] = {
+            value: 0,
+          }
+          le[index] = {
+            value: le[index],
+            itemStyle: {
+              color: '#c29526',
+            },
+          }
+          be[index] = {
+            value: be[index],
+            itemStyle: {
+              color: '#92701c',
+            },
+          }
+        } else {
+          EODEarning.push(0)
+        }
       })
 
       return this.basicChartFormat(
@@ -1062,6 +1086,14 @@ export default {
             data: af,
             smooth: true,
           },
+          {
+            type: 'bar',
+            name: 'EOD Earning',
+            stack: 'Total',
+            showSymbol: false,
+            data: EODEarning,
+            smooth: true,
+          },
         ],
         xAxis,
         undefined,
@@ -1075,6 +1107,7 @@ export default {
             </div>
             <div class="tooltip-body">
               ${param
+                .filter((p) => p.seriesName !== 'EOD Earning' && +p.value > 0)
                 .map(
                   (p) => `<span>
                   <span>${p.seriesName}</span>
@@ -1086,10 +1119,20 @@ export default {
               <span>
                 <span>Total Earning</span>
                 <b>$${this.$options.filters.number(
-                  param.reduce((a, c) => a + (c.value ? c.value : 0), 0),
+                  param
+                    .filter((p) => p.seriesName !== 'EOD Earning')
+                    .reduce((a, c) => a + (c.value ? c.value : 0), 0),
                   '0,0'
                 )}</b>
               </span>
+               ${
+                 EODEarning[param[0].dataIndex] !== 0
+                   ? `<span><span>Total Earning (EOD)</span><b>$${this.$options.filters.number(
+                       param.reduce((a, c) => a + (c.value ? c.value : 0), 0),
+                       '0,0'
+                     )}</b></span>`
+                   : ''
+               }
             </div>
           `
         }

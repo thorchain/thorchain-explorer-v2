@@ -154,7 +154,7 @@ export default {
         xAxis.push(
           moment(
             Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
-          ).format('MM/DD')
+          ).format('dddd, MMM D')
         )
         av.push(
           (+interval.addLiquidityVolume * +interval.runePriceUSD) / 10 ** 8
