@@ -5,7 +5,7 @@
         <span class="title-balance">Balances</span>
         <div class="balance-label">
           <span>RUNE Balance</span>
-          <skeleton-item :loading="isLoading" class="balance-content">
+          <skeleton-item :loading="loading" class="balance-content">
             <asset-icon
               v-if="runeToken && runeToken.price > 0 && !isNaN(runeToken.price)"
               :asset="{ ticker: 'RUNE', chain: 'THOR' }"
@@ -16,7 +16,7 @@
               v-if="runeToken && runeToken.price > 0 && !isNaN(runeToken.price)"
               class="mono"
             >
-              {{ runeToken.quantity }} RUNE
+              {{ balanceFormat(runeToken.quantity) }} RUNE
             </span>
             <span v-else>-</span>
           </skeleton-item>
@@ -24,7 +24,7 @@
 
         <div class="balance-label">
           <span>RUNE Value</span>
-          <skeleton-item :loading="isLoading" class="balance-content">
+          <skeleton-item :loading="loading" class="balance-content">
             <span
               v-if="runeToken && runeToken.price > 0 && !isNaN(runeToken.price)"
               class="mono"
@@ -154,13 +154,12 @@ export default {
     ArrowDownIcon,
     ArrowUpIcon,
   },
-  props: ['state'],
+  props: ['state', 'loading'],
   data() {
     return {
       selectedToken: null,
       isOpen: false,
       runeBalance: null,
-      isLoading: false,
       sortField: 'value',
       sortDirection: {
         Native: 'desc',
@@ -251,32 +250,7 @@ export default {
       }, {})
     },
   },
-  mounted() {
-    this.fetchRuneToken()
-  },
-
   methods: {
-    async fetchRuneToken() {
-      this.isLoading = true
-      try {
-        const balances = await this.$api.getBalance(this.address)
-        const items = balances.data.result
-
-        items.forEach((item) => {
-          if (item.denom === 'rune') {
-            this.runeBalance = {
-              asset: assetFromString('THOR.RUNE'),
-              quantity: Number.parseFloat(item?.amount) / 10 ** 8 ?? 0,
-            }
-            return false
-          }
-        })
-      } catch (error) {
-        console.error('Error fetching RUNE token:', error)
-      } finally {
-        this.isLoading = false
-      }
-    },
     getAssetType(asset) {
       if (asset?.synth) {
         return 'Synth'

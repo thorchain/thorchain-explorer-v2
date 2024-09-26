@@ -240,6 +240,9 @@ export default {
     numberFormat(number) {
       return number ? this.$options.filters.number(+number, '0,0.0000') : '-'
     },
+    balanceFormat(n) {
+      return n.toString().replace(/(?<!\.\d*)(\d)(?=(?:\d{3})+(?!\d))/g, '$1,')
+    },
     showAsset(assetStr) {
       if (!assetStr) {
         return ''

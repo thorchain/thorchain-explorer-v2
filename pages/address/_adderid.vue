@@ -8,14 +8,14 @@
       <span style="color: var(--primary-color)">{{ address }}</span>
       <UtilityBox :value="address" />
     </div>
-    <template v-show="addrTxs">
+    <template>
       <template v-if="!isVault">
         <div class="stat-wrapper mb-1">
           <div class="balance-nav-container">
             <balance
               class="card-balance"
               :state="addressStat"
-              :fetchAddressData="fetchAddressDataMethod"
+              :loading="addressLoading"
             />
             <Card
               extra-class="node-address-card"
@@ -24,23 +24,17 @@
                 { title: 'Thorname', value: 'thorname' },
                 { title: 'Loans', value: 'loans' },
               ]"
-              :isLoading="loading"
+              :is-loading="loading"
               :act-nav.sync="activeMode"
             >
               <keep-alive>
                 <thorname v-if="activeMode == 'thorname'" :address="address" />
               </keep-alive>
               <keep-alive>
-                <pools
-                  v-if="activeMode == 'pools' && !loading"
-                  :address="address"
-                />
+                <pools v-if="activeMode == 'pools'" :address="address" />
               </keep-alive>
               <keep-alive>
-                <loans
-                  v-if="activeMode == 'loans' && !loading"
-                  :address="address"
-                />
+                <loans v-if="activeMode == 'loans'" :address="address" />
               </keep-alive>
             </Card>
           </div>
@@ -150,11 +144,7 @@
         </div>
       </template>
       <template>
-        <transactions
-          :txs="addrTxs"
-          :owner="address"
-          :loading="loading"
-        />
+        <transactions :txs="addrTxs" :owner="address" :loading="loading" />
         <pagination
           v-if="addrTxs && addrTxs.actions"
           :is-first-page="!prevPageToken"
@@ -194,6 +184,7 @@ export default {
       addrTxs: null,
       count: undefined,
       otherBalances: [],
+      addressLoading: true,
       runeBalance: undefined,
       loading: true,
       nextPageToken: undefined,
@@ -297,6 +288,7 @@ export default {
     async fetchAddressData(address) {
       this.loading = true
       try {
+        this.addressLoading = true
         const addrTxs = await this.$api.getMidgardActions({
           address,
           limit: 30,
@@ -336,6 +328,7 @@ export default {
             ...tradeBalances,
             ...synthBalances,
           ])
+          this.addressLoading = false
         }
       } catch (e) {
         console.error(e)
