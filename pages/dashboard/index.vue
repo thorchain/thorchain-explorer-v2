@@ -1089,6 +1089,7 @@ export default {
           {
             type: 'bar',
             name: 'EOD Earning',
+            color: '#f3ba2f',
             stack: 'Total',
             showSymbol: false,
             data: EODEarning,
