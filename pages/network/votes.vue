@@ -303,7 +303,7 @@ export default {
           },
           grid: {
             left: '2%',
-            height: '90%',
+            height: '100%',
             containLabel: true,
           },
           legend: {
@@ -318,13 +318,13 @@ export default {
           yAxis: {
             type: 'category',
             data: xaxis,
-            boundaryGap: ['20%', '40%'],
+            boundaryGap: ['20%', '10%'],
             axisLabel: {
               interval: 0,
               nameTextStyle: {
                 padding: 20,
                 margin: 20,
-                align: 'right',
+                align: 'center',
               },
             },
           },
@@ -429,10 +429,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.card-container {
-  height: 900px !important;
-}
-
 .data-color {
   margin-right: 6px;
   width: 10px;
