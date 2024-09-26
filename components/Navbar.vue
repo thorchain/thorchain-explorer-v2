@@ -410,7 +410,7 @@ export default {
   }
   .navbar-lists::-webkit-scrollbar,
   .submenu::-webkit-scrollbar {
-    width: 8px;
+    width: 5px;
   }
 
   .navbar-lists::-webkit-scrollbar-track,
@@ -420,7 +420,7 @@ export default {
 
   .navbar-lists::-webkit-scrollbar-thumb,
   .submenu::-webkit-scrollbar-thumb {
-    background-color: var(--active-bg-color);
+    background-color: var(--font-color);
     border-radius: 5px;
   }
 
@@ -521,6 +521,8 @@ export default {
       border-radius: 30px;
       position: relative;
       padding-top: 0.2rem;
+      padding-right: 1rem;
+
 
       &:hover {
         span,

@@ -8,11 +8,15 @@
       <span style="color: var(--primary-color)">{{ address }}</span>
       <UtilityBox :value="address" />
     </div>
-    <template v-if="addrTxs">
+    <template>
       <template v-if="!isVault">
         <div class="stat-wrapper mb-1">
           <div class="balance-nav-container">
-            <balance class="card-balance" :state="addressStat" />
+            <balance
+              class="card-balance"
+              :state="addressStat"
+              :loading="addressLoading"
+            />
             <Card
               extra-class="node-address-card"
               :navs="[
@@ -20,6 +24,7 @@
                 { title: 'Thorname', value: 'thorname' },
                 { title: 'Loans', value: 'loans' },
               ]"
+              :is-loading="loading"
               :act-nav.sync="activeMode"
             >
               <keep-alive>
@@ -139,12 +144,7 @@
         </div>
       </template>
       <template>
-        <transactions
-          v-if="addrTxs && addrTxs.actions"
-          :txs="addrTxs"
-          :owner="address"
-          :loading="loading"
-        />
+        <transactions :txs="addrTxs" :owner="address" :loading="loading" />
         <pagination
           v-if="addrTxs && addrTxs.actions"
           :is-first-page="!prevPageToken"
@@ -154,7 +154,7 @@
         />
       </template>
     </template>
-    <div v-else-if="!addrTxs" class="error-container">
+    <div v-show="!addrTxs && !loading" class="error-container">
       Can't Fetch the Address! Please Try again Later.
     </div>
   </page>
@@ -178,75 +178,15 @@ export default {
     Pools,
     Loans,
   },
-  async asyncData({ params, $api }) {
-    const address = params.adderid
-
-    const addrTxs = await $api
-      .getMidgardActions({ address, limit: 30 })
-      .catch((e) => {
-        console.error(e)
-      })
-
-    const nextPageToken = addrTxs?.data?.meta.nextPageToken
-    const prevPageToken = addrTxs?.data?.meta.nextPageToken
-    const count = addrTxs?.data?.count ?? 0
-    let otherBalances = []
-    let runeBalance
-    if (address.match(/^[st]?thor.*/gim)) {
-      try {
-        const balances = (await $api.getBalance(address)).data.result
-
-        const synthBalances = balances.map((item) => {
-          if (item.denom === 'rune') {
-            runeBalance = {
-              asset: assetFromString('THOR.RUNE'),
-              quantity: Number.parseFloat(item?.amount) / 10 ** 8 ?? 0,
-            }
-            return false
-          }
-
-          return {
-            asset: assetFromString(item.denom.toUpperCase()),
-            quantity: (item?.amount / 10 ** 8).toFixed(8),
-          }
-        })
-
-        let tradeBalances = (await $api.getTradeAsset(address)).data
-        tradeBalances = tradeBalances.map((item) => {
-          return {
-            asset: assetFromString(item.asset),
-            quantity: (item?.units / 10 ** 8).toFixed(8),
-          }
-        })
-
-        otherBalances = compact([
-          runeBalance,
-          ...tradeBalances,
-          ...synthBalances,
-        ])
-      } catch (e) {
-        console.warn("can't get the balances")
-      }
-    }
-
-    return {
-      address,
-      addrTxs: addrTxs?.data,
-      count,
-      otherBalances,
-      runeBalance,
-      nextPageToken,
-      prevPageToken,
-    }
-  },
   data() {
     return {
+      address: this.$route.params.adderid,
+      addrTxs: null,
       count: undefined,
-      loading: false,
-      balance: undefined,
-      copyText: 'Copy',
-      showQR: false,
-      thornames: undefined,
+      otherBalances: [],
+      addressLoading: true,
+      runeBalance: undefined,
+      loading: true,
       nextPageToken: undefined,
       prevPageToken: undefined,
       activeMode: 'pools',
@@ -254,7 +194,6 @@ export default {
       chainAddresses: [],
       routers: [],
       vaultInfo: undefined,
-      thornameAddresses: [],
       vaultType: 'Asgard',
       vaultMode: 'chain-addr',
       nodeAddresses: [],
@@ -342,9 +281,61 @@ export default {
     },
   },
   mounted() {
+    this.fetchAddressData(this.address)
     this.checkIsVault(this.address)
   },
   methods: {
+    async fetchAddressData(address) {
+      this.loading = true
+      try {
+        this.addressLoading = true
+        const addrTxs = await this.$api.getMidgardActions({
+          address,
+          limit: 30,
+        })
+        this.addrTxs = addrTxs.data
+        this.count = addrTxs.data.count
+        this.nextPageToken = addrTxs.data.meta.nextPageToken
+        this.prevPageToken = addrTxs.data.meta.prevPageToken
+
+        if (address.match(/^[st]?thor.*/gim)) {
+          const balances = (await this.$api.getBalance(address)).data.result
+          const synthBalances = balances.map((item) => {
+            if (item.denom === 'rune') {
+              this.runeBalance = {
+                asset: assetFromString('THOR.RUNE'),
+                quantity: Number.parseFloat(item?.amount) / 10 ** 8 ?? 0,
+              }
+              return false
+            }
+
+            return {
+              asset: assetFromString(item.denom.toUpperCase()),
+              quantity: (item?.amount / 10 ** 8).toFixed(8),
+            }
+          })
+
+          let tradeBalances = (await this.$api.getTradeAsset(address)).data
+          tradeBalances = tradeBalances.map((item) => {
+            return {
+              asset: assetFromString(item.asset),
+              quantity: (item?.units / 10 ** 8).toFixed(8),
+            }
+          })
+
+          this.otherBalances = compact([
+            this.runeBalance,
+            ...tradeBalances,
+            ...synthBalances,
+          ])
+          this.addressLoading = false
+        }
+      } catch (e) {
+        console.error(e)
+      } finally {
+        this.loading = false
+      }
+    },
     goNext() {
       this.getActions({
         limit: 30,
@@ -360,10 +351,7 @@ export default {
       })
     },
     formatStatus(status) {
-      if (status === 'ActiveVault') {
-        return 'Active'
-      }
-      return status
+      return status === 'ActiveVault' ? 'Active' : status
     },
     getActions(params) {
       this.loading = true
