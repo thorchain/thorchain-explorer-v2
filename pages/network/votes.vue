@@ -1,7 +1,7 @@
 <template>
   <Page>
     <div class="card-container">
-      <Card v-if="votingChart && currentVoting">
+      <Card v-if="votingChart">
         <VChart
           :option="votingChart"
           :loading="!votingChart"
@@ -166,7 +166,7 @@ export default {
   },
   computed: {
     currentVoting() {
-      if (this.mimirVotes && this.mimirs) {
+      if (this.mimirVotes && this.mimirs && this.nodes) {
         const mimrsVoteConstants = []
         const xaxis = []
         const types = []
@@ -179,7 +179,6 @@ export default {
             votesLength++
           }
         }
-        console.log(this.mimirVotes)
         let index = 0
         for (const m of Object.keys(this.mimirs)) {
           if (Object.keys(this.mimirVotes).includes(m)) {
@@ -215,9 +214,6 @@ export default {
                   type: 'bar',
                   stack: 'total',
                   data: initData,
-                  itemStyle: {
-                    borderRadius: [2, 2, 0, 0],
-                  },
                 })
               } else {
                 types[vIndex].data[index] = v.count
@@ -277,7 +273,7 @@ export default {
                     <td style="padding: 5px; text-align:left; color:#333;">${p.seriesName}</td>
                     <td style="padding: 5px; text-align:center; color:#333;">${p.value}</td>
                     <td style="padding: 5px; text-align:center; color:#333;">${consensus}</td>
-                    <td style="padding: 5px; text-align:center; color:#333;">${votesNeeded}</td>
+                    <td style="padding: 5px; text-align:center; color:#333;">${votesNeeded === 0 ? '✅' : votesNeeded}</td>
                   </tr>
                     
                 `
@@ -429,8 +425,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.card-container{
-max-height: 900px;
+.card-container {
+  max-height: 900px;
 }
 .data-color {
   margin-right: 6px;
