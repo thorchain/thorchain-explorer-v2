@@ -303,7 +303,7 @@ export default {
           },
           grid: {
             left: '2%',
-            height: '100%',
+            height: '80%',
             containLabel: true,
           },
           legend: {
@@ -429,6 +429,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.card-container{
+max-height: 900px;
+}
 .data-color {
   margin-right: 6px;
   width: 10px;
