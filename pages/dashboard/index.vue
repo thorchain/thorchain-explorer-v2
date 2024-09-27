@@ -1023,7 +1023,13 @@ export default {
         })
 
         if (d?.intervals.length === index + 1) {
-          const affiliateEOD = affiliate?.daily_affiliate_fees_usd ?? 0
+          let affiliateEOD = affiliate?.daily_affiliate_fees_usd ?? 0
+          if (affiliateEOD === 0) {
+            affiliateEOD =
+              this.affiliateDaily
+                .slice(-3)
+                .reduce((a, c) => a + +c.daily_affiliate_fees_usd, 0) / 3
+          }
 
           EODEarning.push({
             value:
