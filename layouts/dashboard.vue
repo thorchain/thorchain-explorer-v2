@@ -222,8 +222,12 @@ Vue.mixin(global)
   background-color: var(--background);
   background-size: cover;
   background-blend-mode: overlay;
-  padding: 20px;
+  padding: 10px;
   margin-bottom: -4.5rem;
+
+  @include md {
+    padding: 0 3rem;
+  }
 
   .title-search {
     font-family: 'Exo 2';
