@@ -219,6 +219,7 @@ Vue.mixin(global)
   height: 16rem;
 
   background: url('@/assets/images/background.svg');
+  background-color: var(--overview-bg);
   background-size: cover;
   background-blend-mode: overlay;
   padding: 10px;
@@ -233,7 +234,7 @@ Vue.mixin(global)
     font-weight: bold;
     font-size: 16px;
     padding: 9px;
-    color: var(--sec-font-color);
+    color: white;
     padding-left: 2.4rem;
   }
 
