@@ -1103,7 +1103,18 @@ export default {
           },
         ],
         xAxis,
-        undefined,
+        {
+          legend: {
+            type: 'scroll',
+            x: 'right',
+            y: 'top',
+            icon: 'circle',
+            textStyle: {
+              color: 'var(--font-color)',
+            },
+            data: ['Liquidity Earning', 'Bond Earning', 'Affiliate Earning'],
+          },
+        },
         (param) => {
           return `
             <div class="tooltip-header">
