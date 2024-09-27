@@ -1023,7 +1023,7 @@ export default {
         })
 
         if (d?.intervals.length === index + 1) {
-          const affiliateEOD = affiliate?.daily_affiliate_fees_usd
+          const affiliateEOD = affiliate?.daily_affiliate_fees_usd ?? 0
 
           EODEarning.push({
             value:
