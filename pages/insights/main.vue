@@ -1,8 +1,11 @@
 <template>
   <div class="container-page">
-    <div class="coin-info">
-      <info-card :options="coinMarketInfo" />
-    </div>
+    <card title="RUNE" class="coin-info">
+      <template #header>
+        <coinmarketcap style="fill: var(--sec-font-color)" />
+      </template>
+      <info-card :options="coinMarketInfo" :inner="true" />
+    </card>
     <div class="chart-inner-container">
       <Card title="Type Swap Chart">
         <template #header>
@@ -98,6 +101,7 @@ import {
 import VChart from 'vue-echarts'
 
 import FlipSide from '~/assets/images/flipside.svg?inline'
+import Coinmarketcap from '~/assets/images/coinmarketcap.svg?inline'
 
 use([
   SVGRenderer,
@@ -113,6 +117,7 @@ export default {
   components: {
     VChart,
     FlipSide,
+    Coinmarketcap,
   },
   data() {
     return {
@@ -157,7 +162,7 @@ export default {
     coinMarketInfo() {
       return [
         {
-          title: 'RUNE-CoinMarketCap',
+          title: '',
           rowStart: 1,
           colSpan: 1,
           items: [
