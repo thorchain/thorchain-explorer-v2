@@ -418,6 +418,11 @@ input {
 .vgt-wrap {
   overflow: auto;
   border-radius: 0.5rem;
+  border-radius: 1px solid var(--border-color);
+
+  .vgt-inner-wrap {
+    border-radius: 0;
+  }
 }
 
 .vgt-wrap__footer {
