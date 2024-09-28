@@ -206,7 +206,7 @@ export default {
         let poolAsset
         this.pools?.forEach((p) => {
           const pa = assetFromString(p.asset)
-          if (pa.chain === e.asset.chain && pa.ticker === e.asset.ticker) {
+          if (pa.chain === e.asset?.chain && pa?.ticker === e.asset?.ticker) {
             poolAsset = p
           }
         })
@@ -236,7 +236,7 @@ export default {
     otherTokens() {
       return this.tokenRows.filter(
         (token) =>
-          !(token.asset.ticker === 'RUNE' && token.asset.chain === 'THOR')
+          !(token.asset?.ticker === 'RUNE' && token.asset?.chain === 'THOR')
       )
     },
     groupedTokens() {
