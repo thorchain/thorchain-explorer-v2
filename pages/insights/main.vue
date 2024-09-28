@@ -1,5 +1,8 @@
 <template>
   <div class="container-page">
+    <div class="coin-info">
+      <info-card :options="coinMarketInfo" />
+    </div>
     <div class="chart-inner-container">
       <Card title="Type Swap Chart">
         <template #header>
@@ -83,7 +86,6 @@
 
 <script>
 import moment from 'moment'
-
 import { use } from 'echarts/core'
 import { SVGRenderer } from 'echarts/renderers'
 import { LineChart, BarChart } from 'echarts/charts'
@@ -115,6 +117,13 @@ export default {
   data() {
     return {
       churnHistory: undefined,
+      marketInfo: {
+        price: undefined,
+        rank: undefined,
+        marketCap: undefined,
+        tradeVolume: undefined,
+        totalSupply: undefined,
+      },
       cols: [
         {
           label: 'Churn Occurred',
@@ -143,6 +152,56 @@ export default {
       affiliateChart: undefined,
     }
   },
+
+  computed: {
+    coinMarketInfo() {
+      return [
+        {
+          title: 'RUNE-CoinMarketCap',
+          rowStart: 1,
+          colSpan: 1,
+          items: [
+            {
+              name: 'Price',
+              value: this.marketInfo.price,
+              filter: (v) => `${this.$options.filters.currency(v)}`,
+              progress: {
+                data: this.marketInfo.percent_change_24h,
+                down: this.marketInfo.percent_change_24h,
+                filter: (v) => this.$options.filters.percent(v, '0,0', 1),
+              },
+            },
+            {
+              name: 'Crypto Rank',
+              value: this.marketInfo.rank,
+            },
+            {
+              name: 'Market Cap',
+              value: this.marketInfo.marketCap,
+              filter: (v) => `$${this.$options.filters.number(v, '0,0')}`,
+            },
+            {
+              name: 'Trade Volume',
+              value: this.marketInfo.tradeVolume,
+              filter: (v) => `$${this.$options.filters.number(v, '0,0')}`,
+              progress: {
+                data: this.marketInfo.change_24h,
+                down: this.marketInfo.change_24h,
+                filter: (v) => this.$options.filters.percent(v, '0,0', 1),
+              },
+            },
+            {
+              name: 'Total Supply',
+              value: this.marketInfo.totalSupply,
+              filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+            },
+          ],
+        },
+      ]
+    },
+  },
+
   mounted() {
     this.$api.getSwapsWeekly().then(({ data }) => {
       this.swapsStats(data)
@@ -159,8 +218,25 @@ export default {
     this.$api.getAffiliateByWallet().then(({ data }) => {
       this.affiliateEarningsWallets(data)
     })
+    this.getCoinMarketInfo()
   },
   methods: {
+    async getCoinMarketInfo() {
+      try {
+        const response = await this.$api.getCoinMarketInfo()
+        const data = response.data
+
+        this.marketInfo.price = data.quote.USD.price
+        this.marketInfo.rank = data.cmc_rank
+        this.marketInfo.marketCap = data.quote.USD.market_cap
+        this.marketInfo.tradeVolume = data.quote.USD.volume_24h
+        this.marketInfo.change_24h = data.quote.USD.volume_change_24h
+        this.marketInfo.percent_change_24h = data.quote.USD.percent_change_24h
+        this.marketInfo.totalSupply = data.total_supply
+      } catch (error) {
+        console.error('Error coin market info:', error)
+      }
+    },
     affiliateWallets(d) {
       const xAxis = []
       const volume = []
