@@ -1,51 +1,49 @@
-//Dark Colors
 :root {
   --app-background-color: #263137;
-  --bg-color: #191c1e;
-  --bgt-color: rgba(255, 255, 255, 0.7);
-  --sidebar: #212121;
+  --bg-color: #101214;
+  --bgt-color: rgba(255, 255, 255, 0.08);
+  --sidebar: #181b1f;
   --font-color: #9f9f9f;
   --sec-font-color: #e6e6e6;
-  --primary-color: #63fdd9;
-  --border-color: #263238;
-  --card-bg-color: #161819;
-  --gradient-left: #212121;
-  --gradient-right: #263238;
-  --active-bg-color: #3e464b;
-  --color-light: hsl(0, 0%, 10%);
-  --darker-bg: hsl(0, 0%, 20%);
+  --primary-color: #87e9b5;
+  --border-color: #2b2f35;
+  --card-bg-color: #202328;
+  --gradient-left: #252a30;
+  --gradient-right: #1b1f24;
+  --active-bg-color: #2e343b;
+  --color-light: hsl(210, 15%, 20%);
+  --darker-bg: hsl(210, 20%, 15%);
   --green: #81c784;
   --red: rgb(155 28 28);
   --red-bg: rgba(155, 28, 28, 0.169);
   --blue-bg: rgba(45, 28, 155, 0.169);
-  --background: #42ae95;
-  --bs-secondary-color:#bbb;
+  --bs-secondary-color: #bbb;
 }
 
 [theme='dark'] {
   --app-background-color: #263137;
-  --bg-color: rgb(25, 28, 30);
-  --bgt-color: rgba(25, 28, 30, 0.7);
-  --sidebar: #212121;
+  --bg-color: #0d0f12;
+  --bgt-color: rgba(25, 28, 30, 0.9);
+  --sidebar: #181b1f;
   --font-color: #9f9f9f;
   --sec-font-color: #e6e6e6;
-  --primary-color: #63fdd9;
+  --primary-color: #87e9b5;
   --active-primary-color: #3da6f0;
   --border-color: #263238;
-  --card-bg-color: #161819;
-  --gradient-left: #212121;
-  --gradient-right: #263238;
-  --active-bg-color: #3e464b;
+  --card-bg-color: #0d0f12;
+  --gradient-left: #14191f;
+  --gradient-right: #101317;
+  --active-bg-color: #263238;
   --bubble-font-color: #191c1e;
-  --color-light: hsl(0, 0%, 10%);
-  --darker-bg: hsl(0, 0%, 20%);
-  --line: #4b4b4b;
+  --color-light: #0d0f12;
+  --darker-bg: hsl(210, 10%, 12%);
+  --line: #37474f;
   --green: #21c187;
   --red: #f04832;
   --red-bg: #e93d2715;
   --blue-bg: #272de915;
   --highlight: #03a9f4;
-  --background: #1c4e43;
+  --overview-bg: #04251385;
 }
 
 [theme='light'] {
@@ -70,6 +68,6 @@
   --red-bg: rgba(155, 28, 28, 0.169);
   --blue-bg: rgba(45, 28, 155, 0.169);
   --highlight: #ffccbc;
-  --background: #3ca38b;
-  --bs-secondary-color:#6c757d
+  --bs-secondary-color: #6c757d;
+  --overview-bg: #42ae95;
 }
