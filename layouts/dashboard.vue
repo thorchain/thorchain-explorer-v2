@@ -219,7 +219,7 @@ Vue.mixin(global)
   height: 16rem;
 
   background: url('@/assets/images/background.svg');
-  background-color: var(--background);
+  background-color: var(--overview-bg);
   background-size: cover;
   background-blend-mode: overlay;
   padding: 10px;
