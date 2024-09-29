@@ -6,22 +6,15 @@
       @click="handleCopy"
     />
 
-    <div
-      class="toast"
-      :class="{ show: showToast }"
-      role="alert"
-      aria-live="assertive"
-      aria-atomic="true"
-      v-if="showToast"
-    >
+    <div class="toast" :class="{ show: showToast }" v-if="showToast">
       <div class="toast-header">
-        <div class="ml-2 mb-1 checkmark" @click="closeToast" aria-label="Close">
+        <div class="checkmark">
           <Checkmark class="Checkmark" />
         </div>
       </div>
       <div class="toast-body">
-        Node Address copied to clipboard! <br />
-        <span style="display: block; margin-top: 10px; font-weight: bold">
+        copied to clipboard! <br />
+        <span style="display: flex; margin-top: 10px; font-weight: bold">
           {{ strCopy }}
         </span>
       </div>
@@ -72,30 +65,65 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .toast {
   display: flex;
   position: fixed;
   top: 80px;
-  right: 20px;
-  min-width: 200px;
+  right: 5%;
+  padding: 0.5rem;
+  width: 90%;
   background-color: var(--bg-color);
-  padding: 1.5rem;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-20px);
-  transition:
-    opacity 0.5s ease-in-out,
-    transform 0.5s ease-in-out,
-    visibility 0.5s;
   border: 1px solid var(--border-color);
   border-radius: 0.5rem;
+  z-index: 9999;
+  box-sizing: border-box;
+  overflow: auto;
+  
+  @include lg {
+    top: 80px;
+    right: 20px;
+    width: auto;
+    padding: 1rem;
+  }
+}
+@keyframes jello-in {
+  0% {
+    transform: scale3d(0.8, 0.8, 1);
+    opacity: 0;
+  }
+  50% {
+    transform: scale3d(1.1, 1.1, 1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale3d(1, 1, 1);
+  }
+}
+
+@keyframes jello-out {
+  0% {
+    transform: scale3d(1, 1, 1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale3d(1.1, 1.1, 1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale3d(0.8, 0.8, 1);
+    opacity: 0;
+  }
 }
 
 .toast.show {
   opacity: 1;
   visibility: visible;
-  transform: translateY(0);
+  animation: jello-in 0.5s forwards;
+}
+
+.toast:not(.show) {
+  animation: jello-out 0.5s forwards;
 }
 
 .Checkmark {
