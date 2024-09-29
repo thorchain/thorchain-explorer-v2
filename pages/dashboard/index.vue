@@ -62,8 +62,7 @@
             <div class="item-detail">
               <div class="header">Burned RUNE</div>
               <skeleton-item :loading="!totalBurnedRune" class="value">
-                {{ runeCur() }}
-                {{ totalBurnedRune | number('0,0.00') }}
+                {{ totalBurnedRune | currency(runeCur(), 2) }}
               </skeleton-item>
             </div>
           </div>
@@ -529,6 +528,11 @@ export default {
             {
               name: 'Total Swap Count',
               value: this.stats.swapCount ?? 0,
+              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
+            },
+            {
+              name: 'Total Addresses',
+              value: this.totalAddresses,
               filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
             },
           ],
