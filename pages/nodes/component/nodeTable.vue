@@ -255,7 +255,7 @@
           </span>
           <progress-icon
             :data-number="rankChange(props.row.address, props.row.rank)"
-            :is-down="rankChange(props.row.address, props.row.rank)"
+            :is-down="rankChange(props.row.address, props.row.rank) < 0"
           />
         </div>
       </div>
@@ -358,7 +358,7 @@ export default {
   },
   mounted() {
     this.favs = JSON.parse(localStorage.getItem(this.name)) || []
-    window.addEventListener('beforeunload', this.unloadRank)
+    window.addEventListener('visibilitychange', this.unloadRank)
   },
   methods: {
     rankChange(address, rank) {
