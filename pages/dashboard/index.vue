@@ -58,11 +58,12 @@
         </div>
         <div class="stat-group">
           <div class="stat-item">
-            <book class="stat-image" />
+            <burn class="stat-image" />
             <div class="item-detail">
-              <div class="header">Total Addresses</div>
-              <skeleton-item :loading="!totalAddresses" class="value">
-                {{ totalAddresses | number('0,0') }}
+              <div class="header">Burned RUNE</div>
+              <skeleton-item :loading="!totalBurnedRune" class="value">
+                {{ runeCur() }}
+                {{ totalBurnedRune | number('0,0.00') }}
               </skeleton-item>
             </div>
           </div>
@@ -279,12 +280,12 @@ import {
 } from 'echarts/components'
 import VChart from 'vue-echarts'
 import { range } from 'lodash'
-import { blockTime } from '~/utils'
+import { blockTime, runeCur } from '~/utils'
 import StackDollar from '~/assets/images/sack-dollar.svg?inline'
 import LockIcon from '~/assets/images/lock.svg?inline'
 import ArrowRightIcon from '~/assets/images/arrow-right.svg?inline'
 import Exchange from '~/assets/images/exchange.svg?inline'
-import Book from '~/assets/images/book.svg?inline'
+import Burn from '~/assets/images/burn.svg?inline'
 import Piggy from '~/assets/images/piggy.svg?inline'
 
 import Chart from '~/assets/images/chart.svg?inline'
@@ -309,7 +310,7 @@ export default {
     BounceLoader,
     Exchange,
     LockIcon,
-    Book,
+    Burn,
     Chart,
     StackDollar,
     ArrowRightIcon,
@@ -343,6 +344,7 @@ export default {
       poolsOption: undefined,
       poolsData: undefined,
       totalValuePooled: undefined,
+      totalBurnedRune: undefined,
       poolMode: 'earnings-vol',
       swapMode: 'swap-vol',
       inboundInfo: undefined,
@@ -730,6 +732,11 @@ export default {
     this.$api.getAffiliateDaily().then(({ data }) => {
       this.affiliateDaily = data
       this.affiliateEarning = data[data.length - 1]?.daily_affiliate_fees_usd
+    })
+
+    this.$api.getEarnings().then(({ data }) => {
+      this.totalBurnedRune =
+        data?.meta?.pools?.find((p) => p.pool === 'income_burn').earnings / 1e8
     })
 
     // Get inbound info
