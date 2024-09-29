@@ -18,6 +18,7 @@
     "@nuxtjs/dotenv": "^1.4.1",
     "@nuxtjs/style-resources": "^1.2.1",
     "axios-retry": "^3.2.5",
+    "color-hash": "^2.0.2",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
     "nuxt": "^2.18.1",

@@ -177,6 +177,13 @@ export default {
           tdClass: 'mono center',
           thClass: 'center',
         },
+        {
+          label: 'Vault',
+          field: 'vault',
+          type: 'text',
+          tdClass: 'center',
+          thClass: 'center min-padding',
+        },
         ...chains,
         {
           label: 'Age',
@@ -526,7 +533,7 @@ export default {
         }
 
         actNodes.forEach((el, index) => {
-          fillNodeData(filteredNodes, el)
+          fillNodeData(filteredNodes, el, index)
 
           const chainHeight = this.chainsHeight?.THOR
 

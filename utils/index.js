@@ -501,9 +501,13 @@ export function observeredChains(nodes) {
   return majorityHeight
 }
 
-export function fillNodeData(nodes, el) {
+export function fillNodeData(nodes, el, index) {
   if (!el) {
     return
+  }
+  let rank
+  if (index) {
+    rank = index + 1
   }
   nodes.push({
     address: el.node_address,
@@ -527,6 +531,8 @@ export function fillNodeData(nodes, el) {
     leave: el.requested_to_leave,
     fee: el.bond_providers?.node_operator_fee / 1e4,
     operator: el?.node_operator_address,
+    vault: el.vaultMembership,
+    ...(rank && { rank }),
   })
 }
 
