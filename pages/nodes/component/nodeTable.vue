@@ -27,6 +27,9 @@
       <div v-else-if="props.column.field == 'churn'">
         <recycle-icon class="table-icon" />
       </div>
+      <div v-else-if="props.column.field == 'vault'" class="table-asset">
+        <vault-icon class="table-icon" />
+      </div>
       <span v-else>
         {{ props.column.label }}
       </span>
@@ -63,7 +66,7 @@
         <StarIcon
           v-else
           class="table-icon"
-          @click="addFav(props.row.address)"
+          @click="addFav(props.row.address, props.row.rank)"
         />
       </span>
       <span v-else-if="props.column.field == 'age'">
@@ -103,6 +106,13 @@
           {{ props.row.award }}
         </span>
       </span>
+      <div v-else-if="props.column.field == 'vault'" class="vault-wrapper">
+        <div
+          v-tooltip="props.row.vault"
+          class="vault-share"
+          :style="{ background: vaultColor(props.row.vault) }"
+        ></div>
+      </div>
       <span v-else-if="props.column.field == 'status'">
         <div
           :class="[
@@ -229,7 +239,25 @@
             </template>
           </v-menu>
         </div>
-        <span v-if="rows[props.row.originalIndex].churn.length === 0">-</span>
+        <span
+          v-if="
+            rows[props.row.originalIndex].churn.length === 0 &&
+            !isFav(props.row.address)
+          "
+          >-</span
+        >
+        <div
+          v-if="isFav(props.row.address) && name === 'active-nodes'"
+          class="rank-wrap"
+        >
+          <span>
+            {{ props.row.rank }}
+          </span>
+          <progress-icon
+            :data-number="rankChange(props.row.address, props.row.rank)"
+            :is-down="rankChange(props.row.address, props.row.rank)"
+          />
+        </div>
       </div>
       <span v-else-if="props.column.field === 'version'">
         <span :class="[{ upgraded: isUpgrading(props.row.version) }]">
@@ -282,6 +310,7 @@
 import { mapGetters } from 'vuex'
 import { remove, orderBy } from 'lodash'
 import { rcompare } from 'semver'
+import ColorHash from 'color-hash'
 import JsonIcon from '@/assets/images/json.svg?inline'
 import InfoIcon from '@/assets/images/info.svg?inline'
 import StarIcon from '@/assets/images/bookmark.svg?inline'
@@ -292,7 +321,9 @@ import DangerIcon from '@/assets/images/danger.svg?inline'
 import MarkerIcon from '@/assets/images/marker.svg?inline'
 import RecycleIcon from '@/assets/images/recycle.svg?inline'
 import ExternalIcon from '@/assets/images/external.svg?inline'
+import VaultIcon from '@/assets/images/safe.svg?inline'
 import HighlightList from '@/assets/images/highlight-list.svg?inline'
+const colorHash = new ColorHash({ lightness: 0.5 })
 
 export default {
   components: {
@@ -307,6 +338,7 @@ export default {
     DangerIcon,
     HighlightList,
     ExternalIcon,
+    VaultIcon,
   },
   props: ['rows', 'cols', 'name'],
   data() {
@@ -326,8 +358,29 @@ export default {
   },
   mounted() {
     this.favs = JSON.parse(localStorage.getItem(this.name)) || []
+    window.addEventListener('beforeunload', this.unloadRank)
   },
   methods: {
+    rankChange(address, rank) {
+      const na = this.favs.find((f) => f.address === address)
+      return na.rank - rank
+    },
+    unloadRank() {
+      const value = this.rows
+      if (this.name === 'active-nodes' && this.favs.length > 0) {
+        for (let na = 0; na < value.length; na++) {
+          this.favs.forEach((f, i) => {
+            if (f.address === value[na].address) {
+              this.favs[i].rank = na + 1
+            }
+          })
+        }
+        localStorage.setItem(this.name, JSON.stringify(this.favs))
+      }
+    },
+    vaultColor(vaultAddress) {
+      return colorHash.hex(vaultAddress)
+    },
     isUpgrading(ver) {
       if (this.name !== 'active-nodes' || !this.rows) {
         return false
@@ -371,29 +424,23 @@ export default {
 
       return classes.join(' ')
     },
-    addFav(address) {
+    addFav(address, rank) {
       if (address) {
-        this.favs = [...this.favs, address]
+        this.favs = [...this.favs, { address, rank }]
       }
     },
     delFav(address) {
       const favs = this.favs
       remove(favs, (n) => {
-        return n === address
+        return n.address === address
       })
       this.favs = [...favs]
     },
     isFav(address) {
-      if (this.favs && this.favs.includes(address)) {
+      if (this.favs && this.favs.map((f) => f.address).includes(address)) {
         return true
       }
       return false
-    },
-    mos(props) {
-      if (!props.row.churn?.icon) {
-        return
-      }
-      return require(props.row.churn?.icon)
     },
   },
 }
@@ -485,5 +532,37 @@ export default {
 
 .upgraded {
   color: var(--active-primary-color);
+}
+
+.rank-wrap {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.7rem;
+  background: var(--active-bg-color);
+  padding: 3px;
+  border-radius: 3px;
+  color: var(--sec-font-color);
+
+  .arrow-container {
+    font-size: 0.6rem;
+  }
+}
+
+.vault-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .vault-share {
+    display: block;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+
+    &:hover {
+      filter: brightness(150%);
+    }
+  }
 }
 </style>
