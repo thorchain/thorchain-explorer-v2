@@ -279,7 +279,7 @@ import {
 } from 'echarts/components'
 import VChart from 'vue-echarts'
 import { range } from 'lodash'
-import { blockTime, runeCur } from '~/utils'
+import { blockTime } from '~/utils'
 import StackDollar from '~/assets/images/sack-dollar.svg?inline'
 import LockIcon from '~/assets/images/lock.svg?inline'
 import ArrowRightIcon from '~/assets/images/arrow-right.svg?inline'
@@ -486,34 +486,7 @@ export default {
     },
     statsSettings() {
       const pol = this.polOverview
-      const sbn = this.nodes
-        .filter((n) => n.status === 'Active')
-        .map((e) => +e.total_bond)
-        .sort((a, b) => a - b)
 
-      let t = (sbn.length * 2) / 3
-      if (sbn.length % 3 === 0) {
-        t -= 1
-      }
-
-      const bondHardCap = sbn[t]
-
-      let totalEffectiveBond = 0
-      for (const i in sbn) {
-        let bond = sbn[i]
-        if (bond > bondHardCap) {
-          bond = bondHardCap
-        }
-
-        totalEffectiveBond += bond
-      }
-      totalEffectiveBond = totalEffectiveBond / 1e8
-
-      let totalHardCap = 0
-      for (let i = 0; i <= t; i++) {
-        totalHardCap += sbn[i]
-      }
-      totalHardCap = totalHardCap / 1e8
       return [
         {
           title: 'Swap',
@@ -1081,8 +1054,6 @@ export default {
           EODEarning.push(0)
         }
       })
-
-      console.log(df)
 
       return this.basicChartFormat(
         (value) => `$ ${this.normalFormat(value)}`,
