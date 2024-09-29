@@ -993,6 +993,7 @@ export default {
       const le = []
       const be = []
       const af = []
+      const df = []
       const EODEarning = []
 
       if (process.env.NETWORK === 'mainnet') {
@@ -1010,6 +1011,11 @@ export default {
         )
         be.push(
           (+interval.bondingEarnings / 10 ** 8) *
+            Number.parseFloat(interval.runePriceUSD)
+        )
+        df.push(
+          (+interval.pools.find((p) => p.pool === 'dev_fund_reward').earnings /
+            10 ** 8) *
             Number.parseFloat(interval.runePriceUSD)
         )
         const affiliate = this.affiliateDaily?.find((d) => {
@@ -1065,6 +1071,8 @@ export default {
         }
       })
 
+      console.log(df)
+
       return this.basicChartFormat(
         (value) => `$ ${this.normalFormat(value)}`,
         [
@@ -1082,6 +1090,14 @@ export default {
             stack: 'Total',
             showSymbol: false,
             data: be,
+            smooth: true,
+          },
+          {
+            type: 'bar',
+            name: 'Dev Income',
+            stack: 'Total',
+            showSymbol: false,
+            data: df,
             smooth: true,
           },
           this.affiliateDaily && {
@@ -1112,7 +1128,12 @@ export default {
             textStyle: {
               color: 'var(--font-color)',
             },
-            data: ['Liquidity Earning', 'Bond Earning', 'Affiliate Earning'],
+            data: [
+              'Liquidity Earning',
+              'Bond Earning',
+              'Affiliate Earning',
+              'Dev Income',
+            ],
           },
         },
         (param) => {

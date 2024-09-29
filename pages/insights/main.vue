@@ -33,7 +33,7 @@
       </Card>
     </div>
     <div class="chart-inner-container">
-      <Card title="Fees/Reward Chart">
+      <Card title="Fees/Block Reward Chart">
         <template #header>
           <flip-side style="fill: var(--sec-font-color)"></flip-side>
         </template>
@@ -45,7 +45,7 @@
           :theme="chartTheme"
         />
       </Card>
-      <Card title="Fees/Reward Chart Normalized">
+      <Card title="Fees/Block Reward Chart Normalized">
         <template #header>
           <flip-side style="fill: var(--sec-font-color)"></flip-side>
         </template>
@@ -455,7 +455,7 @@ export default {
           data: liquidityFees,
         },
         {
-          name: 'Rewards',
+          name: 'Block Rewards',
           type: 'bar',
           stack: 'Total',
           showSymbol: false,
