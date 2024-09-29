@@ -358,6 +358,7 @@ export default {
   },
   mounted() {
     this.favs = JSON.parse(localStorage.getItem(this.name)) || []
+    this.loadRank()
     window.addEventListener('visibilitychange', this.unloadRank)
   },
   methods: {
@@ -365,17 +366,36 @@ export default {
       const na = this.favs.find((f) => f.address === address)
       return na.rank - rank
     },
-    unloadRank() {
+    loadRank() {
       const value = this.rows
       if (this.name === 'active-nodes' && this.favs.length > 0) {
         for (let na = 0; na < value.length; na++) {
           this.favs.forEach((f, i) => {
             if (f.address === value[na].address) {
-              this.favs[i].rank = na + 1
+              if (!this.favs[i].lastRank) {
+                this.favs[i].lastRank = this.favs[i].rank
+              }
+              this.favs[i].rank = this.favs[i].lastRank
             }
           })
         }
-        localStorage.setItem(this.name, JSON.stringify(this.favs))
+      }
+    },
+    unloadRank() {
+      const value = this.rows
+      if (this.name === 'active-nodes' && this.favs.length > 0) {
+        let changed = false
+        for (let na = 0; na < value.length; na++) {
+          this.favs.forEach((f, i) => {
+            if (f.address === value[na].address && f.lastRank !== na + 1) {
+              this.favs[i].lastRank = na + 1
+              changed = true
+            }
+          })
+        }
+        if (changed) {
+          localStorage.setItem(this.name, JSON.stringify(this.favs))
+        }
       }
     },
     vaultColor(vaultAddress) {
@@ -426,7 +446,7 @@ export default {
     },
     addFav(address, rank) {
       if (address) {
-        this.favs = [...this.favs, { address, rank }]
+        this.favs = [...this.favs, { address, rank, lastRank: rank }]
       }
     },
     delFav(address) {
