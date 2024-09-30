@@ -3,7 +3,7 @@
     <copy-icon
       ref="copy"
       :class="['table-icon', 'copy-icon']"
-      @click="handleCopy"
+      @click="onlyCopy(strCopy)"
     />
 
     <div class="toast" :class="{ show: showToast }" v-if="showToast">
@@ -14,7 +14,7 @@
       </div>
       <div class="toast-body">
         copied to clipboard! <br />
-        <span style="display: flex; margin-top: 10px; font-weight: bold">
+        <span class="copy-text">
           {{ strCopy }}
         </span>
       </div>
@@ -38,9 +38,6 @@ export default {
     }
   },
   methods: {
-    handleCopy() {
-      this.onlyCopy(this.strCopy)
-    },
     onlyCopy(strCopy) {
       navigator.clipboard.writeText(strCopy).then(
         () => {
@@ -77,14 +74,18 @@ export default {
   border: 1px solid var(--border-color);
   border-radius: 0.5rem;
   z-index: 9999;
-  box-sizing: border-box;
-  overflow: auto;
-  
+
   @include lg {
     top: 80px;
     right: 20px;
     width: auto;
     padding: 1rem;
+  }
+  .copy-text {
+    display: block;
+    width: 66%;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 @keyframes jello-in {
