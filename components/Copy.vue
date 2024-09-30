@@ -13,7 +13,7 @@
             <Checkmark class="Checkmark" />
           </div>
         </div>
-        <div class="toast-body">
+        <div class="toast-body mono">
           copied to clipboard! <br />
           <span class="copy-text">
             {{ strCopy }}
@@ -83,12 +83,6 @@ export default {
     width: auto;
     padding: 1rem;
   }
-
-  .copy-text {
-    display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
 }
 
 @keyframes jello-in {
@@ -135,7 +129,21 @@ export default {
 
 .toast-body {
   overflow: hidden;
+  font-size: 0.8rem; 
+  line-height: 1.5;
+  color: var(--primary-color); 
+  text-align: left; 
+  font-weight: 200; 
+  padding: 0.5rem 0; 
+
+  .copy-text {
+    color: var(--sec-font-color); 
+    display: block;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    }
 }
+
 
 .Checkmark {
   display: flex;
