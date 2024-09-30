@@ -158,7 +158,10 @@
         </div>
       </Card>
       <Card
-        :navs="[{ title: 'Earnings Volume', value: 'earnings-vol' }]"
+        :navs="[
+          { title: 'Earnings Volume', value: 'earnings-vol' },
+          { title: 'Supply / Burn', value: 'max-supply' },
+        ]"
         :act-nav.sync="poolMode"
       >
         <VChart
@@ -166,6 +169,15 @@
           :key="2"
           :option="earningsHistory"
           :loading="!earningsHistory"
+          :autoresize="true"
+          :loading-options="showLoading"
+          :theme="chartTheme"
+        />
+        <VChart
+          v-if="poolMode == 'max-supply'"
+          :key="1"
+          :option="supplyHistory"
+          :loading="!supplyHistory"
           :autoresize="true"
           :loading-options="showLoading"
           :theme="chartTheme"
@@ -331,6 +343,7 @@ export default {
       volumeHistory: undefined,
       swapHistory: undefined,
       earningsHistory: undefined,
+      supplyHistory: undefined,
       runeSupply: undefined,
       lastHeight: undefined,
       blocks: undefined,
@@ -637,6 +650,7 @@ export default {
         this.volumeHistory = this.formatLPChange(data?.LPChange)
         ;({ resVolume: this.swapHistory } = this.formatSwap(data?.swaps))
 
+        this.supplyHistory = this.formatSupply(data?.earning)
         this.earningsHistory = await this.formatEarnings(data?.earning)
         this.totalSwapVolumeUSD = data.swaps?.meta?.totalVolumeUSD
         this.totalSwapVolume = data.swaps?.meta?.totalVolume
@@ -974,6 +988,98 @@ export default {
         xAxis
       )
     },
+    formatSupply(d) {
+      const xAxis = []
+      const su = []
+      const bu = []
+      let burnCumulative = 0
+
+      d?.intervals.forEach((interval, index) => {
+        // Date
+        const date = moment(
+          Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
+        )
+        xAxis.push(date.format('dddd, MMM D'))
+
+        const burn =
+          +interval.pools.find((p) => p.pool === 'income_burn').earnings / 1e8
+        burnCumulative += burn
+        bu.push(burn)
+        su.push(5 * 1e8 - burnCumulative)
+      })
+
+      return this.basicChartFormat(
+        (value) => `$ ${this.normalFormat(value, '0,0.00')}`,
+        [
+          {
+            type: 'line',
+            name: 'Max Supply',
+            showSymbol: false,
+            data: su,
+            smooth: true,
+            yAxisIndex: 0,
+          },
+          {
+            type: 'bar',
+            name: 'Burned Rune',
+            showSymbol: false,
+            data: bu,
+            yAxisIndex: 1,
+            itemStyle: {
+              borderRadius: [8, 8, 0, 0],
+              color: '#ff9962',
+            },
+          },
+        ],
+        xAxis,
+        {
+          yAxis: [
+            {
+              type: 'value',
+              name: 'Max Supply',
+              position: 'left',
+              show: false,
+              splitLine: {
+                show: true,
+              },
+              min: su.slice(-1)[0] - 50,
+              max: 'dataMax',
+            },
+            {
+              type: 'value',
+              name: 'Burned Rune',
+              position: 'right',
+              show: false,
+              splitLine: {
+                show: true,
+              },
+              min: 'dataMin',
+              max: 'dataMax',
+            },
+          ],
+        },
+        (param) => {
+          return `
+            <div class="tooltip-header">
+              <div class="data-color" style="background-color: ${
+                param[0].color
+              }"></div>
+              ${param[0].name}
+            </div>
+            <div class="tooltip-body">
+              ${param
+                .map(
+                  (p) => `<span>
+                  <span>${p.seriesName}</span>
+                  <b>${p.value ? this.$options.filters.number(p.value, '0,0.00') : '-'}</b>
+                </span>`
+                )
+                .join('')}
+            </div>
+          `
+        }
+      )
+    },
     async formatEarnings(d) {
       const xAxis = []
       const le = []
@@ -1078,7 +1184,7 @@ export default {
           },
           {
             type: 'bar',
-            name: 'Dev Income',
+            name: 'Dev Fund Earning',
             stack: 'Total',
             showSymbol: false,
             data: df,
@@ -1116,7 +1222,7 @@ export default {
               'Liquidity Earning',
               'Bond Earning',
               'Affiliate Earning',
-              'Dev Income',
+              'Dev Fund Earning',
             ],
           },
         },
