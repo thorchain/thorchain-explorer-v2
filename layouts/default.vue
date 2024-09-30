@@ -152,7 +152,7 @@ Vue.mixin(global)
     background: var(--color-light);
     grid-area: header;
     border-bottom: 1px solid var(--border-color);
-    padding: 0 1.5rem;
+    padding: 0 10px;
 
     @include lg {
       padding: 0.5rem 3rem;
@@ -162,7 +162,7 @@ Vue.mixin(global)
   #navbar {
     background: var(--color-light);
     border-bottom: 1px solid var(--border-color);
-    padding: 0 1.5rem;
+    padding: 0 10px;
 
     @include lg {
       padding: 0.5rem 3rem;
