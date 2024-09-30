@@ -60,8 +60,9 @@
           <div class="stat-item">
             <burn class="stat-image" />
             <div class="item-detail">
-              <div class="header">Burned RUNE</div>
+              <div class="header">Max Supply | Burned RUNE</div>
               <skeleton-item :loading="!totalBurnedRune" class="value">
+                {{ (5 * 1e8 - totalBurnedRune) | currency(runeCur(), 2) }} |
                 {{ totalBurnedRune | currency(runeCur(), 2) }}
               </skeleton-item>
             </div>
@@ -279,6 +280,7 @@ import {
 } from 'echarts/components'
 import VChart from 'vue-echarts'
 import { range } from 'lodash'
+import { number } from 'echarts'
 import { blockTime } from '~/utils'
 import StackDollar from '~/assets/images/sack-dollar.svg?inline'
 import LockIcon from '~/assets/images/lock.svg?inline'
