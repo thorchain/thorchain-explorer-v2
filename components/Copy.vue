@@ -6,7 +6,7 @@
       @click="onlyCopy(strCopy)"
     />
 
-    <div class="toast" :class="{ show: showToast }" v-if="showToast">
+    <div v-if="showToast" class="toast" :class="{ show: showToast }">
       <div class="toast-header">
         <div class="checkmark">
           <Checkmark class="Checkmark" />
@@ -83,7 +83,6 @@ export default {
   }
   .copy-text {
     display: block;
-    width: 66%;
     overflow: hidden;
     text-overflow: ellipsis;
   }
@@ -125,6 +124,10 @@ export default {
 
 .toast:not(.show) {
   animation: jello-out 0.5s forwards;
+}
+
+.toast-body {
+  overflow: hidden;
 }
 
 .Checkmark {
