@@ -1,22 +1,42 @@
 <template>
-  <copy-icon
-    ref="copy"
-    :class="['table-icon', 'copy-icon']"
-    @click="onlyCopy(strCopy)"
-  />
+  <span>
+    <copy-icon
+      ref="copy"
+      :class="['table-icon', 'copy-icon']"
+      @click="onlyCopy(strCopy)"
+    />
+
+    <transition name="toast">
+      <div v-if="showToast" class="toast">
+        <div class="toast-header">
+          <div class="checkmark">
+            <Checkmark class="Checkmark" />
+          </div>
+        </div>
+        <div class="toast-body mono">
+          copied to clipboard! <br />
+          <span class="copy-text">
+            {{ strCopy }}
+          </span>
+        </div>
+      </div>
+    </transition>
+  </span>
 </template>
 
 <script>
 import CopyIcon from '~/assets/images/clone.svg?inline'
+import Checkmark from '~/assets/images/square-checkmark.svg?inline'
 
 export default {
   components: {
     CopyIcon,
+    Checkmark,
   },
   props: ['strCopy'],
   data() {
     return {
-      activeComponent: 'CopyIcon',
+      showToast: false,
     }
   },
   methods: {
@@ -24,17 +44,115 @@ export default {
       navigator.clipboard.writeText(strCopy).then(
         () => {
           this.animate('copy', 'animate', 1000)
+          this.showToastNotification()
         },
         (err) => {
           console.error('Could not copy text: ', err)
         }
       )
     },
+    showToastNotification() {
+      this.showToast = true
+      setTimeout(() => {
+        this.closeToast()
+      }, 3000)
+    },
+    closeToast() {
+      this.showToast = false
+    },
   },
 }
 </script>
 
 <style lang="scss" scoped>
+.toast {
+  display: flex;
+  position: fixed;
+  top: 80px;
+  right: 5%;
+  padding: 0.5rem;
+  width: 90%;
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  z-index: 9999;
+
+  @include lg {
+    top: 80px;
+    right: 20px;
+    width: auto;
+    padding: 1rem;
+  }
+}
+
+@keyframes jello-in {
+  0% {
+    transform: scale3d(0.8, 0.8, 1);
+    opacity: 0;
+  }
+  50% {
+    transform: scale3d(1.1, 1.1, 1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale3d(1, 1, 1);
+  }
+}
+
+@keyframes jello-out {
+  0% {
+    transform: scale3d(1, 1, 1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale3d(1.1, 1.1, 1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale3d(0.8, 0.8, 1);
+    opacity: 0;
+  }
+}
+
+.toast-enter,
+.toast-leave-to {
+  opacity: 0;
+}
+
+.toast-enter-active {
+  animation: jello-in 0.5s forwards;
+}
+
+.toast-leave-active {
+  animation: jello-out 0.5s forwards;
+}
+
+.toast-body {
+  overflow: hidden;
+  font-size: 0.8rem; 
+  line-height: 1.5;
+  color: var(--primary-color); 
+  text-align: left; 
+  font-weight: 200; 
+  padding: 0.5rem 0; 
+
+  .copy-text {
+    color: var(--sec-font-color); 
+    display: block;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    }
+}
+
+
+.Checkmark {
+  display: flex;
+  width: 40px;
+  height: 40px;
+  justify-items: center;
+  padding-right: 1rem;
+}
+
 .animate {
   fill: var(--primary-color);
   -webkit-animation: jello-vertical 1s both;
