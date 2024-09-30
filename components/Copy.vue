@@ -1,25 +1,27 @@
 <template>
-  <div>
+  <span>
     <copy-icon
       ref="copy"
       :class="['table-icon', 'copy-icon']"
       @click="onlyCopy(strCopy)"
     />
 
-    <div v-if="showToast" class="toast" :class="{ show: showToast }">
-      <div class="toast-header">
-        <div class="checkmark">
-          <Checkmark class="Checkmark" />
+    <transition name="toast">
+      <div v-if="showToast" class="toast">
+        <div class="toast-header">
+          <div class="checkmark">
+            <Checkmark class="Checkmark" />
+          </div>
+        </div>
+        <div class="toast-body">
+          copied to clipboard! <br />
+          <span class="copy-text">
+            {{ strCopy }}
+          </span>
         </div>
       </div>
-      <div class="toast-body">
-        copied to clipboard! <br />
-        <span class="copy-text">
-          {{ strCopy }}
-        </span>
-      </div>
-    </div>
-  </div>
+    </transition>
+  </span>
 </template>
 
 <script>
@@ -81,12 +83,14 @@ export default {
     width: auto;
     padding: 1rem;
   }
+
   .copy-text {
     display: block;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 }
+
 @keyframes jello-in {
   0% {
     transform: scale3d(0.8, 0.8, 1);
@@ -116,13 +120,16 @@ export default {
   }
 }
 
-.toast.show {
-  opacity: 1;
-  visibility: visible;
+.toast-enter,
+.toast-leave-to {
+  opacity: 0;
+}
+
+.toast-enter-active {
   animation: jello-in 0.5s forwards;
 }
 
-.toast:not(.show) {
+.toast-leave-active {
   animation: jello-out 0.5s forwards;
 }
 
