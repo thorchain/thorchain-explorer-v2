@@ -62,7 +62,7 @@
             <div class="item-detail">
               <div class="header">Max Supply | Burned RUNE</div>
               <skeleton-item :loading="!totalBurnedRune" class="value">
-                {{ (5 * 1e8 - totalBurnedRune) | currency(runeCur(), 2) }} |
+                {{ (5 * 1e8 - totalBurnedRune) | currency(runeCur(), 0) }} |
                 {{ totalBurnedRune | currency(runeCur(), 2) }}
               </skeleton-item>
             </div>
