@@ -35,273 +35,336 @@
       </span>
     </template>
     <template slot="table-row" slot-scope="props">
-      <span v-if="props.column.field == 'address'">
-        <div class="table-wrapper-row">
-          <nuxt-link
-            v-tooltip="props.row.address"
-            class="clickable"
-            :to="`/address/${props.row.address}`"
-          >
-            {{ addressFormatV2(props.row.address, 4, true) }}
-          </nuxt-link>
-          <Copy :str-copy="props.row.address" />
-          <InfoIcon class="table-icon" @click="gotoNode(props.row.address)" />
-          <a
-            style="height: 1rem"
-            :href="gotoNodeUrl(props.row.address)"
-            target="_blank"
-          >
-            <JsonIcon class="table-icon item-link" />
-          </a>
-          <Ip v-tooltip="props.row.ip" :str-copy="props.row.ip" />
-        </div>
-      </span>
-      <span v-else-if="props.column.field == 'highlight'">
-        <StaredIcon
-          v-if="isFav(props.row.address)"
-          class="table-icon"
-          style="fill: var(--highlight)"
-          @click="delFav(props.row.address)"
-        />
-        <StarIcon
-          v-else
-          class="table-icon"
-          @click="addFav(props.row.address, props.row.rank)"
-        />
-      </span>
-      <span v-else-if="props.column.field == 'age'">
-        <span
-          v-if="props.row.age"
-          v-tooltip="props.row.age.info"
-          style="cursor: pointer"
-          >{{ props.row.age.number | number('0,0.00') }}</span
-        >
-        <span v-else>-</span>
-      </span>
-      <span v-else-if="props.column.field == 'isp'">
-        <cloud-image
-          v-if="props.row.isp"
-          :name="[props.row.isp, props.row.org]"
-        />
-        <span v-else>-</span>
-      </span>
-      <span v-else-if="props.column.field == 'location'">
-        <div
-          v-if="props.row.location"
-          v-tooltip="`${props.row.location.code}, ${props.row.location.city}`"
-          class="countries"
-        >
-          <VFlag :flag="props.row.location.code" />
-        </div>
-      </span>
-      <span v-else-if="props.column.field == 'total_bond'" class="hoverable">
-        <span v-tooltip="formatCurrency(runePrice * props.row.total_bond)">
-          <span class="extra">{{ runeCur() }}</span>
-          {{ numberFormat(props.row.total_bond) }}
-        </span>
-      </span>
-      <span v-else-if="props.column.field == 'award'" class="hoverable">
-        <span v-tooltip="formatCurrency(runePrice * props.row.award)">
-          <span class="extra">{{ runeCur() }}</span>
-          {{ props.row.award }}
-        </span>
-      </span>
-      <div v-else-if="props.column.field == 'vault'" class="vault-wrapper">
-        <div
-          v-tooltip="props.row.vault"
-          class="vault-share"
-          :style="{ background: vaultColor(props.row.vault) }"
-        ></div>
-      </div>
-      <span v-else-if="props.column.field == 'status'">
-        <div
-          :class="[
-            'mini-bubble',
-            {
-              yellow: props.row.status == 'Standby',
-              danger: props.row.status == 'Disabled',
-              white: props.row.status == 'Whitelisted',
-            },
-          ]"
-        >
-          <span>{{ props.row.status }}</span>
-        </div>
-      </span>
-      <span v-else-if="props.column.field == 'ip'">
-        <div v-if="props.row.ip" class="table-wrapper-row">
-          <span>{{ props.row.ip }}</span>
-          <Copy :str-copy="props.row.ip" />
-        </div>
-        <span v-else>-</span>
-      </span>
-      <span v-else-if="props.column.field == 'leave'">
-        <div class="table-wrapper-row" style="justify-content: center">
-          <ExitIcon
-            v-if="props.row.leave == true"
-            class="table-icon"
-            style="fill: var(--red)"
-          />
-        </div>
-      </span>
-      <span v-else-if="props.column.field == 'fee'">
-        <span>{{ props.formattedRow[props.column.field] }}</span>
-      </span>
-      <span v-else-if="props.column.field == 'score'">
-        <span>{{
-          props.formattedRow[props.column.field] | number('0,0.00')
-        }}</span>
-      </span>
-      <span v-else-if="props.column.field == 'operator'">
-        <v-menu>
-          <div class="hoverable">
+      <span
+        :class="rowClassCallback(props.row)"
+        :style="{
+          color: isFav(props.row.address) ? vaultColor(props.row.address) : '',
+          fill: isFav(props.row.address) ? vaultColor(props.row.address) : '',
+          fontWeight: isFav(props.row.address) ? 'bold' : 'normal',
+        }"
+      >
+        <span v-if="props.column.field == 'address'">
+          <div class="table-wrapper-row">
             <nuxt-link
-              class="clickable mono"
-              target="_blank"
-              :to="`/address/${props.row.operator}`"
-              >{{ props.row.operator.slice(-4) }}</nuxt-link
+              v-tooltip="props.row.address"
+              class="clickable"
+              :style="{
+                color: isFav(props.row.address)
+                  ? vaultColor(props.row.address)
+                  : '',
+                fill: isFav(props.row.address)
+                  ? vaultColor(props.row.address)
+                  : '',
+                fontWeight: isFav(props.row.address) ? 'bold' : 'normal',
+              }"
+              :to="`/address/${props.row.address}`"
             >
-            <div class="bubble-container grey">
-              {{ props.row.providers.length }}
-            </div>
+              {{ addressFormatV2(props.row.address, 4, true) }}
+            </nuxt-link>
+            <Copy :str-copy="props.row.address" />
+            <InfoIcon class="table-icon" @click="gotoNode(props.row.address)" />
+            <a
+              :style="{
+                color: isFav(props.row.address)
+                  ? vaultColor(props.row.address)
+                  : '',
+                fill: isFav(props.row.address)
+                  ? vaultColor(props.row.address)
+                  : '',
+                fontWeight: isFav(props.row.address) ? 'bold' : 'normal',
+              }"
+              style="height: 1rem"
+              :href="gotoNodeUrl(props.row.address)"
+              target="_blank"
+            >
+              <JsonIcon class="table-icon item-link" />
+            </a>
+            <Ip v-tooltip="props.row.ip" :str-copy="props.row.ip" />
           </div>
-          <template #popper>
-            <table class="provider-table">
-              <tr>
-                <th style="text-align: left">Address</th>
-                <th>Bond</th>
-                <th style="text-align: right">Share</th>
-              </tr>
-              <tr
-                v-for="(p, i) in filterProviders(props.row.providers)"
-                :key="i"
-              >
-                <td>
-                  <nuxt-link
-                    class="hoverable mono external-link"
-                    target="_blank"
-                    :to="`/address/${p.bond_address}`"
-                  >
-                    {{ addressFormatV2(p.bond_address, 4, true) }}
-                    <external-icon class="asset-icon" />
-                  </nuxt-link>
-                </td>
-                <td class="mono">
-                  <small>
-                    {{ runeCur() }}
-                  </small>
-                  {{ $options.filters.number(p.bond / 10 ** 8, '0,0') }}
-                </td>
-                <td style="text-align: right">
-                  <span class="mono">
-                    {{ (p.bond / 10 ** 8 / props.row.total_bond) | percent }}
-                  </span>
-                </td>
-              </tr>
-            </table>
-            <hr />
-            <div style="margin-top: 5px">
-              <strong>Operator: </strong>
-              <span class="mono"
-                >{{ props.row.operator.slice(-4) }} -
-                {{ props.formattedRow['fee'] }}</span
-              >
-            </div>
-          </template>
-        </v-menu>
-      </span>
-      <div v-else-if="props.column.field == 'churn'" class="churn-wrapper">
-        <div
-          v-for="(churnItem, index) in rows[props.row.originalIndex].churn"
-          :key="index"
-          class="churn-item"
-        >
+        </span>
+        <span v-else-if="props.column.field == 'highlight'">
+          <StaredIcon
+            v-if="isFav(props.row.address)"
+            class="table-icon"
+            :style="{ fill: vaultColor(props.row.address) }"
+            @click="delFav(props.row.address)"
+          />
+          <StarIcon
+            v-else
+            class="table-icon"
+            @click="addFav(props.row.address, props.row.rank)"
+          />
+        </span>
+        <span v-else-if="props.column.field == 'age'">
+          <span
+            v-if="props.row.age"
+            v-tooltip="props.row.age.info"
+            style="cursor: pointer"
+            >{{ props.row.age.number | number('0,0.00') }}</span
+          >
+          <span v-else>-</span>
+        </span>
+        <span v-else-if="props.column.field == 'isp'">
+          <cloud-image
+            v-if="props.row.isp"
+            :name="[props.row.isp, props.row.org]"
+          />
+          <span v-else>-</span>
+        </span>
+        <span v-else-if="props.column.field == 'location'">
+          <div
+            v-if="props.row.location"
+            v-tooltip="`${props.row.location.code}, ${props.row.location.city}`"
+            class="countries"
+          >
+            <VFlag :flag="props.row.location.code" />
+          </div>
+        </span>
+        <span v-else-if="props.column.field == 'total_bond'" class="hoverable">
+          <span v-tooltip="formatCurrency(runePrice * props.row.total_bond)">
+            <span class="extra">{{ runeCur() }}</span>
+            {{ numberFormat(props.row.total_bond) }}
+          </span>
+        </span>
+        <span v-else-if="props.column.field == 'award'" class="hoverable">
+          <span v-tooltip="formatCurrency(runePrice * props.row.award)">
+            <span class="extra">{{ runeCur() }}</span>
+            {{ props.row.award }}
+          </span>
+        </span>
+        <div v-else-if="props.column.field == 'vault'" class="vault-wrapper">
+          <div
+            v-tooltip="props.row.vault"
+            class="vault-share"
+            :style="{ background: vaultColor(props.row.vault) }"
+          ></div>
+        </div>
+        <span v-else-if="props.column.field == 'status'">
+          <div
+            :class="[
+              'mini-bubble',
+              {
+                yellow: props.row.status == 'Standby',
+                danger: props.row.status == 'Disabled',
+                white: props.row.status == 'Whitelisted',
+              },
+            ]"
+            :style="{
+              color: isFav(props.row.address)
+                ? vaultColor(props.row.address)
+                : '',
+              fill: isFav(props.row.address)
+                ? vaultColor(props.row.address)
+                : '',
+              fontWeight: isFav(props.row.address) ? 'bold' : 'normal',
+            }"
+          >
+            <span>{{ props.row.status }}</span>
+          </div>
+        </span>
+        <span v-else-if="props.column.field == 'ip'">
+          <div v-if="props.row.ip" class="table-wrapper-row">
+            <span>{{ props.row.ip }}</span>
+            <Copy :str-copy="props.row.ip" />
+          </div>
+          <span v-else>-</span>
+        </span>
+        <span v-else-if="props.column.field == 'leave'">
+          <div class="table-wrapper-row" style="justify-content: center">
+            <ExitIcon
+              v-if="props.row.leave == true"
+              class="table-icon"
+              style="fill: var(--red)"
+            />
+          </div>
+        </span>
+        <span v-else-if="props.column.field == 'fee'">
+          <span>{{ props.formattedRow[props.column.field] }}</span>
+        </span>
+        <span v-else-if="props.column.field == 'score'">
+          <span>{{
+            props.formattedRow[props.column.field] | number('0,0.00')
+          }}</span>
+        </span>
+        <span v-else-if="props.column.field == 'operator'">
           <v-menu>
-            <component :is="churnItem.icon" class="table-icon" />
+            <div class="hoverable">
+              <nuxt-link
+                class="clickable mono"
+                target="_blank"
+                :to="`/address/${props.row.operator}`"
+                :style="{
+                  color: isFav(props.row.address)
+                    ? vaultColor(props.row.address)
+                    : '',
+                  fill: isFav(props.row.address)
+                    ? vaultColor(props.row.address)
+                    : '',
+                  fontWeight: isFav(props.row.address) ? 'bold' : 'normal',
+                }"
+                >{{ props.row.operator.slice(-4) }}</nuxt-link
+              >
+              <div class="bubble-container grey">
+                {{ props.row.providers.length }}
+              </div>
+            </div>
             <template #popper>
-              <span v-if="churnItem.type !== 'jail'">
-                {{ churnItem.name }}
-              </span>
-              <div v-else>
-                <strong>{{ churnItem.name.reason | capitalize }}</strong>
-                <div style="margin-top: 0.5rem; padding: 4px">
-                  <div>
-                    <span>Released Height:</span>
-                    <span>{{
-                      churnItem.name.release_height | number('0,0')
-                    }}</span>
-                  </div>
-                  <div v-if="churnItem.name.releaseTime">
-                    <span>Release Time:</span>
-                    <span>{{ churnItem.name.releaseTime }}</span>
-                  </div>
-                </div>
+              <table class="provider-table">
+                <tr>
+                  <th style="text-align: left">Address</th>
+                  <th>Bond</th>
+                  <th style="text-align: right">Share</th>
+                </tr>
+                <tr
+                  v-for="(p, i) in filterProviders(props.row.providers)"
+                  :key="i"
+                >
+                  <td>
+                    <nuxt-link
+                      class="hoverable mono external-link"
+                      target="_blank"
+                      :to="`/address/${p.bond_address}`"
+                    >
+                      {{ addressFormatV2(p.bond_address, 4, true) }}
+                      <external-icon class="asset-icon" />
+                    </nuxt-link>
+                  </td>
+                  <td class="mono">
+                    <small>
+                      {{ runeCur() }}
+                    </small>
+                    {{ $options.filters.number(p.bond / 10 ** 8, '0,0') }}
+                  </td>
+                  <td style="text-align: right">
+                    <span class="mono">
+                      {{ (p.bond / 10 ** 8 / props.row.total_bond) | percent }}
+                    </span>
+                  </td>
+                </tr>
+              </table>
+              <hr />
+              <div style="margin-top: 5px">
+                <strong>Operator: </strong>
+                <span class="mono"
+                  >{{ props.row.operator.slice(-4) }} -
+                  {{ props.formattedRow['fee'] }}</span
+                >
               </div>
             </template>
           </v-menu>
+        </span>
+        <div v-else-if="props.column.field == 'churn'" class="churn-wrapper">
+          <div
+            v-for="(churnItem, index) in rows[props.row.originalIndex].churn"
+            :key="index"
+            class="churn-item"
+          >
+            <v-menu>
+              <component :is="churnItem.icon" class="table-icon" />
+              <template #popper>
+                <span v-if="churnItem.type !== 'jail'">
+                  {{ churnItem.name }}
+                </span>
+                <div v-else>
+                  <strong>{{ churnItem.name.reason | capitalize }}</strong>
+                  <div style="margin-top: 0.5rem; padding: 4px">
+                    <div>
+                      <span>Released Height:</span>
+                      <span>{{
+                        churnItem.name.release_height | number('0,0')
+                      }}</span>
+                    </div>
+                    <div v-if="churnItem.name.releaseTime">
+                      <span>Release Time:</span>
+                      <span>{{ churnItem.name.releaseTime }}</span>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </v-menu>
+          </div>
+          <span
+            v-if="
+              rows[props.row.originalIndex].churn.length === 0 &&
+              !isFav(props.row.address)
+            "
+            >-</span
+          >
+          <div
+            v-if="isFav(props.row.address) && name === 'active-nodes'"
+            class="rank-wrap"
+          >
+            <span>
+              {{ props.row.rank }}
+            </span>
+            <progress-icon
+              :data-number="rankChange(props.row.address, props.row.rank)"
+              :is-down="rankChange(props.row.address, props.row.rank) < 0"
+            />
+          </div>
         </div>
-        <span
-          v-if="
-            rows[props.row.originalIndex].churn.length === 0 &&
-            !isFav(props.row.address)
-          "
-          >-</span
-        >
-        <div
-          v-if="isFav(props.row.address) && name === 'active-nodes'"
-          class="rank-wrap"
-        >
-          <span>
-            {{ props.row.rank }}
+        <span v-else-if="props.column.field === 'version'">
+          <span :class="[{ upgraded: isUpgrading(props.row.version) }]">
+            {{ props.formattedRow[props.column.field] }}
           </span>
-          <progress-icon
-            :data-number="rankChange(props.row.address, props.row.rank)"
-            :is-down="rankChange(props.row.address, props.row.rank) < 0"
+        </span>
+        <span v-else-if="props.column.field.includes('behind.')">
+          <span
+            v-if="props.formattedRow[props.column.field] == 0"
+            :style="{
+              color: isFav(props.row.address)
+                ? vaultColor(props.row.address)
+                : '',
+              fill: isFav(props.row.address)
+                ? vaultColor(props.row.address)
+                : '',
+              fontWeight: isFav(props.row.address) ? 'bold' : 'normal',
+            }"
+            class="version"
+            >OK</span
+          >
+          <span
+            v-else-if="
+              0 < props.formattedRow[props.column.field] &&
+              props.formattedRow[props.column.field] < 10000
+            "
+            :style="{
+              color: isFav(props.row.address)
+                ? vaultColor(props.row.address)
+                : '',
+              fill: isFav(props.row.address)
+                ? vaultColor(props.row.address)
+                : '',
+              fontWeight: isFav(props.row.address) ? 'bold' : 'normal',
+            }"
+            class="number"
+            >-{{ props.formattedRow[props.column.field] | number('0a') }}</span
+          >
+          <DangerIcon
+            v-else-if="
+              0 > props.formattedRow[props.column.field] &&
+              props.formattedRow[props.column.field] > -10000
+            "
+            v-tooltip="'Disabled'"
+            class="table-icon"
+            style="color: #ef5350"
           />
-        </div>
-      </div>
-      <span v-else-if="props.column.field === 'version'">
-        <span :class="[{ upgraded: isUpgrading(props.row.version) }]">
+          <DangerIcon
+            v-else-if="props.formattedRow[props.column.field] > 10000"
+            v-tooltip="`${props.formattedRow[props.column.field]}`"
+            class="table-icon"
+            style="fill: #ffc107"
+          />
+          <DangerIcon
+            v-else
+            v-tooltip="`${props.formattedRow[props.column.field]}`"
+            class="table-icon"
+            style="fill: #ef5350"
+          />
+        </span>
+        <span v-else>
           {{ props.formattedRow[props.column.field] }}
         </span>
-      </span>
-      <span v-else-if="props.column.field.includes('behind.')">
-        <span
-          v-if="props.formattedRow[props.column.field] == 0"
-          style="color: #81c784"
-          >OK</span
-        >
-        <span
-          v-else-if="
-            0 < props.formattedRow[props.column.field] &&
-            props.formattedRow[props.column.field] < 10000
-          "
-          style="color: #ffc107"
-          >-{{ props.formattedRow[props.column.field] | number('0a') }}</span
-        >
-        <DangerIcon
-          v-else-if="
-            0 > props.formattedRow[props.column.field] &&
-            props.formattedRow[props.column.field] > -10000
-          "
-          v-tooltip="'Disabled'"
-          class="table-icon"
-          style="color: #ef5350"
-        />
-        <DangerIcon
-          v-else-if="props.formattedRow[props.column.field] > 10000"
-          v-tooltip="`${props.formattedRow[props.column.field]}`"
-          class="table-icon"
-          style="fill: #ffc107"
-        />
-        <DangerIcon
-          v-else
-          v-tooltip="`${props.formattedRow[props.column.field]}`"
-          class="table-icon"
-          style="fill: #ef5350"
-        />
-      </span>
-      <span v-else>
-        {{ props.formattedRow[props.column.field] }}
       </span>
     </template>
   </vue-good-table>
@@ -426,10 +489,6 @@ export default {
     },
     rowClassCallback(row) {
       const classes = ['table-row']
-      if (this.isFav(row.address)) {
-        classes.push('highlight')
-      }
-
       if (row.churn?.length > 0) {
         if (
           row.churn.some((e) => e.type === 'churn-out' || e.type === 'leave')
@@ -467,11 +526,16 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+  .number{
+  color: #ffc107
+}
+.version {
+  color: var(--primary-color);
+}
 .asset-chain {
   height: 1.2rem;
   border-radius: 50%;
 }
-
 .popover-table {
   display: flex;
   justify-content: space-between;
@@ -500,7 +564,6 @@ export default {
   align-items: center;
   justify-content: center;
 }
-
 .grid-network {
   width: 100%;
   display: grid;
@@ -549,7 +612,6 @@ export default {
   width: 80px;
   min-width: 80px;
 }
-
 .upgraded {
   color: var(--active-primary-color);
 }
