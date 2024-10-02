@@ -281,10 +281,6 @@ export default {
               name: 'Rune Pool',
               link: '/thorfi/runepool',
             },
-            {
-              name: 'Lending',
-              link: '/thorfi/lending',
-            },
           ],
         },
         {
@@ -522,7 +518,6 @@ export default {
       position: relative;
       padding-top: 0.2rem;
       padding-right: 1rem;
-
 
       &:hover {
         span,
