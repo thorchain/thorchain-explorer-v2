@@ -303,10 +303,11 @@ export default {
 .type {
   display: flex;
   gap: 8px;
-  .mini-bubble {
-    height: 1.5rem;
-    margin-top: 2px;
-    margin-left: 2px;
-  }
+  align-items: center;
+}
+.mini-bubble {
+  height: 1.5rem;
+  width: 1.5rem;
+  padding: 2px;
 }
 </style>
