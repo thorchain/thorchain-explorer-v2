@@ -1422,6 +1422,7 @@ export default {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  padding: 0 10px;
 
   .stat-item {
     display: flex;
