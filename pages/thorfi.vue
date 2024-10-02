@@ -28,10 +28,6 @@ export default {
           link: '/thorfi/runepool',
           text: 'Rune Pool',
         },
-        {
-          link: '/thorfi/lending',
-          text: 'Lending',
-        },
       ],
     }
   },
