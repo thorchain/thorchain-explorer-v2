@@ -7,6 +7,10 @@
     style-class="vgt-table net-table bordered condensed node-table"
     :line-numbers="true"
     :row-style-class="rowClassCallback"
+    :search-options="{
+      enabled: true,
+      externalQuery: searchTerm,
+    }"
   >
     <template slot="table-column" slot-scope="props">
       <div v-if="props.column.field.includes('behind')" class="table-asset">
@@ -403,7 +407,7 @@ export default {
     ExternalIcon,
     VaultIcon,
   },
-  props: ['rows', 'cols', 'name'],
+  props: ['rows', 'cols', 'name', 'searchTerm'],
   data() {
     return {
       favs: [],
