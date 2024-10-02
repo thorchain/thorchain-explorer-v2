@@ -3,16 +3,32 @@
     <div class="grid-network">
       <info-card :options="topBonds" />
     </div>
+    <input
+      v-model="searchTerm"
+      placeholder="Search All Tables"
+      class="search-input"
+    />
     <card :is-loading="!activeNodes">
-      <node-table :rows="activeNodes" :cols="activeCols" name="active-nodes" />
+      <node-table
+        :rows="activeNodes"
+        :cols="activeCols"
+        :search-term="searchTerm"
+        name="active-nodes"
+      />
     </card>
     <card :is-loading="!stbNodes">
-      <node-table :rows="stbNodes" :cols="stbCols" name="rdy-nodes" />
+      <node-table
+        :rows="stbNodes"
+        :cols="stbCols"
+        :search-term="searchTerm"
+        name="rdy-nodes"
+      />
     </card>
     <card :is-loading="!whiteListedNodes">
       <node-table
         :rows="whiteListedNodes"
         :cols="otherNodes"
+        :search-term="searchTerm"
         name="other-nodes"
       />
     </card>
@@ -48,6 +64,7 @@ export default {
       provDist: undefined,
       intervalId: undefined,
       churnHalted: undefined,
+      searchTerm: '',
       churnProgressValue: 0,
     }
   },
@@ -821,6 +838,26 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.search-input {
+  flex: 1;
+  color: var(--sec-font-color);
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color) !important;
+  border-radius: 0.5rem;
+  outline: none;
+  margin: 2px;
+  padding: 12px;
+  font-size: 0.9062rem;
+  font-weight: 450;
+  &:focus {
+    border-color: transparent;
+    box-shadow: 0 0 0 0.15rem rgba(255, 255, 255, 0.1);
+  }
+
+  &:hover {
+    color: var(--primary-color);
+  }
+}
 .grid-network {
   width: 100%;
   display: grid;
