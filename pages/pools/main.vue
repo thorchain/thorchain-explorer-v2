@@ -195,7 +195,7 @@ export default {
           tdClass: 'mono',
         },
         {
-          label: 'Swap/Save/Borrow',
+          label: 'Swap/Save',
           field: 'actions',
           sortable: false,
           thClass: 'th-center',
