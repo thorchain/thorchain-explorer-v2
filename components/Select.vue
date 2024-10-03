@@ -70,6 +70,19 @@ export default {
   top: calc(100% + 10px);
   max-height: 400px;
   overflow-y: auto;
+  
+  &::-webkit-scrollbar {
+    width: 5px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background-color: var(--border-color);
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--font-color);
+    border-radius: 5px;
+  }
 
   div {
     cursor: pointer;
