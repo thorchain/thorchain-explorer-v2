@@ -3,7 +3,7 @@
     <Nav
       :is-link="true"
       :nav-items="[
-        { link: `/insights`, text: 'Overview' },
+        { link: `/insights/main`, text: 'Overview' },
         { link: `/insights/apr`, text: 'APR' },
       ]"
     />
