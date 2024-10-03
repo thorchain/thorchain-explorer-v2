@@ -23,9 +23,8 @@ export default {
   data() {
     return {
       showLoading: {
-        color: 'var(--primary-color)',
-        textColor: 'var(--primary-color)',
-        maskColor: 'var(--card-bg-color)',
+        maskColor: 'rgba(255, 255, 255, 0)',
+        zlevel: 1,
       },
     }
   },

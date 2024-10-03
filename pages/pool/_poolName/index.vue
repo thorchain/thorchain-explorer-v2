@@ -367,11 +367,6 @@ export default {
       poolStats: [],
       poolDetail: undefined,
       volumeHistory: undefined,
-      showLoading: {
-        color: 'var(--primary-color)',
-        textColor: 'var(--primary-color)',
-        maskColor: 'var(--card-bg-color)',
-      },
     }
   },
 }
