@@ -23,7 +23,9 @@ export default {
   data() {
     return {
       showLoading: {
-        maskColor: 'rgba(255, 255, 255, 0)',
+        text: '',
+        color: this.$store?.state?.darkTheme ? '#3ca38b' : '#63fdd9',
+        maskColor: 'rgba(0,0,0,0)',
         zlevel: 1,
       },
     }
