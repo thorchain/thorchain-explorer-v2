@@ -21,7 +21,7 @@
     <div class="chart-wrapper">
       <VChart
         :option="aprChart"
-        :loading="aprloading"
+        :loading="aprLoading"
         :autoresize="true"
         :loading-options="showLoading"
       />
