@@ -392,6 +392,7 @@ export default {
   cursor: pointer;
   width: auto;
   margin: 0.5rem;
+  white-space: nowrap;
   font-weight: 450;
   transition:
     background-color 0.3s ease,
