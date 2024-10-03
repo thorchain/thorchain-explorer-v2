@@ -24,6 +24,7 @@
         :loading="aprLoading"
         :autoresize="true"
         :loading-options="showLoading"
+        :theme="chartTheme"
       />
     </div>
   </Card>
