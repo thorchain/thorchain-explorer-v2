@@ -2,7 +2,7 @@
   <Page>
     <info-card :options="networkOverview">
       <template #blocktime="{ item }">
-        <span style="font-family: 'Roboto'">
+        <span style="font-family: 'Montserrat', sans-serif">
           {{ item.filter(item.value) }}
         </span>
       </template>
