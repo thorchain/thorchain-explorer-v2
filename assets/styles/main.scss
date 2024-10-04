@@ -1,5 +1,5 @@
 @import './normalize.css'; // normalize css for cross-browser integrations
-@import 'fonts'; //applications font-face
+@import 'font'; //applications font-face
 @import 'breakpoints';
 
 * {
@@ -21,7 +21,8 @@ body {
     var(--gradient-right) 100% /*top-left color*/
   );
   font-family:
-    'Roboto',
+    'Montserrat',
+    sans-serif,
     system-ui,
     -apple-system,
     'Segoe UI',
