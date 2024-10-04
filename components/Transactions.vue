@@ -24,7 +24,7 @@
             :param="props.row[props.column.field]"
           />
         </div>
-        <div class="type" v-else-if="props.column.field === 'type'">
+        <div v-else-if="props.column.field === 'type'" class="type">
           <span v-if="props.row.status === 'pending'" class="pending-icon">
             <Clock :class="['mini-bubble yellow']" />
           </span>
@@ -309,5 +309,8 @@ export default {
   height: 1.5rem;
   width: 1.5rem;
   padding: 2px;
+}
+.pending-icon {
+  height: 24px;
 }
 </style>
