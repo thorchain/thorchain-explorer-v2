@@ -25,7 +25,6 @@
           <template slot="table-column" slot-scope="props">
             <div
               v-if="props.column.field == 'saversDepthRatio'"
-              v-tooltip="'Savers depth to the Asset Depth in the pool'"
               class="table-asset end"
             >
               {{ props.column.label }}
@@ -33,9 +32,6 @@
             </div>
             <div
               v-else-if="props.column.field == 'filled'"
-              v-tooltip="
-                'Savers depth to the max synth per pool depth threshold'
-              "
               class="table-asset end"
             >
               {{ props.column.label }}
@@ -43,9 +39,6 @@
             </div>
             <div
               v-else-if="props.column.field == 'saversReturn'"
-              v-tooltip="
-                'This week savers yield based on its depth and units growth over an extended of a year'
-              "
               class="table-asset end"
             >
               {{ props.column.label }}
@@ -144,12 +137,14 @@ export default {
           label: 'Savers / Depth',
           field: 'saversDepthRatio',
           type: 'percentage',
+          tooltip: 'Savers depth to the Asset Depth in the pool',
           tdClass: 'mono',
         },
         {
           label: 'Savers Filled',
           field: 'filled',
           type: 'percentage',
+          tooltip: 'Savers depth to the max synth per pool depth threshold',
           tdClass: 'mono',
         },
         {
@@ -162,6 +157,8 @@ export default {
         {
           label: 'Savers APR',
           field: 'saversReturn',
+          tooltip:
+            'This week savers yield based on its depth and units growth over an extended of a year',
           type: 'percentage',
           tdClass: 'mono',
         },
