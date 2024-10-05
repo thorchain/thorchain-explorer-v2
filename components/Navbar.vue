@@ -324,7 +324,7 @@ export default {
     toggleDropdown() {
       this.isDropdownOpen = !this.isDropdownOpen
       const navbarLists = this.$el.querySelector('.navbar-lists')
-      navbarLists.style.height = this.isDropdownOpen ? '500px' : 'auto'
+      navbarLists.style.height = this.isDropdownOpen ? '460px' : 'auto'
     },
 
     toggleSubmenu(index) {
