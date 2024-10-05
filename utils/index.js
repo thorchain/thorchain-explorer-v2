@@ -506,7 +506,7 @@ export function fillNodeData(nodes, el, index) {
     return
   }
   let rank
-  if (index) {
+  if (index !== undefined) {
     rank = index + 1
   }
   nodes.push({

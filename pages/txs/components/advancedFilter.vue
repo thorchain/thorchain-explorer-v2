@@ -383,6 +383,8 @@ export default {
 .advanced-filter {
   display: flex;
   align-items: center;
+  position: sticky;
+  top: 13rem;
   padding: 10px 8px;
   font-size: 0.875rem;
   background-color: var(--card-bg-color);
@@ -392,6 +394,7 @@ export default {
   cursor: pointer;
   width: auto;
   margin: 0.5rem;
+  white-space: nowrap;
   font-weight: 450;
   transition:
     background-color 0.3s ease,
