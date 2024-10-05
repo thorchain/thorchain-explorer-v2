@@ -1,8 +1,17 @@
 <template>
   <Page :error="error && !loading" :fluid="true">
     <div class="grid-network">
-      <info-card :options="topBonds" />
+      <info-card :options="nodesInfo" />
     </div>
+    <div id="nodes-search-container">
+      <input
+        v-model="searchTerm"
+        placeholder="Search All Tables"
+        class="search-input"
+      />
+      <SearchIcon class="search-icon" />
+    </div>
+    <<<<<<< HEAD
     <div id="search-container">
       <input
         v-model="searchTerm"
@@ -11,6 +20,7 @@
       />
       <SearchIcon class="search-icon" />
     </div>
+    ======= >>>>>>> 01f4756 (Add current churn info)
     <card :is-loading="!activeNodes">
       <node-table
         :rows="activeNodes"
@@ -71,6 +81,7 @@ export default {
       churnHalted: undefined,
       searchTerm: '',
       churnProgressValue: 0,
+      totalAwards: 0,
     }
   },
   computed: {
@@ -398,7 +409,15 @@ export default {
         },
       ]
     },
-    topBonds() {
+    nodesInfo() {
+      const churnValue =
+        1 -
+        (this.bondMetrics?.nextChurnHeight - this.chainsHeight?.THOR) /
+          this.churnInterval
+
+      const churnTime =
+        this.bondMetrics?.nextChurnHeight - this.chainsHeight?.THOR
+
       return [
         {
           title: 'Active Bonds',
@@ -520,6 +539,30 @@ export default {
               filter: (v) =>
                 `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
               usdValue: true,
+            },
+          ],
+        },
+        {
+          title: 'Current Churn',
+          rowStart: 2,
+          colSpan: 1,
+          items: [
+            {
+              name: 'Churn Time',
+              value: churnTime,
+              filter: (v) => (v > 600 ? blockTime(v, true) : `${v} Blocks`),
+            },
+            {
+              name: 'Churn Progress',
+              value: churnValue,
+              filter: (v) => this.$options.filters.percent(v, '0,0.000'),
+            },
+            {
+              name: 'Total Awards',
+              value: this.totalAwards / 10e8,
+              usdValue: true,
+              filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
             },
           ],
         },
@@ -721,6 +764,7 @@ export default {
   watch: {
     chainsHeight(n, o) {
       this.churnProgress()
+      this.totalAwardsCalc()
     },
   },
   mounted() {
@@ -758,13 +802,18 @@ export default {
     })
   },
   destroyed() {
-    this.$store.commit('resetExtraHeaderInfo')
     this.clearIntervalId(this.intervalId)
   },
   methods: {
     async updateNodes() {
       const { data: nodesInfo } = await this.$api.getNodesInfo()
       this.nodesQuery = nodesInfo
+    },
+    totalAwardsCalc() {
+      this.totalAwards = 0
+      for (const a in this.nodesQuery) {
+        this.totalAwards = this.totalAwards + +this.nodesQuery[a].current_award
+      }
     },
     churnProgress() {
       if (!this.bondMetrics || !this.churnInterval) {
@@ -777,24 +826,6 @@ export default {
           this.churnInterval
 
       this.churnProgressValue = churnValue
-
-      const churnTime =
-        this.bondMetrics?.nextChurnHeight - this.chainsHeight.THOR
-
-      this.$store.commit('setExtraHeaderInfo', [
-        {
-          name: 'Churn Time',
-          value: churnTime,
-          filter: (v) => (v > 600 ? blockTime(v, true) : `${v} Blocks`),
-          extraClass: ['value'],
-        },
-        {
-          name: 'Churn',
-          value: churnValue,
-          filter: (v) => this.$options.filters.percent(v, '0,0.000'),
-          extraClass: ['mono', 'value'],
-        },
-      ])
     },
     calculateHardCap() {
       if (!this.nodesQuery) {
@@ -843,27 +874,42 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-#search-container {
+#nodes-search-container {
   display: flex;
   position: relative;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 
-.search-input {
-  flex: 1;
-  color: var(--sec-font-color);
-  background-color: var(--bg-color);
-  border: 1px solid var(--border-color) !important;
-  border-radius: 0.5rem;
-  outline: none;
-  margin: 2px;
-  padding: 12px;
-  font-size: 0.9062rem;
-  font-weight: 450;
-  
-  &:focus {
-    border-color: transparent;
-    box-shadow: 0 0 0 0.15rem rgba(255, 255, 255, 0.1);
-    color: var(--primary-color);
+  .search-input {
+    flex: 1;
+    color: var(--sec-font-color);
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color) !important;
+    border-radius: 0.5rem;
+    outline: none;
+    margin: 2px;
+    padding: 12px;
+    font-size: 0.9062rem;
+    font-weight: 450;
+
+    &:focus {
+      border-color: transparent;
+      box-shadow: 0 0 0 0.15rem rgba(255, 255, 255, 0.1);
+      color: var(--primary-color);
+    }
+  }
+
+  .search-icon {
+    position: absolute;
+    width: 20px;
+    height: 24px;
+    fill: var(--font-color);
+    right: 0.8rem;
+    top: calc(50% - 0.8rem);
+    cursor: pointer;
+    transition: fill 0.3s ease;
+    box-sizing: content-box;
+    background: var(--card-bg-color);
+    padding-left: 0.3rem;
   }
 }
 
