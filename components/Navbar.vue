@@ -73,6 +73,7 @@
       <div v-if="menu" class="navbar-item" @click="toggleDropdown">
         <div class="navbar-wrap">
           <span class="navbar-text">Appearance & Network</span>
+          <span class="dropdown-icon"></span>
         </div>
         <div v-if="isDropdownOpen" class="dropdown-menu">
           <div id="theme-wrapper" class="dropdown-item">
