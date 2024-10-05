@@ -1,13 +1,15 @@
 <template>
   <Page>
-    <!-- <Nav :active-mode.sync="period" :nav-items="periods" pre-text="APY Period :" /> -->
-    <Card :is-loading="loading">
-      <div v-if="pools && pools.length > 0" class="pools-box">
-        <Nav
+    <div>
+      <Nav
           :active-mode.sync="tableMode"
           :nav-items="tableModeItems"
           :extra-classes="['pools-type-table']"
         />
+    </div>
+    <!-- <Nav :active-mode.sync="period" :nav-items="periods" pre-text="APY Period :" /> -->
+    <Card :is-loading="loading">
+      <div v-if="pools && pools.length > 0" class="pools-box">
         <template v-for="(k, v, i) in tables">
           <vue-good-table
             v-if="k.data.length > 0"
@@ -132,7 +134,7 @@ export default {
       ],
       tableModeItems: [
         { text: 'Active Pools', mode: 'active' },
-        { text: 'Staged/Suspended Pools', mode: 'staged' },
+        { text: 'Staged Pools', mode: 'staged' },
       ],
       tableMode: 'active',
       poolCols: [
@@ -346,7 +348,31 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
+.nav-item {
+    cursor: pointer;
+    padding: 0.5rem 0.7rem;
+    margin: 0 0.1rem;
+    color: var(--font-color);
+    text-decoration: none;
+    border-radius: 0.3rem;
+    border: 1px solid var(--border-color);
+    margin-left: 0.5rem;
+    
+    &.active,
+    &.nuxt-link-exact-active {
+      background-color: var(--active-bg-color);
+      color: var(--sec-font-color);
+    }
+
+    &:hover {
+      background-color: var(--active-bg-color);
+    }
+
+    &:first-of-type {
+      margin-left: 0;
+    }
+  }
 .pools-box {
   .nav-headers.box.pools-type-table {
     border: none !important;

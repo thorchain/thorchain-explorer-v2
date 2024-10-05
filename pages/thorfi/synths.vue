@@ -20,7 +20,6 @@
         <template slot="table-column" slot-scope="props">
           <div
             v-if="props.column.field === 'saverPercentage'"
-            v-tooltip="'Savers depth to the Synth Supply'"
             class="table-asset"
           >
             Saver %
@@ -28,11 +27,6 @@
           </div>
           <div
             v-else-if="props.column.field === 'utilisation'"
-            v-tooltip="
-              `Synth supply to the Pool Depth relative to the Synth cap (${(
-                synthCap * 100
-              ).toFixed(2)}%)`
-            "
             class="table-asset"
           >
             Utilisation
@@ -112,7 +106,21 @@ export default {
           name: 'POL Cap',
         },
       ],
-      cols: [
+      rows: [],
+      pools: [],
+      synthAssets: [],
+      synthUtils: [],
+      mimirData: {},
+      polCap: 0,
+      synthCap: 0,
+    }
+  },
+  computed: {
+    ...mapGetters({
+      midgardPools: 'getPools',
+    }),
+    cols() {
+      return [
         {
           label: 'Asset',
           field: 'asset',
@@ -127,6 +135,7 @@ export default {
           label: 'Saver %',
           field: 'saverPercentage',
           type: 'percentage',
+          tooltip: 'Savers depth to the Synth Supply',
           tdClass: 'mono',
           thClass: 'end',
         },
@@ -134,6 +143,8 @@ export default {
           label: 'Utilisation',
           field: 'utilisation',
           type: 'percentage',
+          tooltip: `Synth supply to the Pool Depth relative to the Synth cap (${this.$options.filters.percent(this.synthCap)})`,
+
           tdClass: 'mono',
           thClass: 'end',
         },
@@ -144,20 +155,8 @@ export default {
           tdClass: 'mono',
           formatFn: this.numberFormat,
         },
-      ],
-      rows: [],
-      pools: [],
-      synthAssets: [],
-      synthUtils: [],
-      mimirData: {},
-      polCap: 0,
-      synthCap: 0,
-    }
-  },
-  computed: {
-    ...mapGetters({
-      midgardPools: 'getPools',
-    }),
+      ]
+    },
   },
   watch: {
     midgardPools(pools) {

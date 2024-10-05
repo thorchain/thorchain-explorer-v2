@@ -3,11 +3,14 @@
     <div class="grid-network">
       <info-card :options="topBonds" />
     </div>
-    <input
-      v-model="searchTerm"
-      placeholder="Search All Tables"
-      class="search-input"
-    />
+    <div id="search-container">
+      <input
+        v-model="searchTerm"
+        placeholder="Search All Tables"
+        class="search-input"
+      />
+      <SearchIcon class="search-icon" />
+    </div>
     <card :is-loading="!activeNodes">
       <node-table
         :rows="activeNodes"
@@ -41,11 +44,13 @@ import { orderBy } from 'lodash'
 import moment from 'moment'
 import NodeTable from './component/nodeTable.vue'
 import { fillNodeData, availableChains, blockTime } from '~/utils'
+import SearchIcon from '~/assets/images/search.svg?inline'
 
 export default {
   name: 'NodesPage',
   components: {
     NodeTable,
+    SearchIcon,
   },
   data() {
     return {
@@ -838,6 +843,11 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+#search-container {
+  display: flex;
+  position: relative;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
 .search-input {
   flex: 1;
   color: var(--sec-font-color);
@@ -849,14 +859,27 @@ export default {
   padding: 12px;
   font-size: 0.9062rem;
   font-weight: 450;
+  
   &:focus {
     border-color: transparent;
     box-shadow: 0 0 0 0.15rem rgba(255, 255, 255, 0.1);
-  }
-
-  &:hover {
     color: var(--primary-color);
   }
+}
+
+.search-icon {
+  position: absolute;
+  width: 20px;
+  height: 24px;
+  fill: var(--font-color);
+  right: 0.8rem;
+  top: calc(50% - 0.8rem);
+  cursor: pointer;
+  transition: fill 0.3s ease;
+  box-sizing: content-box;
+  background: var(--card-bg-color);
+  padding-left: 0.3rem;
+}
 }
 .grid-network {
   width: 100%;

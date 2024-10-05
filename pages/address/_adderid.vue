@@ -434,7 +434,9 @@ export default {
   }
   .balance-nav-container {
     display: flex;
+    flex-direction: column;
     flex-wrap: wrap;
+
     justify-content: space-between;
     gap: 1rem;
     max-width: auto;
@@ -449,6 +451,9 @@ export default {
     .card-balance,
     .node-address-card {
       flex: 1 1 calc(20% - 1rem);
+    }
+    .balance-nav-container {
+      flex-direction: row;
     }
   }
   .content {

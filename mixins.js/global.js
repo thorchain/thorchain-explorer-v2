@@ -146,7 +146,7 @@ export default {
         case 'BTC':
           return '#F7A035'
         case 'ETH':
-          return '#F2F4F7'
+          return '#87e9b5'
         case 'LTC':
           return '#335D9D'
         case 'DOGE':

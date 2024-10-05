@@ -73,6 +73,7 @@
       <div v-if="menu" class="navbar-item" @click="toggleDropdown">
         <div class="navbar-wrap">
           <span class="navbar-text">Appearance & Network</span>
+          <span class="dropdown-icon"></span>
         </div>
         <div v-if="isDropdownOpen" class="dropdown-menu">
           <div id="theme-wrapper" class="dropdown-item">
@@ -323,7 +324,7 @@ export default {
     toggleDropdown() {
       this.isDropdownOpen = !this.isDropdownOpen
       const navbarLists = this.$el.querySelector('.navbar-lists')
-      navbarLists.style.height = this.isDropdownOpen ? '500px' : 'auto'
+      navbarLists.style.height = this.isDropdownOpen ? '460px' : 'auto'
     },
 
     toggleSubmenu(index) {
@@ -516,8 +517,6 @@ export default {
       text-decoration: none;
       border-radius: 30px;
       position: relative;
-      padding-top: 0.2rem;
-      padding-right: 1rem;
 
       &:hover {
         span,
