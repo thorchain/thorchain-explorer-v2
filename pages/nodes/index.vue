@@ -11,16 +11,6 @@
       />
       <SearchIcon class="search-icon" />
     </div>
-    <<<<<<< HEAD
-    <div id="search-container">
-      <input
-        v-model="searchTerm"
-        placeholder="Search All Tables"
-        class="search-input"
-      />
-      <SearchIcon class="search-icon" />
-    </div>
-    ======= >>>>>>> 01f4756 (Add current churn info)
     <card :is-loading="!activeNodes">
       <node-table
         :rows="activeNodes"
@@ -913,20 +903,6 @@ export default {
   }
 }
 
-.search-icon {
-  position: absolute;
-  width: 20px;
-  height: 24px;
-  fill: var(--font-color);
-  right: 0.8rem;
-  top: calc(50% - 0.8rem);
-  cursor: pointer;
-  transition: fill 0.3s ease;
-  box-sizing: content-box;
-  background: var(--card-bg-color);
-  padding-left: 0.3rem;
-}
-}
 .grid-network {
   width: 100%;
   display: grid;
