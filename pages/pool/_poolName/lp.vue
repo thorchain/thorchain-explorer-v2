@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <card>
     <div v-if="!loading && !error" class="base-container lp-container">
       <vue-good-table
         v-if="cols && rows.length > 0"
@@ -33,7 +33,7 @@
     <div v-if="error" class="base-container">
       <span>Can't fetch the pool LPs</span>
     </div>
-  </div>
+  </card>
 </template>
 
 <script>
