@@ -79,7 +79,7 @@
               <div
                 :class="[
                   'mini-bubble big',
-                  { yellow: props.row.status == 'Standby' },
+                  { yellow: props.row.status == 'Retiring' },
                 ]"
               >
                 <span>{{ props.row.status }}</span>
@@ -211,22 +211,24 @@ export default {
       return duration(since * 6, 's').humanize()
     },
     updateGeneralStats() {
-      const totalBond = this.asgard.reduce((total, o) => {
+      const asgard = this.asgard.filter((a) => a.status === 'Active')
+
+      const totalBond = asgard.reduce((total, o) => {
         return total + o.bond * this.runePrice
       }, 0)
 
-      const totalValue = this.asgard.reduce((total, o) => {
+      const totalValue = asgard.reduce((total, o) => {
         return total + o.total_value * this.runePrice
       }, 0)
 
       const valuePerBond = totalValue / totalBond
 
-      const totalIns = this.asgard.reduce((total, o) => {
-        return total + o.ins
+      const totalIns = asgard.reduce((total, o) => {
+        return total + (o.ins ?? 0)
       }, 0)
 
-      const totalOuts = this.asgard.reduce((total, o) => {
-        return total + o.outs
+      const totalOuts = asgard.reduce((total, o) => {
+        return total + (o.outs ?? 0)
       }, 0)
 
       this.vaultsGeneralStats = [
@@ -252,6 +254,8 @@ export default {
     formatStatus(status) {
       if (status === 'ActiveVault') {
         return 'Active'
+      } else if (status === 'RetiringVault') {
+        return 'Retiring'
       }
       return status
     },
