@@ -86,8 +86,9 @@ export default {
               filter: (v) => `${this.$options.filters.currency(v)}`,
             },
             {
-              name: 'Pool APY',
-              value: this.pool?.poolAPY,
+              name: 'Earning Annual to Depth',
+              value: this.pool?.earningsAnnualAsPercentOfDepth,
+              filter: (v) => `${this.$options.filters.percent(v)}`,
             },
             {
               name: 'Status',
@@ -116,12 +117,13 @@ export default {
               name: 'Pending Inbound RUNE',
               value: this.poolDetail?.pending_inbound_rune / 10 ** 8,
               filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,00')} ${this.pool?.asset}`,
+                `${this.runeCur()} ${this.$options.filters.number(v, '0,00')}`,
             },
             {
               name: 'Pending Inbound Asset',
               value: this.poolDetail?.pending_inbound_asset / 10 ** 8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) =>
+                `${this.$options.filters.number(v, '0,0')} ${this.pool?.asset}`,
             },
           ],
         },
