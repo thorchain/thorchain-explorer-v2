@@ -1,4 +1,5 @@
 <template>
+  <page>
   <div class="error-container">
     <div class="error-404">
       <img src="@/assets/images/404.svg" />
@@ -11,6 +12,7 @@
       <NuxtLink to="/" class="back-home">Go back Home</NuxtLink>
     </div>
   </div>
+</page>
 </template>
 
 <script>
@@ -52,7 +54,7 @@ export default {
     }
     @include sm {
       img {
-        width: 35rem;
+        width: 30rem;
       }
     }
   }
