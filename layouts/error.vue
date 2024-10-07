@@ -1,22 +1,25 @@
 <template>
   <page>
-  <div class="error-container">
-    <div class="error-404">
-      <img src="@/assets/images/404.svg" />
+    <div class="error-container">
+      <div class="error-404">
+        <Lost />
+      </div>
+      <div class="error-message">
+        <h2>Page Not Found</h2>
+        <p>
+          Sorry, the page you're looking for does not exist or has been moved.
+        </p>
+        <NuxtLink to="/" class="back-home">Go back Home</NuxtLink>
+      </div>
     </div>
-    <div class="error-message">
-      <h2>Page Not Found</h2>
-      <p>
-        Sorry, the page you're looking for does not exist or has been moved.
-      </p>
-      <NuxtLink to="/" class="back-home">Go back Home</NuxtLink>
-    </div>
-  </div>
-</page>
+  </page>
 </template>
 
 <script>
+import Lost from '~/assets/images/404.svg?inline'
+
 export default {
+  components: { Lost },
   props: ['error'],
 }
 </script>
@@ -32,6 +35,7 @@ export default {
   height: 100%;
   flex-direction: column;
   display: flex;
+  padding: 3rem 1rem;
 
   .error-404 {
     display: flex;
@@ -41,9 +45,11 @@ export default {
     flex-direction: column;
     display: flex;
 
-    img {
-      width: 17rem;
+    svg {
+      flex: 1;
+      max-width: 17rem;
     }
+
     h1 {
       margin: 0;
     }
@@ -53,8 +59,8 @@ export default {
       color: var(--color-light);
     }
     @include sm {
-      img {
-        width: 30rem;
+      svg {
+        max-width: 32rem;
       }
     }
   }
