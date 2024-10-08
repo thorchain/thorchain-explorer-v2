@@ -38,6 +38,9 @@
     <main id="main-content">
       <Nuxt />
     </main>
+    <footer id="footer">
+      <Footer />
+    </footer>
   </main>
 </template>
 

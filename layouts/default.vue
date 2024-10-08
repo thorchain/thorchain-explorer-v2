@@ -18,6 +18,10 @@
     <main id="main-content">
       <Nuxt />
     </main>
+    <!-- Footer -->
+    <footer id="footer">
+      <Footer />
+    </footer>
   </main>
 </template>
 
@@ -142,6 +146,11 @@ Vue.mixin(global)
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  
+  #footer {
+    position: relative;
+    margin-top: auto;
+  }
 
   #header {
     top: 0;
