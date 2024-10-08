@@ -2,7 +2,7 @@
   <div class="footer">
     <div class="footer-container">
       <div class="text">
-        <p>THORChain Explorer 2024 - All Rights Reserved</p>
+        <p>THORChain Explorer 2024 - Made with ❤</p>
       </div>
       <div class="footer-icon">
         <a
