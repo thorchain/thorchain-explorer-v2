@@ -1,14 +1,16 @@
 <template>
   <Page>
-      <div class="node-header"> Node:<span class="node-id">{{ nodeId }}</span></div>
-      <info-card :options="nodeSettings">
-        <template #address>
-          <span class="clickable">
-            {{address}}
-          </span>
-        </template>
-      </info-card>
-      <div class="cards-node">
+    <div class="node-header">
+      Node:<span class="node-id">{{ nodeId }}</span>
+    </div>
+    <info-card :options="nodeSettings">
+      <template #address>
+        <span class="clickable">
+          {{ address }}
+        </span>
+      </template>
+    </info-card>
+    <div class="cards-node">
       <card title="Providers" style="margin-top: 1rem" :is-loading="loading">
         <div v-if="node">
           <div class="providers-container">
@@ -37,7 +39,11 @@
           </div>
         </div>
       </card>
-      <card title="Signer Membership" style="margin-top: 1rem" :is-loading="loading">
+      <card
+        title="Signer Membership"
+        style="margin-top: 1rem"
+        :is-loading="loading"
+      >
         <div v-if="node">
           <div class="providers-container">
             <div
@@ -55,12 +61,10 @@
         </div>
       </card>
     </div>
-    </div>
   </Page>
 </template>
 
 <script>
-
 export default {
   async asyncData({ params }) {
     return { nodeId: params.nodeId }
@@ -68,7 +72,7 @@ export default {
   data() {
     return {
       node: undefined,
-      loading:true,
+      loading: true,
     }
   },
   head: {
@@ -100,7 +104,7 @@ export default {
               value: this.node?.total_bond / 10 ** 8,
               filter: (v) =>
                 `${this.runeCur()} ${this.$options.filters.number(v, '0,0.00')}`,
-                usdValue: true,
+              usdValue: true,
             },
             {
               name: 'Slash Points',
@@ -111,17 +115,17 @@ export default {
               value: this.node?.current_award / 10 ** 8,
               filter: (v) =>
                 `${this.runeCur()} ${this.$options.filters.number(v, '0,0.00')}`,
-                usdValue: true,
+              usdValue: true,
             },
 
             {
               name: 'Active Since (Block Height)',
-              value:this.node?.active_block_height,
+              value: this.node?.active_block_height,
               filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
             },
             {
               name: 'Status Since (Block Height)',
-              value:this.node?.status_since,
+              value: this.node?.status_since,
               filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
             },
 
@@ -129,7 +133,6 @@ export default {
               name: 'Node operator address',
               value: this.node?.node_operator_address,
               filter: (v) => this.addressFormatV2(v),
-
             },
             {
               name: 'Public Keys: Secp256k1',
@@ -142,9 +145,9 @@ export default {
               value: this.node?.pub_key_set?.ed25519,
               filter: (v) => this.addressFormatV2(v),
             },
-          ]
-          },
-          {
+          ],
+        },
+        {
           title: 'Leave',
           rowStart: 1,
           colSpan: 1,
@@ -162,8 +165,8 @@ export default {
               value: this.node?.leave_height?.toString(),
               filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
             },
-             {
-              header:'Jail'
+            {
+              header: 'Jail',
             },
             {
               name: 'Release Height',
@@ -175,7 +178,7 @@ export default {
               value: this.node?.jail?.reason,
             },
             {
-              header:'Preflight'
+              header: 'Preflight',
             },
             {
               name: 'Status',
@@ -189,30 +192,30 @@ export default {
               name: 'Code',
               value: `${this.node?.preflight_status?.code}`,
             },
-            ]
-          },
-          ]
-        }
+          ],
+        },
+      ]
     },
-    mounted() {
-  this.loading = true;
-  this.$api.getNode(this.nodeId)
-    .then(({ data }) => {
-      this.node = data;
-    })
-    .catch(error => {
-      console.error("Error fetching node data:", error);
-    })
-    .finally(() => {
-      this.loading = false; 
-    });
-}
-
+  },
+  mounted() {
+    this.loading = true
+    this.$api
+      .getNode(this.nodeId)
+      .then(({ data }) => {
+        this.node = data
+      })
+      .catch((error) => {
+        console.error('Error fetching node data:', error)
+      })
+      .finally(() => {
+        this.loading = false
+      })
+  },
 }
 </script>
 
 <style lang="scss" scoped>
-.node-header{
+.node-header {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -225,18 +228,16 @@ export default {
 .node-id {
   color: var(--primary-color);
   padding-left: 0.5rem;
-
 }
 .cards-node {
-    display: flex;
-    width: 100%;
-    flex-direction: column;
-    gap:10px
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 10px;
 }
-@include md{
-  .cards-node{
+@include md {
+  .cards-node {
     flex-direction: row;
-
   }
 }
 
