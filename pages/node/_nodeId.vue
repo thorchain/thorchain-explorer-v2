@@ -160,33 +160,34 @@ export default {
             {
               name: 'Leave Height',
               value: this.node?.leave_height?.toString(),
+              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
             },
              {
               header:'Jail'
             },
             {
-              name: 'Jail Release Height',
+              name: 'Release Height',
               value: this.node?.jail?.release_height,
               filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
             },
             {
-              name: 'Jail Reason',
+              name: 'Reason',
               value: this.node?.jail?.reason,
             },
             {
               header:'Preflight'
             },
             {
-              name: 'Preflight Status',
+              name: 'Status',
               value: this.node?.preflight_status?.status,
             },
             {
-              name: 'Preflight Reason',
+              name: 'Reason',
               value: this.node?.preflight_status?.reason,
             },
             {
-              name: 'Preflight Code',
-              value: this.node?.preflight_status?.code,
+              name: 'Code',
+              value: `${this.node?.preflight_status?.code}`,
             },
             ]
           },
