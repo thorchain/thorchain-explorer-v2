@@ -71,7 +71,7 @@ export default {
       churnHalted: undefined,
       searchTerm: '',
       churnProgressValue: 0,
-      totalAwards: 0,
+      totalAwards: undefined,
     }
   },
   computed: {
@@ -400,13 +400,6 @@ export default {
       ]
     },
     nodesInfo() {
-      const churnValue =
-        1 -
-        (this.bondMetrics?.nextChurnHeight - this.chainsHeight?.THOR) /
-          this.churnInterval
-
-      const churnTime =
-        this.bondMetrics?.nextChurnHeight - this.chainsHeight?.THOR
 
       return [
         {
@@ -538,14 +531,8 @@ export default {
           colSpan: 1,
           items: [
             {
-              name: 'Churn Time',
-              value: churnTime,
-              filter: (v) => (v > 600 ? blockTime(v, true) : `${v} Blocks`),
-            },
-            {
-              name: 'Churn Progress',
-              value: churnValue,
-              filter: (v) => this.$options.filters.percent(v, '0,0.000'),
+              name: 'Churn',
+              value: `${this.churnProgressTime > 600 ? blockTime(this.churnProgressTime, true) : ''}${this.churnProgressTime > 600 && this.churnProgressValue ? ' / ' : ''}${this.churnProgressValue ? this.$options.filters.percent(this.churnProgressValue, '0,0.000') : ''}`,
             },
             {
               name: 'Total Awards',
@@ -811,12 +798,17 @@ export default {
       }
 
       const churnValue =
-        1 -
-        (this.bondMetrics?.nextChurnHeight - this.chainsHeight.THOR) /
-          this.churnInterval
+    1 -
+    (this.bondMetrics?.nextChurnHeight - this.chainsHeight.THOR) /
+      this.churnInterval;
 
-      this.churnProgressValue = churnValue
-    },
+this.churnProgressValue = churnValue;
+
+const churnTime =
+    this.bondMetrics?.nextChurnHeight - this.chainsHeight?.THOR;
+
+this.churnProgressTime = churnTime;
+},
     calculateHardCap() {
       if (!this.nodesQuery) {
         return null
