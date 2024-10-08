@@ -1,7 +1,15 @@
 <template>
   <Page :error="error && !loading" :fluid="true">
     <div class="grid-network">
-      <info-card :options="nodesInfo" />
+      <info-card :options="nodesInfo">
+        <template #churn="{ item }">
+          <skeleton-item :loading="!item.value">
+            <span style="font-family: Montserrat">
+              {{ item.value }}
+            </span>
+          </skeleton-item>
+        </template>
+      </info-card>
     </div>
     <div id="nodes-search-container">
       <input
@@ -71,7 +79,7 @@ export default {
       churnHalted: undefined,
       searchTerm: '',
       churnProgressValue: 0,
-      totalAwards: 0,
+      totalAwards: undefined,
     }
   },
   computed: {
@@ -400,13 +408,17 @@ export default {
       ]
     },
     nodesInfo() {
-      const churnValue =
-        1 -
-        (this.bondMetrics?.nextChurnHeight - this.chainsHeight?.THOR) /
-          this.churnInterval
+      let churnValue
 
-      const churnTime =
-        this.bondMetrics?.nextChurnHeight - this.chainsHeight?.THOR
+      if (this.churnProgressTime > 600) {
+        churnValue = blockTime(this.churnProgressTime, true)
+      } else if (this.churnProgressTime) {
+        churnValue = `${this.churnProgressTime} Block`
+      }
+
+      if (this.churnProgressValue) {
+        churnValue += ` / ${this.$options.filters.percent(this.churnProgressValue, '0,0.000')}`
+      }
 
       return [
         {
@@ -538,14 +550,9 @@ export default {
           colSpan: 1,
           items: [
             {
-              name: 'Churn Time',
-              value: churnTime,
-              filter: (v) => (v > 600 ? blockTime(v, true) : `${v} Blocks`),
-            },
-            {
-              name: 'Churn Progress',
+              name: 'Churn',
               value: churnValue,
-              filter: (v) => this.$options.filters.percent(v, '0,0.000'),
+              valueSlot: 'churn',
             },
             {
               name: 'Total Awards',
@@ -816,6 +823,11 @@ export default {
           this.churnInterval
 
       this.churnProgressValue = churnValue
+
+      const churnTime =
+        this.bondMetrics?.nextChurnHeight - this.chainsHeight?.THOR
+
+      this.churnProgressTime = churnTime
     },
     calculateHardCap() {
       if (!this.nodesQuery) {
