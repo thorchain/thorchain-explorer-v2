@@ -1,7 +1,15 @@
 <template>
   <Page :error="error && !loading" :fluid="true">
     <div class="grid-network">
-      <info-card :options="nodesInfo" />
+      <info-card :options="nodesInfo">
+        <template #churn="{ item }">
+          <skeleton-item :loading="!item.value">
+            <span style="font-family: Montserrat">
+              {{ item.value }}
+            </span>
+          </skeleton-item>
+        </template>
+      </info-card>
     </div>
     <div id="nodes-search-container">
       <input
@@ -400,6 +408,17 @@ export default {
       ]
     },
     nodesInfo() {
+      let churnValue
+
+      if (this.churnProgressTime > 600) {
+        churnValue = blockTime(this.churnProgressTime, true)
+      } else if (this.churnProgressTime) {
+        churnValue = `${this.churnProgressTime} Block`
+      }
+
+      if (this.churnProgressValue) {
+        churnValue += ` / ${this.$options.filters.percent(this.churnProgressValue, '0,0.000')}`
+      }
 
       return [
         {
@@ -532,7 +551,8 @@ export default {
           items: [
             {
               name: 'Churn',
-              value: `${this.churnProgressTime > 600 ? blockTime(this.churnProgressTime, true) : ''}${this.churnProgressTime > 600 && this.churnProgressValue ? ' / ' : ''}${this.churnProgressValue ? this.$options.filters.percent(this.churnProgressValue, '0,0.000') : ''}`,
+              value: churnValue,
+              valueSlot: 'churn',
             },
             {
               name: 'Total Awards',
@@ -798,17 +818,17 @@ export default {
       }
 
       const churnValue =
-    1 -
-    (this.bondMetrics?.nextChurnHeight - this.chainsHeight.THOR) /
-      this.churnInterval;
+        1 -
+        (this.bondMetrics?.nextChurnHeight - this.chainsHeight.THOR) /
+          this.churnInterval
 
-this.churnProgressValue = churnValue;
+      this.churnProgressValue = churnValue
 
-const churnTime =
-    this.bondMetrics?.nextChurnHeight - this.chainsHeight?.THOR;
+      const churnTime =
+        this.bondMetrics?.nextChurnHeight - this.chainsHeight?.THOR
 
-this.churnProgressTime = churnTime;
-},
+      this.churnProgressTime = churnTime
+    },
     calculateHardCap() {
       if (!this.nodesQuery) {
         return null
