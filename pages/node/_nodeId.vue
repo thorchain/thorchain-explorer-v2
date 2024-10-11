@@ -246,7 +246,6 @@ export default {
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 10px;
   align-items: center;
-  justify-items: center;
 
   .providers {
     display: flex;
