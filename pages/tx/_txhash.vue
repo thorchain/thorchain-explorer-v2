@@ -303,6 +303,10 @@ export default {
               amount: a?.amount,
               amountUSD: this.amountToUSD(a?.asset, a?.amount, this.pools),
               filter: a?.filter,
+              text: a?.text,
+              icon: a?.icon,
+              address: a?.address,
+              class: a?.class,
             })),
             middle: {
               pending: cardBase.middle?.pending,
@@ -764,6 +768,14 @@ export default {
           memo
         )
         this.$set(this, 'cards', [this.createCard(cards, accordions)])
+      } else if (memo.type === 'unbound') {
+        const { cards, accordions } = this.createUnbondState(
+          thorStatus,
+          midgardAction,
+          thorTx,
+          memo
+        )
+        this.$set(this, 'cards', [this.createCard(cards, accordions)])
       } else {
         const finalCards = []
         for (let i = 0; i < midgardAction?.actions?.length; i++) {
@@ -825,6 +837,56 @@ export default {
             memo: action.metadata?.bond?.memo,
             nodeAddress: action.metadata?.bond?.nodeAddress,
             provider: action.metadata?.bond?.provider,
+            done: true,
+          },
+          out: outs,
+        },
+      }
+    },
+    createUnbondState(thorStatus, action, thorTx) {
+      action = action.actions[0]
+
+      const ins = action?.in.map((a) => ({
+        asset: this.parseMemoAsset(a.coins[0]?.asset),
+        amount: a.coins[0]?.amount,
+        gas: thorStatus.tx?.gas ? thorStatus.tx?.gas[0].amount : null,
+        gasAsset: thorStatus.tx?.gas
+          ? this.parseMemoAsset(thorStatus.tx?.gas[0].asset, this.pools)
+          : null,
+        txid: a?.txID,
+        from: a?.address,
+        done: true,
+      }))
+
+      const outs = action?.out.map((a) => ({
+        asset: this.parseMemoAsset(a.coins[0]?.asset),
+        amount: a.coins[0].amount,
+        txid: a?.txID,
+        to: a?.address,
+        done: true,
+      }))
+
+      return {
+        cards: {
+          title: 'Unbond',
+          in: [
+            {
+              icon: require('@/assets/images/node.svg?inline'),
+              address: action.metadata?.bond?.nodeAddress,
+              class: 'node-icon',
+            },
+          ],
+          middle: {
+            pending: false,
+          },
+          out: outs,
+        },
+        accordions: {
+          in: ins,
+          action: {
+            type: 'Unbond',
+            memo: action.metadata?.bond?.memo,
+            nodeAddress: action.metadata?.bond?.nodeAddress,
             done: true,
           },
           out: outs,
@@ -947,7 +1009,7 @@ export default {
     createAbstractState(thorStatus, action, thorTx) {
       const ins = action?.in.map((a) => ({
         asset: this.parseMemoAsset(a.coins[0]?.asset),
-        amount: a.coins[0].amount,
+        amount: a.coins[0]?.amount,
         txid: a?.txID,
         from: a?.address,
         done: true,
@@ -955,7 +1017,7 @@ export default {
 
       const outs = action?.out.map((a) => ({
         asset: this.parseMemoAsset(a.coins[0]?.asset),
-        amount: a.coins[0].amount,
+        amount: a.coins[0]?.amount,
         txid: a?.txID,
         to: a?.address,
         done: true,
