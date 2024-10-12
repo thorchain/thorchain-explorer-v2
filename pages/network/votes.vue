@@ -16,12 +16,7 @@
         v-if="votesCols && currentVoting"
         :columns="votesCols"
         :rows="currentVoting"
-        style-class="vgt-table net-table bordered"
-        :pagination-options="{
-          enabled: true,
-          perPage: 30,
-          perPageDropdownEnabled: false,
-        }"
+        style-class="vgt-table net-table custom-table"
         :sort-options="{
           enabled: true,
           initialSortBy: { field: 'result' },
@@ -38,6 +33,28 @@
               {{ props.row.result | capitalize }}
             </div>
           </div>
+          <span v-else-if="props.column.field === 'votes'">
+            <div class="votes">
+              <div
+                v-for="(value, index) in props.row.votes.split(' | ')"
+                :key="index"
+                class="votes-item"
+              >
+                <div class="vote-info">
+                  <span class="value">{{ value.split(', ')[0] }}</span>
+                  <span class="votes-needed">{{ value.split(', ')[2] }}</span>
+                  <progress-bar
+                    :width="parseFloat(value.split(', ')[1])"
+                    height="4px"
+                  />
+                  <span
+                    >{{ parseFloat(value.split(', ')[1]).toFixed(2) }}%</span
+                  >
+                </div>
+              </div>
+            </div>
+          </span>
+
           <span v-else>
             {{ props.formattedRow[props.column.field] }}
           </span>
@@ -127,33 +144,8 @@ export default {
           sortable: false,
         },
         {
-          label: 'Current Mimir Value',
-          field: 'currentVal',
-          type: 'number',
-          tdClass: 'mono',
-        },
-        {
-          label: 'Highest Voted Value',
-          field: 'highestValue',
-          type: 'number',
-          tdClass: 'mono',
-        },
-        {
-          label: 'Voted',
-          field: 'votePassed',
-          type: 'number',
-          tdClass: 'mono',
-        },
-        {
-          label: 'Missing',
-          field: 'remainingVotes',
-          type: 'number',
-          tdClass: 'mono',
-        },
-        {
-          label: 'Consensus',
-          field: 'consensus',
-          type: 'percentage',
+          label: 'Vote Poll',
+          field: 'votes',
           tdClass: 'mono',
         },
         {
@@ -229,7 +221,15 @@ export default {
                 +this.network?.activeNodeCount - hVotes.votePassed,
               result:
                 +this.mimirs[m] === +hVotes.value ? 'Passed' : 'In Progress',
-              votedValues: hVotes.values,
+              votes: hVotes.values
+                .map(
+                  (v, index) =>
+                    ` ${v.value}:, ${(hVotes.consensus * 100).toFixed(2)}%, ${v.count}/71, Current Mimir Value: ${this.mimirs[m] === -1 ? '-' : this.mimirs[m]}`
+                )
+                .join(' | '),
+
+              value: hVotes.values.map((v) => v.value),
+              count: hVotes.values.map((v) => v.count),
             })
             index++
           }
@@ -404,17 +404,31 @@ export default {
       )
       const values = activeVoters.map((v) => v.value)
       const voteCount = _.countBy(values)
-      const votesObj = Object.keys(voteCount).map((v, i) => ({
-        value: v,
-        count: voteCount[v],
-        consensus: voteCount[v] / +this.network?.activeNodeCount,
-      }))
+      const votesObj = Object.keys(voteCount).map((v) => {
+        const count = voteCount[v]
+        const consensus = count / +this.network?.activeNodeCount
+        const consensusNeeded = Math.ceil(+this.network?.activeNodeCount * 0.66)
+        const votesNeeded = Math.max(0, consensusNeeded - count)
+
+        return {
+          value: v,
+          count: voteCount[v],
+          votesNeeded,
+          consensus
+        }
+      })
+
       const hVote = _.maxBy(votesObj, (o) => o.consensus)
+
       return {
         consensus: hVote?.consensus ?? 0,
         votePassed: activeVoters?.length ?? 0,
         value: hVote?.value ?? '-',
         values: votesObj,
+        totalActiveNodes: this.network?.activeNodeCount || 0,
+        consensusNeeded: Math.ceil(this.network?.activeNodeCount * 0.66),
+        votesNeeded: votesObj.map((v) => v.votesNeeded),
+        count: hVote ? hVote.count : 0,
       }
     },
   },
@@ -425,8 +439,14 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.card-container {
-  max-height: 900px;
+
+.votes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 0.5rem;
 }
 .data-color {
   margin-right: 6px;
@@ -434,7 +454,11 @@ export default {
   height: 10px;
   border-radius: 50%;
 }
-
+.votes-item {
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 14px;
+}
 .tooltip-header {
   display: flex;
   align-items: center;
@@ -442,7 +466,12 @@ export default {
   border-bottom: 1px solid var(--border-color);
   padding-bottom: 5px;
 }
-
+.vote-info {
+  display: flex;
+  align-items: center;
+  margin: 3px;
+  gap:0.5rem;
+}
 .tooltip-body {
   margin-top: 5px;
   width: 120px;
@@ -458,5 +487,12 @@ export default {
       text-align: right;
     }
   }
+}
+
+.votes-needed {
+  color: var(--sec-font-color);
+  background-color: var(--border-color);
+  padding: 0px 4px;
+  border-radius: 5px;
 }
 </style>
