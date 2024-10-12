@@ -58,7 +58,7 @@
                 v-else-if="overall.middle.fail"
                 class="icon tx-icon warn"
               />
-              <check-icon v-else class="icon tx-icon" />
+              <send-icon v-else class="icon tx-icon" />
             </div>
           </div>
         </div>
@@ -167,13 +167,11 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import CheckIcon from '~/assets/images/check.svg?inline'
 import SendIcon from '~/assets/images/arrow-right.svg?inline'
 import WarningIcon from '~/assets/images/warning.svg?inline'
 
 export default {
   components: {
-    CheckIcon,
     SendIcon,
     WarningIcon,
   },
@@ -320,13 +318,20 @@ $border-size: 2px;
         align-items: center;
       }
 
-      .tx-inbound,
       .tx-outbound {
         justify-content: end;
         .tx-asset,
         .simple-bar {
           border-color: var(--right-border);
           background: var(--right-border);
+        }
+      }
+
+      .tx-inbound {
+        .tx-asset,
+        .simple-bar {
+          border-color: var(--left-border);
+          background: var(--left-border);
         }
       }
     }
