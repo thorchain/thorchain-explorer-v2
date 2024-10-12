@@ -98,7 +98,7 @@
               <span class="mono sec-color">{{ o.text }}</span>
             </template>
             <template v-else-if="o.address">
-              <nuxt-link class="mono clickable" :to="o.address">{{
+              <nuxt-link class="mono clickable" :to="`/address/${o.address}`">{{
                 addressFormatV2(o.address)
               }}</nuxt-link>
             </template>
@@ -128,7 +128,7 @@
               <span class="mono sec-color">{{ o.text }}</span>
             </template>
             <template v-else-if="o.address">
-              <nuxt-link class="mono clickable" :to="o.address">{{
+              <nuxt-link class="mono clickable" :to="`/address/${o.address}`">{{
                 addressFormatV2(o.address)
               }}</nuxt-link>
             </template>
