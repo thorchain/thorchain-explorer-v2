@@ -175,6 +175,26 @@
         {{ addressFormatV2(row.metadata.bond.nodeAddress) }}
       </span>
     </div>
+    <div v-else-if="row && row.type === 'unbond'" class="action-cell">
+      <span class="mini-bubble info customized">
+        {{ addressFormatV2(row.metadata.bond.nodeAddress) }}
+      </span>
+      <right-arrow class="action-type" />
+      <span
+        v-for="(ops, i) in row.out"
+        :key="'out-' + i"
+        class="mini-bubble customized"
+      >
+        <asset-icon
+          :asset="ops.coins[0].asset"
+          :height="'1.2rem'"
+          :chain-height="'1rem'"
+        ></asset-icon>
+        <span class="asset-name">{{
+          (ops.coins[0].amount / 1e8) | number('0,0.0000')
+        }}</span>
+      </span>
+    </div>
     <div v-else-if="row && row.type === 'trade'" class="action-cell">
       <span
         v-for="(ops, i) in row.in"
