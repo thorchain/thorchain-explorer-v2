@@ -289,7 +289,7 @@ export default {
       this.loading = true
       try {
         this.addressLoading = true
-        const addrTxs = await this.$api.getMidgardActions({
+        const addrTxs = await this.$api.getActions({
           address,
           limit: 30,
         })
@@ -356,7 +356,7 @@ export default {
     getActions(params) {
       this.loading = true
       this.$api
-        .getMidgardActions(params)
+        .getActions(params)
         .then((res) => {
           this.addrTxs = res.data
           this.count = res.data.count
