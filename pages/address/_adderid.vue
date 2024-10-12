@@ -22,7 +22,6 @@
               :navs="[
                 { title: 'LP/Savers', value: 'pools' },
                 { title: 'Thorname', value: 'thorname' },
-                { title: 'Loans', value: 'loans' },
               ]"
               :is-loading="loading"
               :act-nav.sync="activeMode"
@@ -32,9 +31,6 @@
               </keep-alive>
               <keep-alive>
                 <pools v-if="activeMode == 'pools'" :address="address" />
-              </keep-alive>
-              <keep-alive>
-                <loans v-if="activeMode == 'loans'" :address="address" />
               </keep-alive>
             </Card>
           </div>

@@ -5,7 +5,7 @@
       :class="[
         'mini-bubble',
         {
-          yellow: row.type === 'refund',
+          yellow: row.type === 'refund' || row.type === 'unbond',
           info:
             row.type === 'send' ||
             row.type === 'withdraw' ||
@@ -19,6 +19,12 @@
       <piggy-icon v-else-if="row.type === 'addLiquidity'" class="status-icon" />
       <deposit v-else-if="row.type === 'runePoolDeposit'" class="status-icon" />
       <exit v-else-if="row.type === 'runePoolWithdraw'" class="status-icon" />
+      <unbond v-else-if="row.type === 'unbond'" class="status-icon" />
+      <unbond
+        v-else-if="row.type === 'bond'"
+        class="status-icon"
+        style="transform: rotate(180deg)"
+      />
       <span class="type-name">
         {{ typeName(row.type) }}
       </span>
@@ -33,9 +39,18 @@ import RefundIcon from '~/assets/images/refund.svg?inline'
 import PiggyIcon from '~/assets/images/piggy.svg?inline'
 import Deposit from '~/assets/images/deposit.svg?inline'
 import Exit from '~/assets/images/exit.svg?inline'
+import Unbond from '~/assets/images/unbond.svg?inline'
 
 export default {
-  components: { SwapIcon, DoveIcon, RefundIcon, PiggyIcon, Deposit, Exit },
+  components: {
+    SwapIcon,
+    DoveIcon,
+    RefundIcon,
+    PiggyIcon,
+    Deposit,
+    Exit,
+    Unbond,
+  },
   props: {
     row: {
       type: Object,

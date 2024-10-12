@@ -280,6 +280,7 @@ export default {
 <style lang="scss" scoped>
 .action-cell {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
 
   .mini-bubble {
