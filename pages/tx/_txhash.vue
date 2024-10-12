@@ -163,7 +163,7 @@ export default {
       // Here the hash can be outbound but the inbound should be caught if it's not
       // Get Midgard details
       const md = (
-        await this.$api.getTx(hash).catch((e) => {
+        await this.$api.getActions({ txid: hash }).catch((e) => {
           if (e?.response?.status === 404) {
             this.error.message =
               'Transaction is not found in Midgard. Please make sure the correct transaction hash or account address is inserted.'
