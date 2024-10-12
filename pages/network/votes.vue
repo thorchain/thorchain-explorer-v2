@@ -174,7 +174,47 @@ export default {
         let index = 0
         for (const m of Object.keys(this.mimirs)) {
           if (Object.keys(this.mimirVotes).includes(m)) {
-            if (m.toLowerCase().includes('ragnarok')) {
+            const filteredVotes = [
+              'ADR012',
+              'ADR18',
+              'ADR013',
+              'ALTGAIACHAIN',
+              'BAREMETALBADASS',
+              'BSCREADY',
+              'DEPRECATEILP',
+              'ELROND',
+              'ENABLEAVAXCHAIN',
+              'ENABLEBSC',
+              'ENABLEDASHCHAIN',
+              'ENABLEDOFM',
+              'ENABLEUPDATEMEMOTERRA',
+              'FULLIMPLOSSPROTECTIONBLOCKS',
+              'KILLSWITCHSTART',
+              'L1MINSLIPBPS',
+              'MAXBONDPROVIDES',
+              'MAXRUNESUPPLY',
+              'MULTIPARTITEFORPRESIDENT',
+              'NEXTCHAIN',
+              'NEXTFEATUREPERPRS',
+              'NEXTFEATUREPERPS',
+              'REMOVESNXPOOL',
+              'SUPPORTTHORCHAINDOTNETWORK',
+              'TEST',
+              'THISISANEWMIMIR',
+              'VOTEDOFM',
+              'VOTELENDING',
+              'VOTEMAXBONDPROVIDERS',
+              'VOTEMAXSYNTHSFORSAVERSYIELD',
+              'VOTESTREAMINGSWAPS',
+              'ENABLEVAXCHAIN',
+              'MAXSYNTHPERASSETDEPTH',
+              'MINIMUM1OUTBOUNDFEEUSD',
+            ]
+
+            if (
+              m.toLowerCase().includes('ragnarok') ||
+              filteredVotes.includes(m.toUpperCase())
+            ) {
               continue
             }
             const hVotes = this.getVoteHighestBid(this.mimirVotes[m])
@@ -183,11 +223,6 @@ export default {
             }
             if (hVotes.values.length === 0) {
               votesLength--
-              continue
-            }
-            const consensusPercent = hVotes.consensus * 100
-            const isPassed = +this.mimirs[m] === +hVotes.value
-            if (isPassed && consensusPercent < 30) {
               continue
             }
             xaxis.push(m)
