@@ -23,10 +23,10 @@
         }"
       >
         <template slot="table-row" slot-scope="props">
-          <div v-if="props.column.field == 'result'" class="cell-content">
+          <div v-if="props.column.field == 'result'">
             <div
               :class="[
-                'bubble-container',
+                'mini-bubble',
                 { yellow: props.row.result === 'In Progress' },
               ]"
             >
@@ -36,61 +36,57 @@
           <span v-else-if="props.column.field === 'votes'">
             <div class="votes">
               <div
-                v-for="(value, index) in props.row.votes.split(' | ')"
+                v-for="(v, index) in props.row.value"
                 :key="index"
                 class="votes-item"
               >
                 <div class="vote-info">
-                  <span class="value">{{ value.split(', ')[0] }}</span>
-                  <span class="votes-needed">{{ value.split(', ')[2] }}</span>
+                  <strong class="value">{{ v }}</strong>
+                  <span class="votes-needed"
+                    >{{ props.row.count[index] }} / {{ nodesNeedToPass }}</span
+                  >
                   <progress-bar
-                    :width="parseFloat(value.split(', ')[1])"
+                    :width="(props.row.count[index] * 100) / nodesNeedToPass"
                     height="4px"
                   />
-                  <span
-                    >{{ parseFloat(value.split(', ')[1]).toFixed(2) }}%</span
+                  <span>{{
+                    (props.row.count[index] / nodesNeedToPass) | percent(0)
+                  }}</span>
+                  <div
+                    v-if="props.row.currentVal.toString() === v"
+                    class="mini-bubble"
                   >
+                    Current
+                  </div>
+                </div>
+              </div>
+              <div class="votes-item">
+                <div class="vote-info">
+                  <strong>Not Voted:</strong>
+                  <span class="mini-bubble danger">{{
+                    network.activeNodeCount -
+                    props.row.count.reduce((p, c) => p + +c, 0)
+                  }}</span>
                 </div>
               </div>
             </div>
           </span>
-
+          <div v-else-if="props.column.field == 'vote'" class="cell-content">
+            <strong>
+              {{ props.formattedRow[props.column.field] }}
+            </strong>
+          </div>
           <span v-else>
             {{ props.formattedRow[props.column.field] }}
           </span>
         </template>
       </vue-good-table>
     </Card>
-    <!-- <Card v-for="(v, k, i) in mimirVotes" :key="i" :title="`${k} Voters`">
-      <vue-good-table
-        v-if="cols && v.length > 0"
-        :columns="cols"
-        :rows="v"
-        style-class="vgt-table net-table vgt-compact"
-        :line-numbers="true"
-        :pagination-options="{
-          enabled: true,
-          perPage: 30,
-          perPageDropdownEnabled: false,
-        }"
-      >
-        <template slot="table-row" slot-scope="props">
-          <span v-if="props.column.field == 'signer'">
-            <span class="clickable" @click="gotoNode(props.row.signer)">
-              {{ props.row.signer }}
-            </span>
-          </span>
-          <span v-else>
-            {{ props.formattedRow[props.column.field] }}
-          </span>
-        </template>
-      </vue-good-table>
-    </Card> -->
   </Page>
 </template>
 
 <script>
-import _ from 'lodash'
+import _, { orderBy } from 'lodash'
 import { mapGetters } from 'vuex'
 
 import { use } from 'echarts/core'
@@ -123,6 +119,8 @@ export default {
       mimirVotes: undefined,
       mimirs: undefined,
       votingChart: undefined,
+      nodesNeedToPass: undefined,
+      nodes: undefined,
       cols: [
         {
           label: 'Signer',
@@ -144,14 +142,16 @@ export default {
           sortable: false,
         },
         {
+          label: 'Result',
+          field: 'result',
+          thClass: 'center',
+          tdClass: 'center',
+          type: 'text',
+        },
+        {
           label: 'Vote Poll',
           field: 'votes',
           tdClass: 'mono',
-        },
-        {
-          label: 'Result',
-          field: 'result',
-          type: 'text',
         },
       ],
     }
@@ -211,6 +211,7 @@ export default {
                 types[vIndex].data[index] = v.count
               }
             })
+            hVotes.values = orderBy(hVotes.values, [(o) => +o.count], ['desc'])
             mimrsVoteConstants.push({
               vote: m,
               currentVal: this.mimirs[m] === -1 ? '-' : this.mimirs[m],
@@ -221,13 +222,6 @@ export default {
                 +this.network?.activeNodeCount - hVotes.votePassed,
               result:
                 +this.mimirs[m] === +hVotes.value ? 'Passed' : 'In Progress',
-              votes: hVotes.values
-                .map(
-                  (v, index) =>
-                    ` ${v.value}:, ${(hVotes.consensus * 100).toFixed(2)}%, ${v.count}/71, Current Mimir Value: ${this.mimirs[m] === -1 ? '-' : this.mimirs[m]}`
-                )
-                .join(' | '),
-
               value: hVotes.values.map((v) => v.value),
               count: hVotes.values.map((v) => v.count),
             })
@@ -275,7 +269,6 @@ export default {
                     <td style="padding: 5px; text-align:center; color:#333;">${consensus}</td>
                     <td style="padding: 5px; text-align:center; color:#333;">${votesNeeded === 0 ? '✅' : votesNeeded}</td>
                   </tr>
-                    
                 `
               }
               return ''
@@ -335,7 +328,6 @@ export default {
     },
     ...mapGetters({
       network: 'getNetworkData',
-      nodes: 'getNodesData',
     }),
   },
   mounted() {
@@ -352,6 +344,15 @@ export default {
       .getMimir()
       .then((res) => {
         this.mimirs = res.data
+      })
+      .catch((e) => {
+        console.error(e)
+      })
+
+    this.$api
+      .getNodesInfo()
+      .then((res) => {
+        this.nodes = res.data
       })
       .catch((e) => {
         console.error(e)
@@ -398,7 +399,7 @@ export default {
       }
       const activeVoters = voters.filter((v) =>
         this.nodes
-          ?.filter((n) => n.status == 'Active')
+          ?.filter((n) => n.status === 'Active')
           .map((n) => n.node_address)
           .includes(v.signer)
       )
@@ -406,6 +407,8 @@ export default {
       const voteCount = _.countBy(values)
       const votesObj = Object.keys(voteCount).map((v) => {
         const count = voteCount[v]
+        this.nodesNeedToPass =
+          parseInt(this.network?.activeNodeCount * (2 / 3)) + 1
         const consensus = count / +this.network?.activeNodeCount
         const consensusNeeded = Math.ceil(+this.network?.activeNodeCount * 0.66)
         const votesNeeded = Math.max(0, consensusNeeded - count)
@@ -414,7 +417,7 @@ export default {
           value: v,
           count: voteCount[v],
           votesNeeded,
-          consensus
+          consensus,
         }
       })
 
@@ -439,7 +442,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
 .votes {
   display: flex;
   flex-direction: column;
@@ -455,7 +457,6 @@ export default {
   border-radius: 50%;
 }
 .votes-item {
-  padding: 10px;
   border-radius: 10px;
   font-size: 14px;
 }
@@ -470,7 +471,7 @@ export default {
   display: flex;
   align-items: center;
   margin: 3px;
-  gap:0.5rem;
+  gap: 0.5rem;
 }
 .tooltip-body {
   margin-top: 5px;
