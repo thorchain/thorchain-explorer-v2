@@ -72,7 +72,10 @@
               />
             </div>
             <div v-else class="tx-asset">
-              <component :is="o.icon" class="asset-icon custom-icon" />
+              <component
+                :is="o.icon"
+                :class="['asset-icon', 'custom-icon', o.class]"
+              />
             </div>
           </div>
         </div>
@@ -183,7 +186,8 @@ export default {
           this.assetColorPalette(this.overall.in[0]?.asset) ?? '#5CDFBD',
         '--right-border': this.overall.out[0]?.borderColor
           ? this.overall.out[0]?.borderColor
-          : (this.assetColorPalette(this.overall.out[0]?.asset) ?? '#00ccff'),
+          : (this.assetColorPalette(this.overall.out[0]?.asset) ??
+            (this.$store?.state?.darkTheme ? '#87e9b5' : '#3ca38b')),
       }
     },
   },
@@ -229,6 +233,11 @@ $border-size: 2px;
           width: 2rem;
           height: 2rem;
           fill: var(--sec-font-color);
+        }
+
+        .node-icon {
+          padding: 3px;
+          fill: var(--bg-color);
         }
       }
 
