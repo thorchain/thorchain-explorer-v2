@@ -32,11 +32,17 @@
             :key="i + '-o-in'"
             class="tx-inbound"
           >
-            <div class="tx-asset">
+            <div v-if="o.asset" class="tx-asset">
               <AssetIcon
                 :classes="['no-margin']"
                 :asset="o.asset"
                 :height="'2rem'"
+              />
+            </div>
+            <div v-else class="tx-asset">
+              <component
+                :is="o.icon"
+                :class="['asset-icon', 'custom-icon', o.class]"
               />
             </div>
             <div v-if="i < 1" class="simple-bar" />
@@ -88,13 +94,27 @@
             :key="i + '-in'"
             class="asset-inbound"
           >
-            <span class="mono sec-color">{{
-              baseAmountFormatOrZero(o.amount)
-            }}</span>
-            <small class="mono sec-color">{{ showAsset(o.asset) }}</small>
-            <br /><small>{{
-              o.amountUSD ? formatBnCurrency(o.amountUSD) : '...'
-            }}</small>
+            <template v-if="o.text">
+              <span class="mono sec-color">{{ o.text }}</span>
+            </template>
+            <template v-else-if="o.address">
+              <nuxt-link class="mono clickable" :to="o.address">{{
+                addressFormatV2(o.address)
+              }}</nuxt-link>
+            </template>
+            <template v-else>
+              <span class="mono sec-color">{{
+                o.amount
+                  ? o.filter
+                    ? o.filter(o.amount)
+                    : baseAmountFormatOrZero(o.amount)
+                  : '...'
+              }}</span>
+              <small class="mono sec-color">{{ showAsset(o.asset) }}</small>
+              <br /><small>{{
+                o.amountUSD ? formatBnCurrency(o.amountUSD) : '...'
+              }}</small>
+            </template>
           </div>
         </div>
 
@@ -293,12 +313,14 @@ $border-size: 2px;
         flex-direction: column;
         gap: 0.5rem;
       }
+
       .tx-inbound,
       .tx-outbound {
         display: flex;
         align-items: center;
       }
 
+      .tx-inbound,
       .tx-outbound {
         justify-content: end;
         .tx-asset,
