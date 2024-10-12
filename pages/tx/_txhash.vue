@@ -318,6 +318,7 @@ export default {
               address: a?.address,
               borderColor: a?.borderColor,
               filter: a?.filter,
+              class: a?.class,
             })),
           },
         },
@@ -518,6 +519,20 @@ export default {
                 key: 'Refund Reseaon',
                 value: accordions.action?.refundReason,
                 is: accordions.action?.refundReason,
+              },
+              {
+                key: 'Node Address',
+                value: accordions.action?.nodeAddress,
+                is: accordions.action?.nodeAddress,
+                type: 'address',
+                formatter: this.formatAddress,
+              },
+              {
+                key: 'Bond Provider',
+                value: accordions.action?.provider,
+                is: accordions.action?.provider,
+                type: 'address',
+                formatter: this.formatAddress,
               },
             ],
           },
@@ -741,6 +756,14 @@ export default {
           memo
         )
         this.$set(this, 'cards', [this.createCard(cards, accordions)])
+      } else if (memo.type === 'bond') {
+        const { cards, accordions } = this.createBondState(
+          thorStatus,
+          midgardAction,
+          thorTx,
+          memo
+        )
+        this.$set(this, 'cards', [this.createCard(cards, accordions)])
       } else {
         const finalCards = []
         for (let i = 0; i < midgardAction?.actions?.length; i++) {
@@ -753,6 +776,59 @@ export default {
           finalCards.push(this.createCard(cards, accordions))
         }
         this.$set(this, 'cards', finalCards)
+      }
+    },
+    createBondState(thorStatus, action, thorTx) {
+      action = action.actions[0]
+
+      const ins = action?.in.map((a) => ({
+        asset: this.parseMemoAsset(a.coins[0]?.asset),
+        amount: a.coins[0].amount,
+        gas: thorStatus.tx?.gas ? thorStatus.tx?.gas[0].amount : null,
+        gasAsset: thorStatus.tx?.gas
+          ? this.parseMemoAsset(thorStatus.tx?.gas[0].asset, this.pools)
+          : null,
+        txid: a?.txID,
+        from: a?.address,
+        done: true,
+      }))
+
+      const outs = action?.out.map((a) => ({
+        asset: this.parseMemoAsset(a.coins[0]?.asset),
+        amount: a.coins[0].amount,
+        txid: a?.txID,
+        to: a?.address,
+        done: true,
+      }))
+
+      const isWhitelist = action.metadata?.bond?.provider
+
+      return {
+        cards: {
+          title: 'Bond' + (isWhitelist ? ' Whitelist' : ''),
+          in: ins,
+          middle: {
+            pending: false,
+          },
+          out: [
+            {
+              icon: require('@/assets/images/node.svg?inline'),
+              address: action.metadata?.bond?.nodeAddress,
+              class: 'node-icon',
+            },
+          ],
+        },
+        accordions: {
+          in: ins,
+          action: {
+            type: 'Bond',
+            memo: action.metadata?.bond?.memo,
+            nodeAddress: action.metadata?.bond?.nodeAddress,
+            provider: action.metadata?.bond?.provider,
+            done: true,
+          },
+          out: outs,
+        },
       }
     },
     createTradeDepositState(thorStatus, action, thorTx) {

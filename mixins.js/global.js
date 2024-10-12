@@ -491,6 +491,25 @@ export default {
         }
       }
 
+      if (type === 'bond') {
+        // BOND:nodeaddress:provider:fee
+        return {
+          type,
+          nodeAddress: parts[1],
+          provider: parts[2],
+          fee: parts[3],
+        }
+      }
+
+      if (type === 'unbond') {
+        // UNBOND:nodeaddress:amount
+        return {
+          type,
+          nodeAddress: parts[1],
+          amount: parts[2],
+        }
+      }
+
       return {
         type: type || null,
         asset: parts[1] || null,
