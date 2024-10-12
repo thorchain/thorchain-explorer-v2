@@ -7,6 +7,7 @@ import {
 } from '@xchainjs/xchain-util'
 import compare from 'semver/functions/compare'
 import moment from 'moment'
+import ColorHash from 'color-hash'
 import { AssetImage } from '~/classes/assetImage'
 import {
   assetFromString,
@@ -18,6 +19,7 @@ import {
   lightTheme,
 } from '~/utils'
 import endpoints from '~/api/endpoints'
+const colorHash = new ColorHash({ lightness: 0.5 })
 
 export default {
   data() {
@@ -427,6 +429,9 @@ export default {
     },
     numberSort(x, y, col, rowX, rowY) {
       return +x < +y ? -1 : +x > +y ? 1 : 0
+    },
+    vaultColor(vaultAddress) {
+      return colorHash.hex(vaultAddress)
     },
     parseMemo(memo) {
       // Driven from track repo

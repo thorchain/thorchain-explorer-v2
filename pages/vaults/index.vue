@@ -12,13 +12,18 @@
           <template slot="table-row" slot-scope="props">
             <span
               v-if="props.column.field == 'hash'"
+              style="display: flex; gap: 5px; align-items: center"
               @click="gotoAddr(props.row.hash)"
             >
-              <span v-tooltip="props.row.hash" class="mono clickable">
-                {{ props.row.hash.slice(0, 8) }}...{{
-                  props.row.hash.slice(-8)
-                }}
+              <span v-tooltip="props.row.pubKey" class="mono clickable">
+                {{ addressFormatV2(props.row.pubKey) }}
               </span>
+              <color-hash
+                v-tooltip="
+                  'Vault colors are identical to the nodes vault membership'
+                "
+                :name="props.row.pubKey"
+              ></color-hash>
             </span>
             <span v-else-if="props.column.field == 'bond'">
               <span
@@ -99,6 +104,7 @@
 import { duration } from 'moment'
 import { mapGetters } from 'vuex'
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
+import { props } from 'qrcode.vue'
 import { runeCur } from '~/utils'
 
 export default {
@@ -234,11 +240,11 @@ export default {
       this.vaultsGeneralStats = [
         {
           name: 'Bond',
-          value: this.$options.filters.currency(totalBond),
+          value: this.$options.filters.currency(totalBond, '$', 0),
         },
         {
           name: 'Balance',
-          value: this.$options.filters.currency(totalValue),
+          value: this.$options.filters.currency(totalValue, '$', 0),
         },
         {
           name: 'Balance/Bond',
@@ -312,6 +318,7 @@ export default {
           height: vault?.block_height,
           since: vault?.status_since,
           age: height?.THOR ? height?.THOR - vault?.block_height : 0,
+          pubKey: vault?.pub_key,
         })
       }
       return y

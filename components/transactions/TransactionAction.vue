@@ -172,13 +172,21 @@
       </span>
       <right-arrow class="action-type" />
       <span class="mini-bubble info customized">
-        {{ addressFormatV2(row.metadata.bond.nodeAddress) }}
+        <nuxt-link
+          class="clickable"
+          :to="`/node/${row.metadata.bond.nodeAddress}`"
+        >
+          {{ addressFormatV2(row.metadata.bond.nodeAddress) }}
+        </nuxt-link>
       </span>
     </div>
     <div v-else-if="row && row.type === 'unbond'" class="action-cell">
-      <span class="mini-bubble info customized">
+      <nuxt-link
+        class="clickable"
+        :to="`/node/${row.metadata.bond.nodeAddress}`"
+      >
         {{ addressFormatV2(row.metadata.bond.nodeAddress) }}
-      </span>
+      </nuxt-link>
       <right-arrow class="action-type" />
       <span
         v-for="(ops, i) in row.out"

@@ -377,7 +377,7 @@
 import { mapGetters } from 'vuex'
 import { remove, orderBy } from 'lodash'
 import { rcompare } from 'semver'
-import ColorHash from 'color-hash'
+
 import JsonIcon from '@/assets/images/json.svg?inline'
 import InfoIcon from '@/assets/images/info.svg?inline'
 import StarIcon from '@/assets/images/bookmark.svg?inline'
@@ -390,7 +390,6 @@ import RecycleIcon from '@/assets/images/recycle.svg?inline'
 import ExternalIcon from '@/assets/images/external.svg?inline'
 import VaultIcon from '@/assets/images/safe.svg?inline'
 import HighlightList from '@/assets/images/highlight-list.svg?inline'
-const colorHash = new ColorHash({ lightness: 0.5 })
 
 export default {
   components: {
@@ -465,9 +464,6 @@ export default {
         }
       }
     },
-    vaultColor(vaultAddress) {
-      return colorHash.hex(vaultAddress)
-    },
     isUpgrading(ver) {
       if (this.name !== 'active-nodes' || !this.rows) {
         return false
@@ -530,8 +526,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  .number{
-  color: #ffc107
+.number {
+  color: #ffc107;
 }
 .version {
   color: var(--primary-color);

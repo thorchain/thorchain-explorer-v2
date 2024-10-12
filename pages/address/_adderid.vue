@@ -76,9 +76,9 @@
                 :key="address.chain"
                 class="addresses"
               >
-                <span class="clickable mono" @click="gotoAddr(address.address)"
-                  >{{ address.slice(0, 8) }}...{{ address.slice(-8) }}</span
-                >
+                <nuxt-link :to="`/node/${address}`" class="clickable mono">
+                  {{ addressFormatV2(address) }}
+                </nuxt-link>
               </div>
             </div>
           </div>
