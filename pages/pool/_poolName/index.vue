@@ -24,7 +24,7 @@
     <div class="footer-stat">
       <small>
         <sup>*</sup>
-        All of the stat are based on 14 days period
+        All of the stat are based on 30 days period
       </small>
     </div>
   </Page>
@@ -132,7 +132,7 @@ export default {
     poolStats() {
       return [
         {
-          title: 'Deposit',
+          title: 'Deposit (30D)',
           rowStart: 1,
           colSpan: 1,
           items: [
@@ -165,7 +165,7 @@ export default {
               usdValue: true,
             },
             {
-              header: 'Withdraw',
+              header: 'Withdraw (30D)',
             },
             {
               name: 'Withdraw Count',
@@ -193,37 +193,16 @@ export default {
           ],
         },
         {
-          title: 'Swap',
+          title: 'Swap (30D)',
           rowStart: 1,
           colSpan: 1,
           items: [
             {
-              name: 'To Asset Fees',
-              value: this.pool?.toAssetFees / 10 ** 8,
-              usdValue: true,
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
-            },
-            {
-              name: 'To RUNE Fees',
-              value: this.pool?.toRuneFees / 10 ** 8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
-              usdValue: true,
-            },
-            {
               name: 'Total Fees',
               value: this.pool?.totalFees / 10 ** 8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
               usdValue: true,
-            },
-            {
-              name: 'To Asset Count',
-              value: this.pool?.toAssetCount,
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
-            },
-            {
-              name: 'To RUNE Count',
-              value: this.pool?.toRuneCount,
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
             },
             {
               name: 'Swap Count',
@@ -231,21 +210,10 @@ export default {
               filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
             },
             {
-              name: 'To Asset Volume',
-              value: this.pool?.toAssetVolume / 10 ** 8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
-              usdValue: true,
-            },
-            {
-              name: 'To RUNE Volume',
-              value: this.pool?.toRuneVolume / 10 ** 8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
-              usdValue: true,
-            },
-            {
               name: 'Swap Volume',
               value: this.pool?.swapVolume / 10 ** 8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) =>
+                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
               usdValue: true,
             },
           ],
