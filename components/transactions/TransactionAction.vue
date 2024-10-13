@@ -1,6 +1,9 @@
 <template>
   <div>
-    <div v-if="row && row.type === 'swap'" class="action-cell">
+    <div
+      v-if="row && (row.type === 'swap' || row.type === 'switch')"
+      class="action-cell"
+    >
       <span
         v-for="(ops, i) in row.in"
         :key="'in-' + i"
@@ -265,7 +268,7 @@ export default {
   },
   methods: {
     affiliateWallet(row) {
-      if (!row.metadata?.swap.affiliateAddress) {
+      if (!row.metadata?.swap?.affiliateAddress) {
         return
       }
       const detail =
