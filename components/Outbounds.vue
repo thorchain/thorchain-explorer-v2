@@ -101,10 +101,13 @@
       </template>
     </template>
     <template v-if="Mode == 'top-swaps'">
-      <div v-for="(swap, index) in topSwaps" :key="index">
-        <div class="top-swap-item">
+      <div v-if="!topSwaps" class="no-outbound">
+        <h3>There is top 24hr swaps inside THORChain.</h3>
+      </div>
+      <template v-for="(swap, index) in topSwaps">
+        <div :key="index" class="top-swap-item">
           <div class="asset-item-info">
-            <div class="asset-item" v-if="swap.inputAsset">
+            <div v-if="swap.inputAsset" class="asset-item">
               <asset-icon :asset="swap.inputAsset.asset" />
               <span class="asset-name-swaps">
                 {{
@@ -119,7 +122,7 @@
               </span>
             </div>
             →
-            <div class="asset-item" v-if="swap.outputAsset">
+            <div v-if="swap.outputAsset" class="asset-item">
               <asset-icon :asset="swap.outputAsset.asset" />
               <span class="asset-name-swaps">
                 <template v-if="swap.outputAsset.amount">
@@ -152,13 +155,14 @@
                 {{ formatAddress(swap.txID) }}
               </NuxtLink>
             </small>
+            <small
+              >Date
+              <small class="date">{{ swap.date }}</small>
+            </small>
           </div>
         </div>
-        <div class="date">
-          <span class="date">{{ swap.date }}</span>
-        </div>
         <hr :key="index + '-hr'" class="hr-space" />
-      </div>
+      </template>
       <nuxt-link to="/swaps" class="swaps-nav">More</nuxt-link>
     </template>
 
@@ -236,7 +240,6 @@ export default {
   },
   methods: {
     async updateTopSwaps() {
-      this.loading = true
       try {
         const response = await this.$api.getTopSwaps()
         const resData = response.data
@@ -247,7 +250,7 @@ export default {
         ) {
           this.topSwaps = resData.actions.map((swap) => {
             return {
-              date: moment(swap.date / 1e6).format('dddd, MMM D'),
+              date: moment(swap.date / 1e6).format('MMM D, HH:MM'),
               txID: swap.in[0]?.txID,
               inputAsset: {
                 address: swap.in[0]?.address,
@@ -264,7 +267,7 @@ export default {
         } else {
           console.error(
             'API response does not contain an actions array:',
-            outputAsset
+            this.swaps.outputAsset
           )
           this.topSwaps = []
         }
@@ -310,8 +313,6 @@ export default {
   display: flex;
   flex-direction: row;
   padding: 0.5rem;
-  border-radius: 0.5rem;
-  margin-bottom: 0.5rem;
   gap: 0.5rem;
   flex-wrap: wrap;
   justify-content: space-between;
@@ -497,13 +498,7 @@ export default {
   }
 }
 .swaps-nav {
-  margin-top: 2rem;
-  position: absolute;
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 96%;
-  z-index: 1000;
+  margin-top: 0.5rem;
 }
 .outbound-item {
   display: flex;
