@@ -108,6 +108,7 @@
         :per-page="perPage"
       />
     </template>
+      <nuxt-link to="/swaps" class="swaps-nav">TOP Swaps (24hr)</nuxt-link>
   </Card>
 </template>
 
@@ -158,7 +159,6 @@ export default {
     async updateStreamingSwap() {
       this.noStreaming = false
       const resData = (await this.$api.getStreamingSwaps()).data
-
       this.totalSumAmount = resData?.reduce((a, c) => {
         const inputUsdValue = this.amountToUSD(
           c.source_asset,
@@ -273,21 +273,15 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.custom-card {
-  background-color: var(--bg-color);
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  color: var(--font-color);
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
-  margin-bottom: 1rem;
-  border: 1px solid var(--border-color) !important;
 
-  &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-  }
+.swaps-nav {
+  position: absolute;
+  bottom: 10px; 
+  left: 50%;
+  transform: translateX(-50%);
+  width: 96%;
+  z-index: 1000;
+  margin-bottom: 2.5px;
 }
 
 .overview-box {
