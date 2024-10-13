@@ -234,11 +234,11 @@ export default {
       this.vaultsGeneralStats = [
         {
           name: 'Bond',
-          value: this.$options.filters.currency(totalBond),
+          value: this.$options.filters.currency(totalBond,'$',0),
         },
         {
           name: 'Balance',
-          value: this.$options.filters.currency(totalValue),
+          value: this.$options.filters.currency(totalValue,'$',0),
         },
         {
           name: 'Balance/Bond',
