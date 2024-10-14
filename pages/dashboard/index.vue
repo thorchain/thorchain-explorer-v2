@@ -1086,7 +1086,11 @@ export default {
       const EODEarning = []
 
       if (process.env.NETWORK === 'mainnet') {
-        this.affiliateDaily = (await this.$api.getAffiliateDaily()).data
+        try {
+          this.affiliateDaily = (await this.$api.getAffiliateDaily()).data
+        } catch (error) {
+          console.error(error)
+        }
       }
 
       d?.intervals.forEach((interval, index) => {
@@ -1122,7 +1126,7 @@ export default {
           if (affiliateEOD === 0) {
             affiliateEOD =
               this.affiliateDaily
-                .slice(-3)
+                ?.slice(-3)
                 .reduce((a, c) => a + +c.daily_affiliate_fees_usd, 0) / 3
           }
 
@@ -1131,7 +1135,7 @@ export default {
               ((+interval.EODBondEarnings + +interval.EODLiquidityEarnings) *
                 +interval.runePriceUSD) /
                 1e8 +
-              affiliateEOD,
+              (affiliateEOD || 0),
             itemStyle: {
               color: 'transparent',
               borderColor: '#f3ba2f',
