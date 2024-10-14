@@ -342,7 +342,6 @@ export default {
   .right-section {
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
     justify-content: end;
     gap: 0 8px;
     flex: 1;
