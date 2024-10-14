@@ -18,13 +18,13 @@
           <small v-else>-</small>
         </div>
         <div ref="header-info-2">
-          <small style="color: var(--sec-font-color)">Block height:</small>
+          <small style="color: var(--sec-font-color)">Node Count:</small>
           <small
-            v-if="chainsHeight && chainsHeight['THOR']"
+            v-if="network && network.activeNodeCount"
             style="color: var(--primary-color)"
             class="mono value"
           >
-            {{ chainsHeight['THOR'] | number('0,0') }}
+            {{network.activeNodeCount | number('0,0') }}
           </small>
           <small v-else>-</small>
         </div>
@@ -134,6 +134,7 @@ export default {
       runePrice: 'getRunePrice',
       chainsHeight: 'getChainsHeight',
       extraHeaderInfo: 'getExtraHeaderInfo',
+      network: 'getNetworkData',
     }),
     isOverviewPage() {
       return this.$route.path === '/dashboard'
@@ -300,6 +301,8 @@ export default {
 
     @include md {
       font-size: 0.9rem;
+      flex-direction: row;
+
     }
 
     .break {
@@ -332,11 +335,11 @@ export default {
   }
 
   .left-section {
-    flex: 1;
     display: flex;
     align-items: center;
     gap: 10px;
     width: 100%;
+    height: 35px;
   }
 
   .right-section {
