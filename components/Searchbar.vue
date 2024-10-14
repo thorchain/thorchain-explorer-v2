@@ -24,7 +24,7 @@
             style="color: var(--primary-color)"
             class="mono value"
           >
-            {{network.activeNodeCount | number('0,0') }}
+            {{ network.activeNodeCount | number('0,0') }}
           </small>
           <small v-else>-</small>
         </div>
@@ -132,7 +132,6 @@ export default {
       fullscreen: 'getFullScreen',
       sidebar: 'getSidebar',
       runePrice: 'getRunePrice',
-      chainsHeight: 'getChainsHeight',
       extraHeaderInfo: 'getExtraHeaderInfo',
       network: 'getNetworkData',
     }),
@@ -147,7 +146,7 @@ export default {
     $route(to, from) {
       this.searchQuery = ''
     },
-    chainsHeight(n, o) {
+    runePrice(n, o) {
       this.animate('header-info-1', 'animate')
       this.animate('header-info-2', 'animate')
     },
@@ -279,15 +278,15 @@ export default {
   &.expanded {
     gap: 0;
     .left-section {
+      display: none;
+      gap: 0;
+    }
+
+    .right-section {
       #search-container {
         flex: 1;
         display: flex;
       }
-    }
-
-    .right-section {
-      display: none;
-      gap: 0;
     }
   }
 
@@ -302,7 +301,6 @@ export default {
     @include md {
       font-size: 0.9rem;
       flex-direction: row;
-
     }
 
     .break {
@@ -337,8 +335,7 @@ export default {
   .left-section {
     display: flex;
     align-items: center;
-    gap: 10px;
-    width: 100%;
+    gap: 0 8px;
     height: 35px;
   }
 
