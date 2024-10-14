@@ -13,7 +13,7 @@
               class="total-swaps mono"
               style="padding-right: 1rem"
             >
-              {{ formatCurrency(totalSumAmount) }}
+              ${{  (totalSumAmount) | number('0a')}}
             </span>
             <span v-else>-</span>
           </div>

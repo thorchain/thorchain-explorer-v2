@@ -617,9 +617,10 @@ export default {
             {
               name: 'Current PnL',
               valueSlot: 'pnl',
-              value: pol.value - +pol.current_deposit,
+              usdValue:true,
+              value: (pol.value - +pol.current_deposit)/1e8,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               isDown: pol.value - +pol.current_deposit <= 0,
-              filter: (v) => this.$options.filters.number(v / 1e8, '0,0.00'),
               progress: {
                 data: (pol?.value - (oldRunePool?.pol?.value ?? 0)) / 1e8,
                 down: pol?.value < (oldRunePool?.pol?.value ?? 0),
@@ -628,9 +629,9 @@ export default {
             },
             {
               name: 'Current Deposited',
-              value: pol?.current_deposit / 1e8,
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0.00')}`,
+              value: pol?.current_deposit/ 1e8,
+              filter: (v) => `${this.$options.filters.number(v , '0,0a')} RUNE`,
+              usdValue:true,
               progress: {
                 data:
                   (pol?.current_deposit -
@@ -645,8 +646,8 @@ export default {
             {
               name: 'Overall Deposited',
               value: this.polOverview?.rune_deposited / 1e8,
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0.00')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              usdValue:true,
               progress: {
                 data:
                   (this.polOverview?.rune_deposited -
@@ -661,8 +662,8 @@ export default {
             {
               name: 'Overall Withdrawn',
               value: this.polOverview?.rune_withdrawn / 1e8,
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0.00')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              usdValue:true,
               progress: {
                 data:
                   (this.polOverview?.rune_withdrawn -
@@ -684,9 +685,10 @@ export default {
             {
               name: 'Current PnL',
               valueSlot: 'pnl',
-              value: providers.pnl,
+              value: providers.pnl/1e8,
               isDown: +providers.pnl <= 0,
-              filter: (v) => this.$options.filters.number(v / 1e8, '0,0.00'),
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              usdValue:true,
               progress: {
                 data: (providers?.pnl - oldRunePool?.providers?.pnl) / 1e8,
                 down: +providers?.pnl < +oldRunePool?.providers?.pnl,
@@ -697,8 +699,8 @@ export default {
               name: 'Current Deposited',
               value:
                 (+providers?.current_deposit + +providers?.pending_rune) / 1e8,
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0.00')}`,
+                filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+                usdValue:true,
               extraInfo:
                 'The amount rune deposited by providers (including pending)',
               progress: {
@@ -760,9 +762,10 @@ export default {
             {
               name: 'Current PnL',
               valueSlot: 'pnl',
-              value: reserve.pnl,
+              value: reserve.pnl/1e8,
               isDown: +reserve.pnl <= 0,
-              filter: (v) => this.$options.filters.number(v / 1e8, '0,0.00'),
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              usdValue:true,
               progress: {
                 data: (reserve?.pnl - oldRunePool?.reserve?.pnl) / 1e8,
                 down: +reserve?.pnl < +oldRunePool?.reserve?.pnl,
@@ -772,8 +775,8 @@ export default {
             {
               name: 'Current Deposited',
               value: reserve?.current_deposit / 1e8,
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0.00')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              usdValue:true,
               progress: {
                 data:
                   (reserve?.current_deposit -

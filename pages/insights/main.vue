@@ -183,12 +183,12 @@ export default {
             {
               name: 'Market Cap',
               value: this.marketInfo.marketCap,
-              filter: (v) => `$${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `$${this.$options.filters.number(v, '0,0a')}`,
             },
             {
               name: 'Trade Volume',
               value: this.marketInfo.tradeVolume,
-              filter: (v) => `$${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `$${this.$options.filters.number(v, '0,0a')}`,
               progress: {
                 data: this.marketInfo.change_24h,
                 down: this.marketInfo.change_24h,
@@ -198,8 +198,8 @@ export default {
             {
               name: 'Total Supply',
               value: this.marketInfo.totalSupply,
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+
             },
           ],
         },
@@ -332,7 +332,7 @@ export default {
       ]
 
       this.affiliateChart = this.basicChartFormat(
-        (value) => `$${this.$options.filters.number(value, '0,0.00 a')}`,
+        (value) => `$${this.$options.filters.number(value, '0,0.00 a')}` ,
         series,
         xAxis,
         {

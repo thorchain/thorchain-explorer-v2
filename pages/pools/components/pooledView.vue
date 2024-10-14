@@ -3,16 +3,16 @@
     <div class="stat-group">
       <skeleton-item class="stat-item" :loading="loading">
         <span class="title">Total Pooled:</span>
-        <span class="mono value">{{ totalInfo.pooled | currency }}</span>
+        <span class="mono value">${{ totalInfo.pooled | number('0a') }}</span>
       </skeleton-item>
       <hr />
       <skeleton-item class="stat-item" :loading="loading">
         <span class="title">24hr Volume:</span>
-        <span class="mono value">{{ totalInfo.day.volume | currency }}</span>
+        <span class="mono value">${{ totalInfo.day.volume | number('0a') }}</span>
       </skeleton-item>
       <skeleton-item class="stat-item" :loading="loading">
         <span class="title">24hr Earnings:</span>
-        <span class="mono value">{{ totalInfo.day.earnings | currency }}</span>
+        <span class="mono value">${{ totalInfo.day.earnings | number('0a') }}</span>
       </skeleton-item>
       <skeleton-item class="stat-item" :loading="loading">
         <span class="title"
@@ -49,11 +49,11 @@
     <div class="stat-group">
       <skeleton-item class="stat-item" :loading="loading">
         <span class="title">7D Volume:</span>
-        <span class="mono value">{{ totalInfo.week.volume | currency }}</span>
+        <span class="mono value">${{ totalInfo.week.volume | number('0a') }}</span>
       </skeleton-item>
       <skeleton-item class="stat-item" :loading="loading">
         <span class="title">7D Earnings:</span>
-        <span class="mono value">{{ totalInfo.week.earnings | currency }}</span>
+        <span class="mono value">${{ totalInfo.week.earnings | number('0a') }}</span>
       </skeleton-item>
       <skeleton-item class="stat-item" :loading="loading">
         <span class="title">7D Earnings APR:</span>
@@ -78,12 +78,12 @@
     <div class="stat-group">
       <skeleton-item class="stat-item" :loading="loading">
         <span class="title">30D Volume:</span>
-        <span class="mono value">{{ totalInfo.month.volume | currency }}</span>
+        <span class="mono value">${{ totalInfo.month.volume | number('0a') }}</span>
       </skeleton-item>
       <skeleton-item class="stat-item" :loading="loading">
         <span class="title">30D Earnings:</span>
-        <span class="mono value">{{
-          totalInfo.month.earnings | currency
+        <span class="mono value">${{
+          totalInfo.month.earnings | number('0a')
         }}</span>
       </skeleton-item>
       <skeleton-item class="stat-item" :loading="loading">
@@ -109,11 +109,11 @@
     <div class="stat-group">
       <skeleton-item class="stat-item" :loading="loading">
         <span class="title">Year Volume:</span>
-        <span class="mono value">{{ totalInfo.year.volume | currency }}</span>
+        <span class="mono value">${{ totalInfo.year.volume | number('0a') }}</span>
       </skeleton-item>
       <skeleton-item class="stat-item" :loading="loading">
         <span class="title">Year Earnings:</span>
-        <span class="mono value">{{ totalInfo.year.earnings | currency }}</span>
+        <span class="mono value">${{ totalInfo.year.earnings | number('0a') }}</span>
       </skeleton-item>
       <skeleton-item class="stat-item" :loading="loading">
         <span class="title">Year Earnings APR:</span>

@@ -61,11 +61,6 @@
                         <slot :name="item.valueSlot" :item="item" />
                       </template>
                       <template v-else>
-                        <template v-if="item.usdValue">
-                          <small v-if="item.value && runePrice">
-                            ({{ (runePrice * item.value) | currency }}) -
-                          </small>
-                        </template>
                         <span v-if="item.filter">
                           {{ item.filter(item.value) }}
                         </span>
@@ -78,6 +73,11 @@
                           :is-down="item.progress.down"
                           :filter="item.progress.filter"
                         />
+                      </template>
+                      <template v-if="item.usdValue">
+                        <small v-if="item.value && runePrice">
+                          (${{ (runePrice * item.value) | number('0a') }})
+                        </small>
                       </template>
                     </div>
                   </skeleton-item>

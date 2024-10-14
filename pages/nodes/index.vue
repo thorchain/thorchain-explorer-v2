@@ -434,14 +434,13 @@ export default {
               name: 'Total Bond',
               value: this.bondMetrics?.bondMetrics?.totalActiveBond / 10 ** 8,
               usdValue: true,
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+
             },
             {
               name: 'Average Bond',
               value: this.bondMetrics?.bondMetrics?.averageActiveBond / 10 ** 8,
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
@@ -454,8 +453,7 @@ export default {
                     10 ** 8
                 )
               ),
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
@@ -466,8 +464,7 @@ export default {
                 ) ?? 0) /
                   10 ** 8
               ),
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
@@ -478,15 +475,13 @@ export default {
                 ) ?? 0) /
                   10 ** 8
               ),
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
               name: 'Max efficient bond',
               value: this.calculateHardCap(),
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
           ],
@@ -503,16 +498,14 @@ export default {
             {
               name: 'Total Bond',
               value: this.bondMetrics?.bondMetrics?.totalStandbyBond / 10 ** 8,
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
               name: 'Average Bond',
               value:
                 this.bondMetrics?.bondMetrics?.averageStandbyBond / 10 ** 8,
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+                filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
@@ -523,23 +516,20 @@ export default {
                 ) ?? 0) /
                   10 ** 8
               ),
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
               name: 'Median Bond',
               value: this.calMedianBond(),
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
               name: 'Minimum Bond',
               value:
                 this.bondMetrics?.bondMetrics?.minimumStandbyBond / 10 ** 8,
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+                filter: (v) => `${this.$options.filters.number(v, '0,0.00a')} RUNE`,
               usdValue: true,
             },
           ],
@@ -558,8 +548,7 @@ export default {
               name: 'Total Awards',
               value: this.totalAwards / 10e8,
               usdValue: true,
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
             },
           ],
         },

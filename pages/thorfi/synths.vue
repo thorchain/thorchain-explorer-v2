@@ -249,7 +249,7 @@ export default {
       this.synthsGeneralStats = [
         {
           name: 'Total Synth Supply',
-          value: this.$options.filters.currency(totalSynthSupply),
+          value:'$'+ this.$options.filters.number(totalSynthSupply || 0, '0,0a'),
           description: 'Total synth asset in the protocol',
         },
         {

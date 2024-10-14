@@ -21,8 +21,8 @@
             <div class="stats-container">
               <div>
                 <span>Amount: </span>
-                <span class="outbound-overall mono" style="padding-right: 1rem">
-                  {{ formatCurrency(totalScheduledValue) }}
+                <span class="outbound-overall mono" style="padding-right: 0.8rem">
+                  ${{  (totalScheduledValue) | number('0a')}}
                 </span>
               </div>
               <div>
@@ -43,8 +43,8 @@
                 <span>Amount: </span>
                 <span
                   class="outbound-overall mono"
-                  style="padding-right: 1rem"
-                  >{{ formatCurrency(totalOutboundValue) }}</span
+                  style="padding-right: 0.8rem"
+                  >  ${{(totalOutboundValue) | number('0a') }}</span
                 >
               </div>
               <div>

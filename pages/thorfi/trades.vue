@@ -214,11 +214,13 @@ export default {
       this.tradingGeneralStats = [
         {
           name: 'Total Trade Depth',
-          value: this.$options.filters.currency(totalTradeDepth),
+          value:'$'+ this.$options.filters.number(totalTradeDepth || 0, '0,0a'),
+
         },
         {
           name: 'Total Vault Depth',
-          value: this.$options.filters.currency(totalVaultDepth),
+          value:'$'+ this.$options.filters.number(totalVaultDepth || 0, '0,0a'),
+
         },
         {
           name: 'Total Vault / Pool',

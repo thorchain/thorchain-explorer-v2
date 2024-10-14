@@ -2,8 +2,8 @@
   <Page>
     <info-card :options="networkSettings">
       <template #usd="{ item }">
-        <small>({{ ((item.value / 1e8) * runePrice) | currency() }})</small>-
         {{ item.filter(item.value) }}
+        <small>(${{ ((item.value / 1e8) * runePrice) | number('0a') }})</small>
       </template>
     </info-card>
   </Page>
@@ -36,7 +36,7 @@ export default {
           items: [
             {
               ...this.parseConstant('OutboundTransactionFee'),
-              filter: (v) => `${runeCur()} ${this.decimalFormat(v)}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               valueSlot: 'usd',
             },
             {
@@ -141,7 +141,7 @@ export default {
             },
             {
               ...this.parseConstant('NativeTransactionFee'),
-              filter: (v) => `${runeCur()} ${this.decimalFormat(v)}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               valueSlot: 'usd',
             },
 
@@ -151,17 +151,17 @@ export default {
             {
               ...this.parseConstant('TNSFeeOnSale'),
               name: 'Fee On Sale',
-              filter: (v) => `${runeCur()} ${this.decimalFormat(v)}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
             },
             {
               ...this.parseConstant('TNSFeePerBlock'),
               name: 'Fee Per Block',
-              filter: (v) => `${runeCur()} ${this.decimalFormat(v)}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
             },
             {
               ...this.parseConstant('TNSRegisterFee'),
               name: 'Register Fee',
-              filter: (v) => `${runeCur()} ${this.unitFormat(v)}`,
+              filter: (v) => `${this.$options.filters.number(v/1e8, '0,0a')} RUNE`,
               valueSlot: 'usd',
             },
           ],
@@ -223,8 +223,8 @@ export default {
             },
             {
               ...this.parseConstant('MinimumBondInRune'),
-              filter: (v) =>
-                `${runeCur()} ${this.$options.filters.number(v / 1e8, '0,0')}`,
+              filter: (v) => `${this.$options.filters.number(v/ 1e8, '0,0a')} RUNE`,
+
               valueSlot: 'usd',
             },
             {
