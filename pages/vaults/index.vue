@@ -97,6 +97,12 @@
         <BounceLoader color="var(--font-color)" size="3rem" />
       </div>
     </Card>
+    <div class="footer-stat">
+      <small>
+        <sup>*</sup>
+        Hover on the table element to see more info!
+      </small>
+    </div>
   </Page>
 </template>
 
@@ -104,7 +110,6 @@
 import { duration } from 'moment'
 import { mapGetters } from 'vuex'
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
-import { props } from 'qrcode.vue'
 import { runeCur } from '~/utils'
 
 export default {
