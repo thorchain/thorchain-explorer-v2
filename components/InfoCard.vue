@@ -72,12 +72,13 @@
                           :data-number="item.progress.data"
                           :is-down="item.progress.down"
                           :filter="item.progress.filter"
+                          size="15.5px"
                         />
                       </template>
-                      <template v-if="item.usdValue">
-                        <small v-if="item.value && runePrice">
+                      <template v-if="item.usdValue" class="item-value">
+                        <div v-if="item.value && runePrice">
                           (${{ (runePrice * item.value) | number('0a') }})
-                        </small>
+                        </div>
                       </template>
                     </div>
                   </skeleton-item>
@@ -231,6 +232,7 @@ export default {
           .item-name {
             display: flex;
             align-items: center;
+            font-size: 14px;
 
             .header-icon {
               fill: var(--font-color);
@@ -244,6 +246,7 @@ export default {
 
           .item-value {
             display: flex;
+            font-size: 16px;
             align-items: center;
             gap: 5px;
             color: var(--sec-font-color);

@@ -7,18 +7,18 @@
       <div class="overview-box">
         <div class="stats-container">
           <div>
-            <span> Amount: </span>
+            <span class="item-value"> Amount: </span>
             <span
               v-if="totalSumAmount"
               class="total-swaps mono"
               style="padding-right: 1rem"
             >
-              ${{  (totalSumAmount) | number('0a')}}
+              ${{ totalSumAmount | number('0a') }}
             </span>
             <span v-else>-</span>
           </div>
           <div>
-            <span> Count: </span>
+            <span class="item-value"> Count: </span>
             <span class="total-swaps mono">{{ streamingSwaps.length }}</span>
           </div>
         </div>
