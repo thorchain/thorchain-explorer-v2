@@ -303,15 +303,15 @@ export default {
         },
         {
           name: 'Total Saved Value',
-          value: this.$options.filters.currency(g.totalUSDSaved),
+          value: '$'+this.$options.filters.number(g.totalUSDSaved || 0, '0,0a'),
           change: this.$options.filters.currency(
-            g.totalUSDSaved - o.totalUSDSaved
+            g.totalUSDSaved  - o.totalUSDSaved 
           ),
           isDown: g.totalUSDSaved < o.totalUSDSaved,
         },
         {
           name: 'Total Earned',
-          value: this.$options.filters.currency(g.totalEarn),
+          value: '$'+this.$options.filters.number(g.totalEarn || 0, '0,0a'),
           change: this.$options.filters.currency(o.totalEarn),
           isDown: g.totalEarn < o.totalEarn,
         },

@@ -100,7 +100,7 @@
     <div class="footer-stat">
       <small>
         <sup>*</sup>
-        Hover on the table element to see more info!
+        Hover on the table elements to see more info!
       </small>
     </div>
   </Page>
@@ -245,11 +245,11 @@ export default {
       this.vaultsGeneralStats = [
         {
           name: 'Bond',
-          value: this.$options.filters.currency(totalBond, '$', 0),
+          value: '$' + this.$options.filters.number(totalBond || 0, '0,0a'),
         },
         {
           name: 'Balance',
-          value: this.$options.filters.currency(totalValue, '$', 0),
+          value: '$' + this.$options.filters.number(totalValue || 0, '0,0a'),
         },
         {
           name: 'Balance/Bond',

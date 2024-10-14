@@ -83,7 +83,7 @@ export default {
             {
               name: 'Asset Price',
               value: this.pool?.assetPriceUSD,
-              filter: (v) => `${this.$options.filters.currency(v)}`,
+              filter: (v) => `$${this.$options.filters.number(v, '0,0a')}`,
             },
             {
               name: 'Earning Annual to Depth',
@@ -105,8 +105,7 @@ export default {
             {
               name: 'Rune Depth',
               value: this.pool?.runeDepth / 10 ** 8,
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
             },
             {
               name: 'Units',
@@ -200,8 +199,7 @@ export default {
             {
               name: 'Total Fees',
               value: this.pool?.totalFees / 10 ** 8,
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
@@ -212,8 +210,7 @@ export default {
             {
               name: 'Swap Volume',
               value: this.pool?.swapVolume / 10 ** 8,
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
           ],

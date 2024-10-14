@@ -137,11 +137,7 @@
           </span>
         </span>
         <div v-else-if="props.column.field == 'vault'" class="vault-wrapper">
-          <div
-            v-tooltip="props.row.vault"
-            class="vault-share"
-            :style="{ background: vaultColor(props.row.vault) }"
-          ></div>
+          <color-hash v-tooltip="props.row.vault" :name="props.row.vault" />
         </div>
         <span v-else-if="props.column.field == 'status'">
           <div
@@ -635,16 +631,5 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-
-  .vault-share {
-    display: block;
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-
-    &:hover {
-      filter: brightness(150%);
-    }
-  }
 }
 </style>

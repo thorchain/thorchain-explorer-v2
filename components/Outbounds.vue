@@ -20,13 +20,13 @@
             </div>
             <div class="stats-container">
               <div>
-                <span>Amount: </span>
-                <span class="outbound-overall mono" style="padding-right: 1rem">
-                  {{ formatCurrency(totalScheduledValue) }}
+                <span class="item-value">Amount: </span>
+                <span class="outbound-overall mono" style="padding-right: 0.8rem">
+                  ${{  (totalScheduledValue) | number('0a')}}
                 </span>
               </div>
               <div>
-                <span>Count: </span>
+                <span class="item-value">Count: </span>
                 <span class="outbound-overall mono">{{ schData.length }}</span>
               </div>
             </div>
@@ -40,15 +40,15 @@
             </div>
             <div class="stats-container">
               <div>
-                <span>Amount: </span>
+                <span class="item-value">Amount: </span>
                 <span
                   class="outbound-overall mono"
-                  style="padding-right: 1rem"
-                  >{{ formatCurrency(totalOutboundValue) }}</span
+                  style="padding-right: 0.8rem"
+                  >  ${{(totalOutboundValue) | number('0a') }}</span
                 >
               </div>
               <div>
-                <span>Count: </span>
+                <span class="item-value">Count: </span>
                 <span class="outbound-overall mono">
                   {{ outData.length }}
                 </span>
@@ -322,6 +322,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.item-value{
+  font-size: 14px;
+}
 .top-swap-item {
   display: flex;
   flex-direction: row;
@@ -538,7 +541,6 @@ export default {
       gap: 5px;
     }
   }
-
   .extra-right {
     display: flex;
     flex-direction: column;

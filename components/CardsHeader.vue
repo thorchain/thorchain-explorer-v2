@@ -75,6 +75,7 @@ export default {
       text-align: center;
       min-width: 80%;
       margin-bottom: 8px;
+      font-weight: 500;
     }
 
     .name {

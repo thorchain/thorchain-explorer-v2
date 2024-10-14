@@ -417,12 +417,12 @@ export default {
       }
 
       if (this.churnProgressValue) {
-        churnValue += ` / ${this.$options.filters.percent(this.churnProgressValue, '0,0.000')}`
+        churnValue += ` | ${this.$options.filters.percent(this.churnProgressValue, '0,0.000')}`
       }
 
       return [
         {
-          title: 'Active Bonds',
+          title: 'Active',
           rowStart: 1,
           colSpan: 1,
           items: [
@@ -434,14 +434,12 @@ export default {
               name: 'Total Bond',
               value: this.bondMetrics?.bondMetrics?.totalActiveBond / 10 ** 8,
               usdValue: true,
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
             },
             {
               name: 'Average Bond',
               value: this.bondMetrics?.bondMetrics?.averageActiveBond / 10 ** 8,
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
@@ -454,8 +452,7 @@ export default {
                     10 ** 8
                 )
               ),
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
@@ -466,8 +463,7 @@ export default {
                 ) ?? 0) /
                   10 ** 8
               ),
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
@@ -478,21 +474,19 @@ export default {
                 ) ?? 0) /
                   10 ** 8
               ),
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
               name: 'Max efficient bond',
               value: this.calculateHardCap(),
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
           ],
         },
         {
-          title: 'Standby Bonds',
+          title: 'Standby',
           rowStart: 1,
           colSpan: 1,
           items: [
@@ -503,16 +497,14 @@ export default {
             {
               name: 'Total Bond',
               value: this.bondMetrics?.bondMetrics?.totalStandbyBond / 10 ** 8,
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
               name: 'Average Bond',
               value:
                 this.bondMetrics?.bondMetrics?.averageStandbyBond / 10 ** 8,
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
@@ -523,15 +515,13 @@ export default {
                 ) ?? 0) /
                   10 ** 8
               ),
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
               name: 'Median Bond',
               value: this.calMedianBond(),
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
@@ -539,13 +529,13 @@ export default {
               value:
                 this.bondMetrics?.bondMetrics?.minimumStandbyBond / 10 ** 8,
               filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+                `${this.$options.filters.number(v, '0,0.00a')} RUNE`,
               usdValue: true,
             },
           ],
         },
         {
-          title: 'Current Churn',
+          title: 'Churn',
           rowStart: 2,
           colSpan: 1,
           items: [
@@ -558,8 +548,7 @@ export default {
               name: 'Total Awards',
               value: this.totalAwards / 10e8,
               usdValue: true,
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
             },
           ],
         },

@@ -8,7 +8,7 @@
             <div class="item-detail">
               <div class="header">Volume (24hr)</div>
               <skeleton-item :loading="!totalSwap24USD" class="value">
-                {{ (totalSwap24USD / 1e2) | currency('$', 0) }}
+                ${{ (totalSwap24USD / 1e2) | number('0a') }}
               </skeleton-item>
             </div>
             <arrow-right-icon class="arrow-icon" />
@@ -30,13 +30,13 @@
           <nuxt-link to="/pools/tvl" class="stat-item stat-item-link">
             <LockIcon class="stat-image" />
             <div class="item-detail">
-              <div class="header">Total Value Locked (Pool + Bond)</div>
+              <div class="header">TVL (Pool + Bond)</div>
               <skeleton-item
                 :loading="!(totalValuePooled && network && network.bondMetrics)"
                 class="value"
               >
                 <template v-if="network && network.bondMetrics">
-                  {{ tvl | currency('$', 0) }}
+                  ${{ tvl | number('0a') }}
                 </template>
               </skeleton-item>
             </div>
@@ -60,10 +60,15 @@
           <div class="stat-item">
             <burn class="stat-image" />
             <div class="item-detail">
-              <div class="header">Max Supply | Burned RUNE</div>
-              <skeleton-item :loading="!totalBurnedRune" class="value">
-                {{ (5 * 1e8 - totalBurnedRune) | currency(runeCur(), 0) }} |
-                {{ totalBurnedRune | currency(runeCur(), 2) }}
+              <div class="header">Max | Total | Circulating | Burned</div>
+              <skeleton-item
+                :loading="!totalBurnedRune || !circulating"
+                class="value"
+              >
+                {{ (5 * 1e8 - totalBurnedRune) | number('0a') }} |
+                {{ runeSupply | number('0a') }} |
+                {{ circulating | number('0a') }} |
+                {{ totalBurnedRune | number('0a') }}
               </skeleton-item>
             </div>
           </div>
@@ -71,9 +76,9 @@
           <div class="stat-item">
             <stack-dollar class="stat-image" />
             <div class="item-detail">
-              <div class="header">Total Earnings (24hr)</div>
+              <div class="header">Earnings (24hr)</div>
               <skeleton-item :loading="!totalEarning24" class="value">
-                {{ totalEarning24 | currency('$', 0) }}
+                ${{ totalEarning24 | number('0a') }}
               </skeleton-item>
             </div>
           </div>
@@ -129,10 +134,10 @@
                     </div>
                   </td>
                   <td style="text-align: center">
-                    ${{ p.vol | number('0,0 a') }}
+                    ${{ p.vol | number('0,0a') }}
                   </td>
                   <td style="text-align: center">
-                    ${{ p.value | number('0,0 a') }}
+                    ${{ p.value | number('0,0a') }}
                   </td>
                 </tr>
                 <tr class="table-footer">
@@ -140,7 +145,7 @@
                     Total value locked in pools:
                   </td>
                   <td style="text-align: center">
-                    ${{ totalValuePooled | number('0,0 a') }}
+                    ${{ totalValuePooled | number('0,0a') }}
                   </td>
                 </tr>
               </tbody>
@@ -389,6 +394,13 @@ export default {
         1e8
       )
     },
+    circulating() {
+      if (!this.network) {
+        return
+      }
+
+      return +this.runeSupply - +this.network.totalReserve / 1e8
+    },
     runeSymbol() {
       return AssetCurrencySymbol.RUNE
     },
@@ -439,35 +451,23 @@ export default {
           colSpan: 1,
           items: [
             {
-              name: 'Total Active Bonded',
-              value:
-                (+this.network.bondMetrics?.totalActiveBond / 10 ** 8) *
-                this.runePrice,
-              filter: (v) => `${this.$options.filters.currency(v)}`,
+              name: 'Active Bond',
+              value: +this.network.bondMetrics?.totalActiveBond / 10 ** 8,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              usdValue: true,
             },
             {
-              name: 'Total Standby Bonded',
-              value:
-                (+this.network.bondMetrics?.totalStandbyBond / 10 ** 8) *
-                this.runePrice,
-              filter: (v) => `${this.$options.filters.currency(v)}`,
+              name: 'Standby Bond',
+              value: +this.network.bondMetrics?.totalStandbyBond / 10 ** 8,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              usdValue: true,
             },
             {
-              name: 'Total Bond (Effective)',
-              value: totalEffectiveBond * this.runePrice,
-              filter: (v) => `${this.$options.filters.currency(v)}`,
-            },
-            {
-              name: 'Hard Cap',
-              value: totalHardCap * this.runePrice,
-              filter: (v) => `${this.$options.filters.currency(v)}`,
-            },
-            {
-              name: 'Active Node Count',
+              name: 'Active Nodes',
               value: this.network.activeNodeCount,
             },
             {
-              name: 'Standby Node Count',
+              name: 'Standby Nodes',
               value: this.network.standbyNodeCount,
             },
           ],
@@ -478,19 +478,20 @@ export default {
           colSpan: 1,
           items: [
             {
-              name: 'Next Churn Countdown',
+              name: 'Next Churn',
               value: `${
                 this.isChurnHalted()
                   ? 'Churn paused'
                   : this.chainsHeight &&
                     blockTime(
-                      this.network.nextChurnHeight - this.chainsHeight.THOR
+                      this.network.nextChurnHeight - this.chainsHeight.THOR,
+                      true
                     )
               }`,
             },
             {
-              name: 'Pool Activation Countdown',
-              value: blockTime(this.network.poolActivationCountdown),
+              name: 'Next Pool',
+              value: blockTime(this.network.poolActivationCountdown, true),
             },
           ],
         },
@@ -508,17 +509,17 @@ export default {
             {
               name: 'Swap Count (30D)',
               value: this.stats.swapCount30d ?? 0,
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')}`,
             },
             {
               name: 'Total Swap Count',
               value: this.stats.swapCount ?? 0,
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')}`,
             },
             {
               name: 'Total Addresses',
               value: this.totalAddresses,
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')}`,
             },
           ],
         },
@@ -528,17 +529,16 @@ export default {
           colSpan: 1,
           items: [
             {
-              name: 'Total Value in Reserve',
-              value:
-                ((this.network.totalReserve ?? 0) / 10 ** 8) * this.runePrice,
-              filter: (v) => `${this.$options.filters.currency(v)}`,
+              name: 'Reserve',
+              value: (this.network.totalReserve ?? 0) / 10 ** 8,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              usdValue: true,
             },
             {
-              name: 'Total Value in Pool',
-              value:
-                ((this.network.totalPooledRune * 2 ?? 0) / 10 ** 8) *
-                this.runePrice,
-              filter: (v) => `${this.$options.filters.currency(v)}`,
+              name: 'Pools',
+              value: (this.network.totalPooledRune * 2 ?? 0) / 10 ** 8,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              usdValue: true,
             },
             {
               name: 'Pool Share Factor',
@@ -546,9 +546,10 @@ export default {
               filter: (v) => `${this.$options.filters.percent(v, 2)}`,
             },
             {
-              name: 'Total Value in RUNEPool',
-              value: (pol?.current_deposit / 1e8) * this.runePrice || 0,
-              filter: (v) => `${this.$options.filters.currency(v)}`,
+              name: 'RUNEPool',
+              value: pol?.current_deposit / 1e8 || 0,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              usdValue: true,
             },
             {
               name: 'RUNEPool Share of Pools',
@@ -1450,6 +1451,7 @@ export default {
 
     .item-detail {
       .value {
+        font-size: 1.15rem;
         font-weight: bold;
         color: var(--sec-font-color);
       }

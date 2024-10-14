@@ -205,8 +205,7 @@ export default {
             {
               name: 'TOR Price in RUNE',
               value: this.thorNetwork?.tor_price_in_rune / 1e8,
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0.0000')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0.0000a')} RUNE`,
               usdValue: true,
             },
             {
@@ -219,8 +218,7 @@ export default {
             {
               name: 'Total Pooled RUNE',
               value: this.network?.totalPooledRune / 10 ** 8,
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
@@ -228,15 +226,13 @@ export default {
               value:
                 +this.network?.bondMetrics?.totalActiveBond / 10 ** 8 +
                 +this.network?.bondMetrics?.totalActiveBond / 10 ** 8,
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+                filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
               name: 'Total Reserved RUNE',
               value: this.network?.totalReserve / 10 ** 8,
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
           ],
@@ -251,8 +247,7 @@ export default {
               value:
                 (this.network.blockRewards?.bondReward / 10 ** 8 ?? 0) *
                 (5256000 / 365),
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+                filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
@@ -260,8 +255,7 @@ export default {
               value:
                 (this.network.blockRewards?.poolReward / 10 ** 8 ?? 0) *
                 (5256000 / 365),
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+                filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
@@ -269,8 +263,7 @@ export default {
               value:
                 (this.network.blockRewards?.blockReward / 10 ** 8 ?? 0) *
                 (5256000 / 365),
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+                filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
@@ -279,8 +272,7 @@ export default {
                 ((this.network.blockRewards?.bondReward / 10 ** 8 ?? 0) *
                   (5256000 / 365)) /
                 +this.network?.activeNodeCount,
-              filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,0')}`,
+                filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
