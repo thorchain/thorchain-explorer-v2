@@ -3,29 +3,7 @@
     class="search-bar-container"
     :class="{ expanded: innerWidth < 992 && isSearch }"
   >
-    <div v-if="!isOverviewPage" class="left-section">
-      <div id="search-container" @click="search">
-        <input
-          ref="searchInput"
-          v-model="searchQuery"
-          :class="[
-            'search-bar-input',
-            { hidden: !(isSearch || innerWidth > 992) },
-          ]"
-          type="text"
-          :placeholder="
-            isSearch || innerWidth > 992
-              ? 'Search by Address / Txn Hash / THORName'
-              : false
-          "
-          @keyup.enter="find"
-          @focus="isSearch = true"
-          @blur="isSearch = false"
-        />
-        <SearchIcon class="search-icon" @click="find" />
-      </div>
-    </div>
-    <div class="right-section">
+    <div class="left-section">
       <div class="header-info">
         <div ref="header-info-1">
           <small style="color: var(--sec-font-color)">RUNE Price:</small>
@@ -50,6 +28,28 @@
           </small>
           <small v-else>-</small>
         </div>
+      </div>
+    </div>
+    <div class="right-section">
+      <div v-if="!isOverviewPage" id="search-container" @click="search">
+        <input
+          ref="searchInput"
+          v-model="searchQuery"
+          :class="[
+            'search-bar-input',
+            { hidden: !(isSearch || innerWidth > 992) },
+          ]"
+          type="text"
+          :placeholder="
+            isSearch || innerWidth > 992
+              ? 'Search by Address / Txn Hash / THORName'
+              : false
+          "
+          @keyup.enter="find"
+          @focus="isSearch = true"
+          @blur="isSearch = false"
+        />
+        <SearchIcon class="search-icon" @click="find" />
       </div>
       <div v-show="innerWidth >= 990" id="theme-wrapper">
         <div
@@ -294,8 +294,9 @@ export default {
     display: flex;
     align-items: end;
     justify-content: center;
-    flex-direction: column;
+    flex-direction: row;
     font-size: 0.8rem;
+    gap: 0.8rem;
 
     @include md {
       font-size: 0.9rem;
