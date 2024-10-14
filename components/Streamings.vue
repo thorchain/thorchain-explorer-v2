@@ -24,91 +24,97 @@
         </div>
       </div>
     </Card>
-    <div v-if="noStreaming" class="no-streaming">
-      <streamingIcon class="streaming-icon large-icon" />
-      <h3>There is no streaming swaps ongoing at the moment.</h3>
-    </div>
-    <template v-for="(o, i) in filteredStreamingSwaps" v-else>
-      <div :key="i" class="streaming-item">
-        <div class="upper-body">
-          <div class="asset-container">
-            <div v-if="o.inputAsset" class="asset-item">
-              <asset-icon :asset="o.inputAsset.asset" />
-              <span class="asset-name">
-                {{
-                  $options.filters.number(o.inputAsset.amount / 1e8, '0,0.0000')
-                }}
-                <small class="asset-text sec-color">{{
-                  o.inputAsset.asset
-                }}</small>
-              </span>
-            </div>
-            →
-            <div v-if="o.outputAsset" class="asset-item">
-              <asset-icon :asset="o.outputAsset.asset" />
-              <span class="asset-name">
-                <template v-if="o.outputAsset.amount">{{
-                  $options.filters.number(
-                    o.outputAsset.amount / 1e8,
-                    '0,0.0000'
-                  )
-                }}</template>
-                <small class="asset-text sec-color">
-                  {{ showAsset(o.outputAsset.asset) }}
-                </small>
-              </span>
-            </div>
-          </div>
-          <small
-            v-if="o.tx_id"
-            class="sec-color mono"
-            style="margin-left: auto"
-          >
-            <NuxtLink
-              v-if="isValidTx(o.tx_id)"
-              class="clickable"
-              :to="{ path: `/tx/${o.tx_id}` }"
-            >
-              {{ formatAddress(o.tx_id) }}
-            </NuxtLink>
-          </small>
-        </div>
-
-        <div class="extra-info">
-          <progress-bar
-            v-if="o.quantity > 0"
-            :width="(o.count / o.quantity) * 100"
-            height="4px"
-          />
-          <small style="white-space: nowrap">
-            {{ $options.filters.percent(o.count / o.quantity) }}
-          </small>
-        </div>
-
-        <small style="margin-top: 5px"
-          >{{ o.interval }} Blocks / Swap
-          <span class="sec-color"
-            ><small style="color: var(--font-color)">(ETA </small>
-            {{ o.remaningETA }}
-            <small style="color: var(--font-color)"
-              >, Remaining swaps: {{ o.quantity - o.count }}</small
-            >
-            <small style="color: var(--font-color)">)</small>
-          </span>
-        </small>
+    <div class="dashboard-card">
+      <div v-if="noStreaming" class="no-streaming">
+        <streamingIcon class="streaming-icon large-icon" />
+        <h3>There is no streaming swaps ongoing at the moment.</h3>
       </div>
-      <hr :key="i + '-hr'" class="hr-space" />
-    </template>
+      <template v-for="(o, i) in filteredStreamingSwaps" v-else>
+        <div :key="i" class="streaming-item">
+          <div class="upper-body">
+            <div class="asset-container">
+              <div v-if="o.inputAsset" class="asset-item">
+                <asset-icon :asset="o.inputAsset.asset" />
+                <span class="asset-name">
+                  {{
+                    $options.filters.number(
+                      o.inputAsset.amount / 1e8,
+                      '0,0.0000'
+                    )
+                  }}
+                  <small class="asset-text sec-color">{{
+                    o.inputAsset.asset
+                  }}</small>
+                </span>
+              </div>
+              →
+              <div v-if="o.outputAsset" class="asset-item">
+                <asset-icon :asset="o.outputAsset.asset" />
+                <span class="asset-name">
+                  <template v-if="o.outputAsset.amount">{{
+                    $options.filters.number(
+                      o.outputAsset.amount / 1e8,
+                      '0,0.0000'
+                    )
+                  }}</template>
+                  <small class="asset-text sec-color">
+                    {{ showAsset(o.outputAsset.asset) }}
+                  </small>
+                </span>
+              </div>
+            </div>
+            <small
+              v-if="o.tx_id"
+              class="sec-color mono"
+              style="margin-left: auto"
+            >
+              <NuxtLink
+                v-if="isValidTx(o.tx_id)"
+                class="clickable"
+                :to="{ path: `/tx/${o.tx_id}` }"
+              >
+                {{ formatAddress(o.tx_id) }}
+              </NuxtLink>
+            </small>
+          </div>
 
-    <template v-if="streamingSwaps.length > perPage" #footer>
+          <div class="extra-info">
+            <progress-bar
+              v-if="o.quantity > 0"
+              :width="(o.count / o.quantity) * 100"
+              height="4px"
+            />
+            <small style="white-space: nowrap">
+              {{ $options.filters.percent(o.count / o.quantity) }}
+            </small>
+          </div>
+
+          <small style="margin-top: 5px"
+            >{{ o.interval }} Blocks / Swap
+            <span class="sec-color"
+              ><small style="color: var(--font-color)">(ETA </small>
+              {{ o.remaningETA }}
+              <small style="color: var(--font-color)"
+                >, Remaining swaps: {{ o.quantity - o.count }}</small
+              >
+              <small style="color: var(--font-color)">)</small>
+            </span>
+          </small>
+        </div>
+        <hr :key="i + '-hr'" class="hr-space" />
+      </template>
+      <nuxt-link to="/swaps" class="swaps-nav">TOP Swaps (24hr)</nuxt-link>
+    </div>
+
+    <template #footer>
       <b-pagination
+        v-if="streamingSwaps.length > perPage"
         v-model="currentPage"
         class="center"
         :total-rows="streamingSwaps.length"
         :per-page="perPage"
       />
     </template>
-      <nuxt-link to="/swaps" class="swaps-nav">TOP Swaps (24hr)</nuxt-link>
   </Card>
 </template>
 
@@ -273,15 +279,15 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.dashboard-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 
-.swaps-nav {
-  position: absolute;
-  bottom: 10px; 
-  left: 50%;
-  transform: translateX(-50%);
-  width: 96%;
-  z-index: 1000;
-  margin-bottom: 2.5px;
+  .swaps-nav {
+    margin-top: auto;
+    justify-self: end;
+  }
 }
 
 .overview-box {
