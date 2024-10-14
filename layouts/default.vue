@@ -94,7 +94,7 @@ export default {
     this.updateInterval = setInterval(() => {
       this.getChainsHeight()
       this.getRunePrice()
-    }, 10000)
+    }, 15000)
 
     const changeHeight = () => {
       const vh = window.innerHeight * 0.01
@@ -146,7 +146,7 @@ Vue.mixin(global)
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  
+
   #footer {
     position: relative;
     margin-top: auto;

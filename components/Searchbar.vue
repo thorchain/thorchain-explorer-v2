@@ -3,8 +3,35 @@
     class="search-bar-container"
     :class="{ expanded: innerWidth < 992 && isSearch }"
   >
-    <div v-if="!isOverviewPage" class="left-section">
-      <div id="search-container" @click="search">
+    <div class="left-section">
+      <div class="header-info">
+        <div ref="header-info-1">
+          <small style="color: var(--sec-font-color)">RUNE Price:</small>
+          <small
+            v-if="runePrice"
+            :key="runePrice"
+            style="color: var(--primary-color)"
+            class="mono value"
+          >
+            {{ runePrice | currency }}
+          </small>
+          <small v-else>-</small>
+        </div>
+        <div ref="header-info-2">
+          <small style="color: var(--sec-font-color)">Node Count:</small>
+          <small
+            v-if="network && network.activeNodeCount"
+            style="color: var(--primary-color)"
+            class="mono value"
+          >
+            {{ network.activeNodeCount | number('0,0') }}
+          </small>
+          <small v-else>-</small>
+        </div>
+      </div>
+    </div>
+    <div class="right-section">
+      <div v-if="!isOverviewPage" id="search-container" @click="search">
         <input
           ref="searchInput"
           v-model="searchQuery"
@@ -23,33 +50,6 @@
           @blur="isSearch = false"
         />
         <SearchIcon class="search-icon" @click="find" />
-      </div>
-    </div>
-    <div class="right-section">
-      <div class="header-info">
-        <div ref="header-info-1">
-          <small style="color: var(--sec-font-color)">RUNE Price:</small>
-          <small
-            v-if="runePrice"
-            :key="runePrice"
-            style="color: var(--primary-color)"
-            class="mono value"
-          >
-            {{ runePrice | currency }}
-          </small>
-          <small v-else>-</small>
-        </div>
-        <div ref="header-info-2">
-          <small style="color: var(--sec-font-color)">Block height:</small>
-          <small
-            v-if="chainsHeight && chainsHeight['THOR']"
-            style="color: var(--primary-color)"
-            class="mono value"
-          >
-            {{ chainsHeight['THOR'] | number('0,0') }}
-          </small>
-          <small v-else>-</small>
-        </div>
       </div>
       <div v-show="innerWidth >= 990" id="theme-wrapper">
         <div
@@ -132,8 +132,8 @@ export default {
       fullscreen: 'getFullScreen',
       sidebar: 'getSidebar',
       runePrice: 'getRunePrice',
-      chainsHeight: 'getChainsHeight',
       extraHeaderInfo: 'getExtraHeaderInfo',
+      network: 'getNetworkData',
     }),
     isOverviewPage() {
       return this.$route.path === '/dashboard'
@@ -146,7 +146,7 @@ export default {
     $route(to, from) {
       this.searchQuery = ''
     },
-    chainsHeight(n, o) {
+    runePrice(n, o) {
       this.animate('header-info-1', 'animate')
       this.animate('header-info-2', 'animate')
     },
@@ -278,15 +278,15 @@ export default {
   &.expanded {
     gap: 0;
     .left-section {
+      display: none;
+      gap: 0;
+    }
+
+    .right-section {
       #search-container {
         flex: 1;
         display: flex;
       }
-    }
-
-    .right-section {
-      display: none;
-      gap: 0;
     }
   }
 
@@ -294,11 +294,13 @@ export default {
     display: flex;
     align-items: end;
     justify-content: center;
-    flex-direction: column;
+    flex-direction: row;
     font-size: 0.8rem;
+    gap: 0.8rem;
 
     @include md {
       font-size: 0.9rem;
+      flex-direction: row;
     }
 
     .break {
@@ -331,17 +333,15 @@ export default {
   }
 
   .left-section {
-    flex: 1;
     display: flex;
     align-items: center;
-    gap: 10px;
-    width: 100%;
+    gap: 0 8px;
+    height: 35px;
   }
 
   .right-section {
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
     justify-content: end;
     gap: 0 8px;
     flex: 1;

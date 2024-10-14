@@ -122,7 +122,7 @@
               </span>
             </div>
             →
-            <div v-if="swap.outputAsset" class="asset-item">
+            <div v-if="swap.outputAsset.asset" class="asset-item">
               <asset-icon :asset="swap.outputAsset.asset" />
               <span class="asset-name-swaps">
                 <template v-if="swap.outputAsset.amount">
@@ -138,6 +138,7 @@
                 }}</small>
               </span>
             </div>
+            <span v-else class="mini-bubble info">pending</span>
           </div>
           <div class="right-section">
             <small class="mono"
