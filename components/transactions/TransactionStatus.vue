@@ -10,6 +10,7 @@
             row.type === 'send' ||
             row.type === 'withdraw' ||
             row.type === 'runePoolWithdraw',
+          danger: row.type === 'failed',
         },
       ]"
     >

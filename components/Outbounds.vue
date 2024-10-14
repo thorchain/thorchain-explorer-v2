@@ -141,7 +141,7 @@
           </div>
           <div class="right-section">
             <small class="mono"
-              >To
+              >Address
               <NuxtLink
                 class="clickable"
                 :to="{ path: `/address/${swap.inputAsset.address}` }"
@@ -248,7 +248,19 @@ export default {
           typeof resData === 'object' &&
           Array.isArray(resData.actions)
         ) {
-          this.topSwaps = resData.actions.map((swap) => {
+          this.topSwaps = resData.actions.slice(0, 10).map((swap) => {
+            let outputAsset = swap.out[0]
+            if (swap.in.length > 0) {
+              const nonRUNE = swap.out.filter(
+                (s) => s.coins[0].asset !== 'THOR.RUNE'
+              )
+              if (nonRUNE && nonRUNE.length > 0) {
+                outputAsset = swap.out.find(
+                  (s) => s.coins[0].asset !== 'THOR.RUNE'
+                )
+              }
+            }
+
             return {
               date: moment(swap.date / 1e6).format('MMM D, HH:MM'),
               txID: swap.in[0]?.txID,
@@ -258,9 +270,9 @@ export default {
                 amount: swap.in[0]?.coins[0]?.amount,
               },
               outputAsset: {
-                address: swap.out[0]?.address,
-                asset: swap.out[0]?.coins[0]?.asset,
-                amount: swap.out[0]?.coins[0]?.amount,
+                address: outputAsset?.address,
+                asset: outputAsset?.coins[0]?.asset,
+                amount: outputAsset?.coins[0]?.amount,
               },
             }
           })
