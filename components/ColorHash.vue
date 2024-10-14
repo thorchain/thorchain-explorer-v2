@@ -11,5 +11,9 @@ export default {
   height: 10px;
   width: 10px;
   border-radius: 50%;
+
+  &:hover {
+    filter: brightness(150%);
+  }
 }
 </style>

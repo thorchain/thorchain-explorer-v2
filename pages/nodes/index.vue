@@ -417,12 +417,12 @@ export default {
       }
 
       if (this.churnProgressValue) {
-        churnValue += ` / ${this.$options.filters.percent(this.churnProgressValue, '0,0.000')}`
+        churnValue += ` | ${this.$options.filters.percent(this.churnProgressValue, '0,0.000')}`
       }
 
       return [
         {
-          title: 'Active Bonds',
+          title: 'Active',
           rowStart: 1,
           colSpan: 1,
           items: [
@@ -435,7 +435,6 @@ export default {
               value: this.bondMetrics?.bondMetrics?.totalActiveBond / 10 ** 8,
               usdValue: true,
               filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
-
             },
             {
               name: 'Average Bond',
@@ -487,7 +486,7 @@ export default {
           ],
         },
         {
-          title: 'Standby Bonds',
+          title: 'Standby',
           rowStart: 1,
           colSpan: 1,
           items: [
@@ -505,7 +504,7 @@ export default {
               name: 'Average Bond',
               value:
                 this.bondMetrics?.bondMetrics?.averageStandbyBond / 10 ** 8,
-                filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
@@ -529,13 +528,14 @@ export default {
               name: 'Minimum Bond',
               value:
                 this.bondMetrics?.bondMetrics?.minimumStandbyBond / 10 ** 8,
-                filter: (v) => `${this.$options.filters.number(v, '0,0.00a')} RUNE`,
+              filter: (v) =>
+                `${this.$options.filters.number(v, '0,0.00a')} RUNE`,
               usdValue: true,
             },
           ],
         },
         {
-          title: 'Current Churn',
+          title: 'Churn',
           rowStart: 2,
           colSpan: 1,
           items: [

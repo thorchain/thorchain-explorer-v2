@@ -76,9 +76,9 @@
                         />
                       </template>
                       <template v-if="item.usdValue" class="item-value">
-                        <div v-if="item.value && runePrice">
+                        <small v-if="item.value && runePrice">
                           (${{ (runePrice * item.value) | number('0a') }})
-                        </div>
+                        </small>
                       </template>
                     </div>
                   </skeleton-item>
