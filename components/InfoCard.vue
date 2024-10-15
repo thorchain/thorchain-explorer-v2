@@ -1,15 +1,15 @@
 <template>
   <component :is="inner ? 'div' : 'card'" extra-class="info-card">
-    <div class="flex-containers">
+    <div :class="grid ? 'grid-containers' : 'flex-containers'">
       <div
         v-for="(container, key, i) in flexContainers"
         :key="`container-${i}`"
-        :class="['flex-container']"
+        :class="[grid ? 'grid-container' : 'flex-container']"
       >
         <div
           v-for="(section, rowIndex) in container"
           :key="`row-${rowIndex}`"
-          class="flex-section"
+          :class="grid ? 'grid-section' : 'flex-section'"
           :style="addStyle(section)"
         >
           <template v-if="section.allSlot">
@@ -17,11 +17,17 @@
           </template>
           <template v-else>
             <h4>{{ section.title }}</h4>
-            <div :class="['flex-items', { cluster: section.cluster }]">
+            <div
+              :class="
+                grid
+                  ? 'grid-items'
+                  : ['flex-items', { cluster: section.cluster }]
+              "
+            >
               <div
                 v-for="(item, colIndex) in section.items"
                 :key="`item-${rowIndex}-${colIndex}`"
-                class="flex-item"
+                :class="grid ? 'grid-item' : 'flex-item'"
                 :style="[
                   {
                     borderTop: item.header
@@ -124,6 +130,9 @@ export default {
 
       return flexes
     },
+    grid() {
+      return this.options.some((option) => option.grid)
+    },
   },
   methods: {
     addStyle(item) {
@@ -149,19 +158,24 @@ export default {
   font-size: 0.9rem;
   margin-right: 12px;
 }
-.flex-containers {
-  .flex-container {
+.flex-containers,
+.grid-containers {
+  .flex-container,
+  .grid-container {
     display: flex;
     flex-wrap: wrap;
     min-width: 100%;
     overflow: hidden;
+    flex-direction: column;
 
     @include md {
       margin-bottom: 1rem;
+      flex-direction: row;
 
       &:last-of-type {
         margin-bottom: 0;
-        .flex-section {
+        .flex-section,
+        .grid-section {
           padding-bottom: 0;
           border-bottom: none !important;
         }
@@ -169,7 +183,8 @@ export default {
     }
 
     @include sm {
-      .flex-item {
+      .flex-item,
+      .grid-item {
         flex-direction: row;
       }
     }
@@ -187,71 +202,102 @@ export default {
       padding-bottom: 0.7rem;
       margin-bottom: 0.7rem;
       border-bottom: 1px solid var(--border-color);
+    }
 
-      @include md {
-        margin-bottom: 0;
-        border-bottom: 1px solid var(--border-color);
+    .grid-section {
+      gap: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      margin: 0 0.7rem;
+      padding-bottom: 0.7rem;
+      margin-bottom: 0.7rem;
+    }
+    .grid-items {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 1rem;
 
-        // &:nth-of-type(even) {
-        //   border-left: 1px solid var(--border-color);
-        // }
+      .grid-item {
+        display: flex;
+        flex-direction: column;
+        font-size: 0.9rem;
+        padding: 0.5rem;
+      }
+      .item-name {
+        display: flex;
+        font-size: 14px;
+
+        .header-icon {
+          fill: var(--font-color);
+          height: 12px;
+
+          @include md {
+            height: 16px;
+          }
+        }
       }
 
-      .flex-items {
-        gap: 0.3rem 0;
-        min-width: 320px;
+      .item-value {
+        display: flex;
+        font-size: 16px;
+        gap: 5px;
+        color: var(--sec-font-color);
+        font-family: 'Roboto Mono';
+      }
+    }
+    .flex-items {
+      gap: 0.3rem 0;
+      min-width: 320px;
 
-        &.cluster {
+      &.cluster {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+
+        .flex-item,
+        .grid-item {
+          justify-content: start;
+        }
+      }
+
+      .flex-item {
+        display: flex;
+        flex-direction: column;
+        font-size: 0.9rem;
+        justify-content: space-between;
+
+        @include md {
+          flex-direction: row;
+          font-size: 1rem;
+          align-items: center;
+          padding: 4px 0;
+        }
+
+        .info-loader {
+          margin-top: 0;
+          min-width: 200px;
+        }
+
+        .item-name {
           display: flex;
-          gap: 8px;
-          flex-wrap: wrap;
+          font-size: 14px;
 
-          .flex-item {
-            justify-content: start;
+          .header-icon {
+            fill: var(--font-color);
+            height: 12px;
+
+            @include md {
+              height: 16px;
+            }
           }
         }
 
-        .flex-item {
+        .item-value {
           display: flex;
-          flex-direction: column;
-          font-size: 0.9rem;
-          justify-content: space-between;
-
-          @include md {
-            flex-direction: row;
-            font-size: 1rem;
-            align-items: center;
-            padding: 4px 0;
-          }
-
-          .info-loader {
-            margin-top: 0;
-            min-width: 200px;
-          }
-
-          .item-name {
-            display: flex;
-            align-items: center;
-            font-size: 14px;
-
-            .header-icon {
-              fill: var(--font-color);
-              height: 12px;
-
-              @include md {
-                height: 16px;
-              }
-            }
-          }
-
-          .item-value {
-            display: flex;
-            font-size: 16px;
-            align-items: center;
-            gap: 5px;
-            color: var(--sec-font-color);
-            font-family: 'Roboto Mono';
-          }
+          font-size: 16px;
+          gap: 5px;
+          color: var(--sec-font-color);
+          font-family: 'Roboto Mono';
         }
       }
     }

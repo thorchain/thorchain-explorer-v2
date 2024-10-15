@@ -80,6 +80,8 @@ export default {
       searchTerm: '',
       churnProgressValue: 0,
       totalAwards: undefined,
+      averageApy: undefined,
+      calculatedValue: undefined,
     }
   },
   computed: {
@@ -425,25 +427,26 @@ export default {
           title: 'Active',
           rowStart: 1,
           colSpan: 1,
+          grid: true,
           items: [
             {
-              name: 'Total Node Count',
+              name: 'Node',
               value: this.bondMetrics?.activeNodeCount,
             },
             {
-              name: 'Total Bond',
+              name: 'Bond',
               value: this.bondMetrics?.bondMetrics?.totalActiveBond / 10 ** 8,
               usdValue: true,
               filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
             },
             {
-              name: 'Average Bond',
+              name: 'Average',
               value: this.bondMetrics?.bondMetrics?.averageActiveBond / 10 ** 8,
               filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
-              name: 'Maximum Bond',
+              name: 'Maximum',
               value: Math.floor(
                 Math.floor(
                   (Number.parseInt(
@@ -456,30 +459,13 @@ export default {
               usdValue: true,
             },
             {
-              name: 'Median Bond',
-              value: Math.floor(
-                (Number.parseInt(
-                  this.bondMetrics?.bondMetrics?.medianActiveBond
-                ) ?? 0) /
-                  10 ** 8
-              ),
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
-              usdValue: true,
-            },
-            {
-              name: 'Minimum Bond',
+              name: 'Minimum',
               value: Math.floor(
                 (Number.parseInt(
                   this.bondMetrics?.bondMetrics?.minimumActiveBond
                 ) ?? 0) /
                   10 ** 8
               ),
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
-              usdValue: true,
-            },
-            {
-              name: 'Max efficient bond',
-              value: this.calculateHardCap(),
               filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
@@ -491,24 +477,24 @@ export default {
           colSpan: 1,
           items: [
             {
-              name: 'Total Node Count',
+              name: 'Nodes',
               value: this.bondMetrics?.standbyNodeCount,
             },
             {
-              name: 'Total Bond',
+              name: 'Bond',
               value: this.bondMetrics?.bondMetrics?.totalStandbyBond / 10 ** 8,
               filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
-              name: 'Average Bond',
+              name: 'Average',
               value:
                 this.bondMetrics?.bondMetrics?.averageStandbyBond / 10 ** 8,
               filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
-              name: 'Maximum Bond',
+              name: 'Maximum',
               value: Math.floor(
                 (Number.parseInt(
                   this.bondMetrics?.bondMetrics?.maximumStandbyBond
@@ -519,13 +505,7 @@ export default {
               usdValue: true,
             },
             {
-              name: 'Median Bond',
-              value: this.calMedianBond(),
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
-              usdValue: true,
-            },
-            {
-              name: 'Minimum Bond',
+              name: 'Minimum',
               value:
                 this.bondMetrics?.bondMetrics?.minimumStandbyBond / 10 ** 8,
               filter: (v) =>
@@ -538,17 +518,35 @@ export default {
           title: 'Churn',
           rowStart: 2,
           colSpan: 1,
+
           items: [
             {
-              name: 'Churn',
+              name: 'Time',
               value: churnValue,
               valueSlot: 'churn',
             },
             {
-              name: 'Total Awards',
+              name: 'Total Rewards',
               value: this.totalAwards / 10e8,
               usdValue: true,
               filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+            },
+            {
+              name: 'Average APY ',
+              value: this.averageApy,
+              filter: (v) => `${this.$options.filters.percent(v, '0,0')} `,
+            },
+            {
+              name: 'Monthly Node Return',
+              value: this.calculatedValue / 1e8,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              usdValue: true,
+            },
+            {
+              name: 'Annual Nodes Return ',
+              value: this.annualNodes / 1e8,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              usdValue: true,
             },
           ],
         },
@@ -751,6 +749,9 @@ export default {
     chainsHeight(n, o) {
       this.churnProgress()
       this.totalAwardsCalc()
+      this.averageApysCalc()
+      this.monthlyNodeReturn()
+      this.annualNodeReturn()
     },
   },
   mounted() {
@@ -800,6 +801,53 @@ export default {
       for (const a in this.nodesQuery) {
         this.totalAwards = this.totalAwards + +this.nodesQuery[a].current_award
       }
+    },
+    monthlyNodeReturn() {
+      if (!this.totalAwards || !this.nodesQuery || !this.churnProgressValue) {
+        return
+      }
+
+      const totalActiveNodes = this.nodesQuery.filter(
+        (node) => node.status === 'Active'
+      ).length
+      const churnProgress = this.churnProgressValue
+
+      const calculatedValue =
+        (this.totalAwards / totalActiveNodes) * (30 / (3 * churnProgress))
+
+      this.calculatedValue = calculatedValue
+    },
+    annualNodeReturn() {
+      if (!this.totalAwards || !this.nodesQuery || !this.churnProgressValue) {
+        return
+      }
+
+      const totalActiveNodes = this.nodesQuery.filter(
+        (node) => node.status === 'Active'
+      ).length
+      const churnProgress = this.churnProgressValue
+
+      const annualNodes =
+        (this.totalAwards / totalActiveNodes) * (365 / (3 * churnProgress))
+
+      this.annualNodes = annualNodes
+    },
+
+    averageApysCalc() {
+      if (!this.nodesQuery || this.nodesQuery.length === 0) {
+        this.averageApy = 0
+        return
+      }
+
+      let totalApy = 0
+      for (const node of this.nodesQuery) {
+        totalApy += +node.apy
+      }
+      const totalActiveNodes = this.nodesQuery.filter(
+        (node) => node.status === 'Active'
+      ).length
+
+      this.averageApy = totalApy / totalActiveNodes
     },
     churnProgress() {
       if (!this.bondMetrics || !this.churnInterval) {

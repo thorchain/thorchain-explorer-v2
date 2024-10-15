@@ -1,13 +1,16 @@
 <template>
   <div class="navbar-container" :class="{ menu: menu }">
     <div class="header">
-      <div class="logo-wrapper">
-        <ThorchainLogo class="logo" />
-        <div class="thorchain-name">
-          <strong>THORChain</strong>
-          Explorer
+      <nuxt-link to="/dashboard" class="logo-link">
+        <div class="logo-wrapper">
+          <ThorchainLogo class="logo" />
+          <div class="thorchain-name">
+            <strong>THORChain</strong>
+            Explorer
+          </div>
         </div>
-      </div>
+      </nuxt-link>
+
       <div class="menu-wrapper" @click="toggleMenu()">
         <MenuIcon v-if="!menu" class="icon" />
         <CrossIcon v-else class="icon" />
@@ -370,7 +373,10 @@ export default {
   transition: height 0.3s;
   max-width: 90rem;
   margin: auto;
-
+  .logo-link {
+    color: var(--font-color);
+    text-decoration: none;
+  }
   .submenu {
     display: none;
     flex-direction: column;
