@@ -282,7 +282,7 @@ export default {
 .dashboard-card {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: calc(100% - 45px);
 
   .swaps-nav {
     margin-top: auto;

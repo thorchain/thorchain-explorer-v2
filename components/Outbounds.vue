@@ -21,8 +21,11 @@
             <div class="stats-container">
               <div>
                 <span class="item-value">Amount: </span>
-                <span class="outbound-overall mono" style="padding-right: 0.8rem">
-                  ${{  (totalScheduledValue) | number('0a')}}
+                <span
+                  class="outbound-overall mono"
+                  style="padding-right: 0.8rem"
+                >
+                  ${{ totalScheduledValue | number('0a') }}
                 </span>
               </div>
               <div>
@@ -44,7 +47,8 @@
                 <span
                   class="outbound-overall mono"
                   style="padding-right: 0.8rem"
-                  >  ${{(totalOutboundValue) | number('0a') }}</span
+                >
+                  ${{ totalOutboundValue | number('0a') }}</span
                 >
               </div>
               <div>
@@ -252,14 +256,7 @@ export default {
           this.topSwaps = resData.actions.slice(0, 10).map((swap) => {
             let outputAsset = swap.out[0]
             if (swap.in.length > 0) {
-              const nonRUNE = swap.out.filter(
-                (s) => s.coins[0].asset !== 'THOR.RUNE'
-              )
-              if (nonRUNE && nonRUNE.length > 0) {
-                outputAsset = swap.out.find(
-                  (s) => s.coins[0].asset !== 'THOR.RUNE'
-                )
-              }
+              outputAsset = swap.out.find((s) => s.affiliate !== true)
             }
 
             return {
@@ -322,7 +319,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.item-value{
+.item-value {
   font-size: 14px;
 }
 .top-swap-item {
