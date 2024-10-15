@@ -15,6 +15,7 @@
       ]"
     >
       <swap-icon v-if="row.type === 'swap'" class="status-icon" />
+      <name v-else-if="row.type === 'thorname'" class="status-icon" />
       <refund-icon v-else-if="row.type === 'refund'" class="status-icon" />
       <dove-icon v-else-if="row.type === 'send'" class="status-icon" />
       <piggy-icon v-else-if="row.type === 'addLiquidity'" class="status-icon" />
@@ -41,6 +42,7 @@ import PiggyIcon from '~/assets/images/piggy.svg?inline'
 import Deposit from '~/assets/images/deposit.svg?inline'
 import Exit from '~/assets/images/exit.svg?inline'
 import Unbond from '~/assets/images/unbond.svg?inline'
+import Name from '~/assets/images/name.svg?inline'
 
 export default {
   components: {
@@ -51,6 +53,7 @@ export default {
     Deposit,
     Exit,
     Unbond,
+    Name,
   },
   props: {
     row: {

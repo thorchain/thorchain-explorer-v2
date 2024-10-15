@@ -315,6 +315,8 @@ const memoToType = {
   'loan-': 'loanRepayment',
   'trade+': 'tradeDeposit',
   'trade-': 'tradeWithdraw',
+  'pool+': 'runePoolDeposit',
+  'pool-': 'runePoolWithdraw',
 }
 
 export function parseMemoToTxType(memo) {

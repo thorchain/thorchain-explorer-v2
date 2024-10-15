@@ -63,6 +63,7 @@ import {
   isInternalTx,
   tradeToAsset,
   assetToString,
+  parseMemoToTxType,
 } from '~/utils'
 import Accordion from '~/components/Accordion.vue'
 
@@ -546,9 +547,18 @@ export default {
                 is: accordions.action?.thorname,
               },
               {
+                key: 'Address',
+                value: accordions.action?.address,
+                is: accordions.action?.address,
+                type: 'address',
+                formatter: this.formatAddress,
+              },
+              {
                 key: 'Owner',
                 value: accordions.action?.owner,
                 is: accordions.action?.owner,
+                type: 'address',
+                formatter: this.formatAddress,
               },
               {
                 key: 'Expire',
@@ -559,7 +569,18 @@ export default {
               {
                 key: 'Registration Fee',
                 value: `${accordions.action?.registrationFee}`,
-                is: true,
+                is: accordions.action?.registrationFee,
+              },
+              // Failed Deposit
+              {
+                key: 'Reason',
+                value: `${accordions.action?.reason}`,
+                is: accordions.action?.reason,
+              },
+              {
+                key: 'Code',
+                value: `${accordions.action?.code}`,
+                is: accordions.action?.code,
               },
             ],
           },
@@ -807,6 +828,14 @@ export default {
           memo
         )
         this.$set(this, 'cards', [this.createCard(cards, accordions)])
+      } else if (midgardAction.actions[0].type === 'failed') {
+        const { cards, accordions } = this.createFailedState(
+          thorStatus,
+          midgardAction,
+          thorTx,
+          memo
+        )
+        this.$set(this, 'cards', [this.createCard(cards, accordions)])
       } else {
         const finalCards = []
         for (let i = 0; i < midgardAction?.actions?.length; i++) {
@@ -823,12 +852,13 @@ export default {
     },
     createThornameState(thorStatus, action, thorTx) {
       action = action.actions[0]
+      const timeStamp = moment.unix(action?.date / 1e9)
 
       const ins = action?.in.map((a) => ({
         txid: a?.txID,
         from: a?.address,
         icon: require('@/assets/images/user.svg?inline'),
-        address: action.in[0]?.address,
+        address: action.metadata?.thorname?.address,
         done: true,
       }))
 
@@ -856,6 +886,51 @@ export default {
             thorname: action.metadata?.thorname?.thorname,
             owner: action.metadata?.thorname?.owner,
             registrationFee: action.metadata?.thorname?.registrationFee,
+            address: action.metadata?.thorname?.address,
+            height: action?.height,
+            timeStamp,
+            done: true,
+          },
+          out: [],
+        },
+      }
+    },
+    createFailedState(thorStatus, action, thorTx) {
+      action = action.actions[0]
+      const timeStamp = moment.unix(action?.date / 1e9)
+      const { type } = this.parseMemo(action?.metadata?.failed.memo)
+
+      const ins = action?.in.map((a) => ({
+        asset: this.parseMemoAsset(a.coins[0]?.asset),
+        amount: a.coins[0].amount,
+        txid: a?.txID,
+        from: a?.address,
+        gas: thorStatus.tx?.gas ? thorStatus.tx?.gas[0].amount : null,
+        gasAsset: thorStatus.tx?.gas
+          ? this.parseMemoAsset(thorStatus.tx?.gas[0].asset, this.pools)
+          : null,
+        done: true,
+      }))
+
+      return {
+        cards: {
+          title: type,
+          in: ins,
+          middle: {
+            pending: false,
+            fail: true,
+          },
+          out: [],
+        },
+        accordions: {
+          in: ins,
+          action: {
+            type,
+            memo: action.metadata?.failed?.memo,
+            reason: action.metadata?.failed?.reason,
+            code: action.metadata?.failed?.code,
+            height: action?.height,
+            timeStamp,
             done: true,
           },
           out: [],
@@ -864,6 +939,7 @@ export default {
     },
     createBondState(thorStatus, action, thorTx) {
       action = action.actions[0]
+      const timeStamp = moment.unix(action?.date / 1e9)
 
       const ins = action?.in.map((a) => ({
         asset: this.parseMemoAsset(a.coins[0]?.asset),
@@ -909,6 +985,8 @@ export default {
             memo: action.metadata?.bond?.memo,
             nodeAddress: action.metadata?.bond?.nodeAddress,
             provider: action.metadata?.bond?.provider,
+            timeStamp,
+            height: action?.height,
             done: true,
           },
           out: outs,
@@ -917,6 +995,7 @@ export default {
     },
     createUnbondState(thorStatus, action, thorTx) {
       action = action.actions[0]
+      const timeStamp = moment.unix(action?.date / 1e9)
 
       const ins = action?.in.map((a) => ({
         asset: this.parseMemoAsset(a.coins[0]?.asset),
@@ -959,6 +1038,8 @@ export default {
             type: 'Unbond',
             memo: action.metadata?.bond?.memo,
             nodeAddress: action.metadata?.bond?.nodeAddress,
+            timeStamp,
+            height: action?.height,
             done: true,
           },
           out: outs,
@@ -966,6 +1047,8 @@ export default {
       }
     },
     createTradeDepositState(thorStatus, action, thorTx) {
+      action = action.actions[0]
+      const timeStamp = moment.unix(action?.date / 1e9)
       const memo = this.parseMemo(thorStatus.tx?.memo)
 
       const ast = this.parseMemoAsset(thorStatus.tx.coins[0].asset, this.pools)
@@ -1010,6 +1093,8 @@ export default {
           action: {
             type: 'Deposit',
             memo: thorStatus.tx?.memo,
+            height: action?.height,
+            timeStamp,
             done: true,
           },
           out: outs,
@@ -1017,6 +1102,8 @@ export default {
       }
     },
     createTradeWithdrawState(thorStatus, action, thorTx) {
+      action = action.actions[0]
+      const timeStamp = moment.unix(action?.date / 1e9)
       const memo = this.parseMemo(thorStatus.tx?.memo)
 
       const ast = this.parseMemoAsset(thorStatus.tx.coins[0].asset, this.pools)
@@ -1072,6 +1159,8 @@ export default {
           action: {
             type: 'Withdraw',
             memo: thorStatus.tx?.memo,
+            height: action?.height,
+            timeStamp,
             done: true,
           },
           out: outs,
@@ -1109,6 +1198,7 @@ export default {
           action: {
             type: 'Action',
             timeStamp: moment.unix(action?.date / 1e9) || null,
+            height: action?.height,
             done: true,
           },
           out: outs,

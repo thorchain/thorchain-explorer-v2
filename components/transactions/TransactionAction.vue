@@ -250,11 +250,30 @@
         </span>
         <right-arrow class="action-type" />
         <span
-          :key="'in-' + i"
           v-tooltip="row.metadata.failed.reason"
           class="mini-bubble danger customized reason"
         >
           see reason
+        </span>
+      </template>
+    </div>
+    <div v-else-if="row && row.type === 'thorname'" class="action-cell">
+      <template v-if="row.metadata && row.metadata.thorname">
+        <span class="mini-bubble customized">
+          <asset-icon
+            :height="'1.2rem'"
+            :asset="baseChainAsset(row.metadata.thorname.chain)"
+          />
+          <nuxt-link
+            class="clickable"
+            :to="`/address/${row.metadata.thorname.address}`"
+          >
+            {{ addressFormatV2(row.metadata.thorname.address, 4) }}
+          </nuxt-link>
+        </span>
+        <right-arrow class="action-type" />
+        <span class="mini-bubble info customized">
+          {{ row.metadata.thorname.thorname }}
         </span>
       </template>
     </div>
@@ -327,7 +346,7 @@ export default {
       cursor: pointer;
 
       &:hover {
-        color: var(--primary-color);
+        background-color: var(--red-bg);
       }
     }
   }
