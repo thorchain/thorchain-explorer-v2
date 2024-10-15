@@ -221,6 +221,7 @@ export default {
         display: flex;
         flex-direction: column;
         font-size: 0.9rem;
+        padding: 0.5rem;
       }
       .item-name {
         display: flex;

@@ -81,7 +81,7 @@ export default {
       churnProgressValue: 0,
       totalAwards: undefined,
       averageApy: undefined,
-      calculatedValue:undefined,
+      calculatedValue: undefined,
     }
   },
   computed: {
@@ -538,14 +538,13 @@ export default {
             },
             {
               name: 'Monthly Node Return',
-              value:this.calculatedValue/1e8 ,
+              value: this.calculatedValue / 1e8,
               filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
-
             },
             {
               name: 'Annual Nodes Return ',
-              value:this.annualNodes/10e8 ,
+              value: this.annualNodes / 1e8,
               filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
@@ -751,8 +750,8 @@ export default {
       this.churnProgress()
       this.totalAwardsCalc()
       this.averageApysCalc()
-      this.calculatedValueCalc()
-      this.annualNodesCalc()
+      this.monthlyNodeReturn()
+      this.annualNodeReturn()
     },
   },
   mounted() {
@@ -796,7 +795,6 @@ export default {
     async updateNodes() {
       const { data: nodesInfo } = await this.$api.getNodesInfo()
       this.nodesQuery = nodesInfo
-      console.log('Updated Nodes Info:', this.nodesQuery)
     },
     totalAwardsCalc() {
       this.totalAwards = 0
@@ -804,58 +802,53 @@ export default {
         this.totalAwards = this.totalAwards + +this.nodesQuery[a].current_award
       }
     },
-    calculatedValueCalc() {
-    if (!this.totalAwards || !this.nodesQuery || !this.churnProgressValue) {
-      return;
-    }
-    
-    const totalActiveNodes = this.nodesQuery.filter(node => node.status === 'Active').length;
-    const churnProgress = this.churnProgressValue;
+    monthlyNodeReturn() {
+      if (!this.totalAwards || !this.nodesQuery || !this.churnProgressValue) {
+        return
+      }
 
-    const calculatedValue = (this.totalAwards / totalActiveNodes) * (30 / (3 * churnProgress));
-    console.log('Calculated totalAwards:', this.totalAwards);
-    console.log('Calculated totalActiveNodes:', totalActiveNodes);
-    console.log('Calculated churnProgress:', churnProgress);
+      const totalActiveNodes = this.nodesQuery.filter(
+        (node) => node.status === 'Active'
+      ).length
+      const churnProgress = this.churnProgressValue
 
+      const calculatedValue =
+        (this.totalAwards / totalActiveNodes) * (30 / (3 * churnProgress))
 
-    this.calculatedValue = calculatedValue;
+      this.calculatedValue = calculatedValue
+    },
+    annualNodeReturn() {
+      if (!this.totalAwards || !this.nodesQuery || !this.churnProgressValue) {
+        return
+      }
 
-    console.log('Calculated Monthly Node Return:', this.calculatedValue);
-  },
-  annualNodesCalc() {
-    if (!this.totalAwards || !this.nodesQuery || !this.churnProgressValue) {
-      return;
-    }
-    
-    const totalActiveNodes = this.nodesQuery.filter(node => node.status === 'Active').length;
-    const churnProgress = this.churnProgressValue;
+      const totalActiveNodes = this.nodesQuery.filter(
+        (node) => node.status === 'Active'
+      ).length
+      const churnProgress = this.churnProgressValue
 
-    const annualNodes = (this.totalAwards / totalActiveNodes) * (365 / (3 * churnProgress));
-    console.log('Calculated totalAwards:', this.totalAwards);
-    console.log('Calculated totalActiveNodes:', totalActiveNodes);
-    console.log('Calculated churnProgress:', churnProgress);
+      const annualNodes =
+        (this.totalAwards / totalActiveNodes) * (365 / (3 * churnProgress))
 
-    this.annualNodes = annualNodes;
-
-    console.log('Calculated Monthly Node Return:', this.annualNodes);
-  },
+      this.annualNodes = annualNodes
+    },
 
     averageApysCalc() {
-  if (!this.nodesQuery || this.nodesQuery.length === 0) {
-    this.averageApy = 0;
-    return;
-  }
+      if (!this.nodesQuery || this.nodesQuery.length === 0) {
+        this.averageApy = 0
+        return
+      }
 
-  let totalApy = 0;
-  for (const node of this.nodesQuery) {
-    totalApy += +node.apy;
-  }
-  const totalActiveNodes = this.nodesQuery.filter(node => node.status === 'Active').length;
+      let totalApy = 0
+      for (const node of this.nodesQuery) {
+        totalApy += +node.apy
+      }
+      const totalActiveNodes = this.nodesQuery.filter(
+        (node) => node.status === 'Active'
+      ).length
 
-
-  this.averageApy = totalApy / totalActiveNodes;
-  console.log('Average APY:', this.averageApy);
-},
+      this.averageApy = totalApy / totalActiveNodes
+    },
     churnProgress() {
       if (!this.bondMetrics || !this.churnInterval) {
         return
