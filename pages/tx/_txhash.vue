@@ -11,7 +11,7 @@
           <Copy :str-copy="$route.params.txhash" />
         </div>
         <div id="qrcode" class="item">
-          <qr-btn></qr-btn>
+          <qr-btn :qrcode="$route.params.txhash"></qr-btn>
         </div>
       </div>
 

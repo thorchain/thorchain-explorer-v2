@@ -243,6 +243,21 @@
         }}</span>
       </span>
     </div>
+    <div v-else-if="row && row.type === 'failed'" class="action-cell">
+      <template v-if="row.metadata && row.metadata.failed">
+        <span class="mini-bubble info customized">
+          {{ parseMemoToTxType(row.metadata.failed.memo) }}
+        </span>
+        <right-arrow class="action-type" />
+        <span
+          :key="'in-' + i"
+          v-tooltip="row.metadata.failed.reason"
+          class="mini-bubble danger customized reason"
+        >
+          see reason
+        </span>
+      </template>
+    </div>
   </div>
 </template>
 
@@ -252,6 +267,7 @@ import RightArrow from '~/assets/images/arrow-right.svg?inline'
 import VaultIcon from '~/assets/images/safe.svg?inline'
 import RedoIcon from '~/assets/images/refresh.svg?inline'
 import UserGear from '~/assets/images/user-gear.svg?inline'
+import { parseMemoToTxType } from '~/utils'
 
 export default {
   components: { RightArrow, VaultIcon, RedoIcon, UserGear },
@@ -286,6 +302,9 @@ export default {
         name: detail.name,
       }
     },
+    parseMemoToTxType(memo) {
+      return parseMemoToTxType(memo)
+    },
   },
 }
 </script>
@@ -302,6 +321,14 @@ export default {
 
     &.customized {
       padding: 4px 6px;
+    }
+
+    &.reason {
+      cursor: pointer;
+
+      &:hover {
+        color: var(--primary-color);
+      }
     }
   }
 

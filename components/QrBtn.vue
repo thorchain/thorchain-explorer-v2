@@ -7,7 +7,7 @@
     <qr-icon class="icon small" />
     <transition name="fade">
       <div v-show="showQR" class="qr-show">
-        <qrcode-vue :value="qrcode" />
+        <qrcode-vue :value="qrcode" render-as="svg" />
       </div>
     </transition>
   </div>
