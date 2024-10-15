@@ -524,6 +524,7 @@ export default {
                 value: accordions.action?.refundReason,
                 is: accordions.action?.refundReason,
               },
+              // Bond
               {
                 key: 'Node Address',
                 value: accordions.action?.nodeAddress,
@@ -537,6 +538,28 @@ export default {
                 is: accordions.action?.provider,
                 type: 'address',
                 formatter: this.formatAddress,
+              },
+              // THORName
+              {
+                key: 'THORName',
+                value: accordions.action?.thorname,
+                is: accordions.action?.thorname,
+              },
+              {
+                key: 'Owner',
+                value: accordions.action?.owner,
+                is: accordions.action?.owner,
+              },
+              {
+                key: 'Expire',
+                value: accordions.action?.expire,
+                is: accordions.action?.expire,
+                formatter: this.normalFormat,
+              },
+              {
+                key: 'Registration Fee',
+                value: `${accordions.action?.registrationFee}`,
+                is: true,
               },
             ],
           },
@@ -776,6 +799,14 @@ export default {
           memo
         )
         this.$set(this, 'cards', [this.createCard(cards, accordions)])
+      } else if (memo.type === 'thorname') {
+        const { cards, accordions } = this.createThornameState(
+          thorStatus,
+          midgardAction,
+          thorTx,
+          memo
+        )
+        this.$set(this, 'cards', [this.createCard(cards, accordions)])
       } else {
         const finalCards = []
         for (let i = 0; i < midgardAction?.actions?.length; i++) {
@@ -788,6 +819,47 @@ export default {
           finalCards.push(this.createCard(cards, accordions))
         }
         this.$set(this, 'cards', finalCards)
+      }
+    },
+    createThornameState(thorStatus, action, thorTx) {
+      action = action.actions[0]
+
+      const ins = action?.in.map((a) => ({
+        txid: a?.txID,
+        from: a?.address,
+        icon: require('@/assets/images/user.svg?inline'),
+        address: action.in[0]?.address,
+        done: true,
+      }))
+
+      const outs = action?.in.map((a) => ({
+        icon: require('@/assets/images/name.svg?inline'),
+        text: action.metadata?.thorname?.thorname,
+        class: 'pad-icon',
+      }))
+
+      return {
+        cards: {
+          title: 'THORName',
+          in: ins,
+          middle: {
+            pending: false,
+          },
+          out: outs,
+        },
+        accordions: {
+          in: ins,
+          action: {
+            type: 'THORName',
+            memo: action.metadata?.thorname?.memo,
+            expire: action.metadata?.thorname?.expire,
+            thorname: action.metadata?.thorname?.thorname,
+            owner: action.metadata?.thorname?.owner,
+            registrationFee: action.metadata?.thorname?.registrationFee,
+            done: true,
+          },
+          out: [],
+        },
       }
     },
     createBondState(thorStatus, action, thorTx) {
@@ -826,7 +898,7 @@ export default {
             {
               icon: require('@/assets/images/node.svg?inline'),
               address: action.metadata?.bond?.nodeAddress,
-              class: 'node-icon',
+              class: 'pad-icon',
             },
           ],
         },
@@ -873,7 +945,7 @@ export default {
             {
               icon: require('@/assets/images/node.svg?inline'),
               address: action.metadata?.bond?.nodeAddress,
-              class: 'node-icon',
+              class: 'pad-icon',
             },
           ],
           middle: {

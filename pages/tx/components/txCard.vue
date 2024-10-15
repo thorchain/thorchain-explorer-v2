@@ -99,7 +99,7 @@
             </template>
             <template v-else-if="o.address">
               <nuxt-link class="mono clickable" :to="`/address/${o.address}`">{{
-                addressFormatV2(o.address)
+                formatAddress(o.address)
               }}</nuxt-link>
             </template>
             <template v-else>
@@ -129,7 +129,7 @@
             </template>
             <template v-else-if="o.address">
               <nuxt-link class="mono clickable" :to="`/address/${o.address}`">{{
-                addressFormatV2(o.address)
+                formatAddress(o.address)
               }}</nuxt-link>
             </template>
             <template v-else>
@@ -253,7 +253,7 @@ $border-size: 2px;
           fill: var(--sec-font-color);
         }
 
-        .node-icon {
+        .pad-icon {
           padding: 3px;
           fill: var(--bg-color);
         }
@@ -324,6 +324,10 @@ $border-size: 2px;
         .simple-bar {
           border-color: var(--right-border);
           background: var(--right-border);
+
+          .custom-icon {
+            fill: var(--card-bg-color);
+          }
         }
       }
 
@@ -332,6 +336,10 @@ $border-size: 2px;
         .simple-bar {
           border-color: var(--left-border);
           background: var(--left-border);
+
+          .custom-icon {
+            fill: var(--card-bg-color);
+          }
         }
       }
     }
