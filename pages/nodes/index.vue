@@ -62,6 +62,7 @@ export default {
   },
   data() {
     return {
+      network: [],
       loading: true,
       mode: 'active',
       statusMode: 'node-stat',
@@ -563,6 +564,46 @@ export default {
             },
           ],
         },
+        {
+          title: 'Block Rewards',
+          rowStart: 2,
+          colSpan: 1,
+          items: [
+            {
+              name: 'Block Bond Reward Per Day',
+              value:
+                (this.network.blockRewards?.bondReward / 10 ** 8 ?? 0) *
+                (5256000 / 365),
+                filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              usdValue: true,
+            },
+            {
+              name: 'Block Pool Reward Per Day',
+              value:
+                (this.network.blockRewards?.poolReward / 10 ** 8 ?? 0) *
+                (5256000 / 365),
+                filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              usdValue: true,
+            },
+            {
+              name: 'Block Reward Per Day',
+              value:
+                (this.network.blockRewards?.blockReward / 10 ** 8 ?? 0) *
+                (5256000 / 365),
+                filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              usdValue: true,
+            },
+            {
+              name: 'Block Reward Per Day Per Node',
+              value:
+                ((this.network.blockRewards?.bondReward / 10 ** 8 ?? 0) *
+                  (5256000 / 365)) /
+                +this.network?.activeNodeCount,
+                filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              usdValue: true,
+            },
+          ],
+        },
       ]
     },
     activeNodes() {
@@ -770,6 +811,10 @@ export default {
     },
   },
   mounted() {
+    this.$api.getNetwork().then(({ data }) => {
+      console.log('Network Data:', data); 
+      this.network = data;
+    });
     const mimirProm = this.$api
       .getMimir()
       .then((res) => {

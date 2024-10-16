@@ -56,6 +56,16 @@
             </span>
           </div>
           <template v-else-if="props.column.field === 'gas_rate'">
+  {{ props.formattedRow[props.column.field] }} {{ props.row.gas_rate_units }}
+</template>
+
+          <template v-else-if="props.column.field === 'outbound_fee'">
+            {{ props.formattedRow[props.column.field] }}
+          </template>
+          <template v-else-if="props.column.field === 'outbound_tx_size'">
+            {{ props.formattedRow[props.column.field] }}
+          </template>
+          <template v-else-if="props.column.field === 'dust_threshold'">
             {{ props.formattedRow[props.column.field] }}
           </template>
           <template v-else-if="props.column.field === 'last_observed_in'">
@@ -161,6 +171,30 @@ export default {
           tdClass: 'mono center',
           thClass: 'th-center',
         },
+        {
+          label: 'Outbound Fee',
+          field: 'outbound_fee',
+          type: 'number',
+          formatFn: (v) => v / 1e8,
+          tdClass: 'mono center',
+          thClass: 'th-center',
+        },
+        {
+          label: 'Outbound Tx size',
+          field: 'outbound_tx_size',
+          type: 'number',
+          formatFn: this.normalFormat,
+          tdClass: 'mono center',
+          thClass: 'th-center',
+        },
+        {
+          label: 'Dust Threshold',
+          field: 'dust_threshold',
+          type: 'number',
+          formatFn: (v) => v / 1e8,
+          tdClass: 'mono center',
+          thClass: 'th-center',
+        },
       ],
     }
   },
@@ -197,12 +231,6 @@ export default {
               valueSlot: 'blocktime',
             },
             {
-              name: 'Active / Standby Nodes',
-              value:
-                this.network &&
-                `${this.network?.activeNodeCount} / ${this.network?.standbyNodeCount}`,
-            },
-            {
               name: 'TOR Price in RUNE',
               value: this.thorNetwork?.tor_price_in_rune / 1e8,
               filter: (v) => `${this.$options.filters.number(v, '0,0.0000a')} RUNE`,
@@ -212,87 +240,14 @@ export default {
               name: 'Vaults Migrating',
               value: this.thorNetwork?.vaults_migrating ? 'Yes' : 'No',
             },
-            {
-              header: 'Allocations',
-            },
-            {
-              name: 'Total Pooled RUNE',
-              value: this.network?.totalPooledRune / 10 ** 8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
-              usdValue: true,
-            },
-            {
-              name: 'Total Bonded RUNE',
-              value:
-                +this.network?.bondMetrics?.totalActiveBond / 10 ** 8 +
-                +this.network?.bondMetrics?.totalActiveBond / 10 ** 8,
-                filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
-              usdValue: true,
-            },
-            {
-              name: 'Total Reserved RUNE',
-              value: this.network?.totalReserve / 10 ** 8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
-              usdValue: true,
-            },
           ],
         },
         {
-          title: 'Block Rewards',
-          rowStart: 1,
+          title: 'Allocations',
+          rowStart: 3,
           colSpan: 1,
           items: [
-            {
-              name: 'Block Bond Reward Per Day',
-              value:
-                (this.network.blockRewards?.bondReward / 10 ** 8 ?? 0) *
-                (5256000 / 365),
-                filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
-              usdValue: true,
-            },
-            {
-              name: 'Block Pool Reward Per Day',
-              value:
-                (this.network.blockRewards?.poolReward / 10 ** 8 ?? 0) *
-                (5256000 / 365),
-                filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
-              usdValue: true,
-            },
-            {
-              name: 'Block Reward Per Day',
-              value:
-                (this.network.blockRewards?.blockReward / 10 ** 8 ?? 0) *
-                (5256000 / 365),
-                filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
-              usdValue: true,
-            },
-            {
-              name: 'Block Reward Per Day Per Node',
-              value:
-                ((this.network.blockRewards?.bondReward / 10 ** 8 ?? 0) *
-                  (5256000 / 365)) /
-                +this.network?.activeNodeCount,
-                filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
-              usdValue: true,
-            },
-            {
-              header: 'Yields',
-            },
-            {
-              name: 'Bond APY',
-              value: this.network.bondingAPY,
-              filter: (v) => this.$options.filters.percent(v, 2),
-            },
-            {
-              name: 'Liquidity APY',
-              value: this.network.liquidityAPY,
-              filter: (v) => this.$options.filters.percent(v, 2),
-            },
-            {
-              name: 'Pool Share Factor',
-              value: this.network.poolShareFactor,
-              filter: (v) => this.$options.filters.percent(v, 2),
-            },
+           
           ],
         },
       ]
@@ -329,6 +284,7 @@ export default {
     this.$api
       .getInboundAddresses()
       .then(async (res) => {
+        console.log("Inbound Addresses Response:", res.data); 
         const mi = (await this.$api.getMimir()).data
         this.inAddresses = res.data
         this.inboundInfo = res.data.map((chain) => ({
