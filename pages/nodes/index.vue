@@ -80,8 +80,7 @@ export default {
       searchTerm: '',
       churnProgressValue: 0,
       totalAwards: undefined,
-      averageApy: undefined,
-      calculatedValue: undefined,
+      leastBondChurn: undefined,
     }
   },
   computed: {
@@ -469,6 +468,13 @@ export default {
               filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
+            {
+              name: 'Max efficient',
+              value: this.calculateHardCap(),
+              filter: (v) =>
+                `${this.$options.filters.number(v, '0,0.00a')} RUNE`,
+              usdValue: true,
+            },
           ],
         },
         {
@@ -512,6 +518,13 @@ export default {
                 `${this.$options.filters.number(v, '0,0.00a')} RUNE`,
               usdValue: true,
             },
+            {
+              name: 'Least Churn',
+              value: this.leastBondChurn,
+              filter: (v) =>
+                `${this.$options.filters.number(v, '0,0.00a')} RUNE`,
+              usdValue: true,
+            },
           ],
         },
         {
@@ -533,18 +546,18 @@ export default {
             },
             {
               name: 'Average APY ',
-              value: this.averageApy,
+              value: this.averageApysCalc(),
               filter: (v) => `${this.$options.filters.percent(v, '0,0')} `,
             },
             {
               name: 'Monthly Node Return',
-              value: this.calculatedValue / 1e8,
+              value: this.monthlyNodeReturn() / 1e8,
               filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
               name: 'Annual Nodes Return ',
-              value: this.annualNodes / 1e8,
+              value: this.annualNodeReturn() / 1e8,
               filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
@@ -668,6 +681,7 @@ export default {
 
         const filteredNodes = []
         const churnInNumbers = 3 + this.newNodesChurn
+        let lastChurnIndex = 0
         let churnNodes = 0
         for (let i = 0; i < stbNodes.length; i++) {
           const el = stbNodes[i]
@@ -710,8 +724,12 @@ export default {
                   : 'churn-in-candidate',
             })
             churnNodes++
+            lastChurnIndex = i
           }
         }
+
+        // Detect the last churn node
+        this.setTheLeastBondChurn(filteredNodes[lastChurnIndex].total_bond)
 
         return filteredNodes
       } else {
@@ -749,9 +767,6 @@ export default {
     chainsHeight(n, o) {
       this.churnProgress()
       this.totalAwardsCalc()
-      this.averageApysCalc()
-      this.monthlyNodeReturn()
-      this.annualNodeReturn()
     },
   },
   mounted() {
@@ -796,6 +811,9 @@ export default {
       const { data: nodesInfo } = await this.$api.getNodesInfo()
       this.nodesQuery = nodesInfo
     },
+    setTheLeastBondChurn(bond) {
+      this.leastBondChurn = bond
+    },
     totalAwardsCalc() {
       this.totalAwards = 0
       for (const a in this.nodesQuery) {
@@ -815,7 +833,7 @@ export default {
       const calculatedValue =
         (this.totalAwards / totalActiveNodes) * (30 / (3 * churnProgress))
 
-      this.calculatedValue = calculatedValue
+      return calculatedValue
     },
     annualNodeReturn() {
       if (!this.totalAwards || !this.nodesQuery || !this.churnProgressValue) {
@@ -830,7 +848,7 @@ export default {
       const annualNodes =
         (this.totalAwards / totalActiveNodes) * (365 / (3 * churnProgress))
 
-      this.annualNodes = annualNodes
+      return annualNodes
     },
 
     averageApysCalc() {
@@ -847,7 +865,7 @@ export default {
         (node) => node.status === 'Active'
       ).length
 
-      this.averageApy = totalApy / totalActiveNodes
+      return totalApy / totalActiveNodes
     },
     churnProgress() {
       if (!this.bondMetrics || !this.churnInterval) {
