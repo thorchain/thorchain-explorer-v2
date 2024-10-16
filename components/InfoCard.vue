@@ -21,9 +21,10 @@
               <nuxt-link
                 v-if="section.link"
                 :to="section.link"
-                class="more-link"
+                class="more-link clickable"
               >
                 More
+                <right-arrow />
               </nuxt-link>
             </div>
             <div
@@ -110,10 +111,11 @@
 <script>
 import { mapGetters } from 'vuex'
 import UnknownIcon from '~/assets/images/unknown.svg?inline'
+import RightArrow from '~/assets/images/arrow-right.svg?inline'
 
 export default {
   name: 'InfoCard',
-  components: { UnknownIcon },
+  components: { UnknownIcon, RightArrow },
   props: {
     options: {
       type: Array,
@@ -177,15 +179,15 @@ export default {
   }
 
   .more-link {
+    display: flex;
+    align-items: center;
+    gap: 3px;
     font-size: 0.9rem;
-    color: var(--primary-color);
-    padding: 5px;
-    text-decoration: underline;
-    cursor: pointer;
-    text-decoration: none;
 
-    &:hover {
-      text-decoration: none;
+    svg {
+      fill: currentColor;
+      height: 1rem;
+      width: 1rem;
     }
   }
 }
