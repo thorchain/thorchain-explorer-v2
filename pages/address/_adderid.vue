@@ -22,6 +22,7 @@
               :navs="[
                 { title: 'LP/Savers', value: 'pools' },
                 { title: 'Thorname', value: 'thorname' },
+                { title: 'Bond', value: 'bond' },
               ]"
               :is-loading="loading"
               :act-nav.sync="activeMode"
@@ -31,6 +32,13 @@
               </keep-alive>
               <keep-alive>
                 <pools v-if="activeMode == 'pools'" :address="address" />
+              </keep-alive>
+              <keep-alive>
+                <bonds
+                  v-if="activeMode == 'bond'"
+                  :address="address"
+                  :nodes="nodesData"
+                />
               </keep-alive>
             </Card>
           </div>
@@ -163,6 +171,7 @@ import Thorname from './components/thorname.vue'
 import Balance from './components/balance.vue'
 import Pools from './components/pools.vue'
 import Loans from './components/loans.vue'
+import Bonds from './components/bonds.vue'
 import WalletIcon from '~/assets/images/wallet.svg?inline'
 import { formatAsset, assetFromString } from '~/utils'
 
@@ -172,7 +181,7 @@ export default {
     Thorname,
     Balance,
     Pools,
-    Loans,
+    Bonds,
   },
   data() {
     return {

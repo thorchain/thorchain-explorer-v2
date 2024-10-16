@@ -1,38 +1,41 @@
 <template>
   <div>
-    <info-card :options="thornames" :inner="true"></info-card>
-    <span v-if="!thornames || thornames.length == 0">NO THORName</span>
-    <div v-if="thornameAddresses.length > 0">
-      <div class="addresses-container">
-        <div
-          v-for="address in thornameAddresses"
-          :key="address.chain"
-          class="addresses"
-        >
-          <img
-            class="asset-icon"
-            :src="assetImage(baseChainAsset(address.chain))"
-          />
-          <span class="clickable mono" @click="gotoAddr(address.address)"
-            >{{ address.address.slice(0, 8) }}...{{
-              address.address.slice(-8)
-            }}</span
-          >
-        </div>
-      </div>
-    </div>
+    <bounce-loader v-if="loading" color="var(--font-color)" size="3rem" />
+    <info-card :options="thornames" :inner="true">
+      <template #asset="{ item }">
+        <template v-for="al in item.aliases">
+          <div :key="`asset-` + al.chain" class="mini-bubble">
+            <asset-icon :asset="baseChainAsset(al.chain)" :height="'1.2rem'" />
+            <nuxt-link class="clickable" :to="`/address/${al.address}`">
+              {{ formatAddress(al.address) }}
+            </nuxt-link>
+          </div>
+        </template>
+        <span v-if="item.aliases.length == 0" class="mini-bubble yellow">
+          No Aliases
+        </span>
+      </template>
+    </info-card>
+    <span v-if="!loading && (!thornames || thornames.length == 0)">
+      NO THORName
+    </span>
   </div>
 </template>
 
 <script>
+import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
+
 export default {
+  components: {
+    BounceLoader,
+  },
   props: ['address'],
   data() {
     return {
+      loading: true,
       owner: undefined,
       preferredAsset: undefined,
       thornames: [],
-      thornameAddresses: [],
     }
   },
   mounted() {
@@ -53,7 +56,33 @@ export default {
             items: [
               {
                 name: 'Name',
-                value: res.data.name,
+                value: res.data?.name,
+              },
+              {
+                name: 'Owner',
+                value: res.data?.owner,
+              },
+              {
+                name: 'Affiliate Collector',
+                value: res.data?.affiliate_collector_rune,
+                filter: (v) =>
+                  `${this.$options.filters.number(v / 1e8, '0,0')} RUNE`,
+              },
+              {
+                name: 'Preferred Asset',
+                value: res.data?.preferred_asset,
+              },
+              {
+                name: 'Expire',
+                value: res.data?.expire_block_height,
+                format: this.normalFormat,
+                filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
+              },
+              {
+                name: 'Aliases',
+                aliases: res.data?.aliases,
+                value: res.data?.aliases !== undefined,
+                valueSlot: 'asset',
               },
             ],
           })
@@ -69,6 +98,9 @@ export default {
         })
         .catch((e) => {
           console.error(e)
+        })
+        .finally(() => {
+          this.loading = false
         })
     },
   },
