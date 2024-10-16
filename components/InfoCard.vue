@@ -16,7 +16,17 @@
             <slot :name="section.allSlot" :items="section.items" />
           </template>
           <template v-else>
-            <h4>{{ section.title }}</h4>
+            <div class="section-header">
+              <h4>{{ section.title }}</h4>
+              <nuxt-link
+                v-if="section.link"
+                :to="section.link"
+                class="more-link clickable"
+              >
+                More
+                <right-arrow />
+              </nuxt-link>
+            </div>
             <div
               :class="
                 grid
@@ -101,10 +111,11 @@
 <script>
 import { mapGetters } from 'vuex'
 import UnknownIcon from '~/assets/images/unknown.svg?inline'
+import RightArrow from '~/assets/images/arrow-right.svg?inline'
 
 export default {
   name: 'InfoCard',
-  components: { UnknownIcon },
+  components: { UnknownIcon, RightArrow },
   props: {
     options: {
       type: Array,
@@ -112,6 +123,10 @@ export default {
     },
     inner: Boolean,
     isLoading: Boolean,
+    link: {
+      type: String,
+      default: null,
+    },
   },
   computed: {
     ...mapGetters({
@@ -154,6 +169,29 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h4 {
+    margin: 0;
+  }
+
+  .more-link {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 0.9rem;
+
+    svg {
+      fill: currentColor;
+      height: 1rem;
+      width: 1rem;
+    }
+  }
+}
+
 .usd-value {
   font-size: 0.9rem;
   margin-right: 12px;

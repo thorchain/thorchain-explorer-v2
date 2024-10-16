@@ -449,6 +449,7 @@ export default {
           title: 'Nodes',
           rowStart: 1,
           colSpan: 1,
+          link:'/nodes',
           items: [
             {
               name: 'Active Bond',
@@ -505,6 +506,7 @@ export default {
           title: 'Swap',
           rowStart: 1,
           colSpan: 1,
+          link: '/txs', 
           items: [
             {
               name: 'Swap Count (30D)',

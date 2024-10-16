@@ -285,8 +285,12 @@ export default {
   height: calc(100% - 45px);
 
   .swaps-nav {
-    margin-top: auto;
+    margin-top: 1rem;
     justify-self: end;
+    @include md{
+      margin-top: auto;
+
+    }
   }
 }
 
