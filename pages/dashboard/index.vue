@@ -214,15 +214,18 @@
                   </span>
                 </div>
                 <div class="txs" style="width: 40%">
-                  <span
-                    >Tx Size: <span class="value">{{ b.txs }}</span></span
-                  >
-                  <span
-                    >Block Size:
-                    <span class="value">{{
-                      b.size | number('0,0')
-                    }}</span></span
-                  >
+                  <span>
+                    Tx Size:
+                    <span style="color: var(--font-color)">
+                      {{ b.txs }}
+                    </span>
+                  </span>
+                  <span>
+                    Block Size:
+                    <span style="color: var(--font-color)">
+                      {{ b.size | number('0,0') }}
+                    </span>
+                  </span>
                 </div>
               </div>
               <hr :key="i + 'hr'" class="hr-space" />
@@ -449,7 +452,7 @@ export default {
           title: 'Nodes',
           rowStart: 1,
           colSpan: 1,
-          link:'/nodes',
+          link: '/nodes',
           items: [
             {
               name: 'Active Bond',
@@ -506,7 +509,7 @@ export default {
           title: 'Swap',
           rowStart: 1,
           colSpan: 1,
-          link: '/txs', 
+          link: '/txs',
           items: [
             {
               name: 'Swap Count (30D)',
