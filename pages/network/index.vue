@@ -56,8 +56,9 @@
             </span>
           </div>
           <template v-else-if="props.column.field === 'gas_rate'">
-  {{ props.formattedRow[props.column.field] }} {{ props.row.gas_rate_units }}
-</template>
+            {{ props.formattedRow[props.column.field] }}
+            {{ props.row.gas_rate_units }}
+          </template>
 
           <template v-else-if="props.column.field === 'outbound_fee'">
             {{ props.formattedRow[props.column.field] }}
@@ -156,7 +157,7 @@ export default {
           thClass: 'th-center monitor-cell',
         },
         {
-          label: 'Observed Tips',
+          label: 'Observed Height',
           field: 'last_observed_in',
           type: 'number',
           formatFn: this.normalFormat,
@@ -175,7 +176,7 @@ export default {
           label: 'Outbound Fee',
           field: 'outbound_fee',
           type: 'number',
-          formatFn: (v) => v / 1e8,
+          formatFn: (v) => `${v / 1e8}`,
           tdClass: 'mono center',
           thClass: 'th-center',
         },
@@ -191,7 +192,7 @@ export default {
           label: 'Dust Threshold',
           field: 'dust_threshold',
           type: 'number',
-          formatFn: (v) => v / 1e8,
+          formatFn: (v) => `${v / 1e8}`,
           tdClass: 'mono center',
           thClass: 'th-center',
         },
@@ -233,7 +234,8 @@ export default {
             {
               name: 'TOR Price in RUNE',
               value: this.thorNetwork?.tor_price_in_rune / 1e8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0.0000a')} RUNE`,
+              filter: (v) =>
+                `${this.$options.filters.number(v, '0,0.0000a')} RUNE`,
               usdValue: true,
             },
             {
@@ -244,10 +246,29 @@ export default {
         },
         {
           title: 'Allocations',
-          rowStart: 3,
+          rowStart: 2,
           colSpan: 1,
           items: [
-           
+            {
+              name: 'Pooled',
+              value: this.network?.totalPooledRune / 10 ** 8,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              usdValue: true,
+            },
+            {
+              name: 'Bonded',
+              value:
+                +this.network?.bondMetrics?.totalActiveBond / 10 ** 8 +
+                +this.network?.bondMetrics?.totalActiveBond / 10 ** 8,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              usdValue: true,
+            },
+            {
+              name: 'Reserved',
+              value: this.network?.totalReserve / 10 ** 8,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              usdValue: true,
+            },
           ],
         },
       ]
@@ -284,7 +305,7 @@ export default {
     this.$api
       .getInboundAddresses()
       .then(async (res) => {
-        console.log("Inbound Addresses Response:", res.data); 
+        console.log('Inbound Addresses Response:', res.data)
         const mi = (await this.$api.getMimir()).data
         this.inAddresses = res.data
         this.inboundInfo = res.data.map((chain) => ({
