@@ -102,6 +102,7 @@ import {
   getDailySwap,
 } from './insights.api'
 import { getTHORLastBlock } from './infra'
+import { getBlockHeight } from './infra'
 import endpoints from './endpoints'
 export var $axiosInstace
 
@@ -169,6 +170,7 @@ export default function ({ $axios }, inject) {
   $axiosInstace = $axios
 
   const api = {
+    getBlockHeight,
     getRunePoolProviders,
     getStats,
     getTxs,
