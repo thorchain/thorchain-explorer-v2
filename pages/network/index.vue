@@ -242,7 +242,6 @@ export default {
           title: 'Allocations',
           rowStart: 2,
           colSpan: 1,
-          allSlot: 'allocations',
           items: [
             {
               name: 'Pooled',
@@ -300,7 +299,6 @@ export default {
     this.$api
       .getInboundAddresses()
       .then(async (res) => {
-        console.log('Inbound Addresses Response:', res.data)
         const mi = (await this.$api.getMimir()).data
         this.inAddresses = res.data
         this.inboundInfo = res.data.map((chain) => ({
