@@ -73,7 +73,7 @@
         </div>
         <transactions v-else :txs="txs" :loading="loading" />
       </div>
-      <pagination @nextPage="goNext" @prevPage="goPrev" />
+      <pagination :meta="txs" @nextPage="goNext" @prevPage="goPrev" />
     </div>
   </Page>
 </template>

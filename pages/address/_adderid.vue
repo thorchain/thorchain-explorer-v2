@@ -151,10 +151,10 @@
         <transactions :txs="addrTxs" :owner="address" :loading="loading" />
         <pagination
           v-if="addrTxs && addrTxs.actions"
-          :is-first-page="!prevPageToken"
+          :meta="addrTxs.actions"
+          :loading="loading"
           @nextPage="goNext"
           @prevPage="goPrev"
-          @firstPage="goFirst"
         />
       </template>
     </template>

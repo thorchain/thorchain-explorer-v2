@@ -44,6 +44,13 @@
           >
           <right-arrow v-else class="interaction-icon" />
         </div>
+        <div
+          v-else-if="props.column.field === 'age'"
+          v-tooltip="getTime(props.row.age)"
+          class="hoverable"
+        >
+          {{ props.formattedRow[props.column.field] }}
+        </div>
         <span v-else>
           {{ props.formattedRow[props.column.field] }}
         </span>
@@ -113,6 +120,7 @@ export default {
         {
           label: 'Age',
           field: 'age',
+          formatFn: this.since,
         },
         {
           label: 'From',
@@ -148,7 +156,7 @@ export default {
           ...t,
           hash:
             t.in.find((e) => e.txID)?.txID || t.out.find((e) => e.txID)?.txID,
-          age: this.since(t.date),
+          age: t.date,
           from: t.in.find((e) => e.address)?.address,
           to: t.out.find((e) => !e.affiliate && e.address)?.address,
         }
@@ -178,6 +186,9 @@ export default {
     },
     since(date) {
       return moment(date / 1e6).fromNow()
+    },
+    getTime(date) {
+      return moment(date / 1e6).format('MMMM DD YYYY, HH:MM:SS')
     },
   },
 }

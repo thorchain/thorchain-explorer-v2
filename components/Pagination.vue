@@ -4,6 +4,14 @@
       <angle-left />
       Prev Page
     </div>
+    <div v-if="meta" class="nav-icons">
+      <template v-if="!loading">
+        {{ timeFrame.from }}
+        -
+        {{ timeFrame.next }}
+      </template>
+      <span v-else>...</span>
+    </div>
     <div class="nav-icons" @click="$emit('nextPage')">
       Next Page
       <angle-right />
@@ -12,6 +20,7 @@
 </template>
 
 <script>
+import moment from 'moment'
 import angleLeft from '@/assets/images/angle-left.svg?inline'
 import angleRight from '@/assets/images/angle-right.svg?inline'
 
@@ -22,13 +31,34 @@ export default {
     angleRight,
   },
   props: {
-    isFirstPage: {
-      type: [Boolean],
+    meta: {
+      type: Object,
       required: false,
-      default: true,
+      default: undefined,
+    },
+    loading: {
+      type: Boolean,
+      default: false,
     },
   },
-  computed: {},
+  computed: {
+    timeFrame() {
+      if (!this.meta || this.meta.length <= 1) {
+        return
+      }
+
+      const firstAction = this.meta[0]
+      const lastAction = this.meta[this.meta.length - 1]
+
+      const from = moment(firstAction?.date / 1e6).format('MM/DD/YYYY HH:MM')
+      const next = moment(lastAction?.date / 1e6).format('MM/DD/YYYY HH:MM')
+
+      return {
+        from,
+        next,
+      }
+    },
+  },
 }
 </script>
 
