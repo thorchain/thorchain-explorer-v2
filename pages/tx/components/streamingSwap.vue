@@ -143,13 +143,6 @@ export default {
         this.durationSeconds
       )
     },
-    createDurationText(duration) {
-      const hours = String(duration.hours()).padStart(2, '0')
-      const minutes = String(duration.minutes()).padStart(2, '0')
-      const seconds = String(duration.seconds()).padStart(2, '0')
-
-      return `${hours}:${minutes}:${seconds}`
-    },
     async updateStreamingDetail(txid) {
       const thorStatus = (await this.$api.getTxStatus(this.inboundHash))?.data
       const isSwap =

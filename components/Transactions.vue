@@ -30,6 +30,11 @@
           </span>
           <transaction-status :row="props.row" />
         </div>
+        <div v-else-if="props.column.field === 'height'">
+          <nuxt-link class="clickable" :to="`/block/${props.row.height}`">
+            {{ props.formattedRow[props.column.field] }}
+          </nuxt-link>
+        </div>
         <div v-else-if="props.column.field === 'action'">
           <transaction-action :row="props.row"></transaction-action>
         </div>

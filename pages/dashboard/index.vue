@@ -206,9 +206,12 @@
             <template v-for="(b, i) in blocks">
               <div :key="i" class="row-item">
                 <div class="meta">
-                  <span class="header">
+                  <nuxt-link
+                    class="clickable header"
+                    :to="`/block/${b.height}`"
+                  >
                     {{ b.height | number('0,0') }}
-                  </span>
+                  </nuxt-link>
                   <span class="timestamp">
                     {{ b.date }}
                   </span>
