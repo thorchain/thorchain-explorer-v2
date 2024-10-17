@@ -158,7 +158,14 @@ const responseInterceptor = (response) => {
 }
 
 export default function ({ $axios }, inject) {
-  axiosRetry($axios, { retries: 3, retryDelay: axiosRetry.exponentialDelay })
+  axiosRetry($axios, {
+    retries: 3,
+    retryDelay: axiosRetry.exponentialDelay,
+    retryCondition: (error) => {
+      const status = error.response ? error.response.status : null
+      return status === 504 || status === 429
+    },
+  })
   $axios.interceptors.response.use(responseInterceptor, errorInterceptor)
   if (process.env.NETWORK === 'mainnet') {
     $axios.defaults.headers.common['X-Client-ID'] = 'thorchain.net'
