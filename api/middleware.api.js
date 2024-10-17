@@ -146,15 +146,6 @@ export function getNodesInfo() {
   )
 }
 
-export function getQuote(params) {
-  return $axiosInstace.get(
-    endpoints[process.env.NETWORK].SERVER_URL + 'quote',
-    {
-      params,
-    }
-  )
-}
-
 export function getTopSwaps() {
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].SERVER_URL + 'api/swaps'

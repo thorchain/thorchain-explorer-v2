@@ -64,6 +64,7 @@ import {
   getTradeAsset,
   getTradeAssets,
   getRunePool,
+  getQuote,
   getThorVersion,
 } from './thornode.api'
 import { getTendermintLatestBlocks } from './tendermint.api'
@@ -91,7 +92,6 @@ import {
   getActions,
   getCoinMarketInfo,
   getNodesInfo,
-  getQuote,
   getTopSwaps,
   getEarnings,
 } from './middleware.api'

@@ -1,12 +1,6 @@
 <template>
   <Page>
-    <info-card :options="networkOverview">
-      <template #blocktime="{ item }">
-        <span style="font-family: 'Montserrat', sans-serif">
-          {{ item.filter(item.value) }}
-        </span>
-      </template>
-    </info-card>
+    <info-card :options="networkOverview"></info-card>
     <Card title="THORChain version upgrade progress">
       <ProgressBar
         v-if="versionProgress"
@@ -248,6 +242,7 @@ export default {
           title: 'Allocations',
           rowStart: 2,
           colSpan: 1,
+          allSlot: 'allocations',
           items: [
             {
               name: 'Pooled',

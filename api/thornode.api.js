@@ -256,3 +256,12 @@ export function getThorVersion() {
     endpoints[process.env.NETWORK].THORNODE_URL + 'thorchain/version'
   )
 }
+
+export function getQuote(params) {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].THORNODE_URL + '/thorchain/quote/swap',
+    {
+      params,
+    }
+  )
+}
