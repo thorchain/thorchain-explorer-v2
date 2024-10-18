@@ -47,9 +47,11 @@
             <Piggy class="stat-image" />
             <div class="item-detail">
               <div class="header">Bond | Pool APY</div>
-              <skeleton-item :loading="!runeSupply" class="value">
-                {{ network.bondingAPY | percent(2) }} |
-                {{ network.liquidityAPY | percent(2) }}
+              <skeleton-item :loading="!network" class="value">
+                <template v-if="network">
+                  {{ network.bondingAPY | percent(2) }} |
+                  {{ network.liquidityAPY | percent(2) }}
+                </template>
               </skeleton-item>
             </div>
             <arrow-right-icon class="arrow-icon" />
@@ -342,8 +344,6 @@ export default {
     return {
       oldRunePool: [],
       polOverview: undefined,
-      nodes: [],
-      network: [],
       rune: '',
       affiliateDaily: undefined,
       lastblock: undefined,
@@ -373,11 +373,6 @@ export default {
       mimirInfo: undefined,
     }
   },
-  async fetch() {
-    await this.updateRunePool()
-    const resBlock = await this.$api.getRPCLastBlockHeight()
-    this.lastHeight = +resBlock?.data?.block?.header?.height
-  },
   head: {
     title: 'THORChain Network Explorer | Dashboard',
   },
@@ -385,17 +380,18 @@ export default {
     ...mapGetters({
       runePrice: 'getRunePrice',
       chainsHeight: 'getChainsHeight',
+      network: 'getNetworkData',
     }),
     totalEarning24() {
       return this.earnings24USD + this.affiliateEarning
     },
     tvl() {
-      if (!this.network.bondMetrics || !this.totalValuePooled) {
+      if (!this.network?.bondMetrics || !this.totalValuePooled) {
         return
       }
       return (
-        ((+this.network.totalPooledRune * 2 +
-          +this.network.bondMetrics.totalActiveBond) *
+        ((+this.network?.totalPooledRune * 2 +
+          +this.network?.bondMetrics.totalActiveBond) *
           this.runePrice) /
         1e8
       )
@@ -405,7 +401,7 @@ export default {
         return
       }
 
-      return +this.runeSupply - +this.network.totalReserve / 1e8
+      return +this.runeSupply - +this.network?.totalReserve / 1e8
     },
     runeSymbol() {
       return AssetCurrencySymbol.RUNE
@@ -421,34 +417,34 @@ export default {
     networkSettings() {
       // From Thornode - https://gitlab.com/thorchain/thornode/-/blob/7016020ef3566e1e2855fee0a38e14fbfa069425/x/thorchain/helpers.go#L1008
       // Refactored for readability
-      const sbn = this.nodes
-        .filter((n) => n.status === 'Active')
-        .map((e) => +e.total_bond)
-        .sort((a, b) => a - b)
+      // const sbn = this.nodes
+      //   .filter((n) => n.status === 'Active')
+      //   .map((e) => +e.total_bond)
+      //   .sort((a, b) => a - b)
 
-      let t = (sbn.length * 2) / 3
-      if (sbn.length % 3 === 0) {
-        t -= 1
-      }
+      // let t = (sbn.length * 2) / 3
+      // if (sbn.length % 3 === 0) {
+      //   t -= 1
+      // }
 
-      const bondHardCap = sbn[t]
+      // const bondHardCap = sbn[t]
 
-      let totalEffectiveBond = 0
-      for (const i in sbn) {
-        let bond = sbn[i]
-        if (bond > bondHardCap) {
-          bond = bondHardCap
-        }
+      // let totalEffectiveBond = 0
+      // for (const i in sbn) {
+      //   let bond = sbn[i]
+      //   if (bond > bondHardCap) {
+      //     bond = bondHardCap
+      //   }
 
-        totalEffectiveBond += bond
-      }
-      totalEffectiveBond = totalEffectiveBond / 1e8
+      //   totalEffectiveBond += bond
+      // }
+      // totalEffectiveBond = totalEffectiveBond / 1e8
 
-      let totalHardCap = 0
-      for (let i = 0; i <= t; i++) {
-        totalHardCap += sbn[i]
-      }
-      totalHardCap = totalHardCap / 1e8
+      // let totalHardCap = 0
+      // for (let i = 0; i <= t; i++) {
+      //   totalHardCap += sbn[i]
+      // }
+      // totalHardCap = totalHardCap / 1e8
 
       return [
         {
@@ -459,23 +455,23 @@ export default {
           items: [
             {
               name: 'Active Bond',
-              value: +this.network.bondMetrics?.totalActiveBond / 10 ** 8,
+              value: +this.network?.bondMetrics?.totalActiveBond / 10 ** 8,
               filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
               name: 'Standby Bond',
-              value: +this.network.bondMetrics?.totalStandbyBond / 10 ** 8,
+              value: +this.network?.bondMetrics?.totalStandbyBond / 10 ** 8,
               filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
               name: 'Active Nodes',
-              value: this.network.activeNodeCount,
+              value: this.network?.activeNodeCount,
             },
             {
               name: 'Standby Nodes',
-              value: this.network.standbyNodeCount,
+              value: this.network?.standbyNodeCount,
             },
           ],
         },
@@ -491,14 +487,14 @@ export default {
                   ? 'Churn paused'
                   : this.chainsHeight &&
                     blockTime(
-                      this.network.nextChurnHeight - this.chainsHeight.THOR,
+                      this.network?.nextChurnHeight - this.chainsHeight.THOR,
                       true
                     )
               }`,
             },
             {
               name: 'Next Pool',
-              value: blockTime(this.network.poolActivationCountdown, true),
+              value: blockTime(this.network?.poolActivationCountdown, true),
             },
           ],
         },
@@ -538,19 +534,19 @@ export default {
           items: [
             {
               name: 'Reserve',
-              value: (this.network.totalReserve ?? 0) / 10 ** 8,
+              value: (this.network?.totalReserve ?? 0) / 10 ** 8,
               filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
               name: 'Pools',
-              value: (this.network.totalPooledRune * 2 ?? 0) / 10 ** 8,
+              value: (this.network?.totalPooledRune * 2 ?? 0) / 10 ** 8,
               filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
               name: 'Pool Share Factor',
-              value: this.network.poolShareFactor,
+              value: this.network?.poolShareFactor,
               filter: (v) => `${this.$options.filters.percent(v, 2)}`,
             },
             {
@@ -561,8 +557,7 @@ export default {
             },
             {
               name: 'RUNEPool Share of Pools',
-              value:
-                this.totalRuneAssetShare / (this.network.totalPooledRune / 1e8),
+              value: pol?.value / (this.network?.totalPooledRune * 2),
               filter: (v) => `${this.$options.filters.percent(v, 2)}`,
             },
           ],
@@ -570,13 +565,6 @@ export default {
       ]
     },
   },
-  activated() {
-    // Call fetch again if last fetch more than 30 sec ago
-    if (this.$fetchState.timestamp <= Date.now() - 6000) {
-      this.$fetch()
-    }
-  },
-  fetchOnServer: false,
   mounted() {
     this.$api
       .getDashboardData()
@@ -704,29 +692,22 @@ export default {
       .getRPCLastBlockHeight()
       .then((res) => {
         this.lastHeight = +res?.data?.block?.header?.height
-        this.$api
-          .getTendermintLatestBlocks()
-          .then(
-            (res) =>
-              (this.blocks = this.formatTendermintBlocks(
-                res?.data?.result.block_metas
-              ))
-          )
-          .catch((error) => {
-            console.error(error)
-          })
       })
       .catch((error) => {
         console.error(error)
       })
 
-    this.$api.getNetwork().then(({ data }) => {
-      this.network = data
-    })
-
-    this.$api.getNodes().then(({ data }) => {
-      this.nodes = data
-    })
+    this.$api
+      .getTendermintLatestBlocks()
+      .then(
+        (res) =>
+          (this.blocks = this.formatTendermintBlocks(
+            res?.data?.result.block_metas
+          ))
+      )
+      .catch((error) => {
+        console.error(error)
+      })
 
     this.$api.getAffiliateDaily().then(({ data }) => {
       this.affiliateDaily = data
@@ -741,6 +722,8 @@ export default {
     // Get inbound info
     this.getNetworkStatus()
 
+    this.updateRunePool()
+
     setInterval(() => {
       this.getNetworkStatus()
     }, 10000)
@@ -750,16 +733,6 @@ export default {
       try {
         const { data } = await this.$api.getRunePool()
         this.polOverview = data.pol || {}
-
-        const { data: runePoolsData } = await this.$api.getRunePoolsInfo()
-        this.runeAssetShare = runePoolsData.map((pool) => ({
-          ...pool,
-          poolShare: pool.poolShare[0],
-        }))
-
-        this.totalRuneAssetShare = this.runeAssetShare
-          .map((e) => e.poolShare)
-          .reduce((total, o) => total + (o || 0), 0)
       } catch (error) {
         console.error('Error updating RUNE pool data:', error)
       }
