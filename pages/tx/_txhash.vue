@@ -1657,7 +1657,7 @@ export default {
           out: [
             {
               asset: outAsset,
-              amount: outAmount || +this.quote.expected_amount_out,
+              amount: outAmount || +this.quote?.expected_amount_out,
               filter: outAmount
                 ? undefined
                 : (v) => `~ ${this.baseAmountFormatOrZero(v)}`,
