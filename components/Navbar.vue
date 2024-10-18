@@ -129,71 +129,21 @@
 <script>
 import { mapMutations, mapGetters } from 'vuex'
 import ThorchainLogo from '~/assets/images/thorchain-logo.svg?inline'
-import XLogo from '~/assets/images/x.svg?inline'
-import DiscordLogo from '~/assets/images/discord-brands.svg?inline'
-import GithubLogo from '~/assets/images/github-brands.svg?inline'
-import Question from '~/assets/images/question.svg?inline'
-
-import appsSelected from '~/assets/images/apps-selected.svg?inline'
-import appsUnselected from '~/assets/images/apps-unselected.svg?inline'
-
-import vectorSelected from '~/assets/images/vector-selected.svg?inline'
-import vectorUnselected from '~/assets/images/vector-unselected.svg?inline'
-
-import layersSelected from '~/assets/images/layers-selected.svg?inline'
-import layersUnselected from '~/assets/images/layers-unselected.svg?inline'
-
-import exchangeSelected from '~/assets/images/exchange-selected.svg?inline'
-import exchangeUnselected from '~/assets/images/exchange-unselected.svg?inline'
-
-import swimmerSelected from '~/assets/images/swimmer-selected.svg?inline'
-import swimmerUnselected from '~/assets/images/swimmer-unselected.svg?inline'
-
-import financeSelected from '~/assets/images/finance-selected.svg?inline'
-import financeUnselected from '~/assets/images/finance.svg?inline'
-
-import shieldSelected from '~/assets/images/shield.svg?inline'
-import shieldUnselected from '~/assets/images/shield-unselected.svg?inline'
-
-import chartSelected from '~/assets/images/chart-selected.svg?inline'
-import chartUnselected from '~/assets/images/chart-unselected.svg?inline'
 
 import MenuIcon from '~/assets/images/menu-burger.svg?inline'
 import CrossIcon from '~/assets/images/cross.svg?inline'
 import MoonIcon from '~/assets/images/moon-icon.svg?inline'
 import SunIcon from '~/assets/images/sun-icon.svg?inline'
-import SettingsIcon from '~/assets/images/settings.svg?inline'
 import links from '~/const/links'
 
 export default {
   name: 'NavBar',
   components: {
-    XLogo,
-    DiscordLogo,
-    GithubLogo,
-    appsSelected,
-    appsUnselected,
-    vectorSelected,
-    vectorUnselected,
-    layersSelected,
-    layersUnselected,
-    exchangeSelected,
-    exchangeUnselected,
-    swimmerSelected,
-    swimmerUnselected,
-    financeSelected,
-    financeUnselected,
-    shieldSelected,
-    shieldUnselected,
     ThorchainLogo,
     MenuIcon,
     CrossIcon,
-    chartSelected,
-    chartUnselected,
-    Question,
     SunIcon,
     MoonIcon,
-    SettingsIcon,
   },
   data() {
     return {
@@ -218,21 +168,21 @@ export default {
           link: '/nodes',
         },
         {
-          name: 'Networks',
+          name: 'Network',
           unicon: 'vectorUnselected',
           icon: 'vectorSelected',
           link: '/network',
           submenu: [
             {
-              name: 'Network',
+              name: 'Overview',
               link: '/network',
             },
             {
-              name: 'Network Settings',
+              name: 'Constants',
               link: '/network/settings',
             },
             {
-              name: 'Mimir Votes',
+              name: 'Votes',
               link: '/network/votes',
             },
           ],
