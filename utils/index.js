@@ -324,9 +324,9 @@ export function parseMemoToTxType(memo) {
     return 'unknown'
   }
 
-  const parsedMemo = memo?.toLowerCase().split(':', 2)[0]
+  const parsedMemo = memo?.trim().toLowerCase().split(':', 2)[0]
 
-  return memoToType[parsedMemo]
+  return memoToType[parsedMemo] ?? 'unknown'
 }
 
 export function parseThornodeStatus(ttx) {

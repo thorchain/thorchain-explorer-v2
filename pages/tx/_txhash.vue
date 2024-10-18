@@ -131,6 +131,7 @@ export default {
       const uI = setInterval(async () => {
         try {
           isPending = await this.fetchTx(txHash)
+          console.log(isPending)
         } catch (error) {
           if (txHash.length <= 45) {
             const addrTxs = await this.$api.getAddress(txHash, 0)
@@ -240,7 +241,7 @@ export default {
           this.thorHeight = parseInt(tdh['x-thorchain-height'] ?? 0)
         }
         this.createTxState(md, td, ts, tdh, this.pools)
-        return this.isTxInPending(ts)
+        return this.isTxInPending(ts, md)
       }
     },
     isTxInPending(thorStatus, actions) {
@@ -274,6 +275,12 @@ export default {
         const isRefund = actions.actions.some((e, i) => e.type === 'refund')
         if (isRefund && (ta.synth || ta.trade)) {
           return false
+        }
+        if (memo.type !== 'swap') {
+          const success = actions.actions.some((e, i) => e.status === 'success')
+          if (success) {
+            return false
+          }
         }
       }
 
