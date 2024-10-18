@@ -1594,6 +1594,7 @@ export default {
             )
           : null
       let timeStamp = swapAction?.date
+      const height = swapAction?.height
 
       // Refunds
       const outboundHasRefund = outTxs?.some(
@@ -1708,6 +1709,7 @@ export default {
             asymmetry: null,
             affiliateOut: affiliateOut || undefined,
             swapSlip: parseInt(actions?.actions[0]?.metadata?.swap?.swapSlip),
+            height,
             streaming: {
               count: thorStatus.stages.swap_status?.streaming?.count,
               interval:
