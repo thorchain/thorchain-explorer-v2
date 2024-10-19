@@ -7,6 +7,14 @@
     <info-card v-if="blockRemainingTime" :options="timerInfo">
       <template #duration="{ item }">
         <div class="duration">
+          <strong>{{ item.value.years().toString().padStart(2, '0') }}</strong>
+          <small>Years</small>
+        </div>
+        <div class="duration">
+          <strong>{{ item.value.months().toString().padStart(2, '0') }}</strong>
+          <small>Months</small>
+        </div>
+        <div class="duration">
           <strong>{{ item.value.days().toString().padStart(2, '0') }}</strong>
           <small>Days</small>
         </div>
