@@ -157,3 +157,7 @@ export function getEarnings() {
     endpoints[process.env.NETWORK].SERVER_URL + 'api/rawEarnings'
   )
 }
+
+export function getNodes() {
+  return $axiosInstace.get(endpoints[process.env.NETWORK].SERVER_URL + 'nodes')
+}

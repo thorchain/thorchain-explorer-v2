@@ -44,7 +44,6 @@ import {
   getOutbound,
   getBlockChainVersion,
   getThorchainTx,
-  getNodes,
   getNode,
   getSavers,
   getThornodeDetailTx,
@@ -94,6 +93,7 @@ import {
   getNodesInfo,
   getTopSwaps,
   getEarnings,
+  getNodes,
 } from './middleware.api'
 import {
   getChurnHistory,
@@ -101,8 +101,7 @@ import {
   getRunePrice,
   getDailySwap,
 } from './insights.api'
-import { getTHORLastBlock } from './infra'
-import { getBlockHeight } from './infra'
+import { getTHORLastBlock, getBlockHeight } from './infra'
 import endpoints from './endpoints'
 export var $axiosInstace
 
@@ -164,6 +163,7 @@ export default function ({ $axios }, inject) {
     retryDelay: axiosRetry.exponentialDelay,
     retryCondition: (error) => {
       const status = error.response ? error.response.status : null
+      console.log(status)
       return status === 504 || status === 429
     },
   })
