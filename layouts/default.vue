@@ -69,7 +69,7 @@ export default {
     this.getRunePrice()
 
     this.$api
-      .getNodesInfo()
+      .getNodes()
       .then(({ data }) => {
         this.$store.commit('setNodesData', data)
       })

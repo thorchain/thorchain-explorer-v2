@@ -385,7 +385,7 @@ export default {
       })
 
     this.$api
-      .getNodesInfo()
+      .getNodes()
       .then((res) => {
         this.nodes = res.data
       })
