@@ -759,28 +759,27 @@ export default {
       })
     },
     mapInterfaceName(s) {
-      const ifc = interfaces[s.toLowerCase()]; 
-            
+      const ifc = interfaces[s.toLowerCase()]
+
       if (!ifc) {
-        return undefined; 
+        return undefined
       }
-      
+
       const icons = {
         url: undefined,
         urlDark: undefined,
-      };
-      
-      if (ifc.icon) {
-        icons.url = require(`@/assets/images/${ifc.icon}.png`);
-        icons.urlDark = require(`@/assets/images/${ifc.icon}-dark.png`);
       }
-      
+
+      if (ifc.icon) {
+        icons.url = require(`@/assets/images/${ifc.icon}.png`)
+        icons.urlDark = require(`@/assets/images/${ifc.icon}-dark.png`)
+      }
+
       return {
-        name: ifc.name ?? ifc, 
+        name: ifc.name ?? ifc,
         icons,
-      };
-    },    
-    
+      }
+    },
 
     mapAffiliateName(s) {
       const ifc = affiliateMap[s]

@@ -1,21 +1,28 @@
 <template>
   <div class="leaderboard-container">
     <div class="data-section">
-      <h3 class="section-title">Swap Fees</h3>
+      <h3 class="section-title">Affiliate Collected</h3>
       <div
-        class="data-item"
-        v-for="(row, index) in sortedData('affiliate_fees_usd')"
+        v-for="(row, index) in sortedData(affiliateData, 'affiliate_fees_usd')"
         :key="index"
+        class="data-item"
       >
         <div class="item-content">
-          <span class="item-number">{{ index + 1 }}.</span>
-          <div>
-            <img v-if="row.icon" :src="row.icon" class="item-icon" />
-          </div>
+          <span class="item-number" :style="{ color: colorizeIndex(index) }">
+            {{ index + 1 }}.
+          </span>
           <div class="item-details">
-            <div class="affiliate-name">{{ row.affiliate }}</div>
-            <div class="affiliate-value">
-              ${{ (row.affiliate_fees_usd / 1e2) | number('0a') }}
+            <img
+              v-if="affiliateWallet(row.affiliate).icon"
+              :src="affiliateWallet(row.affiliate).icon"
+              class="item-icon"
+            />
+            <div v-else class="affiliate-name">{{ row.affiliate }}</div>
+            <div
+              class="affiliate-value"
+              :style="{ color: colorizeIndex(index) }"
+            >
+              ${{ row.affiliate_fees_usd | number('0a') }}
             </div>
           </div>
         </div>
@@ -25,19 +32,26 @@
     <div class="data-section">
       <h3 class="section-title">Swap Volume</h3>
       <div
-        class="data-item"
-        v-for="(row, index) in sortedData('total_volume_usd')"
+        v-for="(row, index) in sortedData(swapVolume, 'total_volume_usd')"
         :key="index"
+        class="data-item"
       >
         <div class="item-content">
-          <span class="item-number">{{ index + 1 }}.</span>
-          <div>
-            <img v-if="row.icon" :src="row.icon" class="item-icon" />
-          </div>
+          <span class="item-number" :style="{ color: colorizeIndex(index) }">
+            {{ index + 1 }}.
+          </span>
           <div class="item-details">
-            <div class="affiliate-name">{{ row.affiliate }}</div>
-            <div class="affiliate-value">
-              ${{ (row.total_volume_usd / 1e2) | number('0a') }}
+            <img
+              v-if="affiliateWallet(row.affiliate).icon"
+              :src="affiliateWallet(row.affiliate).icon"
+              class="item-icon"
+            />
+            <div v-else class="affiliate-name">{{ row.affiliate }}</div>
+            <div
+              class="affiliate-value"
+              :style="{ color: colorizeIndex(index) }"
+            >
+              ${{ row.total_volume_usd | number('0a') }}
             </div>
           </div>
         </div>
@@ -47,34 +61,49 @@
     <div class="data-section">
       <h3 class="section-title">Swap Count</h3>
       <div
-        class="data-item"
-        v-for="(row, index) in sortedData('total_swaps')"
+        v-for="(row, index) in sortedData(affiliateData, 'total_swaps')"
         :key="index"
+        class="data-item"
       >
         <div class="item-content">
-          <span class="item-number">{{ index + 1 }}.</span>
-          <div>
-            <img v-if="row.icon" :src="row.icon" class="item-icon" />
-          </div>
+          <span class="item-number" :style="{ color: colorizeIndex(index) }">
+            {{ index + 1 }}.
+          </span>
           <div class="item-details">
-            <div class="affiliate-name">{{ row.affiliate }}</div>
-            <div class="affiliate-value">
+            <img
+              v-if="affiliateWallet(row.affiliate).icon"
+              :src="affiliateWallet(row.affiliate).icon"
+              class="item-icon"
+            />
+            <div v-else class="affiliate-name">{{ row.affiliate }}</div>
+            <div
+              class="affiliate-value"
+              :style="{ color: colorizeIndex(index) }"
+            >
               {{ row.total_swaps | number('0,0') }}
             </div>
           </div>
         </div>
       </div>
     </div>
+    <div class="footer-stat">
+      <strong>
+        <sup>*</sup>
+        All of the stat are based on 30 days period for now
+      </strong>
+    </div>
   </div>
 </template>
 
 <script>
 import { orderBy } from 'lodash'
+import { mapGetters } from 'vuex'
 
 export default {
   data() {
     return {
-      bs: [],
+      swapVolume: [],
+      affiliateData: [],
       sortDirection: {
         affiliate_fees_usd: 'desc',
         total_volume_usd: 'desc',
@@ -82,47 +111,73 @@ export default {
       },
     }
   },
-  async mounted() {
+  computed: {
+    ...mapGetters({
+      theme: 'getTheme',
+    }),
+  },
+  mounted() {
     try {
-      const { data } = await this.$api.getAffiliateByWallet()
-      this.affiliateWallets(data)
+      this.$api.getAffiliateByWallet().then(({ data }) => {
+        this.formatData(data)
+      })
+
+      this.$api.getAffiliateSwapsByWallet().then(({ data }) => {
+        this.formatVolume(data)
+      })
     } catch (error) {
       console.error('Error fetching affiliate data:', error)
     }
   },
   methods: {
-    affiliateWallets(data) {
-      this.bs = data.map((item) => {
-        const interfaceData = this.mapInterfaceName(item.affiliate)
-        const isDarkMode = this.mapInterfaceName(item.affiliate)
-
+    formatData(data) {
+      this.affiliateData = data.map((item) => {
         return {
           affiliate: item.affiliate,
-          total_volume_usd: item.total_volume_usd,
           affiliate_fees_usd: item.affiliate_fees_usd,
           total_swaps: item.total_swaps,
-          icon: interfaceData
-            ? isDarkMode
-              ? interfaceData.icons.urlDark
-              : interfaceData.icons.url
-            : '',
         }
       })
     },
-
-    sortedData(field) {
-      return orderBy(this.bs, [field], [this.sortDirection[field]])
+    formatVolume(data) {
+      this.swapVolume = data
+        .filter((it) => it.affiliate !== 'No Affiliate')
+        .map((item) => {
+          return {
+            affiliate: item.affiliate,
+            total_volume_usd: item.total_volume_usd,
+          }
+        })
     },
-    affiliateWallet(item) {
-      const detail = this.mapInterfaceName(item.affiliate)
+    sortedData(data, field) {
+      return orderBy(data, [field], [this.sortDirection[field]])
+    },
+    colorizeIndex(index) {
+      switch (index) {
+        case 0:
+          return '#FFD700'
+
+        case 1:
+          return '#CD7F32'
+
+        case 2:
+          return '#C0C0C0'
+        default:
+          return 'var(--font-color)'
+      }
+    },
+
+    affiliateWallet(affiliateName) {
+      const detail = this.mapInterfaceName(affiliateName)
       return detail
         ? {
-            icon: detail.icons.url,
+            icon:
+              this.theme === 'dark' ? detail.icons.urlDark : detail.icons.url,
             name: detail.name,
           }
         : {
-            icon: '',
-            name: item.affiliate,
+            icon: undefined,
+            name: affiliateName,
           }
     },
   },
@@ -138,13 +193,19 @@ export default {
 
   .data-section {
     flex: 1;
-    margin: 0 15px;
+    min-width: 400px;
     background-color: var(--bg-color);
-    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+
+    @include md {
+      border-radius: 0.5rem;
+    }
 
     .section-title {
       text-align: center;
       color: var(--sec-font-color);
+      padding-bottom: 1.1rem;
+      border-bottom: 1px solid var(--border-color);
     }
 
     .data-item {
@@ -167,9 +228,12 @@ export default {
           margin-right: 13px;
         }
 
+        .affiliate-name {
+          color: var(--sec-font-color);
+        }
+
         .item-icon {
-          height: 1.5rem;
-          width: 2.5rem;
+          height: 1.7rem;
           padding: 4px 0;
           margin-right: 15px;
           display: flex;
@@ -182,6 +246,8 @@ export default {
           flex: 1;
 
           .affiliate-value {
+            font-size: 1.05rem;
+            color: var(--sec-font-color);
             font-weight: bold;
           }
         }

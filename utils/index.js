@@ -677,6 +677,10 @@ export const interfaces = {
     name: 'Symbiosis',
     icon: 'symbiosis',
   },
+  defispot: {
+    name: 'Defispot',
+    icon: 'defispot',
+  },
 }
 
 export const affiliateMap = {

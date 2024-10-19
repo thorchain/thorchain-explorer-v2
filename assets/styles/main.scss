@@ -66,6 +66,12 @@ input {
   display: none;
 }
 
+@media (max-width: 1580px) {
+  .last-nav-popover {
+    left: -50px !important;
+  }
+}
+
 @include lg {
   .nav-popover {
     display: block;
