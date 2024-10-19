@@ -23,17 +23,33 @@
         </div>
 
         <div class="balance-label">
-          <span>RUNE Value</span>
+          <span>Bond Balance</span>
+          <skeleton-item :loading="loading || !nodes" class="balance-content">
+            <asset-icon
+              :asset="{ ticker: 'RUNE', chain: 'THOR' }"
+              :chain="false"
+              class="asset-icon"
+            />
+            <span v-if="bonds" class="mono">
+              {{ balanceFormat(bonds.total) }} RUNE
+            </span>
+            <span v-else>-</span>
+          </skeleton-item>
+        </div>
+
+        <div class="balance-label">
+          <span>Total Value</span>
           <skeleton-item :loading="loading" class="balance-content">
             <span
               v-if="runeToken && runeToken.price > 0 && !isNaN(runeToken.price)"
               class="mono"
             >
-              {{ (runeToken.price * runeToken.quantity) | currency }}
+              {{ (runeToken.price * totalBalance) | currency }}
             </span>
             <span v-else>-</span>
           </skeleton-item>
         </div>
+
         <div class="dropdown-container">
           <label for="token-dropdown">Other Asset Holdings</label>
           <div ref="dropdownButton" class="custom-dropdown">
@@ -154,7 +170,7 @@ export default {
     ArrowDownIcon,
     ArrowUpIcon,
   },
-  props: ['state', 'loading'],
+  props: ['state', 'loading', 'address'],
   data() {
     return {
       selectedToken: null,
@@ -173,6 +189,7 @@ export default {
     ...mapGetters({
       runePrice: 'getRunePrice',
       pools: 'getPools',
+      nodes: 'getNodesData',
     }),
     sortedGroupedTokens() {
       return Object.entries(this.groupedTokens).map(([type, tokens]) => {
@@ -248,6 +265,30 @@ export default {
         acc[type].push(token)
         return acc
       }, {})
+    },
+    bonds() {
+      if (!this.nodes) {
+        return undefined
+      }
+      const ret = { total: 0 }
+
+      for (let i = 0; i < this.nodes.length; i++) {
+        const node = this.nodes[i]
+        const bond = node?.bond_providers?.providers.find(
+          (n) => n.bond_address === this.address
+        )
+        if (bond !== undefined) {
+          ret.total += +bond.bond / 1e8
+        }
+      }
+      return ret
+    },
+    totalBalance() {
+      let ret = this.runeToken.quantity
+      if (this.bonds?.total > 0) {
+        ret += this.bonds.total
+      }
+      return ret
     },
   },
   methods: {

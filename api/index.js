@@ -163,7 +163,6 @@ export default function ({ $axios }, inject) {
     retryDelay: axiosRetry.exponentialDelay,
     retryCondition: (error) => {
       const status = error.response ? error.response.status : null
-      console.log(status)
       return status === 504 || status === 429
     },
   })

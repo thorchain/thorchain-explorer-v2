@@ -1,24 +1,37 @@
 <template>
   <div>
     <bounce-loader v-if="loading" color="var(--font-color)" size="3rem" />
-    <info-card :options="thornames" :inner="true">
-      <template #asset="{ item }">
-        <template v-for="al in item.aliases">
-          <div :key="`asset-` + al.chain" class="mini-bubble">
-            <asset-icon :asset="baseChainAsset(al.chain)" :height="'1.2rem'" />
-            <nuxt-link class="clickable" :to="`/address/${al.address}`">
-              {{ formatAddress(al.address) }}
-            </nuxt-link>
-          </div>
+    <template v-else>
+      <info-card :options="thornames" :inner="true">
+        <template #asset="{ item }">
+          <template v-for="al in item.aliases">
+            <div :key="`asset-` + al.chain" class="mini-bubble">
+              <asset-icon
+                :asset="baseChainAsset(al.chain)"
+                :height="'1.2rem'"
+              />
+              <nuxt-link class="clickable" :to="`/address/${al.address}`">
+                {{ formatAddress(al.address) }}
+              </nuxt-link>
+            </div>
+          </template>
+          <span v-if="item.aliases.length == 0" class="mini-bubble yellow">
+            No Aliases
+          </span>
         </template>
-        <span v-if="item.aliases.length == 0" class="mini-bubble yellow">
-          No Aliases
-        </span>
-      </template>
-    </info-card>
-    <span v-if="!loading && (!thornames || thornames.length == 0)">
-      NO THORName
-    </span>
+        <template #address="{ item }">
+          <nuxt-link class="clickable" :to="`/address/${item.value}`">
+            {{ formatAddress(item.value) }}
+          </nuxt-link>
+        </template>
+        <template #block="{ item }">
+          <nuxt-link class="clickable" :to="`/block/${item.value}`">
+            {{ item.filter(item.value) }}
+          </nuxt-link>
+        </template>
+      </info-card>
+      <span v-if="thornames.length == 0"> NO THORName </span>
+    </template>
   </div>
 </template>
 
@@ -47,8 +60,9 @@ export default {
         return
       }
 
+      const promises = []
       names.forEach((n) => {
-        this.$api.getThorname(n).then((res) => {
+        const p = this.$api.getThorname(n).then((res) => {
           this.thornames.push({
             title: '',
             rowStart: 1,
@@ -61,6 +75,7 @@ export default {
               {
                 name: 'Owner',
                 value: res.data?.owner,
+                valueSlot: 'address',
               },
               {
                 name: 'Affiliate Collector',
@@ -77,6 +92,7 @@ export default {
                 value: res.data?.expire_block_height,
                 format: this.normalFormat,
                 filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
+                valueSlot: 'block',
               },
               {
                 name: 'Aliases',
@@ -87,6 +103,11 @@ export default {
             ],
           })
         })
+        promises.push(p)
+      })
+
+      Promise.allSettled(promises).then((res) => {
+        this.loading = false
       })
     },
     rlookThorname(address) {
@@ -97,10 +118,8 @@ export default {
           this.checkThornameAddresses(names)
         })
         .catch((e) => {
-          console.error(e)
-        })
-        .finally(() => {
           this.loading = false
+          console.error(e)
         })
     },
   },

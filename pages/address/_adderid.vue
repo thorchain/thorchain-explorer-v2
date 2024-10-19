@@ -14,6 +14,7 @@
           <div class="balance-nav-container">
             <balance
               class="card-balance"
+              :address="address"
               :state="addressStat"
               :loading="addressLoading"
             />
@@ -21,8 +22,8 @@
               extra-class="node-address-card"
               :navs="[
                 { title: 'LP/Savers', value: 'pools' },
-                { title: 'Thorname', value: 'thorname' },
                 { title: 'Bond', value: 'bond' },
+                { title: 'Thorname', value: 'thorname' },
               ]"
               :is-loading="loading"
               :act-nav.sync="activeMode"
