@@ -226,7 +226,11 @@ export default {
 .node-id {
   color: var(--primary-color);
   padding-left: 0.5rem;
+  word-wrap: break-word; 
+  word-break: break-all; 
+  white-space: normal;   
 }
+
 .cards-node {
   display: flex;
   width: 100%;

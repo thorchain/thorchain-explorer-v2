@@ -1,12 +1,5 @@
 <template>
   <Page>
-    <Nav
-      :is-link="true"
-      :nav-items="[
-        { link: `/insights/main`, text: 'Overview' },
-        { link: `/insights/apr`, text: 'APR' },
-      ]"
-    />
     <nuxt-child />
   </Page>
 </template>

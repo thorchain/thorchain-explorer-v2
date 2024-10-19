@@ -58,8 +58,8 @@
           :key="`popover-menu-${index}`"
           triggers="hover"
           :target="`navbar-${item.name}`"
-          placement="bottom-start"
-          custom-class="nav-popover"
+          placement="bottom"
+          :custom-class="`nav-popover ${item.name === 'Insights' ? 'last-nav-popover' : ''}`"
         >
           <div class="submenu">
             <NuxtLink
@@ -249,6 +249,16 @@ export default {
               unicon: 'chartUnselected',
               icon: 'chartSelected',
               link: '/insights',
+              submenu: [
+                {
+                  name: 'Overview',
+                  link: '/insights/main',
+                },
+                {
+                  name: 'Leaderboard',
+                  link: '/insights/leaderboard',
+                },
+              ],
             }
           : false,
       ],
