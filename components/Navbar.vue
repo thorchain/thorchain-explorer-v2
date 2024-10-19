@@ -249,6 +249,12 @@ export default {
               unicon: 'chartUnselected',
               icon: 'chartSelected',
               link: '/insights',
+              submenu: [
+                {
+                  name: 'Leaderboard',
+                  link: '/Insights/leaderboard',
+                },
+              ],
             }
           : false,
       ],

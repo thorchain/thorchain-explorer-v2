@@ -17,6 +17,7 @@ import {
   affiliateMap,
   darkTheme,
   lightTheme,
+  interfaces,
 } from '~/utils'
 import endpoints from '~/api/endpoints'
 const colorHash = new ColorHash({ lightness: 0.5 })
@@ -757,6 +758,30 @@ export default {
         }
       })
     },
+    mapInterfaceName(s) {
+      const ifc = interfaces[s.toLowerCase()]; 
+            
+      if (!ifc) {
+        return undefined; 
+      }
+      
+      const icons = {
+        url: undefined,
+        urlDark: undefined,
+      };
+      
+      if (ifc.icon) {
+        icons.url = require(`@/assets/images/${ifc.icon}.png`);
+        icons.urlDark = require(`@/assets/images/${ifc.icon}-dark.png`);
+      }
+      
+      return {
+        name: ifc.name ?? ifc, 
+        icons,
+      };
+    },    
+    
+
     mapAffiliateName(s) {
       const ifc = affiliateMap[s]
       if (!ifc) {

@@ -633,7 +633,7 @@ export function assetToString({ chain, synth, trade, symbol }) {
   return `${chain}${delimiter}${symbol}`
 }
 
-const interfaces = {
+export const interfaces = {
   thorswap: {
     name: 'THORSwap',
     icon: 'thorswap',
