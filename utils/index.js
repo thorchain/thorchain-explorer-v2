@@ -681,6 +681,10 @@ export const interfaces = {
     name: 'Defispot',
     icon: 'defispot',
   },
+  vultisig: {
+    name: 'Vultisig',
+    icon: 'vultisig',
+  },
 }
 
 export const affiliateMap = {
