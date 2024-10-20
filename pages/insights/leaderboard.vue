@@ -130,10 +130,24 @@ export default {
     }
   },
   methods: {
+    mapMissing(item) {
+      switch (item.affiliate) {
+        case 'Edge Wallet':
+          return 'edge'
+        case 'OneKey Wallet':
+          return 'oneKey'
+        case 'ELD':
+          return 'Eldorito'
+        case 'dcf':
+          return 'Decentralfi'
+        default:
+          return item.affiliate
+      }
+    },
     formatData(data) {
       this.affiliateData = data.map((item) => {
         return {
-          affiliate: item.affiliate,
+          affiliate: this.mapMissing(item),
           affiliate_fees_usd: item.affiliate_fees_usd,
           total_swaps: item.total_swaps,
         }
@@ -144,7 +158,7 @@ export default {
         .filter((it) => it.affiliate !== 'No Affiliate')
         .map((item) => {
           return {
-            affiliate: item.affiliate,
+            affiliate: this.mapMissing(item),
             total_volume_usd: item.total_volume_usd,
           }
         })

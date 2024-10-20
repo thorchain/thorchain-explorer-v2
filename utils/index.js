@@ -669,7 +669,7 @@ export const interfaces = {
     name: 'OKX',
     icon: 'okx',
   },
-  oneKey: {
+  onekey: {
     name: 'One Key',
     icon: 'onekey',
   },
@@ -684,6 +684,9 @@ export const interfaces = {
   vultisig: {
     name: 'Vultisig',
     icon: 'vultisig',
+  },
+  eldorito: {
+    name: 'ELDORITO',
   },
 }
 
@@ -708,8 +711,9 @@ export const affiliateMap = {
   lifi: interfaces.lifi,
   ej: interfaces.edge,
   okw: interfaces.okx,
-  oky: interfaces.oneKey,
+  oky: interfaces.onekey,
   sy: interfaces.symbiosis,
+  eld: interfaces.eldorito,
 }
 
 export function getExplorerAddressUrl(chain, query) {
