@@ -271,16 +271,16 @@ export default {
       )
 
       if (actions && actions.actions.length > 0) {
-        const ta = assetFromString(outAsset)
-        const isRefund = actions.actions.some((e, i) => e.type === 'refund')
-        if (isRefund && (ta.synth || ta.trade)) {
-          return false
-        }
         if (memo.type !== 'swap') {
           const success = actions.actions.some((e, i) => e.status === 'success')
           if (success) {
             return false
           }
+        }
+        const ta = assetFromString(outAsset)
+        const isRefund = actions.actions.some((e, i) => e.type === 'refund')
+        if (isRefund && (ta.synth || ta.trade)) {
+          return false
         }
       }
 
