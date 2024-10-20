@@ -594,14 +594,14 @@ export default {
     blockRewardInfo() {
       return [
         {
-          title: 'Block Rewards',
+          title: 'Block Rewards (Daily)',
           rowStart: 2,
           colSpan: 1,
           grid: true,
           icon: require('@/assets/images/cube.svg'),
           items: [
             {
-              name: 'Bond (Daily)',
+              name: 'Bond',
               value:
                 (this.network.blockRewards?.bondReward / 10 ** 8 ?? 0) *
                 (5256000 / 365),
@@ -609,7 +609,7 @@ export default {
               usdValue: true,
             },
             {
-              name: 'Pool (Daily)',
+              name: 'Pool',
               value:
                 (this.network.blockRewards?.poolReward / 10 ** 8 ?? 0) *
                 (5256000 / 365),
@@ -617,7 +617,7 @@ export default {
               usdValue: true,
             },
             {
-              name: 'Total (Daily)',
+              name: 'Total',
               value:
                 (this.network.blockRewards?.blockReward / 10 ** 8 ?? 0) *
                 (5256000 / 365),
@@ -625,7 +625,7 @@ export default {
               usdValue: true,
             },
             {
-              name: 'Per Node (Daily)',
+              name: 'Per Node',
               value:
                 ((this.network.blockRewards?.bondReward / 10 ** 8 ?? 0) *
                   (5256000 / 365)) /
