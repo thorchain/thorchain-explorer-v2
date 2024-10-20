@@ -16,10 +16,7 @@
             <slot :name="section.allSlot" :items="section.items" />
           </template>
           <template v-else>
-            <div 
-              class="section-header"
-              :class="{ 'has-icon': section.icon }" 
-            >
+            <div class="section-header" :class="{ 'has-icon': section.icon }">
               <div class="header-content">
                 <template v-if="section.icon">
                   <img :src="section.icon" class="header-icon" alt="Icon" />
@@ -184,17 +181,26 @@ export default {
 
   &.has-icon {
     border-bottom: 1px solid var(--border-color);
+
+    .header-content {
+      margin-bottom: 0.75rem;
+      h4 {
+        margin: 0 !important;
+      }
+    }
   }
   .header-icon {
-    height: 20px;
-    width: 20px;
+    height: 36px;
+    width: 36px;
   }
   .header-content {
     display: flex;
     gap: 0.5rem;
-  }
-  h4 {
-    margin: 0;
+    align-items: center;
+
+    h4 {
+      margin: 0;
+    }
   }
 
   .more-link {
@@ -271,9 +277,8 @@ export default {
       gap: 1rem;
       grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
       margin: 0.8rem 0.5rem;
-      @include md{
+      @include md {
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-
       }
 
       .grid-item {

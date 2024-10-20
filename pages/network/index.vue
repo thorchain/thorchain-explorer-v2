@@ -1,13 +1,13 @@
 <template>
   <Page>
     <div class="grid-network">
-    <Card>
-    <info-card :options="networkOverview" :inner="true"/>
-  </Card>
-  <Card>
-    <info-card :options="allocations" :inner="true"/>
-  </Card>
-</div>
+      <Card>
+        <info-card :options="networkOverview" :inner="true" />
+      </Card>
+      <Card>
+        <info-card :options="allocations" :inner="true" />
+      </Card>
+    </div>
     <Card title="THORChain version upgrade progress">
       <ProgressBar
         v-if="versionProgress"
@@ -98,6 +98,7 @@
 
 <script>
 import { gt, rsort, valid } from 'semver'
+import { mapGetters } from 'vuex'
 import { blockTime } from '~/utils'
 import DangerIcon from '@/assets/images/danger.svg?inline'
 
@@ -204,6 +205,9 @@ export default {
     title: 'THORChain Network Explorer | Network',
   },
   computed: {
+    ...mapGetters({
+      chainsHeight: 'getChainsHeight',
+    }),
     versionProgress() {
       if (!!this.nodes && this.blockchainVersion) {
         return Math.ceil(
@@ -213,12 +217,13 @@ export default {
       return 1
     },
     networkOverview() {
+      console.log(this.chainsHeight?.THOR - this.thorVersion?.next_since_height)
       return [
         {
           title: 'Network Overview',
           rowStart: 1,
           colSpan: 1,
-          icon: require('@/assets/images/network.svg'), 
+          icon: require('@/assets/images/network.svg'),
           items: [
             {
               name: 'Blockchain Version',
@@ -227,11 +232,8 @@ export default {
             {
               name: 'Version Age',
               value:
-                this.lastblock &&
-                this.lastblock[0].thorchain -
-                  this.thorVersion?.next_since_height,
+                this.chainsHeight?.THOR - this.thorVersion?.next_since_height,
               filter: (v) => blockTime(v, true),
-              valueSlot: 'blocktime',
             },
             {
               name: 'TOR Price in RUNE',
@@ -254,7 +256,7 @@ export default {
           title: 'Allocations',
           rowStart: 2,
           colSpan: 1,
-          icon: require('@/assets/images/allocations.svg'), 
+          icon: require('@/assets/images/allocations.svg'),
           items: [
             {
               name: 'Pooled',
