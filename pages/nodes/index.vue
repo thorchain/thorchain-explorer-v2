@@ -1,15 +1,28 @@
 <template>
   <Page :error="error && !loading" :fluid="true">
     <div class="grid-network">
-      <info-card :options="nodesInfo">
-        <template #churn="{ item }">
-          <skeleton-item :loading="!item.value">
-            <span style="font-family: Montserrat">
-              {{ item.value }}
-            </span>
-          </skeleton-item>
-        </template>
-      </info-card>
+      <Card>
+        <info-card :options="activeInfo" :inner="true" />
+      </Card>
+      <Card>
+        <info-card :options="standbyInfo" :inner="true" />
+      </Card>
+    </div>
+    <div class="grid-network">
+      <Card>
+        <info-card :options="churnInfo" :inner="true">
+          <template #churn="{ item }">
+            <skeleton-item :loading="!item.value">
+              <span style="font-family: Montserrat">
+                {{ item.value }}
+              </span>
+            </skeleton-item>
+          </template>
+        </info-card>
+      </Card>
+      <Card>
+        <info-card :options="blockRewardInfo" :inner="true" />
+      </Card>
     </div>
     <div id="nodes-search-container">
       <input
@@ -409,25 +422,14 @@ export default {
         },
       ]
     },
-    nodesInfo() {
-      let churnValue
-
-      if (this.churnProgressTime > 600) {
-        churnValue = blockTime(this.churnProgressTime, true)
-      } else if (this.churnProgressTime) {
-        churnValue = `${this.churnProgressTime} Block`
-      }
-
-      if (this.churnProgressValue) {
-        churnValue += ` | ${this.$options.filters.percent(this.churnProgressValue, '0,0.000')}`
-      }
-
+    activeInfo() {
       return [
         {
           title: 'Active',
           rowStart: 1,
           colSpan: 1,
           grid: true,
+          icon: require('@/assets/images/active.svg'),
           items: [
             {
               name: 'Node',
@@ -478,10 +480,16 @@ export default {
             },
           ],
         },
+      ]
+    },
+    standbyInfo() {
+      return [
         {
           title: 'Standby',
           rowStart: 1,
           colSpan: 1,
+          grid: true,
+          icon: require('@/assets/images/standby.svg'),
           items: [
             {
               name: 'Nodes',
@@ -528,11 +536,28 @@ export default {
             },
           ],
         },
+      ]
+    },
+    churnInfo() {
+      let churnValue
+
+      if (this.churnProgressTime > 600) {
+        churnValue = blockTime(this.churnProgressTime, true)
+      } else if (this.churnProgressTime) {
+        churnValue = `${this.churnProgressTime} Block`
+      }
+
+      if (this.churnProgressValue) {
+        churnValue += ` | ${this.$options.filters.percent(this.churnProgressValue, '0,0.000')}`
+      }
+
+      return [
         {
           title: 'Churn',
           rowStart: 2,
           colSpan: 1,
-
+          grid: true,
+          icon: require('@/assets/images/churn.svg'),
           items: [
             {
               name: 'Time',
@@ -564,10 +589,16 @@ export default {
             },
           ],
         },
+      ]
+    },
+    blockRewardInfo() {
+      return [
         {
           title: 'Block Rewards',
           rowStart: 2,
           colSpan: 1,
+          grid: true,
+          icon: require('@/assets/images/cube.svg'),
           items: [
             {
               name: 'Bond (Daily)',
@@ -1018,7 +1049,7 @@ export default {
 .grid-network {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(auto, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
   grid-gap: 0.5rem;
   gap: 0.5rem;
 }

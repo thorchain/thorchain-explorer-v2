@@ -127,7 +127,7 @@
         <span v-else-if="props.column.field == 'total_bond'" class="hoverable">
           <span v-tooltip="formatCurrency(runePrice * props.row.total_bond)">
             <span class="extra">{{ runeCur() }}</span>
-            {{ numberFormat(props.row.total_bond) }}
+            {{ normalFormat(props.row.total_bond) }}
           </span>
         </span>
         <span v-else-if="props.column.field == 'award'" class="hoverable">
