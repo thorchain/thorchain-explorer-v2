@@ -174,17 +174,24 @@ export default {
     },
   },
   mounted() {
-    let params = {}
-    if (this.$route.query) {
-      const query = this.checkQuery(this.$route.query)
-      this.$router.replace({ path: '/txs', query })
-      this.filters = query
-      params = query
-      this.$refs.advancedFilter.queryToFilter(query)
-      this.hasFilters = true
-    }
-    this.getActions({ limit: this.limit, ...params })
-  },
+  let params = {}
+  
+  if (this.$route.query && Object.keys(this.$route.query).length > 0) {
+    const query = this.checkQuery(this.$route.query)
+    this.$router.replace({ path: '/txs', query })
+    this.filters = query
+    params = query
+    this.$refs.advancedFilter.queryToFilter(query)
+    this.hasFilters = true
+  } else {
+    this.applyFilters({
+      type: ['swap'],
+      asset: ['nosynth', 'notrade', 'norune'],
+    })
+  }
+
+  this.getActions({ limit: this.limit, ...params })
+},
   methods: {
     checkQuery(queries) {
       return pick(queries, [
