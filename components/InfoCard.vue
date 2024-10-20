@@ -16,8 +16,16 @@
             <slot :name="section.allSlot" :items="section.items" />
           </template>
           <template v-else>
-            <div class="section-header">
-              <h4>{{ section.title }}</h4>
+            <div 
+              class="section-header"
+              :class="{ 'has-icon': section.icon }" 
+            >
+              <div class="header-content">
+                <template v-if="section.icon">
+                  <img :src="section.icon" class="header-icon" alt="Icon" />
+                </template>
+                <h4>{{ section.title }}</h4>
+              </div>
               <nuxt-link
                 v-if="section.link"
                 :to="section.link"
@@ -174,6 +182,17 @@ export default {
   justify-content: space-between;
   align-items: center;
 
+  &.has-icon {
+    border-bottom: 1px solid var(--border-color);
+  }
+  .header-icon {
+    height: 20px;
+    width: 20px;
+  }
+  .header-content {
+    display: flex;
+    gap: 0.5rem;
+  }
   h4 {
     margin: 0;
   }
@@ -236,7 +255,6 @@ export default {
 
     .flex-section {
       flex: 1;
-      margin: 0 0.7rem;
       padding-bottom: 0.7rem;
       margin-bottom: 0.7rem;
       border-bottom: 1px solid var(--border-color);
@@ -245,22 +263,21 @@ export default {
     .grid-section {
       gap: 1rem;
       border-bottom: 1px solid var(--border-color);
-      margin: 0 0.7rem;
       padding-bottom: 0.7rem;
       margin-bottom: 0.7rem;
     }
     .grid-items {
-      display: flex;
-      justify-content: space-between;
-      flex-direction: row;
-      flex-wrap: wrap;
+      display: grid;
       gap: 1rem;
+      grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+      margin: 0.8rem 0.5rem;
+      @include md{
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+
+      }
 
       .grid-item {
-        display: flex;
-        flex-direction: column;
         font-size: 0.9rem;
-        padding: 0.5rem;
       }
       .item-name {
         display: flex;
@@ -287,6 +304,7 @@ export default {
     .flex-items {
       gap: 0.3rem 0;
       min-width: 320px;
+      margin: 0.5rem 0.5rem;
 
       &.cluster {
         display: flex;

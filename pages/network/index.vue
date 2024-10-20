@@ -1,6 +1,13 @@
 <template>
   <Page>
-    <info-card :options="networkOverview"></info-card>
+    <div class="grid-network">
+    <Card>
+    <info-card :options="networkOverview" :inner="true"/>
+  </Card>
+  <Card>
+    <info-card :options="allocations" :inner="true"/>
+  </Card>
+</div>
     <Card title="THORChain version upgrade progress">
       <ProgressBar
         v-if="versionProgress"
@@ -211,6 +218,7 @@ export default {
           title: 'Network Overview',
           rowStart: 1,
           colSpan: 1,
+          icon: require('@/assets/images/network.svg'), 
           items: [
             {
               name: 'Blockchain Version',
@@ -238,10 +246,15 @@ export default {
             },
           ],
         },
+      ]
+    },
+    allocations() {
+      return [
         {
           title: 'Allocations',
           rowStart: 2,
           colSpan: 1,
+          icon: require('@/assets/images/allocations.svg'), 
           items: [
             {
               name: 'Pooled',
