@@ -11,5 +11,14 @@ export function getTHORLastBlock() {
 export function getBlockHeight(height) {
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].SERVER_URL + `block?height=${height}`
-  );
+  )
+}
+
+export function getQuote(params) {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + 'quote',
+    {
+      params,
+    }
+  )
 }

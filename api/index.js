@@ -63,7 +63,6 @@ import {
   getTradeAsset,
   getTradeAssets,
   getRunePool,
-  getQuote,
   getThorVersion,
 } from './thornode.api'
 import { getTendermintLatestBlocks } from './tendermint.api'
@@ -101,7 +100,7 @@ import {
   getRunePrice,
   getDailySwap,
 } from './insights.api'
-import { getTHORLastBlock, getBlockHeight } from './infra'
+import { getTHORLastBlock, getBlockHeight, getQuote } from './infra'
 import endpoints from './endpoints'
 export var $axiosInstace
 

@@ -32,7 +32,7 @@ export default {
   },
   props: {
     meta: {
-      type: Object,
+      type: Array,
       required: false,
       default: undefined,
     },

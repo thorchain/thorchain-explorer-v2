@@ -131,7 +131,6 @@ export default {
       const uI = setInterval(async () => {
         try {
           isPending = await this.fetchTx(txHash)
-          console.log(isPending)
         } catch (error) {
           if (txHash.length <= 45) {
             const addrTxs = await this.$api.getAddress(txHash, 0)
@@ -734,9 +733,12 @@ export default {
         )
         const inAmount = parseInt(thorStatus.tx.coins[0].amount)
         const outAsset = this.parseMemoAsset(memo.asset, this.pools)
-        try {
-          this.quote = (
-            await this.$api.getQuote({
+
+        // get quote
+        const swapAction = midgardAction?.actions.find((a) => a.type === 'swap')
+        if (swapAction.status === 'pending') {
+          try {
+            const { data: quoteData } = await this.$api.getQuote({
               amount: inAmount,
               from_asset: assetToString(inAsset),
               to_asset: assetToString(outAsset),
@@ -753,9 +755,10 @@ export default {
                 0,
               height: midgardAction?.actions[0]?.height,
             })
-          ).data
-        } catch (error) {
-          console.error(error)
+            this.quote = quoteData
+          } catch (error) {
+            console.error(error)
+          }
         }
 
         const { cards, accordions } = await this.createSwapState(
