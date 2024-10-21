@@ -24,7 +24,8 @@
         <info-card :options="blockRewardInfo" :inner="true" />
       </Card>
     </div>
-    <div id="nodes-search-container">
+    <div class="search-container">
+   <div id="nodes-search-container">
       <input
         v-model="searchTerm"
         placeholder="Search All Tables"
@@ -32,6 +33,13 @@
       />
       <SearchIcon class="search-icon" />
     </div>
+
+    <button @click="setActiveCol('isp')" class="filter-button">ISP</button>
+  <button @click="setActiveCol('fee')" class="filter-button">Fee</button>
+  <button @click="setActiveCol('score')" class="filter-button">Score</button>
+  <button @click="setActiveCol('age')" class="filter-button">Age</button>
+    </div>
+
     <card :is-loading="!activeNodes">
       <node-table
         :rows="activeNodes"
@@ -95,6 +103,7 @@ export default {
       churnProgressValue: 0,
       totalAwards: undefined,
       leastBondChurn: undefined,
+
     }
   },
   computed: {
@@ -887,6 +896,18 @@ export default {
       const { data: nodesInfo } = await this.$api.getNodesInfo()
       this.nodesQuery = nodesInfo
     },
+    setActiveCol(col) {
+      this.activeCols = []; 
+      if (col === 'isp') {
+        this.activeCols.push({ field: 'isp', label: 'ISP' });
+      } else if (col === 'fee') {
+        this.activeCols.push({ field: 'fee', label: 'Fee' });
+      } else if (col === 'score') {
+        this.activeCols.push({ field: 'score', label: 'Score' });
+      } else if (col === 'age') {
+        this.activeCols.push({ field: 'age', label: 'Age' });
+      }
+    },
     setTheLeastBondChurn(bond) {
       this.leastBondChurn = bond
     },
@@ -1007,10 +1028,31 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.search-container{
+  display: flex;
+}
+.filter-button {
+    background-color: var(--bg-color);
+    color: var(--sec-font-color);
+    border: none;
+    border-radius: 10px;
+    padding: 8px 16px;
+    margin-right: 5px;
+    display: inline-flex;
+    align-items: center;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+
+  .filter-button:hover {
+    color: var(--primary-color);
+  }
 #nodes-search-container {
   display: flex;
   position: relative;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
 
   .search-input {
     flex: 1;
