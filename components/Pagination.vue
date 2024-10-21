@@ -5,7 +5,7 @@
       Prev Page
     </div>
     <div v-if="meta" class="nav-icons">
-      <template v-if="!loading">
+      <template v-if="!loading && timeFrame">
         {{ timeFrame.from }}
         -
         {{ timeFrame.next }}

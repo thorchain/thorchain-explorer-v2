@@ -656,6 +656,7 @@ export const interfaces = {
   },
   asgardex: {
     name: 'ASGARDEX',
+    icon: 'asgardex',
   },
   lifi: {
     name: 'LIFI',
@@ -688,6 +689,22 @@ export const interfaces = {
   eldorito: {
     name: 'ELDORITO',
   },
+  ll: {
+    name: 'Live Ledger',
+    icon: 'ledger',
+  },
+  zengo: {
+    name: 'Zengo',
+    icon: 'zengo',
+  },
+  cakewallet: {
+    name: 'CakeWallet',
+    icon: 'cakewallet',
+  },
+  rango: {
+    name: 'Rango Exchange',
+    icon: 'rango',
+  },
 }
 
 export const affiliateMap = {
@@ -716,6 +733,10 @@ export const affiliateMap = {
   eld: interfaces.eldorito,
   va: interfaces.vultisig,
   vi: interfaces.vultisig,
+  ll: interfaces.ll,
+  zengo: interfaces.zengo,
+  cakewallet: interfaces.cakewallet,
+  rg: interfaces.rango,
 }
 
 export function getExplorerAddressUrl(chain, query) {
