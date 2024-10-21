@@ -129,21 +129,20 @@ export default {
 
 .toast-body {
   overflow: hidden;
-  font-size: 0.8rem; 
+  font-size: 0.8rem;
   line-height: 1.5;
-  color: var(--primary-color); 
-  text-align: left; 
-  font-weight: 200; 
-  padding: 0.5rem 0; 
+  color: var(--primary-color);
+  text-align: left;
+  font-weight: 200;
+  padding: 0.5rem 0;
 
   .copy-text {
-    color: var(--sec-font-color); 
+    color: var(--sec-font-color);
     display: block;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
-    }
+  }
 }
-
 
 .Checkmark {
   display: flex;

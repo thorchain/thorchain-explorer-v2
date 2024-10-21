@@ -161,3 +161,9 @@ export function getEarnings() {
 export function getNodes() {
   return $axiosInstace.get(endpoints[process.env.NETWORK].SERVER_URL + 'nodes')
 }
+
+export function getNetworkAllocation() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + 'api/networkAllocation'
+  )
+}

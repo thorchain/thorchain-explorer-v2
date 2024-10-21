@@ -740,7 +740,7 @@ export function getExplorerAddressUrl(chain, query) {
 }
 
 export const darkTheme = {
-  color: ['#63fdd9', '#00ccff', '#f3ba2f', '#ff4954'],
+  color: ['#63fdd9', '#00ccff', '#f3ba2f', '#ff4954', '#07C86E', '#FFF960'],
   backgroundColor: 'rgba(0,0,0,0)',
   textStyle: {},
   title: {
@@ -780,6 +780,9 @@ export const darkTheme = {
     },
   },
   pie: {
+    label: {
+      color: '#fff',
+    },
     itemStyle: {
       borderWidth: '0',
       borderColor: 'transparent',
@@ -1089,7 +1092,7 @@ export const darkTheme = {
 }
 
 export const lightTheme = {
-  color: ['#3ca38b', '#00ccff', '#f3ba2f', '#ff4954'],
+  color: ['#3ca38b', '#00ccff', '#f3ba2f', '#ff4954', '#07C86E', '#FFF960'],
   backgroundColor: 'rgba(0,0,0,0)',
   textStyle: {},
   title: {
@@ -1129,6 +1132,9 @@ export const lightTheme = {
     },
   },
   pie: {
+    label: {
+      color: '#000',
+    },
     itemStyle: {
       borderWidth: '0',
       borderColor: 'transparent',

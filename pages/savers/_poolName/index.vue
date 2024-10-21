@@ -6,7 +6,7 @@
         :is-loading="!saverDetails || saverDetails.length == 0"
         class="inner-pie-chart"
       >
-        <pie-chart :pie-data="saverDetails" :formatter="totalSaverFormatter" />
+        <pie-chart :pie-data="saversPie" :formatter="totalSaverFormatter" />
       </Card>
       <Card
         title="Savers Cap Filled"
@@ -62,6 +62,8 @@
 </template>
 
 <script>
+import { orderBy, sumBy } from 'lodash'
+
 export default {
   props: ['saversData'],
   asyncData({ params }) {
@@ -120,6 +122,7 @@ export default {
         },
       ],
       saverDetails: [],
+      saversPie: [],
       lastBlockHeight: undefined,
     }
   },
@@ -142,7 +145,11 @@ export default {
       this.$api
         .getSavers(this.poolName)
         .then(({ data: savers }) => {
-          this.saverDetails = savers.map((saverDetail) => ({
+          this.saverDetails = orderBy(
+            savers,
+            [(o) => +o.asset_redeem_value],
+            ['desc']
+          ).map((saverDetail) => ({
             ...saverDetail,
             asset_earned:
               saverDetail.asset_redeem_value - saverDetail.asset_deposit_value,
@@ -153,6 +160,14 @@ export default {
               10 ** 8,
             name: saverDetail.asset_address,
           }))
+
+          this.saversPie = [
+            ...this.saverDetails.slice(0, 10),
+            {
+              name: 'Others',
+              value: sumBy(this.saverDetails.slice(10), (o) => o.value),
+            },
+          ]
         })
         .catch((e) => {
           this.error = true
@@ -188,8 +203,11 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .address-link {
   text-decoration: none;
+}
+.inner-pie-chart {
+  max-width: 500px;
 }
 </style>

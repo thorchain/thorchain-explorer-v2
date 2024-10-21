@@ -93,6 +93,7 @@ import {
   getTopSwaps,
   getEarnings,
   getNodes,
+  getNetworkAllocation,
 } from './middleware.api'
 import {
   getChurnHistory,
@@ -271,6 +272,7 @@ export default function ({ $axios }, inject) {
     getQuote,
     getTopSwaps,
     getEarnings,
+    getNetworkAllocation,
   }
 
   inject('api', api)

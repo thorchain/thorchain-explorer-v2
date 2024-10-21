@@ -204,8 +204,4 @@ h3 {
     text-align: center;
   }
 }
-
-.inner-pie-chart {
-  max-width: 300px;
-}
 </style>

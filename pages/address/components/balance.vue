@@ -130,7 +130,7 @@
                             showAsset(token.asset)
                           }}</span>
                         </div>
-                        <div class="token-quantity">
+                        <div v-if="token.asset" class="token-quantity">
                           {{ token.quantity }} {{ token.asset.ticker }}
                         </div>
                       </div>
@@ -247,7 +247,8 @@ export default {
     },
     runeToken() {
       return this.tokenRows.find(
-        (token) => token.asset.ticker === 'RUNE' && token.asset.chain === 'THOR'
+        (token) =>
+          token?.asset?.ticker === 'RUNE' && token?.asset?.chain === 'THOR'
       )
     },
     otherTokens() {
@@ -257,14 +258,16 @@ export default {
       )
     },
     groupedTokens() {
-      return this.otherTokens.reduce((acc, token) => {
-        const type = this.getAssetType(token.asset)
-        if (!acc[type]) {
-          acc[type] = []
-        }
-        acc[type].push(token)
-        return acc
-      }, {})
+      return this.otherTokens
+        .filter((tok) => tok.asset)
+        .reduce((acc, token) => {
+          const type = this.getAssetType(token.asset)
+          if (!acc[type]) {
+            acc[type] = []
+          }
+          acc[type].push(token)
+          return acc
+        }, {})
     },
     bonds() {
       if (!this.nodes) {

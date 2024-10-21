@@ -3,7 +3,7 @@
     :option="options"
     :autoresize="true"
     :loading-options="showLoading"
-    style="width: 275px; height: 250px; min-height: initial"
+    style="width: 100%; height: 250px; min-height: initial"
     :theme="chartTheme"
   />
 </template>
@@ -33,7 +33,12 @@ export default {
   components: {
     VChart,
   },
-  props: ['pieData', 'formatter', 'name'],
+  props: ['pieData', 'formatter', 'name', 'extraSeries', 'extra'],
+  data() {
+    return {
+      isMobile: false,
+    }
+  },
   computed: {
     options() {
       return {
@@ -45,20 +50,28 @@ export default {
           {
             name: this.name ?? '',
             type: 'pie',
-            radius: [0, 80],
-            center: ['50%', '50%'],
-            width: 275,
-            height: 250,
-            itemStyle: {
-              borderRadius: 5,
-            },
             label: {
-              show: false,
+              distanceToLabelLine: 5,
+              fontFamily: 'Montserrat',
             },
             data: this.pieData,
+            ...this.extraSeries,
           },
         ],
+        ...this.extra,
+        ...(this.isMobile && { legend: { show: false } }),
       }
+    },
+  },
+  mounted() {
+    window.addEventListener('resize', this.handleResize)
+  },
+  beforeDestroy() {
+    window.removeEventListener('resize', this.handleResize)
+  },
+  methods: {
+    handleResize() {
+      this.isMobile = window.innerWidth <= 990
     },
   },
 }

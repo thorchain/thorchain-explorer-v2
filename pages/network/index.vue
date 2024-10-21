@@ -6,6 +6,11 @@
       </Card>
       <Card>
         <info-card :options="allocations" :inner="true" />
+        <pie-chart
+          :pie-data="allocationPie"
+          :extra-series="extraSeries"
+          :extra="extra"
+        />
       </Card>
     </div>
     <Card title="THORChain version upgrade progress">
@@ -112,13 +117,24 @@ export default {
       rune: [],
       lastblock: undefined,
       thorNetwork: undefined,
-      outboundQueue: undefined,
       blockchainVersion: undefined,
       nodes: undefined,
       activeNodes: undefined,
       uptodateNodes: undefined,
       thorVersion: undefined,
       inboundInfo: undefined,
+      networkAllocations: undefined,
+      extraSeries: {
+        center: ['55%', '50%'],
+        radius: ['40%', '70%'],
+        label: {
+          formatter: (a) => {
+            return `${a.name}: ${this.$options.filters.number(a?.data?.value, '0,0a')} RUNE`
+          },
+          distanceToLabelLine: 5,
+          fontFamily: 'Montserrat',
+        },
+      },
       inAddresses: [],
       inboundCols: [
         {
@@ -207,7 +223,28 @@ export default {
   computed: {
     ...mapGetters({
       chainsHeight: 'getChainsHeight',
+      theme: 'getTheme',
     }),
+    extra() {
+      return {
+        legend: {
+          show: true,
+          type: 'scroll',
+          orient: 'vertical',
+          x: 'left',
+          y: 'top',
+          icon: 'circle',
+          textStyle: {
+            color: 'var(--font-color)',
+          },
+        },
+        tooltip: {
+          formatter: (a) => {
+            return `${a.name}: ${this.$options.filters.number(a?.data?.value, '0,0.00a')} RUNE`
+          },
+        },
+      }
+    },
     versionProgress() {
       if (!!this.nodes && this.blockchainVersion) {
         return Math.ceil(
@@ -217,7 +254,6 @@ export default {
       return 1
     },
     networkOverview() {
-      console.log(this.chainsHeight?.THOR - this.thorVersion?.next_since_height)
       return [
         {
           title: 'Network Overview',
@@ -246,7 +282,48 @@ export default {
               name: 'Vaults Migrating',
               value: this.thorNetwork?.vaults_migrating ? 'Yes' : 'No',
             },
+            {
+              name: 'Effective Security Bond',
+              value: this.thorNetwork?.effective_security_bond / 1e8,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              usdValue: true,
+            },
           ],
+        },
+      ]
+    },
+    allocationPie() {
+      const circulating =
+        +this.networkAllocations?.runeSupply -
+        +this.network?.totalPooledRune -
+        +this.network?.bondMetrics?.totalActiveBond -
+        +this.network?.totalReserve -
+        +this.networkAllocations?.totalCexs
+      const burnt = 50000000000000000 - +this.networkAllocations?.runeSupply
+      return [
+        {
+          name: 'Pooled',
+          value: +this.network?.totalPooledRune / 10 ** 8,
+        },
+        {
+          name: 'Bonded',
+          value: +this.network?.bondMetrics?.totalActiveBond / 10 ** 8,
+        },
+        {
+          name: 'Reserve',
+          value: +this.network?.totalReserve / 10 ** 8,
+        },
+        {
+          name: 'CEXs',
+          value: this.networkAllocations?.totalCexs / 10 ** 8,
+        },
+        {
+          name: 'Free',
+          value: circulating / 10 ** 8,
+        },
+        {
+          name: 'Burnt/Killed',
+          value: burnt / 10 ** 8,
         },
       ]
     },
@@ -257,28 +334,7 @@ export default {
           rowStart: 2,
           colSpan: 1,
           icon: require('@/assets/images/allocations.svg'),
-          items: [
-            {
-              name: 'Pooled',
-              value: this.network?.totalPooledRune / 10 ** 8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
-              usdValue: true,
-            },
-            {
-              name: 'Bonded',
-              value:
-                +this.network?.bondMetrics?.totalActiveBond / 10 ** 8 +
-                +this.network?.bondMetrics?.totalActiveBond / 10 ** 8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
-              usdValue: true,
-            },
-            {
-              name: 'Reserved',
-              value: this.network?.totalReserve / 10 ** 8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
-              usdValue: true,
-            },
-          ],
+          items: [],
         },
       ]
     },
@@ -366,14 +422,8 @@ export default {
       })
 
     this.$api
-      .getOutbound()
-      .then(
-        (res) =>
-          (this.outboundQueue = res.data.map((t) => ({
-            ...t,
-            type: t.memo?.split(':')[0] ?? '-',
-          })))
-      )
+      .getNetworkAllocation()
+      .then((res) => (this.networkAllocations = res.data))
       .catch((error) => {
         console.error(error)
       })
