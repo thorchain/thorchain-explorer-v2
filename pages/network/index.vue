@@ -12,7 +12,7 @@
       <ProgressBar
         v-if="versionProgress"
         :width="versionProgress"
-        :color="versionProgress == 100 ? '#81C784' : false"
+        :class="versionProgress === 100 ? 'progress-bar' : false"
       />
       <h3 style="text-align: center">
         <span class="sec-color">{{
@@ -35,13 +35,12 @@
           newStandByVersion || uptodateNodeVersion(activeNodes)
         }})
       </p>
-      <p
-        v-if="versionProgress === 100"
-        style="text-align: center; color: var(--primary-color)"
-      >
-        All nodes are updated to the latest. ✅
+      <p v-if="versionProgress === 100" class="version-progress">
+        All nodes are updated to the latest.
+        <Checkmark class="checkmark" />
       </p>
     </Card>
+
     <card class="chain-status">
       <vue-good-table
         :columns="inboundCols"
@@ -101,10 +100,12 @@ import { gt, rsort, valid } from 'semver'
 import { mapGetters } from 'vuex'
 import { blockTime } from '~/utils'
 import DangerIcon from '@/assets/images/danger.svg?inline'
+import Checkmark from '~/assets/images/check-mark.svg?inline'
 
 export default {
   components: {
     DangerIcon,
+    Checkmark,
   },
   data() {
     return {
@@ -431,6 +432,24 @@ export default {
 </script>
 
 <style lang="scss">
+.version-progress {
+  text-align: center;
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.checkmark {
+  width: 18px;
+  height: 18px;
+  align-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--primary-color);
+}
+.progress-bar {
+  background: linear-gradient(to right, #00c0ff, #00ff9f);
+}
 .grid-network {
   width: 100%;
   display: grid;
