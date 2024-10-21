@@ -25,19 +25,33 @@
       </Card>
     </div>
     <div class="search-container">
-   <div id="nodes-search-container">
-      <input
-        v-model="searchTerm"
-        placeholder="Search All Tables"
-        class="search-input"
-      />
-      <SearchIcon class="search-icon" />
-    </div>
+      <div id="nodes-search-container">
+        <input
+          v-model="searchTerm"
+          placeholder="Search All Tables"
+          class="search-input"
+        />
+        <SearchIcon class="search-icon" />
+      </div>
 
-    <button @click="setActiveCol('isp')" class="filter-button">ISP</button>
-  <button @click="setActiveCol('fee')" class="filter-button">Fee</button>
-  <button @click="setActiveCol('score')" class="filter-button">Score</button>
-  <button @click="setActiveCol('age')" class="filter-button">Age</button>
+      <div class="filter-btns">
+        <button class="filter-button" @click="hides.isp = !hides.isp">
+          <caret :class="['filter-icon', { disable: hides.isp == true }]" />
+          ISP
+        </button>
+        <button class="filter-button" @click="hides.fee = !hides.fee">
+          <caret :class="['filter-icon', { disable: hides.fee == true }]" />
+          Fee
+        </button>
+        <button class="filter-button" @click="hides.score = !hides.score">
+          <caret :class="['filter-icon', { disable: hides.score == true }]" />
+          Score
+        </button>
+        <button class="filter-button" @click="hides.age = !hides.age">
+          <caret :class="['filter-icon', { disable: hides.age == true }]" />
+          Age
+        </button>
+      </div>
     </div>
 
     <card :is-loading="!activeNodes">
@@ -74,11 +88,13 @@ import moment from 'moment'
 import NodeTable from './component/nodeTable.vue'
 import { fillNodeData, availableChains, blockTime } from '~/utils'
 import SearchIcon from '~/assets/images/search.svg?inline'
+import Caret from '~/assets/images/caret.svg?inline'
 
 export default {
   name: 'NodesPage',
   components: {
     NodeTable,
+    Caret,
     SearchIcon,
   },
   data() {
@@ -103,7 +119,12 @@ export default {
       churnProgressValue: 0,
       totalAwards: undefined,
       leastBondChurn: undefined,
-
+      hides: {
+        isp: false,
+        score: false,
+        fee: false,
+        age: false,
+      },
     }
   },
   computed: {
@@ -158,6 +179,7 @@ export default {
           type: 'text',
           tdClass: 'center',
           thClass: 'center',
+          hidden: this.hides?.isp ?? false,
         },
         {
           label: 'Location',
@@ -188,6 +210,7 @@ export default {
           width: '80px',
           type: 'percentage',
           tdClass: 'mono',
+          hidden: this.hides?.fee ?? false,
         },
         {
           label: 'Operator',
@@ -224,6 +247,7 @@ export default {
           type: 'number',
           tdClass: 'mono center',
           thClass: 'center',
+          hidden: this.hides?.score ?? false,
         },
         {
           label: 'APY',
@@ -247,6 +271,7 @@ export default {
           tdClass: 'center',
           thClass: 'center',
           sortFn: this.aSort,
+          hidden: this.hides?.age ?? false,
         },
       ]
     },
@@ -294,6 +319,7 @@ export default {
           type: 'text',
           tdClass: 'center',
           thClass: 'center',
+          hidden: this.hides?.isp ?? false,
         },
         {
           label: 'Location',
@@ -324,6 +350,7 @@ export default {
           width: '80px',
           type: 'percentage',
           tdClass: 'mono',
+          hidden: this.hides?.fee ?? false,
         },
         {
           label: 'Operator',
@@ -355,6 +382,7 @@ export default {
           tdClass: 'center',
           thClass: 'center',
           sortFn: this.aSort,
+          hidden: this.hides?.age ?? false,
         },
       ]
     },
@@ -852,7 +880,6 @@ export default {
   },
   mounted() {
     this.$api.getNetwork().then(({ data }) => {
-      console.log('Network Data:', data)
       this.network = data
     })
     const mimirProm = this.$api
@@ -897,15 +924,15 @@ export default {
       this.nodesQuery = nodesInfo
     },
     setActiveCol(col) {
-      this.activeCols = []; 
+      this.activeCols = []
       if (col === 'isp') {
-        this.activeCols.push({ field: 'isp', label: 'ISP' });
+        this.activeCols.push({ field: 'isp', label: 'ISP' })
       } else if (col === 'fee') {
-        this.activeCols.push({ field: 'fee', label: 'Fee' });
+        this.activeCols.push({ field: 'fee', label: 'Fee' })
       } else if (col === 'score') {
-        this.activeCols.push({ field: 'score', label: 'Score' });
+        this.activeCols.push({ field: 'score', label: 'Score' })
       } else if (col === 'age') {
-        this.activeCols.push({ field: 'age', label: 'Age' });
+        this.activeCols.push({ field: 'age', label: 'Age' })
       }
     },
     setTheLeastBondChurn(bond) {
@@ -1028,31 +1055,38 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.search-container{
+.search-container {
   display: flex;
+  flex-wrap: wrap;
 }
-.filter-button {
+.filter-btns {
+  display: flex;
+  margin-left: 5px;
+  gap: 5px;
+
+  .filter-button {
     background-color: var(--bg-color);
     color: var(--sec-font-color);
-    border: none;
+    border: 1px solid var(--border-color);
     border-radius: 10px;
+    margin: 2px 0;
     padding: 8px 16px;
-    margin-right: 5px;
     display: inline-flex;
     align-items: center;
+    gap: 5px;
     font-size: 14px;
     cursor: pointer;
-    transition: background-color 0.3s;
-  }
 
-  .filter-button:hover {
-    color: var(--primary-color);
+    &:hover {
+      color: var(--primary-color);
+    }
   }
+}
+
 #nodes-search-container {
   display: flex;
   position: relative;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  width: 100%;
+  flex: 1;
 
   .search-input {
     flex: 1;
@@ -1091,12 +1125,23 @@ export default {
 .grid-network {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   grid-gap: 0.5rem;
   gap: 0.5rem;
 }
 
 .extra {
   font-size: 0.7rem;
+}
+
+.filter-icon {
+  fill: currentColor;
+  width: 1rem;
+  height: 1rem;
+  transform: rotate(180deg);
+
+  &.disable {
+    transform: rotate(0);
+  }
 }
 </style>
