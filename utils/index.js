@@ -714,6 +714,8 @@ export const affiliateMap = {
   oky: interfaces.onekey,
   sy: interfaces.symbiosis,
   eld: interfaces.eldorito,
+  va: interfaces.vultisig,
+  vi: interfaces.vultisig,
 }
 
 export function getExplorerAddressUrl(chain, query) {
