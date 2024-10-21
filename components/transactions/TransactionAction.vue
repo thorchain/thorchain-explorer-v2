@@ -43,18 +43,18 @@
       >
         Pending
       </span>
-      <div
-        v-if="affiliateWallet(row)"
-        class="mini-bubble customized info executed"
-      >
-        <user-gear class="action-type small" />
-        <img
-          v-if="affiliateWallet(row).icon"
-          :src="affiliateWallet(row).icon"
-          :alt="affiliateWallet(row).name"
-        />
-        <span v-else>{{ affiliateWallet(row).name }}</span>
-      </div>
+      <template v-if="affiliateWallet(row)">
+        <span>|</span>
+        <div class="executed">
+          <small v-if="!affiliateWallet(row).icon">Affiliate</small>
+          <img
+            v-if="affiliateWallet(row).icon"
+            :src="affiliateWallet(row).icon"
+            :alt="affiliateWallet(row).name"
+          />
+          <em v-else>{{ affiliateWallet(row).name }}</em>
+        </div>
+      </template>
     </div>
     <div
       v-else-if="
@@ -347,7 +347,8 @@ export default {
 <style lang="scss" scoped>
 .no-bubble {
   display: flex;
-  padding: 20px 6px;
+  padding: 8px 0;
+  gap: 5px;
   align-items: center;
 }
 
@@ -355,6 +356,7 @@ export default {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  gap: 5px;
 
   .mini-bubble {
     display: flex;
@@ -404,10 +406,11 @@ export default {
   }
 
   .executed {
+    display: flex;
+    align-items: center;
     color: var(--sec-font-color);
     border-color: var(--border-color);
     background-color: transparent;
-    margin-left: 10px;
     gap: 3px;
     img {
       height: 1.2rem;

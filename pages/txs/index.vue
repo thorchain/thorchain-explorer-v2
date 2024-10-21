@@ -185,8 +185,7 @@ export default {
       this.hasFilters = true
     } else {
       this.applyFilters({
-        type: ['swap', 'send'],
-        asset: ['nosynth', 'notrade'],
+        asset: ['notrade'],
       })
     }
 

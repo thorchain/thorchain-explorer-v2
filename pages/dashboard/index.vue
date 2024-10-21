@@ -252,22 +252,27 @@
             <template v-for="(t, i) in txs">
               <div :key="i" class="row-item-transactions">
                 <div class="transactions">
-                  <transaction-status :row="t" />
-                  <transaction-action :row="t" :showMiniBubble="false" />
+                  <span
+                    v-if="t.in"
+                    style="font-size: 0.875rem; color: var(--sec-font-color)"
+                  >
+                    TxID
+                    <nuxt-link class="clickable" :to="`/tx/${t.in[0].txID}`">
+                      {{ formatAddress(showTx(t.in && t.in[0].txID)) }}
+                    </nuxt-link>
+                  </span>
+                  <transaction-action :row="t" :show-mini-bubble="false" />
                 </div>
                 <div class="txs">
-                  <span
-                    >TxID
-                    <a class="value" @click="gotoTx(t.in && t.in[0].txID)">{{
-                      formatAddress(showTx(t.in && t.in[0].txID))
-                    }}</a></span
-                  >
-                  <span
-                    >From
-                    <a class="value" @click="gotoAddr(t.in[0].address)">{{
-                      formatAddress(t.in && t.in[0].address)
-                    }}</a></span
-                  >
+                  <span>
+                    From
+                    <nuxt-link
+                      class="clickable"
+                      :to="`/address/${t.in[0].address}`"
+                    >
+                      {{ formatAddress(t.in && t.in[0].address) }}
+                    </nuxt-link>
+                  </span>
                   <nuxt-link
                     class="clickable header"
                     :to="`/block/${t.height}`"
