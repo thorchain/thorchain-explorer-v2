@@ -250,28 +250,34 @@
         <div class="card-body">
           <template v-if="txs">
             <template v-for="(t, i) in txs">
-              <div :key="i" class="row-item">
-                <div class="meta">
-                  <span class="header">
-                    {{ t.height | number('0,0') }}
-                  </span>
-                  <span class="timestamp">
-                    {{ formatMoment(t.date) }}
-                  </span>
+              <div :key="i" class="row-item-transactions">
+                <div class="transactions">
+                  <transaction-status :row="t" />
+                  <transaction-action :row="t" :showMiniBubble="false" />
                 </div>
                 <div class="txs">
                   <span
                     >TxID
                     <a class="value" @click="gotoTx(t.in && t.in[0].txID)">{{
-                      showTx(t.in && t.in[0].txID)
+                      formatAddress(showTx(t.in && t.in[0].txID))
                     }}</a></span
                   >
                   <span
                     >From
                     <a class="value" @click="gotoAddr(t.in[0].address)">{{
-                      t.in && t.in[0].address
+                      formatAddress(t.in && t.in[0].address)
                     }}</a></span
                   >
+                  <nuxt-link
+                    class="clickable header"
+                    :to="`/block/${t.height}`"
+                  >
+                    {{ t.height | number('0,0') }}
+                  </nuxt-link>
+
+                  <span class="timestamp">
+                    {{ formatMoment(t.date) }}
+                  </span>
                 </div>
               </div>
               <hr :key="i + 'hr'" class="hr-space" />
@@ -313,6 +319,8 @@ import Piggy from '~/assets/images/piggy.svg?inline'
 
 import Chart from '~/assets/images/chart.svg?inline'
 import External from '@/assets/images/external.svg?inline'
+import TransactionAction from '~/components/transactions/TransactionAction.vue'
+import TransactionStatus from '~/components/transactions/TransactionStatus.vue'
 
 use([
   SVGRenderer,
@@ -338,6 +346,8 @@ export default {
     StackDollar,
     ArrowRightIcon,
     External,
+    TransactionAction,
+    TransactionStatus,
   },
   layout: 'dashboard',
   data() {
@@ -1373,6 +1383,41 @@ export default {
 </script>
 
 <style lang="scss">
+.row-item-transactions {
+  justify-content: space-between;
+  display: flex;
+  align-items: center;
+
+  .txs {
+    display: flex;
+    flex-direction: column;
+    text-overflow: ellipsis;
+    overflow: hidden;
+
+    > span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+
+      white-space: nowrap;
+      word-break: keep-all;
+      font-size: 0.875rem;
+      color: var(--sec-font-color);
+
+      .value {
+        color: var(--primary-color);
+      }
+    }
+
+    a {
+      cursor: pointer;
+    }
+  }
+}
+
+.transactions {
+  display: flex;
+  flex-direction: column;
+}
 .container {
   border: 1px solid var(--border-color);
   border-width: 1px 0 1px 0;
