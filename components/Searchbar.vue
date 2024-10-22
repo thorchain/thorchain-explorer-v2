@@ -31,7 +31,11 @@
       </div>
     </div>
     <div class="right-section">
-      <div v-if="!isOverviewPage" id="search-container" @click="search">
+      <div
+        v-show="isOverviewPage ? isScrolled : true"
+        id="search-container"
+        @click="search"
+      >
         <input
           ref="searchInput"
           v-model="searchQuery"
@@ -124,6 +128,7 @@ export default {
       showDialog: false,
       showSettings: false,
       innerWidth: window.innerWidth,
+      isScrolled: false,
     }
   },
   computed: {
@@ -161,6 +166,9 @@ export default {
     },
   },
   mounted() {
+    if (this.isOverviewPage) {
+      window.addEventListener('scroll', this.handleScroll)
+    }
     window.addEventListener('click', this.handleClickOutside)
     window.addEventListener('touchstart', this.handleClickOutside)
     this.createListener('network', 'netDialog', { topM: 35 })
@@ -174,10 +182,20 @@ export default {
   beforeDestroy() {
     window.removeEventListener('click', this.handleClickOutside)
     window.removeEventListener('resize', this.onResize)
+    if (this.isOverviewPage) {
+      window.removeEventListener('scroll', this.handleScroll)
+    }
   },
   methods: {
     onResize() {
       this.innerWidth = window.innerWidth
+    },
+    handleScroll() {
+      const scrollPosition = window.scrollY || window.pageYOffset
+
+      if (this.isOverviewPage) {
+        this.isScrolled = scrollPosition > 100
+      }
     },
     find() {
       if (!this.isSearch) {
