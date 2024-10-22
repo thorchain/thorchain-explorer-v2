@@ -1,13 +1,5 @@
 <template>
   <Page class="pool-overview">
-    <div v-if="!loading" class="pool-header">
-      <div>
-        <img :src="pool && assetImage(pool.asset)" class="asset-icon" />
-      </div>
-      <div>
-        {{ pool && pool.asset }}
-      </div>
-    </div>
     <div class="cards-container">
       <info-card :options="poolDetailStats" />
       <card :is-loading="loading">
