@@ -1,10 +1,19 @@
 <template>
   <Page>
+    <div v-if="poolName" class="pool-header">
+      <div>
+        <asset-icon :asset="poolName" />
+      </div>
+      <div>
+        {{ poolName }}
+      </div>
+    </div>
     <Nav
       :is-link="true"
       :nav-items="[
         { link: `/pool/${poolName}`, text: 'Overview' },
         { link: `/pool/${poolName}/lp`, text: 'LP Positions' },
+        { link: `/pool/${poolName}/savers`, text: 'Savers' },
       ]"
     />
     <nuxt-child keep-alive />

@@ -8,8 +8,8 @@
         <pie-chart :pie-data="runePieData" :formatter="totalRuneFormatter" />
       </Card>
     </div>
-    <card class="table-card">
-      <div v-if="!loading && !error" class="base-container lp-container">
+    <card :is-loading="loading" class="table-card">
+      <div v-if="!error" class="base-container lp-container">
         <vue-good-table
           v-if="cols && rows.length > 0"
           :columns="cols"
@@ -45,7 +45,6 @@
           </template>
         </vue-good-table>
       </div>
-      <LoadingCard v-if="loading" />
       <div v-if="error" class="base-container">
         <span>Can't fetch the pool LPs</span>
       </div>
@@ -55,18 +54,10 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
 import { orderBy, sumBy } from 'lodash'
 
 export default {
-  components: {
-    BounceLoader,
-  },
-  computed: {
-    ...mapGetters({
-      runePrice: 'getRunePrice',
-    }),
-  },
+  components: {},
   asyncData({ params }) {
     return { poolName: params.poolName }
   },
@@ -78,10 +69,8 @@ export default {
       runePieData: [],
       cols: [
         {
-          label: 'Asset added',
-          field: 'asset_add',
-          type: 'number',
-          formatFn: this.formatNumber,
+          label: 'Position',
+          field: 'position',
         },
         {
           label: 'Rune address',
@@ -89,13 +78,15 @@ export default {
           formatFn: this.formatAddress,
         },
         {
-          label: 'Position',
-          field: 'position',
-        },
-        {
           label: 'Asset address',
           field: 'asset_addr',
           formatFn: this.formatAddress,
+        },
+        {
+          label: 'Asset added',
+          field: 'asset_add',
+          type: 'number',
+          formatFn: this.formatNumber,
         },
         {
           label: 'Rune added',
@@ -129,6 +120,11 @@ export default {
       ],
       rows: [],
     }
+  },
+  computed: {
+    ...mapGetters({
+      runePrice: 'getRunePrice',
+    }),
   },
   mounted() {
     this.loading = true
@@ -206,15 +202,16 @@ export default {
             ? pos[i]?.last_add_height
             : ' ',
 
-          assetClaimable: assetClaimable,
-          claimableRune: claimableRune,
-          ownershipPercentage: ownershipPercentage,
+          assetClaimable,
+          claimableRune,
+          ownershipPercentage,
         })
 
         if (claimableRune > 0) {
           runeData.push({
-            name: pos[i]?.rune_address || 'Unknown',
+            name: pos[i]?.asset_address || pos[i]?.rune_address,
             value: this.runePrice * claimableRune * 2,
+            ownership: ownershipPercentage,
           })
         }
       }
@@ -222,7 +219,7 @@ export default {
       this.createRunePieData(runeData)
     },
     createRunePieData(runeData) {
-      const topRuneData = orderBy(runeData, 'value', 'desc').slice(0, 10)
+      const topRuneData = orderBy(runeData, 'ownership', 'desc').slice(0, 10)
       const othersValue = sumBy(runeData.slice(10), 'value')
 
       this.runePieData = [
