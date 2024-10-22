@@ -76,11 +76,13 @@ export default {
           label: 'Rune address',
           field: 'rune_addr',
           formatFn: this.formatAddress,
+          tdClass: 'mono',
         },
         {
           label: 'Asset address',
           field: 'asset_addr',
           formatFn: this.formatAddress,
+          tdClass: 'mono',
         },
         {
           label: 'Asset added',
