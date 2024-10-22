@@ -2,7 +2,10 @@
   <div class="progress-wrapper" :style="vars">
     <div
       class="progress-bar"
-      :style="{ width: width + '%', backgroundColor: color }"
+      :style="{
+        width: width + '%',
+        background: color,
+      }"
     />
     <span v-if="extraText" class="progress-text">{{ extraText }}</span>
   </div>

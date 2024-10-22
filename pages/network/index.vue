@@ -17,7 +17,7 @@
       <ProgressBar
         v-if="versionProgress"
         :width="versionProgress"
-        :class="versionProgress === 100 ? 'progress-bar' : false"
+        color="linear-gradient(to right, #00c0ff, #00ff9f)"
       />
       <h3 style="text-align: center">
         <span class="sec-color">{{
@@ -496,9 +496,6 @@ export default {
   align-items: center;
   border-radius: 50%;
   border: 1px solid var(--primary-color);
-}
-.progress-bar {
-  background: linear-gradient(to right, #00c0ff, #00ff9f);
 }
 .grid-network {
   width: 100%;
