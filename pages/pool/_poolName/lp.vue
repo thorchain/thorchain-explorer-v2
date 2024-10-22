@@ -1,47 +1,71 @@
 <template>
-  <card>
-    <div v-if="!loading && !error" class="base-container lp-container">
-      <vue-good-table
-        v-if="cols && rows.length > 0"
-        :columns="cols"
-        :rows="rows"
-        style-class="vgt-table net-table"
-        :pagination-options="{
-          enabled: true,
-          perPage: 30,
-          perPageDropdownEnabled: false,
-        }"
+  <div>
+    <div class="pie-chart-container">
+      <Card
+        title="Address Distribution"
+        :is-loading="!runePieData || runePieData.length == 0"
       >
-        <template slot="table-row" slot-scope="props">
-          <template v-if="props.column.field.includes('addr')">
-            <span
-              v-if="props.row[props.column.field]"
-              class="clickable"
-              @click="gotoAddr(props.row[props.column.field])"
-            >
-              {{ props.formattedRow[props.column.field] }}
-            </span>
-            <span v-else> Not Assigned </span>
+        <pie-chart :pie-data="runePieData" :formatter="totalRuneFormatter" />
+      </Card>
+    </div>
+    <card class="table-card">
+      <div v-if="!loading && !error" class="base-container lp-container">
+        <vue-good-table
+          v-if="cols && rows.length > 0"
+          :columns="cols"
+          :rows="rows"
+          style-class="vgt-table net-table"
+          :pagination-options="{
+            enabled: true,
+            perPage: 30,
+            perPageDropdownEnabled: false,
+          }"
+          :sort-options="{
+            enabled: true,
+            initialSortBy: { field: 'asset_add', type: 'desc' },
+          }"
+        >
+          <template slot="table-row" slot-scope="props">
+            <template v-if="props.column.field.includes('addr')">
+              <span
+                v-if="props.row[props.column.field]"
+                class="clickable"
+                @click="gotoAddr(props.row[props.column.field])"
+              >
+                {{ props.formattedRow[props.column.field] }}
+              </span>
+              <span v-else> Not Assigned </span>
+            </template>
+
+            <template v-else-if="props.column.field === 'ownershipPercentage'">
+              <span>
+                {{ props.row.ownershipPercentage | percent(3) }}
+              </span>
+            </template>
           </template>
-          <span v-else>
-            {{ props.formattedRow[props.column.field] }}
-          </span>
-        </template>
-      </vue-good-table>
-    </div>
-    <LoadingCard v-if="loading" />
-    <div v-if="error" class="base-container">
-      <span>Can't fetch the pool LPs</span>
-    </div>
-  </card>
+        </vue-good-table>
+      </div>
+      <LoadingCard v-if="loading" />
+      <div v-if="error" class="base-container">
+        <span>Can't fetch the pool LPs</span>
+      </div>
+    </card>
+  </div>
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
+import { orderBy, sumBy } from 'lodash'
 
 export default {
   components: {
     BounceLoader,
+  },
+  computed: {
+    ...mapGetters({
+      runePrice: 'getRunePrice',
+    }),
   },
   asyncData({ params }) {
     return { poolName: params.poolName }
@@ -51,15 +75,22 @@ export default {
       lpPositions: [],
       loading: true,
       error: false,
+      runePieData: [],
       cols: [
         {
-          label: 'Position',
-          field: 'position',
+          label: 'Asset added',
+          field: 'asset_add',
+          type: 'number',
+          formatFn: this.formatNumber,
         },
         {
           label: 'Rune address',
           field: 'rune_addr',
           formatFn: this.formatAddress,
+        },
+        {
+          label: 'Position',
+          field: 'position',
         },
         {
           label: 'Asset address',
@@ -73,10 +104,21 @@ export default {
           formatFn: this.formatNumber,
         },
         {
-          label: 'Asset added',
-          field: 'asset_add',
+          label: 'Asset Claimable',
+          field: 'assetClaimable',
           type: 'number',
           formatFn: this.formatNumber,
+        },
+        {
+          label: 'Rune Claimable',
+          field: 'claimableRune',
+          type: 'number',
+          formatFn: this.formatNumber,
+        },
+        {
+          label: 'Ownership',
+          field: 'ownershipPercentage',
+          type: 'percentage',
         },
         {
           label: 'Last Height added',
@@ -89,20 +131,37 @@ export default {
     }
   },
   mounted() {
+    this.loading = true
     this.$api
       .getLpPositions(this.$route.params.poolName)
       .then((res) => {
-        this.lpPositions = this.formatLP(res?.data)
+        this.lpPositions = res?.data
+        this.fetchPoolDetail()
       })
       .catch((e) => {
         this.error = true
-        console.error(e)
+        console.error('Error fetching LP positions:', e)
       })
       .finally(() => {
         this.loading = false
       })
   },
   methods: {
+    fetchPoolDetail() {
+      this.$api
+        .getPoolDetail(this.$route.params.poolName)
+        .then((res) => {
+          this.poolDetail = res?.data
+          this.formatLP(this.lpPositions)
+        })
+        .catch((e) => {
+          this.error = true
+          console.error('Error fetching pool detail:', e)
+        })
+        .finally(() => {
+          this.loading = false
+        })
+    },
     checkPostion(position) {
       let pos = ''
       if ('asset_address' in position) {
@@ -117,7 +176,22 @@ export default {
       return pos
     },
     formatLP(pos) {
+      if (!this.poolDetail) return
+
+      const lpUnits = this.poolDetail.LP_units
+      const balanceRune = this.poolDetail.balance_rune
+      const balanceAsset = this.poolDetail.balance_asset
+
+      const runeData = []
+
       for (const i in pos) {
+        const userUnits = pos[i]?.units
+
+        const assetClaimable = ((userUnits / lpUnits) * balanceAsset) / 1e8
+        const claimableRune = ((userUnits / lpUnits) * balanceRune) / 1e8
+
+        const ownershipPercentage = userUnits / lpUnits
+
         this.rows.push({
           position: this.checkPostion(pos[i]),
           rune_addr: pos[i]?.rune_address ? pos[i]?.rune_address : undefined,
@@ -131,14 +205,53 @@ export default {
           last_add_height: pos[i]?.last_add_height
             ? pos[i]?.last_add_height
             : ' ',
+
+          assetClaimable: assetClaimable,
+          claimableRune: claimableRune,
+          ownershipPercentage: ownershipPercentage,
         })
+
+        if (claimableRune > 0) {
+          runeData.push({
+            name: pos[i]?.rune_address || 'Unknown',
+            value: this.runePrice * claimableRune * 2,
+          })
+        }
       }
+
+      this.createRunePieData(runeData)
+    },
+    createRunePieData(runeData) {
+      const topRuneData = orderBy(runeData, 'value', 'desc').slice(0, 10)
+      const othersValue = sumBy(runeData.slice(10), 'value')
+
+      this.runePieData = [
+        ...topRuneData,
+        {
+          name: 'Others',
+          value: othersValue,
+        },
+      ]
     },
     formatNumber(number) {
       return this.$options.filters.number(number, '0,0.0000')
     },
     formatBlock(number) {
       return this.$options.filters.number(number, '0,0')
+    },
+    totalRuneFormatter(param) {
+      return `
+        <div class="tooltip-header">
+          <div class="data-color" style="background-color: ${param.color}"></div>
+          ${this.formatAddress(param.name)}
+        </div>
+        <div class="tooltip-body">
+          <span>
+            <span>Value</span>
+            <b>$${this.$options.filters.number(param.value, '0,0.00 a')}</b>
+          </span>
+        </div>
+      `
     },
   },
 }
@@ -148,5 +261,13 @@ export default {
 .lp-container {
   border: none;
   padding: 0;
+}
+
+.pie-chart-container {
+  margin-bottom: 20px;
+}
+
+.table-card {
+  margin-top: 20px;
 }
 </style>
