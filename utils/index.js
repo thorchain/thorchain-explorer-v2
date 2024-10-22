@@ -705,6 +705,13 @@ export const interfaces = {
     name: 'Rango Exchange',
     icon: 'rango',
   },
+  sk: {
+    name: 'SwapKit',
+    icon: 'swapkit',
+  },
+  is: {
+    name: 'InstaSwap',
+  },
 }
 
 export const affiliateMap = {
@@ -737,6 +744,8 @@ export const affiliateMap = {
   zengo: interfaces.zengo,
   cakewallet: interfaces.cakewallet,
   rg: interfaces.rango,
+  sk: interfaces.sk,
+  is: interfaces.is,
 }
 
 export function getExplorerAddressUrl(chain, query) {
