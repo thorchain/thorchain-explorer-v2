@@ -287,9 +287,8 @@ export default {
   .swaps-nav {
     margin-top: 1rem;
     justify-self: end;
-    @include md{
+    @include md {
       margin-top: auto;
-
     }
   }
 }
