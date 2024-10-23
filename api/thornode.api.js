@@ -256,3 +256,9 @@ export function getThorVersion() {
     endpoints[process.env.NETWORK].THORNODE_URL + 'thorchain/version'
   )
 }
+
+export function getTSSMetrics() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].THORNODE_URL + 'thorchain/metrics'
+  )
+}

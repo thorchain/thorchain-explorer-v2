@@ -110,6 +110,7 @@
 import { duration } from 'moment'
 import { mapGetters } from 'vuex'
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
+import { number } from 'echarts'
 import { runeCur } from '~/utils'
 
 export default {
@@ -180,6 +181,14 @@ export default {
           type: 'number',
           tdClass: 'mono',
         },
+        {
+          label: 'AVG TSS',
+          field: 'avgTSS',
+          type: 'number',
+          formatFn: (v) =>
+            `${this.$options.filters.number(v / 1e3, '0,0.00')} secs`,
+          tdClass: 'mono',
+        },
       ],
       vaultsGeneralStats: [
         {
@@ -199,17 +208,25 @@ export default {
       asgard: [],
     }
   },
+  computed: {
+    ...mapGetters({
+      runePrice: 'getRunePrice',
+      chainsHeight: 'getChainsHeight',
+    }),
+  },
   mounted() {
     this.$api
       .getAsgard()
       .then(async (res) => {
         const poolsPrice = await this.formatPoolPrice()
         const nodes = await this.formatNodes()
+        const tss = await this.formatTSS()
         this.asgard = await this.formatVaults(
           res?.data,
           'Asgard',
           poolsPrice,
-          nodes
+          nodes,
+          tss
         )
         this.updateGeneralStats()
       })
@@ -262,6 +279,11 @@ export default {
       ]
     },
 
+    async formatTSS() {
+      const res = await this.$api.getTSSMetrics()
+
+      return res?.data?.keygen
+    },
     formatStatus(status) {
       if (status === 'ActiveVault') {
         return 'Active'
@@ -286,7 +308,8 @@ export default {
       data,
       type = 'Yggdrasil',
       poolsPrice = undefined,
-      nodes = undefined
+      nodes = undefined,
+      tss = undefined
     ) {
       const y = []
       for (const vault of data) {
@@ -309,6 +332,14 @@ export default {
         if (!this.chainsHeight) {
           height = (await this.$api.getChainsHeight()).data
         }
+        let avgTSS
+        if (tss) {
+          const nodesTSS = tss
+            .find((t) => t?.pub_key === vault?.pub_key)
+            ?.node_tss_times.map((n) => n.tss_time)
+
+          avgTSS = nodesTSS.reduce((a, c) => a + c, 0) / nodesTSS.length
+        }
         y.push({
           hash: vault?.addresses.find((e) => e.chain === 'THOR').address,
           type,
@@ -324,6 +355,7 @@ export default {
           since: vault?.status_since,
           age: height?.THOR ? height?.THOR - vault?.block_height : 0,
           pubKey: vault?.pub_key,
+          avgTSS,
         })
       }
       return y
@@ -337,12 +369,6 @@ export default {
     numberFormat(number) {
       return this.$options.filters.number(number, '0,0')
     },
-  },
-  computed: {
-    ...mapGetters({
-      runePrice: 'getRunePrice',
-      chainsHeight: 'getChainsHeight',
-    }),
   },
   head: {
     title: 'THORChain Network Explorer | Vaults',
