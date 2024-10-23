@@ -746,6 +746,7 @@ export const affiliateMap = {
   rg: interfaces.rango,
   sk: interfaces.sk,
   is: interfaces.is,
+  ds: interfaces.defispot,
 }
 
 export function getExplorerAddressUrl(chain, query) {
