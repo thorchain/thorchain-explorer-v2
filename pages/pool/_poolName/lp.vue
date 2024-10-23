@@ -12,7 +12,6 @@
     <card :is-loading="loading" class="table-card">
       <div v-if="!error" class="base-container lp-container">
         <vue-good-table
-          v-if="cols && rows.length > 0"
           :columns="cols"
           :rows="rows"
           style-class="vgt-table net-table"
