@@ -3,7 +3,11 @@
     :option="options"
     :autoresize="true"
     :loading-options="showLoading"
-    style="width: 100%; height: 250px; min-height: initial"
+    :style="{
+      width: width ? width : '100%',
+      height: '250px',
+      minHeight: 'initial',
+    }"
     :theme="chartTheme"
   />
 </template>
@@ -33,7 +37,7 @@ export default {
   components: {
     VChart,
   },
-  props: ['pieData', 'formatter', 'name', 'extraSeries', 'extra'],
+  props: ['pieData', 'formatter', 'name', 'extraSeries', 'extra', 'width'],
   data() {
     return {
       isMobile: false,

@@ -23,7 +23,7 @@
           }"
           :sort-options="{
             enabled: true,
-            initialSortBy: { field: 'asset_add', type: 'desc' },
+            initialSortBy: { field: 'ownershipPercentage', type: 'desc' },
           }"
         >
           <template slot="table-row" slot-scope="props">
@@ -89,13 +89,13 @@ export default {
           label: 'Asset added',
           field: 'asset_add',
           type: 'number',
-          formatFn: this.formatNumber,
+          formatFn: (v) => `${this.formatNumber(v)}`,
         },
         {
           label: 'Rune added',
           field: 'rune_add',
           type: 'number',
-          formatFn: this.formatNumber,
+          formatFn: (v) => `${this.runeCur()} ${this.formatNumber(v)}`,
         },
         {
           label: 'Asset Claimable',
@@ -107,7 +107,7 @@ export default {
           label: 'Rune Claimable',
           field: 'claimableRune',
           type: 'number',
-          formatFn: this.formatNumber,
+          formatFn: (v) => `${this.runeCur()} ${this.formatNumber(v)}`,
         },
         {
           label: 'Ownership',
@@ -246,7 +246,7 @@ export default {
           },
         ]
       } else {
-        console.log('poolDetail is not defined')
+        console.error('poolDetail is not defined')
       }
     },
     createRunePieData(runeData) {
@@ -292,6 +292,7 @@ export default {
 }
 
 .pie-chart-container {
+  display: flex;
   margin-bottom: 20px;
 }
 
