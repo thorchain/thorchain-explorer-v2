@@ -1,14 +1,5 @@
 <template>
   <Page>
-    <card :is-loading="loading">
-      <VChart
-        :option="chartOption"
-        :loading="!chartOption"
-        :autoresize="true"
-        :loading-options="showLoading"
-        :theme="chartTheme"
-      />
-    </card>
     <info-card :options="infoCardData">
       <template #pnl="{ item }">
         <skeleton-item
@@ -61,6 +52,16 @@
           height="7px"
         />
       </skeleton-item>
+    </card>
+    <card :is-loading="loading" title="Members overview">
+      <VChart
+        :option="chartOption"
+        :loading="!chartOption"
+        :autoresize="true"
+        :loading-options="showLoading"
+        style="width: 100%; height: 250px; min-height: initial"
+        :theme="chartTheme"
+      />
     </card>
 
     <Card
@@ -244,8 +245,6 @@
 <script>
 import moment from 'moment'
 import { mapGetters } from 'vuex'
-import endpoints from '~/api/endpoints'
-import RefreshIcon from '~/assets/images/refresh.svg?inline'
 import { use } from 'echarts/core'
 import { SVGRenderer } from 'echarts/renderers'
 import { LineChart, BarChart } from 'echarts/charts'
@@ -256,6 +255,8 @@ import {
   GridComponent,
 } from 'echarts/components'
 import VChart from 'vue-echarts'
+import RefreshIcon from '~/assets/images/refresh.svg?inline'
+import endpoints from '~/api/endpoints'
 
 use([
   SVGRenderer,
@@ -635,7 +636,6 @@ export default {
       })
     }
     this.updateRunePool()
-    this.updateMember()
   },
   methods: {
     createStatsData(pol, providers, reserve, oldRunePool) {
@@ -895,6 +895,7 @@ export default {
           withdraw_amount: +e.withdraw_amount / 1e8,
           pnl: +e.pnl / 1e8,
           value: +e.value / 1e8,
+          age: +this.height.THOR - +e.last_deposit_height,
           mature: +this.height.THOR - +e.last_deposit_height > matureConstant,
           matureConstant,
           share: +e.units / +this.providersOverview?.units,
@@ -911,33 +912,13 @@ export default {
             )
             .asDays(),
           ror: +e.value
-            ? +e.value / +e.deposit_amount - 1
+            ? +e.value / (+e.deposit_amount - +e.withdraw_amount) - 1
             : +e.withdraw_amount / +e.deposit_amount - 1,
         }))
         this.isUpdating = false
+        this.setChartOption(this.members)
       } catch (error) {
         console.error(error)
-      }
-    },
-    async updateMember() {
-      try {
-        ;({ data: this.runePoolsRows } = await this.$api.getRunePoolsInfo())
-      } catch (error) {
-        console.error('member not found', error)
-      }
-      try {
-        const { data: membersData } = await this.$api.getRunePoolProviders()
-        this.members = membersData.map((member) => ({
-          ...member,
-          age: this.height.THOR - +member.last_deposit_height,
-          ror: +member.value
-        ? (+member.value / +member.deposit_amount - 1) * 100 
-        : (+member.withdraw_amount / +member.deposit_amount - 1) * 100,
-        }))
-        this.setChartOption(this.members)
-        this.loading = false
-      } catch (error) {
-        console.error('member not found', error)
       }
     },
 
@@ -946,7 +927,9 @@ export default {
       const rorData = []
 
       members.forEach((member) => {
-        xAxis.push(member.age)
+        xAxis.push({
+          value: member.age,
+        })
         rorData.push(member.ror)
       })
 
@@ -957,42 +940,45 @@ export default {
         tooltip: {
           confine: true,
           trigger: 'axis',
-          formatter: function (params) {
+          formatter(params) {
+            const index = params[0].dataIndex
+            console.log(members[index], params[0].data)
             const ror = (params[0].data * 100).toFixed(2)
-            return ` ${ror}%`
+            return `<span>RoR: ${ror}%</span><br><span>address: <strong>${members[index].rune_address.slice(-4)}</strong></span>`
           },
         },
         xAxis: {
           data: xAxis,
           boundaryGap: false,
+          splitLine: {
+            show: false,
+          },
           axisLine: {
             show: true,
-            lineStyle: {
-            },
+            lineStyle: {},
           },
-          axisLabel: {
-          },
+          axisLabel: {},
         },
         yAxis: {
           show: true,
           axisLine: {
-            lineStyle: {
-            },
+            lineStyle: {},
           },
-          axisLabel: {
-          },
-          min: -1,
-          max: 1,
+          axisLabel: {},
+          min: -0.05,
+          max: 'dataMax',
           splitNumber: 10,
           splitLine: {
-            show: true,
+            show: false,
             lineStyle: {
               type: 'solid',
             },
           },
         },
         grid: {
-          left: '80px',
+          top: 20,
+          bottom: 20,
+          left: '60px',
           right: '50px',
         },
         series: [
@@ -1012,6 +998,7 @@ export default {
       }
 
       this.chartOption = option
+      this.loading = false
     },
   },
   head: {
