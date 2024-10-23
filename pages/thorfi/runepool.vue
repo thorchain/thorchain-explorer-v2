@@ -930,9 +930,9 @@ export default {
         this.members = membersData.map((member) => ({
           ...member,
           age: this.height.THOR - +member.last_deposit_height,
-          ror: member.value
-            ? +member.value / +member.deposit_amount - 1
-            : +member.withdraw_amount / +member.deposit_amount - 1,
+          ror: +member.value
+        ? (+member.value / +member.deposit_amount - 1) * 100 
+        : (+member.withdraw_amount / +member.deposit_amount - 1) * 100,
         }))
         this.setChartOption(this.members)
         this.loading = false
