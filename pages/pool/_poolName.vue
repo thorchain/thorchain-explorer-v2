@@ -32,6 +32,16 @@ export default {
 </script>
 
 <style lang="scss">
+.pool-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background-color: var(--card-bg-color);
+  color: var(--sec-font-color);
+  border-radius: 0.5rem;
+  padding: 0.8rem;
+  border: 1px solid var(--border-color);
+}
 .nav-pool-header {
   display: flex;
   margin-bottom: 1rem;

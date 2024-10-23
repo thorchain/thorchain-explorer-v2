@@ -1,5 +1,6 @@
 <template>
   <div>
+    <cards-header :table-general-stats="lpGeneralStats" />
     <div class="pie-chart-container">
       <Card
         title="Address Distribution"
@@ -120,6 +121,14 @@ export default {
           formatFn: this.formatBlock,
         },
       ],
+      lpGeneralStats: [
+        {
+          name: 'Total Rune Balance',
+        },
+        {
+          name: 'Total Asset Balance',
+        },
+      ],
       rows: [],
     }
   },
@@ -151,6 +160,7 @@ export default {
         .then((res) => {
           this.poolDetail = res?.data
           this.formatLP(this.lpPositions)
+          this.updateGeneralStats()
         })
         .catch((e) => {
           this.error = true
@@ -219,6 +229,25 @@ export default {
       }
 
       this.createRunePieData(runeData)
+    },
+    updateGeneralStats() {
+      if (this.poolDetail) {
+        const balanceRune = this.poolDetail.balance_rune
+        const balanceAsset = this.poolDetail.balance_asset
+
+        this.lpGeneralStats = [
+          {
+            name: 'Balance Rune',
+            value: this.$options.filters.number(balanceRune / 1e8, '0a'),
+          },
+          {
+            name: 'Balance Asset',
+            value: this.$options.filters.number(balanceAsset / 1e8, '0a'),
+          },
+        ]
+      } else {
+        console.log('poolDetail is not defined')
+      }
     },
     createRunePieData(runeData) {
       const topRuneData = orderBy(runeData, 'ownership', 'desc').slice(0, 10)
