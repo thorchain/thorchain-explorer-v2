@@ -327,7 +327,7 @@ export default {
       if (!params) {
         return
       }
-      this.$router.push(`/savers/${params.row.asset}`)
+      this.$router.push(`/pool/${params.row.asset}/savers`)
     },
     basicChartFormat(
       valueFormatter = undefined,
