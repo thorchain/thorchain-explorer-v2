@@ -1,5 +1,14 @@
 <template>
   <Page>
+    <card :is-loading="loading">
+      <VChart
+        :option="chartOption"
+        :loading="!chartOption"
+        :autoresize="true"
+        :loading-options="showLoading"
+        :theme="chartTheme"
+      />
+    </card>
     <info-card :options="infoCardData">
       <template #pnl="{ item }">
         <skeleton-item
@@ -237,13 +246,33 @@ import moment from 'moment'
 import { mapGetters } from 'vuex'
 import endpoints from '~/api/endpoints'
 import RefreshIcon from '~/assets/images/refresh.svg?inline'
+import { use } from 'echarts/core'
+import { SVGRenderer } from 'echarts/renderers'
+import { LineChart, BarChart } from 'echarts/charts'
+import {
+  TitleComponent,
+  TooltipComponent,
+  LegendComponent,
+  GridComponent,
+} from 'echarts/components'
+import VChart from 'vue-echarts'
+
+use([
+  SVGRenderer,
+  BarChart,
+  GridComponent,
+  LineChart,
+  TitleComponent,
+  TooltipComponent,
+  LegendComponent,
+])
 
 export default {
-  components: { RefreshIcon },
+  components: { RefreshIcon, VChart },
 
   data() {
     return {
-      loading: false,
+      loading: true,
       isUpdating: false,
       reserveAddress: endpoints[process.env.NETWORK].MODULE_ADDR,
       polOverview: undefined,
@@ -257,6 +286,7 @@ export default {
       oldRunePool: [],
       providersInfo: [],
       oldProvidersInfo: [],
+      chartOption: undefined,
       members: [],
       infoCardData: [
         {
@@ -605,6 +635,7 @@ export default {
       })
     }
     this.updateRunePool()
+    this.updateMember()
   },
   methods: {
     createStatsData(pol, providers, reserve, oldRunePool) {
@@ -887,6 +918,100 @@ export default {
       } catch (error) {
         console.error(error)
       }
+    },
+    async updateMember() {
+      try {
+        ;({ data: this.runePoolsRows } = await this.$api.getRunePoolsInfo())
+      } catch (error) {
+        console.error('member not found', error)
+      }
+      try {
+        const { data: membersData } = await this.$api.getRunePoolProviders()
+        this.members = membersData.map((member) => ({
+          ...member,
+          age: this.height.THOR - +member.last_deposit_height,
+          ror: member.value
+            ? +member.value / +member.deposit_amount - 1
+            : +member.withdraw_amount / +member.deposit_amount - 1,
+        }))
+        this.setChartOption(this.members)
+        this.loading = false
+      } catch (error) {
+        console.error('member not found', error)
+      }
+    },
+
+    setChartOption(members) {
+      const xAxis = []
+      const rorData = []
+
+      members.forEach((member) => {
+        xAxis.push(member.age)
+        rorData.push(member.ror)
+      })
+
+      const option = {
+        title: {
+          show: false,
+        },
+        tooltip: {
+          confine: true,
+          trigger: 'axis',
+          formatter: function (params) {
+            const ror = (params[0].data * 100).toFixed(2)
+            return ` ${ror}%`
+          },
+        },
+        xAxis: {
+          data: xAxis,
+          boundaryGap: false,
+          axisLine: {
+            show: true,
+            lineStyle: {
+            },
+          },
+          axisLabel: {
+          },
+        },
+        yAxis: {
+          show: true,
+          axisLine: {
+            lineStyle: {
+            },
+          },
+          axisLabel: {
+          },
+          min: -1,
+          max: 1,
+          splitNumber: 10,
+          splitLine: {
+            show: true,
+            lineStyle: {
+              type: 'solid',
+            },
+          },
+        },
+        grid: {
+          left: '80px',
+          right: '50px',
+        },
+        series: [
+          {
+            type: 'bar',
+            name: 'Rate of Return (RoR)',
+            data: rorData,
+            barWidth: '50%',
+            lineStyle: {
+              width: 1,
+            },
+            itemStyle: {
+              opacity: 0.8,
+            },
+          },
+        ],
+      }
+
+      this.chartOption = option
     },
   },
   head: {
