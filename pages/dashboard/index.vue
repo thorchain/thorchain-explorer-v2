@@ -350,9 +350,7 @@ export default {
     Chart,
     StackDollar,
     ArrowRightIcon,
-    External,
     TransactionAction,
-    TransactionStatus,
   },
   layout: 'dashboard',
   data() {

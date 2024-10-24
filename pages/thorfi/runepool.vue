@@ -255,6 +255,7 @@ import {
   GridComponent,
 } from 'echarts/components'
 import VChart from 'vue-echarts'
+import { orderBy } from 'lodash'
 import RefreshIcon from '~/assets/images/refresh.svg?inline'
 import endpoints from '~/api/endpoints'
 
@@ -923,12 +924,14 @@ export default {
     },
 
     setChartOption(members) {
+      members = orderBy(members, [(o) => o.age])
+
       const xAxis = []
       const rorData = []
 
       members.forEach((member) => {
         xAxis.push({
-          value: member.age,
+          value: moment.duration(member.age * 6, 's').humanize(),
         })
         rorData.push(member.ror)
       })
@@ -942,9 +945,14 @@ export default {
           trigger: 'axis',
           formatter(params) {
             const index = params[0].dataIndex
-            console.log(members[index], params[0].data)
             const ror = (params[0].data * 100).toFixed(2)
-            return `<span>RoR: ${ror}%</span><br><span>address: <strong>${members[index].rune_address.slice(-4)}</strong></span>`
+            return `
+              <span>RoR: ${ror}%</span>
+              <br>
+              <span>address: <strong>${members[index].rune_address.slice(-4)}</strong></span>
+              <br>
+              <span>age: ${members[index].age} blocks</span>
+              `
           },
         },
         xAxis: {
@@ -988,7 +996,7 @@ export default {
             data: rorData,
             barWidth: '50%',
             lineStyle: {
-              width: 1,
+              width: 3,
             },
             itemStyle: {
               opacity: 0.8,
