@@ -121,7 +121,7 @@ export default {
       leastBondChurn: undefined,
       hides: {
         isp: false,
-        score: false,
+        score: true,
         fee: false,
         age: false,
       },
