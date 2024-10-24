@@ -53,6 +53,16 @@
         />
       </skeleton-item>
     </card>
+    <card :is-loading="loading" title="Members overview">
+      <VChart
+        :option="chartOption"
+        :loading="!chartOption"
+        :autoresize="true"
+        :loading-options="showLoading"
+        style="width: 100%; height: 250px; min-height: initial"
+        :theme="chartTheme"
+      />
+    </card>
 
     <Card
       :navs="[
@@ -235,15 +245,36 @@
 <script>
 import moment from 'moment'
 import { mapGetters } from 'vuex'
-import endpoints from '~/api/endpoints'
+import { use } from 'echarts/core'
+import { SVGRenderer } from 'echarts/renderers'
+import { LineChart, BarChart } from 'echarts/charts'
+import {
+  TitleComponent,
+  TooltipComponent,
+  LegendComponent,
+  GridComponent,
+} from 'echarts/components'
+import VChart from 'vue-echarts'
+import { orderBy } from 'lodash'
 import RefreshIcon from '~/assets/images/refresh.svg?inline'
+import endpoints from '~/api/endpoints'
+
+use([
+  SVGRenderer,
+  BarChart,
+  GridComponent,
+  LineChart,
+  TitleComponent,
+  TooltipComponent,
+  LegendComponent,
+])
 
 export default {
-  components: { RefreshIcon },
+  components: { RefreshIcon, VChart },
 
   data() {
     return {
-      loading: false,
+      loading: true,
       isUpdating: false,
       reserveAddress: endpoints[process.env.NETWORK].MODULE_ADDR,
       polOverview: undefined,
@@ -257,6 +288,7 @@ export default {
       oldRunePool: [],
       providersInfo: [],
       oldProvidersInfo: [],
+      chartOption: undefined,
       members: [],
       infoCardData: [
         {
@@ -864,6 +896,7 @@ export default {
           withdraw_amount: +e.withdraw_amount / 1e8,
           pnl: +e.pnl / 1e8,
           value: +e.value / 1e8,
+          age: +this.height.THOR - +e.last_deposit_height,
           mature: +this.height.THOR - +e.last_deposit_height > matureConstant,
           matureConstant,
           share: +e.units / +this.providersOverview?.units,
@@ -880,13 +913,103 @@ export default {
             )
             .asDays(),
           ror: +e.value
-            ? +e.value / +e.deposit_amount - 1
+            ? +e.value / (+e.deposit_amount - +e.withdraw_amount) - 1
             : +e.withdraw_amount / +e.deposit_amount - 1,
         }))
         this.isUpdating = false
+        this.setChartOption(this.members)
       } catch (error) {
         console.error(error)
       }
+    },
+
+    setChartOption(members) {
+      members = orderBy(members, [(o) => o.age])
+
+      const xAxis = []
+      const rorData = []
+
+      members.forEach((member) => {
+        xAxis.push({
+          value: moment
+            .duration(member.age * 6, 's')
+            .asDays()
+            .toFixed(2),
+        })
+        rorData.push(member.ror)
+      })
+
+      const option = {
+        title: {
+          show: false,
+        },
+        tooltip: {
+          confine: true,
+          trigger: 'axis',
+          formatter(params) {
+            const index = params[0].dataIndex
+            const ror = (params[0].data * 100).toFixed(2)
+            return `
+              <span>RoR: ${ror}%</span>
+              <br>
+              <span>Address: <strong>${members[index].rune_address.slice(-4)}</strong></span>
+              <br>
+              <span>Age: ${params[0].name}</span>
+              `
+          },
+        },
+        xAxis: {
+          data: xAxis,
+          boundaryGap: false,
+          splitLine: {
+            show: false,
+          },
+          axisLine: {
+            show: true,
+            lineStyle: {},
+          },
+          axisLabel: {},
+        },
+        yAxis: {
+          show: true,
+          axisLabel: {
+            formatter(value) {
+              return value * 100 + '%'
+            },
+          },
+          axisLine: {
+            lineStyle: {},
+          },
+          min: -0.05,
+          max: 'dataMax',
+          splitNumber: 10,
+          splitLine: {
+            show: false,
+            lineStyle: {
+              type: 'solid',
+            },
+          },
+        },
+        grid: {
+          top: 20,
+          bottom: 20,
+          left: '60px',
+          right: '30px',
+        },
+        series: [
+          {
+            type: 'bar',
+            name: 'Rate of Return (RoR)',
+            data: rorData,
+            itemStyle: {
+              opacity: 0.8,
+            },
+          },
+        ],
+      }
+
+      this.chartOption = option
+      this.loading = false
     },
   },
   head: {
