@@ -931,7 +931,10 @@ export default {
 
       members.forEach((member) => {
         xAxis.push({
-          value: moment.duration(member.age * 6, 's').humanize(),
+          value: moment
+            .duration(member.age * 6, 's')
+            .asDays()
+            .toFixed(2),
         })
         rorData.push(member.ror)
       })
@@ -949,9 +952,9 @@ export default {
             return `
               <span>RoR: ${ror}%</span>
               <br>
-              <span>address: <strong>${members[index].rune_address.slice(-4)}</strong></span>
+              <span>Address: <strong>${members[index].rune_address.slice(-4)}</strong></span>
               <br>
-              <span>age: ${members[index].age} blocks</span>
+              <span>Age: ${params[0].name}</span>
               `
           },
         },
@@ -969,10 +972,14 @@ export default {
         },
         yAxis: {
           show: true,
+          axisLabel: {
+            formatter(value) {
+              return value * 100 + '%'
+            },
+          },
           axisLine: {
             lineStyle: {},
           },
-          axisLabel: {},
           min: -0.05,
           max: 'dataMax',
           splitNumber: 10,
@@ -987,17 +994,13 @@ export default {
           top: 20,
           bottom: 20,
           left: '60px',
-          right: '50px',
+          right: '30px',
         },
         series: [
           {
             type: 'bar',
             name: 'Rate of Return (RoR)',
             data: rorData,
-            barWidth: '50%',
-            lineStyle: {
-              width: 3,
-            },
             itemStyle: {
               opacity: 0.8,
             },
