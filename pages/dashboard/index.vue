@@ -163,14 +163,14 @@
       </Card>
       <Card
         :navs="[
-          { title: 'Earnings Volume', value: 'earnings-vol' },
-          { title: 'Supply / Burn', value: 'max-supply' },
+          { title: 'Total Earnings', value: 'total-earnings' },
+          { title: 'Pool Earnings', value: 'pool-earnings' },
         ]"
         :act-nav.sync="poolMode"
       >
         <VChart
-          v-if="poolMode == 'earnings-vol'"
-          :key="2"
+          v-if="poolMode == 'total-earnings'"
+          :key="1"
           :option="earningsHistory"
           :loading="!earningsHistory"
           :autoresize="true"
@@ -178,10 +178,10 @@
           :theme="chartTheme"
         />
         <VChart
-          v-if="poolMode == 'max-supply'"
-          :key="1"
-          :option="supplyHistory"
-          :loading="!supplyHistory"
+          v-if="poolMode == 'pool-earnings'"
+          :key="2"
+          :option="poolEarnings"
+          :loading="!poolEarnings"
           :autoresize="true"
           :loading-options="showLoading"
           :theme="chartTheme"
@@ -312,8 +312,7 @@ import {
   GridComponent,
 } from 'echarts/components'
 import VChart from 'vue-echarts'
-import { range } from 'lodash'
-import { number } from 'echarts'
+import { range, orderBy } from 'lodash'
 import { blockTime } from '~/utils'
 import StackDollar from '~/assets/images/sack-dollar.svg?inline'
 import LockIcon from '~/assets/images/lock.svg?inline'
@@ -323,9 +322,7 @@ import Burn from '~/assets/images/burn.svg?inline'
 import Piggy from '~/assets/images/piggy.svg?inline'
 
 import Chart from '~/assets/images/chart.svg?inline'
-import External from '@/assets/images/external.svg?inline'
 import TransactionAction from '~/components/transactions/TransactionAction.vue'
-import TransactionStatus from '~/components/transactions/TransactionStatus.vue'
 
 use([
   SVGRenderer,
@@ -364,7 +361,7 @@ export default {
       volumeHistory: undefined,
       swapHistory: undefined,
       earningsHistory: undefined,
-      supplyHistory: undefined,
+      poolEarnings: undefined,
       runeSupply: undefined,
       lastHeight: undefined,
       blocks: undefined,
@@ -380,7 +377,7 @@ export default {
       poolsData: undefined,
       totalValuePooled: undefined,
       totalBurnedRune: undefined,
-      poolMode: 'earnings-vol',
+      poolMode: 'total-earnings',
       swapMode: 'swap-vol',
       inboundInfo: undefined,
       mimirInfo: undefined,
@@ -657,7 +654,7 @@ export default {
         this.volumeHistory = this.formatLPChange(data?.LPChange)
         ;({ resVolume: this.swapHistory } = this.formatSwap(data?.swaps))
 
-        this.supplyHistory = this.formatSupply(data?.earning)
+        this.poolEarnings = this.formatPoolEarnings(data?.earning)
         this.earningsHistory = await this.formatEarnings(data?.earning)
         this.totalSwapVolumeUSD = data.swaps?.meta?.totalVolumeUSD
         this.totalSwapVolume = data.swaps?.meta?.totalVolume
@@ -927,13 +924,13 @@ export default {
           <div class="tooltip-body">
             <span>
               <span>Volume</span>
-              <b>$${this.$options.filters.number(param[0].value, '0,0.00')}</b>
+              <b>$${this.$options.filters.number(param[0].value, '0,0.00a')}</b>
             </span>
             ${
               EODSwap[param[0].dataIndex] !== 0
                 ? `<span><span>Volume (EOD)</span><b>$${this.$options.filters.number(
                     param[0].value + EODSwap[param[0].dataIndex].value,
-                    '0,0.00'
+                    '0,0.00a'
                   )}</b></span>`
                 : ''
             }
@@ -941,7 +938,7 @@ export default {
               <span>Count</span>
               <b>${this.$options.filters.number(
                 swapCount?.total[param[0].dataIndex],
-                '0,0'
+                '0,0a'
               )}</b>
             </span>
           </div>
@@ -980,11 +977,17 @@ export default {
         xAxis
       )
     },
-    formatSupply(d) {
+    formatPoolEarnings(d) {
+      const poolEarnings = orderBy(
+        d.intervals[d.intervals.length - 2].pools,
+        [(o) => +o.earnings],
+        ['desc']
+      )
+        .filter((p) => p.pool !== 'dev_fund_reward')
+        .map((p) => p.pool)
+
       const xAxis = []
-      const su = []
-      const bu = []
-      let burnCumulative = 0
+      const pe = []
 
       d?.intervals.forEach((interval, index) => {
         // Date
@@ -993,81 +996,117 @@ export default {
         )
         xAxis.push(date.format('dddd, MMM D'))
 
-        const burn =
-          +interval.pools.find((p) => p.pool === 'income_burn').earnings / 1e8
-        burnCumulative += burn
-        bu.push(burn)
-        su.push(5 * 1e8 - burnCumulative)
+        const topPool = 8
+
+        let otherEarnings = interval.pools.filter(
+          (p) =>
+            !poolEarnings.slice(0, topPool).includes(p.pool) &&
+            p.pool !== 'income_burn' &&
+            p.pool !== 'dev_fund_reward'
+        )
+
+        // sum them all
+        otherEarnings = otherEarnings.reduce(
+          (a, c) => a + (+c.earnings * +interval.runePriceUSD) / 1e8,
+          0
+        )
+
+        if (index === 0) {
+          pe.push({
+            type: 'bar',
+            name: 'Other Pools',
+            showSymbol: false,
+            stack: 'Total',
+            data: [otherEarnings],
+          })
+        } else {
+          pe[0].data.push(otherEarnings)
+        }
+
+        // Pool Earning
+        for (let pi = 0; pi < topPool; pi++) {
+          const color = this.assetColorPalette(poolEarnings[pi])
+          const pool = interval.pools.find((p) => p.pool === poolEarnings[pi])
+
+          const earning = {
+            value: (+pool.earnings / 1e8) * +interval.runePriceUSD,
+            areaStyle: {
+              color,
+            },
+            lineStyle: {
+              color,
+            },
+            itemStyle: {
+              color,
+              borderRadius: pi === topPool - 1 ? [8, 8, 0, 0] : [0, 0, 0, 0],
+            },
+          }
+
+          if (index === 0) {
+            pe.push({
+              type: 'bar',
+              name: this.showAsset(poolEarnings[pi]),
+              showSymbol: false,
+              stack: 'Total',
+              data: [earning],
+            })
+          } else {
+            pe[pi + 1].data.push(earning)
+          }
+        }
       })
 
       return this.basicChartFormat(
-        (value) => `$ ${this.normalFormat(value, '0,0.00')}`,
-        [
-          {
-            type: 'line',
-            name: 'Max Supply',
-            showSymbol: false,
-            data: su,
-            smooth: true,
-            yAxisIndex: 0,
-          },
-          {
-            type: 'bar',
-            name: 'Burned Rune',
-            showSymbol: false,
-            data: bu,
-            yAxisIndex: 1,
-            itemStyle: {
-              borderRadius: [8, 8, 0, 0],
-              color: '#ff9962',
-            },
-          },
-        ],
+        (value) => `$ ${this.normalFormat(value, '0,0.00a')}`,
+        pe,
         xAxis,
         {
+          legend: {
+            show: false,
+          },
           yAxis: [
             {
               type: 'value',
-              name: 'Max Supply',
-              position: 'left',
-              show: false,
-              splitLine: {
-                show: true,
-              },
-              min: su.slice(-1)[0] - 50,
-              max: 'dataMax',
-            },
-            {
-              type: 'value',
-              name: 'Burned Rune',
+              name: '',
               position: 'right',
               show: false,
               splitLine: {
                 show: true,
               },
-              min: 'dataMin',
-              max: 'dataMax',
             },
           ],
         },
         (param) => {
           return `
             <div class="tooltip-header">
-              <div class="data-color" style="background-color: ${
-                param[0].color
-              }"></div>
               ${param[0].name}
             </div>
             <div class="tooltip-body">
               ${param
                 .map(
-                  (p) => `<span>
-                  <span>${p.seriesName}</span>
-                  <b>${p.value ? this.$options.filters.number(p.value, '0,0.00') : '-'}</b>
-                </span>`
+                  (p) => `
+                  <span>
+                    <div class="tooltip-item">
+                      <div class="data-color" style="background-color: ${p.color}">
+                      </div>
+                      <span style="text-align: left;">
+                        ${p.seriesName}
+                      </span>
+                    </div>
+                    <b>$${p.value ? this.$options.filters.number(p.value, '0,0.00a') : '-'}</b>
+                  </span>`
                 )
                 .join('')}
             </div>
+            <span style="border-top: 1px solid var(--border-color); margin: 2px 0;"></span>
+            <hr>
+            <span>
+              <span>Total Pool Earnings</span>
+              <b>$${this.$options.filters.number(
+                param.reduce((a, c) => a + (c.value ? c.value : 0), 0),
+                '0,0a'
+              )}</b>
+            </span>
           `
         }
       )
@@ -1164,7 +1203,7 @@ export default {
         [
           {
             type: 'bar',
-            name: 'Liquidity Earning',
+            name: 'Pool Earning',
             showSymbol: false,
             stack: 'Total',
             data: le,
@@ -1215,7 +1254,7 @@ export default {
               color: 'var(--font-color)',
             },
             data: [
-              'Liquidity Earning',
+              'Pool Earning',
               'Bond Earning',
               'Affiliate Earning',
               'Dev Fund Earning',
@@ -1236,7 +1275,7 @@ export default {
                 .map(
                   (p) => `<span>
                   <span>${p.seriesName}</span>
-                  <b>$${p.value ? this.$options.filters.number(p.value, '0,0') : '-'}</b>
+                  <b>$${p.value ? this.$options.filters.number(p.value, '0,0a') : '-'}</b>
                 </span>`
                 )
                 .join('')}
@@ -1247,14 +1286,14 @@ export default {
                   param
                     .filter((p) => p.seriesName !== 'EOD Earning')
                     .reduce((a, c) => a + (c.value ? c.value : 0), 0),
-                  '0,0'
+                  '0,0a'
                 )}</b>
               </span>
                ${
                  EODEarning[param[0].dataIndex] !== 0
                    ? `<span><span>Total Earning (EOD)</span><b>$${this.$options.filters.number(
                        param.reduce((a, c) => a + (c.value ? c.value : 0), 0),
-                       '0,0'
+                       '0,0a'
                      )}</b></span>`
                    : ''
                }
@@ -1343,13 +1382,13 @@ export default {
             <div class="tooltip-body">
               <span>
                 <span>Depth</span>
-                <b>$${this.$options.filters.number(param.value, '0,0 a')}</b>
+                <b>$${this.$options.filters.number(param.value, '0,0a')}</b>
               </span>
               <span>
                 <span>Volume</span>
                 <b>$${this.$options.filters.number(
                   poolData[param.dataIndex].vol,
-                  '0,0 a'
+                  '0,0a'
                 )}</b>
               </span>
             </div>

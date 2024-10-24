@@ -833,6 +833,12 @@ input {
   border-top: 1px solid var(--border-color);
 }
 
+.tooltip-item {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
 .data-color {
   width: 10px;
   height: 10px;

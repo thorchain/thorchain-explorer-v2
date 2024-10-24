@@ -655,7 +655,7 @@ export default {
         case 'USDC':
           return '#2775CA'
         case 'ETH':
-          return '#F2F4F7'
+          return '#CACACA'
         case 'WBTC':
           return '#F19440'
         case 'BUSD':
