@@ -1083,6 +1083,11 @@ export default {
             </div>
             <div class="tooltip-body">
               ${param
+                .sort((a, b) => {
+                  if (a.seriesName === 'Other Pools') return 1
+                  if (b.seriesName === 'Other Pools') return -1
+                  return b.value - a.value
+                })
                 .map(
                   (p) => `
                   <span>
