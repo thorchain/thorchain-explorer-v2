@@ -218,8 +218,9 @@ export default {
     .section-title {
       text-align: center;
       color: var(--sec-font-color);
-      padding-bottom: 1.1rem;
+      padding: 1.1rem 0;
       border-bottom: 1px solid var(--border-color);
+      margin-top: 0;
     }
 
     .data-item {
