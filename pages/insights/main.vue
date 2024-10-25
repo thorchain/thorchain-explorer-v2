@@ -211,7 +211,6 @@ export default {
               name: 'Total Supply',
               value: this.marketInfo.totalSupply,
               filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
-
             },
           ],
         },
@@ -236,7 +235,7 @@ export default {
       this.affiliateEarningsWallets(data)
     })
     this.getCoinMarketInfo()
-    this.fetchData()
+    this.supplyBurn()
   },
   methods: {
     async getCoinMarketInfo() {
@@ -345,7 +344,7 @@ export default {
       ]
 
       this.affiliateChart = this.basicChartFormat(
-        (value) => `$${this.$options.filters.number(value, '0,0.00 a')}` ,
+        (value) => `$${this.$options.filters.number(value, '0,0.00 a')}`,
         series,
         xAxis,
         {
@@ -688,124 +687,94 @@ export default {
         }
       )
     },
-    async fetchData() {
+    async supplyBurn() {
       try {
         const { data } = await this.$api.getSupplyHistory(60)
 
+        const xAxis = []
+        const su = []
+        const bu = []
+        let burnCumulative = 0
 
-        const earnings = data.intervals
-          .map((interval) => {
-            const earningsValue = (interval.earnings)
-            if (isNaN(earningsValue)) {
-              console.warn(
-                'Earnings value is invalid or empty:',
-                interval.earnings
-              )
-              return null
-            }
-            return earningsValue
-          })
-          .filter((value) => value !== null)
-
-        if (earnings.length === 0) {
-          console.warn('No valid earnings to process.')
-          this.supplyHistory = null
-        } else {
-          this.supplyHistory = this.formatSupply(earnings)
-        }
-      } catch (error) {
-        console.error('Error fetching supply history:', error)
-      }
-    },
-    formatSupply(data) {
-      if (!data || !Array.isArray(data)) {
-        console.error(
-          'Invalid data format: expected an array of numbers.',
-          data
-        )
-        throw new Error('Invalid data format: data is missing or not an array')
-      }
-
-      const xAxis = []
-      const su = []
-      const bu = []
-      let burnCumulative = 0
-
-      if (data.length === 0) {
-        console.warn('No earnings data available to format.')
-        return {
-          xAxis: [],
-          series: [],
-        }
-      }
-
-      data.forEach((earnings, index) => {
-        if (isNaN(earnings)) {
-          console.warn(`Invalid earnings value at index ${index}: ${earnings}`)
+        if (data.length === 0) {
+          console.warn('No earnings data available to format.')
           return
         }
 
-        const date = moment().subtract(index, 'days').format('dddd, MMM D')
-        xAxis.push(date)
+        data.intervals.forEach((interval, index) => {
+          // ignore the last day
+          if (index === data.intervals.length - 1) {
+            return
+          }
 
-        const burn = earnings / 1e8
-        burnCumulative += burn
-        bu.push(burn)
-        su.push(5 * 1e8 - burnCumulative)
-      })
+          // fill the data
+          xAxis.push(
+            moment(
+              Math.floor((+interval.endTime + +interval.startTime) / 2) * 1e3
+            ).format('dddd, MMM D')
+          )
+          const burns = interval?.pools?.find(
+            (p) => p.pool === 'income_burn'
+          )?.earnings
 
-      return this.basicChartFormat(
-        (value) => `$ ${this.normalFormat(value, '0,0.00')}`,
-        [
-          {
-            type: 'line',
-            name: 'Max Supply',
-            showSymbol: false,
-            data: su,
-            smooth: true,
-            yAxisIndex: 0,
-          },
-          {
-            type: 'bar',
-            name: 'Burned Rune',
-            showSymbol: false,
-            data: bu,
-            yAxisIndex: 1,
-            itemStyle: {
-              borderRadius: [8, 8, 0, 0],
-              color: '#ff9962',
-            },
-          },
-        ],
-        xAxis,
-        {
-          yAxis: [
+          const burn = +burns / 1e8
+          burnCumulative += burn
+          bu.push(burn)
+          su.push(5 * 1e8 - burnCumulative)
+        })
+
+        this.supplyHistory = this.basicChartFormat(
+          (value) => `$ ${this.normalFormat(value, '0,0.00')}`,
+          [
             {
-              type: 'value',
+              type: 'line',
               name: 'Max Supply',
-              position: 'left',
-              show: false,
-              splitLine: {
-                show: true,
-              },
-              min: su[su.length - 1] - 50,
-              max: 'dataMax',
+              showSymbol: false,
+              data: su,
+              smooth: true,
+              yAxisIndex: 0,
             },
             {
-              type: 'value',
+              type: 'bar',
               name: 'Burned Rune',
-              position: 'right',
-              show: false,
-              splitLine: {
-                show: true,
+              showSymbol: false,
+              data: bu,
+              yAxisIndex: 1,
+              itemStyle: {
+                borderRadius: [8, 8, 0, 0],
+                color: '#ff9962',
               },
-              min: 'dataMin',
-              max: 'dataMax',
             },
           ],
-        },
-        (param) => {
-          return `
+          xAxis,
+          {
+            yAxis: [
+              {
+                type: 'value',
+                name: 'Max Supply',
+                position: 'left',
+                show: false,
+                splitLine: {
+                  show: true,
+                },
+                min: su[su.length - 1] - 50,
+                max: 'dataMax',
+              },
+              {
+                type: 'value',
+                name: 'Burned Rune',
+                position: 'right',
+                show: false,
+                splitLine: {
+                  show: true,
+                },
+                min: 'dataMin',
+                max: 'dataMax',
+              },
+            ],
+          },
+          (param) => {
+            return `
         <div class="tooltip-header">
           <div class="data-color" style="background-color: ${param[0].color}"></div>
           ${param[0].name}
@@ -821,8 +790,11 @@ export default {
             .join('')}
         </div>
       `
-        }
-      )
+          }
+        )
+      } catch (error) {
+        console.error('Error fetching supply history:', error)
+      }
     },
   },
 }
