@@ -84,6 +84,17 @@
         />
       </Card>
     </div>
+    <div class="chart-inner-container">
+      <Card title="Supply / Burn">
+        <VChart
+          :option="supplyHistory"
+          :loading="!supplyHistory"
+          :autoresize="true"
+          :loading-options="showLoading"
+          :theme="chartTheme"
+        />
+      </Card>
+    </div>
   </div>
 </template>
 
@@ -122,6 +133,7 @@ export default {
   data() {
     return {
       churnHistory: undefined,
+      supplyHistory: undefined,
       marketInfo: {
         price: undefined,
         rank: undefined,
@@ -199,7 +211,6 @@ export default {
               name: 'Total Supply',
               value: this.marketInfo.totalSupply,
               filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
-
             },
           ],
         },
@@ -224,6 +235,7 @@ export default {
       this.affiliateEarningsWallets(data)
     })
     this.getCoinMarketInfo()
+    this.supplyBurn()
   },
   methods: {
     async getCoinMarketInfo() {
@@ -332,7 +344,7 @@ export default {
       ]
 
       this.affiliateChart = this.basicChartFormat(
-        (value) => `$${this.$options.filters.number(value, '0,0.00 a')}` ,
+        (value) => `$${this.$options.filters.number(value, '0,0.00 a')}`,
         series,
         xAxis,
         {
@@ -674,6 +686,115 @@ export default {
           ],
         }
       )
+    },
+    async supplyBurn() {
+      try {
+        const { data } = await this.$api.getSupplyHistory(60)
+
+        const xAxis = []
+        const su = []
+        const bu = []
+        let burnCumulative = 0
+
+        if (data.length === 0) {
+          console.warn('No earnings data available to format.')
+          return
+        }
+
+        data.intervals.forEach((interval, index) => {
+          // ignore the last day
+          if (index === data.intervals.length - 1) {
+            return
+          }
+
+          // fill the data
+          xAxis.push(
+            moment(
+              Math.floor((+interval.endTime + +interval.startTime) / 2) * 1e3
+            ).format('dddd, MMM D')
+          )
+          const burns = interval?.pools?.find(
+            (p) => p.pool === 'income_burn'
+          )?.earnings
+
+          const burn = +burns / 1e8
+          burnCumulative += burn
+          bu.push(burn)
+          su.push(5 * 1e8 - burnCumulative)
+        })
+
+        this.supplyHistory = this.basicChartFormat(
+          (value) => `$ ${this.normalFormat(value, '0,0.00')}`,
+          [
+            {
+              type: 'line',
+              name: 'Max Supply',
+              showSymbol: false,
+              data: su,
+              smooth: true,
+              yAxisIndex: 0,
+            },
+            {
+              type: 'bar',
+              name: 'Burned Rune',
+              showSymbol: false,
+              data: bu,
+              yAxisIndex: 1,
+              itemStyle: {
+                borderRadius: [8, 8, 0, 0],
+                color: '#ff9962',
+              },
+            },
+          ],
+          xAxis,
+          {
+            yAxis: [
+              {
+                type: 'value',
+                name: 'Max Supply',
+                position: 'left',
+                show: false,
+                splitLine: {
+                  show: true,
+                },
+                min: su[su.length - 1] - 50,
+                max: 'dataMax',
+              },
+              {
+                type: 'value',
+                name: 'Burned Rune',
+                position: 'right',
+                show: false,
+                splitLine: {
+                  show: true,
+                },
+                min: 'dataMin',
+                max: 'dataMax',
+              },
+            ],
+          },
+          (param) => {
+            return `
+        <div class="tooltip-header">
+          <div class="data-color" style="background-color: ${param[0].color}"></div>
+          ${param[0].name}
+        </div>
+        <div class="tooltip-body">
+          ${param
+            .map(
+              (p) => `<span>
+              <span>${p.seriesName}</span>
+              <b>${p.value ? this.$options.filters.number(p.value, '0,0.00') : '-'}</b>
+            </span>`
+            )
+            .join('')}
+        </div>
+      `
+          }
+        )
+      } catch (error) {
+        console.error('Error fetching supply history:', error)
+      }
     },
   },
 }
