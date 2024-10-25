@@ -2,7 +2,7 @@
   <Page class="pool-overview">
     <div class="cards-container">
       <info-card :options="poolDetailStats" />
-      <card :is-loading="loading">
+      <card :is-loading="loading" :title="`${showAsset(poolName)} Earnings`">
         <VChart
           :option="volumeHistory"
           :loading="!volumeHistory"
@@ -12,7 +12,26 @@
         />
       </card>
     </div>
-    <info-card :options="poolStats" />
+    <div class="cards-container">
+      <card :is-loading="loading" :title="`${showAsset(poolName)} Depth`">
+        <VChart
+          :option="depthHistory"
+          :loading="!depthHistory"
+          :loading-options="showLoading"
+          :theme="chartTheme"
+          :autoresize="true"
+        />
+      </card>
+      <card :is-loading="loading" :title="`${showAsset(poolName)} Swaps`">
+        <VChart
+          :option="swapHistory"
+          :loading="!swapHistory"
+          :loading-options="showLoading"
+          :theme="chartTheme"
+          :autoresize="true"
+        />
+      </card>
+    </div>
     <div class="footer-stat">
       <small>
         <sup>*</sup>
@@ -50,7 +69,7 @@ export default {
   components: {
     VChart,
   },
-  async asyncData({ params }) {
+  asyncData({ params }) {
     return { poolName: params.poolName }
   },
   data() {
@@ -58,6 +77,8 @@ export default {
       pool: undefined,
       poolDetail: undefined,
       volumeHistory: undefined,
+      depthHistory: undefined,
+      swapHistory: undefined,
       loading: true,
     }
   },
@@ -92,7 +113,7 @@ export default {
               name: 'Asset Depth',
               value: this.pool?.assetDepth / 10 ** 8,
               filter: (v) =>
-                `${this.$options.filters.number(v, '0,0')} ${this.pool?.asset}`,
+                `${this.$options.filters.number(v, '0,0')} ${this.showAsset(this.pool?.asset)}`,
             },
             {
               name: 'Rune Depth',
@@ -114,96 +135,7 @@ export default {
               name: 'Pending Inbound Asset',
               value: this.poolDetail?.pending_inbound_asset / 10 ** 8,
               filter: (v) =>
-                `${this.$options.filters.number(v, '0,0')} ${this.pool?.asset}`,
-            },
-          ],
-        },
-      ]
-    },
-    poolStats() {
-      return [
-        {
-          title: 'Deposit (30D)',
-          rowStart: 1,
-          colSpan: 1,
-          items: [
-            {
-              name: 'Add Liquidity Count',
-              value: this.pool?.addLiquidityCount,
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
-            },
-            {
-              name: 'Unique Member Count',
-              value: this.pool?.uniqueMemberCount,
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
-            },
-            {
-              name: 'Add Asset Liquidity Volume',
-              value: this.pool?.addAssetLiquidityVolume / 10 ** 8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
-              usdValue: true,
-            },
-            {
-              name: 'Add RUNE Liquidity Volume',
-              value: this.pool?.addRuneLiquidityVolume / 10 ** 8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
-              usdValue: true,
-            },
-            {
-              name: 'Add Liquidity Volume',
-              value: this.pool?.addLiquidityVolume / 10 ** 8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
-              usdValue: true,
-            },
-            {
-              header: 'Withdraw (30D)',
-            },
-            {
-              name: 'Withdraw Count',
-              value: this.pool?.withdrawCount,
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
-            },
-            {
-              name: 'Withdraw Asset Volume',
-              value: this.pool?.withdrawAssetVolume / 10 ** 8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
-              usdValue: true,
-            },
-            {
-              name: 'Withdraw RUNE Volume',
-              value: this.pool?.withdrawRuneVolume / 10 ** 8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
-              usdValue: true,
-            },
-            {
-              name: 'Withdraw Volume',
-              value: this.pool?.withdrawVolume / 10 ** 8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
-              usdValue: true,
-            },
-          ],
-        },
-        {
-          title: 'Swap (30D)',
-          rowStart: 1,
-          colSpan: 1,
-          items: [
-            {
-              name: 'Total Fees',
-              value: this.pool?.totalFees / 10 ** 8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
-              usdValue: true,
-            },
-            {
-              name: 'Swap Count',
-              value: this.pool?.swapCount,
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
-            },
-            {
-              name: 'Swap Volume',
-              value: this.pool?.swapVolume / 10 ** 8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
-              usdValue: true,
+                `${this.$options.filters.number(v, '0,0')} ${this.showAsset(this.pool?.asset)}`,
             },
           ],
         },
@@ -214,90 +146,195 @@ export default {
     this.loadData()
   },
   methods: {
-    loadData() {
+    async loadData() {
       this.loading = true
 
-      this.$api
-        .getPoolStats(this.poolName)
-        .then((res) => {
-          this.pool = res.data
-        })
-        .catch((e) => console.error('Error fetching pool stats:', e))
+      this.pool = (await this.$api.getPoolStats(this.poolName)).data
 
-      this.$api
-        .getPoolDetail(this.poolName)
-        .then((res) => {
-          this.poolDetail = res?.data
-        })
-        .catch((e) => {
-          console.error('Error fetching pool detail:', e)
-        })
+      this.poolDetail = (await this.$api.getPoolDetail(this.poolName)).data
 
-      this.$api
-        .getPoolVolume(this.poolName)
-        .then((res) => {
-          this.volumeHistory = this.formatVol(res?.data)
+      const resEarning = (await this.$api.getEarningHistory()).data
+      this.volumeHistory = this.formatEarnings(resEarning)
+
+      const resDepth = (await this.$api.getPoolDepth(this.poolName, 30)).data
+      this.depthHistory = this.formatDepth(resDepth)
+
+      const resSwaps = (
+        await this.$api.getSwapsHistory({
+          pool: this.poolName,
         })
-        .catch((e) => {
-          console.error(e)
-        })
-        .finally(() => {
-          this.loading = false
-        })
+      ).data
+      this.swapHistory = this.formatSwaps(resSwaps)
+
+      this.loading = false
     },
     assetString(assetStr) {
       const { chain, ticker } = assetFromString(assetStr)
       return `${chain}.${ticker}`
     },
-    formatVol(d) {
+    formatSwaps(d) {
       const xAxis = []
-      const av = []
-      const wv = []
-      const tv = []
-      d?.intervals.forEach((interval) => {
+      const ps = []
+      d?.intervals.forEach((interval, index) => {
+        // ignore the last index
+        if (index === d?.intervals?.length - 1) {
+          return
+        }
         xAxis.push(
           moment(
             Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
           ).format('dddd, MMM D')
         )
-        av.push(
-          (+interval.addLiquidityVolume * +interval.runePriceUSD) / 10 ** 8
+        // usd is in 2 decimal precision
+        ps.push(+interval.totalVolumeUSD / 10 ** 2)
+      })
+      return this.basicChartFormat(
+        (value) => `$ ${this.$options.filters.number(+value, '0,0.00a')}`,
+        [
+          {
+            type: 'bar',
+            name: 'Volume USD',
+            showSymbol: false,
+            data: ps,
+          },
+        ],
+        xAxis
+      )
+    },
+    formatDepth(d) {
+      const xAxis = []
+      const pe = []
+      const pr = []
+      d?.intervals.forEach((interval, index) => {
+        // ignore the last index
+        if (index === d?.intervals?.length - 1) {
+          return
+        }
+        xAxis.push(
+          moment(
+            Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
+          ).format('dddd, MMM D')
         )
-        wv.push(
-          -1 * ((+interval.withdrawVolume * +interval.runePriceUSD) / 10 ** 8)
+        pe.push(+interval.assetDepth / 10 ** 8)
+        pr.push(+interval.runeDepth / 10 ** 8)
+      })
+      return this.basicChartFormat(
+        (value) => `${this.$options.filters.number(+value, '0,0.00a')}`,
+        [
+          {
+            type: 'bar',
+            name: 'Asset Depth',
+            showSymbol: false,
+            yAxisIndex: 1,
+            data: pe,
+          },
+          {
+            type: 'bar',
+            name: 'Rune Depth',
+            showSymbol: false,
+            yAxisIndex: 0,
+            data: pr,
+          },
+        ],
+        xAxis,
+        {
+          yAxis: [
+            {
+              type: 'value',
+              name: '',
+              position: 'right',
+              show: false,
+              splitLine: {
+                show: true,
+              },
+              max: 'dataMax',
+            },
+            {
+              type: 'value',
+              name: '',
+              position: 'left',
+              show: false,
+              splitLine: {
+                show: true,
+              },
+              max: 'dataMax',
+            },
+          ],
+        }
+      )
+    },
+    formatEarnings(d) {
+      const xAxis = []
+      const pe = []
+      const pw = []
+      const pf = []
+      d?.intervals.forEach((interval, index) => {
+        // ignore the last index
+        if (index === d?.intervals?.length - 1) {
+          return
+        }
+        xAxis.push(
+          moment(
+            Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
+          ).format('dddd, MMM D')
         )
-        tv.push(
-          ((+interval.addLiquidityVolume - +interval.withdrawVolume) *
-            +interval.runePriceUSD) /
-            10 ** 8
+        const pool = interval?.pools?.find((p) => p.pool === this.poolName)
+        pe.push((+pool.earnings * +interval.runePriceUSD) / 10 ** 8)
+        pw.push((+pool.rewards * +interval.runePriceUSD) / 10 ** 8)
+        pf.push(
+          (+pool.totalLiquidityFeesRune * +interval.runePriceUSD) / 10 ** 8
         )
       })
       return this.basicChartFormat(
         (value) => `$ ${this.normalFormat(value)}`,
         [
           {
-            type: 'line',
-            name: 'Total Liquidity Change',
+            type: 'bar',
+            name: 'Liquidity Fee',
+            stack: 'total',
             showSymbol: false,
-            data: tv,
-            smooth: true,
+            data: pf,
+          },
+          {
+            type: 'bar',
+            name: 'Rewards',
+            stack: 'total',
+            showSymbol: false,
+            data: pw,
           },
           {
             type: 'line',
-            name: 'Add Liquidity Volume',
+            name: 'Total Earnings',
             showSymbol: false,
-            data: av,
+            areaStyle: {
+              color: 'rgba(243, 186, 47, 0.2)',
+            },
+            data: pe,
             smooth: true,
-          },
-          {
-            type: 'line',
-            name: 'Withdraw Liquidity Volume',
-            showSymbol: false,
-            data: wv,
-            smooth: true,
+            lineStyle: {
+              width: 2,
+            },
+            z: 3,
           },
         ],
-        xAxis
+        xAxis,
+        {
+          yAxis: [
+            {
+              type: 'value',
+              position: 'left',
+              show: false,
+              splitLine: {
+                show: true,
+              },
+              axisLine: {
+                show: false,
+              },
+              min: 'dataMin',
+              max: 'dataMax',
+            },
+          ],
+        }
       )
     },
   },

@@ -8,7 +8,7 @@ import {
   getPoolTxs,
   volumeHistory,
   swapHistory,
-  tvlHistory,
+  getTVLHistory,
   earningsHistory,
   getPoolVolume,
   getLastTvl,
@@ -17,12 +17,13 @@ import {
   getPools,
   getNetwork,
   getPoolDepth,
-  getSupplyHistory,
+  getEarningHistory,
   getMemberDetails,
   getSaverDetails,
   earningLastDay,
   getBorrowerDetails,
   getMidgardActions,
+  getSwapsHistory,
 } from './midgard.api'
 import {
   getRunePoolProviders,
@@ -165,6 +166,9 @@ export default function ({ $axios }, inject) {
     retryDelay: axiosRetry.exponentialDelay,
     retryCondition: (error) => {
       const status = error.response ? error.response.status : null
+      if (error.message === 'Network Error') {
+        return true
+      }
       return status === 504 || status === 429
     },
   })
@@ -188,7 +192,7 @@ export default function ({ $axios }, inject) {
     getAddress,
     getPoolStats,
     getPools,
-    getSupplyHistory,
+    getEarningHistory,
     getPoolTxs,
     getBalance,
     getLastBlockHeight,
@@ -202,7 +206,7 @@ export default function ({ $axios }, inject) {
     getThorPools,
     volumeHistory,
     swapHistory,
-    tvlHistory,
+    getTVLHistory,
     earningsHistory,
     getPoolVolume,
     getSupplyRune,
@@ -277,6 +281,7 @@ export default function ({ $axios }, inject) {
     getEarnings,
     getNetworkAllocation,
     getTSSMetrics,
+    getSwapsHistory,
   }
 
   inject('api', api)

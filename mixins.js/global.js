@@ -232,6 +232,9 @@ export default {
     unitFormat(number) {
       return number ? this.$options.filters.number(+number / 1e8, '0,0') : '-'
     },
+    minFormat(number) {
+      return number ? this.$options.filters.number(+number, '0,0a') : '-'
+    },
     normalFormat(number) {
       return number ? this.$options.filters.number(+number, '0,0') : '-'
     },

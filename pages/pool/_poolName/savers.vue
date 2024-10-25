@@ -1,5 +1,8 @@
 <template>
   <div>
+    <div v-if="error">
+      <h4>There is no savers for this pool</h4>
+    </div>
     <div
       v-show="
         networkEnv === 'mainnet' &&
@@ -65,13 +68,16 @@ export default {
   },
   methods: {
     updateGeneralStats(saversExtraData) {
+      if (!saversExtraData) {
+        return
+      }
       this.saversGeneralStats = [
         {
           name: 'Total Earned',
           value: this.$options.filters.currency(
-            (+saversExtraData.earned * +saversExtraData.assetPriceUSD) / 1e8
+            (+saversExtraData?.earned * +saversExtraData?.assetPriceUSD) / 1e8
           ),
-          hide: !saversExtraData.earned,
+          hide: !saversExtraData?.earned,
         },
         {
           name: 'Total Annualised Return',

@@ -68,12 +68,22 @@ export function volumeHistory() {
   return $axiosInstace.get('history/liquidity_changes?interval=day&count=30')
 }
 
-export function swapHistory() {
-  return $axiosInstace.get('history/swaps?interval=day&count=30')
+export function swapHistory(count = 30) {
+  return $axiosInstace.get(`history/swaps?interval=day&count=${count}`)
 }
 
-export function tvlHistory() {
-  return $axiosInstace.get('history/tvl?interval=day&count=90')
+export function getSwapsHistory(params) {
+  return $axiosInstace.get(`history/swaps`, {
+    params: {
+      interval: 'day',
+      count: 30,
+      ...params,
+    },
+  })
+}
+
+export function getTVLHistory(count = 90) {
+  return $axiosInstace.get(`history/tvl?interval=day&count=${count}`)
 }
 
 export function getLastTvl() {
@@ -84,7 +94,7 @@ export function earningsHistory() {
   return $axiosInstace.get('history/earnings?interval=day&count=30')
 }
 
-export function getSupplyHistory(count = 30) {
+export function getEarningHistory(count = 30) {
   return $axiosInstace.get(`history/earnings?interval=day&count=${count || 60}`)
 }
 

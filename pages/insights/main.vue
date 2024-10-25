@@ -689,7 +689,7 @@ export default {
     },
     async supplyBurn() {
       try {
-        const { data } = await this.$api.getSupplyHistory(60)
+        const { data } = await this.$api.getEarningHistory(60)
 
         const xAxis = []
         const su = []

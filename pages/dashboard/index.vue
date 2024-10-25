@@ -681,8 +681,8 @@ export default {
           })
 
         this.$api
-          .tvlHistory()
-          .then((res) => (this.tvlHistory = this.formatTvl(res.data)))
+          .getTVLHistory()
+          .then((res) => (this.getTVLHistory = this.formatTvl(res.data)))
           .catch((error) => {
             console.error(error)
           })

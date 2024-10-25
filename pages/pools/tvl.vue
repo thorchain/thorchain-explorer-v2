@@ -60,7 +60,7 @@ export default {
     async updateDatum() {
       const {
         data: { intervals = [] },
-      } = await this.$api.tvlHistory()
+      } = await this.$api.getTVLHistory()
 
       const pools = {}
       const xAxis = []
