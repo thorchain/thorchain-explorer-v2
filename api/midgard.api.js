@@ -84,6 +84,12 @@ export function earningsHistory() {
   return $axiosInstace.get('history/earnings?interval=day&count=30')
 }
 
+export function getSupplyHistory(count = 30) {
+  return $axiosInstace.get(`history/earnings?interval=day&count=${count || 60}`);
+}
+
+
+
 export function earningLastDay() {
   return $axiosInstace.get('history/earnings?interval=day&count=2')
 }

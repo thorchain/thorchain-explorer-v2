@@ -84,6 +84,17 @@
         />
       </Card>
     </div>
+    <div class="chart-inner-container">
+      <Card title="Supply / Burn">
+        <VChart
+          :option="supplyHistory"
+          :loading="!supplyHistory"
+          :autoresize="true"
+          :loading-options="showLoading"
+          :theme="chartTheme"
+        />
+      </Card>
+    </div>
   </div>
 </template>
 
@@ -122,6 +133,7 @@ export default {
   data() {
     return {
       churnHistory: undefined,
+      supplyHistory: undefined,
       marketInfo: {
         price: undefined,
         rank: undefined,
@@ -224,6 +236,7 @@ export default {
       this.affiliateEarningsWallets(data)
     })
     this.getCoinMarketInfo()
+    this.fetchData()
   },
   methods: {
     async getCoinMarketInfo() {
@@ -672,6 +685,142 @@ export default {
               max: 1,
             },
           ],
+        }
+      )
+    },
+    async fetchData() {
+      try {
+        const { data } = await this.$api.getSupplyHistory(60)
+
+
+        const earnings = data.intervals
+          .map((interval) => {
+            const earningsValue = (interval.earnings)
+            if (isNaN(earningsValue)) {
+              console.warn(
+                'Earnings value is invalid or empty:',
+                interval.earnings
+              )
+              return null
+            }
+            return earningsValue
+          })
+          .filter((value) => value !== null)
+
+        if (earnings.length === 0) {
+          console.warn('No valid earnings to process.')
+          this.supplyHistory = null
+        } else {
+          this.supplyHistory = this.formatSupply(earnings)
+        }
+      } catch (error) {
+        console.error('Error fetching supply history:', error)
+      }
+    },
+    formatSupply(data) {
+      if (!data || !Array.isArray(data)) {
+        console.error(
+          'Invalid data format: expected an array of numbers.',
+          data
+        )
+        throw new Error('Invalid data format: data is missing or not an array')
+      }
+
+      const xAxis = []
+      const su = []
+      const bu = []
+      let burnCumulative = 0
+
+      if (data.length === 0) {
+        console.warn('No earnings data available to format.')
+        return {
+          xAxis: [],
+          series: [],
+        }
+      }
+
+      data.forEach((earnings, index) => {
+        if (isNaN(earnings)) {
+          console.warn(`Invalid earnings value at index ${index}: ${earnings}`)
+          return
+        }
+
+        const date = moment().subtract(index, 'days').format('dddd, MMM D')
+        xAxis.push(date)
+
+        const burn = earnings / 1e8
+        burnCumulative += burn
+        bu.push(burn)
+        su.push(5 * 1e8 - burnCumulative)
+      })
+
+      return this.basicChartFormat(
+        (value) => `$ ${this.normalFormat(value, '0,0.00')}`,
+        [
+          {
+            type: 'line',
+            name: 'Max Supply',
+            showSymbol: false,
+            data: su,
+            smooth: true,
+            yAxisIndex: 0,
+          },
+          {
+            type: 'bar',
+            name: 'Burned Rune',
+            showSymbol: false,
+            data: bu,
+            yAxisIndex: 1,
+            itemStyle: {
+              borderRadius: [8, 8, 0, 0],
+              color: '#ff9962',
+            },
+          },
+        ],
+        xAxis,
+        {
+          yAxis: [
+            {
+              type: 'value',
+              name: 'Max Supply',
+              position: 'left',
+              show: false,
+              splitLine: {
+                show: true,
+              },
+              min: su[su.length - 1] - 50,
+              max: 'dataMax',
+            },
+            {
+              type: 'value',
+              name: 'Burned Rune',
+              position: 'right',
+              show: false,
+              splitLine: {
+                show: true,
+              },
+              min: 'dataMin',
+              max: 'dataMax',
+            },
+          ],
+        },
+        (param) => {
+          return `
+        <div class="tooltip-header">
+          <div class="data-color" style="background-color: ${param[0].color}"></div>
+          ${param[0].name}
+        </div>
+        <div class="tooltip-body">
+          ${param
+            .map(
+              (p) => `<span>
+              <span>${p.seriesName}</span>
+              <b>${p.value ? this.$options.filters.number(p.value, '0,0.00') : '-'}</b>
+            </span>`
+            )
+            .join('')}
+        </div>
+      `
         }
       )
     },
