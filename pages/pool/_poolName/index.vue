@@ -4,8 +4,8 @@
       <info-card :options="poolDetailStats" />
       <card :is-loading="loading" :title="`${showAsset(poolName)} Earnings`">
         <VChart
-          :option="volumeHistory"
-          :loading="!volumeHistory"
+          :option="earningsHistory"
+          :loading="!earningsHistory"
           :loading-options="showLoading"
           :theme="chartTheme"
           :autoresize="true"
@@ -76,7 +76,7 @@ export default {
     return {
       pool: undefined,
       poolDetail: undefined,
-      volumeHistory: undefined,
+      earningsHistory: undefined,
       depthHistory: undefined,
       swapHistory: undefined,
       loading: true,
@@ -96,7 +96,7 @@ export default {
             {
               name: 'Asset Price',
               value: this.pool?.assetPriceUSD,
-              filter: (v) => `$${this.$options.filters.number(v, '0,0a')}`,
+              filter: (v) => `$${this.$options.filters.number(v, '0,0.00a')}`,
             },
             {
               name: 'Earning Annual to Depth',
@@ -121,21 +121,26 @@ export default {
               filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
             },
             {
-              name: 'Units',
-              value: this.pool?.units / 10 ** 8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
+              header: 'All Time Stats',
             },
             {
-              name: 'Pending Inbound RUNE',
-              value: this.poolDetail?.pending_inbound_rune / 10 ** 8,
+              name: 'Total Swaps',
+              value: this.pool?.swapVolume / 10 ** 8,
               filter: (v) =>
-                `${this.runeCur()} ${this.$options.filters.number(v, '0,00')}`,
+                `${this.$options.filters.number(v, '0,0.00a')} RUNE`,
+              usdValue: true,
             },
             {
-              name: 'Pending Inbound Asset',
-              value: this.poolDetail?.pending_inbound_asset / 10 ** 8,
+              name: 'Total Earning',
+              value: this.pool?.earnings / 10 ** 8,
               filter: (v) =>
-                `${this.$options.filters.number(v, '0,0')} ${this.showAsset(this.pool?.asset)}`,
+                `${this.$options.filters.number(v, '0,0.00a')} RUNE`,
+              usdValue: true,
+            },
+            {
+              name: 'Average Slip',
+              value: this.pool?.averageSlip / 10000,
+              filter: (v) => `${this.$options.filters.percent(v, 2)}`,
             },
           ],
         },
@@ -154,13 +159,15 @@ export default {
       this.poolDetail = (await this.$api.getPoolDetail(this.poolName)).data
 
       const resEarning = (await this.$api.getEarningHistory()).data
-      this.volumeHistory = this.formatEarnings(resEarning)
+      this.earningsHistory = this.formatEarnings(resEarning)
 
       const resDepth = (await this.$api.getPoolDepth(this.poolName, 30)).data
       this.depthHistory = this.formatDepth(resDepth)
 
       const resSwaps = (
         await this.$api.getSwapsHistory({
+          interval: 'day',
+          count: 30,
           pool: this.poolName,
         })
       ).data
@@ -174,6 +181,8 @@ export default {
     },
     formatSwaps(d) {
       const xAxis = []
+      const pn = []
+      const pt = []
       const ps = []
       d?.intervals.forEach((interval, index) => {
         // ignore the last index
@@ -186,19 +195,86 @@ export default {
           ).format('dddd, MMM D')
         )
         // usd is in 2 decimal precision
-        ps.push(+interval.totalVolumeUSD / 10 ** 2)
+        ps.push(
+          (+interval.synthRedeemVolumeUSD + +interval.synthMintVolumeUSD) /
+            10 ** 2
+        )
+        pt.push(
+          (+interval.fromTradeVolumeUSD + +interval.toTradeVolumeUSD) / 10 ** 2
+        )
+        pn.push(
+          (+interval.toRuneVolumeUSD + +interval.toAssetVolumeUSD) / 10 ** 2
+        )
       })
       return this.basicChartFormat(
         (value) => `$ ${this.$options.filters.number(+value, '0,0.00a')}`,
         [
           {
             type: 'bar',
-            name: 'Volume USD',
+            name: 'Native Swaps',
+            stack: 'total',
+            showSymbol: false,
+            data: pn,
+          },
+          {
+            type: 'bar',
+            name: 'Trade Swaps',
+            stack: 'total',
+            showSymbol: false,
+            data: pt,
+          },
+          {
+            type: 'bar',
+            name: 'Synth Swaps',
+            stack: 'total',
             showSymbol: false,
             data: ps,
           },
         ],
-        xAxis
+        xAxis,
+        undefined,
+        (param) => {
+          return `
+            <div class="tooltip-header">
+              ${param[0].name}
+            </div>
+            <div class="tooltip-body">
+              ${param
+                .sort((a, b) => {
+                  return b.value - a.value
+                })
+                .map(
+                  (p) => `
+                  <span>
+                    <div class="tooltip-item">
+                      <div class="data-color" style="background-color: ${p.color}">
+                      </div>
+                      <span style="text-align: left;">
+                        ${p.seriesName}
+                      </span>
+                    </div>
+                    <b>$${p.value ? this.$options.filters.number(p.value, '0,0.00a') : '-'}</b>
+                  </span>`
+                )
+                .join('')}
+            </div>
+            <span style="border-top: 1px solid var(--border-color); margin: 2px 0;"></span>
+            <hr>
+            <span class="tooltip-item space">
+              <span>Total Volume</span>
+              <b>$${this.$options.filters.number(
+                param.reduce((a, c) => a + (c.value ? c.value : 0), 0),
+                '0,0.00a'
+              )}</b>
+            </span>
+            <span class="tooltip-item space">
+              <span style="text-align: left;">
+                Swap Count
+              </span>
+              <b>${this.$options.filters.number(d?.intervals[param[0]?.dataIndex]?.totalCount, '0,0.00a')}</b>
+            </span>
+          `
+        }
       )
     },
     formatDepth(d) {

@@ -54,7 +54,7 @@ export function getPools(period) {
 }
 
 export function getPoolStats(poolName) {
-  return $axiosInstace.get(`pool/${poolName}/stats?period=30d`)
+  return $axiosInstace.get(`pool/${poolName}/stats?period=all`)
 }
 
 export function getPoolDepth(poolName, count = 30, from = undefined) {
@@ -74,11 +74,7 @@ export function swapHistory(count = 30) {
 
 export function getSwapsHistory(params) {
   return $axiosInstace.get(`history/swaps`, {
-    params: {
-      interval: 'day',
-      count: 30,
-      ...params,
-    },
+    params,
   })
 }
 

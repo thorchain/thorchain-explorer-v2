@@ -837,6 +837,10 @@ input {
   display: flex;
   align-items: center;
   gap: 3px;
+
+  &.space {
+    justify-content: space-between;
+  }
 }
 
 .data-color {
