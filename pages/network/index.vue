@@ -481,7 +481,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .version-progress {
   text-align: center;
   color: var(--primary-color);
