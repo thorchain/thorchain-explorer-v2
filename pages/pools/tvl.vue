@@ -131,7 +131,7 @@ export default {
             .map(
               (p) => `
             <div class="tooltip-body">
-              <div style="display: flex; align-items: center;">
+              <div class="tooltip-item">
                 <div class="data-color" style="background-color: ${p.color}"></div>
                 <span>${p.seriesName}</span>
               </div>
@@ -140,8 +140,8 @@ export default {
           `
             )
             .join('')}
-          <hr></hr>
-          <div class="tooltip-body">
+          <hr>
+          <div class="tooltip-item space">
             <div style="display: flex; align-items: center;">
               <span>Total</span>
             </div>
