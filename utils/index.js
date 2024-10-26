@@ -711,6 +711,7 @@ export const interfaces = {
   },
   is: {
     name: 'InstaSwap',
+    icon: 'instaswap',
   },
 }
 
