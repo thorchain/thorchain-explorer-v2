@@ -1137,19 +1137,20 @@ export default {
           Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
         )
         xAxis.push(date.format('dddd, MMM D'))
+        const devFund =
+          (+interval.pools.find((p) => p.pool === 'dev_fund_reward').earnings /
+            10 ** 8) *
+          Number.parseFloat(interval.runePriceUSD)
         le.push(
           (+interval.liquidityEarnings / 10 ** 8) *
-            Number.parseFloat(interval.runePriceUSD)
+            Number.parseFloat(interval.runePriceUSD) -
+            devFund
         )
         be.push(
           (+interval.bondingEarnings / 10 ** 8) *
             Number.parseFloat(interval.runePriceUSD)
         )
-        df.push(
-          (+interval.pools.find((p) => p.pool === 'dev_fund_reward').earnings /
-            10 ** 8) *
-            Number.parseFloat(interval.runePriceUSD)
-        )
+        df.push(devFund)
         const affiliate = this.affiliateDaily?.find((d) => {
           return moment(d.date).isSame(date, 'day')
         })
