@@ -1060,6 +1060,12 @@ export const darkTheme = {
     },
   },
   tooltip: {
+    backgroundColor: '#0d0f12',
+    borderColor: '#263238',
+    textStyle: {
+      color: '#e6e6e6',
+      fontFamily: 'Montserrat',
+    },
     axisPointer: {
       lineStyle: {
         color: '#e6e6e6',
@@ -1412,6 +1418,12 @@ export const lightTheme = {
     },
   },
   tooltip: {
+    backgroundColor: '#fff',
+    borderColor: '#cccccc',
+    textStyle: {
+      color: 'rgb(26, 32, 44)',
+      fontFamily: 'Montserrat',
+    },
     axisPointer: {
       lineStyle: {
         color: '#cccccc',

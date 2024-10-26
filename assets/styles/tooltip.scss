@@ -29,3 +29,10 @@
 .v-popper--theme-tooltip .v-popper__arrow-inner {
   border-color: var(--border-color);
 }
+
+// Test echarts tooltip
+.echarts > div:nth-of-type(2) {
+  background-color: var(--bgt-color) !important;
+  backdrop-filter: blur(8px);
+  box-shadow: none;
+}
