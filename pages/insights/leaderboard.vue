@@ -1,7 +1,9 @@
 <template>
   <div class="leaderboard-container">
     <div class="data-section">
-      <h3 class="section-title">Affiliate Collected</h3>
+      <h3 class="section-title">
+        Affiliate Collected <small>- AVG affiliate bps</small>
+      </h3>
       <div
         v-for="(row, index) in sortedData(affiliateData, 'affiliate_fees_usd')"
         :key="index"
@@ -23,6 +25,10 @@
               :style="{ color: colorizeIndex(index) }"
             >
               ${{ row.affiliate_fees_usd | number('0a') }}
+              <small>
+                -
+                {{ row.avg_bps | percent(2) }}
+              </small>
             </div>
           </div>
         </div>
@@ -176,6 +182,7 @@ export default {
           total_swaps: item.total_swaps,
           total_volume_usd: item.total_volume_usd,
           vc_usd: item.vc_usd,
+          avg_bps: item.avg_affiliate_fee_basis_points / 1e4,
         }
       })
     },
