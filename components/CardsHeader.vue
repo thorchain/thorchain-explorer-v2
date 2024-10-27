@@ -25,6 +25,7 @@
       </div>
       <skeleton-item :loading="!stat.value" class="value">
         {{ stat.value }}
+        <small>{{ stat.extraText }}</small>
       </skeleton-item>
     </div>
   </div>
@@ -63,7 +64,7 @@ export default {
     border-radius: 8px;
     background-color: var(--card-bg-color);
     border: 1px solid var(--border-color);
-
+    gap: 0.2rem;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -76,6 +77,15 @@ export default {
       min-width: 80%;
       margin-bottom: 8px;
       font-weight: 500;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+
+      small {
+        font-size: 0.8rem;
+        color: var(--font-color);
+        margin-left: 0.3rem;
+      }
     }
 
     .name {

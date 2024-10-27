@@ -3,28 +3,7 @@
     <div v-if="error">
       <h4>There is no savers for this pool</h4>
     </div>
-    <div
-      v-show="
-        networkEnv === 'mainnet' &&
-        saversGeneralStats &&
-        saversGeneralStats.length > 0
-      "
-      class="savers-stat-header"
-    >
-      <div
-        v-for="(stat, i) in computedSaversGeneralStats"
-        :key="i"
-        class="savers-stat-card"
-      >
-        <div class="value">
-          {{ stat.value }}
-        </div>
-        <div class="extra-text" v-html="stat.extraText" />
-        <div class="name">
-          {{ stat.name }}
-        </div>
-      </div>
-    </div>
+    <cards-header :table-general-stats="saversGeneralStats" />
     <div v-if="saversExtraData">
       <nuxt-child keep-alive :savers-data="saversExtraData" />
     </div>
@@ -41,8 +20,21 @@ export default {
   data() {
     return {
       error: false,
-      saversGeneralStats: [],
       saversExtraData: undefined,
+      saversGeneralStats: [
+        {
+          name: 'Total Earned',
+        },
+        {
+          name: 'Total Annualised Return',
+        },
+        {
+          name: 'Savers Count',
+        },
+        {
+          name: 'Savers Depth',
+        },
+      ],
     }
   },
   computed: {
@@ -74,9 +66,13 @@ export default {
       this.saversGeneralStats = [
         {
           name: 'Total Earned',
-          value: this.$options.filters.currency(
-            (+saversExtraData?.earned * +saversExtraData?.assetPriceUSD) / 1e8
-          ),
+          value:
+            '$' +
+            this.$options.filters.number(
+              (+saversExtraData?.earned * +saversExtraData?.assetPriceUSD) /
+                1e8 || 0,
+              '0,0a'
+            ),
           hide: !saversExtraData?.earned,
         },
         {
@@ -92,10 +88,15 @@ export default {
         },
         {
           name: 'Savers Depth',
-          value: this.$options.filters.currency(
-            (saversExtraData.saversDepth * saversExtraData.assetPriceUSD) / 1e8
-          ),
-          extraText: `(${this.$options.filters.number(saversExtraData.saversDepth / 1e8, '0,0.00')} <small>${saversExtraData.asset}</small>)`,
+          value:
+            '$' +
+            this.$options.filters.number(
+              (saversExtraData.saversDepth * saversExtraData.assetPriceUSD) /
+                1e8 || 0,
+              '0,0a'
+            ),
+
+          extraText: `(${this.$options.filters.number(saversExtraData.saversDepth / 1e8, '0,0.00a')}${saversExtraData.asset})`,
         },
       ]
     },
