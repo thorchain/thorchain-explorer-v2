@@ -1,11 +1,14 @@
 <template>
   <Page>
+    <card>
+      <info-box :options="boxOptions" class="pool-box" />
+    </card>
     <div>
       <Nav
-          :active-mode.sync="tableMode"
-          :nav-items="tableModeItems"
-          :extra-classes="['pools-type-table']"
-        />
+        :active-mode.sync="tableMode"
+        :nav-items="tableModeItems"
+        :extra-classes="['pools-type-table']"
+      />
     </div>
     <!-- <Nav :active-mode.sync="period" :nav-items="periods" pre-text="APY Period :" /> -->
     <Card :is-loading="loading">
@@ -222,6 +225,105 @@ export default {
     ...mapGetters({
       runePrice: 'getRunePrice',
     }),
+    boxOptions() {
+      return [
+        {
+          backgroundColor: 'var(--active-primary-color)',
+          height: '300px',
+          width: '80px',
+          gridColumn: '1 / 2',
+          gridRow: '1 / 4',
+          textColor: 'var(--sec-font-color)',
+          items: [{ value: '1809', name: 'collateral' }],
+        },
+        {
+          backgroundColor: 'var(--active-primary-color)',
+          textColor: 'var(--sec-font-color)',
+          height: '100px',
+          width: '50px',
+          gridColumn: '2 / 3',
+          gridRow: '3 / 4',
+          items: [{ value: '131', name: 'trade assets' }],
+        },
+        {
+          backgroundColor: 'transparent',
+          textColor: 'var(--sec-font-color)',
+          border: '2px dashed var(--active-primary-color)',
+          height: '120px',
+          width: '80px',
+          gridColumn: '3 / 4',
+          gridRow: '3 / 4',
+          items: [{ value: '798', name: 'derived depth' }],
+        },
+        {
+          backgroundColor: 'var(--active-primary-color)',
+          textColor: 'var(--sec-font-color)',
+          height: '150px',
+          width: '150px',
+          gridColumn: '4 / 5',
+          gridRow: '3 / 4',
+          border: '2px solid var(--active-primary-color)',
+          items: [{ value: '802', name: 'depth' }],
+        },
+        {
+          backgroundColor: 'transparent',
+          textColor: 'var(--sec-font-color)',
+          border: '2px dashed var(--active-primary-color)',
+          height: '50px',
+          width: '150px',
+          gridColumn: '4 / 5',
+          gridRow: '2 / 3',
+          items: [{ value: '2', name: 'pending' }],
+        },
+        {
+          backgroundColor: 'var(--green)',
+          textColor: 'var(--sec-font-color)',
+          height: '150px',
+          width: '150px',
+          gridColumn: '5 / 6',
+          gridRow: '3 / 4',
+          border: '2px solid #008000',
+          items: [{ value: '10.1m', name: 'depth' }],
+        },
+        {
+          backgroundColor: 'transparent',
+          textColor: 'var(--sec-font-color)',
+          border: '2px dashed var(--green)',
+          height: '50px',
+          width: '150px',
+          gridColumn: '5 / 6',
+          gridRow: '2 / 3',
+          items: [{ value: '0', name: 'pending' }],
+        },
+        {
+          backgroundColor: 'var(--active-primary-color)',
+          textColor: 'var(--sec-font-color)',
+          height: '60px',
+          width: '80px',
+          gridColumn: '6 / 7',
+          gridRow: '1 / 2',
+          items: [{ value: '35%', name: 'DLP' }],
+        },
+        {
+          backgroundColor: '#ffd700',
+          textColor: 'var(--sec-font-color)',
+          height: '60px',
+          width: '80px',
+          gridColumn: '6 / 7',
+          gridRow: '3 / 4',
+          items: [{ value: '45%', name: 'Synths' }],
+        },
+        {
+          backgroundColor: 'var(--green)',
+          textColor: 'var(--sec-font-color)',
+          height: '60px',
+          width: '80px',
+          gridColumn: '6 / 7',
+          gridRow: '2 / 3',
+          items: [{ value: '10%', name: 'PoL' }],
+        },
+      ]
+    },
   },
   watch: {
     period(period) {
@@ -350,29 +452,29 @@ export default {
 
 <style lang="scss" scoped>
 .nav-item {
-    cursor: pointer;
-    padding: 0.5rem 0.7rem;
-    margin: 0 0.1rem;
-    color: var(--font-color);
-    text-decoration: none;
-    border-radius: 0.3rem;
-    border: 1px solid var(--border-color);
-    margin-left: 0.5rem;
-    
-    &.active,
-    &.nuxt-link-exact-active {
-      background-color: var(--active-bg-color);
-      color: var(--sec-font-color);
-    }
+  cursor: pointer;
+  padding: 0.5rem 0.7rem;
+  margin: 0 0.1rem;
+  color: var(--font-color);
+  text-decoration: none;
+  border-radius: 0.3rem;
+  border: 1px solid var(--border-color);
+  margin-left: 0.5rem;
 
-    &:hover {
-      background-color: var(--active-bg-color);
-    }
-
-    &:first-of-type {
-      margin-left: 0;
-    }
+  &.active,
+  &.nuxt-link-exact-active {
+    background-color: var(--active-bg-color);
+    color: var(--sec-font-color);
   }
+
+  &:hover {
+    background-color: var(--active-bg-color);
+  }
+
+  &:first-of-type {
+    margin-left: 0;
+  }
+}
 .pools-box {
   .nav-headers.box.pools-type-table {
     border: none !important;

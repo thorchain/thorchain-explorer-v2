@@ -8,7 +8,11 @@
         :style="{
           backgroundColor: option.backgroundColor || backgroundColor,
           color: option.textColor || textColor,
-          height: option.size || 'auto',
+          height: option.height || 'auto',
+          width: option.width || 'auto',
+          gridColumn: option.gridColumn,
+          gridRow: option.gridRow,
+          border: option.border,
         }"
       >
         <div
@@ -18,7 +22,7 @@
         >
           <span v-if="item.filter">{{ item.filter(item.value) }}</span>
           <span v-else>{{ item.value || '-' }}</span>
-          <span v-if="item.name">{{ item.name }}</span>
+          <span class="item-name" v-if="item.name">{{ item.name }}</span>
         </div>
       </div>
     </div>
@@ -36,7 +40,7 @@ export default {
     },
     backgroundColor: {
       type: String,
-      default: 'var( --border-color)',
+      default: 'var(--border-color)',
     },
     textColor: {
       type: String,
@@ -56,30 +60,27 @@ export default {
 
   .info-box {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.5rem;
-    width: 100%;
-    height: auto;
-    max-height: 60vh;
+    gap: 0.8rem;
     overflow-y: auto;
-    justify-content: center;
+    padding: 1rem;
+  }
 
-    .info-item {
+  .info-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    text-align: center;
+    font-weight: bold;
+    font-size: 12px;
+    transition: all 0.3s ease;
+
+    .item-content {
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      padding: 1rem;
-      border-radius: 0.5rem;
-      text-align: center;
-      font-weight: bold;
-      transition: all 0.3s ease;
-
-      .item-content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
     }
   }
 }
