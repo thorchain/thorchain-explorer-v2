@@ -231,7 +231,6 @@ export default {
 
   .data-section {
     flex: 1;
-    min-width: 400px;
     background-color: var(--bg-color);
     border: 1px solid var(--border-color);
 
