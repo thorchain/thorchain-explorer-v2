@@ -1027,6 +1027,9 @@ export default {
         for (let pi = 0; pi < topPool; pi++) {
           const color = this.assetColorPalette(poolEarnings[pi])
           const pool = interval.pools.find((p) => p.pool === poolEarnings[pi])
+          const isRound = !!(
+            pi === topPool - 1 && d?.intervals.length - 1 !== index
+          )
 
           const earning = {
             value: (+pool.earnings / 1e8) * +interval.runePriceUSD,
@@ -1038,7 +1041,7 @@ export default {
             },
             itemStyle: {
               color,
-              borderRadius: pi === topPool - 1 ? [8, 8, 0, 0] : [0, 0, 0, 0],
+              borderRadius: isRound ? [8, 8, 0, 0] : [0, 0, 0, 0],
             },
           }
 
@@ -1054,6 +1057,38 @@ export default {
             pe[pi + 1].data.push(earning)
           }
         }
+      })
+
+      // Add EOD to the earnings
+      const EODEarnings = range(0, d?.intervals.length - 1, 0)
+      let EODValue =
+        (+d?.intervals[d?.intervals.length - 1]?.EODLiquidityEarnings *
+          +d?.intervals[d?.intervals.length - 1].runePriceUSD) /
+          1e8 ?? 0
+      // subtract the dev_fund_reward
+      EODValue -=
+        (+d?.intervals[d?.intervals.length - 2]?.pools?.find(
+          (p) => p.pool === 'dev_fund_reward'
+        )?.earnings *
+          +d?.intervals[d?.intervals.length - 2].runePriceUSD) /
+        1e8
+
+      EODEarnings.push({
+        value: EODValue,
+        itemStyle: {
+          color: 'transparent',
+          borderColor: '#F3BA2F',
+          borderWidth: 1,
+          borderRadius: [8, 8, 0, 0],
+        },
+      })
+
+      pe.push({
+        type: 'bar',
+        name: 'EOD',
+        showSymbol: false,
+        stack: 'Total',
+        data: EODEarnings,
       })
 
       return this.basicChartFormat(
@@ -1083,6 +1118,7 @@ export default {
             </div>
             <div class="tooltip-body">
               ${param
+                .filter((a) => a.value)
                 .sort((a, b) => {
                   if (a.seriesName === 'Other Pools') return 1
                   if (b.seriesName === 'Other Pools') return -1
