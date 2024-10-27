@@ -3,7 +3,6 @@
     <div class="cards-container">
       <info-card :options="poolDetailStats" />
       <card :is-loading="loading" :title="`${showAsset(poolName)} Earnings`">
-        <<<<<<< HEAD
         <VChart
           :option="earningsHistory"
           :loading="!earningsHistory"
@@ -15,17 +14,14 @@
     </div>
     <div class="cards-container">
       <card :is-loading="loading" :title="`${showAsset(poolName)} Depth`">
-        ======= >>>>>>> d5c6524 (Remove the useless components)
         <VChart
-          :option="volumeHistory"
-          :loading="!volumeHistory"
+          :option="depthHistory"
+          :loading="!depthHistory"
           :loading-options="showLoading"
           :theme="chartTheme"
           :autoresize="true"
         />
       </card>
-    </div>
-    <div class="cards-container">
       <card :is-loading="loading" :title="`${showAsset(poolName)} Swaps`">
         <VChart
           :option="swapHistory"
@@ -35,17 +31,6 @@
           :autoresize="true"
         />
       </card>
-      <<<<<<< HEAD =======
-      <card :is-loading="loading" :title="`${showAsset(poolName)} Depth`">
-        <VChart
-          :option="depthHistory"
-          :loading="!depthHistory"
-          :loading-options="showLoading"
-          :theme="chartTheme"
-          :autoresize="true"
-        />
-      </card>
-      >>>>>>> d5c6524 (Remove the useless components)
     </div>
     <div class="footer-stat">
       <small>
