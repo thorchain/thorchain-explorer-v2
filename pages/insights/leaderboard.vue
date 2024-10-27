@@ -32,7 +32,7 @@
     <div class="data-section">
       <h3 class="section-title">Swap Volume</h3>
       <div
-        v-for="(row, index) in sortedData(swapVolume, 'total_volume_usd')"
+        v-for="(row, index) in sortedData(affiliateData, 'total_volume_usd')"
         :key="index"
         class="data-item"
       >
@@ -86,6 +86,35 @@
         </div>
       </div>
     </div>
+
+    <div class="data-section">
+      <h3 class="section-title">Volume / Swap Count</h3>
+      <div
+        v-for="(row, index) in sortedData(affiliateData, 'vc')"
+        :key="index"
+        class="data-item"
+      >
+        <div class="item-content">
+          <span class="item-number" :style="{ color: colorizeIndex(index) }">
+            {{ index + 1 }}.
+          </span>
+          <div class="item-details">
+            <img
+              v-if="affiliateWallet(row.affiliate).icon"
+              :src="affiliateWallet(row.affiliate).icon"
+              class="item-icon"
+            />
+            <div v-else class="affiliate-name">{{ row.affiliate }}</div>
+            <div
+              class="affiliate-value"
+              :style="{ color: colorizeIndex(index) }"
+            >
+              ${{ row.total_swaps | number('0,0') }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <div class="footer-stat">
       <strong>
         <sup>*</sup>
@@ -102,7 +131,6 @@ import { mapGetters } from 'vuex'
 export default {
   data() {
     return {
-      swapVolume: [],
       affiliateData: [],
       sortDirection: {
         affiliate_fees_usd: 'desc',
@@ -118,12 +146,8 @@ export default {
   },
   mounted() {
     try {
-      this.$api.getAffiliateByWallet().then(({ data }) => {
-        this.formatData(data)
-      })
-
       this.$api.getAffiliateSwapsByWallet().then(({ data }) => {
-        this.formatVolume(data)
+        this.formatData(data)
       })
     } catch (error) {
       console.error('Error fetching affiliate data:', error)
@@ -150,18 +174,10 @@ export default {
           affiliate: this.mapMissing(item),
           affiliate_fees_usd: item.affiliate_fees_usd,
           total_swaps: item.total_swaps,
+          total_volume_usd: item.total_volume_usd,
+          vc_usd: item.vc_usd,
         }
       })
-    },
-    formatVolume(data) {
-      this.swapVolume = data
-        .filter((it) => it.affiliate !== 'No Affiliate')
-        .map((item) => {
-          return {
-            affiliate: this.mapMissing(item),
-            total_volume_usd: item.total_volume_usd,
-          }
-        })
     },
     sortedData(data, field) {
       return orderBy(data, [field], [this.sortDirection[field]])
