@@ -115,7 +115,7 @@
               class="affiliate-value"
               :style="{ color: colorizeIndex(index) }"
             >
-              ${{ row.total_swaps | number('0,0') }}
+              ${{ row.vc | number('0,0') }}
             </div>
           </div>
         </div>
@@ -142,6 +142,7 @@ export default {
         affiliate_fees_usd: 'desc',
         total_volume_usd: 'desc',
         total_swaps: 'desc',
+        vc: 'desc',
       },
     }
   },
@@ -181,7 +182,7 @@ export default {
           affiliate_fees_usd: item.affiliate_fees_usd,
           total_swaps: item.total_swaps,
           total_volume_usd: item.total_volume_usd,
-          vc_usd: item.vc_usd,
+          vc: item.vc,
           avg_bps: item.avg_affiliate_fee_basis_points / 1e4,
         }
       })
