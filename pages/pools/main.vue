@@ -349,30 +349,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.nav-item {
-  cursor: pointer;
-  padding: 0.5rem 0.7rem;
-  margin: 0 0.1rem;
-  color: var(--font-color);
-  text-decoration: none;
-  border-radius: 0.3rem;
-  border: 1px solid var(--border-color);
-  margin-left: 0.5rem;
-
-  &.active,
-  &.nuxt-link-exact-active {
-    background-color: var(--active-bg-color);
-    color: var(--sec-font-color);
-  }
-
-  &:hover {
-    background-color: var(--active-bg-color);
-  }
-
-  &:first-of-type {
-    margin-left: 0;
-  }
-}
 .pools-box {
   .nav-headers.box.pools-type-table {
     border: none !important;
