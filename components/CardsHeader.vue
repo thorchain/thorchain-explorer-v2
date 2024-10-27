@@ -24,8 +24,8 @@
         />
       </div>
       <skeleton-item :loading="!stat.value" class="value">
-        <small>{{ stat.extraText }}</small>
         {{ stat.value }}
+        <small>{{ stat.extraText }}</small>
       </skeleton-item>
     </div>
   </div>

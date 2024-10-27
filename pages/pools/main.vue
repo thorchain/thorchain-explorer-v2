@@ -1,8 +1,5 @@
 <template>
   <Page>
-    <card>
-      <info-box :options="boxOptions" class="pool-box" />
-    </card>
     <div>
       <Nav
         :active-mode.sync="tableMode"
@@ -225,105 +222,6 @@ export default {
     ...mapGetters({
       runePrice: 'getRunePrice',
     }),
-    boxOptions() {
-      return [
-        {
-          backgroundColor: 'var(--active-primary-color)',
-          height: '300px',
-          width: '80px',
-          gridColumn: '1 / 2',
-          gridRow: '1 / 4',
-          textColor: 'var(--sec-font-color)',
-          items: [{ value: '1809', name: 'collateral' }],
-        },
-        {
-          backgroundColor: 'var(--active-primary-color)',
-          textColor: 'var(--sec-font-color)',
-          height: '100px',
-          width: '50px',
-          gridColumn: '2 / 3',
-          gridRow: '3 / 4',
-          items: [{ value: '131', name: 'trade assets' }],
-        },
-        {
-          backgroundColor: 'transparent',
-          textColor: 'var(--sec-font-color)',
-          border: '2px dashed var(--active-primary-color)',
-          height: '120px',
-          width: '80px',
-          gridColumn: '3 / 4',
-          gridRow: '3 / 4',
-          items: [{ value: '798', name: 'derived depth' }],
-        },
-        {
-          backgroundColor: 'var(--active-primary-color)',
-          textColor: 'var(--sec-font-color)',
-          height: '150px',
-          width: '150px',
-          gridColumn: '4 / 5',
-          gridRow: '3 / 4',
-          border: '2px solid var(--active-primary-color)',
-          items: [{ value: '802', name: 'depth' }],
-        },
-        {
-          backgroundColor: 'transparent',
-          textColor: 'var(--sec-font-color)',
-          border: '2px dashed var(--active-primary-color)',
-          height: '50px',
-          width: '150px',
-          gridColumn: '4 / 5',
-          gridRow: '2 / 3',
-          items: [{ value: '2', name: 'pending' }],
-        },
-        {
-          backgroundColor: 'var(--green)',
-          textColor: 'var(--sec-font-color)',
-          height: '150px',
-          width: '150px',
-          gridColumn: '5 / 6',
-          gridRow: '3 / 4',
-          border: '2px solid #008000',
-          items: [{ value: '10.1m', name: 'depth' }],
-        },
-        {
-          backgroundColor: 'transparent',
-          textColor: 'var(--sec-font-color)',
-          border: '2px dashed var(--green)',
-          height: '50px',
-          width: '150px',
-          gridColumn: '5 / 6',
-          gridRow: '2 / 3',
-          items: [{ value: '0', name: 'pending' }],
-        },
-        {
-          backgroundColor: 'var(--active-primary-color)',
-          textColor: 'var(--sec-font-color)',
-          height: '60px',
-          width: '80px',
-          gridColumn: '6 / 7',
-          gridRow: '1 / 2',
-          items: [{ value: '35%', name: 'DLP' }],
-        },
-        {
-          backgroundColor: '#ffd700',
-          textColor: 'var(--sec-font-color)',
-          height: '60px',
-          width: '80px',
-          gridColumn: '6 / 7',
-          gridRow: '3 / 4',
-          items: [{ value: '45%', name: 'Synths' }],
-        },
-        {
-          backgroundColor: 'var(--green)',
-          textColor: 'var(--sec-font-color)',
-          height: '60px',
-          width: '80px',
-          gridColumn: '6 / 7',
-          gridRow: '2 / 3',
-          items: [{ value: '10%', name: 'PoL' }],
-        },
-      ]
-    },
   },
   watch: {
     period(period) {
