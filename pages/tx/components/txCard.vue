@@ -52,12 +52,12 @@
         <div v-if="overall.middle" class="tx-middle">
           <div class="tx-state-wrapper">
             <div class="tx-state">
-              <div v-if="overall.middle.pending" class="simple-spinner" />
-              <send-icon v-else-if="overall.middle.send" class="icon tx-icon" />
               <warning-icon
-                v-else-if="overall.middle.fail"
+                v-if="overall.middle.fail"
                 class="icon tx-icon warn"
               />
+              <div v-else-if="overall.middle.pending" class="simple-spinner" />
+              <send-icon v-else-if="overall.middle.send" class="icon tx-icon" />
               <send-icon v-else class="icon tx-icon" />
             </div>
           </div>
