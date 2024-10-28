@@ -240,10 +240,17 @@ export default {
     affiliateWallets(d) {
       const xAxis = []
       const volume = []
+      const filteredData = []
       d.forEach((interval, index) => {
         if (interval.affiliate === 'No Affiliate') {
           return
         }
+        filteredData.push(interval) 
+      })
+      const sortedData = filteredData.sort(
+        (a, b) => b.total_volume_usd - a.total_volume_usd
+      )
+      sortedData.forEach((interval) => {
         xAxis.push(interval.affiliate)
         volume.push(interval.total_volume_usd)
       })
