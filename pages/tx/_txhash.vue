@@ -51,7 +51,7 @@
 
 <script>
 import moment from 'moment'
-import { orderBy, compact } from 'lodash'
+import { orderBy, compact, groupBy, sumBy, mapValues } from 'lodash'
 import { mapGetters } from 'vuex'
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
 import streamingSwap from './components/streamingSwap.vue'
@@ -735,8 +735,10 @@ export default {
         const outAsset = this.parseMemoAsset(memo.asset, this.pools)
 
         // get quote
-        const swapAction = midgardAction?.actions.find((a) => a.type === 'swap')
-        if (swapAction.status === 'pending') {
+        const swapAction = midgardAction?.actions?.find(
+          (a) => a.type === 'swap'
+        )
+        if (swapAction?.status === 'pending') {
           try {
             const { data: quoteData } = await this.$api.getQuote({
               amount: inAmount,
@@ -1585,7 +1587,18 @@ export default {
       let outAmount =
         outTxs?.length > 0 ? parseInt(outTxs[0].coins[0].amount) : 0
       if (!outAmount && actions?.actions?.length > 0 && outAsset.trade) {
-        outAmount = parseInt(actions?.actions[0]?.out[0]?.coins[0].amount)
+        outAmount = parseInt(
+          Object.values(
+            groupBy(
+              actions?.actions
+                ?.find((a) => a.type === 'swap')
+                ?.out?.filter(
+                  (a) => a.coins[0].asset === assetToString(outAsset)
+                ),
+              'txID'
+            )
+          ).map((group) => sumBy(group, (item) => +item.coins[0].amount))[0]
+        )
       }
 
       const outMemoAsset = this.parseMemoAsset(memo.asset)
