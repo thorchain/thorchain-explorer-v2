@@ -613,11 +613,6 @@ export default {
               is: accordions.action?.to,
               type: 'address',
               formatter: this.formatAddress,
-            },
-            {
-              key: 'Memo',
-              value: accordions.action?.memo,
-              is: accordions.action?.memo,
             }
           )
         }
