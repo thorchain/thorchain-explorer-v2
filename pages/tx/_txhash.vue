@@ -1445,9 +1445,30 @@ export default {
         )
       }
 
-      const outAsset = this.parseMemoAsset(outTxs[0].coins[0].asset, this.pools)
-      const outAmount =
-        outTxs?.length > 0 ? parseInt(outTxs[0].coins[0].amount) : 0
+      let outAsset
+      let outAmount
+      if (outTxs[0]) {
+        outAsset = this.parseMemoAsset(outTxs[0].coins[0].asset, this.pools)
+        outAmount = outTxs?.length > 0 ? parseInt(outTxs[0].coins[0].amount) : 0
+      }
+
+      const outs = []
+      if (outAsset) {
+        outs.push({
+          asset: outAsset,
+          amount: outAmount,
+        })
+      }
+
+      const moreOuts = outTxs.slice(1)
+      if (moreOuts && moreOuts.length > 0) {
+        outs.push(
+          moreOuts.map((o) => ({
+            asset: this.parseMemoAsset(o.coins[0].asset, this.pools),
+            amount: parseInt(o.coins[0].amount),
+          }))
+        )
+      }
 
       const outboundDelayRemaining =
         (thorStatus.stages.outbound_delay?.remaining_delay_seconds ?? 0) ||
@@ -1466,16 +1487,7 @@ export default {
           middle: {
             pending: this.isTxInPending(thorStatus),
           },
-          out: [
-            {
-              asset: outAsset,
-              amount: outAmount,
-            },
-            ...outTxs?.slice(1).map((o) => ({
-              asset: this.parseMemoAsset(o.coins[0].asset, this.pools),
-              amount: parseInt(o.coins[0].amount),
-            })),
-          ],
+          out: outs,
         },
         accordions: {
           in: [
