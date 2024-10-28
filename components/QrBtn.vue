@@ -5,7 +5,7 @@
       <div v-show="showQR" class="modal-background" @click.stop>
         <div class="qr-show">
           <div class="qr-body">
-            Address QR Code!
+            QR Code!
             <CrossIcon class="close-btn" @click.stop="showQR = false" />
           </div>
           <div class="line"></div>
@@ -126,4 +126,3 @@ export default {
   font-size: 0.9rem;
 }
 </style>
-
