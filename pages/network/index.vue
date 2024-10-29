@@ -547,7 +547,7 @@ export default {
         )
       })
       return this.basicChartFormat(
-        (value) => `$ ${this.normalFormat(value)}`,
+        (value) => `${this.normalFormat(value)} RUNE`,
         [
           {
             type: 'bar',
