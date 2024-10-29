@@ -161,3 +161,9 @@ export function getNetworkAllocation() {
     endpoints[process.env.NETWORK].SERVER_URL + 'api/networkAllocation'
   )
 }
+
+export function getReserveHistory() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + 'api/reserve'
+  )
+}

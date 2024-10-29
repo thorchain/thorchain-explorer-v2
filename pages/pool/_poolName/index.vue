@@ -47,7 +47,7 @@ import { mapGetters } from 'vuex'
 import moment from 'moment'
 import { use } from 'echarts/core'
 import { SVGRenderer } from 'echarts/renderers'
-import { LineChart } from 'echarts/charts'
+import { BarChart, LineChart } from 'echarts/charts'
 import {
   TitleComponent,
   TooltipComponent,
@@ -59,6 +59,7 @@ import VChart from 'vue-echarts'
 use([
   SVGRenderer,
   GridComponent,
+  BarChart,
   LineChart,
   TitleComponent,
   TooltipComponent,

@@ -1,9 +1,15 @@
 <template>
   <Page>
     <div class="grid-network">
-      <Card>
-        <info-card :options="networkOverview" :inner="true" />
-      </Card>
+      <card :is-loading="!reserveHistory" title="Reserve Breakdown">
+        <VChart
+          :option="reserveHistory"
+          :loading="!reserveHistory"
+          :loading-options="showLoading"
+          :theme="chartTheme"
+          :autoresize="true"
+        />
+      </card>
       <Card>
         <info-card :options="allocations" :inner="true" />
         <pie-chart
@@ -13,38 +19,45 @@
         />
       </Card>
     </div>
-    <Card title="THORChain version upgrade progress">
-      <ProgressBar
-        v-if="versionProgress"
-        :width="versionProgress"
-        color="linear-gradient(to right, #00c0ff, #00ff9f)"
-      />
-      <h3 style="text-align: center">
-        <span class="sec-color">{{
-          uptodateNodes ? uptodateNodes.length : '*'
-        }}</span>
-        of
-        <span class="sec-color">{{
-          activeNodes ? activeNodes.length : '*'
-        }}</span>
-        nodes upgraded to
-        <span class="sec-color">{{
-          activeNodes ? uptodateNodeVersion(activeNodes) : '*'
-        }}</span>
-      </h3>
-      <p
-        v-if="newStandByVersion || (uptodateNodes && uptodateNodes.length == 1)"
-        style="text-align: center; color: var(--primary-color)"
-      >
-        ✨ New version detected! ({{
-          newStandByVersion || uptodateNodeVersion(activeNodes)
-        }})
-      </p>
-      <p v-if="versionProgress === 100" class="version-progress">
-        All nodes are updated to the latest.
-        <Checkmark class="checkmark" />
-      </p>
-    </Card>
+    <div class="grid-network">
+      <card>
+        <info-card :options="networkOverview" :inner="true" />
+      </card>
+      <card title="THORChain version upgrade progress">
+        <ProgressBar
+          v-if="versionProgress"
+          :width="versionProgress"
+          color="linear-gradient(to right, #00c0ff, #00ff9f)"
+        />
+        <h3 style="text-align: center">
+          <span class="sec-color">{{
+            uptodateNodes ? uptodateNodes.length : '*'
+          }}</span>
+          of
+          <span class="sec-color">{{
+            activeNodes ? activeNodes.length : '*'
+          }}</span>
+          nodes upgraded to
+          <span class="sec-color">{{
+            activeNodes ? uptodateNodeVersion(activeNodes) : '*'
+          }}</span>
+        </h3>
+        <p
+          v-if="
+            newStandByVersion || (uptodateNodes && uptodateNodes.length == 1)
+          "
+          style="text-align: center; color: var(--primary-color)"
+        >
+          ✨ New version detected! ({{
+            newStandByVersion || uptodateNodeVersion(activeNodes)
+          }})
+        </p>
+        <p v-if="versionProgress === 100" class="version-progress">
+          All nodes are updated to the latest.
+          <Checkmark class="checkmark" />
+        </p>
+      </card>
+    </div>
 
     <card class="chain-status">
       <vue-good-table
@@ -103,14 +116,39 @@
 <script>
 import { gt, rsort, valid } from 'semver'
 import { mapGetters } from 'vuex'
-import { blockTime } from '~/utils'
-import DangerIcon from '@/assets/images/danger.svg?inline'
+
+import moment from 'moment'
+import { use } from 'echarts/core'
+import { SVGRenderer } from 'echarts/renderers'
+import { BarChart, LineChart } from 'echarts/charts'
+import {
+  TitleComponent,
+  TooltipComponent,
+  LegendComponent,
+  GridComponent,
+} from 'echarts/components'
+
+import VChart from 'vue-echarts'
+
 import Checkmark from '~/assets/images/check-mark.svg?inline'
+import DangerIcon from '@/assets/images/danger.svg?inline'
+import { blockTime } from '~/utils'
+
+use([
+  SVGRenderer,
+  GridComponent,
+  BarChart,
+  LineChart,
+  TitleComponent,
+  TooltipComponent,
+  LegendComponent,
+])
 
 export default {
   components: {
     DangerIcon,
     Checkmark,
+    VChart,
   },
   data() {
     return {
@@ -124,6 +162,7 @@ export default {
       uptodateNodes: undefined,
       thorVersion: undefined,
       inboundInfo: undefined,
+      reserveHistory: undefined,
       networkAllocations: undefined,
       extraSeries: {
         center: ['55%', '50%'],
@@ -454,8 +493,98 @@ export default {
         (n) => n.version === this.uptodateNodeVersion(this.activeNodes)
       )
     })
+
+    this.$api.getReserveHistory().then(({ data }) => {
+      this.reserveHistory = this.formatReserve(data)
+    })
   },
   methods: {
+    formatReserve(d) {
+      const xAxis = []
+      const pf = []
+      const pr = []
+      const pn = []
+      const pt = []
+      d?.intervals.forEach((interval, index) => {
+        // ignore the last index
+        if (index === d?.intervals?.length - 1) {
+          return
+        }
+        xAxis.push(
+          moment(
+            Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
+          ).format('dddd, MMM D')
+        )
+        pf.push(+interval.gasFeeOutbound / 10 ** 8)
+        pr.push((+interval.gasReimbursement * -1) / 10 ** 8)
+        pn.push(+interval.networkFee / 10 ** 8)
+
+        pt.push(
+          (+interval.gasFeeOutbound +
+            +interval.networkFee -
+            +interval.gasReimbursement) /
+            1e8
+        )
+      })
+      return this.basicChartFormat(
+        (value) => `$ ${this.normalFormat(value)}`,
+        [
+          {
+            type: 'bar',
+            name: 'Fee outbound',
+            stack: 'total',
+            showSymbol: false,
+            data: pf,
+          },
+          {
+            type: 'bar',
+            name: 'Network Fee',
+            stack: 'total',
+            showSymbol: false,
+            data: pn,
+          },
+          {
+            type: 'bar',
+            name: 'Gas Reimbursement',
+            stack: 'total',
+            showSymbol: false,
+            data: pr,
+          },
+          {
+            type: 'line',
+            name: 'Total Income',
+            showSymbol: false,
+            areaStyle: {
+              color: 'rgba(243, 186, 47, 0.2)',
+            },
+            data: pt,
+            smooth: true,
+            lineStyle: {
+              width: 2,
+            },
+            z: 3,
+          },
+        ],
+        xAxis,
+        {
+          yAxis: [
+            {
+              type: 'value',
+              position: 'left',
+              show: false,
+              splitLine: {
+                show: true,
+              },
+              axisLine: {
+                show: false,
+              },
+              min: 'dataMin',
+              max: 'dataMax',
+            },
+          ],
+        }
+      )
+    },
     nextChurnTime() {
       if (this.lastblock && this.network) {
         return blockTime(

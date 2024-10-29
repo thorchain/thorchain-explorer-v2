@@ -364,7 +364,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .savers-box {
   .nav-headers.box.pools-type-table {
     margin: 0 !important;
