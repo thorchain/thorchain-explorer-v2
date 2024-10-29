@@ -688,6 +688,7 @@ export const interfaces = {
   },
   eldorito: {
     name: 'ELDORITO',
+    icon: 'eldorito',
   },
   ll: {
     name: 'Live Ledger',
@@ -738,7 +739,7 @@ export const affiliateMap = {
   okw: interfaces.okx,
   oky: interfaces.onekey,
   sy: interfaces.symbiosis,
-  eld: interfaces.eldorito,
+  ELD: interfaces.eldorito,
   va: interfaces.vultisig,
   vi: interfaces.vultisig,
   ll: interfaces.ll,
