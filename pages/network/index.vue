@@ -162,6 +162,7 @@ export default {
       uptodateNodes: undefined,
       thorVersion: undefined,
       inboundInfo: undefined,
+      metaReserve: undefined,
       reserveHistory: undefined,
       networkAllocations: undefined,
       extraSeries: {
@@ -325,6 +326,24 @@ export default {
             {
               name: 'Effective Security Bond',
               value: this.thorNetwork?.effective_security_bond / 1e8,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              usdValue: true,
+            },
+            {
+              name: 'Outbound Fee (30D)',
+              value: this.metaReserve?.gasFeeOutbound / 1e8,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              usdValue: true,
+            },
+            {
+              name: 'Network Fee (30D)',
+              value: this.metaReserve?.networkFee / 1e8,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              usdValue: true,
+            },
+            {
+              name: 'Gas Reimbursement (30D)',
+              value: this.metaReserve?.gasReimbursement / 1e8,
               filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
@@ -495,6 +514,7 @@ export default {
     })
 
     this.$api.getReserveHistory().then(({ data }) => {
+      this.metaReserve = data?.meta
       this.reserveHistory = this.formatReserve(data)
     })
   },
