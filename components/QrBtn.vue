@@ -15,10 +15,19 @@
             :size="size"
             class="qr-code"
           />
+
+          <div class="click-overlay" @click="onlyCopy(qrcode)"></div>
+
           <div class="qr-text mono">
             {{ qrcode }}
           </div>
         </div>
+      </div>
+    </transition>
+
+    <transition name="toast-fade">
+      <div v-if="showToast" class="toast-notification">
+        copied to clipboard!
       </div>
     </transition>
   </div>
@@ -39,7 +48,26 @@ export default {
     return {
       showQR: false,
       size: 200,
+      showToast: false,
     }
+  },
+  methods: {
+    onlyCopy(qrcode) {
+      navigator.clipboard.writeText(qrcode).then(
+        () => {
+          this.showToastNotification()
+        },
+        (err) => {
+          console.error('Could not copy text: ', err)
+        }
+      )
+    },
+    showToastNotification() {
+      this.showToast = true
+      setTimeout(() => {
+        this.showToast = false
+      }, 2000)
+    },
   },
 }
 </script>
@@ -49,7 +77,6 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
 
   &:hover {
     .icon {
@@ -102,11 +129,27 @@ export default {
         width: 20px;
         height: 20px;
         cursor: pointer;
+        &:hover {
+          color: var(--primary-color);
+        }
       }
     }
 
     .qr-code {
       padding: 0.5rem;
+    }
+
+    .click-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 200px;
+      height: 200px;
+      cursor: pointer;
+      background: transparent;
+      cursor: pointer;
+
     }
 
     .line {
@@ -115,7 +158,6 @@ export default {
     }
   }
 }
-
 .qr-text {
   color: var(--sec-font-color);
   display: block;
@@ -124,5 +166,30 @@ export default {
   word-wrap: break-word;
   word-break: break-all;
   font-size: 0.9rem;
+}
+
+.toast-notification {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--bg-color);
+  color: var(--sec-font-color);
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  opacity: 0.9;
+  z-index: 1000;
+  transition: opacity 0.3s;
+}
+
+.toast-fade-enter-active,
+.toast-fade-leave-active {
+  transition: opacity 0.5s;
+}
+
+.toast-fade-enter,
+.toast-fade-leave-to {
+  opacity: 0;
 }
 </style>
