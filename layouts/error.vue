@@ -2,14 +2,19 @@
   <page>
     <div class="error-container">
       <div class="error-404">
-        <Lost />
+        <Lost v-if="is404" />
+        <error-icon v-else />
       </div>
       <div class="error-message">
-        <h2>Page Not Found</h2>
+        <h2>{{ is404 ? 'Page Not Found' : 'Something Went Wrong' }}</h2>
         <p>
-          Sorry, the page you're looking for does not exist or has been moved.
+          {{
+            is404
+              ? "Sorry, the page you're looking for does not exist or has been moved."
+              : 'An unusual behavior happened, please let the devs know!'
+          }}
         </p>
-        <NuxtLink to="/" class="back-home">Go back Home</NuxtLink>
+        <nuxt-link to="/" class="back-home">Go back Home</nuxt-link>
       </div>
     </div>
   </page>
@@ -17,10 +22,16 @@
 
 <script>
 import Lost from '~/assets/images/404.svg?inline'
+import ErrorIcon from '~/assets/images/500.svg?inline'
 
 export default {
-  components: { Lost },
+  components: { Lost, ErrorIcon },
   props: ['error'],
+  computed: {
+    is404() {
+      return this.error && this.error.statusCode === 404
+    },
+  },
 }
 </script>
 
@@ -43,7 +54,6 @@ export default {
     justify-content: center;
     position: relative;
     flex-direction: column;
-    display: flex;
 
     svg {
       flex: 1;
