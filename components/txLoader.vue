@@ -15,13 +15,13 @@
           <skeleton-loader :style="{ height: '2rem', width: '2rem' }" />
         </div>
         <div style="width: 100%">
-          <skeleton-loader width="100%" />
+          <skeleton-loader width="100%" height="2px" />
         </div>
         <div>
           <skeleton-loader :style="{ height: '2rem', width: '2rem' }" />
         </div>
         <div style="width: 100%">
-          <skeleton-loader width="100%" />
+          <skeleton-loader width="100%" height="2px" />
         </div>
         <div>
           <skeleton-loader :style="{ height: '2rem', width: '2rem' }" />
@@ -31,11 +31,11 @@
       <div class="tx-value">
         <div>
           <skeleton-loader :style="{ width: '7rem' }" />
-          <skeleton-loader :style="{ width: '7rem' }" />
+          <skeleton-loader :style="{ width: '3.5rem' }" />
         </div>
-        <div>
+        <div style="display: flex; flex-direction: column; align-items: end">
           <skeleton-loader :style="{ width: '7rem' }" />
-          <skeleton-loader :style="{ width: '7rem' }" />
+          <skeleton-loader :style="{ width: '3.5rem' }" />
         </div>
       </div>
 
