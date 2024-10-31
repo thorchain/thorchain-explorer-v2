@@ -245,6 +245,10 @@ export default {
       }
     }
 
+    .flex-section:last-of-type {
+      border-bottom: none !important;
+    }
+
     @include sm {
       .flex-item,
       .grid-item {

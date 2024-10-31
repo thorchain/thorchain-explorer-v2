@@ -83,6 +83,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import { rcompare } from 'semver'
 import { orderBy } from 'lodash'
 import moment from 'moment'
 import NodeTable from './component/nodeTable.vue'
@@ -684,10 +685,19 @@ export default {
         actNodes = orderBy(actNodes, [(o) => +o.slash_points])
         const filteredNodes = []
 
-        // bond, slash, oldest
+        // bond, slash, oldest, not updated
         let lowestBond = null
         let highestSlash = 0
         let oldest = 0
+
+        // get all active version
+        const lowVersions = []
+        const onlyUnique = (value, index, array) => {
+          return array.indexOf(value) === index
+        }
+        const nodesVersion = actNodes.map((r) => r.version).sort(rcompare)
+        const versions = nodesVersion.filter(onlyUnique)
+
         for (let i = 0; i < actNodes.length; i++) {
           const el = actNodes[i]
           if (+el.slash_points > highestSlash) {
@@ -700,6 +710,10 @@ export default {
 
           if (!lowestBond || lowestBond > +el.total_bond) {
             lowestBond = +el.total_bond
+          }
+
+          if (versions.length > 1 && el.version !== versions[0]) {
+            lowVersions.push(el.node_address)
           }
         }
 
@@ -757,6 +771,14 @@ export default {
                 this.churnProgressValue > 0.5
                   ? 'churn-out'
                   : 'churn-out-candidate',
+            })
+          }
+
+          if (lowVersions.includes(el.node_address)) {
+            filteredNodes[index].churn.push({
+              name: 'Low Version',
+              icon: require('@/assets/images/version.svg?inline'),
+              type: this.churnProgressValue > 0.9 ? 'churn-out' : '',
             })
           }
 
