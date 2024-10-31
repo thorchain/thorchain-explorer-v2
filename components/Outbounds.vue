@@ -110,42 +110,17 @@
       </div>
       <template v-for="(swap, index) in topSwaps">
         <div :key="index" class="top-swap-item">
-          <div class="asset-item-info">
-            <div v-if="swap.inputAsset" class="asset-item">
-              <asset-icon :asset="swap.inputAsset.asset" />
-              <span class="asset-name-swaps">
-                {{
-                  $options.filters.number(
-                    swap.inputAsset.amount / 1e8,
-                    '0,0.0000'
-                  )
-                }}
-                <small class="asset-text sec-color">{{
-                  showAsset(swap.inputAsset.asset)
-                }}</small>
-              </span>
-            </div>
-            →
-            <div v-if="swap.outputAsset.asset" class="asset-item">
-              <asset-icon :asset="swap.outputAsset.asset" />
-              <span class="asset-name-swaps">
-                <template v-if="swap.outputAsset.amount">
-                  {{
-                    $options.filters.number(
-                      swap.outputAsset.amount / 1e8,
-                      '0,0.0000'
-                    )
-                  }}
-                </template>
-                <small class="asset-text sec-color">{{
-                  showAsset(swap.outputAsset.asset)
-                }}</small>
-              </span>
-            </div>
-            <span v-else class="mini-bubble info">pending</span>
+          <div class="transactions">
+            <span style="font-size: 0.875rem; color: var(--sec-font-color)">
+              TxID
+              <nuxt-link class="clickable" :to="`/tx/${swap.txID}`">
+                {{ formatAddress(swap.txID) }}
+              </nuxt-link>
+            </span>
+            <TransactionAction :row="swap" :show-mini-bubble="false" />
           </div>
           <div class="right-section">
-            <small class="mono"
+            <span class="mono"
               >Address
               <NuxtLink
                 class="clickable"
@@ -153,17 +128,11 @@
               >
                 {{ formatAddress(swap.inputAsset.address) }}
               </NuxtLink>
-            </small>
-            <small class="mono"
-              >In TxID
-              <NuxtLink class="clickable" :to="{ path: `/tx/${swap.txID}` }">
-                {{ formatAddress(swap.txID) }}
-              </NuxtLink>
-            </small>
-            <small
+            </span>
+            <span
               >Date
-              <small class="date">{{ swap.date }}</small>
-            </small>
+              <span class="date">{{ swap.date }}</span>
+            </span>
           </div>
         </div>
         <hr :key="index + '-hr'" class="hr-space" />
@@ -190,9 +159,10 @@ import { mapGetters } from 'vuex'
 import moment from 'moment'
 import scheduleIcon from '@/assets/images/schedule.svg?inline'
 import ArrowToDown from '~/assets/images/arrow-down.svg?inline'
+import TransactionAction from '~/components/transactions/TransactionAction.vue'
 
 export default {
-  components: { scheduleIcon, ArrowToDown },
+  components: { scheduleIcon, ArrowToDown, TransactionAction },
   data() {
     return {
       currentPage: 1,
@@ -260,6 +230,10 @@ export default {
             }
 
             return {
+              type: swap.type,
+              in: swap.in,
+              out: swap.out,
+              metadata: swap.metadata,
               date: moment(swap.date / 1e6).format('MMM D, HH:MM'),
               txID: swap.in[0]?.txID,
               inputAsset: {
@@ -319,29 +293,34 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.item-value {
-  font-size: 14px;
-}
 .top-swap-item {
   display: flex;
-  flex-direction: row;
-  padding: 0.5rem;
-  gap: 0.5rem;
-  flex-wrap: wrap;
   justify-content: space-between;
-  flex-direction: row;
-  @include olg {
+  align-items: center;
+
+  .transactions {
+    display: flex;
     flex-direction: column;
   }
-}
 
-.right-section {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
+  .right-section {
+    display: flex;
+    flex-direction: column;
+    text-overflow: ellipsis;
+    overflow: hidden;
 
-  @include sm {
-    justify-content: flex-end;
+    > span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      word-break: keep-all;
+      font-size: 0.875rem;
+      color: var(--sec-font-color);
+
+      .value {
+        color: var(--primary-color);
+      }
+    }
   }
 }
 
