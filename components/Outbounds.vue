@@ -106,7 +106,7 @@
     </template>
     <template v-if="Mode == 'top-swaps'">
       <div v-if="!topSwaps" class="no-outbound">
-        <h3>There is top 24hr swaps inside THORChain.</h3>
+        <h3>There is no top 24hr swaps inside Here.</h3>
       </div>
       <template v-for="(swap, index) in topSwaps">
         <div :key="index" class="top-swap-item">
@@ -119,6 +119,7 @@
             </span>
             <TransactionAction :row="swap" :show-mini-bubble="false" />
           </div>
+          <div class="break"></div>
           <div class="right-section">
             <span class="mono"
               >Address
@@ -296,11 +297,20 @@ export default {
 .top-swap-item {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  flex-direction: column;
 
   .transactions {
     display: flex;
     flex-direction: column;
+  }
+
+  @include md {
+    flex-direction: row;
+
+    .break {
+      display: none;
+    }
   }
 
   .right-section {
