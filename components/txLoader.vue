@@ -3,10 +3,10 @@
     <div class="tx-container">
       <div class="swap">
         <div class="amount">
-          <skeleton-loader :style="{ height: '0.5rem', width: '4rem' }" />
+          <skeleton-loader :style="{ width: '4rem' }" />
         </div>
         <div class="value">
-          <skeleton-loader :style="{ height: '0.5rem', width: '7rem' }" />
+          <skeleton-loader :style="{ width: '7rem' }" />
         </div>
       </div>
 
@@ -14,14 +14,14 @@
         <div>
           <skeleton-loader :style="{ height: '2rem', width: '2rem' }" />
         </div>
-        <div>
-          <skeleton-loader :style="{ height: '0.5rem', width: '7.5rem' }" />
+        <div style="width: 100%">
+          <skeleton-loader width="100%" />
         </div>
         <div>
           <skeleton-loader :style="{ height: '2rem', width: '2rem' }" />
         </div>
-        <div>
-          <skeleton-loader :style="{ height: '0.5rem', width: '7.5rem' }" />
+        <div style="width: 100%">
+          <skeleton-loader width="100%" />
         </div>
         <div>
           <skeleton-loader :style="{ height: '2rem', width: '2rem' }" />
@@ -30,18 +30,20 @@
 
       <div class="tx-value">
         <div>
-          <skeleton-loader :style="{ height: '0.5rem', width: '7rem' }" />
-          <skeleton-loader :style="{ height: '0.5rem', width: '7rem' }" />
+          <skeleton-loader :style="{ width: '7rem' }" />
+          <skeleton-loader :style="{ width: '7rem' }" />
         </div>
         <div>
-          <skeleton-loader :style="{ height: '0.5rem', width: '7rem' }" />
-          <skeleton-loader :style="{ height: '0.5rem', width: '7rem' }" />
+          <skeleton-loader :style="{ width: '7rem' }" />
+          <skeleton-loader :style="{ width: '7rem' }" />
         </div>
       </div>
 
-      <div class="section" v-for="i in 3" :key="i">
+      <div style="margin-top: 3rem"></div>
+
+      <div v-for="i in 3" :key="i" class="section">
+        <skeleton-loader :style="{ width: '4rem' }" />
         <div class="line"></div>
-        <skeleton-loader :style="{ height: '0.5rem', width: '4rem' }" />
         <div class="section-item">
           <skeleton-loader />
           <skeleton-loader />
@@ -85,7 +87,11 @@ export default {}
 .line {
   border-bottom: 1px solid var(--border-color);
   margin: 0.5rem 0 10px;
-  padding: 0.5rem;
+  padding: 0;
+}
+
+.section {
+  margin-top: 2rem;
 }
 
 .section-item {
