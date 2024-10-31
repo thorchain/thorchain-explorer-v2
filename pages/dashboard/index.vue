@@ -200,14 +200,11 @@
       <div class="card">
         <div class="card-header">
           <div class="card-title">
-            <h2 style="color: var(--sec-font-color)" >Latest Blocks</h2>
-            <nuxt-link
-                to="/block/blocks"
-                class="more-link clickable"
-              >
-                More
-                <ArrowRightIcon />
-              </nuxt-link>
+            <h2 style="color: var(--sec-font-color)">Latest Blocks</h2>
+            <nuxt-link to="/block/blocks" class="more-link clickable">
+              More
+              <ArrowRightIcon />
+            </nuxt-link>
           </div>
         </div>
         <div class="card-body">
@@ -263,7 +260,7 @@
                     v-if="t.in"
                     style="font-size: 0.875rem; color: var(--sec-font-color)"
                   >
-                    TxID
+                    <small style="color: var(--font-color)">TxID</small>
                     <nuxt-link class="clickable" :to="`/tx/${t.in[0].txID}`">
                       {{ formatAddress(showTx(t.in && t.in[0].txID)) }}
                     </nuxt-link>
@@ -272,7 +269,7 @@
                 </div>
                 <div class="txs">
                   <span>
-                    From
+                    <small style="color: var(--font-color)">From</small>
                     <nuxt-link
                       class="clickable"
                       :to="`/address/${t.in[0].address}`"
@@ -1475,36 +1472,42 @@ export default {
 
 <style lang="scss">
 .card-title {
-  display: flex; 
-  justify-content: space-between; 
-  align-items: center; 
-  width: 100%; 
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
   font-size: 0.875rem;
-      font-weight: 600;
-      margin-bottom: 0;
+  font-weight: 600;
+  margin-bottom: 0;
 
-      h2 {
-        margin: 0;
-      }
-    }
+  h2 {
+    margin: 0;
+  }
+}
 
 .more-link {
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.9rem;
 
-    svg {
-      fill: currentColor;
-      height: 1rem;
-      width: 1rem;
-    }
+  svg {
+    fill: currentColor;
+    height: 1rem;
+    width: 1rem;
   }
+}
 
 .row-item-transactions {
   justify-content: space-between;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  flex-direction: column;
+
+  @include md {
+    flex-direction: row;
+    align-items: center;
+  }
 
   .txs {
     display: flex;
