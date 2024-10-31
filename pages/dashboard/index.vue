@@ -500,10 +500,14 @@ export default {
                 this.isChurnHalted()
                   ? 'Churn paused'
                   : this.chainsHeight &&
-                    blockTime(
-                      this.network?.nextChurnHeight - this.chainsHeight.THOR,
-                      true
-                    )
+                    (this.network?.nextChurnHeight - this.chainsHeight.THOR >
+                    500
+                      ? blockTime(
+                          this.network?.nextChurnHeight -
+                            this.chainsHeight.THOR,
+                          true
+                        )
+                      : `${this.network?.nextChurnHeight - this.chainsHeight.THOR} Blocks`)
               }`,
             },
             {

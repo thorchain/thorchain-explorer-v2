@@ -245,8 +245,10 @@ export default {
       }
     }
 
-    .flex-section:last-of-type {
-      border-bottom: none !important;
+    &:last-of-type {
+      .flex-section:last-of-type {
+        border-bottom: none !important;
+      }
     }
 
     @include sm {
