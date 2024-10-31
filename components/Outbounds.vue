@@ -112,7 +112,7 @@
         <div :key="index" class="top-swap-item">
           <div class="transactions">
             <span style="font-size: 0.875rem; color: var(--sec-font-color)">
-              TxID
+              <small style="color: var(--font-color)">TxID</small>
               <nuxt-link class="clickable" :to="`/tx/${swap.txID}`">
                 {{ formatAddress(swap.txID) }}
               </nuxt-link>
@@ -121,8 +121,8 @@
           </div>
           <div class="break"></div>
           <div class="right-section">
-            <span class="mono"
-              >Address
+            <span class="mono">
+              <small style="color: var(--font-color)">Address</small>
               <NuxtLink
                 class="clickable"
                 :to="{ path: `/address/${swap.inputAsset.address}` }"
@@ -130,8 +130,8 @@
                 {{ formatAddress(swap.inputAsset.address) }}
               </NuxtLink>
             </span>
-            <span
-              >Date
+            <span>
+              <small style="color: var(--font-color)">Date</small>
               <span class="date">{{ swap.date }}</span>
             </span>
           </div>

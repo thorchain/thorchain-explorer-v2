@@ -260,7 +260,7 @@
                     v-if="t.in"
                     style="font-size: 0.875rem; color: var(--sec-font-color)"
                   >
-                    TxID
+                    <small style="color: var(--font-color)">TxID</small>
                     <nuxt-link class="clickable" :to="`/tx/${t.in[0].txID}`">
                       {{ formatAddress(showTx(t.in && t.in[0].txID)) }}
                     </nuxt-link>
@@ -269,7 +269,7 @@
                 </div>
                 <div class="txs">
                   <span>
-                    From
+                    <small style="color: var(--font-color)">From</small>
                     <nuxt-link
                       class="clickable"
                       :to="`/address/${t.in[0].address}`"
