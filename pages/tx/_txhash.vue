@@ -15,25 +15,28 @@
         </div>
       </div>
 
-      <tx-card v-for="(c, i) in cards" :key="i" :tx-data="c.details">
-        <template
-          v-for="(s, j) in c.accordions.filter((c) => c.data.title)"
-          #[s.name]
-        >
-          <accordion
-            :key="i + '.' + j"
-            :title="s.data.title"
-            :pending="s.data.pending"
-            :stacks="s.data.stacks"
-            :show-at-first="true"
-          />
-        </template>
-      </tx-card>
-      <streaming-swap
-        v-if="inboundHash"
-        :inbound-hash="inboundHash"
-        :quote="quote"
-      />
+      <template v-if="cards && cards.length > 0">
+        <tx-card v-for="(c, i) in cards" :key="i" :tx-data="c.details">
+          <template
+            v-for="(s, j) in c.accordions.filter((c) => c.data.title)"
+            #[s.name]
+          >
+            <accordion
+              :key="i + '.' + j"
+              :title="s.data.title"
+              :pending="s.data.pending"
+              :stacks="s.data.stacks"
+              :show-at-first="true"
+            />
+          </template>
+        </tx-card>
+        <streaming-swap
+          v-if="inboundHash"
+          :inbound-hash="inboundHash"
+          :quote="quote"
+        />
+      </template>
+      <tx-loader v-else></tx-loader>
     </template>
     <div v-else-if="isError" class="notify-card card-bg">
       <h3>{{ error.title }}</h3>
