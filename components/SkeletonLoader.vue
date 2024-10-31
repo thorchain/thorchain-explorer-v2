@@ -9,7 +9,7 @@ export default {
     customStyle() {
       return {
         height: this.height ?? '.5rem',
-        width: this.height ?? 'auto',
+        width: this.width ?? 'auto',
       }
     },
   },

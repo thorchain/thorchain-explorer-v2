@@ -4,122 +4,181 @@
       <h3 class="section-title">
         Affiliate Collected <small>- AVG affiliate bps</small>
       </h3>
-      <div
-        v-for="(row, index) in sortedData(affiliateData, 'affiliate_fees_usd')"
-        :key="index"
-        class="data-item"
-      >
-        <div class="item-content">
-          <span class="item-number" :style="{ color: colorizeIndex(index) }">
-            {{ index + 1 }}.
-          </span>
-          <div class="item-details">
-            <img
-              v-if="affiliateWallet(row.affiliate).icon"
-              :src="affiliateWallet(row.affiliate).icon"
-              class="item-icon"
-            />
-            <div v-else class="affiliate-name">{{ row.affiliate }}</div>
-            <div
-              class="affiliate-value"
-              :style="{ color: colorizeIndex(index) }"
-            >
-              ${{ row.affiliate_fees_usd | number('0a') }}
-              <small>
-                -
-                {{ row.avg_bps | percent(2) }}
-              </small>
+      <template v-if="affiliateData && affiliateData.length > 0">
+        <div
+          v-for="(row, index) in sortedData(
+            affiliateData,
+            'affiliate_fees_usd'
+          )"
+          :key="index"
+          class="data-item"
+        >
+          <div class="item-content">
+            <span class="item-number" :style="{ color: colorizeIndex(index) }">
+              {{ index + 1 }}.
+            </span>
+            <div class="item-details">
+              <img
+                v-if="affiliateWallet(row.affiliate).icon"
+                :src="affiliateWallet(row.affiliate).icon"
+                class="item-icon"
+              />
+              <div v-else class="affiliate-name">{{ row.affiliate }}</div>
+              <div
+                class="affiliate-value"
+                :style="{ color: colorizeIndex(index) }"
+              >
+                ${{ row.affiliate_fees_usd | number('0a') }}
+                <small>
+                  -
+                  {{ row.avg_bps | percent(2) }}
+                </small>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </template>
+      <template v-else>
+        <div v-for="index in 25" :key="index" class="loader-item">
+          <div style="display: flex; gap: 5px">
+            <skeleton-loader
+              class="number-loader"
+              width="5px"
+            ></skeleton-loader>
+            <skeleton-loader class="wallet-loader"></skeleton-loader>
+          </div>
+          <skeleton-loader class="value-loader"></skeleton-loader>
+        </div>
+      </template>
     </div>
 
     <div class="data-section">
       <h3 class="section-title">Swap Volume</h3>
-      <div
-        v-for="(row, index) in sortedData(affiliateData, 'total_volume_usd')"
-        :key="index"
-        class="data-item"
-      >
-        <div class="item-content">
-          <span class="item-number" :style="{ color: colorizeIndex(index) }">
-            {{ index + 1 }}.
-          </span>
-          <div class="item-details">
-            <img
-              v-if="affiliateWallet(row.affiliate).icon"
-              :src="affiliateWallet(row.affiliate).icon"
-              class="item-icon"
-            />
-            <div v-else class="affiliate-name">{{ row.affiliate }}</div>
-            <div
-              class="affiliate-value"
-              :style="{ color: colorizeIndex(index) }"
-            >
-              ${{ row.total_volume_usd | number('0a') }}
+      <template v-if="affiliateData && affiliateData.length > 0">
+        <div
+          v-for="(row, index) in sortedData(affiliateData, 'total_volume_usd')"
+          :key="index"
+          class="data-item"
+        >
+          <div class="item-content">
+            <span class="item-number" :style="{ color: colorizeIndex(index) }">
+              {{ index + 1 }}.
+            </span>
+            <div class="item-details">
+              <img
+                v-if="affiliateWallet(row.affiliate).icon"
+                :src="affiliateWallet(row.affiliate).icon"
+                class="item-icon"
+              />
+              <div v-else class="affiliate-name">{{ row.affiliate }}</div>
+              <div
+                class="affiliate-value"
+                :style="{ color: colorizeIndex(index) }"
+              >
+                ${{ row.total_volume_usd | number('0a') }}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </template>
+      <template v-else>
+        <div v-for="index in 25" :key="index" class="loader-item">
+          <div style="display: flex; gap: 5px">
+            <skeleton-loader
+              class="number-loader"
+              width="5px"
+            ></skeleton-loader>
+            <skeleton-loader class="wallet-loader"></skeleton-loader>
+          </div>
+          <skeleton-loader class="value-loader"></skeleton-loader>
+        </div>
+      </template>
     </div>
 
     <div class="data-section">
       <h3 class="section-title">Swap Count</h3>
-      <div
-        v-for="(row, index) in sortedData(affiliateData, 'total_swaps')"
-        :key="index"
-        class="data-item"
-      >
-        <div class="item-content">
-          <span class="item-number" :style="{ color: colorizeIndex(index) }">
-            {{ index + 1 }}.
-          </span>
-          <div class="item-details">
-            <img
-              v-if="affiliateWallet(row.affiliate).icon"
-              :src="affiliateWallet(row.affiliate).icon"
-              class="item-icon"
-            />
-            <div v-else class="affiliate-name">{{ row.affiliate }}</div>
-            <div
-              class="affiliate-value"
-              :style="{ color: colorizeIndex(index) }"
-            >
-              {{ row.total_swaps | number('0,0') }}
+      <template v-if="affiliateData && affiliateData.length > 0">
+        <div
+          v-for="(row, index) in sortedData(affiliateData, 'total_swaps')"
+          :key="index"
+          class="data-item"
+        >
+          <div class="item-content">
+            <span class="item-number" :style="{ color: colorizeIndex(index) }">
+              {{ index + 1 }}.
+            </span>
+            <div class="item-details">
+              <img
+                v-if="affiliateWallet(row.affiliate).icon"
+                :src="affiliateWallet(row.affiliate).icon"
+                class="item-icon"
+              />
+              <div v-else class="affiliate-name">{{ row.affiliate }}</div>
+              <div
+                class="affiliate-value"
+                :style="{ color: colorizeIndex(index) }"
+              >
+                {{ row.total_swaps | number('0,0') }}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </template>
+      <template v-else>
+        <div v-for="index in 25" :key="index" class="loader-item">
+          <div style="display: flex; gap: 5px">
+            <skeleton-loader
+              class="number-loader"
+              width="5px"
+            ></skeleton-loader>
+            <skeleton-loader class="wallet-loader"></skeleton-loader>
+          </div>
+          <skeleton-loader class="value-loader"></skeleton-loader>
+        </div>
+      </template>
     </div>
 
     <div class="data-section">
       <h3 class="section-title">Volume / Swap Count</h3>
-      <div
-        v-for="(row, index) in sortedData(affiliateData, 'vc')"
-        :key="index"
-        class="data-item"
-      >
-        <div class="item-content">
-          <span class="item-number" :style="{ color: colorizeIndex(index) }">
-            {{ index + 1 }}.
-          </span>
-          <div class="item-details">
-            <img
-              v-if="affiliateWallet(row.affiliate).icon"
-              :src="affiliateWallet(row.affiliate).icon"
-              class="item-icon"
-            />
-            <div v-else class="affiliate-name">{{ row.affiliate }}</div>
-            <div
-              class="affiliate-value"
-              :style="{ color: colorizeIndex(index) }"
-            >
-              ${{ row.vc | number('0,0') }}
+      <template v-if="affiliateData && affiliateData.length > 0">
+        <div
+          v-for="(row, index) in sortedData(affiliateData, 'vc')"
+          :key="index"
+          class="data-item"
+        >
+          <div class="item-content">
+            <span class="item-number" :style="{ color: colorizeIndex(index) }">
+              {{ index + 1 }}.
+            </span>
+            <div class="item-details">
+              <img
+                v-if="affiliateWallet(row.affiliate).icon"
+                :src="affiliateWallet(row.affiliate).icon"
+                class="item-icon"
+              />
+              <div v-else class="affiliate-name">{{ row.affiliate }}</div>
+              <div
+                class="affiliate-value"
+                :style="{ color: colorizeIndex(index) }"
+              >
+                ${{ row.vc | number('0,0') }}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </template>
+      <template v-else>
+        <div v-for="index in 25" :key="index" class="loader-item">
+          <div style="display: flex; gap: 5px">
+            <skeleton-loader
+              class="number-loader"
+              width="5px"
+            ></skeleton-loader>
+            <skeleton-loader class="wallet-loader"></skeleton-loader>
+          </div>
+          <skeleton-loader class="value-loader"></skeleton-loader>
+        </div>
+      </template>
     </div>
     <div class="footer-stat">
       <strong>
@@ -233,6 +292,25 @@ export default {
     flex: 1;
     background-color: var(--bg-color);
     border: 1px solid var(--border-color);
+
+    .loader-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 10px;
+      border-bottom: 1px solid var(--border-color);
+
+      .number-loader {
+        min-width: 10px;
+      }
+
+      .wallet-loader {
+        min-width: 100px;
+      }
+
+      .value-loader {
+        min-width: 120px;
+      }
+    }
 
     @include md {
       border-radius: 0.5rem;
