@@ -1850,6 +1850,7 @@ export default {
   }
 
   .item {
+    border: 1px solid var(--border-color);
     background-color: var(--card-bg-color);
     padding: 0.5rem;
     border-radius: 5px;
@@ -1861,9 +1862,15 @@ export default {
     max-width: 100%;
     min-width: 32px;
 
+    &:not(.tx-id) {
+      height: 32px;
+      width: 32px;
+    }
+
     span {
       color: var(--sec-font-color);
       line-height: 15px;
+      height: 16px;
     }
 
     &:hover {
