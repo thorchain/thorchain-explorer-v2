@@ -247,8 +247,12 @@
       </div>
       <div class="card">
         <div class="card-header">
-          <div class="card-header-title">
+          <div class="card-title">
             <h2 style="color: var(--sec-font-color)">Latest Transactions</h2>
+            <nuxt-link to="/txs" class="more-link clickable">
+              More
+              <ArrowRightIcon />
+            </nuxt-link>
           </div>
         </div>
         <div class="card-body">
