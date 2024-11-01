@@ -1753,7 +1753,7 @@ export default {
               parseInt(actions?.actions[0]?.metadata?.swap?.liquidityFee) ||
               null,
             liquidityUnits: null,
-            refundReason: outboundRefundReason,
+            refundReason: onlyRefund ? outboundRefundReason : null,
             asymmetry: null,
             affiliateOut: affiliateOut || undefined,
             swapSlip: parseInt(actions?.actions[0]?.metadata?.swap?.swapSlip),
