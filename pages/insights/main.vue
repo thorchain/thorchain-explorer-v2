@@ -7,6 +7,17 @@
       <info-card :options="coinMarketInfo" :inner="true" />
     </card>
     <div class="chart-inner-container">
+      <Card title="Reserve income from Pools">
+        <VChart
+          :option="rewardsHistory"
+          :loading="!rewardsHistory"
+          :autoresize="true"
+          :loading-options="showLoading"
+          :theme="chartTheme"
+        />
+      </Card>
+    </div>
+    <div class="chart-inner-container">
       <Card title="Type Swap Chart">
         <template #header>
           <flip-side style="fill: var(--sec-font-color)"></flip-side>
@@ -96,7 +107,7 @@ import {
   GridComponent,
 } from 'echarts/components'
 import VChart from 'vue-echarts'
-
+import { orderBy } from 'lodash'
 import FlipSide from '~/assets/images/flipside.svg?inline'
 import Coinmarketcap from '~/assets/images/coinmarketcap.svg?inline'
 
@@ -119,6 +130,7 @@ export default {
   data() {
     return {
       churnHistory: undefined,
+      rewardsHistory: undefined,
       supplyHistory: undefined,
       marketInfo: {
         price: undefined,
@@ -218,9 +230,173 @@ export default {
     })
 
     this.getCoinMarketInfo()
-    this.supplyBurn()
+    this.$api.getEarningHistory(60).then(({ data }) => {
+      this.supplyBurn(data)
+      this.rewardsHistory = this.formatRewards(data)
+    })
   },
   methods: {
+    formatRewards(d) {
+      const top = 6
+      const poolEarnings = orderBy(
+        d.intervals[d.intervals.length - 2].pools,
+        [(o) => Math.abs(+o.rewards)],
+        ['desc']
+      )
+        .filter((p) => p.pool !== 'dev_fund_reward' && p.pool !== 'income_burn')
+        .slice(0, top)
+        .map((p) => p.pool)
+
+      const xAxis = []
+      const pr = []
+      const pt = []
+
+      d?.intervals.forEach((interval, index) => {
+        if (index === d?.intervals?.length - 1) {
+          return
+        }
+
+        // Date
+        const date = moment(
+          Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
+        )
+        xAxis.push(date.format('dddd, MMM D'))
+
+        let otherEarnings = interval.pools.filter(
+          (p) =>
+            !poolEarnings.slice(0, top).includes(p.pool) &&
+            p.pool !== 'income_burn' &&
+            p.pool !== 'dev_fund_reward'
+        )
+
+        // sum them all
+        otherEarnings = otherEarnings.reduce(
+          (a, c) => a + (-1 * +c.rewards * +interval.runePriceUSD) / 1e8,
+          0
+        )
+
+        if (index === 0) {
+          pr.push({
+            type: 'bar',
+            name: 'Other Pools',
+            showSymbol: false,
+            stack: 'Total',
+            data: [otherEarnings],
+          })
+        } else {
+          pr[0].data.push(otherEarnings)
+        }
+
+        // Pool Earning
+        let total = 0
+        for (let pi = 0; pi < top; pi++) {
+          const pool = interval.pools.find((p) => p.pool === poolEarnings[pi])
+          const value = (+pool.rewards * -1 * +interval.runePriceUSD) / 1e8
+          total += value
+
+          const earning = {
+            value,
+          }
+
+          if (index === 0) {
+            pr.push({
+              type: 'bar',
+              name: this.showAsset(poolEarnings[pi]),
+              showSymbol: false,
+              stack: 'Total',
+              data: [earning],
+            })
+          } else {
+            pr[pi + 1].data.push(earning)
+          }
+        }
+
+        pt.push({
+          value: total,
+        })
+      })
+
+      return this.basicChartFormat(
+        (value) => `$${this.normalFormat(value, '0,0.00a')}`,
+        [
+          ...pr,
+          {
+            type: 'line',
+            name: 'Total Income',
+            showSymbol: false,
+            areaStyle: {
+              color: 'rgba(0, 0, 47, 0.2)',
+            },
+            data: pt,
+            smooth: true,
+            lineStyle: {
+              width: 2,
+            },
+            z: 3,
+          },
+        ],
+        xAxis,
+        {
+          legend: {
+            show: false,
+          },
+          yAxis: [
+            {
+              type: 'value',
+              name: '',
+              position: 'right',
+              show: false,
+              splitLine: {
+                show: true,
+              },
+            },
+          ],
+        },
+        (param) => {
+          return `
+            <div class="tooltip-header">
+              ${param[0].name}
+            </div>
+            <div class="tooltip-body">
+              ${param
+                .filter((a) => a.value)
+                .sort((a, b) => {
+                  if (
+                    a.seriesName === 'Total Income' ||
+                    a.seriesName === 'Other Pools'
+                  )
+                    return 1
+                  if (
+                    b.seriesName === 'Total Income' ||
+                    b.seriesName === 'Other Pools'
+                  )
+                    return -1
+                  return b.value - a.value
+                })
+                .map(
+                  (p, i) => `
+                  ${
+                    param.length - 2 === i
+                      ? ` <span style="border-top: 1px solid var(--border-color); margin: 2px 0;"></span>`
+                      : ''
+                  }
+                  <span>
+                    <div class="tooltip-item">
+                      <div class="data-color" style="background-color: ${p.color}">
+                      </div>
+                      <span style="text-align: left;">
+                        ${p.seriesName}
+                      </span>
+                    </div>
+                    <b>$${p.value ? this.$options.filters.number(p.value, '0,0.00a') : '-'}</b>
+                  </span>`
+                )
+                .join('')}
+            </div>
+          `
+        }
+      )
+    },
     async getCoinMarketInfo() {
       try {
         const response = await this.$api.getCoinMarketInfo()
@@ -245,7 +421,7 @@ export default {
         if (interval.affiliate === 'No Affiliate') {
           return
         }
-        filteredData.push(interval) 
+        filteredData.push(interval)
       })
       const sortedData = filteredData.sort(
         (a, b) => b.total_volume_usd - a.total_volume_usd
@@ -623,10 +799,8 @@ export default {
         }
       )
     },
-    async supplyBurn() {
+    supplyBurn(data) {
       try {
-        const { data } = await this.$api.getEarningHistory(60)
-
         const xAxis = []
         const su = []
         const bu = []

@@ -19,12 +19,6 @@ export function getExraNodesInfo() {
   )
 }
 
-export function getOhclPrice() {
-  return $axiosInstace.get(
-    endpoints[process.env.NETWORK].SERVER_URL + 'api/ohclPrice'
-  )
-}
-
 export function getSaversInfo() {
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].SERVER_URL + 'api/saversInfo'

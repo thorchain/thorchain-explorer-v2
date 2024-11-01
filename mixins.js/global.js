@@ -650,7 +650,7 @@ export default {
         asset = assetFromString(asset)
       }
 
-      switch (asset.ticker.toUpperCase()) {
+      switch (asset?.ticker?.toUpperCase()) {
         case 'USDT':
           return '#27A17C'
         case 'BNB':

@@ -1,20 +1,19 @@
 <template>
   <Page>
-    <template v-if="!isError && !isLoading && pools">
-      <div class="tx-header">
-        <div class="item tx-id">
-          <span class="mono">
-            {{ $route.params.txhash }}
-          </span>
-        </div>
-        <div class="item">
-          <Copy :str-copy="$route.params.txhash" />
-        </div>
-        <div id="qrcode" class="item">
-          <qr-btn :qrcode="$route.params.txhash"></qr-btn>
-        </div>
+    <div class="tx-header">
+      <div class="item tx-id">
+        <span class="mono">
+          {{ $route.params.txhash }}
+        </span>
       </div>
-
+      <div class="item">
+        <Copy :str-copy="$route.params.txhash" />
+      </div>
+      <div id="qrcode" class="item">
+        <qr-btn :qrcode="$route.params.txhash"></qr-btn>
+      </div>
+    </div>
+    <template v-if="!isError && !isLoading && pools">
       <template v-if="cards && cards.length > 0">
         <tx-card v-for="(c, i) in cards" :key="i" :tx-data="c.details">
           <template
@@ -44,10 +43,7 @@
       <DisconnectIcon class="disconnect-icon" />
     </div>
     <div v-else-if="isLoading && !isError">
-      <div class="notify-card" style="width: 18.75rem">
-        <h3>Searching transaction</h3>
-        <BounceLoader color="var(--font-color)" size="3rem" />
-      </div>
+      <tx-loader />
     </div>
   </Page>
 </template>
