@@ -774,7 +774,10 @@ export default {
             })
           }
 
-          if (lowVersions.includes(el.node_address)) {
+          if (
+            lowVersions.includes(el.node_address) &&
+            this.churnProgressValue > 0.9
+          ) {
             filteredNodes[index].churn.push({
               name: 'Low Version',
               icon: require('@/assets/images/version.svg?inline'),
