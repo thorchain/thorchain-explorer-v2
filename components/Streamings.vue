@@ -1,9 +1,13 @@
 <template>
-  <Card :is-loading="loading" title="Ongoing Streaming Swaps">
+  <Card
+    :is-loading="loading"
+    title="Ongoing Streaming Swaps"
+    body-class="streaming-flex"
+  >
     <template #header>
       <dot-live />
     </template>
-    <Card v-if="streamingSwaps.length > 0" class="custom-card">
+    <div v-if="streamingSwaps.length > 0" class="custom-card">
       <div class="overview-box">
         <div class="stats-container">
           <div>
@@ -23,7 +27,7 @@
           </div>
         </div>
       </div>
-    </Card>
+    </div>
     <div class="dashboard-card">
       <div v-if="noStreaming" class="no-streaming">
         <streamingIcon class="streaming-icon large-icon" />
@@ -103,8 +107,8 @@
         </div>
         <hr :key="i + '-hr'" class="hr-space" />
       </template>
-      <nuxt-link to="/swaps" class="swaps-nav">TOP Swaps (24hr)</nuxt-link>
     </div>
+    <nuxt-link to="/swaps" class="swaps-nav">TOP Swaps (24hr)</nuxt-link>
 
     <template #footer>
       <b-pagination
@@ -282,7 +286,7 @@ export default {
 .dashboard-card {
   display: flex;
   flex-direction: column;
-  height: calc(100% - 45px);
+  flex: 1;
 
   .swaps-nav {
     margin-top: 1rem;
@@ -294,6 +298,7 @@ export default {
 }
 
 .overview-box {
+  width: 100%;
   text-align: center;
 }
 
@@ -433,5 +438,13 @@ export default {
     align-items: center;
     gap: 10px;
   }
+}
+
+.custom-card {
+  display: flex;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
 }
 </style>

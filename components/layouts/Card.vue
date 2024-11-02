@@ -33,7 +33,7 @@
         </div>
         <slot name="header" />
       </div>
-      <div class="card-body">
+      <div :class="['card-body', bodyClass]">
         <slot />
       </div>
       <div v-if="$slots['footer']" class="footer">
@@ -56,6 +56,7 @@ export default {
     'title',
     'isLoading',
     'extraClass',
+    'bodyClass',
     'fullscreen',
     'navs',
     'actNav',
@@ -226,5 +227,10 @@ export default {
     margin-top: auto;
     border-top: 1px solid var(--border-color);
   }
+}
+
+.streaming-flex {
+  display: flex;
+  flex-direction: column;
 }
 </style>
