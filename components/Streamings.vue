@@ -287,14 +287,9 @@ export default {
   display: flex;
   flex-direction: column;
   flex: 1;
-
-  .swaps-nav {
-    margin-top: 1rem;
-    justify-self: end;
-    @include md {
-      margin-top: auto;
-    }
-  }
+}
+.swaps-nav {
+  margin-top: 1rem !important;
 }
 
 .overview-box {
@@ -392,6 +387,8 @@ export default {
   display: flex;
   justify-content: space-between;
   flex-direction: column;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 10px;
 
   .asset-container {
     display: flex;
