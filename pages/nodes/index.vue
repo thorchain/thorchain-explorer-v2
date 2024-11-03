@@ -598,7 +598,7 @@ export default {
           icon: require('@/assets/images/churn.svg'),
           items: [
             {
-              name: 'Time',
+              name: 'Next Churn',
               value: churnValue,
               valueSlot: 'churn',
             },
@@ -629,6 +629,15 @@ export default {
               value: this.annualNodeReturn() / 1e8,
               filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
+            },
+            {
+              name: 'Churn Duration',
+              value: this.churn ? `${this.churn.date}` : '',
+            },
+            {
+              name: 'Churn Start',
+              value: this.churn ? `${this.churn.height}` : '',
+              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
             },
           ],
         },
@@ -911,6 +920,11 @@ export default {
   mounted() {
     this.$api.getNetwork().then(({ data }) => {
       this.network = data
+    })
+    this.$api.getChurn().then(({ data }) => {
+      const { date, height } = data[0]
+      const Date = moment(date / 1e6).fromNow()
+      this.churn = { date:Date, height }
     })
     const mimirProm = this.$api
       .getMimir()
