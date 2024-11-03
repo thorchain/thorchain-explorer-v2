@@ -1,7 +1,7 @@
 <template>
   <Page>
     <div class="card-container">
-      <Card v-if="votingChart">
+      <Card class="mobile-hidden" v-if="votingChart">
         <VChart
           :option="votingChart"
           :loading="!votingChart"
@@ -477,6 +477,14 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.mobile-hidden {
+  display: none;
+  @include md{
+    display: block;
+
+  }
+}
+
 .votes {
   display: flex;
   flex-direction: column;
