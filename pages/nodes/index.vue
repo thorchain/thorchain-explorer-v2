@@ -970,7 +970,12 @@ export default {
       }
     },
     monthlyNodeReturn() {
-      if (!this.totalAwards || !this.nodesQuery || !this.churnProgressValue) {
+      if (
+        !this.totalAwards ||
+        !this.nodesQuery ||
+        !this.churnProgressValue ||
+        !this.bondMetrics
+      ) {
         return
       }
 
@@ -978,9 +983,11 @@ export default {
         (node) => node.status === 'Active'
       ).length
       const churnProgress = this.churnProgressValue
+      const churnPeriodInDays = (this.churnInterval * 6) / 86400
 
       const calculatedValue =
-        (this.totalAwards / totalActiveNodes) * (30 / (3 * churnProgress))
+        (this.totalAwards / totalActiveNodes) *
+        (30 / (churnPeriodInDays * churnProgress))
 
       return calculatedValue
     },
@@ -993,9 +1000,11 @@ export default {
         (node) => node.status === 'Active'
       ).length
       const churnProgress = this.churnProgressValue
+      const churnPeriodInDays = (this.churnInterval * 6) / 86400
 
       const annualNodes =
-        (this.totalAwards / totalActiveNodes) * (365 / (3 * churnProgress))
+        (this.totalAwards / totalActiveNodes) *
+        (365 / (churnPeriodInDays * churnProgress))
 
       return annualNodes
     },
