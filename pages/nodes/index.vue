@@ -620,7 +620,7 @@ export default {
               usdValue: true,
             },
             {
-              name: 'Annual Nodes Return ',
+              name: 'Annual Node Return ',
               value: this.annualNodeReturn() / 1e8,
               filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
