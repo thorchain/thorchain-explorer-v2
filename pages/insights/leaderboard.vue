@@ -1,4 +1,6 @@
 <template>
+  <page>
+    <Nav :active-mode.sync="period" :nav-items="periods" pre-text="Period :" />
   <div class="leaderboard-container">
     <div class="data-section">
       <h3 class="section-title">
@@ -187,6 +189,7 @@
       </strong>
     </div>
   </div>
+</page>
 </template>
 
 <script>
@@ -203,6 +206,11 @@ export default {
         total_swaps: 'desc',
         vc: 'desc',
       },
+      period: 'Week',
+      periods: [
+        { text: '1 Week', mode: 'Week' },
+        { text: '1 Month', mode: 'Month' },
+      ],
     }
   },
   computed: {
