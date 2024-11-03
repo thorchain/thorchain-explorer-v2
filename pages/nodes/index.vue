@@ -603,6 +603,11 @@ export default {
               valueSlot: 'churn',
             },
             {
+              name: 'Churn Interval',
+              value: this.churnInterval,
+              filter: (v) => `${blockTime(v, true)}`,
+            },
+            {
               name: 'Total Rewards',
               value: this.totalAwards / 10e8,
               usdValue: true,
