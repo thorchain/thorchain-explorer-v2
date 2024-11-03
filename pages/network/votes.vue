@@ -299,10 +299,10 @@ export default {
 
                 return `
                   <tr>
-                    <td style="padding: 5px; text-align:left; color:#333;">${p.seriesName}</td>
-                    <td style="padding: 5px; text-align:center; color:#333;">${p.value}</td>
-                    <td style="padding: 5px; text-align:center; color:#333;">${consensus}</td>
-                    <td style="padding: 5px; text-align:center; color:#333;">${votesNeeded === 0 ? '✅' : votesNeeded}</td>
+                    <td style="padding: 5px; text-align:left; color: var(--sec-font-color);">${p.seriesName}</td>
+                    <td style="padding: 5px; text-align:center; color: var(--sec-font-color);">${p.value}</td>
+                    <td style="padding: 5px; text-align:center; color: var(--sec-font-color);">${consensus}</td>
+                    <td style="padding: 5px; text-align:center; color: var(--sec-font-color);">${votesNeeded === 0 ? '✅' : votesNeeded}</td>
                   </tr>
                 `
               }
@@ -312,7 +312,7 @@ export default {
         </tbody>
       </table>
       <hr style="margin: 10px 0; border: 1px solid #ddd;">
-      <div style="text-align:center; font-size:12px; color:#333;">
+      <div style="text-align:center; font-size:12px;color: var(--sec-font-color);">
         <b>Voted:</b> ${totalVoted} - <b>Missing votes:</b> ${missingVotes}</div>
     `
               return tooltipContent
@@ -479,9 +479,8 @@ export default {
 <style lang="scss" scoped>
 .mobile-hidden {
   display: none;
-  @include md{
+  @include md {
     display: block;
-
   }
 }
 
