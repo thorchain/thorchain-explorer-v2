@@ -616,7 +616,7 @@ export default {
             {
               name: 'Average APY ',
               value: this.averageApysCalc(),
-              filter: (v) => `${this.$options.filters.percent(v, '0,0')} `,
+              filter: (v) => `${this.$options.filters.percent(v, 2)} `,
             },
             {
               name: 'Monthly Node Return',
