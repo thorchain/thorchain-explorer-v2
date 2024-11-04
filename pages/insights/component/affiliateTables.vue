@@ -328,6 +328,7 @@ export default {
           flex: 1;
 
           .affiliate-value {
+            line-height: 1.4;
             font-size: 1.05rem;
             color: var(--sec-font-color);
             font-weight: bold;
