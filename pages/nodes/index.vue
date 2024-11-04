@@ -924,7 +924,7 @@ export default {
     this.$api.getChurn().then(({ data }) => {
       const { date, height } = data[0]
       const Date = moment(date / 1e6).fromNow()
-      this.churn = { date:Date, height }
+      this.churn = { date: Date, height }
     })
     const mimirProm = this.$api
       .getMimir()
@@ -989,24 +989,20 @@ export default {
       }
     },
     monthlyNodeReturn() {
-      if (
-        !this.totalAwards ||
-        !this.nodesQuery ||
-        !this.churnProgressValue ||
-        !this.bondMetrics
-      ) {
+      if (!this.totalAwards || !this.churnProgressValue || !this.bondMetrics) {
         return
       }
 
-      const totalActiveNodes = this.nodesQuery.filter(
-        (node) => node.status === 'Active'
-      ).length
       const churnProgress = this.churnProgressValue
-      const churnPeriodInDays = (this.churnInterval * 6) / 86400
+      let churnPeriodInDays = ((this.churnInterval * 6) / 86400) * churnProgress
+      const thisChurnBlock = this.chainsHeight?.THOR - +this.churn?.height
+      if (thisChurnBlock > this.churnInterval) {
+        churnPeriodInDays = (thisChurnBlock * 6) / 86400
+      }
 
       const calculatedValue =
-        (this.totalAwards / totalActiveNodes) *
-        (30 / (churnPeriodInDays * churnProgress))
+        (this.totalAwards / this.bondMetrics?.activeNodeCount) *
+        (30 / churnPeriodInDays)
 
       return calculatedValue
     },
@@ -1015,15 +1011,16 @@ export default {
         return
       }
 
-      const totalActiveNodes = this.nodesQuery.filter(
-        (node) => node.status === 'Active'
-      ).length
       const churnProgress = this.churnProgressValue
-      const churnPeriodInDays = (this.churnInterval * 6) / 86400
+      let churnPeriodInDays = ((this.churnInterval * 6) / 86400) * churnProgress
+      const thisChurnBlock = this.chainsHeight?.THOR - +this.churn?.height
+      if (thisChurnBlock > this.churnInterval) {
+        churnPeriodInDays = (thisChurnBlock * 6) / 86400
+      }
 
       const annualNodes =
-        (this.totalAwards / totalActiveNodes) *
-        (365 / (churnPeriodInDays * churnProgress))
+        (this.totalAwards / this.bondMetrics?.activeNodeCount) *
+        (365 / churnPeriodInDays)
 
       return annualNodes
     },
