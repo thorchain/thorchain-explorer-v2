@@ -732,6 +732,10 @@ export default {
         const swapAction = midgardAction?.actions?.find(
           (a) => a.type === 'swap'
         )
+        const affiliateFee =
+          parseInt(midgardAction?.actions[0]?.metadata?.swap?.affiliateFee) ||
+          parseInt(memo.fee) ||
+          0
         if (swapAction?.status === 'pending') {
           try {
             const { data: quoteData } = await this.$api.getQuote({
@@ -742,13 +746,8 @@ export default {
               streaming_interval:
                 thorStatus.stages.swap_status?.streaming?.interval ||
                 memo.interval,
-              affiliate: memo.affiliate,
-              affiliate_bps:
-                parseInt(
-                  midgardAction?.actions[0]?.metadata?.swap?.affiliateFee
-                ) ||
-                parseInt(memo.fee) ||
-                0,
+              ...(affiliateFee && { affiliate: memo.affiliate }),
+              ...(affiliateFee && { affiliate_bps: affiliateFee }),
               height: midgardAction?.actions[0]?.height,
             })
             this.quote = quoteData
