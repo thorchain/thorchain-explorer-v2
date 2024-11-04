@@ -84,7 +84,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import { rcompare } from 'semver'
-import { orderBy } from 'lodash'
+import { orderBy, countBy } from 'lodash'
 import moment from 'moment'
 import NodeTable from './component/nodeTable.vue'
 import { fillNodeData, availableChains, blockTime } from '~/utils'
@@ -707,11 +707,9 @@ export default {
 
         // get all active version
         const lowVersions = []
-        const onlyUnique = (value, index, array) => {
-          return array.indexOf(value) === index
-        }
         const nodesVersion = actNodes.map((r) => r.version).sort(rcompare)
-        const versions = nodesVersion.filter(onlyUnique)
+        const versions = countBy(nodesVersion)
+        console.log(versions)
 
         for (let i = 0; i < actNodes.length; i++) {
           const el = actNodes[i]
@@ -727,7 +725,11 @@ export default {
             lowestBond = +el.total_bond
           }
 
-          if (versions.length > 1 && el.version !== versions[0]) {
+          if (
+            Object.keys(versions).length > 1 &&
+            el.version !== Object.keys(versions)[0] &&
+            Object.keys(versions)[0] > Math.floor((actNodes.length * 2) / 3)
+          ) {
             lowVersions.push(el.node_address)
           }
         }
