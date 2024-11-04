@@ -40,22 +40,23 @@
         </div>
       </card>
       <card
+        v-if="
+          node && node.signer_membership && node.signer_membership.length > 0
+        "
         title="Signer Membership"
         style="margin-top: 1rem"
         :is-loading="loading"
       >
-        <div v-if="node">
-          <div class="providers-container">
-            <div
-              v-for="p in node.signer_membership"
-              :key="p.signer_membership"
-              class="providers"
-            >
-              <div>
-                <span class="mono">
-                  {{ formatAddress(p) }}
-                </span>
-              </div>
+        <div class="providers-container">
+          <div
+            v-for="p in node.signer_membership"
+            :key="p.signer_membership"
+            class="providers"
+          >
+            <div>
+              <span class="mono">
+                {{ formatAddress(p) }}
+              </span>
             </div>
           </div>
         </div>
@@ -80,6 +81,24 @@ export default {
   },
   computed: {
     nodeSettings() {
+      let jailInfo = []
+      if (this.node?.jail?.release_height) {
+        jailInfo = [
+          {
+            header: 'Jail',
+          },
+          {
+            name: 'Release Height',
+            value: this.node?.jail?.release_height,
+            filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
+          },
+          {
+            name: 'Reason',
+            value: this.node?.jail?.reason,
+          },
+        ]
+      }
+
       return [
         {
           title: 'Overview',
@@ -163,18 +182,7 @@ export default {
               value: this.node?.leave_height?.toString(),
               filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
             },
-            {
-              header: 'Jail',
-            },
-            {
-              name: 'Release Height',
-              value: this.node?.jail?.release_height,
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
-            },
-            {
-              name: 'Reason',
-              value: this.node?.jail?.reason,
-            },
+            ...jailInfo,
             {
               header: 'Preflight',
             },
@@ -226,9 +234,9 @@ export default {
 .node-id {
   color: var(--primary-color);
   padding-left: 0.5rem;
-  word-wrap: break-word; 
-  word-break: break-all; 
-  white-space: normal;   
+  word-wrap: break-word;
+  word-break: break-all;
+  white-space: normal;
 }
 
 .cards-node {
