@@ -13,7 +13,6 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
 import AffiliateTable from './component/affiliateTables.vue'
 
 export default {
@@ -30,11 +29,6 @@ export default {
         { text: '1 Month', mode: 'month' },
       ],
     }
-  },
-  computed: {
-    ...mapGetters({
-      theme: 'getTheme',
-    }),
   },
   mounted() {
     try {

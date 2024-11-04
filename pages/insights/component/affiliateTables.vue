@@ -190,7 +190,9 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import { orderBy } from 'lodash'
+
 export default {
   props: ['affiliateData'],
   data() {
@@ -203,6 +205,12 @@ export default {
       },
     }
   },
+  computed: {
+    ...mapGetters({
+      theme: 'getTheme',
+    }),
+  },
+
   methods: {
     sortedData(data, field) {
       return orderBy(data, [field], [this.sortDirection[field]])
