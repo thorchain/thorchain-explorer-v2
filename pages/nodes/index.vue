@@ -107,6 +107,7 @@ export default {
       nodesQuery: undefined,
       nodesExtra: undefined,
       minBond: 30000000000000,
+      extraNodeChurn: 0,
       newNodesChurn: 2,
       lastBlockHeight: undefined,
       churnInterval: undefined,
@@ -731,6 +732,7 @@ export default {
           }
         }
 
+        let extraChurn = 0
         actNodes.forEach((el, index) => {
           fillNodeData(filteredNodes, el, index)
 
@@ -797,6 +799,7 @@ export default {
               icon: require('@/assets/images/version.svg?inline'),
               type: this.churnProgressValue > 0.9 ? 'churn-out' : '',
             })
+            extraChurn += 1
           }
 
           if (el.requested_to_leave) {
@@ -808,6 +811,7 @@ export default {
           }
         })
 
+        this.setExtraChurn(extraChurn)
         return filteredNodes
       } else {
         return undefined
@@ -828,7 +832,7 @@ export default {
         stbNodes = orderBy(stbNodes, [(o) => +o.total_bond], ['desc'])
 
         const filteredNodes = []
-        const churnInNumbers = 3 + this.newNodesChurn
+        const churnInNumbers = 3 + this.newNodesChurn + this.extraNodeChurn
         let lastChurnIndex = 0
         let churnNodes = 0
         for (let i = 0; i < stbNodes.length; i++) {
@@ -979,6 +983,9 @@ export default {
         this.activeCols.push({ field: 'age', label: 'Age' })
       }
     },
+    setExtraChurn(num) {
+      this.extraNodeChurn = num
+    },
     setTheLeastBondChurn(bond) {
       this.leastBondChurn = bond
     },
@@ -1048,7 +1055,7 @@ export default {
 
       const churnValue =
         1 -
-        (this.bondMetrics?.nextChurnHeight - this.chainsHeight.THOR) /
+        (this.bondMetrics?.nextChurnHeight - this.chainsHeight?.THOR) /
           this.churnInterval
 
       this.churnProgressValue = churnValue
