@@ -709,7 +709,6 @@ export default {
         const lowVersions = []
         const nodesVersion = actNodes.map((r) => r.version).sort(rcompare)
         const versions = countBy(nodesVersion)
-        console.log(versions)
 
         for (let i = 0; i < actNodes.length; i++) {
           const el = actNodes[i]
