@@ -32,11 +32,11 @@
             />
             <div class="bonds">
               <span v-if="totalBond !== undefined" class="mono">
-                {{ balanceFormat(totalBond) }} RUNE
+                {{ balanceFormat(totalBond / 1e8) }} RUNE
                 <nuxt-link
                   v-if="isNodeAddress"
                   :to="'/node/' + address"
-                  class="link"
+                  class="clickable"
                 >
                   View Node
                 </nuxt-link>
@@ -355,13 +355,6 @@ export default {
 <style lang="scss" scoped>
 .bonds {
   width: 100%;
-}
-
-.link {
-  color: var(--primary-color);
-  text-decoration: none;
-  cursor: pointer;
-  align-items: center;
 }
 
 .balance-container {
