@@ -311,6 +311,9 @@ export default {
         }
 
         .affiliate-name {
+          max-width: 100px;
+          overflow: hidden;
+          text-overflow: ellipsis;
           color: var(--sec-font-color);
         }
 
