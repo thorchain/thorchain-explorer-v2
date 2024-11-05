@@ -23,17 +23,28 @@
         </div>
 
         <div class="balance-label">
-          <span>Bond Balance</span>
+          <span>{{ isNodeAddress ? 'Bonded Value' : 'Bond Balance' }}</span>
           <skeleton-item :loading="loading || !nodes" class="balance-content">
             <asset-icon
               :asset="{ ticker: 'RUNE', chain: 'THOR' }"
               :chain="false"
               class="asset-icon"
             />
-            <span v-if="bonds" class="mono">
-              {{ balanceFormat(bonds.total) }} RUNE
-            </span>
-            <span v-else>-</span>
+            <div class="bonds">
+              <span v-if="totalBond !== undefined" class="mono">
+                {{ balanceFormat(totalBond) }} RUNE
+                <nuxt-link
+                  v-if="isNodeAddress"
+                  :to="'/node/' + address"
+                  class="link"
+                >
+                  View Node
+                </nuxt-link>
+              </span>
+              <span v-else class="mono">
+                {{ balanceFormat(bonds.total) }} RUNE
+              </span>
+            </div>
           </skeleton-item>
         </div>
 
@@ -269,6 +280,18 @@ export default {
           return acc
         }, {})
     },
+    isNodeAddress() {
+      return this.nodes?.some((node) => node.node_address === this.address)
+    },
+    totalBond() {
+      const foundNode = this.nodes?.find(
+        (node) => node.node_address === this.address
+      )
+      if (foundNode) {
+        return foundNode.total_bond
+      }
+      return this.bonds?.total || 0
+    },
     bonds() {
       if (!this.nodes) {
         return undefined
@@ -277,7 +300,7 @@ export default {
 
       for (let i = 0; i < this.nodes.length; i++) {
         const node = this.nodes[i]
-        const bond = node?.bond_providers?.providers.find(
+        const bond = node.bond_providers?.providers?.find(
           (n) => n.bond_address === this.address
         )
         if (bond !== undefined) {
@@ -330,6 +353,17 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.bonds {
+  width: 100%;
+}
+
+.link {
+  color: var(--primary-color);
+  text-decoration: none;
+  cursor: pointer;
+  align-items: center;
+}
+
 .balance-container {
   display: flex;
   flex-direction: column;
@@ -361,6 +395,10 @@ export default {
 .mono {
   font-size: 14px !important;
   color: var(--sec-font-color);
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  align-items: center;
 }
 .thor-rune-details {
   padding: 12px;
