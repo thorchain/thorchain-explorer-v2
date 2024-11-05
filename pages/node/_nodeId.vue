@@ -94,7 +94,7 @@ export default {
           },
           {
             name: 'Reason',
-            value: this.node?.jail?.reason,
+            value: this.node?.jail?.reason ?? '-',
           },
         ]
       }

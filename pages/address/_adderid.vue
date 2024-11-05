@@ -2,7 +2,9 @@
   <page class="address-container">
     <div class="address-header">
       <WalletIcon class="icon" />
-      <span>{{ isVault ? vaultType : 'Address' }}</span>
+      <span>{{
+        nodeAddress ? 'Node Address' : isVault ? vaultType : 'Address'
+      }}</span>
     </div>
     <div class="address-name">
       <span style="color: var(--primary-color)">{{ address }}</span>
@@ -279,7 +281,11 @@ export default {
     ...mapGetters({
       runePrice: 'getRunePrice',
       nodesData: 'getNodesData',
+      nodes: 'getNodesData',
     }),
+    nodeAddress() {
+      return this.nodes?.some((node) => node.node_address === this.address)
+    },
   },
   watch: {
     nodesData() {
