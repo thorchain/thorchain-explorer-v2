@@ -3,6 +3,11 @@
     <Nav :active-mode.sync="period" :nav-items="periods" pre-text="Period :" />
     <Card :is-loading="loading" title="Pool Earnings">
       <template #header>
+        <span v-if="tableData.length > 0">
+          {{ formatUnixDate(tableData[0].startTime) }}
+          -
+          {{ formatUnixDate(tableData[0].endTime) }}
+        </span>
         <button
           class="button-container full-screen-btn"
           @click="showChange = !showChange"

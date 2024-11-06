@@ -223,6 +223,9 @@ export default {
 
       return isSynthAsset(assetFromString(asset))
     },
+    formatUnixDate(date, format = 'MMM D, h:mm a') {
+      return moment.unix(date).format(format)
+    },
     fromNow(date) {
       return moment(date).fromNow()
     },
