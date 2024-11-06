@@ -714,6 +714,10 @@ export const interfaces = {
     name: 'InstaSwap',
     icon: 'instaswap',
   },
+  bgw: {
+    name: 'BitGet Wallet',
+    icon: 'bgw',
+  },
 }
 
 export const affiliateMap = {
@@ -749,6 +753,7 @@ export const affiliateMap = {
   sk: interfaces.sk,
   is: interfaces.is,
   ds: interfaces.defispot,
+  bgw: interfaces.bgw,
 }
 
 export function getExplorerAddressUrl(chain, query) {
