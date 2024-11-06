@@ -195,7 +195,7 @@ export default {
           tdClass: 'mono',
         },
         {
-          label: 'Pool APR',
+          label: 'Est. Yr. Return',
           field: 'poolAPR',
           type: 'percentage',
           tdClass: 'mono',
