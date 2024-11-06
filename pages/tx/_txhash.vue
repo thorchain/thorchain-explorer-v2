@@ -1644,12 +1644,6 @@ export default {
           : null
       let timeStamp = swapAction?.date
       const height = swapAction?.height
-      const inAmountUSD =
-        (+swapAction?.metadata.swap.inPriceUSD * inAmount) / 1e8
-      const outAmountUSD =
-        (+swapAction?.metadata.swap.outPriceUSD *
-          (outAmount || +this.quote?.expected_amount_out)) /
-        1e8
 
       // Refunds
       const outboundHasRefund = outTxs?.some(
@@ -1659,6 +1653,18 @@ export default {
       const outboundHasSuccess = outTxs?.some((tx) =>
         tx.memo?.toLowerCase().startsWith('out')
       )
+
+      console.log(outboundHasRefund, outboundHasSuccess)
+      const inAmountUSD =
+        (+swapAction?.metadata.swap.inPriceUSD * inAmount) / 1e8
+      let outAmountUSD =
+        (+swapAction?.metadata.swap.outPriceUSD *
+          (outAmount || +this.quote?.expected_amount_out)) /
+        1e8
+      if (!outboundHasSuccess && outboundHasRefund) {
+        outAmountUSD = (+swapAction?.metadata.swap.inPriceUSD * outAmount) / 1e8
+      }
+
       const outboundRefundReason = actions?.actions.find(
         (action) => action.type === 'refund'
       )?.metadata.refund.reason
@@ -1668,8 +1674,8 @@ export default {
         actions?.actions.length > 0 &&
         actions?.actions.every((action) => action?.type === 'refund')
 
+      const refundAction = actions?.actions?.find((a) => a.type === 'refund')
       if (onlyRefund) {
-        const refundAction = actions?.actions?.find((a) => a.type === 'refund')
         timeStamp = refundAction?.date
       }
 
