@@ -13,7 +13,7 @@
       <nuxt-link
         v-else-if="props.column.field == 'operator'"
         class="clickable"
-        :to="`/address/${props.row.node}`"
+        :to="`/address/${props.row.operator}`"
       >
         {{ props.formattedRow[props.column.field] }}
       </nuxt-link>

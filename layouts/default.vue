@@ -35,6 +35,7 @@ export default {
   data() {
     return {
       darkMode: false,
+      updateInterval: undefined,
     }
   },
   computed: {
@@ -43,7 +44,6 @@ export default {
       menu: 'getIsMenuOn',
       fullscreen: 'getFullScreen',
       sidebar: 'getSidebar',
-      updateInterval: undefined,
     }),
   },
   watch: {

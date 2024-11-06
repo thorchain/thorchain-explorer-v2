@@ -50,9 +50,8 @@
 
 <script>
 import moment from 'moment'
-import { orderBy, compact, groupBy, sumBy, mapValues } from 'lodash'
+import { orderBy, groupBy, sumBy } from 'lodash'
 import { mapGetters } from 'vuex'
-import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
 import streamingSwap from './components/streamingSwap.vue'
 import txCard from './components/txCard.vue'
 import DisconnectIcon from '~/assets/images/disconnect.svg?inline'
@@ -62,14 +61,12 @@ import {
   isInternalTx,
   tradeToAsset,
   assetToString,
-  parseMemoToTxType,
 } from '~/utils'
 import Accordion from '~/components/Accordion.vue'
 
 export default {
   components: {
     DisconnectIcon,
-    BounceLoader,
     streamingSwap,
     txCard,
     Accordion,
@@ -286,7 +283,8 @@ export default {
       let actionFinalised = true
       if (memo.type === 'swap') {
         actionFinalised =
-          thorStatus?.stages.swap_finalised?.completed ||
+          (outAsset?.chain !== 'THOR' &&
+            thorStatus?.stages.swap_finalised?.completed) ||
           !thorStatus.stages.swap_status?.pending
       }
       const outboundFinalised =
@@ -307,7 +305,9 @@ export default {
             in: cardBase.in?.map((a) => ({
               asset: a?.asset,
               amount: a?.amount,
-              amountUSD: this.amountToUSD(a?.asset, a?.amount, this.pools),
+              amountUSD:
+                a?.amountUSD ??
+                this.amountToUSD(a?.asset, a?.amount, this.pools),
               filter: a?.filter,
               text: a?.text,
               icon: a?.icon,
@@ -322,7 +322,9 @@ export default {
             out: cardBase.out?.map((a) => ({
               asset: a?.asset,
               amount: a?.amount,
-              amountUSD: this.amountToUSD(a?.asset, a?.amount, this.pools),
+              amountUSD:
+                a?.amountUSD ??
+                this.amountToUSD(a?.asset, a?.amount, this.pools),
               text: a?.text,
               icon: a?.icon,
               address: a?.address,
@@ -1569,9 +1571,9 @@ export default {
           userAddresses.has(tx.to_address.toLowerCase()) ||
           (tx.coins[0].asset ===
             assetToString(this.parseMemoAsset(memo.asset)) &&
-            (tx.id !==
-              '0000000000000000000000000000000000000000000000000000000000000000' ||
-              tx.id !== ''))
+            tx.id !==
+              '0000000000000000000000000000000000000000000000000000000000000000' &&
+            tx.id !== '')
       )
       // get affiliate out if available
       const affiliateOut = thorStatus.out_txs?.filter(
@@ -1642,6 +1644,12 @@ export default {
           : null
       let timeStamp = swapAction?.date
       const height = swapAction?.height
+      const inAmountUSD =
+        (+swapAction?.metadata.swap.inPriceUSD * inAmount) / 1e8
+      const outAmountUSD =
+        (+swapAction?.metadata.swap.outPriceUSD *
+          (outAmount || +this.quote?.expected_amount_out)) /
+        1e8
 
       // Refunds
       const outboundHasRefund = outTxs?.some(
@@ -1688,6 +1696,7 @@ export default {
             {
               asset: inAsset,
               amount: inAmount,
+              amountUSD: inAmountUSD,
             },
           ],
           middle: {
@@ -1698,6 +1707,7 @@ export default {
             {
               asset: outAsset,
               amount: outAmount || +this.quote?.expected_amount_out,
+              amountUSD: outAmountUSD,
               filter: outAmount
                 ? undefined
                 : (v) => `~ ${this.baseAmountFormatOrZero(v)}`,

@@ -41,9 +41,10 @@
                   View Node
                 </nuxt-link>
               </span>
-              <span v-else class="mono">
+              <span v-else-if="bonds && bonds.total !== undefined" class="mono">
                 {{ balanceFormat(bonds.total) }} RUNE
               </span>
+              <span v-else class="mono">-</span>
             </div>
           </skeleton-item>
         </div>
@@ -290,7 +291,7 @@ export default {
       if (foundNode) {
         return foundNode.total_bond
       }
-      return this.bonds?.total || 0
+      return undefined
     },
     bonds() {
       if (!this.nodes) {
