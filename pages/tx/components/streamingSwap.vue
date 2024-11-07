@@ -162,7 +162,9 @@ export default {
       if (isSwap) {
         const { count, interval, quantity } =
           thorStatus.stages.swap_status.streaming
-        this.streamingDetail.fill = count / quantity
+        this.streamingDetail.fill = blockDuration
+          ? blockDuration / interval / quantity
+          : count / quantity
         if (!this.streamingDetail.count || count > this.streamingDetail.count) {
           this.durationSeconds = moment.duration(
             (interval * quantity - blockDuration) * 6,
