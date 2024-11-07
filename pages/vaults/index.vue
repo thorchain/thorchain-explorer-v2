@@ -61,8 +61,8 @@
                       <div class="card-header">Nodes Member</div>
                       <div class="card-body grid-template">
                         <small
-                          v-for="node in props.row.membership"
-                          :key="node"
+                          v-for="(node, i) in props.row.membership"
+                          :key="i"
                           class="mono"
                         >
                           .{{ node.node_address.slice(-4) }}
@@ -241,21 +241,21 @@ export default {
     updateGeneralStats() {
       const asgard = this.asgard.filter((a) => a.status === 'Active')
 
-      const totalBond = asgard.reduce((total, o) => {
+      const totalBond = asgard?.reduce((total, o) => {
         return total + o.bond * this.runePrice
       }, 0)
 
-      const totalValue = asgard.reduce((total, o) => {
+      const totalValue = asgard?.reduce((total, o) => {
         return total + o.total_value * this.runePrice
       }, 0)
 
       const valuePerBond = totalValue / totalBond
 
-      const totalIns = asgard.reduce((total, o) => {
+      const totalIns = asgard?.reduce((total, o) => {
         return total + (o.ins ?? 0)
       }, 0)
 
-      const totalOuts = asgard.reduce((total, o) => {
+      const totalOuts = asgard?.reduce((total, o) => {
         return total + (o.outs ?? 0)
       }, 0)
 
@@ -338,7 +338,9 @@ export default {
             .find((t) => t?.pub_key === vault?.pub_key)
             ?.node_tss_times.map((n) => n.tss_time)
 
-          avgTSS = nodesTSS.reduce((a, c) => a + c, 0) / nodesTSS.length
+          if (nodesTSS) {
+            avgTSS = nodesTSS?.reduce((a, c) => a + c, 0) / nodesTSS?.length
+          }
         }
         y.push({
           hash: vault?.addresses.find((e) => e.chain === 'THOR').address,
