@@ -33,6 +33,7 @@
           v-if="inboundHash"
           :inbound-hash="inboundHash"
           :quote="quote"
+          :height="height"
         />
       </template>
       <tx-loader v-else></tx-loader>
@@ -1644,6 +1645,7 @@ export default {
           : null
       let timeStamp = swapAction?.date
       const height = swapAction?.height
+      this.height = height
 
       // Refunds
       const outboundHasRefund = outTxs?.some(
@@ -1654,7 +1656,6 @@ export default {
         tx.memo?.toLowerCase().startsWith('out')
       )
 
-      console.log(outboundHasRefund, outboundHasSuccess)
       const inAmountUSD =
         (+swapAction?.metadata.swap.inPriceUSD * inAmount) / 1e8
       let outAmountUSD =

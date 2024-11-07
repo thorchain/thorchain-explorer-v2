@@ -83,10 +83,11 @@
 
 <script>
 import moment from 'moment'
+import { mapGetters } from 'vuex'
 import { assetFromString } from '~/utils'
 
 export default {
-  props: ['inboundHash', 'quote'],
+  props: ['inboundHash', 'quote', 'height'],
   data() {
     return {
       streamingDetail: {
@@ -122,6 +123,9 @@ export default {
 
       return 1 - (quoteQuality - quality) / quoteQuality
     },
+    ...mapGetters({
+      chainsHeight: 'getChainsHeight',
+    }),
   },
   mounted() {
     this.updateStreamingDetail(this.inboundHash)
@@ -149,13 +153,19 @@ export default {
         thorStatus.stages.swap_status?.streaming &&
         thorStatus.stages.swap_status?.pending
 
+      let blockDuration
+      if (this.height && this.chainsHeight) {
+        blockDuration = this.chainsHeight?.THOR - this.height
+      }
+
+      // change the remaining seconds to the first height
       if (isSwap) {
         const { count, interval, quantity } =
-          thorStatus.stages.swap_status?.streaming
+          thorStatus.stages.swap_status.streaming
         this.streamingDetail.fill = count / quantity
         if (!this.streamingDetail.count || count > this.streamingDetail.count) {
           this.durationSeconds = moment.duration(
-            interval * (quantity - count) * 6,
+            (interval * quantity - blockDuration) * 6,
             'seconds'
           )
           this.streamingDetail.remIntervalSec = this.createDurationText(
@@ -165,7 +175,8 @@ export default {
         this.streamingDetail.count = count
         this.streamingDetail.quantity = quantity
         this.streamingDetail.interval = interval
-        this.streamingDetail.remInterval = interval * (quantity - count)
+        this.streamingDetail.remInterval =
+          interval * quantity - blockDuration ?? interval * (quantity - count)
 
         if (!this.countdownInterval) {
           this.countdownInterval = setInterval(this.updateCountdown, 1000)
