@@ -180,7 +180,7 @@
         </div>
       </template>
     </div>
-    <div class="footer-stat">
+    <div class="footer-stat" v-if="!isOverview">
       <strong>
         <sup>*</sup>
         All of the stat are based on 30 days period for now
@@ -194,7 +194,16 @@ import { mapGetters } from 'vuex'
 import { orderBy } from 'lodash'
 
 export default {
-  props: ['affiliateData'],
+  props: {
+    affiliateData: {
+      type: Array,
+      required: true,
+    },
+    isOverview: {
+      type: Boolean,
+      default: false,
+    },
+  },
   data() {
     return {
       sortDirection: {
