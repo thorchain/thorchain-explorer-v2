@@ -9,6 +9,7 @@ export const state = () => ({
   showSidebar: false,
   pools: undefined,
   extraHeaderInfo: [],
+  blueElectraTheme: false, 
 })
 
 export const getters = {
@@ -16,7 +17,10 @@ export const getters = {
     return state.runePrice ?? 0
   },
   getTheme(state) {
-    return state.darkTheme ? 'dark' : 'light'
+    if (state.blueElectraTheme) {
+      return 'BlueElectra';
+    }
+    return state.darkTheme ? 'dark' : 'light';
   },
   getIsMenuOn(state) {
     return state.showMenu
@@ -48,12 +52,21 @@ export const mutations = {
   setRunePrice(state, price) {
     state.runePrice = price
   },
-  setTheme(state, isDarkTheme) {
-    const htmlElement = document.documentElement
-    localStorage.setItem('theme', isDarkTheme ? 'dark' : 'light')
-    htmlElement.setAttribute('theme', isDarkTheme ? 'dark' : 'light')
-    state.darkTheme = isDarkTheme
-  },
+  setTheme(state, theme) {
+    const htmlElement = document.documentElement;
+    if (theme === 'BlueElectra') {
+      localStorage.setItem('theme', 'BlueElectra');
+      htmlElement.setAttribute('theme', 'BlueElectra');
+      state.blueElectraTheme = true;
+      state.darkTheme = false;
+    } else {
+      const themeMode = theme ? 'dark' : 'light';
+      localStorage.setItem('theme', themeMode);
+      htmlElement.setAttribute('theme', themeMode);
+      state.darkTheme = theme;
+      state.blueElectraTheme = false;
+    }
+  },  
   setNetworkData(state, networkData) {
     state.networkData = networkData
   },

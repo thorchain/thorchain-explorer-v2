@@ -62,7 +62,8 @@
           @click="toggleSettings"
         >
           <MoonIcon v-if="theme === 'dark'" class="menu-icon" />
-          <SunIcon v-else class="menu-icon" />
+          <SunIcon v-else-if="theme === 'light'" class="menu-icon" />
+          <BlueElectra v-else-if="theme === 'BlueElectra'" class="menu-icon" />
         </div>
         <transition name="fade">
           <div v-show="showSettings" ref="themeDialog" class="theme-dialog">
@@ -74,6 +75,12 @@
               @click="setTheme('light')"
             >
               <SunIcon class="theme-icon" /> Light
+            </a>
+            <a
+              :class="{ active: theme === 'BlueElectra' }"
+              @click="setTheme('BlueElectra')"
+            >
+              <BlueElectra class="theme-icon" /> BlueElectra
             </a>
           </div>
         </transition>
@@ -112,6 +119,7 @@ import MoonIcon from '~/assets/images/moon-icon.svg?inline'
 import SunIcon from '~/assets/images/sun-icon.svg?inline'
 import SettingsIcon from '~/assets/images/settings.svg?inline'
 import links from '~/const/links'
+import BlueElectra from '~/assets/images/blueelectra.svg?inline'
 
 export default {
   name: 'SearchBar',
@@ -120,6 +128,7 @@ export default {
     MoonIcon,
     SearchIcon,
     SettingsIcon,
+    BlueElectra,
   },
   data() {
     return {
@@ -242,7 +251,11 @@ export default {
       }
     },
     setTheme(theme) {
-      this.$store.commit('setTheme', theme === 'dark')
+      if (theme === 'BlueElectra') {
+        this.$store.commit('setTheme', 'BlueElectra')
+      } else {
+        this.$store.commit('setTheme', theme === 'dark')
+      }
     },
     search() {
       this.isSearch = true
@@ -479,7 +492,7 @@ export default {
   flex-direction: column;
   border: 1px solid var(--border-color);
   border-radius: 0.5rem;
-  width: 100px;
+  width: 155px;
   background: var(--card-bg-color);
 
   a {

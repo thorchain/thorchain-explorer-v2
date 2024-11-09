@@ -82,14 +82,21 @@ export default {
   },
   mounted() {
     const htmlElement = document.documentElement
+    const savedTheme = localStorage.getItem('theme')
 
-    const savedTheme =
-      localStorage.getItem('theme') === 'light'
-        ? false
-        : true || !!window.matchMedia('(prefers-color-scheme: dark)').matches
-
-    htmlElement.setAttribute('theme', savedTheme === false ? 'light' : 'dark')
-    this.darkMode = savedTheme
+    if (savedTheme === 'BlueElectra') {
+      this.blueElectraMode = true
+      htmlElement.setAttribute('theme', 'BlueElectra')
+      this.$store.commit('setTheme', 'BlueElectra')
+    } else if (savedTheme === 'light') {
+      this.darkMode = false
+      htmlElement.setAttribute('theme', 'light')
+      this.$store.commit('setTheme', false)
+    } else {
+      this.darkMode = true
+      htmlElement.setAttribute('theme', 'dark')
+      this.$store.commit('setTheme', true)
+    }
 
     this.getRunePrice()
 
