@@ -197,7 +197,11 @@
       <info-card :options="networkSettings" />
     </div>
     <div>
-      <affiliate-tables :affiliateData="affiliateData" :isOverview="true"/>
+      <affiliate-tables
+        :affiliate-data="affiliateData"
+        :is-overview="true"
+        :limit="5"
+      />
     </div>
     <div class="cards-container">
       <div class="card">
@@ -324,6 +328,7 @@ import {
 } from 'echarts/components'
 import VChart from 'vue-echarts'
 import { range, orderBy } from 'lodash'
+import affiliateTables from '../insights/component/affiliateTables.vue'
 import { blockTime } from '~/utils'
 import StackDollar from '~/assets/images/sack-dollar.svg?inline'
 import LockIcon from '~/assets/images/lock.svg?inline'
@@ -331,7 +336,6 @@ import ArrowRightIcon from '~/assets/images/arrow-right.svg?inline'
 import Exchange from '~/assets/images/exchange.svg?inline'
 import Burn from '~/assets/images/burn.svg?inline'
 import Piggy from '~/assets/images/piggy.svg?inline'
-import affiliateTables from '../insights/component/affiliateTables.vue'
 import Chart from '~/assets/images/chart.svg?inline'
 import TransactionAction from '~/components/transactions/TransactionAction.vue'
 
@@ -746,27 +750,25 @@ export default {
         data?.meta?.pools?.find((p) => p.pool === 'income_burn').earnings / 1e8
     })
 
-  this.$api
-  .getAffiliateSwapsByWallet()
-  .then((data) => {
-    if (data && data.data) {
-      this.affiliateData = data.data.slice(0, 5).map((item) => ({
-        affiliate: item.affiliate,
-        affiliate_fees_usd: item.affiliate_fees_usd,
-        total_swaps: item.total_swaps,
-        total_volume_usd: item.total_volume_usd,
-        vc: item.vc,
-      }));
-    } else {
-      console.error('Data structure is not as expected:', data);
-    }
-  })
-  .catch((error) => {
-    console.error('Error fetching affiliate swaps by wallet:', error);
-  });
-
-
-
+    this.$api
+      .getAffiliateSwapsByWallet()
+      .then((data) => {
+        if (data && data.data) {
+          this.affiliateData = data.data.map((item) => ({
+            affiliate: item.affiliate,
+            affiliate_fees_usd: item.affiliate_fees_usd,
+            total_swaps: item.total_swaps,
+            total_volume_usd: item.total_volume_usd,
+            vc: item.vc,
+            avg_bps: item.avg_affiliate_fee_basis_points / 1e4,
+          }))
+        } else {
+          console.error('Data structure is not as expected:', data)
+        }
+      })
+      .catch((error) => {
+        console.error('Error fetching affiliate swaps by wallet:', error)
+      })
 
     // Get inbound info
     this.getNetworkStatus()

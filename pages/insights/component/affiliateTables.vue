@@ -39,7 +39,7 @@
         </div>
       </template>
       <template v-else>
-        <div v-for="index in 25" :key="index" class="loader-item">
+        <div v-for="index in limit" :key="index" class="loader-item">
           <div style="display: flex; gap: 5px">
             <skeleton-loader
               class="number-loader"
@@ -82,7 +82,7 @@
         </div>
       </template>
       <template v-else>
-        <div v-for="index in 25" :key="index" class="loader-item">
+        <div v-for="index in limit" :key="index" class="loader-item">
           <div style="display: flex; gap: 5px">
             <skeleton-loader
               class="number-loader"
@@ -125,7 +125,7 @@
         </div>
       </template>
       <template v-else>
-        <div v-for="index in 25" :key="index" class="loader-item">
+        <div v-for="index in limit" :key="index" class="loader-item">
           <div style="display: flex; gap: 5px">
             <skeleton-loader
               class="number-loader"
@@ -168,7 +168,7 @@
         </div>
       </template>
       <template v-else>
-        <div v-for="index in 25" :key="index" class="loader-item">
+        <div v-for="index in limit" :key="index" class="loader-item">
           <div style="display: flex; gap: 5px">
             <skeleton-loader
               class="number-loader"
@@ -180,7 +180,7 @@
         </div>
       </template>
     </div>
-    <div class="footer-stat" v-if="!isOverview">
+    <div v-if="!isOverview" class="footer-stat">
       <strong>
         <sup>*</sup>
         All of the stat are based on 30 days period for now
@@ -203,6 +203,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    limit: {
+      type: Number,
+      default: 30,
+    },
   },
   data() {
     return {
@@ -222,7 +226,10 @@ export default {
 
   methods: {
     sortedData(data, field) {
-      return orderBy(data, [field], [this.sortDirection[field]])
+      return orderBy(data, [field], [this.sortDirection[field]]).slice(
+        0,
+        this.limit
+      )
     },
     colorizeIndex(index) {
       switch (index) {
