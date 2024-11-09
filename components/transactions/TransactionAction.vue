@@ -60,7 +60,7 @@
       v-else-if="row && (type === 'withdraw' || type === 'runePoolWithdraw')"
       class="action-cell"
     >
-      <div :class="showMiniBubble ? 'mini-bubble' : 'no-bubble'">
+      <div :class="'mini-bubble'">
         <asset-icon
           :height="'1.2rem'"
           :chain-height="'1rem'"
@@ -103,7 +103,7 @@
         }}</span>
       </span>
       <right-arrow class="action-type" />
-      <div :class="showMiniBubble ? 'mini-bubble' : 'no-bubble'">
+      <div :class="'mini-bubble'">
         <asset-icon
           :height="'1.2rem'"
           :chain-height="'1rem'"
@@ -293,11 +293,10 @@ import { mapGetters } from 'vuex'
 import RightArrow from '~/assets/images/arrow-right.svg?inline'
 import VaultIcon from '~/assets/images/safe.svg?inline'
 import RedoIcon from '~/assets/images/refresh.svg?inline'
-import UserGear from '~/assets/images/user-gear.svg?inline'
 import { parseMemoToTxType } from '~/utils'
 
 export default {
-  components: { RightArrow, VaultIcon, RedoIcon, UserGear },
+  components: { RightArrow, VaultIcon, RedoIcon },
   props: {
     row: {
       type: Object,
