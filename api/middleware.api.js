@@ -146,6 +146,18 @@ export function getTopSwaps() {
   )
 }
 
+export function getTopSwapsWeekly() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + 'api/swapsTopWeekly'
+  )
+}
+
+export function getTopSwapsMonthly() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + 'api/swapsTopMonthly'
+  )
+}
+
 export function getEarnings() {
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].SERVER_URL + 'api/rawEarnings'

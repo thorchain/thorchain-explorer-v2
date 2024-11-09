@@ -56,6 +56,9 @@
         >
           {{ props.formattedRow[props.column.field] }}
         </div>
+        <template v-else-if="props.column.field === 'volume'">
+          <slot :name="props.column.field" :props="props"></slot>
+        </template>
         <span v-else>
           {{ props.formattedRow[props.column.field] }}
         </span>
@@ -103,7 +106,32 @@ export default {
       }
     },
   },
-  props: ['txs', 'owner', 'loading'],
+  props: {
+    txs: {
+      type: Object,
+      required: true,
+      default() {
+        return {
+          actions: [],
+        }
+      },
+    },
+    owner: {
+      type: [String, undefined],
+      required: false,
+      default: undefined,
+    },
+    loading: {
+      type: Boolean,
+      required: false,
+    },
+    props: {
+      type: [Object, Array],
+      default() {
+        return []
+      },
+    },
+  },
   data() {
     return {
       actionsColumn: [
@@ -143,6 +171,7 @@ export default {
           label: 'Action',
           field: 'action',
         },
+        ...this.props,
       ],
     }
   },

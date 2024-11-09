@@ -1105,7 +1105,7 @@ export default {
     },
     highlightSort(x, y, col, rowX, rowY, name) {
       const favs =
-        JSON.parse(localStorage.getItem(name)).map((f) => f.address) || []
+        JSON.parse(localStorage.getItem(name))?.map((f) => f.address) || []
       if (!favs) {
         return 0
       }
