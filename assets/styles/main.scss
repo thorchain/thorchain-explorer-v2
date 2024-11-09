@@ -388,6 +388,7 @@ input {
   background-color: var(--bg-color);
 
   thead th {
+    color: var(--font-color);
     font-size: 0.875rem;
     background: var(--bg-color);
     border-color: var(--border-color);
@@ -453,6 +454,7 @@ input {
 }
 
 .vgt-table thead th {
+  color: var(--font-color);
   vertical-align: middle !important;
 
   span {
@@ -691,7 +693,8 @@ input {
   }
 }
 
-[theme='dark'], [theme='BlueElectra'] {
+[theme='dark'],
+[theme='BlueElectra'] {
   .mini-bubble {
     color: #21c187;
     fill: #21c187;

@@ -31,7 +31,9 @@
                 class="cell-content"
               >
                 <AssetIcon :asset="props.row.asset" />
-                <span>{{ props.formattedRow[props.column.field] }}</span>
+                <span class="clickable">{{
+                  props.formattedRow[props.column.field]
+                }}</span>
               </div>
               <div v-else-if="props.column.field == 'volume'">
                 <span>{{ props.formattedRow[props.column.field] }}</span>
