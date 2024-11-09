@@ -25,9 +25,6 @@
           />
         </div>
         <div v-else-if="props.column.field === 'type'" class="type">
-          <span v-if="props.row.status === 'pending'" class="pending-icon">
-            <Clock :class="['mini-bubble yellow']" />
-          </span>
           <transaction-status :row="props.row" />
         </div>
         <div v-else-if="props.column.field === 'height'">
@@ -74,7 +71,6 @@ import TransactionAction from './transactions/TransactionAction.vue'
 import Address from './transactions/Address.vue'
 import Hash from './transactions/Hash.vue'
 import RightArrow from '~/assets/images/arrow-right.svg?inline'
-import Clock from '~/assets/images/clock.svg?inline'
 import { AssetImage } from '~/classes/assetImage'
 
 export default {
@@ -84,7 +80,6 @@ export default {
     Address,
     Hash,
     RightArrow,
-    Clock,
   },
   filters: {
     shortSymbol(assetStr) {
@@ -354,8 +349,5 @@ export default {
   height: 1.5rem;
   width: 1.5rem;
   padding: 2px;
-}
-.pending-icon {
-  height: 24px;
 }
 </style>

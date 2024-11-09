@@ -1,7 +1,7 @@
 <template>
   <div>
     <div
-      v-if="row && (row.type === 'swap' || row.type === 'switch')"
+      v-if="row && (type === 'swap' || type === 'switch')"
       class="action-cell"
     >
       <span
@@ -57,9 +57,7 @@
       </template>
     </div>
     <div
-      v-else-if="
-        row && (row.type === 'withdraw' || row.type === 'runePoolWithdraw')
-      "
+      v-else-if="row && (type === 'withdraw' || type === 'runePoolWithdraw')"
       class="action-cell"
     >
       <div :class="showMiniBubble ? 'mini-bubble' : 'no-bubble'">
@@ -87,9 +85,7 @@
       </span>
     </div>
     <div
-      v-else-if="
-        row && (row.type === 'addLiquidity' || row.type === 'runePoolDeposit')
-      "
+      v-else-if="row && (type === 'addLiquidity' || type === 'runePoolDeposit')"
       class="action-cell"
     >
       <span
@@ -117,7 +113,7 @@
       </div>
     </div>
 
-    <div v-else-if="row && row.type === 'refund'" class="action-cell">
+    <div v-else-if="row && type === 'refund'" class="action-cell">
       <span
         v-for="(ops, i) in row.in"
         :key="'in-' + i"
@@ -135,7 +131,7 @@
       <redo-icon class="action-type" />
     </div>
 
-    <div v-else-if="row && row.type === 'send'" class="action-cell">
+    <div v-else-if="row && type === 'send'" class="action-cell">
       <span
         v-for="(ops, i) in row.in"
         :key="'in-' + i"
@@ -162,7 +158,7 @@
       </span>
     </div>
 
-    <div v-else-if="row && row.type === 'bond'" class="action-cell">
+    <div v-else-if="row && type === 'bond'" class="action-cell">
       <span
         v-for="(ops, i) in row.in"
         :key="'in-' + i"
@@ -188,7 +184,7 @@
       </span>
     </div>
 
-    <div v-else-if="row && row.type === 'unbond'" class="action-cell">
+    <div v-else-if="row && type === 'unbond'" class="action-cell">
       <span :class="showMiniBubble ? 'mini-bubble info customized' : 'info'">
         <nuxt-link
           class="clickable"
@@ -214,7 +210,7 @@
       </span>
     </div>
 
-    <div v-else-if="row && row.type === 'trade'" class="action-cell">
+    <div v-else-if="row && type === 'trade'" class="action-cell">
       <span
         v-for="(ops, i) in row.in"
         :key="'in-' + i"
@@ -250,7 +246,7 @@
       </span>
     </div>
 
-    <div v-else-if="row && row.type === 'failed'" class="action-cell">
+    <div v-else-if="row && type === 'failed'" class="action-cell">
       <template v-if="row.metadata && row.metadata.failed">
         <span :class="showMiniBubble ? 'mini-bubble info customized' : 'info'">
           {{ parseMemoToTxType(row.metadata.failed.memo) }}
@@ -269,7 +265,7 @@
       </template>
     </div>
 
-    <div v-else-if="row && row.type === 'thorname'" class="action-cell">
+    <div v-else-if="row && type === 'thorname'" class="action-cell">
       <template v-if="row.metadata && row.metadata.thorname">
         <span :class="showMiniBubble ? 'mini-bubble customized' : 'no-bubble'">
           <asset-icon
@@ -316,6 +312,19 @@ export default {
     ...mapGetters({
       theme: 'getTheme',
     }),
+    type() {
+      if (this.row.type === 'swap') {
+        const txType = this.row.metadata?.swap?.txType
+        if (txType === 'add') {
+          return 'addLiquidity'
+        }
+        if (txType === 'withdraw') {
+          return 'withdraw'
+        }
+        return this.row.type
+      }
+      return this.row?.type
+    },
   },
   methods: {
     affiliateWallet(row) {

@@ -1,5 +1,8 @@
 <template>
   <div class="customized">
+    <span v-if="isPending" class="pending-icon">
+      <Clock :class="['mini-bubble yellow']" />
+    </span>
     <div
       v-if="row"
       :class="[
@@ -43,6 +46,7 @@ import Deposit from '~/assets/images/deposit.svg?inline'
 import Exit from '~/assets/images/exit.svg?inline'
 import Unbond from '~/assets/images/unbond.svg?inline'
 import Name from '~/assets/images/name.svg?inline'
+import Clock from '~/assets/images/clock.svg?inline'
 
 export default {
   components: {
@@ -54,11 +58,21 @@ export default {
     Exit,
     Unbond,
     Name,
+    Clock,
   },
   props: {
     row: {
       type: Object,
       default: () => {},
+    },
+  },
+  computed: {
+    isPending() {
+      const isSwap = this.row.type === 'swap'
+      if (isSwap && this.row.metadata.swap.txType !== 'swap') {
+        return false
+      }
+      return this.row.status === 'pending'
     },
   },
   methods: {
@@ -98,5 +112,14 @@ export default {
   width: 1.1rem;
   fill: inherit;
   margin-right: 0.5rem;
+}
+
+.pending-icon {
+  height: 24px;
+  margin-right: 5px;
+
+  .mini-bubble {
+    height: 24px;
+  }
 }
 </style>
