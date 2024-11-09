@@ -107,7 +107,7 @@
         <asset-icon
           :height="'1.2rem'"
           :chain-height="'1rem'"
-          :asset="row.pools[0] || row.in[0].coins[0].asset"
+          :asset="(row.pools && row.pools[0]) || row.in[0].coins[0].asset"
         />
         <vault-icon class="action-icon" />
       </div>
@@ -320,7 +320,7 @@ export default {
         if (txType === 'withdraw') {
           return 'withdraw'
         }
-        return this.row.type
+        return this.row?.type
       }
       return this.row?.type
     },
