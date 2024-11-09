@@ -333,7 +333,7 @@ export default {
       }
 
       return {
-        icon: this.theme === 'dark' ? detail.icons.urlDark : detail.icons.url,
+        icon: this.theme === 'light' ? detail.icons.url : detail.icons.urlDark,
         name: detail.name,
       }
     },

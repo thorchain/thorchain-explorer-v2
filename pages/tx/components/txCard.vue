@@ -14,7 +14,7 @@
           <small> executed on </small>
           <img
             v-if="ifc.icons && ifc.icons.url"
-            :src="theme === 'dark' ? ifc.icons.urlDark : ifc.icons.url"
+            :src="theme === 'light' ? ifc.icons.url : ifc.icons.urlDark"
             class="interface-image"
             alt="interface image"
             :title="ifc.name"

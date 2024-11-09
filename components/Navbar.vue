@@ -95,6 +95,16 @@
                 <SunIcon class="menu-icon" />
                 <div>Light</div>
               </div>
+              <div
+                :class="[
+                  'settings-option',
+                  { active: theme === 'BlueElectra' },
+                ]"
+                @click="setTheme('BlueElectra')"
+              >
+                <BlueElectra class="menu-icon" />
+                <div>BlueElectra</div>
+              </div>
             </div>
             <div class="line"></div>
             <div class="settings-container">
@@ -118,6 +128,16 @@
                   Stagenet
                 </a>
               </div>
+              <div class="settings-option" @click="setTheme('BlueElectra')">
+                <a
+                  :class="{
+                    active: networkEnv === 'stagenet',
+                  }"
+                  :href="gotoInstance('stagenet', networkEnv === 'stagenet')"
+                >
+                  Stagenet
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -129,7 +149,7 @@
 <script>
 import { mapMutations, mapGetters } from 'vuex'
 import ThorchainLogo from '~/assets/images/thorchain-logo.svg?inline'
-
+import BlueElectra from '~/assets/images/blueelectra.svg?inline'
 import MenuIcon from '~/assets/images/menu-burger.svg?inline'
 import CrossIcon from '~/assets/images/cross.svg?inline'
 import MoonIcon from '~/assets/images/moon-icon.svg?inline'
@@ -144,6 +164,7 @@ export default {
     CrossIcon,
     SunIcon,
     MoonIcon,
+    BlueElectra,
   },
   data() {
     return {
@@ -310,7 +331,11 @@ export default {
       return !!this.openSubmenus[index]
     },
     setTheme(theme) {
-      this.$store.commit('setTheme', theme === 'dark')
+      if (theme === 'BlueElectra') {
+        this.$store.commit('setTheme', 'BlueElectra')
+      } else {
+        this.$store.commit('setTheme', theme === 'dark')
+      }
     },
     gotoInstance(instance, disabled) {
       if (disabled) return

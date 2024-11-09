@@ -17,6 +17,7 @@ import {
   affiliateMap,
   darkTheme,
   lightTheme,
+  blueElectraTheme,
   interfaces,
 } from '~/utils'
 import endpoints from '~/api/endpoints'
@@ -35,11 +36,14 @@ export default {
   },
   computed: {
     chartTheme() {
+      const isBlueElectra = this.$store.state.blueElectraTheme
       const isDark = this.$store.state.darkTheme
-      if (isDark) {
-        return darkTheme
+
+      if (isBlueElectra) {
+        return blueElectraTheme
       }
-      return lightTheme
+
+      return isDark ? darkTheme : lightTheme
     },
   },
   methods: {

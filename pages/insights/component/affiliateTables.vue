@@ -235,7 +235,7 @@ export default {
       return detail
         ? {
             icon:
-              this.theme === 'dark' ? detail.icons.urlDark : detail.icons.url,
+              this.theme === 'light' ? detail.icons.url : detail.icons.urlDark,
             name: detail.name,
           }
         : {
