@@ -703,7 +703,8 @@ export default {
         // bond, slash, oldest, not updated
         let lowestBond = null
         let highestSlash = 0
-        let oldest = 0
+        let oldest = this.chainsHeight?.THOR ?? Number.MAX_SAFE_INTEGER
+        let oldestIndex
 
         // get all active version
         const lowVersions = []
@@ -716,11 +717,15 @@ export default {
             highestSlash = +el.slash_points
           }
 
-          if (el.age.number > oldest) {
-            oldest = el.age.number
+          if (el.status_since < oldest && el.requested_to_leave === false) {
+            oldest = el.status_since
+            oldestIndex = i
           }
 
-          if (!lowestBond || lowestBond > +el.total_bond) {
+          if (
+            (!lowestBond || lowestBond > +el.total_bond) &&
+            el.requested_to_leave === false
+          ) {
             lowestBond = +el.total_bond
           }
 
@@ -769,7 +774,7 @@ export default {
             })
           }
 
-          if (el.age.number === oldest) {
+          if (index === oldestIndex) {
             filteredNodes[index].churn.push({
               name: 'Oldest',
               icon: require('@/assets/images/old.svg?inline'),
