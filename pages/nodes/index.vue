@@ -1104,11 +1104,18 @@ export default {
       return x?.number < y?.number ? -1 : x?.number > y?.number ? 1 : 0
     },
     highlightSort(x, y, col, rowX, rowY, name) {
-      const favs = JSON.parse(localStorage.getItem(name)) || []
+      const favs =
+        JSON.parse(localStorage.getItem(name)).map((f) => f.address) || []
       if (!favs) {
         return 0
       }
-      return favs.includes(rowX.address) ? 1 : -1
+      if (favs.includes(rowX.address)) {
+        return 1
+      }
+      if (favs.includes(rowY.address)) {
+        return -1
+      }
+      return 0
     },
   },
   head: {
