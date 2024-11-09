@@ -196,6 +196,9 @@
       <info-card :options="statsSettings" />
       <info-card :options="networkSettings" />
     </div>
+    <div>
+      <affiliate-tables :affiliateData="affiliateData" :isOverview="true"/>
+    </div>
     <div class="cards-container">
       <div class="card">
         <div class="card-header">
@@ -328,7 +331,7 @@ import ArrowRightIcon from '~/assets/images/arrow-right.svg?inline'
 import Exchange from '~/assets/images/exchange.svg?inline'
 import Burn from '~/assets/images/burn.svg?inline'
 import Piggy from '~/assets/images/piggy.svg?inline'
-
+import affiliateTables from '../insights/component/affiliateTables.vue'
 import Chart from '~/assets/images/chart.svg?inline'
 import TransactionAction from '~/components/transactions/TransactionAction.vue'
 
@@ -356,10 +359,12 @@ export default {
     StackDollar,
     ArrowRightIcon,
     TransactionAction,
+    affiliateTables,
   },
   layout: 'dashboard',
   data() {
     return {
+      affiliateData: [],
       oldRunePool: [],
       polOverview: undefined,
       rune: '',
@@ -740,6 +745,28 @@ export default {
       this.totalBurnedRune =
         data?.meta?.pools?.find((p) => p.pool === 'income_burn').earnings / 1e8
     })
+
+  this.$api
+  .getAffiliateSwapsByWallet()
+  .then((data) => {
+    if (data && data.data) {
+      this.affiliateData = data.data.slice(0, 5).map((item) => ({
+        affiliate: item.affiliate,
+        affiliate_fees_usd: item.affiliate_fees_usd,
+        total_swaps: item.total_swaps,
+        total_volume_usd: item.total_volume_usd,
+        vc: item.vc,
+      }));
+    } else {
+      console.error('Data structure is not as expected:', data);
+    }
+  })
+  .catch((error) => {
+    console.error('Error fetching affiliate swaps by wallet:', error);
+  });
+
+
+
 
     // Get inbound info
     this.getNetworkStatus()
