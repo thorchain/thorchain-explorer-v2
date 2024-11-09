@@ -266,9 +266,14 @@ export default {
 <style lang="scss" scoped>
 .leaderboard-container {
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
   gap: 20px;
   flex-wrap: wrap;
+
+  @include md {
+    flex-direction: row;
+  }
 
   .data-section {
     flex: 1;
