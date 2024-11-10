@@ -1,7 +1,6 @@
 <template>
   <Page>
-    <Header title="Top Swaps" />
-    <card :is-loading="loading">
+    <card title="90D Swaps Volume">
       <VChart
         :option="swapHistory"
         :loading="!swapHistory"
@@ -10,14 +9,21 @@
         :autoresize="true"
       />
     </card>
-    <Nav :active-mode.sync="period" :nav-items="periods" pre-text="Period :" />
-    <transactions :txs="swaps" :loading="!swaps" :props="formatProp">
-      <template #volume="{ props }">
-        <span class="mono">
-          {{ smallBaseAmountFormatWithCur(getVolume(props.row)) }}
-        </span>
-      </template>
-    </transactions>
+    <div>
+      <Header title="Top Swaps" />
+      <Nav
+        :active-mode.sync="period"
+        :nav-items="periods"
+        pre-text="Period :"
+      />
+      <transactions :txs="swaps" :loading="!swaps" :props="formatProp">
+        <template #volume="{ props }">
+          <span class="mono">
+            {{ smallBaseAmountFormatWithCur(getVolume(props.row)) }}
+          </span>
+        </template>
+      </transactions>
+    </div>
   </Page>
 </template>
 
@@ -86,7 +92,6 @@ export default {
   },
   methods: {
     async fetchData() {
-      this.loading = true
       const resSwaps = (
         await this.$api.getSwapsHistory({
           interval: 'day',
@@ -94,7 +99,6 @@ export default {
         })
       ).data
       this.swapHistory = this.formatSwaps(resSwaps)
-      this.loading = false
     },
     formatSwaps(d) {
       const xAxis = []
