@@ -1,7 +1,7 @@
 <template>
   <Page>
     <div class="card-container">
-      <Card class="mobile-hidden" v-if="votingChart">
+      <Card v-if="votingChart" class="mobile-hidden">
         <VChart
           :option="votingChart"
           :loading="!votingChart"
@@ -378,7 +378,7 @@ export default {
     this.$api
       .getMimir()
       .then((res) => {
-        this.mimirs = res.data
+        this.mimirs = { ...res.data, SYSTEMINCOMEBURNRATEBPS: '0' }
       })
       .catch((e) => {
         console.error(e)
