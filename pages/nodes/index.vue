@@ -35,20 +35,48 @@
       </div>
 
       <div class="filter-btns">
-        <button class="filter-button" @click="hides.isp = !hides.isp">
-          <caret :class="['filter-icon', { disable: hides.isp == true }]" />
+        <button
+          class="filter-button"
+          :class="{ 'enabled-btn': !hides.isp }"
+          @click="
+            hides.isp = !hides.isp
+            saveFilters()
+          "
+        >
+          <caret :class="['filter-icon', { disable: hides.isp }]" />
           ISP
         </button>
-        <button class="filter-button" @click="hides.fee = !hides.fee">
-          <caret :class="['filter-icon', { disable: hides.fee == true }]" />
+        <button
+          class="filter-button"
+          :class="{ 'enabled-btn': !hides.fee }"
+          @click="
+            hides.fee = !hides.fee
+            saveFilters()
+          "
+        >
+          <caret :class="['filter-icon', { disable: hides.fee }]" />
           Fee
         </button>
-        <button class="filter-button" @click="hides.score = !hides.score">
-          <caret :class="['filter-icon', { disable: hides.score == true }]" />
+        <button
+          class="filter-button"
+          :class="{ 'enabled-btn': !hides.score }"
+          @click="
+            hides.score = !hides.score
+            saveFilters()
+          "
+        >
+          <caret :class="['filter-icon', { disable: hides.score }]" />
           Score
         </button>
-        <button class="filter-button" @click="hides.age = !hides.age">
-          <caret :class="['filter-icon', { disable: hides.age == true }]" />
+        <button
+          class="filter-button"
+          :class="{ 'enabled-btn': !hides.age }"
+          @click="
+            hides.age = !hides.age
+            saveFilters()
+          "
+        >
+          <caret :class="['filter-icon', { disable: hides.age }]" />
           Age
         </button>
       </div>
@@ -472,41 +500,29 @@ export default {
           items: [
             {
               name: 'Node',
-              value: this.bondMetrics?.activeNodeCount,
+              value: this.network?.activeNodeCount,
             },
             {
               name: 'Bond',
-              value: this.bondMetrics?.bondMetrics?.totalActiveBond / 10 ** 8,
+              value: this.bondMetrics?.totalActiveBond / 10 ** 8,
               usdValue: true,
               filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
             },
             {
               name: 'Average',
-              value: this.bondMetrics?.bondMetrics?.averageActiveBond / 10 ** 8,
+              value: this.bondMetrics?.averageActiveBond / 10 ** 8,
               filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
               name: 'Maximum',
-              value: Math.floor(
-                Math.floor(
-                  (Number.parseInt(
-                    this.bondMetrics?.bondMetrics?.maximumActiveBond
-                  ) ?? 0) /
-                    10 ** 8
-                )
-              ),
+              value: Math.floor(this.bondMetrics?.maximumActiveBond / 10 ** 8),
               filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
               name: 'Minimum',
-              value: Math.floor(
-                (Number.parseInt(
-                  this.bondMetrics?.bondMetrics?.minimumActiveBond
-                ) ?? 0) /
-                  10 ** 8
-              ),
+              value: Math.floor(this.bondMetrics?.minimumActiveBond / 10 ** 8),
               filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
@@ -532,36 +548,29 @@ export default {
           items: [
             {
               name: 'Nodes',
-              value: this.bondMetrics?.standbyNodeCount,
+              value: this.network?.standbyNodeCount,
             },
             {
               name: 'Bond',
-              value: this.bondMetrics?.bondMetrics?.totalStandbyBond / 10 ** 8,
+              value: this.bondMetrics?.totalStandbyBond / 10 ** 8,
               filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
               name: 'Average',
-              value:
-                this.bondMetrics?.bondMetrics?.averageStandbyBond / 10 ** 8,
+              value: this.bondMetrics?.averageStandbyBond / 10 ** 8,
               filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
               name: 'Maximum',
-              value: Math.floor(
-                (Number.parseInt(
-                  this.bondMetrics?.bondMetrics?.maximumStandbyBond
-                ) ?? 0) /
-                  10 ** 8
-              ),
+              value: Math.floor(this.bondMetrics?.maximumStandbyBond / 10 ** 8),
               filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
             {
               name: 'Minimum',
-              value:
-                this.bondMetrics?.bondMetrics?.minimumStandbyBond / 10 ** 8,
+              value: this.bondMetrics?.minimumStandbyBond / 10 ** 8,
               filter: (v) =>
                 `${this.$options.filters.number(v, '0,0.00a')} RUNE`,
               usdValue: true,
@@ -928,35 +937,22 @@ export default {
     },
   },
   mounted() {
-    this.$api.getNetwork().then(({ data }) => {
-      this.network = data
-    })
-    this.$api.getChurn().then(({ data }) => {
-      const { date, height } = data[0]
-      const Date = moment(date / 1e6).fromNow()
-      this.churn = { date: Date, height }
-    })
-    const mimirProm = this.$api
-      .getMimir()
-      .then((res) => {
-        this.churnHalted = res.data.HALTCHURNING
-        this.minBond = +res.data.MINIMUMBONDINRUNE
-        this.churnInterval = +res.data.CHURNINTERVAL
-        this.newNodesChurn = +res.data.NUMBEROFNEWNODESPERCHURN
+    this.$api
+      .getnodeOverview()
+      .then(({ data }) => {
+        const { network, churn, blockRewards } = data
+
+        this.network = network
+        this.bondMetrics = network.bondMetrics
+        this.churn = churn
+        this.churnHalted = blockRewards.HALTCHURNING
+        this.minBond = +blockRewards.MINIMUMBONDINRUNE
+        this.churnInterval = +blockRewards.CHURNINTERVAL
+        this.newNodesChurn = +blockRewards.NUMBEROFNEWNODESPERCHURN
       })
       .catch((e) => {
         console.error(e)
       })
-
-    const netProm = this.$api
-      .getNetwork()
-      .then((res) => {
-        this.bondMetrics = res.data
-      })
-      .catch((e) => {
-        console.error(e)
-      })
-
     this.updateNodes().then((_) => {
       this.loading = false
     })
@@ -965,9 +961,11 @@ export default {
       this.updateNodes()
     }, 10 * 1e3)
 
-    Promise.all([netProm, mimirProm]).then((_) => {
-      this.churnProgress()
-    })
+    this.churnProgress()
+    const savedFilters = localStorage.getItem('filterSettings')
+    if (savedFilters) {
+      this.hides = JSON.parse(savedFilters)
+    }
   },
   destroyed() {
     this.clearIntervalId(this.intervalId)
@@ -976,6 +974,9 @@ export default {
     async updateNodes() {
       const { data: nodesInfo } = await this.$api.getNodesInfo()
       this.nodesQuery = nodesInfo
+    },
+    saveFilters() {
+      localStorage.setItem('filterSettings', JSON.stringify(this.hides))
     },
     setActiveCol(col) {
       this.activeCols = []
@@ -1002,7 +1003,7 @@ export default {
       }
     },
     monthlyNodeReturn() {
-      if (!this.totalAwards || !this.churnProgressValue || !this.bondMetrics) {
+      if (!this.totalAwards || !this.churnProgressValue || !this.network) {
         return
       }
 
@@ -1014,7 +1015,7 @@ export default {
       }
 
       const calculatedValue =
-        (this.totalAwards / this.bondMetrics?.activeNodeCount) *
+        (this.totalAwards / this.network?.activeNodeCount) *
         (30 / churnPeriodInDays)
 
       return calculatedValue
@@ -1032,7 +1033,7 @@ export default {
       }
 
       const annualNodes =
-        (this.totalAwards / this.bondMetrics?.activeNodeCount) *
+        (this.totalAwards / this.network?.activeNodeCount) *
         (365 / churnPeriodInDays)
 
       return annualNodes
@@ -1055,19 +1056,18 @@ export default {
       return totalApy / totalActiveNodes
     },
     churnProgress() {
-      if (!this.bondMetrics || !this.churnInterval) {
+      if (!this.network || !this.churnInterval) {
         return
       }
 
       const churnValue =
         1 -
-        (this.bondMetrics?.nextChurnHeight - this.chainsHeight?.THOR) /
+        (this.network?.nextChurnHeight - this.chainsHeight?.THOR) /
           this.churnInterval
 
       this.churnProgressValue = churnValue
 
-      const churnTime =
-        this.bondMetrics?.nextChurnHeight - this.chainsHeight?.THOR
+      const churnTime = this.network?.nextChurnHeight - this.chainsHeight?.THOR
 
       this.churnProgressTime = churnTime
     },
@@ -1129,10 +1129,16 @@ export default {
   display: flex;
   flex-wrap: wrap;
 }
+
 .filter-btns {
   display: flex;
   margin-left: 5px;
   gap: 5px;
+
+  .enabled-btn {
+    color: var(--primary-color) !important;
+    border: 1px solid var(--primary-color) !important;
+  }
 
   .filter-button {
     background-color: var(--bg-color);
