@@ -37,7 +37,7 @@
       <div class="filter-btns">
         <button
           class="filter-button"
-          :class="{ 'disabled-btn': hides.isp }"
+          :class="{ 'enabled-btn': !hides.isp }"
           @click="
             hides.isp = !hides.isp
             saveFilters()
@@ -48,7 +48,7 @@
         </button>
         <button
           class="filter-button"
-          :class="{ 'disabled-btn': hides.fee }"
+          :class="{ 'enabled-btn': !hides.fee }"
           @click="
             hides.fee = !hides.fee
             saveFilters()
@@ -59,7 +59,7 @@
         </button>
         <button
           class="filter-button"
-          :class="{ 'disabled-btn': hides.score }"
+          :class="{ 'enabled-btn': !hides.score }"
           @click="
             hides.score = !hides.score
             saveFilters()
@@ -70,7 +70,7 @@
         </button>
         <button
           class="filter-button"
-          :class="{ 'disabled-btn': hides.age }"
+          :class="{ 'enabled-btn': !hides.age }"
           @click="
             hides.age = !hides.age
             saveFilters()
@@ -1135,7 +1135,7 @@ export default {
   margin-left: 5px;
   gap: 5px;
 
-  .disabled-btn {
+  .enabled-btn {
     color: var(--primary-color) !important;
     border: 1px solid var(--primary-color) !important;
   }
