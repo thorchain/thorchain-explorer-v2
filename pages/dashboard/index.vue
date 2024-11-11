@@ -398,6 +398,7 @@ export default {
       swapMode: 'swap-vol',
       inboundInfo: undefined,
       mimirInfo: undefined,
+      network: undefined,
     }
   },
   head: {
@@ -407,7 +408,6 @@ export default {
     ...mapGetters({
       runePrice: 'getRunePrice',
       chainsHeight: 'getChainsHeight',
-      network: 'getNetworkData',
     }),
     totalEarning24() {
       return this.earnings24USD + this.affiliateEarning
@@ -610,6 +610,7 @@ export default {
         this.txs = data?.txs?.actions
         this.totalAddresses = +data?.addresses?.pagination?.total
         this.totalSwap24USD = +data?.stats?.volume24USD
+        this.network = data?.networkData
         this.earnings24USD =
           (data?.stats.earnings24 / 1e8) * +data?.stats.runePriceUSD
 
