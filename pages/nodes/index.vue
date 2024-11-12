@@ -531,6 +531,7 @@ export default {
               value: this.calculateHardCap(),
               filter: (v) =>
                 `${this.$options.filters.number(v, '0,0.00a')} RUNE`,
+              extraInfo: `${this.$options.filters.number(this.calculateHardCap(), '0,0.00')} RUNE`,
               usdValue: true,
             },
           ],
