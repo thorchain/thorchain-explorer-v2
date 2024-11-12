@@ -96,7 +96,7 @@ export default {
               '0,0a'
             ),
 
-          extraText: `(${this.$options.filters.number(saversExtraData.saversDepth / 1e8, '0,0.00a')}${saversExtraData.asset})`,
+          extraText: `(${this.$options.filters.number(saversExtraData.saversDepth / 1e8, '0,0.00a')}${this.showAsset (saversExtraData.asset)})`,
         },
       ]
     },
