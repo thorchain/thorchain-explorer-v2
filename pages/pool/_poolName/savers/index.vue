@@ -49,7 +49,7 @@
               {{ props.formattedRow[props.column.field] }}
             </span>
             <small>
-              {{ props.row.asset }}
+              {{showAsset(props.row.asset) }}
             </small>
           </template>
           <span v-else>

@@ -19,9 +19,6 @@
     </div>
     <div class="chart-inner-container">
       <Card title="Type Swap Chart">
-        <template #header>
-          <flip-side style="fill: var(--sec-font-color)"></flip-side>
-        </template>
         <VChart
           :option="swapChartVolume"
           :loading="!swapChartVolume"
@@ -31,9 +28,6 @@
         />
       </Card>
       <Card title="Swap Chart Normalized">
-        <template #header>
-          <flip-side style="fill: var(--sec-font-color)"></flip-side>
-        </template>
         <VChart
           :option="swapChartVolumeNorm"
           :loading="!swapChartVolumeNorm"
@@ -217,9 +211,18 @@ export default {
   },
 
   mounted() {
-    this.$api.getSwapsWeekly().then(({ data }) => {
-      this.swapsStats(data)
-    })
+    this.$api
+      .getSwapsHistory({
+        interval: 'day',
+        count: 30,
+      })
+      .then(({ data }) => {
+        this.swapChartVolume = this.swapsStats(data)
+        console.log('swap', data)
+      })
+      .catch((error) => {
+        console.error('Error fetching swap history:', error)
+      })
 
     this.$api.getFeesRewardsMonthly().then(({ data }) => {
       this.feesRewards(data)
@@ -665,112 +668,38 @@ export default {
     },
     swapsStats(d) {
       const xAxis = []
-      const taSwapVolume = []
-      const synthSwapVolume = []
-      const nativeSwapVolume = []
-      const affiliateFees = []
-      let totalVolume = []
-      d.forEach((interval, index) => {
-        if (index % 2 === 1) {
-          nativeSwapVolume[Math.floor(index / 2)] +=
-            interval.native_swap_volume_usd
-          synthSwapVolume[Math.floor(index / 2)] +=
-            interval.synth_swap_volume_usd
-          taSwapVolume[Math.floor(index / 2)] += interval.ta_swap_volume_usd
-          affiliateFees[Math.floor(index / 2)] +=
-            interval.total_affiliate_fees_usd
-          totalVolume[Math.floor(index / 2)] +=
-            interval.native_swap_volume_usd +
-            interval.synth_swap_volume_usd +
-            interval.ta_swap_volume_usd +
-            interval.total_affiliate_fees_usd
+      const pn = []
+      const pt = []
+      const ps = []
+
+      d?.intervals.forEach((interval, index) => {
+        if (index === d?.intervals?.length - 1) {
           return
         }
-        xAxis.push(moment(interval.date).format('YY/MM/DD'))
-        nativeSwapVolume.push(interval.native_swap_volume_usd)
-        synthSwapVolume.push(interval.synth_swap_volume_usd)
-        taSwapVolume.push(interval.ta_swap_volume_usd)
-        affiliateFees.push(interval.total_affiliate_fees_usd)
-        totalVolume.push(
-          interval.native_swap_volume_usd +
-            interval.synth_swap_volume_usd +
-            interval.ta_swap_volume_usd +
-            interval.total_affiliate_fees_usd
+        xAxis.push(
+          moment(
+            Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
+          ).format('dddd, MMM D')
+        )
+        ps.push(
+          (+interval.synthRedeemVolumeUSD + +interval.synthMintVolumeUSD) /
+            10 ** 2
+        )
+        pt.push(
+          (+interval.fromTradeVolumeUSD + +interval.toTradeVolumeUSD) / 10 ** 2
+        )
+        pn.push(
+          (+interval.toRuneVolumeUSD + +interval.toAssetVolumeUSD) / 10 ** 2
         )
       })
 
-      totalVolume = totalVolume.reverse()
+      const totalVolume = xAxis.map((_, i) => pn[i] + pt[i] + ps[i])
 
-      const series = [
-        {
-          name: 'Native Swap Volume',
-          type: 'bar',
-          stack: 'Total',
-          showSymbol: false,
-          symbol: 'circle',
-          data: nativeSwapVolume.reverse(),
-        },
-        {
-          name: 'Trade Swap Volume',
-          type: 'bar',
-          stack: 'Total',
-          showSymbol: false,
-          symbol: 'circle',
-          data: taSwapVolume.reverse(),
-        },
-        {
-          name: 'Synth Swap Volume',
-          type: 'bar',
-          stack: 'Total',
-          showSymbol: false,
-          symbol: 'circle',
-          emphasis: {
-            focus: 'series',
-          },
-          data: synthSwapVolume.reverse(),
-        },
-        {
-          name: 'Affiliate fees Volume',
-          type: 'bar',
-          stack: 'Total',
-          showSymbol: false,
-          symbol: 'circle',
-          emphasis: {
-            focus: 'series',
-          },
-          data: affiliateFees.reverse(),
-        },
-      ]
-
-      const formatter = this.focusFormatter(series, totalVolume)
-
-      this.swapChartVolume = this.basicChartFormat(
-        undefined,
-        series,
-        xAxis.reverse(),
-        {
-          tooltip: {
-            confine: true,
-            valueFormatter: (value) => `$ ${this.normalFormat(value)}`,
-            formatter,
-            className: 'custom-tooltip',
-          },
-          yAxis: [
-            {
-              type: 'value',
-              name: '',
-              position: 'right',
-              show: false,
-              splitLine: {
-                show: true,
-              },
-            },
-          ],
-        },
-        undefined
-      )
-
-      const normSeries = series.map((s, i) => {
+      const normSeries = [
+        { name: 'Native Swap Volume', data: pn },
+        { name: 'Trade Swap Volume', data: pt },
+        { name: 'Synth Swap Volume', data: ps },
+      ].map((s) => {
         return {
           name: s.name,
           type: 'bar',
@@ -796,6 +725,77 @@ export default {
               max: 1,
             },
           ],
+        }
+      )
+
+      return this.basicChartFormat(
+        (value) => `$ ${this.$options.filters.number(+value, '0,0.00a')}`,
+        [
+          {
+            type: 'bar',
+            name: 'Native Swap Volume',
+            stack: 'total',
+            showSymbol: false,
+            data: pn,
+          },
+          {
+            type: 'bar',
+            name: 'Trade Swaps',
+            stack: 'total',
+            showSymbol: false,
+            data: pt,
+          },
+          {
+            type: 'bar',
+            name: 'Synth Swaps',
+            stack: 'total',
+            showSymbol: false,
+            data: ps,
+          },
+        ],
+        xAxis,
+        undefined,
+        (param) => {
+          return `
+        <div class="tooltip-header">
+          ${param[0].name}
+        </div>
+        <div class="tooltip-body">
+          ${param
+            .sort((a, b) => {
+              return b.value - a.value
+            })
+            .map(
+              (p) => `
+              <span>
+                <div class="tooltip-item">
+                  <div class="data-color" style="background-color: ${p.color}">
+                  </div>
+                  <span style="text-align: left;">
+                    ${p.seriesName}
+                  </span>
+                </div>
+                <b>$${p.value ? this.$options.filters.number(p.value, '0,0.00a') : '-'}</b>
+              </span>`
+            )
+            .join('')}
+        </div>
+        <span style="border-top: 1px solid var(--border-color); margin: 2px 0;"></span>
+        <hr>
+        <span class="tooltip-item space">
+          <span>Total Volume</span>
+          <b>$${this.$options.filters.number(
+            param.reduce((a, c) => a + (c.value ? c.value : 0), 0),
+            '0,0.00a'
+          )}</b>
+        </span>
+        <span class="tooltip-item space">
+          <span style="text-align: left;">
+            Swap Count
+          </span>
+          <b>${this.$options.filters.number(d?.intervals[param[0]?.dataIndex]?.totalCount, '0,0.00a')}</b>
+        </span>
+      `
         }
       )
     },
