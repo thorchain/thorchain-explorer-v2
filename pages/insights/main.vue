@@ -1,5 +1,5 @@
 <template>
-  <div class="container-page" >
+  <div class="container-page">
     <card title="RUNE" class="coin-info">
       <template #header>
         <coinmarketcap style="fill: var(--sec-font-color)" />
@@ -19,9 +19,6 @@
     </div>
     <div class="chart-inner-container">
       <Card title="Type Swap Chart">
-        <template #header>
-          <flip-side style="fill: var(--sec-font-color)"></flip-side>
-        </template>
         <VChart
           :option="swapChartVolume"
           :loading="!swapChartVolume"
@@ -31,9 +28,6 @@
         />
       </Card>
       <Card title="Swap Chart Normalized">
-        <template #header>
-          <flip-side style="fill: var(--sec-font-color)"></flip-side>
-        </template>
         <VChart
           :option="swapChartVolumeNorm"
           :loading="!swapChartVolumeNorm"
@@ -217,16 +211,18 @@ export default {
   },
 
   mounted() {
-    this.$api.getSwapsHistory({
-      interval: 'day',
-      count: 30,
-    }).then(({ data }) => {
-      this.swapChartVolume = this.swapsStats(data);
-      console.log('swap',data)
-    }).catch((error) => {
-      console.error('Error fetching swap history:', error);
-    });
-
+    this.$api
+      .getSwapsHistory({
+        interval: 'day',
+        count: 30,
+      })
+      .then(({ data }) => {
+        this.swapChartVolume = this.swapsStats(data)
+        console.log('swap', data)
+      })
+      .catch((error) => {
+        console.error('Error fetching swap history:', error)
+      })
 
     this.$api.getFeesRewardsMonthly().then(({ data }) => {
       this.feesRewards(data)
@@ -671,102 +667,103 @@ export default {
       )
     },
     swapsStats(d) {
-  const xAxis = []
-  const pn = []
-  const pt = []
-  const ps = []
+      const xAxis = []
+      const pn = []
+      const pt = []
+      const ps = []
 
-  d?.intervals.forEach((interval, index) => {
-    if (index === d?.intervals?.length - 1) {
-      return
-    }
-    xAxis.push(
-      moment(
-        Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
-      ).format('dddd, MMM D')
-    )
-    ps.push(
-      (+interval.synthRedeemVolumeUSD + +interval.synthMintVolumeUSD) / 10 ** 2
-    )
-    pt.push(
-      (+interval.fromTradeVolumeUSD + +interval.toTradeVolumeUSD) / 10 ** 2
-    )
-    pn.push(
-      (+interval.toRuneVolumeUSD + +interval.toAssetVolumeUSD) / 10 ** 2
-    )
-  })
+      d?.intervals.forEach((interval, index) => {
+        if (index === d?.intervals?.length - 1) {
+          return
+        }
+        xAxis.push(
+          moment(
+            Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
+          ).format('dddd, MMM D')
+        )
+        ps.push(
+          (+interval.synthRedeemVolumeUSD + +interval.synthMintVolumeUSD) /
+            10 ** 2
+        )
+        pt.push(
+          (+interval.fromTradeVolumeUSD + +interval.toTradeVolumeUSD) / 10 ** 2
+        )
+        pn.push(
+          (+interval.toRuneVolumeUSD + +interval.toAssetVolumeUSD) / 10 ** 2
+        )
+      })
 
-  const totalVolume = xAxis.map((_, i) => pn[i] + pt[i] + ps[i]);
+      const totalVolume = xAxis.map((_, i) => pn[i] + pt[i] + ps[i])
 
-  const normSeries = [
-    { name: 'Native Swap Volume', data: pn },
-    { name: 'Trade Swap Volume', data: pt },
-    { name: 'Synth Swap Volume', data: ps }
-  ].map((s) => {
-    return {
-      name: s.name,
-      type: 'bar',
-      stack: 'total',
-      data: s.data.map((d, j) => d / totalVolume[j]),
-    };
-  });
+      const normSeries = [
+        { name: 'Native Swap Volume', data: pn },
+        { name: 'Trade Swap Volume', data: pt },
+        { name: 'Synth Swap Volume', data: ps },
+      ].map((s) => {
+        return {
+          name: s.name,
+          type: 'bar',
+          stack: 'total',
+          data: s.data.map((d, j) => d / totalVolume[j]),
+        }
+      })
 
-  this.swapChartVolumeNorm = this.basicChartFormat(
-    (value) => `${this.percentageFormat(value, 2)}`,
-    normSeries,
-    xAxis,
-    {
-      yAxis: [
+      this.swapChartVolumeNorm = this.basicChartFormat(
+        (value) => `${this.percentageFormat(value, 2)}`,
+        normSeries,
+        xAxis,
         {
-          type: 'value',
-          name: '',
-          position: 'right',
-          show: false,
-          splitLine: {
-            show: true,
-          },
-          max: 1,
-        },
-      ],
-    }
-  );
+          yAxis: [
+            {
+              type: 'value',
+              name: '',
+              position: 'right',
+              show: false,
+              splitLine: {
+                show: true,
+              },
+              max: 1,
+            },
+          ],
+        }
+      )
 
-  return this.basicChartFormat(
-    (value) => `$ ${this.$options.filters.number(+value, '0,0.00a')}`,
-    [
-      {
-        type: 'bar',
-        name: 'Native Swap Volume',
-        stack: 'total',
-        showSymbol: false,
-        data: pn,
-      },
-      {
-        type: 'bar',
-        name: 'Trade Swaps',
-        stack: 'total',
-        showSymbol: false,
-        data: pt,
-      },
-      {
-        type: 'bar',
-        name: 'Synth Swaps',
-        stack: 'total',
-        showSymbol: false,
-        data: ps,
-      },
-    ],
-    xAxis,
-    undefined,
-    (param) => {
-      return `
+      return this.basicChartFormat(
+        (value) => `$ ${this.$options.filters.number(+value, '0,0.00a')}`,
+        [
+          {
+            type: 'bar',
+            name: 'Native Swap Volume',
+            stack: 'total',
+            showSymbol: false,
+            data: pn,
+          },
+          {
+            type: 'bar',
+            name: 'Trade Swaps',
+            stack: 'total',
+            showSymbol: false,
+            data: pt,
+          },
+          {
+            type: 'bar',
+            name: 'Synth Swaps',
+            stack: 'total',
+            showSymbol: false,
+            data: ps,
+          },
+        ],
+        xAxis,
+        undefined,
+        (param) => {
+          return `
         <div class="tooltip-header">
           ${param[0].name}
         </div>
         <div class="tooltip-body">
           ${param
             .sort((a, b) => {
-              return b.value - a.value;
+              return b.value - a.value
             })
             .map(
               (p) => `
@@ -798,10 +795,10 @@ export default {
           </span>
           <b>${this.$options.filters.number(d?.intervals[param[0]?.dataIndex]?.totalCount, '0,0.00a')}</b>
         </span>
-      `;
-    }
-  );
-},
+      `
+        }
+      )
+    },
     supplyBurn(data) {
       try {
         const xAxis = []
