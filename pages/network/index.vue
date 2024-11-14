@@ -513,18 +513,20 @@ export default {
       )
     })
 
-    this.$api.getReserveHistory().then(({ data }) => {
+    this.$api.getReserveHistory().then(async ({ data }) => {
       this.metaReserve = data?.meta
-      this.reserveHistory = this.formatReserve(data)
+      const rewards = (await this.$api.getEarningHistory()).data
+      this.reserveHistory = this.formatReserve(data, rewards)
     })
   },
   methods: {
-    formatReserve(d) {
+    formatReserve(d, rewards) {
       const xAxis = []
       const pf = []
       const pr = []
       const pn = []
       const pt = []
+      const pre = []
       d?.intervals.forEach((interval, index) => {
         // ignore the last index
         if (index === d?.intervals?.length - 1) {
@@ -542,9 +544,12 @@ export default {
         pt.push(
           (+interval.gasFeeOutbound +
             +interval.networkFee -
-            +interval.gasReimbursement) /
+            +interval.gasReimbursement -
+            +rewards?.intervals[index]?.blockRewards) /
             1e8
         )
+
+        pre.push((-1 * rewards?.intervals[index]?.blockRewards) / 1e8)
       })
       return this.basicChartFormat(
         (value) => `${this.normalFormat(value)} RUNE`,
@@ -569,6 +574,13 @@ export default {
             stack: 'total',
             showSymbol: false,
             data: pr,
+          },
+          {
+            type: 'bar',
+            name: 'Reward Emission',
+            stack: 'total',
+            showSymbol: false,
+            data: pre,
           },
           {
             type: 'line',
