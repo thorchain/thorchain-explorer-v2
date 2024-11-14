@@ -28,7 +28,7 @@
                 class="affiliate-value"
                 :style="{ color: colorizeIndex(index) }"
               >
-                ${{ row.affiliate_fees_usd | number('0a') }}
+                ${{ row.affiliate_fees_usd | number('0.00a') }}
                 <small>
                   -
                   {{ row.avg_bps | percent(2) }}
@@ -75,7 +75,7 @@
                 class="affiliate-value"
                 :style="{ color: colorizeIndex(index) }"
               >
-                ${{ row.total_volume_usd | number('0a') }}
+                ${{ row.total_volume_usd | number('0.00a') }}
               </div>
             </div>
           </div>
