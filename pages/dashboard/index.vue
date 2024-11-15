@@ -880,7 +880,8 @@ export default {
               borderRadius: [0, 0, 0, 0],
             },
           })
-          if (+interval.totalCount < +d?.intervals[index - 1].totalCount / 3) {
+          const now = moment()
+          if (now.diff(now.startOf('day'), 'hours') > 9) {
             EODVolume =
               d?.intervals
                 .slice(-4, -1)
