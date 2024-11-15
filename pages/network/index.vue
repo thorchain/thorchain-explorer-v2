@@ -16,6 +16,7 @@
           :pie-data="allocationPie"
           :extra-series="extraSeries"
           :extra="extra"
+          :click="navigatePie"
         />
       </Card>
     </div>
@@ -133,6 +134,7 @@ import VChart from 'vue-echarts'
 import Checkmark from '~/assets/images/check-mark.svg?inline'
 import DangerIcon from '@/assets/images/danger.svg?inline'
 import { blockTime } from '~/utils'
+import endpoints from '~/api/endpoints'
 
 use([
   SVGRenderer,
@@ -168,6 +170,7 @@ export default {
       extraSeries: {
         center: ['55%', '50%'],
         radius: ['40%', '70%'],
+        nodeClick: 'link',
         label: {
           formatter: (a) => {
             return `${a.name}: ${this.$options.filters.number(a?.data?.value, '0,0a')} RUNE`
@@ -520,6 +523,23 @@ export default {
     })
   },
   methods: {
+    navigatePie(param) {
+      switch (param?.name) {
+        case 'Pooled':
+          this.$router.push(`/pools`)
+          break
+        case 'Bonded':
+          this.$router.push('/nodes')
+          break
+        case 'Reserve':
+          this.$router.push(
+            '/address/' + endpoints[process.env.NETWORK].MODULE_ADDR
+          )
+          break
+        default:
+          break
+      }
+    },
     formatReserve(d, rewards) {
       const xAxis = []
       const pf = []

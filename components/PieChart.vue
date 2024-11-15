@@ -9,6 +9,7 @@
       minHeight: 'initial',
     }"
     :theme="chartTheme"
+    @click="click"
   />
 </template>
 
@@ -37,7 +38,15 @@ export default {
   components: {
     VChart,
   },
-  props: ['pieData', 'formatter', 'name', 'extraSeries', 'extra', 'width'],
+  props: [
+    'pieData',
+    'formatter',
+    'name',
+    'extraSeries',
+    'extra',
+    'width',
+    'click',
+  ],
   data() {
     return {
       isMobile: false,

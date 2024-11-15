@@ -506,6 +506,7 @@ export default {
           title: 'Churning',
           rowStart: 3,
           colSpan: 1,
+          link: '/nodes',
           items: [
             {
               name: 'Next Churn',
@@ -562,6 +563,7 @@ export default {
           title: 'Value Locked',
           rowStart: 2,
           colSpan: 1,
+          link: '/network',
           items: [
             {
               name: 'Reserve',
@@ -867,6 +869,7 @@ export default {
       }
 
       let EODVolume = 0
+      const now = moment()
 
       d?.intervals.forEach((interval, index) => {
         if (d?.intervals.length === index + 1) {
@@ -880,7 +883,6 @@ export default {
               borderRadius: [0, 0, 0, 0],
             },
           })
-          const now = moment()
           if (now.diff(now.startOf('day'), 'hours') > 9) {
             EODVolume =
               d?.intervals
