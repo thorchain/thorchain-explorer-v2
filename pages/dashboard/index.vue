@@ -883,7 +883,7 @@ export default {
               borderRadius: [0, 0, 0, 0],
             },
           })
-          if (now.diff(now.startOf('day'), 'hours') > 9) {
+          if (now.diff(moment().startOf('day'), 'hours') < 6) {
             EODVolume =
               d?.intervals
                 .slice(-4, -1)
