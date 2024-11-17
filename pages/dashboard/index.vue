@@ -869,7 +869,7 @@ export default {
       }
 
       let EODVolume = 0
-      const now = moment()
+      const now = moment().utc(0)
 
       d?.intervals.forEach((interval, index) => {
         if (d?.intervals.length === index + 1) {
@@ -883,7 +883,7 @@ export default {
               borderRadius: [0, 0, 0, 0],
             },
           })
-          if (now.diff(moment().startOf('day'), 'hours') < 6) {
+          if (now.diff(moment().utc(0).startOf('day'), 'hours') < 6) {
             EODVolume =
               d?.intervals
                 .slice(-4, -1)
