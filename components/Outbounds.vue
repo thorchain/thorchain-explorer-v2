@@ -65,39 +65,58 @@
         <scheduleIcon class="schedule-icon large-icon" />
         <h3>There is no outbound schedule inside THORChain.</h3>
       </div>
-      <template v-for="(o, i) in filteredOutbounds" v-else>
-        <div :key="i" class="outbound-item">
-          <div v-if="o.coin" class="asset-item">
-            <asset-icon :asset="o.coin.asset" />
-            <span class="asset-name">
-              {{ $options.filters.number(o.coin.amount / 1e8, '0,0.0000') }}
-              <small class="asset-text sec-color">{{ o.coin.asset }}</small>
-            </span>
-            <div v-if="o.label" class="mini-bubble info">
-              {{ o.label | capitalize }}
+      <template v-for="(group, i) in groupedOutbounds">
+        <div :key="i" class="outbound-item" @click="toggleExtraRight(i)">
+          <div class="outbound-collapse">
+            <div class="asset-item">
+              <div class="asset-details">
+                <asset-icon :asset="group.asset" />
+                <span class="asset-name">
+                  {{
+                    $options.filters.number(
+                      group.totalAmount / 1e8 || 0,
+                      '0,0.0000'
+                    )
+                  }}
+                  <small class="asset-text sec-color">{{ group.asset }}</small>
+                </span>
+
+                <div v-if="group.label" class="mini-bubble info">
+                  {{ group.label | capitalize }}
+                </div>
+              </div>
+              <div class="number-item">
+                <span :class="'mini-bubble'">{{ group.count }}</span>
+                <angle-icon
+                  :class="{ trigger: true, rotated: angleRotated[i] }"
+                />
+              </div>
             </div>
-          </div>
-          <div class="extra-right">
-            <small v-if="o.to_address" class="mono"
-              >To
-              <NuxtLink
-                class="clickable"
-                :to="{ path: `/address/${o.to_address}` }"
+            <div v-if="isVisible[i]" class="extra-right">
+              <div
+                v-for="(o, idx) in group.items"
+                :key="idx"
+                class="asset-info"
               >
-                {{ formatAddress(o.to_address) }}
-              </NuxtLink>
-            </small>
-            <small v-if="o.in_hash && o.label !== 'migrate'" class="mono"
-              >In TxID
-              <NuxtLink class="clickable" :to="{ path: `/tx/${o.in_hash}` }">
-                {{ formatAddress(o.in_hash) }}
-              </NuxtLink>
-            </small>
-            <div v-if="o.height">
-              <small class="mono">ETA </small>
-              <span style="color: var(--sec-font-color)">
-                {{ getOutboundEta(o.height) }}
-              </span>
+                <span class="asset-name">
+                  {{ $options.filters.number(o.coin.amount / 1e8, '0,0.0000') }}
+                </span>
+                <div class="right-part">
+                  <div v-if="o.height">
+                    <span style="color: var(--sec-font-color)">
+                      {{ getOutboundEta(o.height) }}
+                    </span>
+                  </div>
+                  <small v-if="o.in_hash && o.label !== 'migrate'" class="mono">
+                    <NuxtLink
+                      class="clickable"
+                      :to="{ path: `/tx/${o.in_hash}` }"
+                    >
+                      {{ formatAddress(o.in_hash) }}
+                    </NuxtLink>
+                  </small>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -142,13 +161,13 @@
     </template>
 
     <template
-      v-if="Mode == 'ongoing-outbounds' && outbounds.length > 10"
+      v-if="Mode == 'ongoing-outbounds' && groupedOutbounds.length > 10"
       #footer
     >
       <b-pagination
         v-model="currentPage"
         class="center"
-        :total-rows="outbounds.length"
+        :total-rows="groupedOutbounds.length"
         :per-page="10"
       />
     </template>
@@ -161,11 +180,13 @@ import moment from 'moment'
 import scheduleIcon from '@/assets/images/schedule.svg?inline'
 import ArrowToDown from '~/assets/images/arrow-down.svg?inline'
 import TransactionAction from '~/components/transactions/TransactionAction.vue'
+import AngleIcon from '~/assets/images/angle-down.svg?inline'
 
 export default {
-  components: { scheduleIcon, ArrowToDown, TransactionAction },
+  components: { scheduleIcon, ArrowToDown, TransactionAction, AngleIcon },
   data() {
     return {
+      isVisible: [],
       currentPage: 1,
       noOutnound: false,
       loading: true,
@@ -175,6 +196,7 @@ export default {
       schData: [],
       Mode: 'ongoing-outbounds',
       topSwaps: [],
+      angleRotated: [],
     }
   },
   computed: {
@@ -196,6 +218,29 @@ export default {
       return this.schData.reduce((total, o) => {
         return total + this.amountToUSD(o.coin.asset, o.coin.amount, this.pools)
       }, 0)
+    },
+    groupedOutbounds() {
+      const grouped = this.outbounds.reduce((acc, o) => {
+        const key = o.coin.asset
+        if (!acc[key]) {
+          acc[key] = {
+            asset: key,
+            totalAmount: 0,
+            count: 0,
+            label: o.label,
+            items: [],
+          }
+        }
+
+        const amount = o.coin.amount || 0
+        acc[key].totalAmount += amount
+
+        acc[key].count += 1
+        acc[key].items.push(o)
+        return acc
+      }, {})
+
+      return Object.values(grouped)
     },
     ...mapGetters({
       chainsHeight: 'getChainsHeight',
@@ -289,6 +334,10 @@ export default {
         return moment.duration(remHeight * 6, 'seconds').humanize()
       }
     },
+    toggleExtraRight(index) {
+      this.$set(this.isVisible, index, !this.isVisible[index])
+      this.$set(this.angleRotated, index, !this.angleRotated[index])
+    },
   },
 }
 </script>
@@ -346,16 +395,32 @@ export default {
   align-items: center;
   gap: 5px;
   margin-bottom: 0.5rem;
+  justify-content: space-between;
 
   span {
     font-size: 0.9rem;
   }
 }
-
+.asset-details {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 0.5rem;
+}
 .asset-item {
   display: flex;
   align-items: center;
   gap: 5px;
+
+  .number-item {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+  }
+  .rotated {
+    transform: rotate(180deg);
+  }
 }
 
 .asset-name-swaps {
@@ -502,16 +567,42 @@ export default {
 .swaps-nav {
   margin-top: 0.5rem;
 }
+.outbound-collapse {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
 .outbound-item {
   display: flex;
   justify-content: space-between;
-  gap: 8px;
-  overflow: hidden;
+  align-items: center;
+  padding: 0.5rem;
+  background-color: var(--bgt-color);
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition:
+    transform 0.3s,
+    box-shadow 0.3s;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+  }
+
+  .trigger {
+    width: 1rem;
+    height: 1rem;
+    fill: var(--font-color);
+    cursor: pointer;
+    transition: transform 0.3s ease;
+  }
 
   .asset-item {
     display: flex;
     align-items: center;
     gap: 5px;
+    justify-content: space-between;
 
     .asset-text {
       display: inline-block;
@@ -530,11 +621,25 @@ export default {
   .extra-right {
     display: flex;
     flex-direction: column;
-    margin-left: auto;
+    gap: 10px;
+
+    .right-part {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
 
     justify-content: center;
     min-width: 177px;
     min-height: 48px;
+
+    .asset-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      gap: 0.5rem;
+    }
 
     small {
       text-wrap: nowrap;
