@@ -80,13 +80,13 @@ export default {
       )
       const totalSwaps = data.reduce((sum, item) => sum + item.total_swaps, 0)
       const totalVolume = data.reduce(
-        (sum, item) => sum + item.total_volume_usd,
+        (sum, item) => sum + +item.total_volume_usd,
         0
       )
 
       const avgFee = data.reduce((sum, item) => {
         const volumeRatio = item.total_volume_usd / totalVolume
-        return sum + item.affiliate_fees_usd * volumeRatio
+        return sum + item.avg_affiliate_fee_basis_points * volumeRatio
       }, 0)
 
       const volumePerSwap = totalVolume / totalSwaps
@@ -98,7 +98,7 @@ export default {
         },
         {
           name: 'AVG Fee',
-          value: `${this.$options.filters.number(avgFee, '0a')}%`,
+          value: `${this.$options.filters.percent(avgFee / 1e4, 2)}`,
         },
         {
           name: 'Swap Count',
@@ -106,7 +106,7 @@ export default {
         },
         {
           name: 'Volume / Count',
-          value: `$${this.$options.filters.number(volumePerSwap, '0a')}`,
+          value: `$${this.$options.filters.number(volumePerSwap, '0.00a')}`,
         },
       ]
     },
