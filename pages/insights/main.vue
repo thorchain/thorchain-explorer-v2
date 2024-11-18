@@ -7,17 +7,6 @@
       <info-card :options="coinMarketInfo" :inner="true" />
     </card>
     <div class="chart-inner-container">
-      <Card title="Reserve income from Pools">
-        <VChart
-          :option="rewardsHistory"
-          :loading="!rewardsHistory"
-          :autoresize="true"
-          :loading-options="showLoading"
-          :theme="chartTheme"
-        />
-      </Card>
-    </div>
-    <div class="chart-inner-container">
       <Card title="Type Swap Chart">
         <VChart
           :option="swapChartVolume"
@@ -64,13 +53,10 @@
       </Card>
     </div>
     <div class="chart-inner-container">
-      <Card title="Top 20 Affiliate by Volume (30D)">
-        <template #header>
-          <flip-side style="fill: var(--sec-font-color)"></flip-side>
-        </template>
+      <Card title="Reserve income from Pools">
         <VChart
-          :option="affiliateVolumeChart"
-          :loading="!affiliateVolumeChart"
+          :option="rewardsHistory"
+          :loading="!rewardsHistory"
           :autoresize="true"
           :loading-options="showLoading"
           :theme="chartTheme"
@@ -218,7 +204,6 @@ export default {
       })
       .then(({ data }) => {
         this.swapChartVolume = this.swapsStats(data)
-        console.log('swap', data)
       })
       .catch((error) => {
         console.error('Error fetching swap history:', error)
@@ -233,9 +218,9 @@ export default {
     })
 
     this.getCoinMarketInfo()
-    this.$api.getEarningHistory(60).then(({ data }) => {
-      this.supplyBurn(data)
-      this.rewardsHistory = this.formatRewards(data)
+    this.$api.getDashboardPlots().then(({ data }) => {
+      this.supplyBurn(data.earning)
+      this.rewardsHistory = this.formatRewards(data.earning)
     })
   },
   methods: {
@@ -812,11 +797,6 @@ export default {
         }
 
         data.intervals.forEach((interval, index) => {
-          // ignore the last day
-          if (index === data.intervals.length - 1) {
-            return
-          }
-
           // fill the data
           xAxis.push(
             moment(
