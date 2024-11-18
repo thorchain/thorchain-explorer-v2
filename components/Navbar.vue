@@ -279,6 +279,10 @@ export default {
                   name: 'Leaderboard',
                   link: '/insights/leaderboard',
                 },
+                {
+                  name: 'Burn',
+                  link: '/insights/burn',
+                },
               ],
             }
           : false,

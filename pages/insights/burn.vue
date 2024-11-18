@@ -1,5 +1,5 @@
 <template>
-  <div class="container-page">
+  <div>
     <div class="burn-card">
       <h3>
         <burn class="burn-icon"></burn>
@@ -22,7 +22,7 @@
         <div class="block-info">
           <span class="height">{{ block.blockHeight | number('0,0') }}</span>
           <span class="duration">
-            {{ getDuration(block.timestamp) }}
+            {{ getDuration(block.timestamp) }} Seconds
           </span>
         </div>
         <div class="burn-info">
@@ -73,7 +73,9 @@ export default {
         })
     },
     getDuration(timestamp) {
-      return moment.duration(timestamp).humanize()
+      const now = moment()
+      const before = moment(timestamp)
+      return moment.duration(now.diff(before)).asSeconds().toFixed()
     },
   },
 }
