@@ -74,7 +74,9 @@ export default {
     }
   },
   watch: {
-    async period(n, o) {
+    async period(newPeriod, oldPeriod) {
+      this.$router.push({ query: { period: newPeriod } })
+
       try {
         this.swaps = (await this.getTopSwaps()).data
       } catch (err) {
@@ -83,6 +85,13 @@ export default {
     },
   },
   async mounted() {
+    const queryPeriod = this.$route.query.period
+    if (queryPeriod) {
+      this.period = queryPeriod
+    } else {
+      this.$router.push({ query: { period: this.period } })
+    }
+
     try {
       this.swaps = (await this.getTopSwaps()).data
     } catch (err) {
@@ -91,6 +100,10 @@ export default {
     this.fetchData()
   },
   methods: {
+    updatePeriod(newPeriod) {
+      this.period = newPeriod
+      this.$router.push({ query: { period: newPeriod } })
+    },
     async fetchData() {
       const resSwaps = (
         await this.$api.getSwapsHistory({
