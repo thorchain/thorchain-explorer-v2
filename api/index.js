@@ -101,6 +101,7 @@ import {
   getReserveHistory,
   getTopSwapsWeekly,
   getTopSwapsMonthly,
+  getBurnedBlocks,
 } from './middleware.api'
 import {
   getChurnHistory,
@@ -290,6 +291,7 @@ export default function ({ $axios }, inject) {
     getReserveHistory,
     getTopSwapsWeekly,
     getTopSwapsMonthly,
+    getBurnedBlocks,
   }
 
   inject('api', api)

@@ -185,3 +185,9 @@ export function getReserveHistory() {
     endpoints[process.env.NETWORK].SERVER_URL + 'api/reserve'
   )
 }
+
+export function getBurnedBlocks() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + 'api/burned'
+  )
+}
