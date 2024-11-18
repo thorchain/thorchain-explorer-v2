@@ -422,7 +422,6 @@ export default {
   flex-direction: row;
   align-items: center;
   gap: 5px;
-  margin-bottom: 0.5rem;
 }
 .asset-item {
   display: flex;
@@ -593,10 +592,9 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.5rem;
-  background-color: var(--bgt-color);
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 0.8rem 0px;
+  border-bottom: 1px solid var(--border-color) !important;
+
   margin-top: 0.5rem;
   transition:
     transform 0.3s,
