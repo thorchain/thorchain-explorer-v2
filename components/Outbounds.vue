@@ -10,7 +10,6 @@
     <template #header>
       <dot-live />
     </template>
-
     <template v-if="Mode == 'ongoing-outbounds'">
       <template v-if="!noOutnound">
         <Card class="overview-card">
@@ -65,63 +64,65 @@
         <scheduleIcon class="schedule-icon large-icon" />
         <h3>There is no outbound schedule inside THORChain.</h3>
       </div>
-      <template v-for="(group, i) in groupedOutbounds">
-        <div :key="i" class="outbound-item" @click="toggleExtraRight(i)">
-          <div class="outbound-collapse">
-            <div class="asset-item">
-              <div class="asset-details">
-                <asset-icon :asset="group.asset" />
-                <span class="asset-name">
-                  {{
-                    $options.filters.number(
-                      group.totalAmount / 1e8 || 0,
-                      '0,0.0000'
-                    )
-                  }}
-                  <small class="asset-text sec-color">{{ group.asset }}</small>
+      <div
+        v-for="(group, i) in groupedOutbounds"
+        :key="i"
+        class="outbound-item"
+        @click="toggleExtraRight(i)"
+      >
+        <div class="outbound-collapse">
+          <div class="asset-item">
+            <div class="asset-details">
+              <asset-icon :asset="group.asset" />
+              <span class="asset-name">
+                {{ (group.totalAmount / 1e8) | number('0,0.0000') }} -
+                <span class="asset-total-usd">
+                  ${{ group.totalAmountUSD | number('0,0.0a') }}
                 </span>
-
-                <div v-if="group.label" class="mini-bubble info">
-                  {{ group.label | capitalize }}
-                </div>
-              </div>
-              <div class="number-item">
-                <span :class="'mini-bubble'">{{ group.count }}</span>
-                <angle-icon
-                  :class="{ trigger: true, rotated: angleRotated[i] }"
-                />
-              </div>
+                <small class="asset-text sec-color">{{
+                  showAsset(group.asset)
+                }}</small>
+              </span>
             </div>
-            <div v-if="isVisible[i]" class="extra-right">
-              <div
-                v-for="(o, idx) in group.items"
-                :key="idx"
-                class="asset-info"
+
+            <div class="number-item">
+              <span :class="'mini-bubble'"
+                >Ongoing: {{ group.ongoingCount }}</span
               >
-                <span class="asset-name">
-                  {{ $options.filters.number(o.coin.amount / 1e8, '0,0.0000') }}
-                </span>
-                <div class="right-part">
-                  <div v-if="o.height">
-                    <span style="color: var(--sec-font-color)">
-                      {{ getOutboundEta(o.height) }}
-                    </span>
-                  </div>
-                  <small v-if="o.in_hash && o.label !== 'migrate'" class="mono">
-                    <NuxtLink
-                      class="clickable"
-                      :to="{ path: `/tx/${o.in_hash}` }"
-                    >
-                      {{ formatAddress(o.in_hash) }}
-                    </NuxtLink>
-                  </small>
+              <span :class="'mini-bubble info'"
+                >Scheduled: {{ group.scheduledCount }}</span
+              >
+              <angle-icon
+                :class="{ trigger: true, rotated: angleRotated[i] }"
+              />
+            </div>
+          </div>
+
+          <div v-if="isVisible[i]" class="extra-right">
+            <div v-for="(o, idx) in group.items" :key="idx" class="asset-info">
+              <span class="asset-name">
+                {{ $options.filters.number(o.coin.amount / 1e8, '0,0.0000') }}
+              </span>
+              <div class="right-part">
+                <div v-if="o.height">
+                  <span style="color: var(--sec-font-color)">
+                    {{ getOutboundEta(o.height) }}
+                  </span>
                 </div>
+                <small v-if="o.in_hash && o.label !== 'migrate'" class="mono">
+                  <NuxtLink
+                    class="clickable"
+                    :to="{ path: `/tx/${o.in_hash}` }"
+                  >
+                    {{ formatAddress(o.in_hash) }}
+                  </NuxtLink>
+                </small>
               </div>
             </div>
           </div>
         </div>
         <hr :key="i + '-hr'" class="hr-space" />
-      </template>
+      </div>
     </template>
     <template v-if="Mode == 'top-swaps'">
       <div v-if="!topSwaps" class="no-outbound">
@@ -226,16 +227,30 @@ export default {
           acc[key] = {
             asset: key,
             totalAmount: 0,
+            totalAmountUSD: 0,
             count: 0,
+            scheduledCount: 0,
+            ongoingCount: 0,
             label: o.label,
             items: [],
           }
         }
 
-        const amount = o.coin.amount || 0
+        const amount = o.coin.amount ? parseFloat(o.coin.amount) : 0
+        const amountUSD =
+          this.amountToUSD(o.coin.asset, amount, this.pools) || 0
         acc[key].totalAmount += amount
-
+        acc[key].totalAmountUSD += amountUSD
         acc[key].count += 1
+
+        if (o.label === 'Scheduled') {
+          acc[key].scheduledCount += 1
+        }
+
+        if (o.label === 'Ongoing') {
+          acc[key].ongoingCount += 1
+        }
+
         acc[key].items.push(o)
         return acc
       }, {})
@@ -315,6 +330,7 @@ export default {
       resData.push(
         ...this.outData.map((s) => ({
           ...s,
+          label: 'Ongoing',
           ...(s.memo.toUpperCase().includes('MIGRATE') && { label: 'migrate' }),
         })),
         ...this.schData.map((s) => ({ ...s, label: 'Scheduled' }))
@@ -581,6 +597,7 @@ export default {
   background-color: var(--bgt-color);
   border-radius: 0.5rem;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-top: 0.5rem;
   transition:
     transform 0.3s,
     box-shadow 0.3s;
@@ -648,6 +665,8 @@ export default {
 
     span {
       font-size: 0.9rem;
+      display: flex;
+      align-items: center;
     }
   }
 }
