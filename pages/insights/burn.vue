@@ -17,32 +17,37 @@
       </small>
     </div>
     <div class="block-card">
-      <div
-        v-for="(block, index) in burnedBlocks"
-        :key="index"
-        class="block-item"
-      >
-        <div class="block-info">
-          <span class="height">{{ block.blockHeight | number('0,0') }}</span>
-          <small class="duration">
-            {{ getDuration(block.timestamp) }} Seconds
-          </small>
-        </div>
-        <div class="right-section">
-          <div class="burn-info">
-            {{ runeCur() }}
-            {{ block.burnedAmount / 1e8 }}
+      <transition-group name="block" tag="div">
+        <div
+          v-for="block in burnedBlocks"
+          :key="block.blockHeight"
+          class="block-item"
+        >
+          <div class="block-info">
+            <span class="height">{{ block.blockHeight | number('0,0') }}</span>
+            <small class="duration">
+              {{ getDuration(block.timestamp) }} Seconds
+            </small>
           </div>
-          <small>
-            {{ ((block.burnedAmount / 1e8) * runePrice) | currency }}
-          </small>
+          <div class="right-section">
+            <div class="burn-info">
+              {{ runeCur() }}
+              {{ block.burnedAmount / 1e8 }}
+            </div>
+            <small>
+              {{ ((block.burnedAmount / 1e8) * runePrice) | currency }}
+            </small>
+          </div>
         </div>
-      </div>
-      <template v-if="burnedBlocks.length == 0">
-        <div v-for="index in 10" :key="index" class="loader-item">
-          <skeleton-loader class="value-loader" height="1rem"></skeleton-loader>
-        </div>
-      </template>
+        <template v-if="burnedBlocks.length == 0">
+          <div v-for="index in 10" :key="index" class="loader-item">
+            <skeleton-loader
+              class="value-loader"
+              height="1rem"
+            ></skeleton-loader>
+          </div>
+        </template>
+      </transition-group>
     </div>
   </div>
 </template>
@@ -185,5 +190,17 @@ export default {
 
 .loader-item {
   margin: 2rem 0;
+}
+
+.block-enter-active {
+  transition: all 1s;
+  .block-info .height {
+    color: #ffa86b;
+  }
+}
+
+.block-enter {
+  opacity: 0;
+  transform: translateY(30px);
 }
 </style>
