@@ -89,11 +89,16 @@ export function getLastTvl() {
 export function earningsHistory() {
   return $axiosInstace.get('history/earnings?interval=day&count=30')
 }
+export function earnings(interval, count) {
+  return $axiosInstace.get(
+    `history/earnings?interval=${interval}&count=${count}`
+  )
+}
 
 export function getEarningHistory(count = 30) {
   return $axiosInstace.get(`history/earnings?interval=day&count=${count || 60}`)
 }
-export function getChurn(){
+export function getChurn() {
   return $axiosInstace.get('churns')
 }
 
