@@ -201,6 +201,6 @@ export default {
 
 .block-enter {
   opacity: 0;
-  transform: translateY(30px);
+  transform: translateY(-30px);
 }
 </style>
