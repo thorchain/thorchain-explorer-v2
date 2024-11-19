@@ -7,11 +7,14 @@
       </h3>
       <div class="burned-value">
         <h1 v-if="totalBurned">
-          {{ runeCur() }}
+          <rune class="rune-cur"></rune>
           {{ totalBurned | number('0,0.00') }}
         </h1>
         <skeleton-loader v-else height="1rem" width="12rem"></skeleton-loader>
       </div>
+      <small v-if="totalBurned && runePrice">
+        {{ (totalBurned * runePrice) | currency }}
+      </small>
     </div>
     <div class="block-card">
       <div
@@ -21,13 +24,18 @@
       >
         <div class="block-info">
           <span class="height">{{ block.blockHeight | number('0,0') }}</span>
-          <span class="duration">
+          <small class="duration">
             {{ getDuration(block.timestamp) }} Seconds
-          </span>
+          </small>
         </div>
-        <div class="burn-info">
-          {{ runeCur() }}
-          {{ block.burnedAmount / 1e8 }}
+        <div class="right-section">
+          <div class="burn-info">
+            {{ runeCur() }}
+            {{ block.burnedAmount / 1e8 }}
+          </div>
+          <small>
+            {{ ((block.burnedAmount / 1e8) * runePrice) | currency }}
+          </small>
         </div>
       </div>
       <template v-if="burnedBlocks.length == 0">
@@ -40,17 +48,24 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import moment from 'moment'
 import Burn from '~/assets/images/burn.svg?inline'
+import Rune from '~/assets/images/rune.svg?inline'
 
 export default {
-  components: { Burn },
+  components: { Burn, Rune },
   data() {
     return {
       updateInterval: undefined,
       totalBurned: undefined,
       burnedBlocks: [],
     }
+  },
+  computed: {
+    ...mapGetters({
+      runePrice: 'getRunePrice',
+    }),
   },
   mounted() {
     this.updateInterval = setInterval(() => {
@@ -103,10 +118,19 @@ export default {
   .burned-value {
     display: flex;
     justify-content: center;
+
+    .rune-cur {
+      height: 2.5rem;
+      fill: currentColor;
+    }
+
     h1 {
       margin: 0.5rem;
 
       @include md {
+        .rune-cur {
+          height: 5rem;
+        }
         font-size: 7rem;
       }
     }
@@ -146,6 +170,12 @@ export default {
       font-size: 1.2rem;
       color: var(--sec-font-color);
     }
+  }
+
+  .right-section {
+    display: flex;
+    flex-direction: column;
+    align-items: end;
   }
 
   .burn-info {
