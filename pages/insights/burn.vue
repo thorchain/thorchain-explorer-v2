@@ -128,7 +128,7 @@ export default {
           return
         }
 
-        const date = moment(interval.endTime * 1000).format('MMM DH, H:mm')
+        const date = moment(interval.endTime * 1000).format('MMM DD, H:mm')
         xAxis.push(date)
 
         const burns = interval?.pools?.find(
@@ -234,7 +234,7 @@ export default {
   }
 
   .burn-chart {
-    height: 200px;
+    min-height: 200px;
   }
 
   .rune-cur {
