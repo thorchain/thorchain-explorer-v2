@@ -237,10 +237,10 @@ export default {
           return '#FFD700'
 
         case 1:
-          return '#CD7F32'
+          return '#EDE8DF'
 
         case 2:
-          return '#C0C0C0'
+          return '#CD7F32'
         default:
           return 'var(--font-color)'
       }
