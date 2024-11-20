@@ -235,6 +235,7 @@ export default {
   }
 
   .burn-chart {
+    height: 200px;
     min-height: 200px;
   }
 
