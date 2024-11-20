@@ -234,7 +234,7 @@ export default {
   }
 
   .burn-chart {
-    min-height: 200px;
+    height: 200px;
   }
 
   .rune-cur {
