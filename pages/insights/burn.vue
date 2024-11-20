@@ -159,6 +159,7 @@ export default {
           grid: {
             top: '0%',
             left: '2%',
+            right: '2%',
             height: '100%',
           },
           yAxis: [
