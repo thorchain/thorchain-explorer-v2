@@ -13,7 +13,10 @@
           :key="index"
           class="data-item"
         >
-          <div class="item-content">
+          <nuxt-link
+            class="item-content hoverable"
+            :to="`/txs?affiliate=${getAffiliateNames(row.affiliate)}`"
+          >
             <span class="item-number" :style="{ color: colorizeIndex(index) }">
               {{ index + 1 }}.
             </span>
@@ -35,7 +38,7 @@
                 </small>
               </div>
             </div>
-          </div>
+          </nuxt-link>
         </div>
       </template>
       <template v-else>
@@ -60,7 +63,10 @@
           :key="index"
           class="data-item"
         >
-          <div class="item-content">
+          <nuxt-link
+            class="item-content hoverable"
+            :to="`/txs?affiliate=${getAffiliateNames(row.affiliate)}`"
+          >
             <span class="item-number" :style="{ color: colorizeIndex(index) }">
               {{ index + 1 }}.
             </span>
@@ -78,7 +84,7 @@
                 ${{ row.total_volume_usd | number('0.00a') }}
               </div>
             </div>
-          </div>
+          </nuxt-link>
         </div>
       </template>
       <template v-else>
@@ -103,7 +109,10 @@
           :key="index"
           class="data-item"
         >
-          <div class="item-content">
+          <nuxt-link
+            class="item-content hoverable"
+            :to="`/txs?affiliate=${getAffiliateNames(row.affiliate)}`"
+          >
             <span class="item-number" :style="{ color: colorizeIndex(index) }">
               {{ index + 1 }}.
             </span>
@@ -121,7 +130,7 @@
                 {{ row.total_swaps | number('0,0') }}
               </div>
             </div>
-          </div>
+          </nuxt-link>
         </div>
       </template>
       <template v-else>
@@ -146,7 +155,10 @@
           :key="index"
           class="data-item"
         >
-          <div class="item-content">
+          <nuxt-link
+            class="item-content hoverable"
+            :to="`/txs?affiliate=${getAffiliateNames(row.affiliate)}`"
+          >
             <span class="item-number" :style="{ color: colorizeIndex(index) }">
               {{ index + 1 }}.
             </span>
@@ -164,7 +176,7 @@
                 ${{ row.vc | number('0,0') }}
               </div>
             </div>
-          </div>
+          </nuxt-link>
         </div>
       </template>
       <template v-else>
@@ -192,6 +204,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import { orderBy } from 'lodash'
+import { nameMapping } from '~/utils'
 
 export default {
   props: {
@@ -230,6 +243,14 @@ export default {
         0,
         this.limit
       )
+    },
+    getAffiliateNames(name) {
+      const affiliates = nameMapping[name]
+      if (affiliates && affiliates.length > 0) {
+        return affiliates.join(',')
+      }
+
+      return name
     },
     colorizeIndex(index) {
       switch (index) {
@@ -325,10 +346,19 @@ export default {
       .item-content {
         display: flex;
         align-items: center;
+        text-decoration: none;
 
         .item-number {
           font-weight: bold;
           margin-right: 13px;
+        }
+
+        &.hoverable:hover {
+          .affiliate-name,
+          .item-number,
+          .affiliate-value {
+            color: var(--primary-color) !important;
+          }
         }
 
         .affiliate-name {

@@ -633,6 +633,33 @@ export function assetToString({ chain, synth, trade, symbol }) {
   return `${chain}${delimiter}${symbol}`
 }
 
+export const nameMapping = {
+  THORSwap: ['t', 'T', 'thor160yye65pf9rzwrgqmtgav69n6zlsyfpgm9a7xk'],
+  'TS Ledger': ['tl'],
+  'Team CoinBot': ['cb'],
+  Asgardex: ['dx'],
+  ShapeShift: ['ss'],
+  XDEFI: ['xdf'],
+  Rango: ['rg'],
+  'Edge Wallet': ['ej'],
+  DefiSpot: ['ds'],
+  Lends: ['lends'],
+  DecentralFi: ['decentralfi'],
+  TrustWallet: ['ti', 'te', 'tr', 'td'],
+  LiFi: ['lifi'],
+  'OneKey Wallet': ['oky'],
+  Symbiosis: ['sy'],
+  vultisig: [
+    'va',
+    'vi',
+    'v0',
+    'wr',
+    'thor1a427q3v96psuj4fnughdw8glt5r7j38lj7rkp8',
+  ],
+  'Cake Wallet': ['cakewallet'],
+  OKX: ['okw'],
+}
+
 export const interfaces = {
   thorswap: {
     name: 'THORSwap',
