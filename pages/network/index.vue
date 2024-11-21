@@ -10,6 +10,8 @@
           :autoresize="true"
         />
       </card>
+      <network-gauge/>
+
       <Card>
         <info-card :options="allocations" :inner="true" />
         <pie-chart
