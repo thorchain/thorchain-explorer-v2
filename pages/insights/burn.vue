@@ -19,6 +19,9 @@
               width="12rem"
             ></skeleton-loader>
           </div>
+        </div>
+
+        <div class="total-burned-container">
           <div class="unit-switcher">
             <label class="switch">
               <input
@@ -32,9 +35,6 @@
               selectedUnit === 'rune' ? 'RUNE' : 'USD'
             }}</span>
           </div>
-        </div>
-
-        <div class="total-burned-container">
           <div v-if="selectedInterval === '24h'" class="burned-item">
             <div class="total-burned">
               <skeleton-item
@@ -374,14 +374,10 @@ export default {
 }
 
 .unit-switcher {
+  display: flex;
   align-items: center;
   justify-content: center;
   margin-left: auto;
-  display: none;
-
-  @include sm {
-    display: flex;
-  }
 }
 
 .switch {
@@ -480,6 +476,7 @@ h3 {
   max-width: 50rem;
   margin: auto;
   h3 {
+    font-size: 1.2rem;
     display: flex;
     align-items: center;
     justify-content: center;
