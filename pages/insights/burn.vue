@@ -297,6 +297,7 @@ export default {
             boundaryGap: false,
             axisLine: { show: false },
             splitLine: { show: false },
+            axisTick: { show: false },
             data: xAxis,
             min: 'dataMin',
             max: 'dataMax',
@@ -310,9 +311,7 @@ export default {
               minorTick: { show: false },
               position: 'right',
               show: true,
-
-              min: Math.min(...runeBurned) * 0.9,
-              max: Math.max(...runeBurned) * 1,
+              splitNumber: 2,
               axisLabel: {
                 formatter: (value) =>
                   this.$options.filters.number(value, '0,0a'),
@@ -546,7 +545,7 @@ h3 {
   display: flex;
   align-items: center;
   margin-top: 1rem;
-  background-color: var(--sidebar);
+  border: 1px solid var(--border-color);
   border-radius: 0.5rem;
   padding: 4px 5px;
   gap: 2rem;
@@ -593,7 +592,6 @@ h3 {
   align-items: center;
   flex: 1;
   margin: 1rem;
-  border-bottom: 1px solid var(--border-color);
 
   .block-info {
     display: flex;
