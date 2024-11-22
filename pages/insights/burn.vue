@@ -287,6 +287,7 @@ export default {
             show: false,
           },
           grid: {
+            left: '2%',
             right: '2%',
             bottom: '2%',
             containLabel: true,
