@@ -6,35 +6,45 @@
           <burn class="burn-icon"></burn>
           Burned RUNE
         </h3>
-        <div class="burned-value">
-          <h1 v-if="totalBurned">
-            <rune class="rune-cur"></rune>
-            {{ totalBurned | number('0,0.00') }}
-          </h1>
-          <skeleton-loader v-else height="1rem" width="12rem"></skeleton-loader>
+        <div class="total-res-data">
+          <div class="burned-value">
+    <h1 v-if="totalBurned">
+      <rune v-if="selectedUnit === 'rune'" class="rune-cur"></rune>
+    <span v-else>$</span> 
+      {{ displayTotalBurned | number('0,0.00') }}
+    </h1>
+    <skeleton-loader v-else height="1rem" width="12rem"></skeleton-loader>
+</div>
+        <div class="unit-switcher">
+            <label class="switch">
+              <input type="checkbox" :checked="selectedUnit === 'dollar'" @change="toggleUnit" />
+              <span class="slider round"></span>
+            </label>
+            <span class="unit-label">{{ selectedUnit === 'rune' ? 'RUNE' : 'USD' }}</span>
+          </div>
         </div>
 
         <div class="total-burned-container">
-          <div v-if="selectedInterval === '24h'">
-            <h3>24H Burned</h3>
-            <div class="total-burned">
-              {{ totalBurned24h | currency }}
-            </div>
-          </div>
-          <div v-else-if="selectedInterval === '7d'">
-            <h3>7D Burned</h3>
-            <div class="total-burned">
-              {{ totalBurned7d | currency }}
-            </div>
-          </div>
-          <div v-else-if="selectedInterval === '30d'">
-            <h3>30D Burned</h3>
-            <div class="total-burned">
-              {{ totalBurned30d | currency }}
-            </div>
-          </div>
-          <div v-else>Please select an interval</div>
-        </div>
+  <div v-if="selectedInterval === '24h'" class="burned-item">
+    <div class="total-burned">
+      {{ totalBurned24h |currency }}
+    </div>
+    <h3>24H </h3>
+  </div>
+  <div v-else-if="selectedInterval === '7d'" class="burned-item">
+    <div class="total-burned">
+      {{ totalBurned7d | currency }}
+    </div>
+    <h3>7D </h3>
+  </div>
+  <div v-else-if="selectedInterval === '30d'" class="burned-item">
+    <div class="total-burned">
+      {{ totalBurned30d | currency }}
+    </div>
+    <h3>30D </h3>
+  </div>
+  <div v-else>Please select an interval</div>
+</div>
 
         <VChart
           :option="burnChart"
@@ -122,6 +132,7 @@ export default {
   components: { Burn, Rune, VChart },
   data() {
     return {
+      selectedUnit: 'rune', 
       totalBurned24h: undefined,
       totalBurned7d: undefined,
       totalBurned30d: undefined,
@@ -141,6 +152,12 @@ export default {
     ...mapGetters({
       runePrice: 'getRunePrice',
     }),
+    displayTotalBurned() {
+    if (this.selectedUnit === 'dollar') {
+      return this.totalBurned * this.runePrice; 
+    }
+    return this.totalBurned; 
+  },
   },
   mounted() {
     this.updateInterval = setInterval(() => {
@@ -185,7 +202,9 @@ export default {
         console.error('Error fetching data:', error)
       }
     },
-
+    toggleUnit() {
+      this.selectedUnit = this.selectedUnit === 'rune' ? 'dollar' : 'rune';
+    },
     formatBurn(data, intervalType) {
       const xAxis = []
       const runeBurned = []
@@ -305,34 +324,111 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.total-burned-container {
-  padding: 10px 20px;
-  border-radius: 10px;
-  font-size: 16px;
-  text-align: center;
+.total-res-data {
   display: flex;
-  flex-direction: column;
+    flex-direction: row;
+    align-items: center;
+    margin-top: 1rem;
+    width: 100%;
+    justify-content: center;
+}
+
+.unit-switcher {
   align-items: center;
-  width: 100%;
+  justify-content: center;
+  margin-left: auto; 
+  display: none;      
 
-  h3 {
-    margin-bottom: 10px;
-    font-size: 16px;
-    color: var(--font-color);
-  }
 
-  .total-burned {
-    font-size: 20px;
-    font-weight: bold;
-    color: var(--sec-font-color);
-    margin-top: 0.4rem;
-  }
+  @include sm {
+      display: flex;
+
+    }
+
 }
-.burn-container {
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 53px;
+    height: 27px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--border-color);
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 19px;
+    width: 21px;
+  border-radius: 50%;
+  left: 4px;
+  bottom: 4px;
+  background-color: var(--sec-font-color);
+  transition: 0.4s;
+}
+
+input:checked + .slider {
+  background-color: #ffa86b;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.unit-label {
+  font-size: 14px;
+  color: var(--font-color);
+  margin-left: 10px;
+}
+.total-burned-container {
+  display: flex; 
+  flex-direction: row; 
+  align-items: center; 
+  justify-content: flex-end; 
+  width: 100%; 
+  margin-top:1rem
+}
+
+.burned-item {
   display: flex;
-  justify-content: space-between;
-  gap: 2rem;
+  flex-direction: row; 
+  align-items: center; 
+  justify-content: flex-end; 
+  gap: 0.5rem; 
+  flex: 1;
 }
+
+h3 {
+  margin-bottom: 10px;
+  font-size: 16px;
+  color: var(--font-color);
+}
+
+.total-burned {
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--sec-font-color);
+}
+
+
+
 .burn-card {
   flex: 1;
   justify-content: center;
@@ -361,22 +457,33 @@ export default {
   }
 
   .rune-cur {
-    height: 2.5rem;
+    height: 3rem;
     fill: currentColor;
+    font-size: 3rem;
   }
 
   .burned-value {
     display: flex;
     justify-content: center;
+    width: 100%;
+    margin-left: 0rem;
+
+     @include md {
+      margin-left: 6rem;
+     }
 
     h1 {
       margin: 0.5rem;
+      font-size: 3rem;
+      display: flex;
+      gap: 0.5rem;
+
 
       @include md {
         .rune-cur {
-          height: 5rem;
+          height: 4rem;
         }
-        font-size: 5rem;
+        font-size: 4rem;
       }
     }
   }
@@ -403,12 +510,18 @@ export default {
 .interval-buttons {
   display: flex;
   align-items: center;
-  margin-top: 2rem;
+  margin-top: 1rem;
   background-color: var(--sidebar);
   border-radius: 0.5rem;
   padding: 4px 5px;
   gap: 2rem;
-  width: 28rem;
+  width: 21rem;
+  margin-top: 1.3rem;
+  
+  @include lg {
+  
+    width: 28rem;
+  }
 
   button {
     align-items: center;
@@ -431,7 +544,7 @@ export default {
       border-radius: 0.5rem;
       margin: 1.5px 5px;
       background-color: var(--border-color);
-      color: var(--sec-font-color);
+      color: #ffa86b;
     }
 
     &:hover {
