@@ -42,8 +42,12 @@
       <span
         :class="rowClassCallback(props.row)"
         :style="{
-          color: isFav(props.row.address) ? vaultColor(props.row.address) : '',
-          fill: isFav(props.row.address) ? vaultColor(props.row.address) : '',
+          color: isFav(props.row.address)
+            ? vaultColor(props.row.address, true)
+            : '',
+          fill: isFav(props.row.address)
+            ? vaultColor(props.row.address, true)
+            : '',
           fontWeight: isFav(props.row.address) ? 'bold' : 'normal',
         }"
       >
@@ -54,10 +58,10 @@
               class="clickable"
               :style="{
                 color: isFav(props.row.address)
-                  ? vaultColor(props.row.address)
+                  ? vaultColor(props.row.address, true)
                   : '',
                 fill: isFav(props.row.address)
-                  ? vaultColor(props.row.address)
+                  ? vaultColor(props.row.address, true)
                   : '',
                 fontWeight: isFav(props.row.address) ? 'bold' : 'normal',
               }"
@@ -70,10 +74,10 @@
             <a
               :style="{
                 color: isFav(props.row.address)
-                  ? vaultColor(props.row.address)
+                  ? vaultColor(props.row.address, true)
                   : '',
                 fill: isFav(props.row.address)
-                  ? vaultColor(props.row.address)
+                  ? vaultColor(props.row.address, true)
                   : '',
                 fontWeight: isFav(props.row.address) ? 'bold' : 'normal',
               }"
@@ -90,7 +94,7 @@
           <StaredIcon
             v-if="isFav(props.row.address)"
             class="table-icon"
-            :style="{ fill: vaultColor(props.row.address) }"
+            :style="{ fill: vaultColor(props.row.address, true) }"
             @click="delFav(props.row.address)"
           />
           <StarIcon
@@ -151,10 +155,10 @@
             ]"
             :style="{
               color: isFav(props.row.address)
-                ? vaultColor(props.row.address)
+                ? vaultColor(props.row.address, true)
                 : '',
               fill: isFav(props.row.address)
-                ? vaultColor(props.row.address)
+                ? vaultColor(props.row.address, true)
                 : '',
               fontWeight: isFav(props.row.address) ? 'bold' : 'normal',
             }"
@@ -195,10 +199,10 @@
                 :to="`/address/${props.row.operator}`"
                 :style="{
                   color: isFav(props.row.address)
-                    ? vaultColor(props.row.address)
+                    ? vaultColor(props.row.address, true)
                     : '',
                   fill: isFav(props.row.address)
-                    ? vaultColor(props.row.address)
+                    ? vaultColor(props.row.address, true)
                     : '',
                   fontWeight: isFav(props.row.address) ? 'bold' : 'normal',
                 }"
@@ -313,10 +317,10 @@
             v-if="props.formattedRow[props.column.field] == 0"
             :style="{
               color: isFav(props.row.address)
-                ? vaultColor(props.row.address)
+                ? vaultColor(props.row.address, true)
                 : '',
               fill: isFav(props.row.address)
-                ? vaultColor(props.row.address)
+                ? vaultColor(props.row.address, true)
                 : '',
               fontWeight: isFav(props.row.address) ? 'bold' : 'normal',
             }"
@@ -330,10 +334,10 @@
             "
             :style="{
               color: isFav(props.row.address)
-                ? vaultColor(props.row.address)
+                ? vaultColor(props.row.address, true)
                 : '',
               fill: isFav(props.row.address)
-                ? vaultColor(props.row.address)
+                ? vaultColor(props.row.address, true)
                 : '',
               fontWeight: isFav(props.row.address) ? 'bold' : 'normal',
             }"

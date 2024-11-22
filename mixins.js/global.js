@@ -441,7 +441,10 @@ export default {
     numberSort(x, y, col, rowX, rowY) {
       return +x < +y ? -1 : +x > +y ? 1 : 0
     },
-    vaultColor(vaultAddress) {
+    vaultColor(vaultAddress, disable) {
+      if (disable) {
+        return 'var(--active-primary-color)'
+      }
       return colorHash.hex(vaultAddress)
     },
     parseMemo(memo) {
