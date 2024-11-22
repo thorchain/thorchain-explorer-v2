@@ -498,11 +498,7 @@ h3 {
     display: flex;
     justify-content: center;
     width: 100%;
-    margin-left: 0rem;
-
-    @include md {
-      margin-left: 6rem;
-    }
+    margin: auto;
 
     h1 {
       margin: 0.5rem;
