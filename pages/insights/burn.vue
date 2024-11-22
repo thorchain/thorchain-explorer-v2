@@ -8,43 +8,83 @@
         </h3>
         <div class="total-res-data">
           <div class="burned-value">
-    <h1 v-if="totalBurned">
-      <rune v-if="selectedUnit === 'rune'" class="rune-cur"></rune>
-    <span v-else>$</span> 
-      {{ displayTotalBurned | number('0,0.00') }}
-    </h1>
-    <skeleton-loader v-else height="1rem" width="12rem"></skeleton-loader>
-</div>
-        <div class="unit-switcher">
+            <h1 v-if="totalBurned">
+              <rune v-if="selectedUnit === 'rune'" class="rune-cur"></rune>
+              <span v-else>$</span>
+              {{ displayTotalBurned | number('0,0.00') }}
+            </h1>
+            <skeleton-loader
+              v-else
+              height="1rem"
+              width="12rem"
+            ></skeleton-loader>
+          </div>
+          <div class="unit-switcher">
             <label class="switch">
-              <input type="checkbox" :checked="selectedUnit === 'dollar'" @change="toggleUnit" />
+              <input
+                type="checkbox"
+                :checked="selectedUnit === 'dollar'"
+                @change="toggleUnit"
+              />
               <span class="slider round"></span>
             </label>
-            <span class="unit-label">{{ selectedUnit === 'rune' ? 'RUNE' : 'USD' }}</span>
+            <span class="unit-label">{{
+              selectedUnit === 'rune' ? 'RUNE' : 'USD'
+            }}</span>
           </div>
         </div>
 
         <div class="total-burned-container">
-  <div v-if="selectedInterval === '24h'" class="burned-item">
-    <div class="total-burned">
-      {{ totalBurned24h |currency }}
-    </div>
-    <h3>24H </h3>
-  </div>
-  <div v-else-if="selectedInterval === '7d'" class="burned-item">
-    <div class="total-burned">
-      {{ totalBurned7d | currency }}
-    </div>
-    <h3>7D </h3>
-  </div>
-  <div v-else-if="selectedInterval === '30d'" class="burned-item">
-    <div class="total-burned">
-      {{ totalBurned30d | currency }}
-    </div>
-    <h3>30D </h3>
-  </div>
-  <div v-else>Please select an interval</div>
-</div>
+          <div v-if="selectedInterval === '24h'" class="burned-item">
+            <div class="total-burned">
+              <skeleton-item
+                v-if="selectedUnit === 'rune'"
+                style="min-width: 100px"
+                :loading="!totalBurned24h"
+              >
+                {{ totalBurned24h | number('0,0.00') }}
+                <small>RUNE</small>
+              </skeleton-item>
+              <span v-else>
+                {{ (totalBurned24h * runePrice) | currency() }}
+              </span>
+            </div>
+            <h3>24H</h3>
+          </div>
+          <div v-else-if="selectedInterval === '7d'" class="burned-item">
+            <div class="total-burned">
+              <skeleton-item
+                v-if="selectedUnit === 'rune'"
+                style="min-width: 100px"
+                :loading="!totalBurned7d"
+              >
+                {{ totalBurned7d | number('0,0.00') }}
+                <small>RUNE</small>
+              </skeleton-item>
+              <span v-else>
+                {{ (totalBurned7d * runePrice) | currency() }}
+              </span>
+            </div>
+            <h3>7D</h3>
+          </div>
+          <div v-else-if="selectedInterval === '30d'" class="burned-item">
+            <div class="total-burned">
+              <skeleton-item
+                v-if="selectedUnit === 'rune'"
+                style="min-width: 100px"
+                :loading="!totalBurned30d"
+              >
+                {{ totalBurned30d | number('0,0.00') }}
+                <small>RUNE</small>
+              </skeleton-item>
+              <span v-else>
+                {{ (totalBurned30d * runePrice) | currency() }}
+              </span>
+            </div>
+            <h3>30D</h3>
+          </div>
+          <div v-else>Please select an interval</div>
+        </div>
 
         <VChart
           :option="burnChart"
@@ -132,7 +172,7 @@ export default {
   components: { Burn, Rune, VChart },
   data() {
     return {
-      selectedUnit: 'rune', 
+      selectedUnit: 'rune',
       totalBurned24h: undefined,
       totalBurned7d: undefined,
       totalBurned30d: undefined,
@@ -153,11 +193,11 @@ export default {
       runePrice: 'getRunePrice',
     }),
     displayTotalBurned() {
-    if (this.selectedUnit === 'dollar') {
-      return this.totalBurned * this.runePrice; 
-    }
-    return this.totalBurned; 
-  },
+      if (this.selectedUnit === 'dollar') {
+        return this.totalBurned * this.runePrice
+      }
+      return this.totalBurned
+    },
   },
   mounted() {
     this.updateInterval = setInterval(() => {
@@ -179,19 +219,19 @@ export default {
           incomeBurn =
             resData?.meta?.pools?.find((pool) => pool.pool === 'income_burn')
               ?.earnings || 0
-          this.totalBurned7d = (+incomeBurn * this.runePrice) / 1e8
+          this.totalBurned7d = +incomeBurn / 1e8
         } else if (intervalKey === '30d') {
           resData = (await this.$api.earnings('day', 30)).data
           incomeBurn =
             resData?.meta?.pools?.find((pool) => pool.pool === 'income_burn')
               ?.earnings || 0
-          this.totalBurned30d = (+incomeBurn * this.runePrice) / 1e8
+          this.totalBurned30d = +incomeBurn / 1e8
         } else if (intervalKey === '24h') {
           resData = (await this.$api.earnings('hour', 24)).data
           incomeBurn =
             resData?.meta?.pools?.find((pool) => pool.pool === 'income_burn')
               ?.earnings || 0
-          this.totalBurned24h = (+incomeBurn * this.runePrice) / 1e8
+          this.totalBurned24h = +incomeBurn / 1e8
         }
 
         this.burnChart = this.formatBurn(
@@ -203,7 +243,7 @@ export default {
       }
     },
     toggleUnit() {
-      this.selectedUnit = this.selectedUnit === 'rune' ? 'dollar' : 'rune';
+      this.selectedUnit = this.selectedUnit === 'rune' ? 'dollar' : 'rune'
     },
     formatBurn(data, intervalType) {
       const xAxis = []
@@ -326,32 +366,29 @@ export default {
 <style lang="scss" scoped>
 .total-res-data {
   display: flex;
-    flex-direction: row;
-    align-items: center;
-    margin-top: 1rem;
-    width: 100%;
-    justify-content: center;
+  flex-direction: row;
+  align-items: center;
+  margin-top: 1rem;
+  width: 100%;
+  justify-content: center;
 }
 
 .unit-switcher {
   align-items: center;
   justify-content: center;
-  margin-left: auto; 
-  display: none;      
-
+  margin-left: auto;
+  display: none;
 
   @include sm {
-      display: flex;
-
-    }
-
+    display: flex;
+  }
 }
 
 .switch {
   position: relative;
   display: inline-block;
   width: 53px;
-    height: 27px;
+  height: 27px;
 }
 
 .switch input {
@@ -374,9 +411,9 @@ export default {
 
 .slider:before {
   position: absolute;
-  content: "";
+  content: '';
   height: 19px;
-    width: 21px;
+  width: 21px;
   border-radius: 50%;
   left: 4px;
   bottom: 4px;
@@ -398,20 +435,20 @@ input:checked + .slider:before {
   margin-left: 10px;
 }
 .total-burned-container {
-  display: flex; 
-  flex-direction: row; 
-  align-items: center; 
-  justify-content: flex-end; 
-  width: 100%; 
-  margin-top:1rem
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  margin-top: 1rem;
 }
 
 .burned-item {
   display: flex;
-  flex-direction: row; 
-  align-items: center; 
-  justify-content: flex-end; 
-  gap: 0.5rem; 
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
   flex: 1;
 }
 
@@ -426,8 +463,6 @@ h3 {
   font-weight: bold;
   color: var(--sec-font-color);
 }
-
-
 
 .burn-card {
   flex: 1;
@@ -468,16 +503,15 @@ h3 {
     width: 100%;
     margin-left: 0rem;
 
-     @include md {
+    @include md {
       margin-left: 6rem;
-     }
+    }
 
     h1 {
       margin: 0.5rem;
       font-size: 3rem;
       display: flex;
       gap: 0.5rem;
-
 
       @include md {
         .rune-cur {
@@ -517,9 +551,8 @@ h3 {
   gap: 2rem;
   width: 21rem;
   margin-top: 1.3rem;
-  
+
   @include lg {
-  
     width: 28rem;
   }
 
