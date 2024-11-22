@@ -22,7 +22,8 @@ export default {
   background-color: var(--active-bg-color);
   height: 0.5rem;
   border-radius: 1rem;
-  margin-top: 0.75rem;
+  max-height: 20px;
+  margin: 0.375rem;
 }
 
 @keyframes skeleton {

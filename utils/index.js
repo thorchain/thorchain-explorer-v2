@@ -970,23 +970,23 @@ export const darkTheme = {
     axisLine: {
       show: true,
       lineStyle: {
-        color: '#e6e6e6',
+        color: '#9f9f9f',
       },
     },
     axisTick: {
       show: true,
       lineStyle: {
-        color: '#e6e6e6',
+        color: '#9f9f9f',
       },
     },
     axisLabel: {
       show: true,
-      color: '#e6e6e6',
+      color: '#9f9f9f',
     },
     splitLine: {
       show: false,
       lineStyle: {
-        color: ['#E0E6F1'],
+        color: ['#9f9f9f'],
       },
     },
     splitArea: {
@@ -1000,23 +1000,23 @@ export const darkTheme = {
     axisLine: {
       show: true,
       lineStyle: {
-        color: '#e6e6e6',
+        color: '#9f9f9f',
       },
     },
     axisTick: {
       show: true,
       lineStyle: {
-        color: '#e6e6e6',
+        color: '#9f9f9f',
       },
     },
     axisLabel: {
       show: true,
-      color: '#e6e6e6',
+      color: '#9f9f9f',
     },
     splitLine: {
       show: false,
       lineStyle: {
-        color: ['#E0E6F1'],
+        color: ['#9f9f9f'],
       },
     },
     splitArea: {
@@ -1030,23 +1030,23 @@ export const darkTheme = {
     axisLine: {
       show: true,
       lineStyle: {
-        color: '#e6e6e6',
+        color: '#9f9f9f',
       },
     },
     axisTick: {
       show: true,
       lineStyle: {
-        color: '#e6e6e6',
+        color: '#9f9f9f',
       },
     },
     axisLabel: {
       show: true,
-      color: '#e6e6e6',
+      color: '#9f9f9f',
     },
     splitLine: {
       show: false,
       lineStyle: {
-        color: ['#E0E6F1'],
+        color: ['#9f9f9f'],
       },
     },
     splitArea: {
@@ -1060,23 +1060,23 @@ export const darkTheme = {
     axisLine: {
       show: true,
       lineStyle: {
-        color: '#e6e6e6',
+        color: '#9f9f9f',
       },
     },
     axisTick: {
       show: true,
       lineStyle: {
-        color: '#e6e6e6',
+        color: '#9f9f9f',
       },
     },
     axisLabel: {
       show: true,
-      color: '#e6e6e6',
+      color: '#9f9f9f',
     },
     splitLine: {
       show: false,
       lineStyle: {
-        color: ['#E0E6F1'],
+        color: ['#9f9f9f'],
       },
     },
     splitArea: {
@@ -1088,7 +1088,7 @@ export const darkTheme = {
   },
   toolbox: {
     iconStyle: {
-      borderColor: '#e6e6e6',
+      borderColor: '#9f9f9f',
     },
     emphasis: {
       iconStyle: {
@@ -1098,7 +1098,7 @@ export const darkTheme = {
   },
   legend: {
     textStyle: {
-      color: '#e6e6e6',
+      color: '#9f9f9f',
     },
   },
   tooltip: {

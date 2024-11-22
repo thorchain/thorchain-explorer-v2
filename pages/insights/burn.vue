@@ -1,29 +1,112 @@
 <template>
   <div>
-    <div class="burn-card">
-      <h3>
-        <burn class="burn-icon"></burn>
-        Burned RUNE
-      </h3>
-      <div class="burned-value">
-        <h1 v-if="totalBurned">
-          <rune class="rune-cur"></rune>
-          {{ totalBurned | number('0,0.00') }}
-        </h1>
-        <skeleton-loader v-else height="1rem" width="12rem"></skeleton-loader>
+    <div class="burn-container">
+      <div class="burn-card">
+        <h3>
+          <burn class="burn-icon"></burn>
+          Burned RUNE
+        </h3>
+        <div class="total-res-data">
+          <div class="burned-value">
+            <h1 v-if="totalBurned">
+              <rune v-if="selectedUnit === 'rune'" class="rune-cur"></rune>
+              <span v-else>$</span>
+              {{ displayTotalBurned | number('0,0.00') }}
+            </h1>
+            <skeleton-loader
+              v-else
+              height="1rem"
+              width="12rem"
+            ></skeleton-loader>
+          </div>
+          <div class="unit-switcher">
+            <label class="switch">
+              <input
+                type="checkbox"
+                :checked="selectedUnit === 'dollar'"
+                @change="toggleUnit"
+              />
+              <span class="slider round"></span>
+            </label>
+            <span class="unit-label">{{
+              selectedUnit === 'rune' ? 'RUNE' : 'USD'
+            }}</span>
+          </div>
+        </div>
+
+        <div class="total-burned-container">
+          <div v-if="selectedInterval === '24h'" class="burned-item">
+            <div class="total-burned">
+              <skeleton-item
+                v-if="selectedUnit === 'rune'"
+                style="min-width: 100px"
+                :loading="!totalBurned24h"
+              >
+                {{ totalBurned24h | number('0,0.00') }}
+                <small>RUNE</small>
+              </skeleton-item>
+              <span v-else>
+                {{ (totalBurned24h * runePrice) | currency() }}
+              </span>
+            </div>
+            <h3>24H</h3>
+          </div>
+          <div v-else-if="selectedInterval === '7d'" class="burned-item">
+            <div class="total-burned">
+              <skeleton-item
+                v-if="selectedUnit === 'rune'"
+                style="min-width: 100px"
+                :loading="!totalBurned7d"
+              >
+                {{ totalBurned7d | number('0,0.00') }}
+                <small>RUNE</small>
+              </skeleton-item>
+              <span v-else>
+                {{ (totalBurned7d * runePrice) | currency() }}
+              </span>
+            </div>
+            <h3>7D</h3>
+          </div>
+          <div v-else-if="selectedInterval === '30d'" class="burned-item">
+            <div class="total-burned">
+              <skeleton-item
+                v-if="selectedUnit === 'rune'"
+                style="min-width: 100px"
+                :loading="!totalBurned30d"
+              >
+                {{ totalBurned30d | number('0,0.00') }}
+                <small>RUNE</small>
+              </skeleton-item>
+              <span v-else>
+                {{ (totalBurned30d * runePrice) | currency() }}
+              </span>
+            </div>
+            <h3>30D</h3>
+          </div>
+          <div v-else>Please select an interval</div>
+        </div>
+
+        <VChart
+          :option="burnChart"
+          :loading="!burnChart"
+          :loading-options="showLoading"
+          :theme="chartTheme"
+          class="burn-chart"
+          :autoresize="true"
+        />
+        <div class="interval-buttons">
+          <button
+            v-for="(label, key) in intervals"
+            :key="key"
+            :class="{ active: selectedInterval === key }"
+            @click="changeInterval(key)"
+          >
+            {{ label }}
+          </button>
+        </div>
       </div>
-      <small v-if="totalBurned && runePrice">
-        {{ (totalBurned * runePrice) | currency }}
-      </small>
-      <VChart
-        :option="burnChart"
-        :loading="!burnChart"
-        :loading-options="showLoading"
-        :theme="chartTheme"
-        class="burn-chart"
-        :autoresize="true"
-      />
     </div>
+
     <div class="block-card">
       <transition-group name="block" tag="div">
         <div
@@ -89,52 +172,96 @@ export default {
   components: { Burn, Rune, VChart },
   data() {
     return {
+      selectedUnit: 'rune',
+      totalBurned24h: undefined,
+      totalBurned7d: undefined,
+      totalBurned30d: undefined,
       updateInterval: undefined,
       totalBurned: undefined,
       burnedBlocks: [],
       burnChart: undefined,
+      selectedInterval: '24h',
+      intervals: {
+        '24h': '24H',
+        '7d': '7D',
+        '30d': '30D',
+      },
     }
   },
   computed: {
     ...mapGetters({
       runePrice: 'getRunePrice',
     }),
+    displayTotalBurned() {
+      if (this.selectedUnit === 'dollar') {
+        return this.totalBurned * this.runePrice
+      }
+      return this.totalBurned
+    },
   },
   mounted() {
     this.updateInterval = setInterval(() => {
       this.getBurnData()
     }, 5000)
-    this.getChartData()
+    this.fetchData(this.selectedInterval)
   },
   destroyed() {
     clearInterval(this.updateInterval)
   },
   methods: {
-    async getChartData() {
+    async fetchData(intervalKey) {
       try {
-        const { data: chartData } = await this.$api.earnings('hour', 48)
-        const chart = this.formatBurn(chartData)
-        this.burnChart = chart
+        let resData
+        let incomeBurn
+
+        if (intervalKey === '7d') {
+          resData = (await this.$api.earnings('day', 7)).data
+          incomeBurn =
+            resData?.meta?.pools?.find((pool) => pool.pool === 'income_burn')
+              ?.earnings || 0
+          this.totalBurned7d = +incomeBurn / 1e8
+        } else if (intervalKey === '30d') {
+          resData = (await this.$api.earnings('day', 30)).data
+          incomeBurn =
+            resData?.meta?.pools?.find((pool) => pool.pool === 'income_burn')
+              ?.earnings || 0
+          this.totalBurned30d = +incomeBurn / 1e8
+        } else if (intervalKey === '24h') {
+          resData = (await this.$api.earnings('hour', 24)).data
+          incomeBurn =
+            resData?.meta?.pools?.find((pool) => pool.pool === 'income_burn')
+              ?.earnings || 0
+          this.totalBurned24h = +incomeBurn / 1e8
+        }
+
+        this.burnChart = this.formatBurn(
+          resData,
+          intervalKey.includes('d') ? 'day' : 'hour'
+        )
       } catch (error) {
         console.error('Error fetching data:', error)
       }
     },
-    formatBurn(data) {
+    toggleUnit() {
+      this.selectedUnit = this.selectedUnit === 'rune' ? 'dollar' : 'rune'
+    },
+    formatBurn(data, intervalType) {
       const xAxis = []
       const runeBurned = []
+
+      const dateFormat = intervalType === 'hour' ? 'H:mm' : 'MMM DD'
 
       data?.intervals.forEach((interval, index) => {
         if (index === data?.intervals?.length - 1) {
           return
         }
 
-        const date = moment(interval.endTime * 1000).format('MMM DD, H:mm')
-        xAxis.push(date)
+        const time = moment(interval.endTime * 1000).format(dateFormat)
+        xAxis.push(time)
 
         const burns = interval?.pools?.find(
           (p) => p.pool === 'income_burn'
         )?.earnings
-
         runeBurned.push(+burns / 1e8)
       })
 
@@ -149,6 +276,9 @@ export default {
             itemStyle: {
               color: '#ff9962',
             },
+            areaStyle: {
+              color: 'rgba(255, 153, 98, 0.2)',
+            },
           },
         ],
         xAxis,
@@ -157,41 +287,61 @@ export default {
             show: false,
           },
           grid: {
-            top: '0%',
             left: '2%',
             right: '2%',
-            height: '100%',
+            bottom: '2%',
+            containLabel: true,
+          },
+          xAxis: {
+            type: 'category',
+            boundaryGap: false,
+            axisLine: { show: false },
+            splitLine: { show: false },
+            axisTick: { show: false },
+            data: xAxis,
+            min: 'dataMin',
+            max: 'dataMax',
           },
           yAxis: [
             {
               type: 'value',
-              name: '',
+              axisLine: { show: false },
+              splitLine: { show: false },
+              axisTick: { show: false },
+              minorTick: { show: false },
               position: 'right',
-              show: false,
-              splitLine: {
-                show: true,
+              show: true,
+              splitNumber: 2,
+              axisLabel: {
+                formatter: (value) =>
+                  this.$options.filters.number(value, '0,0a'),
               },
             },
           ],
         },
         (param) => {
-          return `
-          <div class="tooltip-header">
-            <div class="data-color" style="background-color: ${param[0].color}"></div>
-            ${param[0].name}
-          </div>
-          <div class="tooltip-body">
-            ${param
-              .map(
-                (p) => `<span>
+          return ` 
+        <div class="tooltip-header">
+          <div class="data-color" style="background-color: ${param[0].color}"></div>
+          ${param[0].name}
+        </div>
+        <div class="tooltip-body">
+          ${param
+            .map(
+              (p) => `<span>
                 <span>${p.seriesName}</span>
                 <b>${p.value ? this.$options.filters.number(p.value, '0,0.00') : '-'} RUNE</b>
               </span>`
-              )
-              .join('')}
-          </div>`
+            )
+            .join('')}
+        </div>`
         }
       )
+    },
+
+    changeInterval(intervalKey) {
+      this.selectedInterval = intervalKey
+      this.fetchData(intervalKey)
     },
     getBurnData() {
       this.$api
@@ -214,7 +364,109 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.total-res-data {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-top: 1rem;
+  width: 100%;
+  justify-content: center;
+}
+
+.unit-switcher {
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  display: none;
+
+  @include sm {
+    display: flex;
+  }
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 53px;
+  height: 27px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--border-color);
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: '';
+  height: 19px;
+  width: 21px;
+  border-radius: 50%;
+  left: 4px;
+  bottom: 4px;
+  background-color: var(--sec-font-color);
+  transition: 0.4s;
+}
+
+input:checked + .slider {
+  background-color: #ffa86b;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.unit-label {
+  font-size: 14px;
+  color: var(--font-color);
+  margin-left: 10px;
+}
+.total-burned-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.burned-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+h3 {
+  margin-bottom: 10px;
+  font-size: 16px;
+  color: var(--font-color);
+}
+
+.total-burned {
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--sec-font-color);
+}
+
 .burn-card {
+  flex: 1;
+  justify-content: center;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -240,22 +492,32 @@ export default {
   }
 
   .rune-cur {
-    height: 2.5rem;
+    height: 3rem;
     fill: currentColor;
+    font-size: 3rem;
   }
 
   .burned-value {
     display: flex;
     justify-content: center;
+    width: 100%;
+    margin-left: 0rem;
+
+    @include md {
+      margin-left: 6rem;
+    }
 
     h1 {
       margin: 0.5rem;
+      font-size: 3rem;
+      display: flex;
+      gap: 0.5rem;
 
       @include md {
         .rune-cur {
-          height: 5rem;
+          height: 4rem;
         }
-        font-size: 7rem;
+        font-size: 4rem;
       }
     }
   }
@@ -277,6 +539,51 @@ export default {
   max-width: 50rem;
   margin: auto;
   margin-top: 1rem;
+}
+
+.interval-buttons {
+  display: flex;
+  align-items: center;
+  margin-top: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  padding: 4px 5px;
+  gap: 2rem;
+  width: 21rem;
+  margin-top: 1.3rem;
+
+  @include lg {
+    width: 28rem;
+  }
+
+  button {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+
+    flex: 1;
+    padding: 10px 4px;
+    font-size: 1rem;
+    color: var(--bs-secondary-color);
+
+    background-color: transparent;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+
+    &.active {
+      padding: 0.5rem;
+      border-radius: 0.5rem;
+      margin: 1.5px 5px;
+      background-color: var(--border-color);
+      color: #ffa86b;
+    }
+
+    &:hover {
+      color: #ffa86b;
+    }
+  }
 }
 
 .block-item {
