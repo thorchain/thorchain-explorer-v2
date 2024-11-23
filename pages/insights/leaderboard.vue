@@ -39,8 +39,19 @@ export default {
     }
   },
   mounted() {
+    if (this.$route.query.period) {
+      this.period = this.$route.query.period
+    } else {
+      this.$router.push({ query: { period: this.period } })
+    }
     this.fetchAffiliateData()
   },
+  watch: {
+  period(newPeriod) {
+    this.$router.push({ query: { period: newPeriod } })
+    this.fetchAffiliateData()
+  },
+},
   methods: {
     async fetchAffiliateData() {
       try {
