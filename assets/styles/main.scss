@@ -632,6 +632,11 @@ input {
     background-color: #81c784;
     color: #1b5e20;
   }
+  &.orange {
+    border:1px solid rgba(47, 138, 245, 0.16);
+    color: #ffa86b;
+    background-color:transparent;
+  }
 
   &.yellow {
     background-color: #ffee58;
@@ -677,6 +682,12 @@ input {
     background-color: rgb(253 246 178);
     border: 1px solid rgba(255, 156, 8, 0.25);
   }
+  &.orange {
+    border:1px solid rgba(47, 138, 245, 0.16);
+    color: #ffa86b;
+    background-color:transparent;
+
+  }
 
   &.danger {
     color: rgb(155 28 28);
@@ -706,6 +717,11 @@ input {
     fill: #ffc700;
     background-color: transparent;
     border: 1px solid rgba(255, 156, 8, 0.25);
+  }
+  .mini-bubble.orange {
+    border:1px solid rgba(47, 138, 245, 0.16);
+    color: #ffa86b;
+    background-color:transparent;
   }
 
   .mini-bubble.danger {
