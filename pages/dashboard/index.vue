@@ -1573,8 +1573,8 @@ export default {
   
 }
 .burn-icon {
-  width: 1.2rem;
-    height: 1.2rem;
+  width: 0.8rem;
+    height: 0.8rem;
     border-radius: 50%;
     margin-right: 0.5rem;
     fill: #ffa86b;
