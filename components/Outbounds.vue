@@ -65,7 +65,7 @@
         <h3>There is no outbound schedule inside THORChain.</h3>
       </div>
       <div
-        v-for="(group, i) in groupedOutbounds"
+        v-for="(group, i) in filteredOutbounds" v-else
         :key="i"
         class="outbound-item"
         @click="toggleExtraRight(i)"
@@ -86,26 +86,45 @@
             </div>
 
             <div class="number-item">
-              <span :class="'mini-bubble'"
-                >Ongoing: {{ group.ongoingCount }}</span
-              >
-              <span :class="'mini-bubble info'"
-                >Scheduled: {{ group.scheduledCount }}</span
-              >
-              <angle-icon
-                :class="{ trigger: true, rotated: angleRotated[i] }"
-              />
-            </div>
+  <span
+    v-if="group.ongoingCount > 0"
+    :class="'mini-bubble'"
+    style="border: 1px solid rgba(47, 138, 245, 0.16); background-color: transparent; width: 1.3rem;height: 1.3rem;font-size: 12px;"
+  >
+   {{ group.ongoingCount }}
+  </span>
+  <span 
+  v-if="group.scheduledCount > 0"
+  :class="'mini-bubble info'"
+  style="width: 1.3rem;height: 1.3rem;font-size: 12px;"
+
+  >
+  
+    {{ group.scheduledCount }}
+  </span>
+  <angle-icon
+    :class="{ trigger: true, rotated: angleRotated[i] }"
+  />
+</div>
+
           </div>
 
           <div v-if="isVisible[i]" class="extra-right">
             <div v-for="(o, idx) in group.items" :key="idx" class="asset-info">
+              <div class="left-part">
               <span class="asset-name">
-                {{ $options.filters.number(o.coin.amount / 1e8, '0,0.0000') }}
+                {{ $options.filters.number(o.coin.amount / 1e8, '0,0.0000') }} -
+              <span>
+                ${{ (o.coin.amount/ 1e8 * runePrice) | number('0,0.0a') }}
               </span>
+            </span>
+            <div v-if="o.label === 'Scheduled'" :class="'mini-bubble info'">
+  Scheduled
+</div>
+</div>
               <div class="right-part">
                 <div v-if="o.height">
-                  <span style="color: var(--sec-font-color)">
+                  <span style="color: var(--sec-font-color);font-size: 10px;">
                     {{ getOutboundEta(o.height) }}
                   </span>
                 </div>
@@ -117,6 +136,7 @@
                     {{ formatAddress(o.in_hash) }}
                   </NuxtLink>
                 </small>
+
               </div>
             </div>
           </div>
@@ -202,7 +222,7 @@ export default {
   },
   computed: {
     filteredOutbounds() {
-      return this.outbounds.slice(
+      return this.groupedOutbounds.slice(
         (this.currentPage - 1) * 10,
         this.currentPage * 10
       )
@@ -260,6 +280,7 @@ export default {
     ...mapGetters({
       chainsHeight: 'getChainsHeight',
       pools: 'getPools',
+      runePrice: 'getRunePrice',
     }),
   },
   mounted() {
@@ -422,6 +443,8 @@ export default {
   flex-direction: row;
   align-items: center;
   gap: 5px;
+  cursor: pointer;
+
 }
 .asset-item {
   display: flex;
@@ -431,7 +454,7 @@ export default {
   .number-item {
     display: flex;
     align-items: center;
-    gap: 0.2rem;
+    gap: 0.3rem;
   }
   .rotated {
     transform: rotate(180deg);
@@ -594,6 +617,10 @@ export default {
   align-items: center;
   padding: 0.8rem 0px;
   border-bottom: 1px solid var(--border-color) !important;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+  &:last-child {
+      border-bottom: none !important;
+    }
 
   margin-top: 0.5rem;
   transition:
@@ -631,22 +658,24 @@ export default {
       display: flex;
       align-items: center;
       gap: 5px;
+      color: var(--sec-font-color);
     }
   }
   .extra-right {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    justify-content: center; 
+    align-items: center;
+
 
     .right-part {
       display: flex;
       align-items: center;
       gap: 7px;
+      width: 100%;
+    justify-content: end
     }
 
-    justify-content: center;
-    min-width: 177px;
-    min-height: 48px;
 
     .asset-info {
       display: flex;
@@ -654,6 +683,19 @@ export default {
       align-items: center;
       width: 100%;
       gap: 0.5rem;
+      padding: 0.5rem;
+    &:last-child {
+      border-bottom: none;
+    }
+    }
+    .left-part{
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      width: 100%;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+
     }
 
     small {
@@ -665,6 +707,7 @@ export default {
       font-size: 0.9rem;
       display: flex;
       align-items: center;
+      gap: 3px
     }
   }
 }
