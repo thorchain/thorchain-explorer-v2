@@ -408,9 +408,8 @@ export default {
 
       if (accordions.action) {
         if (accordions.action.affiliateName) {
-          ret.details.interface = this.mapAffiliateName(
-            accordions.action.affiliateName
-          )
+          const firstAffiliate = accordions.action.affiliateName.split('/')[0]
+          ret.details.interface = this.mapAffiliateName(firstAffiliate)
         }
 
         let affiliateOutAmount
@@ -513,9 +512,14 @@ export default {
                 is: accordions.action.liquidityUnits,
               },
               {
-                key: 'Affiliate Name / Basis',
-                value: `${accordions.action.affiliateName} / ${accordions.action.affiliateFee}`,
+                key: 'Affiliate Name',
+                value: `${accordions.action.affiliateName}`,
                 is: accordions.action.affiliateName,
+              },
+              {
+                key: 'Affiliate Basis',
+                value: `${accordions.action.affiliateFee}`,
+                is: accordions.action.affiliateFee,
               },
               {
                 key: 'Block Height',
@@ -735,10 +739,8 @@ export default {
         const swapAction = midgardAction?.actions?.find(
           (a) => a.type === 'swap'
         )
-        const affiliateFee =
-          parseInt(midgardAction?.actions[0]?.metadata?.swap?.affiliateFee) ||
-          parseInt(memo.fee) ||
-          0
+        const affiliateBasis = memo.fee
+        const affiliateFee = affiliateBasis || 0
         if (swapAction?.status === 'pending') {
           try {
             const { data: quoteData } = await this.$api.getQuote({
@@ -1761,10 +1763,7 @@ export default {
             limit: memo.limit,
             limitAsset: onlyRefund ? outMemoAsset : outAsset,
             affiliateName: memo.affiliate,
-            affiliateFee:
-              parseInt(actions?.actions[0]?.metadata?.swap?.affiliateFee) ||
-              parseInt(memo.fee) ||
-              0,
+            affiliateFee: memo.fee || 0,
             liquidityFee:
               parseInt(actions?.actions[0]?.metadata?.swap?.liquidityFee) ||
               null,

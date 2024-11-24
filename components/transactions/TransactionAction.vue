@@ -43,17 +43,19 @@
       >
         Pending
       </span>
-      <template v-if="affiliateWallet(row)">
+      <template v-if="hasAffiliate(row)">
         <span>|</span>
-        <div class="executed">
-          <small v-if="!affiliateWallet(row).icon">Affiliate</small>
-          <img
-            v-if="affiliateWallet(row).icon"
-            :src="affiliateWallet(row).icon"
-            :alt="affiliateWallet(row).name"
-          />
-          <em v-else>{{ affiliateWallet(row).name }}</em>
-        </div>
+        <template v-for="affiliate in hasAffiliate(row)">
+          <div :key="affiliate" class="executed">
+            <small v-if="!affiliateWallet(affiliate).icon">Affiliate</small>
+            <img
+              v-if="affiliateWallet(affiliate).icon"
+              :src="affiliateWallet(affiliate).icon"
+              :alt="affiliateWallet(affiliate).name"
+            />
+            <em v-else>{{ affiliateWallet(affiliate).name }}</em>
+          </div>
+        </template>
       </template>
     </div>
     <div
@@ -326,17 +328,23 @@ export default {
     },
   },
   methods: {
-    affiliateWallet(row) {
+    hasAffiliate(row) {
       if (!row.metadata?.swap?.affiliateAddress) {
+        return false
+      }
+
+      const affiliates = row.metadata?.swap?.affiliateAddress
+      return affiliates.split('/')
+    },
+    affiliateWallet(affiliate) {
+      if (!affiliate) {
         return
       }
-      const detail =
-        row.metadata.swap.affiliateAddress &&
-        this.mapAffiliateName(row.metadata.swap.affiliateAddress)
+      const detail = affiliate && this.mapAffiliateName(affiliate)
 
       if (!detail) {
         return {
-          name: row.metadata?.swap.affiliateAddress,
+          name: affiliate,
         }
       }
 

@@ -12,19 +12,28 @@
 
       <div class="tx-details">
         <div>
-          <skeleton-loader class="skeleton" :style="{ height: '3rem', width: '1.2rem' }" />
+          <skeleton-loader
+            class="skeleton"
+            :style="{ height: '36px', width: '36px', borderRadius: '50%' }"
+          />
         </div>
         <div style="width: 100%">
           <skeleton-loader class="skeleton" width="100%" height="2px" />
         </div>
         <div>
-          <skeleton-loader class="skeleton" :style="{ height: '3rem', width: '1.2rem' }" />
+          <skeleton-loader
+            class="skeleton"
+            :style="{ height: '32px', width: '32px', borderRadius: '50%' }"
+          />
         </div>
         <div style="width: 100%">
           <skeleton-loader class="skeleton" width="100%" height="2px" />
         </div>
         <div>
-          <skeleton-loader  class="skeleton" :style="{ height: '3rem', width: '1.2rem' }" />
+          <skeleton-loader
+            class="skeleton"
+            :style="{ height: '36px', width: '36px', borderRadius: '50%' }"
+          />
         </div>
       </div>
 
@@ -59,7 +68,7 @@ export default {}
 </script>
 
 <style lang="scss" scoped>
-.skeleton{
+.skeleton {
   margin: 0px !important;
 }
 .tx-container {
