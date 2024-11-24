@@ -107,7 +107,7 @@
       </div>
     </div>
 
-    <div class="block-card">
+    <div class="block-card" >
       <transition-group name="block" tag="div">
         <div
           v-for="block in burnedBlocks"
@@ -372,6 +372,50 @@ export default {
   width: 100%;
   justify-content: center;
 }
+.interval-buttons {
+  display: flex;
+  align-items: center;
+  margin-top: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  padding: 4px 5px;
+  gap: 2rem;
+  width: 21rem;
+  margin-top: 1.3rem;
+
+  @include lg {
+    width: 28rem;
+  }
+
+  button {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+
+    flex: 1;
+    padding: 10px 4px;
+    font-size: 1rem;
+    color: var(--bs-secondary-color);
+
+    background-color: transparent;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+
+    &.active {
+      padding: 0.5rem;
+      border-radius: 0.5rem;
+      margin: 1.5px 5px;
+      background-color: var(--border-color);
+      color: #ffa86b;
+    }
+
+    &:hover {
+      color: #ffa86b;
+    }
+  }
+}
 
 .unit-switcher {
   display: flex;
@@ -532,51 +576,6 @@ h3 {
   max-width: 50rem;
   margin: auto;
   margin-top: 1rem;
-}
-
-.interval-buttons {
-  display: flex;
-  align-items: center;
-  margin-top: 1rem;
-  border: 1px solid var(--border-color);
-  border-radius: 0.5rem;
-  padding: 4px 5px;
-  gap: 2rem;
-  width: 21rem;
-  margin-top: 1.3rem;
-
-  @include lg {
-    width: 28rem;
-  }
-
-  button {
-    align-items: center;
-    display: flex;
-    justify-content: center;
-
-    flex: 1;
-    padding: 10px 4px;
-    font-size: 1rem;
-    color: var(--bs-secondary-color);
-
-    background-color: transparent;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease-in-out;
-
-    &.active {
-      padding: 0.5rem;
-      border-radius: 0.5rem;
-      margin: 1.5px 5px;
-      background-color: var(--border-color);
-      color: #ffa86b;
-    }
-
-    &:hover {
-      color: #ffa86b;
-    }
-  }
 }
 
 .block-item {

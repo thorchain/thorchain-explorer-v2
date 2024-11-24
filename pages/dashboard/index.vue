@@ -205,53 +205,42 @@
     </div>
     <div class="cards-container">
       <div class="card">
-        <div class="card-header">
-          <div class="card-title">
-            <h2 style="color: var(--sec-font-color)">Latest Blocks</h2>
-            <nuxt-link to="/block/blocks" class="more-link clickable">
-              More
-              <ArrowRightIcon />
-            </nuxt-link>
-          </div>
+  <div class="card-header">
+    <div class="card-title">
+      <h2 style="color: var(--sec-font-color)">Latest Burned Blocks</h2>
+    </div>
+  </div>
+  <div class="card-body">
+    <transition-group name="block" tag="div">
+      <div
+        v-for="block in burnedBlocks"
+        :key="block.blockHeight"
+        class="block-items"
+      >
+        <div class="block-info-overview">
+          <span class="height">{{ block.blockHeight | number('0,0') }}</span>
+          <small class="duration">
+            {{ getDuration(block.timestamp) }} Seconds
+          </small>
         </div>
-        <div class="card-body">
-          <template v-if="blocks">
-            <template v-for="(b, i) in blocks">
-              <div :key="i" class="row-item">
-                <div class="meta">
-                  <nuxt-link
-                    class="clickable header"
-                    :to="`/block/${b.height}`"
-                  >
-                    {{ b.height | number('0,0') }}
-                  </nuxt-link>
-                  <span class="timestamp">
-                    {{ b.date }}
-                  </span>
-                </div>
-                <div class="txs" style="width: 40%">
-                  <span>
-                    Tx Size:
-                    <span style="color: var(--font-color)">
-                      {{ b.txs }}
-                    </span>
-                  </span>
-                  <span>
-                    Block Size:
-                    <span style="color: var(--font-color)">
-                      {{ b.size | number('0,0') }}
-                    </span>
-                  </span>
-                </div>
-              </div>
-              <hr :key="i + 'hr'" class="hr-space" />
-            </template>
-          </template>
-          <div v-else class="loading">
-            <BounceLoader color="var(--font-color)" size="3rem" />
+        <div class="right-section-overview">
+          <div :class="['mini-bubble orange']" style="padding: 4px 5px; display: flex; align-items: center;">
+            <Burn class="burn-icon"></Burn>
+            {{ block.burnedAmount / 1e8 }}
           </div>
+          <small style="margin-right: 0.5rem;">
+            {{ ((block.burnedAmount / 1e8) * runePrice) | currency }}
+          </small>
         </div>
       </div>
+    </transition-group>
+    <template v-if="burnedBlocks.length == 0">
+      <div class="loading">
+        <BounceLoader color="var(--font-color)" size="3rem" />
+      </div>
+    </template>
+  </div>
+</div>
       <div class="card">
         <div class="card-header">
           <div class="card-title">
@@ -368,6 +357,7 @@ export default {
   layout: 'dashboard',
   data() {
     return {
+      burnedBlocks: [],
       affiliateData: [],
       oldRunePool: [],
       polOverview: undefined,
@@ -781,6 +771,9 @@ export default {
     setInterval(() => {
       this.getNetworkStatus()
     }, 10000)
+    this.updateInterval = setInterval(() => {
+      this.getBurnData()
+    }, 5000)
   },
   methods: {
     async updateRunePool() {
@@ -790,6 +783,22 @@ export default {
       } catch (error) {
         console.error('Error updating RUNE pool data:', error)
       }
+    },
+    getBurnData() {
+      this.$api
+        .getBurnedBlocks()
+        .then(({ data }) => {
+          this.totalBurned = 500_000_000 - +data.totalBurned / 1e8
+          this.burnedBlocks = data.burnedBlocks.reverse()
+        })
+        .catch((error) => {
+          console.error('Error fetching swap history:', error)
+        })
+    },
+    getDuration(timestamp) {
+      const now = moment()
+      const before = moment(timestamp)
+      return moment.duration(now.diff(before)).asSeconds().toFixed()
     },
     stringToPercentage(val) {
       return (Number.parseFloat(val ?? 0) * 100).toFixed(2).toString() + ' %'
@@ -1526,6 +1535,55 @@ export default {
   }
 }
 
+.block-items {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex: 1;
+  padding: 0.5rem 0px;
+  border-bottom: 1px solid var(--border-color);
+  &:last-child {
+    border-bottom: none;
+  }
+  .block-info-overview {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+
+
+    .height {
+      font-size: 1.2rem;
+      color: var(--sec-font-color);
+    }
+  }
+
+  .right-section-overview {
+    display: flex;
+    flex-direction: column;
+    align-items: end;
+    gap: 0.3rem;
+  }
+}
+
+.block-enter-active {
+  transition: all 1s;
+  .block-info-overview.height {
+    color: #ffa86b;
+  }
+  
+}
+.burn-icon {
+  width: 0.9rem;
+    height: 0.9rem;
+    border-radius: 50%;
+    margin-right: 0.3rem;
+    fill: #ffa86b;
+  }
+
+.block-enter {
+  opacity: 0;
+  transform: translateY(-30px);
+}
 .more-link {
   display: flex;
   align-items: center;
