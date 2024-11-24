@@ -10,7 +10,6 @@
     <template #header>
       <dot-live />
     </template>
-
     <template v-if="Mode == 'ongoing-outbounds'">
       <template v-if="!noOutnound">
         <Card class="overview-card">
@@ -65,44 +64,85 @@
         <scheduleIcon class="schedule-icon large-icon" />
         <h3>There is no outbound schedule inside THORChain.</h3>
       </div>
-      <template v-for="(o, i) in filteredOutbounds" v-else>
-        <div :key="i" class="outbound-item">
-          <div v-if="o.coin" class="asset-item">
-            <asset-icon :asset="o.coin.asset" />
-            <span class="asset-name">
-              {{ $options.filters.number(o.coin.amount / 1e8, '0,0.0000') }}
-              <small class="asset-text sec-color">{{ o.coin.asset }}</small>
-            </span>
-            <div v-if="o.label" class="mini-bubble info">
-              {{ o.label | capitalize }}
-            </div>
-          </div>
-          <div class="extra-right">
-            <small v-if="o.to_address" class="mono"
-              >To
-              <NuxtLink
-                class="clickable"
-                :to="{ path: `/address/${o.to_address}` }"
-              >
-                {{ formatAddress(o.to_address) }}
-              </NuxtLink>
-            </small>
-            <small v-if="o.in_hash && o.label !== 'migrate'" class="mono"
-              >In TxID
-              <NuxtLink class="clickable" :to="{ path: `/tx/${o.in_hash}` }">
-                {{ formatAddress(o.in_hash) }}
-              </NuxtLink>
-            </small>
-            <div v-if="o.height">
-              <small class="mono">ETA </small>
-              <span style="color: var(--sec-font-color)">
-                {{ getOutboundEta(o.height) }}
+      <div
+        v-for="(group, i) in filteredOutbounds" v-else
+        :key="i"
+        class="outbound-item"
+        @click="toggleExtraRight(i)"
+      >
+        <div class="outbound-collapse">
+          <div class="asset-item">
+            <div class="asset-details">
+              <asset-icon :asset="group.asset" />
+              <span class="asset-name">
+                {{ (group.totalAmount / 1e8) | number('0,0.0000') }} -
+                <span class="asset-total-usd">
+                  ${{ group.totalAmountUSD | number('0,0.0a') }}
+                </span>
+                <small class="asset-text sec-color">{{
+                  showAsset(group.asset)
+                }}</small>
               </span>
+            </div>
+
+            <div class="number-item">
+  <span
+    v-if="group.ongoingCount > 0"
+    :class="'mini-bubble'"
+    style="border: 1px solid rgba(47, 138, 245, 0.16); background-color: transparent; width: 1.3rem;height: 1.3rem;font-size: 12px;"
+  >
+   {{ group.ongoingCount }}
+  </span>
+  <span 
+  v-if="group.scheduledCount > 0"
+  :class="'mini-bubble info'"
+  style="width: 1.3rem;height: 1.3rem;font-size: 12px;"
+
+  >
+  
+    {{ group.scheduledCount }}
+  </span>
+  <angle-icon
+    :class="{ trigger: true, rotated: angleRotated[i] }"
+  />
+</div>
+
+          </div>
+
+          <div v-if="isVisible[i]" class="extra-right">
+            <div v-for="(o, idx) in group.items" :key="idx" class="asset-info">
+              <div class="left-part">
+              <span class="asset-name">
+                {{ $options.filters.number(o.coin.amount / 1e8, '0,0.0000') }} -
+              <span>
+                ${{ (o.coin.amount/ 1e8 * runePrice) | number('0,0.0a') }}
+              </span>
+            </span>
+            <div v-if="o.label === 'Scheduled'" :class="'mini-bubble info'">
+  Scheduled
+</div>
+</div>
+              <div class="right-part">
+                <div v-if="o.height">
+                  <span style="color: var(--sec-font-color);font-size: 10px;">
+                    {{ getOutboundEta(o.height) }}
+                  </span>
+                </div>
+                <small v-if="o.in_hash && o.label !== 'migrate'" class="mono">
+                  <NuxtLink
+                    class="clickable"
+                    :to="{ path: `/tx/${o.in_hash}` }"
+                  >
+                    {{ formatAddress(o.in_hash) }}
+                  </NuxtLink>
+                </small>
+
+              </div>
             </div>
           </div>
         </div>
         <hr :key="i + '-hr'" class="hr-space" />
-      </template>
+      </div>
     </template>
     <template v-if="Mode == 'top-swaps'">
       <div v-if="!topSwaps" class="no-outbound">
@@ -142,13 +182,13 @@
     </template>
 
     <template
-      v-if="Mode == 'ongoing-outbounds' && outbounds.length > 10"
+      v-if="Mode == 'ongoing-outbounds' && groupedOutbounds.length > 10"
       #footer
     >
       <b-pagination
         v-model="currentPage"
         class="center"
-        :total-rows="outbounds.length"
+        :total-rows="groupedOutbounds.length"
         :per-page="10"
       />
     </template>
@@ -161,11 +201,13 @@ import moment from 'moment'
 import scheduleIcon from '@/assets/images/schedule.svg?inline'
 import ArrowToDown from '~/assets/images/arrow-down.svg?inline'
 import TransactionAction from '~/components/transactions/TransactionAction.vue'
+import AngleIcon from '~/assets/images/angle-down.svg?inline'
 
 export default {
-  components: { scheduleIcon, ArrowToDown, TransactionAction },
+  components: { scheduleIcon, ArrowToDown, TransactionAction, AngleIcon },
   data() {
     return {
+      isVisible: [],
       currentPage: 1,
       noOutnound: false,
       loading: true,
@@ -175,11 +217,12 @@ export default {
       schData: [],
       Mode: 'ongoing-outbounds',
       topSwaps: [],
+      angleRotated: [],
     }
   },
   computed: {
     filteredOutbounds() {
-      return this.outbounds.slice(
+      return this.groupedOutbounds.slice(
         (this.currentPage - 1) * 10,
         this.currentPage * 10
       )
@@ -197,9 +240,47 @@ export default {
         return total + this.amountToUSD(o.coin.asset, o.coin.amount, this.pools)
       }, 0)
     },
+    groupedOutbounds() {
+      const grouped = this.outbounds.reduce((acc, o) => {
+        const key = o.coin.asset
+        if (!acc[key]) {
+          acc[key] = {
+            asset: key,
+            totalAmount: 0,
+            totalAmountUSD: 0,
+            count: 0,
+            scheduledCount: 0,
+            ongoingCount: 0,
+            label: o.label,
+            items: [],
+          }
+        }
+
+        const amount = o.coin.amount ? parseFloat(o.coin.amount) : 0
+        const amountUSD =
+          this.amountToUSD(o.coin.asset, amount, this.pools) || 0
+        acc[key].totalAmount += amount
+        acc[key].totalAmountUSD += amountUSD
+        acc[key].count += 1
+
+        if (o.label === 'Scheduled') {
+          acc[key].scheduledCount += 1
+        }
+
+        if (o.label === 'Ongoing') {
+          acc[key].ongoingCount += 1
+        }
+
+        acc[key].items.push(o)
+        return acc
+      }, {})
+
+      return Object.values(grouped)
+    },
     ...mapGetters({
       chainsHeight: 'getChainsHeight',
       pools: 'getPools',
+      runePrice: 'getRunePrice',
     }),
   },
   mounted() {
@@ -270,6 +351,7 @@ export default {
       resData.push(
         ...this.outData.map((s) => ({
           ...s,
+          label: 'Ongoing',
           ...(s.memo.toUpperCase().includes('MIGRATE') && { label: 'migrate' }),
         })),
         ...this.schData.map((s) => ({ ...s, label: 'Scheduled' }))
@@ -288,6 +370,10 @@ export default {
         const remHeight = height - this.chainsHeight.THOR
         return moment.duration(remHeight * 6, 'seconds').humanize()
       }
+    },
+    toggleExtraRight(index) {
+      this.$set(this.isVisible, index, !this.isVisible[index])
+      this.$set(this.angleRotated, index, !this.angleRotated[index])
     },
   },
 }
@@ -346,16 +432,35 @@ export default {
   align-items: center;
   gap: 5px;
   margin-bottom: 0.5rem;
+  justify-content: space-between;
 
   span {
     font-size: 0.9rem;
   }
 }
+.asset-details {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+ 
 
+}
 .asset-item {
   display: flex;
   align-items: center;
   gap: 5px;
+  padding: 0px 0.5rem;
+  cursor: pointer;
+
+  .number-item {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .rotated {
+    transform: rotate(180deg);
+  }
 }
 
 .asset-name-swaps {
@@ -502,16 +607,41 @@ export default {
 .swaps-nav {
   margin-top: 0.5rem;
 }
+.outbound-collapse {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
 .outbound-item {
   display: flex;
   justify-content: space-between;
-  gap: 8px;
-  overflow: hidden;
+  align-items: center;
+  padding: 0.8rem 0px;
+  border-bottom: 1px solid var(--border-color) !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  &:last-child {
+      border-bottom: none !important;
+    }
+
+  margin-top: 0.5rem;
+  &:hover {
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+  }
+
+  .trigger {
+    width: 1rem;
+    height: 1rem;
+    fill: var(--font-color);
+    cursor: pointer;
+    transition: transform 0.3s ease;
+  }
 
   .asset-item {
     display: flex;
     align-items: center;
     gap: 5px;
+    justify-content: space-between;
 
     .asset-text {
       display: inline-block;
@@ -525,16 +655,45 @@ export default {
       display: flex;
       align-items: center;
       gap: 5px;
+      color: var(--sec-font-color);
     }
   }
   .extra-right {
     display: flex;
     flex-direction: column;
-    margin-left: auto;
+    justify-content: center; 
+    align-items: center;
 
-    justify-content: center;
-    min-width: 177px;
-    min-height: 48px;
+
+    .right-part {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      width: 100%;
+    justify-content: end
+    }
+
+
+    .asset-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      gap: 0.5rem;
+      padding: 0.5rem;
+    &:last-child {
+      border-bottom: none;
+    }
+    }
+    .left-part{
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      width: 100%;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+
+    }
 
     small {
       text-wrap: nowrap;
@@ -543,6 +702,9 @@ export default {
 
     span {
       font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 3px
     }
   }
 }
