@@ -1563,7 +1563,6 @@ export default {
     .height {
       color: var(--primary-color);
       text-decoration: none;
-      font-size: 1.2rem;
     }
   }
 
