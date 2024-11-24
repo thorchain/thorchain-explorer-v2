@@ -205,42 +205,50 @@
     </div>
     <div class="cards-container">
       <div class="card">
-  <div class="card-header">
-    <div class="card-title">
-      <h2 style="color: var(--sec-font-color)">Latest Burned Blocks</h2>
-    </div>
-  </div>
-  <div class="card-body">
-    <transition-group name="block" tag="div">
-      <div
-        v-for="block in burnedBlocks"
-        :key="block.blockHeight"
-        class="block-items"
-      >
-        <div class="block-info-overview">
-          <span class="height">{{ block.blockHeight | number('0,0') }}</span>
-          <small class="duration">
-            {{ getDuration(block.timestamp) }} Seconds
-          </small>
-        </div>
-        <div class="right-section-overview">
-          <div :class="['mini-bubble orange']" style="padding: 4px 5px; display: flex; align-items: center;">
-            <Burn class="burn-icon"></Burn>
-            {{ block.burnedAmount / 1e8 }}
+        <div class="card-header">
+          <div class="card-title">
+            <h2 style="color: var(--sec-font-color)">Latest Burned Blocks</h2>
           </div>
-          <small style="margin-right: 0.5rem;">
-            {{ ((block.burnedAmount / 1e8) * runePrice) | currency }}
-          </small>
+        </div>
+        <div class="card-body">
+          <transition-group name="block" tag="div">
+            <div
+              v-for="block in burnedBlocks"
+              :key="block.blockHeight"
+              class="block-items"
+            >
+              <div class="block-info-overview">
+                <nuxt-link
+                  class="height clickable"
+                  :to="`/block/${block.blockHeight}`"
+                >
+                  {{ block.blockHeight | number('0,0') }}
+                </nuxt-link>
+                <small class="duration">
+                  {{ getDuration(block.timestamp) }} Seconds
+                </small>
+              </div>
+              <div class="right-section-overview">
+                <div
+                  :class="['mini-bubble orange']"
+                  style="padding: 4px 5px; display: flex; align-items: center"
+                >
+                  <Burn class="burn-icon"></Burn>
+                  {{ block.burnedAmount / 1e8 }}
+                </div>
+                <small style="margin-right: 0.5rem">
+                  {{ ((block.burnedAmount / 1e8) * runePrice) | currency }}
+                </small>
+              </div>
+            </div>
+          </transition-group>
+          <template v-if="burnedBlocks.length == 0">
+            <div class="loading">
+              <BounceLoader color="var(--font-color)" size="3rem" />
+            </div>
+          </template>
         </div>
       </div>
-    </transition-group>
-    <template v-if="burnedBlocks.length == 0">
-      <div class="loading">
-        <BounceLoader color="var(--font-color)" size="3rem" />
-      </div>
-    </template>
-  </div>
-</div>
       <div class="card">
         <div class="card-header">
           <div class="card-title">
@@ -389,6 +397,7 @@ export default {
       inboundInfo: undefined,
       mimirInfo: undefined,
       network: undefined,
+      ui: undefined,
     }
   },
   head: {
@@ -768,12 +777,13 @@ export default {
 
     this.updateRunePool()
 
-    setInterval(() => {
+    this.ui = setInterval(() => {
       this.getNetworkStatus()
-    }, 10000)
-    this.updateInterval = setInterval(() => {
       this.getBurnData()
-    }, 5000)
+    }, 10000)
+  },
+  destroyed() {
+    this.clearIntervalId(this.ui)
   },
   methods: {
     async updateRunePool() {
@@ -1550,10 +1560,10 @@ export default {
     flex-direction: column;
     gap: 0.3rem;
 
-
     .height {
+      color: var(--primary-color);
+      text-decoration: none;
       font-size: 1.2rem;
-      color: var(--sec-font-color);
     }
   }
 
@@ -1570,15 +1580,14 @@ export default {
   .block-info-overview.height {
     color: #ffa86b;
   }
-  
 }
 .burn-icon {
   width: 0.9rem;
-    height: 0.9rem;
-    border-radius: 50%;
-    margin-right: 0.3rem;
-    fill: #ffa86b;
-  }
+  height: 0.9rem;
+  border-radius: 50%;
+  margin-right: 0.3rem;
+  fill: #ffa86b;
+}
 
 .block-enter {
   opacity: 0;
