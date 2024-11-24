@@ -443,13 +443,15 @@ export default {
   flex-direction: row;
   align-items: center;
   gap: 5px;
-  cursor: pointer;
+ 
 
 }
 .asset-item {
   display: flex;
   align-items: center;
   gap: 5px;
+  padding: 0px 0.5rem;
+  cursor: pointer;
 
   .number-item {
     display: flex;
@@ -617,18 +619,13 @@ export default {
   align-items: center;
   padding: 0.8rem 0px;
   border-bottom: 1px solid var(--border-color) !important;
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
   &:last-child {
       border-bottom: none !important;
     }
 
   margin-top: 0.5rem;
-  transition:
-    transform 0.3s,
-    box-shadow 0.3s;
-
   &:hover {
-    transform: translateY(-5px);
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
   }
 
