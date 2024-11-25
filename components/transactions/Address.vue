@@ -4,14 +4,17 @@
       <component
         :is="disable ? 'span' : 'nuxt-link'"
         :class="[
-          'mono',
-          { clickable: !disable, hovered: hoveredAddress === param},
+          'mono address',
+          { clickable: !disable, hovered: hoveredAddress === param },
         ]"
         :to="!disable ? { path: `/address/${param}` } : undefined"
+        >{{ addressFormatV2(param) }}</component
       >
-        {{ addressFormatV2(param) }}
-      </component>
-      <copy v-if="!disable" :str-copy="param"></copy>
+      <copy
+        v-if="!disable"
+        :str-copy="param"
+        style="margin-left: 0.2rem"
+      ></copy>
     </template>
     <span v-else :class="['mono', { 'no-hover': disable }]">-</span>
   </div>
@@ -32,22 +35,25 @@ export default {
   },
   methods: {
     emitHovered() {
-      if (this.param) this.$emit('setHovered', this.param);
+      if (this.param) this.$emit('setHovered', this.param)
     },
     emitRemoveHovered() {
-      this.$emit('removeHovered');
+      this.$emit('removeHovered')
     },
   },
-};
+}
 </script>
 
 <style lang="scss" scoped>
+.address {
+  border: 1px solid transparent;
+  padding: 0 4px;
+}
+
 .hovered {
   border: 1px dashed var(--highlight);
   color: var(--active-primary-color) !important;
   border-radius: 0.5rem;
-  padding: 2px 4px;
-  margin-right: 0.5rem;
 }
 
 .no-hover {
