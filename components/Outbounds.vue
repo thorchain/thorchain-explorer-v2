@@ -64,85 +64,98 @@
         <scheduleIcon class="schedule-icon large-icon" />
         <h3>There is no outbound schedule inside THORChain.</h3>
       </div>
-      <div
-        v-for="(group, i) in filteredOutbounds" v-else
-        :key="i"
-        class="outbound-item"
-        @click="toggleExtraRight(i)"
-      >
-        <div class="outbound-collapse">
-          <div class="asset-item">
-            <div class="asset-details">
-              <asset-icon :asset="group.asset" />
-              <span class="asset-name">
-                {{ (group.totalAmount / 1e8) | number('0,0.0000') }} -
-                <span class="asset-total-usd">
-                  ${{ group.totalAmountUSD | number('0,0.0a') }}
+      <template v-else>
+        <div
+          v-for="(group, i) in filteredOutbounds"
+          :key="i"
+          class="outbound-item"
+          @click="toggleExtraRight(i)"
+        >
+          <div class="outbound-collapse">
+            <div class="asset-item">
+              <div class="asset-details">
+                <asset-icon :asset="group.asset" />
+                <span class="asset-name">
+                  {{ (group.totalAmount / 1e8) | number('0,0.0000') }} -
+                  <span class="asset-total-usd">
+                    ${{ group.totalAmountUSD | number('0,0.0a') }}
+                  </span>
+                  <small class="asset-text sec-color">{{
+                    showAsset(group.asset)
+                  }}</small>
                 </span>
-                <small class="asset-text sec-color">{{
-                  showAsset(group.asset)
-                }}</small>
-              </span>
+              </div>
+
+              <div class="number-item">
+                <span
+                  v-if="group.ongoingCount > 0"
+                  :class="'mini-bubble'"
+                  style="width: 1.3rem; height: 1.3rem; font-size: 12px"
+                >
+                  {{ group.ongoingCount }}
+                </span>
+                <span
+                  v-if="group.scheduledCount > 0"
+                  :class="'mini-bubble info'"
+                  style="width: 1.3rem; height: 1.3rem; font-size: 12px"
+                >
+                  {{ group.scheduledCount }}
+                </span>
+                <angle-icon
+                  :class="{ trigger: true, rotated: angleRotated[i] }"
+                />
+              </div>
             </div>
 
-            <div class="number-item">
-  <span
-    v-if="group.ongoingCount > 0"
-    :class="'mini-bubble'"
-    style="border: 1px solid rgba(47, 138, 245, 0.16); background-color: transparent; width: 1.3rem;height: 1.3rem;font-size: 12px;"
-  >
-   {{ group.ongoingCount }}
-  </span>
-  <span 
-  v-if="group.scheduledCount > 0"
-  :class="'mini-bubble info'"
-  style="width: 1.3rem;height: 1.3rem;font-size: 12px;"
-
-  >
-  
-    {{ group.scheduledCount }}
-  </span>
-  <angle-icon
-    :class="{ trigger: true, rotated: angleRotated[i] }"
-  />
-</div>
-
-          </div>
-
-          <div v-if="isVisible[i]" class="extra-right">
-            <div v-for="(o, idx) in group.items" :key="idx" class="asset-info">
-              <div class="left-part">
-              <span class="asset-name">
-                {{ $options.filters.number(o.coin.amount / 1e8, '0,0.0000') }} -
-              <span>
-                ${{ (o.coin.amount/ 1e8 * runePrice) | number('0,0.0a') }}
-              </span>
-            </span>
-            <div v-if="o.label === 'Scheduled'" :class="'mini-bubble info'">
-  Scheduled
-</div>
-</div>
-              <div class="right-part">
-                <div v-if="o.height">
-                  <span style="color: var(--sec-font-color);font-size: 10px;">
-                    {{ getOutboundEta(o.height) }}
+            <div v-if="isVisible[i]" class="extra-right">
+              <div
+                v-for="(o, idx) in group.items"
+                :key="idx"
+                class="asset-info"
+              >
+                <div class="left-part">
+                  <span class="asset-name">
+                    {{
+                      $options.filters.number(o.coin.amount / 1e8, '0,0.0000')
+                    }}
+                    <template v-if="pools">
+                      -
+                      <small>
+                        ${{
+                          getAssetAmountUSD(o.coin.asset, o.coin.amount)
+                            | number('0,0.0a')
+                        }}
+                      </small>
+                    </template>
                   </span>
-                </div>
-                <small v-if="o.in_hash && o.label !== 'migrate'" class="mono">
-                  <NuxtLink
-                    class="clickable"
-                    :to="{ path: `/tx/${o.in_hash}` }"
+                  <div
+                    v-if="o.label === 'Scheduled'"
+                    :class="'mini-bubble info'"
                   >
-                    {{ formatAddress(o.in_hash) }}
-                  </NuxtLink>
-                </small>
-
+                    Scheduled
+                  </div>
+                </div>
+                <div class="right-part">
+                  <div v-if="o.height">
+                    <span style="color: var(--sec-font-color); font-size: 10px">
+                      {{ getOutboundEta(o.height) }}
+                    </span>
+                  </div>
+                  <small v-if="o.in_hash && o.label !== 'migrate'" class="mono">
+                    <NuxtLink
+                      class="clickable"
+                      :to="{ path: `/tx/${o.in_hash}` }"
+                    >
+                      {{ formatAddress(o.in_hash) }}
+                    </NuxtLink>
+                  </small>
+                </div>
               </div>
             </div>
           </div>
+          <hr :key="i + '-hr'" class="hr-space" />
         </div>
-        <hr :key="i + '-hr'" class="hr-space" />
-      </div>
+      </template>
     </template>
     <template v-if="Mode == 'top-swaps'">
       <div v-if="!topSwaps" class="no-outbound">
@@ -375,6 +388,12 @@ export default {
       this.$set(this.isVisible, index, !this.isVisible[index])
       this.$set(this.angleRotated, index, !this.angleRotated[index])
     },
+    getAssetAmountUSD(asset, amount) {
+      if (!this.pools) {
+        return undefined
+      }
+      return this.amountToUSD(asset, amount, this.pools)
+    },
   },
 }
 </script>
@@ -443,8 +462,6 @@ export default {
   flex-direction: row;
   align-items: center;
   gap: 5px;
- 
-
 }
 .asset-item {
   display: flex;
@@ -621,8 +638,8 @@ export default {
   border-bottom: 1px solid var(--border-color) !important;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
   &:last-child {
-      border-bottom: none !important;
-    }
+    border-bottom: none !important;
+  }
 
   margin-top: 0.5rem;
   &:hover {
@@ -661,18 +678,16 @@ export default {
   .extra-right {
     display: flex;
     flex-direction: column;
-    justify-content: center; 
+    justify-content: center;
     align-items: center;
-
 
     .right-part {
       display: flex;
       align-items: center;
       gap: 7px;
       width: 100%;
-    justify-content: end
+      justify-content: end;
     }
-
 
     .asset-info {
       display: flex;
@@ -681,18 +696,17 @@ export default {
       width: 100%;
       gap: 0.5rem;
       padding: 0.5rem;
-    &:last-child {
-      border-bottom: none;
+      &:last-child {
+        border-bottom: none;
+      }
     }
-    }
-    .left-part{
+    .left-part {
       display: flex;
       flex-direction: row;
       align-items: center;
       width: 100%;
       gap: 0.5rem;
       flex-wrap: wrap;
-
     }
 
     small {
@@ -704,7 +718,7 @@ export default {
       font-size: 0.9rem;
       display: flex;
       align-items: center;
-      gap: 3px
+      gap: 3px;
     }
   }
 }
