@@ -17,7 +17,11 @@
           <Address
             v-if="props.column.field === 'from' || props.column.field === 'to'"
             :param="props.row[props.column.field]"
+            :hovered-address="hoveredAddress"
             :disable="owner && owner === props.row[props.column.field]"
+            @setHovered="setHoveredAddress"
+            @removeHovered="removeHoveredAddress"
+            :class="hovered"
           />
           <Hash
             v-if="props.column.field === 'hash'"
@@ -129,6 +133,7 @@ export default {
   },
   data() {
     return {
+      hoveredAddress: '',
       actionsColumn: [
         {
           label: 'Transaction Hash',
@@ -192,6 +197,12 @@ export default {
       })
 
       return ret
+    },
+    setHoveredAddress(address) {
+      this.hoveredAddress = address
+    },
+    removeHoveredAddress() {
+      this.hoveredAddress = ''
     },
     assetImage(assetStr) {
       try {
