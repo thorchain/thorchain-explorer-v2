@@ -76,13 +76,14 @@
               <div class="asset-details">
                 <asset-icon :asset="group.asset" />
                 <span class="asset-name">
-                  {{ (group.totalAmount / 1e8) | number('0,0.0000') }} -
+                  {{ (group.totalAmount / 1e8) | number('0,0.0000') }}
+                  <small class="asset-text sec-color">
+                    {{ showAsset(group.asset) }}
+                  </small>
+                  -
                   <span class="asset-total-usd">
                     ${{ group.totalAmountUSD | number('0,0.0a') }}
                   </span>
-                  <small class="asset-text sec-color">{{
-                    showAsset(group.asset)
-                  }}</small>
                 </span>
               </div>
 
