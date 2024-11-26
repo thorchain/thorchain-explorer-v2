@@ -180,12 +180,6 @@
         </div>
       </template>
     </div>
-    <div v-if="!isOverview" class="footer-stat">
-      <strong>
-        <sup>*</sup>
-        All of the stat are based on 30 days period for now
-      </strong>
-    </div>
   </div>
 </template>
 
@@ -279,6 +273,7 @@ export default {
     flex: 1;
     background-color: var(--bg-color);
     border: 1px solid var(--border-color);
+    min-width: 20.8rem;
 
     .loader-item {
       display: flex;
