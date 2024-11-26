@@ -1,5 +1,5 @@
 <template>
-  <Card :is-loading="loading">
+  <Card :is-loading="loading" title="Security">
     <div class="chart-container">
       <VChart
         v-if="chartOption"
@@ -159,7 +159,7 @@ updateChartOption(pooled, bonded) {
   display: flex;
   justify-content: center;
   align-items: center;
-  max-height: 100vh;
+  height: auto;
 
   .chart {
     width: 100%;
@@ -172,15 +172,6 @@ updateChartOption(pooled, bonded) {
 }
 
 .legend-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 10px;
-  gap: 5rem;
-
-  @include md {
-    gap: 7rem;
-  }
   .skeleton{
     display: flex;
   }
@@ -189,13 +180,16 @@ updateChartOption(pooled, bonded) {
   justify-content: center;
   align-items: center;
   margin-bottom: 10px;
-  gap: 12rem;
+  gap:5rem;
+
+  @include lg {
+    gap: 10rem;
+  }
 }
   .legend-item {
     display: flex;
     align-items: center;
-    margin-top: -3rem;
-
+    margin: 0 10px;
 
     .color-box {
       width: 15px;
