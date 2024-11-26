@@ -1,4 +1,5 @@
 <template>
+  <div class="gauge-container">
   <Card :is-loading="loading" title="Security">
     <div class="chart-container">
       <VChart
@@ -34,6 +35,7 @@
 
 
   </Card>
+</div>
 </template>
 
 <script>
@@ -48,12 +50,19 @@ import {
 } from 'echarts/components'
 import VChart from 'vue-echarts'
 
-use([SVGRenderer, GridComponent, GaugeChart, TitleComponent, TooltipComponent,GraphicComponent])
+use([
+  SVGRenderer,
+  GridComponent,
+  GaugeChart,
+  TitleComponent,
+  TooltipComponent,
+  GraphicComponent,
+])
 
 export default {
   name: 'GaugeChart',
   components: {
-    VChart,
+    VChart
   },
   data() {
     return {
@@ -67,94 +76,95 @@ export default {
   mounted() {
     this.fetchData()
     setTimeout(() => {
-    this.legendLoaded = true;
-  }, 2000);
+      this.legendLoaded = true
+    }, 2000)
   },
   methods: {
     async fetchData() {
-  try {
-    const { data } = await this.$api.getNetwork();
+      try {
+        const { data } = await this.$api.getNetwork();
+        const pooled = (data?.totalPooledRune ?? 0) / 1e8
+        const bonded = (data?.bondMetrics?.totalActiveBond ?? 0) / 1e8
+        this.updateChartOption(pooled, bonded)
+        this.loading = false
+      } catch (error) {
+        console.error('Failed to fetch network data:', error)
+        this.loading = false
+      }
+    },
+    updateChartOption(pooled, bonded) {
+      const total = pooled + bonded
 
-    console.log('totalPooledRune:', data?.totalPooledRune);
-    console.log('bondMetrics:', data?.bondMetrics);
-    const pooled = (data?.totalPooledRune ?? 0) / 1e8;
-    const bonded = (data?.bondMetrics?.totalActiveBond ?? 0) / 1e8;
-    this.updateChartOption(pooled, bonded);
-    this.loading = false;
-  } catch (error) {
-    console.error('Failed to fetch network data:', error);
-    this.loading = false;
-
-  }
-},
-updateChartOption(pooled, bonded) {
-  const total = pooled + bonded;
-
-  this.chartOption = {
-    series: [
-      {
-        type: 'gauge',
-        startAngle: 180,
-        endAngle: 0,
-        min: 0,
-        max: total,
-        radius: '100%',
-        center: ['50%', '50%'],
-        axisLine: {
-          lineStyle: {
-            width: 40,
-            color: [
-              [pooled / total, '#07C86E'],
-              [1, '#f3ba2f'],
-            ],
+      this.chartOption = {
+        series: [
+          {
+            type: 'gauge',
+            startAngle: 180,
+            endAngle: 0,
+            min: 0,
+            max: total,
+            radius: '100%',
+            center: ['50%', '50%'],
+            axisLine: {
+              lineStyle: {
+                width: 40,
+                color: [
+                  [pooled / total, '#07C86E'],
+                  [1, '#f3ba2f'],
+                ],
+              },
+            },
+            pointer: {
+              show: false,
+            },
+            axisTick: {
+              show: false,
+            },
+            splitLine: {
+              show: false,
+            },
+            axisLabel: {
+              show: false,
+            },
+            detail: {
+              show: false,
+            },
           },
-        },
-        pointer: {
-          show: false, 
-        },
-        axisTick: {
-          show: false, 
-        },
-        splitLine: {
-          show: false, 
-        },
-        axisLabel: {
-          show: false, 
-        },
-        detail: {
-          show: false, 
-        },
-      },
-    ],
-    graphic: [
-      {
-        type: 'text',
-        left: '1%', 
-        top: '20%', 
-        style: {
-          text: `${this.$options.filters.number(pooled, '0,0a')}`, 
-          fill: '#07C86E', 
-          align: 'center',
-        },
-      },
-      {
-        type: 'text',
-        left: '88%', 
-        top: '15%', 
-        style: {
-          text: `${this.$options.filters.number(bonded, '0,0a')}`, 
-          fill: '#f3ba2f', 
-          align: 'center',
-        },
-      },
-    ],
-  };
-},
+        ],
+        graphic: [
+          {
+            type: 'text',
+            left: '1%',
+            top: '20%',
+            style: {
+              text: `${this.$options.filters.number(pooled, '0,0a')}`,
+              fill: '#07C86E',
+              align: 'center',
+            },
+          },
+          {
+            type: 'text',
+            left: '88%',
+            top: '15%',
+            style: {
+              text: `${this.$options.filters.number(bonded, '0,0a')}`,
+              fill: '#f3ba2f',
+              align: 'center',
+            },
+          },
+        ],
+      }
+    },
   },
 }
 </script>
 
 <style lang="scss" scoped>
+.gauge-container{
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
 .chart-container {
   display: flex;
   justify-content: center;
@@ -172,20 +182,22 @@ updateChartOption(pooled, bonded) {
 }
 
 .legend-container {
-  .skeleton{
+  .skeleton {
     display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5rem;
   }
-.legend-content{
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 10px;
-  gap:5rem;
+  .legend-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px;
+    gap: 5rem;
 
-  @include lg {
-    gap: 10rem;
-  }
-}
+    @include lg {
+      gap: 10rem;
+    }
   .legend-item {
     display: flex;
     align-items: center;
@@ -197,11 +209,7 @@ updateChartOption(pooled, bonded) {
       border-radius: 50%;
       margin-right: 10px;
     }
-
-    .value {
-      margin-left: 5px;
-      color: var(--sec-font-color);
-    }
+  }
   }
 }
 </style>
