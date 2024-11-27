@@ -492,12 +492,14 @@ export default {
 }
 
 .arrow-down-icon {
-  width: 35px;
+  width: auto;
   margin-left: auto;
   display: flex;
   justify-content: center;
   position: relative;
   right: calc(50% - 17.5px);
+  height: 2rem;
+  bottom: 0.2rem;
 }
 .overview-card {
   background-color: var(--bg-color);
@@ -510,7 +512,7 @@ export default {
   border: 1px solid var(--border-color) !important;
 
   &:first-of-type {
-    margin-bottom: 3px;
+    margin-bottom: -10px;
   }
 
   &:nth-of-type(2) {
