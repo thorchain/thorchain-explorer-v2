@@ -1,5 +1,5 @@
 <template>
-  <page>
+  <div>
     <Nav :active-mode.sync="period" :nav-items="periods" pre-text="Period :" />
     <cards-header
       :table-general-stats="
@@ -15,7 +15,7 @@
       v-if="period === 'week'"
       :affiliate-data="affiliateDataWeekly"
     ></affiliate-table>
-  </page>
+  </div>
 </template>
 
 <script>
