@@ -1,41 +1,39 @@
 <template>
   <div class="gauge-container">
-  <Card :is-loading="loading" title="Security">
-    <div class="chart-container">
-      <VChart
-        v-if="chartOption"
-        class="chart"
-        :option="chartOption"
-        :autoresize="true"
-        :theme="chartTheme"
-      />
-    </div>
-    <div class="legend-container">
-  <div v-if="!legendLoaded" class="skeleton-wrapper">
-    <div class="skeleton">
-    <div class="legend-item">
-      <skeleton-loader height="0.5rem" width="3rem" ></skeleton-loader>
-    </div>
-    <div class="legend-item">
-      <skeleton-loader  height="0.5rem" width="3rem"></skeleton-loader>
-    </div>
+    <Card :is-loading="loading" title="Security">
+      <div class="chart-container">
+        <VChart
+          v-if="chartOption"
+          class="chart"
+          :option="chartOption"
+          :autoresize="true"
+          :theme="chartTheme"
+        />
+      </div>
+      <div class="legend-container">
+        <div v-if="!legendLoaded" class="skeleton-wrapper">
+          <div class="skeleton">
+            <div class="legend-item">
+              <skeleton-loader height="0.5rem" width="3rem"></skeleton-loader>
+            </div>
+            <div class="legend-item">
+              <skeleton-loader height="0.5rem" width="3rem"></skeleton-loader>
+            </div>
+          </div>
+        </div>
+        <div v-else class="legend-content">
+          <div class="legend-item">
+            <span class="color-box" style="background-color: #07c86e"></span>
+            <span>Pooled</span>
+          </div>
+          <div class="legend-item">
+            <span class="color-box" style="background-color: #f3ba2f"></span>
+            <span>Bonded</span>
+          </div>
+        </div>
+      </div>
+    </Card>
   </div>
-  </div>
-  <div v-else class="legend-content">
-    <div class="legend-item">
-      <span class="color-box" style="background-color: #07C86E"></span>
-      <span>Pooled</span>
-    </div>
-    <div class="legend-item">
-      <span class="color-box" style="background-color: #f3ba2f"></span>
-      <span>Bonded</span>
-    </div>
-  </div>
-</div>
-
-
-  </Card>
-</div>
 </template>
 
 <script>
@@ -62,7 +60,7 @@ use([
 export default {
   name: 'GaugeChart',
   components: {
-    VChart
+    VChart,
   },
   data() {
     return {
@@ -82,7 +80,7 @@ export default {
   methods: {
     async fetchData() {
       try {
-        const { data } = await this.$api.getNetwork();
+        const { data } = await this.$api.getNetwork()
         const pooled = (data?.totalPooledRune ?? 0) / 1e8
         const bonded = (data?.bondMetrics?.totalActiveBond ?? 0) / 1e8
         this.updateChartOption(pooled, bonded)
@@ -160,7 +158,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.gauge-container{
+.gauge-container {
   display: flex;
   height: 100%;
   width: 100%;
@@ -198,18 +196,18 @@ export default {
     @include lg {
       gap: 10rem;
     }
-  .legend-item {
-    display: flex;
-    align-items: center;
-    margin: 0 10px;
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin: 0 10px;
 
-    .color-box {
-      width: 15px;
-      height: 15px;
-      border-radius: 50%;
-      margin-right: 10px;
+      .color-box {
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        margin-right: 10px;
+      }
     }
-  }
   }
 }
 </style>
