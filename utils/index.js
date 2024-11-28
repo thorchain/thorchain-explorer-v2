@@ -752,6 +752,7 @@ export const affiliateMap = {
   ti: interfaces.trustwallet,
   tr: interfaces.trustwallet,
   te: interfaces.trustwallet,
+  tb: interfaces.trustwallet,
   thor1a427q3v96psuj4fnughdw8glt5r7j38lj7rkp8: interfaces.vultisig,
   wr: interfaces.vultisig,
   tgt: interfaces.vultisig,
