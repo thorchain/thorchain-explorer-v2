@@ -645,7 +645,7 @@ export const nameMapping = {
   DefiSpot: ['ds'],
   Lends: ['lends'],
   DecentralFi: ['decentralfi'],
-  TrustWallet: ['ti', 'te', 'tr', 'td'],
+  TrustWallet: ['ti', 'te', 'tr', 'td', 'tb'],
   LiFi: ['lifi'],
   'OneKey Wallet': ['oky'],
   Symbiosis: ['sy'],
