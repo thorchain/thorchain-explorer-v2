@@ -38,6 +38,12 @@ export default {
       ],
     }
   },
+  watch: {
+    period(newPeriod) {
+      this.$router.push({ query: { period: newPeriod } })
+      this.fetchAffiliateData()
+    },
+  },
   mounted() {
     if (this.$route.query.period) {
       this.period = this.$route.query.period
@@ -46,12 +52,6 @@ export default {
     }
     this.fetchAffiliateData()
   },
-  watch: {
-  period(newPeriod) {
-    this.$router.push({ query: { period: newPeriod } })
-    this.fetchAffiliateData()
-  },
-},
   methods: {
     async fetchAffiliateData() {
       try {

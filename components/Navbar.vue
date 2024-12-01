@@ -214,7 +214,7 @@ export default {
           icon: 'exchangeSelected',
           link: '/txs',
           submenu: [
-          {
+            {
               name: 'Transactions',
               link: '/txs',
             },
@@ -292,6 +292,10 @@ export default {
                 {
                   name: 'Burn',
                   link: '/insights/burn',
+                },
+                {
+                  name: 'Execution Quality',
+                  link: '/insights/execution',
                 },
               ],
             }

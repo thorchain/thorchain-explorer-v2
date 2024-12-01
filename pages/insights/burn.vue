@@ -107,7 +107,7 @@
       </div>
     </div>
 
-    <div class="block-card" >
+    <div class="block-card">
       <transition-group name="block" tag="div">
         <div
           v-for="block in burnedBlocks"
@@ -301,6 +301,7 @@ export default {
             data: xAxis,
             min: 'dataMin',
             max: 'dataMax',
+            onZero: false,
           },
           yAxis: [
             {
@@ -310,6 +311,8 @@ export default {
               axisTick: { show: false },
               minorTick: { show: false },
               position: 'right',
+              min: 'dataMin',
+              max: 'dataMax',
               show: true,
               splitNumber: 2,
               axisLabel: {
