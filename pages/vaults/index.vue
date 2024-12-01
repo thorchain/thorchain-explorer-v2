@@ -2,7 +2,10 @@
   <Page>
     <cards-header :table-general-stats="vaultsGeneralStats" />
     <Card title="Vaults">
-      <template v-if="asgard.length > 0">
+      <template v-if="loading">
+        <tableLoader :cols="cols" :rows="Array(6).fill({})" />
+      </template>
+      <template v-else>
         <vue-good-table
           v-if="cols"
           :columns="cols"
@@ -108,9 +111,9 @@
 
 <script>
 import { duration } from 'moment'
+import { number } from 'echarts'
 import { mapGetters } from 'vuex'
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
-import { number } from 'echarts'
 import { runeCur } from '~/utils'
 
 export default {
@@ -119,6 +122,7 @@ export default {
   },
   data() {
     return {
+      loading: true, 
       cols: [
         {
           label: 'Hash',
@@ -215,26 +219,32 @@ export default {
     }),
   },
   mounted() {
-    this.$api
-      .getAsgard()
-      .then(async (res) => {
-        const poolsPrice = await this.formatPoolPrice()
-        const nodes = await this.formatNodes()
-        const tss = await this.formatTSS()
-        this.asgard = await this.formatVaults(
-          res?.data,
-          'Asgard',
-          poolsPrice,
-          nodes,
-          tss
-        )
-        this.updateGeneralStats()
-      })
-      .catch((e) => {
-        console.error(e)
-      })
+    this.fetchVaultsData();
   },
   methods: {
+    fetchVaultsData() {
+      this.$api
+        .getAsgard()
+        .then(async (res) => {
+          const poolsPrice = await this.formatPoolPrice();
+          const nodes = await this.formatNodes();
+          const tss = await this.formatTSS();
+          this.asgard = await this.formatVaults(
+            res?.data,
+            'Asgard',
+            poolsPrice,
+            nodes,
+            tss
+          );
+          this.updateGeneralStats();
+        })
+        .catch((e) => {
+          console.error(e);
+        })
+        .finally(() => {
+          this.loading = false; 
+        });
+    },
     duration(since) {
       return duration(since * 6, 's').humanize()
     },

@@ -1,7 +1,7 @@
 <template>
   <Page>
     <Nav :active-mode.sync="period" :nav-items="periods" pre-text="Period :" />
-    <Card :is-loading="loading" title="Pool Earnings">
+    <Card title="Pool Earnings">
       <template #header>
         <span v-if="tableData.length > 0">
           {{ formatUnixDate(tableData[0].startTime) }}
@@ -16,10 +16,15 @@
           <template v-else> Show Changes </template>
         </button>
       </template>
-      <div v-if="tableData.length > 0" class="earning-box">
+      <div class="earning-box">
+        <TableLoader
+          v-if="loading"
+          :cols="cols"
+          :rows="Array(10).fill({})"
+        />
         <vue-good-table
           v-if="tableData.length > 0"
-          :columns="poolCols"
+          :columns="cols"
           :rows="tableData"
           style-class="vgt-table net-table"
           :sort-options="{
@@ -133,7 +138,7 @@ export default {
         { text: '1 Month', mode: 'Month' },
         { text: '1 Year', mode: 'Year' },
       ],
-      poolCols: [
+      cols: [
         {
           label: 'Asset',
           field: 'pool',

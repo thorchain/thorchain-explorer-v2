@@ -1,7 +1,7 @@
 <template>
   <div>
     <cards-header :table-general-stats="tradingGeneralStats" />
-    <Card :is-loading="!(rows && rows.length > 0)" title="Trade Assets">
+    <Card title="Trade Assets">
       <template #header>
         <button class="button-container full-screen-btn" @click="toggleUSD">
           <template v-if="usdDenom">
@@ -12,8 +12,13 @@
           </template>
         </button>
       </template>
+      <TableLoader
+        v-if="loading"
+        :cols="cols"
+        :rows="Array(10).fill({})"
+      />
       <vue-good-table
-        v-if="cols && rows.length > 0"
+        v-else
         :columns="cols"
         :rows="rows"
         style-class="vgt-table net-table"
@@ -137,6 +142,7 @@ export default {
       tradeAssets: undefined,
       pools: undefined,
       asgard: undefined,
+      loading: true, 
     }
   },
   computed: {
@@ -145,16 +151,18 @@ export default {
     }),
   },
   async mounted() {
-    try {
-      this.tradeAssets = (await this.$api.getTradeAssets()).data
-      this.pools = (await this.$api.getThorPools()).data
-      this.asgard = (await this.$api.getAsgard()).data
-      this.rows = this.fillTradeData(this.tradeAssets, this.pools, this.asgard)
-    } catch (e) {
-      this.error = true
-      console.error(e)
-    }
-  },
+  try {
+    this.tradeAssets = (await this.$api.getTradeAssets()).data;
+    this.pools = (await this.$api.getThorPools()).data;
+    this.asgard = (await this.$api.getAsgard()).data;
+    this.rows = this.fillTradeData(this.tradeAssets, this.pools, this.asgard);
+  } catch (e) {
+    this.error = true;
+    console.error(e);
+  } finally {
+    this.loading = false;
+  }
+},
   methods: {
     fillTradeData(tradeAssets, pools, asgard) {
       const assetPerVault = {}

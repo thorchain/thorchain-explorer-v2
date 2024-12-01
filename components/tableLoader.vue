@@ -5,7 +5,7 @@
         </template>
         <template slot="table-row" slot-scope="props">
           <div>
-            <skeleton-loader :style="{ width: '150px', height: '10px' }" />
+            <skeleton-loader :style="{ width: '80px', height: '8px' }" />
           </div>
         </template>
       </vue-good-table>

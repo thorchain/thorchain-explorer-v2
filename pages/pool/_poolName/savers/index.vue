@@ -21,8 +21,14 @@
       </Card>
     </div>
     <Card>
+      <TableLoader
+          v-if="loading"
+          :cols="cols"
+          :rows="Array(10).fill({})"
+        />
       <vue-good-table
-        :columns="saverCols"
+      v-else
+        :columns="cols"
         :rows="saverDetails"
         style-class="vgt-table net-table"
         :pagination-options="{
@@ -73,7 +79,7 @@ export default {
     return {
       loading: false,
       error: false,
-      saverCols: [
+      cols: [
         {
           label: 'Address',
           field: 'asset_address',
@@ -130,50 +136,52 @@ export default {
     this.updateSavers()
   },
   methods: {
-    async updateSavers() {
-      this.loading = true
+  async updateSavers() {
+    this.loading = true; 
 
-      try {
-        this.lastBlockHeight = (
-          await this.$api.getLastBlockHeight()
-        ).data?.find((e) => e.chain === 'BTC')?.thorchain
-      } catch (error) {
-        this.error = true
-        console.error(error)
-      }
+    try {
+      this.lastBlockHeight = (
+        await this.$api.getLastBlockHeight()
+      ).data?.find((e) => e.chain === 'BTC')?.thorchain;
+    } catch (error) {
+      this.error = true;
+      console.error(error);
+    }
 
-      this.$api
-        .getSavers(this.poolName)
-        .then(({ data: savers }) => {
-          this.saverDetails = orderBy(
-            savers,
-            [(o) => +o.asset_redeem_value],
-            ['desc']
-          ).map((saverDetail) => ({
-            ...saverDetail,
-            asset_earned:
-              saverDetail.asset_redeem_value - saverDetail.asset_deposit_value,
-            APR: this.calcAPR(saverDetail),
-            // for pie chart
-            value:
-              (saverDetail.asset_redeem_value * this.saversData.assetPriceUSD) /
-              10 ** 8,
-            name: saverDetail.asset_address,
-          }))
+    this.$api
+      .getSavers(this.poolName)
+      .then(({ data: savers }) => {
+        this.saverDetails = orderBy(
+          savers,
+          [(o) => +o.asset_redeem_value],
+          ['desc']
+        ).map((saverDetail) => ({
+          ...saverDetail,
+          asset_earned:
+            saverDetail.asset_redeem_value - saverDetail.asset_deposit_value,
+          APR: this.calcAPR(saverDetail),
+          value:
+            (saverDetail.asset_redeem_value * this.saversData.assetPriceUSD) /
+            10 ** 8,
+          name: saverDetail.asset_address,
+        }));
 
-          this.saversPie = [
-            ...this.saverDetails.slice(0, 10),
-            {
-              name: 'Others',
-              value: sumBy(this.saverDetails.slice(10), (o) => o.value),
-            },
-          ]
-        })
-        .catch((e) => {
-          this.error = true
-          console.error(e)
-        })
-    },
+        this.saversPie = [
+          ...this.saverDetails.slice(0, 10),
+          {
+            name: 'Others',
+            value: sumBy(this.saverDetails.slice(10), (o) => o.value),
+          },
+        ];
+
+        this.loading = false;
+      })
+      .catch((e) => {
+        this.error = true;
+        console.error(e);
+        this.loading = false;  
+      });
+  },
     calcAPR(saverDetail) {
       if (!this.lastBlockHeight) {
         return 0

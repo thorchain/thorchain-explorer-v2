@@ -1,7 +1,13 @@
 <template>
-  <card :is-loading="loading">
+  <card >
+    <TableLoader
+          v-if="loading"
+          :cols="cols"
+          :rows="Array(10).fill({})"
+        />
     <vue-good-table
-      :columns="actionsColumn"
+    v-else
+      :columns="cols"
       :rows="actions"
       style-class="vgt-table net-table"
     >
@@ -134,7 +140,7 @@ export default {
   data() {
     return {
       hoveredAddress: '',
-      actionsColumn: [
+      cols: [
         {
           label: 'Transaction Hash',
           field: 'hash',

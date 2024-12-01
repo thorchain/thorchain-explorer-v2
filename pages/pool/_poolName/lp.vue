@@ -9,9 +9,15 @@
         <pie-chart :pie-data="runePieData" :formatter="totalRuneFormatter" />
       </Card>
     </div>
-    <card :is-loading="loading" class="table-card">
+    <card  class="table-card">
       <div v-if="!error" class="base-container lp-container">
+        <TableLoader
+          v-if="loading"
+          :cols="cols"
+          :rows="Array(10).fill({})"
+        />
         <vue-good-table
+        v-else
           :columns="cols"
           :rows="rows"
           style-class="vgt-table net-table"
