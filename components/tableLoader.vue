@@ -6,7 +6,15 @@
       style-class="vgt-table net-table"
     >
       <template slot="table-row" slot-scope="props">
-        <div>
+        <div
+          :class="[
+            {
+              'right-align':
+                props.column.type === 'number' ||
+                props.column.type === 'percentage',
+            },
+          ]"
+        >
           <skeleton-loader :style="{ width: '80px', height: '8px' }" />
         </div>
       </template>
@@ -38,4 +46,9 @@ export default {
 }
 </script>
 
-<style lang="scss"></style>
+<style lang="scss" scoped>
+.right-align {
+  display: flex;
+  justify-content: end;
+}
+</style>
