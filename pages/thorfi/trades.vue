@@ -1,7 +1,7 @@
 <template>
   <div>
     <cards-header :table-general-stats="tradingGeneralStats" />
-    <Card :is-loading="!(rows && rows.length > 0)" title="Trade Assets">
+    <Card title="Trade Assets">
       <template #header>
         <button class="button-container full-screen-btn" @click="toggleUSD">
           <template v-if="usdDenom">
@@ -12,8 +12,9 @@
           </template>
         </button>
       </template>
+      <TableLoader v-if="loading" :cols="cols" />
       <vue-good-table
-        v-if="cols && rows.length > 0"
+        v-else
         :columns="cols"
         :rows="rows"
         style-class="vgt-table net-table"
@@ -137,6 +138,7 @@ export default {
       tradeAssets: undefined,
       pools: undefined,
       asgard: undefined,
+      loading: true,
     }
   },
   computed: {
@@ -153,6 +155,8 @@ export default {
     } catch (e) {
       this.error = true
       console.error(e)
+    } finally {
+      this.loading = false
     }
   },
   methods: {
@@ -214,13 +218,13 @@ export default {
       this.tradingGeneralStats = [
         {
           name: 'Total Trade Depth',
-          value:'$'+ this.$options.filters.number(totalTradeDepth || 0, '0,0a'),
-
+          value:
+            '$' + this.$options.filters.number(totalTradeDepth || 0, '0,0a'),
         },
         {
           name: 'Total Vault Depth',
-          value:'$'+ this.$options.filters.number(totalVaultDepth || 0, '0,0a'),
-
+          value:
+            '$' + this.$options.filters.number(totalVaultDepth || 0, '0,0a'),
         },
         {
           name: 'Total Vault / Pool',

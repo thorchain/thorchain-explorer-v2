@@ -96,142 +96,148 @@
         </template>
       </info-card>
 
-      <vue-good-table
-        v-else-if="cardMode === 'rune-pools'"
-        :key="2"
-        :columns="RunePoolsCols"
-        :rows="runePoolsRows"
-        style-class="vgt-table net-table"
-      >
-        <template slot="table-row" slot-scope="props">
-          <div v-if="props.column.field == 'pool'" class="asset-cell">
-            <AssetIcon :asset="props.row.pool" />
-            <span class="ellipsis">
-              {{ props.row.pool }}
-            </span>
-            <div
-              v-if="props.row.label"
-              class="bubble-container"
-              style="margin-left: 10px"
-            >
-              {{ props.row.label }}
+      <template v-else-if="cardMode === 'rune-pools'">
+        <vue-good-table
+          v-if="runePoolsRows && runePoolsRows.length > 0"
+          :key="2"
+          :columns="RunePoolsCols"
+          :rows="runePoolsRows"
+          style-class="vgt-table net-table"
+        >
+          <template slot="table-row" slot-scope="props">
+            <div v-if="props.column.field == 'pool'" class="asset-cell">
+              <AssetIcon :asset="props.row.pool" />
+              <span class="ellipsis">
+                {{ props.row.pool }}
+              </span>
+              <div
+                v-if="props.row.label"
+                class="bubble-container"
+                style="margin-left: 10px"
+              >
+                {{ props.row.label }}
+              </div>
             </div>
-          </div>
-          <div v-else-if="props.column.field == 'luvi'">
-            <progress-icon
-              :data-number="props.row.luvi"
-              :filter="$options.filters.percent"
-              :is-down="+props.row.luvi < 0"
-            ></progress-icon>
-          </div>
-          <span
-            v-else-if="props.column.field.startsWith('pool')"
-            class="pool-cell ellipsis"
-          >
-            <span v-if="props.row[props.column.field][0]">
-              {{ props.row[props.column.field][0] | number('0,0.00') }}
+            <div v-else-if="props.column.field == 'luvi'">
+              <progress-icon
+                :data-number="props.row.luvi"
+                :filter="$options.filters.percent"
+                :is-down="+props.row.luvi < 0"
+              ></progress-icon>
+            </div>
+            <span
+              v-else-if="props.column.field.startsWith('pool')"
+              class="pool-cell ellipsis"
+            >
+              <span v-if="props.row[props.column.field][0]">
+                {{ props.row[props.column.field][0] | number('0,0.00') }}
+                <small>RUNE</small>
+              </span>
+              <span v-if="props.row[props.column.field][1]" class="ellipsis">
+                {{
+                  props.row[props.column.field][1] ||
+                  props.row[props.column.field][1] === 0
+                    ? $options.filters.number(
+                        props.row[props.column.field][1],
+                        '0,0.000000'
+                      )
+                    : '-'
+                }}
+                <small class="ellipsis">{{ props.row.pool }}</small>
+              </span>
+              <span v-else-if="!props.row[props.column.field][0]">-</span>
+            </span>
+            <span v-else-if="props.column.field == 'share'">
+              <span v-if="props.row.share">{{
+                percentageFormat(props.row.share, 4)
+              }}</span>
+              <span v-else>-</span>
+            </span>
+          </template>
+        </vue-good-table>
+        <table-loader v-else :cols="RunePoolsCols"></table-loader>
+      </template>
+
+      <template v-else-if="cardMode === 'members'">
+        <vue-good-table
+          v-if="members && members.length > 0"
+          :key="3"
+          :columns="memberCols"
+          :rows="members"
+          style-class="vgt-table net-table"
+          :pagination-options="{
+            enabled: true,
+            perPage: 30,
+            perPageDropdownEnabled: false,
+          }"
+          :search-options="{
+            enabled: true,
+            placeholder: 'Search',
+          }"
+        >
+          <template slot="table-row" slot-scope="props">
+            <NuxtLink
+              v-if="props.column.field == 'rune_address'"
+              class="clickable"
+              :to="{ path: `/address/${props.row.rune_address}` }"
+            >
+              {{ formatAddress(props.row.rune_address) }}
+            </NuxtLink>
+            <span v-else-if="props.column.field == 'deposit_amount'">
+              {{ $options.filters.number(props.row.deposit_amount, '0,0.00') }}
               <small>RUNE</small>
             </span>
-            <span v-if="props.row[props.column.field][1]" class="ellipsis">
-              {{
-                props.row[props.column.field][1] ||
-                props.row[props.column.field][1] === 0
-                  ? $options.filters.number(
-                      props.row[props.column.field][1],
-                      '0,0.000000'
-                    )
-                  : '-'
-              }}
-              <small class="ellipsis">{{ props.row.pool }}</small>
+            <span v-else-if="props.column.field == 'value'">
+              {{ $options.filters.number(props.row.value, '0,0.00') }}
+              <small>RUNE</small>
             </span>
-            <span v-else-if="!props.row[props.column.field][0]">-</span>
-          </span>
-          <span v-else-if="props.column.field == 'share'">
-            <span v-if="props.row.share">{{
-              percentageFormat(props.row.share, 4)
-            }}</span>
-            <span v-else>-</span>
-          </span>
-        </template>
-      </vue-good-table>
-
-      <vue-good-table
-        v-else-if="cardMode === 'members'"
-        :key="3"
-        :columns="memberCols"
-        :rows="members"
-        style-class="vgt-table net-table"
-        :pagination-options="{
-          enabled: true,
-          perPage: 30,
-          perPageDropdownEnabled: false,
-        }"
-        :search-options="{
-          enabled: true,
-          placeholder: 'Search',
-        }"
-      >
-        <template slot="table-row" slot-scope="props">
-          <NuxtLink
-            v-if="props.column.field == 'rune_address'"
-            class="clickable"
-            :to="{ path: `/address/${props.row.rune_address}` }"
-          >
-            {{ formatAddress(props.row.rune_address) }}
-          </NuxtLink>
-          <span v-else-if="props.column.field == 'deposit_amount'">
-            {{ $options.filters.number(props.row.deposit_amount, '0,0.00') }}
-            <small>RUNE</small>
-          </span>
-          <span v-else-if="props.column.field == 'value'">
-            {{ $options.filters.number(props.row.value, '0,0.00') }}
-            <small>RUNE</small>
-          </span>
-          <span
-            v-else-if="props.column.field == 'pnl'"
-            :style="[{ color: +props.row.pnl < 0 ? '#ff1744' : '#76ff03' }]"
-          >
-            {{ $options.filters.number(props.row.pnl, '0,0.00') }}
-            <small>RUNE</small>
-          </span>
-          <span
-            v-else-if="props.column.field == 'ror'"
-            :style="[{ color: +props.row.ror < 0 ? '#ff1744' : '#76ff03' }]"
-          >
-            {{ props.formattedRow[props.column.field] }}
-          </span>
-          <span v-else-if="props.column.field == 'untilMature'">
             <span
-              :class="[
-                { 'not-mature': !props.row.mature, mature: props.row.mature },
-              ]"
-              >{{ +height.THOR - +props.row.last_deposit_height }}/<small
-                >{{ +props.row.matureConstant }}
+              v-else-if="props.column.field == 'pnl'"
+              :style="[{ color: +props.row.pnl < 0 ? '#ff1744' : '#76ff03' }]"
+            >
+              {{ $options.filters.number(props.row.pnl, '0,0.00') }}
+              <small>RUNE</small>
+            </span>
+            <span
+              v-else-if="props.column.field == 'ror'"
+              :style="[{ color: +props.row.ror < 0 ? '#ff1744' : '#76ff03' }]"
+            >
+              {{ props.formattedRow[props.column.field] }}
+            </span>
+            <span v-else-if="props.column.field == 'untilMature'">
+              <span
+                :class="[
+                  { 'not-mature': !props.row.mature, mature: props.row.mature },
+                ]"
+                >{{ +height.THOR - +props.row.last_deposit_height }}/<small
+                  >{{ +props.row.matureConstant }}
+                </small>
+              </span>
+              <small
+                >({{
+                  +props.row.untilMature && props.row.untilMature.toFixed(2)
+                }})</small
+              >
+            </span>
+            <span v-else-if="props.column.field == 'last_deposit_height'">
+              {{ props.formattedRow[props.column.field] }}
+              <small v-if="props.row.lastTimeDeposit">
+                ({{ props.row.lastTimeDeposit }})
               </small>
             </span>
-            <small
-              >({{
-                +props.row.untilMature && props.row.untilMature.toFixed(2)
-              }})</small
-            >
-          </span>
-          <span v-else-if="props.column.field == 'last_deposit_height'">
-            {{ props.formattedRow[props.column.field] }}
-            <small v-if="props.row.lastTimeDeposit">
-              ({{ props.row.lastTimeDeposit }})
-            </small>
-          </span>
-          <span v-else-if="props.column.field == 'last_withdraw_height'">
-            {{ props.formattedRow[props.column.field] }}
-            <small v-if="props.row.last_withdraw_height">
-              ({{ props.row.lastTimeWithdraw }})
-            </small>
-          </span>
-          <span v-else>
-            {{ props.formattedRow[props.column.field] }}
-          </span>
-        </template>
-      </vue-good-table>
+            <span v-else-if="props.column.field == 'last_withdraw_height'">
+              {{ props.formattedRow[props.column.field] }}
+              <small v-if="props.row.last_withdraw_height">
+                ({{ props.row.lastTimeWithdraw }})
+              </small>
+            </span>
+            <span v-else>
+              {{ props.formattedRow[props.column.field] }}
+            </span>
+          </template>
+        </vue-good-table>
+        <table-loader v-else :cols="memberCols"></table-loader>
+      </template>
     </Card>
     <div class="footer-stat">
       <small>

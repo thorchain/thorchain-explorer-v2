@@ -1,7 +1,9 @@
 <template>
-  <card :is-loading="loading">
+  <card>
+    <TableLoader v-if="loading" :cols="cols" :rows="Array(10).fill({})" />
     <vue-good-table
-      :columns="actionsColumn"
+      v-else
+      :columns="cols"
       :rows="actions"
       style-class="vgt-table net-table"
     >
@@ -19,9 +21,9 @@
             :param="props.row[props.column.field]"
             :hovered-address="hoveredAddress"
             :disable="owner && owner === props.row[props.column.field]"
+            :class="hovered"
             @setHovered="setHoveredAddress"
             @removeHovered="removeHoveredAddress"
-            :class="hovered"
           />
           <Hash
             v-if="props.column.field === 'hash'"
@@ -134,7 +136,7 @@ export default {
   data() {
     return {
       hoveredAddress: '',
-      actionsColumn: [
+      cols: [
         {
           label: 'Transaction Hash',
           field: 'hash',

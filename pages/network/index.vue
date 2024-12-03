@@ -61,8 +61,14 @@
     </div>
 
     <card class="chain-status">
+      <TableLoader
+          v-if="loading"
+          :cols="cols"
+          :rows="Array(10).fill({})"
+        />
       <vue-good-table
-        :columns="inboundCols"
+      v-else
+        :columns="cols"
         :rows="inboundInfo"
         style-class="vgt-table net-table"
         :sort-options="{ enabled: false }"
@@ -154,6 +160,7 @@ export default {
   },
   data() {
     return {
+      loading:true,
       network: [],
       rune: [],
       lastblock: undefined,
@@ -180,7 +187,7 @@ export default {
         },
       },
       inAddresses: [],
-      inboundCols: [
+      cols: [
         {
           label: 'Chain',
           field: 'chain',
@@ -415,113 +422,99 @@ export default {
     },
   },
   mounted() {
-    this.$api
-      .getLastBlockHeight()
-      .then((res) => (this.lastblock = res.data))
-      .catch((error) => {
-        console.error(error)
-      })
+  Promise.all([
+    this.$api.getLastBlockHeight(),
+    this.$api.getThorNetwork(),
+    this.$api.getInboundAddresses(),
+    this.$api.getNetworkAllocation(),
+    this.$api.getBlockChainVersion(),
+    this.$api.getThorVersion(),
+    this.$api.getNetwork(),
+    this.$api.getNodes(),
+    this.$api.getReserveHistory(),
+  ])
+    .then(async ([
+      lastBlockRes,
+      thorNetworkRes,
+      inboundAddressesRes,
+      networkAllocationsRes,
+      blockchainVersionRes,
+      thorVersionRes,
+      networkRes,
+      nodesRes,
+      reserveHistoryRes,
+    ]) => {
+      this.lastblock = lastBlockRes.data
+      this.thorNetwork = thorNetworkRes.data
+      this.inAddresses = inboundAddressesRes.data
 
-    this.$api
-      .getThorNetwork()
-      .then((res) => (this.thorNetwork = res.data))
-      .catch((error) => {
-        console.error(error)
-      })
+      const mimirData = (await this.$api.getMimir()).data
+      this.inboundInfo = inboundAddressesRes.data.map((chain) => ({
+        ...chain,
+        haltHeight: Math.max(
+          ...Object.keys(mimirData)
+            .filter(
+              (key) =>
+                (new RegExp(`.*HALT.*${chain.chain}CHAIN`).test(key) ||
+                  key === 'HALTCHAINGLOBAL') &&
+                mimirData[key] !== 0
+            )
+            .map((key) => mimirData[key])
+        ),
+        haltTradingHeight: Math.max(
+          ...Object.keys(mimirData)
+            .filter(
+              (key) =>
+                (new RegExp(`HALT${chain.chain}TRADING`).test(key) ||
+                  key === 'HALTTRADING') &&
+                mimirData[key] !== 0
+            )
+            .map((key) => mimirData[key])
+        ),
+        haltSigningHeight: Math.max(
+          ...Object.keys(mimirData)
+            .filter(
+              (key) =>
+                (new RegExp(`HALTSIGNING${chain.chain}`).test(key) ||
+                  key === 'HALTSIGNING') &&
+                mimirData[key] !== 0
+            )
+            .map((key) => mimirData[key])
+        ),
+        haltLPHeight: Math.max(
+          ...Object.keys(mimirData)
+            .filter(
+              (key) =>
+                new RegExp(`PAUSELP${chain.chain}`).test(key) && mimirData[key] !== 0
+            )
+            .map((key) => mimirData[key])
+        ),
+        last_observed_in:
+          this.lastblock?.find((b) => b.chain === chain.chain)
+            ?.last_observed_in ?? 0,
+      }))
 
-    this.$api
-      .getInboundAddresses()
-      .then(async (res) => {
-        const mi = (await this.$api.getMimir()).data
-        this.inAddresses = res.data
-        this.inboundInfo = res.data.map((chain) => ({
-          ...chain,
-          haltHeight: Math.max(
-            ...Object.keys(mi)
-              .filter(
-                (key) =>
-                  (new RegExp(`.*HALT.*${chain.chain}CHAIN`).test(key) ||
-                    key === 'HALTCHAINGLOBAL') &&
-                  mi[key] !== 0
-              )
-              .map((key) => mi[key])
-          ),
-          haltTradingHeight: Math.max(
-            ...Object.keys(mi)
-              .filter(
-                (key) =>
-                  (new RegExp(`HALT${chain.chain}TRADING`).test(key) ||
-                    key === 'HALTTRADING') &&
-                  mi[key] !== 0
-              )
-              .map((key) => mi[key])
-          ),
-          haltSigningHeight: Math.max(
-            ...Object.keys(mi)
-              .filter(
-                (key) =>
-                  (new RegExp(`HALTSIGNING${chain.chain}`).test(key) ||
-                    key === 'HALTSIGNING') &&
-                  mi[key] !== 0
-              )
-              .map((key) => mi[key])
-          ),
-          haltLPHeight: Math.max(
-            ...Object.keys(mi)
-              .filter(
-                (key) =>
-                  new RegExp(`PAUSELP${chain.chain}`).test(key) && mi[key] !== 0
-              )
-              .map((key) => mi[key])
-          ),
-          last_observed_in:
-            this.lastblock?.find((b) => b.chain === chain.chain)
-              ?.last_observed_in ?? 0,
-        }))
-      })
-      .catch((error) => {
-        console.error(error)
-      })
-
-    this.$api
-      .getNetworkAllocation()
-      .then((res) => (this.networkAllocations = res.data))
-      .catch((error) => {
-        console.error(error)
-      })
-
-    this.$api
-      .getBlockChainVersion()
-      .then((res) => (this.blockchainVersion = res.data))
-      .catch((error) => {
-        console.error(error)
-      })
-
-    this.$api
-      .getThorVersion()
-      .then((res) => (this.thorVersion = res.data))
-      .catch((error) => {
-        console.error(error)
-      })
-
-    this.$api.getNetwork().then(({ data }) => {
-      this.network = data
-    })
-
-    this.$api.getNodes().then(({ data }) => {
-      this.nodes = data
+      this.networkAllocations = networkAllocationsRes.data
+      this.blockchainVersion = blockchainVersionRes.data
+      this.thorVersion = thorVersionRes.data
+      this.network = networkRes.data
+      this.nodes = nodesRes.data
       this.activeNodes = this.nodes?.filter((n) => n.status === 'Active')
       this.uptodateNodes = this.activeNodes.filter(
         (n) => n.version === this.uptodateNodeVersion(this.activeNodes)
       )
-    })
 
-    this.$api.getReserveHistory().then(async ({ data }) => {
-      this.metaReserve = data?.meta
       const rewards = (await this.$api.getEarningHistory()).data
-      this.reserveHistory = this.formatReserve(data, rewards)
+      this.metaReserve = reserveHistoryRes.data?.meta
+      this.reserveHistory = this.formatReserve(reserveHistoryRes.data, rewards)
+
+      this.loading = false
     })
-  },
+    .catch((error) => {
+      console.error(error)
+      this.loading = false 
+    })
+},
   methods: {
     navigatePie(param) {
       switch (param?.name) {

@@ -1,9 +1,10 @@
 <template>
   <div>
     <cards-header :table-general-stats="synthsGeneralStats" />
-    <Card title="Synth Assets" :is-loading="!(rows && rows.length > 0)">
+    <Card title="Synth Assets">
+      <TableLoader v-if="loading" :cols="cols" />
       <vue-good-table
-        v-if="cols && rows.length > 0"
+        v-else
         :columns="cols"
         :rows="rows"
         style-class="vgt-table net-table"
@@ -87,7 +88,6 @@
 import { mapGetters } from 'vuex'
 import { formatAsset, synthToAsset } from '~/utils'
 import InfoIcon from '~/assets/images/info.svg?inline'
-
 export default {
   components: { InfoIcon },
   data() {
@@ -113,6 +113,7 @@ export default {
       mimirData: {},
       polCap: 0,
       synthCap: 0,
+      loading: true,
     }
   },
   computed: {
@@ -179,11 +180,15 @@ export default {
         (mimirData.POLTARGETSYNTHPERPOOLDEPTH + mimirData.POLBUFFER) / 10000
       this.synthCap = mimirData.MAXSYNTHPERPOOLDEPTH / 10000
 
-      this.loadSynthUtils()
-    } catch (error) {}
+      await this.loadSynthUtils()
+    } catch (error) {
+      console.error(error)
+    } finally {
+      this.loading = false
+    }
   },
   methods: {
-    async loadSynthUtils() {
+    loadSynthUtils() {
       try {
         const synthUtils = []
         for (const asset of this.synthAssets.supply) {
@@ -249,7 +254,8 @@ export default {
       this.synthsGeneralStats = [
         {
           name: 'Total Synth Supply',
-          value:'$'+ this.$options.filters.number(totalSynthSupply || 0, '0,0a'),
+          value:
+            '$' + this.$options.filters.number(totalSynthSupply || 0, '0,0a'),
           description: 'Total synth asset in the protocol',
         },
         {

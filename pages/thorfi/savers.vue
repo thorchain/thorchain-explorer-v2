@@ -2,10 +2,12 @@
   <div>
     <cards-header :table-general-stats="saversGeneralStats" />
     <Page>
-      <Card title="Savers" :is-loading="saversRow.length <= 0">
+      <Card title="Savers">
+        <TableLoader v-if="loading" :cols="cols" />
+
         <vue-good-table
-          v-if="saversRow.length > 0"
-          :columns="saverCols"
+          v-else
+          :columns="cols"
           :rows="saversRow"
           style-class="vgt-table net-table"
           :pagination-options="{
@@ -112,8 +114,9 @@ export default {
   components: { ProgressIcon, InfoIcon },
   data() {
     return {
+      loading: true,
       error: false,
-      saverCols: [
+      cols: [
         {
           label: 'Asset',
           field: 'asset',
@@ -195,7 +198,7 @@ export default {
   },
   mounted() {
     // Disable column 5 if stagenet
-    this.saverCols[5].hidden = this.networkEnv === 'stagenet'
+    this.cols[5].hidden = this.networkEnv === 'stagenet'
 
     this.$api
       .getSaversInfo()
@@ -207,10 +210,11 @@ export default {
         this.saversRow = this.formatSaversInfo()
         this.fillSaversTotal()
         this.fillTotalSaversValue()
-        // this.fillSaversTotal()
+        this.loading = false
       })
       .catch((e) => {
         console.error(e)
+        this.loading = false
       })
 
     this.$api
@@ -218,9 +222,10 @@ export default {
       .then(({ data }) => {
         this.maxSaverCap = (data.MAXSYNTHPERPOOLDEPTH * 2) / 10e3
       })
-      .catch((err) =>
+      .catch((err) => {
         console.error("didn't catch the max synth per asset depth", err)
-      )
+        this.loading = false
+      })
   },
   methods: {
     formatSaversInfo() {
