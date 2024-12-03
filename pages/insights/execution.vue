@@ -1,7 +1,15 @@
 <template>
   <div class="container-page">
+    <input-filter
+      :tags="pairOption"
+      placeholder="Enter Pairs, press enter"
+      label="Pairs"
+      :suggestions="pairOptions"
+      :format="false"
+      @update:tags="updatePairs($event)"
+    />
     <div class="chart-inner-container">
-      <Card title="Execution Quality Scatter">
+      <Card title="Execution Scatter">
         <VChart
           :option="executionData"
           :loading="!executionData"
@@ -12,18 +20,7 @@
       </Card>
     </div>
     <div class="chart-inner-container">
-      <Card title="Pair Execution Quality">
-        <div class="pool-nav-wrapper">
-          <div>
-            <span>Pair:</span>
-            <Select
-              :options="pairOptions"
-              :option.sync="pairOption"
-              name="pair"
-            >
-            </Select>
-          </div>
-        </div>
+      <Card title="Execution Line">
         <VChart
           :option="executionQuality"
           :loading="!executionQuality"
@@ -69,39 +66,51 @@ export default {
       executionQuality: undefined,
       executionQualityData: undefined,
       pairOptions: [],
-      pairOption: {
-        label: 'BTC.BTC <> ETH.ETH',
-        value: 'BTC.BTC <> ETH.ETH',
-      },
+      pairOption: ['BTC.BTC <> ETH.ETH'],
     }
   },
 
   watch: {
     pairOption(val) {
+      this.formatExcQuality()
       this.formatBarExc()
     },
   },
 
   async mounted() {
     this.executionQualityData = (await this.$api.getExecutionQuality()).data
-    this.formatExcQuality(this.executionQualityData)
-    this.pairOptions = this.executionQualityData.map((it) => ({
-      label: it.SWAP_PAIR,
-      value: it.SWAP_PAIR,
-    }))
+    this.pairOptions = this.executionQualityData.map((it) => it.SWAP_PAIR)
 
+    this.formatExcQuality()
     this.formatBarExc()
   },
   methods: {
+    updatePairs(values) {
+      this.pairOption = values
+    },
+
     formatBarExc() {
       const pairDetails = []
       this.executionQualityData.forEach((it) => {
-        if (it.SWAP_PAIR === this.pairOption.value) {
-          pairDetails.push(it)
+        if (this.pairOption.includes(it.SWAP_PAIR)) {
+          const p = pairDetails.findIndex((p) => p.INTERVAL === it.INTERVAL)
+          if (p >= 0) {
+            pairDetails[p] = {
+              COUNT: pairDetails[p].COUNT + it.COUNT,
+              EXC_QUALITY:
+                (pairDetails[p].EXC_QUALITY * pairDetails[p].COUNT +
+                  it.EXC_QUALITY * it.COUNT) /
+                (pairDetails[p].COUNT + it.COUNT),
+              INTERVAL: pairDetails[p].INTERVAL,
+              SWAP_PAIR: pairDetails[p].SWAP_PAIR,
+            }
+          } else {
+            pairDetails.push(it)
+          }
         }
       })
 
-      const intervals = pairDetails.sort((a, b) => +a.INTERVAL - +b.INTERVAL)
+      const intervals = pairDetails.sort((a, b) => a.INTERVAL - b.INTERVAL)
       this.executionQuality = this.basicChartFormat(
         (value) => `$ ${this.$options.filters.number(value, '0,0.00a')}`,
         [
@@ -171,8 +180,11 @@ export default {
         }
       )
     },
-    formatExcQuality(d) {
-      const sortedData = d.sort((a, b) => +a.INTERVAL - +b.INTERVAL)
+    formatExcQuality() {
+      const pairedAssets = this.executionQualityData.filter((a) =>
+        this.pairOption.includes(a.SWAP_PAIR)
+      )
+      const sortedData = pairedAssets.sort((a, b) => +a.INTERVAL - +b.INTERVAL)
 
       const seriesData = sortedData.map((item, index) => ({
         value: [item.INTERVAL, item.EXC_QUALITY, item.COUNT],
@@ -213,10 +225,10 @@ export default {
             name: 'Execution',
             splitLine: { show: false },
             axisTick: { show: false },
-            min: (value) => 0.96,
-            max: (value) => 1.08,
+            min: 'dataMin',
+            max: 'dataMax',
             axisLabel: {
-              formatter: (value) => this.$options.filters.percent(value),
+              formatter: (value) => this.$options.filters.percent(value, 2),
             },
           },
           grid: {

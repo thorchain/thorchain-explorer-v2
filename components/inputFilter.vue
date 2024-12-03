@@ -3,9 +3,9 @@
     <label>{{ label }}</label>
 
     <div :class="['tags-input', tagsWrapClass]">
-      <div v-for="(tag, index) in tags" :key="index" :class="['mini-bubble']">
-        {{ formatAddress(tag) }}
-        <CrrosIcon class="remove-tag" @click="removeTag(index)" />
+      <div v-for="(tag, index) in tags" :key="tag" :class="['mini-bubble']">
+        {{ format ? formatAddress(tag) : tag }}
+        <cross-icon class="remove-tag" @click="removeTag(index)" />
       </div>
       <div id="input-container">
         <input
@@ -26,8 +26,8 @@
         :key="option"
         @mousedown.prevent="selectOption(option)"
       >
-        <asset-icon :asset="option" class="asset-icon" />
-        {{ formatAsset(option) }}
+        <asset-icon v-if="format" :asset="option" class="asset-icon" />
+        {{ format ? formatAsset(option) : option }}
       </li>
     </ul>
   </div>
@@ -36,13 +36,13 @@
 <script>
 import debounce from 'lodash/debounce'
 import EnterIcon from '~/assets/images/arrow-turn-down-right.svg?inline'
-import CrrosIcon from '~/assets/images/cross.svg?inline'
+import CrossIcon from '~/assets/images/cross.svg?inline'
 
 export default {
   name: 'InputFilter',
   components: {
     EnterIcon,
-    CrrosIcon,
+    CrossIcon,
   },
   props: {
     label: {
@@ -62,6 +62,10 @@ export default {
       default: () => [],
     },
     allowTags: {
+      type: Boolean,
+      default: true,
+    },
+    format: {
       type: Boolean,
       default: true,
     },
