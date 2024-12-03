@@ -12,11 +12,7 @@
           </template>
         </button>
       </template>
-      <TableLoader
-        v-if="loading"
-        :cols="cols"
-        :rows="Array(10).fill({})"
-      />
+      <TableLoader v-if="loading" :cols="cols" />
       <vue-good-table
         v-else
         :columns="cols"
@@ -142,7 +138,7 @@ export default {
       tradeAssets: undefined,
       pools: undefined,
       asgard: undefined,
-      loading: true, 
+      loading: true,
     }
   },
   computed: {
@@ -151,18 +147,18 @@ export default {
     }),
   },
   async mounted() {
-  try {
-    this.tradeAssets = (await this.$api.getTradeAssets()).data;
-    this.pools = (await this.$api.getThorPools()).data;
-    this.asgard = (await this.$api.getAsgard()).data;
-    this.rows = this.fillTradeData(this.tradeAssets, this.pools, this.asgard);
-  } catch (e) {
-    this.error = true;
-    console.error(e);
-  } finally {
-    this.loading = false;
-  }
-},
+    try {
+      this.tradeAssets = (await this.$api.getTradeAssets()).data
+      this.pools = (await this.$api.getThorPools()).data
+      this.asgard = (await this.$api.getAsgard()).data
+      this.rows = this.fillTradeData(this.tradeAssets, this.pools, this.asgard)
+    } catch (e) {
+      this.error = true
+      console.error(e)
+    } finally {
+      this.loading = false
+    }
+  },
   methods: {
     fillTradeData(tradeAssets, pools, asgard) {
       const assetPerVault = {}
@@ -222,13 +218,13 @@ export default {
       this.tradingGeneralStats = [
         {
           name: 'Total Trade Depth',
-          value:'$'+ this.$options.filters.number(totalTradeDepth || 0, '0,0a'),
-
+          value:
+            '$' + this.$options.filters.number(totalTradeDepth || 0, '0,0a'),
         },
         {
           name: 'Total Vault Depth',
-          value:'$'+ this.$options.filters.number(totalVaultDepth || 0, '0,0a'),
-
+          value:
+            '$' + this.$options.filters.number(totalVaultDepth || 0, '0,0a'),
         },
         {
           name: 'Total Vault / Pool',

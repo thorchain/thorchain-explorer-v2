@@ -3,11 +3,7 @@
     <cards-header :table-general-stats="saversGeneralStats" />
     <Page>
       <Card title="Savers">
-        <TableLoader
-          v-if="loading"
-          :cols="cols"
-          :rows="Array(10).fill({})"
-        />
+        <TableLoader v-if="loading" :cols="cols" />
 
         <vue-good-table
           v-else
@@ -201,36 +197,36 @@ export default {
     },
   },
   mounted() {
-     // Disable column 5 if stagenet
-     this.cols[5].hidden = this.networkEnv === 'stagenet'
+    // Disable column 5 if stagenet
+    this.cols[5].hidden = this.networkEnv === 'stagenet'
 
-  this.$api
-    .getSaversInfo()
-    .then(({ data }) => {
-      if (!data) {
-        return;
-      }
-      this.saversInfo = data;
-      this.saversRow = this.formatSaversInfo();
-      this.fillSaversTotal();
-      this.fillTotalSaversValue();
-      this.loading = false;  
-    })
-    .catch((e) => {
-      console.error(e);
-      this.loading = false;  
-    });
+    this.$api
+      .getSaversInfo()
+      .then(({ data }) => {
+        if (!data) {
+          return
+        }
+        this.saversInfo = data
+        this.saversRow = this.formatSaversInfo()
+        this.fillSaversTotal()
+        this.fillTotalSaversValue()
+        this.loading = false
+      })
+      .catch((e) => {
+        console.error(e)
+        this.loading = false
+      })
 
-  this.$api
-    .getMimir()
-    .then(({ data }) => {
-      this.maxSaverCap = (data.MAXSYNTHPERPOOLDEPTH * 2) / 10e3;
-    })
-    .catch((err) => {
-      console.error("didn't catch the max synth per asset depth", err);
-      this.loading = false; 
-    });
-},
+    this.$api
+      .getMimir()
+      .then(({ data }) => {
+        this.maxSaverCap = (data.MAXSYNTHPERPOOLDEPTH * 2) / 10e3
+      })
+      .catch((err) => {
+        console.error("didn't catch the max synth per asset depth", err)
+        this.loading = false
+      })
+  },
   methods: {
     formatSaversInfo() {
       const ret = []

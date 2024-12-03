@@ -33,14 +33,14 @@ export default {
   },
   computed: {
     limitedRows() {
-      return [
-        {
-          id: 1,
-        },
-        {
-          id: 2,
-        },
-      ]
+      const range = 10
+      const rows = []
+      for (let i = 0; i < range; i++) {
+        rows.push({
+          id: i,
+        })
+      }
+      return rows
     },
   },
 }

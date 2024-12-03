@@ -3,7 +3,7 @@
     <cards-header :table-general-stats="vaultsGeneralStats" />
     <Card title="Vaults">
       <template v-if="loading">
-        <tableLoader :cols="cols" :rows="Array(6).fill({})" />
+        <tableLoader :cols="cols" />
       </template>
       <template v-else>
         <vue-good-table
@@ -96,9 +96,6 @@
           </template>
         </vue-good-table>
       </template>
-      <div v-else class="loading">
-        <BounceLoader color="var(--font-color)" size="3rem" />
-      </div>
     </Card>
     <div class="footer-stat">
       <small>
@@ -122,7 +119,7 @@ export default {
   },
   data() {
     return {
-      loading: true, 
+      loading: true,
       cols: [
         {
           label: 'Hash',
@@ -219,31 +216,31 @@ export default {
     }),
   },
   mounted() {
-    this.fetchVaultsData();
+    this.fetchVaultsData()
   },
   methods: {
     fetchVaultsData() {
       this.$api
         .getAsgard()
         .then(async (res) => {
-          const poolsPrice = await this.formatPoolPrice();
-          const nodes = await this.formatNodes();
-          const tss = await this.formatTSS();
+          const poolsPrice = await this.formatPoolPrice()
+          const nodes = await this.formatNodes()
+          const tss = await this.formatTSS()
           this.asgard = await this.formatVaults(
             res?.data,
             'Asgard',
             poolsPrice,
             nodes,
             tss
-          );
-          this.updateGeneralStats();
+          )
+          this.updateGeneralStats()
         })
         .catch((e) => {
-          console.error(e);
+          console.error(e)
         })
         .finally(() => {
-          this.loading = false; 
-        });
+          this.loading = false
+        })
     },
     duration(since) {
       return duration(since * 6, 's').humanize()
