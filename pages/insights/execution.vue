@@ -1,6 +1,6 @@
 <template>
   <div class="container-page">
-    <input-filter
+    <suggestion-input
       :tags="pairOption"
       placeholder="Enter Pairs, press enter"
       label="Pairs"
@@ -91,8 +91,27 @@ export default {
 
     formatBarExc() {
       const pairDetails = []
-      this.executionQualityData.forEach((it) => {
-        if (this.pairOption.includes(it.SWAP_PAIR)) {
+
+      if (this.pairOption.includes('All')) {
+        this.executionQualityData.forEach((it) => {
+          const p = pairDetails.findIndex((p) => p.INTERVAL === it.INTERVAL)
+          if (p >= 0) {
+            pairDetails[p] = {
+              COUNT: pairDetails[p].COUNT + it.COUNT,
+              EXC_QUALITY:
+                (pairDetails[p].EXC_QUALITY * pairDetails[p].COUNT +
+                  it.EXC_QUALITY * it.COUNT) /
+                (pairDetails[p].COUNT + it.COUNT),
+              INTERVAL: pairDetails[p].INTERVAL,
+              SWAP_PAIR: pairDetails[p].SWAP_PAIR,
+            }
+          } else {
+            pairDetails.push(it)
+          }
+        })
+      } else {
+        this.executionQualityData.forEach((it) => {
+          if (this.pairOption.includes(it.SWAP_PAIR)) {
           const p = pairDetails.findIndex((p) => p.INTERVAL === it.INTERVAL)
           if (p >= 0) {
             pairDetails[p] = {
@@ -109,6 +128,7 @@ export default {
           }
         }
       })
+      }
 
       const intervals = pairDetails.sort((a, b) => a.INTERVAL - b.INTERVAL)
       this.executionQuality = this.basicChartFormat(
@@ -181,9 +201,14 @@ export default {
       )
     },
     formatExcQuality() {
-      const pairedAssets = this.executionQualityData.filter((a) =>
+      let pairedAssets
+      if (this.pairOption.includes('All')) {
+        pairedAssets = this.executionQualityData
+      } else {
+        pairedAssets = this.executionQualityData.filter((a) =>
         this.pairOption.includes(a.SWAP_PAIR)
-      )
+        )
+      }
       const sortedData = pairedAssets.sort((a, b) => +a.INTERVAL - +b.INTERVAL)
 
       const seriesData = sortedData.map((item, index) => ({
