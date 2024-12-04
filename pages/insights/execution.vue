@@ -1,6 +1,9 @@
 <template>
   <div class="container-page">
-    <input-filter
+    <div class="chart-inner-container">
+      <info-card :options="executionInfo"></info-card>
+    </div>
+    <suggestion-input
       :tags="pairOption"
       placeholder="Enter Pairs, press enter"
       label="Pairs"
@@ -11,19 +14,17 @@
     <div class="chart-inner-container">
       <Card title="Execution Scatter">
         <VChart
-          :option="executionData"
-          :loading="!executionData"
+          :option="scatterOptions"
+          :loading="!scatterOptions"
           :autoresize="true"
           :loading-options="showLoading"
           :theme="chartTheme"
         />
       </Card>
-    </div>
-    <div class="chart-inner-container">
       <Card title="Execution Line">
         <VChart
-          :option="executionQuality"
-          :loading="!executionQuality"
+          :option="barOptions"
+          :loading="!barOptions"
           :autoresize="true"
           :loading-options="showLoading"
           :theme="chartTheme"
@@ -62,12 +63,95 @@ export default {
   },
   data() {
     return {
-      executionData: undefined,
-      executionQuality: undefined,
+      scatterOptions: undefined,
+      barOptions: undefined,
       executionQualityData: undefined,
       pairOptions: [],
       pairOption: ['BTC.BTC <> ETH.ETH'],
     }
+  },
+
+  computed: {
+    executionInfo() {
+      if (!this.executionQualityData) {
+        return [
+          {
+            title: 'Performance',
+            rowStart: 1,
+            colSpan: 1,
+            items: [
+              {
+                name: 'L1 Pairs',
+              },
+              {
+                name: 'BTC.BTC Pairs',
+              },
+              {
+                name: 'ETH.ETH Pairs',
+              },
+            ],
+          },
+        ]
+      }
+
+      return [
+        {
+          title: 'Performance',
+          rowStart: 1,
+          colSpan: 1,
+          items: [
+            {
+              name: 'L1 Pairs',
+              value: this.getPairsPerformance(
+                this.getOnlyPairs([
+                  'BTC.BTC',
+                  'ETH.ETH',
+                  'GAIA.ATOM',
+                  'BSC.BNB',
+                  'AVAX.AVAX',
+                  'DOGE.DOGE',
+                  'LTC.LTC',
+                  'BCH.BCH',
+                ])
+              ),
+              filter: (v) =>
+                `${this.$options.filters.number(v * 10_000, '0,0.00')} bps`,
+            },
+            // {
+            //   name: 'Stables',
+            //   value: this.getPairsPerformance(
+            //     this.getPairs([
+            //       'ETH.USDT',
+            //       'ETH.USDC',
+            //       'AVAX.USDT',
+            //       'BSC.USDT',
+            //       'BSC.USDC',
+            //       'AVAX.USDC',
+            //       'ETH.LUSD',
+            //       'ETH.DAI',
+            //       'ETH.USDP',
+            //       'ETH.GUSD',
+            //     ])
+            //   ),
+            //   filter: (v) =>
+            //     `${this.$options.filters.number(v * 10_000, '0,0.00')} bps`,
+            // },
+            {
+              name: 'BTC.BTC Pairs',
+              value: this.getPairsPerformance(this.getPairs(['BTC.BTC'])),
+              filter: (v) =>
+                `${this.$options.filters.number(v * 10_000, '0,0.00')} bps`,
+            },
+            {
+              name: 'ETH.ETH Pairs',
+              value: this.getPairsPerformance(this.getPairs(['ETH.ETH'])),
+              filter: (v) =>
+                `${this.$options.filters.number(v * 10_000, '0,0.00')} bps`,
+            },
+          ],
+        },
+      ]
+    },
   },
 
   watch: {
@@ -85,14 +169,53 @@ export default {
     this.formatBarExc()
   },
   methods: {
+    getPairs(pairs) {
+      const ret = []
+      const executionPairs = this.executionQualityData.map((it) =>
+        it.SWAP_PAIR.split(' <> ')
+      )
+      for (let i = 0; i < executionPairs.length; i++) {
+        const ep = executionPairs[i]
+        if (ep.some((p) => pairs.includes(p))) {
+          ret.push(this.executionQualityData[i])
+        }
+      }
+      return ret
+    },
+
+    getOnlyPairs(pairs) {
+      const ret = []
+      const executionPairs = this.executionQualityData.map((it) =>
+        it.SWAP_PAIR.split(' <> ')
+      )
+      for (let i = 0; i < executionPairs.length; i++) {
+        const ep = executionPairs[i]
+        if (ep.every((p) => pairs.includes(p))) {
+          ret.push(this.executionQualityData[i])
+        }
+      }
+      return ret
+    },
+
+    getPairsPerformance(results) {
+      let qu = 0
+      const sumUsd = results.reduce((a, c) => a + c.OUT_AMOUNT_USD, 0)
+      for (let i = 0; i < results.length; i++) {
+        const e = results[i]
+        qu = Math.abs(1 - e.EXC_QUALITY) * e.OUT_AMOUNT_USD + qu
+      }
+      return qu / sumUsd
+    },
+
     updatePairs(values) {
       this.pairOption = values
     },
 
     formatBarExc() {
       const pairDetails = []
-      this.executionQualityData.forEach((it) => {
-        if (this.pairOption.includes(it.SWAP_PAIR)) {
+
+      if (this.pairOption.includes('All')) {
+        this.executionQualityData.forEach((it) => {
           const p = pairDetails.findIndex((p) => p.INTERVAL === it.INTERVAL)
           if (p >= 0) {
             pairDetails[p] = {
@@ -107,11 +230,30 @@ export default {
           } else {
             pairDetails.push(it)
           }
-        }
-      })
+        })
+      } else {
+        this.executionQualityData.forEach((it) => {
+          if (this.pairOption.includes(it.SWAP_PAIR)) {
+            const p = pairDetails.findIndex((p) => p.INTERVAL === it.INTERVAL)
+            if (p >= 0) {
+              pairDetails[p] = {
+                COUNT: pairDetails[p].COUNT + it.COUNT,
+                EXC_QUALITY:
+                  (pairDetails[p].EXC_QUALITY * pairDetails[p].COUNT +
+                    it.EXC_QUALITY * it.COUNT) /
+                  (pairDetails[p].COUNT + it.COUNT),
+                INTERVAL: pairDetails[p].INTERVAL,
+                SWAP_PAIR: pairDetails[p].SWAP_PAIR,
+              }
+            } else {
+              pairDetails.push(it)
+            }
+          }
+        })
+      }
 
       const intervals = pairDetails.sort((a, b) => a.INTERVAL - b.INTERVAL)
-      this.executionQuality = this.basicChartFormat(
+      this.barOptions = this.basicChartFormat(
         (value) => `$ ${this.$options.filters.number(value, '0,0.00a')}`,
         [
           {
@@ -181,20 +323,26 @@ export default {
       )
     },
     formatExcQuality() {
-      const pairedAssets = this.executionQualityData.filter((a) =>
-        this.pairOption.includes(a.SWAP_PAIR)
-      )
+      let pairedAssets
+      if (this.pairOption.includes('All')) {
+        pairedAssets = this.executionQualityData
+      } else {
+        pairedAssets = this.executionQualityData.filter((a) =>
+          this.pairOption.includes(a.SWAP_PAIR)
+        )
+      }
       const sortedData = pairedAssets.sort((a, b) => +a.INTERVAL - +b.INTERVAL)
 
       const seriesData = sortedData.map((item, index) => ({
         value: [item.INTERVAL, item.EXC_QUALITY, item.COUNT],
         pair: item.SWAP_PAIR,
+        amount: item.OUT_AMOUNT_USD,
         itemStyle: {
-          color: this.assetColorPalette(item.SWAP_PAIR.split('<>')[0].trim()),
+          color: this.vaultColor(item.SWAP_PAIR),
         },
       }))
 
-      this.executionData = this.basicChartFormat(
+      this.scatterOptions = this.basicChartFormat(
         undefined,
         [
           {
@@ -242,6 +390,7 @@ export default {
             formatter: (params) => `
                 <small>Swap Pair:</small> ${params.data.pair}<br>
                 <small>Count:</small> ${params.value[2]}<br>
+                <small>Amount:</small> $${this.$options.filters.number(params.data.amount, '0,0.00a')}<br>
                 <small>Execution Quality:</small> ${this.$options.filters.percent(params.value[1], 3)}<br>
                 <small>Interval:</small> ${params.value[0]}
             `,

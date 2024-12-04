@@ -8,6 +8,7 @@
           { clickable: !disable, hovered: hoveredAddress === param },
         ]"
         :to="!disable ? { path: `/address/${param}` } : undefined"
+        v-tooltip="param"
         >{{ addressFormatV2(param) }}</component
       >
       <copy

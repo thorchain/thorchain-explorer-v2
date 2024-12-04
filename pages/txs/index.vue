@@ -186,6 +186,7 @@ export default {
     } else {
       this.applyFilters({
         asset: ['notrade'],
+        type: ['swap','send']
       })
     }
 
