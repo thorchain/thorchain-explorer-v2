@@ -90,6 +90,24 @@ export default {
               {
                 name: 'ETH.ETH Pairs',
               },
+              {
+                name: 'GAIA.ATOM Pairs',
+              },
+              {
+                name: 'AVAX.AVAX Pairs',
+              },
+              {
+                name: 'BSC.BNB Pairs',
+              },
+              {
+                name: 'BCH.BCH Pairs',
+              },
+              {
+                name: 'DOGE.DOGE Pairs',
+              },
+              {
+                name: 'LTC.LTC Pairs',
+              },
             ],
           },
         ]
@@ -146,6 +164,42 @@ export default {
             {
               name: 'ETH.ETH Pairs',
               value: this.getPairsPerformance(this.getPairs(['ETH.ETH'])),
+              filter: (v) =>
+                `${this.$options.filters.number(v * 10_000, '0,0.00')} bps`,
+            },
+            {
+              name: 'GAIA.ATOM Pairs',
+              value: this.getPairsPerformance(this.getPairs(['GAIA.ATOM'])),
+              filter: (v) =>
+                `${this.$options.filters.number(v * 10_000, '0,0.00')} bps`,
+            },
+            {
+              name: 'AVAX.AVAX Pairs',
+              value: this.getPairsPerformance(this.getPairs(['AVAX.AVAX'])),
+              filter: (v) =>
+                `${this.$options.filters.number(v * 10_000, '0,0.00')} bps`,
+            },
+            {
+              name: 'BSC.BNB Pairs',
+              value: this.getPairsPerformance(this.getPairs(['BSC.BNB'])),
+              filter: (v) =>
+                `${this.$options.filters.number(v * 10_000, '0,0.00')} bps`,
+            },
+            {
+              name: 'BCH.BCH Pairs',
+              value: this.getPairsPerformance(this.getPairs(['BCH.BCH'])),
+              filter: (v) =>
+                `${this.$options.filters.number(v * 10_000, '0,0.00')} bps`,
+            },
+            {
+              name: 'DOGE.DOGE Pairs',
+              value: this.getPairsPerformance(this.getPairs(['DOGE.DOGE'])),
+              filter: (v) =>
+                `${this.$options.filters.number(v * 10_000, '0,0.00')} bps`,
+            },
+            {
+              name: 'LTC.LTC Pairs',
+              value: this.getPairsPerformance(this.getPairs(['LTC.LTC'])),
               filter: (v) =>
                 `${this.$options.filters.number(v * 10_000, '0,0.00')} bps`,
             },
