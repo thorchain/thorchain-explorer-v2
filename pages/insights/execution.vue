@@ -11,7 +11,7 @@
       :format="false"
       @update:tags="updatePairs($event)"
     />
-    <div class="chart-inner-container">
+    <div v-if="pairOption.length > 0" class="chart-inner-container">
       <Card title="Execution Scatter">
         <VChart
           :option="scatterOptions"
@@ -31,6 +31,7 @@
         />
       </Card>
     </div>
+    <span v-else> No option selected </span>
   </div>
 </template>
 
