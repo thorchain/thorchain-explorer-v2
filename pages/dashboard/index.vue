@@ -1222,6 +1222,7 @@ export default {
       const be = []
       const af = []
       const df = []
+      const ib = []
       const EODEarning = []
 
       if (process.env.NETWORK === 'mainnet') {
@@ -1241,16 +1242,24 @@ export default {
           (+interval.pools.find((p) => p.pool === 'dev_fund_reward').earnings /
             10 ** 8) *
           Number.parseFloat(interval.runePriceUSD)
+        const incomeBurn =
+          (+interval.pools.find((p) => p.pool === 'income_burn').earnings /
+            10 ** 8) *
+          Number.parseFloat(interval.runePriceUSD) 
+
         le.push(
           (+interval.liquidityEarnings / 10 ** 8) *
             Number.parseFloat(interval.runePriceUSD) -
-            devFund
+            devFund -
+            incomeBurn 
         )
         be.push(
           (+interval.bondingEarnings / 10 ** 8) *
             Number.parseFloat(interval.runePriceUSD)
         )
         df.push(devFund)
+        ib.push(incomeBurn) 
+
         const affiliate = this.affiliateDaily?.find((d) => {
           return moment(d.date).isSame(date, 'day')
         })
@@ -1287,17 +1296,14 @@ export default {
           af[index] = {
             value: 0,
           }
-          le[index] = {
-            value: le[index],
-            itemStyle: {
-              color: '#c29526',
-            },
-          }
           be[index] = {
             value: be[index],
-            itemStyle: {
-              color: '#92701c',
-            },
+          }
+          le[index] = {
+            value: le[index],
+          }
+          ib[index] = {
+            value: ib[index],
           }
         } else {
           EODEarning.push(0)
@@ -1309,14 +1315,6 @@ export default {
         [
           {
             type: 'bar',
-            name: 'Pool Earning',
-            showSymbol: false,
-            stack: 'Total',
-            data: le,
-            smooth: true,
-          },
-          {
-            type: 'bar',
             name: 'Bond Earning',
             stack: 'Total',
             showSymbol: false,
@@ -1325,10 +1323,26 @@ export default {
           },
           {
             type: 'bar',
+            name: 'Pool Earning',
+            showSymbol: false,
+            stack: 'Total',
+            data: le,
+            smooth: true,
+          },
+          {
+            type: 'bar',
             name: 'Dev Fund Earning',
             stack: 'Total',
             showSymbol: false,
             data: df,
+            smooth: true,
+          },
+          {
+            type: 'bar',
+            name: 'Burn',
+            stack: 'Total',
+            showSymbol: false,
+            data: ib,
             smooth: true,
           },
           this.affiliateDaily && {
@@ -1360,10 +1374,11 @@ export default {
               color: 'var(--font-color)',
             },
             data: [
-              'Pool Earning',
               'Bond Earning',
-              'Affiliate Earning',
+              'Pool Earning',
               'Dev Fund Earning',
+              'Affiliate Earning',
+              'Burn',
             ],
           },
         },
