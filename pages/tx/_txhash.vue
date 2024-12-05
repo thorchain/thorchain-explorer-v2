@@ -1596,7 +1596,7 @@ export default {
 
       return {
         cards: {
-          title: 'Rune Pool Withdraw',
+          title: 'RUNEPool Withdraw',
           in: ins,
           middle: {
             pending: false,
