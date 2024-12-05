@@ -107,7 +107,7 @@ export default {
     this.updateInterval = setInterval(() => {
       this.getChainsHeight()
       this.getRunePrice()
-    }, 15000)
+    }, 20000)
 
     const changeHeight = () => {
       const vh = window.innerHeight * 0.01

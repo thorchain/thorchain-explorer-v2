@@ -229,41 +229,40 @@
                 </small>
               </div>
               <div class="middle-section-overview">
-
                 <div class="block-burned-item">
-                  <small>Burned Amount</small>
-                  <div :class="['mini-bubble orange']" class="burn-item">
+                  <small>Burned</small>
+                  <div class="burn-item mini-bubble orange">
                     <Burn class="burn-icon"></Burn>
-                    {{ block.burnedAmount / 1e8 }}
+                    {{ (block.burnedAmount / 1e8) | number('0.0000') }}
                   </div>
                 </div>
 
                 <div class="block-burned-item">
-                  <small>Dev Amount</small>
-                  <div :class="['mini-bubble orange']" class="burn-item">
-                    <rune class="burn-icon"></rune>
+                  <small>Dev</small>
+                  <div class="burn-item mini-bubble yellow">
+                    <rune class="rune-icon"></rune>
                     <div class="amount-burn">
-                      {{ block.devAmount / 1e8 }}
+                      {{ (block.devAmount / 1e8) | number('0.0000') }}
                     </div>
                   </div>
                 </div>
 
                 <div class="block-burned-item">
-                  <small>Pool Amount</small>
-                  <div :class="['mini-bubble orange']" class="burn-item">
-                    <rune class="burn-icon"></rune>
+                  <small>Pool</small>
+                  <div class="burn-item mini-bubble info">
+                    <rune class="rune-icon"></rune>
                     <div class="amount-burn">
-                      {{ block.poolAmount / 1e8 }}
+                      {{ (block.poolAmount / 1e8) | number('0.0000') }}
                     </div>
                   </div>
                 </div>
 
                 <div class="block-burned-item">
-                  <small>Bond Amount</small>
-                  <div :class="['mini-bubble orange']" class="burn-item">
-                    <rune class="burn-icon"></rune>
+                  <small>Bond</small>
+                  <div class="burn-item mini-bubble">
+                    <rune class="rune-icon"></rune>
                     <div class="amount-burn">
-                      {{ block.bondAmount / 1e8 }}
+                      {{ (block.bondAmount / 1e8) | number('0.0000') }}
                     </div>
                   </div>
                 </div>
@@ -1275,20 +1274,20 @@ export default {
         const incomeBurn =
           (+interval.pools.find((p) => p.pool === 'income_burn').earnings /
             10 ** 8) *
-          Number.parseFloat(interval.runePriceUSD) 
+          Number.parseFloat(interval.runePriceUSD)
 
         le.push(
           (+interval.liquidityEarnings / 10 ** 8) *
             Number.parseFloat(interval.runePriceUSD) -
             devFund -
-            incomeBurn 
+            incomeBurn
         )
         be.push(
           (+interval.bondingEarnings / 10 ** 8) *
             Number.parseFloat(interval.runePriceUSD)
         )
         df.push(devFund)
-        ib.push(incomeBurn) 
+        ib.push(incomeBurn)
 
         const affiliate = this.affiliateDaily?.find((d) => {
           return moment(d.date).isSame(date, 'day')
@@ -1632,7 +1631,6 @@ export default {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 1rem;
     justify-content: flex-end;
     flex-wrap: wrap;
   }
@@ -1643,11 +1641,19 @@ export default {
     color: #ffa86b;
   }
 }
+
 .burn-icon {
   width: 0.7rem;
   height: 0.7rem;
   border-radius: 50%;
   fill: #ffa86b;
+}
+
+.rune-icon {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  fill: currentColor;
 }
 
 .block-enter {
