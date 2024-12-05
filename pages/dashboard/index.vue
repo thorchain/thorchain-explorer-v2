@@ -1245,20 +1245,20 @@ export default {
         const incomeBurn =
           (+interval.pools.find((p) => p.pool === 'income_burn').earnings /
             10 ** 8) *
-          Number.parseFloat(interval.runePriceUSD) 
+          Number.parseFloat(interval.runePriceUSD)
 
         le.push(
           (+interval.liquidityEarnings / 10 ** 8) *
             Number.parseFloat(interval.runePriceUSD) -
             devFund -
-            incomeBurn 
+            incomeBurn
         )
         be.push(
           (+interval.bondingEarnings / 10 ** 8) *
             Number.parseFloat(interval.runePriceUSD)
         )
         df.push(devFund)
-        ib.push(incomeBurn) 
+        ib.push(incomeBurn)
 
         const affiliate = this.affiliateDaily?.find((d) => {
           return moment(d.date).isSame(date, 'day')

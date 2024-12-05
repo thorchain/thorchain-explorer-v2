@@ -512,6 +512,11 @@ export default {
                 is: accordions.action.liquidityUnits,
               },
               {
+                key: 'Units',
+                value: `${accordions.action.units}`,
+                is: accordions.action.units,
+              },
+              {
                 key: 'Affiliate Name',
                 value: `${accordions.action.affiliateName}`,
                 is: accordions.action.affiliateName,
@@ -792,6 +797,14 @@ export default {
         this.$set(this, 'cards', finalCards)
       } else if (memo.type === 'withdraw') {
         const { cards, accordions } = this.createRemoveLiquidityState(
+          thorStatus,
+          midgardAction,
+          thorTx,
+          memo
+        )
+        this.$set(this, 'cards', [this.createCard(cards, accordions)])
+      } else if (memo.type === 'runePoolWithdraw') {
+        const { cards, accordions } = this.createRunePoolWithdraw(
           thorStatus,
           midgardAction,
           thorTx,
@@ -1559,6 +1572,47 @@ export default {
             done: !hasOngoing,
           },
           out: outActions,
+        },
+      }
+    },
+    createRunePoolWithdraw(thorStatus, actions, thorTx, memo) {
+      const action = actions.actions.find((a) => a.type === 'runePoolWithdraw')
+
+      const ins = action?.in.map((a) => ({
+        asset: this.parseMemoAsset(a.coins[0]?.asset),
+        amount: a.coins[0]?.amount,
+        txid: a?.txID,
+        from: a?.address,
+        done: true,
+      }))
+
+      const outs = action?.out.map((a) => ({
+        asset: this.parseMemoAsset(a.coins[0]?.asset),
+        amount: a.coins[0]?.amount,
+        txid: a?.txID,
+        to: a?.address,
+        done: true,
+      }))
+
+      return {
+        cards: {
+          title: 'Rune Pool Withdraw',
+          in: ins,
+          middle: {
+            pending: false,
+          },
+          out: outs,
+        },
+        accordions: {
+          in: ins,
+          action: {
+            type: 'Withdraw',
+            timeStamp: moment.unix(action?.date / 1e9) || null,
+            height: action?.height,
+            units: parseInt(action?.metadata?.runePoolWithdraw?.units) || null,
+            done: true,
+          },
+          out: outs,
         },
       }
     },
