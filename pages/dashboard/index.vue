@@ -228,17 +228,44 @@
                   {{ getDuration(block.timestamp) }} Seconds
                 </small>
               </div>
-              <div class="right-section-overview">
-                <div
-                  :class="['mini-bubble orange']"
-                  style="padding: 4px 5px; display: flex; align-items: center"
-                >
-                  <Burn class="burn-icon"></Burn>
-                  {{ block.burnedAmount / 1e8 }}
+              <div class="middle-section-overview">
+                <div class="block-burned-item">
+                  <small>Burned</small>
+                  <div class="burn-item mini-bubble orange">
+                    <Burn class="burn-icon"></Burn>
+                    {{ (block.burnedAmount / 1e8) | number('0.0000') }}
+                  </div>
                 </div>
-                <small style="margin-right: 0.5rem">
-                  {{ ((block.burnedAmount / 1e8) * runePrice) | currency }}
-                </small>
+
+                <div class="block-burned-item">
+                  <small>Dev</small>
+                  <div class="burn-item mini-bubble yellow">
+                    <rune class="rune-icon"></rune>
+                    <div class="amount-burn">
+                      {{ (block.devAmount / 1e8) | number('0.0000') }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="block-burned-item">
+                  <small>Pool</small>
+                  <div class="burn-item mini-bubble info">
+                    <rune class="rune-icon"></rune>
+                    <div class="amount-burn">
+                      {{ (block.poolAmount / 1e8) | number('0.0000') }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="block-burned-item">
+                  <small>Bond</small>
+                  <div class="burn-item mini-bubble">
+                    <rune class="rune-icon"></rune>
+                    <div class="amount-burn">
+                      {{ (block.bondAmount / 1e8) | number('0.0000') }}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </transition-group>
@@ -332,6 +359,7 @@ import LockIcon from '~/assets/images/lock.svg?inline'
 import ArrowRightIcon from '~/assets/images/arrow-right.svg?inline'
 import Exchange from '~/assets/images/exchange.svg?inline'
 import Burn from '~/assets/images/burn.svg?inline'
+import Rune from '~/assets/images/rune.svg?inline'
 import Piggy from '~/assets/images/piggy.svg?inline'
 import Chart from '~/assets/images/chart.svg?inline'
 import TransactionAction from '~/components/transactions/TransactionAction.vue'
@@ -356,6 +384,7 @@ export default {
     Exchange,
     LockIcon,
     Burn,
+    Rune,
     Chart,
     StackDollar,
     ArrowRightIcon,
@@ -1580,27 +1609,51 @@ export default {
       text-decoration: none;
     }
   }
-
-  .right-section-overview {
+  .block-burned-item {
+    padding: 4px 5px;
     display: flex;
+    align-items: center;
     flex-direction: column;
-    align-items: end;
     gap: 0.3rem;
   }
-}
+  .amount-burn {
+    font-size: 12.5px;
+    color: var(--sec-font-color);
+    font-weight: 500;
+  }
 
+  .burn-item {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+  }
+  .middle-section-overview {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+}
 .block-enter-active {
   transition: all 1s;
   .block-info-overview.height {
     color: #ffa86b;
   }
 }
+
 .burn-icon {
-  width: 0.9rem;
-  height: 0.9rem;
+  width: 0.7rem;
+  height: 0.7rem;
   border-radius: 50%;
-  margin-right: 0.3rem;
   fill: #ffa86b;
+}
+
+.rune-icon {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  fill: currentColor;
 }
 
 .block-enter {
