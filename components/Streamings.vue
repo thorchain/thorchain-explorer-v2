@@ -51,7 +51,7 @@
                   }}</small>
                 </span>
               </div>
-              →
+              <right-arrow class="action-type" />
               <div v-if="o.outputAsset" class="asset-item">
                 <asset-icon :asset="o.outputAsset.asset" />
                 <span class="asset-name">
@@ -67,11 +67,7 @@
                 </span>
               </div>
             </div>
-            <small
-              v-if="o.tx_id"
-              class="sec-color mono"
-              style="margin-left: auto"
-            >
+            <small v-if="o.tx_id" class="sec-color mono">
               <NuxtLink
                 v-if="isValidTx(o.tx_id)"
                 class="clickable"
@@ -127,9 +123,10 @@ import { mapGetters } from 'vuex'
 import moment from 'moment'
 import { shortAssetName } from '~/utils'
 import streamingIcon from '@/assets/images/streaming.svg?inline'
+import RightArrow from '~/assets/images/arrow-right.svg?inline'
 
 export default {
-  components: { streamingIcon },
+  components: { streamingIcon, RightArrow },
   data() {
     return {
       currentPage: 1,
@@ -382,7 +379,13 @@ export default {
     text-align: center;
   }
 }
-
+.action-type {
+  box-sizing: content-box;
+  height: 1rem;
+  width: 1rem;
+  fill: var(--sec-font-color);
+  padding: 4px;
+}
 .streaming-item {
   display: flex;
   justify-content: space-between;
@@ -408,7 +411,6 @@ export default {
       white-space: nowrap;
       text-overflow: ellipsis;
     }
-
     .asset-name {
       display: flex;
       align-items: center;
@@ -417,13 +419,16 @@ export default {
   }
 
   .upper-body {
-    height: 38px;
+    height: 42px;
     overflow: auto;
     display: flex;
     align-items: center;
     margin-bottom: 10px;
     -ms-overflow-style: none;
     scrollbar-width: none;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 5px;
 
     &::-webkit-scrollbar {
       display: none;
