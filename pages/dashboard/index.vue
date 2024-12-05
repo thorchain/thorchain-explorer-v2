@@ -1624,7 +1624,7 @@ export default {
 
   .burn-item {
     display: flex;
-    gap: 0.4rem;
+    gap: 0.2rem;
     align-items: center;
   }
   .middle-section-overview {
@@ -1653,7 +1653,7 @@ export default {
   width: 0.7rem;
   height: 0.7rem;
   border-radius: 50%;
-  fill: currentColor;
+  fill: var(--sec-font-color);
 }
 
 .block-enter {
