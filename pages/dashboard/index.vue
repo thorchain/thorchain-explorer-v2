@@ -207,7 +207,7 @@
       <div class="card">
         <div class="card-header">
           <div class="card-title">
-            <h2 style="color: var(--sec-font-color)">Latest Burned Blocks</h2>
+            <h2 style="color: var(--sec-font-color)">Latest Blocks</h2>
           </div>
         </div>
         <div class="card-body">
