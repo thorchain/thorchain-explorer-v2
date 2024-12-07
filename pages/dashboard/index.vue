@@ -163,7 +163,7 @@
       </Card>
       <Card
         :navs="[
-          { title: 'Total Earnings', value: 'total-earnings' },
+          { title: 'Fee Earnings', value: 'total-earnings' },
           { title: 'Pool Earnings', value: 'pool-earnings' },
         ]"
         :act-nav.sync="poolMode"
@@ -1368,7 +1368,7 @@ export default {
           },
           {
             type: 'bar',
-            name: 'Burn',
+            name: 'System Burn',
             stack: 'Total',
             showSymbol: false,
             data: ib,
@@ -1431,22 +1431,36 @@ export default {
                 .join('')}
               <span style="border-top: 1px solid var(--border-color); margin: 2px 0;"></span>
               <span>
-                <span>Total Earning</span>
+                <span>Gross System Income</span>
                 <b>$${this.$options.filters.number(
                   param
-                    .filter((p) => p.seriesName !== 'EOD Earning')
+                    .filter(
+                      (p) =>
+                        p.seriesName !== 'EOD Earning' &&
+                        p.seriesName !== 'Affiliate Earning'
+                    )
                     .reduce((a, c) => a + (c.value ? c.value : 0), 0),
                   '0,0a'
                 )}</b>
               </span>
                ${
                  EODEarning[param[0].dataIndex] !== 0
-                   ? `<span><span>Total Earning (EOD)</span><b>$${this.$options.filters.number(
-                       param.reduce((a, c) => a + (c.value ? c.value : 0), 0),
+                   ? `<span><span>Gross System Income (EOD)</span><b>$${this.$options.filters.number(
+                       param
+                         .filter((p) => p.seriesName !== 'Affiliate Earning')
+                         .reduce((a, c) => a + (c.value ? c.value : 0), 0),
                        '0,0a'
                      )}</b></span>`
                    : ''
                }
+              <span style="border-top: 1px solid var(--border-color); margin: 2px 0;"></span>
+              <span>
+                <span>Affiliate Earning</span>
+                <b>$${this.$options.filters.number(
+                  param.find((p) => p.seriesName === 'Affiliate Earning').value,
+                  '0,0a'
+                )}</b>
+              </span>
             </div>
           `
         }
