@@ -1641,7 +1641,11 @@ export default {
             tx.id !== '')
       )
       // TODO: fix this in track code
-      if (!outTxs || outTxs?.length === 0) {
+      if (
+        !outTxs ||
+        outTxs?.length === 0 ||
+        outTxs.every((o) => o.to_address === thorStatus.tx.from_address)
+      ) {
         outTxs = thorStatus.planned_out_txs
           ?.filter((tx) => userAddresses.has(tx.to_address.toLowerCase()))
           .map((tx) => ({
