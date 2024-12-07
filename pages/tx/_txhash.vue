@@ -1644,7 +1644,7 @@ export default {
       if (
         !outTxs ||
         outTxs?.length === 0 ||
-        outTxs.every((o) => o.to_address === thorStatus.tx.from_address)
+        outTxs.every((o) => o.to_address === thorStatus.tx.from_address) // Add scheduled outbound while having a refund
       ) {
         outTxs = thorStatus.planned_out_txs
           ?.filter((tx) => userAddresses.has(tx.to_address.toLowerCase()))

@@ -163,7 +163,7 @@
       </Card>
       <Card
         :navs="[
-          { title: 'Fee Earnings', value: 'total-earnings' },
+          { title: 'Revenue', value: 'total-earnings' },
           { title: 'Pool Earnings', value: 'pool-earnings' },
         ]"
         :act-nav.sync="poolMode"
