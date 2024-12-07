@@ -1376,7 +1376,7 @@ export default {
           },
           this.affiliateDaily && {
             type: 'bar',
-            name: 'Affiliate Earning',
+            name: 'Affiliate Fee',
             showSymbol: false,
             stack: 'Total',
             data: af,
@@ -1406,7 +1406,7 @@ export default {
               'Bond Earning',
               'Pool Earning',
               'Dev Fund Earning',
-              'Affiliate Earning',
+              'Affiliate Fee',
               'Burn',
             ],
           },
@@ -1437,7 +1437,7 @@ export default {
                     .filter(
                       (p) =>
                         p.seriesName !== 'EOD Earning' &&
-                        p.seriesName !== 'Affiliate Earning'
+                        p.seriesName !== 'Affiliate Fee'
                     )
                     .reduce((a, c) => a + (c.value ? c.value : 0), 0),
                   '0,0a'
@@ -1447,7 +1447,7 @@ export default {
                  EODEarning[param[0].dataIndex] !== 0
                    ? `<span><span>Gross System Income (EOD)</span><b>$${this.$options.filters.number(
                        param
-                         .filter((p) => p.seriesName !== 'Affiliate Earning')
+                         .filter((p) => p.seriesName !== 'Affiliate Fee')
                          .reduce((a, c) => a + (c.value ? c.value : 0), 0),
                        '0,0a'
                      )}</b></span>`
@@ -1455,9 +1455,9 @@ export default {
                }
               <span style="border-top: 1px solid var(--border-color); margin: 2px 0;"></span>
               <span>
-                <span>Affiliate Earning</span>
+                <span>Affiliate Fee</span>
                 <b>$${this.$options.filters.number(
-                  param.find((p) => p.seriesName === 'Affiliate Earning').value,
+                  param.find((p) => p.seriesName === 'Affiliate Fee').value,
                   '0,0a'
                 )}</b>
               </span>
