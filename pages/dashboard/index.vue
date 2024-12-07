@@ -1076,7 +1076,7 @@ export default {
         [(o) => +o.earnings],
         ['desc']
       )
-        .filter((p) => p.pool !== 'dev_fund_reward')
+      .filter((p) => p.pool !== 'dev_fund_reward' && p.pool !== 'income_burn') 
         .map((p) => p.pool)
 
       const xAxis = []
