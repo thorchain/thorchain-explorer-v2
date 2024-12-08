@@ -61,13 +61,9 @@
     </div>
 
     <card class="chain-status">
-      <TableLoader
-          v-if="loading"
-          :cols="cols"
-          :rows="Array(10).fill({})"
-        />
+      <TableLoader v-if="loading" :cols="cols" :rows="Array(10).fill({})" />
       <vue-good-table
-      v-else
+        v-else
         :columns="cols"
         :rows="inboundInfo"
         style-class="vgt-table net-table"
@@ -160,7 +156,7 @@ export default {
   },
   data() {
     return {
-      loading:true,
+      loading: true,
       network: [],
       rune: [],
       lastblock: undefined,
@@ -422,99 +418,128 @@ export default {
     },
   },
   mounted() {
-  Promise.all([
-    this.$api.getLastBlockHeight(),
-    this.$api.getThorNetwork(),
-    this.$api.getInboundAddresses(),
-    this.$api.getNetworkAllocation(),
-    this.$api.getBlockChainVersion(),
-    this.$api.getThorVersion(),
-    this.$api.getNetwork(),
-    this.$api.getNodes(),
-    this.$api.getReserveHistory(),
-  ])
-    .then(async ([
-      lastBlockRes,
-      thorNetworkRes,
-      inboundAddressesRes,
-      networkAllocationsRes,
-      blockchainVersionRes,
-      thorVersionRes,
-      networkRes,
-      nodesRes,
-      reserveHistoryRes,
-    ]) => {
-      this.lastblock = lastBlockRes.data
-      this.thorNetwork = thorNetworkRes.data
-      this.inAddresses = inboundAddressesRes.data
+    Promise.allSettled([
+      this.$api.getLastBlockHeight(),
+      this.$api.getThorNetwork(),
+      this.$api.getInboundAddresses(),
+      this.$api.getNetworkAllocation(),
+      this.$api.getBlockChainVersion(),
+      this.$api.getThorVersion(),
+      this.$api.getNetwork(),
+      this.$api.getNodes(),
+      this.$api.getReserveHistory(),
+    ])
+      .then(async (results) => {
+        const [
+          lastBlockRes,
+          thorNetworkRes,
+          inboundAddressesRes,
+          networkAllocationsRes,
+          blockchainVersionRes,
+          thorVersionRes,
+          networkRes,
+          nodesRes,
+          reserveHistoryRes,
+        ] = results.map((res) =>
+          res.status === 'fulfilled' ? res.value : null
+        )
 
-      const mimirData = (await this.$api.getMimir()).data
-      this.inboundInfo = inboundAddressesRes.data.map((chain) => ({
-        ...chain,
-        haltHeight: Math.max(
-          ...Object.keys(mimirData)
-            .filter(
-              (key) =>
-                (new RegExp(`.*HALT.*${chain.chain}CHAIN`).test(key) ||
-                  key === 'HALTCHAINGLOBAL') &&
-                mimirData[key] !== 0
-            )
-            .map((key) => mimirData[key])
-        ),
-        haltTradingHeight: Math.max(
-          ...Object.keys(mimirData)
-            .filter(
-              (key) =>
-                (new RegExp(`HALT${chain.chain}TRADING`).test(key) ||
-                  key === 'HALTTRADING') &&
-                mimirData[key] !== 0
-            )
-            .map((key) => mimirData[key])
-        ),
-        haltSigningHeight: Math.max(
-          ...Object.keys(mimirData)
-            .filter(
-              (key) =>
-                (new RegExp(`HALTSIGNING${chain.chain}`).test(key) ||
-                  key === 'HALTSIGNING') &&
-                mimirData[key] !== 0
-            )
-            .map((key) => mimirData[key])
-        ),
-        haltLPHeight: Math.max(
-          ...Object.keys(mimirData)
-            .filter(
-              (key) =>
-                new RegExp(`PAUSELP${chain.chain}`).test(key) && mimirData[key] !== 0
-            )
-            .map((key) => mimirData[key])
-        ),
-        last_observed_in:
-          this.lastblock?.find((b) => b.chain === chain.chain)
-            ?.last_observed_in ?? 0,
-      }))
+        if (!lastBlockRes || !thorNetworkRes || !inboundAddressesRes) {
+          console.warn('One or more required endpoints failed.')
+          this.loading = false
+          return
+        }
 
-      this.networkAllocations = networkAllocationsRes.data
-      this.blockchainVersion = blockchainVersionRes.data
-      this.thorVersion = thorVersionRes.data
-      this.network = networkRes.data
-      this.nodes = nodesRes.data
-      this.activeNodes = this.nodes?.filter((n) => n.status === 'Active')
-      this.uptodateNodes = this.activeNodes.filter(
-        (n) => n.version === this.uptodateNodeVersion(this.activeNodes)
-      )
+        this.lastblock = lastBlockRes.data
+        this.thorNetwork = thorNetworkRes.data
+        this.inAddresses = inboundAddressesRes.data
 
-      const rewards = (await this.$api.getEarningHistory()).data
-      this.metaReserve = reserveHistoryRes.data?.meta
-      this.reserveHistory = this.formatReserve(reserveHistoryRes.data, rewards)
+        try {
+          const mimirData = (await this.$api.getMimir()).data
 
-      this.loading = false
-    })
-    .catch((error) => {
-      console.error(error)
-      this.loading = false 
-    })
-},
+          this.inboundInfo = inboundAddressesRes.data.map((chain) => ({
+            ...chain,
+            haltHeight: Math.max(
+              ...Object.keys(mimirData)
+                .filter(
+                  (key) =>
+                    (new RegExp(`.*HALT.*${chain.chain}CHAIN`).test(key) ||
+                      key === 'HALTCHAINGLOBAL') &&
+                    mimirData[key] !== 0
+                )
+                .map((key) => mimirData[key])
+            ),
+            haltTradingHeight: Math.max(
+              ...Object.keys(mimirData)
+                .filter(
+                  (key) =>
+                    (new RegExp(`HALT${chain.chain}TRADING`).test(key) ||
+                      key === 'HALTTRADING') &&
+                    mimirData[key] !== 0
+                )
+                .map((key) => mimirData[key])
+            ),
+            haltSigningHeight: Math.max(
+              ...Object.keys(mimirData)
+                .filter(
+                  (key) =>
+                    (new RegExp(`HALTSIGNING${chain.chain}`).test(key) ||
+                      key === 'HALTSIGNING') &&
+                    mimirData[key] !== 0
+                )
+                .map((key) => mimirData[key])
+            ),
+            haltLPHeight: Math.max(
+              ...Object.keys(mimirData)
+                .filter(
+                  (key) =>
+                    new RegExp(`PAUSELP${chain.chain}`).test(key) &&
+                    mimirData[key] !== 0
+                )
+                .map((key) => mimirData[key])
+            ),
+            last_observed_in:
+              this.lastblock?.find((b) => b.chain === chain.chain)
+                ?.last_observed_in ?? 0,
+          }))
+        } catch (error) {
+          console.warn('Failed to fetch Mimir data:', error)
+        }
+
+        if (networkAllocationsRes)
+          this.networkAllocations = networkAllocationsRes.data
+        if (blockchainVersionRes)
+          this.blockchainVersion = blockchainVersionRes.data
+        if (thorVersionRes) this.thorVersion = thorVersionRes.data
+        if (networkRes) this.network = networkRes.data
+        if (nodesRes) {
+          this.nodes = nodesRes.data
+          this.activeNodes = this.nodes?.filter((n) => n.status === 'Active')
+          this.uptodateNodes = this.activeNodes?.filter(
+            (n) => n.version === this.uptodateNodeVersion(this.activeNodes)
+          )
+        }
+
+        try {
+          const rewards = (await this.$api.getEarningHistory()).data
+          if (reserveHistoryRes) {
+            this.metaReserve = reserveHistoryRes.data?.meta
+            this.reserveHistory = this.formatReserve(
+              reserveHistoryRes.data,
+              rewards
+            )
+          }
+        } catch (error) {
+          console.warn('Failed to fetch earning history:', error)
+        }
+
+        this.loading = false
+      })
+      .catch((error) => {
+        console.error('An unexpected error occurred:', error)
+        this.loading = false
+      })
+  },
   methods: {
     navigatePie(param) {
       switch (param?.name) {

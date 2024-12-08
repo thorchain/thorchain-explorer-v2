@@ -233,7 +233,11 @@ export default {
   async mounted() {
     this.loadInterfaces()
     this.updatePool(this.period)
-    this.runePoolData = await this.$api.getRunePoolsInfo()
+    try {
+      this.runePoolData = await this.$api.getRunePoolsInfo()
+    } catch (error) {
+      console.warn('No runepools')
+    }
   },
   methods: {
     loadInterfaces() {

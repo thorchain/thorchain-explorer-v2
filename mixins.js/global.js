@@ -333,6 +333,9 @@ export default {
         endpoints[process.env.NETWORK].THORNODE_URL
       }thorchain/node/${node}`
     },
+    isMainnet() {
+      return process.env.NETWORK === 'mainnet'
+    },
     gotoSaver(params) {
       if (!params) {
         return
@@ -442,7 +445,7 @@ export default {
       return +x < +y ? -1 : +x > +y ? 1 : 0
     },
     vaultColor(vaultAddress, disable) {
-      if (disable) {
+      if (disable || !vaultAddress) {
         return 'var(--active-primary-color)'
       }
       return colorHash.hex(vaultAddress)
