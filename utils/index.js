@@ -634,7 +634,6 @@ export function assetFromString(s) {
     : isSecure
       ? SECURE_DELIMITER
       : delimiter
-
   const data = s.split(delimiter)
   if (data.length <= 1 || data[1]?.length < 1) {
     return null
