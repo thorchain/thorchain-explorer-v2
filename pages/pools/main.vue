@@ -7,7 +7,6 @@
         :extra-classes="['pools-type-table']"
       />
     </div>
-    <!-- <Nav :active-mode.sync="period" :nav-items="periods" pre-text="APY Period :" /> -->
     <Card :is-loading="loading">
       <div v-if="pools && pools.length > 0" class="pools-box">
         <template v-for="(k, v, i) in tables">
