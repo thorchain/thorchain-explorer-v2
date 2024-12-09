@@ -19,7 +19,7 @@
     <div class="navbar-lists">
       <template v-for="(item, index) in navbarLists">
         <NuxtLink
-          v-if="item && !(item.submenu && isMobile)"
+          v-if="item && !(item.submenu && isMobile) && item.link"
           :id="`navbar-${item.name}`"
           :key="index"
           :to="item.link"
@@ -43,7 +43,9 @@
           </div>
           <div :id="`submenu-${index}`" class="submenu">
             <NuxtLink
-              v-for="(subItem, subIndex) in item.submenu"
+              v-for="(subItem, subIndex) in item.submenu.filter(
+                (it) => it.link
+              )"
               :key="subIndex"
               :to="subItem.link"
               class="submenu-item"
@@ -63,7 +65,9 @@
         >
           <div class="submenu">
             <NuxtLink
-              v-for="(subItem, subIndex) in item.submenu"
+              v-for="(subItem, subIndex) in item.submenu.filter(
+                (it) => it.link
+              )"
               :key="subIndex"
               :to="subItem.link"
               class="submenu-item"

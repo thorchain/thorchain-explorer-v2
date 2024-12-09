@@ -108,15 +108,10 @@
 
 <script>
 import { duration } from 'moment'
-import { number } from 'echarts'
 import { mapGetters } from 'vuex'
-import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
 import { runeCur } from '~/utils'
 
 export default {
-  components: {
-    BounceLoader,
-  },
   data() {
     return {
       loading: true,
@@ -287,9 +282,12 @@ export default {
     },
 
     async formatTSS() {
-      const res = await this.$api.getTSSMetrics()
-
-      return res?.data?.keygen
+      try {
+        const res = await this.$api.getTSSMetrics()
+        return res?.data?.keygen ?? '-'
+      } catch (error) {
+        console.warn("Can't get the TSS metrics")
+      }
     },
     formatStatus(status) {
       if (status === 'ActiveVault') {
