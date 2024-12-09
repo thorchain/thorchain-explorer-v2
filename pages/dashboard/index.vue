@@ -163,7 +163,7 @@
       </Card>
       <Card
         :navs="[
-          { title: 'Revenue', value: 'total-earnings' },
+          { title: 'Earnings & Fees', value: 'total-earnings' },
           { title: 'Pool Earnings', value: 'pool-earnings' },
         ]"
         :act-nav.sync="poolMode"
@@ -1076,7 +1076,7 @@ export default {
         [(o) => +o.earnings],
         ['desc']
       )
-      .filter((p) => p.pool !== 'dev_fund_reward' && p.pool !== 'income_burn') 
+        .filter((p) => p.pool !== 'dev_fund_reward' && p.pool !== 'income_burn')
         .map((p) => p.pool)
 
       const xAxis = []
