@@ -538,19 +538,7 @@ export default {
           items: [
             {
               name: 'Next Churn',
-              value: `${
-                this.isChurnHalted()
-                  ? 'Churn paused'
-                  : this.chainsHeight &&
-                    (this.network?.nextChurnHeight - this.chainsHeight.THOR >
-                    500
-                      ? blockTime(
-                          this.network?.nextChurnHeight -
-                            this.chainsHeight.THOR,
-                          true
-                        )
-                      : `${this.network?.nextChurnHeight - this.chainsHeight.THOR} Blocks`)
-              }`,
+              value: this.getNextChurn(),
             },
             {
               name: 'Next Pool',
@@ -1476,6 +1464,24 @@ export default {
           `
         }
       )
+    },
+    getNextChurn() {
+      if (this.isChurnHalted()) {
+        return 'Churn Paused'
+      }
+
+      if (!this.chainsHeight || this.network?.nextChurnHeight === undefined) {
+        return '-'
+      }
+
+      if (+this.network?.nextChurnHeight - +this.chainsHeight.THOR > 500) {
+        return blockTime(
+          this.network?.nextChurnHeight - this.chainsHeight?.THOR,
+          true
+        )
+      }
+
+      return `${this.network?.nextChurnHeight - this.chainsHeight?.THOR} Blocks`
     },
     formatTendermintBlocks(blocks) {
       const blockJsons = []
