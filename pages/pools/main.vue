@@ -10,6 +10,9 @@
     <Card :is-loading="loading">
       <div v-if="pools && pools.length > 0" class="pools-box">
         <template v-for="(k, v, i) in tables">
+          <template v-if="k.mode === tableMode && k.data.length === 0">
+            No Pools {{ k.mode | capitalize }}
+          </template>
           <vue-good-table
             v-if="k.data.length > 0"
             v-show="tableMode == k.mode"
@@ -108,7 +111,7 @@
 </template>
 
 <script>
-import { shuffle } from 'lodash'
+import { shuffle, capitalize } from 'lodash'
 import { mapGetters } from 'vuex'
 import SwapIcon from '~/assets/images/swap.svg?inline'
 import FinanceIcon from '~/assets/images/finance-selected.svg?inline'

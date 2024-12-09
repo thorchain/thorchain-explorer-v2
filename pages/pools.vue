@@ -2,7 +2,7 @@
   <Page>
     <Header :title="routes.find((e) => e.link === $route.path).text" />
     <div class="pools-page-container">
-      <pooled-view></pooled-view>
+      <pooled-view v-if="isMainnet()"></pooled-view>
       <nuxt-child />
     </div>
   </Page>
