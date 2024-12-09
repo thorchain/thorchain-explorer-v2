@@ -1,7 +1,11 @@
 <template>
   <Page>
     <div class="grid-network">
-      <card :is-loading="!reserveHistory" title="Reserve Breakdown">
+      <card
+        v-if="isMainnet()"
+        :is-loading="!reserveHistory"
+        title="Reserve Breakdown"
+      >
         <VChart
           :option="reserveHistory"
           :loading="!reserveHistory"
@@ -301,6 +305,30 @@ export default {
       return 1
     },
     networkOverview() {
+      let revenueOverview = []
+      if (this.isMainnet()) {
+        revenueOverview = [
+          {
+            name: 'Outbound Fee (30D)',
+            value: this.metaReserve?.gasFeeOutbound / 1e8,
+            filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+            usdValue: true,
+          },
+          {
+            name: 'Network Fee (30D)',
+            value: this.metaReserve?.networkFee / 1e8,
+            filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+            usdValue: true,
+          },
+          {
+            name: 'Gas Reimbursement (30D)',
+            value: this.metaReserve?.gasReimbursement / 1e8,
+            filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+            usdValue: true,
+          },
+        ]
+      }
+
       return [
         {
           title: 'Network Overview',
@@ -335,24 +363,7 @@ export default {
               filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
-            {
-              name: 'Outbound Fee (30D)',
-              value: this.metaReserve?.gasFeeOutbound / 1e8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
-              usdValue: true,
-            },
-            {
-              name: 'Network Fee (30D)',
-              value: this.metaReserve?.networkFee / 1e8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
-              usdValue: true,
-            },
-            {
-              name: 'Gas Reimbursement (30D)',
-              value: this.metaReserve?.gasReimbursement / 1e8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
-              usdValue: true,
-            },
+            ...revenueOverview,
           ],
         },
       ]
