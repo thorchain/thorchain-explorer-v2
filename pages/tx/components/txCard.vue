@@ -39,13 +39,39 @@
                 :height="'2rem'"
               />
             </div>
-            <div v-else class="tx-asset">
-              <component
-                :is="o.icon"
-                :class="['asset-icon', 'custom-icon', o.class]"
-              />
+            <div class="inbound-info">
+              <template v-if="o.text">
+                <span class="mono sec-color">{{ o.text }}</span>
+              </template>
+              <template v-else-if="o.address">
+                <nuxt-link
+                  class="mono clickable"
+                  :to="`/address/${o.address}`"
+                  >{{ formatAddress(o.address) }}</nuxt-link
+                >
+              </template>
+              <template v-else>
+                <div class="amount-info">
+                  <span class="mono sec-color">{{
+                    o.amount
+                      ? o.filter
+                        ? o.filter(o.amount)
+                        : baseAmountFormatOrZero(o.amount)
+                      : '...'
+                  }}</span>
+                  <small class="mono sec-color">{{ showAsset(o.asset) }}</small>
+                </div>
+                <small>{{
+                  o.amountUSD ? formatBnCurrency(o.amountUSD) : '...'
+                }}</small>
+              </template>
+              <div v-else class="tx-asset">
+                <component
+                  :is="o.icon"
+                  :class="['asset-icon', 'custom-icon', o.class]"
+                />
+              </div>
             </div>
-            <div v-if="i < 1" class="simple-bar" />
           </div>
         </div>
 
@@ -69,7 +95,34 @@
             :key="i + '-o-out'"
             class="tx-outbound"
           >
-            <div v-if="i < 1" class="simple-bar" />
+            <div class="outbound-info">
+              <template v-if="o.text">
+                <span class="mono sec-color">{{ o.text }}</span>
+              </template>
+              <template v-else-if="o.address">
+                <nuxt-link
+                  class="mono clickable"
+                  :to="`/address/${o.address}`"
+                  >{{ formatAddress(o.address) }}</nuxt-link
+                >
+              </template>
+              <template v-else>
+                <div class="amount-info">
+                  <span class="mono sec-color">{{
+                    o.amount
+                      ? o.filter
+                        ? o.filter(o.amount)
+                        : baseAmountFormatOrZero(o.amount)
+                      : '...'
+                  }}</span>
+                  <small class="mono sec-color">{{ showAsset(o.asset) }}</small>
+                </div>
+                <small>{{
+                  o.amountUSD ? formatBnCurrency(o.amountUSD) : '...'
+                }}</small>
+              </template>
+            </div>
+
             <div v-if="o.asset" class="tx-asset">
               <AssetIcon
                 :classes="['no-margin']"
@@ -83,68 +136,6 @@
                 :class="['asset-icon', 'custom-icon', o.class]"
               />
             </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="tx-assets-info">
-        <div class="tx-wrapper">
-          <div
-            v-for="(o, i) in overall.in"
-            :key="i + '-in'"
-            class="asset-inbound"
-          >
-            <template v-if="o.text">
-              <span class="mono sec-color">{{ o.text }}</span>
-            </template>
-            <template v-else-if="o.address">
-              <nuxt-link class="mono clickable" :to="`/address/${o.address}`">{{
-                formatAddress(o.address)
-              }}</nuxt-link>
-            </template>
-            <template v-else>
-              <span class="mono sec-color">{{
-                o.amount
-                  ? o.filter
-                    ? o.filter(o.amount)
-                    : baseAmountFormatOrZero(o.amount)
-                  : '...'
-              }}</span>
-              <small class="mono sec-color">{{ showAsset(o.asset) }}</small>
-              <br /><small>{{
-                o.amountUSD ? formatBnCurrency(o.amountUSD) : '...'
-              }}</small>
-            </template>
-          </div>
-        </div>
-
-        <div class="tx-wrapper">
-          <div
-            v-for="(o, i) in overall.out"
-            :key="i + '-out'"
-            class="asset-outbound"
-          >
-            <template v-if="o.text">
-              <span class="mono sec-color">{{ o.text }}</span>
-            </template>
-            <template v-else-if="o.address">
-              <nuxt-link class="mono clickable" :to="`/address/${o.address}`">{{
-                formatAddress(o.address)
-              }}</nuxt-link>
-            </template>
-            <template v-else>
-              <span class="mono sec-color">{{
-                o.amount
-                  ? o.filter
-                    ? o.filter(o.amount)
-                    : baseAmountFormatOrZero(o.amount)
-                  : '...'
-              }}</span>
-              <small class="mono sec-color">{{ showAsset(o.asset) }}</small>
-              <br /><small>{{
-                o.amountUSD ? formatBnCurrency(o.amountUSD) : '...'
-              }}</small>
-            </template>
           </div>
         </div>
       </div>
@@ -234,7 +225,10 @@ $border-size: 2px;
       color: var(--sec-font-color);
     }
   }
-
+  .tx-middle {
+    display: flex;
+    align-items: center;
+  }
   .tx-overall {
     padding: 1rem 1.5rem;
 
@@ -299,12 +293,6 @@ $border-size: 2px;
         }
       }
 
-      .simple-bar {
-        width: 100%;
-        height: $border-size;
-        background: var(--left-border);
-      }
-
       .tx-wrapper {
         display: flex;
         flex: 1;
@@ -317,14 +305,29 @@ $border-size: 2px;
         display: flex;
         align-items: center;
       }
+      .inbound-info,
+      .outbound-info {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        align-items: center;
+        gap: 0.4rem;
+      }
+      .amount-info {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 6px;
+      }
 
       .tx-outbound {
+        background-color: var(--card-bg);
+        padding: 8px;
         justify-content: end;
-        .tx-asset,
-        .simple-bar {
-          border-color: var(--right-border);
-          background: var(--right-border);
+        border: 1px solid var(--right-border);
 
+        border-radius: 0.5rem;
+        .tx-asset {
           .custom-icon {
             fill: var(--card-bg-color);
           }
@@ -332,11 +335,12 @@ $border-size: 2px;
       }
 
       .tx-inbound {
-        .tx-asset,
-        .simple-bar {
-          border-color: var(--left-border);
-          background: var(--left-border);
+        background-color: var(--card-bg);
+        padding: 8px;
+        border: 1px solid var(--left-border);
+        border-radius: 0.5rem;
 
+        .tx-asset {
           .custom-icon {
             fill: var(--card-bg-color);
           }

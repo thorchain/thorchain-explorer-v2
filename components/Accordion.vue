@@ -10,34 +10,36 @@
       </strong>
       <div class="accordion-info-right">
         <slot name="header-extra" />
-        <div class="countdown-timer">
-          <div class="circle-timer">
-            <svg class="timer" viewBox="0 0 36 36">
-              <path
-                class="circle-background"
-                d="M18 2.0845a15.9155 15.9155 0 1 0 0 31.831 15.9155 15.9155 0 1 0 0-31.831"
-              />
-              <path
-                class="circle-foreground"
-                :style="circleStyle"
-                d="M18 2.0845a15.9155 15.9155 0 1 0 0 31.831 15.9155 15.9155 0 1 0 0-31.831"
-              />
-            </svg>
-            <div v-if="done">
-              <Checkmark class="checkmark" />
-              <span class="time-text">success</span>
-            </div>
-            <Clock v-else class="clock" />
-          </div>
-          <div v-if="!done" class="time-text">
-            {{ formatCountdown(countdown) }}
-          </div>
-        </div>
+     <div class="countdown-timer">
+  <div class="circle-timer">
+    <svg class="timer" viewBox="0 0 36 36">
+      <path
+        class="circle-background"
+        d="M18 2.0845a15.9155 15.9155 0 1 0 0 31.831 15.9155 15.9155 0 1 0 0-31.831"
+      />
+      <path
+        class="circle-foreground"
+        :style="circleStyle"
+        d="M18 2.0845a15.9155 15.9155 0 1 0 0 31.831 15.9155 15.9155 0 1 0 0-31.831"
+      />
+    </svg>
 
-        <div class="loading">
-          <SandTimer class="loading-icon" />
-          <span class="loading-text">Pending</span>
-        </div>
+    <div v-if="status === 'success'" class="success-status">
+      <Checkmark class="checkmark" />
+      <span class="time-text">Success</span>
+    </div>
+
+    <div v-if="status === 'timer'" class="time-text mono">
+      {{ formatCountdown(countdown) }}
+    </div>
+
+    <div v-if="status === 'pending'" class="loading">
+      <SandTimer class="loading-icon" />
+      <span class="loading-text">Pending</span>
+    </div>
+  </div>
+</div>
+
       </div>
     </div>
 
@@ -116,6 +118,7 @@ export default {
   props: ['title', 'stacks', 'pending', 'showAtFirst'],
   data() {
     return {
+      status: 'pending', 
       labels: this.data?.labels ?? [],
       show: false,
       countdown: 0,
@@ -133,12 +136,17 @@ export default {
       }
       return false
     },
+    status() {
+    if (this.done) return 'success';
+    if (this.pending && this.countdown > 0) return 'countdown';
+    if (this.pending) return 'pending';
+    return null;
+  },
   },
   mounted() {
     if (this.pending || this.showAtFirst) {
       this.toggleAccordion()
     }
-
     this.startCountdown(10)
   },
   beforeDestroy() {
@@ -194,20 +202,27 @@ export default {
         console.error("could't read the asset")
       }
     },
-
     startCountdown(seconds) {
-      this.countdown = seconds
+  this.countdown = seconds
+  this.status = 'pending' 
+  this.updateCircle()
+
+  setTimeout(() => {
+    this.status = 'timer'  
+  }, 100)
+
+  this.countdownInterval = setInterval(() => {
+    if (this.countdown > 0) {
+      this.countdown--
       this.updateCircle()
-      this.countdownInterval = setInterval(() => {
-        if (this.countdown > 0) {
-          this.countdown--
-          this.updateCircle()
-        } else {
-          clearInterval(this.countdownInterval)
-          this.done = true
-        }
-      }, 1000)
-    },
+    } else {
+      clearInterval(this.countdownInterval)
+      this.done = true
+      this.status = 'success'
+    }
+  }, 1000)
+},
+
 
     updateCircle() {
       const totalTime = 10
@@ -226,6 +241,7 @@ export default {
   },
 }
 </script>
+
 
 <style lang="scss" scoped>
 .accordion {
@@ -377,6 +393,24 @@ export default {
         fill: var(--green);
         left: 0.3rem;
         top: 0.3rem;
+        animation: checkmarkSuccess 0.8s ease-out;
+  transform-origin: center;
+  @keyframes checkmarkSuccess {
+  0% {
+    transform: scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.3) rotate(15deg);
+    opacity: 1;
+  }
+  70% {
+    transform: scale(0.9) rotate(-5deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
       }
     }
     .timer {
@@ -392,6 +426,21 @@ export default {
       align-content: center;
       justify-content: center;
       align-items: center;
+      animation: successAnimation 0.5s ease-out;
+
+      @keyframes successAnimation {
+          0% {
+            transform: scale(0.8);
+            opacity: 0;
+          }
+          50% {
+            transform: scale(1.1);
+            opacity: 1;
+          }
+          100% {
+            transform: scale(1);
+          }
+        }
     }
 
     .circle-background,
