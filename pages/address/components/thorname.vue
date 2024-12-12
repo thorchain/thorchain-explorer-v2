@@ -15,7 +15,10 @@
               </nuxt-link>
             </div>
           </template>
-          <span v-if="item.aliases.length == 0" class="mini-bubble yellow">
+          <span
+            v-if="!item.aliases || item.aliases.length == 0"
+            class="mini-bubble yellow"
+          >
             No Aliases
           </span>
         </template>

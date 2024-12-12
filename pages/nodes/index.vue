@@ -610,13 +610,14 @@ export default {
           items: [
             {
               name: 'Next Churn',
-              value: churnValue,
+              value: churnValue ?? 'No Churns',
               valueSlot: 'churn',
             },
             {
               name: 'Churn Interval',
               value: this.churnInterval,
-              filter: (v) => `${blockTime(v, true)}`,
+              filter: (v) =>
+                `${this.churnInterval ? blockTime(v, true) : 'N/A'}`,
             },
             {
               name: 'Total Rewards',
@@ -845,6 +846,10 @@ export default {
             e.version === activeVersion
         )
 
+        if (stbNodes.length === 0) {
+          return []
+        }
+
         stbNodes = orderBy(stbNodes, [(o) => +o.total_bond], ['desc'])
 
         const filteredNodes = []
@@ -897,7 +902,7 @@ export default {
         }
 
         // Detect the last churn node
-        this.setTheLeastBondChurn(filteredNodes[lastChurnIndex].total_bond)
+        this.setTheLeastBondChurn(filteredNodes[lastChurnIndex]?.total_bond)
 
         return filteredNodes
       } else {
@@ -1081,13 +1086,16 @@ export default {
       if (actNodes?.length === 0) {
         return 0
       }
+      if (actNodes?.length < 2) {
+        return actNodes[0].total_bond
+      }
       actNodes?.sort((a, b) => +a.total_bond - +b.total_bond)
       const lowerNodes = actNodes?.slice(
         0,
         Math.floor((actNodes.length * 2) / 3)
       )
       return Math.floor(
-        (Number.parseInt(lowerNodes?.slice(-1)[0].total_bond) ?? 0) / 10 ** 8
+        (Number.parseInt(lowerNodes?.slice(-1)[0]?.total_bond) ?? 0) / 10 ** 8
       )
     },
     calMedianBond() {

@@ -327,7 +327,8 @@ export default {
             }
           })
 
-          let tradeBalances = (await this.$api.getTradeAsset(address)).data
+          let tradeBalances =
+            (await this.$api.getTradeAsset(address)).data ?? []
           tradeBalances = tradeBalances.map((item) => {
             return {
               asset: assetFromString(item.asset),

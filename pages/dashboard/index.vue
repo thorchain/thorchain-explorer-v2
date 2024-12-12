@@ -7,7 +7,7 @@
             <chart class="stat-image" />
             <div class="item-detail">
               <div class="header">Volume (24hr)</div>
-              <skeleton-item :loading="!totalSwap24USD" class="value">
+              <skeleton-item :loading="+totalSwap24USD < 0" class="value">
                 ${{ (totalSwap24USD / 1e2) | number('0a') }}
               </skeleton-item>
             </div>
@@ -196,7 +196,7 @@
       <info-card :options="statsSettings" />
       <info-card :options="networkSettings" />
     </div>
-    <div>
+    <div v-if="isMainnet()">
       <affiliate-tables
         :affiliate-data="affiliateData"
         :is-overview="true"
@@ -538,23 +538,14 @@ export default {
           items: [
             {
               name: 'Next Churn',
-              value: `${
-                this.isChurnHalted()
-                  ? 'Churn paused'
-                  : this.chainsHeight &&
-                    (this.network?.nextChurnHeight - this.chainsHeight.THOR >
-                    500
-                      ? blockTime(
-                          this.network?.nextChurnHeight -
-                            this.chainsHeight.THOR,
-                          true
-                        )
-                      : `${this.network?.nextChurnHeight - this.chainsHeight.THOR} Blocks`)
-              }`,
+              value: this.getNextChurn(),
             },
             {
               name: 'Next Pool',
-              value: blockTime(this.network?.poolActivationCountdown, true),
+              value:
+                this.network?.poolActivationCountdown > 500
+                  ? blockTime(this.network?.poolActivationCountdown, true)
+                  : `${this.network?.poolActivationCountdown} Blocks`,
             },
           ],
         },
@@ -846,6 +837,9 @@ export default {
       if (this.mimirInfo && this.mimirInfo.HALTCHURNING) {
         return true
       }
+      if (+this.network?.nextChurnHeight === -1) {
+        return true
+      }
 
       return false
     },
@@ -1089,7 +1083,8 @@ export default {
         )
         xAxis.push(date.format('dddd, MMM D'))
 
-        const topPool = 8
+        const topPool =
+          d.intervals[0].pools.length > 8 ? 8 : d.intervals[0].pools.length
 
         let otherEarnings = interval.pools.filter(
           (p) =>
@@ -1125,7 +1120,7 @@ export default {
           )
 
           const earning = {
-            value: (+pool.earnings / 1e8) * +interval.runePriceUSD,
+            value: (+pool?.earnings / 1e8) * +interval.runePriceUSD,
             areaStyle: {
               color,
             },
@@ -1454,17 +1449,39 @@ export default {
                    : ''
                }
               <span style="border-top: 1px solid var(--border-color); margin: 2px 0;"></span>
-              <span>
+              ${
+                param.find((p) => p.seriesName === 'Affiliate Fee')
+                  ? `<span>
                 <span>Affiliate Fee</span>
                 <b>$${this.$options.filters.number(
                   param.find((p) => p.seriesName === 'Affiliate Fee').value,
                   '0,0a'
                 )}</b>
-              </span>
+              </span>`
+                  : ``
+              }
             </div>
           `
         }
       )
+    },
+    getNextChurn() {
+      if (this.isChurnHalted()) {
+        return 'Churn Paused'
+      }
+
+      if (!this.chainsHeight || this.network?.nextChurnHeight === undefined) {
+        return '-'
+      }
+
+      if (+this.network?.nextChurnHeight - +this.chainsHeight.THOR > 500) {
+        return blockTime(
+          this.network?.nextChurnHeight - this.chainsHeight?.THOR,
+          true
+        )
+      }
+
+      return `${this.network?.nextChurnHeight - this.chainsHeight?.THOR} Blocks`
     },
     formatTendermintBlocks(blocks) {
       const blockJsons = []

@@ -5,6 +5,7 @@ import moment from 'moment'
 const TRADE_DELIMITER = '~'
 const SYNTH_DELIMITER = '/'
 const NON_SYNTH_DELIMITER = '.'
+const SECURE_DELIMITER = '-'
 
 // Formats time in seconds into `dd:hh:mm hrs`
 export function formatTime(seconds, hour) {
@@ -613,7 +614,13 @@ export function assetFromString(s) {
   const isSynth = s.includes(SYNTH_DELIMITER)
   let delimiter = isSynth ? SYNTH_DELIMITER : NON_SYNTH_DELIMITER
   const isTrade = s.includes(TRADE_DELIMITER)
-  delimiter = isTrade ? TRADE_DELIMITER : delimiter
+  const isSecure =
+    s.includes(SECURE_DELIMITER) && !s.includes(NON_SYNTH_DELIMITER)
+  delimiter = isTrade
+    ? TRADE_DELIMITER
+    : isSecure
+      ? SECURE_DELIMITER
+      : delimiter
   const data = s.split(delimiter)
   if (data.length <= 1 || data[1]?.length < 1) {
     return null
@@ -621,8 +628,8 @@ export function assetFromString(s) {
 
   const chain = data[0]
   const symbol = data[1]
-  const ticker = symbol.split('-')[0]
-  const address = symbol.split('-')[1] ?? ''
+  const ticker = isSecure ? data[1] : symbol.split('-')[0]
+  const address = isSecure ? '' : (symbol.split('-')[1] ?? '')
 
   return { chain, symbol, ticker, address, synth: isSynth, trade: isTrade }
 }

@@ -159,8 +159,8 @@
       </template>
     </template>
     <template v-if="Mode == 'top-swaps'">
-      <div v-if="!topSwaps" class="no-outbound">
-        <h3>There is no top 24hr swaps inside Here.</h3>
+      <div v-if="!topSwaps || topSwaps.length == 0" class="no-outbound">
+        <h3>There is been no swaps in the last 24hr.</h3>
       </div>
       <template v-for="(swap, index) in topSwaps">
         <div :key="index" class="top-swap-item">
@@ -360,8 +360,8 @@ export default {
     async updateOutbounds() {
       this.noOutnound = false
       const resData = []
-      this.outData = (await this.$api.getOutbound()).data
-      this.schData = (await this.$api.getScheduled()).data
+      this.outData = (await this.$api.getOutbound()).data ?? []
+      this.schData = (await this.$api.getScheduled()).data ?? []
       resData.push(
         ...this.outData.map((s) => ({
           ...s,

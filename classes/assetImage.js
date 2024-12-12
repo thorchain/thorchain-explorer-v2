@@ -95,10 +95,14 @@ export const AssetImage = (assetStr) => {
         break
 
       case 'GAIA':
-        iconPath =
-          'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/cosmos/info/logo.png'
+        if (symbol === 'KUJI') {
+          iconPath =
+            'https://raw.githubusercontent.com/trustwallet/assets/refs/heads/master/blockchains/kujira/info/logo.png'
+        } else {
+          iconPath =
+            'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/cosmos/info/logo.png'
+        }
         break
-
       case 'AVAX':
         if (symbol !== 'AVAX') {
           if (symbol === 'USDC') {

@@ -209,7 +209,7 @@
                 >{{ props.row.operator.slice(-4) }}</nuxt-link
               >
               <div class="bubble-container grey">
-                {{ props.row.providers.length }}
+                {{ props.row.providers ? props.row.providers.length : 0 }}
               </div>
             </div>
             <template #popper>
@@ -289,6 +289,7 @@
           </div>
           <span
             v-if="
+              rows[props.row.originalIndex].churn &&
               rows[props.row.originalIndex].churn.length === 0 &&
               !isFav(props.row.address)
             "
@@ -481,8 +482,11 @@ export default {
       return false
     },
     filterProviders(arr) {
+      if (!arr) {
+        return []
+      }
       return orderBy(
-        arr.map((a) => ({ ...a, bond: +a.bond })),
+        arr?.map((a) => ({ ...a, bond: +a.bond })),
         ['bond'],
         ['desc']
       )

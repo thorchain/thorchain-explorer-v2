@@ -19,7 +19,7 @@
     <div class="navbar-lists">
       <template v-for="(item, index) in navbarLists">
         <NuxtLink
-          v-if="item && !(item.submenu && isMobile)"
+          v-if="item && !(item.submenu && isMobile) && item.link"
           :id="`navbar-${item.name}`"
           :key="index"
           :to="item.link"
@@ -43,7 +43,9 @@
           </div>
           <div :id="`submenu-${index}`" class="submenu">
             <NuxtLink
-              v-for="(subItem, subIndex) in item.submenu"
+              v-for="(subItem, subIndex) in item.submenu.filter(
+                (it) => it.link
+              )"
               :key="subIndex"
               :to="subItem.link"
               class="submenu-item"
@@ -63,7 +65,9 @@
         >
           <div class="submenu">
             <NuxtLink
-              v-for="(subItem, subIndex) in item.submenu"
+              v-for="(subItem, subIndex) in item.submenu.filter(
+                (it) => it.link
+              )"
               :key="subIndex"
               :to="subItem.link"
               class="submenu-item"
@@ -234,10 +238,12 @@ export default {
               name: 'Pools',
               link: '/pools/main',
             },
-            {
-              name: 'Pool Earnings',
-              link: '/pools/earnings',
-            },
+            process.env.NETWORK === 'mainnet'
+              ? {
+                  name: 'Pool Earnings',
+                  link: '/pools/earnings',
+                }
+              : false,
             {
               name: 'TVL by Chain',
               link: '/pools/tvl',
@@ -262,10 +268,12 @@ export default {
               name: 'Trade Assets',
               link: '/thorfi/trades',
             },
-            {
-              name: 'Rune Pool',
-              link: '/thorfi/runepool',
-            },
+            process.env.NETWORK === 'mainnet'
+              ? {
+                  name: 'Rune Pool',
+                  link: '/thorfi/runepool',
+                }
+              : false,
           ],
         },
         {
