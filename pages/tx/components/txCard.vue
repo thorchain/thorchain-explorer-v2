@@ -233,6 +233,12 @@ $border-size: 2px;
     .tx-assets-status {
       display: flex;
       align-items: center;
+    flex-wrap: wrap;
+    flex-direction: column;
+
+    @include sm{
+flex-direction: row;
+    }
 
       .tx-asset {
         display: flex;
