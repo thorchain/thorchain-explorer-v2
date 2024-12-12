@@ -32,10 +32,7 @@ export function getBlockChainVersion() {
 }
 
 export function getRPCLastBlockHeight() {
-  let path = 'blocks/latest'
-  if (process.env.NETWORK !== 'mainnet') {
-    path = 'cosmos/base/tendermint/v1beta1/blocks/latest'
-  }
+  const path = 'cosmos/base/tendermint/v1beta1/blocks/latest'
   return $axiosInstace.get(endpoints[process.env.NETWORK].THORNODE_URL + path)
 }
 
