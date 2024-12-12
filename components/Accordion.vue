@@ -376,7 +376,6 @@ export default {
     align-items: center;
     justify-content: center;
     margin-left: 1.1rem;
-    color: #21c187;
     border-radius: 8px;
     padding: 5px;
 
@@ -486,7 +485,7 @@ export default {
     align-items: center;
     gap: 0.5rem;
     border: 1px solid var(--border-color);
-    border-radius: 20px;
+    border-radius: 8px;
 
     &::before {
       content: '';
@@ -496,7 +495,7 @@ export default {
       right: 0;
       bottom: 0;
       border: 1px solid #d86e58;
-      border-radius: 20px;
+      border-radius: 8px;
       transition: all 0.5s;
       animation: clippath 3s infinite linear;
     }
@@ -528,6 +527,7 @@ export default {
 }
 
 .loading-text {
+  color: #d86e58;
   font-size: 10px;
   animation: textFade 1.5s infinite ease-in-out;
 }
