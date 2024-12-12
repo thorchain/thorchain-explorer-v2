@@ -11,7 +11,11 @@
       <div class="accordion-info-right">
         <slot name="header-extra" />
         <div class="countdown-timer">
-          <div class="circle-timer">
+          <div
+            v-if="status !== 'success'"
+            :class="'mini-bubble info'"
+            style="gap: 0.3rem; border-radius: 8px"
+          >
             <svg class="timer" viewBox="0 0 36 36">
               <path
                 class="circle-background"
@@ -24,19 +28,25 @@
               />
             </svg>
 
-            <div v-if="status === 'success'" class="success-status">
-              <Checkmark class="checkmark" />
-              <span class="time-text">Success</span>
-            </div>
-
-            <div v-if="status === 'timer'" class="time-text mono">
+            <div v-if="status === 'timer'" class="mono">
               {{ formatCountdown(countdown) }}
             </div>
+          </div>
 
-            <div v-if="status === 'pending'" class="loading">
-              <SandTimer class="loading-icon" />
-              <span class="loading-text">Pending</span>
+          <div
+            v-if="status === 'success'"
+            :class="'mini-bubble'"
+            style="border-radius: 8px"
+          >
+            <div class="success-status">
+              <circleSuccess class="checkmark" />
+              <span class="time-text">Success</span>
             </div>
+          </div>
+
+          <div v-if="status === 'pending'" class="loading">
+            <SandTimer class="loading-icon" />
+            <span class="loading-text">Pending</span>
           </div>
         </div>
       </div>
@@ -103,7 +113,7 @@ import External from '@/assets/images/external.svg?inline'
 import { assetFromString, getExplorerAddressUrl } from '~/utils'
 import SandTimer from '@/assets/images/sandtimer.svg?inline'
 import Clock from '~/assets/images/alarmclock.svg?inline'
-import Checkmark from '~/assets/images/check.svg?inline'
+import circleSuccess from '~/assets/images/circle.svg?inline'
 
 export default {
   components: {
@@ -112,7 +122,7 @@ export default {
     External,
     SandTimer,
     Clock,
-    Checkmark,
+    circleSuccess,
   },
   props: ['title', 'stacks', 'pending', 'showAtFirst'],
   data() {
@@ -146,7 +156,7 @@ export default {
     if (this.pending || this.showAtFirst) {
       this.toggleAccordion()
     }
-    this.startCountdown(10)
+    this.startCountdown(20)
   },
   beforeDestroy() {
     if (this.countdownInterval) {
@@ -223,7 +233,7 @@ export default {
     },
 
     updateCircle() {
-      const totalTime = 10
+      const totalTime = 20
       const dashOffset = (this.countdown / totalTime) * 100
       this.circleStyle = {
         'stroke-dashoffset': dashOffset,
@@ -255,7 +265,6 @@ export default {
     gap: 0.5rem;
     border-radius: 0.5rem;
     cursor: pointer;
-    padding: 2px;
 
     &:hover {
       color: var(--sec-font-color);
@@ -360,54 +369,41 @@ export default {
     }
   }
 
-  .countdown-timer {
+  .countdown-timer,
+  .success-status {
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid var(--green);
+    margin-left: 1.1rem;
+    color: #21c187;
     border-radius: 8px;
     padding: 5px;
-    gap: 0.5rem;
 
-    .circle-timer {
-      position: relative;
-      display: flex;
+    .checkmark {
+      position: absolute;
+      width: 1rem;
+      height: 1rem;
+      left: -16px;
+      top: 1.8px;
+      animation: checkmarkSuccess-data-v-7dd2b67d 0.8s ease-out;
+      transform-origin: center;
       align-items: center;
-      justify-content: center;
-      gap: 0.2rem;
-
-      .clock {
-        position: absolute;
-        width: 0.7rem;
-        height: 0.7rem;
-        fill: var(--green);
-      }
-
-      .checkmark {
-        position: absolute;
-        width: 0.7rem;
-        height: 0.7rem;
-        fill: var(--green);
-        left: 0.3rem;
-        top: 0.3rem;
-        animation: checkmarkSuccess 0.8s ease-out;
-        transform-origin: center;
-        @keyframes checkmarkSuccess {
-          0% {
-            transform: scale(0) rotate(0deg);
-            opacity: 0;
-          }
-          50% {
-            transform: scale(1.3) rotate(15deg);
-            opacity: 1;
-          }
-          70% {
-            transform: scale(0.9) rotate(-5deg);
-          }
-          100% {
-            transform: scale(1) rotate(0deg);
-          }
+      display: flex;
+      @keyframes checkmarkSuccess {
+        0% {
+          transform: scale(0) rotate(0deg);
+          opacity: 0;
+        }
+        50% {
+          transform: scale(1.3) rotate(15deg);
+          opacity: 1;
+        }
+        70% {
+          transform: scale(0.9) rotate(-5deg);
+        }
+        100% {
+          transform: scale(1) rotate(0deg);
         }
       }
     }
@@ -419,7 +415,6 @@ export default {
     .time-text {
       font-size: 10px;
       font-weight: bold;
-      color: var(--green);
       display: flex;
       align-content: center;
       justify-content: center;
@@ -444,7 +439,7 @@ export default {
     .circle-background,
     .circle-foreground {
       fill: none;
-      stroke-width: 2;
+      stroke-width: 4;
       stroke-linecap: round;
     }
 
@@ -453,7 +448,7 @@ export default {
     }
 
     .circle-foreground {
-      stroke: var(--green);
+      stroke: rgb(47, 138, 245);
       stroke-dasharray: 100;
       stroke-dashoffset: 100;
       transition: stroke-dashoffset 1s linear;
