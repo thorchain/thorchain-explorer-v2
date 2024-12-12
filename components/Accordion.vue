@@ -10,36 +10,35 @@
       </strong>
       <div class="accordion-info-right">
         <slot name="header-extra" />
-     <div class="countdown-timer">
-  <div class="circle-timer">
-    <svg class="timer" viewBox="0 0 36 36">
-      <path
-        class="circle-background"
-        d="M18 2.0845a15.9155 15.9155 0 1 0 0 31.831 15.9155 15.9155 0 1 0 0-31.831"
-      />
-      <path
-        class="circle-foreground"
-        :style="circleStyle"
-        d="M18 2.0845a15.9155 15.9155 0 1 0 0 31.831 15.9155 15.9155 0 1 0 0-31.831"
-      />
-    </svg>
+        <div class="countdown-timer">
+          <div class="circle-timer">
+            <svg class="timer" viewBox="0 0 36 36">
+              <path
+                class="circle-background"
+                d="M18 2.0845a15.9155 15.9155 0 1 0 0 31.831 15.9155 15.9155 0 1 0 0-31.831"
+              />
+              <path
+                class="circle-foreground"
+                :style="circleStyle"
+                d="M18 2.0845a15.9155 15.9155 0 1 0 0 31.831 15.9155 15.9155 0 1 0 0-31.831"
+              />
+            </svg>
 
-    <div v-if="status === 'success'" class="success-status">
-      <Checkmark class="checkmark" />
-      <span class="time-text">Success</span>
-    </div>
+            <div v-if="status === 'success'" class="success-status">
+              <Checkmark class="checkmark" />
+              <span class="time-text">Success</span>
+            </div>
 
-    <div v-if="status === 'timer'" class="time-text mono">
-      {{ formatCountdown(countdown) }}
-    </div>
+            <div v-if="status === 'timer'" class="time-text mono">
+              {{ formatCountdown(countdown) }}
+            </div>
 
-    <div v-if="status === 'pending'" class="loading">
-      <SandTimer class="loading-icon" />
-      <span class="loading-text">Pending</span>
-    </div>
-  </div>
-</div>
-
+            <div v-if="status === 'pending'" class="loading">
+              <SandTimer class="loading-icon" />
+              <span class="loading-text">Pending</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -118,7 +117,7 @@ export default {
   props: ['title', 'stacks', 'pending', 'showAtFirst'],
   data() {
     return {
-      status: 'pending', 
+      status: 'pending',
       labels: this.data?.labels ?? [],
       show: false,
       countdown: 0,
@@ -137,11 +136,11 @@ export default {
       return false
     },
     status() {
-    if (this.done) return 'success';
-    if (this.pending && this.countdown > 0) return 'countdown';
-    if (this.pending) return 'pending';
-    return null;
-  },
+      if (this.done) return 'success'
+      if (this.pending && this.countdown > 0) return 'countdown'
+      if (this.pending) return 'pending'
+      return null
+    },
   },
   mounted() {
     if (this.pending || this.showAtFirst) {
@@ -203,26 +202,25 @@ export default {
       }
     },
     startCountdown(seconds) {
-  this.countdown = seconds
-  this.status = 'pending' 
-  this.updateCircle()
-
-  setTimeout(() => {
-    this.status = 'timer'  
-  }, 100)
-
-  this.countdownInterval = setInterval(() => {
-    if (this.countdown > 0) {
-      this.countdown--
+      this.countdown = seconds
+      this.status = 'pending'
       this.updateCircle()
-    } else {
-      clearInterval(this.countdownInterval)
-      this.done = true
-      this.status = 'success'
-    }
-  }, 1000)
-},
 
+      setTimeout(() => {
+        this.status = 'timer'
+      }, 100)
+
+      this.countdownInterval = setInterval(() => {
+        if (this.countdown > 0) {
+          this.countdown--
+          this.updateCircle()
+        } else {
+          clearInterval(this.countdownInterval)
+          this.done = true
+          this.status = 'success'
+        }
+      }, 1000)
+    },
 
     updateCircle() {
       const totalTime = 10
@@ -242,13 +240,13 @@ export default {
 }
 </script>
 
-
 <style lang="scss" scoped>
 .accordion {
   margin: 0.5rem 1.5rem;
   background-color: var(--card-bg);
   padding: 8px;
   border-radius: 0.5rem;
+  border: 1px solid var(--border-color);
 
   .accordion-info {
     display: flex;
@@ -302,7 +300,6 @@ export default {
     &.show {
       margin-top: 0.5rem;
       border-top: 1px solid var(--border-color);
-      border-bottom: 1px solid var(--border-color);
       opacity: 1;
     }
 
@@ -369,8 +366,8 @@ export default {
     align-items: center;
     justify-content: center;
     border: 1px solid var(--green);
-    border-radius: 20px;
-    padding: 2px 5px;
+    border-radius: 8px;
+    padding: 5px;
     gap: 0.5rem;
 
     .circle-timer {
@@ -386,6 +383,7 @@ export default {
         height: 0.7rem;
         fill: var(--green);
       }
+
       .checkmark {
         position: absolute;
         width: 0.7rem;
@@ -394,23 +392,23 @@ export default {
         left: 0.3rem;
         top: 0.3rem;
         animation: checkmarkSuccess 0.8s ease-out;
-  transform-origin: center;
-  @keyframes checkmarkSuccess {
-  0% {
-    transform: scale(0) rotate(0deg);
-    opacity: 0;
-  }
-  50% {
-    transform: scale(1.3) rotate(15deg);
-    opacity: 1;
-  }
-  70% {
-    transform: scale(0.9) rotate(-5deg);
-  }
-  100% {
-    transform: scale(1) rotate(0deg);
-  }
-}
+        transform-origin: center;
+        @keyframes checkmarkSuccess {
+          0% {
+            transform: scale(0) rotate(0deg);
+            opacity: 0;
+          }
+          50% {
+            transform: scale(1.3) rotate(15deg);
+            opacity: 1;
+          }
+          70% {
+            transform: scale(0.9) rotate(-5deg);
+          }
+          100% {
+            transform: scale(1) rotate(0deg);
+          }
+        }
       }
     }
     .timer {
@@ -429,18 +427,18 @@ export default {
       animation: successAnimation 0.5s ease-out;
 
       @keyframes successAnimation {
-          0% {
-            transform: scale(0.8);
-            opacity: 0;
-          }
-          50% {
-            transform: scale(1.1);
-            opacity: 1;
-          }
-          100% {
-            transform: scale(1);
-          }
+        0% {
+          transform: scale(0.8);
+          opacity: 0;
         }
+        50% {
+          transform: scale(1.1);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
     }
 
     .circle-background,

@@ -16,6 +16,8 @@
 </template>
 
 <script>
+import { assetToString } from '~/utils'
+
 export default {
   props: ['asset', 'chain', 'height', 'classes', 'chainHeight'],
   computed: {
@@ -34,9 +36,14 @@ export default {
         return false
       }
 
+      let asset = this.asset
+      if (typeof asset === 'object') {
+        asset = assetToString(asset)
+      }
+
       if (this.chain) {
         return true
-      } else if (this.assetToChain(this.asset) !== this.asset) {
+      } else if (this.assetToChain(this.asset) !== asset) {
         return true
       }
       return false

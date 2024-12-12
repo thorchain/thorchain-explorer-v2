@@ -76,16 +76,14 @@
         </div>
 
         <div v-if="overall.middle" class="tx-middle">
-          <div class="tx-state-wrapper">
-            <div class="tx-state">
-              <warning-icon
-                v-if="overall.middle.fail"
-                class="icon tx-icon warn"
-              />
-              <div v-else-if="overall.middle.pending" class="simple-spinner" />
-              <send-icon v-else-if="overall.middle.send" class="icon tx-icon" />
-              <send-icon v-else class="icon tx-icon" />
-            </div>
+          <div class="tx-state">
+            <warning-icon
+              v-if="overall.middle.fail"
+              class="icon tx-icon warn"
+            />
+            <div v-else-if="overall.middle.pending" class="simple-spinner" />
+            <send-icon v-else-if="overall.middle.send" class="icon tx-icon" />
+            <send-icon v-else class="icon tx-icon" />
           </div>
         </div>
 
@@ -133,7 +131,7 @@
             <div v-else class="tx-asset">
               <component
                 :is="o.icon"
-                :class="['asset-icon', 'custom-icon', o.class]"
+                :class="[{ 'asset-icon': !o.icon }, 'custom-icon', o.class]"
               />
             </div>
           </div>
@@ -234,11 +232,10 @@ $border-size: 2px;
 
     .tx-assets-status {
       display: flex;
+      align-items: center;
 
       .tx-asset {
         display: flex;
-        border: 2px solid var(--left-border);
-        border-radius: 100%;
 
         .custom-icon {
           margin: 0;
@@ -253,42 +250,21 @@ $border-size: 2px;
         }
       }
 
-      .tx-state-wrapper {
-        background: #385a94;
-        border-radius: 50%;
-        height: 32px;
-        width: 32px;
-        position: relative;
-        background: linear-gradient(
-          to left,
-          var(--right-border),
-          var(--left-border)
-        );
+      .tx-state {
+        height: 30px;
+        width: 40px;
 
-        .tx-state {
-          background: var(--card-bg-color);
-          position: absolute;
-          border-radius: 50%;
-          height: 26px;
-          width: 26px;
-          top: 50%;
-          left: 50%;
-          margin: -13px 0px 0px -13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
 
-          display: flex;
-          align-items: center;
-          justify-content: center;
+        .tx-icon {
+          margin: 0;
+          padding: 3px;
 
-          .tx-icon {
-            border-radius: 100%;
-            margin: 0;
-            padding: 3px;
-            fill: var(--sec-font-color);
-
-            &.warn {
-              padding: 0;
-              fill: rgb(155 28 28);
-            }
+          &.warn {
+            padding: 0;
+            fill: rgb(155 28 28);
           }
         }
       }
@@ -324,12 +300,12 @@ $border-size: 2px;
         background-color: var(--card-bg);
         padding: 8px;
         justify-content: end;
-        border: 1px solid var(--right-border);
+        border: 2px solid var(--right-border);
 
         border-radius: 0.5rem;
         .tx-asset {
           .custom-icon {
-            fill: var(--card-bg-color);
+            fill: var(--right-border);
           }
         }
       }
@@ -337,12 +313,12 @@ $border-size: 2px;
       .tx-inbound {
         background-color: var(--card-bg);
         padding: 8px;
-        border: 1px solid var(--left-border);
+        border: 2px solid var(--left-border);
         border-radius: 0.5rem;
 
         .tx-asset {
           .custom-icon {
-            fill: var(--card-bg-color);
+            fill: var(--right-border);
           }
         }
       }
