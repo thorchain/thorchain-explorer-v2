@@ -657,7 +657,8 @@ export default {
               title: 'Outbound',
               done: a.done,
               pending: !a?.done,
-              countdown: a?.outboundDelayRemaining,
+              remainingTime: a?.outboundDelayRemaining,
+              totalTime: a?.outboundDelayRemaining,
               stacks: [
                 {
                   key: 'Destination',
