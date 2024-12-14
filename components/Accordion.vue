@@ -5,6 +5,12 @@
       @click="toggleAccordion"
     >
       <strong class="accordion-info-left">
+        <asset-icon
+          v-if="asset"
+          :asset="asset"
+          :height="'1.2rem'"
+          :chain-height="'0.5rem'"
+        />
         {{ title | capitalize }}
         <angle-icon v-if="showAccordion" class="trigger" />
       </strong>
@@ -132,6 +138,7 @@ export default {
     'remainingTime',
     'totalTime',
     'done',
+    'asset',
   ],
   data() {
     return {

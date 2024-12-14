@@ -27,6 +27,7 @@
               :done="s.data.done"
               :remaining-time="s.data.remainingTime"
               :total-time="s.data.totalTime"
+              :asset="s.data.asset"
               :stacks="s.data.stacks"
               :show-at-first="true"
             />
@@ -649,6 +650,11 @@ export default {
       }
 
       if (accordions.out) {
+        let showAssets = false
+        if (accordions.out.length > 1) {
+          showAssets = true
+        }
+
         accordions.out.forEach((a, i) => {
           const outboundStages = this.getOutboundStages(a)
           const accordionOut = {
@@ -659,6 +665,7 @@ export default {
               pending: !a?.done,
               remainingTime: a?.outboundDelayRemaining,
               totalTime: a?.outboundDelayRemaining,
+              asset: showAssets ? a?.asset : undefined,
               stacks: [
                 {
                   key: 'Destination',
