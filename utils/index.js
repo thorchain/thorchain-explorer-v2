@@ -665,6 +665,7 @@ export const nameMapping = {
   ],
   'Cake Wallet': ['cakewallet'],
   OKX: ['okw'],
+  Eldorito: ['eld', 'ELD'],
 }
 
 export const interfaces = {
@@ -778,7 +779,7 @@ export const affiliateMap = {
   okw: interfaces.okx,
   oky: interfaces.onekey,
   sy: interfaces.symbiosis,
-  ELD: interfaces.eldorito,
+  Eldorito: interfaces.eld,
   va: interfaces.vultisig,
   vi: interfaces.vultisig,
   ll: interfaces.ll,
