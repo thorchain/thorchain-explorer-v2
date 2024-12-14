@@ -127,7 +127,6 @@ export default {
   props: ['title', 'stacks', 'pending', 'showAtFirst', 'countdown'],
   data() {
     return {
-      status: 'pending',
       labels: this.data?.labels ?? [],
       show: false,
       countdown: this.countdown,
