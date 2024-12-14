@@ -292,7 +292,7 @@ export default {
 
 <style lang="scss">
 .streaming-card {
-  max-width: 640px;
+  max-width: 680px;
   width: 100%;
   margin: auto;
 }

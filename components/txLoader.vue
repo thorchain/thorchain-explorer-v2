@@ -82,7 +82,7 @@ export default {}
 .tx-container {
   padding: 20px;
   border-radius: 10px;
-  max-width: 640px;
+  max-width: 680px;
   margin: auto;
   background-color: var(--card-bg-color);
   border: 1px solid var(--border-color);
@@ -91,6 +91,7 @@ export default {}
 .tx-details,
 .tx-value {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;

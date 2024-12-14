@@ -12,7 +12,7 @@
         <slot name="header-extra" />
         <div class="countdown-timer">
           <div
-            v-if="status !== 'success'"
+            v-if="remainingTime > 0"
             :class="'mini-bubble info'"
             style="gap: 0.3rem; border-radius: 8px"
           >
@@ -28,13 +28,13 @@
               />
             </svg>
 
-            <div v-if="status === 'timer'" class="mono">
-              {{ formatCountdown(countdown) }}
+            <div class="mono">
+              {{ formatCountdown(timer) }}
             </div>
           </div>
 
           <div
-            v-if="status === 'success'"
+            v-if="done || remainingTime <= 0"
             :class="'mini-bubble'"
             style="border-radius: 8px"
           >
@@ -44,7 +44,7 @@
             </div>
           </div>
 
-          <div v-if="status === 'pending'" class="loading">
+          <div v-if="pending && !remainingTime" class="loading">
             <SandTimer class="loading-icon" />
             <span class="loading-text">Pending</span>
           </div>
@@ -124,23 +124,25 @@ export default {
     Clock,
     circleSuccess,
   },
-  props: ['title', 'stacks', 'pending', 'showAtFirst', 'countdown'],
+  props: [
+    'title',
+    'stacks',
+    'pending',
+    'showAtFirst',
+    'remainingTime',
+    'totalTime',
+    'done',
+  ],
   data() {
     return {
       labels: this.data?.labels ?? [],
       show: false,
-      countdown: this.countdown,
+      timer: 0,
       countdownInterval: null,
-      done: false,
       circleStyle: {
         'stroke-dashoffset': 100,
       },
     }
-  },
-  watch: {
-    countdown(newCountdown) {
-      this.startCountdown(newCountdown)
-    },
   },
   computed: {
     showAccordion() {
@@ -149,19 +151,18 @@ export default {
       }
       return false
     },
-    status() {
-      if (this.done) return 'success'
-      if (this.pending && this.countdown > 0) return 'countdown'
-      if (this.pending) return 'pending'
-      return null
+  },
+  watch: {
+    remainingTime(newCountdown) {
+      this.startCountdown(newCountdown)
     },
   },
   mounted() {
-    if (this.pending || this.showAtFirst) {
+    if (this.pending) {
       this.toggleAccordion()
     }
-    if (this.countdown > 0) {
-      this.startCountdown(this.countdown)
+    if (this.remainingTime > 0) {
+      this.startCountdown(this.remainingTime)
     }
   },
   beforeDestroy() {
@@ -218,29 +219,23 @@ export default {
       }
     },
     startCountdown(seconds) {
-      this.countdown = seconds
-      this.status = 'pending'
+      this.timer = seconds
       this.updateCircle()
 
-      setTimeout(() => {
-        this.status = 'timer'
-      }, 100)
-
       this.countdownInterval = setInterval(() => {
-        if (this.countdown > 0) {
-          this.countdown--
+        if (this.remainingTime > 0) {
+          this.timer--
           this.updateCircle()
         } else {
+          this.timer = 0
           clearInterval(this.countdownInterval)
-          this.done = true
-          this.status = 'success'
         }
       }, 1000)
     },
 
     updateCircle() {
-      const totalTime = this.countdown
-      const dashOffset = (this.countdown / totalTime) * 100
+      const totalTime = this.totalTime
+      const dashOffset = (this.timer / totalTime) * 100
       this.circleStyle = {
         'stroke-dashoffset': dashOffset,
       }
@@ -258,7 +253,7 @@ export default {
 
 <style lang="scss" scoped>
 .accordion {
-  margin: 0.5rem 1.5rem;
+  margin: 0 0.75rem;
   background-color: var(--card-bg);
   padding: 8px;
   border-radius: 0.5rem;
@@ -329,6 +324,7 @@ export default {
       .value {
         display: flex;
         flex-wrap: wrap;
+        word-break: break-all;
         color: var(--sec-font-color);
         gap: 7px;
 

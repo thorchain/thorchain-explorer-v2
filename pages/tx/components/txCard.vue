@@ -205,7 +205,7 @@ export default {
 $border-size: 2px;
 .tx-card {
   width: 100%;
-  max-width: 640px;
+  max-width: 680px;
   margin: auto;
   background-color: var(--card-bg-color);
   border-radius: 0.5rem;
@@ -228,17 +228,17 @@ $border-size: 2px;
     align-items: center;
   }
   .tx-overall {
-    padding: 1rem 1.5rem;
+    margin: 1rem 0.75rem;
 
     .tx-assets-status {
       display: flex;
       align-items: center;
-    flex-wrap: wrap;
-    flex-direction: column;
+      flex-wrap: wrap;
+      flex-direction: column;
 
-    @include sm{
-flex-direction: row;
-    }
+      @include sm {
+        flex-direction: row;
+      }
 
       .tx-asset {
         display: flex;
@@ -286,6 +286,7 @@ flex-direction: row;
       .tx-outbound {
         display: flex;
         align-items: center;
+        gap: 8px;
       }
       .inbound-info,
       .outbound-info {
@@ -300,6 +301,14 @@ flex-direction: row;
         flex-direction: row;
         align-items: center;
         gap: 6px;
+
+        .mono {
+          font-size: 0.75rem;
+
+          @include md {
+            font-size: 0.9rem;
+          }
+        }
       }
 
       .tx-outbound {
@@ -354,7 +363,8 @@ flex-direction: row;
   .accordions {
     display: flex;
     flex-direction: column;
-    margin-bottom: 0.5rem;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
   }
 }
 

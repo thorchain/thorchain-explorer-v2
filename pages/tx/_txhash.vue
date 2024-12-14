@@ -24,6 +24,9 @@
               :key="i + '.' + j"
               :title="s.data.title"
               :pending="s.data.pending"
+              :done="s.data.done"
+              :remaining-time="s.data.remainingTime"
+              :total-time="s.data.totalTime"
               :stacks="s.data.stacks"
               :show-at-first="true"
             />
@@ -349,6 +352,7 @@ export default {
             name: `accordion-in-${i}`,
             data: {
               title: 'Inbound',
+              done: a?.done,
               pending: !a?.done,
               stacks: [
                 {
@@ -436,11 +440,25 @@ export default {
               +accordions.action.streaming?.count)
         }
 
+        const remainingTime =
+          (+accordions?.action?.streaming?.quantity -
+            +accordions?.action?.streaming?.count) *
+          +accordions.action.streaming?.interval *
+          6
+
+        const totalTime =
+          +accordions?.action?.streaming?.count *
+          +accordions.action.streaming?.interval *
+          6
+
         const accordionAction = {
           name: 'accordion-action',
           data: {
             title: accordions.action?.type ?? undefined,
+            remainingTime,
+            totalTime,
             pending: !accordions.action?.done,
+            done: accordions.action?.done,
             showAtFirst: accordions.action?.showAtFirst,
             stacks: [
               {
@@ -637,7 +655,9 @@ export default {
             name: `accordion-out-${i}`,
             data: {
               title: 'Outbound',
+              done: a.done,
               pending: !a?.done,
+              countdown: a?.outboundDelayRemaining,
               stacks: [
                 {
                   key: 'Destination',
@@ -667,11 +687,14 @@ export default {
                   key: 'Outbound Est.',
                   value: moment
                     .duration(
-                      this.blockSeconds('THOR') * a.outboundETA,
+                      this.blockSeconds('THOR') *
+                        (+this.chainsHeight?.THOR - +a.outboundETA),
                       'seconds'
                     )
                     .humanize(),
-                  is: !a.outboundDelayRemaining && a.outboundETA > 0,
+                  is:
+                    !a.outboundDelayRemaining &&
+                    a.outboundETA > this.chainsHeight?.THOR,
                 },
                 {
                   key: 'Outbound Delay Est.',
@@ -689,7 +712,7 @@ export default {
                     },
                   ],
                   type: 'bubble',
-                  is: a.outboundETA < 0,
+                  is: a.outboundETA < this.chainsHeight?.THOR,
                 },
                 {
                   key: 'Outbound Stage',
@@ -880,7 +903,7 @@ export default {
       const ins = action?.in.map((a) => ({
         txid: a?.txID,
         from: a?.address,
-        icon: require('@/assets/images/user.svg?inline'),
+        icon: require('@/assets/images/wallet.svg?inline'),
         address: action.metadata?.thorname?.address,
         done: true,
       }))
@@ -1271,7 +1294,7 @@ export default {
         },
         out: [
           {
-            icon: require('@/assets/images/user.svg?inline'),
+            icon: require('@/assets/images/wallet.svg?inline'),
             address: nativeTx?.out[0]?.address,
           },
         ],
@@ -1908,7 +1931,7 @@ export default {
 .tx-header {
   display: flex;
   width: 100%;
-  max-width: 640px;
+  max-width: 680px;
   gap: 8px;
   margin: auto;
   align-items: center;

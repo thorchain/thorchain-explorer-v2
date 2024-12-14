@@ -216,7 +216,7 @@ export default {
         this.$api.getThorname(this.searchQuery).then((res) => {
           if (
             res.status / 200 === 1 &&
-            (res.data?.aliases.length > 0 || res.data.owner)
+            (res.data?.aliases?.length > 0 || res.data?.owner)
           ) {
             let thorchainAddr = res.data?.aliases?.find(
               (el) => el.chain === 'THOR'
