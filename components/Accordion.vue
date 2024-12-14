@@ -124,19 +124,24 @@ export default {
     Clock,
     circleSuccess,
   },
-  props: ['title', 'stacks', 'pending', 'showAtFirst'],
+  props: ['title', 'stacks', 'pending', 'showAtFirst', 'countdown'],
   data() {
     return {
       status: 'pending',
       labels: this.data?.labels ?? [],
       show: false,
-      countdown: 0,
+      countdown: this.countdown,
       countdownInterval: null,
       done: false,
       circleStyle: {
         'stroke-dashoffset': 100,
       },
     }
+  },
+  watch: {
+    countdown(newCountdown) {
+      this.startCountdown(newCountdown)
+    },
   },
   computed: {
     showAccordion() {
@@ -156,7 +161,9 @@ export default {
     if (this.pending || this.showAtFirst) {
       this.toggleAccordion()
     }
-    this.startCountdown(20)
+    if (this.countdown > 0) {
+      this.startCountdown(this.countdown)
+    }
   },
   beforeDestroy() {
     if (this.countdownInterval) {
@@ -233,7 +240,7 @@ export default {
     },
 
     updateCircle() {
-      const totalTime = 20
+      const totalTime = this.countdown
       const dashOffset = (this.countdown / totalTime) * 100
       this.circleStyle = {
         'stroke-dashoffset': dashOffset,
