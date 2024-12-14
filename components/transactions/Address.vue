@@ -3,12 +3,12 @@
     <template v-if="param">
       <component
         :is="disable ? 'span' : 'nuxt-link'"
+        v-tooltip="param"
         :class="[
           'mono address',
           { clickable: !disable, hovered: hoveredAddress === param },
         ]"
         :to="!disable ? { path: `/address/${param}` } : undefined"
-        v-tooltip="param"
         >{{ addressFormatV2(param) }}</component
       >
       <copy
@@ -54,7 +54,7 @@ export default {
 .hovered {
   border: 1px dashed var(--highlight);
   color: var(--active-primary-color) !important;
-  border-radius: 0.5rem;
+  border-radius: 0.3rem;
 }
 
 .no-hover {

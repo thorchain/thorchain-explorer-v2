@@ -39,27 +39,51 @@
                 :height="'2rem'"
               />
             </div>
-            <div v-else class="tx-asset">
-              <component
-                :is="o.icon"
-                :class="['asset-icon', 'custom-icon', o.class]"
-              />
+            <div class="inbound-info">
+              <template v-if="o.text">
+                <span class="mono sec-color">{{ o.text }}</span>
+              </template>
+              <template v-else-if="o.address">
+                <nuxt-link
+                  class="mono clickable"
+                  :to="`/address/${o.address}`"
+                  >{{ formatAddress(o.address) }}</nuxt-link
+                >
+              </template>
+              <template v-else>
+                <div class="amount-info">
+                  <span class="mono sec-color">{{
+                    o.amount
+                      ? o.filter
+                        ? o.filter(o.amount)
+                        : baseAmountFormatOrZero(o.amount)
+                      : '...'
+                  }}</span>
+                  <small class="mono sec-color">{{ showAsset(o.asset) }}</small>
+                </div>
+                <small>{{
+                  o.amountUSD ? formatBnCurrency(o.amountUSD) : '...'
+                }}</small>
+              </template>
+              <div v-else class="tx-asset">
+                <component
+                  :is="o.icon"
+                  :class="['asset-icon', 'custom-icon', o.class]"
+                />
+              </div>
             </div>
-            <div v-if="i < 1" class="simple-bar" />
           </div>
         </div>
 
         <div v-if="overall.middle" class="tx-middle">
-          <div class="tx-state-wrapper">
-            <div class="tx-state">
-              <warning-icon
-                v-if="overall.middle.fail"
-                class="icon tx-icon warn"
-              />
-              <div v-else-if="overall.middle.pending" class="simple-spinner" />
-              <send-icon v-else-if="overall.middle.send" class="icon tx-icon" />
-              <send-icon v-else class="icon tx-icon" />
-            </div>
+          <div class="tx-state">
+            <warning-icon
+              v-if="overall.middle.fail"
+              class="icon tx-icon warn"
+            />
+            <div v-else-if="overall.middle.pending" class="simple-spinner" />
+            <send-icon v-else-if="overall.middle.send" class="icon tx-icon" />
+            <send-icon v-else class="icon tx-icon" />
           </div>
         </div>
 
@@ -69,7 +93,34 @@
             :key="i + '-o-out'"
             class="tx-outbound"
           >
-            <div v-if="i < 1" class="simple-bar" />
+            <div class="outbound-info">
+              <template v-if="o.text">
+                <span class="mono sec-color">{{ o.text }}</span>
+              </template>
+              <template v-else-if="o.address">
+                <nuxt-link
+                  class="mono clickable"
+                  :to="`/address/${o.address}`"
+                  >{{ formatAddress(o.address) }}</nuxt-link
+                >
+              </template>
+              <template v-else>
+                <div class="amount-info">
+                  <span class="mono sec-color">{{
+                    o.amount
+                      ? o.filter
+                        ? o.filter(o.amount)
+                        : baseAmountFormatOrZero(o.amount)
+                      : '...'
+                  }}</span>
+                  <small class="mono sec-color">{{ showAsset(o.asset) }}</small>
+                </div>
+                <small>{{
+                  o.amountUSD ? formatBnCurrency(o.amountUSD) : '...'
+                }}</small>
+              </template>
+            </div>
+
             <div v-if="o.asset" class="tx-asset">
               <AssetIcon
                 :classes="['no-margin']"
@@ -80,71 +131,9 @@
             <div v-else class="tx-asset">
               <component
                 :is="o.icon"
-                :class="['asset-icon', 'custom-icon', o.class]"
+                :class="[{ 'asset-icon': !o.icon }, 'custom-icon', o.class]"
               />
             </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="tx-assets-info">
-        <div class="tx-wrapper">
-          <div
-            v-for="(o, i) in overall.in"
-            :key="i + '-in'"
-            class="asset-inbound"
-          >
-            <template v-if="o.text">
-              <span class="mono sec-color">{{ o.text }}</span>
-            </template>
-            <template v-else-if="o.address">
-              <nuxt-link class="mono clickable" :to="`/address/${o.address}`">{{
-                formatAddress(o.address)
-              }}</nuxt-link>
-            </template>
-            <template v-else>
-              <span class="mono sec-color">{{
-                o.amount
-                  ? o.filter
-                    ? o.filter(o.amount)
-                    : baseAmountFormatOrZero(o.amount)
-                  : '...'
-              }}</span>
-              <small class="mono sec-color">{{ showAsset(o.asset) }}</small>
-              <br /><small>{{
-                o.amountUSD ? formatBnCurrency(o.amountUSD) : '...'
-              }}</small>
-            </template>
-          </div>
-        </div>
-
-        <div class="tx-wrapper">
-          <div
-            v-for="(o, i) in overall.out"
-            :key="i + '-out'"
-            class="asset-outbound"
-          >
-            <template v-if="o.text">
-              <span class="mono sec-color">{{ o.text }}</span>
-            </template>
-            <template v-else-if="o.address">
-              <nuxt-link class="mono clickable" :to="`/address/${o.address}`">{{
-                formatAddress(o.address)
-              }}</nuxt-link>
-            </template>
-            <template v-else>
-              <span class="mono sec-color">{{
-                o.amount
-                  ? o.filter
-                    ? o.filter(o.amount)
-                    : baseAmountFormatOrZero(o.amount)
-                  : '...'
-              }}</span>
-              <small class="mono sec-color">{{ showAsset(o.asset) }}</small>
-              <br /><small>{{
-                o.amountUSD ? formatBnCurrency(o.amountUSD) : '...'
-              }}</small>
-            </template>
           </div>
         </div>
       </div>
@@ -216,7 +205,7 @@ export default {
 $border-size: 2px;
 .tx-card {
   width: 100%;
-  max-width: 640px;
+  max-width: 680px;
   margin: auto;
   background-color: var(--card-bg-color);
   border-radius: 0.5rem;
@@ -234,17 +223,25 @@ $border-size: 2px;
       color: var(--sec-font-color);
     }
   }
-
+  .tx-middle {
+    display: flex;
+    align-items: center;
+  }
   .tx-overall {
-    padding: 1rem 1.5rem;
+    margin: 1rem 0.75rem;
 
     .tx-assets-status {
       display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      flex-direction: column;
+
+      @include sm {
+        flex-direction: row;
+      }
 
       .tx-asset {
         display: flex;
-        border: 2px solid var(--left-border);
-        border-radius: 100%;
 
         .custom-icon {
           margin: 0;
@@ -259,50 +256,23 @@ $border-size: 2px;
         }
       }
 
-      .tx-state-wrapper {
-        background: #385a94;
-        border-radius: 50%;
-        height: 32px;
-        width: 32px;
-        position: relative;
-        background: linear-gradient(
-          to left,
-          var(--right-border),
-          var(--left-border)
-        );
+      .tx-state {
+        height: 30px;
+        width: 40px;
 
-        .tx-state {
-          background: var(--card-bg-color);
-          position: absolute;
-          border-radius: 50%;
-          height: 26px;
-          width: 26px;
-          top: 50%;
-          left: 50%;
-          margin: -13px 0px 0px -13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
 
-          display: flex;
-          align-items: center;
-          justify-content: center;
+        .tx-icon {
+          margin: 0;
+          padding: 3px;
 
-          .tx-icon {
-            border-radius: 100%;
-            margin: 0;
-            padding: 3px;
-            fill: var(--sec-font-color);
-
-            &.warn {
-              padding: 0;
-              fill: rgb(155 28 28);
-            }
+          &.warn {
+            padding: 0;
+            fill: rgb(155 28 28);
           }
         }
-      }
-
-      .simple-bar {
-        width: 100%;
-        height: $border-size;
-        background: var(--left-border);
       }
 
       .tx-wrapper {
@@ -316,29 +286,54 @@ $border-size: 2px;
       .tx-outbound {
         display: flex;
         align-items: center;
+        gap: 8px;
+      }
+      .inbound-info,
+      .outbound-info {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        align-items: center;
+        gap: 0.4rem;
+      }
+      .amount-info {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 6px;
+
+        .mono {
+          font-size: 0.75rem;
+
+          @include md {
+            font-size: 0.9rem;
+          }
+        }
       }
 
       .tx-outbound {
+        background-color: var(--card-bg);
+        padding: 8px;
         justify-content: end;
-        .tx-asset,
-        .simple-bar {
-          border-color: var(--right-border);
-          background: var(--right-border);
+        border: 2px solid var(--right-border);
 
+        border-radius: 0.5rem;
+        .tx-asset {
           .custom-icon {
-            fill: var(--card-bg-color);
+            fill: var(--right-border);
           }
         }
       }
 
       .tx-inbound {
-        .tx-asset,
-        .simple-bar {
-          border-color: var(--left-border);
-          background: var(--left-border);
+        background-color: var(--card-bg);
+        padding: 8px;
+        border: 2px solid var(--left-border);
+        border-radius: 0.5rem;
 
+        .tx-asset {
           .custom-icon {
-            fill: var(--card-bg-color);
+            fill: var(--right-border);
           }
         }
       }
@@ -368,7 +363,8 @@ $border-size: 2px;
   .accordions {
     display: flex;
     flex-direction: column;
-    margin-bottom: 0.5rem;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
   }
 }
 
