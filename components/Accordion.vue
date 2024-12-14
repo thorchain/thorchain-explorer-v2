@@ -154,6 +154,9 @@ export default {
   },
   watch: {
     remainingTime(newCountdown) {
+      if (this.countdownInterval) {
+        clearInterval(this.countdownInterval)
+      }
       this.startCountdown(newCountdown)
     },
   },
