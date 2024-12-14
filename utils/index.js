@@ -615,7 +615,9 @@ export function assetFromString(s) {
   let delimiter = isSynth ? SYNTH_DELIMITER : NON_SYNTH_DELIMITER
   const isTrade = s.includes(TRADE_DELIMITER)
   const isSecure =
-    s.includes(SECURE_DELIMITER) && !s.includes(NON_SYNTH_DELIMITER)
+    s.includes(SECURE_DELIMITER) &&
+    !s.includes(NON_SYNTH_DELIMITER) &&
+    !s.includes(TRADE_DELIMITER)
   delimiter = isTrade
     ? TRADE_DELIMITER
     : isSecure
@@ -627,7 +629,7 @@ export function assetFromString(s) {
   }
 
   const chain = data[0]
-  const symbol = data[1]
+  const symbol = data[1] + (data.length > 2 ? data[2] : '')
   const ticker = isSecure ? data[1] : symbol.split('-')[0]
   const address = isSecure ? '' : (symbol.split('-')[1] ?? '')
 
