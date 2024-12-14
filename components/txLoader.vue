@@ -11,52 +11,54 @@
       </div>
 
       <div class="tx-details">
-        <div>
+        <div class="tx-info">
           <skeleton-loader
             class="skeleton"
             :style="{ height: '36px', width: '36px', borderRadius: '50%' }"
           />
+          <div class="info-value">
+            <skeleton-loader :style="{ width: '8rem', height: '0.5rem' }" />
+            <div style="display: flex; justify-content: center">
+              <skeleton-loader :style="{ width: '4rem', height: '0.5rem' }" />
+            </div>
+          </div>
         </div>
-        <div style="width: 100%">
-          <skeleton-loader class="skeleton" width="100%" height="2px" />
-        </div>
-        <div>
-          <skeleton-loader
-            class="skeleton"
-            :style="{ height: '32px', width: '32px', borderRadius: '50%' }"
-          />
-        </div>
-        <div style="width: 100%">
-          <skeleton-loader class="skeleton" width="100%" height="2px" />
-        </div>
-        <div>
+
+        <div class="tx-info">
+          <div class="info-value">
+            <skeleton-loader :style="{ width: '8rem', height: '0.5rem' }" />
+            <div style="display: flex; justify-content: center">
+              <skeleton-loader :style="{ width: '4rem', height: '0.5rem' }" />
+            </div>
+          </div>
           <skeleton-loader
             class="skeleton"
             :style="{ height: '36px', width: '36px', borderRadius: '50%' }"
           />
         </div>
       </div>
-
-      <div class="tx-value">
-        <div>
-          <skeleton-loader :style="{ width: '7rem' }" />
-          <skeleton-loader :style="{ width: '3.5rem' }" />
-        </div>
-        <div style="display: flex; flex-direction: column; align-items: end">
-          <skeleton-loader :style="{ width: '7rem' }" />
-          <skeleton-loader :style="{ width: '3.5rem' }" />
-        </div>
-      </div>
-
-      <div style="margin-top: 3rem"></div>
 
       <div v-for="i in 3" :key="i" class="section">
-        <skeleton-loader :style="{ width: '4rem' }" />
+        <div class="header-skeleton">
+          <skeleton-loader :style="{ width: '4rem' }" />
+          <skeleton-loader
+            :style="{ width: '5rem', height: '1rem', borderRadius: '5px' }"
+          />
+        </div>
         <div class="line"></div>
         <div class="section-item">
-          <skeleton-loader />
-          <skeleton-loader />
-          <skeleton-loader />
+          <div class="header-skeleton">
+            <skeleton-loader :style="{ width: '8rem', height: '0.5rem' }" />
+            <skeleton-loader :style="{ width: '15rem', height: '0.5rem' }" />
+          </div>
+          <div class="header-skeleton">
+            <skeleton-loader :style="{ width: '8rem', height: '0.5rem' }" />
+            <skeleton-loader :style="{ width: '15rem', height: '0.5rem' }" />
+          </div>
+          <div class="header-skeleton">
+            <skeleton-loader :style="{ width: '8rem', height: '0.5rem' }" />
+            <skeleton-loader :style="{ width: '15rem', height: '0.5rem' }" />
+          </div>
         </div>
       </div>
     </div>
@@ -70,6 +72,12 @@ export default {}
 <style lang="scss" scoped>
 .skeleton {
   margin: 0px !important;
+}
+.header-skeleton {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.5rem;
 }
 .tx-container {
   padding: 20px;
@@ -86,7 +94,21 @@ export default {}
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
-  margin: 10px;
+  margin: 13px 3px;
+}
+.tx-info {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  padding: 8px;
+  align-items: center;
+  justify-content: center;
+}
+.info-value {
+  display: flex;
+  flex-direction: column;
 }
 
 .swap {
@@ -104,7 +126,9 @@ export default {}
 }
 
 .section {
-  margin-top: 2rem;
+  margin-top: 1.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
 }
 
 .section-item {
