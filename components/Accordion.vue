@@ -139,6 +139,7 @@ export default {
       show: false,
       timer: 0,
       countdownInterval: null,
+      timerTotalTime: 0,
       circleStyle: {
         'stroke-dashoffset': 100,
       },
@@ -237,8 +238,10 @@ export default {
     },
 
     updateCircle() {
-      const totalTime = this.totalTime
-      const dashOffset = (this.timer / totalTime) * 100
+      if (this.totalTime > this.timerTotalTime) {
+        this.timerTotalTime = this.totalTime
+      }
+      const dashOffset = (this.timer / this.timerTotalTime) * 100
       this.circleStyle = {
         'stroke-dashoffset': dashOffset,
       }
