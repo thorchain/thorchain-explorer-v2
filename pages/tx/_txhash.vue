@@ -270,7 +270,7 @@ export default {
         this.pools
       )
 
-      if (actions && actions.actions.length > 0) {
+      if (actions && actions.actions?.length > 0) {
         if (memo.type !== 'swap') {
           const success = actions.actions.some((e, i) => e.status === 'success')
           if (success) {
