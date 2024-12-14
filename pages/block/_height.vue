@@ -45,7 +45,28 @@
         <span style="color: var(--primary-color)">{{ blockHash }}</span>
         <UtilityBox :value="blockHash" />
       </skeleton-item>
-      <info-card :options="blockInfo" />
+      <div class="block-content">
+        <card :is-loading="loading">
+          <vue-good-table
+            :columns="assetColumns"
+            :rows="assetRows"
+            style-class="vgt-table net-table"
+          >
+            <template slot="table-row" slot-scope="props">
+              <div v-if="props.column.field === 'assetName'" class="asset-row">
+                <asset-icon :asset="props.row.assetName" />
+                <span>{{ showAsset(props.row.assetName) }}</span>
+              </div>
+              <template v-else-if="props.column.field === 'assetReward'">
+                <span>{{
+                  (props.row.assetReward / 1e8) | number('0,0.0000')
+                }}</span>
+              </template>
+            </template>
+          </vue-good-table>
+        </card>
+        <info-card :options="blockInfo" />
+      </div>
       <Transactions :txs="txs" :loading="loading" />
     </template>
   </page>
@@ -67,6 +88,7 @@ export default {
   data() {
     return {
       height: this.$route.params.height,
+      assetRewards: {},
       loading: false,
       blockNumber: null,
       blockHash: '',
@@ -76,6 +98,10 @@ export default {
       blockRemainingTime: undefined,
       actions: undefined,
       mineTime: undefined,
+      assetColumns: [
+        { label: 'Asset', field: 'assetName' },
+        { label: 'Reward', field: 'assetReward' },
+      ],
     }
   },
   computed: {
@@ -86,7 +112,7 @@ export default {
     blockInfo() {
       return [
         {
-          title: 'Nodes',
+          title: 'Block Info',
           rowStart: 1,
           colSpan: 1,
           items: [
@@ -98,6 +124,21 @@ export default {
               name: 'Block Age',
               value: this.blockAge,
             },
+            {
+              name: 'Dev Fund',
+              value: this.devFundReward,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+            },
+            {
+              name: 'Burn',
+              value: this.incomeBurn,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+            },
+            {
+              name: 'Bond',
+              value: this.bondReward,
+              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+            },
           ],
         },
       ]
@@ -108,7 +149,6 @@ export default {
           title: '',
           rowStart: 1,
           colSpan: 1,
-          grid: true,
           items: [
             {
               name: 'From',
@@ -122,6 +162,12 @@ export default {
           ],
         },
       ]
+    },
+    assetRows() {
+      return Object.keys(this.assetRewards).map((asset) => ({
+        assetName: asset,
+        assetReward: this.assetRewards[asset],
+      }))
     },
   },
   watch: {
@@ -163,21 +209,48 @@ export default {
         console.error('API Error:', error)
       }
     },
-
     async fetchBlockInfo(height) {
       try {
+        this.loading = true
+
         const { data: blockData } = await this.$api.getBlockHeight(height)
+
         this.blockNumber = blockData.header.height
         this.blockHash = blockData.id.hash
         this.blockTime = moment(blockData.header.time).format(
           'MMM DD YYYY hh:mm:ss A'
         )
+
         const blockTimestamp = moment(blockData.header.time)
         this.blockAge = moment
           .duration(moment().diff(blockTimestamp))
           .humanize()
+
+        this.bondReward = ''
+        this.devFundReward = ''
+        this.incomeBurn = ''
+        this.assetRewards = {}
+
+        if (Array.isArray(blockData.end_block_events)) {
+          const rewardEvent = blockData.end_block_events.find(
+            (event) => event.type === 'rewards'
+          )
+          if (rewardEvent) {
+            this.bondReward = rewardEvent.bond_reward || ''
+            this.devFundReward = rewardEvent.dev_fund_reward || ''
+            this.incomeBurn = rewardEvent.income_burn || ''
+
+            Object.keys(rewardEvent).forEach((key) => {
+              if (key.includes('.')) {
+                this.assetRewards[key] = rewardEvent[key]
+              }
+            })
+          }
+        }
       } catch (error) {
         console.error('Error fetching block info:', error)
+      } finally {
+        this.loading = false
       }
     },
   },
@@ -185,9 +258,18 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.block-content {
+  display: flex;
+  gap: 0.5rem;
+}
 .block-icon {
   width: 1.2rem;
   height: 1.2rem;
+}
+.asset-row {
+  display: flex;
+  gap: 5px;
+  align-items: center;
 }
 .block-header {
   display: flex;
