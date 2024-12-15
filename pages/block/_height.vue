@@ -2,7 +2,12 @@
   <page class="block-container">
     <div class="block-header">
       <BlockIcon class="block-icon" />
-      {{ $route.params.height }}
+      <h2>
+        Block
+        <span style="color: var(--sec-font-color)">
+          {{ $route.params.height }}
+        </span>
+      </h2>
     </div>
     <info-card v-if="blockRemainingTime" :options="timerInfo">
       <template #duration="{ item }">
@@ -58,9 +63,10 @@
                 <span>{{ showAsset(props.row.assetName) }}</span>
               </div>
               <template v-else-if="props.column.field === 'assetReward'">
-                <span>{{
-                  (props.row.assetReward / 1e8) | number('0,0.0000')
-                }}</span>
+                <span>
+                  {{ (props.row.assetReward / 1e8) | number('0,0.0000') }}
+                  <small>RUNE</small>
+                </span>
               </template>
             </template>
           </vue-good-table>
@@ -127,17 +133,20 @@ export default {
             {
               name: 'Dev Fund',
               value: this.devFundReward,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) =>
+                `${this.$options.filters.number(v / 1e8, '0,0.00')} RUNE`,
             },
             {
               name: 'Burn',
               value: this.incomeBurn,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) =>
+                `${this.$options.filters.number(v / 1e8, '0,0.00')} RUNE`,
             },
             {
               name: 'Bond',
               value: this.bondReward,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) =>
+                `${this.$options.filters.number(v / 1e8, '0,0.00')} RUNE`,
             },
           ],
         },
@@ -263,8 +272,9 @@ export default {
   gap: 0.5rem;
 }
 .block-icon {
-  width: 1.2rem;
-  height: 1.2rem;
+  fill: currentColor;
+  width: 2rem;
+  height: 2rem;
 }
 .asset-row {
   display: flex;
@@ -279,6 +289,11 @@ export default {
   align-items: center;
   gap: 0.5rem;
   padding-left: 1rem;
+  margin-bottom: 0.5rem;
+
+  h2 {
+    margin: 0;
+  }
 }
 .block-name {
   display: flex;
