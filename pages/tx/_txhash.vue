@@ -683,6 +683,12 @@ export default {
                   formatter: this.formatAddress,
                 },
                 {
+                  key: 'Executed at',
+                  value: a.height,
+                  formatter: this.normalFormat,
+                  is: a.height,
+                },
+                {
                   key: 'Gas',
                   value: `${this.baseAmountFormatOrZero(
                     a.gas
@@ -890,6 +896,14 @@ export default {
           memo
         )
         this.$set(this, 'cards', [this.createCard(cards, accordions)])
+      } else if (memo.type === 'loanRepayment') {
+        const { cards, accordions } = this.createLoanRepayment(
+          thorStatus,
+          midgardAction,
+          thorTx,
+          memo
+        )
+        this.$set(this, 'cards', [this.createCard(cards, accordions)])
       } else {
         const finalCards = []
         for (let i = 0; i < midgardAction?.actions?.length; i++) {
@@ -946,6 +960,58 @@ export default {
             done: true,
           },
           out: [],
+        },
+      }
+    },
+    createLoanRepayment(thorStatus, actions, thorTx) {
+      const action = actions.actions[0]
+
+      const ins = action?.in.map((a) => ({
+        asset: this.parseMemoAsset(a.coins[0]?.asset),
+        amount: a.coins[0]?.amount,
+        txid: a?.txID,
+        from: a?.address,
+        done: true,
+      }))
+
+      let outs = []
+      outs = action?.out.map((a) => ({
+        asset: this.parseMemoAsset(a.coins[0]?.asset),
+        amount: a.coins[0]?.amount,
+        txid: a?.txID,
+        to: a?.address,
+        height: a?.height,
+        done: true,
+      }))
+
+      if (outs?.length === 0 && thorStatus.planned_out_txs?.length > 0) {
+        thorStatus.planned_out_txs.map((t) => ({
+          asset: this.parseMemoAsset(t.coin.asset),
+          amount: t.coin.amount,
+          to: t.to_address,
+          done: false,
+          pending: true,
+        }))
+      }
+
+      return {
+        cards: {
+          title: 'Loan Repay',
+          in: ins,
+          middle: {
+            pending: false,
+          },
+          out: outs,
+        },
+        accordions: {
+          in: ins,
+          action: {
+            type: 'Repay',
+            timeStamp: moment.unix(action?.date / 1e9) || null,
+            height: action?.height,
+            done: true,
+          },
+          out: outs,
         },
       }
     },
@@ -1890,6 +1956,7 @@ export default {
                 outTxs?.length > 0 && outTxs[0].gas
                   ? this.parseMemoAsset(outTxs[0].gas[0].asset, this.pools)
                   : null,
+              height: outTxs?.length > 0 ? outTxs[0].height : null,
               fees: outboundFees,
               feeAssets: outboundFeeAssets,
               delayBlocksRemaining:
@@ -1914,6 +1981,7 @@ export default {
               asset: this.parseMemoAsset(o.coins[0].asset, this.pools),
               amount: parseInt(o.coins[0].amount),
               gas: o.gas ? o.gas[0].amount : null,
+              height: o.height,
               gasAsset: o.gas
                 ? this.parseMemoAsset(o.gas[0].asset, this.pools)
                 : null,
