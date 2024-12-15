@@ -1288,7 +1288,7 @@ export default {
           return moment(d.date).isSame(date, 'day')
         })
         af.push({
-          value: affiliate?.daily_affiliate_fees_usd,
+          value: Math.max(affiliate?.daily_affiliate_fees_usd, 0),
           itemStyle: {
             borderRadius: [8, 8, 0, 0],
           },
