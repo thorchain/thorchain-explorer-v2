@@ -1417,7 +1417,12 @@ export default {
             </div>
             <div class="tooltip-body">
               ${param
-                .filter((p) => p.seriesName !== 'EOD Earning' && +p.value > 0)
+                .filter(
+                  (p) =>
+                    p.seriesName !== 'EOD Earning' &&
+                    p.seriesName !== 'Affiliate Fee' &&
+                    +p.value > 0
+                )
                 .map(
                   (p) => `<span>
                   <span>${p.seriesName}</span>
