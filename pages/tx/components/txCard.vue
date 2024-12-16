@@ -81,7 +81,9 @@
               v-if="overall.middle.fail"
               class="icon tx-icon warn"
             />
-            <div v-else-if="overall.middle.pending" class="simple-spinner" />
+            <div v-else-if="overall.middle.pending" class="simple-spinner">
+              <div class="border-bottom-spinner"></div>
+            </div>
             <send-icon v-else-if="overall.middle.send" class="icon tx-icon" />
             <send-icon v-else class="icon tx-icon" />
           </div>
@@ -235,9 +237,11 @@ $border-size: 2px;
       align-items: center;
       flex-wrap: wrap;
       flex-direction: column;
+      gap: 0.5rem;
 
       @include sm {
         flex-direction: row;
+        gap: 0px;
       }
 
       .tx-asset {
@@ -267,6 +271,10 @@ $border-size: 2px;
         .tx-icon {
           margin: 0;
           padding: 3px;
+          transform: rotate(90deg);
+          @include sm {
+            transform: rotate(0deg);
+          }
 
           &.warn {
             padding: 0;
@@ -367,10 +375,33 @@ $border-size: 2px;
     margin-bottom: 0.75rem;
   }
 }
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
 
 .simple-spinner {
-  border-color: var(--left-border);
-  border-top-color: var(--card-bg-color);
+  border: 2px solid;
+  border-color: var(--left-border) transparent;
+  border-radius: 50%;
+  display: inline-block;
+  -webkit-animation: rotation 1s linear infinite;
+  animation: rotation 1.5s linear infinite;
+  .border-bottom-spinner {
+    box-sizing: border-box;
+    position: absolute;
+    border-radius: 50%;
+    display: inline-block;
+    width: 25.5px;
+    height: 25.5px;
+    border: 2px solid;
+    border-color: var(--right-border) transparent;
+    -webkit-animation: rotation 0.6s linear infinite reverse;
+  }
 }
 
 .interface {
