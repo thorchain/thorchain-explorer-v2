@@ -764,7 +764,8 @@ export default {
 
     this.$api.getAffiliateDaily().then(({ data }) => {
       this.affiliateDaily = data
-      this.affiliateEarning = data[data.length - 1]?.daily_affiliate_fees_usd
+      this.affiliateEarning =
+        data[data.length - 1]?.daily_affiliate_fees_usd ?? 0
     })
 
     this.$api.getEarnings().then(({ data }) => {
@@ -778,7 +779,7 @@ export default {
         if (data && data.data) {
           this.affiliateData = data.data.map((item) => ({
             affiliate: item.affiliate,
-            affiliate_fees_usd: item.affiliate_fees_usd,
+            affiliate_fees_usd: item.affiliate_fees_usd ?? 0,
             total_swaps: item.total_swaps,
             total_volume_usd: item.total_volume_usd,
             vc: item.vc,

@@ -233,6 +233,7 @@ export default {
 
   methods: {
     sortedData(data, field) {
+      data = data.filter((d) => d[field])
       return orderBy(data, [field], [this.sortDirection[field]]).slice(
         0,
         this.limit
