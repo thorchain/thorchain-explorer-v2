@@ -791,7 +791,7 @@ export default {
         )
         const affiliateBasis = memo.fee
         const affiliateFee = affiliateBasis || 0
-        if (swapAction?.status === 'pending') {
+        if (swapAction?.status === 'pending' && !this.quote) {
           try {
             const { data: quoteData } = await this.$api.getQuote({
               amount: inAmount,
