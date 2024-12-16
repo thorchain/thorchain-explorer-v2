@@ -657,14 +657,24 @@ export default {
 
         accordions.out.forEach((a, i) => {
           const outboundStages = this.getOutboundStages(a)
+          let delay = 0
+          if (a.outboundETA > this.chainsHeight?.THOR) {
+            delay =
+              this.blockSeconds('THOR') *
+              (+a.outboundETA - +this.chainsHeight?.THOR)
+          }
+          if (delay === 0) {
+            delay = a.outboundDelayRemaining
+          }
+
           const accordionOut = {
             name: `accordion-out-${i}`,
             data: {
               title: 'Outbound',
               done: a.done,
               pending: !a?.done,
-              remainingTime: a?.outboundDelayRemaining,
-              totalTime: a?.outboundDelayRemaining,
+              remainingTime: delay,
+              totalTime: delay,
               asset: showAssets ? a?.asset : undefined,
               stacks: [
                 {
@@ -706,9 +716,7 @@ export default {
                       'seconds'
                     )
                     .humanize(),
-                  is:
-                    !a.outboundDelayRemaining &&
-                    a.outboundETA > this.chainsHeight?.THOR,
+                  is: a.outboundETA > this.chainsHeight?.THOR,
                 },
                 {
                   key: 'Outbound Delay Est.',
