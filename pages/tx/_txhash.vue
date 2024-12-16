@@ -1269,7 +1269,7 @@ export default {
           outboundETA:
             thorStatus.stages.outbound_signed?.scheduled_outbound_height -
             this.thorHeight,
-          done: thorStatus.status === 'done',
+          done: thorStatus?.stages?.outbound_signed?.completed === true,
         },
       ]
 
@@ -1392,7 +1392,7 @@ export default {
           to: nativeTx?.out[0]?.address,
           height: nativeTx?.height,
           timeStamp,
-          done: true,
+          pending: false,
           showAtFirst: true,
         },
         out: [],
@@ -1851,6 +1851,8 @@ export default {
       // TODO: fix the loading check/spinner on complete
       // TODO: fix streaming card when finished
       // TODO: sometimes the pools price is fetched after the status
+
+      console.log(thorStatus)
 
       const outboundDelayRemaining =
         (thorStatus.stages.outbound_delay?.remaining_delay_seconds ?? 0) ||
