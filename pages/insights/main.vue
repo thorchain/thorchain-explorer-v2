@@ -209,16 +209,13 @@ export default {
         console.error('Error fetching swap history:', error)
       })
 
-    this.$api.getFeesRewardsMonthly().then(({ data }) => {
-      this.feesRewards(data)
-    })
-
     this.$api.getAffiliateSwapsByWallet().then(({ data }) => {
       this.affiliateWallets(data)
     })
 
     this.getCoinMarketInfo()
     this.$api.getDashboardPlots().then(({ data }) => {
+      this.feesRewards(data.earning.intervals)
       this.supplyBurn(data.earning)
       this.rewardsHistory = this.formatRewards(data.earning)
     })
@@ -546,15 +543,19 @@ export default {
       const liquidityFees = []
       const rewards = []
       const halfLine = []
-      const pctLiquidityFees = []
       const totalVolume = []
       d.forEach((interval, index) => {
-        xAxis.push(moment(interval.date).format('YY/MM/DD'))
-        liquidityFees.push(interval.liquidity_fees_usd)
-        rewards.push(interval.block_rewards_usd)
-        halfLine.push(interval.half_line)
-        totalVolume.push(interval.fees_plus_rewards)
-        pctLiquidityFees.push(interval.pct_liquidty_fees)
+        xAxis.push(
+          moment(
+            Math.floor((+interval.endTime + +interval.startTime) / 2) * 1e3
+          ).format('dddd, MMM D')
+        )
+        liquidityFees.push(
+          (interval.liquidityFees * interval.runePriceUSD) / 1e8
+        )
+        rewards.push((interval.blockRewards * interval.runePriceUSD) / 1e8)
+        halfLine.push(0.5)
+        totalVolume.push((interval.earnings * interval.runePriceUSD) / 1e8)
       })
 
       const series = [
