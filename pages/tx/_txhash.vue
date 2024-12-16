@@ -448,7 +448,7 @@ export default {
           6
 
         const totalTime =
-          +accordions?.action?.streaming?.count *
+          +accordions?.action?.streaming?.quantity *
           +accordions.action.streaming?.interval *
           6
 
@@ -1851,8 +1851,6 @@ export default {
       // TODO: fix the loading check/spinner on complete
       // TODO: fix streaming card when finished
       // TODO: sometimes the pools price is fetched after the status
-
-      console.log(thorStatus)
 
       const outboundDelayRemaining =
         (thorStatus.stages.outbound_delay?.remaining_delay_seconds ?? 0) ||
