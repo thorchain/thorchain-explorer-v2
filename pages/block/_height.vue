@@ -9,40 +9,86 @@
         </span>
       </h2>
     </div>
-    <info-card v-if="blockRemainingTime" :options="timerInfo">
-      <template #duration="{ item }">
-        <div class="duration">
-          <strong>{{ item.value.years().toString().padStart(2, '0') }}</strong>
-          <small>Years</small>
-        </div>
-        <div class="duration">
-          <strong>{{ item.value.months().toString().padStart(2, '0') }}</strong>
-          <small>Months</small>
-        </div>
-        <div class="duration">
-          <strong>{{ item.value.days().toString().padStart(2, '0') }}</strong>
-          <small>Days</small>
-        </div>
-        <div class="duration">
-          <strong>{{ item.value.hours().toString().padStart(2, '0') }}</strong>
-          <small>Hours</small>
-        </div>
-        <div class="duration">
-          <strong>
-            {{ item.value.minutes().toString().padStart(2, '0') }}
-          </strong>
-          <small>Minutes</small>
-        </div>
-        <div class="duration">
-          <strong>
-            {{ item.value.seconds().toString().padStart(2, '0') }}
-          </strong>
-          <small>Seconds</small>
-        </div>
-      </template>
-    </info-card>
+    <template v-if="blockRemainingTime">
+      <div class="block-remaining">
+        <card class="counter-container">
+          <div class="counter-items">
+            <div class="timer-items">
+              <div class="Countdown-title">
+                <ClockkIcon class="timer-icon" />
+                <strong>Countdown</strong>
+              </div>
+              <div class="timers">
+                <div class="duration">
+                  <small>Years</small>
+                  <strong>{{
+                    blockRemainingTime.years().toString().padStart(2, '0')
+                  }}</strong>
+                </div>
+                <div class="mini-line"></div>
+                <div class="duration">
+                  <small>Months</small>
+                  <strong>{{
+                    blockRemainingTime.months().toString().padStart(2, '0')
+                  }}</strong>
+                </div>
+                <div class="mini-line"></div>
+                <div class="duration">
+                  <small>Days</small>
+                  <strong>{{
+                    blockRemainingTime.days().toString().padStart(2, '0')
+                  }}</strong>
+                </div>
+                <div class="mini-line"></div>
+                <div class="duration">
+                  <small>Hours</small>
+                  <strong>{{
+                    blockRemainingTime.hours().toString().padStart(2, '0')
+                  }}</strong>
+                </div>
+                <div class="mini-line"></div>
+                <div class="duration">
+                  <small>Minutes</small>
+                  <strong>{{
+                    blockRemainingTime.minutes().toString().padStart(2, '0')
+                  }}</strong>
+                </div>
+                <div class="mini-line"></div>
+                <div class="duration">
+                  <small>Seconds</small>
+                  <strong>{{
+                    blockRemainingTime.seconds().toString().padStart(2, '0')
+                  }}</strong>
+                </div>
+              </div>
+            </div>
+            <div class="line"></div>
 
-    <template v-else>
+            <div class="target-info">
+              <div class="target-title">
+                <CalendarIcon class="target-icon" />
+                <strong>Target Date</strong>
+              </div>
+              <p>{{ mineTime }}</p>
+            </div>
+          </div>
+        </card>
+        <card class="block-details">
+            <div class="block-details-items">
+              <div class="block-details-title">
+                <strong>Block Details</strong>
+              </div>
+              <div class="block-info-items">
+                <strong>Remaining Blocks:</strong>
+                <span>#{{ remainingBlocks }}</span>
+                <strong>Current Block:</strong>
+                <span>#{{ currentHeight }}</span>
+              </div>
+            </div>
+        </card>
+      </div>
+    </template>
+    <template v-if="!blockRemainingTime">
       <skeleton-item
         :loading="!blockHash"
         :class="['block-name', { loading: !blockHash }]"
@@ -83,9 +129,11 @@ import moment from 'moment'
 import { mapGetters } from 'vuex'
 import Transactions from '~/components/Transactions.vue'
 import BlockIcon from '~/assets/images/block.svg?inline'
+import ClockkIcon from '~/assets/images/clock.svg?inline'
+import CalendarIcon from '~/assets/images/calendar.svg?inline'
 
 export default {
-  components: { Transactions, BlockIcon },
+  components: { Transactions, BlockIcon, ClockkIcon, CalendarIcon },
   asyncData({ params, redirect }) {
     if (!params.height) {
       return redirect('/')
@@ -104,12 +152,15 @@ export default {
       blockRemainingTime: undefined,
       actions: undefined,
       mineTime: undefined,
+      remainingBlocks: undefined,
+      currentHeight: undefined,
       assetColumns: [
         { label: 'Asset', field: 'assetName' },
         { label: 'Reward', field: 'assetReward' },
       ],
     }
   },
+
   computed: {
     ...mapGetters({
       runePrice: 'getRunePrice',
@@ -152,26 +203,7 @@ export default {
         },
       ]
     },
-    timerInfo() {
-      return [
-        {
-          title: '',
-          rowStart: 1,
-          colSpan: 1,
-          items: [
-            {
-              name: 'From',
-              valueSlot: 'duration',
-              value: this.blockRemainingTime,
-            },
-            {
-              name: 'When',
-              value: this.mineTime,
-            },
-          ],
-        },
-      ]
-    },
+
     assetRows() {
       return Object.keys(this.assetRewards).map((asset) => ({
         assetName: asset,
@@ -202,9 +234,12 @@ export default {
         this.mineTime = moment()
           .add(remainingSeconds, 'seconds')
           .format('YYYY MMM D, HH:SS')
+        this.remainingBlocks = blockDifference
       } else {
         this.blockRemainingTime = undefined
+        this.remainingBlocks = 0
       }
+      this.currentHeight = currentHeight
     },
 
     async getActions(height) {
@@ -267,9 +302,119 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.block-remaining {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: auto;
+
+  .counter-container,
+  .block-details{
+    display: flex;
+    max-width: 24rem;
+    max-height: 300px;
+    padding: 3px;
+    border-radius: 1rem;
+    @include sm {
+      max-width: 35rem;
+    }
+    .timers {
+      display: flex;
+      gap: 0.3rem;
+      width: 100%;
+      @include sm {
+        gap: 1rem;
+      }
+    }
+
+    strong {
+      display: flex;
+      justify-content: flex-start;
+      text-align: left;
+      width: 100%;
+    }
+
+    .Countdown-title,
+    .target-title,
+    .block-details-title {
+      display: flex;
+      gap: 0.5rem;
+      width: 100%;
+      align-items: center;
+
+      .timer-icon,
+      .target-icon {
+        width: 1rem;
+        height: 1rem;
+      }
+    }
+    .counter-items {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .duration {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+    .duration strong {
+      font-size: 1.5rem;
+      color: var(--primary-color);
+    }
+
+    .duration small {
+      font-size: 0.9rem;
+      color: var(--sec-font-color);
+    }
+  }
+
+  .line {
+    height: 0.5px;
+    background-color: var(--border-color);
+    width: 100%;
+    gap: 0px;
+    display: flex;
+  }
+  .mini-line {
+    height: 43.5px;
+    background-color: var(--border-color);
+    width: 1px;
+    gap: 0px;
+    display: flex;
+  }
+
+  .target-info,
+  .timer-items,
+  .block-details-items {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 1rem;
+
+    p {
+      font-size: 18.75px;
+      color: var(--sec-font-color);
+      margin: 0;
+    }
+  }
+}
+.block-info-items {
+  display: flex;
+  gap: 0.5rem;
+  flex-direction: column;
+  span {
+    color: var(--sec-font-color);
+    font-weight: bold;
+  }
+}
 .block-content {
   display: flex;
   gap: 0.5rem;
+  flex-wrap: wrap;
 }
 .block-icon {
   fill: currentColor;
@@ -313,12 +458,5 @@ export default {
     margin: 14px 0;
     max-height: 31.42px;
   }
-}
-.duration {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 0 5px;
-  gap: 3px;
 }
 </style>
