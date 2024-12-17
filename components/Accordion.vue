@@ -50,7 +50,11 @@
             </div>
           </div>
 
-          <div :class="'mini-bubble danger'" style="border-radius: 8px">
+          <div
+            v-if="error"
+            :class="'mini-bubble danger'"
+            style="border-radius: 8px"
+          >
             <div class="error-status">
               <warning-icon class="icon tx-icon-warn warn" />
               <span class="error-text">Error</span>

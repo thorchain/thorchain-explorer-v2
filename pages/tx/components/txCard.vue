@@ -81,8 +81,8 @@
               v-if="overall.middle.fail"
               class="icon tx-icon-warn warn"
             />
-            <div v-else-if="overall.middle.pending" class="simple-spinner">
-              <div class="border-bottom-spinner"></div>
+            <div v-else-if="overall.middle.pending" class="tx-spinner">
+              <!-- <div class="border-bottom-spinner"></div> -->
             </div>
             <send-icon v-else-if="overall.middle.send" class="icon tx-icon" />
             <send-icon v-else class="icon tx-icon" />
@@ -290,6 +290,7 @@ $border-size: 2px;
       }
 
       .tx-wrapper {
+        width: 100%;
         display: flex;
         flex: 1;
         flex-direction: column;
@@ -381,6 +382,7 @@ $border-size: 2px;
     margin-bottom: 0.75rem;
   }
 }
+
 @keyframes rotation {
   0% {
     transform: rotate(0deg);
@@ -390,23 +392,37 @@ $border-size: 2px;
   }
 }
 
-.simple-spinner {
-  border: 2px solid;
-  border-color: var(--left-border) transparent;
+.tx-spinner {
+  position: relative;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  display: inline-block;
-  -webkit-animation: rotation 1s linear infinite;
   animation: rotation 1.5s linear infinite;
-  .border-bottom-spinner {
-    box-sizing: border-box;
+
+  &::before {
+    content: '';
     position: absolute;
+    left: 0;
+    top: 0;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
-    display: inline-block;
-    width: 25.5px;
-    height: 25.5px;
-    border: 2px solid;
-    border-color: var(--right-border) transparent;
-    -webkit-animation: rotation 0.6s linear infinite reverse;
+    border: 3px solid transparent;
+    border-bottom: 3px solid var(--left-border);
+    border-right: 3px solid var(--left-border);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    border-top: 3px solid var(--right-border);
+    border-left: 3px solid var(--right-border);
   }
 }
 
