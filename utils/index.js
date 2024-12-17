@@ -318,6 +318,8 @@ const memoToType = {
   'trade-': 'tradeWithdraw',
   'pool+': 'runePoolDeposit',
   'pool-': 'runePoolWithdraw',
+  'secure+': 'secureDeposit',
+  'secure-': 'secureWithdraw',
 }
 
 export function parseMemoToTxType(memo) {
@@ -443,6 +445,14 @@ export function assetToTrade(str) {
   }
 
   return str.replace('.', '~')
+}
+
+export function assetToSecure(str) {
+  if (typeof str === 'object') {
+    str = assetToString(str)
+  }
+
+  return str.replace('.', '-')
 }
 
 export function tradeToAsset(str) {
@@ -633,7 +643,15 @@ export function assetFromString(s) {
   const ticker = isSecure ? data[1] : symbol.split('-')[0]
   const address = isSecure ? '' : (symbol.split('-')[1] ?? '')
 
-  return { chain, symbol, ticker, address, synth: isSynth, trade: isTrade }
+  return {
+    chain,
+    symbol,
+    ticker,
+    address,
+    synth: isSynth,
+    trade: isTrade,
+    secure: isSecure,
+  }
 }
 
 export function assetToString({ chain, synth, trade, symbol }) {

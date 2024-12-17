@@ -58,11 +58,9 @@ export default {
       if (!assetStr) {
         return
       }
-      const { chain, synth, trade } = assetFromString(assetStr)
+      const { chain, synth, trade, secure } = assetFromString(assetStr)
       let asset = `${chain}.${chain}`
-      if (synth) {
-        return 'THOR.RUNE'
-      } else if (trade) {
+      if (synth || trade || secure) {
         return 'THOR.RUNE'
       }
       switch (chain) {
@@ -271,6 +269,8 @@ export default {
           del = '/'
         } else if (asset.trade) {
           del = '~'
+        } else if (asset.secure) {
+          del = '-'
         }
         return asset.chain + del + asset.ticker
       } catch (error) {

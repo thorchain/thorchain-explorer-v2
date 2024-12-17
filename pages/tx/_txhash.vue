@@ -63,6 +63,7 @@ import DisconnectIcon from '~/assets/images/disconnect.svg?inline'
 import {
   assetFromString,
   assetToTrade,
+  assetToSecure,
   isInternalTx,
   tradeToAsset,
   assetToString,
@@ -856,7 +857,10 @@ export default {
           memo
         )
         this.$set(this, 'cards', [this.createCard(cards, accordions)])
-      } else if (memo.type === 'tradeWithdraw') {
+      } else if (
+        memo.type === 'tradeWithdraw' ||
+        memo.type === 'secureWithdraw'
+      ) {
         const { cards, accordions } = this.createTradeWithdrawState(
           thorStatus,
           midgardAction,
@@ -864,7 +868,10 @@ export default {
           memo
         )
         this.$set(this, 'cards', [this.createCard(cards, accordions)])
-      } else if (memo.type === 'tradeDeposit') {
+      } else if (
+        memo.type === 'tradeDeposit' ||
+        memo.type === 'secureDeposit'
+      ) {
         const { cards, accordions } = this.createTradeDepositState(
           thorStatus,
           midgardAction,
@@ -896,7 +903,10 @@ export default {
           memo
         )
         this.$set(this, 'cards', [this.createCard(cards, accordions)])
-      } else if (midgardAction.actions[0].type === 'failed') {
+      } else if (
+        midgardAction.actions &&
+        midgardAction.actions[0]?.type === 'failed'
+      ) {
         const { cards, accordions } = this.createFailedState(
           thorStatus,
           midgardAction,
@@ -1181,6 +1191,11 @@ export default {
 
       const ast = this.parseMemoAsset(thorStatus.tx.coins[0].asset, this.pools)
 
+      let isSecure = false
+      if (memo.type.includes('secure')) {
+        isSecure = true
+      }
+
       const ins = [
         {
           asset: ast,
@@ -1197,7 +1212,7 @@ export default {
 
       const outs = [
         {
-          asset: assetToTrade(ast),
+          asset: isSecure ? assetToSecure(ast) : assetToTrade(ast),
           amount: thorStatus.out_txs
             ? thorStatus.out_txs[0]?.coins[0].amount
             : thorStatus.tx.coins[0].amount,
@@ -1209,7 +1224,7 @@ export default {
 
       return {
         cards: {
-          title: 'Trade Account',
+          title: this.camelCase(memo.type),
           in: ins,
           middle: {
             pending: false,
@@ -1275,7 +1290,7 @@ export default {
 
       return {
         cards: {
-          title: 'Trade Account',
+          title: this.camelCase(memo.type),
           in: ins,
           middle: {
             pending: this.isTxInPending(thorStatus, action),
