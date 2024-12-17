@@ -79,9 +79,11 @@
           <div class="tx-state">
             <warning-icon
               v-if="overall.middle.fail"
-              class="icon tx-icon warn"
+              class="icon tx-icon-warn warn"
             />
-            <div v-else-if="overall.middle.pending" class="simple-spinner" />
+            <div v-else-if="overall.middle.pending" class="tx-spinner">
+              <!-- <div class="border-bottom-spinner"></div> -->
+            </div>
             <send-icon v-else-if="overall.middle.send" class="icon tx-icon" />
             <send-icon v-else class="icon tx-icon" />
           </div>
@@ -189,12 +191,15 @@ export default {
     },
     vars() {
       return {
-        '--left-border':
-          this.assetColorPalette(this.overall.in[0]?.asset) ?? '#5CDFBD',
-        '--right-border': this.overall.out[0]?.borderColor
-          ? this.overall.out[0]?.borderColor
-          : (this.assetColorPalette(this.overall.out[0]?.asset) ??
-            (this.$store?.state?.darkTheme ? '#87e9b5' : '#3ca38b')),
+        '--left-border': this.overall.middle?.fail
+          ? '#EF5350'
+          : (this.assetColorPalette(this.overall.in[0]?.asset) ?? '#5CDFBD'),
+        '--right-border': this.overall.middle?.fail
+          ? '#EF5350'
+          : this.overall.out[0]?.borderColor
+            ? this.overall.out[0]?.borderColor
+            : (this.assetColorPalette(this.overall.out[0]?.asset) ??
+              (this.$store?.state?.darkTheme ? '#87e9b5' : '#3ca38b')),
       }
     },
   },
@@ -235,9 +240,11 @@ $border-size: 2px;
       align-items: center;
       flex-wrap: wrap;
       flex-direction: column;
+      gap: 0.5rem;
 
       @include sm {
         flex-direction: row;
+        gap: 0px;
       }
 
       .tx-asset {
@@ -267,15 +274,23 @@ $border-size: 2px;
         .tx-icon {
           margin: 0;
           padding: 3px;
-
+          transform: rotate(90deg);
+          @include sm {
+            transform: rotate(0deg);
+          }
+        }
+        .tx-icon-warn {
+          margin: 0;
+          padding: 3px;
           &.warn {
             padding: 0;
-            fill: rgb(155 28 28);
+            fill: rgb(239, 83, 80);
           }
         }
       }
 
       .tx-wrapper {
+        width: 100%;
         display: flex;
         flex: 1;
         flex-direction: column;
@@ -368,9 +383,47 @@ $border-size: 2px;
   }
 }
 
-.simple-spinner {
-  border-color: var(--left-border);
-  border-top-color: var(--card-bg-color);
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.tx-spinner {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  animation: rotation 1.5s linear infinite;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    border-bottom: 3px solid var(--left-border);
+    border-right: 3px solid var(--left-border);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    border-top: 3px solid var(--right-border);
+    border-left: 3px solid var(--right-border);
+  }
 }
 
 .interface {

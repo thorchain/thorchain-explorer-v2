@@ -92,10 +92,17 @@ export default {}
 .tx-value {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
   align-items: center;
+  justify-content: center;
   margin-bottom: 10px;
   margin: 13px 3px;
+  gap: 1.5rem;
+
+  @include sm {
+    display: flex;
+    justify-content: space-between;
+    gap: 0px;
+  }
 }
 .tx-info {
   border: 1px solid var(--border-color);
