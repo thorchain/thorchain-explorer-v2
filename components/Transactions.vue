@@ -21,7 +21,6 @@
             :param="props.row[props.column.field]"
             :hovered-address="hoveredAddress"
             :disable="owner && owner === props.row[props.column.field]"
-            :class="hovered"
             @setHovered="setHoveredAddress"
             @removeHovered="removeHoveredAddress"
           />

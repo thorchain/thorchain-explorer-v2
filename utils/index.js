@@ -773,6 +773,10 @@ export const interfaces = {
     name: 'BitGet Wallet',
     icon: 'bgw',
   },
+  fortuna: {
+    name: 'Fortuna Swap',
+    icon: 'fortunaswap',
+  },
 }
 
 export const affiliateMap = {
@@ -810,6 +814,7 @@ export const affiliateMap = {
   is: interfaces.is,
   ds: interfaces.defispot,
   bgw: interfaces.bgw,
+  fs: interfaces.fortuna,
 }
 
 export function getExplorerAddressUrl(chain, query) {
