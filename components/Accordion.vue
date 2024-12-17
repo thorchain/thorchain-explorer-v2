@@ -50,6 +50,13 @@
             </div>
           </div>
 
+          <div :class="'mini-bubble danger'" style="border-radius: 8px">
+            <div class="error-status">
+              <warning-icon class="icon tx-icon-warn warn" />
+              <span class="error-text">Error</span>
+            </div>
+          </div>
+
           <div v-if="pending && !remainingTime" class="loading">
             <SandTimer class="loading-icon" />
             <span class="loading-text">Pending</span>
@@ -120,6 +127,7 @@ import { assetFromString, getExplorerAddressUrl } from '~/utils'
 import SandTimer from '@/assets/images/sandtimer.svg?inline'
 import Clock from '~/assets/images/alarmclock.svg?inline'
 import circleSuccess from '~/assets/images/circle.svg?inline'
+import WarningIcon from '~/assets/images/warning.svg?inline'
 
 export default {
   components: {
@@ -129,6 +137,7 @@ export default {
     SandTimer,
     Clock,
     circleSuccess,
+    WarningIcon,
   },
   props: [
     'title',
@@ -138,6 +147,7 @@ export default {
     'remainingTime',
     'totalTime',
     'done',
+    'error',
     'asset',
   ],
   data() {
@@ -271,6 +281,41 @@ export default {
   padding: 8px;
   border-radius: 0.5rem;
   border: 1px solid var(--border-color);
+  .error-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    padding: 1.2px;
+    background-color: rgb(239 83 80 / 11%);
+    border-radius: 7px;
+    padding: 3.5px 8px;
+
+    .error-text {
+      display: flex;
+      font-size: 10px;
+      font-weight: bold;
+      display: flex;
+      align-content: center;
+      justify-content: center;
+      align-items: center;
+      justify-content: center;
+      color: rgb(239, 83, 80);
+    }
+    .tx-icon-warn {
+      margin: 0;
+      width: 1rem;
+      height: 1rem;
+      &.warn {
+        padding: 0;
+        fill: rgb(239, 83, 80);
+      }
+    }
+  }
+  .mini-bubble.danger {
+    border: none !important;
+    background-color: transparent;
+  }
 
   .accordion-info {
     display: flex;

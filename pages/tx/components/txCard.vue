@@ -79,7 +79,7 @@
           <div class="tx-state">
             <warning-icon
               v-if="overall.middle.fail"
-              class="icon tx-icon warn"
+              class="icon tx-icon-warn warn"
             />
             <div v-else-if="overall.middle.pending" class="simple-spinner">
               <div class="border-bottom-spinner"></div>
@@ -191,12 +191,15 @@ export default {
     },
     vars() {
       return {
-        '--left-border':
-          this.assetColorPalette(this.overall.in[0]?.asset) ?? '#5CDFBD',
-        '--right-border': this.overall.out[0]?.borderColor
-          ? this.overall.out[0]?.borderColor
-          : (this.assetColorPalette(this.overall.out[0]?.asset) ??
-            (this.$store?.state?.darkTheme ? '#87e9b5' : '#3ca38b')),
+        '--left-border': this.overall.middle?.fail
+          ? '#EF5350'
+          : (this.assetColorPalette(this.overall.in[0]?.asset) ?? '#5CDFBD'),
+        '--right-border': this.overall.middle?.fail
+          ? '#EF5350'
+          : this.overall.out[0]?.borderColor
+            ? this.overall.out[0]?.borderColor
+            : (this.assetColorPalette(this.overall.out[0]?.asset) ??
+              (this.$store?.state?.darkTheme ? '#87e9b5' : '#3ca38b')),
       }
     },
   },
@@ -275,10 +278,13 @@ $border-size: 2px;
           @include sm {
             transform: rotate(0deg);
           }
-
+        }
+        .tx-icon-warn {
+          margin: 0;
+          padding: 3px;
           &.warn {
             padding: 0;
-            fill: rgb(155 28 28);
+            fill: rgb(239, 83, 80);
           }
         }
       }
