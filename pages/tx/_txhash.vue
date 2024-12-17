@@ -1407,6 +1407,7 @@ export default {
           to: nativeTx?.out[0]?.address,
           height: nativeTx?.height,
           timeStamp,
+          done: true,
           pending: false,
           showAtFirst: true,
         },
