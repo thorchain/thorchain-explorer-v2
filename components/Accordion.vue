@@ -40,7 +40,7 @@
           </div>
 
           <div
-            v-if="done || (remainingTime <= 0 && !pending)"
+            v-if="!error && (done || (remainingTime <= 0 && !pending))"
             :class="'mini-bubble'"
             style="border-radius: 8px"
           >

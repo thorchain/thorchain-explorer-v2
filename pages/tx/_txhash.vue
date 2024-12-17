@@ -29,6 +29,7 @@
               :total-time="s.data.totalTime"
               :asset="s.data.asset"
               :stacks="s.data.stacks"
+              :error="s.data.error"
               :show-at-first="true"
             />
           </template>
@@ -462,6 +463,7 @@ export default {
             pending: !accordions.action?.done,
             done: accordions.action?.done,
             showAtFirst: accordions.action?.showAtFirst,
+            error: accordions.action?.error,
             stacks: [
               {
                 key: 'Timestamp',
@@ -1070,6 +1072,7 @@ export default {
             height: action?.height,
             timeStamp,
             done: true,
+            error: true,
           },
           out: [],
         },
@@ -1407,7 +1410,6 @@ export default {
           to: nativeTx?.out[0]?.address,
           height: nativeTx?.height,
           timeStamp,
-          done: true,
           pending: false,
           showAtFirst: true,
         },
