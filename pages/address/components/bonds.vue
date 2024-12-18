@@ -75,7 +75,10 @@ export default {
       const ret = []
       for (let i = 0; i < this.nodes.length; i++) {
         const node = this.nodes[i]
-        const bond = node?.bond_providers?.providers.find(
+        if (!node?.bond_providers?.providers) {
+          continue
+        }
+        const bond = node?.bond_providers?.providers?.find(
           (n) => n.bond_address === this.address
         )
         if (bond !== undefined) {
