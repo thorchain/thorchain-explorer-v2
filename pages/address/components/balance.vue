@@ -1,6 +1,6 @@
 <template>
-  <card>
-    <template v-if="state">
+  <div>
+    <card v-if="state && explorers.length == 0">
       <div class="balance-container">
         <span class="title-balance">Balances</span>
         <div class="balance-label">
@@ -9,6 +9,7 @@
             <asset-icon
               v-if="runeToken && runeToken.price > 0 && !isNaN(runeToken.price)"
               :asset="{ ticker: 'RUNE', chain: 'THOR' }"
+              :height="'16px'"
               :chain="false"
               class="asset-icon"
             />
@@ -27,6 +28,7 @@
           <skeleton-item :loading="loading || !nodes" class="balance-content">
             <asset-icon
               :asset="{ ticker: 'RUNE', chain: 'THOR' }"
+              :height="'16px'"
               :chain="false"
               class="asset-icon"
             />
@@ -163,24 +165,46 @@
           </div>
         </div>
       </div>
-    </template>
-  </card>
+    </card>
+    <card v-else title="Chain Explorers">
+      <div class="explorers">
+        <div v-for="explorer in explorers" :key="explorer.chain">
+          <a
+            class="explorer-link mini-bubble info hoverable"
+            :href="explorer.url"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <asset-icon
+              :height="'1.2rem'"
+              :asset="baseChainAsset(explorer.chain)"
+            ></asset-icon>
+            {{ explorer.chain }}
+            <external-icon class="ext-icon" />
+          </a>
+        </div>
+      </div>
+    </card>
+  </div>
 </template>
 
 <script>
 import { bnOrZero } from '@xchainjs/xchain-util'
 import { mapGetters } from 'vuex'
 import { orderBy } from 'lodash'
-import { assetFromString } from '~/utils'
+import { validate } from '@swyftx/api-crypto-address-validator'
+import { assetFromString, getExplorerAddressUrl } from '~/utils'
 import AngleIcon from '~/assets/images/angle-down.svg?inline'
 import ArrowDownIcon from '~/assets/images/arrow-down-.svg?inline'
 import ArrowUpIcon from '~/assets/images/arrow-up-.svg?inline'
+import ExternalIcon from '@/assets/images/external.svg?inline'
 
 export default {
   components: {
     AngleIcon,
     ArrowDownIcon,
     ArrowUpIcon,
+    ExternalIcon,
   },
   props: ['state', 'loading', 'address'],
   data() {
@@ -316,6 +340,32 @@ export default {
         ret += this.bonds.total
       }
       return ret
+    },
+    explorers() {
+      const blockChains = ['btc', 'eth', 'doge', 'bch', 'ltc', 'atom']
+
+      const explorers = []
+      for (let i = 0; i < blockChains.length; i++) {
+        const chain = blockChains[i]
+        const res = validate(this.address, chain)
+
+        if (res && chain === 'eth') {
+          const evms = ['ETH', 'BSC', 'AVAX']
+          evms.forEach((e) => {
+            explorers.push({
+              chain: e,
+              url: getExplorerAddressUrl(e, this.address),
+            })
+          })
+        } else if (res) {
+          explorers.push({
+            chain: chain.toUpperCase(),
+            url: getExplorerAddressUrl(chain.toUpperCase(), this.address),
+          })
+        }
+      }
+
+      return explorers
     },
   },
   methods: {
@@ -560,15 +610,7 @@ button[disabled] {
     }
   }
 }
-::v-deep .asset-icon {
-  width: 14px !important;
-  height: 14px !important;
 
-  svg {
-    width: 14px !important;
-    height: 14px !important;
-  }
-}
 .no-results {
   padding: 10px;
   text-align: center;
@@ -606,5 +648,28 @@ button[disabled] {
 }
 .arrow-icon {
   fill: var(--primary-color);
+}
+
+.title-explorers {
+  font-weight: bold;
+  border-bottom: 1px solid var(--border-color);
+  margin: 0;
+  padding-bottom: 15px;
+  margin-bottom: 10px;
+}
+.explorers {
+  display: flex;
+  gap: 8px;
+
+  .explorer-link {
+    display: flex;
+    align-items: center;
+    height: 2rem;
+
+    .ext-icon {
+      fill: currentColor;
+      height: 0.8rem;
+    }
+  }
 }
 </style>

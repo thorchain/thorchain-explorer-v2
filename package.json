@@ -17,6 +17,7 @@
     "@nuxtjs/axios": "^5.13.6",
     "@nuxtjs/dotenv": "^1.4.1",
     "@nuxtjs/style-resources": "^1.2.1",
+    "@swyftx/api-crypto-address-validator": "^1.13.1",
     "axios-retry": "^3.2.5",
     "color-hash": "^2.0.2",
     "eslint-config-prettier": "^9.1.0",
