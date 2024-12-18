@@ -220,6 +220,12 @@ export default {
     this.createDuration()
     this.fetchBlockInfo(this.height)
     this.getActions(this.height)
+    this.startCountdown()
+  },
+  beforeDestroy() {
+    if (this.timer) {
+      clearInterval(this.timer)
+    }
   },
   methods: {
     createDuration() {
@@ -233,13 +239,29 @@ export default {
         this.blockRemainingTime = moment.duration(remainingSeconds, 'seconds')
         this.mineTime = moment()
           .add(remainingSeconds, 'seconds')
-          .format('YYYY MMM D, HH:SS')
+          .format('YYYY MMM D, HH:mm')
         this.remainingBlocks = blockDifference
       } else {
         this.blockRemainingTime = undefined
         this.remainingBlocks = 0
       }
       this.currentHeight = currentHeight
+    },
+
+    startCountdown() {
+      if (!this.blockRemainingTime) return
+
+      this.timer = setInterval(() => {
+        if (this.blockRemainingTime.asSeconds() > 0) {
+          this.blockRemainingTime = moment.duration(
+            this.blockRemainingTime.asSeconds() - 1,
+            'seconds'
+          )
+        } else {
+          clearInterval(this.timer)
+          this.blockRemainingTime = undefined
+        }
+      }, 1000)
     },
 
     async getActions(height) {
