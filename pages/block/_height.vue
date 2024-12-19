@@ -5,7 +5,7 @@
       <h2>
         Block
         <span style="color: var(--sec-font-color)">
-          {{ $route.params.height }}
+          {{ $route.params.height | number('0,0') }}
         </span>
       </h2>
     </div>
@@ -74,17 +74,17 @@
           </div>
         </card>
         <card class="block-details">
-            <div class="block-details-items">
-              <div class="block-details-title">
-                <strong>Block Details</strong>
-              </div>
-              <div class="block-info-items">
-                <strong>Remaining Blocks:</strong>
-                <span>#{{ remainingBlocks }}</span>
-                <strong>Current Block:</strong>
-                <span>#{{ currentHeight }}</span>
-              </div>
+          <div class="block-details-items">
+            <div class="block-details-title">
+              <strong>Block Details</strong>
             </div>
+            <div class="block-info-items">
+              <strong>Remaining Blocks:</strong>
+              <span>#{{ remainingBlocks }}</span>
+              <strong>Current Block:</strong>
+              <span>#{{ currentHeight }}</span>
+            </div>
+          </div>
         </card>
       </div>
     </template>
@@ -214,6 +214,9 @@ export default {
   watch: {
     chainsHeight() {
       this.createDuration()
+      if (!this.timer) {
+        this.startCountdown()
+      }
     },
   },
   mounted() {
@@ -234,7 +237,7 @@ export default {
 
       if (targetHeight > currentHeight) {
         const blockDifference = +targetHeight - +currentHeight
-        const blockTimeSeconds = 5.5
+        const blockTimeSeconds = 6
         const remainingSeconds = blockDifference * blockTimeSeconds
         this.blockRemainingTime = moment.duration(remainingSeconds, 'seconds')
         this.mineTime = moment()
@@ -332,7 +335,7 @@ export default {
   margin: auto;
 
   .counter-container,
-  .block-details{
+  .block-details {
     display: flex;
     max-width: 24rem;
     max-height: 300px;
