@@ -234,8 +234,9 @@ export default {
       this.isLoading = false
 
       const nt = md?.actions?.find((a) => a.type === 'send')
+      const memo = this.parseMemo(td?.tx?.tx?.memo)
       // TODO: add proper error handling
-      if (nt) {
+      if (nt && (!memo.type || memo.type === 'unknown')) {
         this.createNativeTx(nt)
         return false
       } else {
@@ -1411,6 +1412,7 @@ export default {
           height: nativeTx?.height,
           timeStamp,
           pending: false,
+          done: true,
           showAtFirst: true,
         },
         out: [],
@@ -1745,6 +1747,7 @@ export default {
         thorStatus.tx.from_address.toLowerCase(),
         memo.destAddr?.toLowerCase(), // TODO: sometimes the memo destAddr will be THORName
       ])
+      console.log(memo)
       // Non affiliate outs
       let outTxs = thorStatus.out_txs?.filter(
         (tx) =>
