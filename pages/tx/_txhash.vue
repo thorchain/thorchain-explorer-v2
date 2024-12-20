@@ -1461,7 +1461,7 @@ export default {
           out: [
             {
               text: isSaver ? 'THORChain Vault' : 'THORChain Pool',
-              icon: require('@/assets/images/vault.svg?inline'),
+              icon: require('@/assets/images/safe.svg?inline'),
               borderColor: 'var(--border-color)',
             },
           ],
