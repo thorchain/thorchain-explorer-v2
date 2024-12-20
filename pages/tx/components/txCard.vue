@@ -52,13 +52,15 @@
               </template>
               <template v-else>
                 <div class="amount-info">
-                  <span class="mono sec-color">{{
-                    o.amount
-                      ? o.filter
-                        ? o.filter(o.amount)
-                        : baseAmountFormatOrZero(o.amount)
-                      : '...'
-                  }}</span>
+                  <span class="mono sec-color">
+                    {{
+                      (o.amount || o.amount === 0) && !isNaN(o.amount)
+                        ? o.filter
+                          ? o.filter(o.amount)
+                          : baseAmountFormatOrZero(o.amount)
+                        : '...'
+                    }}</span
+                  >
                   <small class="mono sec-color">{{ showAsset(o.asset) }}</small>
                 </div>
                 <small>{{
@@ -94,6 +96,7 @@
             v-for="(o, i) in overall.out"
             :key="i + '-o-out'"
             class="tx-outbound"
+            :style="getBorderColor(o.asset)"
           >
             <div class="outbound-info">
               <template v-if="o.text">
@@ -200,6 +203,17 @@ export default {
             ? this.overall.out[0]?.borderColor
             : (this.assetColorPalette(this.overall.out[0]?.asset) ??
               (this.$store?.state?.darkTheme ? '#87e9b5' : '#3ca38b')),
+      }
+    },
+  },
+  methods: {
+    getBorderColor(asset) {
+      if (!asset) {
+        return
+      }
+
+      return {
+        borderColor: this.assetColorPalette(asset),
       }
     },
   },

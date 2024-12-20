@@ -1609,7 +1609,7 @@ export default {
       const moreOuts = outTxs?.slice(1)
       if (moreOuts && moreOuts.length > 0) {
         outs.push(
-          moreOuts.map((o) => ({
+          ...moreOuts.map((o) => ({
             asset: this.parseMemoAsset(o.coins[0].asset, this.pools),
             amount: parseInt(o.coins[0].amount),
           }))
@@ -1638,7 +1638,7 @@ export default {
 
         if (moreOuts && moreOuts.length > 0) {
           outActions.push(
-            moreOuts.map((o) => ({
+            ...moreOuts.map((o) => ({
               txid: o.id,
               to: o.to_address,
               asset: this.parseMemoAsset(o.coins[0].asset, this.pools),
@@ -1945,7 +1945,7 @@ export default {
             type: onlyRefund ? 'refunded Swap' : 'swap',
             timeStamp: timeStamp || null,
             limit: memo.limit,
-            limitAsset: onlyRefund ? outMemoAsset : outAsset,
+            limitAsset: outMemoAsset,
             affiliateName: memo.affiliate,
             affiliateFee: memo.fee || 0,
             liquidityFee:
