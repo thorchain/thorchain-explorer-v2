@@ -834,14 +834,16 @@ export default {
         finalCards.push(this.createCard(cards, accordions))
         if (memo.asymmetry) {
           const ts = await this.getOtherActionHash(midgardAction, thorStatus)
-          const m = this.parseMemo(ts.tx?.memo)
-          const { cards, accordions } = this.createAddLiquidityState(
-            ts,
-            midgardAction,
-            thorTx,
-            m
-          )
-          finalCards.push(this.createCard(cards, accordions))
+          if (!ts) {
+            const m = this.parseMemo(ts.tx?.memo)
+            const { cards, accordions } = this.createAddLiquidityState(
+              ts,
+              midgardAction,
+              thorTx,
+              m
+            )
+            finalCards.push(this.createCard(cards, accordions))
+          }
         }
         this.$set(this, 'cards', finalCards)
       } else if (memo.type === 'withdraw') {
@@ -1421,7 +1423,7 @@ export default {
       this.$set(this, 'cards', [this.createCard(cards, accordions)])
     },
     createAddLiquidityState(thorStatus, actions, thorTx, memo) {
-      const isSaver = this.parseMemoAsset(memo.asset).synth
+      const isSaver = this.parseMemoAsset(memo.asset)?.synth
 
       const inAsset = this.parseMemoAsset(
         thorStatus.tx.coins[0].asset,
