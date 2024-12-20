@@ -70,6 +70,9 @@
         />
         <vault-icon class="action-icon" />
       </div>
+      <div class="mini-bubble yellow">
+        {{ (row.metadata.withdraw.basisPoints / 1e4) | percent(2) }}
+      </div>
       <right-arrow class="action-type" />
       <span
         v-for="(ops, i) in row.out"
