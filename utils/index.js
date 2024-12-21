@@ -707,8 +707,8 @@ export const interfaces = {
     icon: 'thorwallet',
   },
   xdefi: {
-    name: 'XDEFI',
-    icon: 'xdefi',
+    name: 'Ctrl',
+    icon: 'ctrl',
   },
   asgardex: {
     name: 'ASGARDEX',
