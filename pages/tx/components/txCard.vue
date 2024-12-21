@@ -63,16 +63,16 @@
                   >
                   <small class="mono sec-color">{{ showAsset(o.asset) }}</small>
                 </div>
-                <small>{{
-                  o.amountUSD ? formatBnCurrency(o.amountUSD) : '...'
+                <small v-if="o.amountUSD">{{
+                  formatBnCurrency(o.amountUSD)
                 }}</small>
+                <div class="tx-asset">
+                  <component
+                    :is="o.icon"
+                    :class="['asset-icon', 'custom-icon', o.class]"
+                  />
+                </div>
               </template>
-              <div v-else class="tx-asset">
-                <component
-                  :is="o.icon"
-                  :class="['asset-icon', 'custom-icon', o.class]"
-                />
-              </div>
             </div>
           </div>
         </div>
@@ -120,8 +120,8 @@
                   }}</span>
                   <small class="mono sec-color">{{ showAsset(o.asset) }}</small>
                 </div>
-                <small>{{
-                  o.amountUSD ? formatBnCurrency(o.amountUSD) : '...'
+                <small v-if="o.amountUSD">{{
+                  formatBnCurrency(o.amountUSD)
                 }}</small>
               </template>
             </div>
@@ -323,7 +323,6 @@ $border-size: 2px;
         flex-direction: column;
         width: 100%;
         align-items: center;
-        gap: 0.4rem;
       }
       .amount-info {
         display: flex;

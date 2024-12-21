@@ -834,7 +834,7 @@ export default {
         finalCards.push(this.createCard(cards, accordions))
         if (memo.asymmetry) {
           const ts = await this.getOtherActionHash(midgardAction, thorStatus)
-          if (!ts) {
+          if (ts) {
             const m = this.parseMemo(ts.tx?.memo)
             const { cards, accordions } = this.createAddLiquidityState(
               ts,
@@ -1749,7 +1749,6 @@ export default {
         thorStatus.tx.from_address.toLowerCase(),
         memo.destAddr?.toLowerCase(), // TODO: sometimes the memo destAddr will be THORName
       ])
-      console.log(memo)
       // Non affiliate outs
       let outTxs = thorStatus.out_txs?.filter(
         (tx) =>
@@ -1972,6 +1971,7 @@ export default {
             done:
               thorStatus.stages.swap_finalised?.completed ||
               !thorStatus.stages.swap_status?.pending,
+            error: onlyRefund,
           },
           out: [
             {
