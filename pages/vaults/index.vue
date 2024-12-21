@@ -61,7 +61,7 @@
                   </span>
                   <template slot="popper">
                     <div class="popper-card">
-                      <div class="card-header">Nodes Member</div>
+                      <div class="card-header">Node Members</div>
                       <div class="card-body grid-template">
                         <small
                           v-for="(node, i) in props.row.membership"
