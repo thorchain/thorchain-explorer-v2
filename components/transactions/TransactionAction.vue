@@ -70,7 +70,7 @@
         />
         <vault-icon class="action-icon" />
       </div>
-      <div class="mini-bubble yellow">
+      <div v-if="row.metadata.withdraw" class="mini-bubble yellow">
         {{ (row.metadata.withdraw.basisPoints / 1e4) | percent(2) }}
       </div>
       <right-arrow class="action-type" />
@@ -116,6 +116,20 @@
         />
         <vault-icon class="action-icon" />
       </div>
+      <template v-if="hasAffiliate(row)">
+        <span>|</span>
+        <template v-for="affiliate in hasAffiliate(row)">
+          <div :key="affiliate" class="executed">
+            <small v-if="!affiliateWallet(affiliate).icon">Affiliate</small>
+            <img
+              v-if="affiliateWallet(affiliate).icon"
+              :src="affiliateWallet(affiliate).icon"
+              :alt="affiliateWallet(affiliate).name"
+            />
+            <em v-else>{{ affiliateWallet(affiliate).name }}</em>
+          </div>
+        </template>
+      </template>
     </div>
 
     <div v-else-if="row && type === 'refund'" class="action-cell">
@@ -332,11 +346,16 @@ export default {
   },
   methods: {
     hasAffiliate(row) {
-      if (!row.metadata?.swap?.affiliateAddress) {
+      if (
+        !row.metadata?.swap?.affiliateAddress &&
+        !row.metadata?.addLiquidity?.affiliateAddress
+      ) {
         return false
       }
 
-      const affiliates = row.metadata?.swap?.affiliateAddress
+      const affiliates =
+        row.metadata?.swap?.affiliateAddress ||
+        row.metadata?.addLiquidity?.affiliateAddress
       return affiliates.split('/')
     },
     affiliateWallet(affiliate) {
