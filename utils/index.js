@@ -627,12 +627,14 @@ export function assetFromString(s) {
   const isSecure =
     s.includes(SECURE_DELIMITER) &&
     !s.includes(NON_SYNTH_DELIMITER) &&
-    !s.includes(TRADE_DELIMITER)
+    !s.includes(TRADE_DELIMITER) &&
+    !s.includes(SYNTH_DELIMITER)
   delimiter = isTrade
     ? TRADE_DELIMITER
     : isSecure
       ? SECURE_DELIMITER
       : delimiter
+
   const data = s.split(delimiter)
   if (data.length <= 1 || data[1]?.length < 1) {
     return null
