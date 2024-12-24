@@ -1403,6 +1403,8 @@ export default {
         ],
       }
 
+      const isError = nativeTx?.metadata?.send?.code !== '0'
+
       const accordions = {
         in: [],
         action: {
@@ -1414,6 +1416,8 @@ export default {
           height: nativeTx?.height,
           timeStamp,
           pending: false,
+          error: isError,
+          reason: isError ? nativeTx?.metadata?.send?.reason : undefined,
           done: true,
           showAtFirst: true,
         },
