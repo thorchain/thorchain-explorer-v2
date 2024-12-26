@@ -738,7 +738,9 @@ export default {
                     },
                   ],
                   type: 'bubble',
-                  is: a.outboundETA < this.chainsHeight?.THOR,
+                  is:
+                    a.outboundETA > 0 &&
+                    a.outboundETA < this.chainsHeight?.THOR,
                 },
                 {
                   key: 'Outbound Stage',
@@ -1627,15 +1629,20 @@ export default {
         (thorStatus.stages.outbound_delay?.remaining_delay_blocks ?? 0) *
           this.blockSeconds('THOR')
 
+      const outboundETA =
+        this.thorHeight <
+        thorStatus.stages.outbound_signed?.scheduled_outbound_height
+          ? thorStatus.stages.outbound_signed?.scheduled_outbound_height -
+            this.thorHeight
+          : 0
+
       const outActions = []
       if (isOut) {
         outActions.push({
           fees: outboundFees,
           feeAssets: outboundFeeAssets,
           outboundDelayRemaining: outboundDelayRemaining || 0,
-          outboundETA:
-            thorStatus.stages.outbound_signed?.scheduled_outbound_height -
-            this.thorHeight,
+          outboundETA,
           outboundSigned: thorStatus.stages.outbound_signed?.completed ?? false,
           done:
             thorStatus.stages.outbound_signed?.completed ||
