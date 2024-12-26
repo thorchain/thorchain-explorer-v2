@@ -312,20 +312,29 @@ export default {
 
         if (address.match(/^[st]?thor.*/gim)) {
           const balances = (await this.$api.getBalance(address)).data.result
-          const synthBalances = balances.map((item) => {
-            if (item.denom === 'rune') {
-              this.runeBalance = {
-                asset: assetFromString('THOR.RUNE'),
-                quantity: Number.parseFloat(item?.amount) / 10 ** 8 ?? 0,
+          const synthBalances =
+            balances?.map((item) => {
+              if (item.denom === 'rune') {
+                this.runeBalance = {
+                  asset: assetFromString('THOR.RUNE'),
+                  quantity: Number.parseFloat(item?.amount) / 10 ** 8 ?? 0,
+                }
+                return false
               }
-              return false
-            }
 
-            return {
-              asset: assetFromString(item.denom.toUpperCase()),
-              quantity: (item?.amount / 10 ** 8).toFixed(8),
+              return {
+                asset: assetFromString(item.denom.toUpperCase()),
+                quantity: (item?.amount / 10 ** 8).toFixed(8),
+              }
+            }) ?? []
+
+          // if there is no balance show zero
+          if (!balances) {
+            this.runeBalance = {
+              asset: assetFromString('THOR.RUNE'),
+              quantity: 0,
             }
-          })
+          }
 
           let tradeBalances =
             (await this.$api.getTradeAsset(address)).data ?? []
