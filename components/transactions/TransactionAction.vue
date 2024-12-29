@@ -304,6 +304,12 @@
         </span>
       </template>
     </div>
+
+    <div v-else-if="row && type === 'contract'" class="action-cell">
+      <span class="mini-bubble info">
+        {{ row.metadata.contract.contractType }}
+      </span>
+    </div>
   </div>
 </template>
 

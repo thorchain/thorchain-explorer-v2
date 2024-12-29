@@ -31,6 +31,7 @@
               :stacks="s.data.stacks"
               :error="s.data.error"
               :show-at-first="true"
+              :attributes="s.data.attributes"
             />
           </template>
         </tx-card>
@@ -248,7 +249,7 @@ export default {
       }
     },
     isTxInPending(thorStatus, actions) {
-      const memo = this.parseMemo(thorStatus.tx?.memo)
+      const memo = this.parseMemo(thorStatus?.tx?.memo)
 
       const userAddresses = new Set([
         thorStatus?.tx?.from_address?.toLowerCase(),
@@ -465,6 +466,7 @@ export default {
             done: accordions.action?.done,
             showAtFirst: accordions.action?.showAtFirst,
             error: accordions.action?.error,
+            attributes: accordions?.action?.attributes,
             stacks: [
               {
                 key: 'Timestamp',
@@ -785,10 +787,10 @@ export default {
 
       if (memo.type === 'swap') {
         const inAsset = this.parseMemoAsset(
-          thorStatus.tx.coins[0].asset,
+          thorStatus?.tx.coins[0].asset,
           this.pools
         )
-        const inAmount = parseInt(thorStatus.tx.coins[0].amount)
+        const inAmount = parseInt(thorStatus?.tx.coins[0].amount)
         const outAsset = this.parseMemoAsset(memo.asset, this.pools)
 
         // get quote
@@ -921,6 +923,21 @@ export default {
           memo
         )
         this.$set(this, 'cards', [this.createCard(cards, accordions)])
+      } else if (
+        midgardAction.actions &&
+        midgardAction.actions[0]?.type === 'contract'
+      ) {
+        const finalCards = []
+        for (let i = 0; i < midgardAction?.actions?.length; i++) {
+          const { cards, accordions } = this.createContractState(
+            thorStatus,
+            midgardAction.actions[i],
+            thorTx,
+            memo
+          )
+          finalCards.push(this.createCard(cards, accordions))
+        }
+        this.$set(this, 'cards', finalCards)
       } else if (memo.type === 'loanRepayment') {
         const { cards, accordions } = this.createLoanRepayment(
           thorStatus,
@@ -1040,6 +1057,48 @@ export default {
         },
       }
     },
+    createContractState(thorStatus, action) {
+      const ins = action?.in.map((a) => ({
+        asset: this.parseMemoAsset(a.coins[0]?.asset),
+        amount: a.coins[0]?.amount,
+        txid: a?.txID,
+        from: a?.address,
+        done: true,
+      }))
+
+      return {
+        cards: {
+          title: 'Contract Call',
+          in: [
+            {
+              icon: require('@/assets/images/wallet.svg?inline'),
+              address: action?.in[0]?.address,
+            },
+          ],
+          middle: {
+            pending: false,
+            fail: false,
+            success: true,
+            empty: true,
+          },
+          out: [
+            {
+              icon: require('@/assets/images/contract.svg?inline'),
+              address: action?.out[0]?.address,
+            },
+          ],
+        },
+        accordions: {
+          in: ins,
+          action: {
+            type: action.metadata.contract.contractType,
+            attributes: action.metadata.contract,
+            done: true,
+          },
+          out: [],
+        },
+      }
+    },
     createFailedState(thorStatus, action, thorTx) {
       action = action.actions[0]
       const timeStamp = moment.unix(action?.date / 1e9)
@@ -1050,9 +1109,9 @@ export default {
         amount: a.coins[0].amount,
         txid: a?.txID,
         from: a?.address,
-        gas: thorStatus.tx?.gas ? thorStatus.tx?.gas[0].amount : null,
-        gasAsset: thorStatus.tx?.gas
-          ? this.parseMemoAsset(thorStatus.tx?.gas[0].asset, this.pools)
+        gas: thorStatus?.tx?.gas ? thorStatus?.tx?.gas[0].amount : null,
+        gasAsset: thorStatus?.tx?.gas
+          ? this.parseMemoAsset(thorStatus?.tx?.gas[0].asset, this.pools)
           : null,
         done: true,
       }))
@@ -1090,9 +1149,9 @@ export default {
       const ins = action?.in.map((a) => ({
         asset: this.parseMemoAsset(a.coins[0]?.asset),
         amount: a.coins[0].amount,
-        gas: thorStatus.tx?.gas ? thorStatus.tx?.gas[0].amount : null,
-        gasAsset: thorStatus.tx?.gas
-          ? this.parseMemoAsset(thorStatus.tx?.gas[0].asset, this.pools)
+        gas: thorStatus?.tx?.gas ? thorStatus?.tx?.gas[0].amount : null,
+        gasAsset: thorStatus?.tx?.gas
+          ? this.parseMemoAsset(thorStatus?.tx?.gas[0].asset, this.pools)
           : null,
         txid: a?.txID,
         from: a?.address,
@@ -1146,9 +1205,9 @@ export default {
       const ins = action?.in.map((a) => ({
         asset: this.parseMemoAsset(a.coins[0]?.asset),
         amount: a.coins[0]?.amount,
-        gas: thorStatus.tx?.gas ? thorStatus.tx?.gas[0].amount : null,
-        gasAsset: thorStatus.tx?.gas
-          ? this.parseMemoAsset(thorStatus.tx?.gas[0].asset, this.pools)
+        gas: thorStatus?.tx?.gas ? thorStatus?.tx?.gas[0].amount : null,
+        gasAsset: thorStatus?.tx?.gas
+          ? this.parseMemoAsset(thorStatus?.tx?.gas[0].asset, this.pools)
           : null,
         txid: a?.txID,
         from: a?.address,
@@ -1195,9 +1254,9 @@ export default {
     createTradeDepositState(thorStatus, action, thorTx) {
       action = action.actions[0]
       const timeStamp = moment.unix(action?.date / 1e9)
-      const memo = this.parseMemo(thorStatus.tx?.memo)
+      const memo = this.parseMemo(thorStatus?.tx?.memo)
 
-      const ast = this.parseMemoAsset(thorStatus.tx.coins[0].asset, this.pools)
+      const ast = this.parseMemoAsset(thorStatus?.tx.coins[0].asset, this.pools)
 
       let isSecure = false
       if (memo.type.includes('secure')) {
@@ -1207,12 +1266,12 @@ export default {
       const ins = [
         {
           asset: ast,
-          amount: thorStatus.tx.coins[0].amount,
-          txid: thorStatus.tx?.id,
-          from: thorStatus.tx?.from_address,
-          gas: thorStatus.tx?.gas ? thorStatus.tx?.gas[0].amount : null,
-          gasAsset: thorStatus.tx?.gas
-            ? this.parseMemoAsset(thorStatus.tx?.gas[0].asset, this.pools)
+          amount: thorStatus?.tx.coins[0].amount,
+          txid: thorStatus?.tx?.id,
+          from: thorStatus?.tx?.from_address,
+          gas: thorStatus?.tx?.gas ? thorStatus?.tx?.gas[0].amount : null,
+          gasAsset: thorStatus?.tx?.gas
+            ? this.parseMemoAsset(thorStatus?.tx?.gas[0].asset, this.pools)
             : null,
           done: true,
         },
@@ -1223,7 +1282,7 @@ export default {
           asset: isSecure ? assetToSecure(ast) : assetToTrade(ast),
           amount: thorStatus.out_txs
             ? thorStatus.out_txs[0]?.coins[0].amount
-            : thorStatus.tx.coins[0].amount,
+            : thorStatus?.tx.coins[0].amount,
           txid: thorStatus.out_txs ? thorStatus.out_txs[0].id : null,
           to: memo.address,
           done: true,
@@ -1243,7 +1302,7 @@ export default {
           in: ins,
           action: {
             type: 'Deposit',
-            memo: thorStatus.tx?.memo,
+            memo: thorStatus?.tx?.memo,
             height: action?.height,
             timeStamp,
             done: true,
@@ -1255,19 +1314,19 @@ export default {
     createTradeWithdrawState(thorStatus, action, thorTx) {
       action = action.actions[0]
       const timeStamp = moment.unix(action?.date / 1e9)
-      const memo = this.parseMemo(thorStatus.tx?.memo)
+      const memo = this.parseMemo(thorStatus?.tx?.memo)
 
-      const ast = this.parseMemoAsset(thorStatus.tx.coins[0].asset, this.pools)
+      const ast = this.parseMemoAsset(thorStatus?.tx.coins[0].asset, this.pools)
 
       const ins = [
         {
           asset: assetToTrade(ast),
-          amount: thorStatus.tx.coins[0].amount,
-          txid: thorStatus.tx?.id,
-          from: thorStatus.tx?.from_address,
-          gas: thorStatus.tx?.gas ? thorStatus.tx?.gas[0].amount : null,
-          gasAsset: thorStatus.tx?.gas
-            ? this.parseMemoAsset(thorStatus.tx?.gas[0].asset, this.pools)
+          amount: thorStatus?.tx.coins[0].amount,
+          txid: thorStatus?.tx?.id,
+          from: thorStatus?.tx?.from_address,
+          gas: thorStatus?.tx?.gas ? thorStatus?.tx?.gas[0].amount : null,
+          gasAsset: thorStatus?.tx?.gas
+            ? this.parseMemoAsset(thorStatus?.tx?.gas[0].asset, this.pools)
             : null,
           done: true,
         },
@@ -1278,7 +1337,7 @@ export default {
           asset: tradeToAsset(ast),
           amount: thorStatus.out_txs
             ? thorStatus.out_txs[0]?.coins[0].amount
-            : thorStatus.tx.coins[0].amount,
+            : thorStatus?.tx.coins[0].amount,
           txid: thorStatus.out_txs ? thorStatus.out_txs[0].id : null,
           to: memo.address,
           gas: thorStatus.out_txs ? thorStatus.out_txs[0].gas[0].amount : null,
@@ -1309,7 +1368,7 @@ export default {
           in: ins,
           action: {
             type: 'Withdraw',
-            memo: thorStatus.tx?.memo,
+            memo: thorStatus?.tx?.memo,
             height: action?.height,
             timeStamp,
             done: true,
@@ -1357,7 +1416,7 @@ export default {
       }
     },
     async getOtherActionHash(actions, thorStatus) {
-      let hash = thorStatus.tx?.id
+      let hash = thorStatus?.tx?.id
 
       hash = actions.actions
         ?.reduce(
@@ -1432,10 +1491,10 @@ export default {
       const isSaver = this.parseMemoAsset(memo.asset)?.synth
 
       const inAsset = this.parseMemoAsset(
-        thorStatus.tx.coins[0].asset,
+        thorStatus?.tx.coins[0].asset,
         this.pools
       )
-      const inAmount = parseInt(thorStatus.tx.coins[0].amount)
+      const inAmount = parseInt(thorStatus?.tx.coins[0].amount)
       const addAction = actions?.actions?.find(
         (a) => a.type === 'addLiquidity' && a.in[0].address !== ''
       )
@@ -1475,8 +1534,8 @@ export default {
         accordions: {
           in: [
             {
-              txid: thorStatus.tx.id,
-              from: thorStatus.tx.from_address,
+              txid: thorStatus?.tx.id,
+              from: thorStatus?.tx.from_address,
               asset: inAsset,
               amount: inAmount,
               done: true,
@@ -1556,10 +1615,10 @@ export default {
     },
     createRemoveLiquidityState(thorStatus, actions, thorTx, memo) {
       const inAsset = this.parseMemoAsset(
-        thorStatus.tx.coins[0].asset,
+        thorStatus?.tx.coins[0].asset,
         this.pools
       )
-      const inAmount = parseInt(thorStatus.tx.coins[0].amount)
+      const inAmount = parseInt(thorStatus?.tx.coins[0].amount)
       const withdrawAction = actions?.actions?.find(
         (a) => a.type === 'withdraw'
       )
@@ -1693,8 +1752,8 @@ export default {
         accordions: {
           in: [
             {
-              txid: thorStatus.tx.id,
-              from: thorStatus.tx.from_address,
+              txid: thorStatus?.tx.id,
+              from: thorStatus?.tx.from_address,
               asset: inAsset,
               amount: inAmount,
               done: true,
@@ -1757,7 +1816,7 @@ export default {
     createSwapState(thorStatus, thorTx, actions, memo, thorHeader, quote) {
       // swap user addresses
       const userAddresses = new Set([
-        thorStatus.tx.from_address.toLowerCase(),
+        thorStatus?.tx.from_address.toLowerCase(),
         memo.destAddr?.toLowerCase(), // TODO: sometimes the memo destAddr will be THORName
       ])
       // Non affiliate outs
@@ -1782,7 +1841,7 @@ export default {
       if (
         !outTxs ||
         outTxs?.length === 0 ||
-        outTxs.every((o) => o.to_address === thorStatus.tx.from_address) // Add scheduled outbound while having a refund
+        outTxs.every((o) => o.to_address === thorStatus?.tx.from_address) // Add scheduled outbound while having a refund
       ) {
         outTxs = thorStatus.planned_out_txs
           ?.filter((tx) => userAddresses.has(tx.to_address.toLowerCase()))
@@ -1795,15 +1854,15 @@ export default {
       // order by target swapped asset if we have refund in swap
       outTxs = orderBy(
         outTxs,
-        (o) => o.coins[0].asset === thorStatus.tx.coins[0].asset
+        (o) => o.coins[0].asset === thorStatus?.tx.coins[0].asset
       )
 
       // Add native in/out search
       const inAsset = this.parseMemoAsset(
-        thorStatus.tx.coins[0].asset,
+        thorStatus?.tx.coins[0].asset,
         this.pools
       )
-      const inAmount = parseInt(thorStatus.tx.coins[0].amount)
+      const inAmount = parseInt(thorStatus?.tx.coins[0].amount)
 
       const outAsset = this.parseMemoAsset(
         outTxs?.length > 0 ? outTxs[0].coins[0].asset : memo.asset,
@@ -1926,13 +1985,13 @@ export default {
         accordions: {
           in: [
             {
-              txid: thorStatus.tx.id,
-              from: thorStatus.tx.from_address,
+              txid: thorStatus?.tx.id,
+              from: thorStatus?.tx.from_address,
               asset: inAsset,
               amount: inAmount,
-              gas: thorStatus.tx.gas ? thorStatus.tx.gas[0].amount : null,
-              gasAsset: thorStatus.tx.gas
-                ? this.parseMemoAsset(thorStatus.tx.gas[0].asset, this.pools)
+              gas: thorStatus?.tx.gas ? thorStatus?.tx.gas[0].amount : null,
+              gasAsset: thorStatus?.tx.gas
+                ? this.parseMemoAsset(thorStatus?.tx.gas[0].asset, this.pools)
                 : null,
               preObservations:
                 thorStatus.stages?.inbound_observed?.pre_confirmation_count,

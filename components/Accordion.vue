@@ -119,6 +119,9 @@
         </template>
         <slot v-else :name="s.slotName" />
       </div>
+      <pre v-if="attributes" class="attributes">{{
+        showJSON(attributes.attributes)
+      }}</pre>
     </div>
   </div>
 </template>
@@ -153,6 +156,7 @@ export default {
     'done',
     'error',
     'asset',
+    'attributes',
   ],
   data() {
     return {
@@ -196,6 +200,13 @@ export default {
     }
   },
   methods: {
+    showJSON(attributes) {
+      if (!attributes) {
+        return ''
+      }
+
+      return JSON.stringify(attributes, null, 4).trim()
+    },
     toggleAccordion() {
       this.show = !this.show
       if (this.show) {
@@ -597,5 +608,12 @@ export default {
   color: #d86e58;
   font-size: 10px;
   animation: textFade 1.5s infinite ease-in-out;
+}
+
+.attributes {
+  margin: 8px 0;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--card-bg-color);
 }
 </style>
