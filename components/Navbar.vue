@@ -112,7 +112,7 @@
             </div>
             <div class="line"></div>
             <div class="settings-container">
-              <div class="settings-option" @click="setTheme('dark')">
+              <div class="settings-option">
                 <a
                   :class="{
                     active: networkEnv === 'mainnet',
@@ -122,7 +122,7 @@
                   Mainnet
                 </a>
               </div>
-              <div class="settings-option" @click="setTheme('light')">
+              <div class="settings-option">
                 <a
                   :class="{
                     active: networkEnv === 'stagenet',
@@ -132,14 +132,14 @@
                   Stagenet
                 </a>
               </div>
-              <div class="settings-option" @click="setTheme('BlueElectra')">
+              <div class="settings-option">
                 <a
                   :class="{
-                    active: networkEnv === 'stagenet',
+                    active: networkEnv === 'devnet',
                   }"
-                  :href="gotoInstance('stagenet', networkEnv === 'stagenet')"
+                  :href="gotoInstance('devnet', networkEnv === 'devnet')"
                 >
-                  Stagenet
+                  Devnet
                 </a>
               </div>
             </div>
