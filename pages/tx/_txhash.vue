@@ -288,20 +288,20 @@ export default {
         }
       }
 
-      const inboundFinalised = thorStatus.stages?.inbound_finalised?.completed
+      const inboundFinalised = thorStatus?.stages?.inbound_finalised?.completed
       let actionFinalised = true
       if (memo.type === 'swap') {
         actionFinalised =
           (outAsset?.chain !== 'THOR' &&
             thorStatus?.stages.swap_finalised?.completed) ||
-          !thorStatus.stages.swap_status?.pending
+          !thorStatus?.stages.swap_status?.pending
       }
       const outboundFinalised =
-        (thorStatus.stages.outbound_signed?.completed ||
+        (thorStatus?.stages.outbound_signed?.completed ||
           outAsset?.chain === 'THOR' ||
           outAsset?.synth ||
           outAsset?.trade) &&
-        (thorStatus.stages?.outbound_delay?.completed ?? true)
+        (thorStatus?.stages?.outbound_delay?.completed ?? true)
 
       return !inboundFinalised || !actionFinalised || !outboundFinalised
     },
@@ -807,7 +807,7 @@ export default {
               to_asset: assetToString(outAsset),
               destination: memo.destAddr,
               streaming_interval:
-                thorStatus.stages.swap_status?.streaming?.interval ||
+                thorStatus?.stages.swap_status?.streaming?.interval ||
                 memo.interval,
               ...(affiliateFee && { affiliate: memo.affiliate }),
               ...(affiliateFee && { affiliate_bps: affiliateFee }),
@@ -838,7 +838,7 @@ export default {
         finalCards.push(this.createCard(cards, accordions))
         if (memo.asymmetry) {
           const ts = await this.getOtherActionHash(midgardAction, thorStatus)
-          if (ts) {
+          if (ts && ts.tx) {
             const m = this.parseMemo(ts.tx?.memo)
             const { cards, accordions } = this.createAddLiquidityState(
               ts,
@@ -1347,9 +1347,10 @@ export default {
                 this.pools
               )
             : null,
-          outboundSigned: thorStatus.stages.outbound_signed?.completed ?? false,
+          outboundSigned:
+            thorStatus?.stages.outbound_signed?.completed ?? false,
           outboundETA:
-            thorStatus.stages.outbound_signed?.scheduled_outbound_height -
+            thorStatus?.stages.outbound_signed?.scheduled_outbound_height -
             this.thorHeight,
           done: thorStatus?.stages?.outbound_signed?.completed === true,
         },
@@ -1491,25 +1492,25 @@ export default {
       const isSaver = this.parseMemoAsset(memo.asset)?.synth
 
       const inAsset = this.parseMemoAsset(
-        thorStatus?.tx.coins[0].asset,
+        thorStatus?.tx?.coins[0].asset,
         this.pools
       )
-      const inAmount = parseInt(thorStatus?.tx.coins[0].amount)
+      const inAmount = parseInt(thorStatus?.tx?.coins[0].amount)
       const addAction = actions?.actions?.find(
         (a) => a.type === 'addLiquidity' && a.in[0].address !== ''
       )
       const timeStamp = moment.unix(addAction?.date / 1e9)
 
       const outboundDelayRemaining =
-        (thorStatus.stages.outbound_delay?.remaining_delay_seconds ?? 0) ||
-        (thorStatus.stages.outbound_delay?.remaining_delay_blocks ?? 0) *
+        (thorStatus?.stages.outbound_delay?.remaining_delay_seconds ?? 0) ||
+        (thorStatus?.stages.outbound_delay?.remaining_delay_blocks ?? 0) *
           this.blockSeconds('THOR')
 
       const pending =
-        thorStatus.stages.swap_status?.pending ||
-        !thorStatus.stages.inbound_observed?.completed ||
-        !(thorStatus.stages.inbound_confirmation_counted?.completed ?? true) ||
-        !thorStatus.stages.inbound_finalised?.completed
+        thorStatus?.stages.swap_status?.pending ||
+        !thorStatus?.stages.inbound_observed?.completed ||
+        !(thorStatus?.stages.inbound_confirmation_counted?.completed ?? true) ||
+        !thorStatus?.stages.inbound_finalised?.completed
 
       return {
         cards: {
@@ -1534,8 +1535,8 @@ export default {
         accordions: {
           in: [
             {
-              txid: thorStatus?.tx.id,
-              from: thorStatus?.tx.from_address,
+              txid: thorStatus?.tx?.id,
+              from: thorStatus?.tx?.from_address,
               asset: inAsset,
               amount: inAmount,
               done: true,
@@ -1551,11 +1552,11 @@ export default {
             affiliateFee: parseInt(memo.fee),
             outboundDelayRemaining: outboundDelayRemaining || 0,
             outboundETA:
-              thorStatus.stages.outbound_signed?.scheduled_outbound_height -
+              thorStatus?.stages.outbound_signed?.scheduled_outbound_height -
               this.thorHeight,
             outboundSigned:
-              thorStatus.stages.outbound_signed?.completed ?? false,
-            done: !thorStatus.stages.swap_status?.pending,
+              thorStatus?.stages.outbound_signed?.completed ?? false,
+            done: !thorStatus?.stages.swap_status?.pending,
           },
           out: [],
         },
@@ -1684,14 +1685,14 @@ export default {
       }
 
       const outboundDelayRemaining =
-        (thorStatus.stages.outbound_delay?.remaining_delay_seconds ?? 0) ||
-        (thorStatus.stages.outbound_delay?.remaining_delay_blocks ?? 0) *
+        (thorStatus?.stages.outbound_delay?.remaining_delay_seconds ?? 0) ||
+        (thorStatus?.stages.outbound_delay?.remaining_delay_blocks ?? 0) *
           this.blockSeconds('THOR')
 
       const outboundETA =
         this.thorHeight <
-        thorStatus.stages.outbound_signed?.scheduled_outbound_height
-          ? thorStatus.stages.outbound_signed?.scheduled_outbound_height -
+        thorStatus?.stages.outbound_signed?.scheduled_outbound_height
+          ? thorStatus?.stages.outbound_signed?.scheduled_outbound_height -
             this.thorHeight
           : 0
 
@@ -1702,9 +1703,10 @@ export default {
           feeAssets: outboundFeeAssets,
           outboundDelayRemaining: outboundDelayRemaining || 0,
           outboundETA,
-          outboundSigned: thorStatus.stages.outbound_signed?.completed ?? false,
+          outboundSigned:
+            thorStatus?.stages.outbound_signed?.completed ?? false,
           done:
-            thorStatus.stages.outbound_signed?.completed ||
+            thorStatus?.stages.outbound_signed?.completed ||
             outAsset?.chain === 'THOR',
         })
 
@@ -1720,9 +1722,9 @@ export default {
                 ? this.parseMemoAsset(o.gas[0].asset, this.pools)
                 : null,
               outboundSigned:
-                thorStatus.stages.outbound_signed?.completed ?? false,
+                thorStatus?.stages.outbound_signed?.completed ?? false,
               done:
-                thorStatus.stages.outbound_signed?.completed ||
+                thorStatus?.stages.outbound_signed?.completed ||
                 outAsset?.chain === 'THOR',
             }))
           )
@@ -1945,8 +1947,8 @@ export default {
       // TODO: sometimes the pools price is fetched after the status
 
       const outboundDelayRemaining =
-        (thorStatus.stages.outbound_delay?.remaining_delay_seconds ?? 0) ||
-        (thorStatus.stages.outbound_delay?.remaining_delay_blocks ?? 0) *
+        (thorStatus?.stages.outbound_delay?.remaining_delay_seconds ?? 0) ||
+        (thorStatus?.stages.outbound_delay?.remaining_delay_blocks ?? 0) *
           this.blockSeconds('THOR')
 
       if (timeStamp) {
@@ -1994,22 +1996,22 @@ export default {
                 ? this.parseMemoAsset(thorStatus?.tx.gas[0].asset, this.pools)
                 : null,
               preObservations:
-                thorStatus.stages?.inbound_observed?.pre_confirmation_count,
-              observations: thorStatus.stages?.inbound_observed?.final_count,
+                thorStatus?.stages?.inbound_observed?.pre_confirmation_count,
+              observations: thorStatus?.stages?.inbound_observed?.final_count,
               observationsCompleted:
-                thorStatus.stages?.inbound_observed?.completed,
+                thorStatus?.stages?.inbound_observed?.completed,
               finalisedHeight: thorTx.finalised_height,
               inboundObserved:
                 thorStatus?.stages?.inbound_observed?.completed || false,
               inboundConfCount:
                 thorStatus?.stages?.inbound_confirmation_counted || 0,
               preConfirmationCount:
-                thorStatus.stages?.inbound_observed?.pre_confirmation_count ||
+                thorStatus?.stages?.inbound_observed?.pre_confirmation_count ||
                 0,
               confirmationRemainingSeconds:
-                thorStatus.stages?.inbound_confirmation_counted
+                thorStatus?.stages?.inbound_confirmation_counted
                   ?.remaining_confirmation_seconds || 0,
-              done: thorStatus.stages?.inbound_finalised?.completed,
+              done: thorStatus?.stages?.inbound_finalised?.completed,
             },
           ],
           action: {
@@ -2029,18 +2031,18 @@ export default {
             swapSlip: parseInt(actions?.actions[0]?.metadata?.swap?.swapSlip),
             height,
             streaming: {
-              count: thorStatus.stages.swap_status?.streaming?.count,
+              count: thorStatus?.stages.swap_status?.streaming?.count,
               interval:
-                thorStatus.stages.swap_status?.streaming?.interval ||
+                thorStatus?.stages.swap_status?.streaming?.interval ||
                 memo.interval,
               quantity:
-                thorStatus.stages.swap_status?.streaming?.quantity ||
+                thorStatus?.stages.swap_status?.streaming?.quantity ||
                 memo.quantity,
               lastHeight: null, // Add on midgard if available
             },
             done:
-              thorStatus.stages.swap_finalised?.completed ||
-              !thorStatus.stages.swap_status?.pending,
+              thorStatus?.stages.swap_finalised?.completed ||
+              !thorStatus?.stages.swap_status?.pending,
             error: onlyRefund,
           },
           out: [
@@ -2061,20 +2063,20 @@ export default {
               fees: outboundFees,
               feeAssets: outboundFeeAssets,
               delayBlocksRemaining:
-                thorStatus.stages.outbound_delay?.remaining_delay_blocks || 0,
+                thorStatus?.stages.outbound_delay?.remaining_delay_blocks || 0,
               outboundDelayRemaining: outboundDelayRemaining || 0,
               outboundETA:
-                thorStatus.stages.outbound_signed?.scheduled_outbound_height -
+                thorStatus?.stages.outbound_signed?.scheduled_outbound_height -
                 this.thorHeight,
               outboundSigned:
-                thorStatus.stages.outbound_signed?.completed ?? undefined,
+                thorStatus?.stages.outbound_signed?.completed ?? undefined,
               done:
-                !thorStatus.stages.swap_status?.pending &&
-                (thorStatus.stages.outbound_signed?.completed ||
+                !thorStatus?.stages.swap_status?.pending &&
+                (thorStatus?.stages.outbound_signed?.completed ||
                   outAsset.chain === 'THOR' ||
                   outAsset.synth ||
                   outAsset.trade) &&
-                (thorStatus.stages.outbound_delay?.completed ?? true),
+                (thorStatus?.stages.outbound_delay?.completed ?? true),
             },
             ...outTxs?.slice(1).map((o) => ({
               txid: o.id,
@@ -2087,8 +2089,8 @@ export default {
                 ? this.parseMemoAsset(o.gas[0].asset, this.pools)
                 : null,
               done:
-                !thorStatus.stages.swap_status?.pending &&
-                (thorStatus.stages.outbound_signed?.completed ||
+                !thorStatus?.stages.swap_status?.pending &&
+                (thorStatus?.stages.outbound_signed?.completed ||
                   outAsset.chain === 'THOR' ||
                   outAsset.synth ||
                   outAsset.trade),
