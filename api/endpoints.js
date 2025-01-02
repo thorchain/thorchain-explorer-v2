@@ -17,8 +17,8 @@ module.exports = {
     MODULE_ADDR: 'sthor1dheycdevq39qlkxs2a6wuuzyn4aqxhvepe6as4',
   },
   devnet: {
-    MIDGARD_BASE_URL: 'http://95.217.141.84:8085/v2/',
-    MIDGARD_GRAPH_QL: 'http://95.217.141.84:8085/v2',
+    MIDGARD_BASE_URL: 'https://devnet.thegreatlich.xyz/v2/',
+    MIDGARD_GRAPH_QL: 'https://devnet.thegreatlich.xyz/v2',
     THORNODE_URL: 'https://thornode-devnet-api.bryanlabs.net/',
     TENDERMINT_URL: 'https://thornode-devnet-rpc.bryanlabs.net/',
     SERVER_URL: 'https://vanaheimex.com/devnet/',
