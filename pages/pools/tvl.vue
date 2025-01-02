@@ -78,7 +78,7 @@ export default {
           if (chain === 'BNB') {
             return
           }
-          const poolUSD = (pd.totalDepth / 1e8) * +intervals[i].runePriceUSD
+          const poolUSD = (+pd.totalDepth / 1e8) * +intervals[i].runePriceUSD
           const chainColor = this.getChainColor(chain)
 
           if (chain in pools) {
@@ -87,6 +87,25 @@ export default {
               pools[chain].data.splice(i, 1, beforeUSD + poolUSD)
             } else {
               pools[chain].data.push(poolUSD)
+            }
+          } else if (i > 0) {
+            pools[chain] = {
+              name: chain,
+              type: 'bar',
+              stack: 'Total',
+              showSymbol: false,
+              symbol: 'circle',
+              areaStyle: {
+                color: chainColor,
+              },
+              lineStyle: {
+                color: chainColor,
+              },
+              itemStyle: {
+                color: chainColor,
+              },
+              data: new Array(i).fill(0).concat([poolUSD]),
+              smooth: true,
             }
           } else {
             pools[chain] = {
