@@ -126,6 +126,19 @@ export const AssetImage = (assetStr) => {
         }
         break
 
+      case 'BASE':
+        if (symbol !== 'BASE') {
+          if (ticker.toUpperCase() === 'CBBTC') {
+            iconPath = require('~/assets/images/assets/cbbtc.png')
+            break
+          }
+          iconPath = getErcIconPath('base', symbol, ticker)
+        } else {
+          iconPath =
+            'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/base/info/logo.png'
+        }
+        break
+
       default:
         break
     }
