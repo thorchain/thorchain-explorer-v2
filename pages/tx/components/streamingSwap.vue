@@ -150,8 +150,8 @@ export default {
     async updateStreamingDetail(txid) {
       const thorStatus = (await this.$api.getTxStatus(this.inboundHash))?.data
       const isSwap =
-        thorStatus.stages.swap_status?.streaming &&
-        thorStatus.stages.swap_status?.pending
+        thorStatus?.stages.swap_status?.streaming &&
+        thorStatus?.stages.swap_status?.pending
 
       let blockDuration
       if (this.height && this.chainsHeight) {
@@ -161,7 +161,7 @@ export default {
       // change the remaining seconds to the first height
       if (isSwap) {
         const { count, interval, quantity } =
-          thorStatus.stages.swap_status.streaming
+          thorStatus?.stages.swap_status.streaming
         this.streamingDetail.fill = blockDuration
           ? blockDuration / interval / quantity
           : count / quantity
@@ -280,8 +280,8 @@ export default {
         }
 
         this.streamingDetail.is =
-          !thorStatus.stages.swap_finalised?.completed ||
-          thorStatus.stages.swap_status?.pending
+          !thorStatus?.stages.swap_finalised?.completed ||
+          thorStatus?.stages.swap_status?.pending
       } else {
         this.streamingDetail.is = false
       }
