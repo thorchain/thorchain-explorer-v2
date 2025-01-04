@@ -233,7 +233,7 @@
                   <small>Burned</small>
                   <div class="burn-item mini-bubble orange">
                     <Burn class="burn-icon"></Burn>
-                    {{ (block.burnedAmount / 1e8) | number('0.0000') }}
+                    {{ decimalFormat(block.burnedAmount / 1e8) }}
                   </div>
                 </div>
 
@@ -242,7 +242,7 @@
                   <div class="burn-item mini-bubble yellow">
                     <rune class="rune-icon"></rune>
                     <div class="amount-burn">
-                      {{ (block.devAmount / 1e8) | number('0.0000') }}
+                      {{ decimalFormat(block.devAmount / 1e8) }}
                     </div>
                   </div>
                 </div>
@@ -252,7 +252,7 @@
                   <div class="burn-item mini-bubble info">
                     <rune class="rune-icon"></rune>
                     <div class="amount-burn">
-                      {{ (block.poolAmount / 1e8) | number('0.0000') }}
+                      {{ decimalFormat(block.poolAmount / 1e8) }}
                     </div>
                   </div>
                 </div>
@@ -262,7 +262,7 @@
                   <div class="burn-item mini-bubble">
                     <rune class="rune-icon"></rune>
                     <div class="amount-burn">
-                      {{ (block.bondAmount / 1e8) | number('0.0000') }}
+                      {{ decimalFormat(block.bondAmount / 1e8) }}
                     </div>
                   </div>
                 </div>

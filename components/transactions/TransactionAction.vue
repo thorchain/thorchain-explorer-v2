@@ -162,7 +162,7 @@
           :chain-height="'1rem'"
         ></asset-icon>
         <span class="asset-name">{{
-          decimalFormat(+ops.coins[0].amount)
+          decimalFormat(+ops.coins[0].amount / 1e8)
         }}</span>
       </span>
       <right-arrow class="action-type" />
