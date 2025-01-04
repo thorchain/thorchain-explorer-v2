@@ -15,7 +15,7 @@
           :chain-height="'1rem'"
         />
         <span class="asset-name">{{
-          (ops.coins[0].amount / 1e8) | number('0,0.0000')
+          decimalFormat(ops.coins[0].amount / 1e8)
         }}</span>
       </span>
       <right-arrow class="action-type" />
@@ -30,7 +30,7 @@
           :chain-height="'1rem'"
         ></asset-icon>
         <span class="asset-name">{{
-          (ops.coins[0].amount / 1e8) | number('0,0.0000')
+          decimalFormat(ops.coins[0].amount / 1e8)
         }}</span>
       </span>
       <span
@@ -85,7 +85,7 @@
           :chain-height="'1rem'"
         ></asset-icon>
         <span class="asset-name">{{
-          (ops.coins[0].amount / 1e8) | number('0,0.0000')
+          decimalFormat(ops.coins[0].amount / 1e8)
         }}</span>
       </span>
     </div>
@@ -104,7 +104,7 @@
           :chain-height="'1rem'"
         ></asset-icon>
         <span class="asset-name">{{
-          (ops.coins[0].amount / 1e8) | number('0,0.0000')
+          decimalFormat(ops.coins[0].amount / 1e8)
         }}</span>
       </span>
       <right-arrow class="action-type" />
@@ -144,7 +144,7 @@
           :chain-height="'1rem'"
         ></asset-icon>
         <span class="asset-name">{{
-          (ops.coins[0].amount / 1e8) | number('0,0.0000')
+          decimalFormat(ops.coins[0].amount / 1e8)
         }}</span>
       </span>
       <redo-icon class="action-type" />
@@ -162,7 +162,7 @@
           :chain-height="'1rem'"
         ></asset-icon>
         <span class="asset-name">{{
-          (ops.coins[0].amount / 1e8) | number('0,0.0000')
+          decimalFormat(+ops.coins[0].amount)
         }}</span>
       </span>
       <right-arrow class="action-type" />
@@ -189,7 +189,7 @@
           :chain-height="'1rem'"
         ></asset-icon>
         <span class="asset-name">{{
-          (ops.coins[0].amount / 1e8) | number('0,0.0000')
+          decimalFormat(ops.coins[0].amount / 1e8)
         }}</span>
       </span>
       <right-arrow class="action-type" />
@@ -224,7 +224,7 @@
           :chain-height="'1rem'"
         ></asset-icon>
         <span class="asset-name">{{
-          (ops.coins[0].amount / 1e8) | number('0,0.0000')
+          decimalFormat(ops.coins[0].amount / 1e8)
         }}</span>
       </span>
     </div>
@@ -241,7 +241,7 @@
           :chain-height="'1rem'"
         ></asset-icon>
         <span class="asset-name">{{
-          (ops.coins[0].amount / 1e8) | number('0,0.0000')
+          decimalFormat(ops.coins[0].amount / 1e8)
         }}</span>
       </span>
       <right-arrow class="action-type" />
@@ -260,7 +260,7 @@
           :chain-height="'1rem'"
         ></asset-icon>
         <span class="asset-name">{{
-          (ops.coins[0].amount / 1e8) | number('0,0.0000')
+          decimalFormat(ops.coins[0].amount / 1e8)
         }}</span>
       </span>
     </div>

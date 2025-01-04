@@ -247,7 +247,11 @@ export default {
       return (+num).toLocaleString('en-US', { maximumFractionDigits: 8 })
     },
     decimalFormat(number) {
-      return (number / 1e8).toFixed(20).match(/^-?\d*\.?0*\d{0,1}/)[0]
+      const numStr = (number / 1e8).toFixed(20)
+      if (/^\d+(\.0+)?$/.test(numStr)) {
+        return (number / 1e8).toFixed(2)
+      }
+      return numStr.match(/^-?\d*\.?0*\d{0,1}/)[0]
     },
     numberFormat(number) {
       return number ? this.$options.filters.number(+number, '0,0.0000') : '-'
