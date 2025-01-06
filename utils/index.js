@@ -774,6 +774,10 @@ export const interfaces = {
     name: 'Fortuna Swap',
     icon: 'fortunaswap',
   },
+  tps: {
+    name: 'Token Pocket',
+    icon: 'tokenpocket',
+  },
 }
 
 export const affiliateMap = {
@@ -813,6 +817,7 @@ export const affiliateMap = {
   ds: interfaces.defispot,
   bgw: interfaces.bgw,
   fs: interfaces.fortuna,
+  tps: interfaces.tps,
 }
 
 export function getExplorerAddressUrl(chain, query) {
