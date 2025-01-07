@@ -836,14 +836,15 @@ export default {
     },
     stbNodes() {
       if (this.nodesQuery) {
-        const activeVersion = this.nodesQuery.find(
-          (e) => e.status === 'Active'
-        ).version
+        const actNodes = this.nodesQuery?.filter((e) => e.status === 'Active')
+        const nodesVersion = actNodes?.map((r) => r.version).sort(rcompare)
+        const versions = countBy(nodesVersion)
+        const activeVersion = Object.keys(versions)
 
         let stbNodes = this.nodesQuery?.filter(
           (e) =>
             (e.status === 'Standby' || e.status === 'Ready') &&
-            e.version === activeVersion
+            activeVersion.includes(e.version)
         )
 
         if (stbNodes.length === 0) {

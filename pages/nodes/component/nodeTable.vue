@@ -315,7 +315,7 @@
         </span>
         <span v-else-if="props.column.field.includes('behind.')">
           <span
-            v-if="props.formattedRow[props.column.field] == 0"
+            v-if="parseInt(props.formattedRow[props.column.field]) == 0"
             :style="{
               color: isFav(props.row.address)
                 ? vaultColor(props.row.address, true)
@@ -327,6 +327,9 @@
             }"
             class="version"
             >OK</span
+          >
+          <span v-else-if="props.formattedRow[props.column.field] === ''"
+            >-</span
           >
           <span
             v-else-if="
