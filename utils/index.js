@@ -774,6 +774,11 @@ export const interfaces = {
     name: 'Token Pocket',
     icon: 'tokenpocket',
   },
+  moca: {
+    name: 'Moca',
+    icon: 'moca',
+    addName: true,
+  },
 }
 
 export const affiliateMap = {
@@ -814,6 +819,7 @@ export const affiliateMap = {
   bgw: interfaces.bgw,
   fs: interfaces.fortuna,
   tps: interfaces.tps,
+  moca: interfaces.moca,
 }
 
 export function getExplorerAddressUrl(chain, query) {

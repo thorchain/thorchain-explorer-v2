@@ -21,11 +21,18 @@
               {{ index + 1 }}.
             </span>
             <div class="item-details">
-              <img
+              <div
                 v-if="affiliateWallet(row.affiliate).icon"
-                :src="affiliateWallet(row.affiliate).icon"
-                class="item-icon"
-              />
+                class="item-label"
+              >
+                <img
+                  :src="affiliateWallet(row.affiliate).icon"
+                  class="item-icon"
+                />
+                <span v-if="affiliateWallet(row.affiliate).addName">{{
+                  affiliateWallet(row.affiliate).name
+                }}</span>
+              </div>
               <div v-else class="affiliate-name">{{ row.affiliate }}</div>
               <div
                 class="affiliate-value"
@@ -71,11 +78,18 @@
               {{ index + 1 }}.
             </span>
             <div class="item-details">
-              <img
+              <div
                 v-if="affiliateWallet(row.affiliate).icon"
-                :src="affiliateWallet(row.affiliate).icon"
-                class="item-icon"
-              />
+                class="item-label"
+              >
+                <img
+                  :src="affiliateWallet(row.affiliate).icon"
+                  class="item-icon"
+                />
+                <span v-if="affiliateWallet(row.affiliate).addName">{{
+                  affiliateWallet(row.affiliate).name
+                }}</span>
+              </div>
               <div v-else class="affiliate-name">{{ row.affiliate }}</div>
               <div
                 class="affiliate-value"
@@ -117,11 +131,18 @@
               {{ index + 1 }}.
             </span>
             <div class="item-details">
-              <img
+              <div
                 v-if="affiliateWallet(row.affiliate).icon"
-                :src="affiliateWallet(row.affiliate).icon"
-                class="item-icon"
-              />
+                class="item-label"
+              >
+                <img
+                  :src="affiliateWallet(row.affiliate).icon"
+                  class="item-icon"
+                />
+                <span v-if="affiliateWallet(row.affiliate).addName">{{
+                  affiliateWallet(row.affiliate).name
+                }}</span>
+              </div>
               <div v-else class="affiliate-name">{{ row.affiliate }}</div>
               <div
                 class="affiliate-value"
@@ -163,11 +184,18 @@
               {{ index + 1 }}.
             </span>
             <div class="item-details">
-              <img
+              <div
                 v-if="affiliateWallet(row.affiliate).icon"
-                :src="affiliateWallet(row.affiliate).icon"
-                class="item-icon"
-              />
+                class="item-label"
+              >
+                <img
+                  :src="affiliateWallet(row.affiliate).icon"
+                  class="item-icon"
+                />
+                <span v-if="affiliateWallet(row.affiliate).addName">{{
+                  affiliateWallet(row.affiliate).name
+                }}</span>
+              </div>
               <div v-else class="affiliate-name">{{ row.affiliate }}</div>
               <div
                 class="affiliate-value"
@@ -269,6 +297,7 @@ export default {
             icon:
               this.theme === 'light' ? detail.icons.url : detail.icons.urlDark,
             name: detail.name,
+            addName: detail.addName,
           }
         : {
             icon: undefined,
@@ -364,10 +393,19 @@ export default {
           color: var(--sec-font-color);
         }
 
+        .item-label {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+
+          span {
+            font-weight: bold;
+          }
+        }
+
         .item-icon {
           height: 1.7rem;
           padding: 4px 0;
-          margin-right: 15px;
           display: flex;
           align-items: center;
         }
@@ -376,6 +414,8 @@ export default {
           display: flex;
           justify-content: space-between;
           flex: 1;
+          align-items: center;
+          gap: 1rem;
 
           .affiliate-value {
             line-height: 1.4;

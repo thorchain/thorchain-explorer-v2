@@ -798,6 +798,7 @@ export default {
       return {
         name: ifc.name ?? ifc,
         icons,
+        addName: ifc.addName ?? false,
       }
     },
 
