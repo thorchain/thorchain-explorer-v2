@@ -1,6 +1,5 @@
 import axiosRetry from 'axios-retry'
 import {
-  getStats,
   getTxs,
   getTx,
   getAddress,
@@ -15,7 +14,6 @@ import {
   getLastTvl,
   getLatestBlocks,
   getRevThorname,
-  getPools,
   getNetwork,
   getChurn,
   getPoolDepth,
@@ -111,7 +109,13 @@ import {
   getRunePrice,
   getDailySwap,
 } from './insights.api'
-import { getTHORLastBlock, getBlockHeight, getQuote } from './infra'
+import {
+  getTHORLastBlock,
+  getBlockHeight,
+  getQuote,
+  getPools,
+  getStats,
+} from './infra'
 import endpoints from './endpoints'
 export var $axiosInstace
 
