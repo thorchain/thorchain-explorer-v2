@@ -1395,6 +1395,12 @@ export default {
         done: true,
       }))
 
+      let memo
+      if (action.metadata) {
+        const m = Object.keys(action.metadata)[0]
+        memo = action.metadata[m]?.memo ?? undefined
+      }
+
       return {
         cards: {
           title: 'Action',
@@ -1410,6 +1416,7 @@ export default {
             type: 'Action',
             timeStamp: moment.unix(action?.date / 1e9) || null,
             height: action?.height,
+            memo,
             done: true,
           },
           out: outs,
