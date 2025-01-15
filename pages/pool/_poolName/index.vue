@@ -356,10 +356,10 @@ export default {
           ).format('dddd, MMM D')
         )
         const pool = interval?.pools?.find((p) => p.pool === this.poolName)
-        pe.push((+pool.earnings * +interval.runePriceUSD) / 10 ** 8)
-        pw.push((+pool.rewards * +interval.runePriceUSD) / 10 ** 8)
+        pe.push((+pool?.earnings * +interval.runePriceUSD) / 10 ** 8)
+        pw.push((+pool?.rewards * +interval.runePriceUSD) / 10 ** 8)
         pf.push(
-          (+pool.totalLiquidityFeesRune * +interval.runePriceUSD) / 10 ** 8
+          (+pool?.totalLiquidityFeesRune * +interval.runePriceUSD) / 10 ** 8
         )
       })
       return this.basicChartFormat(
