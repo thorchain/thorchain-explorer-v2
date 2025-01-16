@@ -201,7 +201,7 @@ export default {
           tdClass: 'mono',
         },
         {
-          label: 'Swap/Save',
+          label: 'Swap/LP',
           field: 'actions',
           sortable: false,
           thClass: 'th-center',
