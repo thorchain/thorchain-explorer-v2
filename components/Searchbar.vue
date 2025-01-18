@@ -250,7 +250,7 @@ export default {
         search.startsWith('TLTC') ||
         // COSMOS
         search.startsWith('COSMOS') ||
-        (search.startsWith('0x') && search.length <= 43)
+        (search.startsWith('0X') && search.length <= 43)
       ) {
         this.$router.push({ path: `/address/${this.searchQuery}` })
       } else {
