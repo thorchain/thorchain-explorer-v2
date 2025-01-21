@@ -463,6 +463,14 @@ export function tradeToAsset(str) {
   return str.replace('~', '.')
 }
 
+export function securedToAsset(str) {
+  if (typeof str === 'object') {
+    str = assetToString(str)
+  }
+
+  return str.replace('-', '.')
+}
+
 export function curFormat(number) {
   return this.$options.filters.currency(number)
 }
