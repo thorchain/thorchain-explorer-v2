@@ -50,7 +50,9 @@
             <span v-if="props.row[props.column.field]">
               <span v-if="usdDenom">$</span
               >{{ props.formattedRow[props.column.field] }}
-              <small v-if="!usdDenom">{{ showAsset(props.row.asset) }}</small>
+              <small v-if="!usdDenom">{{
+                tradeToAsset(props.row.asset)
+              }}</small>
             </span>
             <span v-else>-</span>
           </div>
@@ -68,7 +70,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { formatAsset, tradeToAsset } from '~/utils'
+import { formatAsset, tradeToAsset, assetFromString } from '~/utils'
 import UsdIcon from '~/assets/images/usd.svg?inline'
 import UsdFillIcon from '~/assets/images/usd-fill.svg?inline'
 
@@ -245,6 +247,9 @@ export default {
     toggleUSD() {
       this.usdDenom = !this.usdDenom
       this.rows = this.fillTradeData(this.tradeAssets, this.pools, this.asgard)
+    },
+    tradeToAsset(asset) {
+      return assetFromString(asset)?.ticker
     },
   },
   head: {
