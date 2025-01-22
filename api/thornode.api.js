@@ -261,3 +261,9 @@ export function getTSSMetrics() {
     endpoints[process.env.NETWORK].THORNODE_URL + 'thorchain/metrics'
   )
 }
+export function getsecuredassets() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].THORNODE_URL + 'thorchain/securedassets'
+  )
+}
+

@@ -261,6 +261,10 @@ export default {
               link: '/thorfi/savers',
             },
             {
+              name: 'Secured Assets',
+              link: '/thorfi/secured',
+            },
+            {
               name: 'Synths',
               link: '/thorfi/synths',
             },
