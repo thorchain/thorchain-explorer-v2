@@ -680,13 +680,13 @@ export const nameMapping = {
   Lends: ['lends'],
   DecentralFi: ['decentralfi'],
   TrustWallet: ['ti', 'te', 'tr', 'td', 'tb'],
-  LiFi: ['lifi'],
+  LiFi: ['lifi', 'lifi/-_'],
   'OneKey Wallet': ['oky'],
   Symbiosis: ['sy'],
   vultisig: ['va', 'vi', 'v0'],
   thorwallet: ['wr', 'thor1a427q3v96psuj4fnughdw8glt5r7j38lj7rkp8'],
   'Cake Wallet': ['cakewallet'],
-  OKX: ['okw'],
+  OKX: ['okw', 'okw/-_'],
   Eldorito: ['eld', 'ELD'],
 }
 
