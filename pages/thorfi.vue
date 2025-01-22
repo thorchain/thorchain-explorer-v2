@@ -21,6 +21,10 @@ export default {
           text: 'Synths',
         },
         {
+          name: 'Secured',
+          link: '/thorfi/secured',
+        },
+        {
           link: '/thorfi/trades',
           text: 'Trade Assets',
         },
