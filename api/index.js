@@ -24,6 +24,8 @@ import {
   getBorrowerDetails,
   getMidgardActions,
   getSwapsHistory,
+  getStats,
+  getPools,
 } from './midgard.api'
 import {
   getRunePoolProviders,
@@ -64,7 +66,6 @@ import {
   getDerivedPoolDetail,
   getTradeAsset,
   getTradeAssets,
-  getsecuredassets,
   getRunePool,
   getThorVersion,
   getTSSMetrics,
@@ -110,13 +111,7 @@ import {
   getRunePrice,
   getDailySwap,
 } from './insights.api'
-import {
-  getTHORLastBlock,
-  getBlockHeight,
-  getQuote,
-  getPools,
-  getStats,
-} from './infra'
+import { getTHORLastBlock, getBlockHeight, getQuote } from './infra'
 import endpoints from './endpoints'
 export var $axiosInstace
 
@@ -271,7 +266,6 @@ export default function ({ $axios }, inject) {
     getDerivedPoolDetail,
     getTradeAsset,
     getTradeAssets,
-    getsecuredassets,
     getRunePool,
     getRunePoolsInfo,
     getOldRunePools,
