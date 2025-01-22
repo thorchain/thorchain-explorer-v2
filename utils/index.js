@@ -610,6 +610,7 @@ const hashMapShorts = {
   g: 'GAIA.ATOM',
   l: 'LTC.LTC',
   r: 'THOR.RUNE',
+  f: 'BASE.ETH',
 }
 
 export function shortAssetName(name) {
