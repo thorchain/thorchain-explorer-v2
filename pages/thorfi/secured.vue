@@ -233,7 +233,7 @@ export default {
     },
   },
   head: {
-    title: 'THORChain Network Explorer | secured',
+    title: 'THORChain Network Explorer | Secured Assets',
   },
 }
 </script>

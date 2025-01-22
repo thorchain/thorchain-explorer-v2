@@ -261,7 +261,7 @@ export default {
               link: '/thorfi/savers',
             },
             {
-              name: 'Secured',
+              name: 'Secured Assets',
               link: '/thorfi/secured',
             },
             {
