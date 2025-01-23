@@ -1459,10 +1459,16 @@ export default {
                 param.find((p) => p.seriesName === 'Affiliate Fee')
                   ? `<span>
                 <span>Affiliate Fee</span>
-                <b>$${this.$options.filters.number(
-                  param.find((p) => p.seriesName === 'Affiliate Fee').value,
-                  '0,0a'
-                )}</b>
+                <b>${
+                  param.find((p) => p.seriesName === 'Affiliate Fee').value
+                    ? '$' +
+                      this.$options.filters.number(
+                        param.find((p) => p.seriesName === 'Affiliate Fee')
+                          .value,
+                        '0,0a'
+                      )
+                    : '-'
+                }</b>
               </span>`
                   : ``
               }
