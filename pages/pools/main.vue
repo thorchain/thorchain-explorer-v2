@@ -266,10 +266,7 @@ export default {
               depth: (+p.assetDepth / 10 ** 8) * p.assetPriceUSD,
               apy: p.annualPercentageRate,
               volume: (+p.volume24h / 10 ** 8) * this.runePrice,
-              vd: pe
-                ? (+pe.swapVolume * this.runePrice) /
-                  (+p.assetDepth * +p.assetPriceUSD)
-                : +p.volume24h / (+p.assetDepth * +p.assetPrice),
+              vd: +p.volume24h / (+p.assetDepth * +p.assetPrice),
               asset: p.asset,
               saversDepth: +p.saversDepth / 10 ** 8,
               depthToUnitsRatio: p.saversDepth
