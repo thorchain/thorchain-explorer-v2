@@ -115,10 +115,10 @@ export default {
   },
   async mounted() {
     try {
-      this.securedAssets = (await this.$api.getsecuredassets()).data
+      this.securedAssets = (await this.$api.getSecuredAssets()).data
       this.pools = (await this.$api.getThorPools()).data
       this.asgard = (await this.$api.getAsgard()).data
-      this.rows = this.fillsecuredData(
+      this.rows = this.fillSecuredData(
         this.securedAssets,
         this.pools,
         this.asgard
@@ -131,7 +131,7 @@ export default {
     }
   },
   methods: {
-    fillsecuredData(securedAssets, pools, asgard) {
+    fillSecuredData(securedAssets, pools, asgard) {
       const assetPerVault = {}
       const asgardCoins = asgard.map((a) => a.coins)
       for (let i = 0; i < asgardCoins.length; i++) {
@@ -222,7 +222,7 @@ export default {
     },
     toggleUSD() {
       this.usdDenom = !this.usdDenom
-      this.rows = this.fillsecuredData(
+      this.rows = this.fillSecuredData(
         this.securedAssets,
         this.pools,
         this.asgard

@@ -69,6 +69,7 @@ import {
   getRunePool,
   getThorVersion,
   getTSSMetrics,
+  getSecuredAssets,
 } from './thornode.api'
 import { getTendermintLatestBlocks } from './tendermint.api'
 import {
@@ -296,6 +297,7 @@ export default function ({ $axios }, inject) {
     getTopSwapsMonthly,
     getBurnedBlocks,
     getExecutionQuality,
+    getSecuredAssets,
   }
 
   inject('api', api)
