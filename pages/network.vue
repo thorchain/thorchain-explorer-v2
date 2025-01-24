@@ -24,6 +24,10 @@ export default {
           text: 'Mimir Votes',
           link: '/network/votes',
         },
+        {
+              name: 'Churn',
+              link: '/network/churn',
+            },
       ],
     }
   },

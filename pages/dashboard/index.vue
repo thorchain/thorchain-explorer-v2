@@ -534,7 +534,7 @@ export default {
           title: 'Churning',
           rowStart: 3,
           colSpan: 1,
-          link: '/nodes',
+          link: '/network/churn',
           items: [
             {
               name: 'Next Churn',
