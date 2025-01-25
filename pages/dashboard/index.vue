@@ -1,6 +1,5 @@
 <template>
   <Page>
-    <counter/>
     <div class="chart-container">
       <div class="network-stats">
         <div class="stat-group">
