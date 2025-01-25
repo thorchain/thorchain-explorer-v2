@@ -105,6 +105,7 @@ import {
   getTopSwapsMonthly,
   getBurnedBlocks,
   getExecutionQuality,
+  getAffiliateSwapsDaily,
 } from './middleware.api'
 import {
   getChurnHistory,
@@ -279,6 +280,7 @@ export default function ({ $axios }, inject) {
     getFeesRewardsMonthly,
     getAffiliateSwapsByWallet,
     getAffiliateSwapsWeekly,
+    getAffiliateSwapsDaily,
     getnodeOverview,
     getAffiliateDaily,
     getActions,

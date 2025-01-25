@@ -1,11 +1,7 @@
 <template>
   <div>
     <Nav :active-mode.sync="period" :nav-items="periods" pre-text="Period :" />
-    <cards-header
-      :table-general-stats="
-        period === 'month' ? overallInfoMonthly : overallInfoWeekly
-      "
-    />
+    <cards-header :table-general-stats="getOverallInfo(period)" />
     <affiliate-table
       v-if="period === 'month'"
       :affiliate-data="affiliateDataMonthly"
@@ -14,6 +10,11 @@
     <affiliate-table
       v-if="period === 'week'"
       :affiliate-data="affiliateDataWeekly"
+    ></affiliate-table>
+
+    <affiliate-table
+      v-if="period === 'day'"
+      :affiliate-data="affiliateDataDaily"
     ></affiliate-table>
   </div>
 </template>
@@ -29,17 +30,21 @@ export default {
     return {
       affiliateDataMonthly: [],
       affiliateDataWeekly: [],
+      affiliateDataDaily: [],
       overallInfoMonthly: null,
       overallInfoWeekly: null,
+      overallInfoDaily: null,
       period: 'month',
       periods: [
+        { text: '24 Hours', mode: 'day' },
         { text: '1 Week', mode: 'week' },
         { text: '1 Month', mode: 'month' },
       ],
     }
   },
   watch: {
-    period(newPeriod) {
+    period(newPeriod, oldPeriod) {
+      if (newPeriod === oldPeriod) return
       this.$router.push({ query: { period: newPeriod } })
       this.fetchAffiliateData()
     },
@@ -53,21 +58,35 @@ export default {
     this.fetchAffiliateData()
   },
   methods: {
+    getOverallInfo(period) {
+      switch (period) {
+        case 'month':
+          return this.overallInfoMonthly
+        case 'week':
+          return this.overallInfoWeekly
+        case 'day':
+          return this.overallInfoDaily
+        default:
+          return null
+      }
+    },
     async fetchAffiliateData() {
       try {
-        const { data } = await this.$api.getAffiliateSwapsByWallet()
-        this.affiliateDataMonthly = this.formatData(data)
-        this.overallInfoMonthly = this.calculateOverallInfo(data)
+        if (this.period === 'month') {
+          const { data } = await this.$api.getAffiliateSwapsByWallet()
+          this.affiliateDataMonthly = this.formatData(data)
+          this.overallInfoMonthly = this.calculateOverallInfo(data)
+        } else if (this.period === 'week') {
+          const { data } = await this.$api.getAffiliateSwapsWeekly()
+          this.affiliateDataWeekly = this.formatData(data)
+          this.overallInfoWeekly = this.calculateOverallInfo(data)
+        } else if (this.period === 'day') {
+          const { data } = await this.$api.getAffiliateSwapsDaily()
+          this.affiliateDataDaily = this.formatData(data)
+          this.overallInfoDaily = this.calculateOverallInfo(data)
+        }
       } catch (error) {
-        console.error('Error fetching monthly affiliate data:', error)
-      }
-
-      try {
-        const { data } = await this.$api.getAffiliateSwapsWeekly()
-        this.affiliateDataWeekly = this.formatData(data)
-        this.overallInfoWeekly = this.calculateOverallInfo(data)
-      } catch (error) {
-        console.error('Error fetching weekly affiliate data:', error)
+        console.error(`Error fetching ${this.period} affiliate data:`, error)
       }
     },
     mapMissing(item) {
