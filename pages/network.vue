@@ -25,9 +25,9 @@ export default {
           link: '/network/votes',
         },
         {
-              name: 'Churn',
-              link: '/network/churn',
-            },
+          text: 'Churn & Pool countdown',
+          link: '/network/churn',
+        },
       ],
     }
   },

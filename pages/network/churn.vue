@@ -54,9 +54,9 @@
               </div>
               <div class="block-info-items">
                 <strong>Remaining Blocks</strong>
-                <span>#{{ remainingBlocksChurn }}</span>
+                <span>#{{ remainingBlocksChurn | number('0,0') }}</span>
                 <strong>Current Block</strong>
-                <span>#{{ currentBlock }}</span>
+                <span>#{{ currentBlock | number('0,0') }}</span>
               </div>
             </div>
           </card>
@@ -115,10 +115,10 @@
                 <strong>Block Details</strong>
               </div>
               <div class="block-info-items">
-                <strong>Remaining Blocks</strong>
-                <span>#{{ remainingBlocksPool }}</span>
-                <strong>Current Block</strong>
-                <span>#{{ currentBlock }}</span>
+                <strong>Remaining Blocks:</strong>
+                <span>#{{ remainingBlocksPool | number('0,0') }}</span>
+                <strong>Current Block:</strong>
+                <span>#{{ currentBlock | number('0,0') }}</span>
               </div>
             </div>
           </card>
@@ -130,7 +130,6 @@
 
 <script>
 import moment from 'moment'
-import { blockTime } from '~/utils'
 import { mapGetters } from 'vuex'
 import CalendarIcon from '~/assets/images/calendar.svg?inline'
 
@@ -218,8 +217,6 @@ export default {
           throw new Error('Cannot read the data')
         }
         this.network = data?.networkData
-        console.log('Network data:', this.network)
-        console.log('Chains Height:', this.chainsHeight)
         this.getNetworkStatus()
       })
       .catch((error) => {
@@ -283,10 +280,15 @@ export default {
 .countdown-churn {
   display: flex;
   flex-direction: row;
-  gap: 4rem;
+  gap: 2rem;
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
+
+  > div {
+    flex: 1;
+    max-width: 35rem;
+  }
 }
 .header-nextchurn {
   margin: 0.5rem;
