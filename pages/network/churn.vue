@@ -1,128 +1,55 @@
 <template>
   <div class="churn-container">
     <div class="countdown-churn">
-      <div v-if="nextChurnRemainingTime">
-        <div class="next-count">
-          <card class="countdown-item">
-            <div class="Countdown-title">
-              <strong>Next Churn</strong>
-            </div>
-            <div class="timers">
-              <div class="duration">
-                <small>Days</small>
-                <strong>{{
-                  nextChurnRemainingTime.days().toString().padStart(2, '0')
-                }}</strong>
-              </div>
-              <div class="mini-line"></div>
-              <div class="duration">
-                <small>Hours</small>
-                <strong>{{
-                  nextChurnRemainingTime.hours().toString().padStart(2, '0')
-                }}</strong>
-              </div>
-              <div class="mini-line"></div>
-              <div class="duration">
-                <small>Minutes</small>
-                <strong>{{
-                  nextChurnRemainingTime.minutes().toString().padStart(2, '0')
-                }}</strong>
-              </div>
-              <div class="mini-line"></div>
-              <div class="duration">
-                <small>Seconds</small>
-                <strong>{{
-                  nextChurnRemainingTime.seconds().toString().padStart(2, '0')
-                }}</strong>
-              </div>
-            </div>
+      <div class="next-churn">
+        <counter
+          v-if="nextChurnRemainingTime"
+          :remaining-seconds="nextChurnRemainingTime.asSeconds()"
+          :target-date="nextChurnTargetDate"
+          title="Next Churn"
+          :remaining-blocks="remainingBlocksChurn"
+          :current-block="currentBlock"
+          :visible-units="['Days', 'Hours', 'Minutes', 'Seconds']"
+        />
 
-            <div class="line"></div>
-            <div class="target-info">
-              <div class="target-title">
-                <CalendarIcon class="target-icon" />
-                <strong>Target Date</strong>
-              </div>
-              <p>{{ nextChurnTargetDate }}</p>
+        <card v-if="nextChurnRemainingTime" class="block-details">
+          <div class="block-details-items">
+            <div class="block-details-title">
+              <strong>Block Details</strong>
             </div>
-          </card>
-
-          <card class="block-details">
-            <div class="block-details-items">
-              <div class="block-details-title">
-                <strong>Block Details</strong>
-              </div>
-              <div class="block-info-items">
-                <strong>Remaining Blocks</strong>
-                <span>#{{ remainingBlocksChurn | number('0,0') }}</span>
-                <strong>Current Block</strong>
-                <span>#{{ currentBlock | number('0,0') }}</span>
-              </div>
+            <div class="block-info-items">
+              <strong>Remaining Blocks</strong>
+              <span>#{{ remainingBlocksChurn | number('0,0') }}</span>
+              <strong>Current Block</strong>
+              <span>#{{ currentBlock | number('0,0') }}</span>
             </div>
-          </card>
-        </div>
+          </div>
+        </card>
       </div>
+      <div class="next-churn">
+        <counter
+          v-if="nextPoolRemainingTime"
+          :remaining-seconds="nextPoolRemainingTime.asSeconds()"
+          :target-date="nextPoolTargetDate"
+          title="Next Pool"
+          :remaining-blocks="remainingBlocksPool"
+          :current-block="currentBlock"
+          :visible-units="['Days', 'Hours', 'Minutes', 'Seconds']"
+        />
 
-      <div v-if="nextPoolRemainingTime">
-        <div class="next-count">
-          <card class="countdown-item">
-            <div class="Countdown-title">
-              <strong>Next Pool</strong>
+        <card v-if="nextPoolRemainingTime" class="block-details">
+          <div class="block-details-items">
+            <div class="block-details-title">
+              <strong>Block Details</strong>
             </div>
-            <div class="timers">
-              <div class="duration">
-                <small>Days</small>
-                <strong>{{
-                  nextPoolRemainingTime.days().toString().padStart(2, '0')
-                }}</strong>
-              </div>
-              <div class="mini-line"></div>
-              <div class="duration">
-                <small>Hours</small>
-                <strong>{{
-                  nextPoolRemainingTime.hours().toString().padStart(2, '0')
-                }}</strong>
-              </div>
-              <div class="mini-line"></div>
-              <div class="duration">
-                <small>Minutes</small>
-                <strong>{{
-                  nextPoolRemainingTime.minutes().toString().padStart(2, '0')
-                }}</strong>
-              </div>
-              <div class="mini-line"></div>
-              <div class="duration">
-                <small>Seconds</small>
-                <strong>{{
-                  nextPoolRemainingTime.seconds().toString().padStart(2, '0')
-                }}</strong>
-              </div>
+            <div class="block-info-items">
+              <strong>Remaining Blocks</strong>
+              <span>#{{ remainingBlocksPool | number('0,0') }}</span>
+              <strong>Current Block</strong>
+              <span>#{{ currentBlock | number('0,0') }}</span>
             </div>
-
-            <div class="line"></div>
-            <div class="target-info">
-              <div class="target-title">
-                <CalendarIcon class="target-icon" />
-                <strong>Target Date</strong>
-              </div>
-              <p>{{ nextPoolTargetDate }}</p>
-            </div>
-          </card>
-
-          <card class="block-details">
-            <div class="block-details-items">
-              <div class="block-details-title">
-                <strong>Block Details</strong>
-              </div>
-              <div class="block-info-items">
-                <strong>Remaining Blocks:</strong>
-                <span>#{{ remainingBlocksPool | number('0,0') }}</span>
-                <strong>Current Block:</strong>
-                <span>#{{ currentBlock | number('0,0') }}</span>
-              </div>
-            </div>
-          </card>
-        </div>
+          </div>
+        </card>
       </div>
     </div>
   </div>
@@ -131,10 +58,8 @@
 <script>
 import moment from 'moment'
 import { mapGetters } from 'vuex'
-import CalendarIcon from '~/assets/images/calendar.svg?inline'
 
 export default {
-  components: { CalendarIcon },
   data() {
     return {
       network: null,
@@ -290,42 +215,6 @@ export default {
     max-width: 35rem;
   }
 }
-.header-nextchurn {
-  margin: 0.5rem;
-}
-.block-remaining {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 1rem;
-  align-items: center;
-  margin: auto;
-}
-
-.counter-container {
-  display: flex;
-  flex-direction: column;
-  max-width: 35rem;
-  padding: 3px;
-  border-radius: 1rem;
-}
-
-.timer-items {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  width: 100%;
-}
-.countdown-item {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.timer-icon {
-  width: 1rem;
-  height: 1rem;
-}
 .block-details-items {
   display: flex;
   flex-direction: column;
@@ -338,33 +227,15 @@ export default {
     margin: 0;
   }
 }
-.timers {
+.block-details {
   display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-}
-.Countdown-title {
-  margin-bottom: 0.5rem;
-  display: flex;
-  gap: 2rem;
-  width: 100%;
-  align-items: center;
-}
-.duration {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.duration strong {
-  font-size: 1.5rem;
-  color: var(--primary-color);
-}
-
-.duration small {
-  font-size: 0.9rem;
-  color: var(--sec-font-color);
+  max-width: 24rem;
+  max-height: 300px;
+  padding: 3px;
+  border-radius: 1rem;
+  @include sm {
+    max-width: 35rem;
+  }
 }
 .block-info-items {
   display: flex;
@@ -375,36 +246,15 @@ export default {
     font-weight: bold;
   }
 }
-.next-count {
+.block-details-title {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+  align-items: center;
+}
+.next-churn {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-}
-.mini-line {
-  height: 30px;
-  width: 2px;
-  background: var(--border-color);
-}
-.line {
-  height: 0.5px;
-  background-color: var(--border-color);
-  width: 100%;
-  gap: 0px;
-  display: flex;
-  margin-top: 1rem;
-}
-.target-info {
-  margin-top: 1rem;
-}
-
-.target-title {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.target-icon {
-  width: 1.2rem;
-  height: 1.2rem;
 }
 </style>
