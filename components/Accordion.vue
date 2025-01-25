@@ -92,7 +92,7 @@
               {{ b.text | capitalize }}
             </div>
           </div>
-          <div v-else-if="s.type === 'rate' && s.value.length > 0">
+          <div v-else-if="s.type === 'rate' && s.is">
             <div class="value mono">
               <exchangeIcon class="rate" @click="changeRate()" />
               <template v-if="rate">

@@ -483,7 +483,7 @@ export default {
               {
                 key: 'Rate',
                 value: accordions.action.rate,
-                is: accordions.action.rate,
+                is: accordions.action.rate && accordions.action.rate.length > 0,
                 type: 'rate',
               },
               {
