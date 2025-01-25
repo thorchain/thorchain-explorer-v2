@@ -135,7 +135,6 @@ export default {
   display: flex;
   flex-direction: column;
   border-radius: 1rem;
-  background-color: var(--card-bg);
   flex: 1;
   max-width: 35rem;
 }

@@ -363,7 +363,6 @@ import Rune from '~/assets/images/rune.svg?inline'
 import Piggy from '~/assets/images/piggy.svg?inline'
 import Chart from '~/assets/images/chart.svg?inline'
 import TransactionAction from '~/components/transactions/TransactionAction.vue'
-import Counter from '~/components/counter.vue'
 
 use([
   SVGRenderer,
