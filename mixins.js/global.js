@@ -282,6 +282,21 @@ export default {
         console.error("Can't get the asset:", assetStr)
       }
     },
+    showTicker(assetStr) {
+      if (!assetStr) {
+        return ''
+      }
+      try {
+        if (typeof assetStr !== 'string') {
+          assetStr = assetToString(assetStr)
+        }
+        const asset = assetFromString(assetStr)
+        return asset.ticker
+      } catch (error) {
+        console.error(error)
+        console.error("Can't get the asset ticker:", assetStr)
+      }
+    },
     baseAmountFormat(number) {
       return number
         ? this.$options.filters.number(+number / 10 ** 8, '0,0.0000')

@@ -92,6 +92,17 @@
               {{ b.text | capitalize }}
             </div>
           </div>
+          <div v-else-if="s.type === 'rate' && s.value.length > 0">
+            <div class="value mono">
+              <exchangeIcon class="rate" @click="changeRate()" />
+              <template v-if="rate">
+                {{ s.value[0] }}
+              </template>
+              <template v-else>
+                {{ s.value[1] }}
+              </template>
+            </div>
+          </div>
           <div v-else :class="['value', { link: isLink(s.type) }]">
             <component
               :is="checkType(s.type)"
@@ -135,6 +146,7 @@ import SandTimer from '@/assets/images/sandtimer.svg?inline'
 import Clock from '~/assets/images/alarmclock.svg?inline'
 import circleSuccess from '~/assets/images/circle.svg?inline'
 import WarningIcon from '~/assets/images/warning.svg?inline'
+import ExchangeIcon from '~/assets/images/rate.svg?inline'
 
 export default {
   components: {
@@ -145,6 +157,7 @@ export default {
     Clock,
     circleSuccess,
     WarningIcon,
+    ExchangeIcon,
   },
   props: [
     'title',
@@ -168,6 +181,7 @@ export default {
       circleStyle: {
         'stroke-dashoffset': 100,
       },
+      rate: 0,
     }
   },
   computed: {
@@ -206,6 +220,9 @@ export default {
       }
 
       return JSON.stringify(attributes, null, 4).trim()
+    },
+    changeRate() {
+      this.rate = !this.rate
     },
     toggleAccordion() {
       this.show = !this.show
@@ -407,6 +424,18 @@ export default {
         &.bubble-wrapper {
           display: flex;
           gap: 0.5rem;
+        }
+
+        .rate {
+          width: 1rem;
+          height: 1rem;
+          fill: var(--sec-font-color);
+          rotate: 90deg;
+          cursor: pointer;
+
+          &:hover {
+            fill: var(--primary-color);
+          }
         }
 
         &.link {

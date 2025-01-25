@@ -481,6 +481,12 @@ export default {
                 is: accordions.action.streaming?.quantity,
               },
               {
+                key: 'Rate',
+                value: accordions.action.rate,
+                is: accordions.action.rate,
+                type: 'rate',
+              },
+              {
                 key: 'Stream',
                 value: `${accordions.action.streaming?.count} / ${accordions.action.streaming?.quantity}`,
                 is: accordions.action.streaming?.count,
@@ -1962,6 +1968,16 @@ export default {
         timeStamp = moment.unix(timeStamp / 1e9)
       }
 
+      const rates = []
+      if (inAmount && outAmount) {
+        rates.push(
+          `1 ${this.showTicker(outAsset)} = ${outAmount / inAmount} ${this.showTicker(inAsset)}`
+        )
+        rates.push(
+          `1 ${this.showTicker(inAsset)} = ${inAmount / outAmount} ${this.showTicker(outAsset)}`
+        )
+      }
+
       return {
         cards: {
           title: onlyRefund ? 'refunded Swap' : 'swap',
@@ -2037,6 +2053,7 @@ export default {
             affiliateOut: affiliateOut || undefined,
             swapSlip: parseInt(actions?.actions[0]?.metadata?.swap?.swapSlip),
             height,
+            rate: rates,
             streaming: {
               count: thorStatus?.stages.swap_status?.streaming?.count,
               interval:
