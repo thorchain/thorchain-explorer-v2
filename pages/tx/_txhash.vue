@@ -1971,10 +1971,10 @@ export default {
       const rates = []
       if (inAmount && outAmount) {
         rates.push(
-          `1 ${this.showTicker(outAsset)} = ${outAmount / inAmount} ${this.showTicker(inAsset)}`
+          `1 ${this.showTicker(inAsset)} = ${outAmount / inAmount} ${this.showTicker(outAsset)}`
         )
         rates.push(
-          `1 ${this.showTicker(inAsset)} = ${inAmount / outAmount} ${this.showTicker(outAsset)}`
+          `1 ${this.showTicker(outAsset)} = ${inAmount / outAmount} ${this.showTicker(inAsset)}`
         )
       }
 
