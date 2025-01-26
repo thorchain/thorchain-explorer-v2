@@ -390,7 +390,6 @@ export default {
     ArrowRightIcon,
     TransactionAction,
     affiliateTables,
-    Counter,
   },
   layout: 'dashboard',
   data() {

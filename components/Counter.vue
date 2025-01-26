@@ -46,19 +46,13 @@ import ClockIcon from '~/assets/images/clock.svg?inline'
 import CalendarIcon from '~/assets/images/calendar.svg?inline'
 
 export default {
+  name: 'Counter',
   components: { ClockIcon, CalendarIcon },
-  name: 'TimerComponent',
   props: {
-    remainingSeconds: {
+    counter: {
       type: Number,
       required: true,
-    },
-    targetDate: {
-      type: String,
-      required: true,
-      validator(value) {
-        return moment(value, 'YYYY-MM-DD', true).isValid()
-      },
+      default: 0,
     },
     visibleUnits: {
       type: Array,
@@ -73,34 +67,39 @@ export default {
   },
   data() {
     return {
-      blockRemainingTime: moment.duration(this.remainingSeconds, 'seconds'),
+      blockRemainingTime: moment.duration(0, 'seconds'),
       timer: null,
+      duration: 0,
     }
   },
   computed: {
     timeUnits() {
       return {
-        Years: this.blockRemainingTime.years().toString().padStart(2, '0'),
-        Months: this.blockRemainingTime.months().toString().padStart(2, '0'),
-        Days: this.blockRemainingTime.days().toString().padStart(2, '0'),
-        Hours: this.blockRemainingTime.hours().toString().padStart(2, '0'),
-        Minutes: this.blockRemainingTime.minutes().toString().padStart(2, '0'),
-        Seconds: this.blockRemainingTime.seconds().toString().padStart(2, '0'),
+        Years: this.blockRemainingTime?.years().toString().padStart(2, '0'),
+        Months: this.blockRemainingTime?.months().toString().padStart(2, '0'),
+        Days: this.blockRemainingTime?.days().toString().padStart(2, '0'),
+        Hours: this.blockRemainingTime?.hours().toString().padStart(2, '0'),
+        Minutes: this.blockRemainingTime?.minutes().toString().padStart(2, '0'),
+        Seconds: this.blockRemainingTime?.seconds().toString().padStart(2, '0'),
       }
+    },
+    targetDate() {
+      return moment().add(this.duration, 'seconds').format('YYYY MMM D, HH:mm')
     },
   },
   watch: {
-    remainingSeconds: {
+    counter: {
       immediate: true,
-      handler(newVal) {
-        if (this.timer) clearInterval(this.timer)
-        this.blockRemainingTime = moment.duration(newVal, 'seconds')
-        this.startCountdown()
+      handler(newVal, oldVal) {
+        if (newVal === oldVal) return
+        if (newVal > 0) {
+          this.duration = newVal * 6
+          if (!this.timer) {
+            this.startCountdown()
+          }
+        }
       },
     },
-  },
-  mounted() {
-    this.startCountdown()
   },
   beforeDestroy() {
     if (this.timer) {
@@ -109,17 +108,12 @@ export default {
   },
   methods: {
     startCountdown() {
-      const endTime = moment().add(this.blockRemainingTime)
-      this.timer = setInterval(() => {
-        const now = moment()
-        const diff = endTime.diff(now)
-        if (diff > 0) {
-          this.blockRemainingTime = moment.duration(diff)
-        } else {
-          clearInterval(this.timer)
-          this.$emit('countdown-finished')
-        }
-      }, 1000)
+      if (this.counter > 0) {
+        this.timer = setInterval(() => {
+          this.duration = this.duration - 1
+          this.blockRemainingTime = moment.duration(this.duration, 'seconds')
+        }, 1000)
+      }
     },
   },
 }
