@@ -24,6 +24,10 @@ export default {
           text: 'Mimir Votes',
           link: '/network/votes',
         },
+        {
+          text: 'Churn & Pool countdown',
+          link: '/network/churn',
+        },
       ],
     }
   },

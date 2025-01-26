@@ -534,7 +534,7 @@ export default {
           title: 'Churning',
           rowStart: 3,
           colSpan: 1,
-          link: '/nodes',
+          link: '/network/churn',
           items: [
             {
               name: 'Next Churn',
@@ -825,11 +825,6 @@ export default {
         .catch((error) => {
           console.error('Error fetching swap history:', error)
         })
-    },
-    getDuration(timestamp) {
-      const now = moment()
-      const before = moment(timestamp)
-      return moment.duration(now.diff(before)).asSeconds().toFixed()
     },
     stringToPercentage(val) {
       return (Number.parseFloat(val ?? 0) * 100).toFixed(2).toString() + ' %'

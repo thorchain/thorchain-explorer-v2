@@ -210,6 +210,10 @@ export default {
               name: 'Votes',
               link: '/network/votes',
             },
+            {
+              name: 'Churn',
+              link: '/network/churn',
+            },
           ],
         },
         {

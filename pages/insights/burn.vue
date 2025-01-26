@@ -132,10 +132,7 @@
         </div>
         <template v-if="burnedBlocks.length == 0">
           <div v-for="index in 10" :key="index" class="loader-item">
-            <skeleton-loader
-              class="value-loader"
-              height="1rem"
-            ></skeleton-loader>
+            <skeleton-loader height="1rem"></skeleton-loader>
           </div>
         </template>
       </transition-group>
@@ -323,7 +320,7 @@ export default {
           ],
         },
         (param) => {
-          return ` 
+          return `
         <div class="tooltip-header">
           <div class="data-color" style="background-color: ${param[0].color}"></div>
           ${param[0].name}
@@ -356,11 +353,6 @@ export default {
         .catch((error) => {
           console.error('Error fetching swap history:', error)
         })
-    },
-    getDuration(timestamp) {
-      const now = moment()
-      const before = moment(timestamp)
-      return moment.duration(now.diff(before)).asSeconds().toFixed()
     },
   },
 }
@@ -579,38 +571,38 @@ h3 {
   max-width: 50rem;
   margin: auto;
   margin-top: 1rem;
-}
 
-.block-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex: 1;
-  margin: 1rem;
-
-  .block-info {
+  .block-item {
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    flex: 1;
+    margin: 1rem;
 
-    .height {
-      font-size: 1.2rem;
-      color: var(--sec-font-color);
+    .block-info {
+      display: flex;
+      flex-direction: column;
+
+      .height {
+        font-size: 1.2rem;
+        color: var(--sec-font-color);
+      }
+    }
+
+    .right-section {
+      display: flex;
+      flex-direction: column;
+      align-items: end;
+    }
+
+    .burn-info {
+      color: #ffa86b;
     }
   }
 
-  .right-section {
-    display: flex;
-    flex-direction: column;
-    align-items: end;
+  .loader-item {
+    margin: 2rem 0;
   }
-
-  .burn-info {
-    color: #ffa86b;
-  }
-}
-
-.loader-item {
-  margin: 2rem 0;
 }
 
 .block-enter-active {

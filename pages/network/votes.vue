@@ -429,7 +429,7 @@ export default {
       this.$router.push({ path: `/node/${signer}` })
     },
     getVoteHighestBid(voters) {
-      if ((!voters || voters.length == 0) && !this.nodes) {
+      if ((!voters || voters.length === 0) && !this.nodes) {
         return
       }
       const activeVoters = voters.filter((v) =>

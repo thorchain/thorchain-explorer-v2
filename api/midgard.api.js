@@ -98,6 +98,7 @@ export function earnings(interval, count) {
 export function getEarningHistory(count = 30) {
   return $axiosInstace.get(`history/earnings?interval=day&count=${count || 60}`)
 }
+
 export function getChurn() {
   return $axiosInstace.get('churns')
 }
