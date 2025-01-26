@@ -826,11 +826,6 @@ export default {
           console.error('Error fetching swap history:', error)
         })
     },
-    getDuration(timestamp) {
-      const now = moment()
-      const before = moment(timestamp)
-      return moment.duration(now.diff(before)).asSeconds().toFixed()
-    },
     stringToPercentage(val) {
       return (Number.parseFloat(val ?? 0) * 100).toFixed(2).toString() + ' %'
     },

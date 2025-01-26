@@ -46,10 +46,40 @@
         </card>
       </div>
     </div>
+    <!-- Churn Lists -->
+    <div class="block-card">
+      <transition-group name="block" tag="div">
+        <div
+          v-for="(churn, i) in churns"
+          :key="churn.height"
+          class="block-item"
+        >
+          <div class="block-info">
+            <span class="height">Churn #{{ i }}</span>
+            <nuxt-link class="clickable" :to="`/block/${churn.height}`">
+              {{ churn.height | number('0,0') }}
+            </nuxt-link>
+          </div>
+          <div class="right-section">
+            <div style="color: var(--sec-font-color)">
+              {{ getDate(churn.date) }}
+            </div>
+            <small> {{ untilNow(churn.date) }} </small>
+          </div>
+        </div>
+        <template v-if="churns.length === 0">
+          <div v-for="index in 10" :key="index" class="loader-item">
+            <skeleton-loader height="1rem"></skeleton-loader>
+          </div>
+        </template>
+      </transition-group>
+    </div>
   </div>
 </template>
 
 <script>
+import moment from 'moment'
+
 export default {
   data() {
     return {
@@ -58,21 +88,29 @@ export default {
       timer: null,
       nextChurnHeight: 0,
       poolActivationCountdown: 0,
+      churns: [],
     }
   },
+
   computed: {
     currentBlock() {
       return this.$store.state.chainsHeight?.THOR ?? 0
     },
   },
 
-  async mounted() {
-    const networkData = (await this.$api.getNetwork()).data
+  mounted() {
+    this.$api.getNetwork().then(({ data: networkData }) => {
+      this.nextChurnHeight = +networkData.nextChurnHeight
+      this.poolActivationCountdown = +networkData.poolActivationCountdown
+    })
 
-    this.nextChurnHeight = +networkData.nextChurnHeight
-    this.poolActivationCountdown = +networkData.poolActivationCountdown
+    this.$api.getMimir().then(({ data: mimirInfo }) => {
+      this.mimirInfo = mimirInfo
+    })
 
-    this.mimirInfo = (await this.$api.getMimir()).data
+    this.$api.getChurn().then(({ data: churnData }) => {
+      this.churns = churnData.slice(0, 10)
+    })
   },
 
   beforeDestroy() {
@@ -82,10 +120,11 @@ export default {
   },
 
   methods: {
-    isChurnHalted() {
-      return (
-        this.mimirInfo?.HALTCHURNING || this.network?.nextChurnHeight === -1
-      )
+    getDate(timestamp) {
+      return moment.unix(timestamp / 1e9).format('YYYY MMM D')
+    },
+    untilNow(timestamp) {
+      return moment.unix(timestamp / 1e9).fromNow()
     },
   },
 }
@@ -105,26 +144,27 @@ export default {
     max-width: 35rem;
   }
 }
-.block-details-items {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  gap: 1rem;
-
-  p {
-    font-size: 18.75px;
-    color: var(--sec-font-color);
-    margin: 0;
-  }
-}
 .block-details {
   display: flex;
-  max-width: 24rem;
   max-height: 300px;
   padding: 3px;
   border-radius: 1rem;
+
   @include sm {
     max-width: 35rem;
+  }
+
+  .block-details-items {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 1rem;
+
+    p {
+      font-size: 18.75px;
+      color: var(--sec-font-color);
+      margin: 0;
+    }
   }
 }
 .block-info-items {
@@ -146,5 +186,43 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+.block-card {
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 1rem;
+  padding: 0.5rem 1rem;
+  max-width: 72rem;
+  margin: auto;
+  margin-top: 1rem;
+
+  .block-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex: 1;
+    margin: 1rem;
+
+    .block-info {
+      display: flex;
+      flex-direction: column;
+
+      .height {
+        font-size: 1.2rem;
+        color: var(--sec-font-color);
+      }
+    }
+
+    .right-section {
+      display: flex;
+      flex-direction: column;
+      align-items: end;
+    }
+  }
+
+  .loader-item {
+    margin: 2rem 0;
+  }
 }
 </style>

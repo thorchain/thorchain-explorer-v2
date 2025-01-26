@@ -317,6 +317,11 @@ export default {
         return string
       }
     },
+    getDuration(timestamp) {
+      const now = moment()
+      const before = moment(timestamp)
+      return moment.duration(now.diff(before)).asSeconds().toFixed()
+    },
     formatTimeSort(x, y, col, rowX, rowY) {
       return +x < +y ? -1 : +x > +y ? 1 : 0
     },
