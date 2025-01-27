@@ -845,6 +845,7 @@ export function getExplorerAddressUrl(chain, query) {
       return `https://snowtrace.io/address/${query}`
     case 'DOGE':
       return `https://blockchair.com/dogecoin/address/${query}`
+    case 'ATOM':
     case 'GAIA':
       return `https://www.mintscan.io/cosmos/address/${query}`
     case 'LTC':
