@@ -99,6 +99,7 @@ export default {
       thorStatus: undefined,
       thorHeight: 0,
       quote: undefined,
+      height: undefined,
     }
   },
   computed: {
@@ -866,6 +867,14 @@ export default {
         this.$set(this, 'cards', [this.createCard(cards, accordions)])
       } else if (memo.type === 'runePoolWithdraw') {
         const { cards, accordions } = this.createRunePoolWithdraw(
+          thorStatus,
+          midgardAction,
+          thorTx,
+          memo
+        )
+        this.$set(this, 'cards', [this.createCard(cards, accordions)])
+      } else if (memo.type === 'runePoolDeposit') {
+        const { cards, accordions } = this.createRunePoolDeposit(
           thorStatus,
           midgardAction,
           thorTx,
@@ -1784,6 +1793,53 @@ export default {
             done: !hasOngoing,
           },
           out: outActions,
+        },
+      }
+    },
+    createRunePoolDeposit(thorStatus, actions, thorTx, memo) {
+      const action = actions.actions.find((a) => a.type === 'runePoolDeposit')
+
+      const ins = action?.in.map((a) => ({
+        asset: this.parseMemoAsset(a.coins[0]?.asset),
+        amount: a.coins[0]?.amount,
+        txid: a?.txID,
+        from: a?.address,
+        done: true,
+      }))
+
+      const outs = action?.out.map((a) => ({
+        asset: this.parseMemoAsset(a.coins[0]?.asset),
+        amount: a.coins[0]?.amount,
+        txid: a?.txID,
+        to: a?.address,
+        done: true,
+      }))
+
+      return {
+        cards: {
+          title: 'RUNEPool Deposit',
+          in: ins,
+          middle: {
+            pending: false,
+          },
+          out: [
+            {
+              text: 'THORChain Vault',
+              icon: require('@/assets/images/safe.svg?inline'),
+              borderColor: 'var(--primary-color)',
+            },
+          ],
+        },
+        accordions: {
+          in: ins,
+          action: {
+            type: 'RUNEPool Deposit',
+            timeStamp: moment.unix(action?.date / 1e9) || null,
+            height: action?.height,
+            units: parseInt(action?.metadata?.runePoolDeposit?.units) || null,
+            done: true,
+          },
+          out: outs,
         },
       }
     },
