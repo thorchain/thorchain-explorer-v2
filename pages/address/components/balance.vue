@@ -346,7 +346,7 @@ export default {
 
       const explorers = []
       for (let i = 0; i < blockChains.length; i++) {
-        const chain = blockChains[i]
+        let chain = blockChains[i]
         const res = validate(this.address, chain)
 
         if (res && chain === 'eth') {
@@ -358,6 +358,10 @@ export default {
             })
           })
         } else if (res) {
+          // Change atom to GAIA. its chain
+          if (chain === 'atom') {
+            chain = 'gaia'
+          }
           explorers.push({
             chain: chain.toUpperCase(),
             url: getExplorerAddressUrl(chain.toUpperCase(), this.address),
