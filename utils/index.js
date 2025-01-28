@@ -850,6 +850,8 @@ export function getExplorerAddressUrl(chain, query) {
       return `https://www.mintscan.io/cosmos/address/${query}`
     case 'LTC':
       return `https://blockchair.com/litecoin/address/${query}`
+    case 'BASE':
+      return `https://basescan.com/address/${query}`
     default:
       break
   }

@@ -165,6 +165,8 @@ export default {
         case 'BNB':
         case 'BSC':
           return '#F1B90A'
+        case 'BASE':
+          return '#1E6AFF'
         default:
           return this.popRandomColor()
       }
@@ -747,6 +749,8 @@ export default {
           return '#88BA4F'
         case 'LINK':
           return '#305DD4'
+        case 'CBBTC':
+          return '#1E6AFF'
         default:
           return null
       }
@@ -770,6 +774,7 @@ export default {
         case 'AVAX':
           return 3
         case 'BSC':
+        case 'BASE':
           return 3
         case 'BNB':
           return 0.5

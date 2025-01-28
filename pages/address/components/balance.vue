@@ -350,7 +350,7 @@ export default {
         const res = validate(this.address, chain)
 
         if (res && chain === 'eth') {
-          const evms = ['ETH', 'BSC', 'AVAX']
+          const evms = ['ETH', 'BSC', 'AVAX', 'BASE']
           evms.forEach((e) => {
             explorers.push({
               chain: e,
