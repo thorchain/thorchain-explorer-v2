@@ -851,7 +851,7 @@ export function getExplorerAddressUrl(chain, query) {
     case 'LTC':
       return `https://blockchair.com/litecoin/address/${query}`
     case 'BASE':
-      return `https://basescan.com/address/${query}`
+      return `https://basescan.org/address/${query}`
     default:
       break
   }
