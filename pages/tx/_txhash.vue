@@ -446,10 +446,12 @@ export default {
               +accordions.action.streaming?.count)
         }
 
+        const blockDuration = this.chainsHeight?.THOR - this.height
+
         const remainingTime =
-          (+accordions?.action?.streaming?.quantity -
-            +accordions?.action?.streaming?.count) *
-          +accordions.action.streaming?.interval *
+          (+accordions?.action?.streaming?.quantity *
+            +accordions.action.streaming?.interval -
+            blockDuration) *
           6
 
         const totalTime =
