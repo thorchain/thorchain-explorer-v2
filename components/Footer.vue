@@ -9,12 +9,19 @@
         <small style="color: var(--sec-font-color)">Block Height</small>
         <small
           v-if="blockHeight"
+          :key="blockHeight"
           style="color: var(--primary-color)"
-          class="mono value"
+          class="mono value new-value"
         >
           {{ blockHeight | number('0,0') }}
         </small>
-        <small v-else>-</small>
+        
+        <small
+          v-else
+          class="mono value old-value"
+        >
+          -
+        </small>
       </div>
 
       <div class="footer-icon">
@@ -89,10 +96,6 @@ export default {
       this.$nextTick(() => {
         const blockHeight = this.$el.querySelector('.block-height')
         blockHeight.classList.add('animate')
-
-        setTimeout(() => {
-          blockHeight.classList.remove('animate')
-        }, 1000)
       })
     }
   },
@@ -123,17 +126,45 @@ export default {
     position: relative;
     right: 3rem;
   }
+  
+  &.animate {
+    .old-value {
+      opacity: 0;
+      transform: translateX(20px);
+      animation: fade-out 0.5s forwards;
+    }
+    .new-value {
+      opacity: 1;
+      transform: translateX(0);
+      animation: fade-in 0.5s forwards;
+    }
+  }
+
   .block-icon {
     fill: currentColor;
     width: 1rem;
     height: 1rem;
   }
+}
+@keyframes fade-out {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+}
 
-  &.animate {
-    .value {
-      -webkit-animation: jello-vertical 1s both;
-      animation: jello-vertical 1s both;
-    }
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 
@@ -166,37 +197,6 @@ export default {
     &:hover {
       color: var(--primary-color);
     }
-  }
-}
-
-@keyframes jello-vertical {
-  0% {
-    -webkit-transform: scale3d(1, 1, 1);
-    transform: scale3d(1, 1, 1);
-  }
-  30% {
-    -webkit-transform: scale3d(0.75, 1.25, 1);
-    transform: scale3d(0.75, 1.25, 1);
-  }
-  40% {
-    -webkit-transform: scale3d(1.25, 0.75, 1);
-    transform: scale3d(1.25, 0.75, 1);
-  }
-  50% {
-    -webkit-transform: scale3d(0.85, 1.15, 1);
-    transform: scale3d(0.85, 1.15, 1);
-  }
-  65% {
-    -webkit-transform: scale3d(1.05, 0.95, 1);
-    transform: scale3d(1.05, 0.95, 1);
-  }
-  75% {
-    -webkit-transform: scale3d(0.95, 1.05, 1);
-    transform: scale3d(0.95, 1.05, 1);
-  }
-  100% {
-    -webkit-transform: scale3d(1, 1, 1);
-    transform: scale3d(1, 1, 1);
   }
 }
 </style>
