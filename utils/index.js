@@ -668,26 +668,13 @@ export function assetToString({ chain, synth, trade, symbol, secure }) {
 }
 
 export const nameMapping = {
-  THORSwap: ['t', 'T', 'thor160yye65pf9rzwrgqmtgav69n6zlsyfpgm9a7xk'],
-  'TS Ledger': ['tl'],
-  'Team CoinBot': ['cb'],
-  Asgardex: ['dx'],
-  ShapeShift: ['ss'],
-  XDEFI: ['xdf'],
-  Rango: ['rg'],
-  'Edge Wallet': ['ej'],
-  DefiSpot: ['ds'],
-  Lends: ['lends'],
-  DecentralFi: ['decentralfi'],
-  TrustWallet: ['ti', 'te', 'tr', 'td', 'tb'],
-  LiFi: ['lifi', 'lifi/-_'],
-  'OneKey Wallet': ['oky'],
-  Symbiosis: ['sy'],
-  vultisig: ['va', 'vi', 'v0'],
-  thorwallet: ['wr', 'thor1a427q3v96psuj4fnughdw8glt5r7j38lj7rkp8'],
-  'Cake Wallet': ['cakewallet'],
+  t: ['t', 'T', 'thor160yye65pf9rzwrgqmtgav69n6zlsyfpgm9a7xk', 'tl'],
+  ti: ['ti', 'te', 'tr', 'td', 'tb'],
+  lifi: ['lifi', 'lifi/-_'],
   OKX: ['okw', 'okw/-_'],
-  Eldorito: ['eld', 'ELD'],
+  va: ['va', 'vi', 'v0'],
+  wr: ['wr', 'tgt', 'thor1a427q3v96psuj4fnughdw8glt5r7j38lj7rkp8'],
+  eld: ['eld', 'ELD'],
 }
 
 export const interfaces = {
