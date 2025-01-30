@@ -804,10 +804,13 @@ export default {
       })
     },
     mapInterfaceName(s) {
-      const ifc = interfaces[s.toLowerCase()]
+      let ifc = interfaces[s.toLowerCase()]
 
       if (!ifc) {
-        return undefined
+        ifc = affiliateMap[s.toLowerCase()]
+        if (!ifc) {
+          return undefined
+        }
       }
 
       const icons = {
