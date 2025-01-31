@@ -2,9 +2,9 @@
   <div class="pagination-container">
     <div class="nav-icons" @click="$emit('prevPage')">
       <angle-left />
-      Prev Page
+      Newer
     </div>
-    <div v-if="meta" class="nav-icons">
+    <div v-if="meta" class="nav-icons mono">
       <template v-if="!loading && timeFrame">
         {{ timeFrame.from }}
         -
@@ -13,7 +13,7 @@
       <span v-else>...</span>
     </div>
     <div class="nav-icons" @click="$emit('nextPage')">
-      Next Page
+      Older
       <angle-right />
     </div>
   </div>
@@ -50,8 +50,8 @@ export default {
       const firstAction = this.meta[0]
       const lastAction = this.meta[this.meta.length - 1]
 
-      const from = moment(firstAction?.date / 1e6).format('MM/DD/YYYY HH:MM')
-      const next = moment(lastAction?.date / 1e6).format('MM/DD/YYYY HH:MM')
+      const from = moment(firstAction?.date / 1e6).format('MM/DD/YYYY hh:mm:ss')
+      const next = moment(lastAction?.date / 1e6).format('MM/DD/YYYY hh:mm:ss')
 
       return {
         from,

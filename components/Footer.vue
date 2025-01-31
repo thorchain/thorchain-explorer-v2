@@ -1,48 +1,59 @@
 <template>
   <div class="footer">
     <div class="footer-container">
-      <div class="text">
-        <p>THORChain Explorer 2025 ❄️ - Made with ❤</p>
+      <div class="footer-text">
+        <span>THORChain Explorer 2025 ❄️ - Made with ❤</span>
       </div>
-      <div class="footer-icon">
-        <a
-          href="https://gitlab.com/thorchain"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Gitlab />
-        </a>
-        <a
-          href="https://github.com/thorchain"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Github />
-        </a>
-        <a
-          href="https://discord.gg/tW64BraTnX"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Discord />
-        </a>
-        <a
-          href="https://x.com/THORChain"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <XIcon />
-        </a>
+
+      <div class="footer-text">
+        <div ref="block-height" class="block-height">
+          <small style="color: var(--primary-color)" class="mono value">
+            <block-icon class="block-icon" />
+            {{ currentBlock | number('0,0') }}
+          </small>
+        </div>
+        <div class="footer-icon">
+          <a
+            href="https://gitlab.com/thorchain"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Gitlab />
+          </a>
+          <a
+            href="https://github.com/thorchain"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Github />
+          </a>
+          <a
+            href="https://discord.gg/tW64BraTnX"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Discord />
+          </a>
+          <a
+            href="https://x.com/THORChain"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <XIcon />
+          </a>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import XIcon from '~/assets/images/x.svg?inline'
 import Github from '~/assets/images/github-brands.svg?inline'
 import Discord from '~/assets/images/discord-brands.svg?inline'
 import Gitlab from '~/assets/images/gitlab.svg?inline'
+import BlockIcon from '~/assets/images/block.svg?inline'
 
 export default {
   name: 'FooterContent',
@@ -51,7 +62,24 @@ export default {
     Github,
     Discord,
     Gitlab,
+    BlockIcon,
   },
+  data() {
+    return {
+      blockHeight: null,
+    }
+  },
+  computed: {
+    currentBlock() {
+      return this.$store.state.chainsHeight?.THOR ?? 0
+    },
+  },
+  watch: {
+    currentBlock(newVal) {
+      this.animate('block-height', 'animate')
+    },
+  },
+  methods: {},
 }
 </script>
 
@@ -62,36 +90,91 @@ export default {
   color: var(--sec-font-color);
   text-align: center;
   position: relative;
-}
-.footer-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
+
+  .block-height {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &.animate {
+      .value {
+        -webkit-animation: border-offset 2s both;
+        animation: border-offset 2s both;
+      }
+    }
+
+    .value {
+      display: flex;
+      padding: 2px 4px;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      border-radius: 8px;
+      border: 1px solid transparent;
+
+      .block-icon {
+        fill: var(--primary-color);
+        width: 0.8rem;
+        height: 0.8rem;
+        margin-right: 0.4rem;
+      }
+    }
+  }
+
+  .footer-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+    min-height: 3rem;
+
+    @include md {
+      flex-direction: row;
+    }
+  }
+
+  .footer-text {
+    display: flex;
+    font-size: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.8rem;
+    line-height: 16px;
+
+    flex-direction: column-reverse;
+
+    @include md {
+      flex-direction: row;
+    }
+  }
+
+  .footer-icon {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    svg {
+      width: 20px !important;
+      height: 20px !important;
+      margin: 0 0.5rem;
+      &:hover {
+        color: var(--primary-color);
+      }
+    }
+  }
 }
 
-.text {
-  font-size: 10px;
-}
-@include md {
-  .footer-container {
-    flex-direction: row;
+@keyframes border-offset {
+  0% {
+    border-color: transparent;
   }
-  .text {
-    font-size: 14px;
+
+  50% {
+    border-color: var(--primary-color);
   }
-}
-.footer-icon {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  svg {
-    width: 20px !important;
-    height: 20px !important;
-    margin: 0 0.5rem;
-    &:hover {
-      color: var(--primary-color);
-    }
+
+  100% {
+    border-color: transparent;
   }
 }
 </style>
