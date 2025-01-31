@@ -600,6 +600,10 @@ export default {
         churnValue += ` | ${this.$options.filters.percent(this.churnProgressValue, '0,0.000')}`
       }
 
+      if (this.churnHalted) {
+        churnValue = 'Churn Halted'
+      }
+
       return [
         {
           title: 'Churn',
