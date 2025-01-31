@@ -1,58 +1,47 @@
 <template>
   <div class="footer">
     <div class="footer-container">
-      <div class="text">
-        <p>THORChain Explorer 2025 ❄️ - Made with ❤</p>
-      </div>
-      <div class="block-height" :class="{ animate: blockHeight !== null }">
-        <BlockIcon class="block-icon" />
-        <small style="color: var(--sec-font-color)">Block Height</small>
-        <small
-          v-if="blockHeight"
-          :key="blockHeight"
-          style="color: var(--primary-color)"
-          class="mono value new-value"
-        >
-          {{ blockHeight | number('0,0') }}
-        </small>
-        
-        <small
-          v-else
-          class="mono value old-value"
-        >
-          -
-        </small>
+      <div class="footer-text">
+        <span>THORChain Explorer 2025 ❄️ - Made with ❤</span>
       </div>
 
-      <div class="footer-icon">
-        <a
-          href="https://gitlab.com/thorchain"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Gitlab />
-        </a>
-        <a
-          href="https://github.com/thorchain"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Github />
-        </a>
-        <a
-          href="https://discord.gg/tW64BraTnX"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Discord />
-        </a>
-        <a
-          href="https://x.com/THORChain"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <XIcon />
-        </a>
+      <div class="footer-text">
+        <div ref="block-height" class="block-height">
+          <small style="color: var(--primary-color)" class="mono value">
+            <block-icon class="block-icon" />
+            {{ currentBlock | number('0,0') }}
+          </small>
+        </div>
+        <div class="footer-icon">
+          <a
+            href="https://gitlab.com/thorchain"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Gitlab />
+          </a>
+          <a
+            href="https://github.com/thorchain"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Github />
+          </a>
+          <a
+            href="https://discord.gg/tW64BraTnX"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Discord />
+          </a>
+          <a
+            href="https://x.com/THORChain"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <XIcon />
+          </a>
+        </div>
       </div>
     </div>
   </div>
@@ -81,24 +70,16 @@ export default {
     }
   },
   computed: {
-    ...mapGetters({
-      chainsHeight: 'getChainsHeight',
-    }),
-  },
-  watch: {
-    'chainsHeight.THOR'(newHeight) {
-      this.blockHeight = newHeight
-      this.triggerAnimation() 
+    currentBlock() {
+      return this.$store.state.chainsHeight?.THOR ?? 0
     },
   },
-  methods: {
-    triggerAnimation() {
-      this.$nextTick(() => {
-        const blockHeight = this.$el.querySelector('.block-height')
-        blockHeight.classList.add('animate')
-      })
-    }
+  watch: {
+    currentBlock(newVal) {
+      this.animate('block-height', 'animate')
+    },
   },
+  methods: {},
 }
 </script>
 
@@ -109,94 +90,91 @@ export default {
   color: var(--sec-font-color);
   text-align: center;
   position: relative;
-}
 
-.block-height {
-  display: flex;
-  flex-direction: row;
-  gap: 0.5rem;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 0.8rem;
+  .block-height {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-  @include md {
-    margin-bottom: 0rem;
-  }
-  @include lg {
-    position: relative;
-    right: 3rem;
-  }
-  
-  &.animate {
-    .old-value {
-      opacity: 0;
-      transform: translateX(20px);
-      animation: fade-out 0.5s forwards;
+    &.animate {
+      .value {
+        -webkit-animation: border-offset 2s both;
+        animation: border-offset 2s both;
+      }
     }
-    .new-value {
-      opacity: 1;
-      transform: translateX(0);
-      animation: fade-in 0.5s forwards;
+
+    .value {
+      display: flex;
+      padding: 2px 4px;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      border-radius: 8px;
+      border: 1px solid transparent;
+
+      .block-icon {
+        fill: var(--primary-color);
+        width: 0.8rem;
+        height: 0.8rem;
+        margin-right: 0.4rem;
+      }
     }
   }
 
-  .block-icon {
-    fill: currentColor;
-    width: 1rem;
-    height: 1rem;
-  }
-}
-@keyframes fade-out {
-  0% {
-    opacity: 1;
-    transform: translateX(0);
-  }
-  100% {
-    opacity: 0;
-    transform: translateX(20px);
-  }
-}
-
-@keyframes fade-in {
-  0% {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.footer-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.text {
-  font-size: 10px;
-}
-@include md {
   .footer-container {
-    flex-direction: row;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+    min-height: 3rem;
+
+    @include md {
+      flex-direction: row;
+    }
   }
-  .text {
+
+  .footer-text {
+    display: flex;
     font-size: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.8rem;
+    line-height: 16px;
+
+    flex-direction: column-reverse;
+
+    @include md {
+      flex-direction: row;
+    }
+  }
+
+  .footer-icon {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    svg {
+      width: 20px !important;
+      height: 20px !important;
+      margin: 0 0.5rem;
+      &:hover {
+        color: var(--primary-color);
+      }
+    }
   }
 }
-.footer-icon {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  svg {
-    width: 20px !important;
-    height: 20px !important;
-    margin: 0 0.5rem;
-    &:hover {
-      color: var(--primary-color);
-    }
+
+@keyframes border-offset {
+  0% {
+    border-color: transparent;
+  }
+
+  50% {
+    border-color: var(--primary-color);
+  }
+
+  100% {
+    border-color: transparent;
   }
 }
 </style>
