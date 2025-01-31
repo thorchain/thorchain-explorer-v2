@@ -4,6 +4,7 @@
       <div class="next-churn">
         <counter
           :counter="nextChurnHeight - currentBlock"
+          :halted="isChurnHalted()"
           title="Next Churn"
           :visible-units="['Days', 'Hours', 'Minutes', 'Seconds']"
         />
@@ -125,6 +126,13 @@ export default {
     },
     untilNow(timestamp) {
       return moment.unix(timestamp / 1e9).fromNow()
+    },
+    isChurnHalted() {
+      if (this.mimirInfo && this.mimirInfo.HALTCHURNING) {
+        return true
+      }
+
+      return false
     },
   },
 }

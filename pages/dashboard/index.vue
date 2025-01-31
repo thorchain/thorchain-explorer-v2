@@ -1474,7 +1474,7 @@ export default {
     },
     getNextChurn() {
       if (this.isChurnHalted()) {
-        return 'Churn Paused'
+        return 'Churn Halted'
       }
 
       if (!this.chainsHeight || this.network?.nextChurnHeight === undefined) {

@@ -9,22 +9,24 @@
           </div>
 
           <div class="timers" role="timer" aria-live="polite">
-            <div
-              v-for="(value, unit, index) in timeUnits"
-              v-if="visibleUnits.includes(unit)"
-              :key="unit"
-              class="duration-wrapper"
-            >
-              <div class="duration" :aria-label="`${value} ${unit}`">
-                <small>{{ unit }}</small>
-                <strong>{{ value }}</strong>
-              </div>
+            <template v-if="!halted">
               <div
-                v-if="index !== visibleUnits.length - 1"
-                class="separator"
-                aria-hidden="true"
-              ></div>
-            </div>
+                v-for="([unit, value], index) in getVisibleUnits(timeUnits)"
+                :key="unit"
+                class="duration-wrapper"
+              >
+                <div class="duration" :aria-label="`${value} ${unit}`">
+                  <small>{{ unit }}</small>
+                  <strong>{{ value }}</strong>
+                </div>
+                <div
+                  v-if="index < visibleUnits.length - 1"
+                  class="separator"
+                  aria-hidden="true"
+                ></div>
+              </div>
+            </template>
+            <strong v-else class="halted"> Halted </strong>
           </div>
         </div>
         <div class="line"></div>
@@ -63,6 +65,10 @@ export default {
       type: String,
       required: false,
       default: 'Countdown',
+    },
+    halted: {
+      type: Boolean,
+      required: false,
     },
   },
   data() {
@@ -115,6 +121,12 @@ export default {
         }, 1000)
       }
     },
+    getVisibleUnits(units) {
+      return Object.entries(units).filter(([unit, value], index) => {
+        if (this.visibleUnits.includes(unit)) return true
+        return false
+      })
+    },
   },
 }
 </script>
@@ -163,6 +175,11 @@ export default {
   gap: 0.5rem;
   align-items: center;
   justify-content: center;
+
+  .halted {
+    font-size: 1.5rem;
+    color: var(--red);
+  }
 }
 
 .duration-wrapper {
