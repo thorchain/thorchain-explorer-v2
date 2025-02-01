@@ -668,7 +668,7 @@ export function assetToString({ chain, synth, trade, symbol, secure }) {
 }
 
 export const nameMapping = {
-  t: ['t', 'T', 'thor160yye65pf9rzwrgqmtgav69n6zlsyfpgm9a7xk', 'tl'],
+  t: ['t', 't/ct', 'T', 'thor160yye65pf9rzwrgqmtgav69n6zlsyfpgm9a7xk', 'tl'],
   ti: ['ti', 'te', 'tr', 'td', 'tb'],
   lifi: ['lifi', 'lifi/-_'],
   OKX: ['okw', 'okw/-_'],
