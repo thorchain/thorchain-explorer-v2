@@ -831,13 +831,6 @@ export default {
               type: 'leave',
             })
           }
-
-          if (this.retiringVaults.includes(el.pub_key_set?.secp256k1)) {
-            filteredNodes[index].churn.push({
-              name: 'Retiring Vault',
-              icon: require('@/assets/images/walker.svg?inline'),
-            })
-          }
         })
 
         this.setExtraChurn(extraChurn)
@@ -915,9 +908,8 @@ export default {
 
           if (this.retiringVaults.includes(el.pub_key_set?.secp256k1)) {
             filteredNodes[i].churn.push({
-              name: 'Retiring Vault',
+              name: "Retiring Vault, Can't unbond",
               icon: require('@/assets/images/walker.svg?inline'),
-              type: 'churn-out-candidate',
             })
           }
         }
