@@ -830,6 +830,13 @@ export default {
               icon: require('@/assets/images/arrow-down-square.svg?inline'),
               type: 'leave',
             })
+
+            if (
+              this.mimirs &&
+              +this.mimirs?.DESIREDVALIDATORSET > actNodes.length + extraChurn
+            ) {
+              extraChurn += 1
+            }
           }
         })
 
@@ -984,6 +991,10 @@ export default {
 
     this.updateNodes().then((_) => {
       this.loading = false
+    })
+
+    this.$api.getMimir().then(({ data }) => {
+      this.mimirs = data
     })
 
     this.intervalId = setInterval(() => {
