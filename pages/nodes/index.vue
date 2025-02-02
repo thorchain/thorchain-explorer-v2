@@ -149,6 +149,7 @@ export default {
       churnProgressValue: 0,
       totalAwards: undefined,
       leastBondChurn: undefined,
+      retiringVaults: [],
       hides: {
         isp: false,
         score: true,
@@ -830,6 +831,13 @@ export default {
               type: 'leave',
             })
           }
+
+          if (this.retiringVaults.includes(el.pub_key_set?.secp256k1)) {
+            filteredNodes[index].churn.push({
+              name: 'Retiring Vault',
+              icon: require('@/assets/images/walker.svg?inline'),
+            })
+          }
         })
 
         this.setExtraChurn(extraChurn)
@@ -904,6 +912,14 @@ export default {
             churnNodes++
             lastChurnIndex = i
           }
+
+          if (this.retiringVaults.includes(el.pub_key_set?.secp256k1)) {
+            filteredNodes[i].churn.push({
+              name: 'Retiring Vault',
+              icon: require('@/assets/images/walker.svg?inline'),
+              type: 'churn-out-candidate',
+            })
+          }
         }
 
         // Detect the last churn node
@@ -964,6 +980,16 @@ export default {
       .catch((e) => {
         console.error(e)
       })
+
+    this.$api
+      .getAsgard()
+      .then((res) => {
+        this.retiringVaults = this.getRetiringVault(res.data)
+      })
+      .catch((e) => {
+        console.error(e)
+      })
+
     this.updateNodes().then((_) => {
       this.loading = false
     })
@@ -982,6 +1008,12 @@ export default {
     this.clearIntervalId(this.intervalId)
   },
   methods: {
+    getRetiringVault(vaults) {
+      return vaults
+        .filter((v) => v.status === 'RetiringVault')
+        .map((v) => v.membership)
+        .flat()
+    },
     async updateNodes() {
       const { data: nodesInfo } = await this.$api.getNodesInfo()
       this.nodesQuery = nodesInfo

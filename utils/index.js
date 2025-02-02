@@ -547,7 +547,7 @@ export function fillNodeData(nodes, el, index) {
     score: el.slash_points ? (1e4 / el.slash_points).toFixed(4) : 0,
     leave: el.requested_to_leave,
     fee: el.bond_providers?.node_operator_fee / 1e4,
-    operator: el?.node_operator_address,
+    operator: el.node_operator_address,
     vault: el.vaultMembership,
     ...(rank && { rank }),
   })

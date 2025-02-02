@@ -185,6 +185,7 @@ export default {
       const pn = []
       const pt = []
       const ps = []
+      const psec = []
       d?.intervals.forEach((interval, index) => {
         // ignore the last index
         if (index === d?.intervals?.length - 1) {
@@ -205,6 +206,10 @@ export default {
         )
         pn.push(
           (+interval.toRuneVolumeUSD + +interval.toAssetVolumeUSD) / 10 ** 2
+        )
+        psec.push(
+          (+interval.toSecuredVolumeUSD + +interval.fromSecuredVolumeUSD) /
+            10 ** 2
         )
       })
       return this.basicChartFormat(
@@ -230,6 +235,13 @@ export default {
             stack: 'total',
             showSymbol: false,
             data: ps,
+          },
+          {
+            type: 'bar',
+            name: 'Secured Swaps',
+            stack: 'total',
+            showSymbol: false,
+            data: psec,
           },
         ],
         xAxis,
@@ -381,7 +393,7 @@ export default {
           },
           {
             type: 'line',
-            name: 'Total Earnings',
+            name: `LP Earnings`,
             showSymbol: false,
             areaStyle: {
               color: 'rgba(243, 186, 47, 0.2)',
@@ -411,6 +423,36 @@ export default {
               max: 'dataMax',
             },
           ],
+        },
+        (param) => {
+          return `
+            <div class="tooltip-header">
+              ${param[0].name}
+            </div>
+            <div class="tooltip-body">
+              ${param
+                .map(
+                  (p) => `
+                  <span>
+                    <div class="tooltip-item">
+                      <div class="data-color" style="background-color: ${p.color}">
+                      </div>
+                      <span style="text-align: left;">
+                        ${p.seriesName}
+                      </span>
+                    </div>
+                    <b>$${p.value ? this.$options.filters.number(p.value, '0,0.00a') : '-'}</b>
+                  </span>`
+                )
+                .join('')}
+                <span style="border-top: 1px solid var(--border-color); margin: 2px 0;"></span>
+                ${
+                  pw[param[0].dataIndex] < 0
+                    ? '<small>* Negative reward indicates a transfer from Pool Module to the Reserve Module</small>'
+                    : ''
+                }
+            </div>
+          `
         }
       )
     },

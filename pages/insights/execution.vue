@@ -363,7 +363,7 @@ export default {
           },
         },
         (param) => {
-          return ` 
+          return `
             <div class="tooltip-body">
                <span>
                 <span>Quality</span>
@@ -457,7 +457,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .pool-nav-wrapper {
   display: flex;
   align-items: center;
