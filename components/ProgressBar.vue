@@ -3,7 +3,7 @@
     <div
       class="progress-bar"
       :style="{
-        width: width + '%',
+        width: (width > 100 ? 100 : width) + '%',
         background: color,
       }"
     />

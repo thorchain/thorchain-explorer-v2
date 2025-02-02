@@ -8,6 +8,11 @@
           :autoresize="true"
           :loading-options="showLoading"
           :theme="chartTheme"
+          :style="{
+            width: '100%',
+            height: '600px',
+            minHeight: 'initial',
+          }"
         />
       </Card>
     </div>
@@ -63,7 +68,7 @@
               <div class="votes-item">
                 <div class="vote-info">
                   <strong>Not Voted:</strong>
-                  <span class="mini-bubble danger">{{
+                  <span v-if="network" class="mini-bubble danger">{{
                     network.activeNodeCount -
                     props.row.count.reduce((p, c) => p + +c, 0)
                   }}</span>
@@ -172,96 +177,93 @@ export default {
           }
         }
         let index = 0
-        for (const m of Object.keys(this.mimirs)) {
-          if (Object.keys(this.mimirVotes).includes(m)) {
-            const filteredVotes = [
-              'ADR012',
-              'ADR18',
-              'ADR013',
-              'ALTGAIACHAIN',
-              'BAREMETALBADASS',
-              'BSCREADY',
-              'DEPRECATEILP',
-              'ELROND',
-              'ENABLEAVAXCHAIN',
-              'ENABLEBSC',
-              'ENABLEDASHCHAIN',
-              'ENABLEDOFM',
-              'ENABLEUPDATEMEMOTERRA',
-              'FULLIMPLOSSPROTECTIONBLOCKS',
-              'KILLSWITCHSTART',
-              'L1MINSLIPBPS',
-              'MAXBONDPROVIDES',
-              'MAXRUNESUPPLY',
-              'MULTIPARTITEFORPRESIDENT',
-              'NEXTCHAIN',
-              'NEXTFEATUREPERPRS',
-              'NEXTFEATUREPERPS',
-              'REMOVESNXPOOL',
-              'SUPPORTTHORCHAINDOTNETWORK',
-              'TEST',
-              'THISISANEWMIMIR',
-              'VOTEDOFM',
-              'VOTELENDING',
-              'VOTEMAXBONDPROVIDERS',
-              'VOTEMAXSYNTHSFORSAVERSYIELD',
-              'VOTESTREAMINGSWAPS',
-              'ENABLEVAXCHAIN',
-              'MAXSYNTHPERASSETDEPTH',
-              'MINIMUM1OUTBOUNDFEEUSD',
-            ]
+        for (const m of Object.keys(this.mimirVotes)) {
+          const filteredVotes = [
+            'ADR012',
+            'ADR18',
+            'ADR013',
+            'ALTGAIACHAIN',
+            'BAREMETALBADASS',
+            'BSCREADY',
+            'DEPRECATEILP',
+            'ELROND',
+            'ENABLEAVAXCHAIN',
+            'ENABLEBSC',
+            'ENABLEDASHCHAIN',
+            'ENABLEDOFM',
+            'ENABLEUPDATEMEMOTERRA',
+            'FULLIMPLOSSPROTECTIONBLOCKS',
+            'KILLSWITCHSTART',
+            'L1MINSLIPBPS',
+            'MAXBONDPROVIDES',
+            'MAXRUNESUPPLY',
+            'MULTIPARTITEFORPRESIDENT',
+            'NEXTCHAIN',
+            'NEXTFEATUREPERPRS',
+            'NEXTFEATUREPERPS',
+            'REMOVESNXPOOL',
+            'SUPPORTTHORCHAINDOTNETWORK',
+            'TEST',
+            'THISISANEWMIMIR',
+            'VOTEDOFM',
+            'VOTELENDING',
+            'VOTEMAXBONDPROVIDERS',
+            'VOTEMAXSYNTHSFORSAVERSYIELD',
+            'VOTESTREAMINGSWAPS',
+            'ENABLEVAXCHAIN',
+            'MAXSYNTHPERASSETDEPTH',
+            'MINIMUM1OUTBOUNDFEEUSD',
+          ]
 
-            if (
-              m.toLowerCase().includes('ragnarok') ||
-              filteredVotes.includes(m.toUpperCase())
-            ) {
-              continue
-            }
-            const hVotes = this.getVoteHighestBid(this.mimirVotes[m])
-            if (this.mimirVotes[m].every((v) => v.value === undefined)) {
-              continue
-            }
-            if (hVotes.values.length === 0) {
-              votesLength--
-              continue
-            }
-            xaxis.push(m)
-            hVotes.values.forEach((v) => {
-              if (v.value === 'undefined') {
-                return
-              }
-              const vIndex = types?.findIndex(
-                (t) => t.name?.toString() === v.value?.toString()
-              )
-              if (vIndex === -1) {
-                const initData = _.times(votesLength, _.constant(0))
-                initData[index] = v.count
-                types.push({
-                  name: v.value,
-                  type: 'bar',
-                  stack: 'total',
-                  data: initData,
-                })
-              } else {
-                types[vIndex].data[index] = v.count
-              }
-            })
-            hVotes.values = orderBy(hVotes.values, [(o) => +o.count], ['desc'])
-            mimrsVoteConstants.push({
-              vote: m,
-              currentVal: this.mimirs[m] === -1 ? '-' : this.mimirs[m],
-              highestValue: hVotes.value,
-              consensus: hVotes.consensus,
-              votePassed: hVotes.votePassed,
-              remainingVotes:
-                +this.network?.activeNodeCount - hVotes.votePassed,
-              result:
-                +this.mimirs[m] === +hVotes.value ? 'Passed' : 'In Progress',
-              value: hVotes.values.map((v) => v.value),
-              count: hVotes.values.map((v) => v.count),
-            })
-            index++
+          if (
+            m.toLowerCase().includes('ragnarok') ||
+            filteredVotes.includes(m.toUpperCase())
+          ) {
+            continue
           }
+          const hVotes = this.getVoteHighestBid(this.mimirVotes[m])
+          if (this.mimirVotes[m].every((v) => v.value === undefined)) {
+            continue
+          }
+          if (hVotes.values.length === 0) {
+            votesLength--
+            continue
+          }
+          xaxis.push(m)
+          hVotes.values.forEach((v) => {
+            if (v.value === 'undefined') {
+              return
+            }
+            const vIndex = types?.findIndex(
+              (t) => t.name?.toString() === v.value?.toString()
+            )
+            if (vIndex === -1) {
+              const initData = _.times(votesLength, _.constant(0))
+              initData[index] = v.count
+              types.push({
+                name: v.value,
+                type: 'bar',
+                stack: 'total',
+                data: initData,
+              })
+            } else {
+              types[vIndex].data[index] = v.count
+            }
+          })
+          hVotes.values = orderBy(hVotes.values, [(o) => +o.count], ['desc'])
+          mimrsVoteConstants.push({
+            vote: m,
+            currentVal: this.mimirs[m] !== undefined ? this.mimirs[m] : '-',
+            highestValue: hVotes.value,
+            consensus: hVotes.consensus,
+            votePassed: hVotes.votePassed,
+            remainingVotes: +this.network?.activeNodeCount - hVotes.votePassed,
+            result:
+              +this.mimirs[m] === +hVotes.value ? 'Passed' : 'In Progress',
+            value: hVotes.values.map((v) => v.value),
+            count: hVotes.values.map((v) => v.count),
+          })
+          index++
         }
         let option = this.basicChartFormat(undefined, types, xaxis)
         option = {
@@ -429,10 +431,13 @@ export default {
       this.$router.push({ path: `/node/${signer}` })
     },
     getVoteHighestBid(voters) {
-      if ((!voters || voters.length === 0) && !this.nodes) {
+      if (!voters) {
         return
       }
-      const activeVoters = voters.filter((v) =>
+      if (voters.length === 0 && !this.nodes) {
+        return
+      }
+      const activeVoters = voters?.filter((v) =>
         this.nodes
           ?.filter((n) => n.status === 'Active')
           .map((n) => n.node_address)
