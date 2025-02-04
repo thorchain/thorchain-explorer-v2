@@ -671,7 +671,7 @@ export const nameMapping = {
   t: ['t', 't/ct', 'T', 'thor160yye65pf9rzwrgqmtgav69n6zlsyfpgm9a7xk', 'tl'],
   ti: ['ti', 'te', 'tr', 'td', 'tb'],
   lifi: ['lifi', 'lifi/-_'],
-  OKX: ['okw', 'okw/-_'],
+  okw: ['okw', 'okw/-_'],
   va: ['va', 'vi', 'v0'],
   wr: ['wr', 'tgt', 'thor1a427q3v96psuj4fnughdw8glt5r7j38lj7rkp8'],
   eld: ['eld', 'ELD'],
