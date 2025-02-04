@@ -1,7 +1,7 @@
 <template>
   <div>
     <cards-header :table-general-stats="tradingGeneralStats" />
-    <Card title="secured Assets">
+    <Card title="Secured Assets">
       <template #header>
         <button class="button-container full-screen-btn" @click="toggleUSD">
           <template v-if="usdDenom">
