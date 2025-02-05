@@ -57,7 +57,9 @@
               class="cell-content"
             >
               <AssetIcon :asset="props.row.asset" />
-              <span>{{ props.formattedRow[props.column.field] }}</span>
+              <span class="clickable">{{
+                props.formattedRow[props.column.field]
+              }}</span>
             </div>
             <span v-else-if="props.column.field == 'saversDepth'">
               <span>
@@ -303,28 +305,22 @@ export default {
         {
           name: 'Total Savers',
           value: g.saversCount,
-          change: g.saversCount - o.saversCount,
           isDown: g.saversCount < o.saversCount,
         },
         {
-          name: 'Total Saved Value',
+          name: 'Total Value',
           value:
             '$' + this.$options.filters.number(g.totalUSDSaved || 0, '0,0a'),
-          change: this.$options.filters.currency(
-            g.totalUSDSaved - o.totalUSDSaved
-          ),
           isDown: g.totalUSDSaved < o.totalUSDSaved,
         },
         {
           name: 'Total Earned',
           value: '$' + this.$options.filters.number(g.totalEarn || 0, '0,0a'),
-          change: this.$options.filters.currency(o.totalEarn),
           isDown: g.totalEarn < o.totalEarn,
         },
         {
           name: 'APR Mean',
           value: this.$options.filters.percent(g.meanAPR, 2),
-          change: this.$options.filters.percent(g.meanAPR - o.meanAPR, 4),
           isDown: g.meanAPR < o.meanAPR,
         },
       ]
