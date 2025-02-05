@@ -368,11 +368,14 @@ export default {
           ).format('dddd, MMM D')
         )
         const pool = interval?.pools?.find((p) => p.pool === this.poolName)
-        pe.push((+pool?.earnings * +interval.runePriceUSD) / 10 ** 8)
-        pw.push((+pool?.rewards * +interval.runePriceUSD) / 10 ** 8)
-        pf.push(
+        const earnings = (+pool?.earnings * +interval.runePriceUSD) / 10 ** 8
+        const rewards = (+pool?.rewards * +interval.runePriceUSD) / 10 ** 8
+        const liquidityFee =
           (+pool?.totalLiquidityFeesRune * +interval.runePriceUSD) / 10 ** 8
-        )
+
+        pe.push(earnings)
+        pw.push(rewards < 0 ? null : rewards)
+        pf.push(liquidityFee)
       })
       return this.basicChartFormat(
         (value) => `$ ${this.normalFormat(value)}`,
@@ -384,13 +387,17 @@ export default {
             showSymbol: false,
             data: pf,
           },
-          {
-            type: 'bar',
-            name: 'Rewards',
-            stack: 'total',
-            showSymbol: false,
-            data: pw,
-          },
+          ...(pw.some((v) => v !== null)
+            ? [
+                {
+                  type: 'bar',
+                  name: 'Rewards',
+                  stack: 'total',
+                  showSymbol: false,
+                  data: pw,
+                },
+              ]
+            : []),
           {
             type: 'line',
             name: `LP Earnings`,
@@ -425,33 +432,32 @@ export default {
           ],
         },
         (param) => {
+          const filteredParam = param.filter(
+            (p) => p.seriesName !== 'Rewards' || p.value >= 0
+          )
+
+          if (filteredParam.length === 0) return ''
+
           return `
-            <div class="tooltip-header">
-              ${param[0].name}
+    <div class="tooltip-header">
+      ${filteredParam[0].name}
+    </div>
+    <div class="tooltip-body">
+      ${filteredParam
+        .map(
+          (p) => `
+          <span>
+            <div class="tooltip-item">
+              <div class="data-color" style="background-color: ${p.color}"></div>
+              <span style="text-align: left;">
+                ${p.seriesName}
+              </span>
             </div>
-            <div class="tooltip-body">
-              ${param
-                .map(
-                  (p) => `
-                  <span>
-                    <div class="tooltip-item">
-                      <div class="data-color" style="background-color: ${p.color}">
-                      </div>
-                      <span style="text-align: left;">
-                        ${p.seriesName}
-                      </span>
-                    </div>
-                    <b>$${p.value ? this.$options.filters.number(p.value, '0,0.00a') : '-'}</b>
-                  </span>`
-                )
-                .join('')}
-                <span style="border-top: 1px solid var(--border-color); margin: 2px 0;"></span>
-                ${
-                  pw[param[0].dataIndex] < 0
-                    ? '<small>* Negative reward indicates a transfer from Pool Module to the Reserve Module</small>'
-                    : ''
-                }
-            </div>
+            <b>$${this.$options.filters.number(p.value, '0,0.00a')}</b>
+          </span>`
+        )
+        .join('')}
+           </div>
           `
         }
       )
