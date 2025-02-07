@@ -32,6 +32,12 @@
       </Card>
     </div>
     <span v-else> No option selected </span>
+    <div class="footer-stat">
+      <small>
+        <sup>*</sup>
+        The data is for the last 90 days performance.
+      </small>
+    </div>
   </div>
 </template>
 
