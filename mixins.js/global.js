@@ -250,10 +250,13 @@ export default {
     },
     decimalFormat(number) {
       const formatter = new Intl.NumberFormat('en-US', {
-        minimumFractionDigits: 0,
+        minimumFractionDigits: 2,
         maximumFractionDigits: 8,
       })
-      return formatter.format(number)
+
+      const num = formatter.format(number)
+
+      return num
     },
     numberFormat(number) {
       return number ? this.$options.filters.number(+number, '0,0.0000') : '-'
