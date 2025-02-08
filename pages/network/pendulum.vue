@@ -1,28 +1,124 @@
 <template>
   <div class="pendulum-view">
-    <card class="network-balance-card">
-      <div class="balance-indicator">
-        <div
-          class="balance-arm"
-          :style="{
-            transform: `translateX(-50%) rotate(${armRotation}deg)`,
-          }"
-        >
-          <div class="balance-pan security-pan">
-            <div class="pan-label">Security</div>
-            <div class="pan-value">
-              <span>{{ activeNodes | number('0a') }}</span>
-            </div>
-          </div>
-          <div class="balance-pan liquidity-pan">
-            <div class="pan-label">Liquidity</div>
-            <div class="pan-value">
-              <span>{{ totalAdjustedSecuredValue | number('0a') }}</span>
-            </div>
-          </div>
-        </div>
-        <div class="balance-base"></div>
-      </div>
+    <card class="network-balance-card" :is-loading="loading">
+      <svg
+        class="balance-svg"
+        viewBox="50 0 200 180"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <rect
+          x="145"
+          y="125"
+          width="10"
+          height="50"
+          fill="var(--primary-color)"
+        />
+        <rect
+          x="148"
+          y="40"
+          width="4"
+          height="125"
+          fill="var(--primary-color)"
+        />
+
+        <g :transform="'rotate(' + scalePosition + ' 200 50)'">
+          <line
+            x1="80"
+            y1="50"
+            x2="220"
+            y2="50"
+            stroke="var(--primary-color)"
+            stroke-width="4"
+          />
+
+          <circle cx="150" cy="50" r="6" fill="var(--primary-color)" />
+
+          <line
+            x1="100"
+            y1="50"
+            x2="100"
+            y2="90"
+            stroke="var(--primary-color)"
+            stroke-width="2"
+          />
+          <path
+            d="M 82 90 A 18 18 0 0 0 118 90"
+            fill="var(--border-color)"
+            stroke="var(--border-color)"
+            stroke-width="2"
+          />
+          <text
+            x="100"
+            y="102"
+            text-anchor="middle"
+            font-size="10"
+            fill="var(--sec-font-color)"
+          >
+            {{ activeNodes | number('0a') }}
+          </text>
+
+          <rect
+            x="55"
+            y="125"
+            width="48"
+            height="18"
+            fill="var(--gradient-left)"
+            rx="5"
+          />
+          <text
+            x="80"
+            y="136"
+            text-anchor="middle"
+            font-size="8"
+            fill="var(--sec-font-color)"
+          >
+            Security
+          </text>
+
+          <line
+            x1="200"
+            y1="50"
+            x2="200"
+            y2="90"
+            stroke="var(--primary-color)"
+            stroke-width="2"
+          />
+          <path
+            d="M 182 90 A 18 18 0 0 0 218 90"
+            fill="var(--border-color)"
+            stroke="var(--border-color)"
+            stroke-width="2"
+          />
+          <text
+            x="200"
+            y="102"
+            text-anchor="middle"
+            font-size="10"
+            fill="var(--sec-font-color)"
+          >
+            {{ totalAdjustedSecuredValue | number('0a') }}
+          </text>
+
+          <rect
+            x="200"
+            y="125"
+            width="50"
+            height="18"
+            fill="var(--gradient-left)"
+            rx="5"
+          />
+          <text
+            x="225"
+            y="135"
+            text-anchor="middle"
+            font-size="8"
+            fill="var(--sec-font-color)"
+          >
+            Liquidity
+          </text>
+        </g>
+      </svg>
+
       <div class="network-status">
         <span class="status-text">{{ networkState }}</span>
       </div>
@@ -74,24 +170,25 @@ export default {
       fixedRotation: 10,
       poolShare: 0,
       nodeShare: 0,
-      isLoading: true,
+      loading: true,
       pendulumUseEffectiveSecurity: 0,
       usingAllNodesBond: true,
       adjustedBond: 0,
       networkState: '',
+      scalePosition: 0,  
     }
   },
   computed: {
-    armRotation() {
-      if (this.animationActive) {
-        const activeWeight = this.activeNodes
-        const pooledWeight = this.totalAdjustedSecuredValue
-        const balance = pooledWeight - activeWeight
-        return balance > 0
-          ? Math.min(balance * 0.5 + 10, 15)
-          : Math.max(balance * 0.5, -15)
-      }
-      return 8
+    calculateScalePosition() {
+      const maxTilt = 30
+      const midpoint = 50
+
+      const tiltPercentage = (this.nodeShare * 100 - midpoint) / midpoint
+
+      this.scalePosition = Math.max(
+        Math.min(tiltPercentage * maxTilt, maxTilt),
+        -maxTilt
+      )
     },
   },
   mounted() {
@@ -104,15 +201,12 @@ export default {
   methods: {
     async loadData() {
       try {
-        await Promise.all([
-          this.loadPoolsData(),
-          this.loadNodesData(),
-          this.loadMimirData(),
-        ])
+        await Promise.all([this.loadPoolsData(), this.loadNodesData(), this.loadMimirData()])
         this.calculateDependentValues()
-        this.isLoading = false
+        this.loading = false
       } catch (error) {
         console.error('Error loading data:', error)
+        this.loading = false
       }
     },
 
@@ -182,11 +276,12 @@ export default {
         this.networkState = 'Underbonded'
       }
 
-      console.log('poolShare:', this.poolShare, 'nodeShare:', this.nodeShare)
+      this.calculateScalePosition()
     },
   },
 }
 </script>
+
 
 <style lang="scss" scoped>
 .pendulum-view {
@@ -214,10 +309,14 @@ export default {
   gap: 0.5rem;
   width: 100%;
   align-items: center;
+  font-size: 10px;
+  @include sm {
+    font-size: 14px;
+  }
 }
 
 .metric-value {
-  font-size: 24px;
+  font-size: 19px;
   font-weight: bold;
   position: absolute;
   top: 50%;
@@ -229,89 +328,17 @@ export default {
   justify-content: center;
   align-items: center;
   color: var(--sec-font-color);
+  @include md {
+    font-size: 24px;
+  }
 }
 .network-balance-card {
   padding: 30px;
-  background-color: var(--card-bg-color);
   display: flex;
   flex-direction: column;
   align-items: center;
   border-radius: 10px;
   margin: 20px;
-}
-
-.balance-indicator {
-  width: 100%;
-  max-width: 300px;
-  height: 200px;
-  position: relative;
-  margin-bottom: 20px;
-}
-
-.balance-arm {
-  width: calc(100% - 20px);
-  max-width: 280px;
-  height: 8px;
-  background-color: var(--primary-color);
-  position: absolute;
-  top: 50px;
-  left: 50%;
-  transform-origin: center;
-  transition: transform 0.3s ease;
-  border-radius: 4px;
-}
-
-.balance-pan {
-  width: 100px;
-  height: 40px;
-  background-color: var(--border-color);
-  border-radius: 0 0 40px 40px;
-  position: absolute;
-  top: 58px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border: 1px solid var(--border-color);
-}
-
-.pan-label {
-  position: absolute;
-  top: -25px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: var(--gradient-left);
-  padding: 2px 12px;
-  border-radius: 12px;
-  font-size: 12px;
-  white-space: nowrap;
-  color: var(--sec-font-color);
-}
-
-.pan-value {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 14px;
-  color: var(--sec-font-color);
-}
-
-.security-pan {
-  left: -50px;
-}
-
-.liquidity-pan {
-  right: -50px;
-}
-
-.balance-base {
-  width: 8px;
-  height: 140px;
-  background-color: var(--primary-color);
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  border-radius: 4px;
 }
 
 .network-status {
@@ -333,5 +360,9 @@ export default {
   padding: 8px 16px;
   border-radius: 0.5rem;
   color: var(--sec-font-color);
+  font-size: 10px;
+  @include md {
+    font-size: 14px;
+  }
 }
 </style>
