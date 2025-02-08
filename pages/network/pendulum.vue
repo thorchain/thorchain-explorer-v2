@@ -58,7 +58,7 @@
           </text>
 
           <rect
-            x="55"
+            x="80"
             y="125"
             width="48"
             height="18"
@@ -66,7 +66,7 @@
             rx="5"
           />
           <text
-            x="80"
+            x="105"
             y="136"
             text-anchor="middle"
             font-size="8"
