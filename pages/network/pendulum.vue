@@ -3,62 +3,87 @@
     <card class="network-balance-card" :is-loading="loading">
       <svg
         class="balance-svg"
-        viewBox="50 0 200 180"
+        viewBox="40 0 220 180"
         xmlns="http://www.w3.org/2000/svg"
       >
+        <rect
+          x="148"
+          y="30"
+          width="4"
+          height="125"
+          rx="2"
+          ry="2"
+          fill="var(--primary-color)"
+        />
         <rect
           x="145"
           y="125"
           width="10"
           height="50"
-          fill="var(--primary-color)"
+          rx="5"
+          ry="5"
+          fill="var(--border-color)"
         />
         <rect
-          x="148"
-          y="40"
-          width="4"
-          height="125"
-          fill="var(--primary-color)"
+          x="110"
+          y="170"
+          width="80"
+          height="20"
+          rx="2"
+          ry="2"
+          fill="var(--border-color)"
         />
 
-        <g :transform="'rotate(' + scalePosition + ' 200 50)'">
+        <g
+          :transform="`translate(0, ${scalePosition * -1})`"
+          transform-origin="150px 50px"
+        >
           <line
-            x1="80"
-            y1="50"
-            x2="220"
+            x1="78"
+            :y1="50 - scalePosition"
+            x2="150"
             y2="50"
             stroke="var(--primary-color)"
             stroke-width="4"
+            stroke-linecap="round"
           />
 
-          <circle cx="150" cy="50" r="6" fill="var(--primary-color)" />
-
           <line
-            x1="100"
-            y1="50"
+            x1="80"
+            :y1="50 - scalePosition"
+            x2="60"
+            y2="90"
+            stroke="var(--primary-color)"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+          <line
+            x1="80"
+            :y1="50 - scalePosition"
             x2="100"
             y2="90"
             stroke="var(--primary-color)"
             stroke-width="2"
+            stroke-linecap="round"
           />
           <path
-            d="M 82 90 A 18 18 0 0 0 118 90"
+            d="M 60 90 A 18 18 0 0 0 100 90"
             fill="var(--border-color)"
             stroke="var(--border-color)"
             stroke-width="2"
           />
           <text
-            x="100"
-            y="102"
+            x="80"
+            y="103"
             text-anchor="middle"
             font-size="10"
             fill="var(--sec-font-color)"
           >
-            {{ activeNodes | number('0a') }}
+            {{ effectiveBond | number('0a') }}
           </text>
 
           <rect
-            x="80"
+            x="55"
             y="125"
             width="48"
             height="18"
@@ -66,7 +91,7 @@
             rx="5"
           />
           <text
-            x="105"
+            x="80"
             y="136"
             text-anchor="middle"
             font-size="8"
@@ -74,23 +99,48 @@
           >
             Security
           </text>
+        </g>
+
+        <g
+          :transform="`translate(0, ${scalePosition})`"
+          transform-origin="150px 50px"
+        >
+          <line
+            x1="151"
+            :y1="50 - scalePosition"
+            x2="222"
+            y2="50"
+            stroke="var(--primary-color)"
+            stroke-width="4"
+            stroke-linecap="round"
+          />
 
           <line
-            x1="200"
-            y1="50"
+            x1="220"
+            :y1="50"
             x2="200"
             y2="90"
             stroke="var(--primary-color)"
             stroke-width="2"
+            stroke-linecap="round"
+          />
+          <line
+            x1="220"
+            :y1="50"
+            x2="240"
+            y2="90"
+            stroke="var(--primary-color)"
+            stroke-width="2"
+            stroke-linecap="round"
           />
           <path
-            d="M 182 90 A 18 18 0 0 0 218 90"
+            d="M 198 90 A 18 18 0 0 0 241 90"
             fill="var(--border-color)"
             stroke="var(--border-color)"
             stroke-width="2"
           />
           <text
-            x="200"
+            x="220"
             y="102"
             text-anchor="middle"
             font-size="10"
@@ -100,7 +150,7 @@
           </text>
 
           <rect
-            x="200"
+            x="198"
             y="125"
             width="50"
             height="18"
@@ -108,7 +158,7 @@
             rx="5"
           />
           <text
-            x="225"
+            x="222"
             y="135"
             text-anchor="middle"
             font-size="8"
@@ -136,13 +186,16 @@
       <Card class="metric-card bond-metric">
         <div class="metric-title">Total Active Bond</div>
         <div class="metric-value">
-          <span>{{ activeNodes | number('0,0') }}</span>
+          <span>{{ effectiveBond | number('0,0') }} {{ runeCur() }}</span>
         </div>
       </Card>
       <Card class="metric-card secured-metric">
         <div class="metric-title">Total Secured Value</div>
         <div class="metric-value">
-          <span>{{ totalAdjustedSecuredValue | number('0,0') }}</span>
+          <span
+            >{{ totalAdjustedSecuredValue | number('0,0') }}
+            {{ runeCur() }}</span
+          >
         </div>
       </Card>
       <Card class="metric-card node-metric">
@@ -162,7 +215,7 @@ export default {
   name: 'BalanceScale',
   data() {
     return {
-      activeNodes: 0,
+      effectiveBond: 0,
       totalSecuredValue: 0,
       totalAdjustedSecuredValue: 0,
       pendulumAssetBasisPoints: 10000,
@@ -175,20 +228,16 @@ export default {
       usingAllNodesBond: true,
       adjustedBond: 0,
       networkState: '',
-      scalePosition: 0,  
     }
   },
   computed: {
-    calculateScalePosition() {
-      const maxTilt = 30
+    scalePosition() {
+      const maxTilt = 40
       const midpoint = 50
 
       const tiltPercentage = (this.nodeShare * 100 - midpoint) / midpoint
 
-      this.scalePosition = Math.max(
-        Math.min(tiltPercentage * maxTilt, maxTilt),
-        -maxTilt
-      )
+      return Math.max(Math.min(tiltPercentage * maxTilt, maxTilt), -maxTilt)
     },
   },
   mounted() {
@@ -201,7 +250,11 @@ export default {
   methods: {
     async loadData() {
       try {
-        await Promise.all([this.loadPoolsData(), this.loadNodesData(), this.loadMimirData()])
+        await Promise.all([
+          this.loadPoolsData(),
+          this.loadNodesData(),
+          this.loadMimirData(),
+        ])
         this.calculateDependentValues()
         this.loading = false
       } catch (error) {
@@ -221,11 +274,11 @@ export default {
             (a, b) => Number(b.total_bond) - Number(a.total_bond)
           )
           const splitIndex = Math.floor(activeNodes.length * (2 / 3))
-          this.activeNodes = activeNodes
+          this.effectiveBond = activeNodes
             .slice(splitIndex)
             .reduce((sum, node) => sum + Number(node.total_bond) / 1e8, 0)
         } else {
-          this.activeNodes = activeNodes.reduce(
+          this.effectiveBond = activeNodes.reduce(
             (sum, node) => sum + Number(node.total_bond) / 1e8,
             0
           )
@@ -262,31 +315,27 @@ export default {
         this.totalSecuredValue * (this.pendulumAssetBasisPoints / 10000)
 
       const effectiveBond = this.usingAllNodesBond
-        ? this.activeNodes
+        ? this.effectiveBond
         : this.adjustedBond
       this.poolShare =
         (effectiveBond - this.totalAdjustedSecuredValue) / effectiveBond
       this.nodeShare = 1 - this.poolShare
 
-      if (Math.abs(this.nodeShare - 50) < 10) {
+      const nodeSharePct = this.nodeShare * 100
+      if (Math.abs(nodeSharePct - 50) < 10) {
         this.networkState = 'Normal'
-      } else if (this.nodeShare < 50) {
+      } else if (nodeSharePct < 50) {
         this.networkState = 'Overbonded'
       } else {
         this.networkState = 'Underbonded'
       }
-
-      this.calculateScalePosition()
     },
   },
 }
 </script>
 
-
 <style lang="scss" scoped>
 .pendulum-view {
-  max-width: 800px;
-  width: 95%;
   margin: 0 auto;
 }
 
@@ -294,7 +343,7 @@ export default {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 20px;
-  padding: 20px;
+  padding: 20px 0;
 }
 .metric-card {
   display: flex;
@@ -362,5 +411,9 @@ export default {
   @include md {
     font-size: 14px;
   }
+}
+
+.balance-svg {
+  transform: scale(1.2);
 }
 </style>
