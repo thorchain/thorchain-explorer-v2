@@ -337,7 +337,6 @@ export default {
   flex-direction: column;
   align-items: center;
   border-radius: 10px;
-  margin: 20px;
 }
 
 .network-status {
