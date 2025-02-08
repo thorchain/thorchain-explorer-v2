@@ -288,7 +288,6 @@ export default {
   max-width: 800px;
   width: 95%;
   margin: 0 auto;
-  padding: 20px;
 }
 
 .metrics-grid {
