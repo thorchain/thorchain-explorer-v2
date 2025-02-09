@@ -146,7 +146,7 @@
             font-size="10"
             fill="var(--sec-font-color)"
           >
-            {{ totalAdjustedSecuredValue | number('0a') }}
+            {{ adjustedSecuredTotal | number('0a') }}
           </text>
 
           <rect
@@ -170,7 +170,7 @@
       </svg>
 
       <div class="network-status">
-        <span class="status-text">{{ networkState }}</span>
+        <span class="status-text">{{ currentNetworkState }}</span>
       </div>
       <div class="reward-summary">
         <span v-if="nodeShare > poolShare"
@@ -182,30 +182,8 @@
         <span v-else>Equal reward distribution</span>
       </div>
     </card>
-    <div class="metrics-grid">
-      <Card class="metric-card bond-metric">
-        <div class="metric-title">Total Active Bond</div>
-        <div class="metric-value">
-          <span>{{ effectiveBond | number('0,0') }} {{ runeCur() }}</span>
-        </div>
-      </Card>
-      <Card class="metric-card secured-metric">
-        <div class="metric-title">Total Secured Value</div>
-        <div class="metric-value">
-          <span
-            >{{ totalAdjustedSecuredValue | number('0,0') }}
-            {{ runeCur() }}</span
-          >
-        </div>
-      </Card>
-      <Card class="metric-card node-metric">
-        <div class="metric-title">Node Reward Share</div>
-        <div class="metric-value">{{ nodeShare | percent(2) }}</div>
-      </Card>
-      <Card class="metric-card pool-metric">
-        <div class="metric-title">Pool Reward Share</div>
-        <div class="metric-value">{{ poolShare | percent(2) }}</div>
-      </Card>
+    <div class="balance-details">
+      <cards-header :table-general-stats="generalStatsDetails" />
     </div>
   </div>
 </template>
@@ -215,19 +193,33 @@ export default {
   name: 'BalanceScale',
   data() {
     return {
-      effectiveBond: 0,
-      totalSecuredValue: 0,
-      totalAdjustedSecuredValue: 0,
-      pendulumAssetBasisPoints: 10000,
-      animationActive: true,
-      fixedRotation: 10,
-      poolShare: 0,
-      nodeShare: 0,
+      effectiveBond: undefined,
+      totalSecuredValue: undefined,
+      adjustedSecuredTotal: undefined,
+      assetBalancePoints: 10000,
+      isAnimationActive: true,
+      Rotation: 10,
+      poolShare: undefined,
+      nodeShare: undefined,
       loading: true,
-      pendulumUseEffectiveSecurity: 0,
+      pendulumUseEffectiveSecurity: undefined,
       usingAllNodesBond: true,
-      adjustedBond: 0,
-      networkState: '',
+      adjustedBond: undefined,
+      currentNetworkState: '',
+      generalStatsDetails: [
+        {
+          name: 'Total Active Bond',
+        },
+        {
+          name: 'Total Secured Value',
+        },
+        {
+          name: 'Node Reward Share',
+        },
+        {
+          name: 'Pool Reward Share',
+        },
+      ],
     }
   },
   computed: {
@@ -243,8 +235,8 @@ export default {
   mounted() {
     this.loadData()
     setTimeout(() => {
-      this.fixedRotation = 0
-      this.animationActive = false
+      this.Rotation = 0
+      this.isAnimationActive = false
     }, 5000)
   },
   methods: {
@@ -255,8 +247,9 @@ export default {
           this.loadNodesData(),
           this.loadMimirData(),
         ])
-        this.calculateDependentValues()
+        this.calculateValues()
         this.loading = false
+        this.updateStatsDetails()
       } catch (error) {
         console.error('Error loading data:', error)
         this.loading = false
@@ -304,31 +297,51 @@ export default {
     async loadMimirData() {
       try {
         const { data: mimirData } = await this.$api.getMimir()
-        this.pendulumAssetBasisPoints = mimirData > 0 ? mimirData : 10000
+        this.assetBalancePoints = mimirData > 0 ? mimirData : 10000
       } catch (error) {
         console.error('Error fetching mimir data:', error)
       }
     },
 
-    calculateDependentValues() {
-      this.totalAdjustedSecuredValue =
-        this.totalSecuredValue * (this.pendulumAssetBasisPoints / 10000)
+    calculateValues() {
+      this.adjustedSecuredTotal =
+        this.totalSecuredValue * (this.assetBalancePoints / 10000)
 
       const effectiveBond = this.usingAllNodesBond
         ? this.effectiveBond
         : this.adjustedBond
       this.poolShare =
-        (effectiveBond - this.totalAdjustedSecuredValue) / effectiveBond
+        (effectiveBond - this.adjustedSecuredTotal) / effectiveBond
       this.nodeShare = 1 - this.poolShare
 
       const nodeSharePct = this.nodeShare * 100
       if (Math.abs(nodeSharePct - 50) < 10) {
-        this.networkState = 'Normal'
+        this.currentNetworkState = 'Normal'
       } else if (nodeSharePct < 50) {
-        this.networkState = 'Overbonded'
+        this.currentNetworkState = 'Overbonded'
       } else {
-        this.networkState = 'Underbonded'
+        this.currentNetworkState = 'Underbonded'
       }
+    },
+    updateStatsDetails() {
+      this.generalStatsDetails = [
+        {
+          name: 'Total Active Bond',
+          value: this.$options.filters.number(this.effectiveBond, '0,0'),
+        },
+        {
+          name: 'Total Secured Value',
+          value: this.$options.filters.number(this.adjustedSecuredTotal, '0,0'),
+        },
+        {
+          name: 'Node Reward Share',
+          value: this.$options.filters.percent(this.nodeShare, 2),
+        },
+        {
+          name: 'Pool Reward Share',
+          value: this.$options.filters.percent(this.poolShare, 2),
+        },
+      ]
     },
   },
 }
@@ -336,14 +349,11 @@ export default {
 
 <style lang="scss" scoped>
 .pendulum-view {
+  max-width: 53rem;
   margin: 0 auto;
 }
-
-.metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-  padding: 20px 0;
+.balance-details {
+  margin-top: 2rem;
 }
 .metric-card {
   display: flex;
