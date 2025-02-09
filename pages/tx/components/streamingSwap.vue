@@ -142,6 +142,10 @@ export default {
   },
   methods: {
     updateCountdown() {
+      if (this.durationSeconds.asSeconds() <= 0) {
+        clearInterval(this.countdownInterval)
+        this.streamingDetail.remIntervalSec = 'Almost Done'
+      }
       this.durationSeconds.subtract(1, 'seconds')
       this.streamingDetail.remIntervalSec = this.createDurationText(
         this.durationSeconds
@@ -161,7 +165,7 @@ export default {
       // change the remaining seconds to the first height
       if (isSwap) {
         const { count, interval, quantity } =
-          thorStatus?.stages.swap_status.streaming
+          thorStatus?.stages?.swap_status?.streaming ?? false
         this.streamingDetail.fill = blockDuration
           ? blockDuration / interval / quantity
           : count / quantity

@@ -22,7 +22,7 @@
             :class="'mini-bubble info'"
             style="gap: 0.3rem; border-radius: 8px"
           >
-            <svg class="timer" viewBox="0 0 36 36">
+            <svg v-if="totalTime > 0" class="timer" viewBox="0 0 36 36">
               <path
                 class="circle-background"
                 d="M18 2.0845a15.9155 15.9155 0 1 0 0 31.831 15.9155 15.9155 0 1 0 0-31.831"
@@ -485,6 +485,10 @@ export default {
     margin-left: 1.1rem;
     border-radius: 8px;
     padding: 5px;
+
+    .mini-bubble {
+      min-height: 26px;
+    }
 
     .checkmark {
       position: absolute;

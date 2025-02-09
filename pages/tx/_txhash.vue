@@ -360,6 +360,7 @@ export default {
               title: 'Inbound',
               done: a?.done,
               pending: !a?.done,
+              remainingTime: a.confirmationRemainingSeconds,
               stacks: [
                 {
                   key: 'From',
