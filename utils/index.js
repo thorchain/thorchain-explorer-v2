@@ -775,6 +775,10 @@ export const interfaces = {
     icon: 'moca',
     addName: true,
   },
+  sk: {
+    name: 'SwapKit',
+    icon: 'swapkit',
+  },
 }
 
 export const affiliateMap = {
@@ -816,6 +820,7 @@ export const affiliateMap = {
   fs: interfaces.fortuna,
   tps: interfaces.tps,
   moca: interfaces.moca,
+  '-_': interfaces.sk,
 }
 
 export function getExplorerAddressUrl(chain, query) {
