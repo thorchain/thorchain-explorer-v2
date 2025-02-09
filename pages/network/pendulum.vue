@@ -327,11 +327,11 @@ export default {
       this.generalStatsDetails = [
         {
           name: 'Total Active Bond',
-          value: this.$options.filters.number(this.effectiveBond, '0,0'),
+          value: `${this.$options.filters.number(this.effectiveBond, '0.00a')} ${this.runeCur()}`,
         },
         {
           name: 'Total Secured Value',
-          value: this.$options.filters.number(this.adjustedSecuredTotal, '0,0'),
+          value: `${this.$options.filters.number(this.adjustedSecuredTotal, '0.00a')} ${this.runeCur()}`,
         },
         {
           name: 'Node Reward Share',
@@ -390,12 +390,16 @@ export default {
     font-size: 24px;
   }
 }
+
 .network-balance-card {
   padding: 30px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  border-radius: 10px;
+
+  @include md {
+    border-radius: 10px;
+  }
 }
 
 .network-status {
