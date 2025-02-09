@@ -813,6 +813,7 @@ export const affiliateMap = {
   zengo: interfaces.zengo,
   cakewallet: interfaces.cakewallet,
   rg: interfaces.rango,
+  ro: interfaces.rango,
   sk: interfaces.sk,
   is: interfaces.is,
   ds: interfaces.defispot,
