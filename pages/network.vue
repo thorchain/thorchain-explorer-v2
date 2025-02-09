@@ -28,6 +28,10 @@ export default {
           text: 'Churn & Pool countdown',
           link: '/network/churn',
         },
+        {
+          text: 'Pendulum',
+          link: '/network/pendulum',
+        },
       ],
     }
   },

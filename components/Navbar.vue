@@ -214,6 +214,10 @@ export default {
               name: 'Churn',
               link: '/network/churn',
             },
+            {
+              name: 'Pendulum',
+              link: '/network/pendulum',
+            },
           ],
         },
         {
