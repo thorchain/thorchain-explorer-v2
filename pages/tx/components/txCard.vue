@@ -10,16 +10,19 @@
         <div v-for="n in labels" :key="n" class="bubble-container">
           {{ n }}
         </div>
-        <div v-if="ifc" class="interface mono">
+        <div v-if="ifc && ifc.length > 0" class="interface mono">
           <small> executed on </small>
-          <img
-            v-if="ifc.icons && ifc.icons.url"
-            :src="theme === 'light' ? ifc.icons.url : ifc.icons.urlDark"
-            class="interface-image"
-            alt="interface image"
-            :title="ifc.name"
-          />
-          <span v-else>{{ ifc.name }}</span>
+          <template v-for="(inf, i) in ifc">
+            <img
+              v-if="inf.icons && inf.icons.url"
+              :key="i"
+              :src="theme === 'light' ? inf.icons.url : inf.icons.urlDark"
+              class="interface-image"
+              alt="interface image"
+              :title="inf.name"
+            />
+            <span v-else :key="i">{{ inf.name }}</span>
+          </template>
         </div>
       </div>
     </div>
@@ -178,7 +181,7 @@ export default {
       return this.txData?.title ?? ''
     },
     ifc() {
-      return this.txData?.interface ?? undefined
+      return this.txData?.interface ?? []
     },
     labels() {
       return this.txData?.labels ?? []
@@ -446,7 +449,7 @@ $border-size: 2px;
 
   .interface-image {
     display: inline-block;
-    max-width: 100px;
+    max-width: 70px;
     max-height: 25px;
   }
 }

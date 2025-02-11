@@ -418,9 +418,12 @@ export default {
       }
 
       if (accordions.action) {
+        ret.details.interface = []
         if (accordions.action.affiliateName) {
-          const firstAffiliate = accordions.action.affiliateName.split('/')[0]
-          ret.details.interface = this.mapAffiliateName(firstAffiliate)
+          const affiliates = accordions.action.affiliateName
+            .split('/')
+            .map((inf) => this.mapAffiliateName(inf))
+          ret.details.interface = affiliates
         }
 
         let affiliateOutAmount
@@ -428,7 +431,10 @@ export default {
           accordions.action.affiliateOut &&
           accordions.action.affiliateOut.length > 0
         ) {
-          affiliateOutAmount = accordions.action.affiliateOut[0].coins[0].amount
+          affiliateOutAmount = accordions.action.affiliateOut.reduce(
+            (a, b) => a + +b.coins[0].amount,
+            0
+          )
         }
 
         let liquidityFeeName = 'Liquidity Fee'
