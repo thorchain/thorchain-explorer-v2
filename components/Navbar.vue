@@ -231,7 +231,7 @@ export default {
               link: '/txs',
             },
             {
-              name: 'Swap',
+              name: 'TOP Swaps',
               link: '/swaps',
             },
           ],
