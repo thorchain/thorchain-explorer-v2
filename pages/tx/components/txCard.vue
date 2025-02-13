@@ -14,14 +14,14 @@
           <small> executed on </small>
           <template v-for="(inf, i) in ifc">
             <img
-              v-if="inf.icons && inf.icons.url"
+              v-if="inf && inf.icons && inf.icons.url"
               :key="i"
               :src="theme === 'light' ? inf.icons.url : inf.icons.urlDark"
               class="interface-image"
               alt="interface image"
               :title="inf.name"
             />
-            <span v-else :key="i">{{ inf.name }}</span>
+            <span v-else :key="i">{{ inf && inf.name }}</span>
           </template>
         </div>
       </div>
