@@ -23,7 +23,7 @@
           :rows="Array(10).fill({})"
         />
         <vue-good-table
-          v-if="tableData.length > 0"
+          v-if="!loading && tableData.length > 0"
           :columns="cols"
           :rows="tableData"
           style-class="vgt-table net-table"
