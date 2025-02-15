@@ -183,10 +183,15 @@ export default {
       params = query
       this.$refs.advancedFilter.queryToFilter(query)
       this.hasFilters = true
+      if (this.$route.query.nextPageToken) {
+        params.nextPageToken = this.$route.query.nextPageToken
+      } else if (this.$route.query.prevPageToken) {
+        params.prevPageToken = this.$route.query.prevPageToken
+      }
     } else {
       this.applyFilters({
         asset: ['notrade'],
-        type: ['swap','send']
+        type: ['swap', 'send'],
       })
     }
 
@@ -207,9 +212,19 @@ export default {
       ])
     },
     goNext() {
+      const query = {
+        ...this.filters,
+        nextPageToken: this.nextPageToken,
+      }
+      this.$router.replace({ path: '/txs', query })
       this.getActions({ limit: this.limit, nextPageToken: this.nextPageToken })
     },
     goPrev() {
+      const query = {
+        ...this.filters,
+        prevPageToken: this.prevPageToken,
+      }
+      this.$router.replace({ path: '/txs', query })
       this.getActions({ limit: this.limit, prevPageToken: this.prevPageToken })
     },
     applyFilters(params) {
