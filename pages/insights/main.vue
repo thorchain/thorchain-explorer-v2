@@ -545,11 +545,15 @@ export default {
       const halfLine = []
       const totalVolume = []
       d.forEach((interval, index) => {
-        xAxis.push(
-          moment(
-            Math.floor((+interval.endTime + +interval.startTime) / 2) * 1e3
-          ).format('dddd, MMM D')
+        const intervalDate = moment(
+          Math.floor((+interval.endTime + +interval.startTime) / 2) * 1e3
         )
+
+        if (intervalDate.isSame(moment(), 'day')) {
+          return
+        }
+
+        xAxis.push(intervalDate.format('dddd, MMM D'))
         liquidityFees.push(
           (interval.liquidityFees * interval.runePriceUSD) / 1e8
         )
@@ -798,12 +802,15 @@ export default {
         }
 
         data.intervals.forEach((interval, index) => {
-          // fill the data
-          xAxis.push(
-            moment(
-              Math.floor((+interval.endTime + +interval.startTime) / 2) * 1e3
-            ).format('dddd, MMM D')
+          const intervalDate = moment(
+            Math.floor((+interval.endTime + +interval.startTime) / 2) * 1e3
           )
+
+          if (intervalDate.isSame(moment(), 'day')) {
+            return
+          }
+
+          xAxis.push(intervalDate.format('dddd, MMM D'))
           const burns = interval?.pools?.find(
             (p) => p.pool === 'income_burn'
           )?.earnings
