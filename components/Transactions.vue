@@ -229,7 +229,7 @@ export default {
       return moment(date / 1e6).fromNow()
     },
     getTime(date) {
-      return moment(date / 1e6).format('MMMM DD YYYY, hh:mm:ss')
+      return moment(date / 1e6).format('MMMM DD YYYY, hh:mm:ss A (GMTZ)')
     },
   },
 }
