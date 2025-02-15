@@ -174,20 +174,19 @@ export default {
     },
   },
   mounted() {
-    let params = {}
+    let params = { ...this.$route.query }
+    if (!params.nextPageToken && this.nextPageToken) {
+      params.nextPageToken = this.nextPageToken
+    }
+    if (!params.prevPageToken && this.prevPageToken) {
+      params.prevPageToken = this.prevPageToken
+    }
 
-    if (this.$route.query && Object.keys(this.$route.query).length > 0) {
-      const query = this.checkQuery(this.$route.query)
-      this.$router.replace({ path: '/txs', query })
+    if (Object.keys(params).length > 0) {
+      const query = this.checkQuery(params)
       this.filters = query
-      params = query
       this.$refs.advancedFilter.queryToFilter(query)
       this.hasFilters = true
-      if (this.$route.query.nextPageToken) {
-        params.nextPageToken = this.$route.query.nextPageToken
-      } else if (this.$route.query.prevPageToken) {
-        params.prevPageToken = this.$route.query.prevPageToken
-      }
     } else {
       this.applyFilters({
         asset: ['notrade'],
@@ -212,19 +211,27 @@ export default {
       ])
     },
     goNext() {
-      const query = {
-        ...this.filters,
-        nextPageToken: this.nextPageToken,
-      }
-      this.$router.replace({ path: '/txs', query })
+      if (!this.nextPageToken) return
+      this.$router.push({
+        path: '/txs',
+        query: {
+          ...this.$route.query,
+          nextPageToken: this.nextPageToken,
+          prevPageToken: undefined,
+        },
+      })
       this.getActions({ limit: this.limit, nextPageToken: this.nextPageToken })
     },
     goPrev() {
-      const query = {
-        ...this.filters,
-        prevPageToken: this.prevPageToken,
-      }
-      this.$router.replace({ path: '/txs', query })
+      if (!this.prevPageToken) return
+      this.$router.push({
+        path: '/txs',
+        query: {
+          ...this.$route.query,
+          prevPageToken: this.prevPageToken,
+          nextPageToken: undefined,
+        },
+      })
       this.getActions({ limit: this.limit, prevPageToken: this.prevPageToken })
     },
     applyFilters(params) {
