@@ -372,6 +372,7 @@ export default {
       width: 1rem;
       height: 1rem;
       fill: var(--font-color);
+      transition: transform 0.3s ease;
     }
 
     &.not-collapsed {
