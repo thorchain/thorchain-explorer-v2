@@ -106,6 +106,7 @@ import {
   getBurnedBlocks,
   getExecutionQuality,
   getAffiliateSwapsDaily,
+  getAffiliateHistory,
 } from './middleware.api'
 import {
   getChurnHistory,
@@ -300,6 +301,7 @@ export default function ({ $axios }, inject) {
     getBurnedBlocks,
     getExecutionQuality,
     getSecuredAssets,
+    getAffiliateHistory,
   }
 
   inject('api', api)

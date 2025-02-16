@@ -165,6 +165,7 @@
         :navs="[
           { title: 'Earnings & Fees', value: 'total-earnings' },
           { title: 'Pool Earnings', value: 'pool-earnings' },
+          { title: 'Affiliate Fees', value: 'affiliates-fees' },
         ]"
         :act-nav.sync="poolMode"
       >
@@ -182,6 +183,15 @@
           :key="2"
           :option="poolEarnings"
           :loading="!poolEarnings"
+          :autoresize="true"
+          :loading-options="showLoading"
+          :theme="chartTheme"
+        />
+        <VChart
+          v-if="poolMode == 'affiliates-fees'"
+          :key="3"
+          :option="affiliateChart"
+          :loading="!affiliateChart"
           :autoresize="true"
           :loading-options="showLoading"
           :theme="chartTheme"
@@ -351,7 +361,7 @@ import {
   GridComponent,
 } from 'echarts/components'
 import VChart from 'vue-echarts'
-import { range, orderBy } from 'lodash'
+import { range, orderBy, fill } from 'lodash'
 import affiliateTables from '../insights/component/affiliateTables.vue'
 import { blockTime } from '~/utils'
 import StackDollar from '~/assets/images/sack-dollar.svg?inline'
@@ -406,6 +416,7 @@ export default {
       swapHistory: undefined,
       earningsHistory: undefined,
       poolEarnings: undefined,
+      affiliateChart: undefined,
       runeSupply: undefined,
       lastHeight: undefined,
       blocks: undefined,
@@ -791,6 +802,13 @@ export default {
       })
       .catch((error) => {
         console.error('Error fetching affiliate swaps by wallet:', error)
+      })
+
+    this.$api
+      .getAffiliateHistory({ interval: 'day', count: '30' })
+      .then(({ data }) => {
+        const af = this.formatAffiliateHistory(data)
+        this.affiliateChart = af
       })
 
     // Get inbound info
@@ -1468,6 +1486,213 @@ export default {
                   : ``
               }
             </div>
+          `
+        }
+      )
+    },
+    fillArrayWithZero(array, length) {
+      while (array.length < length) {
+        array.push(0)
+      }
+      return array
+    },
+    formatAffiliateHistory(d) {
+      const xAxis = []
+      const thornames = []
+      const others = []
+
+      d?.intervals.forEach((interval, index) => {
+        if (index === d.intervals.length - 1) {
+          return
+        }
+
+        const date = moment(
+          Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
+        )
+        xAxis.push(date.format('dddd, MMM D'))
+
+        let filteredNames = {}
+
+        // Map out the same affiliates
+        for (let i = 0; i < interval.thornames.length; i++) {
+          const thorname = interval.thornames[i]
+          switch (thorname.thorname) {
+            case 't':
+            case 'tl':
+            case 'T':
+              if (filteredNames.t) {
+                filteredNames.t.volumeUSD += +thorname.volumeUSD
+                filteredNames.t.count += +thorname.count
+              } else {
+                filteredNames.t = {
+                  volumeUSD: +thorname.volumeUSD,
+                  thorname: 't',
+                  count: +thorname.count,
+                }
+              }
+              break
+            case 'ti':
+            case 'te':
+            case 'tr':
+            case 'td':
+            case 'tb':
+              if (filteredNames.ti) {
+                filteredNames.ti.volumeUSD += +thorname.volumeUSD
+                filteredNames.ti.count += +thorname.count
+              } else {
+                filteredNames.ti = {
+                  volumeUSD: +thorname.volumeUSD,
+                  thorname: 'ti',
+                  count: +thorname.count,
+                }
+              }
+              break
+            case 'va':
+            case 'vi':
+            case 'v0':
+              if (filteredNames.va) {
+                filteredNames.va.volumeUSD += +thorname.volumeUSD
+                filteredNames.va.count += +thorname.count
+              } else {
+                filteredNames.va = {
+                  volumeUSD: +thorname.volumeUSD,
+                  thorname: 'va',
+                  count: +thorname.count,
+                }
+              }
+              break
+
+            default:
+              filteredNames[thorname.thorname] = thorname
+              break
+          }
+        }
+
+        filteredNames = Object.values(filteredNames)
+        filteredNames = orderBy(filteredNames, [(o) => +o.volumeUSD], ['desc'])
+
+        const topNames = 3
+        let otherTotal = 0
+
+        for (let ti = 0; ti < filteredNames.length; ti++) {
+          if (topNames < ti) {
+            otherTotal += +filteredNames[ti]?.volumeUSD / 1e2
+            if (filteredNames.length - 1 === ti) {
+              others.push(otherTotal)
+            }
+            continue
+          }
+
+          const thornameIndex = thornames.findIndex(
+            (t) => t.name === filteredNames[ti].thorname
+          )
+
+          if (thornameIndex >= 0) {
+            if (thornames[thornameIndex].data.length < index + 1) {
+              thornames[thornameIndex].data = this.fillArrayWithZero(
+                thornames[thornameIndex].data,
+                index
+              )
+            }
+            thornames[thornameIndex].data.push(
+              +filteredNames[ti]?.volumeUSD / 1e2
+            )
+          } else {
+            let data = []
+            if (index > 0) {
+              data = this.fillArrayWithZero(data, index)
+            }
+            data.push(+filteredNames[ti]?.volumeUSD / 1e2)
+            thornames.push({
+              type: 'bar',
+              name: filteredNames[ti].thorname,
+              showSymbol: false,
+              stack: 'Total',
+              data,
+            })
+          }
+        }
+      })
+
+      const getInterfaceIcon = (detail) => {
+        if (!detail.icons) {
+          return ''
+        }
+
+        return this.theme === 'light' ? detail.icons.url : detail.icons.urlDark
+      }
+
+      return this.basicChartFormat(
+        (value) => `$ ${this.normalFormat(value, '0,0.00a')}`,
+        [
+          ...thornames,
+          {
+            type: 'bar',
+            name: 'Others',
+            showSymbol: false,
+            stack: 'Total',
+            data: others,
+          },
+        ],
+        xAxis,
+        {
+          legend: {
+            show: false,
+          },
+          yAxis: [
+            {
+              type: 'value',
+              name: '',
+              position: 'right',
+              show: false,
+              splitLine: {
+                show: true,
+              },
+            },
+          ],
+        },
+        (param) => {
+          return `
+            <div class="tooltip-header">
+              ${param[0].name}
+            </div>
+            <div class="tooltip-body">
+              ${param
+                .filter((a) => a.value)
+                .sort((a, b) => {
+                  if (a.seriesName === 'Others') return 1
+                  if (b.seriesName === 'Others') return -1
+                  return b.value - a.value
+                })
+                .map(
+                  (p) => `
+                  <span>
+                    <div class="tooltip-item">
+                      <div class="data-color" style="background-color: ${p.color}">
+                      </div>
+                      ${
+                        this.mapInterfaceName(p.seriesName)
+                          ? `<img class="tooltip-interface-icon" src="${getInterfaceIcon(this.mapInterfaceName(p.seriesName))}"/>`
+                          : `<span style="text-align: left;">
+                            ${p.seriesName}
+                          </span>`
+                      }
+
+                    </div>
+                    <b>$${p.value ? this.$options.filters.number(p.value, '0,0.00a') : '-'}</b>
+                  </span>`
+                )
+                .join('')}
+            </div>
+            <span style="border-top: 1px solid var(--border-color); margin: 2px 0;"></span>
+            <hr>
+            <span>
+              <span>Total Pool Earnings</span>
+              <b>$${this.$options.filters.number(
+                param.reduce((a, c) => a + (c.value ? c.value : 0), 0),
+                '0,0a'
+              )}</b>
+            </span>
           `
         }
       )

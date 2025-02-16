@@ -826,6 +826,7 @@ input {
   min-width: 150px;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 5px;
 
   > span {
@@ -833,6 +834,11 @@ input {
     gap: 8px;
     justify-content: space-between;
     align-items: center;
+  }
+
+  .tooltip-interface-icon {
+    margin: 0 5px;
+    height: 1rem;
   }
 }
 
