@@ -332,6 +332,8 @@ export default {
     border: none;
     font-size: 0.75rem;
     font-weight: 500;
+    border: 1px solid var(--border-color);
+
     transition:
       background-color 0.3s ease,
       transform 0.2s ease;
