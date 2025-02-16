@@ -165,7 +165,9 @@
         :navs="[
           { title: 'Earnings & Fees', value: 'total-earnings' },
           { title: 'Pool Earnings', value: 'pool-earnings' },
-          { title: 'Affiliate Fees', value: 'affiliates-fees' },
+          ...(isMainnet()
+            ? [{ title: 'Affiliate Fees', value: 'affiliates-fees' }]
+            : []),
         ]"
         :act-nav.sync="poolMode"
       >
