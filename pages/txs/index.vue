@@ -1,63 +1,18 @@
 <template>
   <Page>
     <div class="transactions-container">
-      <!-- transactions component -->
       <div class="top-bar">
-        <div class="action-types">
+        <button class="mobile-filter-btn" @click="showFilters = true">
+          Quick Filters
+        </button>
+        <div class="action-types desktop-filters">
           <div
-            :class="['action-type', { active: isAll }]"
-            @click="resetFilters"
+            v-for="(filter, index) in filtersList"
+            :key="index"
+            :class="['action-type', { active: isActive(filter) }]"
+            @click="applyFilter(filter)"
           >
-            All
-          </div>
-          <div
-            :class="['action-type', { active: isLayerOne }]"
-            @click="
-              applyFilters({
-                type: ['swap'],
-                asset: ['nosynth', 'notrade', 'norune'],
-              })
-            "
-          >
-            L1 Swaps
-          </div>
-          <div
-            :class="['action-type', { active: isTrade }]"
-            @click="applyFilters({ type: ['swap'], asset: ['trade'] })"
-          >
-            Trade Swaps
-          </div>
-          <div
-            :class="['action-type', { active: isSynth }]"
-            @click="applyFilters({ type: ['swap'], asset: ['synth'] })"
-          >
-            Synth Swaps
-          </div>
-          <div
-            :class="['action-type', { active: isLP }]"
-            @click="applyFilters({ type: ['addLiquidity', 'withdraw'] })"
-          >
-            LP / Savers
-          </div>
-          <div
-            :class="['action-type', { active: isRunePool }]"
-            @click="
-              applyFilters({ type: ['runePoolDeposit', 'runePoolWithdraw'] })
-            "
-          >
-            RUNEPool
-          </div>
-          <div
-            :class="['action-type', { active: isSend }]"
-            @click="applyFilters({ type: ['send'] })"
-          >
-            Send
-          </div>
-          <div
-            :class="['action-type', { active: isRefund }]"
-            @click="applyFilters({ type: ['refund'] })"
-          >
-            Refund
+            {{ filter.label }}
           </div>
         </div>
 
@@ -66,6 +21,24 @@
           @applyFilters="applyFilters"
           @clearfilter="clearFilters"
         />
+      </div>
+      <div v-if="showFilters" class="mobile-filter-modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Quick Filters</h3>
+            <CrossIcon class="close-btn" @click="toggleModal" />
+          </div>
+          <div class="action-types">
+            <div
+              v-for="(filter, index) in filtersList"
+              :key="index"
+              :class="['action-type', { active: isActive(filter) }]"
+              @click="applyFilter(filter)"
+            >
+              {{ filter.label }}
+            </div>
+          </div>
+        </div>
       </div>
       <div>
         <div v-if="error" class="error-container">
@@ -87,10 +60,11 @@
 import { isEqual, pick } from 'lodash'
 import advancedFilter from './components/advancedFilter.vue'
 import Transactions from '~/components/Transactions.vue'
+import CrossIcon from '~/assets/images/cross.svg?inline'
 
 export default {
   name: 'TxsPage',
-  components: { Transactions, advancedFilter },
+  components: { Transactions, advancedFilter, CrossIcon },
   data() {
     return {
       txs: undefined,
@@ -101,6 +75,26 @@ export default {
       filters: {},
       hasFilters: false,
       error: false,
+      showFilters: false,
+      filtersList: [
+        { label: 'All', filter: {} },
+        {
+          label: 'L1 Swaps',
+          filter: { type: ['swap'], asset: ['nosynth', 'notrade', 'norune'] },
+        },
+        { label: 'Trade Swaps', filter: { type: ['swap'], asset: ['trade'] } },
+        { label: 'Synth Swaps', filter: { type: ['swap'], asset: ['synth'] } },
+        {
+          label: 'LP / Savers',
+          filter: { type: ['addLiquidity', 'withdraw'] },
+        },
+        {
+          label: 'RUNEPool',
+          filter: { type: ['runePoolDeposit', 'runePoolWithdraw'] },
+        },
+        { label: 'Send', filter: { type: ['send'] } },
+        { label: 'Refund', filter: { type: ['refund'] } },
+      ],
     }
   },
   head: {
@@ -304,20 +298,186 @@ export default {
       this.$refs.advancedFilter.resetFilter({})
       this.clearFilters()
     },
+    toggleModal() {
+      this.showFilters = !this.showFilters
+    },
+    isActive(filter) {
+      if (filter.label === 'All') {
+        return Object.keys(this.filters).length === 0
+      }
+
+      const filterType = filter.filter.type
+        ? filter.filter.type.join(',')
+        : null
+      const filterAsset = filter.filter.asset
+        ? filter.filter.asset.join(',')
+        : null
+
+      const currentType = this.filters.type || null
+      const currentAsset = this.filters.asset || null
+
+      return filterType === currentType && filterAsset === currentAsset
+    },
+    applyFilter(filter) {
+      if (filter.label === 'All') {
+        this.resetFilters()
+      } else {
+        this.applyFilters(filter.filter)
+      }
+      this.showFilters = false
+    },
   },
 }
 </script>
 
 <style lang="scss" scoped>
+.mobile-filter-btn {
+  display: flex;
+  align-items: center;
+  padding: 10px 8px;
+  font-size: 0.875rem;
+  background-color: var(--card-bg-color);
+  color: var(--font-color);
+  border: 1px solid var(--border-color);
+  border-radius: 0.3rem;
+  cursor: pointer;
+  width: auto;
+  margin: 0.5rem;
+  white-space: nowrap;
+  font-weight: 450;
+  transition:
+    background-color 0.3s ease,
+    transform 0.3s ease;
+
+  &:hover {
+    background-color: var(--active-bg-color);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+    color: var(--sec-font-color);
+  }
+}
+.desktop-filters {
+  display: none;
+  flex-wrap: wrap;
+  margin: 0.5rem;
+  gap: 5px;
+}
+
+@include md {
+  .desktop-filters {
+    display: flex;
+  }
+  .mobile-filter-btn {
+    display: none;
+  }
+}
+
+.mobile-filter-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+
+  .action-types {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    gap: 8px;
+  }
+
+  .action-type {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 10px 8px;
+    border-radius: 0.25rem;
+    background-color: var(--card-bg-color);
+    color: var(--font-color);
+    border: 1px solid var(--border-color);
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition:
+      background-color 0.3s ease,
+      transform 0.2s ease;
+
+    &.active {
+      color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+
+    &:hover {
+      background-color: var(--active-bg-color);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      color: var(--sec-font-color);
+      transform: translateY(-2px);
+    }
+
+    &:active {
+      transform: translateY(1px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+    }
+  }
+}
+.modal-content {
+  background: var(--card-bg-color);
+  border-radius: 0.5rem;
+  text-align: left;
+  color: var(--sec-font-color);
+  width: 500px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  overflow-y: auto;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+
+  > div {
+    padding: 18px;
+  }
+}
+
+.close-btn {
+  cursor: pointer;
+  width: 1.5rem;
+  height: 2rem;
+  color: var(--sec-font-color);
+
+  &:hover {
+    color: var(--primary-color);
+  }
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header h3 {
+  font-size: 18px;
+  margin: 0;
+  color: var(--sec-font-color);
+}
 .top-bar {
   display: flex;
   justify-content: space-between;
 
   .action-types {
-    display: flex;
     flex-wrap: wrap;
     margin: 0.5rem;
     gap: 5px;
+    display: none;
+    @include md {
+      display: flex;
+    }
   }
 
   .action-type {
@@ -332,6 +492,8 @@ export default {
     border: none;
     font-size: 0.75rem;
     font-weight: 500;
+    border: 1px solid var(--border-color);
+
     transition:
       background-color 0.3s ease,
       transform 0.2s ease;

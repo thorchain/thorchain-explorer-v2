@@ -191,7 +191,9 @@
           }}</span>
         </span>
         <span v-else-if="props.column.field == 'operator'">
-          <v-menu>
+          <v-menu
+            v-if="!props.row.providers || props.row.providers.length !== 1"
+          >
             <div class="hoverable">
               <nuxt-link
                 class="clickable mono"
@@ -208,7 +210,10 @@
                 }"
                 >{{ props.row.operator.slice(-4) }}</nuxt-link
               >
-              <div class="bubble-container grey">
+              <div
+                v-if="props.row.providers && props.row.providers.length !== 1"
+                class="bubble-container grey"
+              >
                 {{ props.row.providers ? props.row.providers.length : 0 }}
               </div>
             </div>
@@ -256,6 +261,23 @@
               </div>
             </template>
           </v-menu>
+          <div v-else class="hoverable">
+            <nuxt-link
+              class="clickable mono"
+              target="_blank"
+              :to="`/address/${props.row.operator}`"
+              :style="{
+                color: isFav(props.row.address)
+                  ? vaultColor(props.row.address, true)
+                  : '',
+                fill: isFav(props.row.address)
+                  ? vaultColor(props.row.address, true)
+                  : '',
+                fontWeight: isFav(props.row.address) ? 'bold' : 'normal',
+              }"
+              >{{ props.row.operator.slice(-4) }}</nuxt-link
+            >
+          </div>
         </span>
         <div v-else-if="props.column.field == 'churn'" class="churn-wrapper">
           <div
