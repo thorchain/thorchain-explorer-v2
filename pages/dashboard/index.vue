@@ -1687,7 +1687,7 @@ export default {
             <span style="border-top: 1px solid var(--border-color); margin: 2px 0;"></span>
             <hr>
             <span>
-              <span>Total Pool Earnings</span>
+              <span>Total Fees</span>
               <b>$${this.$options.filters.number(
                 param.reduce((a, c) => a + (c.value ? c.value : 0), 0),
                 '0,0a'
