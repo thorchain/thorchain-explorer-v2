@@ -812,9 +812,11 @@ export default {
       .then(({ data }) => {
         const af = this.formatAffiliateHistory(data)
         this.affiliateChart = af
-        this.volumeUSDData = data.intervals.flatMap((interval) =>
-          (interval.thornames || []).map((item) => Number(item.volumeUSD) || 0)
-        )
+        this.volumeUSDData = data.intervals.map((interval) => {
+          return (interval.thornames || []).reduce((sum, item) => {
+            return sum + (Number(item.volumeUSD) || 0)
+          }, 0)
+        })
         console.log('volumeUSDData:', this.volumeUSDData)
       })
       .catch((error) => {
