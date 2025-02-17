@@ -1516,62 +1516,33 @@ export default {
         let filteredNames = {}
 
         // Map out the same affiliates
-        for (let i = 0; i < interval.thornames.length; i++) {
-          const thorname = interval.thornames[i]
-          switch (thorname.thorname) {
-            case 't':
-            case 'tl':
-            case 'T':
-              if (filteredNames.t) {
-                filteredNames.t.volumeUSD += +thorname.volumeUSD
-                filteredNames.t.count += +thorname.count
-              } else {
-                filteredNames.t = {
-                  volumeUSD: +thorname.volumeUSD,
-                  thorname: 't',
-                  count: +thorname.count,
-                }
-              }
-              break
-            case 'ti':
-            case 'te':
-            case 'tr':
-            case 'td':
-            case 'tb':
-              if (filteredNames.ti) {
-                filteredNames.ti.volumeUSD += +thorname.volumeUSD
-                filteredNames.ti.count += +thorname.count
-              } else {
-                filteredNames.ti = {
-                  volumeUSD: +thorname.volumeUSD,
-                  thorname: 'ti',
-                  count: +thorname.count,
-                }
-              }
-              break
-            case 'va':
-            case 'vi':
-            case 'v0':
-              if (filteredNames.va) {
-                filteredNames.va.volumeUSD += +thorname.volumeUSD
-                filteredNames.va.count += +thorname.count
-              } else {
-                filteredNames.va = {
-                  volumeUSD: +thorname.volumeUSD,
-                  thorname: 'va',
-                  count: +thorname.count,
-                }
-              }
-              break
+        filteredNames = interval.thornames.reduce((acc, thorname) => {
+          const key = ['t', 'tl', 'T'].includes(thorname.thorname)
+            ? 't'
+            : ['ti', 'te', 'tr', 'td', 'tb'].includes(thorname.thorname)
+              ? 'ti'
+              : ['va', 'vi', 'v0'].includes(thorname.thorname)
+                ? 'va'
+                : thorname.thorname
 
-            default:
-              filteredNames[thorname.thorname] = thorname
-              break
+          if (acc[key]) {
+            acc[key].volumeUSD += +thorname.volumeUSD
+            acc[key].count += +thorname.count
+          } else {
+            acc[key] = {
+              volumeUSD: +thorname.volumeUSD,
+              thorname: key,
+              count: +thorname.count,
+            }
           }
-        }
+          return acc
+        }, {})
 
-        filteredNames = Object.values(filteredNames)
-        filteredNames = orderBy(filteredNames, [(o) => +o.volumeUSD], ['desc'])
+        filteredNames = orderBy(
+          Object.values(filteredNames),
+          [(o) => +o.volumeUSD],
+          ['desc']
+        )
 
         const topNames = 3
         let otherTotal = 0
