@@ -10,7 +10,11 @@ function getErcIconPath(chain, assetSymbol, assetTicker) {
 }
 
 export const AssetImage = (assetStr) => {
-  const { ticker, chain, symbol } = assetFromString(assetStr)
+  const asset = assetFromString(assetStr)
+  if (!asset) {
+    return ''
+  }
+  const { ticker, chain, symbol } = asset
 
   const trustWalletMatch = CoinIconsFromTrustWallet[ticker]
 
