@@ -440,6 +440,7 @@ export default {
       mimirInfo: undefined,
       network: undefined,
       ui: undefined,
+      volumeUSDData: undefined,
     }
   },
   head: {
@@ -811,6 +812,13 @@ export default {
       .then(({ data }) => {
         const af = this.formatAffiliateHistory(data)
         this.affiliateChart = af
+        this.volumeUSDData = data.intervals.flatMap((interval) =>
+          (interval.thornames || []).map((item) => Number(item.volumeUSD) || 0)
+        )
+        console.log('volumeUSDData:', this.volumeUSDData)
+      })
+      .catch((error) => {
+        console.error('API error:', error)
       })
 
     // Get inbound info
@@ -1300,23 +1308,19 @@ export default {
         df.push(devFund)
         ib.push(incomeBurn)
 
-        const affiliate = this.affiliateDaily?.find((d) => {
-          return moment(d.date).isSame(date, 'day')
-        })
+        const volumeUSD = (this.volumeUSDData[index] || 0) / 1e2
         af.push({
-          value: Math.max(affiliate?.daily_affiliate_fees_usd, 0),
+          value: Math.max(volumeUSD, 0),
           itemStyle: {
             borderRadius: [8, 8, 0, 0],
           },
         })
 
         if (d?.intervals.length === index + 1) {
-          let affiliateEOD = affiliate?.daily_affiliate_fees_usd ?? 0
+          let affiliateEOD = volumeUSD || 0
           if (affiliateEOD === 0) {
             affiliateEOD =
-              this.affiliateDaily
-                ?.slice(-3)
-                .reduce((a, c) => a + +c.daily_affiliate_fees_usd, 0) / 3
+              this.volumeUSDData?.slice(-3).reduce((a, c) => a + +c, 0) / 3
           }
 
           EODEarning.push({
@@ -1385,7 +1389,7 @@ export default {
             data: ib,
             smooth: true,
           },
-          this.affiliateDaily && {
+          this.volumeUSDData && {
             type: 'bar',
             name: 'Affiliate Fee',
             showSymbol: false,
@@ -1424,71 +1428,70 @@ export default {
         },
         (param) => {
           return `
-            <div class="tooltip-header">
-              <div class="data-color" style="background-color: ${
-                param[0].color
-              }"></div>
-              ${param[0].name}
-            </div>
-            <div class="tooltip-body">
-              ${param
+        <div class="tooltip-header">
+          <div class="data-color" style="background-color: ${
+            param[0].color
+          }"></div>
+          ${param[0].name}
+        </div>
+        <div class="tooltip-body">
+          ${param
+            .filter(
+              (p) =>
+                p.seriesName !== 'EOD Earning' &&
+                p.seriesName !== 'Affiliate Fee' &&
+                +p.value > 0
+            )
+            .map(
+              (p) => `<span>
+              <span>${p.seriesName}</span>
+              <b>$${p.value ? this.$options.filters.number(p.value, '0,0a') : '-'}</b>
+            </span>`
+            )
+            .join('')}
+          <span style="border-top: 1px solid var(--border-color); margin: 2px 0;"></span>
+          <span>
+            <span>Gross System Income</span>
+            <b>$${this.$options.filters.number(
+              param
                 .filter(
                   (p) =>
                     p.seriesName !== 'EOD Earning' &&
-                    p.seriesName !== 'Affiliate Fee' &&
-                    +p.value > 0
+                    p.seriesName !== 'Affiliate Fee'
                 )
-                .map(
-                  (p) => `<span>
-                  <span>${p.seriesName}</span>
-                  <b>$${p.value ? this.$options.filters.number(p.value, '0,0a') : '-'}</b>
-                </span>`
-                )
-                .join('')}
-              <span style="border-top: 1px solid var(--border-color); margin: 2px 0;"></span>
-              <span>
-                <span>Gross System Income</span>
-                <b>$${this.$options.filters.number(
-                  param
-                    .filter(
-                      (p) =>
-                        p.seriesName !== 'EOD Earning' &&
-                        p.seriesName !== 'Affiliate Fee'
-                    )
-                    .reduce((a, c) => a + (c.value ? c.value : 0), 0),
-                  '0,0a'
-                )}</b>
-              </span>
-               ${
-                 EODEarning[param[0].dataIndex] !== 0
-                   ? `<span><span>Gross System Income (EOD)</span><b>$${this.$options.filters.number(
-                       param
-                         .filter((p) => p.seriesName !== 'Affiliate Fee')
-                         .reduce((a, c) => a + (c.value ? c.value : 0), 0),
-                       '0,0a'
-                     )}</b></span>`
-                   : ''
-               }
-              <span style="border-top: 1px solid var(--border-color); margin: 2px 0;"></span>
-              ${
-                param.find((p) => p.seriesName === 'Affiliate Fee')
-                  ? `<span>
-                <span>Affiliate Fee</span>
-                <b>${
-                  param.find((p) => p.seriesName === 'Affiliate Fee').value
-                    ? '$' +
-                      this.$options.filters.number(
-                        param.find((p) => p.seriesName === 'Affiliate Fee')
-                          .value,
-                        '0,0a'
-                      )
-                    : '-'
-                }</b>
-              </span>`
-                  : ``
-              }
-            </div>
-          `
+                .reduce((a, c) => a + (c.value ? c.value : 0), 0),
+              '0,0a'
+            )}</b>
+          </span>
+           ${
+             EODEarning[param[0].dataIndex] !== 0
+               ? `<span><span>Gross System Income (EOD)</span><b>$${this.$options.filters.number(
+                   param
+                     .filter((p) => p.seriesName !== 'Affiliate Fee')
+                     .reduce((a, c) => a + (c.value ? c.value : 0), 0),
+                   '0,0a'
+                 )}</b></span>`
+               : ''
+           }
+          <span style="border-top: 1px solid var(--border-color); margin: 2px 0;"></span>
+          ${
+            param.find((p) => p.seriesName === 'Affiliate Fee')
+              ? `<span>
+            <span>Affiliate Fee</span>
+            <b>${
+              param.find((p) => p.seriesName === 'Affiliate Fee').value
+                ? '$' +
+                  this.$options.filters.number(
+                    param.find((p) => p.seriesName === 'Affiliate Fee').value,
+                    '0,0a'
+                  )
+                : '-'
+            }</b>
+          </span>`
+              : ``
+          }
+        </div>
+      `
         }
       )
     },
