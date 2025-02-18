@@ -1274,15 +1274,6 @@ export default {
       const df = []
       const ib = []
       const EODEarning = []
-
-      if (process.env.NETWORK === 'mainnet') {
-        try {
-          this.affiliateDaily = (await this.$api.getAffiliateDaily()).data
-        } catch (error) {
-          console.error(error)
-        }
-      }
-
       d?.intervals.forEach((interval, index) => {
         const date = moment(
           Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
