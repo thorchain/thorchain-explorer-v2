@@ -2130,8 +2130,9 @@ export default {
               lastHeight: null, // Add on midgard if available
             },
             done:
-              thorStatus?.stages.swap_finalised?.completed ||
-              !thorStatus?.stages.swap_status?.pending,
+              thorStatus?.stages?.inbound_finalised?.completed &&
+              (thorStatus?.stages.swap_finalised?.completed ||
+                !thorStatus?.stages.swap_status?.pending),
             error: onlyRefund,
           },
           out: [
