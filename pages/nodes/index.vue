@@ -82,7 +82,11 @@
       </div>
     </div>
 
-    <card :is-loading="!activeNodes">
+    <card
+      :img-src="require('@/assets/images/active.svg')"
+      title="Active Nodes"
+      :is-loading="!activeNodes"
+    >
       <node-table
         :rows="activeNodes"
         :cols="activeCols"
@@ -90,7 +94,11 @@
         name="active-nodes"
       />
     </card>
-    <card :is-loading="!stbNodes">
+    <card
+      :img-src="require('@/assets/images/churn.svg')"
+      title="Eligible Nodes"
+      :is-loading="!stbNodes"
+    >
       <node-table
         :rows="stbNodes"
         :cols="stbCols"
@@ -98,7 +106,11 @@
         name="rdy-nodes"
       />
     </card>
-    <card :is-loading="!whiteListedNodes">
+    <card
+      :img-src="require('@/assets/images/whitelist.svg')"
+      title="Whitelisted Nodes"
+      :is-loading="!whiteListedNodes"
+    >
       <node-table
         :rows="whiteListedNodes"
         :cols="otherNodes"
@@ -931,6 +943,8 @@ export default {
     },
     whiteListedNodes() {
       if (this.nodesQuery) {
+        const stbNodes = this.stbNodes.map((n) => n.address)
+
         let whtNodes = this.nodesQuery?.filter(
           (e) =>
             !(
@@ -939,7 +953,8 @@ export default {
             e.status !== 'Active' &&
             e.status !== 'Ready' &&
             e.status !== 'Disabled' &&
-            e.age.number < 300
+            e.age.number < 300 &&
+            !stbNodes.includes(e.address)
         )
 
         whtNodes = orderBy(whtNodes, [(o) => +o.total_bond], ['desc'])
