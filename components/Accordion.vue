@@ -37,6 +37,24 @@
             <div class="mono">
               {{ formatCountdown(timer) }}
             </div>
+            <svg class="spinner" width="20" height="20" viewBox="0 0 50 50">
+              <circle
+                class="circle-background"
+                cx="25"
+                cy="25"
+                r="20"
+                fill="none"
+                stroke-width="5"
+              ></circle>
+              <circle
+                class="path"
+                cx="25"
+                cy="25"
+                r="20"
+                fill="none"
+                stroke-width="5"
+              ></circle>
+            </svg>
           </div>
 
           <div
@@ -350,6 +368,23 @@ export default {
   .mini-bubble.danger {
     border: none !important;
     background-color: transparent;
+  }
+  .spinner {
+    animation: spin 1.3s linear infinite;
+  }
+  .path {
+    stroke:  rgb(47, 138, 245);
+    stroke-linecap: round;
+    stroke-dasharray: 100;
+    stroke-dashoffset: 60;
+  }
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
   }
 
   .accordion-info {
