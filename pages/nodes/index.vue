@@ -148,7 +148,7 @@ export default {
       searchTerm: '',
       churnProgressValue: 0,
       totalAwards: undefined,
-      leastBondChurn: undefined,
+      leastBondChurn: 0,
       retiringVaults: [],
       hides: {
         isp: false,

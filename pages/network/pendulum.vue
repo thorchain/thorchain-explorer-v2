@@ -224,7 +224,7 @@ export default {
   },
   computed: {
     scalePosition() {
-      const maxTilt = 40
+      const maxTilt = 15
       const midpoint = 50
 
       const tiltPercentage = (this.nodeShare * 100 - midpoint) / midpoint

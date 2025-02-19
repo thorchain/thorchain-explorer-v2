@@ -453,7 +453,9 @@ export default {
 
       return {
         name: uniName,
-        ...(options?.filter ? { value: options?.filter(value) } : { value }),
+        ...(options?.filter
+          ? { value: options?.filter(value) }
+          : { value: value || 0 }), 
         ...(isMimir && { extraInfo: 'Overwritten by Mimir' }),
         ...(isMimir &&
           extraText && {
