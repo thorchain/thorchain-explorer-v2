@@ -22,7 +22,11 @@
             :class="'mini-bubble info'"
             style="gap: 0.3rem; border-radius: 8px"
           >
-            <svg v-if="totalTime > 0" class="timer" viewBox="0 0 36 36">
+            <svg
+              v-if="totalTime > 0 && timer > 0"
+              class="timer"
+              viewBox="0 0 36 36"
+            >
               <path
                 class="circle-background"
                 d="M18 2.0845a15.9155 15.9155 0 1 0 0 31.831 15.9155 15.9155 0 1 0 0-31.831"
@@ -33,11 +37,13 @@
                 d="M18 2.0845a15.9155 15.9155 0 1 0 0 31.831 15.9155 15.9155 0 1 0 0-31.831"
               />
             </svg>
-
-            <div class="mono">
-              {{ formatCountdown(timer) }}
-            </div>
-            <svg class="spinner" width="20" height="20" viewBox="0 0 50 50">
+            <svg
+              v-else
+              class="spinner"
+              width="20"
+              height="20"
+              viewBox="0 0 50 50"
+            >
               <circle
                 class="circle-background"
                 cx="25"
@@ -55,6 +61,10 @@
                 stroke-width="5"
               ></circle>
             </svg>
+
+            <div class="mono">
+              {{ formatCountdown(timer) }}
+            </div>
           </div>
 
           <div
@@ -373,7 +383,7 @@ export default {
     animation: spin 1.3s linear infinite;
   }
   .path {
-    stroke:  rgb(47, 138, 245);
+    stroke: rgb(47, 138, 245);
     stroke-linecap: round;
     stroke-dasharray: 100;
     stroke-dashoffset: 60;
