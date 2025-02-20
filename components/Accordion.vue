@@ -42,24 +42,17 @@
               class="spinner"
               width="20"
               height="20"
-              viewBox="0 0 50 50"
+              viewBox="0 0 36 36"
             >
-              <circle
+              <path
                 class="circle-background"
-                cx="25"
-                cy="25"
-                r="20"
-                fill="none"
-                stroke-width="5"
-              ></circle>
-              <circle
-                class="path"
-                cx="25"
-                cy="25"
-                r="20"
-                fill="none"
-                stroke-width="5"
-              ></circle>
+                d="M18 2.0845a15.9155 15.9155 0 1 0 0 31.831 15.9155 15.9155 0 1 0 0-31.831"
+              />
+              <path
+                class="circle-foreground"
+                :style="{ strokeDashoffset: 70 }"
+                d="M18 2.0845a15.9155 15.9155 0 1 0 0 31.831 15.9155 15.9155 0 1 0 0-31.831"
+              />
             </svg>
 
             <div class="mono">
