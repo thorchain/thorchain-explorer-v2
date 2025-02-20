@@ -7,7 +7,12 @@
             <chart class="stat-image" />
             <div class="item-detail">
               <div class="header">Volume (24hr)</div>
-              <skeleton-item :loading="!totalSwap24USD" class="value">
+              <skeleton-item
+                :loading="
+                  totalSwap24USD == null || totalSwap24USD === undefined
+                "
+                class="value"
+              >
                 ${{ (totalSwap24USD / 1e2) | number('0a') }}
               </skeleton-item>
             </div>

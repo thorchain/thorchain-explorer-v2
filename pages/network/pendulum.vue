@@ -79,7 +79,7 @@
             font-size="10"
             fill="var(--sec-font-color)"
           >
-            {{ effectiveBond | number('0a') }}
+            {{ effectiveBond | number('0.0a') }}
           </text>
 
           <rect
@@ -146,7 +146,7 @@
             font-size="10"
             fill="var(--sec-font-color)"
           >
-            {{ adjustedSecuredTotal | number('0a') }}
+            {{ adjustedSecuredTotal | number('0.0a') }}
           </text>
 
           <rect
@@ -224,7 +224,7 @@ export default {
   },
   computed: {
     scalePosition() {
-      const maxTilt = 40
+      const maxTilt = 15
       const midpoint = 50
 
       const tiltPercentage = (this.nodeShare * 100 - midpoint) / midpoint
