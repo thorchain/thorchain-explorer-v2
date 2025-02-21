@@ -439,6 +439,7 @@ export default {
       poolsData: undefined,
       totalValuePooled: undefined,
       totalBurnedRune: undefined,
+      earningsData: undefined,
       poolMode: 'total-earnings',
       swapMode: 'swap-vol',
       inboundInfo: undefined,
@@ -706,9 +707,23 @@ export default {
           })
       })
 
-    this.$api
+    const affiliatePromise = this.$api
+      .getAffiliateHistory({ interval: 'day', count: '30' })
+      .then(({ data }) => {
+        this.affiliateChart = this.formatAffiliateHistory(data)
+        this.volumeUSDData = data.intervals.map((interval) => {
+          return (interval.thornames || []).reduce((sum, item) => {
+            return sum + (Number(item.volumeUSD) || 0)
+          }, 0)
+        })
+      })
+      .catch((error) => {
+        console.error('API error:', error)
+      })
+
+    const dashboardPromise = this.$api
       .getDashboardPlots()
-      .then(async ({ data }) => {
+      .then(({ data }) => {
         if (!data) {
           throw new Error('Cant read the data')
         }
@@ -717,7 +732,7 @@ export default {
         ;({ resVolume: this.swapHistory } = this.formatSwap(data?.swaps))
 
         this.poolEarnings = this.formatPoolEarnings(data?.earning)
-        this.earningsHistory = await this.formatEarnings(data?.earning)
+        this.earningsData = data?.earning
         this.totalSwapVolumeUSD = data.swaps?.meta?.totalVolumeUSD
         this.totalSwapVolume = data.swaps?.meta?.totalVolume
       })
@@ -759,6 +774,10 @@ export default {
             console.error(error)
           })
       })
+
+    Promise.all([affiliatePromise, dashboardPromise]).then((values) => {
+      this.earningsHistory = this.formatEarnings(this.earningsData)
+    })
 
     this.$api
       .getRPCLastBlockHeight()
@@ -810,22 +829,6 @@ export default {
       })
       .catch((error) => {
         console.error('Error fetching affiliate swaps by wallet:', error)
-      })
-
-    this.$api
-      .getAffiliateHistory({ interval: 'day', count: '30' })
-      .then(({ data }) => {
-        const af = this.formatAffiliateHistory(data)
-        this.affiliateChart = af
-        this.volumeUSDData = data.intervals.map((interval) => {
-          return (interval.thornames || []).reduce((sum, item) => {
-            return sum + (Number(item.volumeUSD) || 0)
-          }, 0)
-        })
-        console.log('volumeUSDData:', this.volumeUSDData)
-      })
-      .catch((error) => {
-        console.error('API error:', error)
       })
 
     // Get inbound info
@@ -1271,7 +1274,7 @@ export default {
         }
       )
     },
-    async formatEarnings(d) {
+    formatEarnings(d) {
       const xAxis = []
       const le = []
       const be = []
@@ -1318,7 +1321,8 @@ export default {
           let affiliateEOD = volumeUSD || 0
           if (affiliateEOD === 0) {
             affiliateEOD =
-              this.volumeUSDData?.slice(-3).reduce((a, c) => a + +c, 0) / 3
+              this.volumeUSDData?.slice(-3).reduce((a, c) => a + +c / 1e2, 0) /
+              3
           }
 
           EODEarning.push({
