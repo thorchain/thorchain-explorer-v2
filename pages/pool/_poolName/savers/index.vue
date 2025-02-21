@@ -9,8 +9,8 @@
         <pie-chart :pie-data="saversPie" :formatter="totalSaverFormatter" />
       </Card>
       <Card
+        v-if="saversData.filled !== null"
         title="Savers Cap Filled"
-        :is-loading="!saversData.filled"
         class="savers-filled-card"
       >
         <ProgressBar :width="saversData.filled * 100" />
@@ -21,11 +21,7 @@
       </Card>
     </div>
     <Card>
-      <TableLoader
-          v-if="loading"
-          :cols="cols"
-          :rows="Array(10).fill({})"
-        />
+      <TableLoader v-if="loading" :cols="cols" :rows="Array(10).fill({})" />
       <vue-good-table
       v-else
         :columns="cols"
@@ -166,13 +162,17 @@ export default {
           name: saverDetail.asset_address,
         }));
 
-        this.saversPie = [
-          ...this.saverDetails.slice(0, 10),
+          this.saversPie =
+            this.saverDetails.length > 1
+              ? [
+       
+              ...this.saverDetails.slice(0, 10),
           {
             name: 'Others',
             value: sumBy(this.saverDetails.slice(10), (o) => o.value),
           },
-        ];
+        ]
+              : [...this.saverDetails]
 
         this.loading = false;
       })

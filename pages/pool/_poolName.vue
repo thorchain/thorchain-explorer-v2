@@ -41,6 +41,7 @@ export default {
   border-radius: 0.5rem;
   padding: 0.8rem;
   border: 1px solid var(--border-color);
+  word-break: break-all;
 }
 .nav-pool-header {
   display: flex;
