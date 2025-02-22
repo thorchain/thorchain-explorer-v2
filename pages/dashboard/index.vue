@@ -169,7 +169,7 @@
       <Card
         :navs="[
           { title: 'Earnings & Fees', value: 'total-earnings' },
-          { title: 'Pool Earnings', value: 'pool-earnings' },
+          { title: 'LP Earnings', value: 'pool-earnings' },
           ...(isMainnet()
             ? [{ title: 'Affiliate Fees', value: 'affiliates-fees' }]
             : []),
@@ -1251,7 +1251,7 @@ export default {
             <span style="border-top: 1px solid var(--border-color); margin: 2px 0;"></span>
             <hr>
             <span>
-              <span>Total Pool Earnings</span>
+              <span>Total Earnings</span>
               <b>$${this.$options.filters.number(
                 param.reduce((a, c) => a + (c.value ? c.value : 0), 0),
                 '0,0a'
@@ -1368,7 +1368,7 @@ export default {
           },
           {
             type: 'bar',
-            name: 'Pool Earning',
+            name: 'LP Earning',
             showSymbol: false,
             stack: 'Total',
             data: le,
@@ -1420,7 +1420,7 @@ export default {
             },
             data: [
               'Bond Earning',
-              'Pool Earning',
+              'LP Earning',
               'Dev Fund Earning',
               'Affiliate Fee',
               'Burn',
