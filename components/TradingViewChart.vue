@@ -18,52 +18,35 @@ export default {
     ...mapGetters({
       theme: 'getTheme',
     }),
-    currentTheme() {
-      const savedTheme = localStorage.getItem('theme')
-      console.log('LocalStorage Theme:', savedTheme)
-      console.log('Vuex Theme:', this.theme)
-      return savedTheme || 'light'
-    },
     chartColors() {
-      if (this.currentTheme === 'dark') {
-        return {
-          background: '#0d0f12',
-          textColor: '#ffffff',
-          gridColor: '#444',
-        }
-      } else if (this.currentTheme === 'BlueElectra') {
-        return {
-          background: '#1c242b',
-          textColor: '#00d4ff',
-          gridColor: '#142850',
-        }
-      } else {
-        return {
-          background: '#ffffff',
-          textColor: '#000000',
-          gridColor: '#ddd',
-        }
+      switch (this.theme) {
+        case 'dark':
+          return {
+            background: 'rgba(0, 0, 0, 0)',
+            textColor: '#ffffff',
+            gridColor: '#444',
+          }
+        case 'BlueElectra':
+          return {
+            background: 'rgba(0, 0, 0, 0)',
+            textColor: '#00d4ff',
+            gridColor: '#142850',
+          }
+        default:
+          return {
+            background: 'rgba(0, 0, 0, 0)',
+            textColor: '#000000',
+            gridColor: '#ddd',
+          }
       }
     },
   },
   watch: {
-    currentTheme(newTheme, oldTheme) {
-      console.log(`Theme changed from ${oldTheme} to ${newTheme}`)
+    theme() {
       this.loadChart()
     },
   },
   mounted() {
-    if (!localStorage.getItem('theme')) {
-      localStorage.setItem('theme', 'light')
-      console.log('Theme set to default: light')
-    }
-    window.addEventListener('storage', () => {
-      console.log(
-        'Storage Event - Theme Changed:',
-        localStorage.getItem('theme')
-      )
-      this.loadChart()
-    })
     this.loadChart()
   },
   methods: {
@@ -77,13 +60,12 @@ export default {
       script.src =
         'https://s3.tradingview.com/external-embedding/embed-widget-symbol-overview.js'
       script.innerHTML = JSON.stringify({
-        symbols: [['BINANCE:RUNEUSDT|1D']],
+        symbols: [['BINANCE:RUNEUSDT|60']],
         chartOnly: false,
         width: '100%',
         height: '100%',
         locale: 'en',
-        colorTheme:
-          this.currentTheme === 'BlueElectra' ? 'dark' : this.currentTheme,
+        colorTheme: this.theme === 'light' ? 'light' : 'dark',
         autosize: true,
         showVolume: false,
         showMA: false,
@@ -92,8 +74,7 @@ export default {
         hideSymbolLogo: false,
         scalePosition: 'right',
         scaleMode: 'Normal',
-        fontFamily:
-          '-apple-system, BlinkMacSystemFont, Trebuchet MS, Roboto, Ubuntu, sans-serif',
+        fontFamily: `-apple-system, BlinkMacSystemFont, Trebuchet MS, Roboto, Ubuntu, sans-serif`,
         fontSize: '10',
         noTimeScale: false,
         valuesTracking: '1',
@@ -108,7 +89,7 @@ export default {
         headerFontSize: 'medium',
         lineWidth: 2,
         lineType: 0,
-        dateRanges: ['1d|1', '1m|30', '3m|60', '12m|1D', '60m|1W', 'all|1M'],
+        dateRanges: ['1w|60', '1m|30', '3m|60', '12m|1D', '60m|1W', 'all|1M'],
       })
       document.getElementById('tradingview-chart').appendChild(script)
       this.scriptAdded = true

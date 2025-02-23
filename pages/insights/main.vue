@@ -1,16 +1,8 @@
 <template>
   <div class="container-page">
-    <!-- 
-    <card title="RUNE" class="coin-info">
-      <template #header>
-        <coinmarketcap style="fill: var(--sec-font-color)" />
-      </template>
-      <info-card :options="coinMarketInfo" :inner="true" />
+    <card class="coin-info">
+      <trading-view-chart symbol="BINANCE:RUNEUSDT" />
     </card>
-    -->
-    <div class="tradingview-section">
-      <TradingViewChart symbol="BINANCE:RUNEUSDT" />
-    </div>
     <div class="chart-inner-container">
       <Card title="Type Swap Chart">
         <VChart
@@ -94,10 +86,7 @@ import {
 import VChart from 'vue-echarts'
 import { orderBy } from 'lodash'
 import FlipSide from '~/assets/images/flipside.svg?inline'
-import Coinmarketcap from '~/assets/images/coinmarketcap.svg?inline'
-
-import TradingViewChart from '~/components/TradingViewChart.vue' // Import TradingViewChart
-import TradingViewTicker from '~/components/TradingViewTicker.vue' // Import TradingViewTicker
+import TradingViewChart from '~/components/TradingViewChart.vue'
 
 use([
   SVGRenderer,
@@ -113,9 +102,7 @@ export default {
   components: {
     VChart,
     FlipSide,
-    Coinmarketcap,
-    TradingViewChart, // Register TradingViewChart
-    TradingViewTicker, // Register TradingViewTicker
+    TradingViewChart,
   },
   data() {
     return {
