@@ -1,11 +1,16 @@
 <template>
   <div class="container-page">
+    <!-- 
     <card title="RUNE" class="coin-info">
       <template #header>
         <coinmarketcap style="fill: var(--sec-font-color)" />
       </template>
       <info-card :options="coinMarketInfo" :inner="true" />
     </card>
+    -->
+    <div class="tradingview-section">
+      <TradingViewChart symbol="BINANCE:RUNEUSDT" />
+    </div>
     <div class="chart-inner-container">
       <Card title="Type Swap Chart">
         <VChart
@@ -91,6 +96,9 @@ import { orderBy } from 'lodash'
 import FlipSide from '~/assets/images/flipside.svg?inline'
 import Coinmarketcap from '~/assets/images/coinmarketcap.svg?inline'
 
+import TradingViewChart from '~/components/TradingViewChart.vue' // Import TradingViewChart
+import TradingViewTicker from '~/components/TradingViewTicker.vue' // Import TradingViewTicker
+
 use([
   SVGRenderer,
   GridComponent,
@@ -106,6 +114,8 @@ export default {
     VChart,
     FlipSide,
     Coinmarketcap,
+    TradingViewChart, // Register TradingViewChart
+    TradingViewTicker, // Register TradingViewTicker
   },
   data() {
     return {
@@ -213,7 +223,6 @@ export default {
       this.affiliateWallets(data)
     })
 
-    this.getCoinMarketInfo()
     this.$api.getDashboardPlots().then(({ data }) => {
       this.feesRewards(data.earning.intervals)
       this.supplyBurn(data.earning)
