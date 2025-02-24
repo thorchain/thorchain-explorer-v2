@@ -156,6 +156,7 @@ export default {
       mimirs: undefined,
       provDist: undefined,
       intervalId: undefined,
+      secondInterval: undefined,
       churnHalted: undefined,
       searchTerm: '',
       churnProgressValue: 0,
@@ -978,22 +979,7 @@ export default {
     },
   },
   mounted() {
-    this.$api
-      .getnodeOverview()
-      .then(({ data }) => {
-        const { network, churn, blockRewards } = data
-
-        this.network = network
-        this.bondMetrics = network.bondMetrics
-        this.churn = churn
-        this.churnHalted = blockRewards.HALTCHURNING
-        this.minBond = +blockRewards.MINIMUMBONDINRUNE
-        this.churnInterval = +blockRewards.CHURNINTERVAL
-        this.newNodesChurn = +blockRewards.NUMBEROFNEWNODESPERCHURN
-      })
-      .catch((e) => {
-        console.error(e)
-      })
+    this.getNodeOverview()
 
     this.$api
       .getAsgard()
@@ -1016,6 +1002,10 @@ export default {
       this.updateNodes()
     }, 10 * 1e3)
 
+    this.secondInterval = setInterval(() => {
+      this.getNodeOverview()
+    }, 60 * 1e3)
+
     this.churnProgress()
     const savedFilters = localStorage.getItem('filterSettings')
     if (savedFilters) {
@@ -1024,6 +1014,7 @@ export default {
   },
   destroyed() {
     this.clearIntervalId(this.intervalId)
+    this.clearIntervalId(this.secondInterval)
   },
   methods: {
     getRetiringVault(vaults) {
@@ -1031,6 +1022,24 @@ export default {
         .filter((v) => v.status === 'RetiringVault')
         .map((v) => v.membership)
         .flat()
+    },
+    getNodeOverview() {
+      this.$api
+        .getNodeOverview()
+        .then(({ data }) => {
+          const { network, churn, blockRewards } = data
+
+          this.network = network
+          this.bondMetrics = network.bondMetrics
+          this.churn = churn
+          this.churnHalted = blockRewards.HALTCHURNING
+          this.minBond = +blockRewards.MINIMUMBONDINRUNE
+          this.churnInterval = +blockRewards.CHURNINTERVAL
+          this.newNodesChurn = +blockRewards.NUMBEROFNEWNODESPERCHURN
+        })
+        .catch((e) => {
+          console.error(e)
+        })
     },
     async updateNodes() {
       const { data: nodesInfo } = await this.$api.getNodesInfo()

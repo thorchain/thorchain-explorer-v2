@@ -121,7 +121,7 @@ export function getAffiliateSwapsDaily() {
   )
 }
 
-export function getnodeOverview() {
+export function getNodeOverview() {
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].SERVER_URL + 'api/nodeOverview'
   )
