@@ -775,9 +775,9 @@ export const interfaces = {
     icon: 'moca',
     addName: true,
   },
-  sk: {
-    name: 'SwapKit',
-    icon: 'swapkit',
+  gemwallet: {
+    name: 'GemWallet',
+    icon: 'gemwallet',
   },
 }
 
@@ -822,6 +822,7 @@ export const affiliateMap = {
   tps: interfaces.tps,
   moca: interfaces.moca,
   '-_': interfaces.sk,
+  g1: interfaces.gemwallet,
 }
 
 export function getExplorerAddressUrl(chain, query) {
