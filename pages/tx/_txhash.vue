@@ -1532,6 +1532,8 @@ export default {
       )
       const timeStamp = moment.unix(addAction?.date / 1e9)
 
+      const isRefund = actions?.actions?.find((a) => a.type === 'refund')
+
       const outboundDelayRemaining =
         (thorStatus?.stages.outbound_delay?.remaining_delay_seconds ?? 0) ||
         (thorStatus?.stages.outbound_delay?.remaining_delay_blocks ?? 0) *
@@ -1545,7 +1547,7 @@ export default {
 
       return {
         cards: {
-          title: 'add Liquidity',
+          title: 'add Liquidity' + (isRefund ? ' (Refunded)' : ''),
           in: [
             {
               asset: inAsset,
@@ -1554,6 +1556,7 @@ export default {
           ],
           middle: {
             pending,
+            fail: isRefund,
           },
           out: [
             {
@@ -1574,7 +1577,7 @@ export default {
             },
           ],
           action: {
-            type: 'Add',
+            type: isRefund ? 'Refund' : 'Add',
             timeStamp: timeStamp || null,
             liquidityUnits:
               parseInt(addAction?.metadata?.addLiquidity?.liquidityUnits) ||
@@ -1587,6 +1590,9 @@ export default {
               this.thorHeight,
             outboundSigned:
               thorStatus?.stages.outbound_signed?.completed ?? false,
+            refundReason: isRefund
+              ? isRefund?.metadata?.refund?.reason
+              : undefined,
             done: !thorStatus?.stages.swap_status?.pending,
           },
           out: [],
