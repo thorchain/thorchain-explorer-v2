@@ -823,6 +823,7 @@ export const affiliateMap = {
   moca: interfaces.moca,
   '-_': interfaces.sk,
   g1: interfaces.gemwallet,
+  thor1xmaggkcln5m5fnha2780xrdrulmplvfrz6wj3l: interfaces.shapeshift,
 }
 
 export function getExplorerAddressUrl(chain, query) {

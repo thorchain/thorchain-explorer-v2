@@ -825,14 +825,6 @@ export default {
           (value) => `$ ${this.normalFormat(value, '0,0.00')}`,
           [
             {
-              type: 'line',
-              name: 'Max Supply',
-              showSymbol: false,
-              data: su,
-              smooth: true,
-              yAxisIndex: 0,
-            },
-            {
               type: 'bar',
               name: 'Burned Rune',
               showSymbol: false,
