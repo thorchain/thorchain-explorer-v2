@@ -1,10 +1,39 @@
 <template>
   <div class="container-page">
-    <card title="RUNE" class="coin-info">
-      <template #header>
-        <coinmarketcap style="fill: var(--sec-font-color)" />
-      </template>
-      <info-card :options="coinMarketInfo" :inner="true" />
+    <card class="coin-info">
+      <trading-view-chart symbol="BINANCE:RUNEUSDT" />
+      <div class="crypto-stats">
+        <div class="crypto-stat">
+          <span class="name">Crypto Rank</span>
+          <skeleton-item :loading="!marketInfo.rank" class="value">
+            {{ marketInfo.rank }}
+          </skeleton-item>
+        </div>
+        <div class="crypto-stat">
+          <span class="name">Market Cap</span>
+          <skeleton-item :loading="!marketInfo.marketCap" class="value">
+            {{ marketInfo.marketCap | currency() }}
+          </skeleton-item>
+        </div>
+        <div class="crypto-stat">
+          <span class="name">Trade Volume</span>
+          <skeleton-item :loading="!marketInfo.tradeVolume" class="value">
+            {{ marketInfo.tradeVolume | currency() }}
+            <progress-icon
+              :data-number="marketInfo.change_24h"
+              :is-down="marketInfo.change_24h"
+              :filter="(v) => $options.filters.percent(v, '0,0', 1)"
+            >
+            </progress-icon>
+          </skeleton-item>
+        </div>
+        <div class="crypto-stat">
+          <span class="name">Total Supply</span>
+          <skeleton-item :loading="!marketInfo.totalSupply" class="value">
+            {{ marketInfo.totalSupply | number('0,0') }}{{ runeCur() }}
+          </skeleton-item>
+        </div>
+      </div>
     </card>
     <div class="chart-inner-container">
       <Card title="Type Swap Chart">
@@ -89,7 +118,7 @@ import {
 import VChart from 'vue-echarts'
 import { orderBy } from 'lodash'
 import FlipSide from '~/assets/images/flipside.svg?inline'
-import Coinmarketcap from '~/assets/images/coinmarketcap.svg?inline'
+import TradingViewChart from '~/components/TradingViewChart.vue'
 
 use([
   SVGRenderer,
@@ -105,7 +134,7 @@ export default {
   components: {
     VChart,
     FlipSide,
-    Coinmarketcap,
+    TradingViewChart,
   },
   data() {
     return {
@@ -148,54 +177,6 @@ export default {
     }
   },
 
-  computed: {
-    coinMarketInfo() {
-      return [
-        {
-          title: '',
-          rowStart: 1,
-          colSpan: 1,
-          items: [
-            {
-              name: 'Price',
-              value: this.marketInfo.price,
-              filter: (v) => `${this.$options.filters.currency(v)}`,
-              progress: {
-                data: this.marketInfo.percent_change_24h,
-                down: this.marketInfo.percent_change_24h,
-                filter: (v) => this.$options.filters.percent(v, '0,0', 1),
-              },
-            },
-            {
-              name: 'Crypto Rank',
-              value: this.marketInfo.rank,
-            },
-            {
-              name: 'Market Cap',
-              value: this.marketInfo.marketCap,
-              filter: (v) => `$${this.$options.filters.number(v, '0,0a')}`,
-            },
-            {
-              name: 'Trade Volume',
-              value: this.marketInfo.tradeVolume,
-              filter: (v) => `$${this.$options.filters.number(v, '0,0a')}`,
-              progress: {
-                data: this.marketInfo.change_24h,
-                down: this.marketInfo.change_24h,
-                filter: (v) => this.$options.filters.percent(v, '0,0', 1),
-              },
-            },
-            {
-              name: 'Total Supply',
-              value: this.marketInfo.totalSupply,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
-            },
-          ],
-        },
-      ]
-    },
-  },
-
   mounted() {
     this.$api
       .getSwapsHistory({
@@ -213,12 +194,13 @@ export default {
       this.affiliateWallets(data)
     })
 
-    this.getCoinMarketInfo()
     this.$api.getDashboardPlots().then(({ data }) => {
       this.feesRewards(data.earning.intervals)
       this.supplyBurn(data.earning)
       this.rewardsHistory = this.formatRewards(data.earning)
     })
+
+    this.getCoinMarketInfo()
   },
   methods: {
     formatRewards(d) {
@@ -919,5 +901,38 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.crypto-stats {
+  display: flex;
+  margin-top: 20px;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+
+  .crypto-stat {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--card-bg);
+
+    .value {
+      display: flex;
+      font-weight: bold;
+      justify-content: center;
+      align-items: center;
+      gap: 5px;
+      font-size: 1.2rem;
+      color: var(--sec-font-color);
+      margin: 5px 0;
+      min-width: 20%;
+      min-height: 1.2rem;
+    }
+  }
 }
 </style>
