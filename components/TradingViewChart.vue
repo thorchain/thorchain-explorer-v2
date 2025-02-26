@@ -60,7 +60,7 @@ export default {
       script.src =
         'https://s3.tradingview.com/external-embedding/embed-widget-symbol-overview.js'
       script.innerHTML = JSON.stringify({
-        symbols: [['BINANCE:RUNEUSDT|60']],
+        symbols: [['BINANCE:RUNEUSDT|1M'], ['BINANCE:RUNEBTC|1M']],
         chartOnly: false,
         width: '100%',
         height: '100%',
