@@ -25,6 +25,10 @@ export default {
           link: '/network/votes',
         },
         {
+          text: 'Node Vote',
+          link: '/network/nodeVote',
+        },
+        {
           text: 'Churn & Pool countdown',
           link: '/network/churn',
         },

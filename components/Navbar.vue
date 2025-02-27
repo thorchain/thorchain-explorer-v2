@@ -211,6 +211,10 @@ export default {
               link: '/network/votes',
             },
             {
+              name: 'Node Vote',
+              link: '/network/nodeVote',
+            },
+            {
               name: 'Churn',
               link: '/network/churn',
             },
