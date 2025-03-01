@@ -1,9 +1,19 @@
 <template>
   <div>
     <cards-header :table-general-stats="generalStatsDetails" />
-    <div class="votes-container">
+
+    <div class="search-container">
+      <div id="vote-search-container">
+        <input
+          v-model="searchQuery"
+          placeholder="Search by Mimir key or node address"
+          class="search-input"
+        />
+        <SearchIcon class="search-icon" />
+      </div>
+      <div class="votes-container">
       <card
-        v-for="(vote, index) in formattedVotes"
+        v-for="(vote, index) in filteredVotes"
         :key="index"
         :title="vote.value"
       >
@@ -99,15 +109,18 @@
       </card>
     </div>
   </div>
+</div>
 </template>
 
 <script>
 import moment from 'moment'
 import circleSuccess from '~/assets/images/circle.svg?inline'
+import SearchIcon from '~/assets/images/search.svg?inline'
 
 export default {
   components: {
     circleSuccess,
+    SearchIcon,
   },
   data() {
     return {
@@ -121,7 +134,31 @@ export default {
         { name: 'Votes required for change' },
       ],
       mimirData: {},
+      searchQuery: '',
     }
+  },
+  computed: {
+    filteredVotes() {
+      if (!this.searchQuery) {
+        return this.formattedVotes
+      }
+      const query = this.searchQuery.toLowerCase()
+      return this.formattedVotes.filter((vote) => {
+        if (vote.value.toLowerCase().includes(query)) {
+          return true
+        }
+        for (const key in vote.keys) {
+          if (
+            vote.keys[key].addresses.some((address) =>
+              address.toLowerCase().includes(query)
+            )
+          ) {
+            return true
+          }
+        }
+        return false
+      })
+    },
   },
   async mounted() {
     try {
@@ -259,6 +296,49 @@ export default {
     @include md {
       min-width: 520px;
     }
+  }
+}
+.search-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+#vote-search-container {
+  display: flex;
+  position: relative;
+  flex: 1;
+
+  .search-input {
+    flex: 1;
+    color: var(--sec-font-color);
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color) !important;
+    border-radius: 0.5rem;
+    outline: none;
+    margin: 2px;
+    padding: 12px;
+    font-size: 0.9062rem;
+    font-weight: 450;
+
+    &:focus {
+      border-color: transparent;
+      box-shadow: 0 0 0 0.15rem rgba(255, 255, 255, 0.1);
+      color: var(--primary-color);
+    }
+  }
+
+  .search-icon {
+    position: absolute;
+    width: 20px;
+    height: 24px;
+    fill: var(--font-color);
+    right: 0.8rem;
+    top: calc(50% - 0.8rem);
+    cursor: pointer;
+    transition: fill 0.3s ease;
+    box-sizing: content-box;
+    background: var(--card-bg-color);
+    padding-left: 0.3rem;
   }
 }
 
