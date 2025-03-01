@@ -295,6 +295,22 @@ export default {
   mounted() {
     this.fetchAddressData(this.address)
     this.checkIsVault(this.address)
+    const { nextPageToken, prevPageToken } = this.$route.query
+    if (nextPageToken) {
+      this.nextPageToken = nextPageToken
+      this.getActions({
+        limit: 30,
+        address: this.address,
+        nextPageToken,
+      })
+    } else if (prevPageToken) {
+      this.prevPageToken = prevPageToken
+      this.getActions({
+        limit: 30,
+        address: this.address,
+        prevPageToken,
+      })
+    }
   },
   methods: {
     async fetchAddressData(address) {
@@ -359,6 +375,14 @@ export default {
       }
     },
     goNext() {
+      this.$router.push({
+        path: `/address/${this.address}`,
+        query: {
+          ...this.$route.query,
+          nextPageToken: this.nextPageToken,
+          prevPageToken: undefined,
+        },
+      })
       this.getActions({
         limit: 30,
         address: this.address,
@@ -366,6 +390,14 @@ export default {
       })
     },
     goPrev() {
+      this.$router.push({
+        path: `/address/${this.address}`,
+        query: {
+          ...this.$route.query,
+          prevPageToken: this.prevPageToken,
+          nextPageToken: undefined,
+        },
+      })
       this.getActions({
         limit: 30,
         address: this.address,
