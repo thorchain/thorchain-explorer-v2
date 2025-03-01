@@ -1,6 +1,11 @@
 <template>
   <Page>
-    <card title="90D Swaps Volume">
+    <Nav
+      :active-mode.sync="chartPeriod"
+      :nav-items="chartPeriods"
+      pre-text="Period :"
+    />
+    <card title="Swaps Volume">
       <VChart
         :option="swapHistory"
         :loading="!swapHistory"
@@ -12,8 +17,8 @@
     <div>
       <Header title="Top Swaps" />
       <Nav
-        :active-mode.sync="period"
-        :nav-items="periods"
+        :active-mode.sync="tablePeriod"
+        :nav-items="tablePeriods"
         pre-text="Period :"
       />
       <transactions :txs="swaps" :loading="!swaps" :props="formatProp">
@@ -65,8 +70,14 @@ export default {
           sortFn: this.volumeSort,
         },
       ],
-      period: 'day',
-      periods: [
+      chartPeriod: '90D',
+      chartPeriods: [
+        { text: '90 Days', mode: '90D' },
+        { text: '180 Days', mode: '180D' },
+        { text: '1 Year', mode: '1 Year' },
+      ],
+      tablePeriod: 'day',
+      tablePeriods: [
         { text: '1 Day', mode: 'day' },
         { text: '1 Week', mode: 'week' },
         { text: '1 Month', mode: 'month' },
@@ -74,44 +85,86 @@ export default {
     }
   },
   watch: {
-    async period(newPeriod, oldPeriod) {
-      this.$router.push({ query: { period: newPeriod } })
-
-      try {
-        this.swaps = (await this.getTopSwaps()).data
-      } catch (err) {
-        console.error(err)
-      }
+    chartPeriod(newPeriod) {
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          chartPeriod: newPeriod,
+        },
+      })
+      this.fetchData(newPeriod)
+    },
+    tablePeriod(newPeriod) {
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          tablePeriod: newPeriod,
+        },
+      })
+      this.fetchTableData(newPeriod)
     },
   },
   async mounted() {
-    const queryPeriod = this.$route.query.period
-    if (queryPeriod) {
-      this.period = queryPeriod
+    const queryChartPeriod = this.$route.query.chartPeriod
+    const queryTablePeriod = this.$route.query.tablePeriod
+
+    let shouldUpdateQuery = false
+
+    if (queryChartPeriod) {
+      this.chartPeriod = queryChartPeriod
     } else {
-      this.$router.push({ query: { period: this.period } })
+      shouldUpdateQuery = true
     }
 
-    try {
-      this.swaps = (await this.getTopSwaps()).data
-    } catch (err) {
-      console.error(err)
+    if (queryTablePeriod) {
+      this.tablePeriod = queryTablePeriod
+    } else {
+      shouldUpdateQuery = true
     }
-    this.fetchData()
+
+    if (shouldUpdateQuery) {
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          chartPeriod: this.chartPeriod,
+          tablePeriod: this.tablePeriod,
+        },
+      })
+    }
+
+    this.fetchData(this.chartPeriod)
+    this.fetchTableData(this.tablePeriod)
   },
   methods: {
-    updatePeriod(newPeriod) {
-      this.period = newPeriod
-      this.$router.push({ query: { period: newPeriod } })
-    },
-    async fetchData() {
+    async fetchData(period) {
+      let count
+      switch (period) {
+        case '90D':
+          count = 90
+          break
+        case '180D':
+          count = 180
+          break
+        case '1 Year':
+          count = 365
+          break
+        default:
+          count = 90
+      }
       const resSwaps = (
         await this.$api.getSwapsHistory({
           interval: 'day',
-          count: 90,
+          count: count,
         })
       ).data
       this.swapHistory = this.formatSwaps(resSwaps)
+    },
+    async fetchTableData(period) {
+      try {
+        this.swaps = (await this.getTopSwaps(period)).data
+      } catch (err) {
+        console.error(err)
+      }
     },
     formatSwaps(d) {
       const xAxis = []
@@ -209,8 +262,8 @@ export default {
         }
       )
     },
-    getTopSwaps() {
-      switch (this.period) {
+    getTopSwaps(period) {
+      switch (period) {
         case 'day':
           return this.$api.getTopSwaps()
         case 'month':
