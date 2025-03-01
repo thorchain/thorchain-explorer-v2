@@ -1,82 +1,108 @@
 <template>
   <div>
     <cards-header :table-general-stats="generalStatsDetails" />
-    <div class="card-container">
-      <div v-for="(vote, index) in formattedVotes" :key="index" class="vote-card">
-        <div class="card-header">
-          <div class="key-name">{{ vote.value }}</div>
-          <div v-if="vote.mimirValue !== undefined && vote.mimirValue !== 0" class="mimir-value">
+    <div class="votes-container">
+      <card
+        v-for="(vote, index) in formattedVotes"
+        :key="index"
+        :title="vote.value"
+      >
+        <template #header>
+          <div
+            v-if="vote.mimirValue !== undefined && vote.mimirValue !== 0"
+            class="mini-bubble"
+          >
             Current: <strong>{{ vote.mimirValue }}</strong>
           </div>
-        </div>
-        <div class="card-body">
-          <div v-for="(addresses, key) in vote.keys" :key="key" class="vote-section">
-            <div class="vote-header">
-              <span class="key-list">{{ key == 0 ? 'Not Voted' : `Value: ${key}` }}</span>
-              <div class="votes-list">
-                <nuxt-link
-                  v-for="(address, idx) in addresses.addresses.slice(0, 6)"
-                  :key="idx"
-                  :to="`/address/${address}`"
-                  class="mini-bubble"
-                  :style="{ backgroundColor: getColorForVote(vote.isPassed, key) }"
-                >
-                  {{ getLastFourCharacters(address) }}
-                </nuxt-link>
-                <button
-                  v-if="addresses.addresses.length > 6 && !addresses.showAllVoted"
-                  @click="addresses.showAllVoted = true"
-                  class="more-button"
-                >
-                  +{{ addresses.addresses.length - 6 }} more
-                </button>
-                <nuxt-link
-                  v-if="addresses.showAllVoted"
-                  v-for="(address, idx) in addresses.addresses.slice(6)"
-                  :key="idx + 6"
-                  :to="`/address/${address}`"
-                  class="mini-bubble"
-                  :style="{ backgroundColor: getColorForVote(vote.isPassed, key) }"
-                >
-                  {{ getLastFourCharacters(address) }}
-                </nuxt-link>
-                <button
-                  v-if="addresses.showAllVoted"
-                  @click="addresses.showAllVoted = false"
-                  class="more-button"
-                >
-                  Show Less
-                </button>
+        </template>
+        <div class="vote-card">
+          <div class="card-body">
+            <div
+              v-for="(addresses, key) in vote.keys"
+              :key="key"
+              class="vote-section"
+            >
+              <div class="progress-section">
+                <!-- <div v-if="vote.isPassed" class="active-status">
+                  <circleSuccess class="checkmark" />
+                  <span class="time-text">Active</span>
+                </div> -->
+
+                <div class="progress-overtext">
+                  <div class="key-name">
+                    <small>Value :</small>
+                    <b>{{ key }}</b>
+                  </div>
+                  <div class="key-name">
+                    <b>{{ addresses.addresses.length }}</b>
+                    <small> /{{ votesRequired }} </small>
+                  </div>
+                </div>
+                <progress-bar
+                  :width="(addresses.addresses.length * 100) / votesRequired"
+                  height="8px"
+                />
               </div>
-            </div>
-            <div class="progress-section">
-              <div v-if="vote.isPassed" class="active-status">
-                <circleSuccess class="checkmark" />
-                <span class="time-text">Active</span>
-              </div>
-              <span v-if="calculateProgress(addresses.addresses.length) !== '100%'" class="progress-text">
-                {{ addresses.addresses.length }}/{{ votesRequired }} needed
-              </span>
-              <div v-if="calculateProgress(addresses.addresses.length) !== '100%'" class="progress-container">
-                <div
-                  :class="['progress-bar', getProgressBarClass(addresses.addresses.length)]"
-                  :style="{ width: calculateProgress(addresses.addresses.length) }"
-                ></div>
-              </div>
-              <div v-if="vote.changeIn24h !== 0" class="change-24h">
-                24H Votes:
-                <progress-icon :data-number="vote.changeIn24h" :is-down="vote.changeIn24h < 0" size="15.5px" />
+              <div class="vote-footer">
+                <div class="votes-list">
+                  <nuxt-link
+                    v-for="(address, idx) in addresses.addresses.slice(0, 6)"
+                    :key="idx"
+                    :to="`/address/${address}`"
+                    class="mini-bubble"
+                    :style="{
+                      backgroundColor: getColorForVote(vote.isPassed, key),
+                    }"
+                  >
+                    {{ getLastFourCharacters(address) }}
+                  </nuxt-link>
+                  <button
+                    v-if="
+                      addresses.addresses.length > 6 && !addresses.showAllVoted
+                    "
+                    class="more-button"
+                    @click="addresses.showAllVoted = true"
+                  >
+                    +{{ addresses.addresses.length - 6 }} more
+                  </button>
+                  <nuxt-link
+                    v-for="(address, idx) in addresses.addresses.slice(6)"
+                    v-if="addresses.showAllVoted"
+                    :key="idx + 6"
+                    :to="`/address/${address}`"
+                    class="mini-bubble"
+                    :style="{
+                      backgroundColor: getColorForVote(vote.isPassed, key),
+                    }"
+                  >
+                    {{ getLastFourCharacters(address) }}
+                  </nuxt-link>
+                  <button
+                    v-if="addresses.showAllVoted"
+                    class="more-button"
+                    @click="addresses.showAllVoted = false"
+                  >
+                    Show Less
+                  </button>
+                </div>
+                <div v-if="vote.changeIn24h !== 0" class="change-24h">
+                  24H Votes:
+                  <progress-icon
+                    :data-number="vote.changeIn24h"
+                    :is-down="vote.changeIn24h < 0"
+                  />
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </card>
     </div>
   </div>
 </template>
 
 <script>
-import axios from 'axios'
+import moment from 'moment'
 import circleSuccess from '~/assets/images/circle.svg?inline'
 
 export default {
@@ -91,17 +117,19 @@ export default {
       votesRequired: 0,
       formattedVotes: [],
       generalStatsDetails: [
-        { name: 'Active nodes'},
-        { name: 'Votes required for change'},
+        { name: 'Active nodes' },
+        { name: 'Votes required for change' },
       ],
       mimirData: {},
     }
   },
-  async created() {
+  async mounted() {
     try {
-      await this.fetchVotes()
-      await this.fetchNodes()
-      await this.fetchMimirData()
+      await Promise.all([
+        this.fetchVotes(),
+        this.fetchNodes(),
+        this.fetchMimirData(),
+      ])
       this.processVotes()
       this.updateStatsDetails()
     } catch (error) {
@@ -113,21 +141,14 @@ export default {
   methods: {
     async fetchMimirData() {
       try {
-        const response = await this.$api.getMimir()
-        this.mimirData = response.data
+        this.mimirData = (await this.$api.getMimir())?.data
       } catch (error) {
         console.error('Error fetching Mimir data:', error)
       }
     },
     async fetchVotes() {
       try {
-        const response = await this.$api.getvotes()
-        this.votes = response.data
-        this.votes.forEach((vote) => {
-          vote.votes.forEach((v) => {
-            v.date = this.convertToDate(v.date)
-          })
-        })
+        this.votes = (await this.$api.getvotes())?.data
       } catch (error) {
         console.error('Error fetching votes:', error)
       }
@@ -143,15 +164,9 @@ export default {
         console.error('Error fetching nodes:', error)
       }
     },
-    convertToDate(timestamp) {
-      const milliseconds = parseInt(timestamp) / 1000000
-      const date = new Date(milliseconds)
-      return date.toLocaleString()
-    },
     processVotes() {
       const groupedVotes = {}
-      const now = new Date()
-      const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+      const twentyFourHoursAgo = moment().subtract(24, 'hours')
 
       this.votes.forEach((vote) => {
         if (!groupedVotes[vote.value]) {
@@ -168,7 +183,8 @@ export default {
         }
 
         vote.votes.forEach((v) => {
-          const voteDate = new Date(v.date)
+          const voteDate = moment(+v.date / 1e6)
+
           if (!groupedVotes[vote.value].keys[v.key]) {
             groupedVotes[vote.value].keys[v.key] = {
               addresses: [],
@@ -177,27 +193,17 @@ export default {
           }
           groupedVotes[vote.value].keys[v.key].addresses.push(v.address)
 
-          if (
-            !groupedVotes[vote.value].recentVoteDate ||
-            voteDate > groupedVotes[vote.value].recentVoteDate
-          ) {
-            groupedVotes[vote.value].recentVoteKey = v.key
-            groupedVotes[vote.value].recentVoteDate = voteDate
-          }
-
-          if (voteDate > twentyFourHoursAgo) {
+          if (voteDate.isAfter(twentyFourHoursAgo)) {
             groupedVotes[vote.value].votesInLast24h++
-          } else if (
-            voteDate >
-            new Date(twentyFourHoursAgo.getTime() - 24 * 60 * 60 * 1000)
-          ) {
+          } else {
             groupedVotes[vote.value].votesInPrevious24h++
           }
         })
 
         Object.keys(groupedVotes[vote.value].keys).forEach((key) => {
           if (
-            groupedVotes[vote.value].keys[key].addresses.length >= this.votesRequired
+            groupedVotes[vote.value].keys[key].addresses.length >=
+            this.votesRequired
           ) {
             groupedVotes[vote.value].isPassed = true
           }
@@ -206,12 +212,11 @@ export default {
 
       this.formattedVotes = Object.values(groupedVotes).map((vote) => ({
         ...vote,
-        changeIn24h: vote.votesInLast24h - vote.votesInPrevious24h,
+        changeIn24h: vote.votesInLast24h,
       }))
     },
     calculateProgress(votesCount) {
-      const percentage = (votesCount / this.votesRequired) * 100
-      return percentage + '%'
+      return (votesCount / this.votesRequired) * 100
     },
     getProgressBarClass(votesCount) {
       const percentage = votesCount / this.votesRequired
@@ -224,18 +229,7 @@ export default {
     },
     getColorForVote(isPassed, key) {
       if (isPassed) return '#2ecc71'
-      const colors = [
-        '#3498db',
-        '#9b59b6',
-        '#e84393',
-        '#e67e22',
-        '#e74c3c',
-        '#f1c40f',
-      ]
-      const hash = key
-        .split('')
-        .reduce((acc, char) => acc + char.charCodeAt(0), 0)
-      return colors[hash % colors.length]
+      return this.createColor(key)
     },
     updateStatsDetails() {
       this.generalStatsDetails = [
@@ -254,28 +248,18 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.card-container {
+.votes-container {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   gap: 1rem;
-}
 
-.vote-card {
-  background-color: var(--card-bg-color);
-  border-radius: 12px;
-  overflow: hidden;
-}
+  .card-container {
+    min-width: 100%;
 
-.card-header {
-  padding: 1rem;
-  background-color: var(--border-color);
-  border-bottom: 1px solid var(--border-color);
-}
-
-.key-name {
-  font-size: 1.25rem;
-  font-weight: bold;
-  color: var(--primary-font-color);
+    @include md {
+      min-width: 520px;
+    }
+  }
 }
 
 .mimir-value {
@@ -292,11 +276,11 @@ export default {
   margin-bottom: 1rem;
 }
 
-.vote-header {
+.vote-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.5rem;
+  margin-top: 0.5rem;
   flex-wrap: wrap;
   gap: 0.5rem;
 }
@@ -344,7 +328,21 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  margin-top: 0.5rem;
+
+  .progress-overtext {
+    display: flex;
+    justify-content: space-between;
+
+    .key-name {
+      b {
+        color: var(--sec-font-color);
+      }
+
+      small {
+        color: var(--font-color);
+      }
+    }
+  }
 }
 
 .active-status {
@@ -363,7 +361,7 @@ export default {
   font-size: 0.75rem;
   color: var(--sec-font-color);
 }
-  
+
 .progress-container {
   width: 210px;
   height: 8px;
@@ -374,7 +372,9 @@ export default {
 
 .progress-bar {
   height: 100%;
-  transition: width 0.3s ease, background-color 0.3s ease;
+  transition:
+    width 0.3s ease,
+    background-color 0.3s ease;
 }
 
 .progress-bar.over-half {

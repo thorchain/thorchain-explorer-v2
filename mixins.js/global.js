@@ -455,7 +455,7 @@ export default {
         name: uniName,
         ...(options?.filter
           ? { value: options?.filter(value) }
-          : { value: value || 0 }), 
+          : { value: value || 0 }),
         ...(isMimir && { extraInfo: 'Overwritten by Mimir' }),
         ...(isMimir &&
           extraText && {
@@ -480,6 +480,9 @@ export default {
         return 'var(--active-primary-color)'
       }
       return colorHash.hex(vaultAddress)
+    },
+    createColor(hash) {
+      return colorHash.hex(hash)
     },
     parseMemo(memo) {
       // Driven from track repo
