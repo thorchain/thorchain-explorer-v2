@@ -375,13 +375,17 @@ export default {
       }
     },
     goNext() {
+      const query = { ...this.$route.query }
+      if (this.nextPageToken) {
+        query.nextPageToken = this.nextPageToken
+      } else {
+        delete query.nextPageToken
+      }
+      delete query.prevPageToken
+
       this.$router.push({
         path: `/address/${this.address}`,
-        query: {
-          ...this.$route.query,
-          nextPageToken: this.nextPageToken,
-          prevPageToken: undefined,
-        },
+        query,
       })
       this.getActions({
         limit: 30,
@@ -390,13 +394,17 @@ export default {
       })
     },
     goPrev() {
+      const query = { ...this.$route.query }
+      if (this.prevPageToken) {
+        query.prevPageToken = this.prevPageToken
+      } else {
+        delete query.prevPageToken
+      }
+      delete query.nextPageToken
+
       this.$router.push({
         path: `/address/${this.address}`,
-        query: {
-          ...this.$route.query,
-          prevPageToken: this.prevPageToken,
-          nextPageToken: undefined,
-        },
+        query,
       })
       this.getActions({
         limit: 30,
