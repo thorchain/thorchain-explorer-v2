@@ -192,6 +192,17 @@ export function getReserveHistory() {
   )
 }
 
+export function getVotes(period = '30d') {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + 'votes',
+    {
+      params: {
+        period,
+      },
+    }
+  )
+}
+
 export function getBurnedBlocks() {
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].SERVER_URL + 'api/burned'

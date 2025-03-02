@@ -124,6 +124,7 @@ export default {
     }
 
     &.has-extra {
+      flex-wrap: wrap;
       justify-content: space-between;
     }
     .nav-section {

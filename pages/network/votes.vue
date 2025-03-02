@@ -1,546 +1,520 @@
 <template>
-  <Page>
-    <div class="card-container">
-      <Card v-if="votingChart" class="mobile-hidden">
-        <VChart
-          :option="votingChart"
-          :loading="!votingChart"
-          :autoresize="true"
-          :loading-options="showLoading"
-          :theme="chartTheme"
-          :style="{
-            width: '100%',
-            height: '600px',
-            minHeight: 'initial',
-          }"
+  <div>
+    <info-card
+      :options="infoCardOptions"
+      style="margin-bottom: 0.5rem"
+    ></info-card>
+    <div class="search-container">
+      <div id="vote-search-container">
+        <input
+          v-model="searchQuery"
+          placeholder="Search by Mimir key or node address"
+          class="search-input"
         />
-      </Card>
-    </div>
-    <Card :is-loading="!currentVoting" title="Mimir Voting Overview">
-      <vue-good-table
-        v-if="votesCols && currentVoting"
-        :columns="votesCols"
-        :rows="currentVoting"
-        style-class="vgt-table net-table custom-table"
-        :sort-options="{
-          enabled: true,
-          initialSortBy: { field: 'result' },
-        }"
-      >
-        <template slot="table-row" slot-scope="props">
-          <div v-if="props.column.field == 'result'">
-            <div
-              :class="[
-                'mini-bubble',
-                { yellow: props.row.result === 'In Progress' },
-              ]"
-            >
-              {{ props.row.result | capitalize }}
+        <SearchIcon class="search-icon" />
+      </div>
+      <div class="votes-container">
+        <card
+          v-for="(vote, index) in filteredVotes"
+          :key="index"
+          :title="vote.value"
+        >
+          <template #header>
+            <div v-if="vote.mimirValue !== undefined" class="mini-bubble">
+              Current:
+              <strong style="margin-left: 5px">{{ vote.mimirValue }}</strong>
             </div>
-          </div>
-          <span v-else-if="props.column.field === 'votes'">
-            <div class="votes">
+          </template>
+          <div class="vote-card">
+            <div class="card-body">
               <div
-                v-for="(v, index) in props.row.value"
-                :key="index"
-                class="votes-item"
+                v-for="(o, key) in vote.keys"
+                :key="key"
+                class="vote-section"
               >
-                <div class="vote-info">
-                  <strong class="value">{{ v }}</strong>
-                  <span class="votes-needed"
-                    >{{ props.row.count[index] }} / {{ nodesNeedToPass }}</span
-                  >
+                <div class="progress-section">
+                  <div class="progress-overtext">
+                    <div class="key-name">
+                      <small>Value :</small>
+                      <b>{{ key }}</b>
+                    </div>
+                    <div class="key-name">
+                      <span
+                        v-if="isVotePassed(o, key, vote.value)"
+                        class="mini-bubble"
+                      >
+                        Active
+                      </span>
+                      <b>{{ o.addresses.length }}</b>
+                      <small>/ {{ votesRequired }}</small>
+                    </div>
+                  </div>
                   <progress-bar
-                    :width="(props.row.count[index] * 100) / nodesNeedToPass"
-                    height="4px"
+                    :width="(o.addresses.length * 100) / votesRequired"
+                    height="8px"
                   />
-                  <span>{{
-                    (props.row.count[index] / nodesNeedToPass) | percent(0)
-                  }}</span>
-                  <div
-                    v-if="props.row.currentVal.toString() === v"
-                    class="mini-bubble"
-                  >
-                    Current
+                </div>
+                <div class="vote-footer">
+                  <vote-list
+                    :addresses="o.addresses"
+                    :color="
+                      getColorForVote(isVotePassed(o, key, vote.value), key)
+                    "
+                  ></vote-list>
+                  <div v-if="o.votesInLast24h > 0" class="change-24h">
+                    24H Votes:
+                    <progress-icon
+                      :data-number="o.votesInLast24h"
+                      :is-down="false"
+                      size="0.9rem"
+                    />
                   </div>
                 </div>
               </div>
-              <div class="votes-item">
-                <div class="vote-info">
-                  <strong>Not Voted:</strong>
-                  <span v-if="network" class="mini-bubble danger">{{
-                    network.activeNodeCount -
-                    props.row.count.reduce((p, c) => p + +c, 0)
-                  }}</span>
+              <div class="vote-section">
+                <div class="progress-section">
+                  <div class="progress-overtext">
+                    <div class="key-name">
+                      <small class="mini-bubble danger">Not Voted</small>
+                    </div>
+                    <div class="key-name">
+                      <b>{{ vote.notVoted.length }}</b>
+                      <small>/ {{ activeNodes.length }}</small>
+                    </div>
+                  </div>
+                  <div class="vote-footer">
+                    <vote-list
+                      :addresses="vote.notVoted"
+                      color="#e74c3c"
+                    ></vote-list>
+                  </div>
+                </div>
+              </div>
+              <div class="vote-section">
+                <div class="progress-section">
+                  <div class="vote-footer"></div>
+                  <div class="progress-overtext">
+                    <div>
+                      <span>Latest Vote:</span>
+                      <strong>
+                        {{ getHumanizeDuration(vote.latestVote / 1e6) }}
+                      </strong>
+                    </div>
+                    <div>
+                      <span>Earliest Vote:</span>
+                      <strong>
+                        {{ getHumanizeDuration(vote.earliestVote / 1e6) }}
+                      </strong>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          </span>
-          <div v-else-if="props.column.field == 'vote'" class="cell-content">
-            <strong>
-              {{ props.formattedRow[props.column.field] }}
-            </strong>
           </div>
-          <span v-else>
-            {{ props.formattedRow[props.column.field] }}
-          </span>
-        </template>
-      </vue-good-table>
-    </Card>
-  </Page>
+        </card>
+      </div>
+    </div>
+    <div class="footer-stat" style="margin-top: 1rem">
+      <small>
+        <sup>*</sup>
+        Vote keys are sorted by the latest vote date.
+      </small>
+    </div>
+  </div>
 </template>
 
 <script>
-import _, { orderBy } from 'lodash'
-import { mapGetters } from 'vuex'
-
-import { use } from 'echarts/core'
-import { SVGRenderer } from 'echarts/renderers'
-import { LineChart } from 'echarts/charts'
-import {
-  TitleComponent,
-  TooltipComponent,
-  LegendComponent,
-  GridComponent,
-} from 'echarts/components'
-import VChart from 'vue-echarts'
-
-use([
-  SVGRenderer,
-  GridComponent,
-  LineChart,
-  TitleComponent,
-  TooltipComponent,
-  LegendComponent,
-])
+import moment from 'moment'
+import SearchIcon from '~/assets/images/search.svg?inline'
 
 export default {
   components: {
-    VChart,
+    SearchIcon,
   },
   data() {
     return {
-      isLoading: true,
-      mimirVotes: undefined,
-      mimirs: undefined,
-      votingChart: undefined,
-      nodesNeedToPass: undefined,
-      nodes: undefined,
-      cols: [
+      loading: true,
+      votes: [],
+      activeNodes: [],
+      votesRequired: 0,
+      formattedVotes: [],
+      generalStatsDetails: [{ name: 'Active nodes' }, { name: 'Consensus' }],
+      mimirData: {},
+      searchQuery: '',
+      last24HVotes: 0,
+      infoCardOptions: [
         {
-          label: 'Signer',
-          field: 'signer',
-          sortable: false,
-          tdClass: 'mono',
-        },
-        {
-          label: 'Value',
-          field: 'value',
-          type: 'number',
-          tdClass: 'mono',
-        },
-      ],
-      votesCols: [
-        {
-          label: 'Vote',
-          field: 'vote',
-          sortable: false,
-        },
-        {
-          label: 'Result',
-          field: 'result',
-          thClass: 'center',
-          tdClass: 'center',
-          type: 'text',
-        },
-        {
-          label: 'Vote Poll',
-          field: 'votes',
-          tdClass: 'mono',
+          title: 'Voting Governance',
+          rowStart: 1,
+          colSpan: 1,
+          items: [
+            {
+              name: 'Active nodes',
+            },
+            {
+              name: 'Consensus',
+            },
+            {
+              name: '24HR Votes',
+            },
+            {
+              name: 'Latest Vote',
+            },
+            {
+              name: 'Past 30D Proposals',
+            },
+          ],
         },
       ],
     }
   },
   computed: {
-    currentVoting() {
-      if (this.mimirVotes && this.mimirs && this.nodes) {
-        const mimrsVoteConstants = []
-        const xaxis = []
-        const types = []
-        let votesLength = 0
-        for (const m of Object.keys(this.mimirs)) {
-          if (Object.keys(this.mimirVotes).includes(m)) {
-            if (this.mimirVotes[m].every((v) => v.value === undefined)) {
-              continue
-            }
-            votesLength++
-          }
-        }
-        let index = 0
-        for (const m of Object.keys(this.mimirVotes)) {
-          const filteredVotes = [
-            'ADR012',
-            'ADR18',
-            'ADR013',
-            'ALTGAIACHAIN',
-            'BAREMETALBADASS',
-            'BSCREADY',
-            'DEPRECATEILP',
-            'ELROND',
-            'ENABLEAVAXCHAIN',
-            'ENABLEBSC',
-            'ENABLEDASHCHAIN',
-            'ENABLEDOFM',
-            'ENABLEUPDATEMEMOTERRA',
-            'FULLIMPLOSSPROTECTIONBLOCKS',
-            'KILLSWITCHSTART',
-            'L1MINSLIPBPS',
-            'MAXBONDPROVIDES',
-            'MAXRUNESUPPLY',
-            'MULTIPARTITEFORPRESIDENT',
-            'NEXTCHAIN',
-            'NEXTFEATUREPERPRS',
-            'NEXTFEATUREPERPS',
-            'REMOVESNXPOOL',
-            'SUPPORTTHORCHAINDOTNETWORK',
-            'TEST',
-            'THISISANEWMIMIR',
-            'VOTEDOFM',
-            'VOTELENDING',
-            'VOTEMAXBONDPROVIDERS',
-            'VOTEMAXSYNTHSFORSAVERSYIELD',
-            'VOTESTREAMINGSWAPS',
-            'ENABLEVAXCHAIN',
-            'MAXSYNTHPERASSETDEPTH',
-            'MINIMUM1OUTBOUNDFEEUSD',
-          ]
-
-          if (
-            m.toLowerCase().includes('ragnarok') ||
-            filteredVotes.includes(m.toUpperCase())
-          ) {
-            continue
-          }
-          const hVotes = this.getVoteHighestBid(this.mimirVotes[m])
-          if (this.mimirVotes[m].every((v) => v.value === undefined)) {
-            continue
-          }
-          if (hVotes.values.length === 0) {
-            votesLength--
-            continue
-          }
-          xaxis.push(m)
-          hVotes.values.forEach((v) => {
-            if (v.value === 'undefined') {
-              return
-            }
-            const vIndex = types?.findIndex(
-              (t) => t.name?.toString() === v.value?.toString()
-            )
-            if (vIndex === -1) {
-              const initData = _.times(votesLength, _.constant(0))
-              initData[index] = v.count
-              types.push({
-                name: v.value,
-                type: 'bar',
-                stack: 'total',
-                data: initData,
-              })
-            } else {
-              types[vIndex].data[index] = v.count
-            }
-          })
-          hVotes.values = orderBy(hVotes.values, [(o) => +o.count], ['desc'])
-          mimrsVoteConstants.push({
-            vote: m,
-            currentVal: this.mimirs[m] !== undefined ? this.mimirs[m] : '-',
-            highestValue: hVotes.value,
-            consensus: hVotes.consensus,
-            votePassed: hVotes.votePassed,
-            remainingVotes: +this.network?.activeNodeCount - hVotes.votePassed,
-            result:
-              +this.mimirs[m] === +hVotes.value ? 'Passed' : 'In Progress',
-            value: hVotes.values.map((v) => v.value),
-            count: hVotes.values.map((v) => v.count),
-          })
-          index++
-        }
-        let option = this.basicChartFormat(undefined, types, xaxis)
-        option = {
-          ...option,
-          tooltip: {
-            trigger: 'axis',
-            formatter: (param) => {
-              const totalActiveNodes = this.network?.activeNodeCount || 0
-              const totalVoted = param.reduce((acc, p) => acc + p.value, 0)
-              const missingVotes = Math.max(0, totalActiveNodes - totalVoted)
-              const tooltipContent = `
-      <div class="tooltip-header" style="text-align:center; font-weight:bold; margin-bottom:5px;">
-        ${param[0].axisValue}
-      </div>
-      <table class="tooltip-table" style="width:100%; border-collapse:collapse; font-size:12px;">
-        <thead>
-          <tr>
-            <th style="padding: 5px; text-align:left;">Value</th>
-            <th style="padding: 5px; text-align:center;">Count</th>
-            <th style="padding: 5px; text-align:center;">Consensus</th>
-            <th style="padding: 5px; text-align:center;">Votes Needed</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${param
-            .map((p) => {
-              if (p.value > 0) {
-                const consensusNeeded = Math.ceil(totalActiveNodes * 0.66)
-                const consensus = this.$options.filters.percent(
-                  p.value / totalActiveNodes,
-                  2
-                )
-
-                const votesNeeded = Math.max(0, consensusNeeded - p.value)
-
-                return `
-                  <tr>
-                    <td style="padding: 5px; text-align:left; color: var(--sec-font-color);">${p.seriesName}</td>
-                    <td style="padding: 5px; text-align:center; color: var(--sec-font-color);">${p.value}</td>
-                    <td style="padding: 5px; text-align:center; color: var(--sec-font-color);">${consensus}</td>
-                    <td style="padding: 5px; text-align:center; color: var(--sec-font-color);">${votesNeeded === 0 ? '✅' : votesNeeded}</td>
-                  </tr>
-                `
-              }
-              return ''
-            })
-            .join('')}
-        </tbody>
-      </table>
-      <hr style="margin: 10px 0; border: 1px solid #ddd;">
-      <div style="text-align:center; font-size:12px;color: var(--sec-font-color);">
-        <b>Voted:</b> ${totalVoted} - <b>Missing votes:</b> ${missingVotes}</div>
-    `
-              return tooltipContent
-            },
-          },
-
-          title: {
-            text: 'Mimir Voting Chart',
-            textStyle: {
-              color: 'var(--font-color)',
-            },
-          },
-          grid: {
-            left: '2%',
-            height: '80%',
-            containLabel: true,
-          },
-          legend: {
-            show: false,
-          },
-          xAxis: {
-            type: 'value',
-            splitLine: {
-              show: false,
-            },
-          },
-          yAxis: {
-            type: 'category',
-            data: xaxis,
-            boundaryGap: ['20%', '10%'],
-            axisLabel: {
-              interval: 0,
-              nameTextStyle: {
-                padding: 20,
-                margin: 20,
-                align: 'center',
-              },
-            },
-          },
-        }
-
-        // eslint-disable-next-line vue/no-side-effects-in-computed-properties
-        this.votingChart = option
-
-        return mimrsVoteConstants
+    filteredVotes() {
+      if (!this.searchQuery) {
+        return this.formattedVotes
       }
-      return []
+      const query = this.searchQuery.toLowerCase()
+      return this.formattedVotes.filter((vote) => {
+        if (vote.value.toLowerCase().includes(query)) {
+          return true
+        }
+        for (const key in vote.keys) {
+          if (
+            vote.keys[key].addresses.some((address) =>
+              address.toLowerCase().includes(query)
+            )
+          ) {
+            return true
+          }
+        }
+        return false
+      })
     },
-    ...mapGetters({
-      network: 'getNetworkData',
-    }),
   },
-  mounted() {
-    this.$api
-      .getMimirVotes()
-      .then((res) => {
-        this.mimirVotes = this.formatVotes(res.data?.mimirs)
-      })
-      .catch((e) => {
-        console.error(e)
-      })
-
-    this.$api
-      .getMimir()
-      .then((res) => {
-        this.mimirs = { ...res.data, SYSTEMINCOMEBURNRATEBPS: '0' }
-      })
-      .catch((e) => {
-        console.error(e)
-      })
-
-    this.$api
-      .getNodes()
-      .then((res) => {
-        this.nodes = res.data
-      })
-      .catch((e) => {
-        console.error(e)
-      })
+  async mounted() {
+    try {
+      await Promise.all([
+        this.fetchVotes(),
+        this.fetchNodes(),
+        this.fetchMimirData(),
+      ])
+      this.processVotes()
+      this.updateStatsDetails()
+    } catch (error) {
+      console.error('Error fetching data:', error)
+    } finally {
+      this.loading = false
+    }
   },
   methods: {
-    formatVotes(mimirs) {
-      const votes = {}
-      for (const i in mimirs) {
-        // if the value if undefined it's zero
-        if (!mimirs[i].value) {
-          mimirs[i].value = 0
-        }
-        // filter out old mimirs
-        const filteredMimirs = ['KILLSWITCHSTART']
-        if (filteredMimirs.includes(mimirs[i].key)) {
-          continue
-        }
-        if (!(mimirs[i].key in votes)) {
-          votes[mimirs[i].key] = [
-            {
-              signer: mimirs[i].signer,
-              value: mimirs[i].value,
-            },
-          ]
-        } else {
-          votes[mimirs[i].key].push({
-            signer: mimirs[i].signer,
-            value: mimirs[i].value,
-          })
-        }
+    async fetchMimirData() {
+      try {
+        this.mimirData = (await this.$api.getMimir())?.data
+      } catch (error) {
+        console.error('Error fetching Mimir data:', error)
       }
-      return votes
     },
-    gotoAddr(address) {
-      this.$router.push({ path: `/address/${address}` })
-    },
-    gotoNode(signer) {
-      this.$router.push({ path: `/node/${signer}` })
-    },
-    getVoteHighestBid(voters) {
-      if (!voters) {
-        return
+    async fetchVotes() {
+      try {
+        this.votes = (await this.$api.getVotes())?.data
+      } catch (error) {
+        console.error('Error fetching votes:', error)
       }
-      if (voters.length === 0 && !this.nodes) {
-        return
+    },
+    async fetchNodes() {
+      try {
+        const { data } = await this.$api.getNodes()
+        this.activeNodes = data
+          .filter((node) => node.status === 'Active')
+          .map((node) => node.node_address)
+        this.votesRequired = Math.floor((this.activeNodes.length * 2) / 3) + 1
+      } catch (error) {
+        console.error('Error fetching nodes:', error)
       }
-      const activeVoters = voters?.filter((v) =>
-        this.nodes
-          ?.filter((n) => n.status === 'Active')
-          .map((n) => n.node_address)
-          .includes(v.signer)
-      )
-      const values = activeVoters.map((v) => v.value)
-      const voteCount = _.countBy(values)
-      const votesObj = Object.keys(voteCount).map((v) => {
-        const count = voteCount[v]
-        this.nodesNeedToPass =
-          parseInt(this.network?.activeNodeCount * (2 / 3)) + 1
-        const consensus = count / +this.network?.activeNodeCount
-        const consensusNeeded = Math.ceil(+this.network?.activeNodeCount * 0.66)
-        const votesNeeded = Math.max(0, consensusNeeded - count)
+    },
+    processVotes() {
+      const twentyFourHoursAgo = moment().subtract(24, 'hours')
 
-        return {
-          value: v,
-          count: voteCount[v],
-          votesNeeded,
-          consensus,
+      const votes = []
+      for (let i = 0; i < this.votes.length; i++) {
+        const vote = this.votes[i]
+
+        const voteInfo = {
+          value: vote.value,
+          keys: {},
+          latestVote: +vote.votes[0].date,
+          earliestVote: +vote.votes[vote.votes.length - 1].date,
+          mimirValue: this.mimirData[vote.value],
+          notVoted: [...this.activeNodes],
         }
+
+        for (let j = 0; j < vote.votes.length; j++) {
+          const { key, date, address } = vote.votes[j]
+          const formattedDate = moment(date / 1e6)
+
+          if (!voteInfo.keys[key]) {
+            voteInfo.keys[key] = {
+              addresses: [],
+              votesInLast24h: 0,
+            }
+          }
+
+          // If inside the active nodes check it out
+          const delIndex = voteInfo.notVoted.indexOf(address)
+          if (delIndex === -1) {
+            continue
+          }
+
+          voteInfo.keys[key].addresses.push(address)
+          voteInfo.notVoted.splice(delIndex, 1)
+
+          if (formattedDate.isAfter(twentyFourHoursAgo)) {
+            voteInfo.keys[key].votesInLast24h += 1
+            this.last24HVotes++
+          }
+        }
+
+        // Push to the votes
+        votes.push(voteInfo)
+      }
+
+      this.formattedVotes = votes.sort((a, b) => {
+        return b.latestVote - a.latestVote
       })
-
-      const hVote = _.maxBy(votesObj, (o) => o.consensus)
-
-      return {
-        consensus: hVote?.consensus ?? 0,
-        votePassed: activeVoters?.length ?? 0,
-        value: hVote?.value ?? '-',
-        values: votesObj,
-        totalActiveNodes: this.network?.activeNodeCount || 0,
-        consensusNeeded: Math.ceil(this.network?.activeNodeCount * 0.66),
-        votesNeeded: votesObj.map((v) => v.votesNeeded),
-        count: hVote ? hVote.count : 0,
-      }
     },
-  },
-  head: {
-    title: 'THORChain Network Explorer | Mimir votes',
+    isVotePassed(o, key, value) {
+      if (this.mimirData[value] === +key) return true
+      if (this.votesRequired <= o.addresses.length) return true
+      return false
+    },
+    getColorForVote(isPassed, key) {
+      if (isPassed) return '#2ecc71'
+      const colors = [
+        '#3498db',
+        '#9b59b6',
+        '#e84393',
+        '#e67e22',
+        '#e74c3c',
+        '#f1c40f',
+      ]
+      return colors[+key % colors.length]
+    },
+    updateStatsDetails() {
+      this.generalStatsDetails = [
+        {
+          name: 'Active nodes',
+          value: this.activeNodes.length.toLocaleString(),
+        },
+        {
+          name: 'Consensus',
+          value: this.votesRequired,
+        },
+        {
+          name: '24HR Votes',
+          value: this.last24HVotes,
+        },
+        {
+          name: 'Latest Vote',
+          value: this.formattedVotes[0]?.value,
+        },
+        {
+          name: 'Past 30D Proposals',
+          value: this.votes.length,
+        },
+      ]
+
+      this.infoCardOptions = [
+        {
+          title: 'Voting Governance',
+          rowStart: 1,
+          colSpan: 1,
+          items: [
+            {
+              name: 'Active nodes',
+              value: this.activeNodes.length.toLocaleString(),
+            },
+            {
+              name: 'Consensus',
+              value: this.votesRequired,
+            },
+            {
+              name: '24HR Votes',
+              value: this.last24HVotes,
+            },
+            {
+              name: 'Latest Vote',
+              value: this.formattedVotes[0]?.value,
+            },
+            {
+              name: 'Past 30D Proposals',
+              value: this.votes.length,
+            },
+          ],
+        },
+      ]
+    },
   },
 }
 </script>
 
-<style lang="scss" scoped>
-.mobile-hidden {
-  display: none;
-  @include md {
-    display: block;
-  }
-}
+<style scoped lang="scss">
+.votes-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
 
-.votes {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 10px;
-  border: 1px solid var(--border-color) !important;
-  border-radius: 0.5rem;
-}
-.data-color {
-  margin-right: 6px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-}
-.votes-item {
-  border-radius: 10px;
-  font-size: 14px;
-}
-.tooltip-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 5px;
-}
-.vote-info {
-  display: flex;
-  align-items: center;
-  margin: 3px;
-  gap: 0.5rem;
-}
-.tooltip-body {
-  margin-top: 5px;
-  width: 120px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+  .card-container {
+    min-width: 100%;
 
-  > span {
-    display: flex;
-    justify-content: space-between;
-
-    b {
-      text-align: right;
+    @include md {
+      min-width: 520px;
     }
   }
 }
 
-.votes-needed {
+.search-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+#vote-search-container {
+  display: flex;
+  position: relative;
+  flex: 1;
+
+  .search-input {
+    flex: 1;
+    color: var(--sec-font-color);
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color) !important;
+    border-radius: 0.5rem;
+    outline: none;
+    margin: 2px;
+    padding: 12px;
+    font-size: 0.9062rem;
+    font-weight: 450;
+
+    &:focus {
+      border-color: transparent;
+      box-shadow: 0 0 0 0.15rem rgba(255, 255, 255, 0.1);
+      color: var(--primary-color);
+    }
+  }
+
+  .search-icon {
+    position: absolute;
+    width: 20px;
+    height: 24px;
+    fill: var(--font-color);
+    right: 0.8rem;
+    top: calc(50% - 0.8rem);
+    cursor: pointer;
+    transition: fill 0.3s ease;
+    box-sizing: content-box;
+    background: var(--card-bg-color);
+    padding-left: 0.3rem;
+  }
+}
+
+.mimir-value {
+  font-size: 0.875rem;
   color: var(--sec-font-color);
+  margin-top: 0.5rem;
+}
+
+.card-body {
+  padding: 1rem;
+}
+
+.vote-section {
+  margin-bottom: 1rem;
+}
+
+.vote-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.key-list {
+  font-size: 0.875rem;
+  color: var(--sec-font-color);
+}
+
+.progress-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  .progress-overtext {
+    display: flex;
+    justify-content: space-between;
+
+    .key-name {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      b {
+        color: var(--sec-font-color);
+      }
+
+      small {
+        color: var(--font-color);
+      }
+    }
+  }
+}
+
+.active-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--success-color);
+}
+
+.checkmark {
+  width: 1rem;
+  height: 1rem;
+}
+
+.progress-text {
+  font-size: 0.75rem;
+  color: var(--sec-font-color);
+}
+
+.progress-container {
+  width: 210px;
+  height: 8px;
   background-color: var(--border-color);
-  padding: 0px 4px;
-  border-radius: 5px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  transition:
+    width 0.3s ease,
+    background-color 0.3s ease;
+}
+
+.progress-bar.over-half {
+  background-color: #f1c40f;
+}
+
+.progress-bar.complete {
+  background-color: #2ecc71;
+}
+
+.change-24h {
+  font-size: 0.75rem;
+  color: var(--sec-font-color);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 </style>

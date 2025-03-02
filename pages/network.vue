@@ -21,7 +21,7 @@ export default {
           link: '/network/settings',
         },
         {
-          text: 'Mimir Votes',
+          text: 'Votes',
           link: '/network/votes',
         },
         {

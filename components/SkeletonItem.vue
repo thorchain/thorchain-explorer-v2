@@ -13,4 +13,8 @@ export default {
 }
 </script>
 
-<style lang="scss"></style>
+<style scoped lang="scss">
+.s-width {
+  min-width: 50px;
+}
+</style>
