@@ -114,6 +114,12 @@
         </card>
       </div>
     </div>
+    <div class="footer-stat" style="margin-top: 1rem">
+      <small>
+        <sup>*</sup>
+        Vote keys are sorted by the latest vote date.
+      </small>
+    </div>
   </div>
 </template>
 
