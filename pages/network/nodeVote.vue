@@ -1,7 +1,9 @@
 <template>
   <div>
-    <cards-header :table-general-stats="generalStatsDetails" />
-
+    <info-card
+      :options="infoCardOptions"
+      style="margin-bottom: 0.5rem"
+    ></info-card>
     <div class="search-container">
       <div id="vote-search-container">
         <input
@@ -12,114 +14,115 @@
         <SearchIcon class="search-icon" />
       </div>
       <div class="votes-container">
-      <card
-        v-for="(vote, index) in filteredVotes"
-        :key="index"
-        :title="vote.value"
-      >
-        <template #header>
-          <div
-            v-if="vote.mimirValue !== undefined && vote.mimirValue !== 0"
-            class="mini-bubble"
-          >
-            Current: <strong>{{ vote.mimirValue }}</strong>
-          </div>
-        </template>
-        <div class="vote-card">
-          <div class="card-body">
-            <div
-              v-for="(addresses, key) in vote.keys"
-              :key="key"
-              class="vote-section"
-            >
-              <div class="progress-section">
-                <!-- <div v-if="vote.isPassed" class="active-status">
-                  <circleSuccess class="checkmark" />
-                  <span class="time-text">Active</span>
-                </div> -->
-
-                <div class="progress-overtext">
-                  <div class="key-name">
-                    <small>Value :</small>
-                    <b>{{ key }}</b>
+        <card
+          v-for="(vote, index) in filteredVotes"
+          :key="index"
+          :title="vote.value"
+        >
+          <template #header>
+            <div v-if="vote.mimirValue !== undefined" class="mini-bubble">
+              Current:
+              <strong style="margin-left: 5px">{{ vote.mimirValue }}</strong>
+            </div>
+          </template>
+          <div class="vote-card">
+            <div class="card-body">
+              <div
+                v-for="(o, key) in vote.keys"
+                :key="key"
+                class="vote-section"
+              >
+                <div class="progress-section">
+                  <div class="progress-overtext">
+                    <div class="key-name">
+                      <small>Value :</small>
+                      <b>{{ key }}</b>
+                    </div>
+                    <div class="key-name">
+                      <span
+                        v-if="isVotePassed(o, key, vote.value)"
+                        class="mini-bubble"
+                      >
+                        Active
+                      </span>
+                      <b>{{ o.addresses.length }}</b>
+                      <small>/ {{ votesRequired }}</small>
+                    </div>
                   </div>
-                  <div class="key-name">
-                    <b>{{ addresses.addresses.length }}</b>
-                    <small> /{{ votesRequired }} </small>
-                  </div>
-                </div>
-                <progress-bar
-                  :width="(addresses.addresses.length * 100) / votesRequired"
-                  height="8px"
-                />
-              </div>
-              <div class="vote-footer">
-                <div class="votes-list">
-                  <nuxt-link
-                    v-for="(address, idx) in addresses.addresses.slice(0, 6)"
-                    :key="idx"
-                    :to="`/address/${address}`"
-                    class="mini-bubble"
-                    :style="{
-                      backgroundColor: getColorForVote(vote.isPassed, key),
-                    }"
-                  >
-                    {{ getLastFourCharacters(address) }}
-                  </nuxt-link>
-                  <button
-                    v-if="
-                      addresses.addresses.length > 6 && !addresses.showAllVoted
-                    "
-                    class="more-button"
-                    @click="addresses.showAllVoted = true"
-                  >
-                    +{{ addresses.addresses.length - 6 }} more
-                  </button>
-                  <nuxt-link
-                    v-for="(address, idx) in addresses.addresses.slice(6)"
-                    v-if="addresses.showAllVoted"
-                    :key="idx + 6"
-                    :to="`/address/${address}`"
-                    class="mini-bubble"
-                    :style="{
-                      backgroundColor: getColorForVote(vote.isPassed, key),
-                    }"
-                  >
-                    {{ getLastFourCharacters(address) }}
-                  </nuxt-link>
-                  <button
-                    v-if="addresses.showAllVoted"
-                    class="more-button"
-                    @click="addresses.showAllVoted = false"
-                  >
-                    Show Less
-                  </button>
-                </div>
-                <div v-if="vote.changeIn24h !== 0" class="change-24h">
-                  24H Votes:
-                  <progress-icon
-                    :data-number="vote.changeIn24h"
-                    :is-down="vote.changeIn24h < 0"
+                  <progress-bar
+                    :width="(o.addresses.length * 100) / votesRequired"
+                    height="8px"
                   />
+                </div>
+                <div class="vote-footer">
+                  <vote-list
+                    :addresses="o.addresses"
+                    :color="
+                      getColorForVote(isVotePassed(o, key, vote.value), key)
+                    "
+                  ></vote-list>
+                  <div v-if="o.votesInLast24h > 0" class="change-24h">
+                    24H Votes:
+                    <progress-icon
+                      :data-number="o.votesInLast24h"
+                      :is-down="false"
+                      size="0.9rem"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="vote-section">
+                <div class="progress-section">
+                  <div class="progress-overtext">
+                    <div class="key-name">
+                      <small class="mini-bubble danger">Not Voted</small>
+                    </div>
+                    <div class="key-name">
+                      <b>{{ vote.notVoted.length }}</b>
+                      <small>/ {{ activeNodes.length }}</small>
+                    </div>
+                  </div>
+                  <div class="vote-footer">
+                    <vote-list
+                      :addresses="vote.notVoted"
+                      color="#e74c3c"
+                    ></vote-list>
+                  </div>
+                </div>
+              </div>
+              <div class="vote-section">
+                <div class="progress-section">
+                  <div class="vote-footer"></div>
+                  <div class="progress-overtext">
+                    <div>
+                      <span>Latest Vote:</span>
+                      <strong>
+                        {{ getHumanizeDuration(vote.latestVote / 1e6) }}
+                      </strong>
+                    </div>
+                    <div>
+                      <span>Earliest Vote:</span>
+                      <strong>
+                        {{ getHumanizeDuration(vote.earliestVote / 1e6) }}
+                      </strong>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </card>
+        </card>
+      </div>
     </div>
   </div>
-</div>
 </template>
 
 <script>
 import moment from 'moment'
-import circleSuccess from '~/assets/images/circle.svg?inline'
 import SearchIcon from '~/assets/images/search.svg?inline'
 
 export default {
   components: {
-    circleSuccess,
     SearchIcon,
   },
   data() {
@@ -129,12 +132,34 @@ export default {
       activeNodes: [],
       votesRequired: 0,
       formattedVotes: [],
-      generalStatsDetails: [
-        { name: 'Active nodes' },
-        { name: 'Votes required for change' },
-      ],
+      generalStatsDetails: [{ name: 'Active nodes' }, { name: 'Consensus' }],
       mimirData: {},
       searchQuery: '',
+      last24HVotes: 0,
+      infoCardOptions: [
+        {
+          title: 'Voting Governance',
+          rowStart: 1,
+          colSpan: 1,
+          items: [
+            {
+              name: 'Active nodes',
+            },
+            {
+              name: 'Consensus',
+            },
+            {
+              name: '24HR Votes',
+            },
+            {
+              name: 'Latest Vote',
+            },
+            {
+              name: 'Past 30D Proposals',
+            },
+          ],
+        },
+      ],
     }
   },
   computed: {
@@ -185,7 +210,7 @@ export default {
     },
     async fetchVotes() {
       try {
-        this.votes = (await this.$api.getvotes())?.data
+        this.votes = (await this.$api.getVotes())?.data
       } catch (error) {
         console.error('Error fetching votes:', error)
       }
@@ -202,71 +227,71 @@ export default {
       }
     },
     processVotes() {
-      const groupedVotes = {}
       const twentyFourHoursAgo = moment().subtract(24, 'hours')
 
-      this.votes.forEach((vote) => {
-        if (!groupedVotes[vote.value]) {
-          groupedVotes[vote.value] = {
-            value: vote.value,
-            keys: {},
-            isPassed: false,
-            recentVoteKey: null,
-            recentVoteDate: null,
-            votesInLast24h: 0,
-            votesInPrevious24h: 0,
-            mimirValue: this.mimirData[vote.value],
+      const votes = []
+      for (let i = 0; i < this.votes.length; i++) {
+        const vote = this.votes[i]
+
+        const voteInfo = {
+          value: vote.value,
+          keys: {},
+          latestVote: +vote.votes[0].date,
+          earliestVote: +vote.votes[vote.votes.length - 1].date,
+          mimirValue: this.mimirData[vote.value],
+          notVoted: [...this.activeNodes],
+        }
+
+        for (let j = 0; j < vote.votes.length; j++) {
+          const { key, date, address } = vote.votes[j]
+          const formattedDate = moment(date / 1e6)
+
+          if (!voteInfo.keys[key]) {
+            voteInfo.keys[key] = {
+              addresses: [],
+              votesInLast24h: 0,
+            }
+          }
+
+          // If inside the active nodes check it out
+          const delIndex = voteInfo.notVoted.indexOf(address)
+          if (delIndex === -1) {
+            continue
+          }
+
+          voteInfo.keys[key].addresses.push(address)
+          voteInfo.notVoted.splice(delIndex, 1)
+
+          if (formattedDate.isAfter(twentyFourHoursAgo)) {
+            voteInfo.keys[key].votesInLast24h += 1
+            this.last24HVotes++
           }
         }
 
-        vote.votes.forEach((v) => {
-          const voteDate = moment(+v.date / 1e6)
+        // Push to the votes
+        votes.push(voteInfo)
+      }
 
-          if (!groupedVotes[vote.value].keys[v.key]) {
-            groupedVotes[vote.value].keys[v.key] = {
-              addresses: [],
-              showAllVoted: false,
-            }
-          }
-          groupedVotes[vote.value].keys[v.key].addresses.push(v.address)
-
-          if (voteDate.isAfter(twentyFourHoursAgo)) {
-            groupedVotes[vote.value].votesInLast24h++
-          } else {
-            groupedVotes[vote.value].votesInPrevious24h++
-          }
-        })
-
-        Object.keys(groupedVotes[vote.value].keys).forEach((key) => {
-          if (
-            groupedVotes[vote.value].keys[key].addresses.length >=
-            this.votesRequired
-          ) {
-            groupedVotes[vote.value].isPassed = true
-          }
-        })
+      this.formattedVotes = votes.sort((a, b) => {
+        return b.latestVote - a.latestVote
       })
-
-      this.formattedVotes = Object.values(groupedVotes).map((vote) => ({
-        ...vote,
-        changeIn24h: vote.votesInLast24h,
-      }))
     },
-    calculateProgress(votesCount) {
-      return (votesCount / this.votesRequired) * 100
-    },
-    getProgressBarClass(votesCount) {
-      const percentage = votesCount / this.votesRequired
-      if (percentage >= 1) return 'progress-bar complete'
-      if (percentage >= 0.5) return 'progress-bar over-half'
-      return 'progress-bar'
-    },
-    getLastFourCharacters(address) {
-      return address.slice(-4)
+    isVotePassed(o, key, value) {
+      if (this.mimirData[value] === +key) return true
+      if (this.votesRequired <= o.addresses.length) return true
+      return false
     },
     getColorForVote(isPassed, key) {
       if (isPassed) return '#2ecc71'
-      return this.createColor(key)
+      const colors = [
+        '#3498db',
+        '#9b59b6',
+        '#e84393',
+        '#e67e22',
+        '#e74c3c',
+        '#f1c40f',
+      ]
+      return colors[+key % colors.length]
     },
     updateStatsDetails() {
       this.generalStatsDetails = [
@@ -275,8 +300,50 @@ export default {
           value: this.activeNodes.length.toLocaleString(),
         },
         {
-          name: 'Votes required for change',
-          value: this.votesRequired.toLocaleString(),
+          name: 'Consensus',
+          value: this.votesRequired,
+        },
+        {
+          name: '24HR Votes',
+          value: this.last24HVotes,
+        },
+        {
+          name: 'Latest Vote',
+          value: this.formattedVotes[0]?.value,
+        },
+        {
+          name: 'Past 30D Proposals',
+          value: this.votes.length,
+        },
+      ]
+
+      this.infoCardOptions = [
+        {
+          title: 'Voting Governance',
+          rowStart: 1,
+          colSpan: 1,
+          items: [
+            {
+              name: 'Active nodes',
+              value: this.activeNodes.length.toLocaleString(),
+            },
+            {
+              name: 'Consensus',
+              value: this.votesRequired,
+            },
+            {
+              name: '24HR Votes',
+              value: this.last24HVotes,
+            },
+            {
+              name: 'Latest Vote',
+              value: this.formattedVotes[0]?.value,
+            },
+            {
+              name: 'Past 30D Proposals',
+              value: this.votes.length,
+            },
+          ],
         },
       ]
     },
@@ -285,6 +352,31 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.overview-card {
+  margin-bottom: 0.5rem;
+  padding: 1rem;
+
+  .stats-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    align-items: center;
+
+    .stat {
+      padding: 0.5rem 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+
+      b {
+        font-size: 1.25rem;
+        color: var(--sec-font-color);
+      }
+    }
+  }
+}
+
 .votes-container {
   display: flex;
   flex-wrap: wrap;
@@ -298,11 +390,13 @@ export default {
     }
   }
 }
+
 .search-container {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
+
 #vote-search-container {
   display: flex;
   position: relative;
@@ -370,40 +464,6 @@ export default {
   color: var(--sec-font-color);
 }
 
-.votes-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.mini-bubble {
-  padding: 0.25rem 0.5rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  color: var(--sec-font-color);
-  cursor: pointer;
-  text-decoration: none;
-  display: inline-block;
-  transition: opacity 0.3s ease;
-
-  &:hover {
-    opacity: 0.8;
-  }
-}
-
-.more-button {
-  background: none;
-  border: none;
-  color: var(--primary-color);
-  cursor: pointer;
-  font-size: 0.75rem;
-  transition: color 0.3s ease;
-
-  &:hover {
-    color: var(--primary-color-dark);
-  }
-}
-
 .progress-section {
   display: flex;
   flex-direction: column;
@@ -414,6 +474,10 @@ export default {
     justify-content: space-between;
 
     .key-name {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
       b {
         color: var(--sec-font-color);
       }

@@ -192,12 +192,14 @@ export function getReserveHistory() {
   )
 }
 
-export function getvotes(period = '') {
-  if (period === '30d') {
-    period = ''
-  }
+export function getVotes(period = '30d') {
   return $axiosInstace.get(
-    endpoints[process.env.NETWORK].SERVER_URL + 'votes' + period
+    endpoints[process.env.NETWORK].SERVER_URL + 'votes',
+    {
+      params: {
+        period,
+      },
+    }
   )
 }
 

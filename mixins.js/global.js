@@ -342,6 +342,11 @@ export default {
       const before = moment(timestamp)
       return moment.duration(now.diff(before)).asSeconds().toFixed()
     },
+    getHumanizeDuration(timestamp) {
+      const now = moment()
+      const before = moment(timestamp)
+      return moment.duration(now.diff(before)).humanize()
+    },
     formatTimeSort(x, y, col, rowX, rowY) {
       return +x < +y ? -1 : +x > +y ? 1 : 0
     },
