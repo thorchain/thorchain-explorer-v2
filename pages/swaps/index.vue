@@ -63,6 +63,7 @@ export default {
     return {
       swaps: undefined,
       swapHistory: undefined,
+      allSwapHistory: undefined, 
       formatProp: [
         {
           label: 'Volume',
@@ -70,11 +71,11 @@ export default {
           sortFn: this.volumeSort,
         },
       ],
-      chartPeriod: '90D',
+      chartPeriod: '90', 
       chartPeriods: [
-        { text: '90 Days', mode: '90D' },
-        { text: '180 Days', mode: '180D' },
-        { text: '1 Year', mode: '1 Year' },
+        { text: '90 Days', mode: '90' }, 
+        { text: '180 Days', mode: '180' }, 
+        { text: '1 Year', mode: '365' }, 
       ],
       tablePeriod: 'day',
       tablePeriods: [
@@ -89,10 +90,10 @@ export default {
       this.$router.push({
         query: {
           ...this.$route.query,
-          chartPeriod: newPeriod,
+          chartPeriod: newPeriod, 
         },
       })
-      this.fetchData(newPeriod)
+      this.filterDataByPeriod(newPeriod) 
     },
     tablePeriod(newPeriod) {
       this.$router.push({
@@ -132,32 +133,43 @@ export default {
       })
     }
 
-    this.fetchData(this.chartPeriod)
+    await this.fetchAllData() 
+    this.filterDataByPeriod(this.chartPeriod) 
     this.fetchTableData(this.tablePeriod)
   },
   methods: {
-    async fetchData(period) {
+    async fetchAllData() {
+      const resSwaps = (
+        await this.$api.getSwapsHistory({
+          interval: 'day',
+          count: 365, 
+        })
+      ).data
+      this.allSwapHistory = resSwaps
+    },
+    filterDataByPeriod(period) {
       let count
       switch (period) {
-        case '90D':
+        case '90':
           count = 90
           break
-        case '180D':
+        case '180':
           count = 180
           break
-        case '1 Year':
+        case '365':
           count = 365
           break
         default:
           count = 90
       }
-      const resSwaps = (
-        await this.$api.getSwapsHistory({
-          interval: 'day',
-          count: count,
-        })
-      ).data
-      this.swapHistory = this.formatSwaps(resSwaps)
+
+      if (this.allSwapHistory) {
+        const filteredData = {
+          ...this.allSwapHistory,
+          intervals: this.allSwapHistory.intervals.slice(-count), 
+        }
+        this.swapHistory = this.formatSwaps(filteredData)
+      }
     },
     async fetchTableData(period) {
       try {
