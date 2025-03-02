@@ -352,31 +352,6 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.overview-card {
-  margin-bottom: 0.5rem;
-  padding: 1rem;
-
-  .stats-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 2rem;
-    align-items: center;
-
-    .stat {
-      padding: 0.5rem 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-
-      b {
-        font-size: 1.25rem;
-        color: var(--sec-font-color);
-      }
-    }
-  }
-}
-
 .votes-container {
   display: flex;
   flex-wrap: wrap;
