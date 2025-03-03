@@ -454,6 +454,7 @@ export default {
     ...mapGetters({
       runePrice: 'getRunePrice',
       chainsHeight: 'getChainsHeight',
+      theme: 'getTheme',
     }),
     totalEarning24() {
       return this.earnings24USD + this.affiliateEarning
@@ -1597,6 +1598,7 @@ export default {
           return ''
         }
 
+        console.log(this.theme)
         return this.theme === 'light' ? detail.icons.url : detail.icons.urlDark
       }
 
