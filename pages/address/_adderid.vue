@@ -293,33 +293,20 @@ export default {
     },
   },
   mounted() {
-    this.fetchAddressData(this.address)
-    this.checkIsVault(this.address)
     const { nextPageToken, prevPageToken } = this.$route.query
-    if (nextPageToken) {
-      this.nextPageToken = nextPageToken
-      this.getActions({
-        limit: 30,
-        address: this.address,
-        nextPageToken,
-      })
-    } else if (prevPageToken) {
-      this.prevPageToken = prevPageToken
-      this.getActions({
-        limit: 30,
-        address: this.address,
-        prevPageToken,
-      })
-    }
+    this.fetchAddressData(this.address, nextPageToken, prevPageToken)
+    this.checkIsVault(this.address)
   },
   methods: {
-    async fetchAddressData(address) {
+    async fetchAddressData(address, nextPageToken, prevPageToken) {
       this.loading = true
       try {
         this.addressLoading = true
         const addrTxs = await this.$api.getActions({
           address,
           limit: 30,
+          ...(nextPageToken && { nextPageToken }),
+          ...(prevPageToken && { prevPageToken }),
         })
         this.addrTxs = addrTxs.data
         this.count = addrTxs.data.count
