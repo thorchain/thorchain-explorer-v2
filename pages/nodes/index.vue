@@ -771,25 +771,25 @@ export default {
         actNodes.forEach((el, index) => {
           fillNodeData(filteredNodes, el, index)
 
-          const chainHeight = this.chainsHeight?.THOR
+          // const chainHeight = this.chainsHeight?.THOR
 
           filteredNodes[index].churn = []
 
-          if (el.jail?.release_height > chainHeight) {
-            filteredNodes[index].churn.push({
-              name: {
-                ...el.jail,
-                releaseTime: moment
-                  .duration(
-                    (el.jail?.release_height - chainHeight) * 6,
-                    'seconds'
-                  )
-                  .humanize(),
-              },
-              icon: require('@/assets/images/handcuffs.svg?inline'),
-              type: 'jail',
-            })
-          }
+          // if (el.jail?.release_height > chainHeight) {
+          //   filteredNodes[index].churn.push({
+          //     name: {
+          //       ...el.jail,
+          //       releaseTime: moment
+          //         .duration(
+          //           (el.jail?.release_height - chainHeight) * 6,
+          //           'seconds'
+          //         )
+          //         .humanize(),
+          //     },
+          //     icon: require('@/assets/images/handcuffs.svg?inline'),
+          //     type: 'jail',
+          //   })
+          // }
 
           // Add churn data
           if (+el.total_bond === lowestBond) {
