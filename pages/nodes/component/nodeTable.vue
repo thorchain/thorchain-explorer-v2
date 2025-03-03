@@ -1,9 +1,9 @@
 <template>
   <vue-good-table
-    v-if="rows"
+    v-if="filteredRows"
     :key="1"
     :columns="cols"
-    :rows="rows"
+    :rows="filteredRows"
     style-class="vgt-table net-table bordered condensed node-table"
     :line-numbers="true"
     :row-style-class="rowClassCallback"
@@ -436,6 +436,7 @@ export default {
   data() {
     return {
       favs: [],
+      filteredRows: this.rows,
     }
   },
   computed: {
@@ -446,6 +447,12 @@ export default {
   watch: {
     favs(array) {
       localStorage.setItem(this.name, JSON.stringify(array))
+    },
+    rows: {
+      handler(newRows) {
+        this.filteredRows = newRows
+      },
+      immediate: true,
     },
   },
   mounted() {
@@ -532,6 +539,19 @@ export default {
 
       return classes.join(' ')
     },
+    isFav(address) {
+      if (this.favs && this.favs.map((f) => f.address).includes(address)) {
+        return true
+      }
+      return false
+    },
+    toggleHighlightedRows(showHighlighted) {
+      if (showHighlighted) {
+        this.filteredRows = this.rows.filter((row) => this.isFav(row.address))
+      } else {
+        this.filteredRows = this.rows
+      }
+    },
     addFav(address, rank) {
       if (address) {
         this.favs = [...this.favs, { address, rank, lastRank: rank }]
@@ -543,12 +563,6 @@ export default {
         return n.address === address
       })
       this.favs = [...favs]
-    },
-    isFav(address) {
-      if (this.favs && this.favs.map((f) => f.address).includes(address)) {
-        return true
-      }
-      return false
     },
   },
 }

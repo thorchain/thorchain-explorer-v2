@@ -59,14 +59,11 @@
         </button>
         <button
           class="filter-button"
-          :class="{ 'enabled-btn': !hides.score }"
-          @click="
-            hides.score = !hides.score
-            saveFilters()
-          "
+          :class="{ 'enabled-btn': showHighlighted }"
+          @click="toggleHighlightedRows"
         >
-          <caret :class="['filter-icon', { disable: hides.score }]" />
-          Score
+          <caret :class="['filter-icon', { disable: !showHighlighted }]" />
+           Favorite
         </button>
         <button
           class="filter-button"
@@ -88,10 +85,12 @@
       :is-loading="!activeNodes"
     >
       <node-table
+        ref="nodeTable"
         :rows="activeNodes"
         :cols="activeCols"
         :search-term="searchTerm"
         name="active-nodes"
+        @highlighted-rows-updated="updateHighlightedRows"
       />
     </card>
     <card
@@ -140,6 +139,8 @@ export default {
   },
   data() {
     return {
+      showHighlighted: false,
+      highlightedRows: [],
       network: [],
       loading: true,
       mode: 'active',
@@ -165,7 +166,6 @@ export default {
       retiringVaults: [],
       hides: {
         isp: false,
-        score: true,
         fee: false,
         age: false,
       },
@@ -1022,6 +1022,13 @@ export default {
         .filter((v) => v.status === 'RetiringVault')
         .map((v) => v.membership)
         .flat()
+    },
+    toggleHighlightedRows() {
+      this.showHighlighted = !this.showHighlighted
+      this.$refs.nodeTable.toggleHighlightedRows(this.showHighlighted)
+    },
+    updateHighlightedRows(rows) {
+      this.highlightedRows = rows
     },
     getNodeOverview() {
       this.$api
