@@ -1184,7 +1184,7 @@ export default {
         1e8
 
       EODEarnings.push({
-        value: EODValue,
+        value: EODValue > 0 ? EODValue : 0,
         itemStyle: {
           color: 'transparent',
           borderColor: '#F3BA2F',
