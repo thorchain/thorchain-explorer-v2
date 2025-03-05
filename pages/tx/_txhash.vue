@@ -1342,9 +1342,14 @@ export default {
 
       const ast = this.parseMemoAsset(thorStatus?.tx.coins[0].asset, this.pools)
 
+      let isSecure = false
+      if (memo.type.includes('secure')) {
+        isSecure = true
+      }
+
       const ins = [
         {
-          asset: assetToTrade(ast),
+          asset: isSecure ? assetToSecure(ast) : assetToTrade(ast),
           amount: thorStatus?.tx.coins[0].amount,
           txid: thorStatus?.tx?.id,
           from: thorStatus?.tx?.from_address,

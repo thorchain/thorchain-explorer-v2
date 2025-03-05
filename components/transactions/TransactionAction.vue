@@ -229,7 +229,10 @@
       </span>
     </div>
 
-    <div v-else-if="row && type === 'trade'" class="action-cell">
+    <div
+      v-else-if="(row && type === 'trade') || type === 'secure'"
+      class="action-cell"
+    >
       <span
         v-for="(ops, i) in row.in"
         :key="'in-' + i"
