@@ -8,7 +8,7 @@
         <info-card :options="standbyInfo" :inner="true" />
       </Card>
     </div>
-    <div  class="grid-network">
+    <div class="grid-network">
       <Card>
         <info-card :options="churnInfo" :inner="true">
           <template #churn="{ item }">
@@ -63,7 +63,7 @@
           @click="toggleHighlightedRows"
         >
           <caret :class="['filter-icon', { disable: !showHighlighted }]" />
-           Favorite
+          Favorite
         </button>
         <button
           class="filter-button"
@@ -85,7 +85,7 @@
       :is-loading="!activeNodes"
     >
       <node-table
-        ref="nodeTable"
+        ref="activeTable"
         :rows="activeNodes"
         :cols="activeCols"
         :search-term="searchTerm"
@@ -99,6 +99,7 @@
       :is-loading="!stbNodes"
     >
       <node-table
+        ref="stbTable"
         :rows="stbNodes"
         :cols="stbCols"
         :search-term="searchTerm"
@@ -115,6 +116,7 @@
         :cols="otherNodes"
         :search-term="searchTerm"
         name="other-nodes"
+        :show-highlighted="false"
       />
     </card>
   </Page>
@@ -1011,6 +1013,8 @@ export default {
     if (savedFilters) {
       this.hides = JSON.parse(savedFilters)
     }
+    const savedShowHighlighted = localStorage.getItem('showHighlighted')
+    this.showHighlighted = savedShowHighlighted === 'true'
   },
   destroyed() {
     this.clearIntervalId(this.intervalId)
@@ -1025,7 +1029,12 @@ export default {
     },
     toggleHighlightedRows() {
       this.showHighlighted = !this.showHighlighted
-      this.$refs.nodeTable.toggleHighlightedRows(this.showHighlighted)
+      localStorage.setItem(
+        'showHighlighted',
+        this.showHighlighted ? 'true' : 'false'
+      )
+      this.$refs.activeTable?.toggleHighlightedRows(this.showHighlighted)
+      this.$refs.stbTable?.toggleHighlightedRows(this.showHighlighted)
     },
     updateHighlightedRows(rows) {
       this.highlightedRows = rows
@@ -1051,6 +1060,9 @@ export default {
     async updateNodes() {
       const { data: nodesInfo } = await this.$api.getNodesInfo()
       this.nodesQuery = nodesInfo
+      if (this.$refs.nodeTable) {
+        this.$refs.nodeTable.toggleHighlightedRows(this.showHighlighted)
+      }
     },
     saveFilters() {
       localStorage.setItem('filterSettings', JSON.stringify(this.hides))

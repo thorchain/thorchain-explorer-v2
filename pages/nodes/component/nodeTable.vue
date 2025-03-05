@@ -450,7 +450,13 @@ export default {
     },
     rows: {
       handler(newRows) {
-        this.filteredRows = newRows
+        const showHighlighted =
+          localStorage.getItem('showHighlighted') === 'true'
+        if (this.name !== 'other-nodes' && showHighlighted) {
+          this.filteredRows = newRows.filter((row) => this.isFav(row.address))
+        } else {
+          this.filteredRows = newRows
+        }
       },
       immediate: true,
     },
@@ -546,24 +552,24 @@ export default {
       return false
     },
     toggleHighlightedRows(showHighlighted) {
-      if (showHighlighted) {
+      if (this.showHighlighted && showHighlighted) {
         this.filteredRows = this.rows.filter((row) => this.isFav(row.address))
       } else {
         this.filteredRows = this.rows
       }
     },
-    addFav(address, rank) {
-      if (address) {
-        this.favs = [...this.favs, { address, rank, lastRank: rank }]
-      }
-    },
-    delFav(address) {
-      const favs = this.favs
-      remove(favs, (n) => {
-        return n.address === address
-      })
-      this.favs = [...favs]
-    },
+  },
+  addFav(address, rank) {
+    if (address) {
+      this.favs = [...this.favs, { address, rank, lastRank: rank }]
+    }
+  },
+  delFav(address) {
+    const favs = this.favs
+    remove(favs, (n) => {
+      return n.address === address
+    })
+    this.favs = [...favs]
   },
 }
 </script>
