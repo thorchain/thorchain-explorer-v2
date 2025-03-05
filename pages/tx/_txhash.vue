@@ -284,7 +284,7 @@ export default {
         }
         const ta = assetFromString(outAsset)
         const isRefund = actions.actions.some((e, i) => e.type === 'refund')
-        if (isRefund && (ta.synth || ta.trade)) {
+        if (isRefund && (ta.synth || ta.trade || ta.secure)) {
           return false
         }
       }
@@ -301,7 +301,8 @@ export default {
         (thorStatus?.stages.outbound_signed?.completed ||
           outAsset?.chain === 'THOR' ||
           outAsset?.synth ||
-          outAsset?.trade) &&
+          outAsset?.trade ||
+          outAsset?.secure) &&
         (thorStatus?.stages?.outbound_delay?.completed ?? true)
 
       return !inboundFinalised || !actionFinalised || !outboundFinalised
@@ -1961,7 +1962,11 @@ export default {
       )
       let outAmount =
         outTxs?.length > 0 ? parseInt(outTxs[0].coins[0].amount) : 0
-      if (!outAmount && actions?.actions?.length > 0 && outAsset.trade) {
+      if (
+        !outAmount &&
+        actions?.actions?.length > 0 &&
+        (outAsset.trade || outAsset.secure)
+      ) {
         outAmount = parseInt(
           Object.values(
             groupBy(
@@ -2176,7 +2181,8 @@ export default {
                 (thorStatus?.stages.outbound_signed?.completed ||
                   outAsset.chain === 'THOR' ||
                   outAsset.synth ||
-                  outAsset.trade) &&
+                  outAsset.trade ||
+                  outAsset.secure) &&
                 (thorStatus?.stages.outbound_delay?.completed ?? true),
             },
             ...outTxs?.slice(1).map((o) => ({
@@ -2194,7 +2200,8 @@ export default {
                 (thorStatus?.stages.outbound_signed?.completed ||
                   outAsset.chain === 'THOR' ||
                   outAsset.synth ||
-                  outAsset.trade),
+                  outAsset.trade ||
+                  outAsset.secure),
             })),
           ],
         },

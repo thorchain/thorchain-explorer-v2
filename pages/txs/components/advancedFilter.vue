@@ -183,9 +183,16 @@ export default {
     assets() {
       const pools = this.$store.state.pools
       if (pools) {
-        return pools
+        const poolsMap = pools
           .map((p) => p.asset)
-          .flatMap((a) => [a, a.replace('.', '/'), a.replace('.', '~')])
+          .flatMap((a) => [
+            a,
+            a.replace('.', '/'),
+            a.replace('.', '~'),
+            a.replace('.', '-'),
+          ])
+
+        return [...poolsMap, 'THOR.RUNE']
       }
 
       return []

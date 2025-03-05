@@ -591,6 +591,8 @@ export default {
               poolAsset.synth = true
             } else if (asset.trade) {
               poolAsset.trade = true
+            } else if (asset.secure) {
+              poolAsset.secure = true
             }
             asset = poolAsset
           }
