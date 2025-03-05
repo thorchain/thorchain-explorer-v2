@@ -645,7 +645,7 @@ export function assetFromString(s) {
   }
 
   const chain = data[0]
-  const symbol = data[1] + (data.length > 2 ? data[2] : '')
+  const symbol = data[1] + (data.length > 2 ? '-' + data[2] : '')
   const ticker = isSecure ? data[1] : symbol.split('-')[0]
   const address = isSecure ? '' : (symbol.split('-')[1] ?? '')
 
