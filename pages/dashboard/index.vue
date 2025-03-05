@@ -1176,12 +1176,12 @@ export default {
           +d?.intervals[d?.intervals.length - 1].runePriceUSD) /
           1e8 ?? 0
       // subtract the dev_fund_reward
-      EODValue -=
-        (+d?.intervals[d?.intervals.length - 2]?.pools?.find(
-          (p) => p.pool === 'dev_fund_reward'
-        )?.earnings *
-          +d?.intervals[d?.intervals.length - 2].runePriceUSD) /
-        1e8
+      const lastTotalEarning =
+        d?.intervals[d?.intervals.length - 2]?.liquidityEarnings
+      const lastDevFundEarning = +d?.intervals[
+        d?.intervals.length - 2
+      ]?.pools?.find((p) => p.pool === 'dev_fund_reward')?.earnings
+      EODValue -= ((lastDevFundEarning / lastTotalEarning) * EODValue) / 1e8
 
       EODEarnings.push({
         value: EODValue > 0 ? EODValue : 0,
