@@ -8,7 +8,7 @@
         <info-card :options="standbyInfo" :inner="true" />
       </Card>
     </div>
-    <div class="grid-network">
+    <div  class="grid-network">
       <Card>
         <info-card :options="churnInfo" :inner="true">
           <template #churn="{ item }">
