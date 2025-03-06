@@ -826,27 +826,50 @@ export const affiliateMap = {
   thor1xmaggkcln5m5fnha2780xrdrulmplvfrz6wj3l: interfaces.shapeshift,
 }
 
-export function getExplorerAddressUrl(chain, query) {
+export function getExplorerAddressUrl(chain, query, type) {
+  let isAddress = true
+  if (type === 'hash') {
+    isAddress = false
+  }
+
   switch (chain) {
     case 'BCH':
-      return `https://www.blockchain.com/explorer/addresses/bch/${query}`
+      return isAddress
+        ? `https://www.blockchain.com/explorer/addresses/bch/${query}`
+        : `https://www.blockchain.com/explorer/transactions/bch/${query}`
     case 'BTC':
-      return `https://www.blockchain.com/explorer/addresses/btc/${query}`
+      return isAddress
+        ? `https://www.blockchain.com/explorer/addresses/btc/${query}`
+        : `https://www.blockchain.com/explorer/transactions/btc/${query}`
     case 'ETH':
-      return `https://etherscan.io/address/${query}`
+      return isAddress
+        ? `https://etherscan.io/address/${query}`
+        : `https://etherscan.io/tx/0x${query}`
     case 'BSC':
-      return `https://bscscan.com/address/${query}`
+      return isAddress
+        ? `https://bscscan.com/address/${query}`
+        : `https://bscscan.com/tx/0x${query}`
     case 'AVAX':
-      return `https://snowtrace.io/address/${query}`
+      return isAddress
+        ? `https://snowtrace.io/address/${query}`
+        : `https://snowtrace.io/tx/0x${query}`
     case 'DOGE':
-      return `https://blockchair.com/dogecoin/address/${query}`
+      return isAddress
+        ? `https://blockchair.com/dogecoin/address/${query}`
+        : `https://blockchair.com/dogecoin/transaction/${query}`
     case 'ATOM':
     case 'GAIA':
-      return `https://www.mintscan.io/cosmos/address/${query}`
+      return isAddress
+        ? `https://www.mintscan.io/cosmos/address/${query}`
+        : `https://www.mintscan.io/cosmos/tx/${query}`
     case 'LTC':
-      return `https://blockchair.com/litecoin/address/${query}`
+      return isAddress
+        ? `https://blockchair.com/litecoin/address/${query}`
+        : `https://blockchair.com/litecoin/transaction/${query}`
     case 'BASE':
-      return `https://basescan.org/address/${query}`
+      return isAddress
+        ? `https://basescan.org/address/${query}`
+        : `https://basescan.org/tx/0x${query}`
     default:
       break
   }

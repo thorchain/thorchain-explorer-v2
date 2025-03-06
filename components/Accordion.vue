@@ -141,7 +141,7 @@
               <a
                 class="value"
                 target="_blank"
-                :href="getUrl(s.asset, s.value)"
+                :href="getUrl(s.asset, s.value, s.type)"
                 rel="noopener noreferrer"
               >
                 <external class="icon external-link" />
@@ -277,7 +277,7 @@ export default {
         return `/tx/${value}`
       }
     },
-    getUrl(assetString, value) {
+    getUrl(assetString, value, type) {
       if (!assetString) {
         return
       }
@@ -287,7 +287,7 @@ export default {
         if (synth || trade) {
           return
         }
-        return getExplorerAddressUrl(chain, value)
+        return getExplorerAddressUrl(chain, value, type)
       } catch (error) {
         console.error("could't read the asset")
       }
