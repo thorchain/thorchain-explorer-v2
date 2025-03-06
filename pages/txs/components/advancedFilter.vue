@@ -289,6 +289,10 @@ export default {
             'thorname',
             'runePoolDeposit',
             'runePoolWithdraw',
+            'bond',
+            'unbond',
+            'trade',
+            'secure',
           ]
         : [
             'unknown',
