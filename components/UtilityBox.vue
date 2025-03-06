@@ -1,5 +1,5 @@
 <template lang="">
-  <div class="utility-wrapper" style="margin-left: 0.7rem">
+  <div class="utility-wrapper">
     <copy :str-copy="value" />
     <div class="divider" />
     <qr-btn :qrcode="value" />

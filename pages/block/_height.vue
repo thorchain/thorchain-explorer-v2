@@ -473,10 +473,16 @@ export default {
   font-size: 11px;
   color: var(--font-color);
   padding: 0 0.8rem;
+  gap: 8px;
+
   span {
+    font-size: 0.85rem;
     text-overflow: ellipsis;
-    max-width: 70%;
     overflow: hidden;
+
+    @include md {
+      font-size: 1rem;
+    }
   }
   &.loading {
     max-width: 300px;

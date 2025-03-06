@@ -568,11 +568,16 @@ export default {
     font-weight: bold;
     color: var(--font-color);
     padding: 0 0.8rem;
+    gap: 8px;
+    text-overflow: ellipsis;
+    overflow: hidden;
 
     span {
-      text-overflow: ellipsis;
-      max-width: 70%;
-      overflow: hidden;
+      font-size: 0.85rem;
+
+      @include md {
+        font-size: 1rem;
+      }
     }
   }
 }
