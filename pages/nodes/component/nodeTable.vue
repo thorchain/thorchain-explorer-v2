@@ -11,6 +11,11 @@
       enabled: true,
       externalQuery: searchTerm,
     }"
+    :sort-options="{
+      enabled: true,
+      initialSortBy: sortColumn ? [{ field: sortColumn, type: sortOrder }] : [],
+    }"
+    @on-sort-change="handleSortChange"
   >
     <template slot="table-column" slot-scope="props">
       <div v-if="props.column.field.includes('behind')" class="table-asset">
@@ -432,7 +437,7 @@ export default {
     ExternalIcon,
     VaultIcon,
   },
-  props: ['rows', 'cols', 'name', 'searchTerm'],
+  props: ['rows', 'cols', 'name', 'searchTerm', 'sortColumn', 'sortOrder'],
   data() {
     return {
       favs: [],
@@ -470,6 +475,17 @@ export default {
     rankChange(address, rank) {
       const na = this.favs.find((f) => f.address === address)
       return na.rank - rank
+    },
+    handleSortChange(params) {
+      if (!params || !params[0] || !params[0].field) {
+        console.error('Sorting parameters are undefined or invalid:', params)
+        return
+      }
+
+      this.$emit('sort-changed', {
+        column: params[0].field,
+        order: params[0].type,
+      })
     },
     loadRank() {
       const value = this.rows
@@ -558,18 +574,18 @@ export default {
         this.filteredRows = this.rows
       }
     },
-  },
-  addFav(address, rank) {
-    if (address) {
-      this.favs = [...this.favs, { address, rank, lastRank: rank }]
-    }
-  },
-  delFav(address) {
-    const favs = this.favs
-    remove(favs, (n) => {
-      return n.address === address
-    })
-    this.favs = [...favs]
+    addFav(address, rank) {
+      if (address) {
+        this.favs = [...this.favs, { address, rank, lastRank: rank }]
+      }
+    },
+    delFav(address) {
+      const favs = this.favs
+      remove(favs, (n) => {
+        return n.address === address
+      })
+      this.favs = [...favs]
+    },
   },
 }
 </script>

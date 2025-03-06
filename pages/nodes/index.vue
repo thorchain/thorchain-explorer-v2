@@ -90,6 +90,9 @@
         :cols="activeCols"
         :search-term="searchTerm"
         name="active-nodes"
+        :sort-column="sortColumn"
+        :sort-order="sortOrder"
+        @sort-changed="onSortChange"
         @highlighted-rows-updated="updateHighlightedRows"
       />
     </card>
@@ -141,6 +144,8 @@ export default {
   },
   data() {
     return {
+      sortColumn: null,
+      sortOrder: null,
       showHighlighted: false,
       highlightedRows: [],
       network: [],
@@ -1015,6 +1020,11 @@ export default {
     }
     const savedShowHighlighted = localStorage.getItem('showHighlighted')
     this.showHighlighted = savedShowHighlighted === 'true'
+    const savedSorting = JSON.parse(localStorage.getItem('tableSorting'))
+    if (savedSorting) {
+      this.sortColumn = savedSorting.column
+      this.sortOrder = savedSorting.order
+    }
   },
   destroyed() {
     this.clearIntervalId(this.intervalId)
@@ -1026,6 +1036,14 @@ export default {
         .filter((v) => v.status === 'RetiringVault')
         .map((v) => v.membership)
         .flat()
+    },
+    saveSorting(column, order) {
+      localStorage.setItem('tableSorting', JSON.stringify({ column, order }))
+    },
+    onSortChange({ column, order }) {
+      this.sortColumn = column
+      this.sortOrder = order
+      localStorage.setItem('tableSorting', JSON.stringify({ column, order }))
     },
     toggleHighlightedRows() {
       this.showHighlighted = !this.showHighlighted
