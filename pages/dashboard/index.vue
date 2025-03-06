@@ -67,12 +67,11 @@
           <div class="stat-item">
             <burn class="stat-image" />
             <div class="item-detail">
-              <div class="header">Max | Total | Circulating | Burned</div>
+              <div class="header">Total | Circulating | Burned</div>
               <skeleton-item
                 :loading="!totalBurnedRune || !circulating"
                 class="value"
               >
-                {{ (5 * 1e8 - totalBurnedRune) | number('0a') }} |
                 {{ runeSupply | number('0a') }} |
                 {{ circulating | number('0a') }} |
                 {{ totalBurnedRune | number('0a') }}
