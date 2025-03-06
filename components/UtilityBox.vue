@@ -1,6 +1,6 @@
 <template lang="">
   <div class="utility-wrapper">
-    <copy :str-copy="value" />
+    <copy :str-copy="value" style="height: 16px" />
     <div class="divider" />
     <qr-btn :qrcode="value" />
   </div>
@@ -18,6 +18,7 @@ export default {
   padding: 0.4rem;
   border-radius: 0.3rem;
   background-color: var(--bg-color);
+  height: 1.6rem;
 
   .divider {
     margin: 0 8px;

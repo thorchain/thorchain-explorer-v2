@@ -663,6 +663,7 @@ button[disabled] {
 }
 .explorers {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 
   .explorer-link {

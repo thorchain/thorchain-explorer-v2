@@ -1,14 +1,21 @@
 <template>
   <page class="address-container">
-    <div class="address-header">
-      <WalletIcon class="icon" />
-      <span>{{
-        nodeAddress ? 'Node Address' : isVault ? vaultType : 'Address'
-      }}</span>
-    </div>
-    <div class="address-name">
-      <span style="color: var(--primary-color)">{{ address }}</span>
-      <UtilityBox :value="address" />
+    <div class="address-section">
+      <div class="address-header">
+        <Avatar :name="address" />
+      </div>
+      <div class="address-name">
+        <span class="address-value" style="color: var(--sec-font-color)">{{
+          address
+        }}</span>
+        <UtilityBox
+          :value="address"
+          style="
+            border: 1px solid var(--border-color);
+            margin-left: 0rem !important;
+          "
+        />
+      </div>
     </div>
     <template>
       <template v-if="!isVault">
@@ -175,12 +182,10 @@ import Balance from './components/balance.vue'
 import Pools from './components/pools.vue'
 import Loans from './components/loans.vue'
 import Bonds from './components/bonds.vue'
-import WalletIcon from '~/assets/images/wallet.svg?inline'
 import { formatAsset, assetFromString } from '~/utils'
 
 export default {
   components: {
-    WalletIcon,
     Thorname,
     Balance,
     Pools,
@@ -508,25 +513,6 @@ export default {
   .content {
     margin-top: 0.5rem;
   }
-  .utility-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.4rem;
-    border-radius: 0.3rem;
-    background-color: var(--bg-color);
-
-    .divider {
-      margin: 0 8px;
-
-      &::after {
-        display: block;
-        content: ' ';
-        border-right: 1px solid var(--border-color);
-        height: 16px;
-      }
-    }
-  }
 
   .qr-wrapper {
     position: relative;
@@ -547,11 +533,17 @@ export default {
     line-height: 0.7rem;
   }
 
+  .address-section {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0 0.8rem;
+  }
+
   .address-header {
     display: flex;
     align-items: center;
-    margin-bottom: 1rem;
-    padding: 0 0.8rem;
 
     span {
       margin-left: 0.7rem;
@@ -560,6 +552,7 @@ export default {
       color: var(--sec-font-color);
     }
   }
+
   .address-name {
     display: flex;
     flex-wrap: wrap;
@@ -567,17 +560,22 @@ export default {
     margin: 0.4rem 0;
     font-weight: bold;
     color: var(--font-color);
-    padding: 0 0.8rem;
     gap: 8px;
     text-overflow: ellipsis;
     overflow: hidden;
+  }
 
-    span {
-      font-size: 0.85rem;
+  .address-value {
+    align-items: center;
+    background-color: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    display: flex;
+    padding: 0.5rem;
+    font-size: 0.65rem;
 
-      @include md {
-        font-size: 1rem;
-      }
+    @include md {
+      font-size: 1rem;
     }
   }
 }
