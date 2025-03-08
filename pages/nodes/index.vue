@@ -293,14 +293,6 @@ export default {
           tdClass: 'mono',
         },
         {
-          label: 'Score',
-          field: 'score',
-          type: 'number',
-          tdClass: 'mono center',
-          thClass: 'center',
-          hidden: this.hides?.score ?? false,
-        },
-        {
           label: 'APY',
           field: 'apy',
           type: 'percentage',
@@ -1091,8 +1083,6 @@ export default {
         this.activeCols.push({ field: 'isp', label: 'ISP' })
       } else if (col === 'fee') {
         this.activeCols.push({ field: 'fee', label: 'Fee' })
-      } else if (col === 'score') {
-        this.activeCols.push({ field: 'score', label: 'Score' })
       } else if (col === 'age') {
         this.activeCols.push({ field: 'age', label: 'Age' })
       }

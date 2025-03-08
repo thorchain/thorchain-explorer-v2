@@ -190,11 +190,6 @@
         <span v-else-if="props.column.field == 'fee'">
           <span>{{ props.formattedRow[props.column.field] }}</span>
         </span>
-        <span v-else-if="props.column.field == 'score'">
-          <span>{{
-            props.formattedRow[props.column.field] | number('0,0.00')
-          }}</span>
-        </span>
         <span v-else-if="props.column.field == 'operator'">
           <v-menu
             v-if="!props.row.providers || props.row.providers.length !== 1"
