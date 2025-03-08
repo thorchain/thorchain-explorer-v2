@@ -4,6 +4,30 @@
       :options="infoCardOptions"
       style="margin-bottom: 0.5rem"
     ></info-card>
+    <h3 class="header-recent-vote">Latest Votes</h3>
+    <div class="recent-votes-container">
+      <div
+        v-for="(vote, index) in recentVotes"
+        :key="index"
+        class="recent-vote-card"
+      >
+        <div class="recent-vote-content">
+          <span class="vote-value">{{ vote.voteValue }} </span>
+          <div class="key-name">
+            <small>Value :</small>
+            <b>{{ vote.value }}</b>
+          </div>
+          <NuxtLink class="clickable" :to="{ path: `/tx/${vote.nodeAddress}` }">
+            {{ formatAddress(vote.nodeAddress) }}
+          </NuxtLink>
+        </div>
+        <div class="vote-date">
+          <small>Date:</small>
+          <b>{{ formatDate(vote.date) }}</b>
+        </div>
+      </div>
+    </div>
+
     <div class="search-container">
       <div id="vote-search-container">
         <input
@@ -137,6 +161,7 @@ export default {
     return {
       loading: true,
       votes: [],
+      recentVotes: [],
       activeNodes: [],
       votesRequired: 0,
       formattedVotes: [],
@@ -202,6 +227,7 @@ export default {
       ])
       this.processVotes()
       this.updateStatsDetails()
+      this.updateRecentVotes()
     } catch (error) {
       console.error('Error fetching data:', error)
     } finally {
@@ -261,7 +287,6 @@ export default {
             }
           }
 
-          // If inside the active nodes check it out
           const delIndex = voteInfo.notVoted.indexOf(address)
           if (delIndex === -1) {
             continue
@@ -276,13 +301,33 @@ export default {
           }
         }
 
-        // Push to the votes
         votes.push(voteInfo)
       }
 
       this.formattedVotes = votes.sort((a, b) => {
         return b.latestVote - a.latestVote
       })
+    },
+    updateRecentVotes() {
+      const recentVotes = []
+      for (let i = 0; i < this.votes.length; i++) {
+        const vote = this.votes[i]
+        for (let j = 0; j < vote.votes.length; j++) {
+          const { key, date, address } = vote.votes[j]
+          recentVotes.push({
+            nodeAddress: address,
+            voteValue: vote.value,
+            value: key,
+            date: date / 1e6,
+          })
+        }
+      }
+      this.recentVotes = recentVotes
+        .sort((a, b) => b.date - a.date)
+        .slice(0, 10)
+    },
+    formatDate(date) {
+      return moment(date).format('YYYY-MM-DD HH:mm:ss')
     },
     isVotePassed(o, key, value) {
       if (this.mimirData[value] === +key) return true
@@ -518,5 +563,79 @@ export default {
   display: flex;
   align-items: center;
   gap: 0.25rem;
+}
+.header-recent-vote{
+  color: var(--sec-font-color);
+}
+.recent-votes-container{
+  display: flex;
+  flex-direction: row;
+  overflow: auto;
+  padding-bottom: 8px;
+  margin-bottom: 0.5rem;
+  gap: 0.5rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) var(--bg-color);
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: var(--bg-color);
+  }
+}
+
+.recent-vote-card {
+  background: var(--bg-color);
+  border: 1px solid var(--border-color) !important;
+  border-radius: 8px;
+  padding: 16px;
+  min-width: 250px;
+  flex: 0 0 auto;
+  .recent-vote-content{
+    display: flex;
+    gap: 0.5rem;
+    flex-direction: column;
+  }
+
+  .vote-value {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--sec-font-color);
+  }
+
+  .key-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+
+    small {
+      color: var(--sec-font-color);
+      font-weight: 400;
+    }
+
+    b {
+      color: var(--sec-font-color);
+      font-weight: 500;
+    }
+  }
+  .vote-date {
+    font-size: 0.85rem;
+    color: var(--sec-font-color);
+    margin-top: 8px;
+  }
+
+  .node-address {
+    font-size: 0.85rem;
+    color: var(--sec-font-color);
+    word-break: break-all;
+    margin-top: 8px;
+  }
 }
 </style>
