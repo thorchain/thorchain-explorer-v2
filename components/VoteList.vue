@@ -1,7 +1,7 @@
 <template>
   <div class="vote-list">
     <nuxt-link
-      v-for="(address, idx) in addresses.slice(0, 6)"
+      v-for="(address, idx) in filteredAddresses.slice(0, 6)"
       :key="idx"
       :to="`/address/${address}`"
       class="mini-bubble"
@@ -12,15 +12,15 @@
       {{ formatAddress(address) }}
     </nuxt-link>
     <button
-      v-if="addresses.length > 6 && !show"
+      v-if="filteredAddresses.length > 6 && !show"
       class="more-button"
       @click="show = true"
     >
-      +{{ addresses.length - 6 }} more
+      +{{ filteredAddresses.length - 6 }} more
     </button>
     <template v-if="show">
       <nuxt-link
-        v-for="(address, idx) in addresses.slice(6)"
+        v-for="(address, idx) in filteredAddresses.slice(6)"
         :key="idx + 6"
         :to="`/address/${address}`"
         class="mini-bubble"
@@ -44,11 +44,26 @@ export default {
     color: {
       required: false,
     },
+    searchQuery: {
+      type: String,
+      default: '',
+    },
   },
   data() {
     return {
       show: false,
     }
+  },
+  computed: {
+    filteredAddresses() {
+      if (!this.searchQuery) {
+        return this.addresses
+      }
+      const query = this.searchQuery.toLowerCase()
+      return this.addresses.filter((address) =>
+        address.toLowerCase().includes(query)
+      )
+    },
   },
   methods: {
     formatAddress(address) {

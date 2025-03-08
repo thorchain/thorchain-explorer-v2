@@ -60,6 +60,7 @@
                     :color="
                       getColorForVote(isVotePassed(o, key, vote.value), key)
                     "
+                    :search-query="searchQuery"
                   ></vote-list>
                   <div v-if="o.votesInLast24h > 0" class="change-24h">
                     24H Votes:
@@ -86,6 +87,7 @@
                     <vote-list
                       :addresses="vote.notVoted"
                       color="#e74c3c"
+                      :search-query="searchQuery"
                     ></vote-list>
                   </div>
                 </div>
