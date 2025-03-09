@@ -17,7 +17,10 @@
             <small>Value :</small>
             <b>{{ vote.value }}</b>
           </div>
-          <NuxtLink class="clickable" :to="{ path: `/tx/${vote.nodeAddress}` }">
+          <NuxtLink
+            class="clickable"
+            :to="{ path: `/address/${vote.nodeAddress}` }"
+          >
             {{ formatAddress(vote.nodeAddress) }}
           </NuxtLink>
         </div>
@@ -564,10 +567,10 @@ export default {
   align-items: center;
   gap: 0.25rem;
 }
-.header-recent-vote{
+.header-recent-vote {
   color: var(--sec-font-color);
 }
-.recent-votes-container{
+.recent-votes-container {
   display: flex;
   flex-direction: row;
   overflow: auto;
@@ -597,7 +600,7 @@ export default {
   padding: 16px;
   min-width: 250px;
   flex: 0 0 auto;
-  .recent-vote-content{
+  .recent-vote-content {
     display: flex;
     gap: 0.5rem;
     flex-direction: column;
