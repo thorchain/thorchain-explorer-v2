@@ -2,7 +2,7 @@
   <div class="overflow-auto">
     <b-pagination
       v-model="currentPage"
-      :total-rows="totalRows"
+      :total-rows="limitedTotalRows"
       :per-page="perPage"
       first-number
       last-number
@@ -26,6 +26,13 @@ export default {
     currentPage: {
       type: Number,
       default: 1,
+    },
+  },
+  computed: {
+    limitedTotalRows() {
+      const maxPages = 200
+      const maxRows = maxPages * this.perPage
+      return Math.min(this.totalRows, maxRows)
     },
   },
   methods: {
