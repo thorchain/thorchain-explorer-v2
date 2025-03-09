@@ -159,8 +159,15 @@
       </template>
       <template>
         <transactions :txs="addrTxs" :owner="address" :loading="loading" />
+        <NewPagination
+          v-if="addrTxs && addrTxs.actions && count > -1"
+          :total-rows="count"
+          :per-page="30"
+          :current-page="currentPage"
+          @change="onPageChange"
+        />
         <pagination
-          v-if="addrTxs && addrTxs.actions"
+          v-else-if="addrTxs && addrTxs.actions"
           :meta="addrTxs.actions"
           :loading="loading"
           @nextPage="goNext"
@@ -239,6 +246,7 @@ export default {
         },
       ],
       pools: undefined,
+      currentPage: 1,
     }
   },
   computed: {
@@ -303,16 +311,28 @@ export default {
     this.checkIsVault(this.address)
   },
   methods: {
-    async fetchAddressData(address, nextPageToken, prevPageToken) {
+    async fetchAddressData(
+      address,
+      offset = 0,
+      limit = 30,
+      nextPageToken,
+      prevPageToken
+    ) {
       this.loading = true
       try {
         this.addressLoading = true
-        const addrTxs = await this.$api.getActions({
-          address,
-          limit: 30,
-          ...(nextPageToken && { nextPageToken }),
-          ...(prevPageToken && { prevPageToken }),
-        })
+
+        const params = { address, limit }
+
+        if (this.count === -1) {
+          if (nextPageToken) params.nextPageToken = nextPageToken
+          if (prevPageToken) params.prevPageToken = prevPageToken
+        } else {
+          params.offset = offset
+        }
+
+        const addrTxs = await this.$api.getActions(params)
+
         this.addrTxs = addrTxs.data
         this.count = addrTxs.data.count
         this.nextPageToken = addrTxs.data.meta.nextPageToken
@@ -384,6 +404,11 @@ export default {
         address: this.address,
         nextPageToken: this.nextPageToken,
       })
+    },
+    onPageChange(newPage) {
+      this.currentPage = newPage
+      const offset = (newPage - 1) * 30
+      this.fetchAddressData(this.address, offset)
     },
     goPrev() {
       const query = { ...this.$route.query }

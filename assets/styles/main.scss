@@ -931,19 +931,8 @@ input {
     display: flex;
     align-items: center;
 
-    &:first-child .page-link {
-      border-top-left-radius: 0.5rem;
-      border-bottom-left-radius: 0.5rem;
-    }
-
-    &:last-child .page-link {
-      border-top-right-radius: 0.5rem;
-      border-bottom-right-radius: 0.5rem;
-    }
-
     .page-link {
-      background: transparent;
-      margin-left: -1px;
+      background-color: var(--card-bg-color);
       padding: 0.3rem 0.5rem;
       border: 1px solid var(--border-color);
       color: var(--sec-font-color);
@@ -953,6 +942,12 @@ input {
     [type='button']:not(:disabled),
     button:not(:disabled) {
       cursor: pointer;
+
+      &:hover {
+        background-color: var(--active-bg-color);
+        color: var(--primary-color);
+        border-color: var(--primary-color);
+      }
     }
 
     &.active .page-link {
@@ -960,7 +955,7 @@ input {
     }
 
     &.disabled .page-link {
-      color: var(--font-color);
+      color: #6c757d;
     }
   }
 }
