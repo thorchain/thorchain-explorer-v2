@@ -6,8 +6,8 @@
       :per-page="perPage"
       first-number
       last-number
-      @change="onPageChange"
       class="custom-pagination"
+      @change="onPageChange"
     ></b-pagination>
   </div>
 </template>
@@ -43,33 +43,25 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss">
 .custom-pagination {
   display: flex;
   justify-content: flex-end;
   align-items: center;
   padding: 0.5rem;
   border-radius: 0.5rem;
-}
+  gap: 8px;
 
-.custom-pagination >>> .page-item.active .page-link {
-  color: white;
-  background-color: var(--green);
-  border-color: var(--border-color);
-}
+  .page-item {
+    border-radius: 5px;
+    .page-link {
+      border-color: var(--border-color);
+      border-radius: 5px;
+    }
 
-.custom-pagination >>> .page-link {
-  color: var(--green);
-  margin: 0 5px;
-  border-radius: 5px;
-}
-
-.custom-pagination >>> .page-link:hover {
-  color: white;
-  background-color: var(--green);
-  border-color: var(--border-color);
-}
-.custom-pagination >>> .page-item.disabled .page-link {
-  color: #6c757d;
+    &.active .page-link {
+      color: var(--primary-color);
+    }
+  }
 }
 </style>
