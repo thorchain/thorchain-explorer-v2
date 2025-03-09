@@ -1,10 +1,13 @@
 <template>
-  <div v-if="avatarSvg" v-html="avatarSvg"></div>
+  <div v-if="avatarUrl" class="avatar-container">
+    <img :src="avatarUrl" alt="User Avatar" />
+  </div>
 </template>
 
 <script>
 import { createAvatar } from '@dicebear/core'
 import { identicon } from '@dicebear/collection'
+import { toPng } from '@dicebear/converter'
 
 export default {
   props: {
@@ -15,7 +18,7 @@ export default {
   },
   data() {
     return {
-      avatarSvg: '',
+      avatarUrl: '',
     }
   },
   mounted() {
@@ -25,10 +28,14 @@ export default {
     name: 'generateAvatar',
   },
   methods: {
-    generateAvatar() {
+    async generateAvatar() {
       try {
-        const avatar = createAvatar(identicon, { seed: this.name })
-        this.avatarSvg = avatar.toString()
+        const avatar = createAvatar(identicon, { seed: this.name }).toString()
+
+        const png = await toPng(avatar)
+        const dataUri = await png.toDataUri()
+
+        this.avatarUrl = dataUri
       } catch (error) {
         console.error('Error generating avatar:', error)
       }
@@ -38,7 +45,7 @@ export default {
 </script>
 
 <style scoped>
-div {
+.avatar-container {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -47,5 +54,12 @@ div {
   height: 2.5rem;
   border-radius: 50%;
   overflow: hidden;
+  border: 2px solid var(--border-color);
+}
+
+.avatar-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 </style>
