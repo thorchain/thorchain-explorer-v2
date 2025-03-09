@@ -1,6 +1,6 @@
 <template>
   <div v-if="avatarUrl" class="avatar-container">
-    <img :src="avatarUrl" alt="User Avatar" />
+    <img :src="avatarUrl" alt="Address Avatar" />
   </div>
 </template>
 
@@ -21,11 +21,11 @@ export default {
       avatarUrl: '',
     }
   },
-  mounted() {
-    this.generateAvatar()
-  },
   watch: {
     name: 'generateAvatar',
+  },
+  mounted() {
+    this.generateAvatar()
   },
   methods: {
     async generateAvatar() {
@@ -49,7 +49,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: var(--border-color);
+  background-color: var(--bg-color);
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 50%;
