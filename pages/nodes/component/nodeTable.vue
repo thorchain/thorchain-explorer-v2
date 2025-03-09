@@ -448,7 +448,7 @@
           <h3>Operator Details</h3>
           <CrossIcon class="close-btn" @click="closeModal" />
         </div>
-        <table class="provider-table">
+        <table class="modal-table">
           <tr>
             <th style="text-align: left">Address</th>
             <th>Bond</th>
@@ -796,7 +796,7 @@ export default {
   color: var(--sec-font-color);
 }
 
-.provider-table {
+.modal-table {
   width: 100%;
 
   th,
