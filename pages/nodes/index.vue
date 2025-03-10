@@ -801,6 +801,8 @@ export default {
                   ? 'churn-out'
                   : 'churn-out-candidate',
             })
+            // lowest
+            // leaving count++
           }
 
           if (index === oldestIndex) {
@@ -812,6 +814,8 @@ export default {
                   ? 'churn-out'
                   : 'churn-out-candidate',
             })
+            // oldest
+            // leaving count++
           }
 
           if (+el.slash_points === highestSlash) {
@@ -823,6 +827,8 @@ export default {
                   ? 'churn-out'
                   : 'churn-out-candidate',
             })
+            // highest
+            // leaving count++
           }
 
           if (
@@ -850,6 +856,8 @@ export default {
             ) {
               extraChurn += 1
             }
+            // leave
+            // leaving count++
           }
         })
 
@@ -923,6 +931,9 @@ export default {
                   : 'churn-in-candidate',
             })
             churnNodes++
+            // get details...
+            // get bond
+            // show churnNodes
             lastChurnIndex = i
           }
 
