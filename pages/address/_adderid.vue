@@ -306,14 +306,21 @@ export default {
     },
   },
   mounted() {
-    const { nextPageToken, prevPageToken } = this.$route.query
-    this.fetchAddressData(this.address, nextPageToken, prevPageToken)
+    const { nextPageToken, prevPageToken, page } = this.$route.query
+    this.currentPage = page ? parseInt(page) : 1
+    this.fetchAddressData(
+      this.address,
+      (this.currentPage - 1) * 30,
+      30,
+      nextPageToken,
+      prevPageToken
+    )
     this.checkIsVault(this.address)
   },
   methods: {
     async fetchAddressData(
       address,
-      offset = 0,
+      offset = (this.currentPage - 1) * 30,
       limit = 30,
       nextPageToken,
       prevPageToken
@@ -322,13 +329,11 @@ export default {
       try {
         this.addressLoading = true
 
-        const params = { address, limit }
+        const params = { address, limit, offset }
 
         if (this.count === -1) {
           if (nextPageToken) params.nextPageToken = nextPageToken
           if (prevPageToken) params.prevPageToken = prevPageToken
-        } else {
-          params.offset = offset
         }
 
         const addrTxs = await this.$api.getActions(params)
@@ -408,6 +413,10 @@ export default {
     onPageChange(newPage) {
       this.currentPage = newPage
       const offset = (newPage - 1) * 30
+      this.$router.push({
+        path: this.$route.path,
+        query: { ...this.$route.query, page: newPage },
+      })
       this.fetchAddressData(this.address, offset)
     },
     goPrev() {
