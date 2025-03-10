@@ -624,7 +624,7 @@ export default {
 
       return [
         {
-          title: 'Churn',
+          title: 'Current Churn',
           rowStart: 2,
           colSpan: 1,
           grid: true,
