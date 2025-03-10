@@ -163,6 +163,10 @@ export default {
       totalAwards: undefined,
       leastBondChurn: 0,
       retiringVaults: [],
+      enteringBond: 0,
+      enteringCount: 0,
+      leavingBond: 0,
+      leavingCount: 0,
       hides: {
         isp: false,
         score: true,
@@ -620,11 +624,11 @@ export default {
 
       return [
         {
-          title: 'Churn',
+          title: 'Current Churn',
           rowStart: 2,
           colSpan: 1,
           grid: true,
-          icon: require('@/assets/images/churn.svg'),
+          icon: require('@/assets/images/next-churn.svg'),
           items: [
             {
               name: 'Next Churn',
@@ -676,42 +680,39 @@ export default {
     blockRewardInfo() {
       return [
         {
-          title: 'Block Rewards (Daily)',
+          title: 'Next Churn',
           rowStart: 2,
           colSpan: 1,
           grid: true,
-          icon: require('@/assets/images/cube.svg'),
+          icon: require('@/assets/images/churn.svg'),
           items: [
             {
-              name: 'Bond',
-              value:
-                (this.network.blockRewards?.bondReward / 10 ** 8 ?? 0) *
-                (5256000 / 365),
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              name: 'Leaving Count',
+              value: this.leavingCount,
+              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
+            },
+            {
+              name: 'Leaving Bond',
+              value: this.leavingBond / 1e8,
+              filter: (v) =>
+                `${this.$options.filters.number(v, '0,0.00a')} RUNE`,
               usdValue: true,
             },
             {
-              name: 'Pool',
-              value:
-                (this.network.blockRewards?.poolReward / 10 ** 8 ?? 0) *
-                (5256000 / 365),
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              name: 'Entering Count',
+              value: this.enteringCount,
+              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
+            },
+            {
+              name: 'Entering Bond',
+              value: this.enteringBond / 1e8,
+              filter: (v) =>
+                `${this.$options.filters.number(v, '0,0.00a')} RUNE`,
               usdValue: true,
             },
             {
-              name: 'Total',
-              value:
-                (this.network.blockRewards?.blockReward / 10 ** 8 ?? 0) *
-                (5256000 / 365),
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
-              usdValue: true,
-            },
-            {
-              name: 'Per Node',
-              value:
-                ((this.network.blockRewards?.bondReward / 10 ** 8 ?? 0) *
-                  (5256000 / 365)) /
-                +this.network?.activeNodeCount,
+              name: 'Bond Difference',
+              value: (this.enteringBond - this.leavingBond) / 1e8,
               filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
               usdValue: true,
             },
@@ -768,28 +769,12 @@ export default {
         }
 
         let extraChurn = 0
+        let leavingCount = 0
+        let leavingBond = 0
         actNodes.forEach((el, index) => {
           fillNodeData(filteredNodes, el, index)
 
-          // const chainHeight = this.chainsHeight?.THOR
-
           filteredNodes[index].churn = []
-
-          // if (el.jail?.release_height > chainHeight) {
-          //   filteredNodes[index].churn.push({
-          //     name: {
-          //       ...el.jail,
-          //       releaseTime: moment
-          //         .duration(
-          //           (el.jail?.release_height - chainHeight) * 6,
-          //           'seconds'
-          //         )
-          //         .humanize(),
-          //     },
-          //     icon: require('@/assets/images/handcuffs.svg?inline'),
-          //     type: 'jail',
-          //   })
-          // }
 
           // Add churn data
           if (+el.total_bond === lowestBond) {
@@ -801,6 +786,8 @@ export default {
                   ? 'churn-out'
                   : 'churn-out-candidate',
             })
+            leavingBond += +el.total_bond
+            leavingCount += 1
           }
 
           if (index === oldestIndex) {
@@ -812,6 +799,8 @@ export default {
                   ? 'churn-out'
                   : 'churn-out-candidate',
             })
+            leavingBond += +el.total_bond
+            leavingCount += 1
           }
 
           if (+el.slash_points === highestSlash) {
@@ -823,6 +812,8 @@ export default {
                   ? 'churn-out'
                   : 'churn-out-candidate',
             })
+            leavingBond += +el.total_bond
+            leavingCount += 1
           }
 
           if (
@@ -850,10 +841,13 @@ export default {
             ) {
               extraChurn += 1
             }
+            leavingBond += +el.total_bond
+            leavingCount += 1
           }
         })
 
         this.setExtraChurn(extraChurn)
+        this.setLeaving(leavingBond, leavingCount)
         return filteredNodes
       } else {
         return undefined
@@ -882,6 +876,8 @@ export default {
         const churnInNumbers = 3 + this.newNodesChurn + this.extraNodeChurn
         let lastChurnIndex = 0
         let churnNodes = 0
+        let enteringBond = 0
+        let enteringCount = 0
         for (let i = 0; i < stbNodes.length; i++) {
           const el = stbNodes[i]
           fillNodeData(filteredNodes, el)
@@ -923,6 +919,8 @@ export default {
                   : 'churn-in-candidate',
             })
             churnNodes++
+            enteringBond += +el.total_bond
+            enteringCount += 1
             lastChurnIndex = i
           }
 
@@ -933,6 +931,8 @@ export default {
             })
           }
         }
+
+        this.setEntering(enteringBond, enteringCount)
 
         // Detect the last churn node
         this.setTheLeastBondChurn(filteredNodes[lastChurnIndex]?.total_bond)
@@ -1065,6 +1065,14 @@ export default {
     },
     setTheLeastBondChurn(bond) {
       this.leastBondChurn = bond
+    },
+    setEntering(bond, count) {
+      this.enteringBond = bond
+      this.enteringCount = count
+    },
+    setLeaving(bond, count) {
+      this.leavingBond = bond
+      this.leavingCount = count
     },
     totalAwardsCalc() {
       this.totalAwards = 0
