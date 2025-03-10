@@ -919,8 +919,6 @@ export default {
                   : 'churn-in-candidate',
             })
             churnNodes++
-            // enteringBond += get bond
-            // entering count++
             enteringBond += +el.total_bond
             enteringCount += 1
             lastChurnIndex = i
