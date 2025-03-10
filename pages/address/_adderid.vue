@@ -8,13 +8,14 @@
         <span class="address-value" style="color: var(--sec-font-color)">{{
           address
         }}</span>
-        <UtilityBox
-          :value="address"
-          style="
-            border: 1px solid var(--border-color);
-            margin-left: 0rem !important;
-          "
-        />
+        <div class="qr-copy-wrapper">
+          <div class="item">
+            <Copy :str-copy="address" />
+          </div>
+          <div id="qrcode" class="item">
+            <qr-btn :qrcode="address"></qr-btn>
+          </div>
+        </div>
       </div>
     </div>
     <template>
@@ -634,6 +635,52 @@ export default {
 .stat-wrapper {
   .value {
     color: var(--primary-color);
+  }
+}
+.qr-copy-wrapper {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+
+  .item {
+    border: 1px solid var(--border-color);
+    background-color: var(--card-bg-color);
+    padding: 0.5rem;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    margin: 0;
+    max-width: 100%;
+    min-width: 32px;
+
+    &:not(.tx-id) {
+      height: 28px;
+      width: 28px;
+      @include md {
+        height: 32px;
+        width: 32px;
+      }
+    }
+
+    span {
+      color: var(--sec-font-color);
+      line-height: 15px;
+      height: 16px;
+    }
+
+    &:hover {
+      span {
+        color: var(--primary-color);
+      }
+
+      * {
+        fill: var(--primary-color);
+      }
+    }
+
+    * {
+      fill: var(--sec-font-color);
+    }
   }
 }
 </style>
