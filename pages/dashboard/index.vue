@@ -99,6 +99,10 @@
         ]"
         :act-nav.sync="swapMode"
       >
+      <div class="open-button">
+      <button class="button-charts" @click="openChart">Open Chart</button>
+    </div>
+      <div>
         <VChart
           v-if="swapMode == 'swap-vol'"
           :key="1"
@@ -109,6 +113,7 @@
           :loading-options="showLoading"
           :theme="chartTheme"
         />
+      </div>
         <div
           v-if="swapMode == 'pools-vol'"
           :key="1"
@@ -853,6 +858,9 @@ export default {
     },
     stringToPercentage(val) {
       return (Number.parseFloat(val ?? 0) * 100).toFixed(2).toString() + ' %'
+    },
+    openChart() {
+      this.$router.push('/charts/swap')
     },
     isChurnHalted() {
       if (this.mimirInfo && this.mimirInfo.HALTCHURNING) {
@@ -2231,6 +2239,31 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 10px 8px;
+  color: var(--font-color);
+  cursor: pointer;
+  font-size: 14px;
+  text-decoration: none;
+  font-weight: 500;
+
+  &:hover {
+    color: var(--primary-color);
+    background-color: var(--active-bg-color);
+    .arrow-icon {
+      fill: var(--primary-color);
+    }
+  }
+}
+.open-button{
+  display: flex;
+  justify-content: flex-end;
+}
+.button-charts {
+  background-color: var(--bg-color);
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
   padding: 10px 8px;
   color: var(--font-color);
   cursor: pointer;
