@@ -82,6 +82,7 @@ export default {
           label: 'L1 Swaps',
           filter: { type: ['swap'], asset: ['nosynth', 'notrade', 'norune'] },
         },
+        { label: 'Secure', filter: { type: ['secure'] } },
         { label: 'Trade Swaps', filter: { type: ['swap'], asset: ['trade'] } },
         { label: 'Synth Swaps', filter: { type: ['swap'], asset: ['synth'] } },
         {
@@ -168,7 +169,7 @@ export default {
     },
   },
   mounted() {
-    let params = { ...this.$route.query }
+    const params = { ...this.$route.query }
     if (!params.nextPageToken && this.nextPageToken) {
       params.nextPageToken = this.nextPageToken
     }
