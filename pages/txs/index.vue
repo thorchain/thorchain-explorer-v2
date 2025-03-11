@@ -42,7 +42,15 @@
         </div>
         <transactions v-else :txs="txs" :loading="loading" />
       </div>
+      <NewPagination
+        v-if="txs && txs.actions && count > -1"
+        :total-rows="count"
+        :per-page="30"
+        :current-page="currentPage"
+        @change="onPageChange"
+      />
       <pagination
+        v-else-if="txs && txs.actions"
         :loading="loading"
         :meta="txs && txs.actions"
         @nextPage="goNext"
@@ -70,6 +78,8 @@ export default {
       prevPageToken: undefined,
       error: false,
       showFilters: false,
+      currentPage: 1,
+      count: undefined,
       filtersList: [
         { label: 'All', filter: {} },
         {
@@ -182,6 +192,15 @@ export default {
         },
       })
     },
+    onPageChange(newPage) {
+      this.currentPage = newPage
+      const offset = (newPage - 1) * 30
+      this.$router.push({
+        path: this.$route.path,
+        query: { ...this.$route.query, page: newPage },
+      })
+      this.getActions({ limit: this.limit, offset })
+    },
     goPrev() {
       if (!this.prevPageToken) return
       this.$router.push({
@@ -203,6 +222,7 @@ export default {
           this.txs = res.data
           this.nextPageToken = res.data.meta.nextPageToken
           this.prevPageToken = res.data.meta.prevPageToken
+          this.count = res.data.count
           this.error = false
           this.loading = false
         })
