@@ -88,12 +88,11 @@ export default {
       dropdownOpen: false,
       selectedOption: 'All',
       chartPeriod: '90',
-      chartInterval: 'day', 
+      chartInterval: 'day',
       chartPeriods: [
         { text: '90 D', mode: '90' },
         { text: '180 D', mode: '180' },
         { text: '365 D', mode: '365' },
-        { text: '50 W', mode: '50w' },
         { text: '100 W', mode: '100w' },
       ],
     }
@@ -166,11 +165,16 @@ export default {
       this.swapHistory = undefined
 
       const interval = this.chartPeriod.includes('w') ? 'week' : 'day'
+      let count = 365
+
+      if (interval === 'week') {
+        count = 100
+      }
 
       const resSwaps = (
         await this.$api.getSwapsHistory({
           interval: interval,
-          count: 365,
+          count: count,
           pool: this.selectedOption === 'All' ? undefined : this.selectedOption,
         })
       ).data
