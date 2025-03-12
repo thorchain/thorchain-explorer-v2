@@ -11,21 +11,23 @@
         ]"
         :act-nav.sync="swapMode"
       >
-      <div class="open-button">
-      <button class="button-charts" @click="openChart">Open Chart</button>
-    </div>
-      <div>
-        <VChart
-          v-if="swapMode == 'swap-vol'"
-          :key="1"
-          class="swap-volume-chart"
-          :option="swapHistory"
-          :loading="!swapHistory"
-          :autoresize="true"
-          :loading-options="showLoading"
-          :theme="chartTheme"
-        />
-      </div>
+        <div v-if="swapMode == 'swap-vol'" class="open-button">
+          <button class="button-charts" @click="openChartSwap">
+            Open Chart
+          </button>
+        </div>
+        <div>
+          <VChart
+            v-if="swapMode == 'swap-vol'"
+            :key="1"
+            class="swap-volume-chart"
+            :option="swapHistory"
+            :loading="!swapHistory"
+            :autoresize="true"
+            :loading-options="showLoading"
+            :theme="chartTheme"
+          />
+        </div>
         <div
           v-if="swapMode == 'pools-vol'"
           :key="1"
@@ -92,15 +94,26 @@
         ]"
         :act-nav.sync="poolMode"
       >
-        <VChart
-          v-if="poolMode == 'total-earnings'"
-          :key="1"
-          :option="earningsHistory"
-          :loading="!earningsHistory"
-          :autoresize="true"
-          :loading-options="showLoading"
-          :theme="chartTheme"
-        />
+        <div class="open-button">
+          <button
+            v-if="['pool-earnings', 'affiliates-fees'].includes(poolMode)"
+            class="button-charts"
+            @click="openChartEarnings"
+          >
+            Open Chart
+          </button>
+        </div>
+        <div>
+          <VChart
+            v-if="poolMode == 'total-earnings'"
+            :key="1"
+            :option="earningsHistory"
+            :loading="!earningsHistory"
+            :autoresize="true"
+            :loading-options="showLoading"
+            :theme="chartTheme"
+          />
+        </div>
         <VChart
           v-if="poolMode == 'pool-earnings'"
           :key="2"
@@ -710,8 +723,11 @@ export default {
     stringToPercentage(val) {
       return (Number.parseFloat(val ?? 0) * 100).toFixed(2).toString() + ' %'
     },
-    openChart() {
+    openChartSwap() {
       this.$router.push('/charts/swap')
+    },
+    openChartEarnings() {
+      this.$router.push('/charts/earnings')
     },
     isChurnHalted() {
       if (this.mimirInfo && this.mimirInfo.HALTCHURNING) {
@@ -2137,7 +2153,7 @@ export default {
     }
   }
 }
-.open-button{
+.open-button {
   display: flex;
   justify-content: flex-end;
 }
