@@ -88,7 +88,7 @@ export default {
       dropdownOpen: false,
       selectedOption: 'All',
       chartPeriod: '90',
-      chartInterval: 'day',
+      chartInterval: 'day', 
       chartPeriods: [
         { text: '90 D', mode: '90' },
         { text: '180 D', mode: '180' },
@@ -112,7 +112,7 @@ export default {
     },
   },
   watch: {
-    chartPeriod(newPeriod) {
+    chartPeriod(newPeriod, oldPeriod) {
       this.$router.push({
         query: {
           ...this.$route.query,
@@ -120,7 +120,12 @@ export default {
         },
       })
       localStorage.setItem('selectedPeriod', newPeriod)
-      this.filterDataByPeriod(newPeriod)
+
+      if (newPeriod.includes('w') !== oldPeriod.includes('w')) {
+        this.fetchSwapHistory()
+      } else {
+        this.filterDataByPeriod(newPeriod)
+      }
     },
   },
   async mounted() {
@@ -159,9 +164,12 @@ export default {
     async fetchSwapHistory() {
       this.allSwapHistory = undefined
       this.swapHistory = undefined
+
+      const interval = this.chartPeriod.includes('w') ? 'week' : 'day'
+
       const resSwaps = (
         await this.$api.getSwapsHistory({
-          interval: this.chartPeriod === '100w' ? 'week' : 'day',
+          interval: interval,
           count: 365,
           pool: this.selectedOption === 'All' ? undefined : this.selectedOption,
         })
@@ -335,6 +343,7 @@ export default {
       display: flex;
       align-items: center;
       gap: 8px;
+      align-items: center;
 
       &:hover {
         background-color: var(--active-bg-color);
@@ -388,6 +397,7 @@ export default {
       .selected-options {
         display: flex;
         padding: 0.5rem;
+        align-items: center;
 
         &:hover {
           background-color: var(--active-bg-color);
