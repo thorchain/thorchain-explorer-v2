@@ -26,9 +26,9 @@
         <div v-if="dropdownOpen" class="dropdown-menu">
           <div class="all-section" @click="selectOption('All')">All</div>
           <div
-            class="selected-options"
             v-for="asset in assets"
             :key="asset"
+            class="selected-options"
             @click="selectOption(asset)"
           >
             <asset-icon :asset="asset" class="asset-icon" />
@@ -88,11 +88,13 @@ export default {
       dropdownOpen: false,
       selectedOption: 'All',
       chartPeriod: '90',
+      chartInterval: 'day',
       chartPeriods: [
-        { text: '90 Days', mode: '90' },
-        { text: '180 Days', mode: '180' },
-        { text: '1 Year', mode: '365' },
-        { text: 'Weeks', mode: '100w' },
+        { text: '90 D', mode: '90' },
+        { text: '180 D', mode: '180' },
+        { text: '365 D', mode: '365' },
+        { text: '50 W', mode: '50w' },
+        { text: '100 W', mode: '100w' },
       ],
     }
   },
@@ -155,9 +157,11 @@ export default {
       this.allSwapHistory = resSwaps
     },
     async fetchSwapHistory() {
+      this.allSwapHistory = undefined
+      this.swapHistory = undefined
       const resSwaps = (
         await this.$api.getSwapsHistory({
-          interval: 'day',
+          interval: this.chartPeriod === '100w' ? 'week' : 'day',
           count: 365,
           pool: this.selectedOption === 'All' ? undefined : this.selectedOption,
         })
