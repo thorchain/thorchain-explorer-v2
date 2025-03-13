@@ -95,7 +95,6 @@ export default {
         { text: '50 W', mode: '50w' },
         { text: '100 W', mode: '100w' },
       ],
-      loading: false,
       dataCache: {},
     }
   },
@@ -148,7 +147,6 @@ export default {
       period = this.chartPeriod,
       selectedPool = this.selectedOption
     ) {
-      this.loading = true
 
       if (period === '50w' || period === '100w') {
         this.chartInterval = 'week'
@@ -159,7 +157,6 @@ export default {
       const count = this.getCountFromPeriod(period)
       if (this.chartInterval === 'day' && this.dataCache[count]) {
         this.updateChart(this.dataCache[count], selectedPool)
-        this.loading = false
         return
       }
 
@@ -177,8 +174,6 @@ export default {
         this.updateChart(resEarning, selectedPool)
       } catch (error) {
         console.error('Error fetching earnings:', error)
-      } finally {
-        this.loading = false
       }
     },
     updateChart(data, selectedPool) {
@@ -371,7 +366,7 @@ export default {
       pointer-events: none;
       cursor: pointer;
       max-height: 300px;
-      width: 162px;
+      width: 164px;
       overflow: auto;
       display: flex;
       flex-direction: column;
@@ -395,6 +390,8 @@ export default {
         display: flex;
         padding: 0.5rem;
         align-items: center;
+        width: 100%;
+        justify-content: center;
 
         &:hover {
           background-color: var(--active-bg-color);
