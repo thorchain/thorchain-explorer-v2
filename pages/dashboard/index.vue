@@ -100,7 +100,7 @@
             class="button-charts"
             @click="openChartEarnings"
           >
-            Open Chart
+            {{ poolMode === 'pool-earnings' ? 'Open Chart' : 'Open Chart' }}
           </button>
         </div>
         <div>
@@ -727,7 +727,11 @@ export default {
       this.$router.push('/charts/swap')
     },
     openChartEarnings() {
-      this.$router.push('/charts/earnings')
+      if (this.poolMode === 'pool-earnings') {
+        this.$router.push('/charts/earnings')
+      } else if (this.poolMode === 'affiliates-fees') {
+        this.$router.push('/charts/affiliates')
+      }
     },
     isChurnHalted() {
       if (this.mimirInfo && this.mimirInfo.HALTCHURNING) {
