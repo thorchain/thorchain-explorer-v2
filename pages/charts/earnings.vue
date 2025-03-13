@@ -1,6 +1,6 @@
 <template>
   <Page>
-    <div class="header-swap">
+    <div class="header-earning">
       <Nav
         :active-mode.sync="chartPeriod"
         :nav-items="chartPeriods"
@@ -10,7 +10,7 @@
       <div class="dropdown" :class="{ open: dropdownOpen }">
         <div>
           <button
-            class="button-swap"
+            class="button-earning"
             :class="{
               'selected-all': selectedOption === 'All',
               'selected-asset': selectedOption !== 'All',
@@ -38,7 +38,7 @@
         </div>
       </div>
     </div>
-    <card title="Swaps Volume" :is-loading="loading">
+    <card title="Earnings" :is-loading="loading">
       <VChart
         :option="chartOptions"
         :loading="!chartOptions"
@@ -96,6 +96,7 @@ export default {
         { text: '100 W', mode: '100w' },
       ],
       loading: false,
+      dataCache: {},
     }
   },
 
@@ -156,24 +157,37 @@ export default {
       }
 
       const count = this.getCountFromPeriod(period)
+      if (this.chartInterval === 'day' && this.dataCache[count]) {
+        this.updateChart(this.dataCache[count], selectedPool)
+        this.loading = false
+        return
+      }
+
       try {
         const resEarning = (await earnings(this.chartInterval, count)).data
+        if (this.chartInterval === 'day') {
+          this.dataCache[count] = resEarning
+        }
+
         const latestInterval =
           resEarning.intervals[resEarning.intervals.length - 1]
 
         this.pools = latestInterval.pools.map((pool) => pool.pool)
 
-        const poolEarnings =
-          selectedPool === 'All'
-            ? this.formatEarnings(resEarning)
-            : this.formatEarnings(resEarning, selectedPool)
-
-        this.chartOptions = poolEarnings
+        this.updateChart(resEarning, selectedPool)
       } catch (error) {
         console.error('Error fetching earnings:', error)
       } finally {
         this.loading = false
       }
+    },
+    updateChart(data, selectedPool) {
+      const poolEarnings =
+        selectedPool === 'All'
+          ? this.formatEarnings(data)
+          : this.formatEarnings(data, selectedPool)
+
+      this.chartOptions = poolEarnings
     },
 
     getCountFromPeriod(period) {
@@ -299,7 +313,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.header-swap {
+.header-earning {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -310,7 +324,7 @@ export default {
     display: inline-block;
     margin-bottom: 10px;
 
-    .button-swap {
+    .button-earning {
       background-color: var(--bg-color);
       border-radius: 8px;
       border: 1px solid var(--border-color);
@@ -339,9 +353,6 @@ export default {
         padding: 12.5px 16px;
       }
 
-      &.selected-asset {
-        padding: 9px 16px;
-      }
     }
 
     .dropdown-menu {
@@ -360,12 +371,19 @@ export default {
       pointer-events: none;
       cursor: pointer;
       max-height: 300px;
-      width: 178px;
+      width: 162px;
       overflow: auto;
+      display: flex;
+      flex-direction: column;
+      align-content: center;
+      align-items: center;
 
       .all-section {
         border-bottom: 1px solid var(--border-color);
         padding: 0.75rem;
+        width: 100%;
+        display: flex;
+        justify-content: center;
 
         &:hover {
           background-color: var(--active-bg-color);
