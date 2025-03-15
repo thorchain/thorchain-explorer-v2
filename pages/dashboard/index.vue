@@ -2290,6 +2290,8 @@ export default {
   font-size: 14px;
   text-decoration: none;
   font-weight: 500;
+  position: absolute;
+  z-index: 10; 
 
   &:hover {
     color: var(--primary-color);
