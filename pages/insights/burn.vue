@@ -106,7 +106,9 @@
         </div>
       </div>
     </div>
-
+    <div class="balance-details">
+      <cards-header :table-general-stats="generalStatsDetails" />
+    </div>
     <div class="block-card">
       <transition-group name="block" tag="div">
         <div
@@ -176,6 +178,9 @@ export default {
       updateInterval: undefined,
       totalBurned: undefined,
       burnedBlocks: [],
+      totalSupply: undefined,
+      uncirculatingSupply: undefined,
+      circulatingSupply: undefined,
       burnChart: undefined,
       selectedInterval: '24h',
       intervals: {
@@ -183,6 +188,17 @@ export default {
         '7d': '7D',
         '30d': '30D',
       },
+      generalStatsDetails: [
+        {
+          name: 'Total Supply',
+        },
+        {
+          name: 'Circulating Supply',
+        },
+        {
+          name: 'Uncirculating (Reserve)',
+        },
+      ],
     }
   },
   computed: {
@@ -231,13 +247,47 @@ export default {
           this.totalBurned24h = +incomeBurn / 1e8
         }
 
+        const supplyData = await this.$api.getSupply()
+        const amount = BigInt(supplyData.data.amount.amount)
+        this.totalSupply = Number(amount) / 1e8
+
+        const address = 'thor1dheycdevq39qlkxs2a6wuuzyn4aqxhve4qxtxt'
+        const uncirculatingData = await this.$api.getBalance(address)
+
+        const runeBalance = uncirculatingData.data.result.find(
+          (item) => item.denom === 'rune'
+        )
+
+        this.uncirculatingSupply = runeBalance
+          ? Number(runeBalance.amount) / 1e8
+          : 0
+
+        this.circulatingSupply = this.totalSupply - this.uncirculatingSupply
+
         this.burnChart = this.formatBurn(
           resData,
           intervalKey.includes('d') ? 'day' : 'hour'
         )
+        this.updateStatsDetails()
       } catch (error) {
         console.error('Error fetching data:', error)
       }
+    },
+    updateStatsDetails() {
+      this.generalStatsDetails = [
+        {
+          name: 'Total Supply',
+          value: `${this.$options.filters.number(this.totalSupply, '0.00a')} ${this.runeCur()}`,
+        },
+        {
+          name: 'Circulating Supply',
+          value: `${this.$options.filters.number(this.circulatingSupply, '0.00a')} ${this.runeCur()}`,
+        },
+        {
+          name: 'Uncirculating (Reserve)',
+          value: `${this.$options.filters.number(this.uncirculatingSupply, '0.00a')} ${this.runeCur()}`,
+        },
+      ]
     },
     toggleUnit() {
       this.selectedUnit = this.selectedUnit === 'rune' ? 'dollar' : 'rune'
@@ -411,7 +461,12 @@ export default {
     }
   }
 }
-
+.balance-details {
+  align-items: center;
+  text-align: center;
+  max-width: 50rem;
+  margin: 0.5rem auto;
+}
 .unit-switcher {
   display: flex;
   align-items: center;

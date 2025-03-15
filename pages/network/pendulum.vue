@@ -193,12 +193,14 @@ export default {
   name: 'BalanceScale',
   data() {
     return {
+      securityBudgetBottomTwoThirds: undefined,
       effectiveBond: undefined,
       totalSecuredValue: undefined,
       adjustedSecuredTotal: undefined,
       assetBalancePoints: 10000,
       isAnimationActive: true,
       Rotation: 10,
+      totalVaultValue: undefined,
       poolShare: undefined,
       nodeShare: undefined,
       loading: true,
@@ -218,6 +220,9 @@ export default {
         },
         {
           name: 'Pool Reward Share',
+        },
+        {
+          name: 'Total Vault Value',
         },
       ],
     }
@@ -246,6 +251,7 @@ export default {
           this.loadPoolsData(),
           this.loadNodesData(),
           this.loadMimirData(),
+          this.fetchVaultData(),
         ])
         this.calculateValues()
         this.loading = false
@@ -256,20 +262,71 @@ export default {
       }
     },
 
+    async fetchVaultData() {
+      try {
+        const vaultsResponse = await this.$api.getAsgard()
+        const vaults = vaultsResponse.data
+
+        const poolsResponse = await this.$api.getThorPools()
+        const pools = poolsResponse.data
+
+        const assetPrices = {}
+        pools.forEach((pool) => {
+          const assetPrice =
+            Number(pool.balance_rune) / Number(pool.balance_asset)
+          assetPrices[pool.asset] = assetPrice
+        })
+
+        const assets = new Map()
+        vaults.forEach((vault) => {
+          vault.coins.forEach((coin) => {
+            const currentAmount = assets.get(coin.asset)?.amount || 0
+            assets.set(coin.asset, {
+              amount: currentAmount + Number(coin.amount),
+              asset: coin.asset,
+            })
+          })
+        })
+
+        const vaultAssets = Array.from(assets.values()).map((asset) => {
+          const amountInBase = asset.amount / 1e8
+          const runePrice = assetPrices[asset.asset] || 0
+          const runeValue = amountInBase * runePrice
+
+          return {
+            asset: asset.asset,
+            amount: amountInBase,
+            runeValue: runeValue,
+          }
+        })
+
+        this.totalVaultValue = vaultAssets.reduce(
+          (sum, asset) => sum + asset.runeValue,
+          0
+        )
+      } catch (error) {
+        console.error('Error fetching vault data:', error)
+      }
+    },
+
     async loadNodesData() {
       try {
         const res = await this.$api.getNodes()
         const nodesData = res.data
         const activeNodes = nodesData.filter((node) => node.status === 'Active')
 
+        activeNodes.sort((a, b) => Number(b.total_bond) - Number(a.total_bond))
+
+        const cutoffIndex = Math.floor(activeNodes.length / 3)
+        const bottomTwoThirdsNodes = activeNodes.slice(cutoffIndex)
+
+        this.securityBudgetBottomTwoThirds = bottomTwoThirdsNodes.reduce(
+          (sum, node) => sum + Number(node.total_bond) / 1e8,
+          0
+        )
+
         if (this.pendulumUseEffectiveSecurity === 1) {
-          activeNodes.sort(
-            (a, b) => Number(b.total_bond) - Number(a.total_bond)
-          )
-          const splitIndex = Math.floor(activeNodes.length * (2 / 3))
-          this.effectiveBond = activeNodes
-            .slice(splitIndex)
-            .reduce((sum, node) => sum + Number(node.total_bond) / 1e8, 0)
+          this.effectiveBond = this.securityBudgetBottomTwoThirds
         } else {
           this.effectiveBond = activeNodes.reduce(
             (sum, node) => sum + Number(node.total_bond) / 1e8,
@@ -314,6 +371,9 @@ export default {
         (effectiveBond - this.adjustedSecuredTotal) / effectiveBond
       this.nodeShare = 1 - this.poolShare
 
+      this.securityDelta =
+        this.securityBudgetBottomTwoThirds - this.totalVaultValue
+
       const nodeSharePct = this.nodeShare * 100
       if (Math.abs(nodeSharePct - 50) < 10) {
         this.currentNetworkState = 'Normal'
@@ -340,6 +400,18 @@ export default {
         {
           name: 'Pool Reward Share',
           value: this.$options.filters.percent(this.poolShare, 2),
+        },
+        {
+          name: 'Total Vault Value',
+          value: `${this.$options.filters.number(this.totalVaultValue, '0.00a')} ${this.runeCur()}`,
+        },
+        {
+          name: 'Security Budget (Bottom 2/3)',
+          value: `${this.$options.filters.number(this.securityBudgetBottomTwoThirds, '0.00a')} ${this.runeCur()}`,
+        },
+        {
+          name: 'Security Delta',
+          value: `${this.$options.filters.number(this.securityDelta, '0.00a')} ${this.runeCur()}`,
         },
       ]
     },

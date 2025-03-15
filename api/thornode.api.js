@@ -119,6 +119,12 @@ export function getSupplyRune() {
       'cosmos/bank/v1beta1/supply/rune'
   )
 }
+export function getSupply() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].THORNODE_URL +
+      'cosmos/bank/v1beta1/supply/by_denom?denom=rune'
+  )
+}
 
 export function getThorPools() {
   return $axiosInstace.get(
