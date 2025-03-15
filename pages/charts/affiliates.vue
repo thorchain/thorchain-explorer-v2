@@ -1,6 +1,6 @@
 <template>
   <page>
-    <div class="header-swap">
+    <div class="header-affiliate">
       <Nav
         :active-mode.sync="chartPeriod"
         :nav-items="chartPeriods"
@@ -11,7 +11,6 @@
           <input
             v-model="affiliateInput"
             placeholder="Enter Affiliate and press enter"
-            @keyup.enter="addAffiliate"
             class="search-input"
           />
           <SearchIcon class="search-icon" />
@@ -20,6 +19,7 @@
 
       <card title="Affiliate Fees" :is-loading="loading">
         <VChart
+          :key="affiliateChartKey"
           :option="affiliateChart"
           :loading="!affiliateChart"
           :autoresize="true"
@@ -63,6 +63,7 @@ export default {
   },
   data() {
     return {
+      affiliateChartKey: 0,
       isFetching: false,
       affiliateChart: undefined,
       affiliate: [],
@@ -78,6 +79,7 @@ export default {
         { text: '100 W', mode: '100w' },
       ],
       affiliateInput: '',
+      isFocused: false,
     }
   },
   watch: {
@@ -97,6 +99,10 @@ export default {
       if (newVal.trim() === '') {
         this.filters.affiliate = []
         this.updateQuery({ thorname: undefined, period: undefined })
+        this.fetchAffiliateHistory()
+      } else {
+        this.filters.affiliate = [newVal.trim()]
+        this.updateQuery({ thorname: newVal.trim() })
         this.fetchAffiliateHistory()
       }
     },
@@ -145,50 +151,36 @@ export default {
         )
         xAxis.push(date.format('dddd, MMM D'))
 
-        let filteredNames = {}
-
-        filteredNames = interval.thornames.reduce((acc, thorname) => {
-          const key = ['t', 'tl', 'T'].includes(thorname.thorname)
-            ? 't'
-            : ['ti', 'te', 'tr', 'td', 'tb'].includes(thorname.thorname)
-              ? 'ti'
-              : ['va', 'vi', 'v0'].includes(thorname.thorname)
-                ? 'va'
-                : thorname.thorname
-
+        const groupedThornames = interval.thornames.reduce((acc, thorname) => {
+          const key = thorname.thorname
           if (acc[key]) {
             acc[key].volumeUSD += +thorname.volumeUSD
-            acc[key].count += +thorname.count
           } else {
             acc[key] = {
               volumeUSD: +thorname.volumeUSD,
               thorname: key,
-              count: +thorname.count,
             }
           }
           return acc
         }, {})
 
-        filteredNames = orderBy(
-          Object.values(filteredNames),
+        const sortedThornames = orderBy(
+          Object.values(groupedThornames),
           [(o) => +o.volumeUSD],
           ['desc']
         )
 
-        const topNames = 3
+        const topThornames = sortedThornames.slice(0, 5)
+        const otherThornames = sortedThornames.slice(5)
+
         let otherTotal = 0
+        otherThornames.forEach((thorname) => {
+          otherTotal += +thorname.volumeUSD / 1e2
+        })
 
-        for (let ti = 0; ti < filteredNames.length; ti++) {
-          if (topNames < ti) {
-            otherTotal += +filteredNames[ti]?.volumeUSD / 1e2
-            if (filteredNames.length - 1 === ti) {
-              others.push(otherTotal)
-            }
-            continue
-          }
-
+        topThornames.forEach((thorname) => {
           const thornameIndex = thornames.findIndex(
-            (t) => t.name === filteredNames[ti].thorname
+            (t) => t.name === thorname.thorname
           )
 
           if (thornameIndex >= 0) {
@@ -198,24 +190,27 @@ export default {
                 index
               )
             }
-            thornames[thornameIndex].data.push(
-              +filteredNames[ti]?.volumeUSD / 1e2
-            )
+            thornames[thornameIndex].data.push(+thorname.volumeUSD / 1e2)
           } else {
             let data = []
             if (index > 0) {
               data = this.fillArrayWithZero(data, index)
             }
-            data.push(+filteredNames[ti]?.volumeUSD / 1e2)
+            data.push(+thorname.volumeUSD / 1e2)
             thornames.push({
               type: 'bar',
-              name: filteredNames[ti].thorname,
+              name: thorname.thorname,
               showSymbol: false,
               stack: 'Total',
               data,
             })
           }
+        })
+
+        if (others.length < index + 1) {
+          others.push(0)
         }
+        others[index] += otherTotal
       })
 
       const getInterfaceIcon = (detail) => {
@@ -256,47 +251,47 @@ export default {
         },
         (param) => {
           return `
-            <div class="tooltip-header">
-              ${param[0].name}
-            </div>
-            <div class="tooltip-body">
-              ${param
-                .filter((a) => a.value)
-                .sort((a, b) => {
-                  if (a.seriesName === 'Others') return 1
-                  if (b.seriesName === 'Others') return -1
-                  return b.value - a.value
-                })
-                .map(
-                  (p) => `
-                  <span>
-                    <div class="tooltip-item">
-                      <div class="data-color" style="background-color: ${p.color}">
-                      </div>
-                      ${
-                        this.mapInterfaceName(p.seriesName)
-                          ? `<img class="tooltip-interface-icon" src="${getInterfaceIcon(this.mapInterfaceName(p.seriesName))}"/>`
-                          : `<span style="text-align: left;">
-                            ${p.seriesName}
-                          </span>`
-                      }
-
+        <div class="tooltip-header">
+          ${param[0].name}
+        </div>
+        <div class="tooltip-body">
+          ${param
+            .filter((a) => a.value)
+            .sort((a, b) => {
+              if (a.seriesName === 'Others') return 1
+              if (b.seriesName === 'Others') return -1
+              return b.value - a.value
+            })
+            .map(
+              (p) => `
+                <span>
+                  <div class="tooltip-item">
+                    <div class="data-color" style="background-color: ${p.color}">
                     </div>
-                    <b>$${p.value ? this.$options.filters.number(p.value, '0,0.00a') : '-'}</b>
-                  </span>`
-                )
-                .join('')}
-            </div>
-            <span style="border-top: 1px solid var(--border-color); margin: 2px 0;"></span>
-            <hr>
-            <span>
-              <span>Total Fees</span>
-              <b>$${this.$options.filters.number(
-                param.reduce((a, c) => a + (c.value ? c.value : 0), 0),
-                '0,0a'
-              )}</b>
-            </span>
-          `
+                    ${
+                      this.mapInterfaceName(p.seriesName)
+                        ? `<img class="tooltip-interface-icon" src="${getInterfaceIcon(this.mapInterfaceName(p.seriesName))}"/>`
+                        : `<span style="text-align: left;">
+                          ${p.seriesName}
+                        </span>`
+                    }
+
+                  </div>
+                  <b>$${p.value ? this.$options.filters.number(p.value, '0,0.00a') : '-'}</b>
+                </span>`
+            )
+            .join('')}
+        </div>
+        <span style="border-top: 1px solid var(--border-color); margin: 2px 0;"></span>
+        <hr>
+        <span>
+          <span>Total Fees</span>
+          <b>$${this.$options.filters.number(
+            param.reduce((a, c) => a + (c.value ? c.value : 0), 0),
+            '0,0a'
+          )}</b>
+        </span>
+      `
         }
       )
       console.log('formatchart', foramtchart)
@@ -332,6 +327,7 @@ export default {
           const af = this.formatAffiliateHistory(data)
           console.log('affiliateChart:', af)
           this.affiliateChart = af
+          this.affiliateChartKey += 1
         })
         .catch((error) => {
           console.error('Error fetching affiliate history:', error)
