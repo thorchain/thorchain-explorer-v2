@@ -135,7 +135,7 @@ export default {
     },
 
     updateQueryParams(newParams) {
-      this.$router.push({
+      this.$router.replace({
         query: {
           ...this.$route.query,
           ...newParams,

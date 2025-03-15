@@ -112,7 +112,7 @@ export default {
   },
   watch: {
     chartPeriod(newPeriod, oldPeriod) {
-      this.$router.push({
+      this.$router.replace({
         query: {
           ...this.$route.query,
           chartPeriod: newPeriod,
