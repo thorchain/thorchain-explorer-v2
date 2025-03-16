@@ -13,7 +13,8 @@
         <unknown-icon
           v-if="stat.description"
           v-tooltip="stat.description"
-          class="header-icon"
+          :class="['header-icon', { link: stat.link }]"
+          @click="stat.link && $router.push(stat.link)"
         />
       </div>
       <div v-if="stat.change" class="stat-change">
@@ -100,6 +101,11 @@ export default {
         margin-left: 10px;
         height: 0.9rem;
         width: 0.9rem;
+
+        &.link {
+          cursor: pointer;
+          fill: var(--primary-color);
+        }
       }
     }
 

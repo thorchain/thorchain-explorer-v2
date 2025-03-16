@@ -179,7 +179,7 @@ export default {
       totalBurned: undefined,
       burnedBlocks: [],
       totalSupply: undefined,
-      uncirculatingSupply: undefined,
+      uncirculatedSupply: undefined,
       circulatingSupply: undefined,
       burnChart: undefined,
       selectedInterval: '24h',
@@ -193,10 +193,7 @@ export default {
           name: 'Total Supply',
         },
         {
-          name: 'Circulating Supply',
-        },
-        {
-          name: 'Uncirculating (Reserve)',
+          name: 'Reserve',
         },
       ],
     }
@@ -248,21 +245,22 @@ export default {
         }
 
         const supplyData = await this.$api.getSupply()
-        const amount = BigInt(supplyData.data.amount.amount)
-        this.totalSupply = Number(amount) / 1e8
+        this.totalSupply = +supplyData.data.amount.amount / 1e8
 
-        const address = 'thor1dheycdevq39qlkxs2a6wuuzyn4aqxhve4qxtxt'
-        const uncirculatingData = await this.$api.getBalance(address)
+        // get reserve address balance
+        const uncirculatedData = await this.$api.getBalance(
+          'thor1dheycdevq39qlkxs2a6wuuzyn4aqxhve4qxtxt'
+        )
 
-        const runeBalance = uncirculatingData.data.result.find(
+        const runeBalance = uncirculatedData.data.result.find(
           (item) => item.denom === 'rune'
         )
 
-        this.uncirculatingSupply = runeBalance
+        this.uncirculatedSupply = runeBalance
           ? Number(runeBalance.amount) / 1e8
           : 0
 
-        this.circulatingSupply = this.totalSupply - this.uncirculatingSupply
+        this.circulatingSupply = this.totalSupply - this.uncirculatedSupply
 
         this.burnChart = this.formatBurn(
           resData,
@@ -278,14 +276,18 @@ export default {
         {
           name: 'Total Supply',
           value: `${this.$options.filters.number(this.totalSupply, '0.00a')} ${this.runeCur()}`,
+          extraText: this.$options.filters.currency(
+            this.totalSupply * this.runePrice
+          ),
+          description: 'Total RUNE breakdown (click for more info)',
+          link: '/network',
         },
         {
-          name: 'Circulating Supply',
-          value: `${this.$options.filters.number(this.circulatingSupply, '0.00a')} ${this.runeCur()}`,
-        },
-        {
-          name: 'Uncirculating (Reserve)',
-          value: `${this.$options.filters.number(this.uncirculatingSupply, '0.00a')} ${this.runeCur()}`,
+          name: 'Reserve',
+          value: `${this.$options.filters.number(this.uncirculatedSupply, '0.00a')} ${this.runeCur()}`,
+          extraText: this.$options.filters.currency(
+            this.uncirculatedSupply * this.runePrice
+          ),
         },
       ]
     },

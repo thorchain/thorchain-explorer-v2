@@ -91,7 +91,7 @@
             rx="5"
           />
           <text
-            x="80"
+            x="79"
             y="136"
             text-anchor="middle"
             font-size="8"
@@ -158,8 +158,8 @@
             rx="5"
           />
           <text
-            x="222"
-            y="135"
+            x="223"
+            y="137"
             text-anchor="middle"
             font-size="8"
             fill="var(--sec-font-color)"
@@ -184,11 +184,15 @@
     </card>
     <div class="balance-details">
       <cards-header :table-general-stats="generalStatsDetails" />
+      <hr class="info-hr" />
+      <cards-header :table-general-stats="securityStats" />
     </div>
   </div>
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+
 export default {
   name: 'BalanceScale',
   data() {
@@ -221,13 +225,26 @@ export default {
         {
           name: 'Pool Reward Share',
         },
+      ],
+      securityStats: [
         {
           name: 'Total Vault Value',
+        },
+        {
+          name: 'Security Budget',
+          description:
+            'Total bond of the bottom 2/3 of the nodes in the network',
+        },
+        {
+          name: 'Security Delta',
         },
       ],
     }
   },
   computed: {
+    ...mapGetters({
+      runePrice: 'getRunePrice',
+    }),
     scalePosition() {
       const maxTilt = 15
       const midpoint = 50
@@ -267,22 +284,19 @@ export default {
         const vaultsResponse = await this.$api.getAsgard()
         const vaults = vaultsResponse.data
 
-        const poolsResponse = await this.$api.getThorPools()
-        const pools = poolsResponse.data
+        const { data: pools } = await this.$api.getThorPools()
 
-        const assetPrices = {}
-        pools.forEach((pool) => {
-          const assetPrice =
-            Number(pool.balance_rune) / Number(pool.balance_asset)
-          assetPrices[pool.asset] = assetPrice
-        })
+        const assetPrices = pools.reduce((prices, pool) => {
+          prices[pool.asset] = +pool.balance_rune / +pool.balance_asset
+          return prices
+        }, {})
 
         const assets = new Map()
         vaults.forEach((vault) => {
           vault.coins.forEach((coin) => {
             const currentAmount = assets.get(coin.asset)?.amount || 0
             assets.set(coin.asset, {
-              amount: currentAmount + Number(coin.amount),
+              amount: currentAmount + +coin.amount,
               asset: coin.asset,
             })
           })
@@ -290,13 +304,13 @@ export default {
 
         const vaultAssets = Array.from(assets.values()).map((asset) => {
           const amountInBase = asset.amount / 1e8
-          const runePrice = assetPrices[asset.asset] || 0
-          const runeValue = amountInBase * runePrice
+          const assetPrice = assetPrices[asset.asset] || 0
+          const runeValue = amountInBase * assetPrice
 
           return {
             asset: asset.asset,
             amount: amountInBase,
-            runeValue: runeValue,
+            runeValue,
           }
         })
 
@@ -388,10 +402,16 @@ export default {
         {
           name: 'Total Active Bond',
           value: `${this.$options.filters.number(this.effectiveBond, '0.00a')} ${this.runeCur()}`,
+          extraText: this.$options.filters.currency(
+            this.effectiveBond * this.runePrice
+          ),
         },
         {
           name: 'Total Secured Value',
           value: `${this.$options.filters.number(this.adjustedSecuredTotal, '0.00a')} ${this.runeCur()}`,
+          extraText: this.$options.filters.currency(
+            this.adjustedSecuredTotal * this.runePrice
+          ),
         },
         {
           name: 'Node Reward Share',
@@ -401,17 +421,30 @@ export default {
           name: 'Pool Reward Share',
           value: this.$options.filters.percent(this.poolShare, 2),
         },
+      ]
+      this.securityStats = [
         {
           name: 'Total Vault Value',
           value: `${this.$options.filters.number(this.totalVaultValue, '0.00a')} ${this.runeCur()}`,
+          extraText: this.$options.filters.currency(
+            this.totalVaultValue * this.runePrice
+          ),
         },
         {
-          name: 'Security Budget (Bottom 2/3)',
+          name: 'Security Budget',
           value: `${this.$options.filters.number(this.securityBudgetBottomTwoThirds, '0.00a')} ${this.runeCur()}`,
+          extraText: this.$options.filters.currency(
+            this.securityBudgetBottomTwoThirds * this.runePrice
+          ),
+          description:
+            'Total bond of the bottom 2/3 of the nodes in the network',
         },
         {
           name: 'Security Delta',
           value: `${this.$options.filters.number(this.securityDelta, '0.00a')} ${this.runeCur()}`,
+          extraText: this.$options.filters.currency(
+            this.securityDelta * this.runePrice
+          ),
         },
       ]
     },
@@ -501,5 +534,11 @@ export default {
 
 .balance-svg {
   transform: scale(1.2);
+}
+
+.info-hr {
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 16px;
 }
 </style>
