@@ -337,7 +337,7 @@ export default {
         })
     },
     updateQuery(params) {
-      this.$router.push({ query: { ...this.$route.query, ...params } })
+      this.$router.replace({ query: { ...this.$route.query, ...params } })
     },
   },
 }

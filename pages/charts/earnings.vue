@@ -47,10 +47,45 @@
         :theme="chartTheme"
       />
     </card>
+    <card title="Liquidity Fees" :is-loading="loading">
+      <VChart
+        :option="liquidityFees"
+        :loading="!liquidityFees"
+        :autoresize="true"
+        :loading-options="showLoading"
+        :theme="chartTheme"
+      />
+    </card>
+    <card title="Bonding Earnings" :is-loading="loading">
+      <div class="bond-earnings-switcher">
+        <label class="switch">
+          <input
+            type="checkbox"
+            :checked="isDividedByAvgNodeCount"
+            @change="toggleDividedByAvgNodeCount"
+          />
+          <span class="slider round"></span>
+        </label>
+        <span class="mode-label">{{
+          isDividedByAvgNodeCount
+            ? 'Divided by Avg Node Count'
+            : 'Bonding Earnings'
+        }}</span>
+      </div>
+
+      <VChart
+        :option="bondingEarnings"
+        :loading="!bondingEarnings"
+        :autoresize="true"
+        :loading-options="showLoading"
+        :theme="chartTheme"
+      />
+    </card>
   </Page>
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import moment from 'moment'
 import { use } from 'echarts/core'
 import { SVGRenderer } from 'echarts/renderers'
@@ -82,10 +117,13 @@ export default {
   },
   data() {
     return {
+      bondingEarnings: undefined,
+      isDividedByAvgNodeCount: false,
       dropdownOpen: false,
       selectedOption: this.$route.query.pool || 'All',
       pools: [],
       chartOptions: undefined,
+      liquidityFees: undefined,
       chartPeriod: this.$route.query.period || '90',
       chartInterval: 'day',
       chartPeriods: [
@@ -100,6 +138,9 @@ export default {
   },
 
   computed: {
+    ...mapGetters({
+      runePrice: 'getRunePrice',
+    }),
     filteredPools() {
       return this.pools
     },
@@ -156,6 +197,8 @@ export default {
       const count = this.getCountFromPeriod(period)
       if (this.chartInterval === 'day' && this.dataCache[count]) {
         this.updateChart(this.dataCache[count], selectedPool)
+        this.updateLiquidityFeesChart(this.dataCache[count], selectedPool)
+        this.updateBondingEarningsChart(this.dataCache[count])
         return
       }
 
@@ -171,6 +214,8 @@ export default {
         this.pools = latestInterval.pools.map((pool) => pool.pool)
 
         this.updateChart(resEarning, selectedPool)
+        this.updateLiquidityFeesChart(resEarning, selectedPool)
+        this.updateBondingEarningsChart(resEarning)
       } catch (error) {
         console.error('Error fetching earnings:', error)
       }
@@ -182,6 +227,20 @@ export default {
           : this.formatEarnings(data, selectedPool)
 
       this.chartOptions = poolEarnings
+    },
+
+    updateLiquidityFeesChart(data, selectedPool) {
+      const liquidityFeesData =
+        selectedPool === 'All'
+          ? this.formatLiquidityFees(data)
+          : this.formatLiquidityFees(data, selectedPool)
+
+      this.liquidityFees = liquidityFeesData
+    },
+
+    updateBondingEarningsChart(data) {
+      const bondingEarningsData = this.formatBondingEarnings(data)
+      this.bondingEarnings = bondingEarningsData
     },
 
     getCountFromPeriod(period) {
@@ -294,6 +353,212 @@ export default {
         }
       )
     },
+
+    formatLiquidityFees(d, selectedPool = 'All') {
+      const xAxis = []
+      const liquidityFeesData = []
+
+      d?.intervals.forEach((interval, index) => {
+        if (index === d?.intervals?.length - 1) {
+          return
+        }
+
+        const formatType =
+          this.chartInterval === 'week' ? 'YYYY , MMM D' : 'dddd, MMM D'
+        xAxis.push(
+          moment(
+            ((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
+          ).format(formatType)
+        )
+
+        const fees =
+          selectedPool === 'All'
+            ? +interval.liquidityFees * this.runePrice
+            : +interval.pools.find((pool) => pool.pool === selectedPool)
+                ?.totalLiquidityFeesRune * this.runePrice
+
+        liquidityFeesData.push(fees / 1e8)
+      })
+
+      return this.basicChartFormat(
+        (value) => `$ ${this.normalFormat(value)}`,
+        [
+          {
+            type: 'bar',
+            name:
+              selectedPool === 'All'
+                ? 'Liquidity Fees'
+                : 'Total Liquidity Fees RUNE',
+            showSymbol: false,
+            areaStyle: {},
+            data: liquidityFeesData,
+            smooth: true,
+            lineStyle: {
+              width: 2,
+            },
+            z: 3,
+          },
+        ],
+        xAxis,
+        {
+          yAxis: [
+            {
+              type: 'value',
+              position: 'left',
+              show: false,
+              splitLine: {
+                show: true,
+              },
+              axisLine: {
+                show: false,
+              },
+              min: 'dataMin',
+              max: 'dataMax',
+            },
+          ],
+        },
+        (param) => {
+          const filteredParam = param.filter(
+            (p) =>
+              p.seriesName ===
+              (selectedPool === 'All'
+                ? 'Liquidity Fees'
+                : 'Total Liquidity Fees RUNE')
+          )
+
+          if (filteredParam.length === 0) return ''
+
+          return `
+        <div class="tooltip-header">
+          ${filteredParam[0].name}
+        </div>
+        <div class="tooltip-body">
+          ${filteredParam
+            .map(
+              (p) => `
+                <span>
+                  <div class="tooltip-item">
+                    <div class="data-color" style="background-color: ${p.color}"></div>
+                    <span style="text-align: left;">
+                      ${p.seriesName}
+                    </span>
+                  </div>
+                  <b>$${this.$options.filters.number(p.value, '0,0.00a')}</b>
+                </span>`
+            )
+            .join('')}
+        </div>
+      `
+        }
+      )
+    },
+
+    formatBondingEarnings(d) {
+      const xAxis = []
+      const bondingEarningsData = []
+
+      d?.intervals.forEach((interval, index) => {
+        if (index === d?.intervals?.length - 1) {
+          return
+        }
+
+        const formatType =
+          this.chartInterval === 'week' ? 'YYYY , MMM D' : 'dddd, MMM D'
+        xAxis.push(
+          moment(
+            ((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
+          ).format(formatType)
+        )
+
+        const earnings = +interval.bondingEarnings * this.runePrice
+        const avgNodeCount = +interval.avgNodeCount || 1
+
+        const finalEarnings = this.isDividedByAvgNodeCount
+          ? earnings / avgNodeCount
+          : earnings
+
+        bondingEarningsData.push(finalEarnings / 1e8)
+      })
+
+      return this.basicChartFormat(
+        (value) => `$ ${this.normalFormat(value)}`,
+        [
+          {
+            type: 'bar',
+            name: this.isDividedByAvgNodeCount
+              ? 'Bond Earnings / Avg Node Count'
+              : 'Bond Earnings',
+            showSymbol: false,
+            areaStyle: {},
+            data: bondingEarningsData,
+            smooth: true,
+            lineStyle: {
+              width: 2,
+            },
+            z: 3,
+          },
+        ],
+        xAxis,
+        {
+          yAxis: [
+            {
+              type: 'value',
+              position: 'left',
+              show: false,
+              splitLine: {
+                show: true,
+              },
+              axisLine: {
+                show: false,
+              },
+              min: 'dataMin',
+              max: 'dataMax',
+            },
+          ],
+        },
+        (param) => {
+          const filteredParam = param.filter(
+            (p) =>
+              p.seriesName ===
+              (this.isDividedByAvgNodeCount
+                ? 'Bond Earnings / Avg Node Count'
+                : 'Bond Earnings')
+          )
+
+          if (filteredParam.length === 0) return ''
+
+          return `
+        <div class="tooltip-header">
+          ${filteredParam[0].name}
+        </div>
+        <div class="tooltip-body">
+          ${filteredParam
+            .map(
+              (p) => `
+                <span>
+                  <div class="tooltip-item">
+                    <div class="data-color" style="background-color: ${p.color}"></div>
+                    <span style="text-align: left;">
+                      ${p.seriesName}
+                    </span>
+                  </div>
+                  <b>$${this.$options.filters.number(p.value, '0,0.00a')}</b>
+                </span>`
+            )
+            .join('')}
+        </div>
+      `
+        }
+      )
+    },
+
+    toggleDividedByAvgNodeCount() {
+      this.isDividedByAvgNodeCount = !this.isDividedByAvgNodeCount
+      this.updateBondingEarningsChart(
+        this.dataCache[this.getCountFromPeriod(this.chartPeriod)]
+      )
+    },
+
     toggleDropdown() {
       this.dropdownOpen = !this.dropdownOpen
     },
@@ -403,5 +668,62 @@ export default {
       pointer-events: auto;
     }
   }
+}
+.bond-earnings-switcher {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-left: auto;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 53px;
+  height: 27px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--border-color);
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: '';
+  height: 19px;
+  width: 21px;
+  border-radius: 50%;
+  left: 4px;
+  bottom: 4px;
+  background-color: var(--sec-font-color);
+  transition: 0.4s;
+}
+
+input:checked + .slider {
+  background-color: var(--primary-color);
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.mode-label {
+  font-size: 14px;
+  color: var(--font-color);
+  margin-left: 10px;
 }
 </style>
