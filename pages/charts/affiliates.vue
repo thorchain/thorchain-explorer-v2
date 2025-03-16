@@ -35,7 +35,7 @@
 import moment from 'moment'
 import { use } from 'echarts/core'
 import { SVGRenderer } from 'echarts/renderers'
-import { range, orderBy, fill } from 'lodash'
+import { orderBy } from 'lodash'
 import { LineChart, BarChart } from 'echarts/charts'
 import {
   TitleComponent,
@@ -75,8 +75,7 @@ export default {
       chartPeriods: [
         { text: '90 D', mode: '90' },
         { text: '180 D', mode: '180' },
-        { text: '365 D', mode: '365' },
-        { text: '100 W', mode: '100w' },
+        { text: '20 W', mode: '20w' },
       ],
       affiliateInput: '',
       isFocused: false,
@@ -152,7 +151,14 @@ export default {
         xAxis.push(date.format('dddd, MMM D'))
 
         const groupedThornames = interval.thornames.reduce((acc, thorname) => {
-          const key = thorname.thorname
+          const key = ['t', 'tl', 'T'].includes(thorname.thorname)
+            ? 't'
+            : ['ti', 'te', 'tr', 'td', 'tb'].includes(thorname.thorname)
+              ? 'ti'
+              : ['va', 'vi', 'v0'].includes(thorname.thorname)
+                ? 'va'
+                : thorname.thorname
+
           if (acc[key]) {
             acc[key].volumeUSD += +thorname.volumeUSD
           } else {
@@ -294,7 +300,6 @@ export default {
       `
         }
       )
-      console.log('formatchart', foramtchart)
       return foramtchart
     },
     updateTags(type, tags) {
@@ -312,8 +317,8 @@ export default {
       }
 
       const params = {
-        count: count,
-        interval: interval,
+        count,
+        interval,
       }
 
       if (this.filters.affiliate.length > 0) {
@@ -323,9 +328,7 @@ export default {
       this.$api
         .getAffiliateHistory(params)
         .then(({ data }) => {
-          console.log('Data from API:', data)
           const af = this.formatAffiliateHistory(data)
-          console.log('affiliateChart:', af)
           this.affiliateChart = af
           this.affiliateChartKey += 1
         })

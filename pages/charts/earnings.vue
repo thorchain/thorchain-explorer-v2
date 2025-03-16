@@ -51,7 +51,6 @@
 </template>
 
 <script>
-import { earnings } from '~/api/midgard.api'
 import moment from 'moment'
 import { use } from 'echarts/core'
 import { SVGRenderer } from 'echarts/renderers'
@@ -63,6 +62,7 @@ import {
   GridComponent,
 } from 'echarts/components'
 import VChart from 'vue-echarts'
+import { earnings } from '~/api/midgard.api'
 import AngleIcon from '~/assets/images/angle-down.svg?inline'
 
 use([
@@ -147,7 +147,6 @@ export default {
       period = this.chartPeriod,
       selectedPool = this.selectedOption
     ) {
-
       if (period === '50w' || period === '100w') {
         this.chartInterval = 'week'
       } else {
@@ -221,12 +220,11 @@ export default {
 
         const earnings =
           selectedPool === 'All'
-            ? +interval.liquidityEarnings / 10 ** 8
+            ? +interval.earnings * +interval.runePriceUSD
             : +interval.pools.find((pool) => pool.pool === selectedPool)
-                ?.earnings /
-              10 ** 8
+                ?.earnings * +interval.runePriceUSD
 
-        earningsData.push(earnings)
+        earningsData.push(earnings / 1e8)
       })
 
       return this.basicChartFormat(
@@ -347,7 +345,6 @@ export default {
       &.selected-all {
         padding: 12.5px 16px;
       }
-
     }
 
     .dropdown-menu {
