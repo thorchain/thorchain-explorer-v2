@@ -91,7 +91,7 @@
             rx="5"
           />
           <text
-            x="80"
+            x="79"
             y="136"
             text-anchor="middle"
             font-size="8"
@@ -158,8 +158,8 @@
             rx="5"
           />
           <text
-            x="222"
-            y="135"
+            x="223"
+            y="137"
             text-anchor="middle"
             font-size="8"
             fill="var(--sec-font-color)"
@@ -184,21 +184,27 @@
     </card>
     <div class="balance-details">
       <cards-header :table-general-stats="generalStatsDetails" />
+      <hr class="info-hr" />
+      <cards-header :table-general-stats="securityStats" />
     </div>
   </div>
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+
 export default {
   name: 'BalanceScale',
   data() {
     return {
+      securityBudgetBottomTwoThirds: undefined,
       effectiveBond: undefined,
       totalSecuredValue: undefined,
       adjustedSecuredTotal: undefined,
       assetBalancePoints: 10000,
       isAnimationActive: true,
       Rotation: 10,
+      totalVaultValue: undefined,
       poolShare: undefined,
       nodeShare: undefined,
       loading: true,
@@ -220,9 +226,25 @@ export default {
           name: 'Pool Reward Share',
         },
       ],
+      securityStats: [
+        {
+          name: 'Total Vault Value',
+        },
+        {
+          name: 'Security Budget',
+          description:
+            'Total bond of the bottom 2/3 of the nodes in the network',
+        },
+        {
+          name: 'Security Delta',
+        },
+      ],
     }
   },
   computed: {
+    ...mapGetters({
+      runePrice: 'getRunePrice',
+    }),
     scalePosition() {
       const maxTilt = 15
       const midpoint = 50
@@ -246,6 +268,7 @@ export default {
           this.loadPoolsData(),
           this.loadNodesData(),
           this.loadMimirData(),
+          this.fetchVaultData(),
         ])
         this.calculateValues()
         this.loading = false
@@ -256,20 +279,68 @@ export default {
       }
     },
 
+    async fetchVaultData() {
+      try {
+        const vaultsResponse = await this.$api.getAsgard()
+        const vaults = vaultsResponse.data
+
+        const { data: pools } = await this.$api.getThorPools()
+
+        const assetPrices = pools.reduce((prices, pool) => {
+          prices[pool.asset] = +pool.balance_rune / +pool.balance_asset
+          return prices
+        }, {})
+
+        const assets = new Map()
+        vaults.forEach((vault) => {
+          vault.coins.forEach((coin) => {
+            const currentAmount = assets.get(coin.asset)?.amount || 0
+            assets.set(coin.asset, {
+              amount: currentAmount + +coin.amount,
+              asset: coin.asset,
+            })
+          })
+        })
+
+        const vaultAssets = Array.from(assets.values()).map((asset) => {
+          const amountInBase = asset.amount / 1e8
+          const assetPrice = assetPrices[asset.asset] || 0
+          const runeValue = amountInBase * assetPrice
+
+          return {
+            asset: asset.asset,
+            amount: amountInBase,
+            runeValue,
+          }
+        })
+
+        this.totalVaultValue = vaultAssets.reduce(
+          (sum, asset) => sum + asset.runeValue,
+          0
+        )
+      } catch (error) {
+        console.error('Error fetching vault data:', error)
+      }
+    },
+
     async loadNodesData() {
       try {
         const res = await this.$api.getNodes()
         const nodesData = res.data
         const activeNodes = nodesData.filter((node) => node.status === 'Active')
 
+        activeNodes.sort((a, b) => Number(b.total_bond) - Number(a.total_bond))
+
+        const cutoffIndex = Math.floor(activeNodes.length / 3)
+        const bottomTwoThirdsNodes = activeNodes.slice(cutoffIndex)
+
+        this.securityBudgetBottomTwoThirds = bottomTwoThirdsNodes.reduce(
+          (sum, node) => sum + Number(node.total_bond) / 1e8,
+          0
+        )
+
         if (this.pendulumUseEffectiveSecurity === 1) {
-          activeNodes.sort(
-            (a, b) => Number(b.total_bond) - Number(a.total_bond)
-          )
-          const splitIndex = Math.floor(activeNodes.length * (2 / 3))
-          this.effectiveBond = activeNodes
-            .slice(splitIndex)
-            .reduce((sum, node) => sum + Number(node.total_bond) / 1e8, 0)
+          this.effectiveBond = this.securityBudgetBottomTwoThirds
         } else {
           this.effectiveBond = activeNodes.reduce(
             (sum, node) => sum + Number(node.total_bond) / 1e8,
@@ -314,6 +385,9 @@ export default {
         (effectiveBond - this.adjustedSecuredTotal) / effectiveBond
       this.nodeShare = 1 - this.poolShare
 
+      this.securityDelta =
+        this.securityBudgetBottomTwoThirds - this.totalVaultValue
+
       const nodeSharePct = this.nodeShare * 100
       if (Math.abs(nodeSharePct - 50) < 10) {
         this.currentNetworkState = 'Normal'
@@ -328,10 +402,16 @@ export default {
         {
           name: 'Total Active Bond',
           value: `${this.$options.filters.number(this.effectiveBond, '0.00a')} ${this.runeCur()}`,
+          extraText: this.$options.filters.currency(
+            this.effectiveBond * this.runePrice
+          ),
         },
         {
           name: 'Total Secured Value',
           value: `${this.$options.filters.number(this.adjustedSecuredTotal, '0.00a')} ${this.runeCur()}`,
+          extraText: this.$options.filters.currency(
+            this.adjustedSecuredTotal * this.runePrice
+          ),
         },
         {
           name: 'Node Reward Share',
@@ -340,6 +420,31 @@ export default {
         {
           name: 'Pool Reward Share',
           value: this.$options.filters.percent(this.poolShare, 2),
+        },
+      ]
+      this.securityStats = [
+        {
+          name: 'Total Vault Value',
+          value: `${this.$options.filters.number(this.totalVaultValue, '0.00a')} ${this.runeCur()}`,
+          extraText: this.$options.filters.currency(
+            this.totalVaultValue * this.runePrice
+          ),
+        },
+        {
+          name: 'Security Budget',
+          value: `${this.$options.filters.number(this.securityBudgetBottomTwoThirds, '0.00a')} ${this.runeCur()}`,
+          extraText: this.$options.filters.currency(
+            this.securityBudgetBottomTwoThirds * this.runePrice
+          ),
+          description:
+            'Total bond of the bottom 2/3 of the nodes in the network',
+        },
+        {
+          name: 'Security Delta',
+          value: `${this.$options.filters.number(this.securityDelta, '0.00a')} ${this.runeCur()}`,
+          extraText: this.$options.filters.currency(
+            this.securityDelta * this.runePrice
+          ),
         },
       ]
     },
@@ -429,5 +534,11 @@ export default {
 
 .balance-svg {
   transform: scale(1.2);
+}
+
+.info-hr {
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 16px;
 }
 </style>
