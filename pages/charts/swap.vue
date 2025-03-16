@@ -129,8 +129,7 @@ export default {
   },
   async mounted() {
     const queryPool = this.$route.query.pool
-    const savedAsset = localStorage.getItem('selectedAsset')
-    this.selectedOption = queryPool || savedAsset || 'All'
+    this.selectedOption = queryPool || 'All'
 
     const queryChartPeriod = this.$route.query.chartPeriod
     const savedPeriod = localStorage.getItem('selectedPeriod')
@@ -173,8 +172,8 @@ export default {
 
       const resSwaps = (
         await this.$api.getSwapsHistory({
-          interval: interval,
-          count: count,
+          interval,
+          count,
           pool: this.selectedOption === 'All' ? undefined : this.selectedOption,
         })
       ).data
