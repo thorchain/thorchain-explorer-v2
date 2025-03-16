@@ -29,6 +29,11 @@
             class="selected-options"
             @click="selectOption(pool)"
           >
+            <asset-icon
+              v-if="!['income_burn', 'dev_fund_reward'].includes(pool)"
+              :asset="pool"
+              class="asset-icon"
+            />
             {{
               ['income_burn', 'dev_fund_reward'].includes(pool)
                 ? pool
@@ -68,9 +73,7 @@
           <span class="slider round"></span>
         </label>
         <span class="mode-label">{{
-          isDividedByAvgNodeCount
-            ? 'Divided by Avg Node Count'
-            : 'Bonding Earnings'
+          isDividedByAvgNodeCount ? 'Bond Earning Per Node' : 'Bonding Earnings'
         }}</span>
       </div>
 
@@ -136,6 +139,7 @@ export default {
         { text: '100 W', mode: '100w' },
       ],
       dataCache: {},
+      loading: false,
     }
   },
 
@@ -144,7 +148,11 @@ export default {
       runePrice: 'getRunePrice',
     }),
     filteredPools() {
-      return this.pools
+      const specialPools = ['income_burn', 'dev_fund_reward']
+      const normalPools = this.pools.filter(
+        (pool) => !specialPools.includes(pool)
+      )
+      return [...normalPools, ...specialPools]
     },
     displayText() {
       if (this.selectedOption === 'All') {
@@ -159,17 +167,24 @@ export default {
     },
   },
   watch: {
-    chartPeriod(newPeriod) {
+    chartPeriod(newPeriod, oldPeriod) {
+      let intervalCHange = true
+      if (
+        (newPeriod.includes('w') && oldPeriod.includes('w')) ||
+        (newPeriod.includes('d') && oldPeriod.includes('d'))
+      ) {
+        intervalCHange = false
+      }
       this.updateQueryParams({ period: newPeriod })
-      this.loadData(newPeriod)
+      this.loadData(newPeriod, this.selectedOption, intervalCHange)
     },
     selectedOption(newOption) {
       this.updateQueryParams({ pool: newOption })
       this.chartKey++
-      this.loadData(this.chartPeriod, newOption)
+      this.loadData(this.chartPeriod, newOption, false)
     },
   },
-  async mounted() {
+  mounted() {
     this.loadData()
   },
 
@@ -189,7 +204,8 @@ export default {
 
     async loadData(
       period = this.chartPeriod,
-      selectedPool = this.selectedOption
+      selectedPool = this.selectedOption,
+      intervalChange = false
     ) {
       if (period === '50w' || period === '100w') {
         this.chartInterval = 'week'
@@ -198,7 +214,7 @@ export default {
       }
 
       const count = this.getCountFromPeriod(period)
-      if (this.chartInterval === 'day' && this.dataCache[count]) {
+      if (!intervalChange && this.dataCache[count]) {
         this.updateChart(this.dataCache[count], selectedPool)
         this.updateLiquidityFeesChart(this.dataCache[count], selectedPool)
         this.updateBondingEarningsChart(this.dataCache[count])
@@ -207,9 +223,10 @@ export default {
 
       try {
         const resEarning = (await earnings(this.chartInterval, count)).data
-        if (this.chartInterval === 'day') {
-          this.dataCache[count] = resEarning
+        if (intervalChange) {
+          this.dataCache[count] = {}
         }
+        this.dataCache[count] = resEarning
 
         const latestInterval =
           resEarning.intervals[resEarning.intervals.length - 1]
@@ -224,7 +241,7 @@ export default {
       }
     },
     updateChart(data, selectedPool) {
-      let poolEarnings =
+      const poolEarnings =
         selectedPool === 'All'
           ? this.formatEarnings(data)
           : this.formatEarnings(data, selectedPool)
@@ -278,7 +295,7 @@ export default {
           if (index === d.intervals.length - 1) return
 
           const formatType =
-            this.chartInterval === 'week' ? 'YYYY , MMM D' : 'dddd, MMM D'
+            this.chartInterval === 'week' ? 'YYYY, MMM D' : 'dddd, MMM D'
           xAxis.push(
             moment(
               ((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
@@ -298,7 +315,7 @@ export default {
           [
             {
               type: 'bar',
-              name: 'Liquidity Earnings',
+              name: 'Pool Earnings',
               stack: 'Total',
               showSymbol: false,
               areaStyle: {},
@@ -363,7 +380,7 @@ export default {
           if (index === d.intervals.length - 1) return
 
           const formatType =
-            this.chartInterval === 'week' ? 'YYYY , MMM D' : 'dddd, MMM D'
+            this.chartInterval === 'week' ? 'YYYY, MMM D' : 'dddd, MMM D'
           xAxis.push(
             moment(
               ((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
@@ -441,7 +458,7 @@ export default {
         }
 
         const formatType =
-          this.chartInterval === 'week' ? 'YYYY , MMM D' : 'dddd, MMM D'
+          this.chartInterval === 'week' ? 'YYYY, MMM D' : 'dddd, MMM D'
         xAxis.push(
           moment(
             ((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
@@ -450,9 +467,9 @@ export default {
 
         const fees =
           selectedPool === 'All'
-            ? +interval.liquidityFees * this.runePrice
+            ? +interval.liquidityFees * +interval.runePriceUSD
             : +interval.pools.find((pool) => pool.pool === selectedPool)
-                ?.totalLiquidityFeesRune * this.runePrice
+                ?.totalLiquidityFeesRune * +interval.runePriceUSD
 
         liquidityFeesData.push(fees / 1e8)
       })
@@ -540,14 +557,14 @@ export default {
         }
 
         const formatType =
-          this.chartInterval === 'week' ? 'YYYY , MMM D' : 'dddd, MMM D'
+          this.chartInterval === 'week' ? 'YYYY, MMM D' : 'dddd, MMM D'
         xAxis.push(
           moment(
             ((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
           ).format(formatType)
         )
 
-        const earnings = +interval.bondingEarnings * this.runePrice
+        const earnings = +interval.bondingEarnings * +interval.runePriceUSD
         const avgNodeCount = +interval.avgNodeCount || 1
 
         const finalEarnings = this.isDividedByAvgNodeCount
@@ -563,7 +580,7 @@ export default {
           {
             type: 'bar',
             name: this.isDividedByAvgNodeCount
-              ? 'Bond Earnings / Avg Node Count'
+              ? 'Bond Earning Per Node'
               : 'Bond Earnings',
             showSymbol: false,
             areaStyle: {},
@@ -598,7 +615,7 @@ export default {
             (p) =>
               p.seriesName ===
               (this.isDividedByAvgNodeCount
-                ? 'Bond Earnings / Avg Node Count'
+                ? 'Bond Earning Per Node'
                 : 'Bond Earnings')
           )
 
@@ -730,7 +747,7 @@ export default {
         padding: 0.5rem;
         align-items: center;
         width: 100%;
-        justify-content: center;
+        gap: 8px;
 
         &:hover {
           background-color: var(--active-bg-color);
