@@ -147,8 +147,6 @@ export default {
       }
 
       let totalSecuredDepth = 0
-      let totalVaultDepth = 0
-      let totalPoolDepth = 0
       const ret = []
       for (const asset of securedAssets) {
         const securedDepth = +asset.depth || 0
@@ -171,11 +169,6 @@ export default {
           (asset.depth / 1e8) *
           (pool?.balance_rune / pool?.balance_asset) *
           this.runePrice
-        totalVaultDepth +=
-          ((vaultDepth ?? 0) / 1e8) *
-          (pool?.balance_rune / pool?.balance_asset) *
-          this.runePrice
-        totalPoolDepth += (pool?.balance_rune / 1e8) * this.runePrice
 
         ret.push({
           ...asset,
@@ -190,6 +183,22 @@ export default {
           vaultRatio: vaultDepth / pool?.balance_asset ?? 0,
           depthRatio: asset.depth / pool?.balance_asset ?? 0,
         })
+      }
+
+      let totalVaultDepth = 0
+      let totalPoolDepth = 0
+      for (const pool of pools) {
+        const assetName = pool.asset
+        const vaultDepth = assetPerVault[assetName]
+        if (!vaultDepth) {
+          continue
+        }
+
+        totalVaultDepth +=
+          ((vaultDepth ?? 0) / 1e8) *
+          (pool?.balance_rune / pool?.balance_asset) *
+          this.runePrice
+        totalPoolDepth += (pool?.balance_rune / 1e8) * this.runePrice
       }
 
       this.tradingGeneralStats = [
