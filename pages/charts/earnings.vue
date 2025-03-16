@@ -40,6 +40,7 @@
     </div>
     <card title="Earnings" :is-loading="loading">
       <VChart
+        ref="mainChart"
         :option="chartOptions"
         :loading="!chartOptions"
         :autoresize="true"
@@ -117,6 +118,7 @@ export default {
   },
   data() {
     return {
+      chartKey: 0,
       bondingEarnings: undefined,
       isDividedByAvgNodeCount: false,
       dropdownOpen: false,
@@ -163,6 +165,7 @@ export default {
     },
     selectedOption(newOption) {
       this.updateQueryParams({ pool: newOption })
+      this.chartKey++
       this.loadData(this.chartPeriod, newOption)
     },
   },
@@ -221,14 +224,19 @@ export default {
       }
     },
     updateChart(data, selectedPool) {
-      const poolEarnings =
+      let poolEarnings =
         selectedPool === 'All'
           ? this.formatEarnings(data)
           : this.formatEarnings(data, selectedPool)
 
-      this.chartOptions = poolEarnings
-    },
+      poolEarnings.notMerge = true
 
+      if (this.$refs.mainChart && this.$refs.mainChart.chart) {
+        this.$refs.mainChart.chart.clear()
+      }
+
+      this.chartOptions = { ...poolEarnings }
+    },
     updateLiquidityFeesChart(data, selectedPool) {
       const liquidityFeesData =
         selectedPool === 'All'
@@ -262,96 +270,165 @@ export default {
 
     formatEarnings(d, selectedPool = 'All') {
       const xAxis = []
-      const earningsData = []
+      if (selectedPool === 'All') {
+        const liquidityEarningsData = []
+        const bondingEarningsData = []
 
-      d?.intervals.forEach((interval, index) => {
-        if (index === d?.intervals?.length - 1) {
-          return
-        }
+        d?.intervals.forEach((interval, index) => {
+          if (index === d.intervals.length - 1) return
 
-        const formatType =
-          this.chartInterval === 'week' ? 'YYYY , MMM D' : 'dddd, MMM D'
-        xAxis.push(
-          moment(
-            ((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
-          ).format(formatType)
-        )
+          const formatType =
+            this.chartInterval === 'week' ? 'YYYY , MMM D' : 'dddd, MMM D'
+          xAxis.push(
+            moment(
+              ((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
+            ).format(formatType)
+          )
+          const liquidity = +interval.earnings * +interval.runePriceUSD
+          liquidityEarningsData.push(liquidity / 1e8)
 
-        const earnings =
-          selectedPool === 'All'
-            ? +interval.earnings * +interval.runePriceUSD
-            : +interval.pools.find((pool) => pool.pool === selectedPool)
-                ?.earnings * +interval.runePriceUSD
+          const bonding = interval.bondingEarnings
+            ? +interval.bondingEarnings * +interval.runePriceUSD
+            : 0
+          bondingEarningsData.push(bonding / 1e8)
+        })
 
-        earningsData.push(earnings / 1e8)
-      })
-
-      return this.basicChartFormat(
-        (value) => `$ ${this.normalFormat(value)}`,
-        [
-          {
-            type: 'bar',
-            name: selectedPool === 'All' ? 'Liquidity Earnings' : 'Earnings',
-            showSymbol: false,
-            areaStyle: {},
-            data: earningsData,
-            smooth: true,
-            lineStyle: {
-              width: 2,
-            },
-            z: 3,
-          },
-        ],
-        xAxis,
-        {
-          yAxis: [
+        return this.basicChartFormat(
+          (value) => `$ ${this.normalFormat(value)}`,
+          [
             {
-              type: 'value',
-              position: 'left',
-              show: false,
-              splitLine: {
-                show: true,
-              },
-              axisLine: {
-                show: false,
-              },
-              min: 'dataMin',
-              max: 'dataMax',
+              type: 'bar',
+              name: 'Liquidity Earnings',
+              stack: 'Total',
+              showSymbol: false,
+              areaStyle: {},
+              data: liquidityEarningsData,
+              smooth: true,
+              lineStyle: { width: 2 },
+              z: 3,
+            },
+            {
+              type: 'bar',
+              name: 'Bonding Earnings',
+              stack: 'Total',
+              showSymbol: false,
+              areaStyle: {},
+              data: bondingEarningsData,
+              smooth: true,
+              lineStyle: { width: 2 },
+              z: 2,
             },
           ],
-        },
-        (param) => {
-          const filteredParam = param.filter(
-            (p) =>
-              p.seriesName ===
-              (selectedPool === 'All' ? 'Liquidity Earnings' : 'Earnings')
+          xAxis,
+          {
+            yAxis: [
+              {
+                type: 'value',
+                position: 'left',
+                show: false,
+                splitLine: { show: true },
+                axisLine: { show: false },
+                min: 'dataMin',
+                max: 'dataMax',
+              },
+            ],
+          },
+          (params) => {
+            if (!params || !Array.isArray(params) || params.length === 0)
+              return ''
+            return `
+          <div class="tooltip-header">${params[0].name}</div>
+          <div class="tooltip-body">
+            ${params
+              .map(
+                (p) => `
+              <span>
+                <div class="tooltip-item">
+                  <div class="data-color" style="background-color: ${p.color}"></div>
+                  <span style="text-align: left;">${p.seriesName}</span>
+                </div>
+                <b>$${this.$options.filters.number(p.value, '0,0.00a')}</b>
+              </span>
+            `
+              )
+              .join('')}
+          </div>
+        `
+          }
+        )
+      } else {
+        const earningsData = []
+
+        d?.intervals.forEach((interval, index) => {
+          if (index === d.intervals.length - 1) return
+
+          const formatType =
+            this.chartInterval === 'week' ? 'YYYY , MMM D' : 'dddd, MMM D'
+          xAxis.push(
+            moment(
+              ((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
+            ).format(formatType)
           )
 
-          if (filteredParam.length === 0) return ''
+          const poolObj = interval.pools.find(
+            (pool) => pool.pool === selectedPool
+          )
+          const value = poolObj ? +poolObj.earnings * +interval.runePriceUSD : 0
+          earningsData.push(value / 1e8)
+        })
 
-          return `
-            <div class="tooltip-header">
-              ${filteredParam[0].name}
-            </div>
-            <div class="tooltip-body">
-              ${filteredParam
-                .map(
-                  (p) => `
-                    <span>
-                      <div class="tooltip-item">
-                        <div class="data-color" style="background-color: ${p.color}"></div>
-                        <span style="text-align: left;">
-                          ${p.seriesName}
-                        </span>
-                      </div>
-                      <b>$${this.$options.filters.number(p.value, '0,0.00a')}</b>
-                    </span>`
-                )
-                .join('')}
-            </div>
-          `
-        }
-      )
+        return this.basicChartFormat(
+          (value) => `$ ${this.normalFormat(value)}`,
+          [
+            {
+              type: 'bar',
+              name: 'Earnings',
+              showSymbol: false,
+              areaStyle: {},
+              data: earningsData,
+              smooth: true,
+              lineStyle: { width: 2 },
+              z: 3,
+            },
+          ],
+          xAxis,
+          {
+            yAxis: [
+              {
+                type: 'value',
+                position: 'left',
+                show: false,
+                splitLine: { show: true },
+                axisLine: { show: false },
+                min: 'dataMin',
+                max: 'dataMax',
+              },
+            ],
+          },
+          (params) => {
+            const filtered = params.filter((p) => p.seriesName === 'Earnings')
+            if (filtered.length === 0) return ''
+            return `
+          <div class="tooltip-header">${filtered[0].name}</div>
+          <div class="tooltip-body">
+            ${filtered
+              .map(
+                (p) => `
+              <span>
+                <div class="tooltip-item">
+                  <div class="data-color" style="background-color: ${p.color}"></div>
+                  <span style="text-align: left;">${p.seriesName}</span>
+                </div>
+                <b>$${this.$options.filters.number(p.value, '0,0.00a')}</b>
+              </span>
+            `
+              )
+              .join('')}
+          </div>
+        `
+          }
+        )
+      }
     },
 
     formatLiquidityFees(d, selectedPool = 'All') {
