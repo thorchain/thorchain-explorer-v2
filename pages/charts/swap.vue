@@ -309,7 +309,7 @@ export default {
     selectOption(option) {
       this.selectedOption = option
       this.dropdownOpen = false
-      this.$router.push({
+      this.$router.replace({
         query: {
           ...this.$route.query,
           pool: option === 'All' ? undefined : option,
