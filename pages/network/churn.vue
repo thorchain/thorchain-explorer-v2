@@ -19,8 +19,8 @@
               <span
                 >#{{ (nextChurnHeight - currentBlock) | number('0,0') }}</span
               >
-              <strong>Current Block</strong>
-              <span>#{{ currentBlock | number('0,0') }}</span>
+              <strong>Churn Block</strong>
+              <span>#{{ nextChurnHeight | number('0,0') }}</span>
             </div>
           </div>
         </card>
@@ -40,8 +40,12 @@
             <div class="block-info-items">
               <strong>Remaining Blocks</strong>
               <span>#{{ poolActivationCountdown | number('0,0') }}</span>
-              <strong>Current Block</strong>
-              <span>#{{ currentBlock | number('0,0') }}</span>
+              <strong>Activation Block</strong>
+              <span
+                >#{{
+                  (currentBlock + poolActivationCountdown) | number('0,0')
+                }}</span
+              >
             </div>
           </div>
         </card>
