@@ -22,3 +22,7 @@ export function getQuote(params) {
     }
   )
 }
+
+export function getChurn() {
+  return $axiosInstace.get(endpoints[process.env.NETWORK].SERVER_URL + 'churns')
+}

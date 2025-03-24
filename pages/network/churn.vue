@@ -48,13 +48,9 @@
       </div>
     </div>
     <!-- Churn Lists -->
-    <div class="block-card">
-      <transition-group name="block" tag="div">
-        <div
-          v-for="(churn, i) in churns"
-          :key="churn.height"
-          class="block-item"
-        >
+    <div class="churn-cards">
+      <div v-for="(churn, i) in churns" :key="churn.height" class="block-item">
+        <div class="block-upper-info">
           <div class="block-info">
             <span class="height">Churn #{{ i }}</span>
             <nuxt-link class="clickable" :to="`/block/${churn.height}`">
@@ -68,12 +64,38 @@
             <small> {{ untilNow(churn.date) }} </small>
           </div>
         </div>
-        <template v-if="churns.length === 0">
-          <div v-for="index in 10" :key="index" class="loader-item">
-            <skeleton-loader height="1rem"></skeleton-loader>
-          </div>
-        </template>
-      </transition-group>
+        <div class="block-downer-info">
+          <strong>Active Nodes</strong>
+          <span
+            v-for="n in churn.active_nodes"
+            :key="n"
+            class="mini-bubble"
+            style="margin-left: 0.5rem"
+          >
+            <nuxt-link :to="`/node/${n}`">
+              {{ addressFormatV2(n, 4, true) }}
+            </nuxt-link>
+          </span>
+        </div>
+        <div class="block-downer-info">
+          <strong>Standby Nodes</strong>
+          <span
+            v-for="n in churn.standby_nodes"
+            :key="n"
+            class="mini-bubble danger"
+            style="margin-left: 0.5rem"
+          >
+            <nuxt-link :to="`/node/${n}`">
+              {{ addressFormatV2(n, 4, true) }}
+            </nuxt-link>
+          </span>
+        </div>
+      </div>
+      <template v-if="churns.length === 0">
+        <div v-for="index in 10" :key="index" class="loader-item">
+          <skeleton-loader height="1rem"></skeleton-loader>
+        </div>
+      </template>
     </div>
   </div>
 </template>
@@ -196,41 +218,58 @@ export default {
   gap: 0.5rem;
 }
 
-.block-card {
-  background-color: var(--bg-color);
-  border: 1px solid var(--border-color);
-  border-radius: 1rem;
-  padding: 0.5rem 1rem;
+.churn-cards {
   max-width: 72rem;
   margin: auto;
   margin-top: 1rem;
+  display: flex;
+  gap: 1rem;
+  flex-direction: column;
 
   .block-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex: 1;
-    margin: 1rem;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    padding: 0.5rem 1rem;
 
-    .block-info {
+    .block-upper-info {
       display: flex;
-      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      flex: 1;
 
-      .height {
-        font-size: 1.2rem;
-        color: var(--sec-font-color);
+      .block-info {
+        display: flex;
+        flex-direction: column;
+
+        .height {
+          font-size: 1.2rem;
+          color: var(--sec-font-color);
+        }
+      }
+
+      .right-section {
+        display: flex;
+        flex-direction: column;
+        align-items: end;
       }
     }
 
-    .right-section {
-      display: flex;
-      flex-direction: column;
-      align-items: end;
+    .block-downer-info {
+      margin-top: 0.5rem;
+
+      a {
+        text-decoration: none;
+      }
     }
   }
 
   .loader-item {
-    margin: 2rem 0;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    padding: 1rem 1rem;
+    margin: 0.5rem 0;
   }
 }
 </style>

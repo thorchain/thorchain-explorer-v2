@@ -15,7 +15,6 @@ import {
   getLatestBlocks,
   getRevThorname,
   getNetwork,
-  getChurn,
   getPoolDepth,
   getEarningHistory,
   getMemberDetails,
@@ -116,7 +115,7 @@ import {
   getRunePrice,
   getDailySwap,
 } from './insights.api'
-import { getTHORLastBlock, getBlockHeight, getQuote } from './infra'
+import { getTHORLastBlock, getBlockHeight, getQuote, getChurn } from './infra'
 import endpoints from './endpoints'
 export var $axiosInstace
 
