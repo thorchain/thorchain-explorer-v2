@@ -72,7 +72,7 @@
             class="mini-bubble"
             style="margin-left: 0.5rem"
           >
-            <nuxt-link :to="`/node/${n}`">
+            <nuxt-link class="clickable" :to="`/node/${n}`">
               {{ addressFormatV2(n, 4, true) }}
             </nuxt-link>
           </span>
@@ -85,7 +85,7 @@
             class="mini-bubble danger"
             style="margin-left: 0.5rem"
           >
-            <nuxt-link :to="`/node/${n}`">
+            <nuxt-link class="clickable danger" :to="`/node/${n}`">
               {{ addressFormatV2(n, 4, true) }}
             </nuxt-link>
           </span>

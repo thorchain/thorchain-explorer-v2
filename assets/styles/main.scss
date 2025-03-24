@@ -162,6 +162,10 @@ input {
   color: var(--primary-color);
   cursor: pointer;
 
+  &.danger {
+    color: var(--sec-font-color);
+  }
+
   &:hover {
     color: var(--active-primary-color);
   }
