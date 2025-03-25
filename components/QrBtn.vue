@@ -77,6 +77,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
 
   &:hover {
     .icon {
@@ -149,7 +150,6 @@ export default {
       cursor: pointer;
       background: transparent;
       cursor: pointer;
-
     }
 
     .line {
