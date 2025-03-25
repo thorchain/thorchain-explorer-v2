@@ -779,6 +779,10 @@ export const interfaces = {
     name: 'GemWallet',
     icon: 'gemwallet',
   },
+  rujira: {
+    name: 'Rujira',
+    icon: 'rujira',
+  },
 }
 
 export const affiliateMap = {
@@ -824,6 +828,7 @@ export const affiliateMap = {
   '-_': interfaces.sk,
   g1: interfaces.gemwallet,
   thor1xmaggkcln5m5fnha2780xrdrulmplvfrz6wj3l: interfaces.shapeshift,
+  rj: interfaces.rujira,
 }
 
 export function getExplorerAddressUrl(chain, query, type) {
