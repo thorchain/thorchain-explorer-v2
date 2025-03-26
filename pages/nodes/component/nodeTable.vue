@@ -156,12 +156,11 @@
             <div
               v-tooltip="props.row.preflight && props.row.preflight.reason"
               :class="[
-                'mini-bubble',
+                'mini-bubble hoverable',
                 {
                   yellow: props.row.status == 'Standby',
                   danger: props.row.status == 'Disabled',
                   white: props.row.status == 'Whitelisted',
-                  hoverable: props.row.status == 'Standby',
                 },
               ]"
               :style="{

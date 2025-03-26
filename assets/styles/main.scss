@@ -627,6 +627,14 @@ input {
   color: #1b5e20;
   line-height: 1;
 
+  &.hoverable {
+    cursor: pointer;
+
+    &:hover {
+      background-color: #466d48;
+    }
+  }
+
   &.blue {
     background-color: #29b6f6;
     color: #01579b;
@@ -636,6 +644,7 @@ input {
     background-color: #81c784;
     color: #1b5e20;
   }
+
   &.orange {
     border: 1px solid #ffa96b4b;
     color: #ffa86b;
@@ -645,6 +654,15 @@ input {
   &.yellow {
     background-color: #ffee58;
     color: #f57f17;
+
+    &.hoverable {
+      cursor: pointer;
+
+      &:hover {
+        color: #f57f17;
+        background-color: #6b5000;
+      }
+    }
   }
 
   &.red {
