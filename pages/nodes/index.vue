@@ -92,6 +92,9 @@
         :cols="activeCols"
         :search-term="searchTerm"
         name="active-nodes"
+        :sort-column="sortColumn"
+        :sort-order="sortOrder"
+        @sort-changed="onSortChange"
       />
     </card>
     <card
@@ -173,6 +176,8 @@ export default {
         fee: false,
         age: false,
       },
+      sortColumn: null,
+      sortOrder: null,
     }
   },
   computed: {
@@ -1018,6 +1023,12 @@ export default {
     if (savedFilters) {
       this.hides = JSON.parse(savedFilters)
     }
+
+    const savedSorting = JSON.parse(localStorage.getItem('tableSorting'))
+    if (savedSorting) {
+      this.sortColumn = savedSorting.column
+      this.sortOrder = savedSorting.order
+    }
   },
   destroyed() {
     this.clearIntervalId(this.intervalId)
@@ -1204,6 +1215,14 @@ export default {
         return -1
       }
       return 0
+    },
+    saveSorting(column, order) {
+      localStorage.setItem('tableSorting', JSON.stringify({ column, order }))
+    },
+    onSortChange({ column, order }) {
+      this.sortColumn = column
+      this.sortOrder = order
+      localStorage.setItem('tableSorting', JSON.stringify({ column, order }))
     },
   },
   head: {

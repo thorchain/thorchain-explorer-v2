@@ -12,6 +12,13 @@
         enabled: true,
         externalQuery: searchTerm,
       }"
+      :sort-options="{
+        enabled: true,
+        initialSortBy: sortColumn
+          ? [{ field: sortColumn, type: sortOrder }]
+          : [],
+      }"
+      @on-sort-change="handleSortChange"
     >
       <template slot="table-column" slot-scope="props">
         <div v-if="props.column.field.includes('behind')" class="table-asset">
@@ -532,7 +539,7 @@ export default {
     ExternalIcon,
     VaultIcon,
   },
-  props: ['rows', 'cols', 'name', 'searchTerm'],
+  props: ['rows', 'cols', 'name', 'searchTerm', 'sortColumn', 'sortOrder'],
   data() {
     return {
       favs: [],
@@ -659,6 +666,16 @@ export default {
         return true
       }
       return false
+    },
+    handleSortChange(params) {
+      if (!params || !params[0] || !params[0].field) {
+        console.error('Sorting parameters are undefined or invalid:', params)
+        return
+      }
+      this.$emit('sort-changed', {
+        column: params[0].field,
+        order: params[0].type,
+      })
     },
   },
 }
