@@ -154,12 +154,14 @@
           </div>
           <span v-else-if="props.column.field == 'status'">
             <div
+              v-tooltip="props.row.preflight && props.row.preflight.reason"
               :class="[
                 'mini-bubble',
                 {
                   yellow: props.row.status == 'Standby',
                   danger: props.row.status == 'Disabled',
                   white: props.row.status == 'Whitelisted',
+                  hoverable: props.row.status == 'Standby',
                 },
               ]"
               :style="{
@@ -500,6 +502,7 @@ import { mapGetters } from 'vuex'
 import { remove, orderBy } from 'lodash'
 import { rcompare } from 'semver'
 
+import { props } from 'qrcode.vue'
 import JsonIcon from '@/assets/images/json.svg?inline'
 import InfoIcon from '@/assets/images/info.svg?inline'
 import StarIcon from '@/assets/images/bookmark.svg?inline'

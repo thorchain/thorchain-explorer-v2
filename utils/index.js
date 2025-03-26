@@ -549,6 +549,7 @@ export function fillNodeData(nodes, el, index) {
     fee: el.bond_providers?.node_operator_fee / 1e4,
     operator: el.node_operator_address,
     vault: el.vaultMembership,
+    preflight: el.preflight_status,
     ...(rank && { rank }),
   })
 }

@@ -860,10 +860,17 @@ export default {
         const versions = countBy(nodesVersion)
         const activeVersion = Object.keys(versions)
 
+        // Check if the latest version is more than 2/3
+        const latestVersion = activeVersion[0]
+        let justLatest = false
+        if (versions[latestVersion] > Math.floor((actNodes.length * 2) / 3)) {
+          justLatest = true
+        }
+
         let stbNodes = this.nodesQuery?.filter(
           (e) =>
             (e.status === 'Standby' || e.status === 'Ready') &&
-            activeVersion.includes(e.version)
+            (activeVersion.includes(e.version) || e.total_bond >= this.minBond)
         )
 
         if (stbNodes.length === 0) {
@@ -904,6 +911,9 @@ export default {
           }
 
           if (churnInNumbers > churnNodes) {
+            if (justLatest && el.version !== latestVersion) {
+              continue
+            }
             if (el.jail && el.jail.release_height > this.chainsHeight?.THOR) {
               continue
             }
@@ -944,18 +954,15 @@ export default {
     },
     whiteListedNodes() {
       if (this.nodesQuery) {
-        const stbNodes = this.stbNodes.map((n) => n.address)
+        const actNodes = this.activeNodes?.map((n) => n.address)
+        const stbNodes = this.stbNodes?.map((n) => n.address)
 
         let whtNodes = this.nodesQuery?.filter(
           (e) =>
-            !(
-              e.status === 'Standby' && e.preflight_status.status === 'Ready'
-            ) &&
-            e.status !== 'Active' &&
-            e.status !== 'Ready' &&
+            !actNodes.includes(e.node_address) &&
             e.status !== 'Disabled' &&
             e.age.number < 300 &&
-            !stbNodes.includes(e.address)
+            !stbNodes.includes(e.node_address)
         )
 
         whtNodes = orderBy(whtNodes, [(o) => +o.total_bond], ['desc'])
