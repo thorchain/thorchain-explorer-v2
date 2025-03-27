@@ -132,7 +132,7 @@
                   Stagenet
                 </a>
               </div>
-              <div class="settings-option">
+              <div v-if="false" class="settings-option">
                 <a
                   :class="{
                     active: networkEnv === 'devnet',
