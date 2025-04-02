@@ -331,7 +331,7 @@ export default {
 
         activeNodes.sort((a, b) => Number(b.total_bond) - Number(a.total_bond))
 
-        const cutoffIndex = Math.floor(activeNodes.length / 3)
+        const cutoffIndex = Math.floor((activeNodes.length * 2) / 3)
         const bottomTwoThirdsNodes = activeNodes.slice(cutoffIndex)
 
         this.securityBudgetBottomTwoThirds = bottomTwoThirdsNodes.reduce(
