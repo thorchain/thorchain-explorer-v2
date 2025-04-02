@@ -398,7 +398,7 @@ export default {
     updateStatsDetails() {
       this.generalStatsDetails = [
         {
-          name: 'Total Active Bond',
+          name: 'Effective Bond',
           value: `${this.$options.filters.number(this.effectiveBond, '0.00a')} ${this.runeCur()}`,
           extraText: this.$options.filters.currency(
             this.effectiveBond * this.runePrice
