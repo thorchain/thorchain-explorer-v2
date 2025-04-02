@@ -369,6 +369,8 @@ export default {
       try {
         const { data: mimirData } = await this.$api.getMimir()
         this.assetBalancePoints = mimirData > 0 ? mimirData : 10000
+        this.pendulumUseEffectiveSecurity =
+          mimirData.PENDULUMUSEEFFECTIVESECURITY
       } catch (error) {
         console.error('Error fetching mimir data:', error)
       }
@@ -378,15 +380,11 @@ export default {
       this.adjustedSecuredTotal =
         this.totalSecuredValue * (this.assetBalancePoints / 10000)
 
-      const effectiveBond = this.usingAllNodesBond
-        ? this.effectiveBond
-        : this.adjustedBond
       this.poolShare =
-        (effectiveBond - this.adjustedSecuredTotal) / effectiveBond
+        (this.effectiveBond - this.adjustedSecuredTotal) / this.effectiveBond
       this.nodeShare = 1 - this.poolShare
 
-      this.securityDelta =
-        this.securityBudgetBottomTwoThirds - this.totalVaultValue
+      this.securityDelta = this.effectiveBond - this.totalVaultValue
 
       const nodeSharePct = this.nodeShare * 100
       if (Math.abs(nodeSharePct - 50) < 10) {
