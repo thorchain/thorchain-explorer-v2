@@ -1,4 +1,5 @@
 // axios instance
+import { getInfraEarnings } from './infra'
 import { $axiosInstace } from './index'
 
 export function getStats() {
@@ -96,6 +97,12 @@ export function earnings(interval, count) {
 }
 
 export function getEarningHistory(count = 30) {
+  if (process.env.NETWORK === 'mainnet') {
+    return getInfraEarnings({
+      interval: 'day',
+      count,
+    })
+  }
   return $axiosInstace.get(`history/earnings?interval=day&count=${count || 60}`)
 }
 
