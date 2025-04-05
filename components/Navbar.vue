@@ -317,6 +317,10 @@ export default {
                   name: 'Execution Quality',
                   link: '/insights/execution',
                 },
+                {
+                  name: 'RUJIRA Merge',
+                  link: '/insights/merge',
+                },
               ],
             }
           : false,

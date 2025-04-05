@@ -1,6 +1,9 @@
 <template>
   <div>
-    <Card title="RUJIRA Merge">
+    <Card
+      title="RUJIRA Merge"
+      :img-src="require('@/assets/images/ruji-merge.png')"
+    >
       <TableLoader v-if="loading" :cols="cols" />
       <vue-good-table
         v-else
