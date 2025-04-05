@@ -209,6 +209,12 @@ export function getBurnedBlocks() {
   )
 }
 
+export function getInfraRUJIMerge() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + 'api/rujiMerge'
+  )
+}
+
 export function getExecutionQuality() {
   return $axiosInstace.get(
     'https://flipsidecrypto.xyz/api/v1/queries/6e18d4c9-3959-4791-a3b2-92a8f27cc120/data/latest'

@@ -264,7 +264,7 @@ export default {
     balanceFormat(n) {
       return n.toString().replace(/(?<!\.\d*)(\d)(?=(?:\d{3})+(?!\d))/g, '$1,')
     },
-    showAsset(assetStr) {
+    showAsset(assetStr, ticker = false) {
       if (!assetStr) {
         return ''
       }
@@ -280,6 +280,9 @@ export default {
           del = '~'
         } else if (asset.secure) {
           del = '-'
+        }
+        if (ticker) {
+          return asset.ticker
         }
         return asset.chain + del + asset.ticker
       } catch (error) {
