@@ -64,15 +64,8 @@ export default {
           formatFn: formatAsset,
         },
         {
-          label: 'Minted',
+          label: 'Switched',
           field: 'MintE8',
-          type: 'number',
-          formatFn: this.baseAmountFormat,
-          tdClass: 'mono',
-        },
-        {
-          label: 'Burned',
-          field: 'BurnE8',
           type: 'number',
           formatFn: this.baseAmountFormat,
           tdClass: 'mono',
