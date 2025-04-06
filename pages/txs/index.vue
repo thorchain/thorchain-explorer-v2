@@ -95,6 +95,7 @@ export default {
         },
         { label: 'Send', filter: { type: ['send'] } },
         { label: 'Refund', filter: { type: ['refund'] } },
+        { label: 'Switch', filter: { type: ['switch'] } },
       ],
     }
   },
