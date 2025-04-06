@@ -15,7 +15,7 @@
     </Card>
     <Card
       title="RUJIRA Merge"
-      :img-src="require('@/assets/images/ruji-merge.png')"
+      :img-src="require('@/assets/images/ruji-merge.svg')"
     >
       <TableLoader v-if="loading" :cols="cols" />
       <vue-good-table

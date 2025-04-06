@@ -30,9 +30,24 @@ export const AssetImage = (assetStr) => {
         if (ticker != null && ticker === 'RUNE') {
           iconPath =
             'https://raw.githubusercontent.com/asgardex/thorchain_explorer/main/assets/images/thorchain-logo.png'
-        } else {
+          break
+        }
+        if (symbol === 'KUJI') {
           iconPath =
-            'https://raw.githubusercontent.com/asgardex/thorchain_explorer/main/assets/images/thorchain-logo.png'
+            'https://raw.githubusercontent.com/trustwallet/assets/refs/heads/master/blockchains/kujira/info/logo.png'
+        } else if (symbol === 'WINK') {
+          iconPath = 'https://kujira.network/assets/WINK.38879507.png'
+        } else if (symbol === 'LVN') {
+          iconPath =
+            'https://raw.githubusercontent.com/cosmos/chain-registry/master/osmosis/images/levana.svg'
+        } else if (symbol === 'FUZN') {
+          iconPath = 'https://plasma.fuzion.app/png/fuzion-logo.png'
+        } else if (symbol === 'NSTK') {
+          iconPath =
+            'https://assets.coingecko.com/coins/images/33110/standard/nstk.png?1700705727'
+        } else if (symbol === 'RKUJI') {
+          iconPath =
+            'https://raw.githubusercontent.com/cosmos/chain-registry/master/kujira/images/rkuji.png'
         }
         break
 
