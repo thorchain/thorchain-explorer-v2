@@ -81,7 +81,7 @@
                     {{ showAsset(group.asset) }}
                   </small>
                   -
-                  <span class="asset-total-usd">
+                  <span v-if="totalAmountUSD > 0" class="asset-total-usd">
                     ${{ group.totalAmountUSD | number('0,0.0a') }}
                   </span>
                 </span>
