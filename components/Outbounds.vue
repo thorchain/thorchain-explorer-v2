@@ -80,9 +80,8 @@
                   <small class="asset-text sec-color">
                     {{ showAsset(group.asset) }}
                   </small>
-                  -
-                  <span v-if="totalAmountUSD > 0" class="asset-total-usd">
-                    ${{ group.totalAmountUSD | number('0,0.0a') }}
+                  <span v-if="group.totalAmountUSD > 0" class="asset-total-usd">
+                    - ${{ group.totalAmountUSD | number('0,0.0a') }}
                   </span>
                 </span>
               </div>
