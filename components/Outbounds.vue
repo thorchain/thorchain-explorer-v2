@@ -119,7 +119,12 @@
                     {{
                       $options.filters.number(o.coin.amount / 1e8, '0,0.0000')
                     }}
-                    <template v-if="pools">
+                    <template
+                      v-if="
+                        pools &&
+                        !isNaN(getAssetAmountUSD(o.coin.asset, o.coin.amount))
+                      "
+                    >
                       -
                       <small>
                         ${{
