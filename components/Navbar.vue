@@ -296,6 +296,24 @@ export default {
         },
         process.env.NETWORK === 'mainnet'
           ? {
+              name: 'Rujira',
+              unicon: 'chartUnselected',
+              icon: 'chartSelected',
+              link: '/rujira',
+              submenu: [
+                {
+                  name: 'Secured Assets',
+                  link: '/rujira/secured',
+                },
+                {
+                  name: 'Merge',
+                  link: '/rujira/merge',
+                },
+              ],
+            }
+          : false,
+        process.env.NETWORK === 'mainnet'
+          ? {
               name: 'Insights',
               unicon: 'chartUnselected',
               icon: 'chartSelected',
@@ -316,10 +334,6 @@ export default {
                 {
                   name: 'Execution Quality',
                   link: '/insights/execution',
-                },
-                {
-                  name: 'RUJIRA Merge',
-                  link: '/insights/merge',
                 },
               ],
             }
