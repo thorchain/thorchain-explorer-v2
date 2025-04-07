@@ -80,9 +80,8 @@
                   <small class="asset-text sec-color">
                     {{ showAsset(group.asset) }}
                   </small>
-                  -
-                  <span class="asset-total-usd">
-                    ${{ group.totalAmountUSD | number('0,0.0a') }}
+                  <span v-if="group.totalAmountUSD > 0" class="asset-total-usd">
+                    - ${{ group.totalAmountUSD | number('0,0.0a') }}
                   </span>
                 </span>
               </div>
@@ -119,7 +118,12 @@
                     {{
                       $options.filters.number(o.coin.amount / 1e8, '0,0.0000')
                     }}
-                    <template v-if="pools">
+                    <template
+                      v-if="
+                        pools &&
+                        !isNaN(getAssetAmountUSD(o.coin.asset, o.coin.amount))
+                      "
+                    >
                       -
                       <small>
                         ${{
