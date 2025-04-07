@@ -1,11 +1,7 @@
-<template />
-
 <script>
 export default {
-  asyncData({ redirect }) {
+  middleware({ redirect }) {
     return redirect('/rujira/merge')
   },
 }
 </script>
-
-<style></style>
