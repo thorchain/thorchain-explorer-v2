@@ -89,6 +89,12 @@ export default {
           tdClass: 'mono',
         },
         {
+          label: '% Switched',
+          field: 'Switched',
+          type: 'percentage',
+          tdClass: 'mono',
+        },
+        {
           label: 'Allocation',
           field: 'Allocation',
           type: 'number',
@@ -148,6 +154,7 @@ export default {
           default:
             break
         }
+        item.Switched = item.MintE8 / 1e8 / item.maxSupply
         return item
       })
       this.rows = mergeData

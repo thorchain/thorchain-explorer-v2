@@ -35,12 +35,12 @@
         />
 
         <g
-          :transform="`translate(0, ${scalePosition * -1})`"
+          :transform="`translate(0, ${scalePosition})`"
           transform-origin="150px 50px"
         >
           <line
             x1="78"
-            :y1="50 - scalePosition"
+            :y1="50 + scalePosition"
             x2="150"
             y2="50"
             stroke="var(--primary-color)"
@@ -50,7 +50,7 @@
 
           <line
             x1="80"
-            :y1="50 - scalePosition"
+            :y1="50 + scalePosition"
             x2="60"
             y2="90"
             stroke="var(--primary-color)"
@@ -59,7 +59,7 @@
           />
           <line
             x1="80"
-            :y1="50 - scalePosition"
+            :y1="50 + scalePosition"
             x2="100"
             y2="90"
             stroke="var(--primary-color)"
@@ -102,12 +102,12 @@
         </g>
 
         <g
-          :transform="`translate(0, ${scalePosition})`"
+          :transform="`translate(0, ${scalePosition * -1})`"
           transform-origin="150px 50px"
         >
           <line
             x1="151"
-            :y1="50 - scalePosition"
+            :y1="50 + scalePosition"
             x2="222"
             y2="50"
             stroke="var(--primary-color)"
