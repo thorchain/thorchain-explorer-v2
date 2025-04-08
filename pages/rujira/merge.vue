@@ -17,10 +17,24 @@
         >
 
         <hr class="info-hr" style="margin-top: 1rem" />
-        <span style="color: var(--sec-font-color)">RUJI Merged: </span>
-        <b v-if="mergedRUJI > 0" style="color: #a5298f">
-          {{ mergedRUJI | number('0,0.00a') }} RUJI
-        </b>
+        <div>
+          <span style="color: var(--sec-font-color)">RUJI Merged: </span>
+          <b v-if="mergedRUJI > 0" style="color: #a5298f">
+            {{ mergedRUJI | number('0,0.00a') }}
+            <template v-if="totalAllocation > 0">
+              / {{ totalAllocation | number('0,0.00a') }} RUJI -
+              {{ (mergedRUJI / totalAllocation) | percent(2) }}
+            </template>
+          </b>
+          <span v-else>-</span>
+        </div>
+        <div>
+          <span style="color: var(--sec-font-color)">Switch Txs:</span>
+          <b v-if="totalTxs > 0" style="color: #a5298f">
+            {{ totalTxs }}
+          </b>
+          <span v-else>-</span>
+        </div>
       </Card>
       <Card
         title="RUJIRA Merge"
@@ -145,6 +159,26 @@ export default {
 
       return this.rows.reduce((acc, item) => {
         acc += item.AllocationMerged
+        return acc
+      }, 0)
+    },
+    totalAllocation() {
+      if (!this.rows) {
+        return 0
+      }
+
+      return this.rows.reduce((acc, item) => {
+        acc += item.Allocation
+        return acc
+      }, 0)
+    },
+    totalTxs() {
+      if (!this.rows) {
+        return 0
+      }
+
+      return this.rows.reduce((acc, item) => {
+        acc += item.Count
         return acc
       }, 0)
     },
