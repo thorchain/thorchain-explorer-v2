@@ -331,6 +331,12 @@ input {
   }
 }
 
+.info-hr {
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 16px;
+}
+
 .simple-card {
   margin: 0;
 

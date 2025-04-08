@@ -533,10 +533,4 @@ export default {
 .balance-svg {
   transform: scale(1.2);
 }
-
-.info-hr {
-  border: none;
-  border-bottom: 1px solid var(--border-color);
-  margin-bottom: 16px;
-}
 </style>

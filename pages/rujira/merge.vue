@@ -15,6 +15,12 @@
         <a href="https://rujira.network/merge/KUJI" target="_blank"
           >More Info</a
         >
+
+        <hr class="info-hr" style="margin-top: 1rem" />
+        <span style="color: var(--sec-font-color)">RUJI Merged: </span>
+        <b v-if="mergedRUJI > 0" style="color: #a5298f">
+          {{ mergedRUJI | number('0,0.00a') }} RUJI
+        </b>
       </Card>
       <Card
         title="RUJIRA Merge"
@@ -51,7 +57,12 @@
                 {{ showAsset(props.row.Asset, true) }}
               </small>
             </div>
-            <div v-else-if="props.column.field == 'Allocation'">
+            <div
+              v-else-if="
+                props.column.field == 'Allocation' ||
+                props.column.field === 'AllocationMerged'
+              "
+            >
               {{ props.formattedRow[props.column.field] }}
               <small>RUJI</small>
             </div>
@@ -102,6 +113,13 @@ export default {
           tdClass: 'mono',
         },
         {
+          label: 'Allocation Merged',
+          field: 'AllocationMerged',
+          type: 'number',
+          formatFn: (n) => this.$options.filters.number(n, '0,0.00a'),
+          tdClass: 'mono',
+        },
+        {
           label: 'Tx Count',
           field: 'Count',
           type: 'number',
@@ -120,6 +138,16 @@ export default {
     ...mapGetters({
       runePrice: 'getRunePrice',
     }),
+    mergedRUJI() {
+      if (!this.rows) {
+        return 0
+      }
+
+      return this.rows.reduce((acc, item) => {
+        acc += item.AllocationMerged
+        return acc
+      }, 0)
+    },
   },
   async mounted() {
     try {
@@ -155,6 +183,7 @@ export default {
             break
         }
         item.Switched = item.MintE8 / 1e8 / item.maxSupply
+        item.AllocationMerged = item.Switched * item.Allocation
         return item
       })
       this.rows = mergeData
