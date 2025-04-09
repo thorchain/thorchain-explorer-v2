@@ -327,6 +327,11 @@
                     >
                       {{ formatAddress(t.in && t.in[0].address) }}
                     </nuxt-link>
+                    <copy
+                      :str-copy="t.in && t.in[0].address"
+                      size="small"
+                      style="margin-left: 0.2rem"
+                    ></copy>
                   </span>
                   <nuxt-link
                     class="clickable header"

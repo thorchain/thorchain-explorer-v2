@@ -276,7 +276,7 @@
                     v-for="(p, i) in filterProviders(props.row.providers)"
                     :key="i"
                   >
-                    <td>
+                    <td style="display: flex">
                       <nuxt-link
                         class="hoverable mono external-link"
                         target="_blank"
@@ -285,6 +285,11 @@
                         {{ addressFormatV2(p.bond_address, 4, true) }}
                         <external-icon class="asset-icon" />
                       </nuxt-link>
+                      <copy
+                        :str-copy="p.bond_address"
+                        size="small"
+                        :hide-toast="true"
+                      ></copy>
                     </td>
                     <td class="mono">
                       <small>
@@ -463,7 +468,7 @@
             <th style="text-align: right">Share</th>
           </tr>
           <tr v-for="(p, i) in filterProviders(selectedRow.providers)" :key="i">
-            <td>
+            <td style="display: flex">
               <nuxt-link
                 class="hoverable mono external-link"
                 target="_blank"
@@ -472,6 +477,11 @@
                 {{ addressFormatV2(p.bond_address, 4, true) }}
                 <external-icon class="asset-icon" />
               </nuxt-link>
+              <copy
+                :str-copy="p.bond_address"
+                size="small"
+                :hide-toast="true"
+              ></copy>
             </td>
             <td class="mono">
               <small>

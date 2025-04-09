@@ -3,6 +3,10 @@
     <copy-icon
       ref="copy"
       :class="['table-icon', 'copy-icon']"
+      :style="{
+        width: size === 'small' ? '0.92rem' : '1rem',
+        height: size === 'small' ? '0.92rem' : '1rem',
+      }"
       @click="onlyCopy(strCopy)"
     />
 
@@ -33,7 +37,7 @@ export default {
     CopyIcon,
     Checkmark,
   },
-  props: ['strCopy'],
+  props: ['strCopy', 'size', 'hideToast'],
   data() {
     return {
       showToast: false,
@@ -44,6 +48,9 @@ export default {
       navigator.clipboard.writeText(strCopy).then(
         () => {
           this.animate('copy', 'animate', 1000)
+          if (this.hideToast) {
+            return
+          }
           this.showToastNotification()
         },
         (err) => {

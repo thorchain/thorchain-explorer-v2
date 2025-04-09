@@ -187,6 +187,7 @@
               >
                 {{ formatAddress(swap.inputAsset.address) }}
               </NuxtLink>
+              <copy :str-copy="swap.inputAsset.address" size="small"></copy>
             </span>
             <span>
               <small style="color: var(--font-color)">Date</small>
@@ -413,6 +414,7 @@ export default {
   .transactions {
     display: flex;
     flex-direction: column;
+    max-width: 60%;
   }
 
   @include md {
