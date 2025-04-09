@@ -1,5 +1,5 @@
 <template>
-  <span>
+  <div class="copy-icon-container">
     <copy-icon
       ref="copy"
       :class="['table-icon', 'copy-icon']"
@@ -25,7 +25,7 @@
         </div>
       </div>
     </transition>
-  </span>
+  </div>
 </template>
 
 <script>
@@ -72,6 +72,14 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.copy-icon-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 1rem;
+}
+
 .toast {
   display: flex;
   position: fixed;

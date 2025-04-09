@@ -181,13 +181,7 @@
           <div class="right-section">
             <span class="mono">
               <small style="color: var(--font-color)">Address</small>
-              <NuxtLink
-                class="clickable"
-                :to="{ path: `/address/${swap.inputAsset.address}` }"
-              >
-                {{ formatAddress(swap.inputAsset.address) }}
-              </NuxtLink>
-              <copy :str-copy="swap.inputAsset.address" size="small"></copy>
+              <address-bar :address-str="swap.inputAsset.address"></address-bar>
             </span>
             <span>
               <small style="color: var(--font-color)">Date</small>

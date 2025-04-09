@@ -321,17 +321,9 @@
                 <div class="txs">
                   <span>
                     <small style="color: var(--font-color)">From</small>
-                    <nuxt-link
-                      class="clickable"
-                      :to="`/address/${t.in[0].address}`"
-                    >
-                      {{ formatAddress(t.in && t.in[0].address) }}
-                    </nuxt-link>
-                    <copy
-                      :str-copy="t.in && t.in[0].address"
-                      size="small"
-                      style="margin-left: 0.2rem"
-                    ></copy>
+                    <address-bar
+                      :address-str="t.in && t.in[0].address"
+                    ></address-bar>
                   </span>
                   <nuxt-link
                     class="clickable header"

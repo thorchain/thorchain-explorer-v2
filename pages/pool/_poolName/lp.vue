@@ -30,16 +30,9 @@
           <template slot="table-row" slot-scope="props">
             <template v-if="props.column.field.includes('addr')">
               <template v-if="props.row[props.column.field]">
-                <span
-                  class="clickable"
-                  @click="gotoAddr(props.row[props.column.field])"
-                >
-                  {{ props.formattedRow[props.column.field] }}
-                </span>
-                <copy
-                  :str-copy="props.row[props.column.field]"
-                  size="small"
-                ></copy>
+                <address-bar
+                  :address-str="props.row[props.column.field]"
+                ></address-bar>
               </template>
               <span v-else> Not Assigned </span>
             </template>

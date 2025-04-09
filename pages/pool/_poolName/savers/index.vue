@@ -39,13 +39,7 @@
       >
         <template slot="table-row" slot-scope="props">
           <template v-if="props.column.field.includes('asset_address')">
-            <nuxt-link
-              class="address-link clickable"
-              :to="`/address/${props.row.asset_address}`"
-            >
-              {{ props.formattedRow[props.column.field] }}
-            </nuxt-link>
-            <copy :str-copy="props.row.asset_address" size="small"></copy>
+            <address-bar :address-str="props.row.asset_address"></address-bar>
           </template>
           <template v-else-if="props.column.field.includes('asset')">
             <span>

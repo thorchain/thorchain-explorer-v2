@@ -177,13 +177,7 @@
         >
           <template slot="table-row" slot-scope="props">
             <template v-if="props.column.field == 'rune_address'">
-              <nuxt-link
-                class="clickable"
-                :to="{ path: `/address/${props.row.rune_address}` }"
-              >
-                {{ formatAddress(props.row.rune_address) }}
-              </nuxt-link>
-              <copy :str-copy="props.row.rune_address" size="small"></copy>
+              <address-bar :address-str="props.row.rune_address"></address-bar>
             </template>
             <span v-else-if="props.column.field == 'deposit_amount'">
               {{ $options.filters.number(props.row.deposit_amount, '0,0.00') }}
