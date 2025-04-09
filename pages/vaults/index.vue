@@ -16,9 +16,12 @@
             <span
               v-if="props.column.field == 'hash'"
               style="display: flex; gap: 5px; align-items: center"
-              @click="gotoAddr(props.row.hash)"
             >
-              <span v-tooltip="props.row.pubKey" class="mono clickable">
+              <span
+                v-tooltip="props.row.pubKey"
+                class="mono clickable"
+                @click="gotoAddr(props.row.hash)"
+              >
                 {{ addressFormatV2(props.row.pubKey) }}
               </span>
               <color-hash
@@ -27,6 +30,11 @@
                 "
                 :name="props.row.pubKey"
               ></color-hash>
+              <copy
+                :str-copy="props.row.pubKey"
+                size="small"
+                style="margin-left: 0.1rem"
+              ></copy>
             </span>
             <span v-else-if="props.column.field == 'bond'">
               <span
@@ -108,6 +116,7 @@
 
 <script>
 import { duration } from 'moment'
+import { props } from 'qrcode.vue'
 import { mapGetters } from 'vuex'
 import { runeCur } from '~/utils'
 

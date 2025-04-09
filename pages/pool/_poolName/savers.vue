@@ -3,8 +3,23 @@
     <div v-if="error">
       <h4>There are no savers for this pool</h4>
     </div>
-    <cards-header v-if="saversExtraData && (saversExtraData.earned > 0 || saversExtraData.saversCount > 0 || saversExtraData.saversDepth > 0)" :table-general-stats="saversGeneralStats" />
-    <div v-if="saversExtraData && (saversExtraData.earned > 0 || saversExtraData.saversCount > 0 || saversExtraData.saversDepth > 0)">
+    <cards-header
+      v-if="
+        saversExtraData &&
+        (saversExtraData.earned > 0 ||
+          saversExtraData.saversCount > 0 ||
+          saversExtraData.saversDepth > 0)
+      "
+      :table-general-stats="saversGeneralStats"
+    />
+    <div
+      v-if="
+        saversExtraData &&
+        (saversExtraData.earned > 0 ||
+          saversExtraData.saversCount > 0 ||
+          saversExtraData.saversDepth > 0)
+      "
+    >
       <nuxt-child keep-alive :savers-data="saversExtraData" />
     </div>
   </div>

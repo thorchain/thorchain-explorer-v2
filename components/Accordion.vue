@@ -136,6 +136,11 @@
                 class="icon arrow-link"
               />
             </component>
+            <copy
+              v-if="s.type === 'address'"
+              :str-copy="s.value"
+              size="small"
+            ></copy>
             <template v-if="isLink(s.type) && notTHOR(s.asset)">
               <span> | </span>
               <a

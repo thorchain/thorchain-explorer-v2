@@ -17,12 +17,19 @@
             <small>Value :</small>
             <b>{{ vote.value }}</b>
           </div>
-          <NuxtLink
-            class="clickable"
-            :to="{ path: `/address/${vote.nodeAddress}` }"
-          >
-            {{ formatAddress(vote.nodeAddress) }}
-          </NuxtLink>
+          <div style="display: flex">
+            <nuxt-link
+              class="clickable"
+              :to="{ path: `/address/${vote.nodeAddress}` }"
+            >
+              {{ formatAddress(vote.nodeAddress) }}
+            </nuxt-link>
+            <copy
+              :str-copy="vote.nodeAddress"
+              size="small"
+              style="margin-left: 0.3rem"
+            ></copy>
+          </div>
         </div>
         <div class="vote-date">
           <small>Date:</small>

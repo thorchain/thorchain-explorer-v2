@@ -23,7 +23,7 @@
     <Card>
       <TableLoader v-if="loading" :cols="cols" :rows="Array(10).fill({})" />
       <vue-good-table
-      v-else
+        v-else
         :columns="cols"
         :rows="saverDetails"
         style-class="vgt-table net-table"
@@ -39,19 +39,20 @@
       >
         <template slot="table-row" slot-scope="props">
           <template v-if="props.column.field.includes('asset_address')">
-            <NuxtLink
+            <nuxt-link
               class="address-link clickable"
               :to="`/address/${props.row.asset_address}`"
             >
               {{ props.formattedRow[props.column.field] }}
-            </NuxtLink>
+            </nuxt-link>
+            <copy :str-copy="props.row.asset_address" size="small"></copy>
           </template>
           <template v-else-if="props.column.field.includes('asset')">
             <span>
               {{ props.formattedRow[props.column.field] }}
             </span>
             <small>
-              {{showAsset(props.row.asset) }}
+              {{ showAsset(props.row.asset) }}
             </small>
           </template>
           <span v-else>
@@ -132,56 +133,55 @@ export default {
     this.updateSavers()
   },
   methods: {
-  async updateSavers() {
-    this.loading = true; 
+    async updateSavers() {
+      this.loading = true
 
-    try {
-      this.lastBlockHeight = (
-        await this.$api.getLastBlockHeight()
-      ).data?.find((e) => e.chain === 'BTC')?.thorchain;
-    } catch (error) {
-      this.error = true;
-      console.error(error);
-    }
+      try {
+        this.lastBlockHeight = (
+          await this.$api.getLastBlockHeight()
+        ).data?.find((e) => e.chain === 'BTC')?.thorchain
+      } catch (error) {
+        this.error = true
+        console.error(error)
+      }
 
-    this.$api
-      .getSavers(this.poolName)
-      .then(({ data: savers }) => {
-        this.saverDetails = orderBy(
-          savers,
-          [(o) => +o.asset_redeem_value],
-          ['desc']
-        ).map((saverDetail) => ({
-          ...saverDetail,
-          asset_earned:
-            saverDetail.asset_redeem_value - saverDetail.asset_deposit_value,
-          APR: this.calcAPR(saverDetail),
-          value:
-            (saverDetail.asset_redeem_value * this.saversData.assetPriceUSD) /
-            10 ** 8,
-          name: saverDetail.asset_address,
-        }));
+      this.$api
+        .getSavers(this.poolName)
+        .then(({ data: savers }) => {
+          this.saverDetails = orderBy(
+            savers,
+            [(o) => +o.asset_redeem_value],
+            ['desc']
+          ).map((saverDetail) => ({
+            ...saverDetail,
+            asset_earned:
+              saverDetail.asset_redeem_value - saverDetail.asset_deposit_value,
+            APR: this.calcAPR(saverDetail),
+            value:
+              (saverDetail.asset_redeem_value * this.saversData.assetPriceUSD) /
+              10 ** 8,
+            name: saverDetail.asset_address,
+          }))
 
           this.saversPie =
             this.saverDetails.length > 1
               ? [
-       
-              ...this.saverDetails.slice(0, 10),
-          {
-            name: 'Others',
-            value: sumBy(this.saverDetails.slice(10), (o) => o.value),
-          },
-        ]
+                  ...this.saverDetails.slice(0, 10),
+                  {
+                    name: 'Others',
+                    value: sumBy(this.saverDetails.slice(10), (o) => o.value),
+                  },
+                ]
               : [...this.saverDetails]
 
-        this.loading = false;
-      })
-      .catch((e) => {
-        this.error = true;
-        console.error(e);
-        this.loading = false;  
-      });
-  },
+          this.loading = false
+        })
+        .catch((e) => {
+          this.error = true
+          console.error(e)
+          this.loading = false
+        })
+    },
     calcAPR(saverDetail) {
       if (!this.lastBlockHeight) {
         return 0

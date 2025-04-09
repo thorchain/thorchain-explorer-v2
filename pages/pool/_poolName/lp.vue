@@ -9,15 +9,11 @@
         <pie-chart :pie-data="runePieData" :formatter="totalRuneFormatter" />
       </Card>
     </div>
-    <card  class="table-card">
+    <card class="table-card">
       <div v-if="!error" class="base-container lp-container">
-        <TableLoader
-          v-if="loading"
-          :cols="cols"
-          :rows="Array(10).fill({})"
-        />
+        <TableLoader v-if="loading" :cols="cols" :rows="Array(10).fill({})" />
         <vue-good-table
-        v-else
+          v-else
           :columns="cols"
           :rows="rows"
           style-class="vgt-table net-table"
@@ -33,13 +29,18 @@
         >
           <template slot="table-row" slot-scope="props">
             <template v-if="props.column.field.includes('addr')">
-              <span
-                v-if="props.row[props.column.field]"
-                class="clickable"
-                @click="gotoAddr(props.row[props.column.field])"
-              >
-                {{ props.formattedRow[props.column.field] }}
-              </span>
+              <template v-if="props.row[props.column.field]">
+                <span
+                  class="clickable"
+                  @click="gotoAddr(props.row[props.column.field])"
+                >
+                  {{ props.formattedRow[props.column.field] }}
+                </span>
+                <copy
+                  :str-copy="props.row[props.column.field]"
+                  size="small"
+                ></copy>
+              </template>
               <span v-else> Not Assigned </span>
             </template>
 
