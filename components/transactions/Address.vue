@@ -1,5 +1,9 @@
 <template>
-  <div @mouseover="emitHovered" @mouseleave="emitRemoveHovered">
+  <div
+    class="address-container"
+    @mouseover="emitHovered"
+    @mouseleave="emitRemoveHovered"
+  >
     <template v-if="param">
       <component
         :is="disable ? 'span' : 'nuxt-link'"
@@ -46,18 +50,23 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.address {
-  border: 1px solid transparent;
-  padding: 0 4px;
-}
+.address-container {
+  display: inline-flex;
+  align-items: center;
 
-.hovered {
-  border: 1px dashed var(--highlight);
-  color: var(--active-primary-color) !important;
-  border-radius: 0.3rem;
-}
+  .address {
+    border: 1px solid transparent;
+    padding: 0 4px;
 
-.no-hover {
-  pointer-events: none;
+    &.hovered {
+      border: 1px dashed var(--highlight);
+      color: var(--active-primary-color) !important;
+      border-radius: 2px;
+    }
+  }
+
+  .no-hover {
+    pointer-events: none;
+  }
 }
 </style>
