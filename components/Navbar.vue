@@ -13,7 +13,7 @@
 
       <div class="menu-wrapper" @click="toggleMenu()">
         <MenuIcon v-if="!menu" class="icon" />
-        <MenuIcon v-else class="icon" />
+        <CrossIcon v-else class="icon" />
       </div>
     </div>
     <div class="navbar-lists">
@@ -188,7 +188,6 @@ export default {
   },
   data() {
     return {
-      isThorfiDropdownOpen: false,
       isMobile: window.innerWidth <= 990,
       openSubmenus: {},
       showExternalMenu: false,
@@ -617,6 +616,7 @@ export default {
         padding: 5px 0;
         border-radius: 30px;
         justify-content: space-between;
+        cursor: pointer;
       }
 
       @include lg {
@@ -669,6 +669,7 @@ export default {
         &:hover {
           color: var(--primary-color);
           background: var(--darker-bg);
+          border-radius: 0.3rem;
         }
 
         &.active {
@@ -736,6 +737,7 @@ export default {
         cursor: pointer;
         transition: background-color 0.3s ease;
         background: var(--darker-bg);
+        border-radius: 0.3rem;
       }
 
       &.active {
