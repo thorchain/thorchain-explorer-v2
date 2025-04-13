@@ -24,6 +24,7 @@
           :key="index"
           :to="item.link"
           class="navbar-item"
+          @click.native="handleItemClick(item)"
         >
           <div class="navbar-wrap">
             <span class="navbar-text">{{ item.name }}</span>
@@ -381,6 +382,10 @@ export default {
       }
       this.isMobile = window.innerWidth <= 990
     },
+    closeMenu() {
+      this.toggleMenu()
+      this.closeAllSubmenus()
+    },
     toggleDropdown() {
       this.isDropdownOpen = !this.isDropdownOpen
       Object.keys(this.openSubmenus).forEach((key) => {
@@ -400,11 +405,19 @@ export default {
         this.isDropdownOpen = false
       }
     },
+    handleItemClick(item) {
+      if (this.isMobile) {
+        this.closeMenu()
+      }
+    },
     closeAllSubmenus() {
       Object.keys(this.openSubmenus).forEach((key) => {
         this.$set(this.openSubmenus, key, false)
       })
       this.isDropdownOpen = false
+      if (this.isMobile && this.menu) {
+        this.toggleMenu()
+      }
     },
     handleDocumentClick(event) {
       if (!this.$el.contains(event.target)) {
@@ -726,7 +739,7 @@ export default {
     }
 
     .submenu-item {
-      font-size: 14px;
+      font-size: 13px;
       padding: 10px;
       text-decoration: none;
       color: var(--sec-font-color);
