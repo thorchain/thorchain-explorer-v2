@@ -24,7 +24,7 @@
           :key="index"
           :to="item.link"
           class="navbar-item"
-          @click.native="handleItemClick(item)"
+          @click.native="closeAllSubmenus"
         >
           <div class="navbar-wrap">
             <span class="navbar-text">{{ item.name }}</span>
@@ -402,11 +402,6 @@ export default {
 
       if (this.openSubmenus[index]) {
         this.isDropdownOpen = false
-      }
-    },
-    handleItemClick(item) {
-      if (this.isMobile) {
-        this.closeMenu()
       }
     },
     closeAllSubmenus() {
