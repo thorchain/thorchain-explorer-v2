@@ -24,6 +24,7 @@
           :key="index"
           :to="item.link"
           class="navbar-item"
+          @click.native="closeAllSubmenus"
         >
           <div class="navbar-wrap">
             <span class="navbar-text">{{ item.name }}</span>
@@ -35,13 +36,21 @@
           :id="`menu-item-${index}`"
           :key="`item-${index}`"
           :class="['navbar-item', { active: $route.path.includes(item.link) }]"
-          @click="toggleSubmenu(index)"
+          @click.stop="toggleSubmenu(index)"
         >
           <div class="navbar-wrap">
             <span class="navbar-text">{{ item.name }}</span>
-            <span class="dropdown-icon"></span>
+            <span
+              class="dropdown-icon"
+              :class="{ rotated: openSubmenus[index] }"
+            ></span>
           </div>
-          <div :id="`submenu-${index}`" class="submenu">
+          <div
+            :id="`submenu-${index}`"
+            class="submenu"
+            :class="{ open: openSubmenus[index] }"
+            @click.stop
+          >
             <NuxtLink
               v-for="(subItem, subIndex) in item.submenu.filter(
                 (it) => it.link
@@ -50,6 +59,7 @@
               :to="subItem.link"
               class="submenu-item"
               :class="{ active: isActive(subItem) }"
+              @click.native="closeAllSubmenus"
             >
               {{ subItem.name }}
             </NuxtLink>
@@ -77,12 +87,19 @@
           </div>
         </b-popover>
       </template>
-      <div v-if="menu" class="navbar-item" @click="toggleDropdown">
+      <div
+        v-if="menu"
+        class="navbar-item dropdown-wrapper"
+        @click.stop="toggleDropdown"
+      >
         <div class="navbar-wrap">
           <span class="navbar-text">Appearance & Network</span>
-          <span class="dropdown-icon"></span>
+          <span
+            class="dropdown-icon"
+            :class="{ rotated: isDropdownOpen }"
+          ></span>
         </div>
-        <div v-if="isDropdownOpen" class="dropdown-menu">
+        <div class="dropdown-menu" :class="{ open: isDropdownOpen }">
           <div id="theme-wrapper" class="dropdown-item">
             <div class="settings-container">
               <div
@@ -132,7 +149,7 @@
                   Stagenet
                 </a>
               </div>
-              <div v-if="false" class="settings-option">
+              <div class="settings-option">
                 <a
                   :class="{
                     active: networkEnv === 'devnet',
@@ -172,7 +189,6 @@ export default {
   },
   data() {
     return {
-      isThorfiDropdownOpen: false,
       isMobile: window.innerWidth <= 990,
       openSubmenus: {},
       showExternalMenu: false,
@@ -349,6 +365,14 @@ export default {
       return process.env.NETWORK
     },
   },
+  mounted() {
+    window.addEventListener('resize', this.handleResize)
+    document.addEventListener('click', this.handleDocumentClick)
+  },
+  beforeDestroy() {
+    window.removeEventListener('resize', this.handleResize)
+    document.removeEventListener('click', this.handleDocumentClick)
+  },
   methods: {
     ...mapMutations(['toggleMenu']),
     handleResize() {
@@ -357,20 +381,42 @@ export default {
       }
       this.isMobile = window.innerWidth <= 990
     },
+    closeMenu() {
+      this.toggleMenu()
+      this.closeAllSubmenus()
+    },
     toggleDropdown() {
       this.isDropdownOpen = !this.isDropdownOpen
-      const navbarLists = this.$el.querySelector('.navbar-lists')
-      navbarLists.style.height = this.isDropdownOpen ? '460px' : 'auto'
+      Object.keys(this.openSubmenus).forEach((key) => {
+        this.$set(this.openSubmenus, key, false)
+      })
     },
-
     toggleSubmenu(index) {
-      this.$set(this.openSubmenus, index, !this.openSubmenus[index])
-      this.$nextTick(() => {
-        const submenu = this.$el.querySelector(`#submenu-${index}`)
-        if (submenu) {
-          submenu.classList.toggle('open', this.openSubmenus[index])
+      Object.keys(this.openSubmenus).forEach((key) => {
+        if (key !== index.toString()) {
+          this.$set(this.openSubmenus, key, false)
         }
       })
+
+      this.$set(this.openSubmenus, index, !this.openSubmenus[index])
+
+      if (this.openSubmenus[index]) {
+        this.isDropdownOpen = false
+      }
+    },
+    closeAllSubmenus() {
+      Object.keys(this.openSubmenus).forEach((key) => {
+        this.$set(this.openSubmenus, key, false)
+      })
+      this.isDropdownOpen = false
+      if (this.isMobile && this.menu) {
+        this.toggleMenu()
+      }
+    },
+    handleDocumentClick(event) {
+      if (!this.$el.contains(event.target)) {
+        this.closeAllSubmenus()
+      }
     },
     isActive(item) {
       return (
@@ -379,27 +425,18 @@ export default {
           item.submenu.some((subItem) => this.$route.path === subItem.link))
       )
     },
-    isSubmenuOpen(index) {
-      return !!this.openSubmenus[index]
-    },
     setTheme(theme) {
       if (theme === 'BlueElectra') {
         this.$store.commit('setTheme', 'BlueElectra')
       } else {
         this.$store.commit('setTheme', theme === 'dark')
       }
+      this.isDropdownOpen = false
     },
     gotoInstance(instance, disabled) {
       if (disabled) return
       return links[instance]
     },
-  },
-
-  mounted() {
-    window.addEventListener('resize', this.handleResize)
-  },
-  beforeDestroy() {
-    window.removeEventListener('resize', this.handleResize)
   },
 }
 </script>
@@ -410,58 +447,11 @@ export default {
   transition: height 0.3s;
   max-width: 90rem;
   margin: auto;
+  position: relative;
+
   .logo-link {
     color: var(--font-color);
     text-decoration: none;
-  }
-  .submenu {
-    display: none;
-    flex-direction: column;
-    transition: height 0.3s ease;
-    overflow: hidden;
-    border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    padding: 0.3rem;
-    z-index: 1000;
-    transform: translateY(0);
-    transition:
-      opacity 0.3s ease,
-      transform 0.3s ease;
-    margin-top: 0.5rem;
-    max-width: 56rem;
-    .submenu-item {
-      font-size: 14px;
-      padding: 10px;
-      text-decoration: none;
-      &:hover {
-        color: var(--primary-color);
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-      }
-
-      &.active {
-        color: var(--primary-color);
-      }
-    }
-  }
-  .submenu.open {
-    display: flex;
-  }
-  .navbar-lists::-webkit-scrollbar,
-  .submenu::-webkit-scrollbar {
-    width: 5px;
-  }
-
-  .navbar-lists::-webkit-scrollbar-track,
-  .submenu::-webkit-scrollbar-track {
-    background-color: var(--border-color);
-  }
-
-  .navbar-lists::-webkit-scrollbar-thumb,
-  .submenu::-webkit-scrollbar-thumb {
-    background-color: var(--font-color);
-    border-radius: 5px;
   }
 
   .header {
@@ -493,6 +483,7 @@ export default {
     position: relative;
     display: inline-block;
     margin-left: 0.5rem;
+    transition: transform 0.3s ease;
 
     &::after {
       content: '';
@@ -504,6 +495,11 @@ export default {
       vertical-align: middle;
       margin-bottom: 6px;
       transition: border-color 0.3s;
+    }
+
+    &.rotated::after {
+      transform: rotate(-135deg);
+      margin-bottom: 2px;
     }
   }
 
@@ -530,8 +526,25 @@ export default {
     }
   }
 
-  &.menu .navbar-lists {
-    padding: 12px 0;
+  .menu-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+
+    @include lg {
+      display: none;
+    }
+
+    .icon {
+      margin: 0;
+      width: 20px;
+      background-color: var(--card-bg-color);
+      border: 1px solid var(--border-color);
+      border-radius: 0.5rem;
+      padding: 0.375rem 0.75rem;
+      box-sizing: content-box;
+    }
   }
 
   .navbar-lists {
@@ -540,6 +553,7 @@ export default {
     transition:
       all 0.7s cubic-bezier(0.25, 0.1, 0.25, 1),
       opacity 1s ease;
+    gap: 0.25rem;
 
     @include lg {
       display: flex;
@@ -549,6 +563,7 @@ export default {
       justify-content: flex-end;
       margin: 0;
       max-height: none;
+      overflow: visible !important;
 
       &::-webkit-scrollbar {
         display: none;
@@ -608,6 +623,8 @@ export default {
         align-items: center;
         padding: 5px 0;
         border-radius: 30px;
+        justify-content: space-between;
+        cursor: pointer;
       }
 
       @include lg {
@@ -622,132 +639,45 @@ export default {
         }
       }
     }
-  }
 
-  .menu-wrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-
-    @include lg {
-      display: none;
-    }
-  }
-
-  .icon {
-    margin: 0;
-    width: 20px;
-    background-color: var(--card-bg-color);
-    border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
-    padding: 0.375rem 0.75rem;
-    box-sizing: content-box;
-  }
-
-  &.menu {
-    .navbar-lists {
-      display: flex;
-      flex-direction: column;
-      max-height: 500px;
-      overflow: auto;
-    }
-
-    .navbar-text {
-      cursor: pointer;
-      &.active,
-      &.nuxt-link-exact-active,
-      &.nuxt-link-active {
-        border-radius: 0.3rem;
-        color: var(--primary-color);
-        margin-bottom: 5px;
-      }
-
-      &:hover {
-        border-radius: 0.3rem;
-        color: var(--primary-color);
-      }
-    }
-
-    .network-dialog,
-    .theme-dialog {
-      position: absolute;
-      z-index: 1000;
-      display: flex;
-      flex-direction: column;
-      border: 1px solid var(--border-color);
-      border-radius: 0.5rem;
-      width: 100px;
-      background: var(--card-bg-color);
-
-      a {
-        cursor: pointer;
-        background: var(--card-bg-color);
-        color: var(--font-color);
-        border: none;
-        padding: 0.5rem 1rem;
-        text-decoration: none;
-        text-align: center;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        transition: background-color 0.3s ease;
-
-        &:first-of-type {
-          border-radius: 0.5rem 0.5rem 0 0;
-        }
-
-        &:last-of-type {
-          border-radius: 0 0 0.5rem 0.5rem;
-        }
-
-        &:hover {
-          background: var(--darker-bg);
-          color: var(--primary-color);
-        }
-
-        &.active {
-          color: var(--primary-color);
-
-          &:hover {
-            background-color: var(--card-bg-color);
-          }
-        }
-      }
+    .dropdown-wrapper {
+      position: relative;
     }
 
     .dropdown-menu {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      border: 1px solid var(--border-color);
       width: 100%;
-      max-width: 100%;
+      border: none;
+      box-shadow: none;
+      padding: 0;
+      background: var(--card-bg-color);
       border-radius: 0.5rem;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-      padding: 0.3rem;
-      z-index: 1000;
-      transform: translateY(0);
-      transition:
-        opacity 0.3s ease,
-        transform 0.3s ease;
-      display: flex;
-      flex-direction: column;
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 0.3s ease;
       margin-top: 0.5rem;
+
+      &.open {
+        max-height: 500px;
+        border: 1px solid var(--border-color);
+      }
+
+      .settings-container {
+        padding: 0.5rem;
+        font-size: 13px;
+      }
 
       .settings-option {
         display: flex;
         align-items: center;
-        font-size: 13px;
+        padding: 10px;
+        margin: 0;
         color: var(--sec-font-color);
-        text-decoration: none;
-        padding: 5px;
-        margin: 5px;
+        cursor: pointer;
 
         &:hover {
           color: var(--primary-color);
-          cursor: pointer;
-          transition: background-color 0.3s ease;
+          background: var(--darker-bg);
+          border-radius: 0.3rem;
         }
 
         &.active {
@@ -755,6 +685,10 @@ export default {
         }
 
         a {
+          display: flex;
+          align-items: center;
+          width: 100%;
+          color: inherit;
           text-decoration: none;
 
           &.active {
@@ -763,50 +697,71 @@ export default {
         }
 
         .menu-icon {
-          fill: currentColor;
           margin-right: 8px;
+          fill: currentColor;
         }
       }
 
       .line {
         height: 0.5px;
         background-color: var(--border-color);
-        margin: 10px 0;
-        width: 100%;
+        margin: 0.5rem;
       }
+    }
+  }
 
-      .network-container {
-        display: flex;
-        align-items: center;
+  .submenu {
+    display: none;
+    flex-direction: column;
+    transition: height 0.3s ease;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    padding: 0.3rem;
+    z-index: 1000;
+    margin-top: 0.5rem;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 0.3s ease;
+
+    &.open {
+      display: flex;
+      max-height: 500px;
+      opacity: 1;
+      transition:
+        max-height 0.3s ease,
+        opacity 0.2s ease 0.1s;
+    }
+
+    .submenu-item {
+      font-size: 13px;
+      padding: 10px;
+      text-decoration: none;
+      color: var(--sec-font-color);
+
+      &:hover {
+        color: var(--primary-color);
         cursor: pointer;
-        padding: 5px;
-        margin: 5px;
+        transition: background-color 0.3s ease;
+        background: var(--darker-bg);
+        border-radius: 0.3rem;
       }
 
-      .icon-label-container {
-        display: flex;
-        align-items: center;
+      &.active {
+        color: var(--primary-color);
       }
+    }
+  }
 
-      .network-label-group {
-        display: flex;
-        flex-direction: column;
-        text-decoration: none;
-        color: var(--sec-font-color);
-        margin-left: 10px;
-      }
-
-      .network-label-group a {
-        text-decoration: none;
-        color: var(--sec-font-color);
-        margin-bottom: 8px;
-        font-size: 13px;
-
-        &:hover {
-          color: var(--primary-color);
-          transition: background-color 0.3s ease;
-        }
-      }
+  &.menu {
+    .navbar-lists {
+      display: flex;
+      flex-direction: column;
+      max-height: none;
+      overflow: visible;
+      padding: 12px 0;
+      gap: 0.25rem !important;
     }
   }
 }
