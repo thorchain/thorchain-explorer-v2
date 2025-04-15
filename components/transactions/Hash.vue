@@ -1,8 +1,8 @@
 <template>
-  <div>
+  <div class="transaction-hash">
     <template v-if="param">
       <nuxt-link
-        class="transaction-hash clickable mono"
+        class="clickable mono"
         :to="{
           path: `/tx/${param}`,
         }"
