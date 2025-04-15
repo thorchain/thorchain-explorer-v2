@@ -2,7 +2,7 @@
   <div>
     <template v-if="param">
       <nuxt-link
-        class="clickable mono"
+        class="transaction-hash clickable mono"
         :to="{
           path: `/tx/${param}`,
         }"
@@ -21,4 +21,10 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.transaction-hash {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+</style>
