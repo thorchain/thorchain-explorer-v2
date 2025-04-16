@@ -190,7 +190,7 @@ export default {
         item.Asset = item.Asset.replace('THOR.', 'GAIA.')
         switch (item.Asset) {
           case 'GAIA.KUJI':
-            item.maxSupply = 122349807
+            item.maxSupply = 112349807
             item.Allocation = 41_840_000
             break
           case 'GAIA.WINK':
