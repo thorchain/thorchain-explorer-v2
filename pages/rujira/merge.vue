@@ -185,7 +185,9 @@ export default {
   },
   async mounted() {
     try {
-      const mergeData = (await this.$api.getInfraRUJIMerge()).data
+      const mergeData = (await this.$api.getInfraRUJIMerge()).data.filter(
+        (a) => !a.Asset.includes('RUNE')
+      )
       mergeData.map((item) => {
         item.Asset = item.Asset.replace('THOR.', 'GAIA.')
         switch (item.Asset) {
