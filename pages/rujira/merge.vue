@@ -64,7 +64,7 @@
               <AssetIcon :asset="props.row.Asset" />
               <span>{{ props.formattedRow[props.column.field] }}</span>
             </div>
-            <div v-else-if="props.column.field == 'MintE8'">
+            <div v-else-if="props.column.field == 'Amount'">
               {{ props.formattedRow[props.column.field] }}
               / {{ props.row.maxSupply | number('0,0.00a') }}
               <small>
@@ -107,15 +107,15 @@ export default {
           formatFn: formatAsset,
         },
         {
-          label: 'Switched',
-          field: 'MintE8',
+          label: 'Merged',
+          field: 'Amount',
           type: 'number',
           formatFn: this.baseAmountFormat,
           tdClass: 'mono',
         },
         {
-          label: '% Switched',
-          field: 'Switched',
+          label: '% Merged',
+          field: 'MergedPct',
           type: 'percentage',
           tdClass: 'mono',
         },
@@ -128,9 +128,9 @@ export default {
         },
         {
           label: 'Allocation Merged',
-          field: 'AllocationMerged',
+          field: 'Shares',
           type: 'number',
-          formatFn: (n) => this.$options.filters.number(n, '0,0.00a'),
+          formatFn: (n) => this.$options.filters.number(n / 1e8, '0,0.00a'),
           tdClass: 'mono',
         },
         {
@@ -189,6 +189,7 @@ export default {
         (a) => !a.Asset.includes('RUNE')
       )
       mergeData.map((item) => {
+        item.Asset = item.Asset.toUpperCase()
         item.Asset = item.Asset.replace('THOR.', 'GAIA.')
         switch (item.Asset) {
           case 'GAIA.KUJI':
@@ -218,8 +219,8 @@ export default {
           default:
             break
         }
-        item.Switched = item.MintE8 / 1e8 / item.maxSupply
-        item.AllocationMerged = item.Switched * item.Allocation
+        item.MergedPct = item.Amount / 1e8 / item.maxSupply
+        item.AllocationMerged = item.MergedPct * item.Allocation
         return item
       })
       this.rows = mergeData
