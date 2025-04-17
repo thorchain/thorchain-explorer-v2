@@ -174,7 +174,7 @@ export default {
         search.startsWith('TLTC') ||
         // COSMOS
         search.startsWith('COSMOS') ||
-        (search.startsWith('0X') && search.length <= 43)
+        search.length <= 43
       ) {
         this.$router.push({ path: `/address/${this.searchQuery}` })
       } else {
@@ -285,17 +285,20 @@ Vue.mixin(global)
 
       .search-icon {
         position: absolute;
-        right: 1rem;
+        right: 0.6rem;
         top: 50%;
         transform: translateY(-50%);
-        width: 24px;
-        height: 24px;
-        fill: var(--font-color);
+        width: 35px;
+        height: 35px;
+        fill: #fff;
         cursor: pointer;
-        transition: fill 0.3s ease;
+        transition: background-color 0.3s ease;
+        background-color: var(--primary-color);
+        padding: 6px;
+        border-radius: 4px;
 
         &:hover {
-          fill: var(--primary-color);
+          background-color: var(--active-primary-color);
         }
       }
 
