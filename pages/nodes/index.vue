@@ -648,7 +648,7 @@ export default {
             },
             {
               name: 'Total Rewards',
-              value: this.totalAwards / 10e8,
+              value: this.totalAwards / 1e8,
               usdValue: true,
               filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
             },
