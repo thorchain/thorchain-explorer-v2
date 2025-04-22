@@ -50,16 +50,28 @@ export function getThornodeDetailTx(txID) {
 }
 
 export function getThornodeArchiveTx(txID) {
+  if (process.env.NETWORK === 'mainnet') {
+    return $axiosInstace.get(
+      endpoints[process.env.NETWORK].ARCHIVE_THORNODE +
+        `thorchain/tx/details/${txID}`
+    )
+  }
+
   return $axiosInstace.get(
-    endpoints[process.env.NETWORK].ARCHIVE_THORNODE +
-      `thorchain/tx/details/${txID}`
+    endpoints[process.env.NETWORK].THORNODE_URL + `thorchain/tx/details/${txID}`
   )
 }
 
 export function getTxArchiveStatus(txID) {
+  if (process.env.NETWORK === 'mainnet') {
+    return $axiosInstace.get(
+      endpoints[process.env.NETWORK].ARCHIVE_THORNODE +
+        `thorchain/tx/status/${txID}`
+    )
+  }
+
   return $axiosInstace.get(
-    endpoints[process.env.NETWORK].ARCHIVE_THORNODE +
-      `thorchain/tx/status/${txID}`
+    endpoints[process.env.NETWORK].THORNODE_URL + `thorchain/tx/status/${txID}`
   )
 }
 

@@ -627,6 +627,17 @@ export function assetFromString(s) {
     return s
   }
 
+  if (s === 'TCY') {
+    return {
+      chain: 'THOR',
+      symbol: 'TCY',
+      ticker: 'TCY',
+      synth: false,
+      trade: false,
+      secure: false,
+    }
+  }
+
   const isSynth = s.includes(SYNTH_DELIMITER)
   let delimiter = isSynth ? SYNTH_DELIMITER : NON_SYNTH_DELIMITER
   const isTrade = s.includes(TRADE_DELIMITER)

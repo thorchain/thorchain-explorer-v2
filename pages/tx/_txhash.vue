@@ -282,9 +282,12 @@ export default {
             return false
           }
         }
-        const ta = assetFromString(outAsset)
+        let ta
+        if (outAsset) {
+          ta = assetFromString(outAsset)
+        }
         const isRefund = actions.actions.some((e, i) => e.type === 'refund')
-        if (isRefund && (ta.synth || ta.trade || ta.secure)) {
+        if (isRefund && (ta?.synth || ta?.trade || ta?.secure)) {
           return false
         }
       }
@@ -1428,9 +1431,16 @@ export default {
       }))
 
       let memo
+      let reason
+      let isRefund = false
       if (action.metadata) {
         const m = Object.keys(action.metadata)[0]
         memo = action.metadata[m]?.memo ?? undefined
+        reason =
+          action.metadata[m]?.reason ?? action.metadata[m]?.code ?? undefined
+        if (Object.keys(action.metadata).length === 1) {
+          isRefund = m === 'refund'
+        }
       }
 
       return {
@@ -1438,6 +1448,7 @@ export default {
           title: 'Action',
           in: ins,
           middle: {
+            fail: isRefund,
             pending: false,
           },
           out: outs,
@@ -1449,6 +1460,7 @@ export default {
             timeStamp: moment.unix(action?.date / 1e9) || null,
             height: action?.height,
             memo,
+            reason,
             done: true,
           },
           out: outs,
