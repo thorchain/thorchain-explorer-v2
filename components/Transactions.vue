@@ -30,7 +30,12 @@
           />
         </div>
         <div v-else-if="props.column.field === 'type'" class="type">
-          <transaction-status :row="props.row" />
+          <transaction-status 
+            :row="props.row" 
+            :hovered-type="hoveredType"
+            @setHoveredType="setHoveredType"
+            @removeHoveredType="removeHoveredType"
+          />
         </div>
         <div v-else-if="props.column.field === 'height'">
           <nuxt-link class="clickable" :to="`/block/${props.row.height}`">
@@ -134,6 +139,7 @@ export default {
   },
   data() {
     return {
+      hoveredType: '', 
       hoveredAddress: '',
       cols: [
         {
@@ -204,6 +210,12 @@ export default {
     },
     removeHoveredAddress() {
       this.hoveredAddress = ''
+    },
+    setHoveredType(type) {
+      this.hoveredType = type
+    },
+    removeHoveredType() {
+      this.hoveredType = ''
     },
     assetImage(assetStr) {
       try {

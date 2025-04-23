@@ -7,7 +7,7 @@
       <span
         v-for="(ops, i) in row.in"
         :key="'in-' + i"
-        :class="showMiniBubble ? 'mini-bubble customized' : 'no-bubble'"
+        class="asset-cell"
       >
         <asset-icon
           :asset="ops.coins[0].asset"
@@ -22,7 +22,7 @@
       <span
         v-for="(ops, i) in row.out.filter((o) => !o.affiliate)"
         :key="'out-' + i"
-        :class="showMiniBubble ? 'mini-bubble customized' : 'no-bubble'"
+        class="asset-cell"
       >
         <asset-icon
           :asset="ops.coins[0].asset"
@@ -39,7 +39,7 @@
           row.out.length === 0 ||
           row.status === 'pending'
         "
-        class="mini-bubble customized info"
+        class="asset-cell"
       >
         Pending
       </span>
@@ -62,7 +62,7 @@
       v-else-if="row && (type === 'withdraw' || type === 'runePoolWithdraw')"
       class="action-cell"
     >
-      <div :class="'mini-bubble'">
+      <div>
         <asset-icon
           :height="'1.2rem'"
           :chain-height="'1rem'"
@@ -70,14 +70,15 @@
         />
         <vault-icon class="action-icon" />
       </div>
-      <div v-if="row.metadata.withdraw" class="mini-bubble yellow">
+      <div v-if="row.metadata.withdraw" >
         {{ (row.metadata.withdraw.basisPoints / 1e4) | percent(2) }}
       </div>
       <right-arrow class="action-type" />
       <span
         v-for="(ops, i) in row.out"
         :key="'out-' + i"
-        :class="showMiniBubble ? 'mini-bubble customized' : 'no-bubble'"
+        class="asset-cell"
+
       >
         <asset-icon
           :asset="ops.coins[0].asset"
@@ -96,7 +97,8 @@
       <span
         v-for="(ops, i) in row.in"
         :key="'in-' + i"
-        :class="showMiniBubble ? 'mini-bubble customized' : 'no-bubble'"
+        class="asset-cell"
+
       >
         <asset-icon
           :asset="ops.coins[0].asset"
@@ -108,7 +110,7 @@
         }}</span>
       </span>
       <right-arrow class="action-type" />
-      <div :class="'mini-bubble'">
+      <div>
         <asset-icon
           :height="'1.2rem'"
           :chain-height="'1rem'"
@@ -136,7 +138,8 @@
       <span
         v-for="(ops, i) in row.in"
         :key="'in-' + i"
-        :class="showMiniBubble ? 'mini-bubble customized' : 'no-bubble'"
+        class="asset-cell"
+
       >
         <asset-icon
           :asset="ops.coins[0].asset"
@@ -154,7 +157,7 @@
       <span
         v-for="(ops, i) in row.in"
         :key="'in-' + i"
-        :class="showMiniBubble ? 'mini-bubble customized' : 'no-bubble'"
+        class="asset-cell"
       >
         <asset-icon
           :asset="ops.coins[0].asset"
@@ -169,7 +172,7 @@
       <span
         v-for="(ops, i) in row.out"
         :key="'out-' + i"
-        :class="showMiniBubble ? 'mini-bubble info customized' : 'info'"
+        class="asset-cell"
       >
         <small class="asset-name">{{
           addressFormatV2(ops.address, 6, true)
@@ -181,7 +184,8 @@
       <span
         v-for="(ops, i) in row.in"
         :key="'in-' + i"
-        :class="showMiniBubble ? 'mini-bubble customized' : 'no-bubble'"
+        class="asset-cell"
+
       >
         <asset-icon
           :asset="ops.coins[0].asset"
@@ -193,7 +197,7 @@
         }}</span>
       </span>
       <right-arrow class="action-type" />
-      <span :class="showMiniBubble ? 'mini-bubble info customized' : 'info'">
+      <span >
         <nuxt-link
           class="clickable"
           :to="`/node/${row.metadata.bond.nodeAddress}`"
@@ -204,7 +208,7 @@
     </div>
 
     <div v-else-if="row && type === 'unbond'" class="action-cell">
-      <span :class="showMiniBubble ? 'mini-bubble info customized' : 'info'">
+      <span>
         <nuxt-link
           class="clickable"
           :to="`/node/${row.metadata.bond.nodeAddress}`"
@@ -216,7 +220,6 @@
       <span
         v-for="(ops, i) in row.out"
         :key="'out-' + i"
-        :class="showMiniBubble ? 'mini-bubble customized' : 'no-bubble'"
       >
         <asset-icon
           :asset="ops.coins[0].asset"
@@ -236,7 +239,7 @@
       <span
         v-for="(ops, i) in row.in"
         :key="'in-' + i"
-        :class="showMiniBubble ? 'mini-bubble customized' : 'no-bubble'"
+        class="asset-cell"
       >
         <asset-icon
           :asset="ops.coins[0].asset"
@@ -248,14 +251,13 @@
         }}</span>
       </span>
       <right-arrow class="action-type" />
-      <div :class="showMiniBubble ? 'mini-bubble' : 'no-bubble'">
+      <div >
         <vault-icon class="action-icon" />
       </div>
       <right-arrow class="action-type" />
       <span
         v-for="(ops, i) in row.out"
         :key="'out-' + i"
-        :class="showMiniBubble ? 'mini-bubble customized' : 'no-bubble'"
       >
         <asset-icon
           :asset="ops.coins[0].asset"
@@ -270,17 +272,12 @@
 
     <div v-else-if="row && type === 'failed'" class="action-cell">
       <template v-if="row.metadata && row.metadata.failed">
-        <span :class="showMiniBubble ? 'mini-bubble info customized' : 'info'">
+        <span>
           {{ parseMemoToTxType(row.metadata.failed.memo) }}
         </span>
         <right-arrow class="action-type" />
         <span
           v-tooltip="row.metadata.failed.reason"
-          :class="
-            showMiniBubble
-              ? 'mini-bubble danger customized reason'
-              : 'danger reason'
-          "
         >
           see reason
         </span>
@@ -289,7 +286,7 @@
 
     <div v-else-if="row && type === 'thorname'" class="action-cell">
       <template v-if="row.metadata && row.metadata.thorname">
-        <span :class="showMiniBubble ? 'mini-bubble customized' : 'no-bubble'">
+        <span>
           <asset-icon
             :height="'1.2rem'"
             :asset="baseChainAsset(row.metadata.thorname.chain)"
@@ -302,14 +299,14 @@
           </nuxt-link>
         </span>
         <right-arrow class="action-type" />
-        <span :class="showMiniBubble ? 'mini-bubble info customized' : 'info'">
+        <span>
           {{ row.metadata.thorname.thorname }}
         </span>
       </template>
     </div>
 
     <div v-else-if="row && type === 'contract'" class="action-cell">
-      <span class="mini-bubble info">
+      <span>
         {{ row.metadata.contract.contractType }}
       </span>
     </div>
@@ -401,9 +398,15 @@ export default {
 
 .action-cell {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: 5px;
+  padding:8px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  background-color: var( --bgl-color);
+  border: 1px solid var(--border-color) ;
+  border-radius: 4px;
 
   .mini-bubble {
     display: flex;
@@ -429,6 +432,12 @@ export default {
 
   small.asset-name {
     font-size: 0.775rem;
+    padding: 0.375rem !important;
+    color: var(--sec-font-color);
+    background-color: var(--bgt-color);
+    border: 1px solid var(--border-color) !important;
+    border-radius: 0.5rem !important;
+    transition: all 0.2s ease;
   }
 
   .action-type {
@@ -450,6 +459,10 @@ export default {
     height: 1.2rem;
     width: 1.2rem;
     padding: 4px 0;
+  }
+  .asset-cell{
+    display: flex;
+    align-items: center;
   }
 
   .executed {
