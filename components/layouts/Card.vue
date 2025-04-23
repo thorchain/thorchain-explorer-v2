@@ -80,15 +80,14 @@ export default {
   flex-direction: column;
   word-wrap: break-word;
   border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
   background-color: var(--card-bg-color);
   max-width: 100%;
-
-  border-left: 0;
-  border-right: 0;
+  margin: 15px;
 
   @include lg {
-    border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
+    margin: 0px;
+
   }
 
   &.loading-container {

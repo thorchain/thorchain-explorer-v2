@@ -293,7 +293,7 @@ Vue.mixin(global)
         fill: #fff;
         cursor: pointer;
         transition: background-color 0.3s ease;
-        background-color: var(--primary-color);
+        background-color: var( --search-color);
         padding: 6px;
         border-radius: 4px;
 

@@ -44,6 +44,8 @@
   --highlight: #03a9f4;
   --overview-bg: #04251385;
   --card-bg: #101416;
+  --bgl-color: #101216;
+  --search-color: rgb(21 48 34 / 98%)
 }
 
 [theme='light'] {
@@ -71,6 +73,8 @@
   --bs-secondary-color: #6c757d;
   --overview-bg: #42ae95;
   --card-bg: #f8f8f8;
+  --bgl-color: #f2f2f2;
+  --search-color: rgb(66 174 149)
 }
 
 [theme='BlueElectra'] {
@@ -97,4 +101,7 @@
   --highlight: #03a9f4;
   --overview-bg: #04251385;
   --card-bg: #242f38;
+  --bgl-color: #1f272e;
+  --search-color: rgb(29 51 43)
+
 }
