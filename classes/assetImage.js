@@ -49,6 +49,9 @@ export const AssetImage = (assetStr) => {
           iconPath =
             'https://raw.githubusercontent.com/cosmos/chain-registry/master/kujira/images/rkuji.png'
         }
+        if (symbol === 'TCY') {
+          iconPath = require('~/assets/images/assets/tcy.svg')
+        }
         break
 
       case 'BTC':
