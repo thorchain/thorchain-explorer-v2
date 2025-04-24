@@ -316,7 +316,7 @@
                       {{ formatAddress(showTx(t.in && t.in[0].txID)) }}
                     </nuxt-link>
                   </span>
-                  <transaction-action :row="t" :show-mini-bubble="false" />
+                  <transaction-action :row="t" :show-mini-bubble="false" :no-border="true"/>
                 </div>
                 <div class="txs">
                   <span>

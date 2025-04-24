@@ -3,12 +3,12 @@
     <div
       v-if="row && (type === 'swap' || type === 'switch')"
       class="action-cell"
+      :style="{
+        border: noBorder ? 'none' : '1px solid var(--border-color)',
+        backgroundColor: noBorder ? 'transparent' : 'var(--bgt-color)',
+      }"
     >
-      <span
-        v-for="(ops, i) in row.in"
-        :key="'in-' + i"
-        class="asset-cell"
-      >
+      <span v-for="(ops, i) in row.in" :key="'in-' + i" class="asset-cell">
         <asset-icon
           :asset="ops.coins[0].asset"
           :height="'1.2rem'"
@@ -61,8 +61,12 @@
     <div
       v-else-if="row && (type === 'withdraw' || type === 'runePoolWithdraw')"
       class="action-cell"
+      :style="{
+        border: noBorder ? 'none' : '1px solid var(--border-color)',
+        backgroundColor: noBorder ? 'transparent' : 'var(--bgt-color)',
+      }"
     >
-      <div>
+      <div class="icon-box">
         <asset-icon
           :height="'1.2rem'"
           :chain-height="'1rem'"
@@ -70,16 +74,11 @@
         />
         <vault-icon class="action-icon" />
       </div>
-      <div v-if="row.metadata.withdraw" >
+      <div v-if="row.metadata.withdraw" class="mini-bubble yellow">
         {{ (row.metadata.withdraw.basisPoints / 1e4) | percent(2) }}
       </div>
       <right-arrow class="action-type" />
-      <span
-        v-for="(ops, i) in row.out"
-        :key="'out-' + i"
-        class="asset-cell"
-
-      >
+      <span v-for="(ops, i) in row.out" :key="'out-' + i" class="asset-cell">
         <asset-icon
           :asset="ops.coins[0].asset"
           :height="'1.2rem'"
@@ -93,13 +92,12 @@
     <div
       v-else-if="row && (type === 'addLiquidity' || type === 'runePoolDeposit')"
       class="action-cell"
+      :style="{
+        border: noBorder ? 'none' : '1px solid var(--border-color)',
+        backgroundColor: noBorder ? 'transparent' : 'var(--bgt-color)',
+      }"
     >
-      <span
-        v-for="(ops, i) in row.in"
-        :key="'in-' + i"
-        class="asset-cell"
-
-      >
+      <span v-for="(ops, i) in row.in" :key="'in-' + i" class="asset-cell">
         <asset-icon
           :asset="ops.coins[0].asset"
           :height="'1.2rem'"
@@ -110,7 +108,7 @@
         }}</span>
       </span>
       <right-arrow class="action-type" />
-      <div>
+      <div class="icon-box">
         <asset-icon
           :height="'1.2rem'"
           :chain-height="'1rem'"
@@ -134,13 +132,15 @@
       </template>
     </div>
 
-    <div v-else-if="row && type === 'refund'" class="action-cell">
-      <span
-        v-for="(ops, i) in row.in"
-        :key="'in-' + i"
-        class="asset-cell"
-
-      >
+    <div
+      v-else-if="row && type === 'refund'"
+      class="action-cell"
+      :style="{
+        border: noBorder ? 'none' : '1px solid var(--border-color)',
+        backgroundColor: noBorder ? 'transparent' : 'var(--bgt-color)',
+      }"
+    >
+      <span v-for="(ops, i) in row.in" :key="'in-' + i" class="asset-cell">
         <asset-icon
           :asset="ops.coins[0].asset"
           :height="'1.2rem'"
@@ -153,40 +153,41 @@
       <redo-icon class="action-type" />
     </div>
 
-    <div v-else-if="row && type === 'send'" class="action-cell">
-      <span
-        v-for="(ops, i) in row.in"
-        :key="'in-' + i"
-        class="asset-cell"
-      >
+    <div
+      v-else-if="row && type === 'send'"
+      class="action-cell"
+      :style="{
+        border: noBorder ? 'none' : '1px solid var(--border-color)',
+        backgroundColor: noBorder ? 'transparent' : 'var(--bgt-color)',
+      }"
+    >
+      <span v-for="(ops, i) in row.in" :key="'in-' + i" class="asset-cell">
         <asset-icon
           :asset="ops.coins[0].asset"
           :height="'1.2rem'"
           :chain-height="'1rem'"
-        ></asset-icon>
+        />
         <span class="asset-name">{{
           decimalFormat(+ops.coins[0].amount / 1e8)
         }}</span>
       </span>
       <right-arrow class="action-type" />
-      <span
-        v-for="(ops, i) in row.out"
-        :key="'out-' + i"
-        class="asset-cell"
-      >
-        <small class="asset-name">{{
-          addressFormatV2(ops.address, 6, true)
-        }}</small>
+      <span v-for="(ops, i) in row.out" :key="'out-' + i" class="asset-cell">
+        <nuxt-link class="clickable" :to="`/address/${ops.address}`">
+          {{ addressFormatV2(ops.address) }}
+        </nuxt-link>
       </span>
     </div>
 
-    <div v-else-if="row && type === 'bond'" class="action-cell">
-      <span
-        v-for="(ops, i) in row.in"
-        :key="'in-' + i"
-        class="asset-cell"
-
-      >
+    <div
+      v-else-if="row && type === 'bond'"
+      class="action-cell"
+      :style="{
+        border: noBorder ? 'none' : '1px solid var(--border-color)',
+        backgroundColor: noBorder ? 'transparent' : 'var(--bgt-color)',
+      }"
+    >
+      <span v-for="(ops, i) in row.in" :key="'in-' + i" class="asset-cell">
         <asset-icon
           :asset="ops.coins[0].asset"
           :height="'1.2rem'"
@@ -197,7 +198,7 @@
         }}</span>
       </span>
       <right-arrow class="action-type" />
-      <span >
+      <span>
         <nuxt-link
           class="clickable"
           :to="`/node/${row.metadata.bond.nodeAddress}`"
@@ -207,7 +208,14 @@
       </span>
     </div>
 
-    <div v-else-if="row && type === 'unbond'" class="action-cell">
+    <div
+      v-else-if="row && type === 'unbond'"
+      class="action-cell"
+      :style="{
+        border: noBorder ? 'none' : '1px solid var(--border-color)',
+        backgroundColor: noBorder ? 'transparent' : 'var(--bgt-color)',
+      }"
+    >
       <span>
         <nuxt-link
           class="clickable"
@@ -217,10 +225,7 @@
         </nuxt-link>
       </span>
       <right-arrow class="action-type" />
-      <span
-        v-for="(ops, i) in row.out"
-        :key="'out-' + i"
-      >
+      <span v-for="(ops, i) in row.out" :key="'out-' + i">
         <asset-icon
           :asset="ops.coins[0].asset"
           :height="'1.2rem'"
@@ -235,12 +240,12 @@
     <div
       v-else-if="(row && type === 'trade') || type === 'secure'"
       class="action-cell"
+      :style="{
+        border: noBorder ? 'none' : '1px solid var(--border-color)',
+        backgroundColor: noBorder ? 'transparent' : 'var(--bgt-color)',
+      }"
     >
-      <span
-        v-for="(ops, i) in row.in"
-        :key="'in-' + i"
-        class="asset-cell"
-      >
+      <span v-for="(ops, i) in row.in" :key="'in-' + i" class="asset-cell">
         <asset-icon
           :asset="ops.coins[0].asset"
           :height="'1.2rem'"
@@ -251,13 +256,14 @@
         }}</span>
       </span>
       <right-arrow class="action-type" />
-      <div >
+      <div>
         <vault-icon class="action-icon" />
       </div>
       <right-arrow class="action-type" />
       <span
         v-for="(ops, i) in row.out"
         :key="'out-' + i"
+        style="display: flex; align-items: flex-end; gap: 0.3rem"
       >
         <asset-icon
           :asset="ops.coins[0].asset"
@@ -270,21 +276,31 @@
       </span>
     </div>
 
-    <div v-else-if="row && type === 'failed'" class="action-cell">
+    <div
+      v-else-if="row && type === 'failed'"
+      class="action-cell"
+      :style="{
+        border: noBorder ? 'none' : '1px solid var(--border-color)',
+        backgroundColor: noBorder ? 'transparent' : 'var(--bgt-color)',
+      }"
+    >
       <template v-if="row.metadata && row.metadata.failed">
         <span>
           {{ parseMemoToTxType(row.metadata.failed.memo) }}
         </span>
         <right-arrow class="action-type" />
-        <span
-          v-tooltip="row.metadata.failed.reason"
-        >
-          see reason
-        </span>
+        <span v-tooltip="row.metadata.failed.reason"> see reason </span>
       </template>
     </div>
 
-    <div v-else-if="row && type === 'thorname'" class="action-cell">
+    <div
+      v-else-if="row && type === 'thorname'"
+      class="action-cell"
+      :style="{
+        border: noBorder ? 'none' : '1px solid var(--border-color)',
+        backgroundColor: noBorder ? 'transparent' : 'var(--bgt-color)',
+      }"
+    >
       <template v-if="row.metadata && row.metadata.thorname">
         <span>
           <asset-icon
@@ -305,7 +321,14 @@
       </template>
     </div>
 
-    <div v-else-if="row && type === 'contract'" class="action-cell">
+    <div
+      v-else-if="row && type === 'contract'"
+      class="action-cell"
+      :style="{
+        border: noBorder ? 'none' : '1px solid var(--border-color)',
+        backgroundColor: noBorder ? 'transparent' : 'var(--bgt-color)',
+      }"
+    >
       <span>
         {{ row.metadata.contract.contractType }}
       </span>
@@ -330,6 +353,10 @@ export default {
     showMiniBubble: {
       type: Boolean,
       default: true,
+    },
+    noBorder: {
+      type: Boolean,
+      default: false,
     },
   },
   computed: {
@@ -399,13 +426,13 @@ export default {
 .action-cell {
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding:8px;
+  gap: 10px;
+  padding: 8px;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  background-color: var( --bgl-color);
-  border: 1px solid var(--border-color) ;
+  background-color: var(--bgl-color);
+  border: 1px solid var(--border-color);
   border-radius: 4px;
 
   .mini-bubble {
@@ -432,11 +459,10 @@ export default {
 
   small.asset-name {
     font-size: 0.775rem;
-    padding: 0.375rem !important;
-    color: var(--sec-font-color);
+    padding: 0.375rem;
     background-color: var(--bgt-color);
-    border: 1px solid var(--border-color) !important;
-    border-radius: 0.5rem !important;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
     transition: all 0.2s ease;
   }
 
@@ -459,8 +485,17 @@ export default {
     height: 1.2rem;
     width: 1.2rem;
     padding: 4px 0;
+    fill: #21c187;
   }
-  .asset-cell{
+  .icon-box {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 0.375rem;
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+  }
+  .asset-cell {
     display: flex;
     align-items: center;
   }
@@ -473,7 +508,7 @@ export default {
     background-color: transparent;
     gap: 3px;
     img {
-      height: 1.2rem;
+      height: 0.9rem;
     }
   }
 }

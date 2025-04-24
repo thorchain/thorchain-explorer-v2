@@ -69,6 +69,7 @@
           <div ref="dropdownButton" class="custom-dropdown">
             <button
               class="dropdown-button"
+              :class="{ 'dropdown-open': isOpen }"
               :disabled="totalValue.count === 0"
               @click="toggleDropdown"
             >
@@ -524,6 +525,14 @@ button[disabled] {
     transition:
       border-color 0.3s ease,
       box-shadow 0.3s ease;
+
+    &:hover {
+      background-color: var(--bgt-color);
+      border-radius: 0.3rem;
+    }
+    &.dropdown-open {
+      background-color: var(--bgt-color);
+    }
 
     .dropdown-icon {
       width: 1rem;

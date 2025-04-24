@@ -175,7 +175,7 @@
                 {{ formatAddress(swap.txID) }}
               </nuxt-link>
             </span>
-            <TransactionAction :row="swap" :show-mini-bubble="false" />
+            <transaction-action :row="swap" :show-mini-bubble="false" :no-border="true"/>
           </div>
           <div class="break"></div>
           <div class="right-section">
