@@ -30,8 +30,8 @@
           />
         </div>
         <div v-else-if="props.column.field === 'type'" class="type">
-          <transaction-status 
-            :row="props.row" 
+          <transaction-status
+            :row="props.row"
             :hovered-type="hoveredType"
             @setHoveredType="setHoveredType"
             @removeHoveredType="removeHoveredType"
@@ -139,7 +139,7 @@ export default {
   },
   data() {
     return {
-      hoveredType: '', 
+      hoveredType: '',
       hoveredAddress: '',
       cols: [
         {

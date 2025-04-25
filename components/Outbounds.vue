@@ -175,7 +175,11 @@
                 {{ formatAddress(swap.txID) }}
               </nuxt-link>
             </span>
-            <transaction-action :row="swap" :show-mini-bubble="false" :no-border="true"/>
+            <transaction-action
+              :row="swap"
+              :show-mini-bubble="false"
+              :no-border="true"
+            />
           </div>
           <div class="break"></div>
           <div class="right-section">
@@ -408,7 +412,7 @@ export default {
   .transactions {
     display: flex;
     flex-direction: column;
-    max-width: 60%;
+    overflow: hidden;
   }
 
   @include md {
@@ -424,6 +428,7 @@ export default {
     flex-direction: column;
     text-overflow: ellipsis;
     overflow: hidden;
+    min-width: 205px;
 
     > span {
       overflow: hidden;

@@ -14,9 +14,7 @@
         },
       ]"
     >
-      <span class="type-name">
-        {{ typeName(row.type) }}
-      </span>
+      <span class="type-name" :title="row.type"> {{ typeName(row.type) }}</span>
     </div>
   </div>
 </template>
@@ -51,23 +49,21 @@ export default {
     getTypeClass(type) {
       switch (type) {
         case 'send':
-          return 'send-type'
+          return 'blue-type'
         case 'swap':
-          return 'swap-type'
-        case 'refund':
-          return 'refund-type'
-        case 'unbond':
-          return 'unbond-type'
-        case 'failed':
-          return 'failed-type'
         case 'addLiquidity':
-          return 'add-liquidity-type'
-        case 'withdraw':
-          return 'withdraw-type'
         case 'runePoolDeposit':
-          return 'rune-deposit-type'
+        case 'bond':
+          return 'green-type'
+        case 'refund':
+          return 'yellow-type'
+        case 'unbond':
+        case 'withdraw':
         case 'runePoolWithdraw':
-          return 'rune-withdraw-type'
+        case 'failed':
+          return 'red-type'
+        case 'switch':
+          return 'alert-type'
         default:
           return 'default-type'
       }
@@ -88,65 +84,62 @@ export default {
 .customized {
   display: flex;
   align-items: center;
+
   .type-class {
     padding: 0.375rem !important;
     color: var(--sec-font-color);
     background-color: var(--bgl-color);
-    border: 1px solid var(--border-color) !important;
-    border-radius: 0.375rem !important;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
     transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    width: 80px;
+    justify-content: center;
+    cursor: pointer;
 
     &.highlighted {
       border: 1px dashed var(--highlight);
       border-radius: 2px;
-      &.send-type {
-        color: var(--highlight) !important;
-        border: 1px dashed var(--highlight) !important;
+
+      &.blue-type {
+        color: var(--highlight);
+        border-color: var(--highlight);
       }
 
-      &.swap-type {
-        color: var(--green) !important;
-        border: 1px dashed var(--green) !important;
+      &.green-type {
+        color: var(--green);
+        border-color: var(--green);
       }
 
-      &.refund-type,
-      &.unbond-type {
-        color: #f39c12 !important;
-        border: 1px dashed #f39c12 !important;
+      &.yellow-type {
+        color: #f39c12;
+        border-color: #f39c12;
       }
 
-      &.failed-type {
-        color: var(--red) !important;
-        border: 1px dashed var(--red) !important;
+      &.red-type {
+        color: var(--red);
+        border-color: var(--red);
       }
 
-      &.add-liquidity-type {
-        color: #9b59b6 !important;
-        border: 1px dashed #9b59b6 !important;
-      }
-
-      &.withdraw-type,
-      &.rune-withdraw-type {
-        color: var(--green) !important;
-        border: 1px dashed var(--green) !important;
-      }
-
-      &.rune-deposit-type {
-        color: var(--highlight) !important;
-        border: 1px dashed var(--highlight) !important;
+      &.alert-type {
+        color: #9b59b6;
+        border-color: #9b59b6;
       }
 
       &.default-type {
-        color: var(--highlight) !important;
-        border: 1px dashed var(--highlight) !important;
+        color: var(--highlight);
+        border-color: var(--highlight);
       }
     }
   }
 
   .type-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: bold;
     font-size: 0.7rem;
     line-height: 0.875rem;
-    font-weight: 500;
   }
 }
 </style>

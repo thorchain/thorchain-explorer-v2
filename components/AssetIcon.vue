@@ -25,8 +25,8 @@ export default {
       return {
         '--asset-height': this.height ?? '1.5rem',
         '--asset-width': this.height ?? '1.5rem',
-        '--chain-asset-height': this.chainHeight ?? '0.9rem',
-        '--chain-asset-width': this.chainHeight ?? '0.9rem',
+        '--chain-asset-height': this.chainHeight ?? '0.7rem',
+        '--chain-asset-width': this.chainHeight ?? '0.7rem',
       }
     },
   },
@@ -67,12 +67,13 @@ export default {
   }
 
   .chain-asset-icon {
+    border: 1px solid var(--border-color);
     width: var(--chain-asset-width);
     height: var(--chain-asset-height);
     border-radius: 50%;
     position: absolute;
-    right: calc(var(--chain-asset-width) * -1 / 2);
-    bottom: calc(var(--chain-asset-width) * -1 / 2);
+    right: calc(var(--chain-asset-width) * -1 / 3);
+    bottom: calc(var(--chain-asset-width) * -1 / 3);
   }
 
   &.no-margin {

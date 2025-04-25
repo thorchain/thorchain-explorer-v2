@@ -83,11 +83,10 @@ export default {
   border-radius: 0.5rem;
   background-color: var(--card-bg-color);
   max-width: 100%;
-  margin: 15px;
+  margin: 0 10px;
 
   @include lg {
     margin: 0px;
-
   }
 
   &.loading-container {

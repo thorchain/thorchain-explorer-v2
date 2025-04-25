@@ -325,6 +325,8 @@ export default {
     background-color: var(--bg-color);
     border: 1px solid var(--border-color);
     min-width: 20.8rem;
+    border-radius: 0.5rem;
+    margin: 0 10px;
 
     .loader-item {
       display: flex;

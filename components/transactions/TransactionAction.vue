@@ -2,17 +2,13 @@
   <div>
     <div
       v-if="row && (type === 'swap' || type === 'switch')"
-      class="action-cell"
-      :style="{
-        border: noBorder ? 'none' : '1px solid var(--border-color)',
-        backgroundColor: noBorder ? 'transparent' : 'var(--bgt-color)',
-      }"
+      :class="['action-cell', { 'no-border': noBorder }]"
     >
       <span v-for="(ops, i) in row.in" :key="'in-' + i" class="asset-cell">
         <asset-icon
           :asset="ops.coins[0].asset"
           :height="'1.2rem'"
-          :chain-height="'1rem'"
+          :chain-height="'0.8rem'"
         />
         <span class="asset-name">{{
           decimalFormat(ops.coins[0].amount / 1e8)
@@ -27,7 +23,7 @@
         <asset-icon
           :asset="ops.coins[0].asset"
           :height="'1.2rem'"
-          :chain-height="'1rem'"
+          :chain-height="'0.8rem'"
         ></asset-icon>
         <span class="asset-name">{{
           decimalFormat(ops.coins[0].amount / 1e8)
@@ -60,61 +56,70 @@
     </div>
     <div
       v-else-if="row && (type === 'withdraw' || type === 'runePoolWithdraw')"
-      class="action-cell"
-      :style="{
-        border: noBorder ? 'none' : '1px solid var(--border-color)',
-        backgroundColor: noBorder ? 'transparent' : 'var(--bgt-color)',
-      }"
+      :class="['action-cell', { 'no-border': noBorder }]"
     >
-      <div class="icon-box">
+      <div class="asset-cell">
         <asset-icon
           :height="'1.2rem'"
-          :chain-height="'1rem'"
+          :chain-height="'0.8rem'"
           :asset="row.pools[0] || row.out[0].coins[0].asset"
         />
-        <vault-icon class="action-icon" />
-      </div>
-      <div v-if="row.metadata.withdraw" class="mini-bubble yellow">
-        {{ (row.metadata.withdraw.basisPoints / 1e4) | percent(2) }}
+        <span v-if="row.metadata.withdraw" class="mini-bubble yellow">
+          {{ (row.metadata.withdraw.basisPoints / 1e4) | percent(2) }}
+        </span>
       </div>
       <right-arrow class="action-type" />
-      <span v-for="(ops, i) in row.out" :key="'out-' + i" class="asset-cell">
-        <asset-icon
-          :asset="ops.coins[0].asset"
-          :height="'1.2rem'"
-          :chain-height="'1rem'"
-        ></asset-icon>
-        <span class="asset-name">{{
-          decimalFormat(ops.coins[0].amount / 1e8)
-        }}</span>
-      </span>
+      <template v-for="(ops, i) in row.out">
+        <span :key="'out-' + i" class="asset-cell">
+          <asset-icon
+            :asset="ops.coins[0].asset"
+            :height="'1.2rem'"
+            :chain-height="'0.8rem'"
+          ></asset-icon>
+          <span class="asset-name">
+            {{ decimalFormat(ops.coins[0].amount / 1e8) }}
+          </span>
+        </span>
+        <div
+          v-if="row.out.length > 1 && i + 1 !== row.out.length"
+          :key="'out-plus-' + i"
+        >
+          +
+        </div>
+      </template>
     </div>
     <div
       v-else-if="row && (type === 'addLiquidity' || type === 'runePoolDeposit')"
-      class="action-cell"
-      :style="{
-        border: noBorder ? 'none' : '1px solid var(--border-color)',
-        backgroundColor: noBorder ? 'transparent' : 'var(--bgt-color)',
-      }"
+      :class="['action-cell', { 'no-border': noBorder }]"
     >
-      <span v-for="(ops, i) in row.in" :key="'in-' + i" class="asset-cell">
-        <asset-icon
-          :asset="ops.coins[0].asset"
-          :height="'1.2rem'"
-          :chain-height="'1rem'"
-        ></asset-icon>
-        <span class="asset-name">{{
-          decimalFormat(ops.coins[0].amount / 1e8)
-        }}</span>
-      </span>
+      <template v-for="(ops, i) in row.in">
+        <span :key="'in-' + i" class="asset-cell">
+          <asset-icon
+            :asset="ops.coins[0].asset"
+            :height="'1.2rem'"
+            :chain-height="'0.8rem'"
+          ></asset-icon>
+          <span class="asset-name">{{
+            decimalFormat(ops.coins[0].amount / 1e8)
+          }}</span>
+        </span>
+        <div
+          v-if="row.in.length > 1 && i + 1 !== row.in.length"
+          :key="'in-plus-' + i"
+        >
+          +
+        </div>
+      </template>
       <right-arrow class="action-type" />
-      <div class="icon-box">
+      <div class="asset-cell">
         <asset-icon
           :height="'1.2rem'"
-          :chain-height="'1rem'"
+          :chain-height="'0.8rem'"
           :asset="(row.pools && row.pools[0]) || row.in[0].coins[0].asset"
         />
-        <vault-icon class="action-icon" />
+        <span>
+          {{ showAsset(row.pools && row.pools[0]) || row.in[0].coins[0].asset }}
+        </span>
       </div>
       <template v-if="hasAffiliate(row)">
         <span>|</span>
@@ -134,17 +139,13 @@
 
     <div
       v-else-if="row && type === 'refund'"
-      class="action-cell"
-      :style="{
-        border: noBorder ? 'none' : '1px solid var(--border-color)',
-        backgroundColor: noBorder ? 'transparent' : 'var(--bgt-color)',
-      }"
+      :class="['action-cell', { 'no-border': noBorder }]"
     >
       <span v-for="(ops, i) in row.in" :key="'in-' + i" class="asset-cell">
         <asset-icon
           :asset="ops.coins[0].asset"
           :height="'1.2rem'"
-          :chain-height="'1rem'"
+          :chain-height="'0.8rem'"
         ></asset-icon>
         <span class="asset-name">{{
           decimalFormat(ops.coins[0].amount / 1e8)
@@ -155,17 +156,13 @@
 
     <div
       v-else-if="row && type === 'send'"
-      class="action-cell"
-      :style="{
-        border: noBorder ? 'none' : '1px solid var(--border-color)',
-        backgroundColor: noBorder ? 'transparent' : 'var(--bgt-color)',
-      }"
+      :class="['action-cell', { 'no-border': noBorder }]"
     >
       <span v-for="(ops, i) in row.in" :key="'in-' + i" class="asset-cell">
         <asset-icon
           :asset="ops.coins[0].asset"
           :height="'1.2rem'"
-          :chain-height="'1rem'"
+          :chain-height="'0.8rem'"
         />
         <span class="asset-name">{{
           decimalFormat(+ops.coins[0].amount / 1e8)
@@ -181,40 +178,32 @@
 
     <div
       v-else-if="row && type === 'bond'"
-      class="action-cell"
-      :style="{
-        border: noBorder ? 'none' : '1px solid var(--border-color)',
-        backgroundColor: noBorder ? 'transparent' : 'var(--bgt-color)',
-      }"
+      :class="['action-cell', { 'no-border': noBorder }]"
     >
       <span v-for="(ops, i) in row.in" :key="'in-' + i" class="asset-cell">
         <asset-icon
           :asset="ops.coins[0].asset"
           :height="'1.2rem'"
-          :chain-height="'1rem'"
+          :chain-height="'0.8rem'"
         ></asset-icon>
         <span class="asset-name">{{
           decimalFormat(ops.coins[0].amount / 1e8)
         }}</span>
       </span>
       <right-arrow class="action-type" />
-      <span>
+      <div class="asset-cell">
         <nuxt-link
           class="clickable"
           :to="`/node/${row.metadata.bond.nodeAddress}`"
         >
           {{ addressFormatV2(row.metadata.bond.nodeAddress) }}
         </nuxt-link>
-      </span>
+      </div>
     </div>
 
     <div
       v-else-if="row && type === 'unbond'"
-      class="action-cell"
-      :style="{
-        border: noBorder ? 'none' : '1px solid var(--border-color)',
-        backgroundColor: noBorder ? 'transparent' : 'var(--bgt-color)',
-      }"
+      :class="['action-cell', { 'no-border': noBorder }]"
     >
       <span>
         <nuxt-link
@@ -229,7 +218,7 @@
         <asset-icon
           :asset="ops.coins[0].asset"
           :height="'1.2rem'"
-          :chain-height="'1rem'"
+          :chain-height="'0.8rem'"
         ></asset-icon>
         <span class="asset-name">{{
           decimalFormat(ops.coins[0].amount / 1e8)
@@ -239,17 +228,13 @@
 
     <div
       v-else-if="(row && type === 'trade') || type === 'secure'"
-      class="action-cell"
-      :style="{
-        border: noBorder ? 'none' : '1px solid var(--border-color)',
-        backgroundColor: noBorder ? 'transparent' : 'var(--bgt-color)',
-      }"
+      :class="['action-cell', { 'no-border': noBorder }]"
     >
       <span v-for="(ops, i) in row.in" :key="'in-' + i" class="asset-cell">
         <asset-icon
           :asset="ops.coins[0].asset"
           :height="'1.2rem'"
-          :chain-height="'1rem'"
+          :chain-height="'0.8rem'"
         ></asset-icon>
         <span class="asset-name">{{
           decimalFormat(ops.coins[0].amount / 1e8)
@@ -268,7 +253,7 @@
         <asset-icon
           :asset="ops.coins[0].asset"
           :height="'1.2rem'"
-          :chain-height="'1rem'"
+          :chain-height="'0.8rem'"
         ></asset-icon>
         <span class="asset-name">{{
           decimalFormat(ops.coins[0].amount / 1e8)
@@ -278,28 +263,24 @@
 
     <div
       v-else-if="row && type === 'failed'"
-      class="action-cell"
-      :style="{
-        border: noBorder ? 'none' : '1px solid var(--border-color)',
-        backgroundColor: noBorder ? 'transparent' : 'var(--bgt-color)',
-      }"
+      :class="['action-cell', { 'no-border': noBorder }]"
     >
-      <template v-if="row.metadata && row.metadata.failed">
+      <div v-if="row.metadata && row.metadata.failed" class="asset-cell">
         <span>
           {{ parseMemoToTxType(row.metadata.failed.memo) }}
         </span>
         <right-arrow class="action-type" />
-        <span v-tooltip="row.metadata.failed.reason"> see reason </span>
-      </template>
+        <info-icon
+          v-tooltip="row.metadata.failed.reason"
+          class="action-type reason"
+        >
+        </info-icon>
+      </div>
     </div>
 
     <div
       v-else-if="row && type === 'thorname'"
-      class="action-cell"
-      :style="{
-        border: noBorder ? 'none' : '1px solid var(--border-color)',
-        backgroundColor: noBorder ? 'transparent' : 'var(--bgt-color)',
-      }"
+      :class="['action-cell', { 'no-border': noBorder }]"
     >
       <template v-if="row.metadata && row.metadata.thorname">
         <span>
@@ -323,11 +304,7 @@
 
     <div
       v-else-if="row && type === 'contract'"
-      class="action-cell"
-      :style="{
-        border: noBorder ? 'none' : '1px solid var(--border-color)',
-        backgroundColor: noBorder ? 'transparent' : 'var(--bgt-color)',
-      }"
+      :class="['action-cell', { 'no-border': noBorder }]"
     >
       <span>
         {{ row.metadata.contract.contractType }}
@@ -341,10 +318,11 @@ import { mapGetters } from 'vuex'
 import RightArrow from '~/assets/images/arrow-right.svg?inline'
 import VaultIcon from '~/assets/images/safe.svg?inline'
 import RedoIcon from '~/assets/images/refresh.svg?inline'
+import InfoIcon from '~/assets/images/info.svg?inline'
 import { parseMemoToTxType } from '~/utils'
 
 export default {
-  components: { RightArrow, VaultIcon, RedoIcon },
+  components: { RightArrow, VaultIcon, RedoIcon, InfoIcon },
   props: {
     row: {
       type: Object,
@@ -426,31 +404,11 @@ export default {
 .action-cell {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px;
+  gap: 6px;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  background-color: var(--bgl-color);
-  border: 1px solid var(--border-color);
   border-radius: 4px;
-
-  .mini-bubble {
-    display: flex;
-    align-items: center;
-
-    &.customized {
-      padding: 4px 6px;
-    }
-
-    &.reason {
-      cursor: pointer;
-
-      &:hover {
-        background-color: var(--red-bg);
-      }
-    }
-  }
 
   .asset-name {
     font-size: 0.9rem;
@@ -477,6 +435,14 @@ export default {
       height: 0.8rem;
       width: 0.8re;
     }
+
+    &.reason {
+      cursor: pointer;
+
+      &:hover {
+        fill: var(--red);
+      }
+    }
   }
 
   .action-icon {
@@ -487,6 +453,7 @@ export default {
     padding: 4px 0;
     fill: #21c187;
   }
+
   .icon-box {
     display: flex;
     flex-direction: row;
@@ -495,9 +462,22 @@ export default {
     border: 1px solid var(--border-color);
     border-radius: 1rem;
   }
+
   .asset-cell {
     display: flex;
     align-items: center;
+
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bgt-color);
+  }
+
+  &.no-border {
+    .asset-cell {
+      border: none;
+      background-color: transparent;
+    }
   }
 
   .executed {
