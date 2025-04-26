@@ -1,16 +1,21 @@
 <template>
   <div class="leaderboard-container">
     <leaderboard-card
-      title="Affiliate Collected"
+      title=" "
       :data="affiliateData"
       sort-key="affiliate_fees_usd"
       :limit="limit"
       :is-loading="!affiliateData || affiliateData.length === 0"
     >
       <template #header>
-        <small class="sub-title">- AVG affiliate bps</small>
+        <span>
+          <h2 class="card-header-title">
+            Affiliate Collected
+            <small class="sub-title">- AVG affiliate bps</small>
+          </h2>
+        </span>
       </template>
-      <template #default="{ row, index }">
+      <template #default="{ row }">
         ${{ row.affiliate_fees_usd | number('0.00a') }}
         <small>- {{ row.avg_bps | percent(2) }}</small>
       </template>
@@ -47,9 +52,7 @@
       :limit="limit"
       :is-loading="!affiliateData || affiliateData.length === 0"
     >
-      <template #default="{ row }">
-        ${{ row.vc | number('0,0') }}
-      </template>
+      <template #default="{ row }"> ${{ row.vc | number('0,0') }} </template>
     </leaderboard-card>
   </div>
 </template>
@@ -61,7 +64,7 @@ import { nameMapping } from '~/utils'
 
 export default {
   components: {
-    LeaderboardCard
+    LeaderboardCard,
   },
   props: {
     affiliateData: {
@@ -97,9 +100,6 @@ export default {
 
 <style lang="scss" scoped>
 .sub-title {
-  display: flex;
-  font-size: 1rem;
-  font-weight: 700;
   color: var(--sec-font-color);
 }
 
