@@ -170,9 +170,6 @@ export default {
 
   .data-section {
     flex: 1;
-    background-color: var(--bg-color);
-    border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
     margin: 0 10px;
 
     @include lg {

@@ -59,6 +59,11 @@ export default {
   margin-bottom: 1rem;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   grid-template-rows: auto;
+  margin: 1rem 10px;
+
+  @include lg {
+    margin: 1rem 0px;
+  }
 
   .table-stat-card {
     padding: 2rem 0;

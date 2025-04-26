@@ -220,13 +220,8 @@
       />
     </div>
     <div class="cards-container">
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">
-            <h2 style="color: var(--sec-font-color)">Latest Blocks</h2>
-          </div>
-        </div>
-        <div class="card-body">
+      <card title="Latest Blocks">
+        <div>
           <transition-group name="block" tag="div">
             <div
               v-for="block in burnedBlocks"
@@ -291,18 +286,15 @@
             </div>
           </template>
         </div>
-      </div>
-      <div class="card">
-        <div class="card-header">
-          <div class="card-title">
-            <h2 style="color: var(--sec-font-color)">Latest Transactions</h2>
-            <nuxt-link to="/txs" class="more-link clickable">
-              More
-              <ArrowRightIcon />
-            </nuxt-link>
-          </div>
-        </div>
-        <div class="card-body">
+      </card>
+      <card title="Latest Transactions">
+  <template #more>
+    <nuxt-link to="/txs" class="more-link clickable" style="margin-left: auto;">
+      More
+      <ArrowRightIcon />
+    </nuxt-link>
+  </template>
+        <div>
           <template v-if="txs">
             <template v-for="(t, i) in txs">
               <div :key="i" class="row-item-transactions">
@@ -344,7 +336,7 @@
             <BounceLoader color="var(--font-color)" size="3rem" />
           </div>
         </div>
-      </div>
+      </card>
     </div>
   </Page>
 </template>

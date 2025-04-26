@@ -1235,6 +1235,11 @@ export default {
 .search-container {
   display: flex;
   flex-wrap: wrap;
+  margin: 0 10px;
+
+  @include lg {
+    margin: 0px;
+  }
 }
 
 .filter-btns {

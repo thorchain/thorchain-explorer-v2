@@ -56,7 +56,7 @@
     </div>
     <div
       v-else-if="row && (type === 'withdraw' || type === 'runePoolWithdraw')"
-      :class="['action-cell', { 'no-border': noBorder }]"
+      :class="['action-cell', { 'no-border': noBorder, wrap: wrap }]"
     >
       <div class="asset-cell">
         <asset-icon
@@ -90,7 +90,7 @@
     </div>
     <div
       v-else-if="row && (type === 'addLiquidity' || type === 'runePoolDeposit')"
-      :class="['action-cell', { 'no-border': noBorder }]"
+      :class="['action-cell', { 'no-border': noBorder, wrap: wrap }]"
     >
       <template v-for="(ops, i) in row.in">
         <span :key="'in-' + i" class="asset-cell">
@@ -139,7 +139,7 @@
 
     <div
       v-else-if="row && type === 'refund'"
-      :class="['action-cell', { 'no-border': noBorder }]"
+      :class="['action-cell', { 'no-border': noBorder, wrap: wrap }]"
     >
       <span v-for="(ops, i) in row.in" :key="'in-' + i" class="asset-cell">
         <asset-icon
@@ -156,7 +156,7 @@
 
     <div
       v-else-if="row && type === 'send'"
-      :class="['action-cell', { 'no-border': noBorder }]"
+      :class="['action-cell', { 'no-border': noBorder, wrap: wrap }]"
     >
       <span v-for="(ops, i) in row.in" :key="'in-' + i" class="asset-cell">
         <asset-icon
@@ -178,7 +178,7 @@
 
     <div
       v-else-if="row && type === 'bond'"
-      :class="['action-cell', { 'no-border': noBorder }]"
+      :class="['action-cell', { 'no-border': noBorder, wrap: wrap }]"
     >
       <span v-for="(ops, i) in row.in" :key="'in-' + i" class="asset-cell">
         <asset-icon
@@ -203,7 +203,7 @@
 
     <div
       v-else-if="row && type === 'unbond'"
-      :class="['action-cell', { 'no-border': noBorder }]"
+      :class="['action-cell', { 'no-border': noBorder, wrap: wrap }]"
     >
       <span>
         <nuxt-link
@@ -228,7 +228,7 @@
 
     <div
       v-else-if="(row && type === 'trade') || type === 'secure'"
-      :class="['action-cell', { 'no-border': noBorder }]"
+      :class="['action-cell', { 'no-border': noBorder, wrap: wrap }]"
     >
       <span v-for="(ops, i) in row.in" :key="'in-' + i" class="asset-cell">
         <asset-icon
@@ -263,7 +263,7 @@
 
     <div
       v-else-if="row && type === 'failed'"
-      :class="['action-cell', { 'no-border': noBorder }]"
+      :class="['action-cell', { 'no-border': noBorder, wrap: wrap }]"
     >
       <div v-if="row.metadata && row.metadata.failed" class="asset-cell">
         <span>
@@ -280,7 +280,7 @@
 
     <div
       v-else-if="row && type === 'thorname'"
-      :class="['action-cell', { 'no-border': noBorder }]"
+      :class="['action-cell', { 'no-border': noBorder, wrap: wrap }]"
     >
       <template v-if="row.metadata && row.metadata.thorname">
         <span>
@@ -304,7 +304,7 @@
 
     <div
       v-else-if="row && type === 'contract'"
-      :class="['action-cell', { 'no-border': noBorder }]"
+      :class="['action-cell', { 'no-border': noBorder, wrap: wrap }]"
     >
       <span>
         {{ row.metadata.contract.contractType }}
@@ -409,6 +409,10 @@ export default {
   white-space: nowrap;
   text-overflow: ellipsis;
   border-radius: 4px;
+  &.no-border {
+    display: flex;
+    flex-wrap: wrap;
+  }
 
   .asset-name {
     font-size: 0.9rem;

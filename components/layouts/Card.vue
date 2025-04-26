@@ -124,6 +124,12 @@ export default {
     &.has-extra {
       flex-wrap: wrap;
       justify-content: space-between;
+      gap: 0.5rem;
+
+      @include lg {
+        margin: 0px;
+        gap: 0rem;
+      }
     }
     .nav-section {
       cursor: pointer;
