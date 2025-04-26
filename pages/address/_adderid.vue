@@ -509,6 +509,11 @@ export default {
 
 <style lang="scss" scoped>
 .address-container {
+  margin: 0 10px;
+
+  @include lg {
+    margin: 0px;
+  }
   .icon {
     fill: var(--sec-font-color);
     height: 1.5rem;
@@ -524,7 +529,7 @@ export default {
   .balance-nav-container {
     display: flex;
     flex-direction: column;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
 
     justify-content: space-between;
     gap: 1rem;
@@ -543,6 +548,7 @@ export default {
     }
     .balance-nav-container {
       flex-direction: row;
+      flex-wrap: wrap;
     }
   }
   .content {

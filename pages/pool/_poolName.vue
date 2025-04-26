@@ -42,6 +42,11 @@ export default {
   padding: 0.8rem;
   border: 1px solid var(--border-color);
   word-break: break-all;
+  margin: 0 10px;
+
+  @include lg {
+    margin: 0px;
+  }
 }
 .nav-pool-header {
   display: flex;

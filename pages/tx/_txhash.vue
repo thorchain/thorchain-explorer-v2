@@ -2231,12 +2231,16 @@ export default {
 <style lang="scss" scoped>
 .tx-header {
   display: flex;
-  width: 100%;
   max-width: 680px;
   gap: 8px;
-  margin: auto;
   align-items: center;
   justify-content: center;
+  margin: 0 10px;
+
+  @include lg {
+    margin: auto;
+    width: 100%;
+  }
 
   @include md {
     justify-content: flex-start;
