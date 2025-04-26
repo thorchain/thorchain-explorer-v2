@@ -58,19 +58,25 @@
       v-else-if="row && (type === 'withdraw' || type === 'runePoolWithdraw')"
       :class="['action-cell', { 'no-border': noBorder, wrap: wrap }]"
     >
-      <div class="asset-cell">
+      <div v-if="row.metadata.withdraw" class="asset-cell">
         <asset-icon
           :height="'1.2rem'"
           :chain-height="'0.8rem'"
           :asset="row.pools[0] || row.out[0].coins[0].asset"
         />
-        <span v-if="row.metadata.withdraw" class="mini-bubble yellow">
-          {{ (row.metadata.withdraw.basisPoints / 1e4) | percent(2) }}
+        <span class="mini-bubble yellow">
+          <template v-if="row.metadata.withdraw.basisPoints">
+            {{ (row.metadata.withdraw.basisPoints / 1e4) | percent(2) }}
+          </template>
+          <template v-else>
+            {{ row.pools[0] || row.out[0].coins[0].asset }}
+          </template>
         </span>
       </div>
-      <right-arrow class="action-type" />
+      <right-arrow v-if="row.metadata.withdraw" class="action-type" />
       <template v-for="(ops, i) in row.out">
         <span :key="'out-' + i" class="asset-cell">
+          <subtract-icon class="active-icon"></subtract-icon>
           <asset-icon
             :asset="ops.coins[0].asset"
             :height="'1.2rem'"
@@ -141,7 +147,12 @@
       v-else-if="row && type === 'refund'"
       :class="['action-cell', { 'no-border': noBorder, wrap: wrap }]"
     >
-      <span v-for="(ops, i) in row.in" :key="'in-' + i" class="asset-cell">
+      <span
+        v-for="(ops, i) in row.in"
+        :key="'in-' + i"
+        class="asset-cell yellow-type"
+      >
+        <redo-icon class="active-icon"></redo-icon>
         <asset-icon
           :asset="ops.coins[0].asset"
           :height="'1.2rem'"
@@ -151,7 +162,6 @@
           decimalFormat(ops.coins[0].amount / 1e8)
         }}</span>
       </span>
-      <redo-icon class="action-type" />
     </div>
 
     <div
@@ -170,6 +180,7 @@
       </span>
       <right-arrow class="action-type" />
       <span v-for="(ops, i) in row.out" :key="'out-' + i" class="asset-cell">
+        <wallet-icon class="active-icon"></wallet-icon>
         <nuxt-link class="clickable" :to="`/address/${ops.address}`">
           {{ addressFormatV2(ops.address) }}
         </nuxt-link>
@@ -181,6 +192,7 @@
       :class="['action-cell', { 'no-border': noBorder, wrap: wrap }]"
     >
       <span v-for="(ops, i) in row.in" :key="'in-' + i" class="asset-cell">
+        <add-icon class="active-icon"></add-icon>
         <asset-icon
           :asset="ops.coins[0].asset"
           :height="'1.2rem'"
@@ -192,6 +204,7 @@
       </span>
       <right-arrow class="action-type" />
       <div class="asset-cell">
+        <node-icon class="active-icon"></node-icon>
         <nuxt-link
           class="clickable"
           :to="`/node/${row.metadata.bond.nodeAddress}`"
@@ -205,16 +218,17 @@
       v-else-if="row && type === 'unbond'"
       :class="['action-cell', { 'no-border': noBorder, wrap: wrap }]"
     >
-      <span>
+      <div class="asset-cell">
+        <node-icon class="active-icon"></node-icon>
         <nuxt-link
           class="clickable"
           :to="`/node/${row.metadata.bond.nodeAddress}`"
         >
           {{ addressFormatV2(row.metadata.bond.nodeAddress) }}
         </nuxt-link>
-      </span>
+      </div>
       <right-arrow class="action-type" />
-      <span v-for="(ops, i) in row.out" :key="'out-' + i">
+      <div v-for="(ops, i) in row.out" :key="'out-' + i" class="asset-cell">
         <asset-icon
           :asset="ops.coins[0].asset"
           :height="'1.2rem'"
@@ -223,7 +237,7 @@
         <span class="asset-name">{{
           decimalFormat(ops.coins[0].amount / 1e8)
         }}</span>
-      </span>
+      </div>
     </div>
 
     <div
@@ -245,11 +259,7 @@
         <vault-icon class="action-icon" />
       </div>
       <right-arrow class="action-type" />
-      <span
-        v-for="(ops, i) in row.out"
-        :key="'out-' + i"
-        style="display: flex; align-items: flex-end; gap: 0.3rem"
-      >
+      <span v-for="(ops, i) in row.out" :key="'out-' + i" class="asset-cell">
         <asset-icon
           :asset="ops.coins[0].asset"
           :height="'1.2rem'"
@@ -319,10 +329,23 @@ import RightArrow from '~/assets/images/arrow-right.svg?inline'
 import VaultIcon from '~/assets/images/safe.svg?inline'
 import RedoIcon from '~/assets/images/refresh.svg?inline'
 import InfoIcon from '~/assets/images/info.svg?inline'
+import AddIcon from '~/assets/images/add.svg?inline'
+import NodeIcon from '~/assets/images/node.svg?inline'
+import WalletIcon from '~/assets/images/wallet.svg?inline'
+import SubtractIcon from '~/assets/images/subtract.svg?inline'
 import { parseMemoToTxType } from '~/utils'
 
 export default {
-  components: { RightArrow, VaultIcon, RedoIcon, InfoIcon },
+  components: {
+    RightArrow,
+    VaultIcon,
+    InfoIcon,
+    AddIcon,
+    NodeIcon,
+    WalletIcon,
+    SubtractIcon,
+    RedoIcon,
+  },
   props: {
     row: {
       type: Object,
@@ -474,7 +497,19 @@ export default {
     padding: 8px;
     border-radius: 4px;
     border: 1px solid var(--border-color);
-    background-color: var(--bgt-color);
+    background-color: var(--bgl-color);
+
+    .active-icon {
+      height: 1rem;
+      width: 1rem;
+      fill: var(--sec-font-color);
+      margin-right: 5px;
+    }
+
+    &.yellow-type {
+      border-style: dashed;
+      border-color: #f39d1256;
+    }
   }
 
   &.no-border {

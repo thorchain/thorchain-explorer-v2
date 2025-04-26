@@ -582,6 +582,10 @@ input {
   .header {
     margin-right: 0.2rem;
   }
+
+  &.active {
+    fill: var(--primary-color);
+  }
 }
 
 .large-icon {
