@@ -9,25 +9,40 @@
     >
       <template slot="table-row" slot-scope="props">
         <div
-          v-if="
-            props.column.field == 'hash' ||
-            props.column.field === 'from' ||
-            props.column.field === 'to'
-          "
-          class="flex-cell-content"
+          v-if="props.column.field == 'hash' || props.column.field === 'from'"
+          class="flex-cell-content-tx"
         >
-          <Address
-            v-if="props.column.field === 'from' || props.column.field === 'to'"
-            :param="props.row[props.column.field]"
-            :hovered-address="hoveredAddress"
-            :disable="owner && owner === props.row[props.column.field]"
-            @setHovered="setHoveredAddress"
-            @removeHovered="removeHoveredAddress"
-          />
+          <div v-if="props.column.field === 'from'" class="from-address">
+            <div class="address-direction">
+              <sendIcon class="send-icon" />
+              <Address
+                :param="props.row[props.column.field]"
+                :hovered-address="hoveredAddress"
+                :disable="owner && owner === props.row[props.column.field]"
+                @setHovered="setHoveredAddress"
+                @removeHovered="removeHoveredAddress"
+              />
+            </div>
+          </div>
           <Hash
             v-if="props.column.field === 'hash'"
             :param="props.row[props.column.field]"
           />
+          <div
+            v-if="props.column.field === 'from' && props.row.to"
+            class="to-address"
+          >
+            <div class="address-direction">
+              <uprightarrow class="arrow-icon" />
+              <Address
+                :param="props.row.to"
+                :hovered-address="hoveredAddress"
+                :disable="owner && owner === props.row.to"
+                @setHovered="setHoveredAddress"
+                @removeHovered="removeHoveredAddress"
+              />
+            </div>
+          </div>
         </div>
         <div v-else-if="props.column.field === 'type'" class="type">
           <transaction-status
@@ -81,6 +96,8 @@ import TransactionAction from './transactions/TransactionAction.vue'
 import Address from './transactions/Address.vue'
 import Hash from './transactions/Hash.vue'
 import RightArrow from '~/assets/images/arrow-right.svg?inline'
+import sendIcon from '~/assets/images/send.svg?inline'
+import uprightarrow from '~/assets/images/uprightarrow.svg?inline'
 import { AssetImage } from '~/classes/assetImage'
 
 export default {
@@ -90,6 +107,8 @@ export default {
     Address,
     Hash,
     RightArrow,
+    sendIcon,
+    uprightarrow,
   },
   filters: {
     shortSymbol(assetStr) {
@@ -163,14 +182,8 @@ export default {
           formatFn: this.since,
         },
         {
-          label: 'From',
+          label: 'From / To',
           field: 'from',
-          tdClass: 'mono',
-          formatFn: (v) => this.addressFormatV2(v),
-        },
-        {
-          label: 'To',
-          field: 'to',
           tdClass: 'mono',
           formatFn: (v) => this.addressFormatV2(v),
         },
@@ -373,5 +386,32 @@ export default {
   height: 1.5rem;
   width: 1.5rem;
   padding: 2px;
+}
+.flex-cell-content-tx {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+
+  .to-address {
+    padding-top: 6px;
+  }
+}
+
+.address-direction {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.send-icon {
+  width: 20px;
+  height: 20px;
+  fill: var(--sec-font-color);
+  transform: rotate(319deg);
+}
+
+.arrow-icon {
+  width: 16px;
+  height: 16px;
+  fill: var(--sec-font-color);
 }
 </style>

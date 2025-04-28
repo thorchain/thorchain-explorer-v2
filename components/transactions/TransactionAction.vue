@@ -35,9 +35,11 @@
           row.out.length === 0 ||
           row.status === 'pending'
         "
-        class="asset-cell"
+        class="pending-cell"
       >
-        Pending
+      <span class="pending-dots">
+        <span class="pending-text">Pending</span>
+      </span>
       </span>
       <template v-if="hasAffiliate(row)">
         <span>|</span>
@@ -436,21 +438,6 @@ export default {
     display: flex;
     flex-wrap: wrap;
   }
-
-  .asset-name {
-    font-size: 0.9rem;
-    line-height: 14px;
-  }
-
-  small.asset-name {
-    font-size: 0.775rem;
-    padding: 0.375rem;
-    background-color: var(--bgt-color);
-    border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
-    transition: all 0.2s ease;
-  }
-
   .action-type {
     box-sizing: content-box;
     height: 1rem;
@@ -529,6 +516,88 @@ export default {
     img {
       height: 0.9rem;
     }
+  }
+  .pending-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--sec-font-color);
+  font-weight: bold;
+}
+
+.pending-dots  {
+  position: relative;
+  padding: 5px 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.2rem;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 1px solid #d86e58;
+    border-radius: 0.2rem;
+    transition: all 0.5s;
+    animation: clippath 3s infinite linear;
+  }
+}
+
+
+.pending-text {
+  color: #d86e58;
+  font-size: 10px;
+}
+
+@keyframes clippath {
+  0%,
+  100% {
+    clip-path: inset(0 0 80% 0);
+  }
+  25% {
+    clip-path: inset(0 80% 0 0);
+  }
+  50% {
+    clip-path: inset(80% 0 0 0);
+  }
+  75% {
+    clip-path: inset(0 0 0 80%);
+  }
+}
+
+@keyframes sandTimerRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(180deg);
+  }
+  40% {
+    transform: rotate(180deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+
+  .asset-name {
+    font-size: 0.9rem;
+    line-height: 14px;
+  }
+
+  small.asset-name {
+    font-size: 0.775rem;
+    padding: 0.375rem;
+    background-color: var(--bgt-color);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
   }
 }
 </style>
