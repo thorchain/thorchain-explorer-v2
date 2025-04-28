@@ -3,7 +3,6 @@
 @import 'breakpoints';
 @import './variables.scss';
 
-
 * {
   box-sizing: border-box;
 }
@@ -958,7 +957,11 @@ input {
   display: flex;
   list-style: none;
   border-radius: 0.5rem;
-  padding: 0;
+  padding: 0 10px;
+
+  @include lg {
+    padding: 0;
+  }
 
   &.center {
     justify-content: center;

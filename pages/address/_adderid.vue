@@ -509,11 +509,8 @@ export default {
 
 <style lang="scss" scoped>
 .address-container {
-  margin: 0 10px;
+  margin: auto;
 
-  @include lg {
-    margin: 0px;
-  }
   .icon {
     fill: var(--sec-font-color);
     height: 1.5rem;
