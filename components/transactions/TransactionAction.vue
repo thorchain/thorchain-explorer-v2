@@ -2,17 +2,13 @@
   <div>
     <div
       v-if="row && (type === 'swap' || type === 'switch')"
-      class="action-cell"
+      :class="['action-cell', { 'no-border': noBorder }]"
     >
-      <span
-        v-for="(ops, i) in row.in"
-        :key="'in-' + i"
-        :class="showMiniBubble ? 'mini-bubble customized' : 'no-bubble'"
-      >
+      <span v-for="(ops, i) in row.in" :key="'in-' + i" class="asset-cell">
         <asset-icon
           :asset="ops.coins[0].asset"
           :height="'1.2rem'"
-          :chain-height="'1rem'"
+          :chain-height="'0.8rem'"
         />
         <span class="asset-name">{{
           decimalFormat(ops.coins[0].amount / 1e8)
@@ -22,12 +18,12 @@
       <span
         v-for="(ops, i) in row.out.filter((o) => !o.affiliate)"
         :key="'out-' + i"
-        :class="showMiniBubble ? 'mini-bubble customized' : 'no-bubble'"
+        class="asset-cell"
       >
         <asset-icon
           :asset="ops.coins[0].asset"
           :height="'1.2rem'"
-          :chain-height="'1rem'"
+          :chain-height="'0.8rem'"
         ></asset-icon>
         <span class="asset-name">{{
           decimalFormat(ops.coins[0].amount / 1e8)
@@ -39,9 +35,11 @@
           row.out.length === 0 ||
           row.status === 'pending'
         "
-        class="mini-bubble customized info"
+        class="pending-cell"
       >
-        Pending
+      <span class="pending-dots">
+        <span class="pending-text">Pending</span>
+      </span>
       </span>
       <template v-if="hasAffiliate(row)">
         <span>|</span>
@@ -60,61 +58,76 @@
     </div>
     <div
       v-else-if="row && (type === 'withdraw' || type === 'runePoolWithdraw')"
-      class="action-cell"
+      :class="['action-cell', { 'no-border': noBorder, wrap: wrap }]"
     >
-      <div :class="'mini-bubble'">
+      <div v-if="row.metadata.withdraw" class="asset-cell">
         <asset-icon
           :height="'1.2rem'"
-          :chain-height="'1rem'"
+          :chain-height="'0.8rem'"
           :asset="row.pools[0] || row.out[0].coins[0].asset"
         />
-        <vault-icon class="action-icon" />
+        <span class="mini-bubble yellow">
+          <template v-if="row.metadata.withdraw.basisPoints">
+            {{ (row.metadata.withdraw.basisPoints / 1e4) | percent(2) }}
+          </template>
+          <template v-else>
+            {{ row.pools[0] || row.out[0].coins[0].asset }}
+          </template>
+        </span>
       </div>
-      <div v-if="row.metadata.withdraw" class="mini-bubble yellow">
-        {{ (row.metadata.withdraw.basisPoints / 1e4) | percent(2) }}
-      </div>
-      <right-arrow class="action-type" />
-      <span
-        v-for="(ops, i) in row.out"
-        :key="'out-' + i"
-        :class="showMiniBubble ? 'mini-bubble customized' : 'no-bubble'"
-      >
-        <asset-icon
-          :asset="ops.coins[0].asset"
-          :height="'1.2rem'"
-          :chain-height="'1rem'"
-        ></asset-icon>
-        <span class="asset-name">{{
-          decimalFormat(ops.coins[0].amount / 1e8)
-        }}</span>
-      </span>
+      <right-arrow v-if="row.metadata.withdraw" class="action-type" />
+      <template v-for="(ops, i) in row.out">
+        <span :key="'out-' + i" class="asset-cell">
+          <subtract-icon class="active-icon"></subtract-icon>
+          <asset-icon
+            :asset="ops.coins[0].asset"
+            :height="'1.2rem'"
+            :chain-height="'0.8rem'"
+          ></asset-icon>
+          <span class="asset-name">
+            {{ decimalFormat(ops.coins[0].amount / 1e8) }}
+          </span>
+        </span>
+        <div
+          v-if="row.out.length > 1 && i + 1 !== row.out.length"
+          :key="'out-plus-' + i"
+        >
+          +
+        </div>
+      </template>
     </div>
     <div
       v-else-if="row && (type === 'addLiquidity' || type === 'runePoolDeposit')"
-      class="action-cell"
+      :class="['action-cell', { 'no-border': noBorder, wrap: wrap }]"
     >
-      <span
-        v-for="(ops, i) in row.in"
-        :key="'in-' + i"
-        :class="showMiniBubble ? 'mini-bubble customized' : 'no-bubble'"
-      >
-        <asset-icon
-          :asset="ops.coins[0].asset"
-          :height="'1.2rem'"
-          :chain-height="'1rem'"
-        ></asset-icon>
-        <span class="asset-name">{{
-          decimalFormat(ops.coins[0].amount / 1e8)
-        }}</span>
-      </span>
+      <template v-for="(ops, i) in row.in">
+        <span :key="'in-' + i" class="asset-cell">
+          <asset-icon
+            :asset="ops.coins[0].asset"
+            :height="'1.2rem'"
+            :chain-height="'0.8rem'"
+          ></asset-icon>
+          <span class="asset-name">{{
+            decimalFormat(ops.coins[0].amount / 1e8)
+          }}</span>
+        </span>
+        <div
+          v-if="row.in.length > 1 && i + 1 !== row.in.length"
+          :key="'in-plus-' + i"
+        >
+          +
+        </div>
+      </template>
       <right-arrow class="action-type" />
-      <div :class="'mini-bubble'">
+      <div class="asset-cell">
         <asset-icon
           :height="'1.2rem'"
-          :chain-height="'1rem'"
+          :chain-height="'0.8rem'"
           :asset="(row.pools && row.pools[0]) || row.in[0].coins[0].asset"
         />
-        <vault-icon class="action-icon" />
+        <span>
+          {{ showAsset(row.pools && row.pools[0]) || row.in[0].coins[0].asset }}
+        </span>
       </div>
       <template v-if="hasAffiliate(row)">
         <span>|</span>
@@ -132,96 +145,20 @@
       </template>
     </div>
 
-    <div v-else-if="row && type === 'refund'" class="action-cell">
+    <div
+      v-else-if="row && type === 'refund'"
+      :class="['action-cell', { 'no-border': noBorder, wrap: wrap }]"
+    >
       <span
         v-for="(ops, i) in row.in"
         :key="'in-' + i"
-        :class="showMiniBubble ? 'mini-bubble customized' : 'no-bubble'"
+        class="asset-cell yellow-type"
       >
+        <redo-icon class="active-icon"></redo-icon>
         <asset-icon
           :asset="ops.coins[0].asset"
           :height="'1.2rem'"
-          :chain-height="'1rem'"
-        ></asset-icon>
-        <span class="asset-name">{{
-          decimalFormat(ops.coins[0].amount / 1e8)
-        }}</span>
-      </span>
-      <redo-icon class="action-type" />
-    </div>
-
-    <div v-else-if="row && type === 'send'" class="action-cell">
-      <span
-        v-for="(ops, i) in row.in"
-        :key="'in-' + i"
-        :class="showMiniBubble ? 'mini-bubble customized' : 'no-bubble'"
-      >
-        <asset-icon
-          :asset="ops.coins[0].asset"
-          :height="'1.2rem'"
-          :chain-height="'1rem'"
-        ></asset-icon>
-        <span class="asset-name">{{
-          decimalFormat(+ops.coins[0].amount / 1e8)
-        }}</span>
-      </span>
-      <right-arrow class="action-type" />
-      <span
-        v-for="(ops, i) in row.out"
-        :key="'out-' + i"
-        :class="showMiniBubble ? 'mini-bubble info customized' : 'info'"
-      >
-        <small class="asset-name">{{
-          addressFormatV2(ops.address, 6, true)
-        }}</small>
-      </span>
-    </div>
-
-    <div v-else-if="row && type === 'bond'" class="action-cell">
-      <span
-        v-for="(ops, i) in row.in"
-        :key="'in-' + i"
-        :class="showMiniBubble ? 'mini-bubble customized' : 'no-bubble'"
-      >
-        <asset-icon
-          :asset="ops.coins[0].asset"
-          :height="'1.2rem'"
-          :chain-height="'1rem'"
-        ></asset-icon>
-        <span class="asset-name">{{
-          decimalFormat(ops.coins[0].amount / 1e8)
-        }}</span>
-      </span>
-      <right-arrow class="action-type" />
-      <span :class="showMiniBubble ? 'mini-bubble info customized' : 'info'">
-        <nuxt-link
-          class="clickable"
-          :to="`/node/${row.metadata.bond.nodeAddress}`"
-        >
-          {{ addressFormatV2(row.metadata.bond.nodeAddress) }}
-        </nuxt-link>
-      </span>
-    </div>
-
-    <div v-else-if="row && type === 'unbond'" class="action-cell">
-      <span :class="showMiniBubble ? 'mini-bubble info customized' : 'info'">
-        <nuxt-link
-          class="clickable"
-          :to="`/node/${row.metadata.bond.nodeAddress}`"
-        >
-          {{ addressFormatV2(row.metadata.bond.nodeAddress) }}
-        </nuxt-link>
-      </span>
-      <right-arrow class="action-type" />
-      <span
-        v-for="(ops, i) in row.out"
-        :key="'out-' + i"
-        :class="showMiniBubble ? 'mini-bubble customized' : 'no-bubble'"
-      >
-        <asset-icon
-          :asset="ops.coins[0].asset"
-          :height="'1.2rem'"
-          :chain-height="'1rem'"
+          :chain-height="'0.8rem'"
         ></asset-icon>
         <span class="asset-name">{{
           decimalFormat(ops.coins[0].amount / 1e8)
@@ -230,37 +167,105 @@
     </div>
 
     <div
-      v-else-if="(row && type === 'trade') || type === 'secure'"
-      class="action-cell"
+      v-else-if="row && type === 'send'"
+      :class="['action-cell', { 'no-border': noBorder, wrap: wrap }]"
     >
-      <span
-        v-for="(ops, i) in row.in"
-        :key="'in-' + i"
-        :class="showMiniBubble ? 'mini-bubble customized' : 'no-bubble'"
-      >
+      <span v-for="(ops, i) in row.in" :key="'in-' + i" class="asset-cell">
         <asset-icon
           :asset="ops.coins[0].asset"
           :height="'1.2rem'"
-          :chain-height="'1rem'"
+          :chain-height="'0.8rem'"
+        />
+        <span class="asset-name">{{
+          decimalFormat(+ops.coins[0].amount / 1e8)
+        }}</span>
+      </span>
+      <right-arrow class="action-type" />
+      <span v-for="(ops, i) in row.out" :key="'out-' + i" class="asset-cell">
+        <wallet-icon class="active-icon"></wallet-icon>
+        <nuxt-link class="clickable" :to="`/address/${ops.address}`">
+          {{ addressFormatV2(ops.address) }}
+        </nuxt-link>
+      </span>
+    </div>
+
+    <div
+      v-else-if="row && type === 'bond'"
+      :class="['action-cell', { 'no-border': noBorder, wrap: wrap }]"
+    >
+      <span v-for="(ops, i) in row.in" :key="'in-' + i" class="asset-cell">
+        <add-icon class="active-icon"></add-icon>
+        <asset-icon
+          :asset="ops.coins[0].asset"
+          :height="'1.2rem'"
+          :chain-height="'0.8rem'"
         ></asset-icon>
         <span class="asset-name">{{
           decimalFormat(ops.coins[0].amount / 1e8)
         }}</span>
       </span>
       <right-arrow class="action-type" />
-      <div :class="showMiniBubble ? 'mini-bubble' : 'no-bubble'">
+      <div class="asset-cell">
+        <node-icon class="active-icon"></node-icon>
+        <nuxt-link
+          class="clickable"
+          :to="`/node/${row.metadata.bond.nodeAddress}`"
+        >
+          {{ addressFormatV2(row.metadata.bond.nodeAddress) }}
+        </nuxt-link>
+      </div>
+    </div>
+
+    <div
+      v-else-if="row && type === 'unbond'"
+      :class="['action-cell', { 'no-border': noBorder, wrap: wrap }]"
+    >
+      <div class="asset-cell">
+        <node-icon class="active-icon"></node-icon>
+        <nuxt-link
+          class="clickable"
+          :to="`/node/${row.metadata.bond.nodeAddress}`"
+        >
+          {{ addressFormatV2(row.metadata.bond.nodeAddress) }}
+        </nuxt-link>
+      </div>
+      <right-arrow class="action-type" />
+      <div v-for="(ops, i) in row.out" :key="'out-' + i" class="asset-cell">
+        <asset-icon
+          :asset="ops.coins[0].asset"
+          :height="'1.2rem'"
+          :chain-height="'0.8rem'"
+        ></asset-icon>
+        <span class="asset-name">{{
+          decimalFormat(ops.coins[0].amount / 1e8)
+        }}</span>
+      </div>
+    </div>
+
+    <div
+      v-else-if="(row && type === 'trade') || type === 'secure'"
+      :class="['action-cell', { 'no-border': noBorder, wrap: wrap }]"
+    >
+      <span v-for="(ops, i) in row.in" :key="'in-' + i" class="asset-cell">
+        <asset-icon
+          :asset="ops.coins[0].asset"
+          :height="'1.2rem'"
+          :chain-height="'0.8rem'"
+        ></asset-icon>
+        <span class="asset-name">{{
+          decimalFormat(ops.coins[0].amount / 1e8)
+        }}</span>
+      </span>
+      <right-arrow class="action-type" />
+      <div>
         <vault-icon class="action-icon" />
       </div>
       <right-arrow class="action-type" />
-      <span
-        v-for="(ops, i) in row.out"
-        :key="'out-' + i"
-        :class="showMiniBubble ? 'mini-bubble customized' : 'no-bubble'"
-      >
+      <span v-for="(ops, i) in row.out" :key="'out-' + i" class="asset-cell">
         <asset-icon
           :asset="ops.coins[0].asset"
           :height="'1.2rem'"
-          :chain-height="'1rem'"
+          :chain-height="'0.8rem'"
         ></asset-icon>
         <span class="asset-name">{{
           decimalFormat(ops.coins[0].amount / 1e8)
@@ -268,28 +273,29 @@
       </span>
     </div>
 
-    <div v-else-if="row && type === 'failed'" class="action-cell">
-      <template v-if="row.metadata && row.metadata.failed">
-        <span :class="showMiniBubble ? 'mini-bubble info customized' : 'info'">
+    <div
+      v-else-if="row && type === 'failed'"
+      :class="['action-cell', { 'no-border': noBorder, wrap: wrap }]"
+    >
+      <div v-if="row.metadata && row.metadata.failed" class="asset-cell">
+        <span>
           {{ parseMemoToTxType(row.metadata.failed.memo) }}
         </span>
         <right-arrow class="action-type" />
-        <span
+        <info-icon
           v-tooltip="row.metadata.failed.reason"
-          :class="
-            showMiniBubble
-              ? 'mini-bubble danger customized reason'
-              : 'danger reason'
-          "
+          class="action-type reason"
         >
-          see reason
-        </span>
-      </template>
+        </info-icon>
+      </div>
     </div>
 
-    <div v-else-if="row && type === 'thorname'" class="action-cell">
+    <div
+      v-else-if="row && type === 'thorname'"
+      :class="['action-cell', { 'no-border': noBorder, wrap: wrap }]"
+    >
       <template v-if="row.metadata && row.metadata.thorname">
-        <span :class="showMiniBubble ? 'mini-bubble customized' : 'no-bubble'">
+        <span>
           <asset-icon
             :height="'1.2rem'"
             :asset="baseChainAsset(row.metadata.thorname.chain)"
@@ -302,14 +308,17 @@
           </nuxt-link>
         </span>
         <right-arrow class="action-type" />
-        <span :class="showMiniBubble ? 'mini-bubble info customized' : 'info'">
+        <span>
           {{ row.metadata.thorname.thorname }}
         </span>
       </template>
     </div>
 
-    <div v-else-if="row && type === 'contract'" class="action-cell">
-      <span class="mini-bubble info">
+    <div
+      v-else-if="row && type === 'contract'"
+      :class="['action-cell', { 'no-border': noBorder, wrap: wrap }]"
+    >
+      <span>
         {{ row.metadata.contract.contractType }}
       </span>
     </div>
@@ -321,10 +330,24 @@ import { mapGetters } from 'vuex'
 import RightArrow from '~/assets/images/arrow-right.svg?inline'
 import VaultIcon from '~/assets/images/safe.svg?inline'
 import RedoIcon from '~/assets/images/refresh.svg?inline'
+import InfoIcon from '~/assets/images/info.svg?inline'
+import AddIcon from '~/assets/images/add.svg?inline'
+import NodeIcon from '~/assets/images/node.svg?inline'
+import WalletIcon from '~/assets/images/wallet.svg?inline'
+import SubtractIcon from '~/assets/images/subtract.svg?inline'
 import { parseMemoToTxType } from '~/utils'
 
 export default {
-  components: { RightArrow, VaultIcon, RedoIcon },
+  components: {
+    RightArrow,
+    VaultIcon,
+    InfoIcon,
+    AddIcon,
+    NodeIcon,
+    WalletIcon,
+    SubtractIcon,
+    RedoIcon,
+  },
   props: {
     row: {
       type: Object,
@@ -333,6 +356,10 @@ export default {
     showMiniBubble: {
       type: Boolean,
       default: true,
+    },
+    noBorder: {
+      type: Boolean,
+      default: false,
     },
   },
   computed: {
@@ -401,36 +428,16 @@ export default {
 
 .action-cell {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 5px;
-
-  .mini-bubble {
+  gap: 6px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  border-radius: 4px;
+  &.no-border {
     display: flex;
-    align-items: center;
-
-    &.customized {
-      padding: 4px 6px;
-    }
-
-    &.reason {
-      cursor: pointer;
-
-      &:hover {
-        background-color: var(--red-bg);
-      }
-    }
+    flex-wrap: wrap;
   }
-
-  .asset-name {
-    font-size: 0.9rem;
-    line-height: 14px;
-  }
-
-  small.asset-name {
-    font-size: 0.775rem;
-  }
-
   .action-type {
     box-sizing: content-box;
     height: 1rem;
@@ -442,6 +449,14 @@ export default {
       height: 0.8rem;
       width: 0.8re;
     }
+
+    &.reason {
+      cursor: pointer;
+
+      &:hover {
+        fill: var(--red);
+      }
+    }
   }
 
   .action-icon {
@@ -450,6 +465,45 @@ export default {
     height: 1.2rem;
     width: 1.2rem;
     padding: 4px 0;
+    fill: #21c187;
+  }
+
+  .icon-box {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 0.375rem;
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+  }
+
+  .asset-cell {
+    display: flex;
+    align-items: center;
+
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bgl-color);
+
+    .active-icon {
+      height: 1rem;
+      width: 1rem;
+      fill: var(--sec-font-color);
+      margin-right: 5px;
+    }
+
+    &.yellow-type {
+      border-style: dashed;
+      border-color: #f39d1256;
+    }
+  }
+
+  &.no-border {
+    .asset-cell {
+      border: none;
+      background-color: transparent;
+    }
   }
 
   .executed {
@@ -460,8 +514,90 @@ export default {
     background-color: transparent;
     gap: 3px;
     img {
-      height: 1.2rem;
+      height: 0.9rem;
     }
+  }
+  .pending-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--sec-font-color);
+  font-weight: bold;
+}
+
+.pending-dots  {
+  position: relative;
+  padding: 5px 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.2rem;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 1px solid #d86e58;
+    border-radius: 0.2rem;
+    transition: all 0.5s;
+    animation: clippath 3s infinite linear;
+  }
+}
+
+
+.pending-text {
+  color: #d86e58;
+  font-size: 10px;
+}
+
+@keyframes clippath {
+  0%,
+  100% {
+    clip-path: inset(0 0 80% 0);
+  }
+  25% {
+    clip-path: inset(0 80% 0 0);
+  }
+  50% {
+    clip-path: inset(80% 0 0 0);
+  }
+  75% {
+    clip-path: inset(0 0 0 80%);
+  }
+}
+
+@keyframes sandTimerRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(180deg);
+  }
+  40% {
+    transform: rotate(180deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+
+  .asset-name {
+    font-size: 0.9rem;
+    line-height: 14px;
+  }
+
+  small.asset-name {
+    font-size: 0.775rem;
+    padding: 0.375rem;
+    background-color: var(--bgt-color);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
   }
 }
 </style>

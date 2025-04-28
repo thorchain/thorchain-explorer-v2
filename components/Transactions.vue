@@ -9,28 +9,48 @@
     >
       <template slot="table-row" slot-scope="props">
         <div
-          v-if="
-            props.column.field == 'hash' ||
-            props.column.field === 'from' ||
-            props.column.field === 'to'
-          "
-          class="flex-cell-content"
+          v-if="props.column.field == 'hash' || props.column.field === 'from'"
+          class="flex-cell-content-tx"
         >
-          <Address
-            v-if="props.column.field === 'from' || props.column.field === 'to'"
-            :param="props.row[props.column.field]"
-            :hovered-address="hoveredAddress"
-            :disable="owner && owner === props.row[props.column.field]"
-            @setHovered="setHoveredAddress"
-            @removeHovered="removeHoveredAddress"
-          />
+          <div v-if="props.column.field === 'from'" class="from-address">
+            <div class="address-direction">
+              <send-icon class="send-icon" />
+              <Address
+                :param="props.row[props.column.field]"
+                :hovered-address="hoveredAddress"
+                :disable="owner && owner === props.row[props.column.field]"
+                @setHovered="setHoveredAddress"
+                @removeHovered="removeHoveredAddress"
+              />
+            </div>
+          </div>
           <Hash
             v-if="props.column.field === 'hash'"
             :param="props.row[props.column.field]"
           />
+          <div
+            v-if="props.column.field === 'from' && props.row.to"
+            class="to-address"
+          >
+            <div class="address-direction">
+              <receive-icon class="send-icon" />
+              <Address
+                :param="props.row.to"
+                :hovered-address="hoveredAddress"
+                :disable="owner && owner === props.row.to"
+                @setHovered="setHoveredAddress"
+                @removeHovered="removeHoveredAddress"
+              />
+            </div>
+          </div>
         </div>
         <div v-else-if="props.column.field === 'type'" class="type">
-          <transaction-status :row="props.row" />
+          <transaction-status
+            :row="props.row"
+            :hovered-type="hoveredType"
+            @setHoveredType="setHoveredType"
+            @removeHoveredType="removeHoveredType"
+          />
         </div>
         <div v-else-if="props.column.field === 'height'">
           <nuxt-link class="clickable" :to="`/block/${props.row.height}`">
@@ -76,6 +96,8 @@ import TransactionAction from './transactions/TransactionAction.vue'
 import Address from './transactions/Address.vue'
 import Hash from './transactions/Hash.vue'
 import RightArrow from '~/assets/images/arrow-right.svg?inline'
+import sendIcon from '~/assets/images/send.svg?inline'
+import receiveIcon from '~/assets/images/receive.svg?inline'
 import { AssetImage } from '~/classes/assetImage'
 
 export default {
@@ -85,6 +107,8 @@ export default {
     Address,
     Hash,
     RightArrow,
+    sendIcon,
+    receiveIcon,
   },
   filters: {
     shortSymbol(assetStr) {
@@ -134,6 +158,7 @@ export default {
   },
   data() {
     return {
+      hoveredType: '',
       hoveredAddress: '',
       cols: [
         {
@@ -157,14 +182,8 @@ export default {
           formatFn: this.since,
         },
         {
-          label: 'From',
+          label: 'From / To',
           field: 'from',
-          tdClass: 'mono',
-          formatFn: (v) => this.addressFormatV2(v),
-        },
-        {
-          label: 'To',
-          field: 'to',
           tdClass: 'mono',
           formatFn: (v) => this.addressFormatV2(v),
         },
@@ -204,6 +223,12 @@ export default {
     },
     removeHoveredAddress() {
       this.hoveredAddress = ''
+    },
+    setHoveredType(type) {
+      this.hoveredType = type
+    },
+    removeHoveredType() {
+      this.hoveredType = ''
     },
     assetImage(assetStr) {
       try {
@@ -361,5 +386,32 @@ export default {
   height: 1.5rem;
   width: 1.5rem;
   padding: 2px;
+}
+.flex-cell-content-tx {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+
+  .to-address {
+    padding-top: 6px;
+  }
+}
+
+.address-direction {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.send-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+  fill: var(--sec-font-color);
+}
+
+.arrow-icon {
+  width: 16px;
+  height: 16px;
+  fill: var(--sec-font-color);
 }
 </style>

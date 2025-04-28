@@ -170,8 +170,11 @@ export default {
 
   .data-section {
     flex: 1;
-    background-color: var(--bg-color);
-    border: 1px solid var(--border-color);
+    margin: 0 10px;
+
+    @include lg {
+      margin: 0;
+    }
 
     .section-title {
       text-align: center;

@@ -238,7 +238,7 @@ Vue.mixin(global)
   .title-search {
     font-family: 'Exo 2';
     font-weight: bold;
-    font-size: 16px;
+    font-size: $font-size-desktop;
     padding: 9px;
     color: white;
   }
@@ -265,7 +265,7 @@ Vue.mixin(global)
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
       }
       .search-input {
-        font-size: 14px;
+        font-size: $font-size-s;
         padding-right: 2.5rem;
         padding-left: 0.75rem;
         flex: 1;
@@ -281,6 +281,9 @@ Vue.mixin(global)
           outline: none;
           border-color: var(--primary-color);
         }
+        @include lg{
+          font-size: $font-size-sm;
+        }
       }
 
       .search-icon {
@@ -293,7 +296,7 @@ Vue.mixin(global)
         fill: #fff;
         cursor: pointer;
         transition: background-color 0.3s ease;
-        background-color: var(--primary-color);
+        background-color: var(--search-color);
         padding: 6px;
         border-radius: 4px;
 
@@ -306,7 +309,7 @@ Vue.mixin(global)
         width: 90%;
 
         .search-input {
-          font-size: 1.1rem;
+          font-size: $font-size-desktop;
           padding-right: 3rem;
           padding-left: 1rem;
         }

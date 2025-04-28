@@ -224,11 +224,14 @@ export default {
 
 .churn-cards {
   max-width: 72rem;
-  margin: auto;
-  margin-top: 1rem;
   display: flex;
   gap: 1rem;
   flex-direction: column;
+  margin: 1rem 10px;
+
+@include lg {
+  margin:1rem auto;
+}
 
   .block-item {
     background-color: var(--bg-color);

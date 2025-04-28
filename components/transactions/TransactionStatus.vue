@@ -1,78 +1,34 @@
 <template>
-  <div class="customized">
-    <span v-if="isPending" class="pending-icon">
-      <Clock :class="['mini-bubble yellow']" />
-    </span>
+  <div
+    class="customized"
+    @mouseover="emitHovered"
+    @mouseleave="emitRemoveHovered"
+  >
     <div
       v-if="row"
       :class="[
-        'mini-bubble',
+        'type-class',
+        getTypeClass(row.type),
         {
-          yellow: row.type === 'refund' || row.type === 'unbond',
-          info:
-            row.type === 'send' ||
-            row.type === 'withdraw' ||
-            row.type === 'runePoolWithdraw',
-          danger: row.type === 'failed',
+          highlighted: hoveredType === row.type,
         },
       ]"
     >
-      <swap-icon v-if="row.type === 'swap'" class="status-icon" />
-      <name v-else-if="row.type === 'thorname'" class="status-icon" />
-      <refund-icon v-else-if="row.type === 'refund'" class="status-icon" />
-      <dove-icon v-else-if="row.type === 'send'" class="status-icon" />
-      <piggy-icon v-else-if="row.type === 'addLiquidity'" class="status-icon" />
-      <deposit v-else-if="row.type === 'runePoolDeposit'" class="status-icon" />
-      <exit v-else-if="row.type === 'runePoolWithdraw'" class="status-icon" />
-      <unbond v-else-if="row.type === 'unbond'" class="status-icon" />
-      <unbond
-        v-else-if="row.type === 'bond'"
-        class="status-icon"
-        style="transform: rotate(180deg)"
-      />
-      <span class="type-name">
-        {{ typeName(row.type) }}
-      </span>
+      <span class="type-name" :title="row.type"> {{ typeName(row.type) }}</span>
     </div>
   </div>
 </template>
 
 <script>
-import SwapIcon from '~/assets/images/transform.svg?inline'
-import DoveIcon from '~/assets/images/dove.svg?inline'
-import RefundIcon from '~/assets/images/refund.svg?inline'
-import PiggyIcon from '~/assets/images/piggy.svg?inline'
-import Deposit from '~/assets/images/deposit.svg?inline'
-import Exit from '~/assets/images/exit.svg?inline'
-import Unbond from '~/assets/images/unbond.svg?inline'
-import Name from '~/assets/images/name.svg?inline'
-import Clock from '~/assets/images/clock.svg?inline'
-
 export default {
-  components: {
-    SwapIcon,
-    DoveIcon,
-    RefundIcon,
-    PiggyIcon,
-    Deposit,
-    Exit,
-    Unbond,
-    Name,
-    Clock,
-  },
   props: {
     row: {
       type: Object,
       default: () => {},
     },
-  },
-  computed: {
-    isPending() {
-      const isSwap = this.row.type === 'swap'
-      if (isSwap && this.row.metadata.swap.txType !== 'swap') {
-        return false
-      }
-      return this.row.status === 'pending'
+    hoveredType: {
+      type: String,
+      default: '',
     },
   },
   methods: {
@@ -87,8 +43,38 @@ export default {
         case 'runePoolWithdraw':
           return 'RUNEPool Withdraw'
         default:
-          return this.$options.filters.capitalize(type)
+          return this.$options.filters?.capitalize(type) || type
       }
+    },
+    getTypeClass(type) {
+      switch (type) {
+        case 'send':
+          return 'blue-type'
+        case 'swap':
+        case 'addLiquidity':
+        case 'runePoolDeposit':
+        case 'bond':
+          return 'green-type'
+        case 'refund':
+          return 'yellow-type'
+        case 'unbond':
+        case 'withdraw':
+        case 'runePoolWithdraw':
+        case 'failed':
+          return 'red-type'
+        case 'switch':
+          return 'alert-type'
+        default:
+          return 'default-type'
+      }
+    },
+    emitHovered() {
+      if (this.row?.type) {
+        this.$emit('setHoveredType', this.row.type)
+      }
+    },
+    emitRemoveHovered() {
+      this.$emit('removeHoveredType')
     },
   },
 }
@@ -97,29 +83,63 @@ export default {
 <style lang="scss" scoped>
 .customized {
   display: flex;
+  align-items: center;
 
-  .mini-bubble {
-    padding: 4px 6px;
+  .type-class {
+    padding: 0.375rem !important;
+    color: var(--sec-font-color);
+    background-color: var(--bgl-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    width: 80px;
+    justify-content: center;
+    cursor: pointer;
+
+    &.highlighted {
+      border: 1px dashed var(--highlight);
+      border-radius: 2px;
+
+      &.blue-type {
+        color: var(--highlight);
+        border-color: var(--highlight);
+      }
+
+      &.green-type {
+        color: var(--green);
+        border-color: var(--green);
+      }
+
+      &.yellow-type {
+        color: #f39c12;
+        border-color: #f39c12;
+      }
+
+      &.red-type {
+        color: var(--red);
+        border-color: var(--red);
+      }
+
+      &.alert-type {
+        color: #9b59b6;
+        border-color: #9b59b6;
+      }
+
+      &.default-type {
+        color: var(--highlight);
+        border-color: var(--highlight);
+      }
+    }
   }
+
   .type-name {
-    font-size: 0.9rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: bold;
+    font-size: 0.7rem;
     line-height: 0.875rem;
-  }
-}
-
-.status-icon {
-  height: 1.1rem;
-  width: 1.1rem;
-  fill: inherit;
-  margin-right: 0.5rem;
-}
-
-.pending-icon {
-  height: 24px;
-  margin-right: 5px;
-
-  .mini-bubble {
-    height: 24px;
   }
 }
 </style>

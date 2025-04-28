@@ -412,6 +412,7 @@ export default {
 
   .card-container {
     min-width: 100%;
+    margin: 0px;
 
     @include md {
       min-width: 520px;
@@ -429,6 +430,11 @@ export default {
   display: flex;
   position: relative;
   flex: 1;
+    margin: 0.5rem 10px;
+
+  @include lg {
+    margin:0.5rem 0px;
+  }
 
   .search-input {
     flex: 1;
@@ -566,6 +572,12 @@ export default {
 }
 .header-recent-vote {
   color: var(--sec-font-color);
+  margin:18px 12px;
+
+  @include lg {
+    margin: 18.7px 0px;
+  }
+
 }
 .recent-votes-container {
   display: flex;
@@ -574,6 +586,11 @@ export default {
   padding-bottom: 8px;
   margin-bottom: 0.5rem;
   gap: 0.5rem;
+  margin: 0 10px;
+
+@include lg {
+  margin: 0px;
+}
   scrollbar-width: thin;
   scrollbar-color: var(--border-color) var(--bg-color);
   &::-webkit-scrollbar {

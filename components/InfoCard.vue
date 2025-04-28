@@ -207,7 +207,8 @@ export default {
     display: flex;
     align-items: center;
     gap: 3px;
-    font-size: 0.9rem;
+    font-size: $font-size-sm;
+    margin-right: 0.5rem;
 
     svg {
       fill: currentColor;
@@ -218,7 +219,7 @@ export default {
 }
 
 .usd-value {
-  font-size: 0.9rem;
+  font-size: $font-size-sm;
   margin-right: 12px;
 }
 .flex-containers,
@@ -261,8 +262,12 @@ export default {
     h4 {
       font-weight: bold;
       color: var(--sec-font-color);
-      font-size: 1.1rem;
+      font-size: $font-size-mobile;
       margin: 0 0 0.5rem 0;
+
+      @include lg{
+        font-size: $font-size-smm;
+      }
     }
 
     .flex-section {
@@ -292,7 +297,7 @@ export default {
       }
       .item-name {
         display: flex;
-        font-size: 14px;
+        font-size: $font-size-sm;
 
         .header-icon {
           fill: var(--font-color);
@@ -306,16 +311,22 @@ export default {
 
       .item-value {
         display: flex;
-        font-size: 16px;
+        font-size: $font-size-desktop;
         gap: 5px;
         color: var(--sec-font-color);
         font-family: 'Roboto Mono';
       }
     }
     .flex-items {
-      gap: 0.3rem 0;
+      gap: 0.5rem 0;
       min-width: 320px;
       margin: 0.5rem 0.5rem;
+      display: flex;
+      flex-direction: column;
+
+      @include lg{
+        gap:0;
+      }
 
       &.cluster {
         display: flex;
@@ -331,12 +342,13 @@ export default {
       .flex-item {
         display: flex;
         flex-direction: column;
-        font-size: 0.9rem;
+        font-size: $font-size-sm;
         justify-content: space-between;
+        gap: 0.3rem 0;
 
         @include md {
           flex-direction: row;
-          font-size: 1rem;
+          font-size: $font-size-desktop;
           align-items: center;
           padding: 4px 0;
         }
@@ -348,7 +360,7 @@ export default {
 
         .item-name {
           display: flex;
-          font-size: 14px;
+          font-size: $font-size-sm;
 
           .header-icon {
             fill: var(--font-color);
@@ -362,7 +374,7 @@ export default {
 
         .item-value {
           display: flex;
-          font-size: 16px;
+          font-size: $font-size-desktop;
           gap: 5px;
           color: var(--sec-font-color);
           font-family: 'Roboto Mono';

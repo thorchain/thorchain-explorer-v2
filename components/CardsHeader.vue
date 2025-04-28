@@ -59,6 +59,11 @@ export default {
   margin-bottom: 1rem;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   grid-template-rows: auto;
+  margin: 1rem 10px;
+
+  @include lg {
+    margin: 1rem 0px;
+  }
 
   .table-stat-card {
     padding: 2rem 0;
@@ -73,7 +78,7 @@ export default {
 
     .value {
       color: var(--sec-font-color);
-      font-size: 1.5rem;
+      font-size: $font-size-xl;
       text-align: center;
       min-width: 80%;
       margin-bottom: 8px;
@@ -83,7 +88,7 @@ export default {
       gap: 0.2rem;
 
       small {
-        font-size: 0.8rem;
+        font-size: $font-size-s;
         color: var(--font-color);
         margin-left: 0.3rem;
       }

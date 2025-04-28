@@ -82,21 +82,19 @@ export default {
     padding: 0.2rem;
     background-color: var(--bg-color);
     border: 1px solid var(--border-color);
-    border-width: 1px 0 1px 0;
+    border-width: 1px;
+    margin: 0px 10px 10px 10px;
+    border-radius: 5px;
+
+@include lg {
+  margin: 0px 0px 10px 0px;
+}
 
     .nav-item {
       &.active,
       &.nuxt-link-exact-active {
         color: var(--primary-color);
       }
-    }
-  }
-
-  @include lg {
-    border-radius: 5px;
-
-    &.box {
-      border-width: 1px;
     }
   }
 }

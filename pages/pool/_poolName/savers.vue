@@ -197,11 +197,20 @@ h3 {
   display: flex;
   gap: 15px;
   flex-wrap: wrap;
+  margin: 15px 10px;
+
+  @include lg {
+    margin: 15px 0px;
+  }
 
   .card-container {
     border: 1px solid var(--border-color);
     border-radius: 0.5rem;
-    margin: auto;
+    margin: 0px;
+
+    @include lg {
+      margin: auto;
+    }
   }
 
   h4 {

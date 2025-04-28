@@ -80,15 +80,13 @@ export default {
   flex-direction: column;
   word-wrap: break-word;
   border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
   background-color: var(--card-bg-color);
   max-width: 100%;
-
-  border-left: 0;
-  border-right: 0;
+  margin: 0 10px;
 
   @include lg {
-    border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
+    margin: 0px;
   }
 
   &.loading-container {
@@ -117,15 +115,24 @@ export default {
 
     .card-header-title {
       color: var(--sec-font-color);
-      font-size: 1.125rem;
+      font-size: $font-size-desktop;
       font-weight: 700;
       margin-bottom: 0;
       margin: 0;
+      @include lg {
+        font-size: $font-size-md;
+      }
     }
 
     &.has-extra {
       flex-wrap: wrap;
       justify-content: space-between;
+      gap: 0.5rem;
+
+      @include lg {
+        margin: 0px;
+        gap: 0rem;
+      }
     }
     .nav-section {
       cursor: pointer;
@@ -177,12 +184,12 @@ export default {
         color: var(--sec-font-color);
 
         .header {
-          font-size: 0.975rem;
+          font-size: $font-size-mobile;
         }
 
         .timestamp {
           color: var(--font-color);
-          font-size: 0.75rem;
+          font-size: $font-size-xs;
         }
       }
 
@@ -196,7 +203,7 @@ export default {
         > span {
           white-space: nowrap;
           word-break: keep-all;
-          font-size: 0.875rem;
+          font-size: $font-size-sm;
           color: var(--sec-font-color);
 
           .value {

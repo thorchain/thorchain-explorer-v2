@@ -142,6 +142,11 @@ export default {
   flex: 1;
   min-width: 0;
   position: relative;
+  margin: 0 10px;
+
+@include lg {
+  margin: 0px;
+}
 
   label {
     display: block;
@@ -161,6 +166,7 @@ export default {
   overflow-y: auto;
   position: relative;
   align-items: center;
+
 
   ::-webkit-scrollbar {
     display: none;

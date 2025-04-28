@@ -570,7 +570,12 @@ h3 {
   font-size: 1.875rem;
   color: var(--sec-font-color);
   max-width: 50rem;
-  margin: auto;
+  margin: 0 10px;
+
+
+  @include lg {
+    margin: auto;
+  }
   h3 {
     font-size: 1.2rem;
     display: flex;
@@ -628,6 +633,12 @@ h3 {
   max-width: 50rem;
   margin: auto;
   margin-top: 1rem;
+  margin: 1rem 10px;
+
+
+  @include lg {
+    margin: auto;
+  }
 
   .block-item {
     display: flex;

@@ -1,6 +1,7 @@
 @import './normalize.css'; // normalize css for cross-browser integrations
 @import 'font'; //applications font-face
 @import 'breakpoints';
+@import './variables.scss';
 
 * {
   box-sizing: border-box;
@@ -387,10 +388,12 @@ input {
   border: 1px solid var(--border-color);
   border-width: 1px 0 1px 0;
   color: var(--sec-font-color);
+  margin: 0 10px;
+  border-radius: 0.5rem;
+  border-width: 1px;
 
   @include lg {
-    border-radius: 0.5rem;
-    border-width: 1px;
+    margin: 0px;
   }
 }
 
@@ -579,6 +582,10 @@ input {
 
   .header {
     margin-right: 0.2rem;
+  }
+
+  &.active {
+    fill: var(--primary-color);
   }
 }
 
@@ -950,7 +957,11 @@ input {
   display: flex;
   list-style: none;
   border-radius: 0.5rem;
-  padding: 0;
+  padding: 0 10px;
+
+  @include lg {
+    padding: 0;
+  }
 
   &.center {
     justify-content: center;

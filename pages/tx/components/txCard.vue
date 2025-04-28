@@ -226,12 +226,16 @@ export default {
 <style lang="scss" scoped>
 $border-size: 2px;
 .tx-card {
-  width: 100%;
   max-width: 680px;
-  margin: auto;
   background-color: var(--card-bg-color);
   border-radius: 0.5rem;
   border: 1px solid var(--border-color);
+  margin: 0 10px;
+
+  @include lg {
+    margin: auto;
+    width: 100%;
+  }
 
   .tx-header {
     display: flex;
