@@ -115,12 +115,12 @@ export default {
 
     .card-header-title {
       color: var(--sec-font-color);
-      font-size:$font-size-desktop;
+      font-size: $font-size-desktop;
       font-weight: 700;
       margin-bottom: 0;
       margin: 0;
       @include lg {
-        font-size: $font-size-md  ;
+        font-size: $font-size-md;
       }
     }
 

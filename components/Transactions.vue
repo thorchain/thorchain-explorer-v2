@@ -14,7 +14,7 @@
         >
           <div v-if="props.column.field === 'from'" class="from-address">
             <div class="address-direction">
-              <sendIcon class="send-icon" />
+              <send-icon class="send-icon" />
               <Address
                 :param="props.row[props.column.field]"
                 :hovered-address="hoveredAddress"
@@ -33,7 +33,7 @@
             class="to-address"
           >
             <div class="address-direction">
-              <uprightarrow class="arrow-icon" />
+              <receive-icon class="send-icon" />
               <Address
                 :param="props.row.to"
                 :hovered-address="hoveredAddress"
@@ -97,7 +97,7 @@ import Address from './transactions/Address.vue'
 import Hash from './transactions/Hash.vue'
 import RightArrow from '~/assets/images/arrow-right.svg?inline'
 import sendIcon from '~/assets/images/send.svg?inline'
-import uprightarrow from '~/assets/images/uprightarrow.svg?inline'
+import receiveIcon from '~/assets/images/receive.svg?inline'
 import { AssetImage } from '~/classes/assetImage'
 
 export default {
@@ -108,7 +108,7 @@ export default {
     Hash,
     RightArrow,
     sendIcon,
-    uprightarrow,
+    receiveIcon,
   },
   filters: {
     shortSymbol(assetStr) {
@@ -400,13 +400,13 @@ export default {
 .address-direction {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
 }
+
 .send-icon {
-  width: 20px;
-  height: 20px;
+  width: 0.875rem;
+  height: 0.875rem;
   fill: var(--sec-font-color);
-  transform: rotate(319deg);
 }
 
 .arrow-icon {
