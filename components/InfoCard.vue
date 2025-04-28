@@ -313,9 +313,15 @@ export default {
       }
     }
     .flex-items {
-      gap: 0.3rem 0;
+      gap: 0.5rem 0;
       min-width: 320px;
       margin: 0.5rem 0.5rem;
+      display: flex;
+      flex-direction: column;
+
+      @include lg{
+        gap:0;
+      }
 
       &.cluster {
         display: flex;
@@ -333,6 +339,7 @@ export default {
         flex-direction: column;
         font-size: 0.9rem;
         justify-content: space-between;
+        gap: 0.3rem 0;
 
         @include md {
           flex-direction: row;
