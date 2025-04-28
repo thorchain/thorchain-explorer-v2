@@ -115,10 +115,13 @@ export default {
 
     .card-header-title {
       color: var(--sec-font-color);
-      font-size: 1.125rem;
+      font-size:$font-size-desktop;
       font-weight: 700;
       margin-bottom: 0;
       margin: 0;
+      @include lg {
+        font-size: $font-size-md  ;
+      }
     }
 
     &.has-extra {
@@ -181,12 +184,12 @@ export default {
         color: var(--sec-font-color);
 
         .header {
-          font-size: 0.975rem;
+          font-size: $font-size-mobile;
         }
 
         .timestamp {
           color: var(--font-color);
-          font-size: 0.75rem;
+          font-size: $font-size-xs;
         }
       }
 
@@ -200,7 +203,7 @@ export default {
         > span {
           white-space: nowrap;
           word-break: keep-all;
-          font-size: 0.875rem;
+          font-size: $font-size-sm;
           color: var(--sec-font-color);
 
           .value {

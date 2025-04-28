@@ -78,7 +78,7 @@ export default {
 
     .value {
       color: var(--sec-font-color);
-      font-size: 1.5rem;
+      font-size: $font-size-xl;
       text-align: center;
       min-width: 80%;
       margin-bottom: 8px;
@@ -88,7 +88,7 @@ export default {
       gap: 0.2rem;
 
       small {
-        font-size: 0.8rem;
+        font-size: $font-size-s;
         color: var(--font-color);
         margin-left: 0.3rem;
       }

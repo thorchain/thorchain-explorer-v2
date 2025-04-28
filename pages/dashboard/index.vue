@@ -1811,7 +1811,7 @@ export default {
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  font-size: 0.875rem;
+  font-size: $font-size-sm;
   font-weight: 600;
   margin-bottom: 0;
 
@@ -1848,7 +1848,7 @@ export default {
     gap: 0.3rem;
   }
   .amount-burn {
-    font-size: 12.5px;
+    font-size: $font-size-xs;
     color: var(--sec-font-color);
     font-weight: 500;
   }
@@ -1895,7 +1895,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 3px;
-  font-size: 0.9rem;
+  font-size: $font-size-sm;
 
   svg {
     fill: currentColor;
@@ -1927,7 +1927,7 @@ export default {
 
       white-space: nowrap;
       word-break: keep-all;
-      font-size: 0.875rem;
+      font-size: $font-size-sm;
       color: var(--sec-font-color);
 
       .value {
@@ -1985,13 +1985,13 @@ export default {
 
     .header {
       color: var(--font-color);
-      font-size: 0.875rem;
+      font-size: $font-size-sm;
     }
 
     .value {
       .extra {
         color: var(--font-color);
-        font-size: 0.78rem;
+        font-size: $font-size-xs;
       }
     }
 
@@ -2003,10 +2003,17 @@ export default {
     }
 
     .item-detail {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
       .value {
-        font-size: 1.15rem;
+        font-size: $font-size-desktop;
         font-weight: bold;
         color: var(--sec-font-color);
+        @include lg{
+          font-size: $font-size-md;
+
+        }
       }
     }
 
@@ -2050,7 +2057,7 @@ export default {
   .rune-symbol {
     color: var(--font-color);
     margin: 0 0.6rem;
-    font-size: 2rem;
+    font-size: font-size-xxl;
     line-height: 28px;
     width: 1.6rem;
   }
@@ -2152,7 +2159,7 @@ export default {
 
         th {
           padding-bottom: 7px;
-          font-size: 0.875rem;
+          font-size: $font-size-sm;
         }
       }
 
@@ -2165,7 +2172,7 @@ export default {
         font-weight: 700;
         padding: 7px 0;
         color: var(--sec-font-color);
-        font-size: 0.875rem;
+        font-size: $font-size-sm;
       }
 
       .table-footer {
@@ -2193,7 +2200,7 @@ export default {
     color: var(--font-color);
     cursor: pointer;
     width: 80%;
-    font-size: 14px;
+    font-size: $font-size-sm;
     font-weight: 500;
 
     .arrow-icon {
@@ -2223,7 +2230,7 @@ export default {
   padding: 10px 8px;
   color: var(--font-color);
   cursor: pointer;
-  font-size: 14px;
+  font-size: $font-size-sm;
   text-decoration: none;
   font-weight: 500;
 

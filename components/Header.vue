@@ -20,7 +20,7 @@ export default {
   h1 {
     font-family: 'Exo 2';
     color: var(--sec-font-color);
-    font-size: 1.17rem;
+    font-size: $font-size-md;
     margin: 0 10px;
 
   @include lg {

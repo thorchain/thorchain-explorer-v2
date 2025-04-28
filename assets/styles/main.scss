@@ -1,6 +1,8 @@
 @import './normalize.css'; // normalize css for cross-browser integrations
 @import 'font'; //applications font-face
 @import 'breakpoints';
+@import './variables.scss';
+
 
 * {
   box-sizing: border-box;
