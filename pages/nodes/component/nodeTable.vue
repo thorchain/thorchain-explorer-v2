@@ -700,7 +700,7 @@ export default {
 }
 .asset-chain {
   height: 1.2rem;
-  border-radius: 50%;
+  border-radius: $radius-full;
 }
 .popover-table {
   display: flex;
@@ -739,7 +739,7 @@ export default {
 }
 
 .extra {
-  font-size: 0.7rem;
+  font-size: $font-size-xs;
 }
 
 .node-table {
@@ -757,11 +757,11 @@ export default {
 .provider-table {
   td {
     &:first-of-type {
-      padding-right: 1rem;
+      padding-right: $space-16;
     }
 
     &:last-of-type {
-      padding-left: 1rem;
+      padding-left: $space-16;
     }
   }
 }
@@ -796,7 +796,7 @@ export default {
 
 .modal-content {
   background: var(--card-bg-color);
-  border-radius: 0.5rem;
+  border-radius: $radius-lg;
   text-align: left;
   color: var(--sec-font-color);
   width: 300px;
@@ -808,20 +808,20 @@ export default {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
 
   > div {
-    padding: 18px;
+    padding: $space-18;
   }
 }
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 10px;
+  padding-bottom: $space-10;
   border-bottom: 1px solid var(--border-color);
 }
 
 .modal-header h3 {
-  font-size: 18px;
-  margin: 0;
+  font-size: $font-size-md;
+  margin: $space-0;
   color: var(--sec-font-color);
 }
 
@@ -830,9 +830,9 @@ export default {
 
   th,
   td {
-    padding: 8px;
+    padding: $space-8;
     text-align: left;
-    font-size: 14px;
+    font-size: $font-size-sm;
   }
 
   th {
@@ -851,7 +851,7 @@ export default {
   }
 }
 .footer-table {
-  font-size: 14px;
+  font-size: $font-size-sm;
   display: flex;
   align-content: center;
   justify-content: center;
@@ -863,14 +863,14 @@ export default {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 0.7rem;
+  font-size: $font-size-xs;
   background: var(--active-bg-color);
-  padding: 3px;
-  border-radius: 3px;
+  padding: $space-3;
+  border-radius: $radius-sm;
   color: var(--sec-font-color);
 
   .arrow-container {
-    font-size: 0.6rem;
+    font-size: $font-size-xxs;
   }
 }
 

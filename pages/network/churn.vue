@@ -181,8 +181,8 @@ export default {
 .block-details {
   display: flex;
   max-height: 300px;
-  padding: 3px;
-  border-radius: 1rem;
+  padding: $space-3;
+  border-radius: $radius-2xl;
 
   @include sm {
     max-width: 35rem;
@@ -195,9 +195,9 @@ export default {
     gap: 1rem;
 
     p {
-      font-size: 18.75px;
+      font-size: $font-size-md;
       color: var(--sec-font-color);
-      margin: 0;
+      margin: $space-0;
     }
   }
 }
@@ -227,17 +227,17 @@ export default {
   display: flex;
   gap: 1rem;
   flex-direction: column;
-  margin: 1rem 10px;
+  margin: $space-16 $space-10;
 
-@include lg {
-  margin:1rem auto;
-}
+  @include lg {
+    margin: $space-16 auto;
+  }
 
   .block-item {
     background-color: var(--bg-color);
     border: 1px solid var(--border-color);
-    border-radius: 1rem;
-    padding: 0.5rem 1rem;
+    border-radius: $radius-2xl;
+    padding: $space-8 $space-16;
 
     .block-upper-info {
       display: flex;
@@ -250,7 +250,7 @@ export default {
         flex-direction: column;
 
         .height {
-          font-size: 1.2rem;
+          font-size: $font-size-md;
           color: var(--sec-font-color);
         }
       }
@@ -263,7 +263,7 @@ export default {
     }
 
     .block-downer-info {
-      margin-top: 0.5rem;
+      margin-top: $space-8;
 
       a {
         text-decoration: none;
@@ -274,9 +274,9 @@ export default {
   .loader-item {
     background-color: var(--bg-color);
     border: 1px solid var(--border-color);
-    border-radius: 1rem;
-    padding: 1rem 1rem;
-    margin: 0.5rem 0;
+    border-radius: $radius-2xl;
+    padding: $space-16 $space-16;
+    margin: $space-8 0;
   }
 }
 </style>

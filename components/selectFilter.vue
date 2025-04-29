@@ -19,10 +19,7 @@
           </span>
           <span v-else :class="['mini-bubble', 'multiple-selected']">
             {{ selectedOptions.length }} selected
-            <CrrosIcon
-              class="remove-tag"
-              @click.stop="clearSelections"
-            />
+            <CrrosIcon class="remove-tag" @click.stop="clearSelections" />
           </span>
           <span v-if="selectedOptions.length === 0">All</span>
         </div>
@@ -43,7 +40,6 @@
     </div>
   </div>
 </template>
-
 
 <script>
 import AngleIcon from '~/assets/images/angle-down.svg?inline'
@@ -116,14 +112,14 @@ export default {
       this.$emit('update:selectedOptions', this.selectedOptions)
     },
     clearSelections() {
-    this.selectedOptions = [];
-    this.$emit('update:selectedOptions', this.selectedOptions);
-  },
+      this.selectedOptions = []
+      this.$emit('update:selectedOptions', this.selectedOptions)
+    },
   },
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .form-group {
   flex: 1;
   min-width: 0;
@@ -135,26 +131,26 @@ export default {
     gap: 4px;
   }
   .mini-bubble {
-    font-size: 12px;
+    font-size: $font-size-xs;
     height: 17px;
-    margin-top: 2px;
-    margin-left: 2px;
+    margin-top: $space-2;
+    margin-left: $space-2;
   }
   .remove-tag {
     color: var(--sec-font-color);
-    margin-left: 8px;
+    margin-left: $space-8;
     cursor: pointer;
     width: 0.5rem;
     height: 0.5rem;
   }
   .dropdown-option.selected {
-    border-radius: 0.3rem;
+    border-radius: $radius-s;
     color: var(--primary-color);
   }
   label {
     display: block;
-    margin-bottom: 8px;
-    font-size: 16px;
+    margin-bottom: $space-8;
+    font-size: $font-size-desktop;
     font-weight: bold;
     color: var(--sec-font-color);
   }
@@ -163,10 +159,10 @@ export default {
 
     .dropdown-button {
       width: 100%;
-      padding: 12px 10px;
-      font-size: 16px;
+      padding: $space-12 $space-10;
+      font-size: $font-size-desktop;
       border: none;
-      border-radius: 6px;
+      border-radius: $radius-md;
       background-color: var(--bg-color);
       color: var(--sec-font-color);
       border: 1px solid var(--border-color);
@@ -191,24 +187,24 @@ export default {
     background-color: var(--bg-color);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     z-index: 1000;
-    border-radius: 6px;
-    margin-top: 0.5rem;
-    padding: 0.5rem 0;
+    border-radius: $radius-md;
+    margin-top: $space-8;
+    padding: $space-8 $space-0;
     box-sizing: border-box;
     max-height: 200px;
     overflow: auto;
   }
   .dropdown-option {
     position: relative;
-    padding: 12px 34px;
-    font-size: 16px;
+    padding: $space-12 34px;
+    font-size: $font-size-desktop;
     color: var(--sec-font-color);
     cursor: pointer;
     transition: background-color 0.3s ease;
 
     &:hover {
       background-color: var(--active-bg-color);
-      border-radius: 0.3rem;
+      border-radius: $radius-s;
       color: var(--primary-color);
     }
 
@@ -232,9 +228,7 @@ export default {
 
   .dropdown-options::-webkit-scrollbar-thumb {
     background-color: var(--font-color);
-    border-radius: 3px;
+    border-radius: $radius-sm;
   }
-
-
 }
 </style>

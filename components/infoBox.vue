@@ -56,13 +56,13 @@ export default {
   justify-content: center;
   align-items: center;
   min-height: 36vh;
-  padding: 20px;
+  padding: $space-20;
 
   .info-box {
     display: grid;
     gap: 0.8rem;
     overflow-y: auto;
-    padding: 1rem;
+    padding: $space-16;
   }
 
   .info-item {
@@ -70,11 +70,11 @@ export default {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 1rem;
-    border-radius: 0.5rem;
+    padding: $space-16;
+    border-radius: $radius-lg;
     text-align: center;
     font-weight: bold;
-    font-size: 12px;
+    font-size: $font-size-xs;
     transition: all 0.3s ease;
 
     .item-content {

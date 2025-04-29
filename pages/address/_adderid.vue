@@ -549,16 +549,16 @@ export default {
     }
   }
   .content {
-    margin-top: 0.5rem;
+    margin-top: $space-8;
   }
 
   .qr-wrapper {
     position: relative;
 
     .qr-show {
-      border-radius: 0.3rem;
+      border-radius: $radius-s;
       background-color: #fff;
-      padding: 0.625rem;
+      padding: $space-10;
       top: calc(100% + 0.625rem);
       position: absolute;
       z-index: 999;
@@ -567,7 +567,7 @@ export default {
   }
 
   .utility {
-    font-size: 0.7rem;
+    font-size: $font-size-xs;
     line-height: 0.7rem;
   }
 
@@ -576,7 +576,7 @@ export default {
     flex-direction: row;
     align-items: center;
     gap: 0.6rem;
-    padding: 0 0.8rem;
+    padding: $space-0 $space-12;
   }
 
   .address-header {
@@ -584,9 +584,9 @@ export default {
     align-items: center;
 
     span {
-      margin-left: 0.7rem;
+      margin-left: $space-12;
       line-height: 1.5rem;
-      font-size: 1.5rem;
+      font-size: $font-size-xl;
       color: var(--sec-font-color);
     }
   }
@@ -595,7 +595,7 @@ export default {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    margin: 0.4rem 0;
+    margin: $space-5 $space-0;
     font-weight: bold;
     color: var(--font-color);
     gap: 8px;
@@ -607,13 +607,13 @@ export default {
     align-items: center;
     background-color: var(--card-bg-color);
     border: 1px solid var(--border-color);
-    border-radius: 5px;
+    border-radius: $radius-s;
     display: flex;
-    padding: 0.5rem;
-    font-size: 0.65rem;
+    padding: $space-8;
+    font-size: $font-size-xxs;
 
     @include md {
-      font-size: 1rem;
+      font-size: $font-size-desktop;
     }
   }
 }
@@ -648,11 +648,11 @@ export default {
   .item {
     border: 1px solid var(--border-color);
     background-color: var(--card-bg-color);
-    padding: 0.5rem;
-    border-radius: 5px;
+    padding: $space-8;
+    border-radius: $radius-s;
     display: flex;
     align-items: center;
-    margin: 0;
+    margin: $space-0;
     max-width: 100%;
     min-width: 32px;
 

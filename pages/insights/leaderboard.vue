@@ -170,18 +170,18 @@ export default {
 
   .data-section {
     flex: 1;
-    margin: 0 10px;
+    margin: $space-0 $space-10;
 
     @include lg {
-      margin: 0;
+      margin: $space-0;
     }
 
     .section-title {
       text-align: center;
       color: var(--sec-font-color);
-      padding: 1.1rem 0;
+      padding: $space-18 $space-0;
       border-bottom: 1px solid var(--border-color);
-      margin-top: 0;
+      margin-top: $space-0;
     }
   }
 }

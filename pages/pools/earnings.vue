@@ -17,11 +17,7 @@
         </button>
       </template>
       <div class="earning-box">
-        <TableLoader
-          v-if="loading"
-          :cols="cols"
-          :rows="Array(10).fill({})"
-        />
+        <TableLoader v-if="loading" :cols="cols" :rows="Array(10).fill({})" />
         <vue-good-table
           v-if="!loading && tableData.length > 0"
           :columns="cols"
@@ -300,7 +296,7 @@ export default {
 <style lang="scss">
 .earning-box {
   .nav-headers.box.pools-type-table {
-    margin: 0 !important;
+    margin: $space-0 !important;
     border: 1px solid var(--border-color);
     border-bottom: 0;
     border-radius: 7px 8px 0 0;

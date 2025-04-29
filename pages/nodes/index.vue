@@ -1235,17 +1235,19 @@ export default {
 .search-container {
   display: flex;
   flex-wrap: wrap;
-  margin: 0 10px;
+  margin: $space-0 $space-10;
+  gap: 0.5rem;
 
   @include lg {
-    margin: 0px;
+    margin: $space-0;
+    gap: $space-0;
   }
 }
 
 .filter-btns {
   display: flex;
-  margin-left: 5px;
-  gap: 5px;
+  margin-left: $space-5;
+  gap: $space-5;
 
   .enabled-btn {
     color: var(--primary-color) !important;
@@ -1256,13 +1258,13 @@ export default {
     background-color: var(--bg-color);
     color: var(--sec-font-color);
     border: 1px solid var(--border-color);
-    border-radius: 10px;
-    margin: 2px 0;
-    padding: 8px 16px;
+    border-radius: $radius-2lg;
+    margin: $space-2 $space-0;
+    padding: $space-8 $space-16;
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    font-size: 14px;
+    gap: $space-5;
+    font-size: $font-size-sm;
     cursor: pointer;
 
     &:hover {
@@ -1281,11 +1283,11 @@ export default {
     color: var(--sec-font-color);
     background-color: var(--bg-color);
     border: 1px solid var(--border-color) !important;
-    border-radius: 0.5rem;
+    border-radius: $radius-lg;
     outline: none;
-    margin: 2px;
-    padding: 12px;
-    font-size: 0.9062rem;
+    margin: $space-2;
+    padding: $space-12;
+    font-size: $font-size-mobile;
     font-weight: 450;
 
     &:focus {
@@ -1306,7 +1308,7 @@ export default {
     transition: fill 0.3s ease;
     box-sizing: content-box;
     background: var(--card-bg-color);
-    padding-left: 0.3rem;
+    padding-left: $space-8;
   }
 }
 
@@ -1319,7 +1321,7 @@ export default {
 }
 
 .extra {
-  font-size: 0.7rem;
+  font-size: $font-size-xs;
 }
 
 .filter-icon {

@@ -314,32 +314,32 @@ export default {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
-  margin: 10px 0;
+  gap: $space-8;
+  margin: $space-10 $space-0;
 
   span {
-    font-size: 0.9rem;
+    font-size: $font-size-mobile;
     color: var(--sec-font-color);
   }
 
   &.timer {
     strong {
       display: block;
-      font-size: 0.95rem;
-      padding: 0.2rem 0.3rem;
-      border-radius: 0.3rem;
+      font-size: $font-size-mobile;
+      padding: $space-3 $space-5;
+      border-radius: $radius-s;
       color: var(--primary-color);
       background-color: #63fdd927;
     }
   }
 
   &.strong span {
-    font-size: 0.9rem;
+    font-size: $font-size-mobile;
   }
 }
 
 .header-sup {
-  font-size: 0.6rem;
+  font-size: $font-size-xxs;
   color: #f04832;
 }
 

@@ -63,7 +63,7 @@ export default {
     return {
       swaps: undefined,
       swapHistory: undefined,
-      allSwapHistory: undefined, 
+      allSwapHistory: undefined,
       formatProp: [
         {
           label: 'Volume',
@@ -71,11 +71,11 @@ export default {
           sortFn: this.volumeSort,
         },
       ],
-      chartPeriod: '90', 
+      chartPeriod: '90',
       chartPeriods: [
-        { text: '90 Days', mode: '90' }, 
-        { text: '180 Days', mode: '180' }, 
-        { text: '1 Year', mode: '365' }, 
+        { text: '90 Days', mode: '90' },
+        { text: '180 Days', mode: '180' },
+        { text: '1 Year', mode: '365' },
       ],
       tablePeriod: 'day',
       tablePeriods: [
@@ -90,10 +90,10 @@ export default {
       this.$router.push({
         query: {
           ...this.$route.query,
-          chartPeriod: newPeriod, 
+          chartPeriod: newPeriod,
         },
       })
-      this.filterDataByPeriod(newPeriod) 
+      this.filterDataByPeriod(newPeriod)
     },
     tablePeriod(newPeriod) {
       this.$router.push({
@@ -133,8 +133,8 @@ export default {
       })
     }
 
-    await this.fetchAllData() 
-    this.filterDataByPeriod(this.chartPeriod) 
+    await this.fetchAllData()
+    this.filterDataByPeriod(this.chartPeriod)
     this.fetchTableData(this.tablePeriod)
   },
   methods: {
@@ -142,7 +142,7 @@ export default {
       const resSwaps = (
         await this.$api.getSwapsHistory({
           interval: 'day',
-          count: 365, 
+          count: 365,
         })
       ).data
       this.allSwapHistory = resSwaps
@@ -166,7 +166,7 @@ export default {
       if (this.allSwapHistory) {
         const filteredData = {
           ...this.allSwapHistory,
-          intervals: this.allSwapHistory.intervals.slice(-count), 
+          intervals: this.allSwapHistory.intervals.slice(-count),
         }
         this.swapHistory = this.formatSwaps(filteredData)
       }

@@ -89,8 +89,8 @@ export default {
   justify-content: center;
 
   .asset-icon {
-    margin: 0;
-    border-radius: 0;
+    margin: $space-0;
+    border-radius: $radius-none;
   }
 
   .asset-image {

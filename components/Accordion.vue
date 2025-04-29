@@ -337,10 +337,10 @@ export default {
 
 <style lang="scss" scoped>
 .accordion {
-  margin: 0 0.75rem;
+  margin: $space-0 $space-12;
   background-color: var(--card-bg);
-  padding: 8px;
-  border-radius: 0.5rem;
+  padding: $space-8;
+  border-radius: $radius-lg;
   border: 1px solid var(--border-color);
   .error-status {
     display: flex;
@@ -349,12 +349,12 @@ export default {
     gap: 0.3rem;
     padding: 1.2px;
     background-color: rgb(239 83 80 / 11%);
-    border-radius: 7px;
-    padding: 3.5px 8px;
+    border-radius: $radius-lg;
+    padding: $space-3 $space-8;
 
     .error-text {
       display: flex;
-      font-size: 10px;
+      font-size: $font-size-xxs;
       font-weight: bold;
       display: flex;
       align-content: center;
@@ -364,11 +364,11 @@ export default {
       color: rgb(239, 83, 80);
     }
     .tx-icon-warn {
-      margin: 0;
+      margin: $space-0;
       width: 1rem;
       height: 1rem;
       &.warn {
-        padding: 0;
+        padding: $space-0;
         fill: rgb(239, 83, 80);
       }
     }
@@ -400,7 +400,7 @@ export default {
     align-items: center;
     justify-content: space-between;
     gap: 0.5rem;
-    border-radius: 0.5rem;
+    border-radius: $radius-lg;
     cursor: pointer;
 
     &:hover {
@@ -433,19 +433,19 @@ export default {
   }
 
   .accordion-inner {
-    font-size: 0.875rem;
+    font-size: $font-size-sm;
     overflow: hidden;
     transition: all 0.3s ease-in-out;
 
     max-height: 0;
     opacity: 0;
-    margin-top: 0;
+    margin-top: $space-0;
 
     display: flex;
     flex-direction: column;
 
     &.show {
-      margin-top: 0.5rem;
+      margin-top: $space-8;
       border-top: 1px solid var(--border-color);
       opacity: 1;
     }
@@ -455,7 +455,7 @@ export default {
       flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      padding: 0.3rem 0;
+      padding: $space-5 $space-0;
       gap: 5px;
 
       .value {
@@ -494,7 +494,7 @@ export default {
             .icon {
               cursor: pointer;
               fill: var(--primary-color);
-              margin: 0;
+              margin: $space-0;
               height: 1rem;
               width: 1rem;
             }
@@ -511,11 +511,11 @@ export default {
       }
 
       &:last-of-type {
-        padding-bottom: 0.5rem;
+        padding-bottom: $space-8;
       }
 
       &:first-of-type {
-        padding-top: 0.5rem;
+        padding-top: $space-8;
       }
     }
   }
@@ -527,8 +527,8 @@ export default {
     align-items: center;
     justify-content: center;
     margin-left: 1.1rem;
-    border-radius: 8px;
-    padding: 5px;
+    border-radius: $radius-lg;
+    padding: $space-5;
 
     .mini-bubble {
       min-height: 26px;
@@ -567,7 +567,7 @@ export default {
       transform: rotate(-90deg);
     }
     .time-text {
-      font-size: 10px;
+      font-size: $font-size-xxs;
       font-weight: bold;
       display: flex;
       align-content: center;
@@ -635,12 +635,12 @@ export default {
 
   .loading {
     position: relative;
-    padding: 5px 8px;
+    padding: $space-5 $space-8;
     display: flex;
     align-items: center;
     gap: 0.5rem;
     border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border-radius: $radius-lg;
 
     &::before {
       content: '';
@@ -650,7 +650,7 @@ export default {
       right: 0;
       bottom: 0;
       border: 1px solid #d86e58;
-      border-radius: 8px;
+      border-radius: $radius-lg;
       transition: all 0.5s;
       animation: clippath 3s infinite linear;
     }
@@ -683,14 +683,14 @@ export default {
 
 .loading-text {
   color: #d86e58;
-  font-size: 10px;
+  font-size: $font-size-xxs;
   animation: textFade 1.5s infinite ease-in-out;
 }
 
 .attributes {
-  margin: 8px 0;
+  margin: $space-8 $space-0;
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: $radius-lg;
   background: var(--card-bg-color);
 }
 </style>

@@ -145,7 +145,7 @@ export default {
 
 .s-header {
   display: flex;
-  font-size: 0.75rem;
+  font-size: $font-size-xs;
   color: var(--font-color);
 }
 

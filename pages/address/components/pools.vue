@@ -223,7 +223,7 @@ export default {
 
   span {
     display: block;
-    font-size: 0.9rem;
+    font-size: $font-size-mobile;
   }
 }
 

@@ -263,40 +263,40 @@ export default {
 
 <style lang="scss">
 .pool-stats {
-  margin-bottom: 1rem;
+  margin-bottom: $space-16;
 
   .stat-item {
     display: flex;
     align-items: center;
-    padding-top: 5px;
+    padding-top: $space-5;
     justify-content: space-between;
     flex-wrap: wrap;
-    gap: 5px;
+    gap: $space-5;
 
     .title {
       display: flex;
       align-items: center;
       color: var(--sec-font-color);
-      margin-right: 0.5rem;
-      font-size: 0.85rem;
+      margin-right: $space-8;
+      font-size: $font-size-sm;
 
       .header-icon {
         display: inline-block;
         height: 0.9rem;
         width: 0.9rem;
         fill: var(--sec-font-color);
-        margin-left: 5px;
+        margin-left: $space-5;
       }
     }
 
     .value {
       color: var(--primary-color);
-      font-size: 0.85rem;
+      font-size: $font-size-sm;
     }
   }
 
   hr {
-    margin: 0.5rem 0;
+    margin: $space-8 $space-0;
     opacity: 0.65;
     overflow: visible;
     height: 0;
@@ -307,13 +307,13 @@ export default {
 
 @include md {
   .pool-stats {
-    padding: 0;
+    padding: $space-0;
     display: flex;
     justify-content: space-between;
 
     .stat-group {
       position: relative;
-      padding: 1rem;
+      padding: $space-16;
       flex: 1;
       margin-top: auto;
 
@@ -327,7 +327,7 @@ export default {
         height: calc(100% - 1rem);
         border-left: 0;
         border-right: 1px solid var(--border-color);
-        margin: 0.5rem 0;
+        margin: $space-8 $space-0;
       }
 
       &:last-of-type::after {

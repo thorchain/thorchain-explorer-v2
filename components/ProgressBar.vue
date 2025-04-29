@@ -27,13 +27,13 @@ export default {
 <style lang="scss">
 .progress-wrapper {
   height: var(--bar-height);
-  border-radius: 5px;
+  border-radius: $radius-s;
   width: 100%;
   background-color: var(--border-color);
 
   .progress-bar {
     height: var(--bar-height);
-    border-radius: 5px;
+    border-radius: $radius-s;
     width: 1%;
     background-color: var(--primary-color);
 
@@ -45,7 +45,7 @@ export default {
     justify-content: center;
     color: var(--sec-font-color);
     margin-top: var(--bar-height);
-    font-size: 0.875rem;
+    font-size: $font-size-sm;
   }
 }
 </style>

@@ -35,11 +35,11 @@ export default {
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  padding: 1rem;
+  padding: $space-16;
 
   img {
     width: 150px;
-    margin-bottom: 1rem;
+    margin-bottom: $space-16;
   }
 }
 </style>

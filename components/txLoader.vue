@@ -71,17 +71,17 @@ export default {}
 
 <style lang="scss" scoped>
 .skeleton {
-  margin: 0px !important;
+  margin: $space-0 !important;
 }
 .header-skeleton {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 0.5rem;
+  margin-top: $space-8;
 }
 .tx-container {
-  padding: 20px;
-  border-radius: 10px;
+  padding: $space-20;
+  border-radius: $radius-2lg;
   max-width: 680px;
   margin: auto;
   background-color: var(--card-bg-color);
@@ -94,8 +94,8 @@ export default {}
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  margin-bottom: 10px;
-  margin: 13px 3px;
+  margin-bottom: $space-10;
+  margin: $space-12 $space-4;
   gap: 1.5rem;
 
   @include sm {
@@ -106,11 +106,11 @@ export default {}
 }
 .tx-info {
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: $radius-lg;
   display: flex;
   flex-direction: row;
   gap: 1rem;
-  padding: 8px;
+  padding: $space-8;
   align-items: center;
   justify-content: center;
 }
@@ -124,24 +124,24 @@ export default {}
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid var(--border-color);
-  padding-bottom: 1rem;
+  padding-bottom: $space-16;
 }
 
 .line {
   border-bottom: 1px solid var(--border-color);
-  margin: 0.5rem 0 10px;
-  padding: 0;
+  margin: $space-8 $space-0 $space-10;
+  padding: $space-0;
 }
 
 .section {
-  margin-top: 1.5rem;
+  margin-top: $space-24;
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: $radius-lg;
 }
 
 .section-item {
   display: flex;
   flex-direction: column;
-  margin: 0.5rem 0 5px;
+  margin: $space-8 $space-0 $space-5;
 }
 </style>

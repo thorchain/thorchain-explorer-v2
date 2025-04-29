@@ -408,11 +408,11 @@ export default {
 .votes-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: $space-16;
 
   .card-container {
     min-width: 100%;
-    margin: 0px;
+    margin: $space-0;
 
     @include md {
       min-width: 520px;
@@ -423,17 +423,17 @@ export default {
 .search-container {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: $space-8;
 }
 
 #vote-search-container {
   display: flex;
   position: relative;
   flex: 1;
-    margin: 0.5rem 10px;
+  margin: $space-8 $space-10;
 
   @include lg {
-    margin:0.5rem 0px;
+    margin: $space-8 $space-0;
   }
 
   .search-input {
@@ -441,11 +441,11 @@ export default {
     color: var(--sec-font-color);
     background-color: var(--bg-color);
     border: 1px solid var(--border-color) !important;
-    border-radius: 0.5rem;
+    border-radius: $radius-lg;
     outline: none;
-    margin: 2px;
-    padding: 12px;
-    font-size: 0.9062rem;
+    margin: $space-2;
+    padding: $space-12;
+    font-size: $font-size-mobile;
     font-weight: 450;
 
     &:focus {
@@ -466,35 +466,35 @@ export default {
     transition: fill 0.3s ease;
     box-sizing: content-box;
     background: var(--card-bg-color);
-    padding-left: 0.3rem;
+    padding-left: $space-5;
   }
 }
 
 .mimir-value {
-  font-size: 0.875rem;
+  font-size: $font-size-sm;
   color: var(--sec-font-color);
-  margin-top: 0.5rem;
+  margin-top: $space-8;
 }
 
 .card-body {
-  padding: 1rem;
+  padding: $space-16;
 }
 
 .vote-section {
-  margin-bottom: 1rem;
+  margin-bottom: $space-16;
 }
 
 .vote-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 0.5rem;
+  margin-top: $space-8;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: $space-8;
 }
 
 .key-list {
-  font-size: 0.875rem;
+  font-size: $font-size-sm;
   color: var(--sec-font-color);
 }
 
@@ -506,6 +506,7 @@ export default {
   .progress-overtext {
     display: flex;
     justify-content: space-between;
+    font-size: $font-size-sm;
 
     .key-name {
       display: flex;
@@ -536,7 +537,7 @@ export default {
 }
 
 .progress-text {
-  font-size: 0.75rem;
+  font-size: $font-size-xs;
   color: var(--sec-font-color);
 }
 
@@ -544,7 +545,7 @@ export default {
   width: 210px;
   height: 8px;
   background-color: var(--border-color);
-  border-radius: 4px;
+  border-radius: $radius-sm;
   overflow: hidden;
 }
 
@@ -564,7 +565,7 @@ export default {
 }
 
 .change-24h {
-  font-size: 0.75rem;
+  font-size: $font-size-xs;
   color: var(--sec-font-color);
   display: flex;
   align-items: center;
@@ -572,25 +573,24 @@ export default {
 }
 .header-recent-vote {
   color: var(--sec-font-color);
-  margin:18px 12px;
+  margin: $space-18 $space-12;
 
   @include lg {
-    margin: 18.7px 0px;
+    margin: $space-18 $space-0;
   }
-
 }
 .recent-votes-container {
   display: flex;
   flex-direction: row;
   overflow: auto;
-  padding-bottom: 8px;
-  margin-bottom: 0.5rem;
-  gap: 0.5rem;
-  margin: 0 10px;
+  padding-bottom: $space-8;
+  margin-bottom: $space-8;
+  gap: $space-8;
+  margin: $space-0 $space-10;
 
-@include lg {
-  margin: 0px;
-}
+  @include lg {
+    margin: $space-0;
+  }
   scrollbar-width: thin;
   scrollbar-color: var(--border-color) var(--bg-color);
   &::-webkit-scrollbar {
@@ -599,7 +599,7 @@ export default {
 
   &::-webkit-scrollbar-thumb {
     background-color: var(--border-color);
-    border-radius: 4px;
+    border-radius: $radius-sm;
   }
 
   &::-webkit-scrollbar-track {
@@ -610,8 +610,8 @@ export default {
 .recent-vote-card {
   background: var(--bg-color);
   border: 1px solid var(--border-color) !important;
-  border-radius: 8px;
-  padding: 16px;
+  border-radius: $radius-lg;
+  padding: $space-16;
   min-width: 250px;
   flex: 0 0 auto;
   .recent-vote-content {
@@ -621,7 +621,7 @@ export default {
   }
 
   .vote-value {
-    font-size: 1.1rem;
+    font-size: $font-size-md;
     font-weight: 600;
     color: var(--sec-font-color);
   }
@@ -630,7 +630,7 @@ export default {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 0.9rem;
+    font-size: $font-size-sm;
 
     small {
       color: var(--sec-font-color);
@@ -643,16 +643,16 @@ export default {
     }
   }
   .vote-date {
-    font-size: 0.85rem;
+    font-size: $font-size-sm;
     color: var(--sec-font-color);
-    margin-top: 8px;
+    margin-top: $space-8;
   }
 
   .node-address {
-    font-size: 0.85rem;
+    font-size: $font-size-sm;
     color: var(--sec-font-color);
     word-break: break-all;
-    margin-top: 8px;
+    margin-top: $space-8;
   }
 }
 </style>

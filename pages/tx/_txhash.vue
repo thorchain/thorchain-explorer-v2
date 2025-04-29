@@ -2235,7 +2235,7 @@ export default {
   gap: 8px;
   align-items: center;
   justify-content: center;
-  margin: 0 10px;
+  margin: $space-0 $space-10;
 
   @include lg {
     margin: auto;
@@ -2249,12 +2249,12 @@ export default {
   .item {
     border: 1px solid var(--border-color);
     background-color: var(--card-bg-color);
-    padding: 0.5rem;
-    border-radius: 5px;
+    padding: $space-8;
+    border-radius: $radius-s;
     display: flex;
     align-items: center;
     gap: 8px;
-    margin: 0;
+    margin: $space-0;
     flex-grow: 1;
     max-width: 100%;
     min-width: 32px;
@@ -2302,7 +2302,7 @@ export default {
     align-items: center;
 
     .icon {
-      margin-right: 0;
+      margin-right: $space-0;
     }
 
     @include md {
@@ -2316,18 +2316,18 @@ export default {
   flex-wrap: wrap;
   justify-content: space-between;
   background: var(--card-bg-color);
-  border-radius: 5px;
-  padding: 20px;
-  gap: 10px;
+  border-radius: $radius-s;
+  padding: $space-20;
+  gap: $space-10;
 }
 
 .tx-contain {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: $space-10;
 
   .asset-icon-container {
-    margin-top: 10px;
+    margin-top: $space-10;
     display: flex;
     align-items: center;
 
@@ -2340,7 +2340,7 @@ export default {
   }
 
   .address {
-    margin-top: 10px;
+    margin-top: $space-10;
   }
 
   .txid {
@@ -2362,17 +2362,17 @@ export default {
   height: 1.5rem;
 
   &.small {
-    margin-right: 0;
+    margin-right: $space-0;
     height: 0.8rem;
     width: 0.8rem;
   }
 }
 
 .extra-details {
-  margin-top: 1rem;
+  margin-top: $space-16;
 
   .pool-box {
-    margin: 5px 0;
+    margin: $space-5 $space-0;
     display: flex;
     align-items: center;
   }
@@ -2380,16 +2380,16 @@ export default {
 
 .utility,
 .tx-date {
-  padding: 0 1rem;
+  padding: $space-0 $space-16;
 }
 
 .utility {
   justify-content: space-between;
-  gap: 1rem;
+  gap: $space-16;
 }
 
 .asset-text {
-  font-size: 1.1rem;
+  font-size: $font-size-md;
 }
 
 .tx-id {

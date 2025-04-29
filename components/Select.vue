@@ -45,8 +45,8 @@ export default {
 <style lang="scss">
 .option-wrapper {
   position: relative;
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
+  padding: $space-8 $space-16;
+  border-radius: $radius-lg;
   background-color: var(--card-bg-color);
   border: 1px solid var(--border-color);
   display: flex;
@@ -65,23 +65,23 @@ export default {
   display: flex;
   flex-direction: column;
   border: 1px solid var(--border-color);
-  border-radius: 0.5rem;
+  border-radius: $radius-lg;
   max-width: 250px;
   top: calc(100% + 10px);
   max-height: 400px;
   overflow-y: auto;
-  
+
   &::-webkit-scrollbar {
     width: 5px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background-color: var(--border-color);
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background-color: var(--font-color);
-    border-radius: 5px;
+    border-radius: $radius-s;
   }
 
   div {
@@ -89,7 +89,7 @@ export default {
     background: var(--card-bg-color);
     color: var(--font-color);
     border: none;
-    padding: 0.5rem 1rem;
+    padding: $space-8 $space-16;
     text-decoration: none;
     text-align: center;
     overflow: hidden;
@@ -101,11 +101,11 @@ export default {
     }
 
     &:first-of-type {
-      border-radius: 0.5rem 0.5rem 0 0;
+      border-radius: $radius-lg $radius-lg 0 0;
     }
 
     &:last-of-type {
-      border-radius: 0 0 0.5rem 0.5rem;
+      border-radius: 0 0 $radius-lg $radius-lg;
     }
 
     &:hover {

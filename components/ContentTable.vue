@@ -51,14 +51,14 @@ export default {
 .table-wrapper {
   display: flex;
   flex-direction: column;
-  border-radius: 0.5rem;
+  border-radius: $radius-lg;
   background-color: var(--bg-color);
   border: 1px solid var(--border-color);
 
   .header {
     color: var(--sec-font-color);
     font-size: 1.5rem;
-    padding: 1rem;
+    padding: $space-16;
   }
 
   .table {
@@ -70,7 +70,7 @@ export default {
     border-collapse: collapse;
 
     thead tr th {
-      padding: 1rem;
+      padding: $space-16;
       color: var(--sec-font-color);
     }
 
@@ -81,7 +81,7 @@ export default {
 
       td {
         cursor: pointer;
-        padding: 1rem;
+        padding: $space-16;
         color: var(--sec-font-color);
         border: 1px solid var(--border-color);
         border-width: 1px 0 1px 0;

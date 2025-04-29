@@ -47,21 +47,21 @@ export default {
 .nav-headers {
   display: flex;
   flex-wrap: wrap;
-  margin-bottom: 10px;
+  margin-bottom: $space-10;
 
   .pre-text {
     color: var(--sec-font-color);
-    padding: 0 10px;
-    margin: auto 0;
+    padding: $space-0 $space-10;
+    margin: auto $space-0;
   }
 
   .nav-item {
     cursor: pointer;
-    padding: 0.5rem 0.7rem;
-    margin: 0 0.1rem;
+    padding: $space-8 $space-12;
+    margin: $space-0 0.1rem;
     color: var(--font-color);
     text-decoration: none;
-    border-radius: 0.3rem;
+    border-radius: $radius-s;
 
     &.active,
     &.nuxt-link-exact-active {
@@ -74,21 +74,21 @@ export default {
     }
 
     &:first-of-type {
-      margin-left: 0;
+      margin-left: $space-0;
     }
   }
 
   &.box {
-    padding: 0.2rem;
+    padding: $space-3;
     background-color: var(--bg-color);
     border: 1px solid var(--border-color);
     border-width: 1px;
-    margin: 0px 10px 10px 10px;
-    border-radius: 5px;
+    margin: $space-0 $space-10 $space-10 $space-10;
+    border-radius: $radius-s;
 
-@include lg {
-  margin: 0px 0px 10px 0px;
-}
+    @include lg {
+      margin: $space-0 $space-0 $space-10 $space-0;
+    }
 
     .nav-item {
       &.active,

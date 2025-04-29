@@ -27,7 +27,7 @@ export default {
 
 <style lang="scss">
 .country-icon {
-  border-radius: 0.2rem;
-  margin: 0;
+  border-radius: $radius-sm;
+  margin: $space-0;
 }
 </style>

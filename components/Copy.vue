@@ -85,18 +85,18 @@ export default {
   position: fixed;
   top: 80px;
   right: 5%;
-  padding: 0.5rem;
+  padding: $space-8;
   width: 90%;
   background-color: var(--bg-color);
   border: 1px solid var(--border-color);
-  border-radius: 0.5rem;
+  border-radius: $radius-lg;
   z-index: 9999;
 
   @include lg {
     top: 80px;
     right: 20px;
     width: auto;
-    padding: 1rem;
+    padding: $space-16;
   }
 }
 
@@ -144,12 +144,12 @@ export default {
 
 .toast-body {
   overflow: hidden;
-  font-size: 0.8rem;
+  font-size: $font-size-s;
   line-height: 1.5;
   color: var(--primary-color);
   text-align: left;
   font-weight: 200;
-  padding: 0.5rem 0;
+  padding: $space-8 $space-0;
 
   .copy-text {
     color: var(--sec-font-color);
@@ -164,7 +164,7 @@ export default {
   width: 40px;
   height: 40px;
   justify-items: center;
-  padding-right: 1rem;
+  padding-right: $space-16;
 }
 
 .animate {

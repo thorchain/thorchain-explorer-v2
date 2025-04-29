@@ -221,6 +221,6 @@ export default {
 }
 
 .txStages-container {
-  margin: 0;
+  margin: $space-0;
 }
 </style>

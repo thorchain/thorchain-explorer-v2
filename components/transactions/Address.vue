@@ -56,12 +56,12 @@ export default {
 
   .address {
     border: 1px solid transparent;
-    padding: 0 4px;
+    padding: $space-0 $space-4;
 
     &.hovered {
       border: 1px dashed var(--highlight);
       color: var(--active-primary-color) !important;
-      border-radius: 2px;
+      border-radius: $radius-xs;
     }
   }
 

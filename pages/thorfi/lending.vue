@@ -420,7 +420,7 @@ export default {
 
   span {
     display: block;
-    font-size: 0.9rem;
+    font-size: $font-size-mobile;
   }
 }
 
@@ -438,13 +438,13 @@ export default {
 .stat-template {
   display: grid;
   gap: 15px;
-  margin-bottom: 1rem;
+  margin-bottom: $space-16;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   grid-template-rows: auto;
 
   .stat-card {
-    padding: 2rem 0;
-    border-radius: 8px;
+    padding: $space-32 $space-0;
+    border-radius: $radius-lg;
     background-color: var(--card-bg-color);
     border: 1px solid var(--border-color);
 
@@ -455,7 +455,7 @@ export default {
 
     .stat-value {
       color: var(--sec-font-color);
-      font-size: 1.5rem;
+      font-size: $font-size-xl;
       text-align: center;
       min-width: 80%;
     }
@@ -469,7 +469,7 @@ export default {
 
       .header-icon {
         fill: var(--font-color);
-        margin-left: 10px;
+        margin-left: $space-10;
         height: 0.9rem;
         width: 0.9rem;
       }

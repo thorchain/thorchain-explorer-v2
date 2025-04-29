@@ -80,9 +80,9 @@ export default {
   gap: 0.5rem;
 
   .mini-bubble {
-    padding: 0.25rem 0.5rem;
-    border-radius: 12px;
-    font-size: 0.75rem;
+    padding: $space-4 $space-8;
+    border-radius: $radius-xl;
+    font-size: $font-size-xs;
     color: var(--sec-font-color);
     cursor: pointer;
     text-decoration: none;
@@ -99,7 +99,7 @@ export default {
     border: none;
     color: var(--primary-color);
     cursor: pointer;
-    font-size: 0.75rem;
+    font-size: $font-size-xs;
     transition: color 0.3s ease;
 
     &:hover {

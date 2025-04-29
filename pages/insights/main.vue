@@ -881,33 +881,33 @@ export default {
 .legend-item {
   display: flex;
   align-items: center;
-  font-size: 0.8rem;
-  padding: 0 0.1rem;
+  font-size: $font-size-s;
+  padding: $space-0 0.1rem;
 
   .legend-fill {
     width: 5px;
     height: 5px;
-    border-radius: 50%;
-    margin-right: 5px;
+    border-radius: $radius-full;
+    margin-right: $space-5;
   }
 
   .value {
     font-weight: bold;
-    margin-left: 5px;
+    margin-left: $space-5;
   }
 }
 
 .container-page {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: $space-10;
 }
 
 .crypto-stats {
   display: flex;
-  margin-top: 20px;
+  margin-top: $space-20;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: $space-20;
   justify-content: center;
 
   .crypto-stat {
@@ -915,8 +915,8 @@ export default {
     display: flex;
     flex-direction: column;
     border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 1rem;
+    border-radius: $radius-lg;
+    padding: $space-16;
     align-items: center;
     justify-content: center;
     background-color: var(--card-bg);
@@ -927,9 +927,9 @@ export default {
       justify-content: center;
       align-items: center;
       gap: 5px;
-      font-size: 1.2rem;
+      font-size: $font-size-md;
       color: var(--sec-font-color);
-      margin: 5px 0;
+      margin: $space-5 $space-0;
       min-width: 20%;
       min-height: 1.2rem;
     }

@@ -473,8 +473,8 @@ export default {
   align-items: center;
   background-color: var(--card-bg-color);
   color: var(--sec-font-color);
-  border-radius: 0.5rem;
-  padding: 0.8rem;
+  border-radius: $radius-lg;
+  padding: $space-12;
 }
 .pool-overview {
   width: 100%;

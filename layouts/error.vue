@@ -61,11 +61,11 @@ export default {
     }
 
     h1 {
-      margin: 0;
+      margin: $space-0;
     }
 
     p {
-      font-size: 1rem;
+      font-size: $font-size-desktop;
       color: var(--color-light);
     }
     @include sm {
@@ -76,13 +76,13 @@ export default {
   }
   .back-home {
     display: inline-block;
-    margin-top: 5px;
+    margin-top: $space-5;
     padding: 10px 20px;
     background-color: var(--primary-color);
     color: var(--bg-color);
-    border-radius: 5px;
+    border-radius: $radius-s;
     text-decoration: none;
-    margin: 0.5rem;
+    margin: $space-8;
   }
 }
 </style>

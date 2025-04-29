@@ -80,13 +80,13 @@ export default {
   flex-direction: column;
   word-wrap: break-word;
   border: 1px solid var(--border-color);
-  border-radius: 0.5rem;
+  border-radius: $radius-lg;
   background-color: var(--card-bg-color);
   max-width: 100%;
-  margin: 0 10px;
+  margin: $space-0 $space-10;
 
   @include lg {
-    margin: 0px;
+    margin: $space-0;
   }
 
   &.loading-container {
@@ -96,8 +96,8 @@ export default {
   }
 
   .card-header {
-    padding: 1rem;
-    margin-bottom: 0;
+    padding: $space-16;
+    margin-bottom: $space-0;
     border-bottom: 1px solid var(--border-color);
     justify-content: space-between;
 
@@ -117,8 +117,8 @@ export default {
       color: var(--sec-font-color);
       font-size: $font-size-desktop;
       font-weight: 700;
-      margin-bottom: 0;
-      margin: 0;
+      margin-bottom: $space-0;
+      margin: $space-0;
       @include lg {
         font-size: $font-size-md;
       }
@@ -130,16 +130,16 @@ export default {
       gap: 0.5rem;
 
       @include lg {
-        margin: 0px;
-        gap: 0rem;
+        margin: $space-0;
+        gap: $space-0;
       }
     }
     .nav-section {
       cursor: pointer;
       color: var(--font-color);
       border-bottom: 1px solid transparent;
-      margin-right: 1rem;
-      padding: 1rem 0.1rem;
+      margin-right: $space-16;
+      padding: $space-16 0.1rem;
 
       &.active {
         color: var(--sec-font-color);
@@ -148,7 +148,7 @@ export default {
     }
 
     .stat-image {
-      margin-right: 10px;
+      margin-right: $space-10;
       height: 1.5rem;
     }
 
@@ -158,11 +158,11 @@ export default {
       margin-left: auto;
       gap: 10px;
       cursor: pointer;
-      padding: 5px;
-      border-radius: 5px;
+      padding: $space-5;
+      border-radius: $radius-s;
 
       .icon {
-        margin-right: 0;
+        margin-right: $space-0;
       }
 
       &:hover {
@@ -173,7 +173,7 @@ export default {
 
   .card-body {
     flex: 1;
-    padding: 0.75rem;
+    padding: $space-12;
     .row-item {
       justify-content: space-between;
       display: flex;
@@ -218,8 +218,8 @@ export default {
     }
 
     .hr-space {
-      margin-top: 0.75rem;
-      margin-bottom: 0.75rem;
+      margin-top: $space-12;
+      margin-bottom: $space-12;
       opacity: 0.75;
       height: 0;
       border: 0;

@@ -267,13 +267,13 @@ export default {
 }
 
 .no-tx {
-  padding: 1rem;
+  padding: $space-16;
 }
 
 .tx-container {
   display: flex;
   flex: 1 1 100%;
-  padding: 1rem;
+  padding: $space-16;
   border-bottom: 1px solid var(--border-color);
   overflow: auto;
 
@@ -284,7 +284,7 @@ export default {
   .since,
   .date,
   .time {
-    font-size: 0.875rem;
+    font-size: $font-size-sm;
   }
 
   .tx-header {
@@ -296,7 +296,7 @@ export default {
     }
 
     .date {
-      margin-top: 0.5rem;
+      margin-top: $space-8;
     }
   }
 
@@ -304,19 +304,19 @@ export default {
     display: flex;
     flex: 1;
     border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
-    margin-left: 2rem;
+    border-radius: $radius-lg;
+    margin-left: $space-32;
 
     > * {
       color: var(--sec-font-color);
-      padding: 0.7rem;
+      padding: $space-12;
       flex: 1 1 50%;
     }
 
     .tx {
       cursor: pointer;
       color: var(--primary-color);
-      margin-left: 0.2rem;
+      margin-left: $space-3;
       display: inline-block;
     }
 
@@ -344,7 +344,7 @@ export default {
     .icon-arrow {
       fill: var(--font-color);
       background-color: var(--border-color);
-      border-radius: 50%;
+      border-radius: $radius-full;
       position: absolute;
       width: 2rem;
       left: -1rem;
@@ -354,7 +354,7 @@ export default {
     .asset-icon {
       width: 1.2rem;
       height: 1.2rem;
-      border-radius: 50%;
+      border-radius: $radius-full;
     }
   }
 }
@@ -367,7 +367,7 @@ export default {
 .tx-out .tx-contain:not(:first-of-type),
 .tx-in .tx-contain:not(:first-of-type) {
   border-top: 1px solid var(--border-color);
-  padding-top: 0.8rem;
+  padding-top: $space-12;
 }
 
 .interaction-icon {
@@ -375,7 +375,7 @@ export default {
   height: 1rem;
   width: 1rem;
   fill: var(--sec-font-color);
-  padding: 4px;
+  padding: $space-4;
 }
 .type {
   display: flex;
@@ -385,7 +385,7 @@ export default {
 .mini-bubble {
   height: 1.5rem;
   width: 1.5rem;
-  padding: 2px;
+  padding: $space-2;
 }
 .flex-cell-content-tx {
   display: flex;
@@ -393,7 +393,7 @@ export default {
   gap: 3px;
 
   .to-address {
-    padding-top: 6px;
+    padding-top: $space-5;
   }
 }
 

@@ -38,29 +38,29 @@ export default {
   align-items: center;
   background-color: var(--card-bg-color);
   color: var(--sec-font-color);
-  border-radius: 0.5rem;
-  padding: 0.8rem;
+  border-radius: $radius-lg;
+  padding: $space-12;
   border: 1px solid var(--border-color);
   word-break: break-all;
-  margin: 0 10px;
+  margin: $space-0 $space-10;
 
   @include lg {
-    margin: 0px;
+    margin: $space-0;
   }
 }
 .nav-pool-header {
   display: flex;
-  margin-bottom: 1rem;
+  margin-bottom: $space-16;
 
   a {
-    padding: 0.5rem 0.7rem;
+    padding: $space-8 $space-12;
     margin: 0 0.1rem;
     color: var(--font-color);
     text-decoration: none;
-    border-radius: 0.3rem;
+    border-radius: $radius-s;
 
     &:first-of-type {
-      margin-left: 0;
+      margin-left: $space-0;
     }
 
     &:hover {

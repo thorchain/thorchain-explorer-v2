@@ -57,27 +57,27 @@ export default {
   position: relative;
   width: var(--asset-width);
   height: var(--asset-height);
-  border-radius: 50%;
-  margin-right: 0.5rem;
+  border-radius: $radius-full;
+  margin-right: $space-8;
 
   .asset-icon {
     width: var(--asset-width);
     height: var(--asset-height);
-    border-radius: 50%;
+    border-radius: $radius-full;
   }
 
   .chain-asset-icon {
     border: 1px solid var(--border-color);
     width: var(--chain-asset-width);
     height: var(--chain-asset-height);
-    border-radius: 50%;
+    border-radius: $radius-full;
     position: absolute;
     right: calc(var(--chain-asset-width) * -1 / 3);
     bottom: calc(var(--chain-asset-width) * -1 / 3);
   }
 
   &.no-margin {
-    margin: 0;
+    margin: $space-0;
   }
 }
 </style>

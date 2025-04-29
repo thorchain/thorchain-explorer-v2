@@ -102,7 +102,7 @@ export default {
   width: 100%;
   height: 300px;
   position: relative;
-  border-radius: 0.5rem;
+  border-radius: $radius-lg;
   overflow: hidden;
 }
 

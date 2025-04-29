@@ -48,7 +48,7 @@ export default {
 
   .action-btn {
     cursor: pointer;
-    border-radius: 0.5rem;
+    border-radius: $radius-lg;
 
     &.on {
       background-color: var(--active-bg-color);
@@ -62,21 +62,21 @@ export default {
 }
 
 .drop-menu {
-  padding: 0.2rem;
+  padding: $space-4;
   display: flex;
-  margin: 0.5rem;
+  margin: $space-8;
 
   a {
     display: flex;
     align-items: center;
     color: var(--font-color);
     text-decoration: none;
-    padding: 0.5rem;
-    border-radius: 0.2rem;
-    margin: 0 0.2rem;
+    padding: $space-8;
+    border-radius: $radius-sm;
+    margin: $space-0 $space-4;
     gap: 10px;
     font-family: 'Exo 2';
-    font-size: 0.9rem;
+    font-size: $font-size-mobile;
     text-wrap: nowrap;
 
     .menu-icon {

@@ -36,17 +36,17 @@ export default {
 
 <style lang="scss" scoped>
 .nav-header {
-  margin-bottom: 1rem;
+  margin-bottom: $space-16;
 
   a {
-    padding: 0.5rem 0.7rem;
-    margin: 0 0.1rem;
+    padding: $space-8 $space-12;
+    margin: $space-0 0.1rem;
     color: var(--font-color);
     text-decoration: none;
-    border-radius: 0.3rem;
+    border-radius: $radius-s;
 
     &:first-of-type {
-      margin-left: 0;
+      margin-left: $space-0;
     }
 
     &:hover {

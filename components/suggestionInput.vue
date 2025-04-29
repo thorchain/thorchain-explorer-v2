@@ -142,16 +142,16 @@ export default {
   flex: 1;
   min-width: 0;
   position: relative;
-  margin: 0 10px;
+  margin: $space-0 $space-10;
 
-@include lg {
-  margin: 0px;
-}
+  @include lg {
+    margin: $space-0;
+  }
 
   label {
     display: block;
-    margin-bottom: 8px;
-    font-size: 16px;
+    margin-bottom: $space-8;
+    font-size: $font-size-desktop;
     font-weight: bold;
     color: var(--sec-font-color);
   }
@@ -160,13 +160,12 @@ export default {
 .tags-input {
   display: flex;
   background-color: var(--bg-color);
-  border-radius: 6px;
+  border-radius: $radius-md;
   border: 1px solid var(--border-color);
   max-height: 100px;
   overflow-y: auto;
   position: relative;
   align-items: center;
-
 
   ::-webkit-scrollbar {
     display: none;
@@ -185,10 +184,10 @@ export default {
       height: 38px;
       color: var(--sec-font-color);
       background-color: transparent;
-      border-radius: 0.5rem;
+      border-radius: $radius-lg;
       border: none;
-      padding: 0.5rem;
-      font-size: 14px;
+      padding: $space-8;
+      font-size: $font-size-sm;
       outline: none;
     }
     .enter-icon {
@@ -198,14 +197,14 @@ export default {
       transform: scaleX(-1);
       pointer-events: all;
       color: var(--sec-font-color);
-      margin-left: 0.5rem;
+      margin-left: $space-8;
       transition: color 0.2s;
       pointer-events: all;
       opacity: 0;
       transition: opacity 0.3s ease;
       border: 1px solid var(--border-color);
-      border-radius: 4px;
-      padding: 4px;
+      border-radius: $radius-sm;
+      padding: $space-4;
       background-color: var(--bg-color);
 
       &:hover {
@@ -220,18 +219,18 @@ export default {
 }
 
 .mini-bubble {
-  font-size: 12px;
+  font-size: $font-size-xs;
   height: 17px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-left: 6px;
-  margin-top: 2px;
+  margin-left: $space-5;
+  margin-top: $space-2;
   height: auto;
 }
 
 .remove-tag {
-  margin-left: 8px;
+  margin-left: $space-8;
   cursor: pointer;
   color: var(--sec-font-color);
   width: 0.5rem;
@@ -251,9 +250,9 @@ export default {
   left: 0;
   right: 0;
   background-color: var(--bg-color);
-  border-radius: 6px;
-  margin-top: 2px;
-  padding: 0.5rem 0;
+  border-radius: $radius-md;
+  margin-top: $space-2;
+  padding: $space-8 $space-0;
   z-index: 1000;
   overflow: auto;
   max-height: 200px;
@@ -278,9 +277,9 @@ export default {
     cursor: pointer;
     display: flex;
     flex-direction: row;
-    font-size: 13px;
+    font-size: $font-size-s;
     line-height: 1.5;
-    padding: 12px 16px;
+    padding: $space-12 $space-16;
     transition: background-color 0.3s ease;
 
     &:hover {

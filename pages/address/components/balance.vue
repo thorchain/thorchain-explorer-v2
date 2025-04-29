@@ -424,12 +424,12 @@ export default {
     display: flex;
     flex-direction: column;
     gap: 5px;
-    font-size: 12px;
+    font-size: $font-size-xs;
   }
   .balance-value {
     display: flex;
     align-items: center;
-    font-size: 16px;
+    font-size: $font-size-desktop;
     font-weight: bold;
     align-items: center;
   }
@@ -442,7 +442,7 @@ export default {
   font-weight: bold;
 }
 .mono {
-  font-size: 14px !important;
+  font-size: $font-size-sm !important;
   color: var(--sec-font-color);
   display: flex;
   justify-content: space-between;
@@ -450,20 +450,20 @@ export default {
   align-items: center;
 }
 .thor-rune-details {
-  padding: 12px;
-  margin-bottom: 24px;
+  padding: $space-12;
+  margin-bottom: $space-24;
 }
 
 .token-details {
-  margin-top: 10px;
-  padding: 10px;
+  margin-top: $space-10;
+  padding: $space-10;
   background-color: var(--bg-color-light);
-  border-radius: 6px;
+  border-radius: $radius-md;
 }
 
 .detail-item {
-  font-size: 16px;
-  padding: 10px;
+  font-size: $font-size-desktop;
+  padding: $space-10;
 }
 
 button[disabled] {
@@ -471,7 +471,7 @@ button[disabled] {
   opacity: 0.6;
 }
 .dropdown-container {
-  font-size: 12px;
+  font-size: $font-size-xs;
   letter-spacing: 1px;
   display: flex;
   gap: 5px;
@@ -481,16 +481,16 @@ button[disabled] {
 
   .search-input {
     flex: 1;
-    padding: 8px;
+    padding: $space-8;
     color: var(--sec-font-color);
     background-color: var(--bg-color);
     border: 1px solid var(--border-color) !important;
-    border-radius: 0.5rem;
-    margin: 8px 12px;
-    margin-right: 20px;
+    border-radius: $radius-lg;
+    margin: $space-8 $space-12;
+    margin-right: $space-20;
     display: flex;
     outline: none;
-    font-size: 0.9062rem;
+    font-size: $font-size-mobile;
     font-weight: 450;
     &:focus {
       border-color: transparent;
@@ -501,7 +501,7 @@ button[disabled] {
 .options-container {
   display: flex;
   flex-direction: column;
-  margin: 0px 12px;
+  margin: $space-0 $space-12;
 }
 
 .custom-dropdown {
@@ -510,10 +510,10 @@ button[disabled] {
 
   .dropdown-button {
     width: 100%;
-    padding: 10px 12px;
-    font-size: 16px;
+    padding: $space-10 $space-12;
+    font-size: $font-size-desktop;
     border: none;
-    border-radius: 6px;
+    border-radius: $radius-md;
     background-color: var(--bg-color);
     color: var(--sec-font-color);
     border: 1px solid var(--border-color);
@@ -528,7 +528,7 @@ button[disabled] {
 
     &:hover {
       background-color: var(--bgt-color);
-      border-radius: 0.3rem;
+      border-radius: $radius-s;
     }
     &.dropdown-open {
       background-color: var(--bgt-color);
@@ -547,14 +547,14 @@ button[disabled] {
   flex-direction: column;
   background-color: var(--bg-color);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  border-radius: 0.5rem;
+  border-radius: $radius-lg;
   z-index: 1000;
   position: absolute;
   width: 100%;
   box-sizing: border-box;
   left: 0;
   top: 108%;
-  padding-bottom: 8px;
+  padding-bottom: $space-8;
 }
 
 .dropdown-options {
@@ -572,15 +572,15 @@ button[disabled] {
   &::-webkit-scrollbar-thumb {
     background-color: var(--font-color);
     opacity: 50%;
-    border-radius: 3px;
+    border-radius: $radius-sm;
   }
 
   .dropdown-option {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px;
-    font-size: 14px;
+    padding: $space-10;
+    font-size: $font-size-sm;
     transition: background-color 0.3s ease;
     border-bottom: 1px solid var(--border-color);
 
@@ -590,7 +590,7 @@ button[disabled] {
 
     &:hover {
       background-color: var(--active-bg-color);
-      border-radius: 0.3rem;
+      border-radius: $radius-s;
     }
 
     .token-info {
@@ -599,14 +599,14 @@ button[disabled] {
 
       .token-name {
         color: var(--sec-font-color);
-        font-size: 12px;
+        font-size: $font-size-xs;
         display: flex;
-        padding-bottom: 6px;
+        padding-bottom: $space-5;
         align-items: center;
       }
 
       .token-quantity {
-        font-size: 12px;
+        font-size: $font-size-xs;
       }
     }
 
@@ -615,39 +615,39 @@ button[disabled] {
       display: flex;
       flex-direction: column;
       gap: 6px;
-      font-size: 12px;
+      font-size: $font-size-xs;
 
       .token-price {
-        font-size: 12px;
+        font-size: $font-size-xs;
       }
     }
   }
 }
 
 .no-results {
-  padding: 10px;
+  padding: $space-10;
   text-align: center;
   color: var(--bs-secondary-color);
-  font-size: 14px;
+  font-size: $font-size-sm;
 }
 
 .total-value {
-  font-size: 15px;
+  font-size: $font-size-mobile;
   font-weight: bold;
 }
 
 .count-value {
   color: var(--bs-secondary-color);
-  font-size: 14px;
+  font-size: $font-size-sm;
 }
 
 .token-group-header {
   font-weight: bold;
-  padding: 10px;
-  font-size: 14px;
+  padding: $space-10;
+  font-size: $font-size-sm;
   background-color: var(--border-color);
   color: var(--sec-font-color);
-  border-radius: 5px;
+  border-radius: $radius-s;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -657,7 +657,7 @@ button[disabled] {
   position: relative;
   display: flex;
   align-items: center;
-  padding-right: 2px;
+  padding-right: $space-2;
 }
 .arrow-icon {
   fill: var(--primary-color);
@@ -666,14 +666,14 @@ button[disabled] {
 .title-explorers {
   font-weight: bold;
   border-bottom: 1px solid var(--border-color);
-  margin: 0;
-  padding-bottom: 15px;
-  margin-bottom: 10px;
+  margin: $space-0;
+  padding-bottom: $space-14;
+  margin-bottom: $space-10;
 }
 .explorers {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: $space-8;
 
   .explorer-link {
     display: flex;

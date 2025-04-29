@@ -493,35 +493,35 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 10px;
+  padding: $space-10;
   border: 1px solid var(--border-color) !important;
-  border-radius: 0.5rem;
+  border-radius: $radius-lg;
 }
 .data-color {
-  margin-right: 6px;
+  margin-right: $space-5;
   width: 10px;
   height: 10px;
-  border-radius: 50%;
+  border-radius: $radius-full;
 }
 .votes-item {
-  border-radius: 10px;
-  font-size: 14px;
+  border-radius: $radius-2lg;
+  font-size: $font-size-sm;
 }
 .tooltip-header {
   display: flex;
   align-items: center;
   justify-content: center;
   border-bottom: 1px solid var(--border-color);
-  padding-bottom: 5px;
+  padding-bottom: $space-5;
 }
 .vote-info {
   display: flex;
   align-items: center;
-  margin: 3px;
+  margin: $space-3;
   gap: 0.5rem;
 }
 .tooltip-body {
-  margin-top: 5px;
+  margin-top: $space-5;
   width: 120px;
   display: flex;
   flex-direction: column;
@@ -540,7 +540,7 @@ export default {
 .votes-needed {
   color: var(--sec-font-color);
   background-color: var(--border-color);
-  padding: 0px 4px;
-  border-radius: 5px;
+  padding: $space-0 $space-4;
+  border-radius: $radius-s;
 }
 </style>

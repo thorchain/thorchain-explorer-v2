@@ -453,10 +453,10 @@ export default {
 <style lang="scss" scoped>
 .pendulum-view {
   max-width: 53rem;
-  margin: 0 auto;
+  margin: $space-0 auto;
 }
 .balance-details {
-  margin-top: 2rem;
+  margin-top: $space-2;
 }
 .metric-card {
   display: flex;
@@ -470,14 +470,14 @@ export default {
   gap: 0.5rem;
   width: 100%;
   align-items: center;
-  font-size: 10px;
+  font-size: $font-size-xxs;
   @include sm {
-    font-size: 14px;
+    font-size: $font-size-sm;
   }
 }
 
 .metric-value {
-  font-size: 19px;
+  font-size: $font-size-md;
   font-weight: bold;
   position: absolute;
   top: 50%;
@@ -490,7 +490,7 @@ export default {
   align-items: center;
   color: var(--sec-font-color);
   @include md {
-    font-size: 24px;
+    font-size: $font-size-xl;
   }
 }
 
@@ -501,32 +501,32 @@ export default {
   align-items: center;
 
   @include md {
-    border-radius: 10px;
+    border-radius: $radius-2lg;
   }
 }
 
 .network-status {
-  margin-top: 20px;
+  margin-top: $space-20;
   text-align: center;
-  padding: 10px 20px;
-  border-radius: 0.5rem;
+  padding: $space-10 $space-20;
+  border-radius: $radius-lg;
 }
 
 .status-text {
   color: var(--primary-color);
-  font-size: 20px;
+  font-size: $font-size-lg;
   font-weight: 700;
 }
 
 .reward-summary {
   text-align: center;
   background-color: var(--gradient-left);
-  padding: 8px 16px;
-  border-radius: 0.5rem;
+  padding: $space-8 $space-16;
+  border-radius: $radius-lg;
   color: var(--sec-font-color);
-  font-size: 10px;
+  font-size: $font-size-xxs;
   @include md {
-    font-size: 14px;
+    font-size: $font-size-sm;
   }
 }
 

@@ -126,11 +126,11 @@ export default {
     display: flex;
     justify-content: space-between;
     font-weight: bold;
-    padding: 1rem;
+    padding: $space-16;
 
     background-color: var(--card-bg-color);
     border: 1px solid var(--border-color);
-    border-radius: 5px 5px 0 0;
+    border-radius: $radius-s $radius-s 0 0;
     border-bottom: none;
 
     .stat-header-btn {
@@ -141,19 +141,19 @@ export default {
     .stat-header-text {
       display: flex;
       align-items: center;
-      font-size: 1.125rem;
+      font-size: $font-size-md;
       font-weight: 700;
     }
 
     .header-icon {
-      margin-right: 10px;
+      margin-right: $space-10;
       height: 1.5rem;
     }
   }
 
   .stat-table-container {
     background-color: var(--bg-color);
-    border-radius: 0 0 5px 5px;
+    border-radius: 0 0 $radius-s $radius-s;
     border: 1px solid var(--border-color);
   }
 
@@ -170,14 +170,14 @@ export default {
     .stat-table-group {
       display: flex;
       align-items: center;
-      padding: 0.5rem 1rem;
+      padding: $space-8 $space-16;
       flex: 1 0;
 
       .img-div {
         display: inherit;
         img {
-          border-radius: 50%;
-          margin-right: 0.5rem;
+          border-radius: $radius-full;
+          margin-right: $space-8;
           width: 1.5rem;
         }
       }
@@ -191,7 +191,7 @@ export default {
 
         .usd-value {
           color: var(--font-color);
-          font-size: 0.8rem;
+          font-size: $font-size-s;
         }
 
         .danger-text {
@@ -200,18 +200,18 @@ export default {
 
         &.flex-item {
           display: flex;
-          gap: 5px;
+          gap: $space-5;
         }
       }
 
       .col-header {
         display: flex;
-        font-size: 0.75rem;
+        font-size: $font-size-xs;
 
         .header-icon {
-          margin-left: 5px;
+          margin-left: $space-5;
           fill: var(--font-color);
-          margin-right: 10px;
+          margin-right: $space-10;
           height: 0.9rem;
           width: 0.9rem;
         }
@@ -225,17 +225,17 @@ pre {
   white-space: pre-wrap;
   word-wrap: break-word;
   word-break: break-all;
-  margin: 0;
+  margin: $space-0;
 }
 
 pre.rune-value {
   font-family: 'Roboto Mono';
-  font-size: 0.8rem;
+  font-size: $font-size-s;
 }
 
 .value-item {
   font-family: 'Roboto Mono';
-  font-size: 0.8rem;
+  font-size: $font-size-s;
 }
 
 .stat-loader {

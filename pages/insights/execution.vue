@@ -485,19 +485,19 @@ export default {
 .legend-item {
   display: flex;
   align-items: center;
-  font-size: 0.8rem;
-  padding: 0 0.1rem;
+  font-size: $font-size-s;
+  padding: $space-0 0.1rem;
 
   .legend-fill {
     width: 5px;
     height: 5px;
-    border-radius: 50%;
-    margin-right: 5px;
+    border-radius: $radius-full;
+    margin-right: $space-5;
   }
 
   .value {
     font-weight: bold;
-    margin-left: 5px;
+    margin-left: $space-5;
   }
 }
 

@@ -368,7 +368,7 @@ export default {
 <style lang="scss" scoped>
 .savers-box {
   .nav-headers.box.pools-type-table {
-    margin: 0 !important;
+    margin: $space-0 !important;
     border: 1px solid var(--border-color);
     border-bottom: 0;
     border-radius: 7px 8px 0 0;
@@ -383,14 +383,14 @@ export default {
 }
 
 .chart-edition {
-  margin-bottom: 15px;
+  margin-bottom: $space-16;
   display: flex;
-  gap: 15px;
+  gap: $space-16;
   flex-wrap: wrap;
 
   .card-container {
     border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
+    border-radius: $radius-lg;
     margin: auto;
   }
 
@@ -401,7 +401,7 @@ export default {
 }
 
 .footer-stat {
-  margin: 1.5rem 1rem 0 1rem;
+  margin: $space-24 $space-16 $space-0 $space-16;
 
   small {
     font-size: small;

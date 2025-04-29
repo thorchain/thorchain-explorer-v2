@@ -11,9 +11,9 @@ export default {
 <style lang="scss">
 .header-wrapper {
   display: flex;
-  padding: 1rem 0;
-  margin: 0 8px;
-  padding-top: 0;
+  padding: $space-16 $space-0;
+  margin: $space-0 $space-8;
+  padding-top: $space-0;
   align-items: center;
   justify-content: space-between;
 
@@ -21,11 +21,11 @@ export default {
     font-family: 'Exo 2';
     color: var(--sec-font-color);
     font-size: $font-size-md;
-    margin: 0 10px;
+    margin: $space-0 $space-10;
 
-  @include lg {
-    margin: 0px;
-  }
+    @include lg {
+      margin: $space-0;
+    }
   }
 }
 </style>

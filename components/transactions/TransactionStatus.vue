@@ -86,11 +86,11 @@ export default {
   align-items: center;
 
   .type-class {
-    padding: 0.375rem !important;
+    padding: $space-5 !important;
     color: var(--sec-font-color);
     background-color: var(--bgl-color);
     border: 1px solid var(--border-color);
-    border-radius: 4px;
+    border-radius: $radius-sm;
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
@@ -100,7 +100,7 @@ export default {
 
     &.highlighted {
       border: 1px dashed var(--highlight);
-      border-radius: 2px;
+      border-radius: $radius-xs;
 
       &.blue-type {
         color: var(--highlight);
@@ -138,7 +138,7 @@ export default {
     overflow: hidden;
     text-overflow: ellipsis;
     font-weight: bold;
-    font-size: 0.7rem;
+    font-size: $font-size-xs;
     line-height: 0.875rem;
   }
 }

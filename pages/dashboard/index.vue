@@ -288,12 +288,16 @@
         </div>
       </card>
       <card title="Latest Transactions">
-  <template #more>
-    <nuxt-link to="/txs" class="more-link clickable" style="margin-left: auto;">
-      More
-      <ArrowRightIcon />
-    </nuxt-link>
-  </template>
+        <template #more>
+          <nuxt-link
+            to="/txs"
+            class="more-link clickable"
+            style="margin-left: auto"
+          >
+            More
+            <ArrowRightIcon />
+          </nuxt-link>
+        </template>
         <div>
           <template v-if="txs">
             <template v-for="(t, i) in txs">
@@ -308,7 +312,11 @@
                       {{ formatAddress(showTx(t.in && t.in[0].txID)) }}
                     </nuxt-link>
                   </span>
-                  <transaction-action :row="t" :show-mini-bubble="false" :no-border="true"/>
+                  <transaction-action
+                    :row="t"
+                    :show-mini-bubble="false"
+                    :no-border="true"
+                  />
                 </div>
                 <div class="txs">
                   <span>
@@ -1813,10 +1821,10 @@ export default {
   width: 100%;
   font-size: $font-size-sm;
   font-weight: 600;
-  margin-bottom: 0;
+  margin-bottom: $space-0;
 
   h2 {
-    margin: 0;
+    margin: $space-0;
   }
 }
 
@@ -1825,7 +1833,7 @@ export default {
   justify-content: space-between;
   align-items: center;
   flex: 1;
-  padding: 0.5rem 0px;
+  padding: $space-8 $space-0;
   border-bottom: 1px solid var(--border-color);
   &:last-child {
     border-bottom: none;
@@ -1841,7 +1849,7 @@ export default {
     }
   }
   .block-burned-item {
-    padding: 4px 5px;
+    padding: $space-4 $space-5;
     display: flex;
     align-items: center;
     flex-direction: column;
@@ -1876,14 +1884,14 @@ export default {
 .burn-icon {
   width: 0.7rem;
   height: 0.7rem;
-  border-radius: 50%;
+  border-radius: $radius-full;
   fill: #ffa86b;
 }
 
 .rune-icon {
   width: 0.7rem;
   height: 0.7rem;
-  border-radius: 50%;
+  border-radius: $radius-full;
   fill: var(--sec-font-color);
 }
 
@@ -1977,7 +1985,7 @@ export default {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  padding: 0 10px;
+  padding: $space-0 $space-10;
 
   .stat-item {
     display: flex;
@@ -1996,7 +2004,7 @@ export default {
     }
 
     .stat-image {
-      margin-right: 0.75rem;
+      margin-right: $space-12;
       width: 2rem;
       height: 2rem;
       fill: var(--sec-font-color);
@@ -2010,9 +2018,8 @@ export default {
         font-size: $font-size-desktop;
         font-weight: bold;
         color: var(--sec-font-color);
-        @include lg{
+        @include lg {
           font-size: $font-size-md;
-
         }
       }
     }
@@ -2046,7 +2053,7 @@ export default {
   }
 
   hr {
-    margin: 0.75rem 0;
+    margin: $space-12 $space-0;
     opacity: 0.65;
     overflow: visible;
     height: 0;
@@ -2056,7 +2063,7 @@ export default {
 
   .rune-symbol {
     color: var(--font-color);
-    margin: 0 0.6rem;
+    margin: $space-0 $space-10;
     font-size: font-size-xxl;
     line-height: 28px;
     width: 1.6rem;
@@ -2066,8 +2073,8 @@ export default {
     border: 1px solid var(--border-color);
     min-width: 280px;
     background-color: var(--bg-color);
-    border-radius: 8px;
-    padding: 15px;
+    border-radius: $radius-lg;
+    padding: $space-14;
     flex: 1;
   }
 }
@@ -2078,12 +2085,12 @@ export default {
 
 @include md {
   .network-stats {
-    padding: 0;
+    padding: $space-0;
     justify-content: space-between;
 
     .stat-group {
       position: relative;
-      padding: 1rem;
+      padding: $space-16;
       flex: 1;
 
       &:last-of-type::after {
@@ -2100,7 +2107,7 @@ export default {
   grid-auto-columns: minmax(100px, auto);
 
   .card {
-    margin: 0;
+    margin: $space-0;
   }
 
   @include lg {
@@ -2117,7 +2124,7 @@ export default {
   display: flex;
   align-items: center;
   flex-direction: column;
-  padding-right: 1.5rem !important;
+  padding-right: $space-24 !important;
   min-height: 100%;
 
   @include lg {
@@ -2138,10 +2145,10 @@ export default {
 
   .pool-depth-extra {
     flex: 1;
-    margin-top: 1.5rem;
+    margin-top: $space-24;
 
     @include lg {
-      margin-top: 0;
+      margin-top: $space-0;
     }
 
     .pool-name-container {
@@ -2158,7 +2165,7 @@ export default {
         border-bottom: 1px solid var(--border-color);
 
         th {
-          padding-bottom: 7px;
+          padding-bottom: $space-8;
           font-size: $font-size-sm;
         }
       }
@@ -2170,7 +2177,7 @@ export default {
 
       tbody td {
         font-weight: 700;
-        padding: 7px 0;
+        padding: $space-8 $space-0;
         color: var(--sec-font-color);
         font-size: $font-size-sm;
       }
@@ -2183,7 +2190,7 @@ export default {
   .view-all-link {
     display: flex;
     justify-content: center;
-    margin-top: 16px;
+    margin-top: $space-16;
     width: 100%;
     text-align: center;
     text-decoration: none;
@@ -2191,12 +2198,12 @@ export default {
 
   .view-all-button {
     background-color: var(--bg-color);
-    border-radius: 0.5rem;
+    border-radius: $radius-lg;
     border: 1px solid var(--border-color);
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 10px 8px;
+    padding: $space-10 $space-8;
     color: var(--font-color);
     cursor: pointer;
     width: 80%;
@@ -2207,7 +2214,7 @@ export default {
       fill: var(--sec-font-color);
       width: 1.2rem;
       height: 1.2rem;
-      margin-left: 6px;
+      margin-left: $space-5;
     }
 
     &:hover {
@@ -2222,12 +2229,12 @@ export default {
 
 .swaps-nav {
   background-color: var(--bg-color);
-  border-radius: 0.5rem;
+  border-radius: $radius-lg;
   border: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 8px;
+  padding: $space-10 $space-8;
   color: var(--font-color);
   cursor: pointer;
   font-size: $font-size-sm;

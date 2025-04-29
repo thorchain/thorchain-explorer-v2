@@ -336,15 +336,15 @@ export default {
 .mobile-filter-btn {
   display: flex;
   align-items: center;
-  padding: 10px 8px;
-  font-size: 0.875rem;
+  padding: $space-10 $space-8;
+  font-size: $font-size-sm;
   background-color: var(--card-bg-color);
   color: var(--font-color);
   border: 1px solid var(--border-color);
-  border-radius: 0.3rem;
+  border-radius: $radius-s;
   cursor: pointer;
   width: auto;
-  margin: 0.5rem;
+  margin: $space-8;
   white-space: nowrap;
   font-weight: 450;
   transition:
@@ -361,7 +361,7 @@ export default {
 .desktop-filters {
   display: none;
   flex-wrap: wrap;
-  margin: 0.5rem;
+  margin: $space-8;
   gap: 5px;
 }
 
@@ -398,12 +398,12 @@ export default {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    padding: 10px 8px;
-    border-radius: 0.25rem;
+    padding: $space-10 $space-8;
+    border-radius: $radius-sm;
     background-color: var(--card-bg-color);
     color: var(--font-color);
     border: 1px solid var(--border-color);
-    font-size: 0.75rem;
+    font-size: $font-size-xs;
     font-weight: 500;
     transition:
       background-color 0.3s ease,
@@ -429,7 +429,7 @@ export default {
 }
 .modal-content {
   background: var(--card-bg-color);
-  border-radius: 0.5rem;
+  border-radius: $radius-lg;
   text-align: left;
   color: var(--sec-font-color);
   width: 500px;
@@ -441,7 +441,7 @@ export default {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
 
   > div {
-    padding: 18px;
+    padding: $space-18;
   }
 }
 
@@ -459,13 +459,13 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 10px;
+  padding-bottom: $space-10;
   border-bottom: 1px solid var(--border-color);
 }
 
 .modal-header h3 {
-  font-size: 18px;
-  margin: 0;
+  font-size: $font-size-md;
+  margin: $space-0;
   color: var(--sec-font-color);
 }
 .top-bar {
@@ -474,7 +474,7 @@ export default {
 
   .action-types {
     flex-wrap: wrap;
-    margin: 0.5rem;
+    margin: $space-8;
     gap: 5px;
     display: none;
     @include md {
@@ -487,12 +487,12 @@ export default {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    padding: 10px 8px;
-    border-radius: 0.25rem;
+    padding: $space-10 $space-8;
+    border-radius: $radius-sm;
     background-color: var(--card-bg-color);
     color: var(--font-color);
     border: none;
-    font-size: 0.75rem;
+    font-size: $font-size-xs;
     font-weight: 500;
     border: 1px solid var(--border-color);
 
@@ -508,7 +508,7 @@ export default {
       fill: var(--font-color);
       width: 0.75rem;
       height: 0.75rem;
-      margin: 0 0.2rem;
+      margin: $space-0 $space-3;
     }
 
     &:hover {

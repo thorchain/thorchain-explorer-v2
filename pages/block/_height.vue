@@ -339,8 +339,8 @@ export default {
     display: flex;
     max-width: 24rem;
     max-height: 300px;
-    padding: 3px;
-    border-radius: 1rem;
+    padding: $space-3;
+    border-radius: $radius-2xl;
     @include sm {
       max-width: 35rem;
     }
@@ -387,12 +387,12 @@ export default {
       text-align: center;
     }
     .duration strong {
-      font-size: 1.5rem;
+      font-size: $font-size-xl;
       color: var(--primary-color);
     }
 
     .duration small {
-      font-size: 0.9rem;
+      font-size: $font-size-mobile;
       color: var(--sec-font-color);
     }
   }
@@ -418,12 +418,12 @@ export default {
     display: flex;
     flex-direction: column;
     width: 100%;
-    gap: 1rem;
+    gap: $space-16;
 
     p {
-      font-size: 18.75px;
+      font-size: $font-size-md;
       color: var(--sec-font-color);
-      margin: 0;
+      margin: $space-0;
     }
   }
 }
@@ -448,21 +448,21 @@ export default {
 }
 .asset-row {
   display: flex;
-  gap: 5px;
+  gap: $space-5;
   align-items: center;
 }
 .block-header {
   display: flex;
-  font-size: 20px !important;
+  font-size: $font-size-lg !important;
   color: var(--font-color) !important;
   font-weight: bold;
   align-items: center;
-  gap: 0.5rem;
-  padding-left: 1rem;
-  margin-bottom: 0.5rem;
+  gap: $space-8;
+  padding-left: $space-16;
+  margin-bottom: $space-8;
 
   h2 {
-    margin: 0;
+    margin: $space-0;
   }
 }
 .block-name {
@@ -470,23 +470,23 @@ export default {
   flex-wrap: wrap;
   align-items: center;
   font-weight: bold;
-  font-size: 11px;
+  font-size: $font-size-xs;
   color: var(--font-color);
-  padding: 0 0.8rem;
-  gap: 8px;
+  padding: $space-0 $space-12;
+  gap: $space-8;
 
   span {
-    font-size: 0.85rem;
+    font-size: $font-size-sm;
     text-overflow: ellipsis;
     overflow: hidden;
 
     @include md {
-      font-size: 1rem;
+      font-size: $font-size-desktop;
     }
   }
   &.loading {
     max-width: 300px;
-    margin: 14px 0;
+    margin: $space-14 $space-0;
     max-height: 31.42px;
   }
 }

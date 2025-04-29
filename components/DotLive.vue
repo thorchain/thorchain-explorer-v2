@@ -16,12 +16,12 @@ export default {
 }
 </script>
 
-<style>
+<style lang="scss">
 .dot {
   width: 0.7rem;
   height: 0.7rem;
   background: var(--dot-color);
-  border-radius: 50%;
+  border-radius: $radius-full;
   position: relative;
 }
 
@@ -47,6 +47,6 @@ export default {
   top: 0;
   left: 0;
   background: var(--dot-color);
-  border-radius: 50%;
+  border-radius: $radius-full;
 }
 </style>

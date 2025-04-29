@@ -443,7 +443,7 @@ export default {
 
 <style lang="scss" scoped>
 .navbar-container {
-  padding: 0.25rem 0;
+  padding: $space-4 $space-0;
   transition: height 0.3s;
   max-width: 90rem;
   margin: auto;
@@ -463,14 +463,14 @@ export default {
       display: flex;
       align-items: center;
       font-family: 'Exo 2';
-      font-size: 0.875rem;
+      font-size: $font-size-sm;
 
       .logo {
         width: 1.5rem;
       }
 
       @include lg {
-        font-size: 1rem;
+        font-size: $font-size-desktop;
 
         .logo {
           width: 1.75rem;
@@ -482,7 +482,7 @@ export default {
   .dropdown-icon {
     position: relative;
     display: inline-block;
-    margin-left: 0.5rem;
+    margin-left: $space-8;
     transition: transform 0.3s ease;
 
     &::after {
@@ -490,16 +490,16 @@ export default {
       border: solid var(--sec-font-color);
       border-width: 0 2px 2px 0;
       display: inline-block;
-      padding: 2.8px;
+      padding: $space-3;
       transform: rotate(45deg);
       vertical-align: middle;
-      margin-bottom: 6px;
+      margin-bottom: $space-5;
       transition: border-color 0.3s;
     }
 
     &.rotated::after {
       transform: rotate(-135deg);
-      margin-bottom: 2px;
+      margin-bottom: $space-2;
     }
   }
 
@@ -510,17 +510,17 @@ export default {
     .dropdown-icon {
       position: relative;
       display: inline-block;
-      margin-left: 0.5rem;
+      margin-left: $space-8;
 
       &::after {
         content: '';
         border: solid var(--sec-font-color);
         border-width: 0 2px 2px 0;
         display: inline-block;
-        padding: 2.8px;
+        padding: $space-2;
         transform: rotate(45deg);
         vertical-align: middle;
-        margin-bottom: 6px;
+        margin-bottom: $space-5;
         transition: border-color 0.3s;
       }
     }
@@ -537,12 +537,12 @@ export default {
     }
 
     .icon {
-      margin: 0;
+      margin: $space-0;
       width: 20px;
       background-color: var(--card-bg-color);
       border: 1px solid var(--border-color);
-      border-radius: 0.5rem;
-      padding: 0.375rem 0.75rem;
+      border-radius: $radius-lg;
+      padding: $space-5 $space-12;
       box-sizing: content-box;
     }
   }
@@ -561,7 +561,7 @@ export default {
       -ms-overflow-style: none;
       scrollbar-width: none;
       justify-content: flex-end;
-      margin: 0;
+      margin: $space-0;
       max-height: none;
       overflow: visible !important;
 
@@ -606,11 +606,11 @@ export default {
       }
 
       &:last-of-type {
-        padding-right: 0;
+        padding-right: $space-0;
       }
 
       span {
-        font-size: 14px;
+        font-size: $font-size-sm;
         height: 20px;
         line-height: 20px;
         color: var(--sec-font-color);
@@ -621,17 +621,17 @@ export default {
       .navbar-wrap {
         display: flex;
         align-items: center;
-        padding: 5px 0;
+        padding: $space-5 $space-0;
         border-radius: 30px;
         justify-content: space-between;
         cursor: pointer;
       }
 
       @include lg {
-        padding: 0.2rem 1rem;
+        padding: $space-3 $space-16;
 
         span {
-          font-size: 14px;
+          font-size: $font-size-sm;
         }
 
         .icon {
@@ -648,13 +648,13 @@ export default {
       width: 100%;
       border: none;
       box-shadow: none;
-      padding: 0;
+      padding: $space-0;
       background: var(--card-bg-color);
-      border-radius: 0.5rem;
+      border-radius: $radius-lg;
       overflow: hidden;
       max-height: 0;
       transition: max-height 0.3s ease;
-      margin-top: 0.5rem;
+      margin-top: $space-8;
 
       &.open {
         max-height: 500px;
@@ -662,22 +662,22 @@ export default {
       }
 
       .settings-container {
-        padding: 0.5rem;
-        font-size: 13px;
+        padding: $space-8;
+        font-size: $font-size-s;
       }
 
       .settings-option {
         display: flex;
         align-items: center;
-        padding: 10px;
-        margin: 0;
+        padding: $space-10;
+        margin: $space-0;
         color: var(--sec-font-color);
         cursor: pointer;
 
         &:hover {
           color: var(--primary-color);
           background: var(--darker-bg);
-          border-radius: 0.3rem;
+          border-radius: $radius-s;
         }
 
         &.active {
@@ -697,7 +697,7 @@ export default {
         }
 
         .menu-icon {
-          margin-right: 8px;
+          margin-right: $space-8;
           fill: currentColor;
         }
       }
@@ -705,7 +705,7 @@ export default {
       .line {
         height: 0.5px;
         background-color: var(--border-color);
-        margin: 0.5rem;
+        margin: $space-8;
       }
     }
   }
@@ -716,11 +716,11 @@ export default {
     transition: height 0.3s ease;
     overflow: hidden;
     border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
+    border-radius: $radius-lg;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    padding: 0.3rem;
+    padding: $space-5;
     z-index: 1000;
-    margin-top: 0.5rem;
+    margin-top: $space-8;
     max-height: 0;
     opacity: 0;
     transition: max-height 0.3s ease;
@@ -736,7 +736,7 @@ export default {
 
     .submenu-item {
       font-size: 13px;
-      padding: 10px;
+      padding: $space-10;
       text-decoration: none;
       color: var(--sec-font-color);
 
@@ -745,7 +745,7 @@ export default {
         cursor: pointer;
         transition: background-color 0.3s ease;
         background: var(--darker-bg);
-        border-radius: 0.3rem;
+        border-radius: $radius-s;
       }
 
       &.active {
@@ -760,7 +760,7 @@ export default {
       flex-direction: column;
       max-height: none;
       overflow: visible;
-      padding: 12px 0;
+      padding: $space-12 $space-0;
       gap: 0.25rem !important;
     }
   }

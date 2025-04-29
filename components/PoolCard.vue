@@ -95,14 +95,14 @@ export default {
     flex-direction: column;
     background-color: var(--bg-color);
     border: 1px solid var(--border-color);
-    padding: 1rem;
-    border-radius: 0.4rem;
+    padding: $space-16;
+    border-radius: $radius-md;
 
     .asset-chain {
       width: 1rem;
       height: 1rem;
-      margin-right: 0.4rem;
-      border-radius: 50%;
+      margin-right: $space-5;
+      border-radius: $radius-full;
     }
 
     .pool-status {
@@ -116,17 +116,17 @@ export default {
     .asset-icon {
       width: 2rem;
       height: 2rem;
-      border-radius: 50%;
-      margin: 1rem 0;
+      border-radius: $radius-full;
+      margin: $space-16 $space-0;
     }
 
     .asset-name {
       color: var(--sec-font-color);
-      font-size: 1.5rem;
+      font-size: $font-size-xl;
     }
 
     .symbol-name {
-      margin-top: 0.3rem;
+      margin-top: $space-5;
       text-align: center;
       word-break: break-all;
     }
@@ -145,11 +145,11 @@ export default {
       text-align: center;
 
       .header {
-        font-size: 0.8rem;
+        font-size: $font-size-s;
       }
 
       .value {
-        font-size: 1.1rem;
+        font-size: $font-size-md;
         color: var(--sec-font-color);
       }
     }

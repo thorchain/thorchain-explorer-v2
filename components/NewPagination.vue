@@ -48,15 +48,15 @@ export default {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  padding: 0.5rem;
-  border-radius: 0.5rem;
+  padding: $space-8;
+  border-radius: $radius-lg;
   gap: 8px;
 
   .page-item {
-    border-radius: 5px;
+    border-radius: $radius-s;
     .page-link {
       border-color: var(--border-color);
-      border-radius: 5px;
+      border-radius: $radius-s;
     }
 
     &.active .page-link {

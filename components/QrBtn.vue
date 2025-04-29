@@ -88,7 +88,7 @@ export default {
   .icon {
     width: 0.9rem;
     height: 0.9rem;
-    margin-right: 0;
+    margin-right: $space-0;
   }
 
   .modal-background {
@@ -108,9 +108,9 @@ export default {
     display: flex;
     flex-direction: column;
     gap: 0.8rem;
-    border-radius: 0.3rem;
+    border-radius: $radius-s;
     background-color: var(--bg-color);
-    padding: 1rem;
+    padding: $space-16;
     z-index: 999;
     border: 1px solid var(--border-color);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
@@ -123,7 +123,7 @@ export default {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 1rem;
+      font-size: $font-size-desktop;
       font-weight: bold;
 
       .close-btn {
@@ -137,7 +137,7 @@ export default {
     }
 
     .qr-code {
-      padding: 0.5rem;
+      padding: $space-8;
     }
 
     .click-overlay {
@@ -165,7 +165,7 @@ export default {
   text-overflow: ellipsis !important;
   word-wrap: break-word;
   word-break: break-all;
-  font-size: 0.9rem;
+  font-size: $font-size-sm;
 }
 
 .toast-notification {
@@ -175,9 +175,9 @@ export default {
   transform: translateX(-50%);
   background-color: var(--bg-color);
   color: var(--sec-font-color);
-  padding: 10px 20px;
-  border-radius: 5px;
-  font-size: 0.9rem;
+  padding: $space-10 $space-20;
+  border-radius: $radius-s;
+  font-size: $font-size-sm;
   opacity: 0.9;
   z-index: 1000;
   transition: opacity 0.3s;

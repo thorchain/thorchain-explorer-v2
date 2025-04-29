@@ -174,26 +174,26 @@ Vue.mixin(global)
     background: var(--color-light);
     grid-area: header;
     border-bottom: 1px solid var(--border-color);
-    padding: 0 10px;
+    padding: $space-0 $space-10;
 
     @include lg {
-      padding: 0.5rem 3rem;
+      padding: $space-8 3rem;
     }
   }
 
   #navbar {
     background: var(--color-light);
     border-bottom: 1px solid var(--border-color);
-    padding: 0 10px;
+    padding: $space-0 $space-10;
 
     @include lg {
-      padding: 0.5rem 3rem;
+      padding: $space-8 3rem;
     }
   }
 
   #main-content {
     padding-bottom: 10rem;
-    padding-top: 32px;
+    padding-top: $space-32;
     grid-area: main;
 
     @include lg {

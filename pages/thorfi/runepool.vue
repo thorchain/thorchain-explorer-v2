@@ -1055,7 +1055,7 @@ export default {
 
   span {
     display: block;
-    font-size: 0.9rem;
+    font-size: $font-size-mobile;
   }
 }
 
@@ -1088,7 +1088,7 @@ export default {
 .runepool-cap {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 0.5rem;
+  margin-bottom: $space-8;
 
   span {
     color: var(--sec-font-color);
