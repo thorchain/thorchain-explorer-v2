@@ -139,6 +139,12 @@ export default {
           type: 'number',
           tdClass: 'mono',
         },
+        {
+          label: 'Wallet Count',
+          field: 'Addresses',
+          type: 'number',
+          tdClass: 'mono',
+        },
       ],
       rows: [],
       error: false,
