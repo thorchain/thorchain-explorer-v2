@@ -336,7 +336,7 @@ export default {
 .mobile-filter-btn {
   display: flex;
   align-items: center;
-  padding: 10px 8px;
+  padding: $space-10 $space-8;
   font-size: $font-size-sm;
   background-color: var(--card-bg-color);
   color: var(--font-color);
@@ -344,7 +344,7 @@ export default {
   border-radius: $radius-s;
   cursor: pointer;
   width: auto;
-  margin: 0.5rem;
+  margin: $space-8;
   white-space: nowrap;
   font-weight: 450;
   transition:
@@ -361,7 +361,7 @@ export default {
 .desktop-filters {
   display: none;
   flex-wrap: wrap;
-  margin: 0.5rem;
+  margin: $space-8;
   gap: 5px;
 }
 
@@ -398,7 +398,7 @@ export default {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    padding: 10px 8px;
+    padding: $space-10 $space-8;
     border-radius: $radius-sm;
     background-color: var(--card-bg-color);
     color: var(--font-color);
@@ -441,7 +441,7 @@ export default {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
 
   > div {
-    padding: 18px;
+    padding: $space-18;
   }
 }
 
@@ -459,13 +459,13 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 10px;
+  padding-bottom: $space-10;
   border-bottom: 1px solid var(--border-color);
 }
 
 .modal-header h3 {
   font-size: $font-size-md;
-  margin: 0;
+  margin: $space-0;
   color: var(--sec-font-color);
 }
 .top-bar {
@@ -474,7 +474,7 @@ export default {
 
   .action-types {
     flex-wrap: wrap;
-    margin: 0.5rem;
+    margin: $space-8;
     gap: 5px;
     display: none;
     @include md {
@@ -487,7 +487,7 @@ export default {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    padding: 10px 8px;
+    padding: $space-10 $space-8;
     border-radius: $radius-sm;
     background-color: var(--card-bg-color);
     color: var(--font-color);
@@ -508,7 +508,7 @@ export default {
       fill: var(--font-color);
       width: 0.75rem;
       height: 0.75rem;
-      margin: 0 0.2rem;
+      margin: $space-0 $space-3;
     }
 
     &:hover {

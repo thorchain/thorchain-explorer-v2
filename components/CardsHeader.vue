@@ -56,17 +56,17 @@ export default {
 .header-class {
   display: grid;
   gap: 15px;
-  margin-bottom: 1rem;
+  margin-bottom: $space-16;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   grid-template-rows: auto;
-  margin: 1rem 10px;
+  margin: $space-16 $space-10;
 
   @include lg {
-    margin: 1rem 0px;
+    margin: $space-16 $space-0;
   }
 
   .table-stat-card {
-    padding: 2rem 0;
+    padding: $space-32 $space-0;
     border-radius: $radius-lg;
     background-color: var(--card-bg-color);
     border: 1px solid var(--border-color);
@@ -81,7 +81,7 @@ export default {
       font-size: $font-size-xl;
       text-align: center;
       min-width: 80%;
-      margin-bottom: 8px;
+      margin-bottom: $space-8;
       font-weight: 500;
       display: flex;
       flex-direction: column;
@@ -90,7 +90,7 @@ export default {
       small {
         font-size: $font-size-s;
         color: var(--font-color);
-        margin-left: 0.3rem;
+        margin-left: $space-5;
       }
     }
 
@@ -103,7 +103,7 @@ export default {
 
       .header-icon {
         fill: var(--font-color);
-        margin-left: 10px;
+        margin-left: $space-10;
         height: 0.9rem;
         width: 0.9rem;
 
@@ -117,7 +117,7 @@ export default {
     .stat-change {
       display: flex;
       justify-content: center;
-      margin: 0.2rem 0;
+      margin: $space-4 0;
     }
   }
 }

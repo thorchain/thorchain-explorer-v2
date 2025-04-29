@@ -22,7 +22,7 @@ export default {
   background-color: var(--active-bg-color);
   height: 0.5rem;
   border-radius: $radius-2xl;
-  margin: 0.375rem;
+  margin: $space-5;
 }
 
 @keyframes skeleton {

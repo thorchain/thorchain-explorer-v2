@@ -226,7 +226,7 @@ export default {
   p {
     font-size: $font-size-md;
     color: var(--sec-font-color);
-    margin: 0;
+    margin: $space-0;
   }
 }
 

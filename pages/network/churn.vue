@@ -181,7 +181,7 @@ export default {
 .block-details {
   display: flex;
   max-height: 300px;
-  padding: 3px;
+  padding: $space-3;
   border-radius: $radius-2xl;
 
   @include sm {
@@ -197,7 +197,7 @@ export default {
     p {
       font-size: $font-size-md;
       color: var(--sec-font-color);
-      margin: 0;
+      margin: $space-0;
     }
   }
 }
@@ -227,17 +227,17 @@ export default {
   display: flex;
   gap: 1rem;
   flex-direction: column;
-  margin: 1rem 10px;
+  margin: $space-16 $space-10;
 
 @include lg {
-  margin:1rem auto;
+  margin:$space-16 auto;
 }
 
   .block-item {
     background-color: var(--bg-color);
     border: 1px solid var(--border-color);
     border-radius: $radius-2xl;
-    padding: 0.5rem 1rem;
+    padding: $space-8 $space-16;
 
     .block-upper-info {
       display: flex;
@@ -263,7 +263,7 @@ export default {
     }
 
     .block-downer-info {
-      margin-top: 0.5rem;
+      margin-top: $space-8;
 
       a {
         text-decoration: none;
@@ -275,8 +275,8 @@ export default {
     background-color: var(--bg-color);
     border: 1px solid var(--border-color);
     border-radius: $radius-2xl;
-    padding: 1rem 1rem;
-    margin: 0.5rem 0;
+    padding: $space-16 $space-16;
+    margin: $space-8 0;
   }
 }
 </style>

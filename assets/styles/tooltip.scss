@@ -13,7 +13,7 @@
   font-size: $font-size-sm;
   color: var(--sec-font-color);
   background-color: var(--bgt-color);
-  padding: 10px;
+  padding: $space-10;
   border: 1px var(--border-color) solid;
   border-radius: $radius-lg;
   outline: none;

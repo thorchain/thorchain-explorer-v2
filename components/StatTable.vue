@@ -126,7 +126,7 @@ export default {
     display: flex;
     justify-content: space-between;
     font-weight: bold;
-    padding: 1rem;
+    padding: $space-16;
 
     background-color: var(--card-bg-color);
     border: 1px solid var(--border-color);
@@ -146,7 +146,7 @@ export default {
     }
 
     .header-icon {
-      margin-right: 10px;
+      margin-right: $space-10;
       height: 1.5rem;
     }
   }
@@ -170,14 +170,14 @@ export default {
     .stat-table-group {
       display: flex;
       align-items: center;
-      padding: 0.5rem 1rem;
+      padding: $space-8 $space-16;
       flex: 1 0;
 
       .img-div {
         display: inherit;
         img {
           border-radius: $radius-full;
-          margin-right: 0.5rem;
+          margin-right: $space-8;
           width: 1.5rem;
         }
       }
@@ -200,7 +200,7 @@ export default {
 
         &.flex-item {
           display: flex;
-          gap: 5px;
+          gap: $space-5;
         }
       }
 
@@ -209,9 +209,9 @@ export default {
         font-size:$font-size-xs;
 
         .header-icon {
-          margin-left: 5px;
+          margin-left: $space-5;
           fill: var(--font-color);
-          margin-right: 10px;
+          margin-right: $space-10;
           height: 0.9rem;
           width: 0.9rem;
         }
@@ -225,7 +225,7 @@ pre {
   white-space: pre-wrap;
   word-wrap: break-word;
   word-break: break-all;
-  margin: 0;
+  margin: $space-0;
 }
 
 pre.rune-value {

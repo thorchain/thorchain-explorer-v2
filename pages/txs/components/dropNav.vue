@@ -90,9 +90,9 @@ export default {
 
 <style lang="scss">
 .nav-box-wrapper {
-  margin-bottom: 10px;
+  margin-bottom: $space-10;
   display: flex;
-  gap: 10px;
+  gap: $space-10;
 
   .nav-box-item {
     position: relative;
@@ -104,7 +104,7 @@ export default {
     }
 
     .nav-box-mainframe {
-      padding: 0.5rem 1rem;
+      padding: $space-8 $space-16;
       border-radius: $radius-lg;
       background-color: var(--card-bg-color);
       border: 1px solid var(--border-color);
@@ -127,7 +127,7 @@ export default {
       border: 1px solid var(--border-color);
       border-radius: $radius-lg;
       min-width: 100px;
-      margin-top: 0.3rem;
+      margin-top: $space-5;
       left: 50%;
       transform: translateX(-50%);
 
@@ -136,7 +136,7 @@ export default {
         background: var(--card-bg-color);
         color: var(--font-color);
         border: none;
-        padding: 0.5rem 1rem;
+        padding: $space-8 $space-16;
         text-decoration: none;
         text-align: center;
 

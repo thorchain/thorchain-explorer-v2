@@ -448,15 +448,15 @@ export default {
 .date {
   color: var(--sec-font-color);
   font-size: $font-size-sm;
-  margin-bottom: 0.5rem;
-  padding-left: 0.5rem;
+  margin-bottom: $space-8;
+  padding-left: $space-8;
 }
 .asset-item-info {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 5px;
-  margin-bottom: 0.5rem;
+  gap: $space-5;
+  margin-bottom: $space-8;
   justify-content: space-between;
 
   span {
@@ -467,19 +467,19 @@ export default {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 5px;
+  gap: $space-5;
 }
 .asset-item {
   display: flex;
   align-items: center;
   gap: 5px;
-  padding: 0px 0.5rem;
+  padding: $space-0 $space-8;
   cursor: pointer;
 
   .number-item {
     display: flex;
     align-items: center;
-    gap: 0.3rem;
+    gap: $space-5;
   }
   .rotated {
     transform: rotate(180deg);
@@ -521,8 +521,8 @@ export default {
   }
 
   &:nth-of-type(2) {
-    margin-top: 3px;
-    margin-bottom: 1rem;
+    margin-top: $space-3;
+    margin-bottom: $space-16;
   }
 
   &:hover {
@@ -573,12 +573,12 @@ export default {
 
   div {
     flex: 1;
-    padding: 0.4rem;
-    margin: 0;
+    padding: $space-5;
+    margin: $space-0;
     animation: slideIn 0.5s ease;
 
     @include md {
-      padding: 0;
+      padding: $space-0;
     }
 
     &:first-child {
@@ -618,7 +618,7 @@ export default {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 2rem;
+  padding: $space-32;
 
   .schedule-icon {
     stroke: var(--font-color);
@@ -630,7 +630,7 @@ export default {
   }
 }
 .swaps-nav {
-  margin-top: 0.5rem;
+  margin-top: $space-8;
 }
 .outbound-collapse {
   display: flex;
@@ -642,14 +642,14 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.8rem 0px;
+  padding: $space-12 $space-0;
   border-bottom: 1px solid var(--border-color) !important;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
   &:last-child {
     border-bottom: none !important;
   }
 
-  margin-top: 0.5rem;
+  margin-top: $space-8;
   &:hover {
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
   }
@@ -702,8 +702,8 @@ export default {
       justify-content: space-between;
       align-items: center;
       width: 100%;
-      gap: 0.5rem;
-      padding: 0.5rem;
+      gap: $space-8;
+      padding: $space-8;
       &:last-child {
         border-bottom: none;
       }
@@ -713,7 +713,7 @@ export default {
       flex-direction: row;
       align-items: center;
       width: 100%;
-      gap: 0.5rem;
+      gap: $space-8;
       flex-wrap: wrap;
     }
 

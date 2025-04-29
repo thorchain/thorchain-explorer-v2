@@ -44,7 +44,7 @@ body {
 
 input {
   border: none !important;
-  padding: 0.75rem;
+  padding: $space-12;
   color: #fff;
 
   &:focus,
@@ -83,7 +83,7 @@ input {
     background-color: var(--card-bg-color);
     border-radius: 0 0 $radius-lg $radius-lg;
     z-index: 1000;
-    padding: 0.5rem 0.375rem;
+    padding:$space-8 $space-5;
     min-width: 9rem;
     border-top: var(--primary-color) 2px solid;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
@@ -107,17 +107,17 @@ input {
   .submenu-item {
     font-size: $font-size-s;
     display: block;
-    padding: 0.75rem;
+    padding: $space-12;
     white-space: nowrap;
     text-decoration: none;
     color: var(--sec-font-color);
-    margin-top: 5px;
+    margin-top:$space-5;
 
     &.active,
     &.nuxt-link-exact-active {
       border-radius: $radius-s;
       color: var(--primary-color);
-      margin-bottom: 5px;
+      margin-bottom: $space-5;
     }
 
     &:hover {
@@ -129,7 +129,7 @@ input {
 }
 
 .header-icon {
-  margin-left: 5px;
+  margin-left:$space-5;
   height: 1rem;
   width: 1rem;
   fill: #606266;
@@ -146,8 +146,8 @@ input {
 }
 
 .custom-popover {
-  padding: 15px;
-  margin: 15px;
+  padding: $space-14;
+  margin: $space-14;
   background-color: var(--card-bg-color) !important;
   border: 1px solid var(--border-color) !important;
   border-radius:$radius-s;
@@ -193,7 +193,7 @@ input {
     border: 1px solid var(--border-color);
     border-radius: $radius-s;
     min-height: initial;
-    padding: 20px;
+    padding: $space-20;
     background-color: var(--card-bg-color);
   }
 }
@@ -201,7 +201,7 @@ input {
 .disconnect-icon {
   width: 100px;
   height: 120px;
-  padding: 20px;
+  padding: $space-20;
   fill: var(--font-color);
 }
 
@@ -214,12 +214,12 @@ input {
   min-width: 100px;
 
   .card-header {
-    padding: 0.2rem;
-    margin-bottom: 0;
+    padding: $space-3;
+    margin-bottom: $space-0;
   }
 
   .card-body {
-    padding: 0.2rem;
+    padding: $space-3;
   }
 }
 
@@ -233,7 +233,7 @@ input {
   border: 1px solid var(--border-color);
   border-width: 1px 0 1px 0;
   background-color: var(--card-bg-color);
-  margin: 0 0.5rem;
+  margin: $space-0 $space-8;
 
   &.normal {
     border-width: 1px;
@@ -246,8 +246,8 @@ input {
   }
 
   .card-header {
-    padding: 1rem;
-    margin-bottom: 0;
+    padding: $space-16;
+    margin-bottom: $space-0;
     border-bottom: 1px solid var(--border-color);
 
     display: flex;
@@ -261,16 +261,16 @@ input {
     .card-header-title {
       font-size: $font-size-sm;
       font-weight: 600;
-      margin-bottom: 0;
+      margin-bottom: $space-0;
 
       h2 {
-        margin: 0;
+        margin: $space-0;
       }
     }
   }
 
   .card-body {
-    padding: 0.75rem;
+    padding: $space-12;
 
     .row-item {
       justify-content: space-between;
@@ -319,8 +319,8 @@ input {
     }
 
     .hr-space {
-      margin-top: 0.75rem;
-      margin-bottom: 0.75rem;
+      margin-top: $space-12;
+      margin-bottom: $space-12;
       opacity: 0.75;
       height: 0;
       border: 0;
@@ -336,11 +336,11 @@ input {
 .info-hr {
   border: none;
   border-bottom: 1px solid var(--border-color);
-  margin-bottom: 16px;
+  margin-bottom: $space-16;
 }
 
 .simple-card {
-  margin: 0;
+  margin: $space-0;
 
   .card-header {
     font-size: $font-size-sm;
@@ -358,7 +358,7 @@ input {
 }
 
 .v-spinner {
-  margin: 1rem 0;
+  margin: $space-16 $space-0;
 }
 
 //Dividers
@@ -371,11 +371,11 @@ input {
 }
 
 .mb-1 {
-  margin-bottom: 0.5rem;
+  margin-bottom: $space-8;
 }
 
 .error-container {
-  padding: 1rem;
+  padding: $space-16;
   border-radius: $radius-lg;
   background-color: var(--bg-color);
   border: 1px solid var(--border-color);
@@ -383,17 +383,17 @@ input {
 }
 
 .base-container {
-  padding: 1rem;
+  padding: $space-16;
   background-color: var(--bg-color);
   border: 1px solid var(--border-color);
   border-width: 1px 0 1px 0;
   color: var(--sec-font-color);
-  margin: 0 10px;
+  margin: $space-0 $space-10;
   border-radius: $radius-lg;
   border-width: 1px;
 
   @include lg {
-    margin: 0px;
+    margin: $space-0;
   }
 }
 
@@ -434,7 +434,6 @@ input {
 
 .vgt-wrap {
   overflow: auto;
-  border-radius: $radius-lg;
 
   .vgt-inner-wrap {
     border-radius: $radius-none;
@@ -505,7 +504,7 @@ input {
   }
 
   form input {
-    margin: 3px 10px;
+    margin: $space-4 $space-10;
     border: 1px solid var(--border-color) !important;
     background-color: transparent;
     color: var(--font-color);
@@ -520,7 +519,7 @@ input {
   }
 
   .vgt-global-search__input {
-    padding-left: 0;
+    padding-left: $space-0;
   }
 }
 
@@ -535,7 +534,7 @@ input {
   width: 1.5rem;
   height: 1.5rem;
   border-radius: $radius-full;
-  margin-right: 0.5rem;
+  margin-right: $space-8;
 
   &.synth {
     border: 2px solid var(--primary-color);
@@ -577,10 +576,10 @@ input {
   fill: var(--font-color);
   width: 1.5rem;
   height: 1.5rem;
-  margin-right: 0.5rem;
+  margin-right: $space-8;
 
   .header {
-    margin-right: 0.2rem;
+    margin-right: $space-3;
   }
 
   &.active {
@@ -593,7 +592,7 @@ input {
 }
 
 .stat-image {
-  margin-right: 10px;
+  margin-right: $space-10;
   height: 1.5rem;
 }
 
@@ -631,7 +630,7 @@ input {
   display: inline-flex;
   font-weight: bold;
   font-size: $font-size-sm;
-  padding: 2px 6px;
+  padding: $space-2 $space-5;
   justify-content: center;
   align-items: center;
   color: var(--bubble-font-color);
@@ -794,7 +793,7 @@ input {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  margin-bottom: 10px;
+  margin-bottom: $space-10;
 }
 
 .icon-wrapper {
@@ -802,10 +801,10 @@ input {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  padding: 0.4rem;
+  padding: $space-5;
   border-radius: $radius-s;
   background-color: var(--bg-color);
-  margin: 10px 0;
+  margin: $space-10 $space-0;
 
   &:hover {
     background-color: var(--active-bg-color);
@@ -814,7 +813,7 @@ input {
   .icon-name {
     color: var(--sec-font-color);
     font-size: $font-size-xxs;
-    margin-right: 0.3rem;
+    margin-right: $space-5;
   }
 }
 
@@ -852,12 +851,12 @@ input {
   align-items: center;
   justify-content: center;
   border-bottom: 1px solid var(--border-color);
-  padding-bottom: 5px;
+  padding-bottom: $space-5;
   gap: 5px;
 }
 
 .tooltip-body {
-  margin-top: 5px;
+  margin-top: $space-5;
   min-width: 150px;
   display: flex;
   flex-direction: column;
@@ -872,7 +871,7 @@ input {
   }
 
   .tooltip-interface-icon {
-    margin: 0 5px;
+    margin: $space-0 $space-5;
     height: 1rem;
   }
 }
@@ -884,8 +883,8 @@ input {
 }
 
 .tooltip-total {
-  padding-top: 3px;
-  margin-top: 5px;
+  padding-top: $space-3;
+  margin-top: $space-5;
   border-top: 1px solid var(--border-color);
 }
 
@@ -911,7 +910,7 @@ input {
   border-radius: $radius-lg;
   border: 1px solid var(--border-color);
   font-size: $font-size-s;
-  padding: 0.5rem 1rem;
+  padding: $space-8 $space-16;
   cursor: pointer;
   color: var(--sec-font-color);
 
@@ -956,10 +955,10 @@ input {
   display: flex;
   list-style: none;
   border-radius: $radius-lg;
-  padding: 0 10px;
+  padding: $space-0 $space-10;
 
   @include lg {
-    padding: 0;
+    padding: $space-0;
   }
 
   &.center {
@@ -972,7 +971,7 @@ input {
 
     .page-link {
       background-color: var(--card-bg-color);
-      padding: 0.3rem 0.5rem;
+      padding: $space-5 $space-8;
       border: 1px solid var(--border-color);
       color: var(--sec-font-color);
       font-family: 'Roboto Mono';
@@ -1100,7 +1099,7 @@ input {
 }
 
 #vgt-table > thead > tr > th {
-  padding-right: 0.75rem;
+  padding-right: $space-12;
 
   &.sortable {
     button {
@@ -1111,7 +1110,7 @@ input {
     }
 
     &.sorting {
-      padding-right: 1.5rem;
+      padding-right: $space-24;
       span {
         color: var(--primary-color);
       }
@@ -1134,12 +1133,12 @@ input {
 }
 
 #vgt-table > thead > tr > th.no-padding {
-  padding: 0;
+  padding: $space-0;
   width: 32px !important;
 }
 
 #vgt-table > thead > tr > th.min-padding {
-  padding: 0 5px;
+  padding: $space-0 $space-5;
 }
 
 a {

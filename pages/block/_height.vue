@@ -339,7 +339,7 @@ export default {
     display: flex;
     max-width: 24rem;
     max-height: 300px;
-    padding: 3px;
+    padding: $space-3;
     border-radius: $radius-2xl;
     @include sm {
       max-width: 35rem;
@@ -418,12 +418,12 @@ export default {
     display: flex;
     flex-direction: column;
     width: 100%;
-    gap: 1rem;
+    gap: $space-16;
 
     p {
       font-size: $font-size-md;
       color: var(--sec-font-color);
-      margin: 0;
+      margin: $space-0;
     }
   }
 }
@@ -448,7 +448,7 @@ export default {
 }
 .asset-row {
   display: flex;
-  gap: 5px;
+  gap: $space-5;
   align-items: center;
 }
 .block-header {
@@ -457,12 +457,12 @@ export default {
   color: var(--font-color) !important;
   font-weight: bold;
   align-items: center;
-  gap: 0.5rem;
-  padding-left: 1rem;
-  margin-bottom: 0.5rem;
+  gap: $space-8;
+  padding-left: $space-16;
+  margin-bottom: $space-8;
 
   h2 {
-    margin: 0;
+    margin: $space-0;
   }
 }
 .block-name {
@@ -472,8 +472,8 @@ export default {
   font-weight: bold;
   font-size: $font-size-xs;
   color: var(--font-color);
-  padding: 0 0.8rem;
-  gap: 8px;
+  padding: $space-0 $space-12;
+  gap: $space-8;
 
   span {
     font-size: $font-size-sm;
@@ -486,7 +486,7 @@ export default {
   }
   &.loading {
     max-width: 300px;
-    margin: 14px 0;
+    margin: $space-14 $space-0;
     max-height: 31.42px;
   }
 }

@@ -64,7 +64,7 @@ export default {
     height: var(--font-size);
     width: var(--font-size);
     fill: #76ff03;
-    margin-left: 0 0.1rem;
+    margin-left: $space-0 0.1rem;
   }
 
   &.down {

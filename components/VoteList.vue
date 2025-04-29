@@ -80,7 +80,7 @@ export default {
   gap: 0.5rem;
 
   .mini-bubble {
-    padding: 0.25rem 0.5rem;
+    padding: $space-4 $space-8;
     border-radius: $radius-xl;
     font-size: $font-size-xs;
     color: var(--sec-font-color);

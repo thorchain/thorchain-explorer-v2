@@ -15,13 +15,13 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.4rem;
+  padding: $space-5;
   border-radius: $radius-s;
   background-color: var(--bg-color);
   height: 1.6rem;
 
   .divider {
-    margin: 0 8px;
+    margin: $space-0 $space-8;
 
     &::after {
       display: block;

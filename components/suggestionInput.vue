@@ -142,15 +142,15 @@ export default {
   flex: 1;
   min-width: 0;
   position: relative;
-  margin: 0 10px;
+  margin: $space-0 $space-10;
 
 @include lg {
-  margin: 0px;
+  margin: $space-0;
 }
 
   label {
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: $space-8;
     font-size: $font-size-desktop;
     font-weight: bold;
     color: var(--sec-font-color);
@@ -187,7 +187,7 @@ export default {
       background-color: transparent;
       border-radius: $radius-lg;
       border: none;
-      padding: 0.5rem;
+      padding: $space-8;
       font-size: $font-size-sm;
       outline: none;
     }
@@ -198,14 +198,14 @@ export default {
       transform: scaleX(-1);
       pointer-events: all;
       color: var(--sec-font-color);
-      margin-left: 0.5rem;
+      margin-left: $space-8;
       transition: color 0.2s;
       pointer-events: all;
       opacity: 0;
       transition: opacity 0.3s ease;
       border: 1px solid var(--border-color);
       border-radius: $radius-sm;
-      padding: 4px;
+      padding: $space-4;
       background-color: var(--bg-color);
 
       &:hover {
@@ -225,13 +225,13 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-left: 6px;
-  margin-top: 2px;
+  margin-left: $space-5;
+  margin-top: $space-2;
   height: auto;
 }
 
 .remove-tag {
-  margin-left: 8px;
+  margin-left: $space-8;
   cursor: pointer;
   color: var(--sec-font-color);
   width: 0.5rem;
@@ -252,8 +252,8 @@ export default {
   right: 0;
   background-color: var(--bg-color);
   border-radius: $radius-md;
-  margin-top: 2px;
-  padding: 0.5rem 0;
+  margin-top:$space-2;
+  padding: $space-8 $space-0;
   z-index: 1000;
   overflow: auto;
   max-height: 200px;
@@ -280,7 +280,7 @@ export default {
     flex-direction: row;
     font-size: $font-size-s;
     line-height: 1.5;
-    padding: 12px 16px;
+    padding: $space-12 $space-16;
     transition: background-color 0.3s ease;
 
     &:hover {

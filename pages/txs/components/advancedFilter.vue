@@ -373,7 +373,7 @@ export default {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
 
   > div {
-    padding: 18px;
+    padding: $space-18;
   }
 }
 
@@ -381,20 +381,20 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 10px;
+  padding-bottom: $space-10;
   border-bottom: 1px solid var(--border-color);
 }
 
 .modal-header h3 {
   font-size: $font-size-md;
-  margin: 0;
+  margin: $space-0;
   color: var(--sec-font-color);
 }
 
 .advanced-filter {
   display: flex;
   align-items: center;
-  padding: 10px 8px;
+  padding: $space-10 $space-8;
   font-size: $font-size-sm;
   background-color: var(--card-bg-color);
   color: var(--font-color);
@@ -402,7 +402,7 @@ export default {
   border-radius: $radius-s;
   cursor: pointer;
   width: auto;
-  margin: 0.5rem;
+  margin: $space-8;
   white-space: nowrap;
   font-weight: 450;
   transition:
@@ -412,7 +412,7 @@ export default {
   .filter-icon {
     width: 1.2rem;
     height: 1.2rem;
-    margin-right: 6px;
+    margin-right: $space-5;
   }
 
   &:hover {
@@ -430,7 +430,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-left: 6px;
+  margin-left: $space-5;
 }
 
 .close-btn {
@@ -467,7 +467,7 @@ export default {
     font-size: $font-size-desktop;
     font-weight: bold;
     color: var(--sec-font-color);
-    margin-bottom: 8px;
+    margin-bottom: $space-8;
   }
 
   input {
@@ -476,7 +476,7 @@ export default {
     background-color: var(--bg-color) !important;
     border-radius: $radius-lg;
     border: 1px solid var(--border-color) !important;
-    padding: 0.5rem;
+    padding: $space-8;
     font-size: $font-size-sm;
     outline: none;
     flex-grow: 1;
@@ -500,7 +500,7 @@ export default {
 .button-group {
   display: flex;
   justify-content: center;
-  padding-top: 20px;
+  padding-top: $space-20;
   border-top: 1px solid var(--border-color);
 
   button {
@@ -510,12 +510,12 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 10px 20px;
+    padding: $space-10 $space-20;
     color: var(--font-color);
     cursor: pointer;
     font-size: $font-size-sm;
     font-weight: 500;
-    margin-left: 0.5rem;
+    margin-left: $space-8;
 
     &:hover {
       color: var(--primary-color);

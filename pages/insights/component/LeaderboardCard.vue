@@ -129,7 +129,7 @@
     .loader-item {
       display: flex;
       justify-content: space-between;
-      padding: 10px 10px;
+      padding: $space-10 $space-10;
       border-bottom: 1px solid var(--border-color);
   
       .number-loader {
@@ -152,9 +152,9 @@
     .data-item {
       background-color: var(--bg-color);
       border-bottom: 1px solid var(--border-color);
-      padding: 10px;
-      margin: 10px;
-      margin-bottom: 10px;
+      padding: $space-10;
+      margin: $space-10;
+      margin-bottom: $space-10;
   
       &:last-child {
         border-bottom: none;
@@ -167,7 +167,7 @@
   
         .item-number {
           font-weight: bold;
-          margin-right: 13px;
+          margin-right: $space-12;
         }
   
         &.hoverable:hover {
@@ -197,7 +197,7 @@
   
         .item-icon {
           height: 1.7rem;
-          padding: 4px 0;
+          padding: $space-4 $space-0;
           display: flex;
           align-items: center;
         }

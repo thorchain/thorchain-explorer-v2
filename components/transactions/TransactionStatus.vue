@@ -86,7 +86,7 @@ export default {
   align-items: center;
 
   .type-class {
-    padding: 0.375rem !important;
+    padding: $space-5 !important;
     color: var(--sec-font-color);
     background-color: var(--bgl-color);
     border: 1px solid var(--border-color);

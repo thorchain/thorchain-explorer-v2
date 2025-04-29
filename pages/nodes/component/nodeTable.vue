@@ -757,11 +757,11 @@ export default {
 .provider-table {
   td {
     &:first-of-type {
-      padding-right: 1rem;
+      padding-right:$space-16;
     }
 
     &:last-of-type {
-      padding-left: 1rem;
+      padding-left: $space-16;
     }
   }
 }
@@ -808,20 +808,20 @@ export default {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
 
   > div {
-    padding: 18px;
+    padding: $space-18;
   }
 }
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 10px;
+  padding-bottom: $space-10;
   border-bottom: 1px solid var(--border-color);
 }
 
 .modal-header h3 {
   font-size: $font-size-md;
-  margin: 0;
+  margin: $space-0;
   color: var(--sec-font-color);
 }
 
@@ -830,7 +830,7 @@ export default {
 
   th,
   td {
-    padding: 8px;
+    padding: $space-8;
     text-align: left;
     font-size: $font-size-sm;
   }
@@ -865,7 +865,7 @@ export default {
   gap: 5px;
   font-size: $font-size-xs;
   background: var(--active-bg-color);
-  padding: 3px;
+  padding: $space-3;
   border-radius: $radius-sm;
   color: var(--sec-font-color);
 

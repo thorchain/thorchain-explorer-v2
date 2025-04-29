@@ -312,7 +312,7 @@ export default {
   margin: auto;
   gap: 15px;
   max-width: 90rem;
-  padding: 0.25rem 0;
+  padding: $space-4 $space-0;
 
   &.expanded {
     gap: 0;
@@ -435,11 +435,11 @@ export default {
       height: 38px;
       color: var(--sec-font-color);
       background-color: var(--card-bg-color);
-      padding: 0 1rem;
+      padding: $space-0 $space-16;
       border-radius: $radius-lg;
       transition: width 0.3s ease;
       padding-right: 2.5rem;
-      padding-left: 1rem;
+      padding-left: $space-16;
 
       &:focus {
         outline: none;
@@ -462,7 +462,7 @@ export default {
       transition: fill 0.3s ease;
       box-sizing: content-box;
       background: var(--card-bg-color);
-      padding-left: 0.3rem;
+      padding-left: $space-5;
 
       &:hover {
         fill: var(--primary-color);
@@ -508,7 +508,7 @@ export default {
     background: var(--card-bg-color);
     color: var(--font-color);
     border: none;
-    padding: 0.5rem 1rem;
+    padding: $space-8 $space-16;
     text-decoration: none;
     text-align: center;
     display: flex;

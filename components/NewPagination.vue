@@ -48,7 +48,7 @@ export default {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  padding: 0.5rem;
+  padding: $space-8;
   border-radius: $radius-lg;
   gap: 8px;
 

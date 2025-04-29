@@ -143,7 +143,7 @@ export default {
 
   label {
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: $space-8;
     font-size: $font-size-desktop;
     font-weight: bold;
     color: var(--sec-font-color);
@@ -178,7 +178,7 @@ export default {
         background-color: var(--card-bg-color);
         border-radius: $radius-lg;
         border: none;
-        padding: 0.5rem;
+        padding: $space-8;
         font-size: $font-size-sm;
         background-color: transparent;
         outline: none;
@@ -198,7 +198,7 @@ export default {
         transition: opacity 0.3s ease;
         border: 1px solid var(--border-color);
         border-radius: $radius-sm;
-        padding: 4px;
+        padding: $space-4;
         background-color: var(--bg-color);
 
         &:hover {
@@ -218,13 +218,13 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-left: 6px;
-    margin-top: 2px;
+    margin-left: $space-5;
+    margin-top: $space-2;
     height: auto;
   }
 
   .remove-tag {
-    margin-left: 8px;
+    margin-left: $space-8;
     cursor: pointer;
     color: var(--sec-font-color);
     width: 0.5rem;
@@ -246,8 +246,8 @@ export default {
     background-color: var(--bg-color);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     border-radius: $radius-md;
-    margin-top: 2px;
-    padding: 0.5rem 0;
+    margin-top: $space-2;
+    padding: $space-8 $space-0;
     z-index: 1000;
     overflow: auto;
     max-height: 200px;
@@ -272,7 +272,7 @@ export default {
       display: flex;
       flex-direction: row;
       align-items: center;
-      padding: 12px 16px;
+      padding: $space-12 $space-16;
       font-size: $font-size-s;
       color: var(--sec-font-color);
       cursor: pointer;
@@ -284,7 +284,7 @@ export default {
         background-color: var(--active-bg-color);
       }
       .asset-icon {
-        margin-right: 15px;
+        margin-right:$space-14;
       }
     }
   }

@@ -357,7 +357,7 @@ export default {
 .pools-box {
   .nav-headers.box.pools-type-table {
     border: none !important;
-    margin-bottom: 1rem !important;
+    margin-bottom: $space-16 !important;
     border-radius: 7px 8px;
   }
 }
@@ -392,7 +392,7 @@ export default {
   .swap-menu {
     display: flex;
     position: absolute;
-    padding: 0.2rem 0;
+    padding: $space-3 $space-0;
     left: calc(100% + 10px);
     top: 0;
 
@@ -401,9 +401,9 @@ export default {
       align-items: center;
       color: var(--font-color);
       text-decoration: none;
-      padding: 0.5rem;
+      padding: $space-8;
       border-radius: $radius-sm;
-      margin: 0 0.2rem;
+      margin: $space-0 $space-3;
       gap: 10px;
       font-family: 'Exo 2';
       font-size: $font-size-mobile;
@@ -438,9 +438,9 @@ a.interface {
   align-items: center;
   color: var(--font-color);
   text-decoration: none;
-  padding: 0.5rem 0.3rem;
+  padding: $space-8 $space-5;
   border-radius: $radius-sm;
-  margin: 0.1rem 0.2rem;
+  margin: 0.1rem $space-3;
   gap: 10px;
   font-family: 'Exo 2';
   font-size: $font-size-mobile;

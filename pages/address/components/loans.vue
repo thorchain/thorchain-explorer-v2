@@ -176,6 +176,6 @@ export default {
 
 .table-hr {
   border: 1px solid var(--border-color);
-  margin: 3px 0;
+  margin: $space-3 $space-0;
 }
 </style>

@@ -67,11 +67,11 @@ export default {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  padding: 0.5rem;
+  padding: $space-8;
   border-radius: $radius-lg;
 
   .divider {
-    margin: 0 5px;
+    margin: $space-0 $space-5;
     height: 30px;
     width: 1px;
     background-color: var(--border-color);
@@ -82,8 +82,8 @@ export default {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    margin: 0 0.3rem;
-    padding: 10px 8px;
+    margin: $space-0 $space-5;
+    padding: $space-10 $space-8;
     border-radius: $radius-sm;
     background-color: var(--card-bg-color);
     color: var(--font-color);
@@ -97,7 +97,7 @@ export default {
       fill: var(--font-color);
       width: 0.75rem;
       height: 0.75rem;
-      margin: 0 0.2rem;
+      margin: 0 $space-4;
     }
 
     &:hover {
@@ -116,7 +116,7 @@ export default {
   .page {
     color: var(--font-color);
     line-height: 2rem;
-    margin: 0 1rem;
+    margin: $space-0 1rem;
     font-size: $font-size-sm;
     font-weight: 500;
   }

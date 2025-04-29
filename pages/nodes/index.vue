@@ -1235,19 +1235,19 @@ export default {
 .search-container {
   display: flex;
   flex-wrap: wrap;
-  margin: 0 10px;
+  margin: $space-0 $space-10;
   gap: 0.5rem;
 
   @include lg {
-    margin: 0px;
-    gap: 0;
+    margin: $space-0;
+    gap: $space-0;
   }
 }
 
 .filter-btns {
   display: flex;
-  margin-left: 5px;
-  gap: 5px;
+  margin-left: $space-5;
+  gap:$space-5;
 
   .enabled-btn {
     color: var(--primary-color) !important;
@@ -1259,11 +1259,11 @@ export default {
     color: var(--sec-font-color);
     border: 1px solid var(--border-color);
     border-radius: $radius-2lg;
-    margin: 2px 0;
-    padding: 8px 16px;
+    margin: $space-2 $space-0;
+    padding: $space-8 $space-16;
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: $space-5;
     font-size: $font-size-sm;
     cursor: pointer;
 
@@ -1285,8 +1285,8 @@ export default {
     border: 1px solid var(--border-color) !important;
     border-radius: $radius-lg;
     outline: none;
-    margin: 2px;
-    padding: 12px;
+    margin: $space-2;
+    padding: $space-12;
     font-size: $font-size-mobile;
     font-weight: 450;
 
@@ -1308,7 +1308,7 @@ export default {
     transition: fill 0.3s ease;
     box-sizing: content-box;
     background: var(--card-bg-color);
-    padding-left: 0.3rem;
+    padding-left: $space-8;
   }
 }
 

@@ -287,15 +287,15 @@ export default {
 <style lang="scss" scoped>
 .lp-container {
   border: none;
-  padding: 0;
+  padding: $space-0;
 }
 
 .pie-chart-container {
   display: flex;
-  margin-bottom: 20px;
+  margin-bottom: $space-20;
 }
 
 .table-card {
-  margin-top: 20px;
+  margin-top: $space-20;
 }
 </style>

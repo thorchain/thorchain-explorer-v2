@@ -286,7 +286,7 @@ export default {
   flex: 1;
 }
 .swaps-nav {
-  margin-top: 1rem !important;
+  margin-top: $space-16 !important;
 }
 
 .overview-box {
@@ -324,12 +324,12 @@ export default {
 
   div {
     flex: 1;
-    padding: 0.4rem;
-    margin: 0;
+    padding: $space-5;
+    margin: $space-0;
     animation: slideIn 0.5s ease;
 
     @include md {
-      padding: 0;
+      padding: $space-0;
     }
 
     &:first-child {
@@ -369,7 +369,7 @@ export default {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 2rem;
+  padding: $space-16;
 
   .streaming-icon {
     fill: var(--font-color);
@@ -384,14 +384,14 @@ export default {
   height: 1rem;
   width: 1rem;
   fill: var(--sec-font-color);
-  padding: 4px;
+  padding: $space-4;
 }
 .streaming-item {
   display: flex;
   justify-content: space-between;
   flex-direction: column;
   border-bottom: 1px solid var(--border-color);
-  padding-bottom: 10px;
+  padding-bottom:$space-10;
 
   .asset-container {
     display: flex;
@@ -414,7 +414,7 @@ export default {
     .asset-name {
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: $space-5;
     }
   }
 
@@ -423,12 +423,12 @@ export default {
     overflow: auto;
     display: flex;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: $space-10;
     -ms-overflow-style: none;
     scrollbar-width: none;
     flex-wrap: wrap;
     justify-content: space-between;
-    gap: 5px;
+    gap: $space-5;
 
     &::-webkit-scrollbar {
       display: none;
@@ -438,7 +438,7 @@ export default {
   .extra-info {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: $space-10;
   }
 }
 
@@ -446,7 +446,7 @@ export default {
   display: flex;
   border: 1px solid var(--border-color);
   border-radius: $radius-lg;
-  padding: 0.75rem;
-  margin-bottom: 0.5rem;
+  padding:$space-12;
+  margin-bottom: $space-8;
 }
 </style>

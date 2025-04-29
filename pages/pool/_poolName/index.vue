@@ -474,7 +474,7 @@ export default {
   background-color: var(--card-bg-color);
   color: var(--sec-font-color);
   border-radius: $radius-lg;
-  padding: 0.8rem;
+  padding: $space-12;
 }
 .pool-overview {
   width: 100%;

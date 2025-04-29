@@ -86,7 +86,7 @@ export default {
 <style lang="scss" scoped>
 .footer {
   border-top: 1px solid var(--border-color);
-  padding: 1rem 2rem;
+  padding: $space-16 $space-32;
   color: var(--sec-font-color);
   text-align: center;
   position: relative;
@@ -105,7 +105,7 @@ export default {
 
     .value {
       display: flex;
-      padding: 2px 4px;
+      padding: $space-2 $space-4;
       align-items: center;
       justify-content: center;
       position: relative;
@@ -116,7 +116,7 @@ export default {
         fill: var(--primary-color);
         width: 0.8rem;
         height: 0.8rem;
-        margin-right: 0.4rem;
+        margin-right: $space-5;
       }
     }
   }
@@ -156,7 +156,7 @@ export default {
     svg {
       width: 20px !important;
       height: 20px !important;
-      margin: 0 0.5rem;
+      margin: $space-0 $space-8;
       &:hover {
         color: var(--primary-color);
       }

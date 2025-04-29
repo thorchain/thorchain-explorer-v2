@@ -415,20 +415,20 @@ export default {
   display: flex;
   flex-direction: row;
   align-items: center;
-  margin-top: 1rem;
+  margin-top: $space-16;
   width: 100%;
   justify-content: center;
 }
 .interval-buttons {
   display: flex;
   align-items: center;
-  margin-top: 1rem;
+  margin-top: $space-16;
   border: 1px solid var(--border-color);
   border-radius: $radius-lg;
-  padding: 4px 5px;
-  gap: 2rem;
+  padding: $space-4 $space-5;
+  gap: $space-2;
   width: 21rem;
-  margin-top: 1.3rem;
+  margin-top: $space-20;
 
   @include lg {
     width: 28rem;
@@ -440,7 +440,7 @@ export default {
     justify-content: center;
 
     flex: 1;
-    padding: 10px 4px;
+    padding: $space-10 $space-4;
     font-size: $font-size-desktop;
     color: var(--bs-secondary-color);
 
@@ -451,9 +451,9 @@ export default {
     transition: all 0.3s ease-in-out;
 
     &.active {
-      padding: 0.5rem;
+      padding: $space-8;
       border-radius: $radius-lg;
-      margin: 1.5px 5px;
+      margin: 1.5px $space-5;
       background-color: var(--border-color);
       color: #ffa86b;
     }
@@ -467,7 +467,7 @@ export default {
   align-items: center;
   text-align: center;
   max-width: 50rem;
-  margin: 0.5rem auto;
+  margin: $space-8 auto;
 }
 .unit-switcher {
   display: flex;
@@ -524,7 +524,7 @@ input:checked + .slider:before {
 .unit-label {
   font-size: $font-size-sm;
   color: var(--font-color);
-  margin-left: 10px;
+  margin-left: $space-10;
 }
 .total-burned-container {
   display: flex;
@@ -532,7 +532,7 @@ input:checked + .slider:before {
   align-items: center;
   justify-content: flex-end;
   width: 100%;
-  margin-top: 1rem;
+  margin-top: $space-16;
 }
 
 .burned-item {
@@ -540,12 +540,12 @@ input:checked + .slider:before {
   flex-direction: row;
   align-items: center;
   justify-content: flex-end;
-  gap: 0.5rem;
+  gap: $space-8;
   flex: 1;
 }
 
 h3 {
-  margin-bottom: 10px;
+  margin-bottom: $space-10;
   font-size: $font-size-desktop;
   color: var(--font-color);
 }
@@ -566,11 +566,11 @@ h3 {
   background-color: var(--bg-color);
   border: 1px solid var(--border-color);
   border-radius: $radius-2xl;
-  padding: 1rem 2rem;
+  padding: $space-16 $space-32;
   font-size: 1.875rem;
   color: var(--sec-font-color);
   max-width: 50rem;
-  margin: 0 10px;
+  margin: $space-0 $space-10;
 
 
   @include lg {
@@ -581,7 +581,7 @@ h3 {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0;
+    margin: $space-0;
   }
 
   .burn-chart {
@@ -602,7 +602,7 @@ h3 {
     margin: auto;
 
     h1 {
-      margin: 0.5rem;
+      margin: $space-8;
       font-size: 3rem;
       display: flex;
       gap: 0.5rem;
@@ -620,7 +620,7 @@ h3 {
     width: 2rem;
     height: 2rem;
     border-radius: $radius-full;
-    margin-right: 0.5rem;
+    margin-right: $space-8;
     fill: #ffa86b;
   }
 }
@@ -629,11 +629,11 @@ h3 {
   background-color: var(--bg-color);
   border: 1px solid var(--border-color);
   border-radius: $radius-2xl;
-  padding: 0.5rem 1rem;
+  padding:$space-8  $space-16;
   max-width: 50rem;
   margin: auto;
-  margin-top: 1rem;
-  margin: 1rem 10px;
+  margin-top: $space-16;
+  margin: $space-16 $space-10;
 
 
   @include lg {
@@ -645,7 +645,7 @@ h3 {
     justify-content: space-between;
     align-items: center;
     flex: 1;
-    margin: 1rem;
+    margin: $space-10;
 
     .block-info {
       display: flex;
@@ -669,7 +669,7 @@ h3 {
   }
 
   .loader-item {
-    margin: 2rem 0;
+    margin: $space-32 $space-0;
   }
 }
 

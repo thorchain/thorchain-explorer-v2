@@ -88,7 +88,7 @@ export default {
   .icon {
     width: 0.9rem;
     height: 0.9rem;
-    margin-right: 0;
+    margin-right:$space-0;
   }
 
   .modal-background {
@@ -110,7 +110,7 @@ export default {
     gap: 0.8rem;
     border-radius: $radius-s;
     background-color: var(--bg-color);
-    padding: 1rem;
+    padding: $space-16;
     z-index: 999;
     border: 1px solid var(--border-color);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
@@ -137,7 +137,7 @@ export default {
     }
 
     .qr-code {
-      padding: 0.5rem;
+      padding: $space-8;
     }
 
     .click-overlay {
@@ -175,7 +175,7 @@ export default {
   transform: translateX(-50%);
   background-color: var(--bg-color);
   color: var(--sec-font-color);
-  padding: 10px 20px;
+  padding: $space-10 $space-20;
   border-radius: $radius-s;
   font-size: $font-size-sm;
   opacity: 0.9;

@@ -450,20 +450,20 @@ export default {
   align-items: center;
 }
 .thor-rune-details {
-  padding: 12px;
-  margin-bottom: 24px;
+  padding: $space-12;
+  margin-bottom: $space-24;
 }
 
 .token-details {
-  margin-top: 10px;
-  padding: 10px;
+  margin-top: $space-10;
+  padding: $space-10;
   background-color: var(--bg-color-light);
   border-radius: $radius-md;
 }
 
 .detail-item {
   font-size: $font-size-desktop;
-  padding: 10px;
+  padding: $space-10;
 }
 
 button[disabled] {
@@ -481,13 +481,13 @@ button[disabled] {
 
   .search-input {
     flex: 1;
-    padding: 8px;
+    padding: $space-8;
     color: var(--sec-font-color);
     background-color: var(--bg-color);
     border: 1px solid var(--border-color) !important;
     border-radius: $radius-lg;
-    margin: 8px 12px;
-    margin-right: 20px;
+    margin: $space-8 $space-12;
+    margin-right: $space-20;
     display: flex;
     outline: none;
     font-size: $font-size-mobile;
@@ -501,7 +501,7 @@ button[disabled] {
 .options-container {
   display: flex;
   flex-direction: column;
-  margin: 0px 12px;
+  margin: $space-0 $space-12;
 }
 
 .custom-dropdown {
@@ -510,7 +510,7 @@ button[disabled] {
 
   .dropdown-button {
     width: 100%;
-    padding: 10px 12px;
+    padding: $space-10 $space-12;
     font-size: $font-size-desktop;
     border: none;
     border-radius: $radius-md;
@@ -554,7 +554,7 @@ button[disabled] {
   box-sizing: border-box;
   left: 0;
   top: 108%;
-  padding-bottom: 8px;
+  padding-bottom:$space-8;
 }
 
 .dropdown-options {
@@ -579,7 +579,7 @@ button[disabled] {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px;
+    padding: $space-10;
     font-size: $font-size-sm;
     transition: background-color 0.3s ease;
     border-bottom: 1px solid var(--border-color);
@@ -601,7 +601,7 @@ button[disabled] {
         color: var(--sec-font-color);
         font-size: $font-size-xs;
         display: flex;
-        padding-bottom: 6px;
+        padding-bottom: $space-5;
         align-items: center;
       }
 
@@ -625,7 +625,7 @@ button[disabled] {
 }
 
 .no-results {
-  padding: 10px;
+  padding: $space-10;
   text-align: center;
   color: var(--bs-secondary-color);
   font-size: $font-size-sm;
@@ -643,7 +643,7 @@ button[disabled] {
 
 .token-group-header {
   font-weight: bold;
-  padding: 10px;
+  padding: $space-10;
   font-size: $font-size-sm;
   background-color: var(--border-color);
   color: var(--sec-font-color);
@@ -657,7 +657,7 @@ button[disabled] {
   position: relative;
   display: flex;
   align-items: center;
-  padding-right: 2px;
+  padding-right: $space-2;
 }
 .arrow-icon {
   fill: var(--primary-color);
@@ -666,14 +666,14 @@ button[disabled] {
 .title-explorers {
   font-weight: bold;
   border-bottom: 1px solid var(--border-color);
-  margin: 0;
-  padding-bottom: 15px;
-  margin-bottom: 10px;
+  margin: $space-0;
+  padding-bottom: $space-14;
+  margin-bottom: $space-10;
 }
 .explorers {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: $space-8;
 
   .explorer-link {
     display: flex;

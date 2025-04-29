@@ -421,7 +421,7 @@ export default {
 <style lang="scss" scoped>
 .no-bubble {
   display: flex;
-  padding: 8px 0;
+  padding: $space-8 $space-0;
   gap: 5px;
   align-items: center;
 }
@@ -443,7 +443,7 @@ export default {
     height: 1rem;
     width: 1rem;
     fill: var(--sec-font-color);
-    padding: 4px;
+    padding: $space-4;
 
     &.small {
       height: 0.8rem;
@@ -464,7 +464,7 @@ export default {
     border-radius: $radius-s;
     height: 1.2rem;
     width: 1.2rem;
-    padding: 4px 0;
+    padding: $space-4 $space-0;
     fill: #21c187;
   }
 
@@ -472,7 +472,7 @@ export default {
     display: flex;
     flex-direction: row;
     align-items: center;
-    padding: 0.375rem;
+    padding: $space-5;
     border: 1px solid var(--border-color);
     border-radius: $radius-2xl;
   }
@@ -481,7 +481,7 @@ export default {
     display: flex;
     align-items: center;
 
-    padding: 8px;
+    padding: $space-8;
     border-radius: $radius-sm;
     border: 1px solid var(--border-color);
     background-color: var(--bgl-color);
@@ -490,7 +490,7 @@ export default {
       height: 1rem;
       width: 1rem;
       fill: var(--sec-font-color);
-      margin-right: 5px;
+      margin-right: $space-5;
     }
 
     &.yellow-type {
@@ -520,14 +520,14 @@ export default {
   .pending-cell {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $space-8;
   color: var(--sec-font-color);
   font-weight: bold;
 }
 
 .pending-dots  {
   position: relative;
-  padding: 5px 8px;
+  padding: $space-5 $space-8;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -593,7 +593,7 @@ export default {
 
   small.asset-name {
     font-size: $font-size-s;
-    padding: 0.375rem;
+    padding: $space-5;
     background-color: var(--bgt-color);
     border: 1px solid var(--border-color);
     border-radius: $radius-lg;

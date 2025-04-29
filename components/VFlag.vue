@@ -28,6 +28,6 @@ export default {
 <style lang="scss">
 .country-icon {
   border-radius: $radius-sm;
-  margin: 0;
+  margin: $space-0;
 }
 </style>

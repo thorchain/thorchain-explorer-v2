@@ -183,9 +183,9 @@ export default {
     border-bottom: 1px solid var(--border-color);
 
     .header-content {
-      margin-bottom: 0.75rem;
+      margin-bottom: $space-12;
       h4 {
-        margin: 0 !important;
+        margin: $space-0 !important;
       }
     }
   }
@@ -195,11 +195,11 @@ export default {
   }
   .header-content {
     display: flex;
-    gap: 0.5rem;
+    gap: $space-8;
     align-items: center;
 
     h4 {
-      margin: 0;
+      margin: $space-0;
     }
   }
 
@@ -208,7 +208,7 @@ export default {
     align-items: center;
     gap: 3px;
     font-size: $font-size-sm;
-    margin-right: 0.5rem;
+    margin-right: $space-8;
 
     svg {
       fill: currentColor;
@@ -220,7 +220,7 @@ export default {
 
 .usd-value {
   font-size: $font-size-sm;
-  margin-right: 12px;
+  margin-right: $space-12;
 }
 .flex-containers,
 .grid-containers {
@@ -233,14 +233,14 @@ export default {
     flex-direction: column;
 
     @include md {
-      margin-bottom: 1rem;
+      margin-bottom: $space-16;
       flex-direction: row;
 
       &:last-of-type {
-        margin-bottom: 0;
+        margin-bottom: $space-0;
         .flex-section,
         .grid-section {
-          padding-bottom: 0;
+          padding-bottom: $space-0;
           border-bottom: none !important;
         }
       }
@@ -263,7 +263,7 @@ export default {
       font-weight: bold;
       color: var(--sec-font-color);
       font-size: $font-size-mobile;
-      margin: 0 0 0.5rem 0;
+      margin: $space-0 $space-0 $space-8 $space-0;
 
       @include lg {
         font-size: $font-size-smm;
@@ -272,22 +272,22 @@ export default {
 
     .flex-section {
       flex: 1;
-      padding-bottom: 0.7rem;
-      margin-bottom: 0.7rem;
+      padding-bottom: $space-12;
+      margin-bottom: $space-12;
       border-bottom: 1px solid var(--border-color);
     }
 
     .grid-section {
       gap: 1rem;
       border-bottom: 1px solid var(--border-color);
-      padding-bottom: 0.7rem;
-      margin-bottom: 0.7rem;
+      padding-bottom: $space-12;
+      margin-bottom: $space-12;
     }
     .grid-items {
       display: grid;
-      gap: 1rem;
+      gap: $space-16;
       grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
-      margin: 0.8rem 0.5rem;
+      margin: $space-12 $space-8;
       @include md {
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
       }
@@ -320,7 +320,7 @@ export default {
     .flex-items {
       gap: 0.5rem 0;
       min-width: 320px;
-      margin: 0.5rem 0.5rem;
+      margin: $space-8 $space-8;
       display: flex;
       flex-direction: column;
 
@@ -351,11 +351,11 @@ export default {
           flex-direction: row;
           font-size: $font-size-desktop;
           align-items: center;
-          padding: 4px 0;
+          padding: $space-4 $space-0;
         }
 
         .info-loader {
-          margin-top: 0;
+          margin-top: $space-0;
           min-width: 200px;
         }
 

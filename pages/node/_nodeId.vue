@@ -228,12 +228,12 @@ export default {
   background-color: var(--card-bg-color);
   color: var(--sec-font-color);
   border-radius: $radius-lg;
-  padding: 1rem;
-  margin-bottom: 1rem;
+  padding: $space-16;
+  margin-bottom: $space-16;
 }
 .node-id {
   color: var(--primary-color);
-  padding-left: 0.5rem;
+  padding-left: $space-8;
   word-wrap: break-word;
   word-break: break-all;
   white-space: normal;
@@ -243,7 +243,7 @@ export default {
   display: flex;
   width: 100%;
   flex-direction: column;
-  gap: 10px;
+  gap: $space-10;
 }
 @include md {
   .cards-node {

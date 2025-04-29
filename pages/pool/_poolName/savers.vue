@@ -125,17 +125,17 @@ export default {
 <style lang="scss">
 .nav-pool-header {
   display: flex;
-  margin-bottom: 1rem;
+  margin-bottom: $space-16;
 
   a {
-    padding: 0.5rem 0.7rem;
-    margin: 0 0.1rem;
+    padding: $space-8 $space-12;
+    margin: $space-0 0.1rem;
     color: var(--font-color);
     text-decoration: none;
     border-radius: $radius-s;
 
     &:first-of-type {
-      margin-left: 0;
+      margin-left: $space-0;
     }
 
     &:hover {
@@ -151,18 +151,18 @@ export default {
 
 h3 {
   color: var(--sec-font-color);
-  margin: 0;
+  margin: $space-0;
 }
 
 .savers-stat-header {
   display: grid;
   gap: 15px;
-  margin-bottom: 1rem;
+  margin-bottom: $space-16;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   grid-template-rows: auto;
 
   .savers-stat-card {
-    padding: 2rem 0;
+    padding: $space-32 $space-0;
     border-radius: $radius-lg;
     background-color: var(--card-bg-color);
     border: 1px solid var(--border-color);
@@ -188,25 +188,25 @@ h3 {
 .savers-filled-card {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: $space-14;
   min-width: 350px;
 }
 
 .chart-edition {
-  margin-bottom: 15px;
+  margin-bottom: $space-14;
   display: flex;
-  gap: 15px;
+  gap: $space-14;
   flex-wrap: wrap;
-  margin: 15px 10px;
+  margin: $space-14 $space-10;
 
   @include lg {
-    margin: 15px 0px;
+    margin: $space-14 $space-0;
   }
 
   .card-container {
     border: 1px solid var(--border-color);
     border-radius: $radius-lg;
-    margin: 0px;
+    margin:$space-0;
 
     @include lg {
       margin: auto;

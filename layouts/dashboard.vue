@@ -220,7 +220,7 @@ Vue.mixin(global)
 .background-container {
   justify-content: flex-start;
   align-items: center;
-  padding: 1rem;
+  padding: $space-16;
   width: 100%;
   height: 16rem;
 
@@ -228,18 +228,18 @@ Vue.mixin(global)
   background-color: var(--overview-bg);
   background-size: cover;
   background-blend-mode: overlay;
-  padding: 10px;
+  padding: $space-10;
   margin-bottom: -4.5rem;
 
   @include md {
-    padding: 0 3rem;
+    padding: $space-0 3rem;
   }
 
   .title-search {
     font-family: 'Exo 2';
     font-weight: bold;
     font-size: $font-size-desktop;
-    padding: 9px;
+    padding: $space-10;
     color: white;
   }
 
@@ -259,7 +259,7 @@ Vue.mixin(global)
       background-color: var(--card-bg-color);
       box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
       transition: all 0.3s ease;
-      padding: 0.3rem;
+      padding: $space-5;
 
       &:hover {
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
@@ -267,7 +267,7 @@ Vue.mixin(global)
       .search-input {
         font-size: $font-size-s;
         padding-right: 2.5rem;
-        padding-left: 0.75rem;
+        padding-left: $space-12;
         flex: 1;
         border: none;
         height: 40px;
@@ -297,7 +297,7 @@ Vue.mixin(global)
         cursor: pointer;
         transition: background-color 0.3s ease;
         background-color: var(--search-color);
-        padding: 6px;
+        padding: $space-5;
         border-radius: $radius-sm;
 
         &:hover {
@@ -311,7 +311,7 @@ Vue.mixin(global)
         .search-input {
           font-size: $font-size-desktop;
           padding-right: 3rem;
-          padding-left: 1rem;
+          padding-left: $space-16;
         }
       }
     }
@@ -337,20 +337,20 @@ Vue.mixin(global)
     background: var(--color-light);
     grid-area: header;
     border-bottom: 1px solid var(--border-color);
-    padding: 0 10px;
+    padding: $space-0 $space-10;
 
     @include lg {
-      padding: 0.5rem 3rem;
+      padding: $space-8 3rem;
     }
   }
 
   #navbar {
     background: var(--color-light);
     border-bottom: 1px solid var(--border-color);
-    padding: 0 10px;
+    padding: $space-0 $space-10;
 
     @include lg {
-      padding: 0.5rem 3rem;
+      padding: $space-8 3rem;
     }
   }
 
@@ -359,8 +359,8 @@ Vue.mixin(global)
     grid-area: main;
 
     @include lg {
-      padding: 0 3rem;
-      padding-bottom: 2rem;
+      padding: $space-0 3rem;
+      padding-bottom: $space-32;
     }
   }
 }

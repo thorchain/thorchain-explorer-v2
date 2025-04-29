@@ -453,10 +453,10 @@ export default {
 <style lang="scss" scoped>
 .pendulum-view {
   max-width: 53rem;
-  margin: 0 auto;
+  margin: $space-0 auto;
 }
 .balance-details {
-  margin-top: 2rem;
+  margin-top: $space-2;
 }
 .metric-card {
   display: flex;
@@ -506,9 +506,9 @@ export default {
 }
 
 .network-status {
-  margin-top: 20px;
+  margin-top: $space-20;
   text-align: center;
-  padding: 10px 20px;
+  padding: $space-10 $space-20;
   border-radius: $radius-lg;
 }
 
@@ -521,7 +521,7 @@ export default {
 .reward-summary {
   text-align: center;
   background-color: var(--gradient-left);
-  padding: 8px 16px;
+  padding: $space-8 $space-16;
   border-radius: $radius-lg;
   color: var(--sec-font-color);
   font-size: $font-size-xxs;

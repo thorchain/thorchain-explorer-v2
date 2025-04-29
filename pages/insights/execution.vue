@@ -486,18 +486,18 @@ export default {
   display: flex;
   align-items: center;
   font-size: $font-size-s;
-  padding: 0 0.1rem;
+  padding: $space-0 0.1rem;
 
   .legend-fill {
     width: 5px;
     height: 5px;
     border-radius: $radius-full;
-    margin-right: 5px;
+    margin-right: $space-5;
   }
 
   .value {
     font-weight: bold;
-    margin-left: 5px;
+    margin-left: $space-5;
   }
 }
 

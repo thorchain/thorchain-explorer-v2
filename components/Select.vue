@@ -45,7 +45,7 @@ export default {
 <style lang="scss">
 .option-wrapper {
   position: relative;
-  padding: 0.5rem 1rem;
+  padding: $space-8 $space-16;
   border-radius: $radius-lg;
   background-color: var(--card-bg-color);
   border: 1px solid var(--border-color);
@@ -89,7 +89,7 @@ export default {
     background: var(--card-bg-color);
     color: var(--font-color);
     border: none;
-    padding: 0.5rem 1rem;
+    padding: $space-8 $space-16;
     text-decoration: none;
     text-align: center;
     overflow: hidden;

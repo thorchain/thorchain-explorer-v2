@@ -95,13 +95,13 @@ export default {
     flex-direction: column;
     background-color: var(--bg-color);
     border: 1px solid var(--border-color);
-    padding: 1rem;
+    padding: $space-16;
     border-radius: $radius-md;
 
     .asset-chain {
       width: 1rem;
       height: 1rem;
-      margin-right: 0.4rem;
+      margin-right: $space-5;
       border-radius: $radius-full;
     }
 
@@ -117,7 +117,7 @@ export default {
       width: 2rem;
       height: 2rem;
       border-radius: $radius-full;
-      margin: 1rem 0;
+      margin: $space-16 $space-0;
     }
 
     .asset-name {
@@ -126,7 +126,7 @@ export default {
     }
 
     .symbol-name {
-      margin-top: 0.3rem;
+      margin-top: $space-5;
       text-align: center;
       word-break: break-all;
     }

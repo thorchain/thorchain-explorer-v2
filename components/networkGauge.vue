@@ -190,7 +190,7 @@ export default {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: $space-10;
     gap: 5rem;
 
     @include lg {
@@ -199,13 +199,13 @@ export default {
     .legend-item {
       display: flex;
       align-items: center;
-      margin: 0 10px;
+      margin: $space-0 $space-10;
 
       .color-box {
         width: 15px;
         height: 15px;
         border-radius: $radius-full;
-        margin-right: 10px;
+        margin-right: $space-10;
       }
     }
   }

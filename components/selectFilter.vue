@@ -137,12 +137,12 @@ export default {
   .mini-bubble {
     font-size: $font-size-xs;
     height: 17px;
-    margin-top: 2px;
-    margin-left: 2px;
+    margin-top: $space-2;
+    margin-left: $space-2;
   }
   .remove-tag {
     color: var(--sec-font-color);
-    margin-left: 8px;
+    margin-left: $space-8;
     cursor: pointer;
     width: 0.5rem;
     height: 0.5rem;
@@ -153,7 +153,7 @@ export default {
   }
   label {
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: $space-8;
     font-size: $font-size-desktop;
     font-weight: bold;
     color: var(--sec-font-color);
@@ -163,7 +163,7 @@ export default {
 
     .dropdown-button {
       width: 100%;
-      padding: 12px 10px;
+      padding: $space-12 $space-10;
       font-size: $font-size-desktop;
       border: none;
       border-radius: $radius-md;
@@ -192,15 +192,15 @@ export default {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     z-index: 1000;
     border-radius: $radius-md;
-    margin-top: 0.5rem;
-    padding: 0.5rem 0;
+    margin-top: $space-8;
+    padding: $space-8 $space-0;
     box-sizing: border-box;
     max-height: 200px;
     overflow: auto;
   }
   .dropdown-option {
     position: relative;
-    padding: 12px 34px;
+    padding: $space-12 34px;
     font-size: $font-size-desktop;
     color: var(--sec-font-color);
     cursor: pointer;
