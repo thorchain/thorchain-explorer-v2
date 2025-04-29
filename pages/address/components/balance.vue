@@ -64,13 +64,12 @@
           </skeleton-item>
         </div>
 
-        <div class="dropdown-container">
+        <div v-if="totalValue.count > 0" class="dropdown-container">
           <label for="token-dropdown">Other Asset Holdings</label>
           <div ref="dropdownButton" class="custom-dropdown">
             <button
               class="dropdown-button"
               :class="{ 'dropdown-open': isOpen }"
-              :disabled="totalValue.count === 0"
               @click="toggleDropdown"
             >
               <div class="selected-options">
@@ -417,6 +416,7 @@ export default {
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 240px;
   gap: 24px;
 
   .balance-label {
