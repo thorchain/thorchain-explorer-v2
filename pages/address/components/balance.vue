@@ -64,13 +64,12 @@
           </skeleton-item>
         </div>
 
-        <div class="dropdown-container">
+        <div v-if="totalValue.count > 0" class="dropdown-container">
           <label for="token-dropdown">Other Asset Holdings</label>
           <div ref="dropdownButton" class="custom-dropdown">
             <button
               class="dropdown-button"
               :class="{ 'dropdown-open': isOpen }"
-              :disabled="totalValue.count === 0"
               @click="toggleDropdown"
             >
               <div class="selected-options">
@@ -164,7 +163,7 @@
               </div>
             </div>
           </div>
-        </div>
+          </div>
       </div>
     </card>
     <card v-else title="Chain Explorers">
