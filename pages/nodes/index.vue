@@ -1236,9 +1236,11 @@ export default {
   display: flex;
   flex-wrap: wrap;
   margin: 0 10px;
+  gap: 0.5rem;
 
   @include lg {
     margin: 0px;
+    gap: 0;
   }
 }
 
@@ -1256,13 +1258,13 @@ export default {
     background-color: var(--bg-color);
     color: var(--sec-font-color);
     border: 1px solid var(--border-color);
-    border-radius: 10px;
+    border-radius: $radius-2lg;
     margin: 2px 0;
     padding: 8px 16px;
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    font-size: 14px;
+    font-size: $font-size-sm;
     cursor: pointer;
 
     &:hover {
@@ -1281,11 +1283,11 @@ export default {
     color: var(--sec-font-color);
     background-color: var(--bg-color);
     border: 1px solid var(--border-color) !important;
-    border-radius: 0.5rem;
+    border-radius: $radius-lg;
     outline: none;
     margin: 2px;
     padding: 12px;
-    font-size: 0.9062rem;
+    font-size: $font-size-mobile;
     font-weight: 450;
 
     &:focus {
@@ -1319,7 +1321,7 @@ export default {
 }
 
 .extra {
-  font-size: 0.7rem;
+  font-size: $font-size-xs;
 }
 
 .filter-icon {

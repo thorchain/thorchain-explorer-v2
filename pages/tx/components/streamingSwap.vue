@@ -318,28 +318,28 @@ export default {
   margin: 10px 0;
 
   span {
-    font-size: 0.9rem;
+    font-size: $font-size-mobile;
     color: var(--sec-font-color);
   }
 
   &.timer {
     strong {
       display: block;
-      font-size: 0.95rem;
+      font-size: $font-size-mobile;
       padding: 0.2rem 0.3rem;
-      border-radius: 0.3rem;
+      border-radius: $radius-s;
       color: var(--primary-color);
       background-color: #63fdd927;
     }
   }
 
   &.strong span {
-    font-size: 0.9rem;
+    font-size: $font-size-mobile;
   }
 }
 
 .header-sup {
-  font-size: 0.6rem;
+  font-size: $font-size-xxs;
   color: #f04832;
 }
 

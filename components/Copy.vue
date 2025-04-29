@@ -89,7 +89,7 @@ export default {
   width: 90%;
   background-color: var(--bg-color);
   border: 1px solid var(--border-color);
-  border-radius: 0.5rem;
+  border-radius: $radius-lg;
   z-index: 9999;
 
   @include lg {
@@ -144,7 +144,7 @@ export default {
 
 .toast-body {
   overflow: hidden;
-  font-size: 0.8rem;
+  font-size: $font-size-s;
   line-height: 1.5;
   color: var(--primary-color);
   text-align: left;

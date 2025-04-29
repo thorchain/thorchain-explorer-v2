@@ -278,7 +278,7 @@ export default {
       align-items: center;
       color: var(--sec-font-color);
       margin-right: 0.5rem;
-      font-size: 0.85rem;
+      font-size: $font-size-sm;
 
       .header-icon {
         display: inline-block;
@@ -291,7 +291,7 @@ export default {
 
     .value {
       color: var(--primary-color);
-      font-size: 0.85rem;
+      font-size: $font-size-sm;
     }
   }
 

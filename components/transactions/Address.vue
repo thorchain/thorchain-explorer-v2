@@ -61,7 +61,7 @@ export default {
     &.hovered {
       border: 1px dashed var(--highlight);
       color: var(--active-primary-color) !important;
-      border-radius: 2px;
+      border-radius: $radius-xs;
     }
   }
 

@@ -21,7 +21,7 @@ export default {
   animation: skeleton 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   background-color: var(--active-bg-color);
   height: 0.5rem;
-  border-radius: 1rem;
+  border-radius: $radius-2xl;
   margin: 0.375rem;
 }
 

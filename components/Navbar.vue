@@ -463,14 +463,14 @@ export default {
       display: flex;
       align-items: center;
       font-family: 'Exo 2';
-      font-size: 0.875rem;
+      font-size: $font-size-sm;
 
       .logo {
         width: 1.5rem;
       }
 
       @include lg {
-        font-size: 1rem;
+        font-size: $font-size-desktop;
 
         .logo {
           width: 1.75rem;
@@ -541,7 +541,7 @@ export default {
       width: 20px;
       background-color: var(--card-bg-color);
       border: 1px solid var(--border-color);
-      border-radius: 0.5rem;
+      border-radius: $radius-lg;
       padding: 0.375rem 0.75rem;
       box-sizing: content-box;
     }
@@ -610,7 +610,7 @@ export default {
       }
 
       span {
-        font-size: 14px;
+        font-size: $font-size-sm;
         height: 20px;
         line-height: 20px;
         color: var(--sec-font-color);
@@ -631,7 +631,7 @@ export default {
         padding: 0.2rem 1rem;
 
         span {
-          font-size: 14px;
+          font-size: $font-size-sm;
         }
 
         .icon {
@@ -650,7 +650,7 @@ export default {
       box-shadow: none;
       padding: 0;
       background: var(--card-bg-color);
-      border-radius: 0.5rem;
+      border-radius: $radius-lg;
       overflow: hidden;
       max-height: 0;
       transition: max-height 0.3s ease;
@@ -663,7 +663,7 @@ export default {
 
       .settings-container {
         padding: 0.5rem;
-        font-size: 13px;
+        font-size: $font-size-s;
       }
 
       .settings-option {
@@ -677,7 +677,7 @@ export default {
         &:hover {
           color: var(--primary-color);
           background: var(--darker-bg);
-          border-radius: 0.3rem;
+          border-radius: $radius-s;
         }
 
         &.active {
@@ -716,7 +716,7 @@ export default {
     transition: height 0.3s ease;
     overflow: hidden;
     border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
+    border-radius: $radius-lg;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     padding: 0.3rem;
     z-index: 1000;
@@ -745,7 +745,7 @@ export default {
         cursor: pointer;
         transition: background-color 0.3s ease;
         background: var(--darker-bg);
-        border-radius: 0.3rem;
+        border-radius: $radius-s;
       }
 
       &.active {

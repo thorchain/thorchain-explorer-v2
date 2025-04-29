@@ -340,7 +340,7 @@ export default {
     max-width: 24rem;
     max-height: 300px;
     padding: 3px;
-    border-radius: 1rem;
+    border-radius: $radius-2xl;
     @include sm {
       max-width: 35rem;
     }
@@ -387,12 +387,12 @@ export default {
       text-align: center;
     }
     .duration strong {
-      font-size: 1.5rem;
+      font-size: $font-size-xl;
       color: var(--primary-color);
     }
 
     .duration small {
-      font-size: 0.9rem;
+      font-size: $font-size-mobile;
       color: var(--sec-font-color);
     }
   }
@@ -421,7 +421,7 @@ export default {
     gap: 1rem;
 
     p {
-      font-size: 18.75px;
+      font-size: $font-size-md;
       color: var(--sec-font-color);
       margin: 0;
     }
@@ -453,7 +453,7 @@ export default {
 }
 .block-header {
   display: flex;
-  font-size: 20px !important;
+  font-size: $font-size-lg !important;
   color: var(--font-color) !important;
   font-weight: bold;
   align-items: center;
@@ -470,18 +470,18 @@ export default {
   flex-wrap: wrap;
   align-items: center;
   font-weight: bold;
-  font-size: 11px;
+  font-size: $font-size-xs;
   color: var(--font-color);
   padding: 0 0.8rem;
   gap: 8px;
 
   span {
-    font-size: 0.85rem;
+    font-size: $font-size-sm;
     text-overflow: ellipsis;
     overflow: hidden;
 
     @include md {
-      font-size: 1rem;
+      font-size: $font-size-desktop;
     }
   }
   &.loading {

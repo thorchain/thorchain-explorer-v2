@@ -704,7 +704,7 @@ export default {
   width: 18px;
   height: 18px;
   align-items: center;
-  border-radius: 50%;
+  border-radius: $radius-full;
   border: 1px solid var(--primary-color);
 }
 .grid-network {

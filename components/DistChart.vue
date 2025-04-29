@@ -59,7 +59,7 @@ export default {
 .progress-wrapper {
   display: flex;
   height: var(--bar-height);
-  border-radius: 5px;
+  border-radius: $radius-s;
   width: 100%;
   background-color: var(--border-color);
 
@@ -70,11 +70,11 @@ export default {
     transition: width 700ms;
 
     &:last-of-type {
-      border-radius: 0 5px 5px 0;
+      border-radius: 0 $radius-s $radius-s 0;
     }
 
     &:first-of-type {
-      border-radius: 5px 0 0 5px;
+      border-radius: $radius-s 0 0 $radius-s;
     }
   }
 }

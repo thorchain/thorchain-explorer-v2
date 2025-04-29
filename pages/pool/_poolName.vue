@@ -38,7 +38,7 @@ export default {
   align-items: center;
   background-color: var(--card-bg-color);
   color: var(--sec-font-color);
-  border-radius: 0.5rem;
+  border-radius: $radius-lg;
   padding: 0.8rem;
   border: 1px solid var(--border-color);
   word-break: break-all;
@@ -57,7 +57,7 @@ export default {
     margin: 0 0.1rem;
     color: var(--font-color);
     text-decoration: none;
-    border-radius: 0.3rem;
+    border-radius: $radius-s;
 
     &:first-of-type {
       margin-left: 0;

@@ -556,7 +556,7 @@ export default {
     position: relative;
 
     .qr-show {
-      border-radius: 0.3rem;
+      border-radius: $radius-s;
       background-color: #fff;
       padding: 0.625rem;
       top: calc(100% + 0.625rem);
@@ -567,7 +567,7 @@ export default {
   }
 
   .utility {
-    font-size: 0.7rem;
+    font-size: $font-size-xs;
     line-height: 0.7rem;
   }
 
@@ -586,7 +586,7 @@ export default {
     span {
       margin-left: 0.7rem;
       line-height: 1.5rem;
-      font-size: 1.5rem;
+      font-size: $font-size-xl;
       color: var(--sec-font-color);
     }
   }
@@ -607,13 +607,13 @@ export default {
     align-items: center;
     background-color: var(--card-bg-color);
     border: 1px solid var(--border-color);
-    border-radius: 5px;
+    border-radius: $radius-s;
     display: flex;
     padding: 0.5rem;
-    font-size: 0.65rem;
+    font-size: $font-size-xxs;
 
     @include md {
-      font-size: 1rem;
+      font-size: $font-size-desktop;
     }
   }
 }
@@ -649,7 +649,7 @@ export default {
     border: 1px solid var(--border-color);
     background-color: var(--card-bg-color);
     padding: 0.5rem;
-    border-radius: 5px;
+    border-radius: $radius-s;
     display: flex;
     align-items: center;
     margin: 0;

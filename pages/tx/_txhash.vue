@@ -2250,7 +2250,7 @@ export default {
     border: 1px solid var(--border-color);
     background-color: var(--card-bg-color);
     padding: 0.5rem;
-    border-radius: 5px;
+    border-radius: $radius-s;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -2316,7 +2316,7 @@ export default {
   flex-wrap: wrap;
   justify-content: space-between;
   background: var(--card-bg-color);
-  border-radius: 5px;
+  border-radius: $radius-s;
   padding: 20px;
   gap: 10px;
 }
@@ -2389,7 +2389,7 @@ export default {
 }
 
 .asset-text {
-  font-size: 1.1rem;
+  font-size: $font-size-md;
 }
 
 .tx-id {

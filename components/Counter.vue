@@ -140,7 +140,7 @@ export default {
 .counter-container {
   display: flex;
   flex-direction: column;
-  border-radius: 1rem;
+  border-radius:$radius-2xl ;
   flex: 1;
   max-width: 35rem;
 }
@@ -177,7 +177,7 @@ export default {
   justify-content: center;
 
   .halted {
-    font-size: 1.5rem;
+    font-size: $font-size-xl;
     color: var(--red);
   }
 }
@@ -196,12 +196,12 @@ export default {
 }
 
 .duration strong {
-  font-size: 1.5rem;
+  font-size: $font-size-xl;
   color: var(--primary-color);
 }
 
 .duration small {
-  font-size: 0.9rem;
+  font-size: $font-size-mobile;
   color: var(--sec-font-color);
 }
 
@@ -224,7 +224,7 @@ export default {
   gap: 1rem;
 
   p {
-    font-size: 18.75px;
+    font-size: $font-size-md;
     color: var(--sec-font-color);
     margin: 0;
   }

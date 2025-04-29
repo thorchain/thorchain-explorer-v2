@@ -433,7 +433,7 @@ export default {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  border-radius: 4px;
+  border-radius: $radius-sm;
   &.no-border {
     display: flex;
     flex-wrap: wrap;
@@ -461,7 +461,7 @@ export default {
 
   .action-icon {
     box-sizing: content-box;
-    border-radius: 5px;
+    border-radius: $radius-s;
     height: 1.2rem;
     width: 1.2rem;
     padding: 4px 0;
@@ -474,7 +474,7 @@ export default {
     align-items: center;
     padding: 0.375rem;
     border: 1px solid var(--border-color);
-    border-radius: 1rem;
+    border-radius: $radius-2xl;
   }
 
   .asset-cell {
@@ -482,7 +482,7 @@ export default {
     align-items: center;
 
     padding: 8px;
-    border-radius: 4px;
+    border-radius: $radius-sm;
     border: 1px solid var(--border-color);
     background-color: var(--bgl-color);
 
@@ -532,7 +532,7 @@ export default {
   align-items: center;
   gap: 0.5rem;
   border: 1px solid var(--border-color);
-  border-radius: 0.2rem;
+  border-radius: $radius-sm;
 
   &::before {
     content: '';
@@ -542,7 +542,7 @@ export default {
     right: 0;
     bottom: 0;
     border: 1px solid #d86e58;
-    border-radius: 0.2rem;
+    border-radius: $radius-sm;
     transition: all 0.5s;
     animation: clippath 3s infinite linear;
   }
@@ -551,7 +551,7 @@ export default {
 
 .pending-text {
   color: #d86e58;
-  font-size: 10px;
+  font-size: $font-size-xxs;
 }
 
 @keyframes clippath {
@@ -588,15 +588,15 @@ export default {
 
   .asset-name {
     font-size: 0.9rem;
-    line-height: 14px;
+    line-height: $font-size-sm;
   }
 
   small.asset-name {
-    font-size: 0.775rem;
+    font-size: $font-size-s;
     padding: 0.375rem;
     background-color: var(--bgt-color);
     border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
+    border-radius: $radius-lg;
     transition: all 0.2s ease;
   }
 }

@@ -51,7 +51,7 @@ export default {
 .table-wrapper {
   display: flex;
   flex-direction: column;
-  border-radius: 0.5rem;
+  border-radius: $radius-lg;
   background-color: var(--bg-color);
   border: 1px solid var(--border-color);
 

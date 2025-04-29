@@ -390,7 +390,7 @@ export default {
 
   .card-container {
     border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
+    border-radius: $radius-lg;
     margin: auto;
   }
 

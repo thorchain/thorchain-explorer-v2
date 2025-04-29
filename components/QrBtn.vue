@@ -108,7 +108,7 @@ export default {
     display: flex;
     flex-direction: column;
     gap: 0.8rem;
-    border-radius: 0.3rem;
+    border-radius: $radius-s;
     background-color: var(--bg-color);
     padding: 1rem;
     z-index: 999;
@@ -123,7 +123,7 @@ export default {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 1rem;
+      font-size: $font-size-desktop;
       font-weight: bold;
 
       .close-btn {
@@ -165,7 +165,7 @@ export default {
   text-overflow: ellipsis !important;
   word-wrap: break-word;
   word-break: break-all;
-  font-size: 0.9rem;
+  font-size: $font-size-sm;
 }
 
 .toast-notification {
@@ -176,8 +176,8 @@ export default {
   background-color: var(--bg-color);
   color: var(--sec-font-color);
   padding: 10px 20px;
-  border-radius: 5px;
-  font-size: 0.9rem;
+  border-radius: $radius-s;
+  font-size: $font-size-sm;
   opacity: 0.9;
   z-index: 1000;
   transition: opacity 0.3s;

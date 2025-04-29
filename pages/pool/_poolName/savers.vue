@@ -132,7 +132,7 @@ export default {
     margin: 0 0.1rem;
     color: var(--font-color);
     text-decoration: none;
-    border-radius: 0.3rem;
+    border-radius: $radius-s;
 
     &:first-of-type {
       margin-left: 0;
@@ -163,13 +163,13 @@ h3 {
 
   .savers-stat-card {
     padding: 2rem 0;
-    border-radius: 8px;
+    border-radius: $radius-lg;
     background-color: var(--card-bg-color);
     border: 1px solid var(--border-color);
 
     .value {
       color: var(--sec-font-color);
-      font-size: 1.5rem;
+      font-size: $font-size-xl;
       text-align: center;
     }
 
@@ -179,7 +179,7 @@ h3 {
     }
 
     .extra-text {
-      font-size: 0.9rem;
+      font-size: $font-size-mobile;
       text-align: center;
     }
   }
@@ -205,7 +205,7 @@ h3 {
 
   .card-container {
     border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
+    border-radius: $radius-lg;
     margin: 0px;
 
     @include lg {

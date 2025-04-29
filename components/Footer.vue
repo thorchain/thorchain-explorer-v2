@@ -109,7 +109,7 @@ export default {
       align-items: center;
       justify-content: center;
       position: relative;
-      border-radius: 8px;
+      border-radius: $radius-lg;
       border: 1px solid transparent;
 
       .block-icon {
@@ -136,7 +136,7 @@ export default {
 
   .footer-text {
     display: flex;
-    font-size: 14px;
+    font-size: $font-size-sm;
     flex-wrap: wrap;
     justify-content: center;
     gap: 0.8rem;

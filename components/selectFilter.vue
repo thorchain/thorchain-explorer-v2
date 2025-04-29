@@ -123,7 +123,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .form-group {
   flex: 1;
   min-width: 0;
@@ -135,7 +135,7 @@ export default {
     gap: 4px;
   }
   .mini-bubble {
-    font-size: 12px;
+    font-size: $font-size-xs;
     height: 17px;
     margin-top: 2px;
     margin-left: 2px;
@@ -148,13 +148,13 @@ export default {
     height: 0.5rem;
   }
   .dropdown-option.selected {
-    border-radius: 0.3rem;
+    border-radius: $radius-s;
     color: var(--primary-color);
   }
   label {
     display: block;
     margin-bottom: 8px;
-    font-size: 16px;
+    font-size: $font-size-desktop;
     font-weight: bold;
     color: var(--sec-font-color);
   }
@@ -164,9 +164,9 @@ export default {
     .dropdown-button {
       width: 100%;
       padding: 12px 10px;
-      font-size: 16px;
+      font-size: $font-size-desktop;
       border: none;
-      border-radius: 6px;
+      border-radius: $radius-md;
       background-color: var(--bg-color);
       color: var(--sec-font-color);
       border: 1px solid var(--border-color);
@@ -191,7 +191,7 @@ export default {
     background-color: var(--bg-color);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     z-index: 1000;
-    border-radius: 6px;
+    border-radius: $radius-md;
     margin-top: 0.5rem;
     padding: 0.5rem 0;
     box-sizing: border-box;
@@ -201,14 +201,14 @@ export default {
   .dropdown-option {
     position: relative;
     padding: 12px 34px;
-    font-size: 16px;
+    font-size: $font-size-desktop;
     color: var(--sec-font-color);
     cursor: pointer;
     transition: background-color 0.3s ease;
 
     &:hover {
       background-color: var(--active-bg-color);
-      border-radius: 0.3rem;
+      border-radius: $radius-s;
       color: var(--primary-color);
     }
 
@@ -232,7 +232,7 @@ export default {
 
   .dropdown-options::-webkit-scrollbar-thumb {
     background-color: var(--font-color);
-    border-radius: 3px;
+    border-radius: $radius-sm;
   }
 
 

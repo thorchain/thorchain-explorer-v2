@@ -10,7 +10,7 @@ export default {
 .color-hash {
   height: 10px;
   width: 10px;
-  border-radius: 50%;
+  border-radius: $radius-full;
 
   &:hover {
     filter: brightness(150%);

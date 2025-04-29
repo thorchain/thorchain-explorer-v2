@@ -81,7 +81,7 @@ export default {}
 }
 .tx-container {
   padding: 20px;
-  border-radius: 10px;
+  border-radius: $radius-2lg;
   max-width: 680px;
   margin: auto;
   background-color: var(--card-bg-color);
@@ -106,7 +106,7 @@ export default {}
 }
 .tx-info {
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: $radius-lg;
   display: flex;
   flex-direction: row;
   gap: 1rem;
@@ -136,7 +136,7 @@ export default {}
 .section {
   margin-top: 1.5rem;
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: $radius-lg;
 }
 
 .section-item {

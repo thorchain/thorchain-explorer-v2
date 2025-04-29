@@ -255,7 +255,7 @@ Vue.mixin(global)
       width: 100%;
       max-width: 30rem;
       border: 2px solid var(--border-color);
-      border-radius: 0.75rem;
+      border-radius: $radius-xl;
       background-color: var(--card-bg-color);
       box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
       transition: all 0.3s ease;
@@ -271,7 +271,7 @@ Vue.mixin(global)
         flex: 1;
         border: none;
         height: 40px;
-        border-radius: 0.75rem;
+        border-radius: $radius-xl;
         color: var(--sec-font-color);
         background-color: var(--input-bg-color);
         border: 1px solid var(--border-color);
@@ -298,7 +298,7 @@ Vue.mixin(global)
         transition: background-color 0.3s ease;
         background-color: var(--search-color);
         padding: 6px;
-        border-radius: 4px;
+        border-radius: $radius-sm;
 
         &:hover {
           background-color: var(--active-primary-color);

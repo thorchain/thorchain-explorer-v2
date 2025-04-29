@@ -424,7 +424,7 @@ export default {
   align-items: center;
   margin-top: 1rem;
   border: 1px solid var(--border-color);
-  border-radius: 0.5rem;
+  border-radius: $radius-lg;
   padding: 4px 5px;
   gap: 2rem;
   width: 21rem;
@@ -441,18 +441,18 @@ export default {
 
     flex: 1;
     padding: 10px 4px;
-    font-size: 1rem;
+    font-size: $font-size-desktop;
     color: var(--bs-secondary-color);
 
     background-color: transparent;
     border: none;
-    border-radius: 8px;
+    border-radius: $radius-lg;
     cursor: pointer;
     transition: all 0.3s ease-in-out;
 
     &.active {
       padding: 0.5rem;
-      border-radius: 0.5rem;
+      border-radius: $radius-lg;
       margin: 1.5px 5px;
       background-color: var(--border-color);
       color: #ffa86b;
@@ -506,7 +506,7 @@ export default {
   content: '';
   height: 19px;
   width: 21px;
-  border-radius: 50%;
+  border-radius: $radius-full;
   left: 4px;
   bottom: 4px;
   background-color: var(--sec-font-color);
@@ -522,7 +522,7 @@ input:checked + .slider:before {
 }
 
 .unit-label {
-  font-size: 14px;
+  font-size: $font-size-sm;
   color: var(--font-color);
   margin-left: 10px;
 }
@@ -546,12 +546,12 @@ input:checked + .slider:before {
 
 h3 {
   margin-bottom: 10px;
-  font-size: 16px;
+  font-size: $font-size-desktop;
   color: var(--font-color);
 }
 
 .total-burned {
-  font-size: 16px;
+  font-size: $font-size-desktop;
   font-weight: bold;
   color: var(--sec-font-color);
 }
@@ -565,7 +565,7 @@ h3 {
   text-align: center;
   background-color: var(--bg-color);
   border: 1px solid var(--border-color);
-  border-radius: 1rem;
+  border-radius: $radius-2xl;
   padding: 1rem 2rem;
   font-size: 1.875rem;
   color: var(--sec-font-color);
@@ -577,7 +577,7 @@ h3 {
     margin: auto;
   }
   h3 {
-    font-size: 1.2rem;
+    font-size: $font-size-lg;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -619,7 +619,7 @@ h3 {
   .burn-icon {
     width: 2rem;
     height: 2rem;
-    border-radius: 50%;
+    border-radius: $radius-full;
     margin-right: 0.5rem;
     fill: #ffa86b;
   }
@@ -628,7 +628,7 @@ h3 {
 .block-card {
   background-color: var(--bg-color);
   border: 1px solid var(--border-color);
-  border-radius: 1rem;
+  border-radius: $radius-2xl;
   padding: 0.5rem 1rem;
   max-width: 50rem;
   margin: auto;
@@ -652,7 +652,7 @@ h3 {
       flex-direction: column;
 
       .height {
-        font-size: 1.2rem;
+        font-size: $font-size-lg;
         color: var(--sec-font-color);
       }
     }

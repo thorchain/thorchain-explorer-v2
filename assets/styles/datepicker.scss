@@ -32,7 +32,7 @@ $time-active-background-color: transparent !default;
 $time-hover-color: $default-color !default;
 $time-hover-background-color: mix(#191c1e, $calendar-active-background-color, 95%) !default;
 
-$input-border-radius: 4px !default;
+$input-border-radius: $radius-sm !default;
 $sidebar-margin-left: 100px !default;
 /* Customize the datepicker's appearance */
 @import '~vue2-datepicker/scss/index.scss';

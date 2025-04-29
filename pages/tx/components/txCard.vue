@@ -228,7 +228,7 @@ $border-size: 2px;
 .tx-card {
   max-width: 680px;
   background-color: var(--card-bg-color);
-  border-radius: 0.5rem;
+  border-radius: $radius-lg;
   border: 1px solid var(--border-color);
   margin: 0 10px;
 
@@ -338,10 +338,10 @@ $border-size: 2px;
         gap: 6px;
 
         .mono {
-          font-size: 0.75rem;
+          font-size: $font-size-xs;
 
           @include md {
-            font-size: 0.9rem;
+            font-size: $font-size-mobile;
           }
         }
       }
@@ -352,7 +352,7 @@ $border-size: 2px;
         justify-content: end;
         border: 2px solid var(--right-border);
 
-        border-radius: 0.5rem;
+        border-radius: $radius-lg;
         .tx-asset {
           .custom-icon {
             fill: var(--right-border);
@@ -364,7 +364,7 @@ $border-size: 2px;
         background-color: var(--card-bg);
         padding: 8px;
         border: 2px solid var(--left-border);
-        border-radius: 0.5rem;
+        border-radius: $radius-lg;
 
         .tx-asset {
           .custom-icon {
@@ -416,7 +416,7 @@ $border-size: 2px;
   position: relative;
   width: 28px;
   height: 28px;
-  border-radius: 50%;
+  border-radius: $radius-full;
   animation: rotation 1.5s linear infinite;
 
   &::before {
@@ -426,7 +426,7 @@ $border-size: 2px;
     top: 0;
     width: 22px;
     height: 22px;
-    border-radius: 50%;
+    border-radius: $radius-full;
     border: 3px solid transparent;
     border-bottom: 3px solid var(--left-border);
     border-right: 3px solid var(--left-border);
@@ -439,7 +439,7 @@ $border-size: 2px;
     top: 0;
     width: 22px;
     height: 22px;
-    border-radius: 50%;
+    border-radius: $radius-full;
     border: 3px solid transparent;
     border-top: 3px solid var(--right-border);
     border-left: 3px solid var(--right-border);

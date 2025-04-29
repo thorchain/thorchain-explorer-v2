@@ -41,7 +41,7 @@ export default {
     width: 20px;
     height: 20px;
     background: #fff;
-    border-radius: 50%;
+    border-radius: $radius-full;
     transition: 0.3s;
   }
 

@@ -1,10 +1,23 @@
-$font-size-desktop: 16px;
+$font-size-desktop : 16px;
 $font-size-mobile: 15px;
+$font-size-xxs: 10px;
 $font-size-xs: 12px;
 $font-size-s: 13px;
 $font-size-sm: 14px;
-$font-size-smm:17px;
+$font-size-smm: 17px;
 $font-size-md: 18px;
 $font-size-lg: 20px;
 $font-size-xl: 24px;
 $font-size-xxl: 32px;
+
+// Border Radius Variables
+$radius-none: 0;
+$radius-xs: 2px;
+$radius-sm: 4px;
+$radius-s: 5px;
+$radius-md: 6px;
+$radius-lg: 8px;
+$radius-2lg:10px;
+$radius-xl: 12px;
+$radius-2xl: 16px;
+$radius-full: 9999px;

@@ -700,7 +700,7 @@ export default {
 }
 .asset-chain {
   height: 1.2rem;
-  border-radius: 50%;
+  border-radius: $radius-full;
 }
 .popover-table {
   display: flex;
@@ -739,7 +739,7 @@ export default {
 }
 
 .extra {
-  font-size: 0.7rem;
+  font-size: $font-size-xs;
 }
 
 .node-table {
@@ -796,7 +796,7 @@ export default {
 
 .modal-content {
   background: var(--card-bg-color);
-  border-radius: 0.5rem;
+  border-radius: $radius-lg;
   text-align: left;
   color: var(--sec-font-color);
   width: 300px;
@@ -820,7 +820,7 @@ export default {
 }
 
 .modal-header h3 {
-  font-size: 18px;
+  font-size: $font-size-md;
   margin: 0;
   color: var(--sec-font-color);
 }
@@ -832,7 +832,7 @@ export default {
   td {
     padding: 8px;
     text-align: left;
-    font-size: 14px;
+    font-size: $font-size-sm;
   }
 
   th {
@@ -851,7 +851,7 @@ export default {
   }
 }
 .footer-table {
-  font-size: 14px;
+  font-size: $font-size-sm;
   display: flex;
   align-content: center;
   justify-content: center;
@@ -863,14 +863,14 @@ export default {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 0.7rem;
+  font-size: $font-size-xs;
   background: var(--active-bg-color);
   padding: 3px;
-  border-radius: 3px;
+  border-radius: $radius-sm;
   color: var(--sec-font-color);
 
   .arrow-container {
-    font-size: 0.6rem;
+    font-size: $font-size-xxs;
   }
 }
 

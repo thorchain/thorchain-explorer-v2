@@ -146,7 +146,7 @@
     }
   
     @include md {
-      border-radius: 0.5rem;
+      border-radius: $radius-lg;
     }
   
     .data-item {
@@ -211,7 +211,7 @@
   
           .affiliate-value {
             line-height: 1.4;
-            font-size: 1.05rem;
+            font-size: $font-size-smm;
             color: var(--sec-font-color);
             font-weight: bold;
           }

@@ -65,7 +65,7 @@ export default {
     }
 
     p {
-      font-size: 1rem;
+      font-size: $font-size-desktop;
       color: var(--color-light);
     }
     @include sm {
@@ -80,7 +80,7 @@ export default {
     padding: 10px 20px;
     background-color: var(--primary-color);
     color: var(--bg-color);
-    border-radius: 5px;
+    border-radius: $radius-s;
     text-decoration: none;
     margin: 0.5rem;
   }

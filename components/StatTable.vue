@@ -130,7 +130,7 @@ export default {
 
     background-color: var(--card-bg-color);
     border: 1px solid var(--border-color);
-    border-radius: 5px 5px 0 0;
+    border-radius: $radius-s $radius-s 0 0;
     border-bottom: none;
 
     .stat-header-btn {
@@ -141,7 +141,7 @@ export default {
     .stat-header-text {
       display: flex;
       align-items: center;
-      font-size: 1.125rem;
+      font-size: $font-size-md;
       font-weight: 700;
     }
 
@@ -153,7 +153,7 @@ export default {
 
   .stat-table-container {
     background-color: var(--bg-color);
-    border-radius: 0 0 5px 5px;
+    border-radius: 0 0 $radius-s $radius-s;
     border: 1px solid var(--border-color);
   }
 
@@ -176,7 +176,7 @@ export default {
       .img-div {
         display: inherit;
         img {
-          border-radius: 50%;
+          border-radius: $radius-full;
           margin-right: 0.5rem;
           width: 1.5rem;
         }
@@ -191,7 +191,7 @@ export default {
 
         .usd-value {
           color: var(--font-color);
-          font-size: 0.8rem;
+          font-size: $font-size-s;
         }
 
         .danger-text {
@@ -206,7 +206,7 @@ export default {
 
       .col-header {
         display: flex;
-        font-size: 0.75rem;
+        font-size:$font-size-xs;
 
         .header-icon {
           margin-left: 5px;
@@ -230,12 +230,12 @@ pre {
 
 pre.rune-value {
   font-family: 'Roboto Mono';
-  font-size: 0.8rem;
+  font-size: $font-size-s;
 }
 
 .value-item {
   font-family: 'Roboto Mono';
-  font-size: 0.8rem;
+  font-size: $font-size-s;
 }
 
 .stat-loader {

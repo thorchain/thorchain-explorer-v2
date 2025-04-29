@@ -420,7 +420,7 @@ export default {
 
   span {
     display: block;
-    font-size: 0.9rem;
+    font-size: $font-size-mobile;
   }
 }
 
@@ -444,7 +444,7 @@ export default {
 
   .stat-card {
     padding: 2rem 0;
-    border-radius: 8px;
+    border-radius: $radius-lg;
     background-color: var(--card-bg-color);
     border: 1px solid var(--border-color);
 
@@ -455,7 +455,7 @@ export default {
 
     .stat-value {
       color: var(--sec-font-color);
-      font-size: 1.5rem;
+      font-size: $font-size-xl;
       text-align: center;
       min-width: 80%;
     }

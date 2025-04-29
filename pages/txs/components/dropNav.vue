@@ -105,7 +105,7 @@ export default {
 
     .nav-box-mainframe {
       padding: 0.5rem 1rem;
-      border-radius: 0.5rem;
+      border-radius: $radius-lg;
       background-color: var(--card-bg-color);
       border: 1px solid var(--border-color);
       min-width: 100px;
@@ -125,7 +125,7 @@ export default {
       display: flex;
       flex-direction: column;
       border: 1px solid var(--border-color);
-      border-radius: 0.5rem;
+      border-radius: $radius-lg;
       min-width: 100px;
       margin-top: 0.3rem;
       left: 50%;
@@ -152,11 +152,11 @@ export default {
         }
 
         &:first-of-type {
-          border-radius: 0.5rem 0.5rem 0 0;
+          border-radius: $radius-lg $radius-lg 0 0;
         }
 
         &:last-of-type {
-          border-radius: 0 0 0.5rem 0.5rem;
+          border-radius: 0 0 $radius-lg $radius-lg;
         }
 
         &:hover {

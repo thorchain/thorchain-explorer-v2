@@ -80,7 +80,7 @@ export default {
   flex-direction: column;
   word-wrap: break-word;
   border: 1px solid var(--border-color);
-  border-radius: 0.5rem;
+  border-radius: $radius-lg;
   background-color: var(--card-bg-color);
   max-width: 100%;
   margin: 0 10px;
@@ -159,7 +159,7 @@ export default {
       gap: 10px;
       cursor: pointer;
       padding: 5px;
-      border-radius: 5px;
+      border-radius: $radius-s;
 
       .icon {
         margin-right: 0;

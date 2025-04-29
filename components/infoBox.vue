@@ -71,10 +71,10 @@ export default {
     align-items: center;
     justify-content: center;
     padding: 1rem;
-    border-radius: 0.5rem;
+    border-radius: $radius-lg;
     text-align: center;
     font-weight: bold;
-    font-size: 12px;
+    font-size: $font-size-xs;
     transition: all 0.3s ease;
 
     .item-content {

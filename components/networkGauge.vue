@@ -204,7 +204,7 @@ export default {
       .color-box {
         width: 15px;
         height: 15px;
-        border-radius: 50%;
+        border-radius: $radius-full;
         margin-right: 10px;
       }
     }

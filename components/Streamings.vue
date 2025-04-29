@@ -445,7 +445,7 @@ export default {
 .custom-card {
   display: flex;
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: $radius-lg;
   padding: 0.75rem;
   margin-bottom: 0.5rem;
 }

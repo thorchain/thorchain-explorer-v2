@@ -1876,14 +1876,14 @@ export default {
 .burn-icon {
   width: 0.7rem;
   height: 0.7rem;
-  border-radius: 50%;
+  border-radius: $radius-full;
   fill: #ffa86b;
 }
 
 .rune-icon {
   width: 0.7rem;
   height: 0.7rem;
-  border-radius: 50%;
+  border-radius: $radius-full;
   fill: var(--sec-font-color);
 }
 
@@ -2066,7 +2066,7 @@ export default {
     border: 1px solid var(--border-color);
     min-width: 280px;
     background-color: var(--bg-color);
-    border-radius: 8px;
+    border-radius: $radius-lg;
     padding: 15px;
     flex: 1;
   }
@@ -2191,7 +2191,7 @@ export default {
 
   .view-all-button {
     background-color: var(--bg-color);
-    border-radius: 0.5rem;
+    border-radius: $radius-lg;
     border: 1px solid var(--border-color);
     display: flex;
     align-items: center;
@@ -2222,7 +2222,7 @@ export default {
 
 .swaps-nav {
   background-color: var(--bg-color);
-  border-radius: 0.5rem;
+  border-radius: $radius-lg;
   border: 1px solid var(--border-color);
   display: flex;
   align-items: center;

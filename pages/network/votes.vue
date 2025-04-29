@@ -441,11 +441,11 @@ export default {
     color: var(--sec-font-color);
     background-color: var(--bg-color);
     border: 1px solid var(--border-color) !important;
-    border-radius: 0.5rem;
+    border-radius: $radius-lg;
     outline: none;
     margin: 2px;
     padding: 12px;
-    font-size: 0.9062rem;
+    font-size: $font-size-mobile;
     font-weight: 450;
 
     &:focus {
@@ -471,7 +471,7 @@ export default {
 }
 
 .mimir-value {
-  font-size: 0.875rem;
+  font-size: $font-size-sm;
   color: var(--sec-font-color);
   margin-top: 0.5rem;
 }
@@ -494,7 +494,7 @@ export default {
 }
 
 .key-list {
-  font-size: 0.875rem;
+  font-size: $font-size-sm;
   color: var(--sec-font-color);
 }
 
@@ -506,6 +506,7 @@ export default {
   .progress-overtext {
     display: flex;
     justify-content: space-between;
+    font-size: $font-size-sm;
 
     .key-name {
       display: flex;
@@ -536,7 +537,7 @@ export default {
 }
 
 .progress-text {
-  font-size: 0.75rem;
+  font-size: $font-size-xs;
   color: var(--sec-font-color);
 }
 
@@ -544,7 +545,7 @@ export default {
   width: 210px;
   height: 8px;
   background-color: var(--border-color);
-  border-radius: 4px;
+  border-radius: $radius-sm;
   overflow: hidden;
 }
 
@@ -564,7 +565,7 @@ export default {
 }
 
 .change-24h {
-  font-size: 0.75rem;
+  font-size: $font-size-xs;
   color: var(--sec-font-color);
   display: flex;
   align-items: center;
@@ -599,7 +600,7 @@ export default {
 
   &::-webkit-scrollbar-thumb {
     background-color: var(--border-color);
-    border-radius: 4px;
+    border-radius: $radius-sm;
   }
 
   &::-webkit-scrollbar-track {
@@ -610,7 +611,7 @@ export default {
 .recent-vote-card {
   background: var(--bg-color);
   border: 1px solid var(--border-color) !important;
-  border-radius: 8px;
+  border-radius: $radius-lg;
   padding: 16px;
   min-width: 250px;
   flex: 0 0 auto;
@@ -621,7 +622,7 @@ export default {
   }
 
   .vote-value {
-    font-size: 1.1rem;
+    font-size: $font-size-md;
     font-weight: 600;
     color: var(--sec-font-color);
   }
@@ -630,7 +631,7 @@ export default {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 0.9rem;
+    font-size: $font-size-sm;
 
     small {
       color: var(--sec-font-color);
@@ -643,13 +644,13 @@ export default {
     }
   }
   .vote-date {
-    font-size: 0.85rem;
+    font-size: $font-size-sm;
     color: var(--sec-font-color);
     margin-top: 8px;
   }
 
   .node-address {
-    font-size: 0.85rem;
+    font-size: $font-size-sm;
     color: var(--sec-font-color);
     word-break: break-all;
     margin-top: 8px;

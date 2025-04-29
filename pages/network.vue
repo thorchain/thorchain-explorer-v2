@@ -47,7 +47,7 @@ export default {
     margin: 0 0.1rem;
     color: var(--font-color);
     text-decoration: none;
-    border-radius: 0.3rem;
+    border-radius: $radius-s;
 
     &:first-of-type {
       margin-left: 0;

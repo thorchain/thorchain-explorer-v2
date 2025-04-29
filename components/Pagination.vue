@@ -68,7 +68,7 @@ export default {
   justify-content: flex-end;
   align-items: center;
   padding: 0.5rem;
-  border-radius: 0.5rem;
+  border-radius: $radius-lg;
 
   .divider {
     margin: 0 5px;
@@ -84,10 +84,10 @@ export default {
     cursor: pointer;
     margin: 0 0.3rem;
     padding: 10px 8px;
-    border-radius: 0.25rem;
+    border-radius: $radius-sm;
     background-color: var(--card-bg-color);
     color: var(--font-color);
-    font-size: 0.75rem;
+    font-size: $font-size-xs;
     font-weight: 500;
     transition:
       background-color 0.3s ease,
@@ -117,7 +117,7 @@ export default {
     color: var(--font-color);
     line-height: 2rem;
     margin: 0 1rem;
-    font-size: 0.875rem;
+    font-size: $font-size-sm;
     font-weight: 500;
   }
 }

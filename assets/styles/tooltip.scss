@@ -10,12 +10,12 @@
 .v-popper--theme-menu .v-popper__inner,
 .v-popper--theme-tooltip .v-popper__inner {
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.9rem;
+  font-size: $font-size-sm;
   color: var(--sec-font-color);
   background-color: var(--bgt-color);
   padding: 10px;
   border: 1px var(--border-color) solid;
-  border-radius: 8px;
+  border-radius: $radius-lg;
   outline: none;
   backdrop-filter: blur(5px);
   margin: 1px;

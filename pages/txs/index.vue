@@ -337,11 +337,11 @@ export default {
   display: flex;
   align-items: center;
   padding: 10px 8px;
-  font-size: 0.875rem;
+  font-size: $font-size-sm;
   background-color: var(--card-bg-color);
   color: var(--font-color);
   border: 1px solid var(--border-color);
-  border-radius: 0.3rem;
+  border-radius: $radius-s;
   cursor: pointer;
   width: auto;
   margin: 0.5rem;
@@ -399,11 +399,11 @@ export default {
     justify-content: center;
     cursor: pointer;
     padding: 10px 8px;
-    border-radius: 0.25rem;
+    border-radius: $radius-sm;
     background-color: var(--card-bg-color);
     color: var(--font-color);
     border: 1px solid var(--border-color);
-    font-size: 0.75rem;
+    font-size: $font-size-xs;
     font-weight: 500;
     transition:
       background-color 0.3s ease,
@@ -429,7 +429,7 @@ export default {
 }
 .modal-content {
   background: var(--card-bg-color);
-  border-radius: 0.5rem;
+  border-radius: $radius-lg;
   text-align: left;
   color: var(--sec-font-color);
   width: 500px;
@@ -464,7 +464,7 @@ export default {
 }
 
 .modal-header h3 {
-  font-size: 18px;
+  font-size: $font-size-md;
   margin: 0;
   color: var(--sec-font-color);
 }
@@ -488,11 +488,11 @@ export default {
     justify-content: center;
     cursor: pointer;
     padding: 10px 8px;
-    border-radius: 0.25rem;
+    border-radius: $radius-sm;
     background-color: var(--card-bg-color);
     color: var(--font-color);
     border: none;
-    font-size: 0.75rem;
+    font-size: $font-size-xs;
     font-weight: 500;
     border: 1px solid var(--border-color);
 

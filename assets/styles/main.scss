@@ -12,7 +12,7 @@ body,
 #__nuxt,
 #__layout,
 main {
-  font-size: 16px; //root font-size
+  font-size: $font-size-desktop; //root font-size
 }
 
 body {
@@ -81,7 +81,7 @@ input {
   .submenu {
     display: block;
     background-color: var(--card-bg-color);
-    border-radius: 0 0 0.5rem 0.5rem;
+    border-radius: 0 0 $radius-lg $radius-lg;
     z-index: 1000;
     padding: 0.5rem 0.375rem;
     min-width: 9rem;
@@ -105,7 +105,7 @@ input {
   }
 
   .submenu-item {
-    font-size: 13px;
+    font-size: $font-size-s;
     display: block;
     padding: 0.75rem;
     white-space: nowrap;
@@ -115,14 +115,14 @@ input {
 
     &.active,
     &.nuxt-link-exact-active {
-      border-radius: 0.3rem;
+      border-radius: $radius-s;
       color: var(--primary-color);
       margin-bottom: 5px;
     }
 
     &:hover {
       background-color: var(--darker-bg);
-      border-radius: 0.3rem;
+      border-radius: $radius-s;
       color: var(--primary-color);
     }
   }
@@ -150,8 +150,8 @@ input {
   margin: 15px;
   background-color: var(--card-bg-color) !important;
   border: 1px solid var(--border-color) !important;
-  border-radius: 5px;
-  font-size: 0.9rem;
+  border-radius:$radius-s;
+  font-size: $font-size-sm;
 
   .key {
     word-break: keep-all;
@@ -191,7 +191,7 @@ input {
 
   &.card-bg {
     border: 1px solid var(--border-color);
-    border-radius: 5px;
+    border-radius: $radius-s;
     min-height: initial;
     padding: 20px;
     background-color: var(--card-bg-color);
@@ -237,12 +237,12 @@ input {
 
   &.normal {
     border-width: 1px;
-    border-radius: 0.5rem;
+    border-radius: $radius-lg;
   }
 
   @include lg {
     border-width: 1px;
-    border-radius: 0.5rem;
+    border-radius: $radius-lg;
   }
 
   .card-header {
@@ -255,11 +255,11 @@ input {
 
     span {
       color: var(--font-color);
-      font-size: 1rem;
+      font-size: $font-size-desktop;
     }
 
     .card-header-title {
-      font-size: 0.875rem;
+      font-size: $font-size-sm;
       font-weight: 600;
       margin-bottom: 0;
 
@@ -282,12 +282,12 @@ input {
         color: var(--sec-font-color);
 
         .header {
-          font-size: 0.975rem;
+          font-size: $font-size-desktop;
         }
 
         .timestamp {
           color: var(--font-color);
-          font-size: 0.75rem;
+          font-size: $font-size-xs;
         }
       }
 
@@ -304,7 +304,7 @@ input {
 
           white-space: nowrap;
           word-break: keep-all;
-          font-size: 0.875rem;
+          font-size:$font-size-sm;
           color: var(--sec-font-color);
 
           .value {
@@ -343,7 +343,7 @@ input {
   margin: 0;
 
   .card-header {
-    font-size: 0.875rem;
+    font-size: $font-size-sm;
   }
 }
 
@@ -376,7 +376,7 @@ input {
 
 .error-container {
   padding: 1rem;
-  border-radius: 0.5rem;
+  border-radius: $radius-lg;
   background-color: var(--bg-color);
   border: 1px solid var(--border-color);
   color: var(--sec-font-color);
@@ -389,7 +389,7 @@ input {
   border-width: 1px 0 1px 0;
   color: var(--sec-font-color);
   margin: 0 10px;
-  border-radius: 0.5rem;
+  border-radius: $radius-lg;
   border-width: 1px;
 
   @include lg {
@@ -403,22 +403,22 @@ input {
 
   thead th {
     color: var(--font-color);
-    font-size: 0.875rem;
+    font-size: $font-size-sm;
     background: var(--bg-color);
     border-color: var(--border-color);
 
     &:first-of-type {
-      border-radius: 0.3rem 0 0 0;
+      border-radius: $radius-s 0 0 0;
     }
 
     &:last-of-type {
-      border-radius: 0 0.3rem 0 0;
+      border-radius: 0 $radius-s 0 0;
     }
   }
 
   tbody tr {
     td {
-      font-size: 0.875rem;
+      font-size: $font-size-sm;
       color: var(--sec-font-color);
       border-color: var(--border-color);
       vertical-align: middle;
@@ -434,16 +434,15 @@ input {
 
 .vgt-wrap {
   overflow: auto;
-  border-radius: 0.5rem;
-  border-radius: 1px solid var(--border-color);
+  border-radius: $radius-lg;
 
   .vgt-inner-wrap {
-    border-radius: 0;
+    border-radius: $radius-none;
   }
 }
 
 .vgt-wrap__footer {
-  font-size: 0.875rem !important;
+  font-size: $font-size-sm !important;
   border-top: none !important;
   border: none !important;
   border-top: 1px solid !important;
@@ -472,7 +471,7 @@ input {
   vertical-align: middle !important;
 
   span {
-    font-size: 0.85rem !important;
+    font-size: $font-size-sm !important;
   }
 }
 
@@ -535,7 +534,7 @@ input {
 .asset-icon {
   width: 1.5rem;
   height: 1.5rem;
-  border-radius: 50%;
+  border-radius: $radius-full;
   margin-right: 0.5rem;
 
   &.synth {
@@ -631,12 +630,12 @@ input {
 .mini-bubble {
   display: inline-flex;
   font-weight: bold;
-  font-size: 0.85rem;
+  font-size: $font-size-sm;
   padding: 2px 6px;
   justify-content: center;
   align-items: center;
   color: var(--bubble-font-color);
-  border-radius: 0.2rem;
+  border-radius: $radius-sm;
   background-color: #81c784;
   color: #1b5e20;
   line-height: 1;
@@ -702,14 +701,14 @@ input {
 }
 
 .mini-bubble {
-  font-size: 0.75rem;
-  border-radius: 1rem;
+  font-size: $font-size-xs;
+  border-radius: $radius-2xl;
   color: rgb(3 84 63);
   fill: rgb(3 84 63);
   background-color: rgb(222 247 236);
 
   &.big {
-    font-size: 0.85rem;
+    font-size: $font-size-sm;
   }
 
   &.yellow {
@@ -788,7 +787,7 @@ input {
 //extra text
 .extra-text {
   font-family: 'ProductSans';
-  font-size: 0.7rem;
+  font-size: $font-size-xs;
 }
 
 .utility {
@@ -804,7 +803,7 @@ input {
   justify-content: center;
   cursor: pointer;
   padding: 0.4rem;
-  border-radius: 0.3rem;
+  border-radius: $radius-s;
   background-color: var(--bg-color);
   margin: 10px 0;
 
@@ -814,7 +813,7 @@ input {
 
   .icon-name {
     color: var(--sec-font-color);
-    font-size: 0.625rem;
+    font-size: $font-size-xxs;
     margin-right: 0.3rem;
   }
 }
@@ -903,15 +902,15 @@ input {
 .data-color {
   width: 10px;
   height: 10px;
-  border-radius: 50%;
+  border-radius: $radius-full;
 }
 
 //Button Style
 .button-container {
   background: var(--card-bg-color);
-  border-radius: 0.5rem;
+  border-radius: $radius-lg;
   border: 1px solid var(--border-color);
-  font-size: 0.8rem;
+  font-size: $font-size-s;
   padding: 0.5rem 1rem;
   cursor: pointer;
   color: var(--sec-font-color);
@@ -956,7 +955,7 @@ input {
 .pagination.b-pagination {
   display: flex;
   list-style: none;
-  border-radius: 0.5rem;
+  border-radius: $radius-lg;
   padding: 0 10px;
 
   @include lg {
@@ -1005,7 +1004,7 @@ input {
   width: 26px;
   height: 26px;
   border: 3px solid var(--sec-font-color);
-  border-radius: 50%;
+  border-radius: $radius-full;
   border-top-color: var(--card-bg-color);
   animation: spin 1s ease-in-out infinite;
   -webkit-animation: spin 1s ease-in-out infinite;
@@ -1153,12 +1152,12 @@ a {
 
 ::-webkit-scrollbar-track {
   background-color: var(--bg-color);
-  border-radius: 2px;
+  border-radius: $radius-xs;
 }
 
 ::-webkit-scrollbar-thumb {
   background-color: var(--border-color);
-  border-radius: 2px;
+  border-radius: $radius-xs;
 }
 
 ::-webkit-scrollbar-thumb:hover {

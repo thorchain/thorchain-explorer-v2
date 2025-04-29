@@ -16,7 +16,7 @@ export default {
   align-items: center;
   justify-content: center;
   padding: 0.4rem;
-  border-radius: 0.3rem;
+  border-radius: $radius-s;
   background-color: var(--bg-color);
   height: 1.6rem;
 

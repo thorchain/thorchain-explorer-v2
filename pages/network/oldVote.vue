@@ -495,17 +495,17 @@ export default {
   gap: 10px;
   padding: 10px;
   border: 1px solid var(--border-color) !important;
-  border-radius: 0.5rem;
+  border-radius: $radius-lg ;
 }
 .data-color {
   margin-right: 6px;
   width: 10px;
   height: 10px;
-  border-radius: 50%;
+  border-radius: $radius-full;
 }
 .votes-item {
-  border-radius: 10px;
-  font-size: 14px;
+  border-radius: $radius-2lg;
+  font-size: $font-size-sm;
 }
 .tooltip-header {
   display: flex;
@@ -541,6 +541,6 @@ export default {
   color: var(--sec-font-color);
   background-color: var(--border-color);
   padding: 0px 4px;
-  border-radius: 5px;
+  border-radius: $radius-s;
 }
 </style>

@@ -227,7 +227,7 @@ export default {
   align-items: center;
   background-color: var(--card-bg-color);
   color: var(--sec-font-color);
-  border-radius: 0.5rem;
+  border-radius: $radius-lg;
   padding: 1rem;
   margin-bottom: 1rem;
 }

@@ -435,7 +435,7 @@ export default {
       text-overflow: ellipsis;
       white-space: nowrap;
       word-break: keep-all;
-      font-size: 0.875rem;
+      font-size: $font-size-sm;
       color: var(--sec-font-color);
 
       .value {
@@ -447,7 +447,7 @@ export default {
 
 .date {
   color: var(--sec-font-color);
-  font-size: 0.875rem;
+  font-size: $font-size-sm;
   margin-bottom: 0.5rem;
   padding-left: 0.5rem;
 }
@@ -460,7 +460,7 @@ export default {
   justify-content: space-between;
 
   span {
-    font-size: 0.9rem;
+    font-size: $font-size-mobile;
   }
 }
 .asset-details {
@@ -508,7 +508,7 @@ export default {
 }
 .overview-card {
   background-color: var(--bg-color);
-  border-radius: 0.5rem;
+  border-radius: $radius-lg;
   transition:
     transform 0.3s ease,
     box-shadow 0.3s ease;
@@ -723,7 +723,7 @@ export default {
     }
 
     span {
-      font-size: 0.9rem;
+      font-size: $font-size-mobile;
       display: flex;
       align-items: center;
       gap: 3px;

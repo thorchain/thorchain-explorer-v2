@@ -881,13 +881,13 @@ export default {
 .legend-item {
   display: flex;
   align-items: center;
-  font-size: 0.8rem;
+  font-size: $font-size-s;
   padding: 0 0.1rem;
 
   .legend-fill {
     width: 5px;
     height: 5px;
-    border-radius: 50%;
+    border-radius: $radius-full;
     margin-right: 5px;
   }
 
@@ -915,7 +915,7 @@ export default {
     display: flex;
     flex-direction: column;
     border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border-radius: $radius-lg;
     padding: 1rem;
     align-items: center;
     justify-content: center;
@@ -927,7 +927,7 @@ export default {
       justify-content: center;
       align-items: center;
       gap: 5px;
-      font-size: 1.2rem;
+      font-size: $font-size-md;
       color: var(--sec-font-color);
       margin: 5px 0;
       min-width: 20%;

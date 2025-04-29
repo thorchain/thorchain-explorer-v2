@@ -67,7 +67,7 @@ export default {
 
   .table-stat-card {
     padding: 2rem 0;
-    border-radius: 8px;
+    border-radius: $radius-lg;
     background-color: var(--card-bg-color);
     border: 1px solid var(--border-color);
     gap: 0.2rem;

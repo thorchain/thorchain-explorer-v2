@@ -284,7 +284,7 @@ export default {
   .since,
   .date,
   .time {
-    font-size: 0.875rem;
+    font-size: $font-size-sm;
   }
 
   .tx-header {
@@ -304,7 +304,7 @@ export default {
     display: flex;
     flex: 1;
     border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
+    border-radius: $radius-lg;
     margin-left: 2rem;
 
     > * {
@@ -344,7 +344,7 @@ export default {
     .icon-arrow {
       fill: var(--font-color);
       background-color: var(--border-color);
-      border-radius: 50%;
+      border-radius: $radius-full;
       position: absolute;
       width: 2rem;
       left: -1rem;
@@ -354,7 +354,7 @@ export default {
     .asset-icon {
       width: 1.2rem;
       height: 1.2rem;
-      border-radius: 50%;
+      border-radius: $radius-full;
     }
   }
 }

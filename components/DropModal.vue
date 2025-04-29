@@ -48,7 +48,7 @@ export default {
 
   .action-btn {
     cursor: pointer;
-    border-radius: 0.5rem;
+    border-radius: $radius-lg;
 
     &.on {
       background-color: var(--active-bg-color);
@@ -72,11 +72,11 @@ export default {
     color: var(--font-color);
     text-decoration: none;
     padding: 0.5rem;
-    border-radius: 0.2rem;
+    border-radius: $radius-sm;
     margin: 0 0.2rem;
     gap: 10px;
     font-family: 'Exo 2';
-    font-size: 0.9rem;
+    font-size: $font-size-mobile;
     text-wrap: nowrap;
 
     .menu-icon {

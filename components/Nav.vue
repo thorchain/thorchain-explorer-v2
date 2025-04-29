@@ -61,7 +61,7 @@ export default {
     margin: 0 0.1rem;
     color: var(--font-color);
     text-decoration: none;
-    border-radius: 0.3rem;
+    border-radius: $radius-s;
 
     &.active,
     &.nuxt-link-exact-active {
@@ -84,7 +84,7 @@ export default {
     border: 1px solid var(--border-color);
     border-width: 1px;
     margin: 0px 10px 10px 10px;
-    border-radius: 5px;
+    border-radius: $radius-s;
 
 @include lg {
   margin: 0px 0px 10px 0px;

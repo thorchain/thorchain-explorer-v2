@@ -485,13 +485,13 @@ export default {
 .legend-item {
   display: flex;
   align-items: center;
-  font-size: 0.8rem;
+  font-size: $font-size-s;
   padding: 0 0.1rem;
 
   .legend-fill {
     width: 5px;
     height: 5px;
-    border-radius: 50%;
+    border-radius: $radius-full;
     margin-right: 5px;
   }
 

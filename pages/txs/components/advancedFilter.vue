@@ -361,7 +361,7 @@ export default {
 
 .modal-content {
   background: var(--card-bg-color);
-  border-radius: 0.5rem;
+  border-radius: $radius-lg;
   text-align: left;
   color: var(--sec-font-color);
   width: 500px;
@@ -386,7 +386,7 @@ export default {
 }
 
 .modal-header h3 {
-  font-size: 18px;
+  font-size: $font-size-md;
   margin: 0;
   color: var(--sec-font-color);
 }
@@ -395,11 +395,11 @@ export default {
   display: flex;
   align-items: center;
   padding: 10px 8px;
-  font-size: 0.875rem;
+  font-size: $font-size-sm;
   background-color: var(--card-bg-color);
   color: var(--font-color);
   border: 1px solid var(--border-color);
-  border-radius: 0.3rem;
+  border-radius: $radius-s;
   cursor: pointer;
   width: auto;
   margin: 0.5rem;
@@ -424,7 +424,7 @@ export default {
 }
 
 .mini-bubble {
-  font-size: 12px;
+  font-size: $font-size-xs;
   width: 20px;
   height: 20px;
   display: flex;
@@ -464,7 +464,7 @@ export default {
   width: 100%;
 
   label {
-    font-size: 16px;
+    font-size: $font-size-desktop;
     font-weight: bold;
     color: var(--sec-font-color);
     margin-bottom: 8px;
@@ -474,10 +474,10 @@ export default {
     height: 38px;
     color: var(--sec-font-color) !important;
     background-color: var(--bg-color) !important;
-    border-radius: 0.5rem;
+    border-radius: $radius-lg;
     border: 1px solid var(--border-color) !important;
     padding: 0.5rem;
-    font-size: 14px;
+    font-size: $font-size-sm;
     outline: none;
     flex-grow: 1;
   }
@@ -505,7 +505,7 @@ export default {
 
   button {
     background-color: var(--bg-color);
-    border-radius: 0.5rem;
+    border-radius: $radius-lg;
     border: 1px solid var(--border-color);
     display: flex;
     align-items: center;
@@ -513,7 +513,7 @@ export default {
     padding: 10px 20px;
     color: var(--font-color);
     cursor: pointer;
-    font-size: 14px;
+    font-size: $font-size-sm;
     font-weight: 500;
     margin-left: 0.5rem;
 

@@ -151,7 +151,7 @@ export default {
   label {
     display: block;
     margin-bottom: 8px;
-    font-size: 16px;
+    font-size: $font-size-desktop;
     font-weight: bold;
     color: var(--sec-font-color);
   }
@@ -160,7 +160,7 @@ export default {
 .tags-input {
   display: flex;
   background-color: var(--bg-color);
-  border-radius: 6px;
+  border-radius: $radius-md;
   border: 1px solid var(--border-color);
   max-height: 100px;
   overflow-y: auto;
@@ -185,10 +185,10 @@ export default {
       height: 38px;
       color: var(--sec-font-color);
       background-color: transparent;
-      border-radius: 0.5rem;
+      border-radius: $radius-lg;
       border: none;
       padding: 0.5rem;
-      font-size: 14px;
+      font-size: $font-size-sm;
       outline: none;
     }
     .enter-icon {
@@ -204,7 +204,7 @@ export default {
       opacity: 0;
       transition: opacity 0.3s ease;
       border: 1px solid var(--border-color);
-      border-radius: 4px;
+      border-radius: $radius-sm;
       padding: 4px;
       background-color: var(--bg-color);
 
@@ -220,7 +220,7 @@ export default {
 }
 
 .mini-bubble {
-  font-size: 12px;
+  font-size: $font-size-xs;
   height: 17px;
   display: flex;
   align-items: center;
@@ -251,7 +251,7 @@ export default {
   left: 0;
   right: 0;
   background-color: var(--bg-color);
-  border-radius: 6px;
+  border-radius: $radius-md;
   margin-top: 2px;
   padding: 0.5rem 0;
   z-index: 1000;
@@ -278,7 +278,7 @@ export default {
     cursor: pointer;
     display: flex;
     flex-direction: row;
-    font-size: 13px;
+    font-size: $font-size-s;
     line-height: 1.5;
     padding: 12px 16px;
     transition: background-color 0.3s ease;

@@ -338,7 +338,7 @@ export default {
     gap: 0.8rem;
 
     @include md {
-      font-size: 0.9rem;
+      font-size: $font-size-sm;
       flex-direction: row;
     }
 
@@ -394,7 +394,7 @@ export default {
         width: 38px;
         height: 38px;
 
-        border-radius: 0.5rem;
+        border-radius: $radius-lg;
         background-color: var(--card-bg-color);
         border: 1px solid var(--border-color);
         display: flex;
@@ -423,20 +423,20 @@ export default {
     position: relative;
     transition: all 0.5s ease;
     border: 1px solid var(--border-color);
-    border-radius: 0.5rem;
+    border-radius: $radius-lg;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     overflow: hidden;
     width: 46px;
 
     .search-bar-input {
       flex: 1;
-      font-size: 1rem;
+      font-size: $font-size-desktop;
       border: none;
       height: 38px;
       color: var(--sec-font-color);
       background-color: var(--card-bg-color);
       padding: 0 1rem;
-      border-radius: 0.5rem;
+      border-radius: $radius-lg;
       transition: width 0.3s ease;
       padding-right: 2.5rem;
       padding-left: 1rem;
@@ -472,7 +472,7 @@ export default {
     span {
       display: none;
       pointer-events: none;
-      font-size: 0.875rem;
+      font-size: $font-size-sm;
       position: absolute;
       left: 0.7rem;
       top: calc(50% - 0.4rem);
@@ -499,7 +499,7 @@ export default {
   display: flex;
   flex-direction: column;
   border: 1px solid var(--border-color);
-  border-radius: 0.5rem;
+  border-radius: $radius-lg;
   width: 155px;
   background: var(--card-bg-color);
 
@@ -517,11 +517,11 @@ export default {
     transition: background-color 0.3s ease;
 
     &:first-of-type {
-      border-radius: 0.5rem 0.5rem 0 0;
+      border-radius: $radius-lg $radius-lg 0 0;
     }
 
     &:last-of-type {
-      border-radius: 0 0 0.5rem 0.5rem;
+      border-radius: 0 0 $radius-lg $radius-lg;
     }
 
     &:hover {
