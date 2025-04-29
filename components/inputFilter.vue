@@ -284,7 +284,7 @@ export default {
         background-color: var(--active-bg-color);
       }
       .asset-icon {
-        margin-right:$space-14;
+        margin-right: $space-14;
       }
     }
   }

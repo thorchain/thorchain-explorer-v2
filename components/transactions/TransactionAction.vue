@@ -37,9 +37,9 @@
         "
         class="pending-cell"
       >
-      <span class="pending-dots">
-        <span class="pending-text">Pending</span>
-      </span>
+        <span class="pending-dots">
+          <span class="pending-text">Pending</span>
+        </span>
       </span>
       <template v-if="hasAffiliate(row)">
         <span>|</span>
@@ -518,73 +518,71 @@ export default {
     }
   }
   .pending-cell {
-  display: flex;
-  align-items: center;
-  gap: $space-8;
-  color: var(--sec-font-color);
-  font-weight: bold;
-}
+    display: flex;
+    align-items: center;
+    gap: $space-8;
+    color: var(--sec-font-color);
+    font-weight: bold;
+  }
 
-.pending-dots  {
-  position: relative;
-  padding: $space-5 $space-8;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  border: 1px solid var(--border-color);
-  border-radius: $radius-sm;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border: 1px solid #d86e58;
+  .pending-dots {
+    position: relative;
+    padding: $space-5 $space-8;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid var(--border-color);
     border-radius: $radius-sm;
-    transition: all 0.5s;
-    animation: clippath 3s infinite linear;
-  }
-}
 
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border: 1px solid #d86e58;
+      border-radius: $radius-sm;
+      transition: all 0.5s;
+      animation: clippath 3s infinite linear;
+    }
+  }
 
-.pending-text {
-  color: #d86e58;
-  font-size: $font-size-xxs;
-}
+  .pending-text {
+    color: #d86e58;
+    font-size: $font-size-xxs;
+  }
 
-@keyframes clippath {
-  0%,
-  100% {
-    clip-path: inset(0 0 80% 0);
+  @keyframes clippath {
+    0%,
+    100% {
+      clip-path: inset(0 0 80% 0);
+    }
+    25% {
+      clip-path: inset(0 80% 0 0);
+    }
+    50% {
+      clip-path: inset(80% 0 0 0);
+    }
+    75% {
+      clip-path: inset(0 0 0 80%);
+    }
   }
-  25% {
-    clip-path: inset(0 80% 0 0);
-  }
-  50% {
-    clip-path: inset(80% 0 0 0);
-  }
-  75% {
-    clip-path: inset(0 0 0 80%);
-  }
-}
 
-@keyframes sandTimerRotate {
-  0% {
-    transform: rotate(0deg);
+  @keyframes sandTimerRotate {
+    0% {
+      transform: rotate(0deg);
+    }
+    50% {
+      transform: rotate(180deg);
+    }
+    40% {
+      transform: rotate(180deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
   }
-  50% {
-    transform: rotate(180deg);
-  }
-  40% {
-    transform: rotate(180deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
 
   .asset-name {
     font-size: 0.9rem;

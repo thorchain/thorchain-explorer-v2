@@ -158,7 +158,7 @@ export default {
       margin-left: auto;
       gap: 10px;
       cursor: pointer;
-      padding:$space-5;
+      padding: $space-5;
       border-radius: $radius-s;
 
       .icon {

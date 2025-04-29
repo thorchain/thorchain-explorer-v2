@@ -482,7 +482,7 @@ export default {
   .dropdown-icon {
     position: relative;
     display: inline-block;
-    margin-left:$space-8;
+    margin-left: $space-8;
     transition: transform 0.3s ease;
 
     &::after {

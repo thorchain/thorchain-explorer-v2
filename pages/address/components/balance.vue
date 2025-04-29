@@ -554,7 +554,7 @@ button[disabled] {
   box-sizing: border-box;
   left: 0;
   top: 108%;
-  padding-bottom:$space-8;
+  padding-bottom: $space-8;
 }
 
 .dropdown-options {

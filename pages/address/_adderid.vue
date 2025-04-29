@@ -558,7 +558,7 @@ export default {
     .qr-show {
       border-radius: $radius-s;
       background-color: #fff;
-      padding:$space-10;
+      padding: $space-10;
       top: calc(100% + 0.625rem);
       position: absolute;
       z-index: 999;
@@ -584,7 +584,7 @@ export default {
     align-items: center;
 
     span {
-      margin-left:$space-12;
+      margin-left: $space-12;
       line-height: 1.5rem;
       font-size: $font-size-xl;
       color: var(--sec-font-color);

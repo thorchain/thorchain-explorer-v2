@@ -88,7 +88,7 @@ export default {
   .icon {
     width: 0.9rem;
     height: 0.9rem;
-    margin-right:$space-0;
+    margin-right: $space-0;
   }
 
   .modal-background {

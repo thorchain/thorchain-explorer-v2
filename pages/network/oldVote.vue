@@ -495,7 +495,7 @@ export default {
   gap: 10px;
   padding: $space-10;
   border: 1px solid var(--border-color) !important;
-  border-radius: $radius-lg ;
+  border-radius: $radius-lg;
 }
 .data-color {
   margin-right: $space-5;

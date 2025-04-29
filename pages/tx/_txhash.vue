@@ -2324,7 +2324,7 @@ export default {
 .tx-contain {
   display: flex;
   flex-direction: column;
-  gap:$space-10;
+  gap: $space-10;
 
   .asset-icon-container {
     margin-top: $space-10;

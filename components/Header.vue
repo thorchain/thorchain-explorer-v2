@@ -23,9 +23,9 @@ export default {
     font-size: $font-size-md;
     margin: $space-0 $space-10;
 
-  @include lg {
-    margin: $space-0;
-  }
+    @include lg {
+      margin: $space-0;
+    }
   }
 }
 </style>

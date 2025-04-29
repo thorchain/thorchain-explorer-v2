@@ -281,7 +281,7 @@ Vue.mixin(global)
           outline: none;
           border-color: var(--primary-color);
         }
-        @include lg{
+        @include lg {
           font-size: $font-size-sm;
         }
       }

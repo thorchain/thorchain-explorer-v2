@@ -430,10 +430,10 @@ export default {
   display: flex;
   position: relative;
   flex: 1;
-    margin: $space-8 $space-10;
+  margin: $space-8 $space-10;
 
   @include lg {
-    margin:$space-8 $space-0;
+    margin: $space-8 $space-0;
   }
 
   .search-input {
@@ -573,12 +573,11 @@ export default {
 }
 .header-recent-vote {
   color: var(--sec-font-color);
-  margin:$space-18 $space-12;
+  margin: $space-18 $space-12;
 
   @include lg {
     margin: $space-18 $space-0;
   }
-
 }
 .recent-votes-container {
   display: flex;
@@ -589,9 +588,9 @@ export default {
   gap: $space-8;
   margin: $space-0 $space-10;
 
-@include lg {
-  margin: $space-0;
-}
+  @include lg {
+    margin: $space-0;
+  }
   scrollbar-width: thin;
   scrollbar-color: var(--border-color) var(--bg-color);
   &::-webkit-scrollbar {

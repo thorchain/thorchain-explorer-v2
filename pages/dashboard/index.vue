@@ -288,12 +288,16 @@
         </div>
       </card>
       <card title="Latest Transactions">
-  <template #more>
-    <nuxt-link to="/txs" class="more-link clickable" style="margin-left: auto;">
-      More
-      <ArrowRightIcon />
-    </nuxt-link>
-  </template>
+        <template #more>
+          <nuxt-link
+            to="/txs"
+            class="more-link clickable"
+            style="margin-left: auto"
+          >
+            More
+            <ArrowRightIcon />
+          </nuxt-link>
+        </template>
         <div>
           <template v-if="txs">
             <template v-for="(t, i) in txs">
@@ -308,7 +312,11 @@
                       {{ formatAddress(showTx(t.in && t.in[0].txID)) }}
                     </nuxt-link>
                   </span>
-                  <transaction-action :row="t" :show-mini-bubble="false" :no-border="true"/>
+                  <transaction-action
+                    :row="t"
+                    :show-mini-bubble="false"
+                    :no-border="true"
+                  />
                 </div>
                 <div class="txs">
                   <span>
@@ -2010,9 +2018,8 @@ export default {
         font-size: $font-size-desktop;
         font-weight: bold;
         color: var(--sec-font-color);
-        @include lg{
+        @include lg {
           font-size: $font-size-md;
-
         }
       }
     }
@@ -2138,7 +2145,7 @@ export default {
 
   .pool-depth-extra {
     flex: 1;
-    margin-top:$space-24;
+    margin-top: $space-24;
 
     @include lg {
       margin-top: $space-0;

@@ -206,7 +206,7 @@ h3 {
   .card-container {
     border: 1px solid var(--border-color);
     border-radius: $radius-lg;
-    margin:$space-0;
+    margin: $space-0;
 
     @include lg {
       margin: auto;

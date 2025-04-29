@@ -229,9 +229,9 @@ export default {
   flex-direction: column;
   margin: $space-16 $space-10;
 
-@include lg {
-  margin:$space-16 auto;
-}
+  @include lg {
+    margin: $space-16 auto;
+  }
 
   .block-item {
     background-color: var(--bg-color);

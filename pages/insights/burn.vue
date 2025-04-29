@@ -572,7 +572,6 @@ h3 {
   max-width: 50rem;
   margin: $space-0 $space-10;
 
-
   @include lg {
     margin: auto;
   }
@@ -629,12 +628,11 @@ h3 {
   background-color: var(--bg-color);
   border: 1px solid var(--border-color);
   border-radius: $radius-2xl;
-  padding:$space-8  $space-16;
+  padding: $space-8 $space-16;
   max-width: 50rem;
   margin: auto;
   margin-top: $space-16;
   margin: $space-16 $space-10;
-
 
   @include lg {
     margin: auto;

@@ -17,11 +17,7 @@
         </button>
       </template>
       <div class="earning-box">
-        <TableLoader
-          v-if="loading"
-          :cols="cols"
-          :rows="Array(10).fill({})"
-        />
+        <TableLoader v-if="loading" :cols="cols" :rows="Array(10).fill({})" />
         <vue-good-table
           v-if="!loading && tableData.length > 0"
           :columns="cols"

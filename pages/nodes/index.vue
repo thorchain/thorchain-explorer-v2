@@ -1247,7 +1247,7 @@ export default {
 .filter-btns {
   display: flex;
   margin-left: $space-5;
-  gap:$space-5;
+  gap: $space-5;
 
   .enabled-btn {
     color: var(--primary-color) !important;

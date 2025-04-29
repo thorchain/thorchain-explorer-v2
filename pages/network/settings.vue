@@ -161,7 +161,8 @@ export default {
             {
               ...this.parseConstant('TNSRegisterFee'),
               name: 'Register Fee',
-              filter: (v) => `${this.$options.filters.number(v/1e8, '0,0a')} RUNE`,
+              filter: (v) =>
+                `${this.$options.filters.number(v / 1e8, '0,0a')} RUNE`,
               valueSlot: 'usd',
             },
           ],
@@ -223,7 +224,8 @@ export default {
             },
             {
               ...this.parseConstant('MinimumBondInRune'),
-              filter: (v) => `${this.$options.filters.number(v/ 1e8, '0,0a')} RUNE`,
+              filter: (v) =>
+                `${this.$options.filters.number(v / 1e8, '0,0a')} RUNE`,
 
               valueSlot: 'usd',
             },

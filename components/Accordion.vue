@@ -511,7 +511,7 @@ export default {
       }
 
       &:last-of-type {
-        padding-bottom:$space-8;
+        padding-bottom: $space-8;
       }
 
       &:first-of-type {

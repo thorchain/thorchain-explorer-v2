@@ -391,7 +391,7 @@ export default {
   justify-content: space-between;
   flex-direction: column;
   border-bottom: 1px solid var(--border-color);
-  padding-bottom:$space-10;
+  padding-bottom: $space-10;
 
   .asset-container {
     display: flex;
@@ -446,7 +446,7 @@ export default {
   display: flex;
   border: 1px solid var(--border-color);
   border-radius: $radius-lg;
-  padding:$space-12;
+  padding: $space-12;
   margin-bottom: $space-8;
 }
 </style>

@@ -86,9 +86,9 @@ export default {
     margin: $space-0 $space-10 $space-10 $space-10;
     border-radius: $radius-s;
 
-@include lg {
-  margin: $space-0 $space-0 $space-10 $space-0;
-}
+    @include lg {
+      margin: $space-0 $space-0 $space-10 $space-0;
+    }
 
     .nav-item {
       &.active,

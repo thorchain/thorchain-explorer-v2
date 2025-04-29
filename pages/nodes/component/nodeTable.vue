@@ -757,7 +757,7 @@ export default {
 .provider-table {
   td {
     &:first-of-type {
-      padding-right:$space-16;
+      padding-right: $space-16;
     }
 
     &:last-of-type {

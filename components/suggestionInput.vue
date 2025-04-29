@@ -144,9 +144,9 @@ export default {
   position: relative;
   margin: $space-0 $space-10;
 
-@include lg {
-  margin: $space-0;
-}
+  @include lg {
+    margin: $space-0;
+  }
 
   label {
     display: block;
@@ -166,7 +166,6 @@ export default {
   overflow-y: auto;
   position: relative;
   align-items: center;
-
 
   ::-webkit-scrollbar {
     display: none;
@@ -252,7 +251,7 @@ export default {
   right: 0;
   background-color: var(--bg-color);
   border-radius: $radius-md;
-  margin-top:$space-2;
+  margin-top: $space-2;
   padding: $space-8 $space-0;
   z-index: 1000;
   overflow: auto;

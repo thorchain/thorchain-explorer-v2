@@ -271,7 +271,7 @@ export default {
     padding-top: $space-5;
     justify-content: space-between;
     flex-wrap: wrap;
-    gap:$space-5;
+    gap: $space-5;
 
     .title {
       display: flex;

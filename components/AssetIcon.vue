@@ -57,7 +57,7 @@ export default {
   position: relative;
   width: var(--asset-width);
   height: var(--asset-height);
-  border-radius:$radius-full;
+  border-radius: $radius-full;
   margin-right: $space-8;
 
   .asset-icon {

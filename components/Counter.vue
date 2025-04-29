@@ -140,7 +140,7 @@ export default {
 .counter-container {
   display: flex;
   flex-direction: column;
-  border-radius:$radius-2xl ;
+  border-radius: $radius-2xl;
   flex: 1;
   max-width: 35rem;
 }

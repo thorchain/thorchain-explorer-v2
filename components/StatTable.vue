@@ -206,7 +206,7 @@ export default {
 
       .col-header {
         display: flex;
-        font-size:$font-size-xs;
+        font-size: $font-size-xs;
 
         .header-icon {
           margin-left: $space-5;
