@@ -163,7 +163,7 @@
               </div>
             </div>
           </div>
-          </div>
+        </div>
       </div>
     </card>
     <card v-else title="Chain Explorers">
@@ -416,6 +416,7 @@ export default {
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 240px;
   gap: 24px;
 
   .balance-label {
