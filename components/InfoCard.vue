@@ -265,7 +265,7 @@ export default {
       font-size: $font-size-mobile;
       margin: 0 0 0.5rem 0;
 
-      @include lg{
+      @include lg {
         font-size: $font-size-smm;
       }
     }
@@ -324,12 +324,13 @@ export default {
       display: flex;
       flex-direction: column;
 
-      @include lg{
-        gap:0;
+      @include lg {
+        gap: 0;
       }
 
       &.cluster {
         display: flex;
+        flex-direction: row;
         gap: 8px;
         flex-wrap: wrap;
 
