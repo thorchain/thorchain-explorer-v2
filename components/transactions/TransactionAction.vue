@@ -170,6 +170,12 @@
       v-else-if="row && type === 'send'"
       :class="['action-cell', { 'no-border': noBorder, wrap: wrap }]"
     >
+      <div v-if="row.status === 'failed'" class="asset-cell">
+        <info-icon
+          v-tooltip="row.metadata.send.reason"
+          class="action-type red reason"
+        />
+      </div>
       <span v-for="(ops, i) in row.in" :key="'in-' + i" class="asset-cell">
         <asset-icon
           :asset="ops.coins[0].asset"
@@ -457,6 +463,10 @@ export default {
         fill: var(--red);
       }
     }
+
+    &.red {
+      fill: var(--red);
+    }
   }
 
   .action-icon {
@@ -503,6 +513,7 @@ export default {
     .asset-cell {
       border: none;
       background-color: transparent;
+      padding: 0;
     }
   }
 
