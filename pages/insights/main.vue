@@ -210,7 +210,12 @@ export default {
         [(o) => Math.abs(+o.rewards)],
         ['desc']
       )
-        .filter((p) => p.pool !== 'dev_fund_reward' && p.pool !== 'income_burn')
+        .filter(
+          (p) =>
+            p.pool !== 'income_burn' &&
+            p.pool !== 'dev_fund_reward' &&
+            p.pool !== 'tcy_stake_reward'
+        )
         .slice(0, top)
         .map((p) => p.pool)
 
@@ -233,7 +238,8 @@ export default {
           (p) =>
             !poolEarnings.slice(0, top).includes(p.pool) &&
             p.pool !== 'income_burn' &&
-            p.pool !== 'dev_fund_reward'
+            p.pool !== 'dev_fund_reward' &&
+            p.pool !== 'tcy_stake_reward'
         )
 
         // sum them all

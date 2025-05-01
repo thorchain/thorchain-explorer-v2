@@ -154,6 +154,9 @@ export default {
       mineTime: undefined,
       remainingBlocks: undefined,
       currentHeight: undefined,
+      incomeBurn: '',
+      stakeReward: '',
+      devFundReward: '',
       assetColumns: [
         { label: 'Asset', field: 'assetName' },
         { label: 'Reward', field: 'assetReward' },
@@ -184,6 +187,12 @@ export default {
             {
               name: 'Dev Fund',
               value: this.devFundReward,
+              filter: (v) =>
+                `${this.$options.filters.number(v / 1e8, '0,0.00')} RUNE`,
+            },
+            {
+              name: 'TCY Stake Reward',
+              value: this.stakeReward,
               filter: (v) =>
                 `${this.$options.filters.number(v / 1e8, '0,0.00')} RUNE`,
             },
@@ -298,6 +307,7 @@ export default {
         this.bondReward = ''
         this.devFundReward = ''
         this.incomeBurn = ''
+        this.stakeReward = ''
         this.assetRewards = {}
 
         if (Array.isArray(blockData.end_block_events)) {
@@ -308,6 +318,7 @@ export default {
             this.bondReward = rewardEvent.bond_reward || ''
             this.devFundReward = rewardEvent.dev_fund_reward || ''
             this.incomeBurn = rewardEvent.income_burn || ''
+            this.stakeReward = rewardEvent.tcy_stake_reward || ''
 
             Object.keys(rewardEvent).forEach((key) => {
               if (key.includes('.')) {

@@ -28,6 +28,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    hoveredAddress: {
+      type: String,
+      default: undefined,
+    },
   },
 }
 </script>

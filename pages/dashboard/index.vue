@@ -1101,7 +1101,12 @@ export default {
         [(o) => +o.earnings],
         ['desc']
       )
-        .filter((p) => p.pool !== 'dev_fund_reward' && p.pool !== 'income_burn')
+        .filter(
+          (p) =>
+            p.pool !== 'dev_fund_reward' &&
+            p.pool !== 'income_burn' &&
+            p.pool !== 'tcy_stake_reward'
+        )
         .map((p) => p.pool)
 
       const xAxis = []
@@ -1121,7 +1126,8 @@ export default {
           (p) =>
             !poolEarnings.slice(0, topPool).includes(p.pool) &&
             p.pool !== 'income_burn' &&
-            p.pool !== 'dev_fund_reward'
+            p.pool !== 'dev_fund_reward' &&
+            p.pool !== 'tcy_stake_reward'
         )
 
         // sum them all
@@ -1278,18 +1284,25 @@ export default {
       const af = []
       const df = []
       const ib = []
+      const tc = []
       const EODEarning = []
+      let affiliateEOD = 0
       d?.intervals.forEach((interval, index) => {
         const date = moment(
           Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
         )
         xAxis.push(date.format('dddd, MMM D'))
         const devFund =
-          (+interval.pools.find((p) => p.pool === 'dev_fund_reward').earnings /
+          (+interval.pools.find((p) => p.pool === 'dev_fund_reward')?.earnings /
             10 ** 8) *
           Number.parseFloat(interval.runePriceUSD)
         const incomeBurn =
-          (+interval.pools.find((p) => p.pool === 'income_burn').earnings /
+          (+interval.pools.find((p) => p.pool === 'income_burn')?.earnings /
+            10 ** 8) *
+          Number.parseFloat(interval.runePriceUSD)
+        const tcyStakeReward =
+          (+interval.pools.find((p) => p.pool === 'tcy_stake_reward')
+            ?.earnings /
             10 ** 8) *
           Number.parseFloat(interval.runePriceUSD)
 
@@ -1297,7 +1310,8 @@ export default {
           (+interval.liquidityEarnings / 10 ** 8) *
             Number.parseFloat(interval.runePriceUSD) -
             devFund -
-            incomeBurn
+            incomeBurn -
+            tcyStakeReward
         )
         be.push(
           (+interval.bondingEarnings / 10 ** 8) *
@@ -1305,6 +1319,7 @@ export default {
         )
         df.push(devFund)
         ib.push(incomeBurn)
+        tc.push(tcyStakeReward)
 
         const volumeUSD = (this.volumeUSDData[index] || 0) / 1e2
         af.push({
@@ -1315,7 +1330,7 @@ export default {
         })
 
         if (d?.intervals.length === index + 1) {
-          let affiliateEOD = volumeUSD || 0
+          affiliateEOD = volumeUSD || 0
           if (affiliateEOD === 0) {
             affiliateEOD =
               this.volumeUSDData?.slice(-3).reduce((a, c) => a + +c / 1e2, 0) /
@@ -1347,6 +1362,9 @@ export default {
           }
           ib[index] = {
             value: ib[index],
+          }
+          tc[index] = {
+            value: tc[index],
           }
         } else {
           EODEarning.push(0)
@@ -1394,6 +1412,14 @@ export default {
             showSymbol: false,
             stack: 'Total',
             data: af,
+            smooth: true,
+          },
+          {
+            type: 'bar',
+            name: 'TCY Stake Reward',
+            stack: 'Total',
+            showSymbol: false,
+            data: tc,
             smooth: true,
           },
           {
@@ -1464,12 +1490,19 @@ export default {
           </span>
            ${
              EODEarning[param[0].dataIndex] !== 0
-               ? `<span><span>Gross System Income (EOD)</span><b>$${this.$options.filters.number(
-                   param
-                     .filter((p) => p.seriesName !== 'Affiliate Fee')
-                     .reduce((a, c) => a + (c.value ? c.value : 0), 0),
-                   '0,0a'
-                 )}</b></span>`
+               ? `
+                  <span><span>Gross System Income (EOD)</span><b>$${this.$options.filters.number(
+                    param
+                      .filter(
+                        (p) =>
+                          p.seriesName !== 'EOD Earning' &&
+                          p.seriesName !== 'Affiliate Fee'
+                      )
+                      .reduce((a, c) => a + (c.value ? c.value : 0), 0) +
+                      EODEarning[param[0].dataIndex].value -
+                      affiliateEOD,
+                    '0,0a'
+                  )}</b></span>`
                : ''
            }
           <span style="border-top: 1px solid var(--border-color); margin: 2px 0;"></span>
@@ -1484,7 +1517,12 @@ export default {
                     param.find((p) => p.seriesName === 'Affiliate Fee').value,
                     '0,0a'
                   )
-                : '-'
+                : affiliateEOD != 0
+                  ? `$${this.$options.filters.number(
+                      affiliateEOD,
+                      '0,0a'
+                    )} (EOD)`
+                  : '-'
             }</b>
           </span>`
               : ``

@@ -367,6 +367,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    wrap: {
+      type: Boolean,
+      default: false,
+    },
   },
   computed: {
     ...mapGetters({
