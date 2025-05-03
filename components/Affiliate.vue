@@ -1,14 +1,21 @@
 <template>
   <div class="affiliate">
     <template v-if="affiliates && affiliates.length">
-      <div v-for="affiliate in affiliates" :key="affiliate" class="executed">
-        <img
-          v-if="affiliateWallet(affiliate).icon"
-          :src="affiliateWallet(affiliate).icon"
-          :alt="affiliateWallet(affiliate).name"
-        />
-        <em v-else>{{ affiliateWallet(affiliate).name }}</em>
-      </div>
+      <nuxt-link class="affiliate-link" :to="`/txs?affiliate=${affiliates}`">
+        <div
+          v-for="affiliate in affiliates"
+          :key="affiliate"
+          v-tooltip="affiliateWallet(affiliate).name"
+          class="executed"
+        >
+          <img
+            v-if="affiliateWallet(affiliate).icon"
+            :src="affiliateWallet(affiliate).icon"
+            :alt="affiliateWallet(affiliate).name"
+          />
+          <em v-else>{{ affiliateWallet(affiliate).name }}</em>
+        </div>
+      </nuxt-link>
     </template>
   </div>
 </template>
@@ -348,7 +355,7 @@ export default {
           : detail.icons.url
 
       return {
-        icon: icon,
+        icon,
         name: detail.name,
       }
     },
@@ -363,13 +370,22 @@ export default {
   align-items: center;
   gap: $space-8;
 }
+
+.affiliate-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: var(--sec-font-color);
+  gap: $space-8;
+}
+
 .executed {
   display: flex;
   align-items: center;
   color: var(--sec-font-color);
   border-color: var(--border-color);
   background-color: transparent;
-  gap: 3px;
+  gap: $space-8;
 
   img {
     height: 1.2rem;
