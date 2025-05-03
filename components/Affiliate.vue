@@ -1,10 +1,14 @@
 <template>
   <div class="affiliate-content">
     <template v-if="affiliates && affiliates.length">
+<<<<<<< HEAD
       <nuxt-link
         class="affiliate-direct"
         :to="`/txs?affiliate=${affiliates.join('/')}`"
       >
+=======
+      <nuxt-link class="affiliate-direct" :to="`/txs?affiliate=${affiliates}`">
+>>>>>>> 3b31c8c (Fix affiliate user-agent)
         <div
           v-for="affiliate in affiliates"
           :key="affiliate"
