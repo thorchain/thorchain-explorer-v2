@@ -42,6 +42,12 @@ export default {
           return 'RUNEPool Deposit'
         case 'runePoolWithdraw':
           return 'RUNEPool Withdraw'
+        case 'tcy_claim':
+          return 'TCY Claim'
+        case 'tcy_stake':
+          return 'TCY Stake'
+        case 'tcy_unstake':
+          return 'TCY Unstake'
         default:
           return this.$options.filters?.capitalize(type) || type
       }
@@ -54,6 +60,8 @@ export default {
         case 'addLiquidity':
         case 'runePoolDeposit':
         case 'bond':
+        case 'tcy_claim':
+        case 'tcy_stake':
           return 'green-type'
         case 'refund':
           return 'yellow-type'
@@ -61,6 +69,7 @@ export default {
         case 'withdraw':
         case 'runePoolWithdraw':
         case 'failed':
+        case 'tcy_unstake':
           return 'red-type'
         case 'switch':
           return 'alert-type'

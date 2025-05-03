@@ -976,6 +976,15 @@ export default {
           memo
         )
         this.$set(this, 'cards', [this.createCard(cards, accordions)])
+      } else if (memo.type === 'tcyUnstake') {
+        const { cards, accordions } = this.createTCYUnstake(
+          thorStatus,
+          midgardAction,
+          thorTx,
+          memo
+        )
+
+        this.$set(this, 'cards', [this.createCard(cards, accordions)])
       } else {
         const finalCards = []
         for (let i = 0; i < midgardAction?.actions?.length; i++) {
@@ -1413,8 +1422,83 @@ export default {
         },
       }
     },
+    createTCYUnstake(thorStatus, actions, thorTx) {
+      const TCYUnstake = actions?.actions?.find((a) => a.type === 'tcy_unstake')
+      const RefundAction = actions?.actions?.find((a) => a.type === 'refund')
+
+      let memo = ''
+      let reason = ''
+      let outs = []
+      let ins = []
+
+      let isRefund = false
+      if (RefundAction) {
+        const m = Object.keys(RefundAction.metadata)[0]
+        memo = RefundAction.metadata[m]?.memo ?? undefined
+        reason =
+          RefundAction.metadata[m]?.reason ??
+          RefundAction.metadata[m]?.code ??
+          undefined
+        isRefund = true
+      }
+
+      let action = TCYUnstake
+      if (isRefund) {
+        action = RefundAction
+      }
+
+      if (isRefund === false) {
+        outs = [
+          {
+            asset: TCYUnstake.out[0].coins[0].asset,
+            amount: TCYUnstake.out[0].coins[0].amount,
+            txid: TCYUnstake.out[0].txID,
+            to: TCYUnstake.out[0].address,
+            done: true,
+          },
+        ]
+
+        ins = [
+          {
+            from: TCYUnstake.out[0].address,
+            txid: TCYUnstake.out[0].txID,
+            done: true,
+          },
+        ]
+      }
+
+      return {
+        cards: {
+          title: 'TCY Unstake ' + (isRefund ? '(Refund)' : ''),
+          in: [
+            {
+              icon: require('@/assets/images/vault.svg?inline'),
+              text: 'Stake Module',
+              class: 'pad-icon',
+            },
+          ],
+          middle: {
+            fail: isRefund,
+            pending: false,
+          },
+          out: outs,
+        },
+        accordions: {
+          in: ins,
+          action: {
+            type: 'Action',
+            timeStamp: moment.unix(action?.date / 1e9) || null,
+            height: action?.height,
+            memo,
+            reason,
+            done: true,
+          },
+          out: outs,
+        },
+      }
+    },
     createAbstractState(thorStatus, action, thorTx) {
-      const ins = action?.in.map((a) => ({
+      let ins = action?.in.map((a) => ({
         asset: this.parseMemoAsset(a.coins[0]?.asset),
         amount: a.coins[0]?.amount,
         txid: a?.txID,
@@ -1443,9 +1527,25 @@ export default {
         }
       }
 
+      let title = 'Action'
+      if (action.type === 'tcy_claim') {
+        title = 'Tcy Claim'
+
+        ins = [
+          {
+            icon: require('@/assets/images/vault.svg?inline'),
+            text: 'Claim Module',
+            class: 'pad-icon',
+            from: action?.in[0].address,
+            txid: action?.in[0].txID,
+            done: true,
+          },
+        ]
+      }
+
       return {
         cards: {
-          title: 'Action',
+          title,
           in: ins,
           middle: {
             fail: isRefund,

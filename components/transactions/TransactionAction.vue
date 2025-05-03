@@ -177,14 +177,24 @@
         />
       </div>
       <span v-for="(ops, i) in row.in" :key="'in-' + i" class="asset-cell">
-        <asset-icon
-          :asset="ops.coins[0].asset"
-          :height="'1.2rem'"
-          :chain-height="'0.8rem'"
-        />
-        <span class="asset-name">{{
-          decimalFormat(+ops.coins[0].amount / 1e8)
-        }}</span>
+        <template v-if="ops.coins.length > 0">
+          <asset-icon
+            :asset="ops.coins[0].asset"
+            :height="'1.2rem'"
+            :chain-height="'0.8rem'"
+          />
+          <span class="asset-name">{{
+            decimalFormat(+ops.coins[0].amount / 1e8)
+          }}</span>
+        </template>
+        <template v-else>
+          <asset-icon
+            :asset="'THOR.RUNE'"
+            :height="'1.2rem'"
+            :chain-height="'0.8rem'"
+          />
+          <span class="asset-name">{{ decimalFormat(0) }}</span>
+        </template>
       </span>
       <right-arrow class="action-type" />
       <span v-for="(ops, i) in row.out" :key="'out-' + i" class="asset-cell">
@@ -193,6 +203,40 @@
           {{ addressFormatV2(ops.address) }}
         </nuxt-link>
       </span>
+    </div>
+
+    <div
+      v-else-if="row && type === 'tcy_claim'"
+      :class="['action-cell', { 'no-border': noBorder, wrap: wrap }]"
+    >
+      <div v-for="(ops, i) in row.out" :key="'out-' + i" class="asset-cell">
+        <add-icon class="active-icon"></add-icon>
+        <asset-icon
+          :asset="ops.coins[0].asset"
+          :height="'1.2rem'"
+          :chain-height="'0.8rem'"
+        ></asset-icon>
+        <span class="asset-name">{{
+          decimalFormat(ops.coins[0].amount / 1e8)
+        }}</span>
+      </div>
+    </div>
+
+    <div
+      v-else-if="row && type === 'tcy_unstake'"
+      :class="['action-cell', { 'no-border': noBorder, wrap: wrap }]"
+    >
+      <div v-for="(ops, i) in row.out" :key="'out-' + i" class="asset-cell">
+        <subtract-icon class="active-icon"></subtract-icon>
+        <asset-icon
+          :asset="ops.coins[0].asset"
+          :height="'1.2rem'"
+          :chain-height="'0.8rem'"
+        ></asset-icon>
+        <span class="asset-name">{{
+          decimalFormat(ops.coins[0].amount / 1e8)
+        }}</span>
+      </div>
     </div>
 
     <div

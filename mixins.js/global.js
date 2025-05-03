@@ -574,6 +574,26 @@ export default {
         }
       }
 
+      if (type === 'tcyClaim') {
+        return {
+          type,
+          address: parts[1],
+        }
+      }
+
+      if (type === 'tcyStake') {
+        return {
+          type,
+        }
+      }
+
+      if (type === 'tcyUnstake') {
+        return {
+          type,
+          bps: parts[1] || null,
+        }
+      }
+
       return {
         type: type || null,
         asset: parts[1] || null,

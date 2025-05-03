@@ -320,6 +320,11 @@ const memoToType = {
   'pool-': 'runePoolWithdraw',
   'secure+': 'secureDeposit',
   'secure-': 'secureWithdraw',
+  exec: 'txExec',
+  x: 'txExec',
+  tcy: 'tcyClaim',
+  'tcy+': 'tcyStake',
+  'tcy-': 'tcyUnstake',
 }
 
 export function parseMemoToTxType(memo) {
