@@ -43,17 +43,12 @@
       </span>
       <template v-if="hasAffiliate(row)">
         <span>|</span>
-        <template v-for="affiliate in hasAffiliate(row)">
-          <div :key="affiliate" class="executed">
-            <small v-if="!affiliateWallet(affiliate).icon">Affiliate</small>
-            <img
-              v-if="affiliateWallet(affiliate).icon"
-              :src="affiliateWallet(affiliate).icon"
-              :alt="affiliateWallet(affiliate).name"
-            />
-            <em v-else>{{ affiliateWallet(affiliate).name }}</em>
-          </div>
-        </template>
+        <div class="asset-cell">
+          <affiliate
+            :affiliate-address="getAffiliateAddress(row)"
+            :use-new-icons="true"
+          />
+        </div>
       </template>
     </div>
     <div
@@ -131,17 +126,12 @@
       </div>
       <template v-if="hasAffiliate(row)">
         <span>|</span>
-        <template v-for="affiliate in hasAffiliate(row)">
-          <div :key="affiliate" class="executed">
-            <small v-if="!affiliateWallet(affiliate).icon">Affiliate</small>
-            <img
-              v-if="affiliateWallet(affiliate).icon"
-              :src="affiliateWallet(affiliate).icon"
-              :alt="affiliateWallet(affiliate).name"
-            />
-            <em v-else>{{ affiliateWallet(affiliate).name }}</em>
-          </div>
-        </template>
+        <div class="asset-cell">
+          <affiliate
+            :affiliate-address="getAffiliateAddress(row)"
+            :use-new-icons="true"
+          />
+        </div>
       </template>
     </div>
 
@@ -381,38 +371,21 @@ export default {
     },
   },
   methods: {
-    hasAffiliate(row) {
-      if (
-        !row.metadata?.swap?.affiliateAddress &&
-        !row.metadata?.addLiquidity?.affiliateAddress
-      ) {
-        return false
-      }
-
-      const affiliates =
-        row.metadata?.swap?.affiliateAddress ||
-        row.metadata?.addLiquidity?.affiliateAddress
-      return affiliates.split('/')
-    },
-    affiliateWallet(affiliate) {
-      if (!affiliate) {
-        return
-      }
-      const detail = affiliate && this.mapAffiliateName(affiliate)
-
-      if (!detail) {
-        return {
-          name: affiliate,
-        }
-      }
-
-      return {
-        icon: this.theme === 'light' ? detail.icons.url : detail.icons.urlDark,
-        name: detail.name,
-      }
-    },
     parseMemoToTxType(memo) {
       return parseMemoToTxType(memo)
+    },
+    hasAffiliate(row) {
+      return (
+        row.metadata?.swap?.affiliateAddress ||
+        row.metadata?.addLiquidity?.affiliateAddress
+      )
+    },
+    getAffiliateAddress(row) {
+      return (
+        row.metadata?.swap?.affiliateAddress ||
+        row.metadata?.addLiquidity?.affiliateAddress ||
+        ''
+      )
     },
   },
 }

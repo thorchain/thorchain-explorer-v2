@@ -14,19 +14,11 @@
               {{ index + 1 }}.
             </span>
             <div class="item-details">
-              <div
-                v-if="affiliateWallet(row.affiliate).icon"
+              <affiliate
+                :affiliate-address="row.affiliate"
+                :use-new-icons="false"
                 class="item-label"
-              >
-                <img
-                  :src="affiliateWallet(row.affiliate).icon"
-                  class="item-icon"
-                />
-                <span v-if="affiliateWallet(row.affiliate).addName">
-                  {{ affiliateWallet(row.affiliate).name }}
-                </span>
-              </div>
-              <div v-else class="affiliate-name">{{ row.affiliate }}</div>
+              />
               <div
                 class="affiliate-value"
                 :style="{ color: colorizeIndex(index) }"
@@ -104,22 +96,6 @@ export default {
     getAffiliateNames(name) {
       const affiliates = this.$parent.getAffiliateNames(name)
       return affiliates
-    },
-    affiliateWallet(affiliateName) {
-      const detail = this.$parent.mapInterfaceName(affiliateName)
-      return detail
-        ? {
-            icon:
-              this.$parent.theme === 'light'
-                ? detail.icons.url
-                : detail.icons.urlDark,
-            name: detail.name,
-            addName: detail.addName,
-          }
-        : {
-            icon: undefined,
-            name: affiliateName,
-          }
     },
   },
 }
