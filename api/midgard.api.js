@@ -156,3 +156,7 @@ export function getSaverDetails(address) {
 export function getBorrowerDetails(address) {
   return $axiosInstace.get(`borrower/${address}`)
 }
+
+export function getTCYDistribution(address) {
+  return $axiosInstace.get(`tcy/distribution/${address}`)
+}

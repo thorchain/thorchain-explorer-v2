@@ -34,6 +34,7 @@
                 { title: 'LP/Savers', value: 'pools' },
                 { title: 'Bond', value: 'bond' },
                 { title: 'Thorname', value: 'thorname' },
+                { title: 'TCY', value: 'distribution' },
               ]"
               :is-loading="loading"
               :act-nav.sync="activeMode"
@@ -49,6 +50,12 @@
                   v-if="activeMode == 'bond'"
                   :address="address"
                   :nodes="nodesData"
+                />
+              </keep-alive>
+              <keep-alive>
+                <distribution
+                  v-if="activeMode == 'distribution'"
+                  :address="address"
                 />
               </keep-alive>
             </Card>
@@ -188,8 +195,8 @@ import { compact } from 'lodash'
 import Thorname from './components/thorname.vue'
 import Balance from './components/balance.vue'
 import Pools from './components/pools.vue'
-import Loans from './components/loans.vue'
 import Bonds from './components/bonds.vue'
+import Distribution from './components/distribution.vue'
 import { formatAsset, assetFromString } from '~/utils'
 
 export default {
@@ -198,6 +205,7 @@ export default {
     Balance,
     Pools,
     Bonds,
+    Distribution,
   },
   data() {
     return {

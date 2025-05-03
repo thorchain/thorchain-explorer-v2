@@ -327,7 +327,7 @@ export default {
         .slice(0, 10)
     },
     formatDate(date) {
-      return moment(date).format('YYYY-MM-DD HH:mm:ss')
+      return moment(date).format('MM/DD/YYYY HH:mm:ss')
     },
     isVotePassed(o, key, value) {
       if (this.mimirData[value] === +key) return true
