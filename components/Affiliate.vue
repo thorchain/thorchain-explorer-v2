@@ -374,6 +374,8 @@ export default {
     display: flex;
     align-items: center;
     text-decoration: none;
+    gap: $space-8;
+    align-items: center;
   }
 
   .executed {
