@@ -10,7 +10,7 @@
         <div v-for="n in labels" :key="n" class="bubble-container">
           {{ n }}
         </div>
-        <div class="interface mono">
+        <div v-if="ifc" class="interface mono">
           <small> executed on </small>
           <affiliate :affiliate-address="ifc" />
         </div>

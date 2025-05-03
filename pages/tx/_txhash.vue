@@ -423,7 +423,7 @@ export default {
       }
 
       if (accordions.action) {
-        ret.details.interface = []
+        ret.details.interface = ''
         if (accordions.action.affiliateName) {
           const affiliates = accordions.action.affiliateName
           ret.details.interface = affiliates
