@@ -10,19 +10,9 @@
         <div v-for="n in labels" :key="n" class="bubble-container">
           {{ n }}
         </div>
-        <div v-if="ifc && ifc.length > 0" class="interface mono">
+        <div v-if="ifc" class="interface mono">
           <small> executed on </small>
-          <template v-for="(inf, i) in ifc">
-            <img
-              v-if="inf && inf.icons && inf.icons.url"
-              :key="i"
-              :src="theme === 'light' ? inf.icons.url : inf.icons.urlDark"
-              class="interface-image"
-              alt="interface image"
-              :title="inf.name"
-            />
-            <span v-else :key="i">{{ inf && inf.name }}</span>
-          </template>
+          <affiliate :affiliate-address="ifc" />
         </div>
       </div>
     </div>
@@ -181,7 +171,7 @@ export default {
       return this.txData?.title ?? ''
     },
     ifc() {
-      return this.txData?.interface ?? []
+      return this.txData?.interface ?? ''
     },
     labels() {
       return this.txData?.labels ?? []

@@ -423,11 +423,9 @@ export default {
       }
 
       if (accordions.action) {
-        ret.details.interface = []
+        ret.details.interface = ''
         if (accordions.action.affiliateName) {
           const affiliates = accordions.action.affiliateName
-            .split('/')
-            .map((inf) => this.mapAffiliateName(inf))
           ret.details.interface = affiliates
         }
 
@@ -1665,6 +1663,8 @@ export default {
         !(thorStatus?.stages.inbound_confirmation_counted?.completed ?? true) ||
         !thorStatus?.stages.inbound_finalised?.completed
 
+      const memoText = thorStatus?.tx?.memo || isRefund?.metadata.refund.memo
+
       return {
         cards: {
           title: 'add Liquidity' + (isRefund ? ' (Refunded)' : ''),
@@ -1713,6 +1713,7 @@ export default {
             refundReason: isRefund
               ? isRefund?.metadata?.refund?.reason
               : undefined,
+            memo: memoText,
             done: !thorStatus?.stages.swap_status?.pending,
           },
           out: [],
