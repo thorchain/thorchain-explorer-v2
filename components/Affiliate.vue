@@ -1,7 +1,7 @@
 <template>
-  <div class="affiliate">
+  <div class="affiliate-content">
     <template v-if="affiliates && affiliates.length">
-      <nuxt-link class="affiliate-link" :to="`/txs?affiliate=${affiliates}`">
+      <nuxt-link class="affiliate-direct" :to="`/txs?affiliate=${affiliates}`">
         <div
           v-for="affiliate in affiliates"
           :key="affiliate"
@@ -364,31 +364,29 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.affiliate {
+.affiliate-content {
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: $space-8;
-}
 
-.affiliate-link {
-  display: flex;
-  align-items: center;
-  text-decoration: none;
-  color: var(--sec-font-color);
-  gap: $space-8;
-}
+  .affiliate-direct {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+  }
 
-.executed {
-  display: flex;
-  align-items: center;
-  color: var(--sec-font-color);
-  border-color: var(--border-color);
-  background-color: transparent;
-  gap: $space-8;
+  .executed {
+    display: flex;
+    align-items: center;
+    color: var(--sec-font-color);
+    border-color: var(--border-color);
+    background-color: transparent;
+    gap: $space-8;
 
-  img {
-    height: 1.2rem;
+    img {
+      height: 1.2rem;
+    }
   }
 }
 </style>
