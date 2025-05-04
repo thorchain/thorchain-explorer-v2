@@ -98,7 +98,7 @@ export default {
     padding: $space-5 !important;
     color: var(--sec-font-color);
     background-color: var(--bgl-color);
-    border: 1px solid;
+    border: 1px solid var(--border-color);
     border-radius: $radius-sm;
     transition: all 0.2s ease;
     display: flex;
@@ -108,27 +108,27 @@ export default {
     cursor: pointer;
 
     &.blue-type {
-      border-color: color-mix(in srgb, var(--highlight) 35%, transparent);
+      background-color: color-mix(in srgb, var(--highlight) 5%, transparent);
     }
 
     &.green-type {
-      border-color: color-mix(in srgb, var(--green) 30%, transparent);
+      background-color: color-mix(in srgb, var(--green) 5%, transparent);
     }
 
     &.yellow-type {
-      border-color: color-mix(in srgb, #f39c12 35%, transparent);
+      background-color: color-mix(in srgb, #f39c12 5%, transparent);
     }
 
     &.red-type {
-      border-color: color-mix(in srgb, var(--red) 35%, transparent);
+      background-color: color-mix(in srgb, var(--red) 5%, transparent);
     }
 
     &.alert-type {
-      border-color: color-mix(in srgb, #9b59b6 35%, transparent);
+      background-color: color-mix(in srgb, #9b59b6 5%, transparent);
     }
 
     &.default-type {
-      border-color: color-mix(in srgb, var(--highlight) 35%, transparent);
+      background-color: color-mix(in srgb, var(--highlight) 5%, transparent);
     }
 
     &.highlighted {

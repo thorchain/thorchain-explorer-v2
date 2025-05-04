@@ -96,7 +96,6 @@ import TransactionStatus from './transactions/TransactionStatus.vue'
 import TransactionAction from './transactions/TransactionAction.vue'
 import Address from './transactions/Address.vue'
 import Hash from './transactions/Hash.vue'
-import RightArrow from '~/assets/images/arrow-right.svg?inline'
 import sendIcon from '~/assets/images/send.svg?inline'
 import receiveIcon from '~/assets/images/receive.svg?inline'
 import { AssetImage } from '~/classes/assetImage'
@@ -107,7 +106,6 @@ export default {
     TransactionAction,
     Address,
     Hash,
-    RightArrow,
     sendIcon,
     receiveIcon,
   },
@@ -185,6 +183,7 @@ export default {
         {
           label: '',
           field: 'direction',
+          hidden: this.owner === undefined,
         },
         {
           label: 'From / To',
@@ -408,8 +407,9 @@ export default {
   align-items: center;
   width: 100%;
   justify-content: center;
-  font-size: 75%;
+  font-size: $font-size-xs;
   font-weight: 700;
+  line-height: 12px;
 
   @include lg {
     padding: $space-6 $space-0;
@@ -420,6 +420,7 @@ export default {
     border-color: rgba(var(--bs-secondary-rgb), var(--bs-bg-opacity));
     background-color: rgba(var(--bs-secondary-rgb), var(--bs-bg-opacity));
   }
+
   &.green {
     color: rgba(var(--bs-success-rgb), var(--bs-text-opacity));
     border-color: rgba(var(--bs-success-rgb), var(--bs-bg-opacity));
@@ -432,11 +433,7 @@ export default {
     border: 1px solid rgba(var(--bs-warning-rgb), var(--bs-border-opacity));
   }
 }
-.mini-bubble {
-  height: 1.5rem;
-  width: 1.5rem;
-  padding: $space-2;
-}
+
 .flex-cell-content-tx {
   display: flex;
   flex-direction: column;
