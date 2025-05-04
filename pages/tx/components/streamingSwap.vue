@@ -1,5 +1,5 @@
 <template>
-  <div v-if="streamingDetail.is" class="card streaming-card">
+  <card v-if="streamingDetail.is" class="streaming-card">
     <div class="card-header streaming-header">
       <span>Streaming Swap <sup class="header-sup">Live</sup></span>
       <div
@@ -78,7 +78,7 @@
         </span>
       </span>
     </div>
-  </div>
+  </card>
 </template>
 
 <script>
@@ -296,13 +296,17 @@ export default {
 
 <style lang="scss">
 .streaming-card {
-  max-width: 680px;
-  width: 100%;
-  margin: auto;
+  max-width: 680px !important;
+  margin: 0 10px;
+  @include lg{
+    margin: auto !important;
+    width: 100% !important;
+  }
 }
 .streaming-header {
   display: flex;
   justify-content: space-between;
+  padding: $space-5 $space-0 $space-14 $space-0 !important;
 
   span {
     color: var(--sec-font-color) !important;
