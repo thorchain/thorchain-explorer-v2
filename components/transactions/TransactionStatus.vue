@@ -57,7 +57,6 @@ export default {
         case 'send':
           return 'blue-type'
         case 'swap':
-        case 'addLiquidity':
         case 'runePoolDeposit':
         case 'bond':
         case 'tcy_claim':
@@ -72,6 +71,7 @@ export default {
         case 'tcy_unstake':
           return 'red-type'
         case 'switch':
+        case 'addLiquidity':
           return 'alert-type'
         default:
           return 'default-type'
@@ -98,7 +98,7 @@ export default {
     padding: $space-5 !important;
     color: var(--sec-font-color);
     background-color: var(--bgl-color);
-    border: 1px solid var(--border-color);
+    border: 1px solid;
     border-radius: $radius-sm;
     transition: all 0.2s ease;
     display: flex;
@@ -107,37 +107,54 @@ export default {
     justify-content: center;
     cursor: pointer;
 
-    &.highlighted {
-      border: 1px dashed var(--highlight);
-      border-radius: $radius-xs;
+    &.blue-type {
+      border-color: color-mix(in srgb, var(--highlight) 35%, transparent);
+    }
 
+    &.green-type {
+      border-color: color-mix(in srgb, var(--green) 30%, transparent);
+    }
+
+    &.yellow-type {
+      border-color: color-mix(in srgb, #f39c12 35%, transparent);
+    }
+
+    &.red-type {
+      border-color: color-mix(in srgb, var(--red) 35%, transparent);
+    }
+
+    &.alert-type {
+      border-color: color-mix(in srgb, #9b59b6 35%, transparent);
+    }
+
+    &.default-type {
+      border-color: color-mix(in srgb, var(--highlight) 35%, transparent);
+    }
+
+    &.highlighted {
+      border: 1px dashed;
+      border-radius: $radius-xs;
       &.blue-type {
-        color: var(--highlight);
         border-color: var(--highlight);
       }
 
       &.green-type {
-        color: var(--green);
         border-color: var(--green);
       }
 
       &.yellow-type {
-        color: #f39c12;
         border-color: #f39c12;
       }
 
       &.red-type {
-        color: var(--red);
         border-color: var(--red);
       }
 
       &.alert-type {
-        color: #9b59b6;
         border-color: #9b59b6;
       }
 
       &.default-type {
-        color: var(--highlight);
         border-color: var(--highlight);
       }
     }
