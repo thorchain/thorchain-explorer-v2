@@ -57,7 +57,6 @@ export default {
         case 'send':
           return 'blue-type'
         case 'swap':
-        case 'addLiquidity':
         case 'runePoolDeposit':
         case 'bond':
         case 'tcy_claim':
@@ -72,6 +71,7 @@ export default {
         case 'tcy_unstake':
           return 'red-type'
         case 'switch':
+        case 'addLiquidity':
           return 'alert-type'
         default:
           return 'default-type'
@@ -107,37 +107,54 @@ export default {
     justify-content: center;
     cursor: pointer;
 
-    &.highlighted {
-      border: 1px dashed var(--highlight);
-      border-radius: $radius-xs;
+    &.blue-type {
+      background-color: color-mix(in srgb, var(--highlight) 5%, transparent);
+    }
 
+    &.green-type {
+      background-color: color-mix(in srgb, var(--green) 5%, transparent);
+    }
+
+    &.yellow-type {
+      background-color: color-mix(in srgb, #f39c12 5%, transparent);
+    }
+
+    &.red-type {
+      background-color: color-mix(in srgb, var(--red) 5%, transparent);
+    }
+
+    &.alert-type {
+      background-color: color-mix(in srgb, #9b59b6 5%, transparent);
+    }
+
+    &.default-type {
+      background-color: color-mix(in srgb, var(--highlight) 5%, transparent);
+    }
+
+    &.highlighted {
+      border: 1px dashed;
+      border-radius: $radius-xs;
       &.blue-type {
-        color: var(--highlight);
         border-color: var(--highlight);
       }
 
       &.green-type {
-        color: var(--green);
         border-color: var(--green);
       }
 
       &.yellow-type {
-        color: #f39c12;
         border-color: #f39c12;
       }
 
       &.red-type {
-        color: var(--red);
         border-color: var(--red);
       }
 
       &.alert-type {
-        color: #9b59b6;
         border-color: #9b59b6;
       }
 
       &.default-type {
-        color: var(--highlight);
         border-color: var(--highlight);
       }
     }

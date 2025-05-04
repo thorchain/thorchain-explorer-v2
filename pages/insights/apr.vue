@@ -151,7 +151,7 @@ export default {
           const apr = (365 * increase) / c
           aprs.unshift({
             increase: apr,
-            time: moment(now[i].startTime * 1e3).format('YY/MM/DD'),
+            time: moment(now[i].startTime * 1e3).format('MM/DD/YYYY'),
           })
         }
       }

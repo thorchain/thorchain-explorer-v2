@@ -375,7 +375,6 @@ export default {
     align-items: center;
     text-decoration: none;
     gap: $space-8;
-    align-items: center;
   }
 
   .executed {

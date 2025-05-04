@@ -60,17 +60,18 @@
         <div v-else-if="props.column.field === 'action'">
           <transaction-action :row="props.row"></transaction-action>
         </div>
-        <div v-else-if="props.column.field === 'interaction'">
-          <span
-            v-if="owner && owner === props.row.from"
-            class="mini-bubble info"
-            >OUT</span
-          >
-          <span v-else-if="owner && owner === props.row.to" class="mini-bubble"
-            >IN</span
-          >
-          <right-arrow v-else class="interaction-icon" />
+        <div
+          v-else-if="props.column.field === 'direction'"
+          :class="{
+            'direction-class green': props.row.direction === 'IN',
+            'direction-class yellow': props.row.direction === 'OUT',
+            'direction-class gray': props.row.direction === 'SELF',
+          }"
+          class="direction-class"
+        >
+          <span>{{ props.row.direction }}</span>
         </div>
+
         <div
           v-else-if="props.column.field === 'age'"
           v-tooltip="getTime(props.row.age)"
@@ -95,7 +96,6 @@ import TransactionStatus from './transactions/TransactionStatus.vue'
 import TransactionAction from './transactions/TransactionAction.vue'
 import Address from './transactions/Address.vue'
 import Hash from './transactions/Hash.vue'
-import RightArrow from '~/assets/images/arrow-right.svg?inline'
 import sendIcon from '~/assets/images/send.svg?inline'
 import receiveIcon from '~/assets/images/receive.svg?inline'
 import { AssetImage } from '~/classes/assetImage'
@@ -106,7 +106,6 @@ export default {
     TransactionAction,
     Address,
     Hash,
-    RightArrow,
     sendIcon,
     receiveIcon,
   },
@@ -182,6 +181,11 @@ export default {
           formatFn: this.since,
         },
         {
+          label: '',
+          field: 'direction',
+          hidden: this.owner === undefined,
+        },
+        {
           label: 'From / To',
           field: 'from',
           tdClass: 'mono',
@@ -206,13 +210,22 @@ export default {
   methods: {
     formatActions(txs) {
       const ret = txs.actions.map((t) => {
+        const fromAddr = t.in?.find((e) => e.address)?.address || ''
+        const toAddr =
+          t.out?.find((e) => !e.affiliate && e.address)?.address || ''
         return {
           ...t,
           hash:
             t.in.find((e) => e.txID)?.txID || t.out.find((e) => e.txID)?.txID,
           age: t.date,
-          from: t.in.find((e) => e.address)?.address,
-          to: t.out.find((e) => !e.affiliate && e.address)?.address,
+          from: fromAddr,
+          to: toAddr,
+          direction:
+            fromAddr === toAddr
+              ? 'SELF'
+              : this.owner === fromAddr
+                ? 'OUT'
+                : 'IN',
         }
       })
 
@@ -382,11 +395,45 @@ export default {
   gap: 8px;
   align-items: center;
 }
-.mini-bubble {
-  height: 1.5rem;
-  width: 1.5rem;
-  padding: $space-2;
+
+.direction-class {
+  padding: $space-6 $space-2;
+  color: var(--sec-font-color);
+  background-color: var(--bgl-color);
+  border: 1px solid var(--border-color);
+  border-radius: $radius-md;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  justify-content: center;
+  font-size: $font-size-xs;
+  font-weight: 700;
+  line-height: 12px;
+
+  @include lg {
+    padding: $space-6 $space-0;
+  }
+
+  &.gray {
+    color: rgba(var(--bs-secondary-rgb), var(--bs-text-opacity));
+    border-color: rgba(var(--bs-secondary-rgb), var(--bs-bg-opacity));
+    background-color: rgba(var(--bs-secondary-rgb), var(--bs-bg-opacity));
+  }
+
+  &.green {
+    color: rgba(var(--bs-success-rgb), var(--bs-text-opacity));
+    border-color: rgba(var(--bs-success-rgb), var(--bs-bg-opacity));
+    background-color: rgba(var(--bs-success-rgb), var(--bs-bg-opacity));
+  }
+
+  &.yellow {
+    color: #cc9a06;
+    background-color: rgba(var(--bs-warning-rgb), var(--bs-bg-opacity));
+    border: 1px solid rgba(var(--bs-warning-rgb), var(--bs-border-opacity));
+  }
 }
+
 .flex-cell-content-tx {
   display: flex;
   flex-direction: column;

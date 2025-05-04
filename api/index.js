@@ -25,6 +25,7 @@ import {
   getSwapsHistory,
   getStats,
   getPools,
+  getTCYDistribution,
 } from './midgard.api'
 import {
   getRunePoolProviders,
@@ -70,6 +71,7 @@ import {
   getThorVersion,
   getTSSMetrics,
   getSecuredAssets,
+  getTCYStaker,
 } from './thornode.api'
 import { getTendermintLatestBlocks } from './tendermint.api'
 import {
@@ -307,6 +309,8 @@ export default function ({ $axios }, inject) {
     getSecuredAssets,
     getAffiliateHistory,
     getInfraRUJIMerge,
+    getTCYDistribution,
+    getTCYStaker,
   }
 
   inject('api', api)
