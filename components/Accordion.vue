@@ -156,9 +156,7 @@
         </template>
         <slot v-else :name="s.slotName" />
       </div>
-      <pre v-if="attributes" class="attributes">{{
-        showJSON(attributes.attributes)
-      }}</pre>
+      <pre v-if="attributes" class="attributes">{{ showJSON(attributes) }}</pre>
     </div>
   </div>
 </template>
@@ -689,6 +687,7 @@ export default {
 
 .attributes {
   margin: $space-8 $space-0;
+  margin-bottom: 0;
   border: 1px solid var(--border-color);
   border-radius: $radius-lg;
   background: var(--card-bg-color);

@@ -1129,7 +1129,11 @@ export default {
           in: ins,
           action: {
             type: action.metadata.contract.contractType,
-            attributes: action.metadata.contract,
+            attributes: {
+              attributes: action.metadata.contract.attributes,
+              funds: action.metadata.contract.funds,
+              msg: action.metadata.contract.msg,
+            },
             done: true,
           },
           out: [],
