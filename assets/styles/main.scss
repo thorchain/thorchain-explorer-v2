@@ -83,7 +83,7 @@ input {
     background-color: var(--card-bg-color);
     border-radius: 0 0 $radius-lg $radius-lg;
     z-index: 1000;
-    padding:$space-8 $space-5;
+    padding: $space-8 $space-5;
     min-width: 9rem;
     border-top: var(--primary-color) 2px solid;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
@@ -111,13 +111,12 @@ input {
     white-space: nowrap;
     text-decoration: none;
     color: var(--sec-font-color);
-    margin-top:$space-5;
+    margin-top: $space-5;
 
     &.active,
     &.nuxt-link-exact-active {
       border-radius: $radius-s;
       color: var(--primary-color);
-      margin-bottom: $space-5;
     }
 
     &:hover {
@@ -129,7 +128,7 @@ input {
 }
 
 .header-icon {
-  margin-left:$space-5;
+  margin-left: $space-5;
   height: 1rem;
   width: 1rem;
   fill: #606266;
@@ -150,7 +149,7 @@ input {
   margin: $space-14;
   background-color: var(--card-bg-color) !important;
   border: 1px solid var(--border-color) !important;
-  border-radius:$radius-s;
+  border-radius: $radius-s;
   font-size: $font-size-sm;
 
   .key {
@@ -304,7 +303,7 @@ input {
 
           white-space: nowrap;
           word-break: keep-all;
-          font-size:$font-size-sm;
+          font-size: $font-size-sm;
           color: var(--sec-font-color);
 
           .value {
