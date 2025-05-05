@@ -280,7 +280,7 @@ export default {
                 ? (pe.earnings * this.runePrice * 365) / 10 ** 8
                 : 0,
               collateral: +p.totalCollateral / 1e8,
-              trading: (+tradeAsset.depth / 1e8) * p.assetPriceUSD,
+              trading: (+tradeAsset?.depth / 1e8) * p.assetPriceUSD,
             }
           })
           this.sepPools(ps)
