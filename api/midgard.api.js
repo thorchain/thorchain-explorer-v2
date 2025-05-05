@@ -60,7 +60,10 @@ export function getPools(period) {
 }
 
 export function getPoolStats(poolName) {
-  return $axiosInstace.get(`pool/${poolName}/stats?period=all`)
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL +
+      `pool/${poolName}/stats?period=all`
+  )
 }
 
 export function getPoolDepth(poolName, count = 30, from = undefined) {
