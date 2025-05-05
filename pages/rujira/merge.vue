@@ -12,30 +12,15 @@
         </span>
         <br />
         <br />
-        <a href="https://rujira.network/merge/KUJI" target="_blank"
-          >More Info</a
-        >
-
-        <hr class="info-hr" style="margin-top: 1rem" />
-        <div>
-          <span style="color: var(--sec-font-color)">RUJI Merged: </span>
-          <b v-if="mergedRUJI > 0" style="color: #a5298f">
-            {{ mergedRUJI | number('0,0.00a') }}
-            <template v-if="totalAllocation > 0">
-              / {{ totalAllocation | number('0,0.00a') }} RUJI -
-              {{ (mergedRUJI / totalAllocation) | percent(2) }}
-            </template>
-          </b>
-          <span v-else>-</span>
-        </div>
-        <div>
-          <span style="color: var(--sec-font-color)">Switch Txs:</span>
-          <b v-if="totalTxs > 0" style="color: #a5298f">
-            {{ totalTxs }}
-          </b>
-          <span v-else>-</span>
-        </div>
+        <div class="button-more" href="https://rujira.network/merge/KUJI" target="_blank"
+          >More Info</div
+>
       </Card>
+  </div>
+      <StatsPanel 
+          :metrics="statsMetrics"
+          style="margin-bottom: 1rem;"
+        />
       <Card
         title="RUJIRA Merge"
         :img-src="require('@/assets/images/ruji-merge.svg')"
@@ -168,6 +153,16 @@ export default {
         return acc
       }, 0)
     },
+    totalWallets() {
+  if (!this.rows) {
+    return 0
+  }
+
+  return this.rows.reduce((acc, item) => {
+    acc += item.Addresses
+    return acc
+  }, 0)
+},
     totalAllocation() {
       if (!this.rows) {
         return 0
@@ -188,6 +183,31 @@ export default {
         return acc
       }, 0)
     },
+    statsMetrics() {
+  return [
+    {
+      label: 'RUJI Merged',
+      value: this.mergedRUJI,
+      format: (val) => {
+        let formatted = this.$options.filters.number(val, '0,0.00a')
+        if (this.totalAllocation > 0) {
+          formatted += ` / ${this.$options.filters.number(this.totalAllocation, '0,0.00a')} RUJI - ${this.$options.filters.percent(val / this.totalAllocation, 2)}`
+        }
+        return formatted
+      }
+    },
+    {
+      label: 'Switch Txs',
+      value: this.totalTxs,
+      format: (val) => val > 0 ? val : '-'
+    },
+    {
+      label: 'Wallet Count',
+      value: this.totalWallets,
+      format: (val) => val > 0 ? val : '-'
+    }
+  ]
+}
   },
   async mounted() {
     try {
@@ -241,8 +261,18 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 th.end .table-asset {
   justify-content: flex-end;
 }
+.button-more {
+    background-color:transparent;
+    color: var(--sec-font-color);
+    padding: $space-8;
+    border:1px solid var(--border-color);
+    border-radius:$space-8;
+    cursor: pointer;
+    width: fit-content;
+    font-size: $font-size-xs;
+  }
 </style>
