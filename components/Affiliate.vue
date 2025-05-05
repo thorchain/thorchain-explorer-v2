@@ -244,9 +244,9 @@ const newInterfaces = {
     name: 'GemWallet',
     icon: 'gemwalleticon',
   },
-  xdefi2: {
+  xdefi: {
     name: 'Ctrl',
-    icon: 'ctrl2',
+    icon: 'ctrlicon',
   },
   okx2: {
     name: 'OKX',
@@ -282,7 +282,7 @@ const newAffiliateMap = {
   bgw: newInterfaces.bgw,
   ss: newInterfaces.shapeshift,
   g1: newInterfaces.gemwallet,
-  xdf: newInterfaces.xdefi2,
+  xdf: newInterfaces.xdefi,
   okw: newInterfaces.okx2,
   oky: newInterfaces.onekey2,
 }
