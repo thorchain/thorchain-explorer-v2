@@ -52,7 +52,7 @@
       </div>
     </div>
     <!-- Churn Lists -->
-    <div class="churn-cards">
+    <!-- <div class="churn-cards">
       <div v-for="(churn, i) in churns" :key="churn.height" class="block-item">
         <div class="block-upper-info">
           <div class="block-info">
@@ -100,7 +100,7 @@
           <skeleton-loader height="1rem"></skeleton-loader>
         </div>
       </template>
-    </div>
+    </div> -->
   </div>
 </template>
 
