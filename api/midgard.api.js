@@ -1,3 +1,5 @@
+import endpoints from './endpoints'
+
 // axios instance
 import { getInfraEarnings } from './infra'
 import { $axiosInstace } from './index'
@@ -51,7 +53,10 @@ export function getPoolTxs(poolName, offset = 0, limit = 10) {
 }
 
 export function getPools(period) {
-  return $axiosInstace.get(`pools?period=${period ?? '180d'}`)
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL +
+      `pools?period=${period ?? '180d'}`
+  )
 }
 
 export function getPoolStats(poolName) {
