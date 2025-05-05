@@ -178,6 +178,7 @@ export default {
     align-items: center;
     justify-content: space-between;
     padding: $space-8 0;
+    gap: $space-5;
     width: 100%;
 
     @include lg {

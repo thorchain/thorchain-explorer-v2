@@ -1,9 +1,7 @@
 <template>
   <div>
-    <info-card
-      :options="infoCardOptions"
-      style="margin-bottom: 0.5rem"
-    ></info-card>
+    <StatsPanel :metrics="governanceStats" />
+
     <h3 class="header-recent-vote">Latest Votes</h3>
     <div class="recent-votes-container">
       <div
@@ -169,30 +167,6 @@ export default {
       mimirData: {},
       searchQuery: '',
       last24HVotes: 0,
-      infoCardOptions: [
-        {
-          title: 'Voting Governance',
-          rowStart: 1,
-          colSpan: 1,
-          items: [
-            {
-              name: 'Active nodes',
-            },
-            {
-              name: 'Consensus',
-            },
-            {
-              name: '24HR Votes',
-            },
-            {
-              name: 'Latest Vote',
-            },
-            {
-              name: 'Past 30D Proposals',
-            },
-          ],
-        },
-      ],
     }
   },
   computed: {
@@ -216,6 +190,30 @@ export default {
         }
         return false
       })
+    },
+    governanceStats() {
+      return [
+        {
+          label: 'Active Nodes',
+          value: this.activeNodes.length,
+        },
+        {
+          label: 'Consensus',
+          value: this.votesRequired,
+        },
+        {
+          label: '24H Votes',
+          value: this.last24HVotes,
+        },
+        {
+          label: 'Latest Vote',
+          value: this.formattedVotes[0]?.value || '-',
+        },
+        {
+          label: '30D Proposals',
+          value: this.votes.length,
+        },
+      ]
     },
   },
   async mounted() {
