@@ -1,5 +1,59 @@
 <template>
   <Page>
+    <StatsPanel :metrics="statsMetrics" />
+    <Card
+      title="RUJIRA Merge"
+      :img-src="require('@/assets/images/ruji-merge.svg')"
+    >
+      <TableLoader v-if="loading" :cols="cols" />
+      <vue-good-table
+        v-else
+        :columns="cols"
+        :rows="rows"
+        style-class="vgt-table net-table"
+        :sort-options="{
+          enabled: true,
+        }"
+      >
+        <template slot="table-column" slot-scope="props">
+          <span>
+            {{ props.column.label }}
+          </span>
+        </template>
+        <template slot="table-row" slot-scope="props">
+          <div
+            v-if="props.column.field == 'Asset'"
+            v-tooltip="props.row.asset"
+            class="cell-content"
+          >
+            <AssetIcon :asset="props.row.Asset" />
+            <span>{{ props.formattedRow[props.column.field] }}</span>
+          </div>
+          <div v-else-if="props.column.field == 'Amount'">
+            {{ props.formattedRow[props.column.field] }}
+            / {{ props.row.maxSupply | number('0,0.00a') }}
+            <small>
+              {{ showAsset(props.row.Asset, true) }}
+            </small>
+          </div>
+          <div
+            v-else-if="
+              props.column.field == 'Allocation' ||
+              props.column.field === 'AllocationMerged'
+            "
+          >
+            {{ props.formattedRow[props.column.field] }}
+            <small>RUJI</small>
+          </div>
+          <span v-else>
+            <span v-if="props.row[props.column.field]">
+              {{ props.formattedRow[props.column.field] }}
+            </span>
+            <span v-else>-</span>
+          </span>
+        </template>
+      </vue-good-table>
+    </Card>
     <div>
       <Card style="margin-bottom: 1rem">
         <span>
@@ -12,67 +66,13 @@
         </span>
         <br />
         <br />
-        <div class="button-more" href="https://rujira.network/merge/KUJI" target="_blank"
-          >More Info</div
->
-      </Card>
-  </div>
-      <StatsPanel 
-          :metrics="statsMetrics"
-          style="margin-bottom: 1rem;"
-        />
-      <Card
-        title="RUJIRA Merge"
-        :img-src="require('@/assets/images/ruji-merge.svg')"
-      >
-        <TableLoader v-if="loading" :cols="cols" />
-        <vue-good-table
-          v-else
-          :columns="cols"
-          :rows="rows"
-          style-class="vgt-table net-table"
-          :sort-options="{
-            enabled: true,
-          }"
+        <div
+          class="button-more"
+          href="https://rujira.network/merge/KUJI"
+          target="_blank"
         >
-          <template slot="table-column" slot-scope="props">
-            <span>
-              {{ props.column.label }}
-            </span>
-          </template>
-          <template slot="table-row" slot-scope="props">
-            <div
-              v-if="props.column.field == 'Asset'"
-              v-tooltip="props.row.asset"
-              class="cell-content"
-            >
-              <AssetIcon :asset="props.row.Asset" />
-              <span>{{ props.formattedRow[props.column.field] }}</span>
-            </div>
-            <div v-else-if="props.column.field == 'Amount'">
-              {{ props.formattedRow[props.column.field] }}
-              / {{ props.row.maxSupply | number('0,0.00a') }}
-              <small>
-                {{ showAsset(props.row.Asset, true) }}
-              </small>
-            </div>
-            <div
-              v-else-if="
-                props.column.field == 'Allocation' ||
-                props.column.field === 'AllocationMerged'
-              "
-            >
-              {{ props.formattedRow[props.column.field] }}
-              <small>RUJI</small>
-            </div>
-            <span v-else>
-              <span v-if="props.row[props.column.field]">
-                {{ props.formattedRow[props.column.field] }}
-              </span>
-              <span v-else>-</span>
-            </span>
-          </template>
-        </vue-good-table>
+          More Info
+        </div>
       </Card>
     </div>
   </Page>
@@ -154,15 +154,15 @@ export default {
       }, 0)
     },
     totalWallets() {
-  if (!this.rows) {
-    return 0
-  }
+      if (!this.rows) {
+        return 0
+      }
 
-  return this.rows.reduce((acc, item) => {
-    acc += item.Addresses
-    return acc
-  }, 0)
-},
+      return this.rows.reduce((acc, item) => {
+        acc += item.Addresses
+        return acc
+      }, 0)
+    },
     totalAllocation() {
       if (!this.rows) {
         return 0
@@ -184,30 +184,30 @@ export default {
       }, 0)
     },
     statsMetrics() {
-  return [
-    {
-      label: 'RUJI Merged',
-      value: this.mergedRUJI,
-      format: (val) => {
-        let formatted = this.$options.filters.number(val, '0,0.00a')
-        if (this.totalAllocation > 0) {
-          formatted += ` / ${this.$options.filters.number(this.totalAllocation, '0,0.00a')} RUJI - ${this.$options.filters.percent(val / this.totalAllocation, 2)}`
-        }
-        return formatted
-      }
+      return [
+        {
+          label: 'RUJI Merged',
+          value: this.mergedRUJI,
+          format: (val) => {
+            let formatted = this.$options.filters.number(val, '0,0.00a')
+            if (this.totalAllocation > 0) {
+              formatted += ` / ${this.$options.filters.number(this.totalAllocation, '0,0.00a')} RUJI - ${this.$options.filters.percent(val / this.totalAllocation, 2)}`
+            }
+            return formatted
+          },
+        },
+        {
+          label: 'Switch Txs',
+          value: this.totalTxs,
+          format: (val) => (val > 0 ? val : '-'),
+        },
+        {
+          label: 'Wallet Count',
+          value: this.totalWallets,
+          format: (val) => (val > 0 ? val : '-'),
+        },
+      ]
     },
-    {
-      label: 'Switch Txs',
-      value: this.totalTxs,
-      format: (val) => val > 0 ? val : '-'
-    },
-    {
-      label: 'Wallet Count',
-      value: this.totalWallets,
-      format: (val) => val > 0 ? val : '-'
-    }
-  ]
-}
   },
   async mounted() {
     try {
@@ -266,13 +266,13 @@ th.end .table-asset {
   justify-content: flex-end;
 }
 .button-more {
-    background-color:transparent;
-    color: var(--sec-font-color);
-    padding: $space-8;
-    border:1px solid var(--border-color);
-    border-radius:$space-8;
-    cursor: pointer;
-    width: fit-content;
-    font-size: $font-size-xs;
-  }
+  background-color: transparent;
+  color: var(--sec-font-color);
+  padding: $space-8;
+  border: 1px solid var(--border-color);
+  border-radius: $space-8;
+  cursor: pointer;
+  width: fit-content;
+  font-size: $font-size-xs;
+}
 </style>
