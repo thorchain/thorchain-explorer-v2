@@ -224,7 +224,7 @@ export default {
               value: this.tcyInfo?.claimed_not_staked,
               filter: (v) =>
                 `${this.$options.filters.number(v / 1e8, '0,0.00a')} TCY`,
-              extraInfo: `Almost ${this.$options.filters.percent(this.tcyInfo?.claimed_not_staked / this.tcyInfo?.claimed_info.total)} of claimers hasn't staked`,
+              extraInfo: `Almost ${this.$options.filters.percent(this.tcyInfo?.claimed_not_staked / this.tcyInfo?.claimed_info.total)} of claimers haven't staked`,
             },
             {
               name: 'TCY Price',
@@ -275,32 +275,32 @@ export default {
           colSpan: 1,
           items: [
             {
-              name: 'TCY CLAIMING HALT',
+              name: 'TCY CLAIMING',
               value: checkHaltStatus(this.mimir?.TCYCLAIMINGHALT),
               valueSlot: 'mimir',
             },
             {
-              name: 'TCY CLAIMING SWAP HALT',
+              name: 'TCY CLAIMING SWAP',
               value: checkHaltStatus(this.mimir?.TCYCLAIMINGSWAPHALT),
               valueSlot: 'mimir',
             },
             {
-              name: 'TCY STAKE DISTRIBUTION HALT',
+              name: 'TCY STAKE DISTRIBUTION',
               value: checkHaltStatus(this.mimir?.TCYSTAKEDISTRIBUTIONHALT),
               valueSlot: 'mimir',
             },
             {
-              name: 'TCY STAKING HALT',
+              name: 'TCY STAKING',
               value: checkHaltStatus(this.mimir?.TCYSTAKINGHALT),
               valueSlot: 'mimir',
             },
             {
-              name: 'TCY UNSTAKING HALT',
+              name: 'TCY UNSTAKING',
               value: checkHaltStatus(this.mimir?.TCYUNSTAKINGHALT),
               valueSlot: 'mimir',
             },
             {
-              name: 'HALT TCY TRADING',
+              name: 'TCY TRADING',
               value: checkHaltStatus(this.mimir?.HALTTCYTRADING),
               valueSlot: 'mimir',
             },
