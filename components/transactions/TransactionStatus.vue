@@ -108,27 +108,27 @@ export default {
     cursor: pointer;
 
     &.blue-type {
-      background-color: color-mix(in srgb, var(--highlight) 5%, transparent);
+      background-color: color-mix(in srgb, var(--highlight) 10%, transparent);
     }
 
     &.green-type {
-      background-color: color-mix(in srgb, var(--green) 5%, transparent);
+      background-color: color-mix(in srgb, var(--green) 10%, transparent);
     }
 
     &.yellow-type {
-      background-color: color-mix(in srgb, #f39c12 5%, transparent);
+      background-color: color-mix(in srgb, #f39c12 10%, transparent);
     }
 
     &.red-type {
-      background-color: color-mix(in srgb, var(--red) 5%, transparent);
+      background-color: color-mix(in srgb, var(--red) 10%, transparent);
     }
 
     &.alert-type {
-      background-color: color-mix(in srgb, #9b59b6 5%, transparent);
+      background-color: color-mix(in srgb, #9b59b6 10%, transparent);
     }
 
     &.default-type {
-      background-color: color-mix(in srgb, var(--highlight) 5%, transparent);
+      background-color: color-mix(in srgb, var(--highlight) 10%, transparent);
     }
 
     &.highlighted {
@@ -166,6 +166,7 @@ export default {
     font-weight: bold;
     font-size: $font-size-xs;
     line-height: 0.875rem;
+    white-space: nowrap;
   }
 }
 </style>
