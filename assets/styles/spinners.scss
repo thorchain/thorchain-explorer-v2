@@ -1,0 +1,36 @@
+//loader
+.v-bounce {
+    margin: auto;
+  }
+  
+  .v-spinner {
+    margin: $space-16 $space-0;
+  }
+  
+  // Spinner
+  .simple-spinner {
+    width: 26px;
+    height: 26px;
+    border: 3px solid var(--sec-font-color);
+    border-radius: $radius-full;
+    border-top-color: var(--card-bg-color);
+    animation: spin 1s ease-in-out infinite;
+    -webkit-animation: spin 1s ease-in-out infinite;
+  }
+  
+  @keyframes spin {
+    to {
+      -webkit-transform: rotate(360deg);
+    }
+  }
+  
+  @-webkit-keyframes spin {
+    to {
+      -webkit-transform: rotate(360deg);
+    }
+  }
+  
+  .loading {
+    display: flex;
+    justify-content: center;
+  }

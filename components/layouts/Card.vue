@@ -13,7 +13,12 @@
         ]"
       >
         <div class="header-title-section">
-          <img v-if="imgSrc" class="stat-image" :src="imgSrc" />
+          <img
+            v-if="imgSrc"
+            class="stat-image"
+            :src="imgSrc"
+            :style="imgStyle"
+          />
           <h2 class="card-header-title">
             {{ title }}
           </h2>
@@ -56,6 +61,7 @@ export default {
     BounceLoader,
   },
   props: [
+    'imgStyle',
     'imgSrc',
     'title',
     'isLoading',

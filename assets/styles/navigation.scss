@@ -1,0 +1,63 @@
+.nav-popover {
+    display: none;
+  }
+  
+  @media (max-width: 1580px) {
+    .last-nav-popover {
+      left: -50px !important;
+    }
+  }
+  
+  @include lg {
+    .nav-popover {
+      display: block;
+    }
+  
+    .submenu {
+      display: block;
+      background-color: var(--card-bg-color);
+      border-radius: 0 0 $radius-lg $radius-lg;
+      z-index: 1000;
+      padding: $space-8 $space-5;
+      min-width: 9rem;
+      border-top: var(--primary-color) 2px solid;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      position: relative;
+      top: 0.75rem;
+      animation: slideDown 0.3s ease forwards;
+  
+      @keyframes slideDown {
+        0% {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+  
+        100% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    }
+  
+    .submenu-item {
+      font-size: $font-size-s;
+      display: block;
+      padding: $space-12;
+      white-space: nowrap;
+      text-decoration: none;
+      color: var(--sec-font-color);
+      margin-top: $space-5;
+  
+      &.active,
+      &.nuxt-link-exact-active {
+        border-radius: $radius-s;
+        color: var(--primary-color);
+      }
+  
+      &:hover {
+        background-color: var(--darker-bg);
+        border-radius: $radius-s;
+        color: var(--primary-color);
+      }
+    }
+  }

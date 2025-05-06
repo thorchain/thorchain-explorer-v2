@@ -691,5 +691,6 @@ export default {
   border: 1px solid var(--border-color);
   border-radius: $radius-lg;
   background: var(--card-bg-color);
+  padding:$space-10;
 }
 </style>

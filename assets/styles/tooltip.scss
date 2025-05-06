@@ -36,3 +36,60 @@
   backdrop-filter: blur(8px);
   box-shadow: none;
 }
+.tooltip-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: $space-5;
+  gap: 5px;
+}
+
+.tooltip-body {
+  margin-top: $space-5;
+  min-width: 150px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+
+  > span {
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .tooltip-interface-icon {
+    margin: $space-0 $space-5;
+    height: 1rem;
+  }
+}
+
+.series-name-color {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.tooltip-total {
+  padding-top: $space-3;
+  margin-top: $space-5;
+  border-top: 1px solid var(--border-color);
+}
+
+.tooltip-item {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+
+  &.space {
+    justify-content: space-between;
+  }
+}
+
+.data-color {
+  width: 10px;
+  height: 10px;
+  border-radius: $radius-full;
+}

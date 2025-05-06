@@ -1,0 +1,230 @@
+.table-asset {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  
+    &.end {
+      justify-content: end;
+    }
+  }
+  
+  #main-content table.net-table {
+    border-color: var(--border-color) !important;
+    background-color: var(--bg-color);
+  
+    thead th {
+      color: var(--font-color);
+      font-size: $font-size-sm;
+      background: var(--bg-color);
+      border-color: var(--border-color);
+  
+      &:first-of-type {
+        border-radius: $radius-s 0 0 0;
+      }
+  
+      &:last-of-type {
+        border-radius: 0 $radius-s 0 0;
+      }
+    }
+  
+    tbody tr {
+      td {
+        font-size: $font-size-sm;
+        color: var(--sec-font-color);
+        border-color: var(--border-color);
+        vertical-align: middle;
+      }
+  
+      &.clickable {
+        &:hover {
+          background-color: var(--card-bg-color);
+        }
+      }
+    }
+  }
+  
+  .vgt-wrap {
+    overflow: auto;
+  
+    .vgt-inner-wrap {
+      border-radius: $radius-none;
+    }
+  }
+  
+  .vgt-wrap__footer {
+    font-size: $font-size-sm !important;
+    border-top: none !important;
+    border: none !important;
+    border-top: 1px solid !important;
+    border-color: var(--border-color) !important;
+    background: var(--bg-color) !important;
+  }
+  
+  .vgt-wrap__footer .footer__navigation__page-btn {
+    .chevron::after {
+      border-left-color: var(--border-color) !important;
+      border-right-color: var(--border-color) !important;
+    }
+  
+    &:hover {
+      color: var(--sec-font-color);
+  
+      .chevron::after {
+        border-left-color: var(--primary-color) !important;
+        border-right-color: var(--primary-color) !important;
+      }
+    }
+  }
+  
+  .vgt-table thead th {
+    color: var(--font-color);
+    vertical-align: middle !important;
+  
+    span {
+      font-size: $font-size-sm !important;
+    }
+  }
+  
+  .vgt-table {
+    border: none !important;
+  
+    .td-center {
+      text-align: center;
+    }
+  
+    .th-center {
+      text-align: center;
+      padding-right: 10.5px;
+    }
+  }
+  
+  .vgt-table:not(.node-table) > tbody > tr:last-child td {
+    border-bottom: none !important;
+  }
+  
+  .vgt-table.node-table .table-row {
+    height: 42px;
+  }
+  
+  .vgt-wrap .vgt-global-search {
+    background: transparent;
+    border: none;
+  
+    form label {
+      display: none;
+    }
+  
+    form input {
+      margin: $space-4 $space-10;
+      border: 1px solid var(--border-color) !important;
+      background-color: transparent;
+      color: var(--font-color);
+  
+      &::placeholder {
+        color: var(--font-color);
+      }
+    }
+  
+    .vgt-pull-right {
+      display: none;
+    }
+  
+    .vgt-global-search__input {
+      padding-left: $space-0;
+    }
+  }
+  
+  .vgt-table thead th.sorting-desc button:before,
+  .vgt-table thead th.sorting-asc button:after {
+    border-top-color: var(--primary-color) !important;
+    border-bottom-color: var(--primary-color) !important;
+  }
+  
+  .vgt-table tr th.line-numbers {
+    background: var(--bg-color);
+    color: var(--font-color);
+    border-color: var(--border-color);
+  }
+  
+  #vgt-table.net-table tbody {
+    tr.table-row {
+      &:hover {
+        background-color: var(--darker-bg) !important;
+  
+        th {
+          background-color: var(--darker-bg) !important;
+        }
+      }
+  
+      &.highlight {
+        td,
+        th,
+        td span span,
+        .table-wrapper-row,
+        a {
+          fill: var(--highlight) !important;
+          color: var(--highlight) !important;
+          font-weight: bold;
+        }
+      }
+  
+      &.churning-out {
+        background-color: var(--red-bg);
+  
+        th {
+          background-color: var(--red-bg);
+        }
+      }
+  
+      &.churning-in {
+        background-color: var(--blue-bg);
+  
+        th {
+          background-color: var(--blue-bg);
+        }
+      }
+    }
+  }
+  
+  #vgt-table > thead > tr > th {
+    padding-right: $space-12;
+  
+    &.sortable {
+      button {
+        &::after,
+        &::before {
+          display: none;
+        }
+      }
+  
+      &.sorting {
+        padding-right: $space-24;
+        span {
+          color: var(--primary-color);
+        }
+      }
+  
+      &.sorting-asc {
+        button::after {
+          margin-top: -3px;
+          display: block;
+        }
+      }
+  
+      &.sorting-desc {
+        button::before {
+          margin-top: -3px;
+          display: block;
+        }
+      }
+    }
+  }
+  
+  #vgt-table > thead > tr > th.no-padding {
+    padding: $space-0;
+    width: 32px !important;
+  }
+  
+  #vgt-table > thead > tr > th.min-padding {
+    padding: $space-0 $space-5;
+  }

@@ -1,0 +1,157 @@
+.bubble-container,
+.mini-bubble {
+  display: inline-flex;
+  font-weight: bold;
+  font-size: $font-size-sm;
+  padding: $space-2 $space-5;
+  justify-content: center;
+  align-items: center;
+  color: var(--bubble-font-color);
+  border-radius: $radius-sm;
+  background-color: #81c784;
+  color: #1b5e20;
+  line-height: 1;
+
+  &.hoverable {
+    cursor: pointer;
+
+    &:hover {
+      background-color: #466d48;
+    }
+  }
+
+  &.blue {
+    background-color: #29b6f6;
+    color: #01579b;
+  }
+
+  &.green {
+    background-color: #81c784;
+    color: #1b5e20;
+  }
+
+  &.orange {
+    border: 1px solid #ffa96b4b;
+    color: #ffa86b;
+    background-color: transparent;
+  }
+
+  &.yellow {
+    background-color: #ffee58;
+    color: #f57f17;
+
+    &.hoverable {
+      cursor: pointer;
+
+      &:hover {
+        color: #f57f17;
+        background-color: #6b5000;
+      }
+    }
+  }
+
+  &.red {
+    background-color: #ef5350;
+    color: #fff;
+  }
+
+  &.white {
+    border: 1px solid #eee;
+    background-color: #eee;
+    color: #000;
+  }
+
+  &.black {
+    color: #fff;
+    background-color: #000;
+  }
+
+  &.grey {
+    color: var(--font-color);
+    background-color: var(--active-bg-color);
+  }
+}
+
+.mini-bubble {
+  font-size: $font-size-xs;
+  border-radius: $radius-2xl;
+  color: rgb(3 84 63);
+  fill: rgb(3 84 63);
+  background-color: rgb(222 247 236);
+
+  &.big {
+    font-size: $font-size-sm;
+  }
+
+  &.yellow {
+    color: rgb(114 59 19);
+    fill: rgb(114 59 19);
+    background-color: rgb(253 246 178);
+    border: 1px solid rgba(255, 156, 8, 0.25);
+  }
+
+  &.danger {
+    color: rgb(155 28 28);
+    fill: rgb(155 28 28);
+    background-color: rgb(253 232 232);
+    border: 1px solid rgba(255, 33, 8, 0.25);
+  }
+
+  &.info {
+    color: rgb(30 66 159);
+    fill: rgb(30 66 159);
+    background-color: rgb(225 239 254);
+    border: 1px solid rgba(47, 138, 245, 0.16);
+  }
+}
+
+[theme='dark'],
+[theme='BlueElectra'] {
+  .mini-bubble {
+    color: #21c187;
+    fill: #21c187;
+    background-color: rgba(51, 119, 107, 0.25);
+  }
+
+  .mini-bubble.yellow {
+    color: #ffc700;
+    fill: #ffc700;
+    background-color: transparent;
+    border: 1px solid rgba(255, 156, 8, 0.25);
+  }
+  .mini-bubble.orange {
+    border: 1px solid #ffa96b4b;
+    color: #ffa86b;
+    background-color: transparent;
+  }
+
+  .mini-bubble.danger {
+    color: #f04832;
+    fill: #f04832;
+    background-color: transparent;
+    border: 1px solid rgba(255, 33, 8, 0.25);
+  }
+
+  .mini-bubble.info {
+    color: rgb(47, 138, 245);
+    fill: rgb(47, 138, 245);
+    background-color: transparent;
+    border: 1px solid rgba(47, 138, 245, 0.16);
+  }
+
+  .mini-bubble.white {
+    border: 1px solid #eee;
+    background-color: #eee;
+    color: #000;
+  }
+
+  .mini-bubble.black {
+    color: #fff;
+    background-color: #000;
+  }
+
+  .mini-bubble.grey {
+    color: var(--font-color);
+    background-color: var(--active-bg-color);
+  }
+}
