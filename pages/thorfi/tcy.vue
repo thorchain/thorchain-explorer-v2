@@ -37,6 +37,10 @@
             )
           "
           max-height="400px"
+          :sort-options="{
+            enabled: true,
+            initialSortBy: { field: 'value', type: 'desc' },
+          }"
         >
           <template slot="table-row" slot-scope="props">
             <div
@@ -53,8 +57,12 @@
                 showAsset(props.formattedRow[props.column.field])
               }}</span>
             </div>
-            <div v-else>
+            <div v-else-if="props.column.field == 'value'">
               {{ props.formattedRow[props.column.field] | number('0,0.00a') }}
+              <small>TCY</small>
+            </div>
+            <div v-else-if="props.column.field == 'usdValue'">
+              {{ (props.row.value * tcyInfo.price) | currency() }}
               <small>TCY</small>
             </div>
           </template>
@@ -92,12 +100,17 @@ export default {
   data() {
     return {
       tcyAssetColumns: [
-        { label: 'Asset', field: 'asset', sortable: true },
+        { label: 'Asset', field: 'asset' },
         {
           label: 'Value (TCY)',
           field: 'value',
           type: 'number',
-          sortable: true,
+        },
+        {
+          label: 'Value ($)',
+          field: 'usdValue',
+          type: 'number',
+          sortable: false,
         },
       ],
       mimir: undefined,
@@ -212,6 +225,11 @@ export default {
               filter: (v) =>
                 `${this.$options.filters.number(v / 1e8, '0,0.00a')} TCY`,
               extraInfo: `Almost ${this.$options.filters.percent(this.tcyInfo?.claimed_not_staked / this.tcyInfo?.claimed_info.total)} of claimers hasn't staked`,
+            },
+            {
+              name: 'TCY Price',
+              value: this.tcyInfo?.price,
+              filter: (v) => `${this.$options.filters.currency(v)}`,
             },
           ],
         },
