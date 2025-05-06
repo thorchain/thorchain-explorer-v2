@@ -19,7 +19,7 @@
       </card>
     </div>
     <div class="tcy-card">
-      <card title="TCY Unclaimed asset distribution" :is-loading="!tcyInfo">
+      <card title="TCY Unclaimed asset distribution">
         <vue-good-table
           v-if="tcyInfo"
           style-class="vgt-table net-table vgt-compact"
@@ -55,6 +55,11 @@
             </div>
           </template>
         </vue-good-table>
+        <table-loader
+          v-else
+          :cols="tcyAssetColumns"
+          :rows="Array(10).fill({})"
+        />
       </card>
       <card title="TCY Mimirs">
         <info-card :options="mimirInfoCard" :inner="true">
