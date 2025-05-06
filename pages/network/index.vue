@@ -5,6 +5,11 @@
         v-if="isMainnet()"
         :is-loading="!reserveHistory"
         title="Reserve Breakdown"
+        :img-src="require('@/assets/images/signal.svg')"
+        :img-style="{
+          width: '36px',
+          height: '36px',
+        }"
       >
         <VChart
           :option="reserveHistory"
@@ -28,7 +33,14 @@
       <card>
         <info-card :options="networkOverview" :inner="true" />
       </card>
-      <card title="THORChain version upgrade progress">
+      <card
+        title="THORChain version upgrade progress"
+        :img-src="require('@/assets/images/time.svg')"
+        :img-style="{
+          width: '36px',
+          height: '36px',
+        }"
+      >
         <ProgressBar
           v-if="versionProgress"
           :width="versionProgress"
