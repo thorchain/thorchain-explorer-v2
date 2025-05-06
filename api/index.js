@@ -111,6 +111,7 @@ import {
   getAffiliateSwapsDaily,
   getAffiliateHistory,
   getInfraRUJIMerge,
+  getTcyInfo,
 } from './middleware.api'
 import {
   getChurnHistory,
@@ -311,6 +312,7 @@ export default function ({ $axios }, inject) {
     getInfraRUJIMerge,
     getTCYDistribution,
     getTCYStaker,
+    getTcyInfo,
   }
 
   inject('api', api)

@@ -281,6 +281,10 @@ export default {
           link: '/thorfi',
           submenu: [
             {
+              name: 'TCY',
+              link: '/thorfi/tcy',
+            },
+            {
               name: 'Savers',
               link: '/thorfi/savers',
             },

@@ -229,3 +229,12 @@ export function getAffiliateHistory(params) {
     }
   )
 }
+
+export function getTcyInfo(params) {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + 'api/tcyInfo',
+    {
+      params,
+    }
+  )
+}

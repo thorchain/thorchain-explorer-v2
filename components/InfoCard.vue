@@ -82,7 +82,7 @@
                         <slot :name="item.valueSlot" :item="item" />
                       </template>
                       <template v-else>
-                        <span v-if="item.filter">
+                        <span v-if="item.filter && item.value !== undefined">
                           {{ item.filter(item.value) }}
                         </span>
                         <span v-else>
