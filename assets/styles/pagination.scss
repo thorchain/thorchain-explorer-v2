@@ -1,0 +1,46 @@
+.pagination.b-pagination {
+    display: flex;
+    list-style: none;
+    border-radius: $radius-lg;
+    padding: $space-0 $space-10;
+  
+    @include lg {
+      padding: $space-0;
+    }
+  
+    &.center {
+      justify-content: center;
+    }
+  
+    .page-item {
+      display: flex;
+      align-items: center;
+  
+      .page-link {
+        background-color: var(--card-bg-color);
+        padding: $space-5 $space-8;
+        border: 1px solid var(--border-color);
+        color: var(--sec-font-color);
+        font-family: 'Roboto Mono';
+      }
+  
+      [type='button']:not(:disabled),
+      button:not(:disabled) {
+        cursor: pointer;
+  
+        &:hover {
+          background-color: var(--active-bg-color);
+          color: var(--primary-color);
+          border-color: var(--primary-color);
+        }
+      }
+  
+      &.active .page-link {
+        color: var(--primary-color);
+      }
+  
+      &.disabled .page-link {
+        color: #6c757d;
+      }
+    }
+  }

@@ -1,0 +1,95 @@
+.header-icon {
+    margin-left: $space-5;
+    height: 1rem;
+    width: 1rem;
+    fill: #606266;
+  }
+  
+  .table-asset-icon,
+  .asset-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: $radius-full;
+    margin-right: $space-8;
+  
+    &.synth {
+      border: 2px solid var(--primary-color);
+    }
+  }
+  
+  .table-icon {
+    width: 1rem;
+    height: 1rem;
+    fill: currentColor;
+    cursor: pointer;
+  
+    &:hover,
+    &.active {
+      fill: var(--primary-color);
+    }
+  }
+  
+  .btn-icon {
+    display: flex;
+    width: 1.2rem;
+    height: 1.2rem;
+    fill: var(--font-color);
+    cursor: pointer;
+  
+    &:hover,
+    &.active {
+      fill: var(--primary-color);
+    }
+  }
+  
+  .icon {
+    fill: var(--font-color);
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-right: $space-8;
+  
+    .header {
+      margin-right: $space-3;
+    }
+  
+    &.active {
+      fill: var(--primary-color);
+    }
+  }
+  
+  .large-icon {
+    width: 3rem;
+  }
+  
+  .stat-image {
+    margin-right: $space-10;
+    height: 1.5rem;
+  }
+  
+  .disconnect-icon {
+    width: 100px;
+    height: 120px;
+    padding: $space-20;
+    fill: var(--font-color);
+  }
+  
+  .icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: $space-5;
+    border-radius: $radius-s;
+    background-color: var(--bg-color);
+    margin: $space-10 $space-0;
+  
+    &:hover {
+      background-color: var(--active-bg-color);
+    }
+  
+    .icon-name {
+      color: var(--sec-font-color);
+      font-size: $font-size-xxs;
+      margin-right: $space-5;
+    }
+  }

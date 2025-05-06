@@ -1,0 +1,20 @@
+.mono {
+    font-family: 'Roboto Mono' !important;
+  }
+  
+  .center {
+    text-align: center !important;
+  }
+  
+  .sec-color {
+    color: var(--sec-font-color);
+  }
+  
+  .extra-text {
+    font-family: 'ProductSans';
+    font-size: $font-size-xs;
+  }
+  
+  .danger-text {
+    color: #f04832 !important;
+  }

@@ -1,0 +1,83 @@
+@import './normalize.css';
+@import 'font';
+@import 'breakpoints';
+@import './variables.scss';
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#__nuxt,
+#__layout,
+main {
+  font-size: $font-size-desktop;
+}
+
+body {
+  background: linear-gradient(
+    to left top,
+    var(--gradient-left) 0%,
+    var(--gradient-right) 100%
+  );
+  font-family:
+    'Montserrat',
+    sans-serif,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    'Helvetica Neue',
+    'Noto Sans',
+    'Liberation Sans',
+    Arial,
+    sans-serif,
+    'Apple Color Emoji',
+    'Segoe UI Emoji',
+    'Segoe UI Symbol',
+    'Noto Color Emoji';
+  font-style: normal;
+  font-optical-sizing: auto;
+  color: var(--font-color);
+  background-color: var(--bg-color);
+}
+
+input {
+  border: none !important;
+  padding: $space-12;
+  color: #fff;
+
+  &:focus,
+  &:active {
+    border: none;
+    box-shadow: none !important;
+    outline: var(--font-color) solid 2px;
+  }
+}
+
+a {
+  color: var(--sec-font-color);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: var(--bg-color);
+  border-radius: $radius-xs;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--border-color);
+  border-radius: $radius-xs;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--border-color);
+}
+
+.scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) var(--bg-color);
+}

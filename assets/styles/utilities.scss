@@ -1,0 +1,70 @@
+// Spacing
+.vd-2 {
+    height: 2rem;
+  }
+  
+  .vd {
+    height: 0.5rem;
+  }
+  
+  .mb-1 {
+    margin-bottom: $space-8;
+  }
+  
+  .break {
+    flex-basis: 100%;
+    height: 0;
+  }
+  
+  // Layout
+  .flex-cell-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  
+    .copy-icon {
+      fill: var(--sec-font-color);
+  
+      &:hover {
+        fill: var(--primary-color);
+      }
+    }
+  }
+  
+  .table-wrapper-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .utility {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: $space-10;
+  }
+  
+  // Transitions
+  .fade-enter-active,
+  .fade-leave-active {
+    transition: all 0.2s;
+    transform: translateY(0);
+  }
+  
+  .fade-enter,
+  .fade-leave-to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  
+  .fade-up-enter-active,
+  .fade-up-leave-active {
+    transition: all 0.2s;
+    transform: translateY(0);
+  }
+  
+  .fade-up-enter,
+  .fade-up-leave-to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
