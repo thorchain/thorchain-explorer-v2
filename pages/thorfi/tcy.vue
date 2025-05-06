@@ -19,7 +19,10 @@
       </card>
     </div>
     <div class="tcy-card">
-      <card title="TCY Unclaimed asset distribution">
+      <card
+        title="TCY Unclaimed asset distribution"
+        :img-src="require('@/assets/images/asset.svg')"
+      >
         <vue-good-table
           v-if="tcyInfo"
           style-class="vgt-table net-table vgt-compact"
@@ -61,7 +64,7 @@
           :rows="Array(10).fill({})"
         />
       </card>
-      <card title="TCY Mimirs">
+      <card title="TCY Mimirs" :img-src="require('@/assets/images/gear.svg')">
         <info-card :options="mimirInfoCard" :inner="true">
           <template #mimir="{ item }">
             <checkmark
