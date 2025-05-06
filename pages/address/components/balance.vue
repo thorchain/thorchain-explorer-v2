@@ -81,7 +81,7 @@
                     {{ showAsset(selectedToken.asset) }}
                   </span>
                   <span v-else class="total-value">
-                    {{ totalValue.total | number('0,0.000') }}
+                    {{ totalValue.total | currency }}
                   </span>
                   <span class="count-value">
                     ({{ totalValue.count }} Tokens)

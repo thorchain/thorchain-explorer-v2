@@ -202,6 +202,7 @@ export default {
       totalSecuredValue: undefined,
       adjustedSecuredTotal: undefined,
       assetBalancePoints: 10000,
+      tvlBasisPoints: 0,
       isAnimationActive: true,
       Rotation: 10,
       totalVaultValue: undefined,
@@ -212,6 +213,8 @@ export default {
       usingAllNodesBond: true,
       adjustedBond: undefined,
       currentNetworkState: '',
+      securityBudgetInfo:
+        'Total bond of the bottom 2/3 of the nodes in the network',
       generalStatsDetails: [
         {
           name: 'Total Active Bond',
@@ -232,8 +235,7 @@ export default {
         },
         {
           name: 'Security Budget',
-          description:
-            'Total bond of the bottom 2/3 of the nodes in the network',
+          description: this.securityBudgetInfo,
         },
         {
           name: 'Security Delta',
@@ -339,6 +341,14 @@ export default {
           0
         )
 
+        if (this.tvlBasisPoints > 0) {
+          this.securityBudgetInfo = `Effective Bond is at ${this.tvlBasisPoints / 100}% TVL Basis Point`
+          this.securityBudgetBottomTwoThirds = activeNodes.reduce(
+            (sum, node) => sum + Number(node.total_bond) / 1e8,
+            0
+          )
+        }
+
         if (this.pendulumUseEffectiveSecurity === 1) {
           this.effectiveBond = this.securityBudgetBottomTwoThirds
         } else {
@@ -371,6 +381,8 @@ export default {
         this.assetBalancePoints = mimirData > 0 ? mimirData : 10000
         this.pendulumUseEffectiveSecurity =
           mimirData.PENDULUMUSEEFFECTIVESECURITY
+        this.tvlBasisPoints =
+          mimirData.TVLCAPBASISPOINTS > 0 ? mimirData.TVLCAPBASISPOINTS : 0
       } catch (error) {
         console.error('Error fetching mimir data:', error)
       }
@@ -434,8 +446,7 @@ export default {
           extraText: this.$options.filters.currency(
             this.securityBudgetBottomTwoThirds * this.runePrice
           ),
-          description:
-            'Total bond of the bottom 2/3 of the nodes in the network',
+          description: this.securityBudgetInfo,
         },
         {
           name: 'Security Delta',
