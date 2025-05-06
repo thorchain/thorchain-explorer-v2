@@ -63,7 +63,6 @@
             </div>
             <div v-else-if="props.column.field == 'usdValue'">
               {{ (props.row.value * tcyInfo.price) | currency() }}
-              <small>TCY</small>
             </div>
           </template>
         </vue-good-table>
