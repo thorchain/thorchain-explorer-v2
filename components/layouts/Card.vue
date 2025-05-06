@@ -6,7 +6,11 @@
     <template v-else>
       <div
         v-if="title"
-        :class="[{ 'has-extra': $slots.header }, 'card-header']"
+        :class="[
+          { 'has-extra': $slots.header },
+          'card-header',
+          { 'has-image': imgSrc },
+        ]"
       >
         <div class="header-title-section">
           <img v-if="imgSrc" class="stat-image" :src="imgSrc" />
@@ -131,6 +135,10 @@ export default {
       }
     }
 
+    &.has-image {
+      padding: $space-12;
+    }
+
     &.has-extra {
       flex-wrap: wrap;
       justify-content: space-between;
@@ -156,7 +164,7 @@ export default {
 
     .stat-image {
       margin-right: $space-10;
-      height: 1.5rem;
+      height: 36px;
     }
 
     .fullscreen-container {
