@@ -466,6 +466,7 @@ a.interface {
 .balance-row {
   display: flex;
   justify-content: end;
+  align-items: center;
   gap: $space-8;
 }
 </style>
