@@ -43,12 +43,17 @@
               <div v-else-if="props.column.field == 'earningsAPR'">
                 <span>{{ props.formattedRow[props.column.field] }}</span>
               </div>
-              <div v-else-if="props.column.field == 'collateral'">
-                <span v-if="props.row.collateral > 0">
-                  ${{
-                    (props.row.collateral * props.row.price) | number('0,0.00a')
-                  }}
-                </span>
+              <div v-else-if="props.column.field == 'balances'">
+                <div v-if="props.row.balances > 0">
+                  <div class="balance-row">
+                    {{ props.row.balances | number('0,0.00a') }}
+                    <small>RUNE</small>
+                  </div>
+                  <div class="balance-row">
+                    {{ props.row.assetDepth | number('0,0.00a') }}
+                    <small>{{ showAsset(props.row.asset, true) }}</small>
+                  </div>
+                </div>
                 <span v-else> - </span>
               </div>
               <div v-else-if="props.column.field == 'trading'">
@@ -169,6 +174,12 @@ export default {
           tdClass: 'mono',
         },
         {
+          label: 'Balances',
+          field: 'balances',
+          type: 'number',
+          tdClass: 'mono',
+        },
+        {
           label: 'Trade Asset Depth',
           field: 'trading',
           type: 'number',
@@ -192,12 +203,6 @@ export default {
           field: 'estEarnings',
           type: 'number',
           formatFn: this.formattedPrice,
-          tdClass: 'mono',
-        },
-        {
-          label: 'Collateral',
-          field: 'collateral',
-          type: 'number',
           tdClass: 'mono',
         },
         {
@@ -280,6 +285,8 @@ export default {
                 ? (pe.earnings * this.runePrice * 365) / 10 ** 8
                 : 0,
               collateral: +p.totalCollateral / 1e8,
+              assetDepth: +p.assetDepth / 1e8,
+              balances: +p.runeDepth / 1e8,
               trading: (+tradeAsset?.depth / 1e8) * p.assetPriceUSD,
             }
           })
@@ -358,7 +365,7 @@ export default {
   .nav-headers.box.pools-type-table {
     border: none !important;
     margin-bottom: $space-16 !important;
-    border-radius: 7px 8px;
+    border-radius: $radius-md $radius-md;
   }
 }
 
@@ -370,7 +377,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: $space-10;
 }
 
 .action-btn {
@@ -454,5 +461,11 @@ a.interface {
     width: 1.3rem;
     height: 1.3rem;
   }
+}
+
+.balance-row {
+  display: flex;
+  justify-content: end;
+  gap: $space-8;
 }
 </style>
