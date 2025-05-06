@@ -80,7 +80,7 @@ export default {
         { label: 'All', filter: {} },
         {
           label: 'L1 Swaps',
-          filter: { type: ['swap'], asset: ['l1'] },
+          filter: { type: ['swap'], asset: ['l1', 'notrade', 'nosynth'] },
         },
         { label: 'Secure', filter: { type: ['secure'] } },
         { label: 'Trade Swaps', filter: { type: ['swap'], asset: ['trade'] } },
