@@ -211,7 +211,7 @@ export default {
               value: this.tcyInfo?.claimed_not_staked,
               filter: (v) =>
                 `${this.$options.filters.number(v / 1e8, '0,0.00a')} TCY`,
-              extraInfo: `Almost ${this.$options.filters.percent(this.tcyInfo?.claimed_not_staked / this.tcyInfo?.claimed_info.total)} hasn't staked`,
+              extraInfo: `Almost ${this.$options.filters.percent(this.tcyInfo?.claimed_not_staked / this.tcyInfo?.claimed_info.total)} of claimers hasn't staked`,
             },
           ],
         },
