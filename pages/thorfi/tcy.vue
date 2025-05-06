@@ -108,7 +108,7 @@ export default {
         nodeClick: 'link',
         label: {
           formatter: (a) => {
-            return `${a.name}: ${this.$options.filters.number(a?.data?.value, '0,0.00a')} RUNE`
+            return `${a.name}: ${this.$options.filters.number(a?.data?.value, '0,0.00a')} TCY`
           },
           distanceToLabelLine: 5,
           fontFamily: 'Montserrat',
@@ -147,7 +147,8 @@ export default {
             {
               name: 'Number',
               value: this.tcyInfo?.claimed_info.count,
-              filter: (v) => this.$options.filters.number(v, '0,0'),
+              filter: (v) =>
+                `${this.$options.filters.number(v, '0,0')} (${this.$options.filters.percent(this.tcyInfo?.claimed_info.count / 11614)})`,
             },
             {
               name: 'Supply',
@@ -209,6 +210,7 @@ export default {
               value: this.tcyInfo?.claimed_not_staked,
               filter: (v) =>
                 `${this.$options.filters.number(v / 1e8, '0,0.00a')} TCY`,
+              extraInfo: `Almost ${this.$options.filters.percent(this.tcyInfo?.claimed_not_staked / this.tcyInfo?.claimed_info.total)} hasn't staked`,
             },
           ],
         },
