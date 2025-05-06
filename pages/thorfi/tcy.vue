@@ -9,6 +9,7 @@
       </card>
       <card
         title="Allocation"
+        style="min-width: 400px"
         :img-src="require('@/assets/images/allocations.svg')"
       >
         <pie-chart
