@@ -108,7 +108,7 @@ export default {
         nodeClick: 'link',
         label: {
           formatter: (a) => {
-            return `${a.name}: ${this.$options.filters.number(a?.data?.value, '0,0a')} RUNE`
+            return `${a.name}: ${this.$options.filters.number(a?.data?.value, '0,0.00a')} RUNE`
           },
           distanceToLabelLine: 5,
           fontFamily: 'Montserrat',
@@ -153,7 +153,7 @@ export default {
               name: 'Supply',
               value: this.tcyInfo?.claimed_info.total,
               filter: (v) =>
-                `${this.$options.filters.number(v / 1e8, '0,0a')} TCY`,
+                `${this.$options.filters.number(v / 1e8, '0,0.00a')} TCY`,
             },
           ],
         },
@@ -171,7 +171,7 @@ export default {
               name: 'Supply',
               value: this.tcyInfo?.staker_info.total,
               filter: (v) =>
-                `${this.$options.filters.number(v / 1e8, '0,0a')} TCY`,
+                `${this.$options.filters.number(v / 1e8, '0,0.00a')} TCY`,
             },
           ],
         },
@@ -189,7 +189,7 @@ export default {
               name: 'Supply',
               value: this.tcyInfo?.unclaim_info.total,
               filter: (v) =>
-                `${this.$options.filters.number(v / 1e8, '0,0a')} TCY`,
+                `${this.$options.filters.number(v / 1e8, '0,0.00a')} TCY`,
             },
           ],
         },
