@@ -289,9 +289,9 @@ export default {
           colSpan: 1,
           items: [
             {
-              name: 'TCY Supply',
+              name: 'Fixed Supply',
               value: this.tcyInfo?.TCYSupply,
-              filter: (v) => `${this.$options.filters.number(v, '0,0.00')}`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0.00')} TCY`,
             },
             {
               name: 'TCY Marketcap',
