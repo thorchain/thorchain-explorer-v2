@@ -352,7 +352,11 @@
       :class="['action-cell', { 'no-border': noBorder, wrap: wrap }]"
     >
       <template v-if="row.metadata && row.metadata.thorname">
-        <span>
+        <span class="asset-cell">
+          {{ row.metadata.thorname.thorname }}
+        </span>
+        <right-arrow class="action-type" />
+        <span class="asset-cell">
           <asset-icon
             :height="'1.2rem'"
             :asset="baseChainAsset(row.metadata.thorname.chain)"
@@ -363,10 +367,6 @@
           >
             {{ addressFormatV2(row.metadata.thorname.address, 4) }}
           </nuxt-link>
-        </span>
-        <right-arrow class="action-type" />
-        <span>
-          {{ row.metadata.thorname.thorname }}
         </span>
       </template>
     </div>

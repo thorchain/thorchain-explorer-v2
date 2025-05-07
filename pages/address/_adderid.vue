@@ -169,7 +169,7 @@
         <transactions :txs="addrTxs" :owner="address" :loading="loading" />
         <NewPagination
           v-if="addrTxs && addrTxs.actions && count > -1"
-          :total-rows="count"
+          :total-rows="+count"
           :per-page="30"
           :current-page="currentPage"
           @change="onPageChange"

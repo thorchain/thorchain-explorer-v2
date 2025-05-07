@@ -40,7 +40,16 @@
       </div>
     </div>
     <div class="distributions">
-      <h3 class="info-title">Distributions</h3>
+      <div class="distribution-header">
+        <h3 class="info-title">Distributions</h3>
+        <div
+          class="csv-download"
+          title="csv-download"
+          @click="downloadDistribution(distribution.distributions)"
+        >
+          <file-download class="clickable"></file-download>
+        </div>
+      </div>
       <vue-good-table
         :columns="distributionsColumns"
         :rows="distribution && distribution.distributions"
@@ -75,8 +84,12 @@
 <script>
 import { mapGetters } from 'vuex'
 import moment from 'moment'
+import FileDownload from '~/assets/images/file-download.svg?inline'
 
 export default {
+  components: {
+    FileDownload,
+  },
   props: {
     address: {
       type: String,
@@ -117,34 +130,27 @@ export default {
       pools: 'getPools',
     }),
     dailyEarn() {
-      if (this.distribution?.distributions?.length >= 2) {
-        const lastTwo = this.distribution.distributions
-          .slice(-2)
-          .map((dist) => ({
-            amount: dist.amount,
-            date: moment.unix(dist.date),
-          }))
+      const totalEarn = +this.distribution?.total / 1e8
+      const days = this.distribution?.distributions?.length
 
-        const hoursDifference = lastTwo[1].date.diff(lastTwo[0].date, 'hours')
-        const amountDifference = (lastTwo[1].amount - lastTwo[0].amount) / 1e8
-
-        return hoursDifference > 0
-          ? ((amountDifference / hoursDifference) * 24).toFixed(4)
-          : 0
+      if (+totalEarn <= 0) {
+        return 0
       }
-      return 0
+
+      return totalEarn / days
     },
     tcyAPY() {
       if (!this.dailyEarn || !this.pools) {
         return 0
       }
 
-      const TCYPrice = this.pools.find((pool) => pool.asset === 'THOR.TCY')
-      const dailyReturn =
-        (this.dailyEarn * this.runePrice) /
-        (this.stakedAmount * TCYPrice.assetPriceUSD)
+      const TCYPool = this.pools.find((pool) => pool.asset === 'THOR.TCY')
+      const TCYPrice = +TCYPool.assetPriceUSD
 
-      return (1 + dailyReturn / 365) ** 365 - 1
+      const dailyReturn =
+        (this.dailyEarn * this.runePrice) / (this.stakedAmount * TCYPrice)
+
+      return dailyReturn * 365
     },
   },
   mounted() {
@@ -155,6 +161,47 @@ export default {
     this.$api.getTCYStaker(this.address).then((res) => {
       this.stakedAmount = res.data?.amount / 1e8
     })
+  },
+  methods: {
+    downloadDistribution(data) {
+      if (!data || !data.length) {
+        console.error('No data provided for CSV download.')
+        return
+      }
+
+      data = data.map((d) => ({
+        amount: d.amount / 1e8,
+        date: d.date,
+      }))
+
+      const csvContent = [
+        Object.keys(data[0]).join(','), // Header row
+        ...data.map((row) =>
+          Object.values(row)
+            .map((value) => `"${value}"`)
+            .join(',')
+        ),
+      ].join('\n')
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+      const link = document.createElement('a')
+      const url = URL.createObjectURL(blob)
+
+      const lastDistribution = data[data.length - 1]?.date
+        ? moment.unix(data[data.length - 1].date).format('YYYY-MM-DD')
+        : 'unknown'
+
+      link.setAttribute('href', url)
+      link.setAttribute(
+        'download',
+        `distribution-${this.address.slice(-4)}-${lastDistribution}`
+      )
+      link.style.visibility = 'hidden'
+
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    },
   },
 }
 </script>
@@ -222,6 +269,23 @@ export default {
   border: 1px solid var(--border-color);
   border-radius: $radius-s;
   margin-top: $space-16;
+
+  .distribution-header {
+    display: flex;
+    gap: $space-8;
+    justify-content: space-between;
+    align-items: center;
+
+    .csv-download svg {
+      fill: var(--sec-font-color);
+      height: 1.2rem;
+      width: 1.2rem;
+
+      &:hover {
+        fill: var(--primary-color);
+      }
+    }
+  }
 
   h3 {
     font-size: $font-size-md;
