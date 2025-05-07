@@ -983,6 +983,15 @@ export default {
         )
 
         this.$set(this, 'cards', [this.createCard(cards, accordions)])
+      } else if (memo.type === 'tcyStake') {
+        const { cards, accordions } = this.createTCYStake(
+          thorStatus,
+          midgardAction,
+          thorTx,
+          memo
+        )
+
+        this.$set(this, 'cards', [this.createCard(cards, accordions)])
       } else {
         const finalCards = []
         for (let i = 0; i < midgardAction?.actions?.length; i++) {
@@ -1428,7 +1437,7 @@ export default {
       const TCYUnstake = actions?.actions?.find((a) => a.type === 'tcy_unstake')
       const RefundAction = actions?.actions?.find((a) => a.type === 'refund')
 
-      let memo = ''
+      let memo = TCYUnstake?.metadata?.tcy?.memo
       let reason = ''
       let outs = []
       let ins = []
@@ -1471,7 +1480,7 @@ export default {
 
       return {
         cards: {
-          title: 'TCY Unstake ' + (isRefund ? '(Refund)' : ''),
+          title: 'Unstake ' + (isRefund ? '(Refund)' : ''),
           in: [
             {
               icon: require('@/assets/images/vault.svg?inline'),
@@ -1488,7 +1497,82 @@ export default {
         accordions: {
           in: ins,
           action: {
-            type: 'Action',
+            type: 'Unstake',
+            timeStamp: moment.unix(action?.date / 1e9) || null,
+            height: action?.height,
+            memo,
+            reason,
+            done: true,
+          },
+          out: outs,
+        },
+      }
+    },
+    createTCYStake(thorStatus, actions, thorTx) {
+      const TCYStake = actions?.actions?.find((a) => a.type === 'tcy_stake')
+      const RefundAction = actions?.actions?.find((a) => a.type === 'refund')
+
+      let memo = TCYStake?.metadata?.tcy?.memo
+      let reason = ''
+      let outs = []
+      let ins = []
+
+      let isRefund = false
+      if (RefundAction) {
+        const m = Object.keys(RefundAction.metadata)[0]
+        memo = RefundAction.metadata[m]?.memo ?? undefined
+        reason =
+          RefundAction.metadata[m]?.reason ??
+          RefundAction.metadata[m]?.code ??
+          undefined
+        isRefund = true
+      }
+
+      let action = TCYStake
+      if (isRefund) {
+        action = RefundAction
+      }
+
+      if (isRefund === false) {
+        ins = [
+          {
+            asset: TCYStake.in[0].coins[0].asset,
+            amount: TCYStake.in[0].coins[0].amount,
+            txid: TCYStake.in[0].txID,
+            from: TCYStake.in[0].address,
+            done: true,
+          },
+        ]
+
+        outs = [
+          {
+            to: TCYStake.in[0].address,
+            txid: TCYStake.in[0].txID,
+            done: true,
+          },
+        ]
+      }
+
+      return {
+        cards: {
+          title: 'Stake ' + (isRefund ? '(Refund)' : ''),
+          in: ins,
+          middle: {
+            fail: isRefund,
+            pending: false,
+          },
+          out: [
+            {
+              icon: require('@/assets/images/vault.svg?inline'),
+              text: 'Stake Module',
+              class: 'pad-icon',
+            },
+          ],
+        },
+        accordions: {
+          in: ins,
+          action: {
+            type: 'Stake',
             timeStamp: moment.unix(action?.date / 1e9) || null,
             height: action?.height,
             memo,
