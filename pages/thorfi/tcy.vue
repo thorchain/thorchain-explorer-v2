@@ -17,14 +17,16 @@
           :extra-series="extraSeries"
           :extra="extra"
         />
-        <VChart
-          class="tcy-chart"
-          :option="earningsHistory"
-          :loading="!earningsHistory"
-          :loading-options="showLoading"
-          :theme="chartTheme"
-          :autoresize="true"
-        />
+        <div>
+          <VChart
+            class="tcy-chart"
+            :option="earningsHistory"
+            :loading="!earningsHistory"
+            :loading-options="showLoading"
+            :theme="chartTheme"
+            :autoresize="true"
+          />
+        </div>
       </card>
     </div>
     <div class="tcy-card">
@@ -465,34 +467,26 @@ export default {
             type: 'bar',
             name: 'TCY Pool Earning',
             showSymbol: false,
-            stack: 'Total',
             data: pf,
           },
           {
             type: 'bar',
             name: `Stake Earnings`,
             showSymbol: false,
-            stack: 'Total',
             data: pe,
           },
         ],
         xAxis,
         {
-          yAxis: [
-            {
-              type: 'value',
-              position: 'left',
-              show: false,
-              splitLine: {
-                show: true,
-              },
-              axisLine: {
-                show: false,
-              },
-              min: 'dataMin',
-              max: 'dataMax',
+          legend: {
+            type: 'scroll',
+            x: 'right',
+            y: 'top',
+            icon: 'circle',
+            textStyle: {
+              color: 'var(--font-color)',
             },
-          ],
+          },
         },
         (param) => {
           if (param.length === 0) return ''
