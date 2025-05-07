@@ -260,7 +260,7 @@ export default {
               name: 'Pooled TCY',
               value: this.tcyInfo?.tcy_in_pool,
               filter: (v) =>
-                `${this.$options.filters.number(v / 1e8, '0,0.00a')} TCY`,
+                `${this.$options.filters.number(v / 1e8, '0,0a')} TCY`,
               extraText: `$${this.$options.filters.number((this.tcyInfo?.tcy_in_pool / 1e8) * this.tcyInfo?.price, '0,0.00a')}`,
             },
             {
