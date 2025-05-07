@@ -28,9 +28,22 @@
           </small>
           <small v-else>-</small>
         </div>
+        <div
+          v-for="(info, index) in extraHeaderInfo"
+          :key="'extra-info-' + index"
+          :ref="'extra-info-' + index"
+          class="extra-info-item"
+        >
+          <small style="color: var(--sec-font-color)">{{ info.label }}:</small>
+          <small style="color: var(--primary-color)" class="mono value">
+            {{ info.value }}
+          </small>
+        </div>
       </div>
     </div>
+
     <div class="right-section">
+      <!-- بقیه کدهای قبلی بدون تغییر -->
       <div
         v-show="isOverviewPage ? isScrolled : true"
         id="search-container"
@@ -183,6 +196,11 @@ export default {
     },
   },
   mounted() {
+    this.$store.commit('setExtraHeaderInfo', [
+      { label: 'Test Label 1', value: 'Test Value 1' },
+      { label: 'Test Label 2', value: 'Test Value 2' },
+    ])
+
     if (this.isOverviewPage) {
       window.addEventListener('scroll', this.handleScroll)
     }
