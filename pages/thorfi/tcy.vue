@@ -76,7 +76,7 @@
         <info-card :options="mimirInfoCard" :inner="true">
           <template #mimir="{ item }">
             <checkmark
-              v-if="item.value === 'True'"
+              v-if="item.value === 'False'"
               class="mimir-icon"
             ></checkmark>
             <xmark v-else class="mimir-icon"></xmark>
@@ -161,13 +161,13 @@ export default {
               name: 'Number',
               value: this.tcyInfo?.claimed_info.count,
               filter: (v) =>
-                `${this.$options.filters.number(v, '0,0')} (${this.$options.filters.percent(this.tcyInfo?.claimed_info.count / 11614)})`,
+                `${this.$options.filters.number(v, '0,0')} (${this.$options.filters.percent(v / 11614)})`,
             },
             {
               name: 'Supply',
               value: this.tcyInfo?.claimed_info.total,
               filter: (v) =>
-                `${this.$options.filters.number(v / 1e8, '0,0.00a')} TCY`,
+                `${this.$options.filters.number(v / 1e8, '0,0.00a')} TCY (${this.$options.filters.percent(v / 20660654128874864)})`,
             },
           ],
         },
@@ -230,6 +230,13 @@ export default {
               value: this.tcyInfo?.price,
               filter: (v) => `${this.$options.filters.currency(v)}`,
             },
+            {
+              name: 'Pending Reward',
+              value: this.tcyInfo?.pending_reward / 1e8,
+              usdValue: true,
+              filter: (v) =>
+                `${this.$options.filters.number(v, '0,0.00a')} RUNE`,
+            },
           ],
         },
       ]
@@ -269,7 +276,7 @@ export default {
 
       return [
         {
-          title: 'Halt',
+          title: 'Status',
           rowStart: 1,
           colSpan: 1,
           items: [
