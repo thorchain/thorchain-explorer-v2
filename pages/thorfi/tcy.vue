@@ -16,16 +16,14 @@
           :extra-series="extraSeries"
           :extra="extra"
         />
-        <div>
-          <VChart
-            class="tcy-chart"
-            :option="earningsHistory"
-            :loading="!earningsHistory"
-            :loading-options="showLoading"
-            :theme="chartTheme"
-            :autoresize="true"
-          />
-        </div>
+        <VChart
+          class="tcy-chart"
+          :option="earningsHistory"
+          :loading="!earningsHistory"
+          :loading-options="showLoading"
+          :theme="chartTheme"
+          :autoresize="true"
+        />
       </card>
     </div>
     <div class="tcy-card">
@@ -150,7 +148,6 @@ export default {
       extraSeries: {
         center: ['55%', '50%'],
         radius: ['40%', '70%'],
-        nodeClick: 'link',
         label: {
           formatter: (a) => {
             return `${a.name}: ${this.$options.filters.number(a?.data?.value, '0,0.00a')} TCY\n(${a.percent}%)`
@@ -521,8 +518,12 @@ export default {
 <style lang="scss" scoped>
 .tcy-card {
   display: flex;
-  flex-wrap: wrap;
   gap: $space-8;
+  flex-direction: column;
+
+  @include lg {
+    flex-direction: row;
+  }
 }
 
 .asset-item {
