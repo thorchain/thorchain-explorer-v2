@@ -325,6 +325,17 @@ export default {
               filter: (v) => `${this.$options.filters.percent(v, 2)}`,
               extraInfo: `Annualized earnings based on last week's earnings`,
             },
+            {
+              name: 'Multiple',
+              value:
+                1 /
+                (((this.tcyInfo?.last_week_earnings / 1e8) *
+                  this.runePrice *
+                  52) /
+                  this.tcyInfo?.TCYSupply /
+                  this.tcyInfo?.price),
+              filter: (v) => `${this.$options.filters.number(v)}x`,
+            },
           ],
         },
       ]
