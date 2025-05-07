@@ -12,11 +12,7 @@
         style="min-width: 400px"
         :img-src="require('@/assets/images/allocations.svg')"
       >
-        <pie-chart
-          :pie-data="allocationPie"
-          :extra-series="extraSeries"
-          :extra="extra"
-        />
+        <pie-chart :pie-data="allocationPie" :extra-series="extraSeries" />
       </card>
     </div>
     <div class="tcy-card">
@@ -273,6 +269,24 @@ export default {
               name: 'TCY Price',
               value: this.tcyInfo?.price,
               filter: (v) => `${this.$options.filters.currency(v)}`,
+            },
+            {
+              name: 'Earnings (7d)',
+              value: this.tcyInfo?.last_week_earnings / 1e8,
+              filter: (v) =>
+                `${this.$options.filters.number(v, '0,0.00a')} RUNE`,
+              usdValue: true,
+            },
+            {
+              name: 'APR',
+              value:
+                ((this.tcyInfo?.last_week_earnings / 1e8) *
+                  this.runePrice *
+                  52) /
+                this.tcyInfo?.TCYSupply /
+                this.tcyInfo?.price,
+              filter: (v) => `${this.$options.filters.percent(v, 2)}`,
+              extraInfo: `Annualized earnings based on last week's earnings`,
             },
           ],
         },
