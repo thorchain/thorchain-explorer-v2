@@ -279,14 +279,6 @@ export default {
       ]
     },
     allocationPie() {
-      const others =
-        210_000_000 -
-        (this.tcyInfo?.staker_info.total +
-          this.tcyInfo?.unclaim_info.total +
-          this.tcyInfo?.tcy_in_pool +
-          this.tcyInfo?.pol_tcy) /
-          1e8
-
       return [
         {
           name: 'Staked',
@@ -305,8 +297,8 @@ export default {
           value: this.tcyInfo?.pol_tcy / 1e8,
         },
         {
-          name: 'Others',
-          value: others,
+          name: 'Unstaked',
+          value: this.tcyInfo?.claimed_not_staked / 1e8,
         },
       ]
     },
