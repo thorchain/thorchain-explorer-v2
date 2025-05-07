@@ -283,7 +283,8 @@ export default {
         210_000_000 -
         (this.tcyInfo?.staker_info.total +
           this.tcyInfo?.unclaim_info.total +
-          this.tcyInfo?.tcy_in_pool) /
+          this.tcyInfo?.tcy_in_pool +
+          this.tcyInfo?.pol_tcy) /
           1e8
 
       return [
@@ -298,6 +299,10 @@ export default {
         {
           name: 'Pooled',
           value: this.tcyInfo?.tcy_in_pool / 1e8,
+        },
+        {
+          name: 'Protocol Owned',
+          value: this.tcyInfo?.pol_tcy / 1e8,
         },
         {
           name: 'Others',
