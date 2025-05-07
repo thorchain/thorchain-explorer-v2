@@ -88,6 +88,7 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import Checkmark from '~/assets/images/square-checkmark.svg?inline'
 import Xmark from '~/assets/images/xmark.svg?inline'
 
@@ -130,6 +131,9 @@ export default {
     }
   },
   computed: {
+    ...mapGetters({
+      runePrice: 'getRunePrice',
+    }),
     extra() {
       return {
         legend: {
@@ -158,16 +162,17 @@ export default {
           colSpan: 1,
           items: [
             {
-              name: 'Number',
+              name: 'Number of Wallets',
               value: this.tcyInfo?.claimed_info.count,
-              filter: (v) =>
-                `${this.$options.filters.number(v, '0,0')} (${this.$options.filters.percent(v / 11614)})`,
+              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
+              extraText: `${this.$options.filters.percent(this.tcyInfo?.claimed_info.count / 11614)}`,
             },
             {
               name: 'Supply',
               value: this.tcyInfo?.claimed_info.total,
               filter: (v) =>
-                `${this.$options.filters.number(v / 1e8, '0,0.00a')} TCY (${this.$options.filters.percent(v / 20660654128874864)})`,
+                `${this.$options.filters.number(v / 1e8, '0,0.00a')} TCY`,
+              extraText: `${this.$options.filters.percent(this.tcyInfo?.claimed_info.total / 20660654128874864)}`,
             },
           ],
         },
@@ -177,7 +182,7 @@ export default {
           colSpan: 1,
           items: [
             {
-              name: 'Number',
+              name: 'Number of Wallets',
               value: this.tcyInfo?.staker_info.count,
               filter: (v) => this.$options.filters.number(v, '0,0'),
             },
@@ -186,6 +191,7 @@ export default {
               value: this.tcyInfo?.staker_info.total,
               filter: (v) =>
                 `${this.$options.filters.number(v / 1e8, '0,0.00a')} TCY`,
+              extraText: `$${this.$options.filters.number((this.tcyInfo?.staker_info.total / 1e8) * this.tcyInfo?.price, '0,0.00a')}`,
             },
             {
               name: 'Pending Reward',
@@ -202,7 +208,7 @@ export default {
           colSpan: 1,
           items: [
             {
-              name: 'Number',
+              name: 'Number of Wallets',
               value: this.tcyInfo?.unclaim_info.count,
               filter: (v) => this.$options.filters.number(v, '0,0'),
             },
@@ -211,6 +217,7 @@ export default {
               value: this.tcyInfo?.unclaim_info.total,
               filter: (v) =>
                 `${this.$options.filters.number(v / 1e8, '0,0.00a')} TCY`,
+              extraText: `$${this.$options.filters.number((this.tcyInfo?.unclaim_info.total / 1e8) * this.tcyInfo?.price, '0,0.00a')}`,
             },
           ],
         },
@@ -224,13 +231,35 @@ export default {
               value: this.tcyInfo?.tcy_in_pool,
               filter: (v) =>
                 `${this.$options.filters.number(v / 1e8, '0,0.00a')} TCY`,
+              extraText: `$${this.$options.filters.number((this.tcyInfo?.tcy_in_pool / 1e8) * this.tcyInfo?.price, '0,0.00a')}`,
             },
             {
-              name: 'Claimed but not staked',
+              name: 'Not staked',
               value: this.tcyInfo?.claimed_not_staked,
               filter: (v) =>
                 `${this.$options.filters.number(v / 1e8, '0,0.00a')} TCY`,
               extraInfo: `Almost ${this.$options.filters.percent(this.tcyInfo?.claimed_not_staked / this.tcyInfo?.claimed_info.total, 2)} of claimers haven't staked`,
+              extraText: `$${this.$options.filters.number((this.tcyInfo?.claimed_not_staked / 1e8) * this.tcyInfo?.price, '0,0.00a')}`,
+            },
+          ],
+        },
+        {
+          title: 'Economics',
+          rowStart: 3,
+          colSpan: 1,
+          items: [
+            {
+              name: 'TCY Marketcap',
+              value: this.tcyInfo?.TCYSupply * this.tcyInfo?.price,
+              filter: (v) => `${this.$options.filters.currency(v)}`,
+            },
+            {
+              name: 'vs RUNE Marketcap',
+              value: this.runePrice
+                ? (this.tcyInfo?.TCYSupply * this.tcyInfo?.price) /
+                  ((this.tcyInfo?.runeSupply / 1e8) * (this.runePrice ?? 1))
+                : undefined,
+              filter: (v) => `${this.$options.filters.percent(v, 2)}`,
             },
             {
               name: 'TCY Price',

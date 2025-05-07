@@ -101,6 +101,9 @@
                           (${{ (runePrice * item.value) | number('0a') }})
                         </small>
                       </template>
+                      <template v-if="item.extraText" class="item-value">
+                        <small> ({{ item.extraText }}) </small>
+                      </template>
                     </div>
                   </skeleton-item>
                 </template>
@@ -345,6 +348,7 @@ export default {
         flex-direction: column;
         font-size: $font-size-sm;
         justify-content: space-between;
+        align-items: center;
         gap: 0.3rem 0;
 
         @include md {
