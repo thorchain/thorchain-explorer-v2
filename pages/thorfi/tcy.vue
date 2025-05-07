@@ -241,6 +241,14 @@ export default {
               extraInfo: `Almost ${this.$options.filters.percent(this.tcyInfo?.claimed_not_staked / this.tcyInfo?.claimed_info.total, 2)} of claimers haven't staked`,
               extraText: `$${this.$options.filters.number((this.tcyInfo?.claimed_not_staked / 1e8) * this.tcyInfo?.price, '0,0.00a')}`,
             },
+            {
+              name: 'Protocol Owned',
+              value: this.tcyInfo?.pol_tcy,
+              filter: (v) =>
+                `${this.$options.filters.number(v / 1e8, '0,0.00a')} TCY`,
+              extraInfo: `Total TCY bought back by the protocol`,
+              extraText: `$${this.$options.filters.number((this.tcyInfo?.pol_tcy / 1e8) * this.tcyInfo?.price, '0,0.00a')}`,
+            },
           ],
         },
         {

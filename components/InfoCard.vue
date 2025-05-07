@@ -348,7 +348,6 @@ export default {
         flex-direction: column;
         font-size: $font-size-sm;
         justify-content: space-between;
-        align-items: center;
         gap: 0.3rem 0;
 
         @include md {
