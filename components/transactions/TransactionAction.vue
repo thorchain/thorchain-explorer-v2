@@ -230,6 +230,23 @@
     </div>
 
     <div
+      v-else-if="row && type === 'tcy_stake'"
+      :class="['action-cell', { 'no-border': noBorder, wrap: wrap }]"
+    >
+      <div v-for="(ops, i) in row.in" :key="'in-' + i" class="asset-cell">
+        <add-icon class="active-icon"></add-icon>
+        <asset-icon
+          :asset="ops.coins[0].asset"
+          :height="'1.2rem'"
+          :chain-height="'0.8rem'"
+        ></asset-icon>
+        <span class="asset-name">{{
+          decimalFormat(ops.coins[0].amount / 1e8)
+        }}</span>
+      </div>
+    </div>
+
+    <div
       v-else-if="row && type === 'bond'"
       :class="['action-cell', { 'no-border': noBorder, wrap: wrap }]"
     >
