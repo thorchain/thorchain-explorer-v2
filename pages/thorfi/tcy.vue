@@ -8,11 +8,23 @@
         <info-card :options="infoCardData" :inner="true"> </info-card>
       </card>
       <card
-        title="Allocation"
+        title="Allocation & Earnings"
         style="min-width: 400px"
         :img-src="require('@/assets/images/allocations.svg')"
       >
-        <pie-chart :pie-data="allocationPie" :extra-series="extraSeries" />
+        <pie-chart
+          :pie-data="allocationPie"
+          :extra-series="extraSeries"
+          :extra="extra"
+        />
+        <VChart
+          class="tcy-chart"
+          :option="earningsHistory"
+          :loading="!earningsHistory"
+          :loading-options="showLoading"
+          :theme="chartTheme"
+          :autoresize="true"
+        />
       </card>
     </div>
     <div class="tcy-card">
@@ -85,13 +97,34 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import Checkmark from '~/assets/images/square-checkmark.svg?inline'
+import moment from 'moment'
+import { use } from 'echarts/core'
+import { SVGRenderer } from 'echarts/renderers'
+import { BarChart } from 'echarts/charts'
+import {
+  TitleComponent,
+  TooltipComponent,
+  LegendComponent,
+  GridComponent,
+} from 'echarts/components'
+import VChart from 'vue-echarts'
 import Xmark from '~/assets/images/xmark.svg?inline'
+import Checkmark from '~/assets/images/square-checkmark.svg?inline'
+
+use([
+  SVGRenderer,
+  GridComponent,
+  BarChart,
+  TitleComponent,
+  TooltipComponent,
+  LegendComponent,
+])
 
 export default {
   components: {
     Checkmark,
     Xmark,
+    VChart,
   },
   data() {
     return {
@@ -112,6 +145,7 @@ export default {
       mimir: undefined,
       networkConst: undefined,
       tcyInfo: undefined,
+      earningsHistory: undefined,
       extraSeries: {
         center: ['55%', '50%'],
         radius: ['40%', '70%'],
@@ -253,6 +287,11 @@ export default {
           colSpan: 1,
           items: [
             {
+              name: 'TCY Supply',
+              value: this.tcyInfo?.TCYSupply,
+              filter: (v) => `${this.$options.filters.number(v, '0,0.00')}`,
+            },
+            {
               name: 'TCY Marketcap',
               value: this.tcyInfo?.TCYSupply * this.tcyInfo?.price,
               filter: (v) => `${this.$options.filters.currency(v)}`,
@@ -389,6 +428,99 @@ export default {
     this.tcyInfo = (await this.$api.getTcyInfo()).data
     this.mimir = (await this.$api.getMimir()).data
     this.networkConst = (await this.$api.getConstants()).data
+    const earnings = (await this.$api.earnings('day', '30')).data
+    this.earningsHistory = this.formatEarnings(earnings)
+  },
+  methods: {
+    formatEarnings(d) {
+      const xAxis = []
+      const pe = []
+      const pf = []
+      d?.intervals.forEach((interval, index) => {
+        // ignore the last index
+        if (index === d?.intervals?.length - 1) {
+          return
+        }
+        xAxis.push(
+          moment(
+            Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
+          ).format('dddd, MMM D')
+        )
+        const tcy = interval?.pools?.find((p) => p.pool === 'THOR.TCY')
+        const staked = interval?.pools?.find(
+          (p) => p.pool === 'tcy_stake_reward'
+        )
+        const earnings = (+staked?.earnings * +interval.runePriceUSD) / 10 ** 8
+        const liquidityFee =
+          (+tcy?.totalLiquidityFeesRune * +interval.runePriceUSD) / 10 ** 8
+
+        pe.push(earnings)
+        pf.push(liquidityFee)
+      })
+
+      return this.basicChartFormat(
+        (value) => `$ ${this.normalFormat(value)}`,
+        [
+          {
+            type: 'bar',
+            name: 'TCY Pool Earning',
+            showSymbol: false,
+            stack: 'Total',
+            data: pf,
+          },
+          {
+            type: 'bar',
+            name: `Stake Earnings`,
+            showSymbol: false,
+            stack: 'Total',
+            data: pe,
+          },
+        ],
+        xAxis,
+        {
+          yAxis: [
+            {
+              type: 'value',
+              position: 'left',
+              show: false,
+              splitLine: {
+                show: true,
+              },
+              axisLine: {
+                show: false,
+              },
+              min: 'dataMin',
+              max: 'dataMax',
+            },
+          ],
+        },
+        (param) => {
+          if (param.length === 0) return ''
+
+          return `
+          <div class="tooltip-header">
+            ${param[0].name}
+          </div>
+          <div class="tooltip-body">
+            ${param
+              .map(
+                (p) => `
+                <span>
+                  <div class="tooltip-item">
+                    <div class="data-color" style="background-color: ${p.color}"></div>
+                    <span style="text-align: left;">
+                      ${p.seriesName}
+                    </span>
+                  </div>
+                  <b>$${this.$options.filters.number(p.value, '0,0.00a')}</b>
+                </span>`
+              )
+              .join('')}
+          </div>
+          `
+        }
+      )
+    },
   },
 }
 </script>
@@ -422,5 +554,9 @@ export default {
 
 .mimir-icon {
   height: 1.2rem;
+}
+
+.tcy-chart {
+  height: 300px;
 }
 </style>

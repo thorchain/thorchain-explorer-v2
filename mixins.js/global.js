@@ -436,7 +436,6 @@ export default {
     parseConstant(key, options) {
       // make sure component has these data in it.
 
-      console.log(this.mimir, this.networkConst)
       if (
         !this.mimir ||
         !this.networkConst ||
