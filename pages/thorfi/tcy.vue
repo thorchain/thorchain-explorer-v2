@@ -160,6 +160,7 @@ export default {
   },
   computed: {
     ...mapGetters({
+      chainsHeight: 'getChainsHeight',
       runePrice: 'getRunePrice',
     }),
     extra() {
@@ -315,6 +316,21 @@ export default {
               usdValue: true,
             },
             {
+              name: 'Blocks Until Payout',
+              value:
+                Math.ceil(this.chainsHeight?.THOR / 14_400) * 14_400 -
+                this.chainsHeight?.THOR,
+              filter: (v) => `${this.$options.filters.number(v, '0,0')} Blocks`,
+              extraText: `${moment
+                .duration(
+                  (Math.ceil(this.chainsHeight?.THOR / 14_400) * 14_400 -
+                    this.chainsHeight?.THOR) *
+                    6,
+                  'seconds'
+                )
+                .humanize()}`,
+            },
+            {
               name: 'APR',
               value:
                 ((this.tcyInfo?.last_week_earnings / 1e8) *
@@ -448,7 +464,8 @@ export default {
       d?.intervals.forEach((interval, index) => {
         // ignore the last index
         if (index === d?.intervals?.length - 1) {
-          return
+          pe.push((this.tcyInfo?.tcy_stake_eod / 1e8) * this.runePrice)
+          pf.push((this.tcyInfo?.tcy_pool_eod / 1e8) * this.runePrice)
         }
         xAxis.push(
           moment(
