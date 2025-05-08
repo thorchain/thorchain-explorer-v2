@@ -5,17 +5,30 @@
   >
     <div class="left-section">
       <div class="header-info">
-        <div ref="header-info-1">
-          <small style="color: var(--sec-font-color)">RUNE Price:</small>
-          <small
-            v-if="runePrice"
-            :key="runePrice"
-            style="color: var(--primary-color)"
-            class="mono value"
+        <div class="price-container">
+          <div ref="header-info-1" class="price-item">
+            <small style="color: var(--sec-font-color)">RUNE Price:</small>
+            <small
+              v-if="runePrice"
+              :key="runePrice"
+              style="color: var(--primary-color)"
+              class="mono value"
+            >
+              {{ runePrice | currency }}
+            </small>
+            <small v-else>-</small>
+          </div>
+          <div
+            v-for="(info, index) in extraHeaderInfo"
+            :key="'extra-info-' + index"
+            :ref="'extra-info-' + index"
+            class="extra-info-item price-item"
           >
-            {{ runePrice | currency }}
-          </small>
-          <small v-else>-</small>
+            <small style="color: var(--sec-font-color)">{{ info.label }}:</small>
+            <small style="color: var(--primary-color)" class="mono value">
+              {{ info.value | currency }}
+            </small>
+          </div>
         </div>
         <div ref="header-info-2">
           <small style="color: var(--sec-font-color)">Node Count:</small>
@@ -28,22 +41,10 @@
           </small>
           <small v-else>-</small>
         </div>
-        <div
-          v-for="(info, index) in extraHeaderInfo"
-          :key="'extra-info-' + index"
-          :ref="'extra-info-' + index"
-          class="extra-info-item"
-        >
-          <small style="color: var(--sec-font-color)">{{ info.label }}:</small>
-          <small style="color: var(--primary-color)" class="mono value">
-            {{ info.value }}
-          </small>
-        </div>
       </div>
     </div>
 
     <div class="right-section">
-      <!-- بقیه کدهای قبلی بدون تغییر -->
       <div
         v-show="isOverviewPage ? isScrolled : true"
         id="search-container"
@@ -169,12 +170,16 @@ export default {
       runePrice: 'getRunePrice',
       extraHeaderInfo: 'getExtraHeaderInfo',
       network: 'getNetworkData',
+      pools: 'getPools',
     }),
     isOverviewPage() {
       return this.$route.path === '/dashboard'
     },
     networkEnv() {
       return process.env.NETWORK
+    },
+    thorTCYPool() {
+      return this.pools?.find((pool) => pool.asset === 'THOR.TCY')
     },
   },
   watch: {
@@ -194,13 +199,14 @@ export default {
         this.showSettings = false
       }
     },
+    thorTCYPool(newPool, oldPool) {
+      if (newPool?.assetPriceUSD !== oldPool?.assetPriceUSD) {
+        this.animate('extra-info-0', 'animate')
+        this.updateTCYPrice()
+      }
+    },
   },
   mounted() {
-    this.$store.commit('setExtraHeaderInfo', [
-      { label: 'Test Label 1', value: 'Test Value 1' },
-      { label: 'Test Label 2', value: 'Test Value 2' },
-    ])
-
     if (this.isOverviewPage) {
       window.addEventListener('scroll', this.handleScroll)
     }
@@ -222,6 +228,15 @@ export default {
     }
   },
   methods: {
+    updateTCYPrice() {
+      const tcyPrice = this.thorTCYPool?.assetPriceUSD
+        ? this.thorTCYPool.assetPriceUSD
+        : '-'
+
+      this.$store.commit('setExtraHeaderInfo', [
+        { label: 'TCY Price', value: tcyPrice },
+      ])
+    },
     onResize() {
       this.innerWidth = window.innerWidth
     },
@@ -349,11 +364,33 @@ export default {
 
   .header-info {
     display: flex;
-    align-items: end;
+    align-items: baseline;
     justify-content: center;
     flex-direction: row;
     font-size: 0.8rem;
     gap: 0.8rem;
+
+    @include md {
+      font-size: $font-size-sm;
+      flex-direction: row;
+    }
+
+    .price-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+
+      @include md {
+        flex-direction: row;
+        align-items: center;
+        gap: 0.8rem;
+      }
+    }
+
+    .price-item {
+      display: flex;
+      gap: 0.2rem;
+    }
 
     @include md {
       font-size: $font-size-sm;

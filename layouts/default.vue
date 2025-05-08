@@ -105,6 +105,7 @@ export default {
     this.getChainsHeight()
 
     this.updateInterval = setInterval(() => {
+      this.getPools()
       this.getChainsHeight()
       this.getRunePrice()
     }, 20000)
