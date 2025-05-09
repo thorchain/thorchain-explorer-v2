@@ -48,6 +48,8 @@ export const AssetImage = (assetStr) => {
         } else if (symbol === 'RKUJI') {
           iconPath =
             'https://raw.githubusercontent.com/cosmos/chain-registry/master/kujira/images/rkuji.png'
+        } else if (symbol === 'RUJI') {
+          iconPath = iconPath = require('~/assets/images/assets/ruji.svg')
         }
         if (symbol === 'TCY') {
           iconPath = require('~/assets/images/assets/tcy.svg')
