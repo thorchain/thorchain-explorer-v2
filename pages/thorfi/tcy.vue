@@ -206,8 +206,27 @@ export default {
           ],
         },
         {
-          title: 'Stakers',
+          title: 'Unclaimed',
           rowStart: 1,
+          colSpan: 1,
+          items: [
+            {
+              name: 'Number of Wallets',
+              value: this.tcyInfo?.unclaim_info.count,
+              filter: (v) => this.$options.filters.number(v, '0,0'),
+            },
+            {
+              name: 'Supply',
+              value: this.tcyInfo?.unclaim_info.total,
+              filter: (v) =>
+                `${this.$options.filters.number(v / 1e8, '0,0.00a')} TCY`,
+              extraText: `$${this.$options.filters.number((this.tcyInfo?.unclaim_info.total / 1e8) * this.tcyInfo?.price, '0,0.00a')}`,
+            },
+          ],
+        },
+        {
+          title: 'Stakers',
+          rowStart: 2,
           colSpan: 1,
           items: [
             {
@@ -229,24 +248,20 @@ export default {
               filter: (v) =>
                 `${this.$options.filters.number(v, '0,0.00a')} RUNE`,
             },
-          ],
-        },
-        {
-          title: 'Unclaimed',
-          rowStart: 2,
-          colSpan: 1,
-          items: [
             {
-              name: 'Number of Wallets',
-              value: this.tcyInfo?.unclaim_info.count,
-              filter: (v) => this.$options.filters.number(v, '0,0'),
-            },
-            {
-              name: 'Supply',
-              value: this.tcyInfo?.unclaim_info.total,
-              filter: (v) =>
-                `${this.$options.filters.number(v / 1e8, '0,0.00a')} TCY`,
-              extraText: `$${this.$options.filters.number((this.tcyInfo?.unclaim_info.total / 1e8) * this.tcyInfo?.price, '0,0.00a')}`,
+              name: 'Next Payout',
+              value:
+                Math.ceil(this.chainsHeight?.THOR / 14_400) * 14_400 -
+                this.chainsHeight?.THOR,
+              filter: (v) => `${this.$options.filters.number(v, '0,0')} Blocks`,
+              extraText: `${moment
+                .duration(
+                  (Math.ceil(this.chainsHeight?.THOR / 14_400) * 14_400 -
+                    this.chainsHeight?.THOR) *
+                    6,
+                  'seconds'
+                )
+                .humanize()}`,
             },
           ],
         },
@@ -314,21 +329,6 @@ export default {
               filter: (v) =>
                 `${this.$options.filters.number(v, '0,0.00a')} RUNE`,
               usdValue: true,
-            },
-            {
-              name: 'Blocks Until Payout',
-              value:
-                Math.ceil(this.chainsHeight?.THOR / 14_400) * 14_400 -
-                this.chainsHeight?.THOR,
-              filter: (v) => `${this.$options.filters.number(v, '0,0')} Blocks`,
-              extraText: `${moment
-                .duration(
-                  (Math.ceil(this.chainsHeight?.THOR / 14_400) * 14_400 -
-                    this.chainsHeight?.THOR) *
-                    6,
-                  'seconds'
-                )
-                .humanize()}`,
             },
             {
               name: 'APR',
