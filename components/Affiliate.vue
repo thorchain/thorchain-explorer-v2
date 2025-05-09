@@ -328,9 +328,7 @@ export default {
         try {
           icons.url = require(`@/assets/images/${ifc.icon}.png`)
           icons.urlDark = require(`@/assets/images/${ifc.icon}-dark.png`)
-        } catch (e) {
-          console.warn(`Could not load icon for ${ifc.icon}`)
-        }
+        } catch (e) {}
       }
 
       return {

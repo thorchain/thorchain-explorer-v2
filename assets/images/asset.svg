@@ -1,10 +1,17 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="36px" height="36px" viewBox="0 0 36 36" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <title>gear</title>
-    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <g id="gear" fill-rule="nonzero">
-            <rect id="Rectangle" fill-opacity="0.2" fill="#F4D944" x="0" y="0" width="36" height="36" rx="6"></rect>
-            <path d="M20,10.0643785 C22.4137328,10.3877216 24,11.9217158 24,14.5 C24,15.8066622 23.5925809,16.8451074 22.8765128,17.5936812 C24.2001695,18.3022124 25,19.6304361 25,21.5 C25,24.4022916 23.0724776,26 20.25,26 L20,26 L20,28 L18,28 L18,26 L16,26 L16,28 L14,28 L14,26 L12,26 L12,24 L14,24 L14,12 L12,12 L12,10 L14,10 L14,8 L16,8 L16,10 L18,10 L18,8 L20,8 L20,10.0643785 Z M19,12 L16,12 L16,17 L19,17 C20.9561749,17 22,16.1888576 22,14.5 C22,12.8111424 20.9561749,12 19,12 Z M16,19 L16,24 L20.25,24 C22.0421608,24 23,23.2060545 23,21.5 C23,19.7939455 22.0421608,19 20.25,19 L16,19 Z" id="Shape" fill="#F3BA2F"></path>
-        </g>
-    </g>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 27.9.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 36 36" style="enable-background:new 0 0 36 36;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:#F4D944;fill-opacity:0.2;}
+	.st1{fill:#F3BA2F;}
+</style>
+<g id="Page-1">
+	<g id="gear">
+		<path id="Rectangle" class="st0" d="M6,0h24c3.3,0,6,2.7,6,6v24c0,3.3-2.7,6-6,6H6c-3.3,0-6-2.7-6-6V6C0,2.7,2.7,0,6,0z"/>
+		<path id="Shape" class="st1" d="M19.5,10.1c2.4,0.3,4,1.7,4,4.1c0,1.2-0.4,2.2-1.1,2.9c1.3,0.7,2.1,1.9,2.1,3.6
+			c0,2.7-1.9,4.2-4.8,4.2h-0.2v1.9h-2v-1.9h-2v1.9h-2v-1.9h-2V23h2V11.9h-2V10h2V8.1h2V10h2V8.1h2V10.1z M18.5,11.9h-3v4.7h3
+			c2,0,3-0.8,3-2.3S20.5,11.9,18.5,11.9z M15.5,18.4V23h4.2c1.8,0,2.8-0.7,2.8-2.3s-1-2.3-2.8-2.3H15.5z"/>
+	</g>
+</g>
 </svg>

@@ -309,17 +309,19 @@ export default {
           this.nextPageToken = res.data.meta.nextPageToken
           this.prevPageToken = res.data.meta.prevPageToken
           this.error = false
+          this.loading = false
         })
         .catch((error) => {
+          if (error.message === 'cancel') {
+            this.loading = true
+            return
+          }
           this.error = true
           console.error(error)
         })
-        .finally(() => {
-          this.loading = false
-        })
     },
     resetFilters() {
-      this.$refs.advancedFilter.resetFilter({})
+      this.$refs.advancedFilter?.resetFilter({})
       this.clearFilters()
     },
     toggleModal() {

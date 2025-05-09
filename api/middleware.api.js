@@ -133,10 +133,18 @@ export function getAffiliateDaily() {
   )
 }
 
+let fetchDataCancel = null
+
 export function getActions(params) {
+  if (fetchDataCancel) {
+    fetchDataCancel.cancel('cancel')
+  }
+
+  fetchDataCancel = $axiosInstace.CancelToken.source()
+
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].SERVER_URL + 'actions',
-    { params }
+    { params, cancelToken: fetchDataCancel.token }
   )
 }
 
