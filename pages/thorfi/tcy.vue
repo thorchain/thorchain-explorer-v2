@@ -489,7 +489,7 @@ export default {
         [
           {
             type: 'bar',
-            name: 'TCY Pool Earning',
+            name: 'TCY Pool Fees',
             showSymbol: false,
             data: pf,
           },
