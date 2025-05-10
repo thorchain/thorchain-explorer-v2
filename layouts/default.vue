@@ -95,18 +95,12 @@ export default {
       })
       .catch((e) => console.error(e))
 
-    this.$api
-      .getPools()
-      .then(({ data }) => {
-        this.$store.commit('setPools', data)
-      })
-      .catch((e) => console.error(e))
-
     this.getChainsHeight()
 
     this.updateInterval = setInterval(() => {
       this.getChainsHeight()
       this.getRunePrice()
+      this.getPools()
     }, 20000)
 
     const changeHeight = () => {
@@ -147,6 +141,14 @@ export default {
         .catch((error) => {
           console.error(error)
         })
+    },
+    getPools() {
+      this.$api
+        .getPools()
+        .then(({ data }) => {
+          this.$store.commit('setPools', data)
+        })
+        .catch((e) => console.error(e))
     },
   },
 }

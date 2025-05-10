@@ -193,10 +193,10 @@ export default {
     runePrice(n, o) {
       this.animate('header-info-1', 'animate')
     },
-    network() {
+    network(n, o) {
       this.animate('header-info-2', 'animate')
     },
-    pools() {
+    pools(n, o) {
       this.animate('header-info-3', 'animate')
     },
     innerWidth(newWidth) {
@@ -408,6 +408,7 @@ export default {
         transition: all ease 0.4s;
       }
 
+      .animate,
       &.animate {
         .value {
           -webkit-animation: jello-vertical 1s both;
