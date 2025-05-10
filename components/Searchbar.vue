@@ -5,17 +5,31 @@
   >
     <div class="left-section">
       <div class="header-info">
-        <div ref="header-info-1">
-          <small style="color: var(--sec-font-color)">RUNE Price:</small>
-          <small
-            v-if="runePrice"
-            :key="runePrice"
-            style="color: var(--primary-color)"
-            class="mono value"
-          >
-            {{ runePrice | currency }}
-          </small>
-          <small v-else>-</small>
+        <div class="price-container">
+          <div ref="header-info-1">
+            <small style="color: var(--sec-font-color)">RUNE Price:</small>
+            <small
+              v-if="runePrice"
+              :key="runePrice"
+              style="color: var(--primary-color)"
+              class="mono value"
+            >
+              {{ runePrice | currency }}
+            </small>
+            <small v-else>-</small>
+          </div>
+          <div ref="header-info-3">
+            <small style="color: var(--sec-font-color)">TCY Price:</small>
+            <small
+              v-if="tcyPrice"
+              :key="tcyPrice"
+              style="color: var(--primary-color)"
+              class="mono value"
+            >
+              {{ tcyPrice | currency }}
+            </small>
+            <small v-else>-</small>
+          </div>
         </div>
         <div ref="header-info-2">
           <small style="color: var(--sec-font-color)">Node Count:</small>
@@ -25,18 +39,6 @@
             class="mono value"
           >
             {{ network.activeNodeCount | number('0,0') }}
-          </small>
-          <small v-else>-</small>
-        </div>
-        <div ref="header-info-3">
-          <small style="color: var(--sec-font-color)">TCY Price:</small>
-          <small
-            v-if="tcyPrice"
-            :key="tcyPrice"
-            style="color: var(--primary-color)"
-            class="mono value"
-          >
-            {{ tcyPrice | currency }}
           </small>
           <small v-else>-</small>
         </div>
@@ -352,11 +354,33 @@ export default {
 
   .header-info {
     display: flex;
-    align-items: end;
+    align-items: baseline;
     justify-content: center;
     flex-direction: row;
     font-size: 0.8rem;
     gap: 0.8rem;
+
+    @include md {
+      font-size: $font-size-sm;
+      flex-direction: row;
+    }
+
+    .price-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+
+      @include md {
+        flex-direction: row;
+        align-items: center;
+        gap: 0.8rem;
+      }
+    }
+
+    .price-item {
+      display: flex;
+      gap: 0.2rem;
+    }
 
     @include md {
       font-size: $font-size-sm;
