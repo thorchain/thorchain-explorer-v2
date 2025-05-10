@@ -28,6 +28,18 @@
           </small>
           <small v-else>-</small>
         </div>
+        <div ref="header-info-3">
+          <small style="color: var(--sec-font-color)">TCY Price:</small>
+          <small
+            v-if="tcyPrice"
+            :key="tcyPrice"
+            style="color: var(--primary-color)"
+            class="mono value"
+          >
+            {{ tcyPrice | currency }}
+          </small>
+          <small v-else>-</small>
+        </div>
       </div>
     </div>
     <div class="right-section">
@@ -156,12 +168,20 @@ export default {
       runePrice: 'getRunePrice',
       extraHeaderInfo: 'getExtraHeaderInfo',
       network: 'getNetworkData',
+      pools: 'getPools',
     }),
     isOverviewPage() {
       return this.$route.path === '/dashboard'
     },
     networkEnv() {
       return process.env.NETWORK
+    },
+    tcyPrice() {
+      if (this.pools && this.pools.length > 0) {
+        const tcyPool = this.pools.find((pool) => pool.asset === 'THOR.TCY')
+        return tcyPool ? tcyPool.assetPriceUSD : null
+      }
+      return null
     },
   },
   watch: {
@@ -171,6 +191,7 @@ export default {
     runePrice(n, o) {
       this.animate('header-info-1', 'animate')
       this.animate('header-info-2', 'animate')
+      this.animate('header-info-3', 'animate')
     },
     extraHeaderInfo(n, o) {
       this.animate('churn-info', 'animate')

@@ -113,7 +113,6 @@ export default {
         this.$store.commit('setNetworkData', data)
       })
       .catch((e) => console.error(e))
-
     this.$api
       .getPools()
       .then(({ data }) => {
@@ -126,6 +125,12 @@ export default {
     this.updateInterval = setInterval(() => {
       this.getChainsHeight()
       this.getRunePrice()
+      this.$api
+        .getPools()
+        .then(({ data }) => {
+          this.$store.commit('setPools', data)
+        })
+        .catch((e) => console.error(e))
     }, 20000)
 
     const changeHeight = () => {
