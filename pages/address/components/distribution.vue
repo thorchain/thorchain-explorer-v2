@@ -1,14 +1,13 @@
 <template>
   <div>
     <stats-panel :metrics="statsMetrics">
-      <template v-slot:metric-icon-0>
+      <template #metric-icon-0>
         <asset-icon asset="THOR.TCY" height="1.2rem" />
       </template>
-
-      <template v-slot:metric-icon-2>
+      <template #metric-icon-2>
         <asset-icon asset="THOR.RUNE" height="1.2rem" />
       </template>
-      <template v-slot:metric-icon-3>
+      <template #metric-icon-3>
         <asset-icon asset="THOR.RUNE" height="1.2rem" />
       </template>
     </stats-panel>
@@ -100,8 +99,17 @@ export default {
   computed: {
     ...mapGetters({
       runePrice: 'getRunePrice',
-      pools: 'getPools',
     }),
+    tcyPrice() {
+      const pools = this.$store.getters.getPools
+      console.log(pools)
+
+      if (pools && pools.length > 0) {
+        const tcyPool = pools.find((pool) => pool.asset === 'THOR.TCY')
+        return tcyPool ? tcyPool.assetPriceUSD : 0
+      }
+      return 0
+    },
     statsMetrics() {
       return [
         {
@@ -110,6 +118,7 @@ export default {
           filter: (val) => {
             return `${this.$options.filters.number(val, '0,0.00')} `
           },
+          subValue: `${this.$options.filters.currency(this.stakedAmount * this.tcyPrice)}`,
         },
         {
           label: 'APY',
@@ -143,15 +152,12 @@ export default {
       return totalEarn / days
     },
     tcyAPY() {
-      if (!this.dailyEarn || !this.pools) {
+      if (!this.dailyEarn || !this.tcyPrice) {
         return 0
       }
 
-      const TCYPool = this.pools.find((pool) => pool.asset === 'THOR.TCY')
-      const TCYPrice = +TCYPool.assetPriceUSD
-
       const dailyReturn =
-        (this.dailyEarn * this.runePrice) / (this.stakedAmount * TCYPrice)
+        (this.dailyEarn * this.runePrice) / (this.stakedAmount * this.tcyPrice)
 
       return dailyReturn * 365
     },

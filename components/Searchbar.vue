@@ -18,7 +18,7 @@
             </small>
             <small v-else>-</small>
           </div>
-          <div ref="header-info-3">
+          <nuxt-link ref="header-info-3" :to="'/thorfi/tcy'">
             <small style="color: var(--sec-font-color)">TCY Price:</small>
             <small
               v-if="tcyPrice"
@@ -29,7 +29,7 @@
               {{ tcyPrice | currency }}
             </small>
             <small v-else>-</small>
-          </div>
+          </nuxt-link>
         </div>
         <div ref="header-info-2">
           <small style="color: var(--sec-font-color)">Node Count:</small>
@@ -359,7 +359,7 @@ export default {
     justify-content: center;
     flex-direction: row;
     font-size: 0.8rem;
-    gap: 0.8rem;
+    gap: 0.3rem;
 
     @include md {
       font-size: $font-size-sm;
@@ -368,13 +368,13 @@ export default {
 
     .price-container {
       display: flex;
-      flex-direction: column;
-      gap: 0.2rem;
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.3rem;
 
-      @include md {
-        flex-direction: row;
-        align-items: center;
-        gap: 0.8rem;
+      a {
+        text-decoration: none;
       }
     }
 

@@ -96,6 +96,7 @@ export default {
       .catch((e) => console.error(e))
 
     this.getChainsHeight()
+    this.getPools()
 
     this.updateInterval = setInterval(() => {
       this.getChainsHeight()

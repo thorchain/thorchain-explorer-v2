@@ -50,6 +50,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.stats-panel {
+  margin: 0;
+}
+
 .stats-summary {
   display: flex;
   align-items: center;
@@ -76,7 +80,6 @@ export default {
       width: initial;
     }
 
-
     .metric-label {
       font-size: $font-size-sm;
       margin: 0;
@@ -87,7 +90,6 @@ export default {
       flex-direction: column;
       align-items: flex-end;
       gap: 5px;
-
 
       @include lg {
         align-items: center;

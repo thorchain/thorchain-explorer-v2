@@ -304,6 +304,7 @@ export default {
       runePrice: 'getRunePrice',
       nodesData: 'getNodesData',
       nodes: 'getNodesData',
+      pools: 'getPools',
     }),
     nodeAddress() {
       return this.nodes?.some((node) => node.node_address === this.address)
