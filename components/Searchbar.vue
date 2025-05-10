@@ -5,17 +5,31 @@
   >
     <div class="left-section">
       <div class="header-info">
-        <div ref="header-info-1">
-          <small style="color: var(--sec-font-color)">RUNE Price:</small>
-          <small
-            v-if="runePrice"
-            :key="runePrice"
-            style="color: var(--primary-color)"
-            class="mono value"
-          >
-            {{ runePrice | currency }}
-          </small>
-          <small v-else>-</small>
+        <div class="price-container">
+          <div ref="header-info-1">
+            <small style="color: var(--sec-font-color)">RUNE Price:</small>
+            <small
+              v-if="runePrice"
+              :key="runePrice"
+              style="color: var(--primary-color)"
+              class="mono value"
+            >
+              {{ runePrice | currency }}
+            </small>
+            <small v-else>-</small>
+          </div>
+          <div ref="header-info-3">
+            <small style="color: var(--sec-font-color)">TCY Price:</small>
+            <small
+              v-if="tcyPrice"
+              :key="tcyPrice"
+              style="color: var(--primary-color)"
+              class="mono value"
+            >
+              {{ tcyPrice | currency }}
+            </small>
+            <small v-else>-</small>
+          </div>
         </div>
         <div ref="header-info-2">
           <small style="color: var(--sec-font-color)">Node Count:</small>
@@ -156,12 +170,20 @@ export default {
       runePrice: 'getRunePrice',
       extraHeaderInfo: 'getExtraHeaderInfo',
       network: 'getNetworkData',
+      pools: 'getPools',
     }),
     isOverviewPage() {
       return this.$route.path === '/dashboard'
     },
     networkEnv() {
       return process.env.NETWORK
+    },
+    tcyPrice() {
+      if (this.pools && this.pools.length > 0) {
+        const tcyPool = this.pools.find((pool) => pool.asset === 'THOR.TCY')
+        return tcyPool ? tcyPool.assetPriceUSD : null
+      }
+      return null
     },
   },
   watch: {
@@ -170,10 +192,12 @@ export default {
     },
     runePrice(n, o) {
       this.animate('header-info-1', 'animate')
+    },
+    network(n, o) {
       this.animate('header-info-2', 'animate')
     },
-    extraHeaderInfo(n, o) {
-      this.animate('churn-info', 'animate')
+    pools(n, o) {
+      this.animate('header-info-3', 'animate')
     },
     innerWidth(newWidth) {
       if (newWidth < 900) {
@@ -331,11 +355,33 @@ export default {
 
   .header-info {
     display: flex;
-    align-items: end;
+    align-items: baseline;
     justify-content: center;
     flex-direction: row;
     font-size: 0.8rem;
     gap: 0.8rem;
+
+    @include md {
+      font-size: $font-size-sm;
+      flex-direction: row;
+    }
+
+    .price-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+
+      @include md {
+        flex-direction: row;
+        align-items: center;
+        gap: 0.8rem;
+      }
+    }
+
+    .price-item {
+      display: flex;
+      gap: 0.2rem;
+    }
 
     @include md {
       font-size: $font-size-sm;
@@ -362,6 +408,7 @@ export default {
         transition: all ease 0.4s;
       }
 
+      .animate,
       &.animate {
         .value {
           -webkit-animation: jello-vertical 1s both;
