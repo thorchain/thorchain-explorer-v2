@@ -192,11 +192,12 @@ export default {
     },
     runePrice(n, o) {
       this.animate('header-info-1', 'animate')
-      this.animate('header-info-2', 'animate')
-      this.animate('header-info-3', 'animate')
     },
-    extraHeaderInfo(n, o) {
-      this.animate('churn-info', 'animate')
+    network() {
+      this.animate('header-info-2', 'animate')
+    },
+    pools() {
+      this.animate('header-info-3', 'animate')
     },
     innerWidth(newWidth) {
       if (newWidth < 900) {
