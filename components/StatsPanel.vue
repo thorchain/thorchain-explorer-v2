@@ -8,20 +8,26 @@
         :class="{ 'with-separator': idx > 0 }"
       >
         <h6 class="metric-label">{{ metric.label }}</h6>
-        <b class="metric-value">
-          <span v-if="metric.format">
-            {{ metric.format(metric.value) }}
-          </span>
-          <span v-else>
-            {{ metric.value || '-' }}
-          </span>
-        </b>
+        <div class="metric-values">
+          <b class="metric-value">
+            <template v-if="metric.valueSlot">
+              <slot :name="metric.valueSlot" :metric="metric" />
+            </template>
+            <template v-else>
+              <span v-if="metric.filter && metric.value !== undefined">
+                {{ metric.filter(metric.value) }}
+              </span>
+              <span v-else>
+                {{ metric.value || '-' }}
+              </span>
+            </template>
+            <slot :name="`metric-icon-${idx}`"></slot>
+          </b>
+          <div v-if="metric.subValue" class="metric-sub-value">
+            {{ metric.subValue }}
+          </div>
+        </div>
       </div>
-    </div>
-
-    <div v-if="displayExtraSection" class="extra-section">
-      <h3 class="extra-title">{{ extraTitle }}</h3>
-      <slot name="extraStats"></slot>
     </div>
   </card>
 </template>
@@ -38,14 +44,6 @@ export default {
           (item) => item.hasOwnProperty('label') && item.hasOwnProperty('value')
         )
       },
-    },
-    extraStats: {
-      type: Boolean,
-      default: false,
-    },
-    extraTitle: {
-      type: String,
-      default: 'Distributions',
     },
   },
 }
@@ -78,13 +76,22 @@ export default {
       width: initial;
     }
 
-    &:first-of-type {
-      padding-left: 0;
-    }
 
     .metric-label {
       font-size: $font-size-sm;
       margin: 0;
+    }
+
+    .metric-values {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 5px;
+
+
+      @include lg {
+        align-items: center;
+      }
     }
 
     .metric-value {
@@ -99,6 +106,12 @@ export default {
       }
     }
 
+    .metric-sub-value {
+      font-size: $font-size-s;
+      color: var(--font-color);
+      margin-top: 2px;
+    }
+
     &.with-separator {
       border-top: 1px solid var(--border-color);
 
@@ -107,19 +120,6 @@ export default {
         border-left: 1px solid var(--border-color);
       }
     }
-  }
-}
-
-.extra-section {
-  padding: $space-16;
-  border: 1px solid var(--border-color);
-  border-radius: $radius-s;
-  margin-top: $space-16;
-
-  .extra-title {
-    font-size: $font-size-md;
-    margin: 0 0 $space-8 0;
-    color: var(--sec-font-color);
   }
 }
 </style>
