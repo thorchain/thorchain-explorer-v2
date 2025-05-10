@@ -31,7 +31,7 @@
             <small v-else>-</small>
           </nuxt-link>
         </div>
-        <div ref="header-info-2">
+        <nuxt-link ref="header-info-2" :to="'/nodes'">
           <small style="color: var(--sec-font-color)">Node Count:</small>
           <small
             v-if="network && network.activeNodeCount"
@@ -41,7 +41,7 @@
             {{ network.activeNodeCount | number('0,0') }}
           </small>
           <small v-else>-</small>
-        </div>
+        </nuxt-link>
       </div>
     </div>
     <div class="right-section">
@@ -372,10 +372,6 @@ export default {
       flex-wrap: wrap;
       align-items: center;
       gap: 0.3rem;
-
-      a {
-        text-decoration: none;
-      }
     }
 
     .price-item {
@@ -415,6 +411,14 @@ export default {
           animation: jello-vertical 1s both;
         }
       }
+    }
+
+    a {
+      &:hover small {
+        color: var(--primary-color) !important;
+      }
+
+      text-decoration: none;
     }
   }
 
