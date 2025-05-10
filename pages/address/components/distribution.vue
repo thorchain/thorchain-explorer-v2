@@ -1,44 +1,16 @@
 <template>
   <div>
-    <div class="main-stats">
-      <div class="stat-info">
-        <h6 class="info-title">Staked TCY</h6>
-        <b class="info-value">
-          {{ stakedAmount | number('0,0.00') }}
-          <asset-icon
-            :asset="'THOR.TCY'"
-            class="asset-icon"
-            :height="'1.2rem'"
-          />
-        </b>
-      </div>
-      <div class="stat-info border-left">
-        <h6 class="info-title">APY</h6>
-        <b class="info-value">{{ tcyAPY | percent(2) }}</b>
-      </div>
-      <div class="stat-info border-left">
-        <h6 class="info-title">Daily Earn (est)</h6>
-        <b class="info-value">
-          {{ dailyEarn | number('0,0.00000') }}
-          <asset-icon
-            :asset="'THOR.RUNE'"
-            class="asset-icon"
-            :height="'1.2rem'"
-          />
-        </b>
-      </div>
-      <div class="stat-info border-left">
-        <h6 class="info-title">Total Earned</h6>
-        <b class="info-value">
-          {{ (distribution.total / 1e8) | number('0,0.0000') }}
-          <asset-icon
-            :asset="'THOR.RUNE'"
-            class="asset-icon"
-            :height="'1.2rem'"
-          />
-        </b>
-      </div>
-    </div>
+    <stats-panel :metrics="statsMetrics">
+      <template #metric-icon-0>
+        <asset-icon asset="THOR.TCY" height="1.2rem" />
+      </template>
+      <template #metric-icon-2>
+        <asset-icon asset="THOR.RUNE" height="1.2rem" />
+      </template>
+      <template #metric-icon-3>
+        <asset-icon asset="THOR.RUNE" height="1.2rem" />
+      </template>
+    </stats-panel>
     <div class="distributions">
       <div class="distribution-header">
         <h3 class="info-title">Distributions</h3>
@@ -127,8 +99,48 @@ export default {
   computed: {
     ...mapGetters({
       runePrice: 'getRunePrice',
-      pools: 'getPools',
     }),
+    tcyPrice() {
+      const pools = this.$store.getters.getPools
+      console.log(pools)
+
+      if (pools && pools.length > 0) {
+        const tcyPool = pools.find((pool) => pool.asset === 'THOR.TCY')
+        return tcyPool ? tcyPool.assetPriceUSD : 0
+      }
+      return 0
+    },
+    statsMetrics() {
+      return [
+        {
+          label: 'Staked TCY',
+          value: this.stakedAmount,
+          filter: (val) => {
+            return `${this.$options.filters.number(val, '0,0.00')} `
+          },
+          subValue: `${this.$options.filters.currency(this.stakedAmount * this.tcyPrice)}`,
+        },
+        {
+          label: 'APY',
+          value: this.tcyAPY,
+          filter: (val) => this.$options.filters.percent(val, 2),
+        },
+        {
+          label: 'Daily Earn (est)',
+          value: this.dailyEarn,
+          filter: (val) => {
+            return `${this.$options.filters.number(val, '0,0.00000')} `
+          },
+        },
+        {
+          label: 'Total Earned',
+          value: this.distribution.total / 1e8,
+          filter: (val) => {
+            return `${this.$options.filters.number(val, '0,0.0000')} `
+          },
+        },
+      ]
+    },
     dailyEarn() {
       const totalEarn = +this.distribution?.total / 1e8
       const days = this.distribution?.distributions?.length
@@ -140,15 +152,12 @@ export default {
       return totalEarn / days
     },
     tcyAPY() {
-      if (!this.dailyEarn || !this.pools) {
+      if (!this.dailyEarn || !this.tcyPrice) {
         return 0
       }
 
-      const TCYPool = this.pools.find((pool) => pool.asset === 'THOR.TCY')
-      const TCYPrice = +TCYPool.assetPriceUSD
-
       const dailyReturn =
-        (this.dailyEarn * this.runePrice) / (this.stakedAmount * TCYPrice)
+        (this.dailyEarn * this.runePrice) / (this.stakedAmount * this.tcyPrice)
 
       return dailyReturn * 365
     },
