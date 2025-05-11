@@ -169,28 +169,7 @@ export default {
       return false
     },
   },
-  watch: {
-    '$route.query': {
-      handler(newVal) {
-        const params = { ...newVal }
-
-        if (Object.keys(params).length > 0) {
-          const query = this.checkQuery(params)
-          this.filters = query
-          this.$refs.advancedFilter?.queryToFilter(query)
-          this.hasFilters = true
-        } else {
-          this.applyFilters({
-            asset: ['notrade'],
-            type: ['swap', 'send'],
-          })
-        }
-
-        this.getActions({ limit: this.limit, ...params })
-      },
-      immediate: true,
-    },
-  },
+  watch: {},
   mounted() {
     const params = { ...this.$route.query }
     if (!params.nextPageToken && this.nextPageToken) {
@@ -199,7 +178,6 @@ export default {
     if (!params.prevPageToken && this.prevPageToken) {
       params.prevPageToken = this.prevPageToken
     }
-
     if (Object.keys(params).length > 0) {
       const query = this.checkQuery(params)
       this.filters = query
@@ -211,7 +189,6 @@ export default {
         type: ['swap', 'send'],
       })
     }
-
     this.getActions({ limit: this.limit, ...params })
   },
   methods: {

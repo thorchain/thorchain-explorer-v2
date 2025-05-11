@@ -893,7 +893,7 @@ export default {
     addAnimate(d, className, duration) {
       d.classList?.add(className)
       setTimeout(function () {
-        d.classList.remove(className)
+        d.classList?.remove(className)
       }, duration)
     },
     animate(refName, className, duration = 2000) {
