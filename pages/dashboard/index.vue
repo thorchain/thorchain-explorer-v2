@@ -1,95 +1,7 @@
 <template>
   <Page>
     <div class="chart-container">
-      <div class="network-stats">
-        <div class="stat-group">
-          <nuxt-link to="/swaps" class="stat-item stat-item-link">
-            <chart class="stat-image" />
-            <div class="item-detail">
-              <div class="header">Volume (24hr)</div>
-              <skeleton-item
-                :loading="
-                  totalSwap24USD == null || totalSwap24USD === undefined
-                "
-                class="value"
-              >
-                ${{ (totalSwap24USD / 1e2) | number('0a') }}
-              </skeleton-item>
-            </div>
-            <arrow-right-icon class="arrow-icon" />
-          </nuxt-link>
-          <hr />
-          <nuxt-link to="/insights" class="stat-item stat-item-link">
-            <exchange class="stat-image" />
-            <div class="item-detail">
-              <div class="header">Swaps (24hr)</div>
-              <skeleton-item :loading="!runeVolume" class="value">
-                {{ stats.swapCount24h | number('0,0') }}
-              </skeleton-item>
-            </div>
-            <arrow-right-icon class="arrow-icon" />
-          </nuxt-link>
-          <hr />
-        </div>
-        <div class="stat-group">
-          <nuxt-link to="/pools/tvl" class="stat-item stat-item-link">
-            <LockIcon class="stat-image" />
-            <div class="item-detail">
-              <div class="header">TVL (Pool + Bond)</div>
-              <skeleton-item
-                :loading="!(totalValuePooled && network && network.bondMetrics)"
-                class="value"
-              >
-                <template v-if="network && network.bondMetrics">
-                  ${{ tvl | number('0a') }}
-                </template>
-              </skeleton-item>
-            </div>
-            <arrow-right-icon class="arrow-icon" />
-          </nuxt-link>
-          <hr />
-          <nuxt-link to="/pools" class="stat-item stat-item-link">
-            <Piggy class="stat-image" />
-            <div class="item-detail">
-              <div class="header">Bond | Pool APY</div>
-              <skeleton-item :loading="!network" class="value">
-                <template v-if="network">
-                  {{ network.bondingAPY | percent(2) }} |
-                  {{ network.liquidityAPY | percent(2) }}
-                </template>
-              </skeleton-item>
-            </div>
-            <arrow-right-icon class="arrow-icon" />
-          </nuxt-link>
-          <hr />
-        </div>
-        <div class="stat-group">
-          <div class="stat-item">
-            <burn class="stat-image" />
-            <div class="item-detail">
-              <div class="header">Total | Circulating | Burned</div>
-              <skeleton-item
-                :loading="!totalBurnedRune || !circulating"
-                class="value"
-              >
-                {{ runeSupply | number('0a') }} |
-                {{ circulating | number('0a') }} |
-                {{ totalBurnedRune | number('0a') }}
-              </skeleton-item>
-            </div>
-          </div>
-          <hr />
-          <div class="stat-item">
-            <stack-dollar class="stat-image" />
-            <div class="item-detail">
-              <div class="header">Earnings (24hr)</div>
-              <skeleton-item :loading="!totalEarning24" class="value">
-                ${{ totalEarning24 | number('0a') }}
-              </skeleton-item>
-            </div>
-          </div>
-        </div>
-      </div>
+      <NetworkStats />
     </div>
     <div class="chart-inner-container">
       <Card
@@ -220,131 +132,8 @@
       />
     </div>
     <div class="cards-container">
-      <card title="Latest Blocks">
-        <div>
-          <transition-group name="block" tag="div">
-            <div
-              v-for="block in burnedBlocks"
-              :key="block.blockHeight"
-              class="block-items"
-            >
-              <div class="block-info-overview">
-                <nuxt-link
-                  class="height clickable"
-                  :to="`/block/${block.blockHeight}`"
-                >
-                  {{ block.blockHeight | number('0,0') }}
-                </nuxt-link>
-                <small class="duration">
-                  {{ getDuration(block.timestamp) }} Seconds
-                </small>
-              </div>
-              <div class="middle-section-overview">
-                <div class="block-burned-item">
-                  <small>Burned</small>
-                  <div class="burn-item mini-bubble orange">
-                    <Burn class="burn-icon"></Burn>
-                    {{ decimalFormat(block.burnedAmount / 1e8) }}
-                  </div>
-                </div>
-
-                <div class="block-burned-item">
-                  <small>Dev</small>
-                  <div class="burn-item mini-bubble yellow">
-                    <rune class="rune-icon"></rune>
-                    <div class="amount-burn">
-                      {{ decimalFormat(block.devAmount / 1e8) }}
-                    </div>
-                  </div>
-                </div>
-
-                <div class="block-burned-item">
-                  <small>Pool</small>
-                  <div class="burn-item mini-bubble info">
-                    <rune class="rune-icon"></rune>
-                    <div class="amount-burn">
-                      {{ decimalFormat(block.poolAmount / 1e8) }}
-                    </div>
-                  </div>
-                </div>
-
-                <div class="block-burned-item">
-                  <small>Bond</small>
-                  <div class="burn-item mini-bubble">
-                    <rune class="rune-icon"></rune>
-                    <div class="amount-burn">
-                      {{ decimalFormat(block.bondAmount / 1e8) }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </transition-group>
-          <template v-if="burnedBlocks.length == 0">
-            <div class="loading">
-              <BounceLoader color="var(--font-color)" size="3rem" />
-            </div>
-          </template>
-        </div>
-      </card>
-      <card title="Latest Transactions">
-        <template #more>
-          <nuxt-link
-            to="/txs"
-            class="more-link clickable"
-            style="margin-left: auto"
-          >
-            More
-            <ArrowRightIcon />
-          </nuxt-link>
-        </template>
-        <div>
-          <template v-if="txs">
-            <template v-for="(t, i) in txs">
-              <div :key="i" class="row-item-transactions">
-                <div class="transactions">
-                  <span
-                    v-if="t.in"
-                    style="font-size: 0.875rem; color: var(--sec-font-color)"
-                  >
-                    <small style="color: var(--font-color)">TxID</small>
-                    <nuxt-link class="clickable" :to="`/tx/${t.in[0].txID}`">
-                      {{ formatAddress(showTx(t.in && t.in[0].txID)) }}
-                    </nuxt-link>
-                  </span>
-                  <transaction-action
-                    :row="t"
-                    :show-mini-bubble="false"
-                    :no-border="true"
-                  />
-                </div>
-                <div class="txs">
-                  <span>
-                    <small style="color: var(--font-color)">From</small>
-                    <address-bar
-                      :address-str="t.in && t.in[0].address"
-                    ></address-bar>
-                  </span>
-                  <nuxt-link
-                    class="clickable header"
-                    :to="`/block/${t.height}`"
-                  >
-                    {{ t.height | number('0,0') }}
-                  </nuxt-link>
-
-                  <span class="timestamp">
-                    {{ formatMoment(t.date) }}
-                  </span>
-                </div>
-              </div>
-              <hr :key="i + 'hr'" class="hr-space" />
-            </template>
-          </template>
-          <div v-else class="loading">
-            <BounceLoader color="var(--font-color)" size="3rem" />
-          </div>
-        </div>
-      </card>
+      <LatestBlocks :burned-blocks="burnedBlocks" />
+      <LatestTransactions></LatestTransactions>
     </div>
   </Page>
 </template>
@@ -376,7 +165,9 @@ import Rune from '~/assets/images/rune.svg?inline'
 import Piggy from '~/assets/images/piggy.svg?inline'
 import Chart from '~/assets/images/chart.svg?inline'
 import TransactionAction from '~/components/transactions/TransactionAction.vue'
-
+import NetworkStats from './NetworkStats.vue'
+import LatestTransactions from './LatestTransactions.vue'
+import LatestBlocks from './LatestBlocks.vue'
 use([
   SVGRenderer,
   GridComponent,
@@ -403,6 +194,9 @@ export default {
     ArrowRightIcon,
     TransactionAction,
     affiliateTables,
+    NetworkStats,
+    LatestTransactions,
+    LatestBlocks,
   },
   layout: 'dashboard',
   data() {
