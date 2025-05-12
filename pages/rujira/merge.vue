@@ -184,27 +184,29 @@ export default {
       }, 0)
     },
     statsMetrics() {
+      const formatMerge = (val) => {
+        let formatted = this.$options.filters.number(val, '0,0.00a')
+        if (this.totalAllocation > 0) {
+          formatted += ` / ${this.$options.filters.number(this.totalAllocation, '0,0.00a')} RUJI - ${this.$options.filters.percent(val / this.totalAllocation, 2)}`
+        }
+        return formatted
+      }
+
       return [
         {
           label: 'RUJI Merged',
           value: this.mergedRUJI,
-          format: (val) => {
-            let formatted = this.$options.filters.number(val, '0,0.00a')
-            if (this.totalAllocation > 0) {
-              formatted += ` / ${this.$options.filters.number(this.totalAllocation, '0,0.00a')} RUJI - ${this.$options.filters.percent(val / this.totalAllocation, 2)}`
-            }
-            return formatted
-          },
+          filter: (val) => formatMerge(val),
         },
         {
           label: 'Switch Txs',
           value: this.totalTxs,
-          format: (val) => (val > 0 ? val : '-'),
+          filter: (v) => this.$options.filters.number(v, '0,0'),
         },
         {
           label: 'Wallet Count',
           value: this.totalWallets,
-          format: (val) => (val > 0 ? val : '-'),
+          filter: (v) => this.$options.filters.number(v, '0,0'),
         },
       ]
     },
