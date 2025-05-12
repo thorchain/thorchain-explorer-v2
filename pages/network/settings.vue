@@ -1,23 +1,79 @@
 <template>
   <Page>
-    <info-card :options="networkSettings">
+    <Nav :active-mode.sync="activeView" :nav-items="navItems" pre-text="View:" />
+    <info-card v-if="activeView === 'info'" :options="networkSettings">
       <template #usd="{ item }">
         {{ item.filter(item.value) }}
         <small>(${{ ((item.value / 1e8) * runePrice) | number('0a') }})</small>
       </template>
     </info-card>
+
+    <div v-else>
+      <div id="vote-search-container">
+        <input
+          v-model="searchKey"
+          type="text"
+          placeholder="Search by key..."
+          class="search-input"
+        />
+        <info-icon class="search-icon" />
+      </div>
+      <card>
+        <vue-good-table
+          :columns="combinedSettingsCols"
+          :rows="filteredCombinedSettings"
+        style-class="vgt-table net-table"
+        :sort-options="{
+          enabled: true,
+          initialSortBy: { field: 'status', type: 'desc' },
+        }"
+      >
+        <template slot="table-row" slot-scope="props">
+          <div v-if="props.column.field === 'status'" class="status-container">
+            <span :class="['mini-bubble', { 'info': props.row.status === 'Constant' }]">
+              {{ props.row.status }}
+            </span>
+            <info-icon
+              v-if="props.row.extraInfo"
+              class="table-icon"
+              v-tooltip="props.row.extraInfo"
+            />
+          </div>
+          <span v-else>
+            {{ props.formattedRow[props.column.field] }}
+          </span>
+        </template>
+      </vue-good-table>
+      </card>
+    </div>
   </Page>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
 import { blockTime, runeCur } from '~/utils'
+import InfoIcon from '~/assets/images/info.svg?inline'
 
 export default {
+  components: {
+    InfoIcon,
+  },
   data() {
     return {
       networkConst: [],
       mimir: undefined,
+      combinedSettings: [],
+      combinedSettingsCols: [
+        { label: 'Key', field: 'key' },
+        { label: 'Value', field: 'value' },
+        { label: 'Status', field: 'status' },
+      ],
+      searchKey: '',
+      activeView: 'info',
+      navItems: [
+        { text: 'Settings Overview', mode: 'info' },
+        { text: 'Detailed Constants/Mimir', mode: 'table' }
+      ],
     }
   },
   head: {
@@ -331,27 +387,112 @@ export default {
         },
       ]
     },
+    filteredCombinedSettings() {
+      if (!this.searchKey) return this.combinedSettings;
+      return this.combinedSettings.filter(row =>
+        row.key.toLowerCase().includes(this.searchKey.toLowerCase())
+      );
+    },
   },
   mounted() {
-    this.$api
-      .getConstants()
-      .then((res) => {
-        this.networkConst = res.data
-      })
-      .catch((e) => {
-        console.error(e)
-      })
+    this.getNetworkData().then((data) => {
+      this.combinedSettings = data
+    })
+  },
+  methods: {
+    async getNetworkData() {
+      try {
+        const [constRes, mimirRes] = await Promise.all([
+          this.$api.getConstants(),
+          this.$api.getMimir(),
+        ])
 
-    this.$api
-      .getMimir()
-      .then((res) => {
-        this.mimir = res.data
-      })
-      .catch((e) => {
+        this.networkConst = constRes.data
+        this.mimir = mimirRes.data
+
+        // Create combined array of settings
+        const combinedSettings = []
+
+        // Add constants
+        if (this.networkConst?.int_64_values) {
+          for (const [key, value] of Object.entries(this.networkConst.int_64_values)) {
+            const parsedConstant = this.parseConstant(key)
+            console.log(parsedConstant)
+            combinedSettings.push({
+              ...parsedConstant,
+              status: parsedConstant.extraInfo ? 'Mimir' : 'Constant',
+              key: key.toUpperCase(),
+            })
+          }
+        }
+
+        // Add mimirs
+        if (this.mimir) {
+          for (const [key, value] of Object.entries(this.mimir)) {
+            if (!combinedSettings.find((s) => s.key === key)) {
+              combinedSettings.push({
+                name: key,
+                value,
+                status: 'Mimir',
+                key: key,
+              })
+            }
+          }
+        }
+
+        return combinedSettings
+      } catch (e) {
         console.error(e)
-      })
+        return []
+      }
+    },
   },
 }
 </script>
 
-<style></style>
+<style lang="scss" scoped>
+.status-container {
+  display: flex;
+  align-items: center;
+  gap: $space-8;
+}
+
+#vote-search-container {
+  display: flex;
+  position: relative;
+  flex: 1;
+  margin-bottom: $space-12;
+}
+
+.search-input {
+  flex: 1;
+  color: var(--sec-font-color);
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color) !important;
+  border-radius: $radius-sm;
+  outline: none;
+  padding: $space-12;
+  font-size: 1rem;
+  font-weight: 450;
+}
+
+.search-input:focus {
+  border-color: transparent;
+  box-shadow: 0 0 0 0.15rem rgba(255, 255, 255, 0.1);
+  color: var(--primary-color);
+}
+
+.search-icon {
+  position: absolute;
+  width: 20px;
+  height: 24px;
+  fill: var(--font-color);
+  right: 0.8rem;
+  top: calc(50% - 0.8rem);
+  cursor: pointer;
+  transition: fill 0.3s ease;
+  box-sizing: content-box;
+  background: var(--card-bg-color);
+  padding-left: 5px;
+}
+</style>

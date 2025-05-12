@@ -431,7 +431,7 @@ export default {
       }
     },
     camelCase(e) {
-      return e && e.replace(/([A-Z])/g, ' $1')
+      return e && e.replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2').replace(/([a-z])([A-Z])/g, '$1 $2')
     },
     parseConstant(key, options) {
       // make sure component has these data in it.
