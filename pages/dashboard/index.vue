@@ -585,11 +585,6 @@ export default {
           link: '/thorfi/tcy',
           items: [
             {
-              name: 'Price',
-              value: this.tcyInfo?.price || 0,
-              filter: (v) => this.$options.filters.currency(v),
-            },
-            {
               name: 'Claimed',
               value: this.tcyInfo?.claimed_info?.total,
               filter: (v) =>
