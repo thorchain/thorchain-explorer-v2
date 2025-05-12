@@ -1,6 +1,10 @@
 <template>
   <Page>
-    <Nav :active-mode.sync="activeView" :nav-items="navItems" pre-text="View:" />
+    <Nav
+      :active-mode.sync="activeView"
+      :nav-items="navItems"
+      pre-text="View:"
+    />
     <info-card v-if="activeView === 'info'" :options="networkSettings">
       <template #usd="{ item }">
         {{ item.filter(item.value) }}
@@ -8,7 +12,7 @@
       </template>
     </info-card>
 
-    <div v-else>
+    <div v-else class="constants-table">
       <div id="vote-search-container">
         <input
           v-model="searchKey"
@@ -16,34 +20,42 @@
           placeholder="Search by key..."
           class="search-input"
         />
-        <info-icon class="search-icon" />
+        <search-icon class="search-icon" />
       </div>
       <card>
         <vue-good-table
           :columns="combinedSettingsCols"
           :rows="filteredCombinedSettings"
-        style-class="vgt-table net-table"
-        :sort-options="{
-          enabled: true,
-          initialSortBy: { field: 'status', type: 'desc' },
-        }"
-      >
-        <template slot="table-row" slot-scope="props">
-          <div v-if="props.column.field === 'status'" class="status-container">
-            <span :class="['mini-bubble', { 'info': props.row.status === 'Constant' }]">
-              {{ props.row.status }}
+          style-class="vgt-table net-table"
+          :sort-options="{
+            enabled: true,
+            initialSortBy: { field: 'status', type: 'desc' },
+          }"
+        >
+          <template slot="table-row" slot-scope="props">
+            <div
+              v-if="props.column.field === 'status'"
+              class="status-container"
+            >
+              <span
+                :class="[
+                  'mini-bubble',
+                  { info: props.row.status === 'Constant' },
+                ]"
+              >
+                {{ props.row.status }}
+              </span>
+              <info-icon
+                v-if="props.row.extraInfo"
+                v-tooltip="props.row.extraInfo"
+                class="table-icon"
+              />
+            </div>
+            <span v-else>
+              {{ props.formattedRow[props.column.field] }}
             </span>
-            <info-icon
-              v-if="props.row.extraInfo"
-              class="table-icon"
-              v-tooltip="props.row.extraInfo"
-            />
-          </div>
-          <span v-else>
-            {{ props.formattedRow[props.column.field] }}
-          </span>
-        </template>
-      </vue-good-table>
+          </template>
+        </vue-good-table>
       </card>
     </div>
   </Page>
@@ -51,12 +63,14 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { blockTime, runeCur } from '~/utils'
+import { blockTime } from '~/utils'
 import InfoIcon from '~/assets/images/info.svg?inline'
+import SearchIcon from '~/assets/images/search.svg?inline'
 
 export default {
   components: {
     InfoIcon,
+    SearchIcon,
   },
   data() {
     return {
@@ -64,15 +78,20 @@ export default {
       mimir: undefined,
       combinedSettings: [],
       combinedSettingsCols: [
-        { label: 'Key', field: 'key' },
-        { label: 'Value', field: 'value' },
+        { label: 'Key', field: 'name' },
+        {
+          label: 'Value',
+          field: 'value',
+          tdClass: 'mono',
+          formatFn: (v) => (v ? this.normalFormat(v) : '0'),
+        },
         { label: 'Status', field: 'status' },
       ],
       searchKey: '',
       activeView: 'info',
       navItems: [
         { text: 'Settings Overview', mode: 'info' },
-        { text: 'Detailed Constants/Mimir', mode: 'table' }
+        { text: 'Detailed Constants/Mimir', mode: 'table' },
       ],
     }
   },
@@ -388,10 +407,10 @@ export default {
       ]
     },
     filteredCombinedSettings() {
-      if (!this.searchKey) return this.combinedSettings;
-      return this.combinedSettings.filter(row =>
+      if (!this.searchKey) return this.combinedSettings
+      return this.combinedSettings.filter((row) =>
         row.key.toLowerCase().includes(this.searchKey.toLowerCase())
-      );
+      )
     },
   },
   mounted() {
@@ -415,7 +434,9 @@ export default {
 
         // Add constants
         if (this.networkConst?.int_64_values) {
-          for (const [key, value] of Object.entries(this.networkConst.int_64_values)) {
+          for (const [key, value] of Object.entries(
+            this.networkConst.int_64_values
+          )) {
             const parsedConstant = this.parseConstant(key)
             console.log(parsedConstant)
             combinedSettings.push({
@@ -434,7 +455,7 @@ export default {
                 name: key,
                 value,
                 status: 'Mimir',
-                key: key,
+                key,
               })
             }
           }
@@ -460,8 +481,13 @@ export default {
 #vote-search-container {
   display: flex;
   position: relative;
-  flex: 1;
+  margin: 0 $space-10;
   margin-bottom: $space-12;
+
+  @include md {
+    margin: 0;
+    margin-bottom: $space-12;
+  }
 }
 
 .search-input {
