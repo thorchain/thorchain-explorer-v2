@@ -122,6 +122,12 @@
 import { mapGetters } from 'vuex'
 
 export default {
+  asyncData({ redirect }) {
+    if (process.env.NETWORK === 'mainnet') {
+      return
+    }
+    return redirect('/pools/main')
+  },
   data() {
     return {
       loading: false,
