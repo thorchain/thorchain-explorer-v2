@@ -443,6 +443,7 @@ export default {
       network: undefined,
       ui: undefined,
       volumeUSDData: undefined,
+      tcyInfo: undefined,
     }
   },
   head: {
@@ -454,6 +455,17 @@ export default {
       chainsHeight: 'getChainsHeight',
       theme: 'getTheme',
     }),
+    calculatedAPY() {
+      if (!this.tcyInfo || !this.runePrice) return 0
+
+      const lastWeekEarnings = this.tcyInfo.last_week_earnings
+      const tcySupply = this.tcyInfo.TCYSupply
+      const price = this.tcyInfo.price
+
+      return (
+        ((lastWeekEarnings / 1e8) * this.runePrice * 52) / tcySupply / price
+      )
+    },
     totalEarning24() {
       return this.earnings24USD + this.affiliateEarning
     },
@@ -566,6 +578,32 @@ export default {
             },
           ],
         },
+        {
+          title: 'TCY ',
+          rowStart: 5,
+          colSpan: 1,
+          link: '/thorfi/tcy',
+          items: [
+            {
+              name: 'Claimed',
+              value: this.tcyInfo?.claimed_info?.total,
+              filter: (v) =>
+                this.$options.filters.percent(v / 20660654128874864, 2),
+            },
+            {
+              name: 'Total Stakers',
+              value: this.tcyInfo?.staker_info?.total || 0,
+              filter: (v) =>
+                `${this.$options.filters.number(v / 1e8, '0,0.00a')} TCY`,
+              extraText: `$${this.$options.filters.number((this.tcyInfo?.staker_info.total / 1e8) * this.tcyInfo?.price, '0,0.00a')}`,
+            },
+            {
+              name: 'APR',
+              value: this.calculatedAPY || 0,
+              filter: (v) => this.$options.filters.percent(v, 2),
+            },
+          ],
+        },
       ]
     },
     statsSettings() {
@@ -635,6 +673,15 @@ export default {
     },
   },
   mounted() {
+    this.$api
+      .getTcyInfo()
+      .then(({ data }) => {
+        this.tcyInfo = data
+      })
+      .catch((error) => {
+        console.error('Error fetching TCY info:', error)
+      })
+
     this.$api
       .getDashboardData()
       .then(({ data }) => {
