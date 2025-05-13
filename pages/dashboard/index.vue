@@ -133,7 +133,7 @@
     </div>
     <div class="cards-container">
       <LatestBlocks :burned-blocks="burnedBlocks" />
-      <LatestTransactions></LatestTransactions>
+      <LatestTransactions :transactions="txs"></LatestTransactions>
     </div>
   </Page>
 </template>

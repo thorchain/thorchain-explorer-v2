@@ -63,6 +63,12 @@ import moment from 'moment'
 
 export default {
   name: 'LatestTransactions',
+  props: {
+    transactions: {
+      type: Array,
+      default: null,
+    },
+  },
   components: {
     BounceLoader,
     ArrowRightIcon,
@@ -74,18 +80,7 @@ export default {
       transactions: null,
     }
   },
-  mounted() {
-    this.fetchTransactions()
-  },
   methods: {
-    async fetchTransactions() {
-      try {
-        const { data } = await this.$api.getTxs()
-        this.transactions = data?.actions
-      } catch (error) {
-        console.error('Error fetching transactions:', error)
-      }
-    },
     showTx(txID) {
       if (
         txID ===
