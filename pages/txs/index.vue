@@ -138,6 +138,16 @@ export default {
       deep: true,
     },
   },
+  mounted() {
+    if (Object.keys(this.$route.query).length === 0) {
+      this.$router.replace({ 
+        query: {
+          asset: 'notrade',
+          type: 'swap,send',
+        }
+      })
+    }
+  },
   methods: {
     checkQuery(queries) {
       return pick(queries, [
@@ -175,14 +185,6 @@ export default {
       })
     },
     fetchData(params) {
-      if (Object.keys(params).length === 0) {
-        params = {
-          asset: 'notrade',
-          type: 'swap,send',
-        }
-        this.$router.replace({ query: params })
-        return
-      }
       this.loading = true
 
       const cleanParams = this.checkQuery(params)
