@@ -53,7 +53,7 @@
 </template>
 
 <script>
-import { isEqual, pick } from 'lodash'
+import { pick } from 'lodash'
 import advancedFilter from './components/advancedFilter.vue'
 import Transactions from '~/components/Transactions.vue'
 import CrossIcon from '~/assets/images/cross.svg?inline'
@@ -140,11 +140,11 @@ export default {
   },
   mounted() {
     if (Object.keys(this.$route.query).length === 0) {
-      this.$router.replace({ 
+      this.$router.replace({
         query: {
           asset: 'notrade',
           type: 'swap,send',
-        }
+        },
       })
     }
   },
