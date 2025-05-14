@@ -51,7 +51,6 @@
                 v-model="filters.fromHeight"
                 type="text"
                 placeholder="Enter fromHeight, press enter"
-                :disabled="isDateFilled"
               />
             </div>
             <div class="input-group">
@@ -61,7 +60,6 @@
                 v-model="filters.toHeight"
                 type="text"
                 placeholder="Enter toHeight, press enter"
-                :disabled="isDateFilled"
               />
             </div>
           </div>
@@ -151,6 +149,14 @@ export default {
       },
     }
   },
+  watch: {
+    '$route.query': {
+      handler(query) {
+        this.updateFiltersFromQuery(query)
+      },
+      immediate: true,
+    },
+  },
   computed: {
     filledFilterCount() {
       let count = 0
@@ -173,11 +179,6 @@ export default {
       return (
         this.filters.toHeight.trim() !== '' ||
         this.filters.fromHeight.trim() !== ''
-      )
-    },
-    isDateFilled() {
-      return (
-        this.filters.dateValue[0] !== null && this.filters.dateValue[1] !== null
       )
     },
     assets() {
@@ -219,50 +220,60 @@ export default {
 
     submitForm() {
       if (this.isFormValid()) {
-        this.$emit('applyFilters', this.filters)
-        this.showBadge = true
+        const query = this.prepareQueryParams()
+        this.$router.push({ query })
         this.toggleModal()
       }
     },
 
     resetForm() {
-      this.filters = {
-        addresses: [],
-        txId: [],
-        asset: [],
-        type: [],
-        txType: [],
-        affiliate: [],
-        toHeight: '',
-        fromHeight: '',
-        dateValue: [null, null],
-      }
-      this.submittedCount = this.filledFilterCount
-      this.$emit('clearfilter')
+      this.$router.push({ query: {} })
     },
 
-    resetFilter(filter) {
-      this.filters = {
-        addresses: [],
-        txId: [],
-        asset: [],
-        type: [],
-        txType: [],
-        affiliate: [],
-        toHeight: '',
-        fromHeight: '',
-        dateValue: [null, null],
-        ...filter,
+    prepareQueryParams() {
+      const query = {}
+
+      const arrayFilters = [
+        'addresses',
+        'txId',
+        'asset',
+        'type',
+        'txType',
+        'affiliate',
+      ]
+
+      arrayFilters.forEach((key) => {
+        if (this.filters[key]?.length > 0) {
+          query[key] = this.filters[key].filter(Boolean).join(',')
+        }
+      })
+
+      if (this.filters.fromHeight) {
+        query.fromHeight = this.filters.fromHeight.toString()
       }
-      this.submittedCount = this.filledFilterCount
+
+      if (this.filters.toHeight) {
+        query.toHeight = this.filters.toHeight.toString()
+      }
+
+      if (
+        this.filters.dateValue &&
+        this.filters.dateValue[0] &&
+        this.filters.dateValue[1]
+      ) {
+        query.fromTimestamp = Math.floor(
+          this.filters.dateValue[0] / 1000
+        ).toString()
+        query.timestamp = Math.floor(
+          this.filters.dateValue[1] / 1000
+        ).toString()
+      }
+
+      return query
     },
 
-    queryToFilter(query) {
-      const filters = {}
-      for (const k in query) {
-        filters[k] = query[k].split(',')
-      }
-      this.filters = {
+    updateFiltersFromQuery(query) {
+      const filters = {
         addresses: [],
         txId: [],
         asset: [],
@@ -272,8 +283,39 @@ export default {
         toHeight: '',
         fromHeight: '',
         dateValue: [null, null],
-        ...filters,
       }
+
+      const arrayFilters = [
+        'addresses',
+        'txId',
+        'asset',
+        'type',
+        'txType',
+        'affiliate',
+      ]
+
+      arrayFilters.forEach((key) => {
+        if (query[key]) {
+          filters[key] = query[key].split(',').map((item) => item.trim())
+        }
+      })
+
+      if (query.fromHeight) {
+        filters.fromHeight = query.fromHeight.toString()
+      }
+
+      if (query.toHeight) {
+        filters.toHeight = query.toHeight.toString()
+      }
+
+      if (query.fromTimestamp && query.timestamp) {
+        filters.dateValue = [
+          parseInt(query.fromTimestamp) * 1000,
+          parseInt(query.timestamp) * 1000,
+        ]
+      }
+
+      this.filters = filters
       this.submittedCount = this.filledFilterCount
     },
 
@@ -321,7 +363,24 @@ export default {
     },
 
     isFormValid() {
-      const valid =
+      if (
+        (this.filters.toHeight.trim() !== '' ||
+          this.filters.fromHeight.trim() !== '') &&
+        this.filters.dateValue?.length > 0 &&
+        this.filters.dateValue[0] !== null &&
+        this.filters.dateValue[1] !== null
+      ) {
+        return false
+      }
+      if (
+        (this.filters.fromHeight.trim() !== '' &&
+          isNaN(parseInt(this.filters.fromHeight))) ||
+        (this.filters.toHeight.trim() !== '' &&
+          isNaN(parseInt(this.filters.toHeight)))
+      ) {
+        return false
+      }
+      return (
         this.filters.addresses.length > 0 ||
         this.filters.txId.length > 0 ||
         this.filters.affiliate.length > 0 ||
@@ -330,16 +389,10 @@ export default {
         this.filters.txType.length > 0 ||
         this.filters.toHeight.trim() !== '' ||
         this.filters.fromHeight.trim() !== '' ||
-        (this.filters.dateValue.length > 0 && this.filters.dateValue[0] != null)
-
-      if (
-        (this.filters.toHeight.trim() !== '' ||
-          this.filters.fromHeight.trim() !== '') &&
-        this.filters.dateValue?.length > 0
+        (this.filters.dateValue?.length > 0 &&
+          this.filters.dateValue[0] !== null &&
+          this.filters.dateValue[1] !== null)
       )
-        return false
-
-      return valid
     },
   },
 }
