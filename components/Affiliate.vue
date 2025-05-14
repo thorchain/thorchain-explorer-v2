@@ -136,11 +136,11 @@ const defaultInterfaces = {
   },
   cacaoswap: {
     name: 'CacaoSwap',
-    icon: 'CacaoSwap',
+    icon: 'cacaoswap',
   },
   Leodex: {
     name: 'LeoDex',
-    icon: 'Leodex',
+    icon: 'Leodexicon',
   },
 }
 
