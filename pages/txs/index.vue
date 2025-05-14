@@ -16,11 +16,7 @@
           </div>
         </div>
 
-        <advanced-filter
-          ref="advancedFilter"
-          @applyFilters="applyFilters"
-          @clearfilter="clearFilters"
-        />
+        <advanced-filter ref="advancedFilter" />
       </div>
       <div v-if="showFilters" class="mobile-filter-modal">
         <div class="modal-content">
@@ -57,7 +53,7 @@
 </template>
 
 <script>
-import { isEqual, pick } from 'lodash'
+import { pick } from 'lodash'
 import advancedFilter from './components/advancedFilter.vue'
 import Transactions from '~/components/Transactions.vue'
 import CrossIcon from '~/assets/images/cross.svg?inline'
@@ -72,8 +68,6 @@ export default {
       limit: 30,
       nextPageToken: undefined,
       prevPageToken: undefined,
-      filters: {},
-      hasFilters: false,
       error: false,
       showFilters: false,
       filtersList: [
@@ -104,92 +98,55 @@ export default {
   },
   computed: {
     isLayerOne() {
-      if (this.filters && this.filters.asset) {
-        return (
-          isEqual(this.filters.asset, 'nosynth,notrade,norune') &&
-          isEqual(this.filters.type, 'swap')
-        )
-      }
-
-      return false
+      return (
+        this.$route.query.asset === 'nosynth,notrade,norune' &&
+        this.$route.query.type === 'swap'
+      )
     },
     isTrade() {
-      if (this.filters && this.filters.asset) {
-        return (
-          isEqual(this.filters.asset, 'trade') &&
-          isEqual(this.filters.type, 'swap')
-        )
-      }
-
-      return false
+      return (
+        this.$route.query.asset === 'trade' && this.$route.query.type === 'swap'
+      )
     },
     isSynth() {
-      if (this.filters && this.filters.asset) {
-        return (
-          isEqual(this.filters.asset, 'synth') &&
-          isEqual(this.filters.type, 'swap')
-        )
-      }
-
-      return false
+      return (
+        this.$route.query.asset === 'synth' && this.$route.query.type === 'swap'
+      )
     },
     isLP() {
-      if (this.filters && this.filters.type) {
-        return isEqual(this.filters.type, 'addLiquidity,withdraw')
-      }
-
-      return false
+      return this.$route.query.type === 'addLiquidity,withdraw'
     },
     isSend() {
-      if (this.filters && this.filters.type) {
-        return isEqual(this.filters.type, 'send')
-      }
-
-      return false
+      return this.$route.query.type === 'send'
     },
     isRefund() {
-      if (this.filters && this.filters.type) {
-        return isEqual(this.filters.type, 'refund')
-      }
-
-      return false
+      return this.$route.query.type === 'refund'
     },
     isAll() {
-      if (Object.keys(this.filters).length === 0) {
-        return true
-      }
-
-      return false
+      return Object.keys(this.$route.query).length === 0
     },
     isRunePool() {
-      if (this.filters && this.filters.type) {
-        return isEqual(this.filters.type, 'runePoolDeposit,runePoolWithdraw')
-      }
-
-      return false
+      return this.$route.query.type === 'runePoolDeposit,runePoolWithdraw'
     },
   },
-  watch: {},
+  watch: {
+    '$route.query': {
+      handler(query) {
+        this.fetchData(query)
+      },
+      immediate: true,
+      deep: true,
+    },
+  },
   mounted() {
-    const params = { ...this.$route.query }
-    if (!params.nextPageToken && this.nextPageToken) {
-      params.nextPageToken = this.nextPageToken
-    }
-    if (!params.prevPageToken && this.prevPageToken) {
-      params.prevPageToken = this.prevPageToken
-    }
-    if (Object.keys(params).length > 0) {
-      const query = this.checkQuery(params)
-      this.filters = query
-      this.$refs.advancedFilter.queryToFilter(query)
-      this.hasFilters = true
-    } else {
-      this.applyFilters({
-        asset: ['notrade'],
-        type: ['swap', 'send'],
+    if (Object.keys(this.$route.query).length === 0) {
+      this.$router.replace({
+        query: {
+          asset: 'notrade',
+          type: 'swap,send',
+        },
       })
     }
-    this.getActions({ limit: this.limit, ...params })
   },
   methods: {
     checkQuery(queries) {
@@ -203,84 +160,37 @@ export default {
         'type',
         'fromTimestamp',
         'timestamp',
+        'nextPageToken',
+        'prevPageToken',
       ])
     },
     goNext() {
       if (!this.nextPageToken) return
       this.$router.push({
-        path: '/txs',
         query: {
           ...this.$route.query,
           nextPageToken: this.nextPageToken,
           prevPageToken: undefined,
         },
       })
-      this.getActions({ limit: this.limit, nextPageToken: this.nextPageToken })
     },
     goPrev() {
       if (!this.prevPageToken) return
       this.$router.push({
-        path: '/txs',
         query: {
           ...this.$route.query,
           prevPageToken: this.prevPageToken,
           nextPageToken: undefined,
         },
       })
-      this.getActions({ limit: this.limit, prevPageToken: this.prevPageToken })
     },
-    applyFilters(params) {
-      const query = {
-        ...(params.asset &&
-          params.asset.length > 0 && { asset: params.asset.join(',') }),
-        ...(params.toHeight && { height: params.toHeight }),
-        ...(params.fromHeight && { fromHeight: params.fromHeight }),
-        ...(params.affiliate &&
-          params.affiliate.length > 0 && {
-            affiliate: params.affiliate.join(','),
-          }),
-        ...(params.addresses &&
-          params.addresses.length > 0 && {
-            address: params.addresses.join(','),
-          }),
-        ...(params.txType &&
-          params.txType.length > 0 && { txType: params.txType.join(',') }),
-        ...(params.type &&
-          params.type.length > 0 && { type: params.type.join(',') }),
-        ...(params.dateValue &&
-          params.dateValue[0] != null &&
-          params.dateValue[0] !== '' && {
-            fromTimestamp: params.dateValue[0] / 1e3,
-          }),
-        ...(params.dateValue &&
-          params.dateValue[1] != null &&
-          params.dateValue[1] !== '' && {
-            timestamp: params.dateValue[1] / 1e3,
-          }),
-      }
-
-      this.filters = query
-      this.$router.replace({ path: '/txs', query })
-      this.$refs.advancedFilter.resetFilter(params)
-      this.hasFilters = true
-      this.getActions({ limit: this.limit })
-    },
-    clearFilters() {
-      this.filters = {}
-      this.hasFilters = false
-      this.$router.replace({ path: '/txs' })
-      this.getActions({ limit: this.limit })
-    },
-    getActions(params) {
+    fetchData(params) {
       this.loading = true
-      if (this.hasFilters) {
-        params = {
-          ...params,
-          ...this.filters,
-        }
-      }
+
+      const cleanParams = this.checkQuery(params)
+
       this.$api
-        .getActions(params)
+        .getActions({ limit: this.limit, ...cleanParams })
         .then((res) => {
           this.txs = res.data
           this.nextPageToken = res.data.meta.nextPageToken
@@ -297,16 +207,12 @@ export default {
           console.error(error)
         })
     },
-    resetFilters() {
-      this.$refs.advancedFilter?.resetFilter({})
-      this.clearFilters()
-    },
     toggleModal() {
       this.showFilters = !this.showFilters
     },
     isActive(filter) {
       if (filter.label === 'All') {
-        return Object.keys(this.filters).length === 0
+        return Object.keys(this.$route.query).length === 0
       }
 
       const filterType = filter.filter.type
@@ -316,16 +222,26 @@ export default {
         ? filter.filter.asset.join(',')
         : null
 
-      const currentType = this.filters.type || null
-      const currentAsset = this.filters.asset || null
+      const currentType = this.$route.query.type || null
+      const currentAsset = this.$route.query.asset || null
 
       return filterType === currentType && filterAsset === currentAsset
     },
     applyFilter(filter) {
       if (filter.label === 'All') {
-        this.resetFilters()
+        this.$router.push({ query: {} })
       } else {
-        this.applyFilters(filter.filter)
+        const query = {}
+
+        if (filter.filter.type) {
+          query.type = filter.filter.type.join(',')
+        }
+
+        if (filter.filter.asset) {
+          query.asset = filter.filter.asset.join(',')
+        }
+
+        this.$router.push({ query })
       }
       this.showFilters = false
     },
