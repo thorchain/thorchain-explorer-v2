@@ -50,10 +50,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.stats-panel {
-  margin: 0;
-}
-
 .stats-summary {
   display: flex;
   align-items: center;
