@@ -134,9 +134,18 @@ const defaultInterfaces = {
     name: 'Eld',
     icon: 'eld',
   },
+  cacaoswap: {
+    name: 'CacaoSwap',
+    icon: 'cacaoswap',
+  },
+  Leodex: {
+    name: 'LeoDex',
+    icon: 'Leodex',
+  },
 }
 
 const defaultAffiliateMap = {
+  leo: defaultInterfaces.Leodex,
   td: defaultInterfaces.trustwallet,
   ti: defaultInterfaces.trustwallet,
   tr: defaultInterfaces.trustwallet,
@@ -181,6 +190,7 @@ const defaultAffiliateMap = {
   thor1xmaggkcln5m5fnha2780xrdrulmplvfrz6wj3l: defaultInterfaces.shapeshift,
   rj: defaultInterfaces.rujira,
   eld: defaultInterfaces.eld,
+  cs: defaultInterfaces.cacaoswap,
 }
 
 const newInterfaces = {
@@ -256,9 +266,23 @@ const newInterfaces = {
     name: 'One Key',
     icon: 'onekey',
   },
+  vultisig: {
+    name: 'Vultisig',
+    icon: 'vultisigicon',
+  },
+  cacaoswap: {
+    name: 'CacaoSwap',
+    icon: 'cacaoswapicon',
+  },
+  Leodex: {
+    name: 'LeoDex',
+    icon: 'Leodexicon',
+  },
 }
 
 const newAffiliateMap = {
+  leo: newInterfaces.Leodex,
+  cs: newInterfaces.cacaoswap,
   dx: newInterfaces.asgard,
   td: newInterfaces.trustwallet,
   te: newInterfaces.trustwallet,
@@ -285,6 +309,9 @@ const newAffiliateMap = {
   xdf: newInterfaces.xdefi,
   okw: newInterfaces.okx2,
   oky: newInterfaces.onekey2,
+  v0: newInterfaces.vultisig,
+  va: newInterfaces.vultisig,
+  vi: newInterfaces.vultisig,
 }
 
 export default {
@@ -388,6 +415,7 @@ export default {
 
     img {
       height: 1.2rem;
+      max-width: 78px;
     }
   }
 }
