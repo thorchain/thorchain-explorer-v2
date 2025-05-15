@@ -227,18 +227,23 @@ export default {
       }
 
       const sendActions = txs.actions.filter((a) => a.type === 'send').reverse()
-      const outAddress = new Set()
+      const outAddresses = new Set()
       for (let i = 0; i < sendActions.length; i++) {
-        const action = txs.actions[i]
-        if (action.in[0].address === this.owner) {
-          outAddress.add(action.out[0].address)
+        const action = sendActions[i]
+        const outAddress = action.out[0]?.address ?? undefined
+        if (!outAddress) {
+          continue
         }
 
-        if (action.out[0].address === this.owner) {
+        if (action.in[0].address === this.owner && outAddress) {
+          outAddresses.add(outAddress)
+        }
+
+        if (outAddress === this.owner) {
           const inAddress = action.in[0].address
           const inShort = inAddress.slice(0, 4) + inAddress.slice(-4)
 
-          outAddress.forEach((oa) => {
+          outAddresses.forEach((oa) => {
             const outShort = oa.slice(0, 4) + oa.slice(-4)
             if (inShort === outShort && oa !== inAddress) {
               hashes.push(action.in[0].txID)
