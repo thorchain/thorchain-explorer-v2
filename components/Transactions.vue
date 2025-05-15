@@ -66,15 +66,15 @@
             :class="[
               'direction-class',
               {
-                green: props.row.direction === 'IN' && !props.row.isScam,
-                yellow: props.row.direction === 'OUT' && !props.row.isScam,
+                green: props.row.direction === 'IN',
+                yellow: props.row.direction === 'OUT',
                 gray: props.row.direction === 'SELF',
-                'scam-out': props.row.direction === 'OUT' && props.row.isScam,
+                scam: props.row.isScam,
               },
             ]"
           >
             <span>
-              <span v-if="props.row.direction === 'OUT' && props.row.isScam">
+              <span v-if="props.row.isScam">
                 <alert-icon />
               </span>
               <span v-else>{{ props.row.direction }}</span>
@@ -220,102 +220,68 @@ export default {
     },
   },
   methods: {
-    checkForScamAddresses(txs) {
-      const owner = this.owner
+    checkSuspiciousTxs(txs) {
+      const sendActions = txs.actions.filter((a) => a.type === 'send').reverse()
+      const outAddress = new Set()
+      const hashes = []
+      for (let i = 0; i < sendActions.length; i++) {
+        const action = txs.actions[i]
+        if (action.in[0].address === this.owner) {
+          outAddress.add(action.out[0].address)
+        }
 
-      const outAddresses = [
-        ...new Set(
-          txs.actions
-            .filter((tx) => {
-              const fromAddr = tx.in?.find((e) => e.address)?.address
-              return fromAddr === owner
-            })
-            .flatMap((tx) =>
-              (tx.out || [])
-                .filter((e) => !e.affiliate && e.address)
-                .map((e) => e.address)
-            )
-        ),
-      ]
+        if (action.out[0].address === this.owner) {
+          const inAddress = action.in[0].address
+          const inShort = inAddress.slice(0, 4) + inAddress.slice(-4)
 
-      const inAddresses = [
-        ...new Set(
-          txs.actions.flatMap((tx) =>
-            (tx.in || []).filter((e) => e.address).map((e) => e.address)
-          )
-        ),
-      ]
-
-      const patternMap = {}
-
-      outAddresses.forEach((outAddr) => {
-        if (!outAddr) return
-
-        const outPattern = outAddr.slice(0, 4) + outAddr.slice(-4)
-
-        inAddresses.forEach((inAddr) => {
-          if (!inAddr) return
-
-          const inPattern = inAddr.slice(0, 4) + inAddr.slice(-4)
-
-          if (outPattern === inPattern && outAddr !== inAddr) {
-            if (!patternMap[outPattern]) {
-              patternMap[outPattern] = {
-                out: new Set(),
-                in: new Set(),
-              }
+          outAddress.forEach((oa) => {
+            const outShort = oa.slice(0, 4) + oa.slice(-4)
+            if (inShort === outShort && oa !== inAddress) {
+              hashes.push(action.in[0].txID)
             }
-            patternMap[outPattern].out.add(outAddr)
-            patternMap[outPattern].in.add(inAddr)
-          }
-        })
-      })
+          })
+        }
+      }
 
-      const scamPatterns = Object.entries(patternMap).map(
-        ([pattern, addresses]) => ({
-          pattern,
-          outAddresses: Array.from(addresses.out),
-          inAddresses: Array.from(addresses.in),
-        })
-      )
-
-      return scamPatterns
+      return hashes
     },
-
+    getDirection(fromAddr, toAddr) {
+      if (fromAddr === toAddr) {
+        return 'SELF'
+      }
+      if (this.owner === fromAddr) {
+        return 'OUT'
+      }
+      return 'IN'
+    },
     formatActions(txs) {
-      const scamPatterns = this.checkForScamAddresses(txs)
+      const actions = []
+      if (!txs || txs.actions?.length === 0) {
+        return actions
+      }
 
-      const ret = txs.actions.map((t) => {
+      const suspiciousTxs = this.checkSuspiciousTxs(txs)
+
+      for (let i = 0; i < txs?.actions?.length; i++) {
+        const t = txs?.actions[i]
         const fromAddr = t.in?.find((e) => e.address)?.address || ''
         const toAddr =
           t.out?.find((e) => !e.affiliate && e.address)?.address || ''
+        const direction = this.getDirection(fromAddr, toAddr)
 
-        const isScam = scamPatterns.some(
-          (pattern) =>
-            pattern.outAddresses.includes(toAddr) ||
-            pattern.inAddresses.includes(toAddr) ||
-            pattern.outAddresses.includes(fromAddr) ||
-            pattern.inAddresses.includes(fromAddr)
-        )
-
-        return {
+        actions.push({
           ...t,
           hash:
             t.in.find((e) => e.txID)?.txID || t.out.find((e) => e.txID)?.txID,
           age: t.date,
           from: fromAddr,
           to: toAddr,
-          direction:
-            fromAddr === toAddr
-              ? 'SELF'
-              : this.owner === fromAddr
-                ? 'OUT'
-                : 'IN',
-          isScam,
-        }
-      })
+          direction,
+          isScam: suspiciousTxs.includes(t.in.find((e) => e.txID)?.txID),
+        })
+      }
 
-      return ret
+      return actions
     },
     setHoveredAddress(address) {
       this.hoveredAddress = address
@@ -503,11 +469,12 @@ export default {
   @include lg {
     padding: $space-6 $space-0;
   }
-&.scam-out {
-  color: #f50404;
-  background-color: rgba(230, 36, 34, 0.2) !important;
-  border: 1px solid rgba(255, 99, 97, 1) !important;
-}
+
+  &.scam {
+    color: #f50404 !important;
+    background-color: rgba(230, 36, 34, 0.2) !important;
+    border: 1px solid rgba(255, 99, 97, 1) !important;
+  }
 
   &.gray {
     color: rgba(var(--bs-secondary-rgb), var(--bs-text-opacity));
