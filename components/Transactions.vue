@@ -221,9 +221,13 @@ export default {
   },
   methods: {
     checkSuspiciousTxs(txs) {
+      const hashes = []
+      if (this.owner === undefined) {
+        return hashes
+      }
+
       const sendActions = txs.actions.filter((a) => a.type === 'send').reverse()
       const outAddress = new Set()
-      const hashes = []
       for (let i = 0; i < sendActions.length; i++) {
         const action = txs.actions[i]
         if (action.in[0].address === this.owner) {
