@@ -197,7 +197,7 @@ export default {
   name: 'BalanceScale',
   data() {
     return {
-      securityBudgetBottomTwoThirds: undefined,
+      securityBudget: undefined,
       effectiveBond: undefined,
       totalSecuredValue: undefined,
       adjustedSecuredTotal: undefined,
@@ -266,10 +266,10 @@ export default {
   methods: {
     async loadData() {
       try {
+        await this.loadMimirData()
         await Promise.all([
           this.loadPoolsData(),
           this.loadNodesData(),
-          this.loadMimirData(),
           this.fetchVaultData(),
         ])
         this.calculateValues()
@@ -336,26 +336,26 @@ export default {
         const cutoffIndex = Math.floor(activeNodes.length / 3)
         const bottomTwoThirdsNodes = activeNodes.slice(cutoffIndex)
 
-        this.securityBudgetBottomTwoThirds = bottomTwoThirdsNodes.reduce(
+        const securityBudgetBottomTwoThirds = bottomTwoThirdsNodes.reduce(
           (sum, node) => sum + Number(node.total_bond) / 1e8,
           0
         )
 
+        const totalBond = activeNodes.reduce(
+          (sum, node) => sum + Number(node.total_bond) / 1e8,
+          0
+        )
+
+        this.securityBudget = securityBudgetBottomTwoThirds
         if (this.tvlBasisPoints > 0) {
           this.securityBudgetInfo = `Effective Bond is at ${this.tvlBasisPoints / 100}% TVL Basis Point`
-          this.securityBudgetBottomTwoThirds = activeNodes.reduce(
-            (sum, node) => sum + Number(node.total_bond) / 1e8,
-            0
-          )
+          this.securityBudget = totalBond
         }
 
         if (this.pendulumUseEffectiveSecurity === 1) {
-          this.effectiveBond = this.securityBudgetBottomTwoThirds
+          this.effectiveBond = securityBudgetBottomTwoThirds
         } else {
-          this.effectiveBond = activeNodes.reduce(
-            (sum, node) => sum + Number(node.total_bond) / 1e8,
-            0
-          )
+          this.effectiveBond = totalBond
         }
       } catch (error) {
         console.error('Error fetching nodes data:', error)
@@ -396,7 +396,7 @@ export default {
         (this.effectiveBond - this.adjustedSecuredTotal) / this.effectiveBond
       this.nodeShare = 1 - this.poolShare
 
-      this.securityDelta = this.effectiveBond - this.totalVaultValue
+      this.securityDelta = this.securityBudget - this.totalVaultValue
 
       const nodeSharePct = this.nodeShare * 100
       if (Math.abs(nodeSharePct - 50) < 10) {
@@ -442,9 +442,9 @@ export default {
         },
         {
           name: 'Security Budget',
-          value: `${this.$options.filters.number(this.securityBudgetBottomTwoThirds, '0.00a')} ${this.runeCur()}`,
+          value: `${this.$options.filters.number(this.securityBudget, '0.00a')} ${this.runeCur()}`,
           extraText: this.$options.filters.currency(
-            this.securityBudgetBottomTwoThirds * this.runePrice
+            this.securityBudget * this.runePrice
           ),
           description: this.securityBudgetInfo,
         },
