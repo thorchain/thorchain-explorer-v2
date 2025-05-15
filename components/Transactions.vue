@@ -8,83 +8,93 @@
       style-class="vgt-table net-table"
     >
       <template slot="table-row" slot-scope="props">
-        <div
-          v-if="props.column.field == 'hash' || props.column.field === 'from'"
-          class="flex-cell-content-tx"
-        >
-          <div v-if="props.column.field === 'from'" class="from-address">
-            <div class="address-direction">
-              <send-icon class="send-icon" />
-              <Address
-                :param="props.row[props.column.field]"
-                :hovered-address="hoveredAddress"
-                :disable="owner && owner === props.row[props.column.field]"
-                @setHovered="setHoveredAddress"
-                @removeHovered="removeHoveredAddress"
-              />
-            </div>
-          </div>
-          <Hash
-            v-if="props.column.field === 'hash'"
-            :param="props.row[props.column.field]"
-          />
+        <div :class="{ 'scam-disabled': props.row.isScam }">
           <div
-            v-if="props.column.field === 'from' && props.row.to"
-            class="to-address"
+            v-if="props.column.field == 'hash' || props.column.field === 'from'"
+            class="flex-cell-content-tx"
           >
-            <div class="address-direction">
-              <receive-icon class="send-icon" />
-              <Address
-                :param="props.row.to"
-                :hovered-address="hoveredAddress"
-                :disable="owner && owner === props.row.to"
-                @setHovered="setHoveredAddress"
-                @removeHovered="removeHoveredAddress"
-              />
+            <div v-if="props.column.field === 'from'" class="from-address">
+              <div class="address-direction">
+                <send-icon class="send-icon" />
+                <Address
+                  :param="props.row[props.column.field]"
+                  :hovered-address="hoveredAddress"
+                  :disable="owner && owner === props.row[props.column.field]"
+                  @setHovered="setHoveredAddress"
+                  @removeHovered="removeHoveredAddress"
+                />
+              </div>
+            </div>
+            <Hash
+              v-if="props.column.field === 'hash'"
+              :param="props.row[props.column.field]"
+            />
+            <div
+              v-if="props.column.field === 'from' && props.row.to"
+              class="to-address"
+            >
+              <div class="address-direction">
+                <receive-icon class="send-icon" />
+                <Address
+                  :param="props.row.to"
+                  :hovered-address="hoveredAddress"
+                  :disable="owner && owner === props.row.to"
+                  @setHovered="setHoveredAddress"
+                  @removeHovered="removeHoveredAddress"
+                />
+              </div>
             </div>
           </div>
-        </div>
-        <div v-else-if="props.column.field === 'type'" class="type">
-          <transaction-status
-            :row="props.row"
-            :hovered-type="hoveredType"
-            @setHoveredType="setHoveredType"
-            @removeHoveredType="removeHoveredType"
-          />
-        </div>
-        <div v-else-if="props.column.field === 'height'">
-          <nuxt-link class="clickable" :to="`/block/${props.row.height}`">
-            {{ props.formattedRow[props.column.field] }}
-          </nuxt-link>
-        </div>
-        <div v-else-if="props.column.field === 'action'">
-          <transaction-action :row="props.row"></transaction-action>
-        </div>
-        <div
-          v-else-if="props.column.field === 'direction'"
-          :class="{
-            'direction-class green': props.row.direction === 'IN',
-            'direction-class yellow': props.row.direction === 'OUT',
-            'direction-class gray': props.row.direction === 'SELF',
-          }"
-          class="direction-class"
-        >
-          <span>{{ props.row.direction }}</span>
-        </div>
+          <div v-else-if="props.column.field === 'type'" class="type">
+            <transaction-status
+              :row="props.row"
+              :hovered-type="hoveredType"
+              @setHoveredType="setHoveredType"
+              @removeHoveredType="removeHoveredType"
+            />
+          </div>
+          <div v-else-if="props.column.field === 'height'">
+            <nuxt-link class="clickable" :to="`/block/${props.row.height}`">
+              {{ props.formattedRow[props.column.field] }}
+            </nuxt-link>
+          </div>
+          <div v-else-if="props.column.field === 'action'">
+            <transaction-action :row="props.row"></transaction-action>
+          </div>
+          <div
+            v-else-if="props.column.field === 'direction'"
+            :class="[
+              'direction-class',
+              {
+                green: props.row.direction === 'IN',
+                yellow: props.row.direction === 'OUT',
+                gray: props.row.direction === 'SELF',
+                scam: props.row.isScam,
+              },
+            ]"
+          >
+            <span>
+              <span v-if="props.row.isScam">
+                <alert-icon />
+              </span>
+              <span v-else>{{ props.row.direction }}</span>
+            </span>
+          </div>
 
-        <div
-          v-else-if="props.column.field === 'age'"
-          v-tooltip="getTime(props.row.age)"
-          class="hoverable"
-        >
-          {{ props.formattedRow[props.column.field] }}
+          <div
+            v-else-if="props.column.field === 'age'"
+            v-tooltip="getTime(props.row.age)"
+            class="hoverable"
+          >
+            {{ props.formattedRow[props.column.field] }}
+          </div>
+          <template v-else-if="props.column.field === 'volume'">
+            <slot :name="props.column.field" :props="props"></slot>
+          </template>
+          <span v-else>
+            {{ props.formattedRow[props.column.field] }}
+          </span>
         </div>
-        <template v-else-if="props.column.field === 'volume'">
-          <slot :name="props.column.field" :props="props"></slot>
-        </template>
-        <span v-else>
-          {{ props.formattedRow[props.column.field] }}
-        </span>
       </template>
     </vue-good-table>
   </card>
@@ -97,6 +107,7 @@ import TransactionAction from './transactions/TransactionAction.vue'
 import Address from './transactions/Address.vue'
 import Hash from './transactions/Hash.vue'
 import sendIcon from '~/assets/images/send.svg?inline'
+import alertIcon from '~/assets/images/alert.svg?inline'
 import receiveIcon from '~/assets/images/receive.svg?inline'
 import { AssetImage } from '~/classes/assetImage'
 
@@ -108,6 +119,7 @@ export default {
     Hash,
     sendIcon,
     receiveIcon,
+    alertIcon,
   },
   filters: {
     shortSymbol(assetStr) {
@@ -208,28 +220,72 @@ export default {
     },
   },
   methods: {
+    checkSuspiciousTxs(txs) {
+      const hashes = []
+      if (this.owner === undefined) {
+        return hashes
+      }
+
+      const sendActions = txs.actions.filter((a) => a.type === 'send').reverse()
+      const outAddress = new Set()
+      for (let i = 0; i < sendActions.length; i++) {
+        const action = txs.actions[i]
+        if (action.in[0].address === this.owner) {
+          outAddress.add(action.out[0].address)
+        }
+
+        if (action.out[0].address === this.owner) {
+          const inAddress = action.in[0].address
+          const inShort = inAddress.slice(0, 4) + inAddress.slice(-4)
+
+          outAddress.forEach((oa) => {
+            const outShort = oa.slice(0, 4) + oa.slice(-4)
+            if (inShort === outShort && oa !== inAddress) {
+              hashes.push(action.in[0].txID)
+            }
+          })
+        }
+      }
+
+      return hashes
+    },
+    getDirection(fromAddr, toAddr) {
+      if (fromAddr === toAddr) {
+        return 'SELF'
+      }
+      if (this.owner === fromAddr) {
+        return 'OUT'
+      }
+      return 'IN'
+    },
     formatActions(txs) {
-      const ret = txs.actions.map((t) => {
+      const actions = []
+      if (!txs || txs.actions?.length === 0) {
+        return actions
+      }
+
+      const suspiciousTxs = this.checkSuspiciousTxs(txs)
+
+      for (let i = 0; i < txs?.actions?.length; i++) {
+        const t = txs?.actions[i]
         const fromAddr = t.in?.find((e) => e.address)?.address || ''
         const toAddr =
           t.out?.find((e) => !e.affiliate && e.address)?.address || ''
-        return {
+        const direction = this.getDirection(fromAddr, toAddr)
+
+        actions.push({
           ...t,
           hash:
             t.in.find((e) => e.txID)?.txID || t.out.find((e) => e.txID)?.txID,
           age: t.date,
           from: fromAddr,
           to: toAddr,
-          direction:
-            fromAddr === toAddr
-              ? 'SELF'
-              : this.owner === fromAddr
-                ? 'OUT'
-                : 'IN',
-        }
-      })
+          direction,
+          isScam: suspiciousTxs.includes(t.in.find((e) => e.txID)?.txID),
+        })
+      }
 
-      return ret
+      return actions
     },
     setHoveredAddress(address) {
       this.hoveredAddress = address
@@ -274,6 +330,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.scam-disabled {
+  opacity: 0.2;
+}
 .loading {
   height: 10rem;
   align-items: center;
@@ -413,6 +472,12 @@ export default {
 
   @include lg {
     padding: $space-6 $space-0;
+  }
+
+  &.scam {
+    color: #f50404 !important;
+    background-color: rgba(230, 36, 34, 0.2) !important;
+    border: 1px solid rgba(255, 99, 97, 1) !important;
   }
 
   &.gray {
