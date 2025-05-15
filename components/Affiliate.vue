@@ -140,7 +140,7 @@ const defaultInterfaces = {
   },
   Leodex: {
     name: 'LeoDex',
-    icon: 'Leodexicon',
+    icon: 'Leodex',
   },
 }
 
@@ -415,6 +415,7 @@ export default {
 
     img {
       height: 1.2rem;
+      max-width: 78px;
     }
   }
 }
