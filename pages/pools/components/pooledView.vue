@@ -168,6 +168,7 @@ export default {
           earningsAPR: 0,
           swapCount: 0,
           avgFee: 0,
+          liquidityFees: 0,
         },
         week: {
           volume: 0,
@@ -175,6 +176,7 @@ export default {
           earningsAPR: 0,
           swapCount: 0,
           avgFee: 0,
+          liquidityFees: 0,
         },
         month: {
           volume: 0,
@@ -182,6 +184,7 @@ export default {
           earningsAPR: 0,
           swapCount: 0,
           avgFee: 0,
+          liquidityFees: 0,
         },
         year: {
           volume: 0,
@@ -189,6 +192,7 @@ export default {
           earningsAPR: 0,
           swapCount: 0,
           avgFee: 0,
+          liquidityFees: 0,
         },
       },
     }
@@ -242,10 +246,12 @@ export default {
           this.totalInfo[period].earnings +=
             (+p.earnings * this.runePrice) / 1e8
           this.totalInfo[period].swapCount += +p.swapCount
+          this.totalInfo[period].liquidityFees +=
+            +p.totalLiquidityFeesRune / 1e8
         })
 
         const ve =
-          this.totalInfo[period].earnings / this.totalInfo[period].volume
+          this.totalInfo[period].liquidityFees / this.totalInfo[period].volume
         const ep = this.totalInfo[period].earnings / this.totalInfo.pooled
 
         this.totalInfo[period].earningsAPR = ep * ppy
