@@ -40,7 +40,7 @@
         <span class="title"
           >24hr Fee Ratio:
           <unknown-icon
-            v-tooltip="'Average Fee in basis point (Earnings / Volume)'"
+            v-tooltip="'Average Fee in basis point (Fees / Volume)'"
             class="header-icon"
           />
         </span>
