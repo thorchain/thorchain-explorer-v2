@@ -26,7 +26,7 @@
         :columns="distributionsColumns"
         :rows="distribution && distribution.distributions"
         :line-numbers="true"
-        max-height="400px"
+        max-height="200px"
         style-class="vgt-table net-table vgt-compact"
         :sort-options="{
           enabled: true,
