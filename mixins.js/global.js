@@ -431,7 +431,12 @@ export default {
       }
     },
     camelCase(e) {
-      return e && e.replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2').replace(/([a-z])([A-Z])/g, '$1 $2')
+      return (
+        e &&
+        e
+          .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
+          .replace(/([a-z])([A-Z])/g, '$1 $2')
+      )
     },
     parseConstant(key, options) {
       // make sure component has these data in it.
@@ -492,6 +497,11 @@ export default {
     },
     createColor(hash) {
       return colorHash.hex(hash)
+    },
+    parseCosmosAsset(casset) {
+      const firstAsset = casset.split(',')[0]
+      const match = firstAsset.match(/[a-zA-Z.]+/)
+      return match ? match[0].toUpperCase() : casset
     },
     parseMemo(memo) {
       // Driven from track repo

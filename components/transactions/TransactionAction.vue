@@ -372,10 +372,32 @@
     </div>
 
     <div
-      v-else-if="row && type === 'contract'"
+      v-else-if="row && type === 'contract' && row.metadata.contract"
       :class="['action-cell', { 'no-border': noBorder, wrap: wrap }]"
     >
-      <span>
+      <template
+        v-if="
+          row.metadata.contract.contractType === 'wasm-rujira-merge/deposit'
+        "
+      >
+        <div class="asset-cell">
+          <asset-icon
+            :height="'1.2rem'"
+            :asset="parseCosmosAsset(row.metadata.contract.funds)"
+          />
+          <span class="asset-name">{{
+            decimalFormat(row.metadata.contract.attributes.amount / 1e8)
+          }}</span>
+        </div>
+        <right-arrow class="action-type" />
+        <div class="asset-cell">
+          <asset-icon :height="'1.2rem'" :asset="'THOR.RUJI'" />
+          <span class="asset-name">{{
+            decimalFormat(row.metadata.contract.attributes.shares / 1e8)
+          }}</span>
+        </div>
+      </template>
+      <span v-else>
         {{ row.metadata.contract.contractType }}
       </span>
     </div>

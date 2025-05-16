@@ -103,7 +103,7 @@ export default {
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
-    width: 80px;
+    width: 90px;
     justify-content: center;
     cursor: pointer;
 
@@ -164,7 +164,7 @@ export default {
     overflow: hidden;
     text-overflow: ellipsis;
     font-weight: bold;
-    font-size: $font-size-xs;
+    font-size: $font-size-xxs;
     line-height: 0.875rem;
     white-space: nowrap;
   }

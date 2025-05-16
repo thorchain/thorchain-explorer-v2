@@ -90,6 +90,11 @@ export default {
         { label: 'Send', filter: { type: ['send'] } },
         { label: 'Refund', filter: { type: ['refund'] } },
         { label: 'Switch', filter: { type: ['switch'] } },
+        { label: 'Contract', filter: { type: ['contract'] } },
+        {
+          label: 'TCY',
+          filter: { type: ['tcy_claim', 'tcy_stake', 'tcy_unstake'] },
+        },
       ],
     }
   },
@@ -127,6 +132,9 @@ export default {
     },
     isRunePool() {
       return this.$route.query.type === 'runePoolDeposit,runePoolWithdraw'
+    },
+    isContract() {
+      return this.$route.query.type === 'contract'
     },
   },
   watch: {
