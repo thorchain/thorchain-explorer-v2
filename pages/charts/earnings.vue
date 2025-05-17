@@ -30,7 +30,10 @@
             @click="selectOption(pool)"
           >
             <asset-icon
-              v-if="!['income_burn', 'dev_fund_reward'].includes(pool)"
+              v-if="
+                !['income_burn', 'dev_fund_reward'].includes(pool) &&
+                isValidAsset(pool)
+              "
               :asset="pool"
               class="asset-icon"
             />
@@ -139,6 +142,7 @@ export default {
       ],
       earningsData: null,
       fullDataCache: null,
+      isDividedByAvgNodeCount: false,
     }
   },
   computed: {
@@ -148,7 +152,13 @@ export default {
     filteredPools() {
       const specialPools = ['income_burn', 'dev_fund_reward']
       const normalPools = Array.isArray(this.pools)
-        ? this.pools.filter((pool) => !specialPools.includes(pool))
+        ? this.pools.filter(
+            (pool) =>
+              pool &&
+              typeof pool === 'string' &&
+              !specialPools.includes(pool) &&
+              this.isValidAsset(pool)
+          )
         : []
       return [...normalPools, ...specialPools]
     },
@@ -218,12 +228,25 @@ export default {
 
         const latestInterval =
           this.fullDataCache.intervals[this.fullDataCache.intervals.length - 1]
-        this.pools = latestInterval.pools.map((pool) => pool.pool)
+
+        this.pools = latestInterval?.pools
+          ? latestInterval.pools
+              .map((pool) => pool?.pool)
+              .filter(
+                (pool) =>
+                  pool && typeof pool === 'string' && this.isValidAsset(pool)
+              )
+          : []
 
         this.filterDataByPeriod(this.chartPeriod)
       } catch (error) {
         console.error('Error fetching earnings data:', error)
+        this.pools = []
       }
+    },
+    isValidAsset(assetStr) {
+      if (!assetStr) return false
+      return assetStr.includes('.')
     },
 
     filterDataByPeriod(period) {
