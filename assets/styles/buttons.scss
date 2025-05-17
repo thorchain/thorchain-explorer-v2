@@ -1,14 +1,15 @@
 .button-container {
-    background: var(--card-bg-color);
-    border-radius: $radius-lg;
-    border: 1px solid var(--border-color);
-    font-size: $font-size-s;
-    padding: $space-8 $space-16;
-    cursor: pointer;
-    color: var(--sec-font-color);
-  
-    &:hover {
-      color: var(--primary-color);
-      background-color: var(--darker-bg);
-    }
+  background: var(--card-bg-color);
+  border-radius: $radius-lg;
+  border: 1px solid var(--border-color);
+  font-size: $font-size-s;
+  padding: $space-8 $space-16;
+  cursor: pointer;
+  color: var(--sec-font-color);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--primary-color);
+    background-color: var(--darker-bg);
   }
+}

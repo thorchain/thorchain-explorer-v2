@@ -66,12 +66,21 @@
         </span>
         <br />
         <br />
-        <div
-          class="button-more"
-          href="https://rujira.network/merge/KUJI"
-          target="_blank"
-        >
-          More Info
+        <div class="button-more">
+          <div
+            class="button-container"
+            href="https://rujira.network/merge/KUJI"
+            target="_blank"
+          >
+            More Info
+          </div>
+          <nuxt-link
+            class="button-container"
+            to="/address/thor14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s3p2nzy"
+            target="_blank"
+          >
+            Merge Contract Txs
+          </nuxt-link>
         </div>
       </Card>
     </div>
@@ -267,14 +276,9 @@ export default {
 th.end .table-asset {
   justify-content: flex-end;
 }
+
 .button-more {
-  background-color: transparent;
-  color: var(--sec-font-color);
-  padding: $space-8;
-  border: 1px solid var(--border-color);
-  border-radius: $space-8;
-  cursor: pointer;
-  width: fit-content;
-  font-size: $font-size-xs;
+  display: flex;
+  gap: 8px;
 }
 </style>
