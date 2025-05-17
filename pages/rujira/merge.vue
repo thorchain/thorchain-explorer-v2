@@ -67,13 +67,13 @@
         <br />
         <br />
         <div class="button-more">
-          <div
+          <a
             class="button-container"
             href="https://rujira.network/merge/KUJI"
             target="_blank"
           >
             More Info
-          </div>
+          </a>
           <nuxt-link
             class="button-container"
             to="/address/thor14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s3p2nzy"
