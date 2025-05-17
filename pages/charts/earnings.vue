@@ -213,18 +213,14 @@ export default {
   methods: {
     async loadInitialData() {
       try {
-        const [weeklyData, dailyData] = await Promise.all([
-          earnings('week', 100),
-          earnings('day', 365),
-        ])
+        const isWeekly = this.chartPeriod.includes('w')
+        const interval = isWeekly ? 'week' : 'day'
+        const count = this.getCountFromPeriod(this.chartPeriod)
 
-        this.fullDataCache = {
-          ...weeklyData.data,
-          intervals: [
-            ...weeklyData.data.intervals,
-            ...dailyData.data.intervals,
-          ],
-        }
+        const response = await earnings(interval, count)
+
+        this.fullDataCache = response.data
+        this.chartInterval = interval
 
         const latestInterval =
           this.fullDataCache.intervals[this.fullDataCache.intervals.length - 1]
@@ -238,7 +234,7 @@ export default {
               )
           : []
 
-        this.filterDataByPeriod(this.chartPeriod)
+        this.filterDataByPeriod(this.chartPeriod, false)
       } catch (error) {
         console.error('Error fetching earnings data:', error)
         this.pools = []
@@ -249,8 +245,17 @@ export default {
       return assetStr.includes('.')
     },
 
-    filterDataByPeriod(period) {
+    filterDataByPeriod(period, intervalChange = true) {
       if (!this.fullDataCache) return
+
+      const isWeekly = period.includes('w')
+      const newInterval = isWeekly ? 'week' : 'day'
+
+      if (intervalChange && newInterval !== this.chartInterval) {
+        this.chartInterval = newInterval
+        this.loadInitialData()
+        return
+      }
 
       const count = this.getCountFromPeriod(period)
 
@@ -321,7 +326,7 @@ export default {
         )
 
         if (selectedPool === 'All') {
-          const liquidity = +interval.earnings * +interval.runePriceUSD
+          const liquidity = +interval.liquidityEarnings * +interval.runePriceUSD
           const bonding = interval.bondingEarnings
             ? +interval.bondingEarnings * +interval.runePriceUSD
             : 0
@@ -398,23 +403,23 @@ export default {
           if (!params || !Array.isArray(params) || params.length === 0)
             return ''
           return `
-          <div class="tooltip-header">${params[0].name}</div>
-          <div class="tooltip-body">
-            ${params
-              .map(
-                (p) => `
-              <span>
-                <div class="tooltip-item">
-                  <div class="data-color" style="background-color: ${p.color}"></div>
-                  <span style="text-align: left;">${p.seriesName}</span>
-                </div>
-                <b>$${this.$options.filters.number(p.value, '0,0.00a')}</b>
-              </span>
-            `
-              )
-              .join('')}
-          </div>
+      <div class="tooltip-header">${params[0].name}</div>
+      <div class="tooltip-body">
+        ${params
+          .map(
+            (p) => `
+          <span>
+            <div class="tooltip-item">
+              <div class="data-color" style="background-color: ${p.color}"></div>
+              <span style="text-align: left;">${p.seriesName}</span>
+            </div>
+            <b>$${this.$options.filters.number(p.value, '0,0.00a')}</b>
+          </span>
         `
+          )
+          .join('')}
+      </div>
+    `
         }
       )
     },
