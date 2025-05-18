@@ -1,5 +1,5 @@
 <template>
-  <Page>
+  <div>
     <div class="header-swap">
       <Nav
         :active-mode.sync="chartPeriod"
@@ -46,7 +46,7 @@
         :autoresize="true"
       />
     </card>
-  </Page>
+  </div>
 </template>
 
 <script>

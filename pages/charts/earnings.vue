@@ -1,5 +1,21 @@
 <template>
   <Page>
+    <div class="view-toggle">
+      <button
+        class="toggle-button"
+        :class="{ active: activeView === 'pool' }"
+        @click="setActiveView('pool')"
+      >
+        Pool Earnings
+      </button>
+      <button
+        class="toggle-button"
+        :class="{ active: activeView === 'bond' }"
+        @click="setActiveView('bond')"
+      >
+        Bond Earnings
+      </button>
+    </div>
     <div class="header-earning">
       <Nav
         :active-mode.sync="chartPeriod"
@@ -7,7 +23,11 @@
         pre-text="Period :"
         @update:active-mode="chartPeriod = $event"
       />
-      <div class="dropdown" :class="{ open: dropdownOpen }">
+      <div
+        v-if="activeView === 'pool'"
+        class="dropdown"
+        :class="{ open: dropdownOpen }"
+      >
         <div>
           <button
             class="button-earning"
@@ -46,48 +66,57 @@
         </div>
       </div>
     </div>
-    <card title="Earnings" :is-loading="loading">
-      <VChart
-        ref="mainChart"
-        :option="chartOptions"
-        :loading="!chartOptions"
-        :autoresize="true"
-        :loading-options="showLoading"
-        :theme="chartTheme"
-      />
-    </card>
-    <card title="Liquidity Fees" :is-loading="loading">
-      <VChart
-        :option="liquidityFees"
-        :loading="!liquidityFees"
-        :autoresize="true"
-        :loading-options="showLoading"
-        :theme="chartTheme"
-      />
-    </card>
-    <card title="Bonding Earnings" :is-loading="loading">
-      <div class="bond-earnings-switcher">
-        <label class="switch">
-          <input
-            type="checkbox"
-            :checked="isDividedByAvgNodeCount"
-            @change="toggleDividedByAvgNodeCount"
-          />
-          <span class="slider round"></span>
-        </label>
-        <span class="mode-label">{{
-          isDividedByAvgNodeCount ? 'Bond Earning Per Node' : 'Bonding Earnings'
-        }}</span>
-      </div>
 
-      <VChart
-        :option="bondingEarnings"
-        :loading="!bondingEarnings"
-        :autoresize="true"
-        :loading-options="showLoading"
-        :theme="chartTheme"
-      />
-    </card>
+    <template v-if="activeView === 'pool'">
+      <card title="Earnings" :is-loading="loading">
+        <VChart
+          ref="mainChart"
+          :option="chartOptions"
+          :loading="!chartOptions"
+          :autoresize="true"
+          :loading-options="showLoading"
+          :theme="chartTheme"
+        />
+      </card>
+      <card title="Liquidity Fees" :is-loading="loading">
+        <VChart
+          :option="liquidityFees"
+          :loading="!liquidityFees"
+          :autoresize="true"
+          :loading-options="showLoading"
+          :theme="chartTheme"
+        />
+      </card>
+    </template>
+
+    <template v-else>
+      <card title="Bond Earnings" :is-loading="loading">
+        <div class="bond-earnings-switcher">
+          <label class="switch">
+            <input
+              type="checkbox"
+              :checked="isDividedByAvgNodeCount"
+              @change="toggleDividedByAvgNodeCount"
+            />
+            <span class="slider round"></span>
+          </label>
+          <span class="mode-label">{{
+            isDividedByAvgNodeCount
+              ? 'Bond Earning Per Node'
+              : 'Bonding Earnings'
+          }}</span>
+        </div>
+
+        <VChart
+          :key="'bonding-chart-' + bondingChartKey"
+          :option="bondingEarnings"
+          :loading="!bondingEarnings"
+          :autoresize="true"
+          :loading-options="showLoading"
+          :theme="chartTheme"
+        />
+      </card>
+    </template>
   </Page>
 </template>
 
@@ -124,6 +153,7 @@ export default {
   },
   data() {
     return {
+      bondingChartKey: 0,
       chartKey: 0,
       bondingEarnings: undefined,
       dropdownOpen: false,
@@ -141,8 +171,8 @@ export default {
         { text: '100 W', mode: '100w' },
       ],
       earningsData: null,
-      fullDataCache: null,
       isDividedByAvgNodeCount: false,
+      activeView: 'pool',
     }
   },
   computed: {
@@ -185,9 +215,6 @@ export default {
       if (!this.earningsData) return null
       return this.formatBondingEarnings(this.earningsData)
     },
-    chartData() {
-      return this.formatChartData(this.selectedOption, this.chartPeriod)
-    },
   },
   watch: {
     chartPeriod(newPeriod, oldPeriod) {
@@ -211,6 +238,9 @@ export default {
     await this.loadInitialData()
   },
   methods: {
+    setActiveView(view) {
+      this.activeView = view
+    },
     async loadInitialData() {
       try {
         const isWeekly = this.chartPeriod.includes('w')
@@ -219,12 +249,12 @@ export default {
 
         const response = await earnings(interval, count)
 
-        this.fullDataCache = response.data
+        const intervals = response.data?.intervals || []
+
         this.chartInterval = interval
+        this.earningsData = { ...response.data, intervals }
 
-        const latestInterval =
-          this.fullDataCache.intervals[this.fullDataCache.intervals.length - 1]
-
+        const latestInterval = intervals[intervals.length - 1]
         this.pools = latestInterval?.pools
           ? latestInterval.pools
               .map((pool) => pool?.pool)
@@ -234,7 +264,7 @@ export default {
               )
           : []
 
-        this.filterDataByPeriod(this.chartPeriod, false)
+        this.updateCharts(this.earningsData, this.selectedOption)
       } catch (error) {
         console.error('Error fetching earnings data:', error)
         this.pools = []
@@ -244,26 +274,23 @@ export default {
       if (!assetStr) return false
       return assetStr.includes('.')
     },
-
-    filterDataByPeriod(period, intervalChange = true) {
-      if (!this.fullDataCache) return
-
+    async filterDataByPeriod(period, intervalChange = true) {
       const isWeekly = period.includes('w')
       const newInterval = isWeekly ? 'week' : 'day'
 
       if (intervalChange && newInterval !== this.chartInterval) {
-        this.chartInterval = newInterval
-        this.loadInitialData()
+        this.chartPeriod = period
+        await this.loadInitialData()
         return
       }
 
       const count = this.getCountFromPeriod(period)
 
-      const filteredIntervals = this.fullDataCache.intervals.slice(-count)
-
+      const response = await earnings(newInterval, count)
+      this.chartInterval = newInterval
       this.earningsData = {
-        ...this.fullDataCache,
-        intervals: filteredIntervals,
+        ...response.data,
+        intervals: response.data.intervals.slice(-count),
       }
 
       this.updateCharts(this.earningsData, this.selectedOption)
@@ -610,6 +637,7 @@ export default {
 
     toggleDividedByAvgNodeCount() {
       this.isDividedByAvgNodeCount = !this.isDividedByAvgNodeCount
+      this.bondingChartKey += 1
       if (this.earningsData) {
         this.bondingEarnings = this.formatBondingEarnings(this.earningsData)
       }
@@ -626,11 +654,52 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.view-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 2px 24px;
+  @include lg {
+    margin: 2px 10px;
+  }
+
+  .toggle-button {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 8px 12px;
+    background-color: var(--bg-color);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    color: var(--font-color);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    @include lg {
+      font-size: 14px;
+      font-weight: 500;
+      padding: 12px 16px;
+    }
+
+    &:hover {
+      background-color: var(--active-bg-color);
+      color: var(--primary-color);
+    }
+
+    &.active {
+      background-color: var(--active-bg-color);
+      color: var(--primary-color);
+      border: 1px solid var(--primary-color);
+    }
+  }
+}
+
 .header-earning {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
+  margin: 0 10px;
 
   .dropdown {
     position: relative;

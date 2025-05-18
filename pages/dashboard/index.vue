@@ -11,11 +11,6 @@
         ]"
         :act-nav.sync="swapMode"
       >
-        <div v-if="swapMode == 'swap-vol'" class="open-button">
-          <button class="button-charts" @click="openChartSwap">
-            Open Chart
-          </button>
-        </div>
         <div>
           <VChart
             v-if="swapMode == 'swap-vol'"
