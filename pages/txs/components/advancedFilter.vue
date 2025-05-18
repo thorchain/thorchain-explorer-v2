@@ -166,13 +166,16 @@ export default {
       if (this.filters.asset.length > 0) count++
       if (this.filters.type.length > 0) count++
       if (this.filters.txType.length > 0) count++
-      if (this.filters.toHeight) count++
-      if (this.filters.fromHeight) count++
-      if (
-        this.filters.dateValue.length > 0 &&
-        this.filters.dateValue[0] != null
-      )
+      if (this.filters.toHeight && this.filters.toHeight.trim() !== '') count++
+      if (this.filters.fromHeight && this.filters.fromHeight.trim() !== '')
         count++
+      if (
+        this.filters.dateValue &&
+        this.filters.dateValue[0] != null &&
+        this.filters.dateValue[1] != null
+      ) {
+        count++
+      }
       return count
     },
     isHeightFilled() {
@@ -221,6 +224,7 @@ export default {
     submitForm() {
       if (this.isFormValid()) {
         const query = this.prepareQueryParams()
+        console.log('Submitting query:', query) 
         this.$router.push({ query })
         this.toggleModal()
       }
@@ -233,27 +237,29 @@ export default {
     prepareQueryParams() {
       const query = {}
 
-      const arrayFilters = [
-        'addresses',
-        'txId',
-        'asset',
-        'type',
-        'txType',
-        'affiliate',
-      ]
+      if (this.filters.addresses?.length > 0) {
+        query.address = this.filters.addresses
+          .filter(Boolean)
+          .map((addr) => addr.trim())
+          .join(',')
+      }
 
-      arrayFilters.forEach((key) => {
+      const otherArrayFilters = ['txId', 'asset', 'type', 'txType', 'affiliate']
+      otherArrayFilters.forEach((key) => {
         if (this.filters[key]?.length > 0) {
-          query[key] = this.filters[key].filter(Boolean).join(',')
+          query[key] = this.filters[key]
+            .filter(Boolean)
+            .map((item) => item.trim())
+            .join(',')
         }
       })
 
       if (this.filters.fromHeight) {
-        query.fromHeight = this.filters.fromHeight.toString()
+        query.fromHeight = this.filters.fromHeight.toString().trim()
       }
 
       if (this.filters.toHeight) {
-        query.toHeight = this.filters.toHeight.toString()
+        query.toHeight = this.filters.toHeight.toString().trim()
       }
 
       if (
@@ -285,15 +291,11 @@ export default {
         dateValue: [null, null],
       }
 
-      const arrayFilters = [
-        'addresses',
-        'txId',
-        'asset',
-        'type',
-        'txType',
-        'affiliate',
-      ]
+      if (query.address) {
+        filters.addresses = query.address.split(',').map((item) => item.trim())
+      }
 
+      const arrayFilters = ['txId', 'asset', 'type', 'txType', 'affiliate']
       arrayFilters.forEach((key) => {
         if (query[key]) {
           filters[key] = query[key].split(',').map((item) => item.trim())
