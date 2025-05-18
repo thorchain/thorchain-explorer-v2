@@ -11,18 +11,16 @@
         ]"
         :act-nav.sync="swapMode"
       >
-        <div>
-          <VChart
-            v-if="swapMode == 'swap-vol'"
-            :key="1"
-            class="swap-volume-chart"
-            :option="swapHistory"
-            :loading="!swapHistory"
-            :autoresize="true"
-            :loading-options="showLoading"
-            :theme="chartTheme"
-          />
-        </div>
+        <VChart
+          v-if="swapMode == 'swap-vol'"
+          :key="1"
+          class="swap-volume-chart"
+          :option="swapHistory"
+          :loading="!swapHistory"
+          :autoresize="true"
+          :loading-options="showLoading"
+          :theme="chartTheme"
+        />
         <div
           v-if="swapMode == 'pools-vol'"
           :key="1"
@@ -168,6 +166,9 @@ import {
 import VChart from 'vue-echarts'
 import { range, orderBy, fill } from 'lodash'
 import affiliateTables from '../insights/component/affiliateTables.vue'
+import NetworkStats from './NetworkStats.vue'
+import LatestTransactions from './LatestTransactions.vue'
+import LatestBlocks from './LatestBlocks.vue'
 import { blockTime } from '~/utils'
 import StackDollar from '~/assets/images/sack-dollar.svg?inline'
 import LockIcon from '~/assets/images/lock.svg?inline'
@@ -178,9 +179,6 @@ import Rune from '~/assets/images/rune.svg?inline'
 import Piggy from '~/assets/images/piggy.svg?inline'
 import Chart from '~/assets/images/chart.svg?inline'
 import TransactionAction from '~/components/transactions/TransactionAction.vue'
-import NetworkStats from './NetworkStats.vue'
-import LatestTransactions from './LatestTransactions.vue'
-import LatestBlocks from './LatestBlocks.vue'
 use([
   SVGRenderer,
   GridComponent,
@@ -2169,7 +2167,7 @@ export default {
   text-decoration: none;
   font-weight: 500;
   position: absolute;
-  z-index: 10; 
+  z-index: 10;
 
   &:hover {
     color: var(--primary-color);

@@ -659,9 +659,10 @@ export default {
   align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
-  margin: 2px 24px;
+  margin: 2px 10px;
+
   @include lg {
-    margin: 2px 10px;
+    margin: 0;
   }
 
   .toggle-button {
@@ -696,15 +697,17 @@ export default {
 
 .header-earning {
   display: flex;
-  align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
-  margin: 0 10px;
 
   .dropdown {
     position: relative;
     display: inline-block;
-    margin-bottom: 10px;
+    margin: 0 10px;
+
+    @include md {
+      margin: 0;
+    }
 
     .button-earning {
       background-color: var(--bg-color);
