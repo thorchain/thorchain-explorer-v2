@@ -18,7 +18,7 @@
           <CrossIcon class="close-btn" @click="toggleModal" />
         </div>
         <div class="input-fields">
-          <div class="input-row" v-if="!hideAddressFilter">
+          <div v-if="!hideAddressFilter" class="input-row">
             <input-filter
               :tags="filters.addresses"
               placeholder="Enter Addresses, press enter"
@@ -155,14 +155,6 @@ export default {
       },
     }
   },
-  watch: {
-    '$route.query': {
-      handler(query) {
-        this.updateFiltersFromQuery(query)
-      },
-      immediate: true,
-    },
-  },
   computed: {
     filledFilterCount() {
       let count = 0
@@ -206,6 +198,14 @@ export default {
       }
 
       return []
+    },
+  },
+  watch: {
+    '$route.query': {
+      handler(query) {
+        this.updateFiltersFromQuery(query)
+      },
+      immediate: true,
     },
   },
   methods: {
@@ -297,9 +297,7 @@ export default {
       }
 
       if (query.address) {
-        filters.addresses = query.address
-          .split(',')
-          .map((item) => item.trim())
+        filters.addresses = query.address.split(',').map((item) => item.trim())
       }
 
       const arrayFilters = ['txId', 'asset', 'type', 'txType', 'affiliate']
@@ -332,6 +330,7 @@ export default {
       return key === 'type'
         ? [
             'swap',
+            'send',
             'addLiquidity',
             'withdraw',
             'donate',
@@ -344,6 +343,7 @@ export default {
             'unbond',
             'trade',
             'secure',
+            'contract',
           ]
         : [
             'unknown',
