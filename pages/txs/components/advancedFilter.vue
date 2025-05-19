@@ -18,7 +18,7 @@
           <CrossIcon class="close-btn" @click="toggleModal" />
         </div>
         <div class="input-fields">
-          <div class="input-row">
+          <div class="input-row" v-if="!hideAddressFilter">
             <input-filter
               :tags="filters.addresses"
               placeholder="Enter Addresses, press enter"
@@ -122,14 +122,13 @@ export default {
     DatePicker,
   },
   props: {
-    currentAddress: {
-      type: String,
-      default: '',
+    hideAddressFilter: {
+      type: Boolean,
+      default: false,
     },
   },
   data() {
     return {
-      hiddenAddress: '',
       isModalVisible: false,
       submittedCount: 0,
       filters: {
@@ -162,12 +161,6 @@ export default {
         this.updateFiltersFromQuery(query)
       },
       immediate: true,
-    },
-    currentAddress: {
-      immediate: true,
-      handler(newVal) {
-        this.hiddenAddress = newVal || ''
-      },
     },
   },
   computed: {
@@ -244,22 +237,16 @@ export default {
     },
 
     resetForm() {
-      const address = this.currentAddress || ''
-      this.$router.push({
-        query: address ? { address } : {},
-      })
+      this.$router.push({ query: {} })
     },
 
     prepareQueryParams() {
       const query = {}
 
-      const addresses = [
-        ...(this.hiddenAddress ? [this.hiddenAddress] : []),
-        ...this.filters.addresses,
-      ].filter(Boolean)
-
-      if (addresses.length > 0) {
-        query.address = addresses.map((addr) => addr.trim()).join(',')
+      if (this.filters.addresses.length > 0) {
+        query.address = this.filters.addresses
+          .map((addr) => addr.trim())
+          .join(',')
       }
 
       const otherArrayFilters = ['txId', 'asset', 'type', 'txType', 'affiliate']
@@ -310,12 +297,9 @@ export default {
       }
 
       if (query.address) {
-        const queryAddresses = query.address
+        filters.addresses = query.address
           .split(',')
           .map((item) => item.trim())
-          .filter((addr) => addr !== this.hiddenAddress)
-
-        filters.addresses = queryAddresses
       }
 
       const arrayFilters = ['txId', 'asset', 'type', 'txType', 'affiliate']
@@ -486,11 +470,10 @@ export default {
   transition:
     background-color 0.3s ease,
     transform 0.3s ease;
-    @include lg{
+  @include lg {
     font-size: $font-size-sm;
-  font-weight: 450;
-
-    }
+    font-weight: 450;
+  }
 
   .filter-icon {
     width: 1.2rem;

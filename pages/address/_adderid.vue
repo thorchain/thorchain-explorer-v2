@@ -2,27 +2,27 @@
   <page class="address-container">
     <div class="address-section">
       <div class="left-section">
-      <div class="address-header">
-        <Avatar :name="address" />
-      </div>
-      <div class="address-name">
-        <span class="address-value" style="color: var(--sec-font-color)">{{
-          address
-        }}</span>
-        <div class="qr-copy-wrapper">
-          <div class="item">
-            <Copy :str-copy="address" />
-          </div>
-          <div id="qrcode" class="item">
-            <qr-btn :qrcode="address"></qr-btn>
+        <div class="address-header">
+          <Avatar :name="address" />
+        </div>
+        <div class="address-name">
+          <span class="address-value" style="color: var(--sec-font-color)">{{
+            address
+          }}</span>
+          <div class="qr-copy-wrapper">
+            <div class="item">
+              <Copy :str-copy="address" />
+            </div>
+            <div id="qrcode" class="item">
+              <qr-btn :qrcode="address"></qr-btn>
+            </div>
           </div>
         </div>
-      </div>
       </div>
       <div class="action-types desktop-filters">
         <advanced-filter
           ref="advancedFilter"
-          :current-address="address"
+          :hide-address-filter="true"
           class="desktop-filters"
         />
       </div>
@@ -345,15 +345,9 @@ export default {
     this.checkIsVault(this.address)
   },
   methods: {
-    async fetchAddressData(
-      address,
-      offset = (this.currentPage - 1) * 30,
-      limit = 30
-    ) {
+    async fetchAddressData(address, offset = 0, limit = 30) {
       this.loading = true
       try {
-        this.addressLoading = true
-
         const params = {
           address,
           limit,
@@ -418,13 +412,17 @@ export default {
     onPageChange(newPage) {
       this.currentPage = newPage
       const offset = (newPage - 1) * 30
-      this.$router.push({
-        path: this.$route.path,
-        query: {
-          ...this.$route.query,
-          page: newPage,
-        },
-      })
+
+      this.$router
+        .push({
+          path: this.$route.path,
+          query: {
+            ...this.$route.query,
+            page: newPage.toString(),
+          },
+        })
+        .catch(() => {})
+
       this.fetchAddressData(this.address, offset)
     },
     goNext() {
@@ -518,7 +516,11 @@ export default {
       const cleanParams = this.checkQuery(params)
 
       this.$api
-        .getActions({ limit: this.limit, ...cleanParams })
+        .getActions({
+          limit: this.limit,
+          ...cleanParams,
+          address: this.address,
+        })
         .then((res) => {
           this.addrTxs = res.data
           this.nextPageToken = res.data.meta.nextPageToken
