@@ -121,8 +121,15 @@ export default {
     FilterIcon,
     DatePicker,
   },
+  props: {
+    currentAddress: {
+      type: String,
+      default: '',
+    },
+  },
   data() {
     return {
+      hiddenAddress: '',
       isModalVisible: false,
       submittedCount: 0,
       filters: {
@@ -155,6 +162,12 @@ export default {
         this.updateFiltersFromQuery(query)
       },
       immediate: true,
+    },
+    currentAddress: {
+      immediate: true,
+      handler(newVal) {
+        this.hiddenAddress = newVal || ''
+      },
     },
   },
   computed: {
@@ -224,24 +237,29 @@ export default {
     submitForm() {
       if (this.isFormValid()) {
         const query = this.prepareQueryParams()
-        console.log('Submitting query:', query) 
+        console.log('Submitting query:', query)
         this.$router.push({ query })
         this.toggleModal()
       }
     },
 
     resetForm() {
-      this.$router.push({ query: {} })
+      const address = this.currentAddress || ''
+      this.$router.push({
+        query: address ? { address } : {},
+      })
     },
 
     prepareQueryParams() {
       const query = {}
 
-      if (this.filters.addresses?.length > 0) {
-        query.address = this.filters.addresses
-          .filter(Boolean)
-          .map((addr) => addr.trim())
-          .join(',')
+      const addresses = [
+        ...(this.hiddenAddress ? [this.hiddenAddress] : []),
+        ...this.filters.addresses,
+      ].filter(Boolean)
+
+      if (addresses.length > 0) {
+        query.address = addresses.map((addr) => addr.trim()).join(',')
       }
 
       const otherArrayFilters = ['txId', 'asset', 'type', 'txType', 'affiliate']
@@ -292,7 +310,12 @@ export default {
       }
 
       if (query.address) {
-        filters.addresses = query.address.split(',').map((item) => item.trim())
+        const queryAddresses = query.address
+          .split(',')
+          .map((item) => item.trim())
+          .filter((addr) => addr !== this.hiddenAddress)
+
+        filters.addresses = queryAddresses
       }
 
       const arrayFilters = ['txId', 'asset', 'type', 'txType', 'affiliate']
@@ -450,7 +473,7 @@ export default {
   display: flex;
   align-items: center;
   padding: $space-10 $space-8;
-  font-size: $font-size-sm;
+  font-size: $font-size-s;
   background-color: var(--card-bg-color);
   color: var(--font-color);
   border: 1px solid var(--border-color);
@@ -459,10 +482,15 @@ export default {
   width: auto;
   margin: $space-8;
   white-space: nowrap;
-  font-weight: 450;
+  font-weight: 300;
   transition:
     background-color 0.3s ease,
     transform 0.3s ease;
+    @include lg{
+    font-size: $font-size-sm;
+  font-weight: 450;
+
+    }
 
   .filter-icon {
     width: 1.2rem;
