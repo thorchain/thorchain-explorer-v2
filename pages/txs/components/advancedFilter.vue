@@ -18,7 +18,7 @@
           <CrossIcon class="close-btn" @click="toggleModal" />
         </div>
         <div class="input-fields">
-          <div class="input-row">
+          <div v-if="!hideAddressFilter" class="input-row">
             <input-filter
               :tags="filters.addresses"
               placeholder="Enter Addresses, press enter"
@@ -121,6 +121,12 @@ export default {
     FilterIcon,
     DatePicker,
   },
+  props: {
+    hideAddressFilter: {
+      type: Boolean,
+      default: false,
+    },
+  },
   data() {
     return {
       isModalVisible: false,
@@ -148,14 +154,6 @@ export default {
         date: 'Date Range',
       },
     }
-  },
-  watch: {
-    '$route.query': {
-      handler(query) {
-        this.updateFiltersFromQuery(query)
-      },
-      immediate: true,
-    },
   },
   computed: {
     filledFilterCount() {
@@ -202,6 +200,14 @@ export default {
       return []
     },
   },
+  watch: {
+    '$route.query': {
+      handler(query) {
+        this.updateFiltersFromQuery(query)
+      },
+      immediate: true,
+    },
+  },
   methods: {
     toggleModal() {
       this.isModalVisible = !this.isModalVisible
@@ -224,7 +230,7 @@ export default {
     submitForm() {
       if (this.isFormValid()) {
         const query = this.prepareQueryParams()
-        console.log('Submitting query:', query) 
+        console.log('Submitting query:', query)
         this.$router.push({ query })
         this.toggleModal()
       }
@@ -237,9 +243,8 @@ export default {
     prepareQueryParams() {
       const query = {}
 
-      if (this.filters.addresses?.length > 0) {
+      if (this.filters.addresses.length > 0) {
         query.address = this.filters.addresses
-          .filter(Boolean)
           .map((addr) => addr.trim())
           .join(',')
       }
@@ -325,6 +330,7 @@ export default {
       return key === 'type'
         ? [
             'swap',
+            'send',
             'addLiquidity',
             'withdraw',
             'donate',
@@ -337,6 +343,7 @@ export default {
             'unbond',
             'trade',
             'secure',
+            'contract',
           ]
         : [
             'unknown',
@@ -450,7 +457,7 @@ export default {
   display: flex;
   align-items: center;
   padding: $space-10 $space-8;
-  font-size: $font-size-sm;
+  font-size: $font-size-s;
   background-color: var(--card-bg-color);
   color: var(--font-color);
   border: 1px solid var(--border-color);
@@ -459,10 +466,14 @@ export default {
   width: auto;
   margin: $space-8;
   white-space: nowrap;
-  font-weight: 450;
+  font-weight: 300;
   transition:
     background-color 0.3s ease,
     transform 0.3s ease;
+  @include lg {
+    font-size: $font-size-sm;
+    font-weight: 450;
+  }
 
   .filter-icon {
     width: 1.2rem;

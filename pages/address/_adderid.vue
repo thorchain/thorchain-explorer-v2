@@ -1,21 +1,30 @@
 <template>
   <page class="address-container">
     <div class="address-section">
-      <div class="address-header">
-        <Avatar :name="address" />
-      </div>
-      <div class="address-name">
-        <span class="address-value" style="color: var(--sec-font-color)">{{
-          address
-        }}</span>
-        <div class="qr-copy-wrapper">
-          <div class="item">
-            <Copy :str-copy="address" />
-          </div>
-          <div id="qrcode" class="item">
-            <qr-btn :qrcode="address"></qr-btn>
+      <div class="left-section">
+        <div class="address-header">
+          <Avatar :name="address" />
+        </div>
+        <div class="address-name">
+          <span class="address-value" style="color: var(--sec-font-color)">{{
+            address
+          }}</span>
+          <div class="qr-copy-wrapper">
+            <div class="item">
+              <Copy :str-copy="address" />
+            </div>
+            <div id="qrcode" class="item">
+              <qr-btn :qrcode="address"></qr-btn>
+            </div>
           </div>
         </div>
+      </div>
+      <div class="action-types desktop-filters">
+        <advanced-filter
+          ref="advancedFilter"
+          :hide-address-filter="true"
+          class="desktop-filters"
+        />
       </div>
     </div>
     <template>
@@ -198,7 +207,7 @@ import Pools from './components/pools.vue'
 import Bonds from './components/bonds.vue'
 import Distribution from './components/distribution.vue'
 import { formatAsset, assetFromString } from '~/utils'
-
+import advancedFilter from '../txs/components/advancedFilter.vue'
 export default {
   components: {
     Thorname,
@@ -206,6 +215,7 @@ export default {
     Pools,
     Bonds,
     Distribution,
+    advancedFilter,
   },
   data() {
     return {
@@ -314,6 +324,13 @@ export default {
     nodesData() {
       this.fillNodesAddresses()
     },
+    '$route.query': {
+      handler(query) {
+        this.fetchData(query)
+      },
+      immediate: true,
+      deep: true,
+    },
   },
   mounted() {
     const { nextPageToken, prevPageToken, page } = this.$route.query
@@ -328,26 +345,17 @@ export default {
     this.checkIsVault(this.address)
   },
   methods: {
-    async fetchAddressData(
-      address,
-      offset = (this.currentPage - 1) * 30,
-      limit = 30,
-      nextPageToken,
-      prevPageToken
-    ) {
+    async fetchAddressData(address, offset = 0, limit = 30) {
       this.loading = true
       try {
-        this.addressLoading = true
-
-        const params = { address, limit, offset }
-
-        if (this.count === -1) {
-          if (nextPageToken) params.nextPageToken = nextPageToken
-          if (prevPageToken) params.prevPageToken = prevPageToken
+        const params = {
+          address,
+          limit,
+          offset,
+          ...this.checkQuery(this.$route.query),
         }
 
         const addrTxs = await this.$api.getActions(params)
-
         this.addrTxs = addrTxs.data
         this.count = addrTxs.data.count
         this.nextPageToken = addrTxs.data.meta.nextPageToken
@@ -401,12 +409,26 @@ export default {
         this.loading = false
       }
     },
+    onPageChange(newPage) {
+      this.currentPage = newPage
+      const offset = (newPage - 1) * 30
+
+      this.$router
+        .push({
+          path: this.$route.path,
+          query: {
+            ...this.$route.query,
+            page: newPage.toString(),
+          },
+        })
+        .catch(() => {})
+
+      this.fetchAddressData(this.address, offset)
+    },
     goNext() {
-      const query = { ...this.$route.query }
-      if (this.nextPageToken) {
-        query.nextPageToken = this.nextPageToken
-      } else {
-        delete query.nextPageToken
+      const query = {
+        ...this.$route.query,
+        nextPageToken: this.nextPageToken,
       }
       delete query.prevPageToken
 
@@ -414,38 +436,17 @@ export default {
         path: `/address/${this.address}`,
         query,
       })
-      this.getActions({
-        limit: 30,
-        address: this.address,
-        nextPageToken: this.nextPageToken,
-      })
-    },
-    onPageChange(newPage) {
-      this.currentPage = newPage
-      const offset = (newPage - 1) * 30
-      this.$router.push({
-        path: this.$route.path,
-        query: { ...this.$route.query, page: newPage },
-      })
-      this.fetchAddressData(this.address, offset)
     },
     goPrev() {
-      const query = { ...this.$route.query }
-      if (this.prevPageToken) {
-        query.prevPageToken = this.prevPageToken
-      } else {
-        delete query.prevPageToken
+      const query = {
+        ...this.$route.query,
+        prevPageToken: this.prevPageToken,
       }
       delete query.nextPageToken
 
       this.$router.push({
         path: `/address/${this.address}`,
         query,
-      })
-      this.getActions({
-        limit: 30,
-        address: this.address,
-        prevPageToken: this.prevPageToken,
       })
     },
     formatStatus(status) {
@@ -508,6 +509,56 @@ export default {
           }
         })
       }
+    },
+    fetchData(params) {
+      this.loading = true
+
+      const cleanParams = this.checkQuery(params)
+
+      this.$api
+        .getActions({
+          limit: this.limit,
+          ...cleanParams,
+          address: this.address,
+        })
+        .then((res) => {
+          this.addrTxs = res.data
+          this.nextPageToken = res.data.meta.nextPageToken
+          this.prevPageToken = res.data.meta.prevPageToken
+          this.count = res.data.count
+          this.error = false
+          this.loading = false
+        })
+        .catch((error) => {
+          if (error.message === 'cancel') {
+            this.loading = true
+            return
+          }
+          this.error = true
+          console.error(error)
+        })
+    },
+    checkQuery(queries) {
+      const validParams = [
+        'address',
+        'asset',
+        'height',
+        'fromHeight',
+        'affiliate',
+        'txType',
+        'type',
+        'fromTimestamp',
+        'timestamp',
+        'nextPageToken',
+        'prevPageToken',
+      ]
+
+      return Object.keys(queries)
+        .filter((key) => validParams.includes(key))
+        .reduce((obj, key) => {
+          obj[key] = queries[key]
+          return obj
+        }, {})
     },
   },
   head: {
@@ -582,10 +633,18 @@ export default {
 
   .address-section {
     display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    align-items: center;
     flex-direction: row;
     align-items: center;
     gap: 0.6rem;
     padding: $space-0 $space-12;
+  }
+  .left-section{
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
   }
 
   .address-header {
