@@ -38,7 +38,7 @@
             @click="toggleDropdown"
           >
             {{ displayText }}
-            <AngleIcon class="dropdown-icon" />
+            <angle-icon class="dropdown-icon" />
           </button>
         </div>
         <div v-if="dropdownOpen" class="dropdown-menu">
@@ -118,7 +118,6 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
 import moment from 'moment'
 import { use } from 'echarts/core'
 import { SVGRenderer } from 'echarts/renderers'
@@ -173,9 +172,6 @@ export default {
     }
   },
   computed: {
-    ...mapGetters({
-      runePrice: 'getRunePrice',
-    }),
     poolStats() {
       return [
         {
@@ -612,23 +608,23 @@ export default {
           if (!params || !Array.isArray(params) || params.length === 0)
             return ''
           return `
-  <div class="tooltip-header">${params[0].name}</div>
-  <div class="tooltip-body">
-    ${params
-      .map(
-        (p) => `
-      <span>
-        <div class="tooltip-item">
-          <div class="data-color" style="background-color: ${p.color}"></div>
-          <span style="text-align: left;">${p.seriesName}</span>
-        </div>
-        <b>$${this.$options.filters.number(p.value, '0,0.00a')}</b>
-      </span>
-    `
-      )
-      .join('')}
-  </div>
-`
+          <div class="tooltip-header">${params[0].name}</div>
+          <div class="tooltip-body">
+          ${params
+            .map(
+              (p) => `
+            <span>
+              <div class="tooltip-item">
+                <div class="data-color" style="background-color: ${p.color}"></div>
+                <span style="text-align: left;">${p.seriesName}</span>
+              </div>
+              <b>$${this.$options.filters.number(p.value, '0,0.00a')}</b>
+            </span>
+          `
+            )
+            .join('')}
+          </div>
+          `
         }
       )
     },
@@ -701,26 +697,26 @@ export default {
           if (filteredParam.length === 0) return ''
 
           return `
-        <div class="tooltip-header">
-          ${filteredParam[0].name}
-        </div>
-        <div class="tooltip-body">
-          ${filteredParam
-            .map(
-              (p) => `
-                <span>
-                  <div class="tooltip-item">
-                    <div class="data-color" style="background-color: ${p.color}"></div>
-                    <span style="text-align: left;">
-                      ${p.seriesName}
-                    </span>
-                  </div>
-                  <b>$${this.$options.filters.number(p.value, '0,0.00a')}</b>
-                </span>`
-            )
-            .join('')}
-        </div>
-      `
+          <div class="tooltip-header">
+            ${filteredParam[0].name}
+          </div>
+          <div class="tooltip-body">
+            ${filteredParam
+              .map(
+                (p) => `
+                  <span>
+                    <div class="tooltip-item">
+                      <div class="data-color" style="background-color: ${p.color}"></div>
+                      <span style="text-align: left;">
+                        ${p.seriesName}
+                      </span>
+                    </div>
+                    <b>$${this.$options.filters.number(p.value, '0,0.00a')}</b>
+                  </span>`
+              )
+              .join('')}
+          </div>
+          `
         }
       )
     },
@@ -793,26 +789,26 @@ export default {
           if (filteredParam.length === 0) return ''
 
           return `
-        <div class="tooltip-header">
-          ${filteredParam[0].name}
-        </div>
-        <div class="tooltip-body">
-          ${filteredParam
-            .map(
-              (p) => `
-                <span>
-                  <div class="tooltip-item">
-                    <div class="data-color" style="background-color: ${p.color}"></div>
-                    <span style="text-align: left;">
-                      ${p.seriesName}
-                    </span>
-                  </div>
-                  <b>$${this.$options.filters.number(p.value, '0,0.00a')}</b>
-                </span>`
-            )
-            .join('')}
-        </div>
-      `
+            <div class="tooltip-header">
+              ${filteredParam[0].name}
+            </div>
+            <div class="tooltip-body">
+              ${filteredParam
+                .map(
+                  (p) => `
+                    <span>
+                      <div class="tooltip-item">
+                        <div class="data-color" style="background-color: ${p.color}"></div>
+                        <span style="text-align: left;">
+                          ${p.seriesName}
+                        </span>
+                      </div>
+                      <b>$${this.$options.filters.number(p.value, '0,0.00a')}</b>
+                    </span>`
+                )
+                .join('')}
+            </div>
+          `
         }
       )
     },
