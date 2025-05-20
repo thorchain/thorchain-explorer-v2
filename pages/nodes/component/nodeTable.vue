@@ -300,7 +300,7 @@
                     <td style="text-align: right">
                       <span class="mono">
                         {{
-                          (p.bond / 10 ** 8 / props.row.total_bond) | percent
+                          (p.bond / 10 ** 8 / props.row.total_bond) | percent(2)
                         }}
                       </span>
                     </td>
@@ -491,7 +491,7 @@
             </td>
             <td style="text-align: right">
               <span class="mono">
-                {{ (p.bond / 10 ** 8 / selectedRow.total_bond) | percent }}
+                {{ (p.bond / 10 ** 8 / selectedRow.total_bond) | percent(2) }}
               </span>
             </td>
           </tr>
