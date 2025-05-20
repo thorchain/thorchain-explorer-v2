@@ -38,7 +38,7 @@
             @click="toggleDropdown"
           >
             {{ displayText }}
-            <AngleIcon class="dropdown-icon" />
+            <angle-icon class="dropdown-icon" />
           </button>
         </div>
         <div v-if="dropdownOpen" class="dropdown-menu">
@@ -50,24 +50,19 @@
             @click="selectOption(pool)"
           >
             <asset-icon
-              v-if="
-                !['income_burn', 'dev_fund_reward'].includes(pool) &&
-                isValidAsset(pool)
-              "
+              v-if="isValidAsset(pool)"
               :asset="pool"
               class="asset-icon"
             />
-            {{
-              ['income_burn', 'dev_fund_reward'].includes(pool)
-                ? pool
-                : showAsset(pool)
-            }}
+            {{ showAsset(pool) }}
           </div>
         </div>
       </div>
     </div>
 
     <template v-if="activeView === 'pool'">
+      <StatsPanel :metrics="poolStats" />
+
       <card title="Earnings" :is-loading="loading">
         <VChart
           ref="mainChart"
@@ -90,6 +85,8 @@
     </template>
 
     <template v-else>
+      <StatsPanel :metrics="bondStats" />
+
       <card title="Bond Earnings" :is-loading="loading">
         <div class="bond-earnings-switcher">
           <label class="switch">
@@ -121,7 +118,6 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
 import moment from 'moment'
 import { use } from 'echarts/core'
 import { SVGRenderer } from 'echarts/renderers'
@@ -176,27 +172,155 @@ export default {
     }
   },
   computed: {
-    ...mapGetters({
-      runePrice: 'getRunePrice',
-    }),
+    poolStats() {
+      return [
+        {
+          label: 'Total Liquidity Fees',
+          value: `$${this.formatNumber(this.totalLiquidityFees)}`,
+          tooltip: 'Total fees collected from all swaps',
+        },
+        {
+          label: 'Total Pool Earnings',
+          value: `$${this.formatNumber(this.totalPoolEarnings)}`,
+          tooltip: 'LP earnings',
+        },
+        {
+          label: 'Total Bond Earnings',
+          value: `$${this.formatNumber(this.totalBondEarnings)}`,
+          tooltip: 'Total earnings from bonding',
+        },
+        {
+          label: 'Total Burned',
+          value: `$${this.formatNumber(this.totalBurned)}`,
+          tooltip: 'Total income burn earnings',
+        },
+        {
+          label: 'Total TCY Reward',
+          value: `$${this.formatNumber(this.totalTCYReward)}`,
+          tooltip: 'Total tcy stake reward earnings',
+        },
+      ]
+    },
+    bondStats() {
+      const totalDays =
+        (this.earningsData?.meta?.endTime -
+          this.earningsData?.meta?.startTime) /
+        (24 * 60 * 60)
+
+      const earningsPerDayPerNode =
+        this.totalBondEarnings / this.averageNodeCount / totalDays
+
+      return [
+        {
+          label: 'Total Bond Earnings',
+          value: `$${this.formatNumber(this.totalBondEarnings)}`,
+          tooltip: 'Total earnings from bonding across all intervals',
+        },
+        {
+          label: 'Monthly Earnings',
+          value: `$${this.formatNumber(earningsPerDayPerNode * 31)}`,
+          tooltip: 'Estimated monthly earnings per node during this period',
+          subValue: 'Per Node',
+        },
+        {
+          label: 'Weekly Earnings',
+          value: `$${this.formatNumber(earningsPerDayPerNode * 7)}`,
+          tooltip: 'Estimated weekly earnings per node during this period',
+          subValue: 'Per Node',
+        },
+        {
+          label: 'Yearly Earnings',
+          value: `$${this.formatNumber(earningsPerDayPerNode * 365)}`,
+          tooltip: 'Estimated yearly earnings per node during this period',
+          subValue: 'Per Node',
+        },
+      ]
+    },
+
+    totalBondEarnings() {
+      if (!this.earningsData) return 0
+      return (
+        this.earningsData.intervals.reduce((total, interval) => {
+          return total + +interval.bondingEarnings * +interval.runePriceUSD
+        }, 0) / 1e8
+      )
+    },
+
+    averageNodeCount() {
+      if (!this.earningsData || !this.earningsData.intervals.length) return 1
+      return (
+        this.earningsData.intervals.reduce((sum, interval) => {
+          return sum + (+interval.avgNodeCount || 0)
+        }, 0) / this.earningsData.intervals.length
+      )
+    },
     filteredPools() {
-      const specialPools = ['income_burn', 'dev_fund_reward']
       const normalPools = Array.isArray(this.pools)
         ? this.pools.filter(
             (pool) =>
-              pool &&
-              typeof pool === 'string' &&
-              !specialPools.includes(pool) &&
-              this.isValidAsset(pool)
+              pool && typeof pool === 'string' && this.isValidAsset(pool)
           )
         : []
-      return [...normalPools, ...specialPools]
+      return normalPools
     },
+    totalLiquidityFees() {
+      if (!this.earningsData) return 0
+      return (
+        this.earningsData.intervals.reduce((total, interval) => {
+          return total + +interval.liquidityFees * +interval.runePriceUSD
+        }, 0) / 1e8
+      )
+    },
+    totalPoolEarnings() {
+      if (!this.earningsData) return 0
+      return (
+        this.earningsData.intervals.reduce((total, interval) => {
+          const devFund =
+            interval.pools.find((p) => p.pool === 'dev_fund_reward')
+              ?.earnings || 0
+          const incomeBurn =
+            interval.pools.find((p) => p.pool === 'income_burn')?.earnings || 0
+          const tcyStake =
+            interval.pools.find((p) => p.pool === 'tcy_stake_reward')
+              ?.earnings || 0
+          const totalEarnings = +interval.liquidityEarnings
+          return (
+            total +
+            (totalEarnings - devFund - incomeBurn - tcyStake) *
+              +interval.runePriceUSD
+          )
+        }, 0) / 1e8
+      )
+    },
+    totalBurned() {
+      if (!this.earningsData) return 0
+      return (
+        this.earningsData.intervals.reduce((total, interval) => {
+          const incomeBurn =
+            interval.pools.find((p) => p.pool === 'income_burn')?.earnings || 0
+          return total + +incomeBurn * +interval.runePriceUSD
+        }, 0) / 1e8
+      )
+    },
+    totalTCYReward() {
+      if (!this.earningsData) return 0
+      return (
+        this.earningsData.intervals.reduce((total, interval) => {
+          const tcyStake =
+            interval.pools.find((p) => p.pool === 'tcy_stake_reward')
+              ?.earnings || 0
+          return total + +tcyStake * +interval.runePriceUSD
+        }, 0) / 1e8
+      )
+    },
+
     displayText() {
       if (this.selectedOption === 'All') {
         return this.selectedOption
       } else if (
-        ['income_burn', 'dev_fund_reward'].includes(this.selectedOption)
+        ['income_burn', 'dev_fund_reward', 'tcy_stake_reward'].includes(
+          this.selectedOption
+        )
       ) {
         return this.selectedOption
       } else {
@@ -240,6 +364,9 @@ export default {
   methods: {
     setActiveView(view) {
       this.activeView = view
+    },
+    formatNumber(value) {
+      return this.$options.filters.number(value, '0,0.00a')
     },
     async loadInitialData() {
       try {
@@ -340,6 +467,11 @@ export default {
     formatEarnings(d, selectedPool = 'All') {
       const xAxis = []
       const series = []
+      const specialPools = [
+        'income_burn',
+        'dev_fund_reward',
+        'tcy_stake_reward',
+      ]
 
       d?.intervals.forEach((interval, index) => {
         if (index === d.intervals.length - 1) return
@@ -358,11 +490,21 @@ export default {
             ? +interval.bondingEarnings * +interval.runePriceUSD
             : 0
 
+          const specialEarnings = specialPools.map((pool) => {
+            const poolData = interval.pools.find((p) => p.pool === pool)
+            return poolData ? +poolData.earnings * +interval.runePriceUSD : 0
+          })
+
           series[0] = series[0] || []
           series[0].push(liquidity / 1e8)
 
           series[1] = series[1] || []
           series[1].push(bonding / 1e8)
+
+          specialPools.forEach((pool, i) => {
+            series[2 + i] = series[2 + i] || []
+            series[2 + i].push(specialEarnings[i] / 1e8)
+          })
         } else {
           const poolObj = interval.pools.find(
             (pool) => pool.pool === selectedPool
@@ -373,8 +515,7 @@ export default {
         }
       })
 
-      return this.basicChartFormat(
-        (value) => `$ ${this.normalFormat(value)}`,
+      const chartSeries =
         selectedPool === 'All'
           ? [
               {
@@ -399,6 +540,39 @@ export default {
                 lineStyle: { width: 2 },
                 z: 2,
               },
+              {
+                type: 'bar',
+                name: 'Income Burn',
+                stack: 'Total',
+                showSymbol: false,
+                areaStyle: {},
+                data: series[2],
+                smooth: true,
+                lineStyle: { width: 2 },
+                z: 1,
+              },
+              {
+                type: 'bar',
+                name: 'Dev Fund Reward',
+                stack: 'Total',
+                showSymbol: false,
+                areaStyle: {},
+                data: series[3],
+                smooth: true,
+                lineStyle: { width: 2 },
+                z: 1,
+              },
+              {
+                type: 'bar',
+                name: 'TCY Stake Reward',
+                stack: 'Total',
+                showSymbol: false,
+                areaStyle: {},
+                data: series[4],
+                smooth: true,
+                lineStyle: { width: 2 },
+                z: 1,
+              },
             ]
           : [
               {
@@ -411,7 +585,11 @@ export default {
                 lineStyle: { width: 2 },
                 z: 3,
               },
-            ],
+            ]
+
+      return this.basicChartFormat(
+        (value) => `$ ${this.normalFormat(value)}`,
+        chartSeries,
         xAxis,
         {
           yAxis: [
@@ -430,23 +608,23 @@ export default {
           if (!params || !Array.isArray(params) || params.length === 0)
             return ''
           return `
-      <div class="tooltip-header">${params[0].name}</div>
-      <div class="tooltip-body">
-        ${params
-          .map(
-            (p) => `
-          <span>
-            <div class="tooltip-item">
-              <div class="data-color" style="background-color: ${p.color}"></div>
-              <span style="text-align: left;">${p.seriesName}</span>
-            </div>
-            <b>$${this.$options.filters.number(p.value, '0,0.00a')}</b>
-          </span>
-        `
-          )
-          .join('')}
-      </div>
-    `
+          <div class="tooltip-header">${params[0].name}</div>
+          <div class="tooltip-body">
+          ${params
+            .map(
+              (p) => `
+            <span>
+              <div class="tooltip-item">
+                <div class="data-color" style="background-color: ${p.color}"></div>
+                <span style="text-align: left;">${p.seriesName}</span>
+              </div>
+              <b>$${this.$options.filters.number(p.value, '0,0.00a')}</b>
+            </span>
+          `
+            )
+            .join('')}
+          </div>
+          `
         }
       )
     },
@@ -519,26 +697,26 @@ export default {
           if (filteredParam.length === 0) return ''
 
           return `
-        <div class="tooltip-header">
-          ${filteredParam[0].name}
-        </div>
-        <div class="tooltip-body">
-          ${filteredParam
-            .map(
-              (p) => `
-                <span>
-                  <div class="tooltip-item">
-                    <div class="data-color" style="background-color: ${p.color}"></div>
-                    <span style="text-align: left;">
-                      ${p.seriesName}
-                    </span>
-                  </div>
-                  <b>$${this.$options.filters.number(p.value, '0,0.00a')}</b>
-                </span>`
-            )
-            .join('')}
-        </div>
-      `
+          <div class="tooltip-header">
+            ${filteredParam[0].name}
+          </div>
+          <div class="tooltip-body">
+            ${filteredParam
+              .map(
+                (p) => `
+                  <span>
+                    <div class="tooltip-item">
+                      <div class="data-color" style="background-color: ${p.color}"></div>
+                      <span style="text-align: left;">
+                        ${p.seriesName}
+                      </span>
+                    </div>
+                    <b>$${this.$options.filters.number(p.value, '0,0.00a')}</b>
+                  </span>`
+              )
+              .join('')}
+          </div>
+          `
         }
       )
     },
@@ -611,26 +789,26 @@ export default {
           if (filteredParam.length === 0) return ''
 
           return `
-        <div class="tooltip-header">
-          ${filteredParam[0].name}
-        </div>
-        <div class="tooltip-body">
-          ${filteredParam
-            .map(
-              (p) => `
-                <span>
-                  <div class="tooltip-item">
-                    <div class="data-color" style="background-color: ${p.color}"></div>
-                    <span style="text-align: left;">
-                      ${p.seriesName}
-                    </span>
-                  </div>
-                  <b>$${this.$options.filters.number(p.value, '0,0.00a')}</b>
-                </span>`
-            )
-            .join('')}
-        </div>
-      `
+            <div class="tooltip-header">
+              ${filteredParam[0].name}
+            </div>
+            <div class="tooltip-body">
+              ${filteredParam
+                .map(
+                  (p) => `
+                    <span>
+                      <div class="tooltip-item">
+                        <div class="data-color" style="background-color: ${p.color}"></div>
+                        <span style="text-align: left;">
+                          ${p.seriesName}
+                        </span>
+                      </div>
+                      <b>$${this.$options.filters.number(p.value, '0,0.00a')}</b>
+                    </span>`
+                )
+                .join('')}
+            </div>
+          `
         }
       )
     },
