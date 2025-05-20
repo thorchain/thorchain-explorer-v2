@@ -181,12 +181,12 @@ export default {
         {
           label: 'Total Liquidity Fees',
           value: `$${this.formatNumber(this.totalLiquidityFees)}`,
-          tooltip: 'Total fees collected from all pools',
+          tooltip: 'Total fees collected from all swaps',
         },
         {
           label: 'Total Pool Earnings',
           value: `$${this.formatNumber(this.totalPoolEarnings)}`,
-          tooltip: 'Pool earnings minus dev_fund, income_burn, and tcy_stake',
+          tooltip: 'LP earnings',
         },
         {
           label: 'Total Bond Earnings',
@@ -196,24 +196,23 @@ export default {
         {
           label: 'Total Burned',
           value: `$${this.formatNumber(this.totalBurned)}`,
-          tooltip: 'Total income_burn earnings',
+          tooltip: 'Total income burn earnings',
         },
         {
           label: 'Total TCY Reward',
           value: `$${this.formatNumber(this.totalTCYReward)}`,
-          tooltip: 'Total tcy_stake_reward earnings',
+          tooltip: 'Total tcy stake reward earnings',
         },
       ]
     },
     bondStats() {
       const totalDays =
-        this.earningsData?.intervals.reduce((total, interval) => {
-          const days = (interval.endTime - interval.startTime) / (24 * 60 * 60)
-          return total + days
-        }, 0) || 1
+        (this.earningsData?.meta?.endTime -
+          this.earningsData?.meta?.startTime) /
+        (24 * 60 * 60)
 
       const earningsPerDayPerNode =
-        this.totalBondEarnings / totalDays / this.averageNodeCount
+        this.totalBondEarnings / this.averageNodeCount / totalDays
 
       return [
         {
@@ -222,19 +221,22 @@ export default {
           tooltip: 'Total earnings from bonding across all intervals',
         },
         {
-          label: 'Monthly Earnings (per node)',
+          label: 'Monthly Earnings',
           value: `$${this.formatNumber(earningsPerDayPerNode * 31)}`,
-          tooltip: 'Estimated monthly earnings per node',
+          tooltip: 'Estimated monthly earnings per node during this period',
+          subValue: 'Per Node',
         },
         {
-          label: 'Weekly Earnings (per node)',
+          label: 'Weekly Earnings',
           value: `$${this.formatNumber(earningsPerDayPerNode * 7)}`,
-          tooltip: 'Estimated weekly earnings per node',
+          tooltip: 'Estimated weekly earnings per node during this period',
+          subValue: 'Per Node',
         },
         {
-          label: 'Yearly Earnings (per node)',
+          label: 'Yearly Earnings',
           value: `$${this.formatNumber(earningsPerDayPerNode * 365)}`,
-          tooltip: 'Estimated yearly earnings per node',
+          tooltip: 'Estimated yearly earnings per node during this period',
+          subValue: 'Per Node',
         },
       ]
     },

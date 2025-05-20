@@ -9,7 +9,7 @@
       >
         <h6 class="metric-label">{{ metric.label }}</h6>
         <div class="metric-values">
-          <b class="metric-value">
+          <b class="metric-value" :title="metric.tooltip">
             <template v-if="metric.valueSlot">
               <slot :name="metric.valueSlot" :metric="metric" />
             </template>
