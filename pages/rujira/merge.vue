@@ -45,6 +45,14 @@
             {{ props.formattedRow[props.column.field] }}
             <small>RUJI</small>
           </div>
+          <div v-else-if="props.column.field == 'contract'">
+            <nuxt-link
+              class="button-container"
+              :to="`/address/${getContractAddress(props.row.Asset)}`"
+            >
+              Transactions
+            </nuxt-link>
+          </div>
           <span v-else>
             <span v-if="props.row[props.column.field]">
               {{ props.formattedRow[props.column.field] }}
@@ -74,13 +82,6 @@
           >
             More Info
           </a>
-          <nuxt-link
-            class="button-container"
-            to="/address/thor14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s3p2nzy"
-            target="_blank"
-          >
-            Merge Contract Txs
-          </nuxt-link>
         </div>
       </Card>
     </div>
@@ -138,6 +139,13 @@ export default {
           field: 'Addresses',
           type: 'number',
           tdClass: 'mono',
+        },
+        {
+          label: 'Contract',
+          field: 'contract',
+          thClass: 'center',
+          tdClass: 'center',
+          hide: process.env.NODE_ENV !== 'mainnet',
         },
       ],
       rows: [],
@@ -268,7 +276,26 @@ export default {
       this.loading = false
     }
   },
-  methods: {},
+  methods: {
+    getContractAddress(asset) {
+      switch (asset) {
+        case 'GAIA.KUJI':
+          return 'thor14hj2tavq8fpesdwxxcu44rty3hh90vhujrvcmstl4zr3txmfvw9s3p2nzy'
+        case 'GAIA.WINK':
+          return 'thor1yw4xvtc43me9scqfr2jr2gzvcxd3a9y4eq7gaukreugw2yd2f8tsz3392y'
+        case 'GAIA.RKUJI':
+          return 'thor1yyca08xqdgvjz0psg56z67ejh9xms6l436u8y58m82npdqqhmmtqrsjrgh'
+        case 'GAIA.FUZN':
+          return 'thor1suhgf5svhu4usrurvxzlgn54ksxmn8gljarjtxqnapv8kjnp4nrsw5xx2d'
+        case 'GAIA.LVN':
+          return 'thor1ltd0maxmte3xf4zshta9j5djrq9cl692ctsp9u5q0p9wss0f5lms7us4yf'
+        case 'GAIA.NSTK':
+          return 'thor1cnuw3f076wgdyahssdkd0g3nr96ckq8cwa2mh029fn5mgf2fmcmsmam5ck'
+        default:
+          return ''
+      }
+    },
+  },
 }
 </script>
 
