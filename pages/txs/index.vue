@@ -160,7 +160,7 @@ export default {
     if (Object.keys(this.$route.query).length === 0) {
       this.$router.replace({
         query: {
-          asset: 'notrade,nosynth,l1',
+          asset: 'l1,notrade,nosynth',
           type: 'swap',
         },
       })
