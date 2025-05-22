@@ -2,9 +2,9 @@
   <div class="affiliate-content">
     <template v-if="affiliates && affiliates.length">
       <component
-        :is="useNewIcons ? 'nuxt-link' : 'div'"
+        :is="showLink ? 'nuxt-link' : 'div'"
         class="affiliate-direct"
-        :to="useNewIcons ? { path: navigateToAffiliate() } : undefined"
+        :to="showLink ? { path: navigateToAffiliate() } : undefined"
       >
         <div
           v-for="affiliate in affiliates"
@@ -324,6 +324,10 @@ export default {
     useNewIcons: {
       type: Boolean,
       default: false,
+    },
+    showLink: {
+      type: Boolean,
+      default: true,
     },
   },
 

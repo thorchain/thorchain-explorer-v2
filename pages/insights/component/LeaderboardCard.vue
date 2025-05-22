@@ -17,6 +17,7 @@
               <affiliate
                 :affiliate-address="row.affiliate"
                 :use-new-icons="false"
+                :show-link="false"
                 class="item-label"
               />
               <div
