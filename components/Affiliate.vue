@@ -1,7 +1,11 @@
 <template>
   <div class="affiliate-content">
     <template v-if="affiliates && affiliates.length">
-      <div class="affiliate-direct" @click="navigateToAffiliate">
+      <component
+        :is="useNewIcons ? 'nuxt-link' : 'div'"
+        class="affiliate-direct"
+        :to="useNewIcons ? { path: navigateToAffiliate() } : undefined"
+      >
         <div
           v-for="affiliate in affiliates"
           :key="affiliate"
@@ -15,7 +19,7 @@
           />
           <em v-else>{{ affiliateWallet(affiliate).name }}</em>
         </div>
-      </div>
+      </component>
     </template>
   </div>
 </template>
@@ -338,7 +342,7 @@ export default {
 
   methods: {
     navigateToAffiliate() {
-      this.$router.push(`/txs?affiliate=${this.affiliates.join('/')}`)
+      return `/txs?affiliate=${this.affiliates.join('/')}`
     },
     mapAffiliateName(s) {
       const ifc = this.currentAffiliateMap[s]
