@@ -643,6 +643,17 @@ export function assetFromString(s) {
     }
   }
 
+  if (s === 'RUNE') {
+    return {
+      chain: 'THOR',
+      symbol: 'RUNE',
+      ticker: 'RUNE',
+      synth: false,
+      trade: false,
+      secure: false,
+    }
+  }
+
   // Handle "x/staking-x/" denoms
   if (s.toLowerCase().startsWith('x/staking-x/')) {
     const id = s.substring('x/staking-x/'.length)

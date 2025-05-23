@@ -201,13 +201,13 @@
 <script>
 import { mapGetters } from 'vuex'
 import { compact } from 'lodash'
+import advancedFilter from '../txs/components/advancedFilter.vue'
 import Thorname from './components/thorname.vue'
 import Balance from './components/balance.vue'
 import Pools from './components/pools.vue'
 import Bonds from './components/bonds.vue'
 import Distribution from './components/distribution.vue'
 import { formatAsset, assetFromString } from '~/utils'
-import advancedFilter from '../txs/components/advancedFilter.vue'
 export default {
   components: {
     Thorname,
@@ -411,19 +411,15 @@ export default {
     },
     onPageChange(newPage) {
       this.currentPage = newPage
-      const offset = (newPage - 1) * 30
-
       this.$router
         .push({
           path: this.$route.path,
           query: {
             ...this.$route.query,
-            page: newPage.toString(),
+            page: newPage,
           },
         })
         .catch(() => {})
-
-      this.fetchAddressData(this.address, offset)
     },
     goNext() {
       const query = {
@@ -451,23 +447,6 @@ export default {
     },
     formatStatus(status) {
       return status === 'ActiveVault' ? 'Active' : status
-    },
-    getActions(params) {
-      this.loading = true
-      this.$api
-        .getActions(params)
-        .then((res) => {
-          this.addrTxs = res.data
-          this.count = res.data.count
-          this.nextPageToken = res.data.meta.nextPageToken
-          this.prevPageToken = res.data.meta.prevPageToken
-        })
-        .catch((error) => {
-          console.error(error)
-        })
-        .finally(() => {
-          this.loading = false
-        })
     },
     checkIsVault(address) {
       this.$api
@@ -515,11 +494,18 @@ export default {
 
       const cleanParams = this.checkQuery(params)
 
+      let offset
+      if (this.$route.query.page) {
+        this.currentPage = this.$route.query.page
+        offset = (this.$route.query.page - 1) * this.limit
+      }
+
       this.$api
         .getActions({
           limit: this.limit,
           ...cleanParams,
           address: this.address,
+          offset,
         })
         .then((res) => {
           this.addrTxs = res.data
@@ -641,7 +627,7 @@ export default {
     gap: 0.6rem;
     padding: $space-0 $space-12;
   }
-  .left-section{
+  .left-section {
     display: flex;
     align-items: center;
     gap: 0.6rem;

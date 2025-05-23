@@ -194,12 +194,10 @@ export default {
     },
     onPageChange(newPage) {
       this.currentPage = newPage
-      const offset = (newPage - 1) * 30
       this.$router.push({
         path: this.$route.path,
         query: { ...this.$route.query, page: newPage },
       })
-      this.getActions({ limit: this.limit, offset })
     },
     goPrev() {
       if (!this.prevPageToken) return
@@ -216,8 +214,14 @@ export default {
 
       const cleanParams = this.checkQuery(params)
 
+      let offset
+      if (this.$route.query.page) {
+        this.currentPage = this.$route.query.page
+        offset = (this.$route.query.page - 1) * this.limit
+      }
+
       this.$api
-        .getActions({ limit: this.limit, ...cleanParams })
+        .getActions({ limit: this.limit, ...cleanParams, offset })
         .then((res) => {
           this.txs = res.data
           this.nextPageToken = res.data.meta.nextPageToken
