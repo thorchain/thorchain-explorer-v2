@@ -643,12 +643,52 @@ export function assetFromString(s) {
     }
   }
 
-  // Add LP tokens as a special case
-  if (s.startsWith('X/')) {
+  // Handle "x/staking-x/" denoms
+  if (s.toLowerCase().startsWith('x/staking-x/')) {
+    const id = s.substring('x/staking-x/'.length)
+    const symbol = 's' + id.toUpperCase()
     return {
       chain: 'THOR',
-      symbol: s,
-      ticker: s,
+      symbol,
+      ticker: symbol,
+      synth: false,
+      trade: false,
+      secure: false,
+      id: s,
+      type: 'native',
+    }
+  }
+
+  // Handle "x/bow-xyk-" denoms (best effort, without Bow deployments lookup)
+  if (s.toLowerCase().startsWith('x/bow-xyk-')) {
+    const id = s.substring('x/bow-xyk-'.length)
+    const [x, y] = id.split('-')
+    if (x && y) {
+      const xAsset = assetFromString(x)
+      const yAsset = assetFromString(y)
+      if (xAsset && yAsset) {
+        return {
+          chain: 'THOR',
+          symbol: `${xAsset.symbol}/${yAsset.symbol} LP`,
+          ticker: `${xAsset.ticker}/${yAsset.ticker} LP`,
+          synth: false,
+          trade: false,
+          secure: false,
+          id: s,
+          type: 'native',
+        }
+      }
+    }
+    return s
+  }
+
+  // Add support for "x/" prefix for THORChain assets
+  if (s.toLowerCase().startsWith('x/')) {
+    const symbol = s.substring(2)
+    return {
+      chain: 'THOR',
+      symbol,
+      ticker: symbol,
       synth: false,
       trade: false,
       secure: false,
