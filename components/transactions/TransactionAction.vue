@@ -44,7 +44,10 @@
       <template v-if="hasAffiliate(row)">
         <span>|</span>
         <div class="asset-cell">
-          <affiliate :affiliate-address="getAffiliateAddress(row)" />
+          <affiliate
+            :affiliate-address="getAffiliateAddress(row)"
+            :use-new-icons="true"
+          />
         </div>
       </template>
     </div>
@@ -124,7 +127,10 @@
       <template v-if="hasAffiliate(row)">
         <span>|</span>
         <div class="asset-cell">
-          <affiliate :affiliate-address="getAffiliateAddress(row)" />
+          <affiliate
+            :affiliate-address="getAffiliateAddress(row)"
+            :use-new-icons="true"
+          />
         </div>
       </template>
     </div>
