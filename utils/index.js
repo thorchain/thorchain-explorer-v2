@@ -643,6 +643,18 @@ export function assetFromString(s) {
     }
   }
 
+  // Add LP tokens as a special case
+  if (s.startsWith('X/')) {
+    return {
+      chain: 'THOR',
+      symbol: s,
+      ticker: s,
+      synth: false,
+      trade: false,
+      secure: false,
+    }
+  }
+
   const isSynth = s.includes(SYNTH_DELIMITER)
   let delimiter = isSynth ? SYNTH_DELIMITER : NON_SYNTH_DELIMITER
   const isTrade = s.includes(TRADE_DELIMITER)
