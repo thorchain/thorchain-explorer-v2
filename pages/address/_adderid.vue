@@ -266,6 +266,7 @@ export default {
       ],
       pools: undefined,
       currentPage: 1,
+      limit: 30,
     }
   },
   computed: {
@@ -338,7 +339,7 @@ export default {
     this.fetchAddressData(
       this.address,
       (this.currentPage - 1) * 30,
-      30,
+      this.limit,
       nextPageToken,
       prevPageToken
     )
@@ -411,15 +412,13 @@ export default {
     },
     onPageChange(newPage) {
       this.currentPage = newPage
-      this.$router
-        .push({
-          path: this.$route.path,
-          query: {
-            ...this.$route.query,
-            page: newPage,
-          },
-        })
-        .catch(() => {})
+      this.$router.push({
+        path: this.$route.path,
+        query: {
+          ...this.$route.query,
+          page: newPage,
+        },
+      })
     },
     goNext() {
       const query = {
@@ -496,8 +495,8 @@ export default {
 
       let offset
       if (this.$route.query.page) {
-        this.currentPage = this.$route.query.page
-        offset = (this.$route.query.page - 1) * this.limit
+        this.currentPage = +this.$route.query.page
+        offset = (this.currentPage - 1) * this.limit
       }
 
       this.$api
