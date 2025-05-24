@@ -673,7 +673,16 @@ export function assetFromString(s) {
   // Handle "x/bow-xyk-" denoms (best effort, without Bow deployments lookup)
   if (s.toLowerCase().startsWith('x/bow-xyk-')) {
     const id = s.substring('x/bow-xyk-'.length)
-    const [x, y] = id.split('-')
+    const firstDash = id.indexOf('-')
+    let x, y
+    if (id.indexOf('.') > 0 || id.indexOf('/') > 0) {
+      x = id.substring(0, firstDash)
+      y = id.substring(firstDash + 1)
+    } else {
+      const secondDash = id.indexOf('-', firstDash + 1)
+      x = id.substring(0, secondDash)
+      y = id.substring(secondDash + 1)
+    }
     if (x && y) {
       const xAsset = assetFromString(x)
       const yAsset = assetFromString(y)
