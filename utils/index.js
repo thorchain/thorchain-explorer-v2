@@ -689,7 +689,7 @@ export function assetFromString(s) {
       if (xAsset && yAsset) {
         return {
           chain: 'THOR',
-          symbol: `${xAsset.symbol}/${yAsset.symbol} LP`,
+          symbol: `${xAsset.symbol}/${yAsset.symbol}`,
           ticker: `${xAsset.ticker}/${yAsset.ticker} LP`,
           synth: false,
           trade: false,

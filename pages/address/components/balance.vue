@@ -11,7 +11,6 @@
               :asset="{ ticker: 'RUNE', chain: 'THOR' }"
               :height="'16px'"
               :chain="false"
-              class="asset-icon"
             />
             <span
               v-if="runeToken && runeToken.price > 0 && !isNaN(runeToken.price)"
@@ -30,7 +29,6 @@
               :asset="{ ticker: 'RUNE', chain: 'THOR' }"
               :height="'16px'"
               :chain="false"
-              class="asset-icon"
             />
             <div class="bonds">
               <span v-if="totalBond !== undefined" class="mono">
@@ -135,11 +133,7 @@
                     >
                       <div class="token-info">
                         <div class="token-name">
-                          <asset-icon
-                            :asset="token.asset"
-                            :chain="false"
-                            class="asset-icon"
-                          />
+                          <asset-icon :asset="token.asset" :chain="false" />
                           <span style="line-height: 1">{{
                             showAsset(token.asset)
                           }}</span>

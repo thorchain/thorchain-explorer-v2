@@ -1,4 +1,3 @@
-import { icons } from '@dicebear/collection'
 import { ethers } from 'ethers'
 import { CoinIconsFromTrustWallet } from '~/const/icon-list'
 import { assetFromString } from '~/utils'
@@ -50,8 +49,7 @@ export const AssetImage = (assetStr) => {
             'https://raw.githubusercontent.com/cosmos/chain-registry/master/kujira/images/rkuji.png'
         } else if (symbol === 'RUJI') {
           iconPath = iconPath = require('~/assets/images/assets/ruji.svg')
-        }
-        if (symbol === 'TCY') {
+        } else if (symbol === 'TCY') {
           iconPath = require('~/assets/images/assets/tcy.svg')
         }
         break

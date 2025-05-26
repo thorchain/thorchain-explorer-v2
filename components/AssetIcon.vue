@@ -1,26 +1,55 @@
 <template>
   <div :class="['icon-asset-container', ...classes]" :style="heightStyle">
-    <img
-      class="asset-icon"
-      :src="assetImage(asset)"
-      alt="asset-icon"
-      @error="imgErr"
-    />
-    <img
-      v-if="showChainImage()"
-      class="chain-asset-icon"
-      :src="assetImage(chain ? chain : assetToChain(asset))"
-      alt="asset-chain-icon"
-    />
+    <div v-if="isTokenFactory" class="asset-group">
+      <div class="left-icon">
+        <img
+          class="asset-icon"
+          :src="assetImage(tokens[0])"
+          alt="asset-icon"
+          @error="imgErr"
+        />
+      </div>
+      <div class="right-icon">
+        <img
+          class="asset-icon"
+          :src="assetImage(tokens[1])"
+          alt="asset-icon"
+          @error="imgErr"
+        />
+      </div>
+    </div>
+    <template v-else>
+      <img
+        class="asset-icon"
+        :src="assetImage(asset)"
+        alt="asset-icon"
+        @error="imgErr"
+      />
+      <img
+        v-if="showChainImage()"
+        class="chain-asset-icon"
+        :src="assetImage(chain ? chain : assetToChain(asset))"
+        alt="asset-chain-icon"
+      />
+    </template>
   </div>
 </template>
 
 <script>
-import { assetToString } from '~/utils'
+import { mapGetters } from 'vuex'
+import { assetFromString, assetToString } from '~/utils'
 
 export default {
   props: ['asset', 'chain', 'height', 'classes', 'chainHeight'],
+  data() {
+    return {
+      tokens: [],
+    }
+  },
   computed: {
+    ...mapGetters({
+      pools: 'getPools',
+    }),
     heightStyle() {
       return {
         '--asset-height': this.height ?? '1.5rem',
@@ -29,8 +58,37 @@ export default {
         '--chain-asset-width': this.chainHeight ?? '0.7rem',
       }
     },
+    isTokenFactory() {
+      return this.asset && typeof this.asset === 'object' && this.asset.id
+    },
+  },
+  mounted() {
+    this.tokens = this.formatAsset(this.asset)
   },
   methods: {
+    findAssetInPools(assetSymbol) {
+      const pool = this.pools.find((p) => {
+        const poolAsset = assetFromString(p.asset)
+        if (poolAsset.symbol === assetSymbol) {
+          return true
+        }
+        return false
+      })
+
+      return pool ? pool.asset : assetSymbol
+    },
+    formatAsset(asset) {
+      if (typeof asset === 'string') {
+        asset = assetFromString(asset)
+      }
+
+      if (asset.id) {
+        const [x, y] = asset.symbol.split('/')
+        return [this.findAssetInPools(x), this.findAssetInPools(y)]
+      }
+
+      return asset
+    },
     showChainImage() {
       if (this.chain === false) {
         return false
@@ -57,7 +115,6 @@ export default {
   position: relative;
   width: var(--asset-width);
   height: var(--asset-height);
-  border-radius: $radius-full;
   margin-right: $space-8;
 
   .asset-icon {
@@ -78,6 +135,28 @@ export default {
 
   &.no-margin {
     margin: $space-0;
+  }
+}
+
+.asset-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $space-2;
+
+  .left-icon,
+  .right-icon {
+    width: calc(var(--asset-width) / 2);
+    display: flex;
+    overflow: hidden;
+  }
+
+  .right-icon {
+    justify-content: flex-end;
+  }
+
+  .asset-icon {
+    margin: 0;
   }
 }
 </style>
