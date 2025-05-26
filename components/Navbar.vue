@@ -296,6 +296,10 @@ export default {
               name: 'Trade Assets',
               link: '/thorfi/trades',
             },
+              {
+              name: 'Denoms',
+              link: '/thorfi/denom',
+            },
             process.env.NETWORK === 'mainnet'
               ? {
                   name: 'Rune Pool',

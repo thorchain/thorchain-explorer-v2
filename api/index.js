@@ -30,6 +30,7 @@ import {
 import {
   getRunePoolProviders,
   getMimir,
+  getDenom,
   getBalance,
   getLastBlockHeight,
   getNativeTx,
@@ -203,6 +204,7 @@ export default function ({ $axios }, inject) {
     getTxs,
     getConstants,
     getMimir,
+    getDenom,
     getTx,
     getAddress,
     getPoolStats,
