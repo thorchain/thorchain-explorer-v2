@@ -36,6 +36,10 @@ export default {
           link: '/thorfi/runepool',
           text: 'Rune Pool',
         },
+        {
+          name: 'Denoms',
+          link: '/thorfi/denom',
+        },
       ],
     }
   },

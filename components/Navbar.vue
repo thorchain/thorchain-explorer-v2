@@ -310,24 +310,28 @@ export default {
           icon: 'shieldSelected',
           link: '/vaults',
         },
-        process.env.NETWORK === 'mainnet'
-          ? {
-              name: 'Rujira',
-              unicon: 'chartUnselected',
-              icon: 'chartSelected',
-              link: '/rujira',
-              submenu: [
-                {
-                  name: 'Secured Assets',
-                  link: '/rujira/secured',
-                },
-                {
+        {
+          name: 'Rujira',
+          unicon: 'chartUnselected',
+          icon: 'chartSelected',
+          link: '/rujira',
+          submenu: [
+            {
+              name: 'Secured Assets',
+              link: '/rujira/secured',
+            },
+            process.env.NETWORK === 'mainnet'
+              ? {
                   name: 'Merge',
                   link: '/rujira/merge',
-                },
-              ],
-            }
-          : false,
+                }
+              : false,
+            {
+              name: 'Tokens',
+              link: '/rujira/tokens',
+            },
+          ],
+        },
         process.env.NETWORK === 'mainnet'
           ? {
               name: 'Insights',

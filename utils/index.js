@@ -632,7 +632,7 @@ export function assetFromString(s) {
     return s
   }
 
-  if (s === 'TCY') {
+  if (s.toUpperCase() === 'TCY') {
     return {
       chain: 'THOR',
       symbol: 'TCY',
@@ -643,7 +643,7 @@ export function assetFromString(s) {
     }
   }
 
-  if (s === 'RUNE') {
+  if (s.toUpperCase() === 'RUNE') {
     return {
       chain: 'THOR',
       symbol: 'RUNE',
@@ -654,7 +654,7 @@ export function assetFromString(s) {
     }
   }
 
-  if (s === 'NAMI') {
+  if (s.toUpperCase() === 'NAMI') {
     return {
       chain: 'THOR',
       symbol: 'NAMI',
@@ -665,7 +665,7 @@ export function assetFromString(s) {
     }
   }
 
-  if (s === 'AUTO') {
+  if (s.toUpperCase() === 'AUTO') {
     return {
       chain: 'THOR',
       symbol: 'AUTO',
@@ -676,7 +676,7 @@ export function assetFromString(s) {
     }
   }
 
-  if (s === 'LQDY') {
+  if (s.toUpperCase() === 'LQDY') {
     return {
       chain: 'THOR',
       symbol: 'LQDY',
@@ -737,7 +737,7 @@ export function assetFromString(s) {
 
   // Add support for "x/" prefix for THORChain assets
   if (s.toLowerCase().startsWith('x/')) {
-    const symbol = s.substring(2)
+    const symbol = s.substring(2).toUpperCase()
     return {
       chain: 'THOR',
       symbol,

@@ -7,6 +7,11 @@ export function getMimir() {
     endpoints[process.env.NETWORK].THORNODE_URL + 'thorchain/mimir'
   )
 }
+export function getDenom() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].THORNODE_URL + 'cosmos/bank/v1beta1/denoms_metadata'
+  )
+}
 export function getRunePoolProviders() {
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].THORNODE_URL + 'thorchain/rune_providers'
