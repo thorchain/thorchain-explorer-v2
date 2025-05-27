@@ -1,15 +1,13 @@
 <template>
-  <div>
-    <div class="search-denom">
-      <div class="search-container">
-        <div id="nodes-search-container">
-          <input
-            v-model="searchTerm"
-            placeholder="Search by name or symbol"
-            class="search-input"
-          />
-          <SearchIcon class="search-icon" />
-        </div>
+  <page>
+    <div class="search-container">
+      <div id="nodes-search-container">
+        <input
+          v-model="searchTerm"
+          placeholder="Search by name or symbol"
+          class="search-input"
+        />
+        <SearchIcon class="search-icon" />
       </div>
     </div>
     <div class="metadata-grid">
@@ -85,7 +83,7 @@
         </div>
       </card>
     </div>
-  </div>
+  </page>
 </template>
 
 <script>
@@ -178,14 +176,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.search-denom {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 30px;
-}
-
 .title-section {
   display: flex;
   align-items: center;
@@ -213,6 +203,7 @@ export default {
   display: flex;
   position: relative;
   flex: 1;
+  max-width: 35rem;
 
   .search-input {
     flex: 1;
@@ -224,7 +215,6 @@ export default {
     padding: $space-12;
     font-size: $font-size-mobile;
     font-weight: 450;
-    width: 22rem;
     margin: $space-2;
 
     @include lg {
