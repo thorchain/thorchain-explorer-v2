@@ -654,6 +654,39 @@ export function assetFromString(s) {
     }
   }
 
+  if (s === 'NAMI') {
+    return {
+      chain: 'THOR',
+      symbol: 'NAMI',
+      ticker: 'NAMI',
+      synth: false,
+      trade: false,
+      secure: false,
+    }
+  }
+
+  if (s === 'AUTO') {
+    return {
+      chain: 'THOR',
+      symbol: 'AUTO',
+      ticker: 'AUTO',
+      synth: false,
+      trade: false,
+      secure: false,
+    }
+  }
+
+  if (s === 'LQDY') {
+    return {
+      chain: 'THOR',
+      symbol: 'LQDY',
+      ticker: 'LQDY',
+      synth: false,
+      trade: false,
+      secure: false,
+    }
+  }
+
   // Handle "x/staking-x/" denoms
   if (s.toLowerCase().startsWith('x/staking-x/')) {
     const id = s.substring('x/staking-x/'.length)

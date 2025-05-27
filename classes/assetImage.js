@@ -51,6 +51,12 @@ export const AssetImage = (assetStr) => {
           iconPath = iconPath = require('~/assets/images/assets/ruji.svg')
         } else if (symbol === 'TCY') {
           iconPath = require('~/assets/images/assets/tcy.svg')
+        } else if (symbol === 'NAMI') {
+          iconPath = require('~/assets/images/assets/nami.png')
+        } else if (symbol === 'AUTO') {
+          iconPath = require('~/assets/images/assets/auto.png')
+        } else if (symbol === 'LQDY') {
+          iconPath = require('~/assets/images/assets/lqdy.png')
         }
         break
 
