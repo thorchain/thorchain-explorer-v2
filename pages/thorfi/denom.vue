@@ -15,35 +15,37 @@
     <div class="metadata-grid">
       <card v-for="metadata in filteredMetadata" :key="metadata.base">
         <div class="metadata-header">
-          <h3>{{ metadata.display || metadata.base }}</h3>
+          <h3 class="header-class">
+            <asset-icon
+              :asset="assetFromString(metadata.base)"
+              :chain="false"
+              :height="'1.8rem'"
+            ></asset-icon>
+            <span>
+              {{ formatContractAsset(metadata.base) }}
+            </span>
+          </h3>
           <div v-if="metadata.description" class="description-container">
             <infoIcon
+              v-tooltip="metadata.description"
               class="description-button"
-              :class="{ active: metadata.showDescription }"
-              @click="toggleDescription(metadata)"
-              title="Show description"
             >
             </infoIcon>
-
-            <card v-if="metadata.showDescription" class="description-section">
-              {{ metadata.description }}
-            </card>
           </div>
         </div>
 
         <div class="metadata-content">
-          <div class="symbol-badge">
-            <div :class="'mini-bubble green'">
-              <div>{{ metadata.symbol }}</div>
-            </div>
+          <div class="metadata-field">
+            <label>Symbol:</label>
+            <div>{{ metadata.symbol }}</div>
           </div>
 
           <div class="metadata-field">
             <label>Base:</label>
-            <div>{{ metadata.base }}</div>
+            <div v-tooltip="metadata.base">{{ metadata.base }}</div>
           </div>
 
-          <div class="metadata-field">
+          <div v-if="metadata.base !== metadata.display" class="metadata-field">
             <label>Display:</label>
             <div>{{ metadata.display }}</div>
           </div>
@@ -55,7 +57,7 @@
             }}</a>
           </div>
 
-          <div class="denom-units-section" v-if="metadata.denom_units">
+          <div v-if="metadata.denom_units" class="denom-units-section">
             <div class="denom-units-container">
               <div
                 v-for="(unit, index) in metadata.denom_units"
@@ -64,15 +66,15 @@
               >
                 <div class="denom-unit-field">
                   <div class="denom-unit-label">Denom:</div>
-                  <span>{{ unit.denom }}</span>
+                  <span v-tooltip="unit.denom">{{ unit.denom }}</span>
                 </div>
                 <div class="denom-unit-exponent">
                   <div class="denom-unit-label">Exponent:</div>
                   <span>{{ unit.exponent }}</span>
                 </div>
                 <div
-                  class="denom-unit-field"
                   v-if="unit.aliases && unit.aliases.length"
+                  class="denom-unit-field"
                 >
                   <span class="denom-unit-label">Aliases:</span>
                   <span>{{ unit.aliases.join(', ') }}</span>
@@ -89,6 +91,7 @@
 <script>
 import SearchIcon from '~/assets/images/search.svg?inline'
 import infoIcon from '~/assets/images/info.svg?inline'
+import { assetFromString } from '~/utils'
 
 export default {
   name: 'DenomMetadata',
@@ -145,13 +148,23 @@ export default {
     await this.fetchMetadata()
   },
   methods: {
+    assetFromString(asset) {
+      return assetFromString(asset)
+    },
+    formatContractAsset(asset) {
+      const a = assetFromString(asset)
+      if (a) {
+        return a.ticker?.toUpperCase() ?? a
+      }
+
+      return asset
+    },
     async fetchMetadata() {
       try {
         const response = await this.$api.getDenom()
         const data = response.data
         this.metadataList = (data.metadatas || []).map((item) => ({
           ...item,
-          showDescription: false,
         }))
       } catch (error) {
         console.error('Error fetching denom metadata:', error)
@@ -159,9 +172,6 @@ export default {
       } finally {
         this.loading = false
       }
-    },
-    toggleDescription(metadata) {
-      metadata.showDescription = !metadata.showDescription
     },
   },
 }
@@ -261,11 +271,17 @@ export default {
     margin: 0;
     font-size: 18px;
     overflow: hidden;
-    text-overflow: ellipsis;
     white-space: nowrap;
     max-width: 12rem;
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: $space-8;
     font-size: $font-size-xs;
+
+    span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
   }
 }
 
@@ -328,6 +344,11 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 4px;
+
+  @include lg {
+    flex-direction: row;
+    justify-content: space-between;
+  }
 
   label {
     font-size: $font-size-s;

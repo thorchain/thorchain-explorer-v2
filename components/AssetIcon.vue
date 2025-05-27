@@ -41,11 +41,6 @@ import { assetFromString, assetToString } from '~/utils'
 
 export default {
   props: ['asset', 'chain', 'height', 'classes', 'chainHeight'],
-  data() {
-    return {
-      tokens: [],
-    }
-  },
   computed: {
     ...mapGetters({
       pools: 'getPools',
@@ -61,13 +56,23 @@ export default {
     isTokenFactory() {
       return this.asset && typeof this.asset === 'object' && this.asset.id
     },
-  },
-  mounted() {
-    this.tokens = this.formatAsset(this.asset)
+    tokens() {
+      let asset = this.asset
+      if (typeof asset === 'string') {
+        asset = assetFromString(asset)
+      }
+
+      if (asset.id) {
+        const [x, y] = asset.symbol.toUpperCase().split('/')
+        return [this.findAssetInPools(x), this.findAssetInPools(y)]
+      }
+
+      return [asset]
+    },
   },
   methods: {
     findAssetInPools(assetSymbol) {
-      const pool = this.pools.find((p) => {
+      const pool = this.pools?.find((p) => {
         const poolAsset = assetFromString(p.asset)
         if (poolAsset.symbol === assetSymbol) {
           return true
@@ -76,18 +81,6 @@ export default {
       })
 
       return pool ? pool.asset : assetSymbol
-    },
-    formatAsset(asset) {
-      if (typeof asset === 'string') {
-        asset = assetFromString(asset)
-      }
-
-      if (asset.id) {
-        const [x, y] = asset.symbol.split('/')
-        return [this.findAssetInPools(x), this.findAssetInPools(y)]
-      }
-
-      return asset
     },
     showChainImage() {
       if (this.chain === false) {
