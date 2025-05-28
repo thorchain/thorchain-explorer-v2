@@ -234,6 +234,10 @@ export default {
               name: 'Pendulum',
               link: '/network/pendulum',
             },
+            {
+              name: 'Outbound Fees',
+              link: '/network/outboundFees',
+            },
           ],
         },
         {
@@ -319,6 +323,10 @@ export default {
             {
               name: 'Secured Assets',
               link: '/rujira/secured',
+            },
+            {
+              name: 'Contracts',
+              link: '/rujira/contracts',
             },
             process.env.NETWORK === 'mainnet'
               ? {

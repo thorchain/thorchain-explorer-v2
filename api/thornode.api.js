@@ -12,6 +12,16 @@ export function getDenom() {
     endpoints[process.env.NETWORK].THORNODE_URL + 'cosmos/bank/v1beta1/denoms_metadata'
   )
 }
+export function getOutboundFees() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].THORNODE_URL + '/thorchain/outbound_fees'
+  )
+}
+export function getCodes() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].THORNODE_URL + '/thorchain/codes'
+  )
+}
 export function getRunePoolProviders() {
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].THORNODE_URL + 'thorchain/rune_providers'
