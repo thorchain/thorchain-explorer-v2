@@ -234,6 +234,10 @@ export default {
               name: 'Pendulum',
               link: '/network/pendulum',
             },
+            {
+              name: 'Outbound Fees',
+              link: '/network/outboundFees',
+            },
           ],
         },
         {
@@ -316,9 +320,13 @@ export default {
           icon: 'chartSelected',
           link: '/rujira',
           submenu: [
-            {
+              {
               name: 'Secured Assets',
               link: '/rujira/secured',
+            },
+               {
+              name: 'Contract',
+              link: '/rujira/contract',
             },
             process.env.NETWORK === 'mainnet'
               ? {
