@@ -320,13 +320,13 @@ export default {
           icon: 'chartSelected',
           link: '/rujira',
           submenu: [
-              {
+            {
               name: 'Secured Assets',
               link: '/rujira/secured',
             },
-               {
-              name: 'Contract',
-              link: '/rujira/contract',
+            {
+              name: 'Contracts',
+              link: '/rujira/contracts',
             },
             process.env.NETWORK === 'mainnet'
               ? {

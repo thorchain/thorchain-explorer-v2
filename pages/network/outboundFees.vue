@@ -18,30 +18,37 @@
           <span>{{ props.formattedRow[props.column.field] }}</span>
         </span>
         <span v-else-if="props.column.field === 'outboundFee'">
-          {{ (props.row.outboundFee / 1e8).toFixed(8) }}
-          {{ props.formattedRow.asset.split('.')[1] }}
+          {{ decimalFormat(props.row.outboundFee / 1e8) }}
+          {{ showAsset(props.row.asset, true) }}
         </span>
         <span v-else-if="props.column.field === 'feeWithheld'">
+          {{ runeCur() }}
           {{ (props.row.feeWithheld / 1e8) | number('0,0.00a') }}
-          (${{
-            ((props.row.feeWithheld / 1e8) * runePrice) | number('0,0.00a')
-          }}
-
-          )
+          <small v-if="+props.row.feeWithheld > 0">
+            (${{
+              ((props.row.feeWithheld / 1e8) * runePrice) | number('0,0.00a')
+            }})
+          </small>
         </span>
         <span v-else-if="props.column.field === 'feeSpent'">
-          {{ (props.row.feeSpent / 1e8) | number('0,0.00a') }} (${{
-            ((props.row.feeSpent / 1e8) * runePrice) | number('0,0.00a')
-          }})
+          {{ runeCur() }}
+          {{ (props.row.feeSpent / 1e8) | number('0,0.00a') }}
+          <small v-if="+props.row.feeSpent > 0">
+            (${{
+              ((props.row.feeSpent / 1e8) * runePrice) | number('0,0.00a')
+            }})
+          </small>
         </span>
         <span v-else-if="props.column.field === 'surplus'">
-          {{ (props.row.surplus / 1e8) | number('0,0.00a') }} (${{
-            ((props.row.surplus / 1e8) * runePrice) | number('0,0.00a')
-          }})
+          {{ runeCur() }}
+          {{ (props.row.surplus / 1e8) | number('0,0.00a') }}
+          <small v-if="+props.row.surplus > 0">
+            (${{ ((props.row.surplus / 1e8) * runePrice) | number('0,0.00a') }})
+          </small>
         </span>
 
         <span v-else-if="props.column.field === 'dynamicMultiplier'">
-          {{ (props.row.dynamicMultiplier / 1e4) | percentage }}%
+          {{ (props.row.dynamicMultiplier / 1e6) | percent(2) }}
         </span>
         <span v-else>
           {{ props.formattedRow[props.column.field] }}
@@ -71,26 +78,36 @@ export default {
           label: 'Outbound Fee',
           field: 'outboundFee',
           sortable: true,
+          tdClass: 'mono',
+          type: 'number',
         },
         {
           label: 'Fee Withheld',
           field: 'feeWithheld',
           sortable: true,
+          tdClass: 'mono',
+          type: 'number',
         },
         {
           label: 'Fee Spent',
           field: 'feeSpent',
           sortable: true,
+          tdClass: 'mono',
+          type: 'number',
         },
         {
           label: 'Surplus',
           field: 'surplus',
           sortable: true,
+          tdClass: 'mono',
+          type: 'number',
         },
         {
           label: 'Dynamic Multiplier',
           field: 'dynamicMultiplier',
           sortable: true,
+          tdClass: 'mono',
+          type: 'number',
         },
       ],
     }

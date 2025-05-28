@@ -1,49 +1,52 @@
 <template>
-  <div>
-    <TableLoader v-if="loading" :cols="columns" :rows="Array(7).fill({})" />
-    <vue-good-table
-      v-else
-      :columns="columns"
-      :rows="codes"
-      style-class="vgt-table net-table"
-      :sort-options="{
-        enabled: true,
-        initialSortBy: { field: 'name', type: 'asc' },
-      }"
-    >
-      <template #table-row="props">
-        <span v-if="props.column.field === 'name'">
-          {{ props.row.name }}
-        </span>
-
-        <span v-else-if="props.column.field === 'checksum'">
-          {{ props.row.code.slice(0, 6) }}...{{ props.row.code.slice(-4) }}
-        </span>
-
-        <span v-else-if="props.column.field === 'deployers'">
-          <span
-            v-for="(deployer, index) in props.row.deployers"
-            :key="deployer"
-          >
-            <NuxtLink :to="`/address/${deployer}`" class="clickable">
-              {{ deployer.slice(-4) }}
-            </NuxtLink>
-            <span v-if="index < props.row.deployers.length - 1">, </span>
+  <page>
+    <card title="Contracts">
+      <TableLoader v-if="loading" :cols="columns" :rows="Array(7).fill({})" />
+      <vue-good-table
+        v-else
+        :columns="columns"
+        :rows="codes"
+        style-class="vgt-table net-table"
+        :sort-options="{
+          enabled: true,
+          initialSortBy: { field: 'name', type: 'asc' },
+        }"
+      >
+        <template #table-row="props">
+          <span v-if="props.column.field === 'name'">
+            {{ props.row.name }}
           </span>
-        </span>
 
-        <span v-else-if="props.column.field === 'origin'">
-          <a :href="props.row.origin" target="_blank">
-            {{ props.row.displayOrigin }}
-          </a>
-        </span>
+          <span v-else-if="props.column.field === 'checksum'" class="checksum">
+            {{ props.row.code.slice(0, 6) }}...{{ props.row.code.slice(-4) }}
+            <copy :str-copy="props.row.code" />
+          </span>
 
-        <span v-else>
-          {{ props.row[props.column.field] }}
-        </span>
-      </template>
-    </vue-good-table>
-  </div>
+          <span v-else-if="props.column.field === 'deployers'">
+            <span
+              v-for="(deployer, index) in props.row.deployers"
+              :key="deployer"
+            >
+              <nuxt-link :to="`/address/${deployer}`" class="clickable">
+                {{ deployer.slice(-4) }}
+              </nuxt-link>
+              <span v-if="index < props.row.deployers.length - 1">, </span>
+            </span>
+          </span>
+
+          <span v-else-if="props.column.field === 'origin'">
+            <a class="clickable" :href="props.row.origin" target="_blank">
+              {{ props.row.displayOrigin }}
+            </a>
+          </span>
+
+          <span v-else>
+            {{ props.row[props.column.field] }}
+          </span>
+        </template>
+      </vue-good-table>
+    </card>
+  </page>
 </template>
 
 <script>
@@ -61,11 +64,13 @@ export default {
           label: 'Checksum',
           field: 'checksum',
           sortable: true,
+          tdClass: 'mono',
         },
         {
           label: 'Deployers',
           field: 'deployers',
           sortable: true,
+          tdClass: 'mono',
         },
         {
           label: 'Origin',
@@ -82,7 +87,6 @@ export default {
     async fetchCodes() {
       try {
         const { data } = await this.$api.getCodes()
-        console.log('API Response:', data)
 
         if (!data?.codes) {
           console.error('Invalid data structure')
@@ -128,3 +132,11 @@ export default {
   },
 }
 </script>
+
+<style lang="scss" scoped>
+.checksum {
+  display: flex;
+  align-items: center;
+  gap: $space-8;
+}
+</style>
