@@ -34,7 +34,7 @@ export default {
         },
         {
           name: 'Outbound Fees',
-          link: '/network/outboundFees',
+          link: '/network/outbounds',
         },
       ],
     }
