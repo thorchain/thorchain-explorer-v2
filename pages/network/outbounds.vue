@@ -1,7 +1,6 @@
 <template>
-  <div>
+  <card title="Outbound Fees">
     <TableLoader v-if="loading" :cols="columns" :rows="Array(10).fill({})" />
-
     <vue-good-table
       v-else
       :columns="columns"
@@ -55,7 +54,7 @@
         </span>
       </template>
     </vue-good-table>
-  </div>
+  </card>
 </template>
 
 <script>
