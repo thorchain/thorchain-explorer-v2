@@ -55,14 +55,16 @@
             }}</a>
           </div>
 
-          <div v-if="metadata.supply" class="metadata-field">
-            <label>Supply:</label>
-            <div>{{ (metadata.supply / 1e8) | number('0,0.00') }}</div>
-          </div>
+          <div v-if="metadata.supply" class="supplies">
+            <div v-if="metadata.supply" class="metadata-field">
+              <label>Supply:</label>
+              <div>{{ (metadata.supply / 1e8) | number('0,0.00') }}</div>
+            </div>
 
-          <div v-if="metadata.owners" class="metadata-field">
-            <label>Holders:</label>
-            <div>{{ metadata.owners | number('0,0') }}</div>
+            <div v-if="metadata.owners" class="metadata-field">
+              <label>Holders:</label>
+              <div>{{ metadata.owners | number('0,0') }}</div>
+            </div>
           </div>
 
           <div v-if="metadata.denom_units" class="denom-units-section">
@@ -382,6 +384,15 @@ export default {
 .symbol-badge {
   width: fit-content;
 }
+
+.supplies {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border-color);
+}
+
 .denom-units-section {
   padding-top: 15px;
   border-top: 1px dashed var(--border-color);
