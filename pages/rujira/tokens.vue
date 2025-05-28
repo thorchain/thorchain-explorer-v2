@@ -55,6 +55,16 @@
             }}</a>
           </div>
 
+          <div v-if="metadata.supply" class="metadata-field">
+            <label>Supply:</label>
+            <div>{{ (metadata.supply / 1e8) | number('0,0.00') }}</div>
+          </div>
+
+          <div v-if="metadata.owners" class="metadata-field">
+            <label>Holders:</label>
+            <div>{{ metadata.owners | number('0,0') }}</div>
+          </div>
+
           <div v-if="metadata.denom_units" class="denom-units-section">
             <div class="denom-units-container">
               <div
@@ -143,7 +153,11 @@ export default {
     },
   },
   async mounted() {
-    await this.fetchMetadata()
+    try {
+      await this.fetchMiddleware()
+    } catch (error) {
+      await this.fetchMetadata()
+    }
   },
   methods: {
     assetFromString(asset) {
@@ -157,13 +171,12 @@ export default {
 
       return asset
     },
+    async fetchMiddleware() {
+      this.metadataList = (await this.$api.getDenoms())?.data
+    },
     async fetchMetadata() {
       try {
-        const response = await this.$api.getDenom()
-        const data = response.data
-        this.metadataList = (data.metadatas || []).map((item) => ({
-          ...item,
-        }))
+        this.metadataList = (await this.$api.getDenom())?.data?.metadatas
       } catch (error) {
         console.error('Error fetching denom metadata:', error)
         this.metadataList = []

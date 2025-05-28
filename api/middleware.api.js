@@ -246,3 +246,9 @@ export function getTcyInfo(params) {
     }
   )
 }
+
+export function getDenoms() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + 'api/denoms'
+  )
+}

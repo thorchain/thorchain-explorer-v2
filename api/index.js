@@ -115,6 +115,7 @@ import {
   getAffiliateHistory,
   getInfraRUJIMerge,
   getTcyInfo,
+  getDenoms,
 } from './middleware.api'
 import {
   getChurnHistory,
@@ -319,6 +320,7 @@ export default function ({ $axios }, inject) {
     getTCYDistribution,
     getTCYStaker,
     getTcyInfo,
+    getDenoms,
   }
 
   inject('api', api)
