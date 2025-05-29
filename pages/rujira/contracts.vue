@@ -11,38 +11,56 @@
           enabled: true,
           initialSortBy: { field: 'name', type: 'asc' },
         }"
+        :group-options="{
+          enabled: true,
+          collapsable: true,
+          rowKey: 'name',
+        }"
       >
-        <template #table-row="props">
-          <span v-if="props.column.field === 'name'">
+        <template slot="table-row" slot-scope="props">
+          <span v-if="props.column.field === 'name' && props.row.children">
             {{ props.row.name }}
           </span>
 
-          <span v-else-if="props.column.field === 'checksum'" class="checksum">
-            {{ props.row.code.slice(0, 6) }}...{{ props.row.code.slice(-4) }}
-            <copy :str-copy="props.row.code" />
-          </span>
-
-          <span v-else-if="props.column.field === 'deployers'">
-            <span
-              v-for="(deployer, index) in props.row.deployers"
-              :key="deployer"
-            >
-              <nuxt-link :to="`/address/${deployer}`" class="clickable">
-                {{ deployer.slice(-4) }}
-              </nuxt-link>
-              <span v-if="index < props.row.deployers.length - 1">, </span>
+          <template v-else-if="!props.row.children">
+            <span v-if="props.column.field === 'name'">
+              {{ props.row.name }}
             </span>
-          </span>
 
-          <span v-else-if="props.column.field === 'origin'">
-            <a class="clickable" :href="props.row.origin" target="_blank">
-              {{ props.row.displayOrigin }}
-            </a>
-          </span>
+            <span
+              v-else-if="props.column.field === 'checksum' && props.row.code"
+              class="checksum"
+            >
+              {{ props.row.code.slice(0, 6) }}...{{ props.row.code.slice(-4) }}
+              <copy :str-copy="props.row.code" />
+            </span>
 
-          <span v-else>
-            {{ props.row[props.column.field] }}
-          </span>
+            <span v-else-if="props.column.field === 'deployers'">
+              <span
+                v-for="(deployer, index) in props.row.deployers"
+                :key="deployer"
+              >
+                <nuxt-link :to="`/address/${deployer}`" class="clickable">
+                  {{ deployer.slice(-4) }}
+                </nuxt-link>
+                <span v-if="index < props.row.deployers.length - 1">, </span>
+              </span>
+            </span>
+
+            <span
+              v-else-if="props.column.field === 'origin' && props.row.origin"
+            >
+              <a class="clickable" :href="props.row.origin" target="_blank">
+                {{ props.row.displayOrigin }}
+              </a>
+            </span>
+
+            <span v-else>
+              {{ props.row[props.column.field] || '' }}
+            </span>
+          </template>
+
+          <span v-else></span>
         </template>
       </vue-good-table>
     </card>
@@ -93,15 +111,34 @@ export default {
           return
         }
 
-        this.codes = data.codes.map((item) => ({
-          name: this.formatName(item.origin),
-          code: item.code,
-          checksum: item.code,
-          deployers: item.deployers || [],
-          origin: item.origin,
-          displayOrigin: this.formatOrigin(item.origin),
-        }))
+        const grouped = {}
 
+        data.codes.forEach((item) => {
+          const name = this.formatName(item.origin)
+          const displayName = this.formatDisplayName(item.origin)
+
+          if (!grouped[name]) {
+            grouped[name] = {
+              name: displayName,
+              children: [],
+              totalDeployers: 0,
+              sampleOrigin: item.origin,
+            }
+          }
+
+          grouped[name].children.push({
+            name: displayName,
+            code: item.code,
+            checksum: item.code,
+            deployers: item.deployers || [],
+            origin: item.origin,
+            displayOrigin: this.formatOrigin(item.origin),
+          })
+
+          grouped[name].totalDeployers += item.deployers?.length || 0
+        })
+
+        this.codes = Object.values(grouped)
         this.loading = false
       } catch (error) {
         console.error('Error:', error)
@@ -112,6 +149,11 @@ export default {
       return origin.split('/').pop()
     },
     formatName(origin) {
+      if (!origin) return ''
+      const parts = origin.split('/')
+      return parts[parts.length - 1]
+    },
+    formatDisplayName(origin) {
       if (!origin) return ''
       const parts = origin.split('/')
       const lastPart = parts[parts.length - 1]
@@ -134,9 +176,24 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.checksum {
-  display: flex;
-  align-items: center;
-  gap: $space-8;
+::v-deep .vgt-table.net-table {
+  background-color: var(--bg-color);
+  .vgt-row-header {
+    background-color: var(--bg-color);
+    cursor: pointer;
+    font-weight: bold;
+    border-top: 1px solid var(--border-color) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+  }
+
+  tr.vgt-row:not(.vgt-row-header) {
+    background-color: var(--bg-color);
+  }
+
+  .checksum {
+    display: flex;
+    align-items: center;
+    gap: $space-8;
+  }
 }
 </style>
