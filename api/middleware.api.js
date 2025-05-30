@@ -252,3 +252,9 @@ export function getDenoms() {
     endpoints[process.env.NETWORK].SERVER_URL + 'api/denoms'
   )
 }
+
+export function getContracts() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + 'api/contracts'
+  )
+}
