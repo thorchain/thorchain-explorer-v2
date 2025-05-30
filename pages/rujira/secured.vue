@@ -26,6 +26,7 @@
           }"
           :sort-options="{
             enabled: true,
+            initialSortBy: { field: 'securedDepth', type: 'desc' },
           }"
         >
           <template slot="table-column" slot-scope="props">
