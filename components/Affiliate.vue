@@ -18,6 +18,9 @@
             :alt="affiliateWallet(affiliate).name"
           />
           <em v-else>{{ affiliateWallet(affiliate).name }}</em>
+          <em v-if="affiliateWallet(affiliate).addName">
+            {{ affiliateWallet(affiliate).name }}
+          </em>
         </div>
       </component>
     </template>
@@ -143,6 +146,11 @@ const defaultInterfaces = {
     name: 'LeoDex',
     icon: 'Leodex',
   },
+  clypto: {
+    name: 'Clypto',
+    icon: 'clypto',
+    addName: true,
+  },
 }
 
 const defaultAffiliateMap = {
@@ -192,6 +200,7 @@ const defaultAffiliateMap = {
   rj: defaultInterfaces.rujira,
   eld: defaultInterfaces.eld,
   cs: defaultInterfaces.cacaoswap,
+  c1: defaultInterfaces.clypto,
 }
 
 const newInterfaces = {
@@ -279,6 +288,10 @@ const newInterfaces = {
     name: 'LeoDex',
     icon: 'Leodexicon',
   },
+  clypto: {
+    name: 'Clypto',
+    icon: 'clypto',
+  },
 }
 
 const newAffiliateMap = {
@@ -313,6 +326,7 @@ const newAffiliateMap = {
   v0: newInterfaces.vultisig,
   va: newInterfaces.vultisig,
   vi: newInterfaces.vultisig,
+  c1: newInterfaces.clypto,
 }
 
 export default {
@@ -369,6 +383,7 @@ export default {
       return {
         name: ifc.name ?? ifc,
         icons,
+        addName: ifc.addName ?? null,
       }
     },
 
@@ -393,6 +408,7 @@ export default {
       return {
         icon,
         name: detail.name,
+        addName: detail.addName,
       }
     },
   },
