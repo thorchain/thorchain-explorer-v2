@@ -391,7 +391,7 @@
         </div>
         <right-arrow class="action-type" />
         <div class="asset-cell">
-          <asset-icon :height="'1.2rem'" :asset="'THOR.RUJI'" />
+          <span style="margin-right: 0.5rem">Shares:</span>
           <span class="asset-name">{{
             decimalFormat(row.metadata.contract.attributes.shares / 1e8)
           }}</span>
