@@ -28,6 +28,10 @@ export default {
           text: 'TVL by Chain',
           link: '/pools/tvl',
         },
+        {
+          text: 'Rune Pool',
+          link: '/pools/runepool',
+        },
       ],
     }
   },

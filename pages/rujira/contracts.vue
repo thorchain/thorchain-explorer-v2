@@ -97,8 +97,6 @@
 </template>
 
 <script>
-import { props } from 'qrcode.vue'
-
 export default {
   data() {
     return {

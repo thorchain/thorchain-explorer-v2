@@ -276,6 +276,12 @@ export default {
               name: 'TVL by Chain',
               link: '/pools/tvl',
             },
+            process.env.NETWORK === 'mainnet'
+              ? {
+                  name: 'Rune Pool',
+                  link: '/pools/runepool',
+                }
+              : false,
           ],
         },
         {
@@ -300,12 +306,6 @@ export default {
               name: 'Trade Assets',
               link: '/thorfi/trades',
             },
-            process.env.NETWORK === 'mainnet'
-              ? {
-                  name: 'Rune Pool',
-                  link: '/thorfi/runepool',
-                }
-              : false,
           ],
         },
         {

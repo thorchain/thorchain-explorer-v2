@@ -622,7 +622,7 @@ export default {
   watch: {
     cardMode(n, o) {
       if (n !== o) {
-        this.$router.replace({ path: '/thorfi/runepool', query: { tab: n } })
+        this.$router.replace({ path: '/pools/runepool', query: { tab: n } })
       }
     },
     height() {
@@ -634,7 +634,7 @@ export default {
       this.cardMode = this.tab
     } else {
       this.$router.replace({
-        path: '/thorfi/runepool',
+        path: '/pools/runepool',
         query: { tab: 'rune-pools' },
       })
     }

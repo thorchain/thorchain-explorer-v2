@@ -33,10 +33,6 @@ export default {
           text: 'Trade Assets',
         },
         {
-          link: '/thorfi/runepool',
-          text: 'Rune Pool',
-        },
-        {
           name: 'Denoms',
           link: '/thorfi/denom',
         },
