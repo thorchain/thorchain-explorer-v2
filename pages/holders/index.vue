@@ -1,5 +1,6 @@
 <template>
   <page>
+    <Header :title="`${asset} Holders`"></Header>
     <card>
       <TableLoader
         v-if="loading"
@@ -11,6 +12,9 @@
         v-else
         :columns="filteredColumns"
         :rows="holders"
+        :sort-options="{
+          enabled: false,
+        }"
         style-class="vgt-table net-table"
       >
         <template slot="table-row" slot-scope="props">
