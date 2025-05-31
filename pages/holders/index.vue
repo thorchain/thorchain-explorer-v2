@@ -14,19 +14,26 @@
         style-class="vgt-table net-table"
       >
         <template slot="table-row" slot-scope="props">
-          <span v-if="props.column.field === 'address'">
+          <span
+            v-if="props.column.field === 'address'"
+            class="address-container"
+          >
+            <avatar :name="props.row.address" :small="true" />
             <address-bar :address-str="props.row.address"></address-bar>
           </span>
           <span v-else-if="props.column.field === 'amount'">
             {{
-              props.row.amount >= 10000
+              props.row.amount >= 1000
                 ? normalFormat(props.row.amount)
-                : props.row.amount
+                : decimalFormat(props.row.amount)
             }}
+            <small>
+              {{ showAsset(props.row.asset, true) }}
+            </small>
           </span>
 
           <span v-else-if="props.column.field === 'value' && showValue">
-            {{ normalFormat(props.row.value) }}
+            {{ props.row.value | currency }}
           </span>
           <span v-else-if="props.column.field === 'value' && !showValue">
             -
@@ -39,12 +46,25 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import { assetFromString } from '~/utils'
 
 export default {
   name: 'ThorHolders',
   data() {
     return {
-      allColumns: [
+      holders: [],
+      asset: '',
+      loading: true,
+      showValue: false,
+    }
+  },
+  computed: {
+    ...mapGetters({
+      runePrice: 'getRunePrice',
+      pools: 'getPools',
+    }),
+    allColumns() {
+      return [
         {
           label: 'Address',
           field: 'address',
@@ -53,25 +73,16 @@ export default {
           label: 'Balance',
           field: 'amount',
           type: 'number',
+          tdClass: 'mono',
         },
         {
           label: 'Value',
           field: 'value',
           type: 'number',
+          tdClass: 'mono',
+          hide: this.showValue === true,
         },
-      ],
-      holders: [],
-      asset: '',
-      loading: true,
-    }
-  },
-  computed: {
-    ...mapGetters({
-      runePrice: 'getRunePrice',
-      pools: 'getPools',
-    }),
-    showValue() {
-      return this.asset === 'THOR.RUNE'
+      ]
     },
     filteredColumns() {
       return this.allColumns.filter((column) => {
@@ -92,13 +103,29 @@ export default {
     if (!this.$route.query.asset) {
       this.$router.replace({ query: { asset: 'THOR.RUNE' } })
     } else {
-      this.asset = this.$route.query.asset
+      this.asset = this.$route.query.asset.toUpperCase()
       this.fetchHoldersData()
     }
   },
   methods: {
     async fetchHoldersData() {
       try {
+        let assetPrice = null
+        if (this.pools) {
+          const assetObject = assetFromString(this.asset)
+          const assetPool = this.pools.find(
+            (p) => assetFromString(p.asset).ticker === assetObject.ticker
+          )
+          assetPrice = +assetPool?.assetPriceUSD
+        }
+
+        if (this.asset === 'THOR.RUNE') {
+          assetPrice = this.runePrice
+        }
+
+        if (assetPrice) {
+          this.showValue = true
+        }
         const { data } = await this.$api.getHolders(this.asset)
 
         this.holders = data.map((holder, index) => {
@@ -107,7 +134,8 @@ export default {
           return {
             address: holder.address,
             amount,
-            value: this.showValue ? amount * this.runePrice : 0,
+            value: this.showValue ? amount * assetPrice : 0,
+            asset: coin.asset,
           }
         })
       } catch (error) {
@@ -119,3 +147,10 @@ export default {
   },
 }
 </script>
+
+<style lang="scss" scoped>
+.address-container {
+  display: flex;
+  gap: $space-8;
+}
+</style>

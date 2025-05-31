@@ -1,5 +1,5 @@
 <template>
-  <div v-if="avatarUrl" class="avatar-container">
+  <div v-if="avatarUrl" :class="['avatar-container', { small }]">
     <img :src="avatarUrl" alt="Address Avatar" />
   </div>
 </template>
@@ -14,6 +14,11 @@ export default {
     name: {
       type: String,
       required: true,
+    },
+    small: {
+      type: Boolean,
+      require: false,
+      default: false,
     },
   },
   data() {
@@ -44,7 +49,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .avatar-container {
   display: flex;
   justify-content: center;
@@ -55,11 +60,17 @@ export default {
   border-radius: 50%;
   overflow: hidden;
   border: 2px solid var(--border-color);
-}
 
-.avatar-container img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &.small {
+    width: 1rem;
+    height: 1rem;
+    border-radius: $radius-xs;
+  }
 }
 </style>
