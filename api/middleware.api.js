@@ -31,6 +31,13 @@ export function getChainsHeight() {
   )
 }
 
+export function getHolders(asset = 'THOR.RUNE') {
+  const baseUrl = endpoints[process.env.NETWORK].SERVER_URL + 'holders'
+  return $axiosInstace.get(baseUrl, {
+    params: { asset }
+  })
+}
+
 export function getPoolsHistory(period = '') {
   if (period === 'day') {
     period = ''
