@@ -205,6 +205,10 @@ export default {
             },
           ],
         },
+             {
+          title: 'Holders',
+          link: '/holders?asset=TCY',
+        },
         {
           title: 'Unclaimed',
           rowStart: 1,

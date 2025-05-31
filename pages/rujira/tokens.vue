@@ -63,7 +63,12 @@
 
             <div v-if="metadata.owners" class="metadata-field">
               <label>Holders:</label>
-              <div>{{ metadata.owners | number('0,0') }}</div>
+              <nuxt-link
+                class="clickable"
+                :to="'/holders?asset=' + metadata.base"
+              >
+                {{ metadata.owners | number('0,0') }}
+              </nuxt-link>
             </div>
           </div>
 

@@ -254,6 +254,10 @@ export default {
               name: 'TOP Swaps',
               link: '/swaps',
             },
+              {
+              name: 'Holders',
+              link: '/holders',
+            },
           ],
         },
         {

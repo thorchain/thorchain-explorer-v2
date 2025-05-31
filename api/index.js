@@ -82,6 +82,7 @@ import {
   getDashboardPlots,
   getExraNodesInfo,
   getChainsHeight,
+  getHolders,
   getServerTx,
   getPoolsHistory,
   getOldPoolsHistory,
@@ -266,6 +267,8 @@ export default function ({ $axios }, inject) {
     getThornodeArchiveTx,
     getTxArchiveStatus,
     getChainsHeight,
+    getHolders,
+
     getUserLpPosition,
     getPol,
     getBorrowers,
