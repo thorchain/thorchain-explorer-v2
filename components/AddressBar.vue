@@ -46,8 +46,8 @@ export default {
         return addressMap[this.addressStr]
       }
       return this.addressFormatV2(this.addressStr)
-    }
-  }
+    },
+  },
 }
 </script>
 
