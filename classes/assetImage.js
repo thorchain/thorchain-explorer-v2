@@ -21,6 +21,9 @@ export const AssetImage = (assetStr) => {
   let iconPath
 
   if (trustWalletMatch && chain !== 'THOR') {
+    if (trustWalletMatch === 'XRP-BF2') {
+      return require('~/assets/images/assets/xrp.svg')
+    }
     iconPath = `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/binance/assets/${trustWalletMatch}/logo.png`
   } else {
     // Override token icons when not found in trustwallet
