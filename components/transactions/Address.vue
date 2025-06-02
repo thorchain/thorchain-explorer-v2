@@ -7,7 +7,7 @@
     <template v-if="param">
       <component
         :is="disable ? 'span' : 'nuxt-link'"
-        v-tooltip="displayText"
+        v-tooltip="tooltipText" 
         :class="[
           'mono address',
           { clickable: !disable, hovered: hoveredAddress === param },
@@ -51,6 +51,9 @@ export default {
       }
       return this.addressFormatV2(this.param)
     },
+    tooltipText() {
+      return this.param  
+    }
   },
   methods: {
     emitHovered() {
