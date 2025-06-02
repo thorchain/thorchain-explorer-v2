@@ -3,14 +3,15 @@
     <template v-if="addressStr">
       <component
         :is="disable ? 'span' : 'nuxt-link'"
-        v-tooltip="addressStr"
+        v-tooltip="customName ? `${customName} (${addressStr})` : addressStr"
         :class="[
           'mono address',
           { clickable: !disable, hovered: hoveredAddress === addressStr },
         ]"
         :to="!disable ? { path: `/address/${addressStr}` } : undefined"
-        >{{ addressFormatV2(addressStr) }}</component
       >
+        {{ customName || addressFormatV2(addressStr) }}
+      </component>
       <copy v-if="!disable" :str-copy="addressStr" size="small"></copy>
     </template>
     <span v-else :class="['mono', { 'no-hover': disable }]">-</span>
@@ -31,6 +32,10 @@ export default {
     hoveredAddress: {
       type: String,
       default: undefined,
+    },
+    customName: {
+      type: String,
+      default: '',
     },
   },
 }
