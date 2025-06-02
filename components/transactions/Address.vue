@@ -7,13 +7,13 @@
     <template v-if="param">
       <component
         :is="disable ? 'span' : 'nuxt-link'"
-        v-tooltip="param"
+        v-tooltip="tooltipText"
         :class="[
           'mono address',
           { clickable: !disable, hovered: hoveredAddress === param },
         ]"
         :to="!disable ? { path: `/address/${param}` } : undefined"
-        >{{ addressFormatV2(param) }}</component
+        >{{ displayText }}</component
       >
       <copy
         v-if="!disable"
@@ -26,6 +26,8 @@
 </template>
 
 <script>
+import addressMap from '~/utils/address'
+
 export default {
   props: {
     param: {
@@ -37,6 +39,21 @@ export default {
       default: false,
     },
     hoveredAddress: String,
+    useCustomName: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  computed: {
+    displayText() {
+      if (this.useCustomName && addressMap[this.param]) {
+        return addressMap[this.param]
+      }
+      return this.addressFormatV2(this.param)
+    },
+    tooltipText() {
+      return this.param
+    },
   },
   methods: {
     emitHovered() {

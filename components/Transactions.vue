@@ -22,6 +22,7 @@
                   :disable="owner && owner === props.row[props.column.field]"
                   @setHovered="setHoveredAddress"
                   @removeHovered="removeHoveredAddress"
+                  :use-custom-name="true"
                 />
               </div>
             </div>
@@ -41,6 +42,7 @@
                   :disable="owner && owner === props.row.to"
                   @setHovered="setHoveredAddress"
                   @removeHovered="removeHoveredAddress"
+                  :use-custom-name="true"
                 />
               </div>
             </div>
