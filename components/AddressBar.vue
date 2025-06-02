@@ -3,14 +3,14 @@
     <template v-if="addressStr">
       <component
         :is="disable ? 'span' : 'nuxt-link'"
-        v-tooltip="customName ? `${customName} (${addressStr})` : addressStr"
+        v-tooltip="getDisplayName"
         :class="[
           'mono address',
           { clickable: !disable, hovered: hoveredAddress === addressStr },
         ]"
         :to="!disable ? { path: `/address/${addressStr}` } : undefined"
       >
-        {{ customName || addressFormatV2(addressStr) }}
+        {{ getDisplayName }}
       </component>
       <copy v-if="!disable" :str-copy="addressStr" size="small"></copy>
     </template>
@@ -19,6 +19,8 @@
 </template>
 
 <script>
+import addressMap from '~/utils/address'
+
 export default {
   props: {
     addressStr: {
@@ -33,11 +35,19 @@ export default {
       type: String,
       default: undefined,
     },
-    customName: {
-      type: String,
-      default: '',
+    useCustomName: {
+      type: Boolean,
+      default: false,
     },
   },
+  computed: {
+    getDisplayName() {
+      if (this.useCustomName && addressMap[this.addressStr]) {
+        return addressMap[this.addressStr]
+      }
+      return this.addressFormatV2(this.addressStr)
+    }
+  }
 }
 </script>
 
