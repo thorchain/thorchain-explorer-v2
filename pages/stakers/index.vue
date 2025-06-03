@@ -1,7 +1,6 @@
 <template>
   <page>
-    <Header :title="`Tcy Stakers`"></Header>
-
+    <Header :title="`TCY Stakers`"></Header>
     <card>
       <TableLoader v-if="loading" :cols="columns" :rows="Array(10).fill({})" />
       <vue-good-table
