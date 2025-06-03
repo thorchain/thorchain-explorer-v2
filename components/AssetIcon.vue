@@ -132,20 +132,22 @@ export default {
 }
 
 .asset-group {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: $space-2;
+  width: var(--asset-width);
+  height: var(--asset-height);
 
   .left-icon,
   .right-icon {
-    width: calc(var(--asset-width) / 2);
-    display: flex;
-    overflow: hidden;
+    position: absolute;
+    width: var(--asset-width);
+    height: var(--asset-height);
+  }
+
+  .left-icon {
+    left: 0;
   }
 
   .right-icon {
-    justify-content: flex-end;
+    left: calc(var(--asset-width) / 1.3);
   }
 
   .asset-icon {

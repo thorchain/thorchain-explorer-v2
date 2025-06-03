@@ -3,7 +3,7 @@
     <template v-if="addressStr">
       <component
         :is="disable ? 'span' : 'nuxt-link'"
-        v-tooltip="getDisplayName"
+        v-tooltip="addressStr "
         :class="[
           'mono address',
           { clickable: !disable, hovered: hoveredAddress === addressStr },

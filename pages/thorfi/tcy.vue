@@ -205,7 +205,7 @@ export default {
             },
           ],
         },
-             {
+        {
           title: 'Holders',
           link: '/holders?asset=TCY',
         },
@@ -232,6 +232,7 @@ export default {
           title: 'Stakers',
           rowStart: 2,
           colSpan: 1,
+          link: '/stakers',
           items: [
             {
               name: 'Number of Wallets',
