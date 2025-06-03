@@ -108,13 +108,19 @@ export default {
         (sum, item) => sum + item.affiliate_fees_usd,
         0
       )
-      const totalSwaps = data.reduce((sum, item) => sum + item.total_swaps, 0)
-      const totalVolume = data.reduce(
+
+      const nonMultiData = data.filter((item) => item.multi === false)
+
+      const totalSwaps = nonMultiData.reduce(
+        (sum, item) => sum + item.total_swaps,
+        0
+      )
+      const totalVolume = nonMultiData.reduce(
         (sum, item) => sum + +item.total_volume_usd,
         0
       )
 
-      const avgFee = data.reduce((sum, item) => {
+      const avgFee = nonMultiData.reduce((sum, item) => {
         const volumeRatio = item.total_volume_usd / totalVolume
         return sum + item.avg_affiliate_fee_basis_points * volumeRatio
       }, 0)
