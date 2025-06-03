@@ -797,6 +797,18 @@ export const nameMapping = {
   va: ['va', 'vi', 'v0'],
   wr: ['wr', 'tgt', 'thor1a427q3v96psuj4fnughdw8glt5r7j38lj7rkp8'],
   eld: ['eld', 'ELD'],
+  '-_': [
+    '-_',
+    '-_/ll',
+    '-_/t',
+    'lifi,-_',
+    '-_/t1',
+    '-_/bgw',
+    '-_/tps',
+    '-_/xdf',
+  ],
+  bgw: ['bgw', '-_/bgw'],
+  ll: ['ll', '-_/ll'],
 }
 
 export const interfaces = {
