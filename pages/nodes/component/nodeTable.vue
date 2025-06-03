@@ -78,10 +78,21 @@
                 {{ addressFormatV2(props.row.address, 4, true) }}
               </nuxt-link>
               <Copy :str-copy="props.row.address" />
-              <InfoIcon
-                class="table-icon"
-                @click="gotoNode(props.row.address)"
-              />
+              <a
+                :style="{
+                  color: isFav(props.row.address)
+                    ? vaultColor(props.row.address, true)
+                    : '',
+                  fill: isFav(props.row.address)
+                    ? vaultColor(props.row.address, true)
+                    : '',
+                  fontWeight: isFav(props.row.address) ? 'bold' : 'normal',
+                }"
+                :href="`http://${props.row.ip}:6040/status/scanner`"
+                target="_blank"
+              >
+                <info-icon class="table-icon item-link" />
+              </a>
               <a
                 :style="{
                   color: isFav(props.row.address)
