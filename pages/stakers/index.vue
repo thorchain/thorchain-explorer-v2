@@ -7,11 +7,17 @@
       <vue-good-table
         v-else
         :columns="columns"
-        :rows="paginatedRows"
+        :rows="rows"
         style-class="vgt-table net-table"
+        :line-numbers="true"
         :sort-options="{
           enabled: true,
           initialSortBy: { field: 'amount', type: 'desc' },
+        }"
+        :pagination-options="{
+          enabled: true,
+          perPage: 50,
+          perPageDropdownEnabled: false,
         }"
       >
         <template slot="table-row" slot-scope="props">
@@ -19,11 +25,8 @@
             {{ props.row.value | currency }}
           </span>
           <span v-else-if="props.column.field === 'amount'">
-            {{
-              props.row.amount >= 1000
-                ? normalFormat(props.row.amount)
-                : decimalFormat(props.row.amount)
-            }}
+            {{ numberFormat(props.row.amount) }}
+            <small>TCY</small>
           </span>
           <span
             v-else-if="props.column.field === 'address'"
@@ -41,12 +44,6 @@
         </template>
       </vue-good-table>
     </card>
-    <new-pagination
-      :total-rows="totalRows"
-      :per-page="perPage"
-      :current-page="currentPage"
-      @change="handlePageChange"
-    />
   </page>
 </template>
 
@@ -68,19 +65,19 @@ export default {
           field: 'amount',
           type: 'number',
           sortable: true,
+          tdClass: 'mono',
         },
         {
           label: 'Value',
           field: 'value',
           type: 'number',
           sortable: true,
+          tdClass: 'mono',
         },
       ],
       rows: [],
       loading: true,
       error: null,
-      perPage: 100,
-      currentPage: 1,
     }
   },
   computed: {
@@ -93,14 +90,6 @@ export default {
         return tcyPool ? tcyPool.assetPriceUSD : null
       }
       return null
-    },
-    totalRows() {
-      return this.rows.length
-    },
-    paginatedRows() {
-      const start = (this.currentPage - 1) * this.perPage
-      const end = start + this.perPage
-      return this.rows.slice(start, end)
     },
   },
   mounted() {
@@ -119,8 +108,8 @@ export default {
 
         this.rows = data.tcy_stakers.map((staker) => ({
           address: staker.address,
-          amount: staker.amount / 1e8,
-          value: (staker.amount * this.tcyPrice) / 1e8,
+          amount: +staker.amount / 1e8,
+          value: (+staker.amount * this.tcyPrice) / 1e8,
         }))
       } catch (err) {
         this.error = 'Failed to fetch stakers data'
@@ -128,9 +117,6 @@ export default {
       } finally {
         this.loading = false
       }
-    },
-    handlePageChange(newPage) {
-      this.currentPage = newPage
     },
   },
 }
