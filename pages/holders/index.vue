@@ -11,6 +11,7 @@
       <vue-good-table
         v-else
         :columns="filteredColumns"
+        :line-numbers="true"
         :rows="holders"
         :sort-options="{
           enabled: false,
