@@ -1,5 +1,12 @@
 <template>
-  <div :class="['icon-asset-container', ...classes]" :style="heightStyle">
+  <div
+    :class="[
+      'icon-asset-container',
+      { 'has-margin': isTokenFactory },
+      ...classes,
+    ]"
+    :style="heightStyle"
+  >
     <div v-if="isTokenFactory" class="asset-group">
       <div class="left-icon">
         <img
@@ -108,7 +115,7 @@ export default {
   position: relative;
   width: var(--asset-width);
   height: var(--asset-height);
-  margin-right: $space-8;
+  margin-right: $space-6;
 
   .asset-icon {
     width: var(--asset-width);
@@ -124,6 +131,10 @@ export default {
     position: absolute;
     right: calc(var(--chain-asset-width) * -1 / 3);
     bottom: calc(var(--chain-asset-width) * -1 / 3);
+  }
+
+  &.has-margin {
+    margin-right: 26px;
   }
 
   &.no-margin {

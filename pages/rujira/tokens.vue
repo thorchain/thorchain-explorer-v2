@@ -285,7 +285,7 @@ export default {
     max-width: 12rem;
     display: flex;
     align-items: center;
-    gap: $space-20;
+    gap: $space-2;
     font-size: $font-size-xs;
 
     span {
