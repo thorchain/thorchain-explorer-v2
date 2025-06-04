@@ -30,9 +30,7 @@
           <template slot="table-row" slot-scope="props">
             <template v-if="props.column.field.includes('addr')">
               <template v-if="props.row[props.column.field]">
-                <address-bar
-                  :address-str="props.row[props.column.field]"
-                ></address-bar>
+                <Address :address="props.row[props.column.field]"></Address>
               </template>
               <span v-else> Not Assigned </span>
             </template>
@@ -55,9 +53,10 @@
 <script>
 import { mapGetters } from 'vuex'
 import { orderBy, sumBy } from 'lodash'
+import Address from '~/components/transactions/Address.vue'
 
 export default {
-  components: {},
+  components: { Address },
   asyncData({ params }) {
     return { poolName: params.poolName }
   },

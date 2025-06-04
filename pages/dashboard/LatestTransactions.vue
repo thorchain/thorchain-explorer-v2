@@ -33,7 +33,7 @@
             <div class="txs">
               <span>
                 <small style="color: var(--font-color)">From</small>
-                <AddressBar :address-str="t.in && t.in[0].address"></AddressBar>
+                <Address :address="t.in && t.in[0].address"></Address>
               </span>
               <nuxt-link class="clickable header" :to="`/block/${t.height}`">
                 {{ t.height | number('0,0') }}
@@ -58,7 +58,7 @@
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
 import ArrowRightIcon from '~/assets/images/arrow-right.svg?inline'
 import TransactionAction from '~/components/transactions/TransactionAction.vue'
-import AddressBar from '~/components/AddressBar.vue'
+import Address from '~/components/transactions/Address.vue'
 import moment from 'moment'
 
 export default {
@@ -73,7 +73,7 @@ export default {
     BounceLoader,
     ArrowRightIcon,
     TransactionAction,
-    AddressBar,
+    Address,
   },
   data() {
     return {

@@ -24,10 +24,10 @@
             class="address-container"
           >
             <avatar :name="props.row.address" :small="true" />
-            <address-bar
-              :address-str="props.row.address"
+            <Address
+              :address="props.row.address"
               :use-custom-name="true"
-            ></address-bar>
+            ></Address>
           </span>
           <span v-else-if="props.column.field === 'amount'">
             {{
@@ -55,8 +55,13 @@
 <script>
 import { mapGetters } from 'vuex'
 import { assetFromString } from '~/utils'
+import Address from '~/components/transactions/Address.vue'
+
 export default {
   name: 'ThorHolders',
+  components: {
+    Address,
+  },
   data() {
     return {
       holders: [],

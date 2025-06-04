@@ -16,7 +16,7 @@
             <b>{{ vote.value }}</b>
           </div>
           <div style="display: flex">
-            <address-bar :address-str="vote.nodeAddress"></address-bar>
+            <Address :address="vote.nodeAddress"></Address>
           </div>
         </div>
         <div class="vote-date">
@@ -150,10 +150,12 @@
 <script>
 import moment from 'moment'
 import SearchIcon from '~/assets/images/search.svg?inline'
+import Address from '~/components/transactions/Address.vue'
 
 export default {
   components: {
     SearchIcon,
+    Address,
   },
   data() {
     return {

@@ -17,7 +17,7 @@
               <div class="address-direction">
                 <send-icon class="send-icon" />
                 <Address
-                  :param="props.row[props.column.field]"
+                  :address="props.row[props.column.field]"
                   :hovered-address="hoveredAddress"
                   :disable="owner && owner === props.row[props.column.field]"
                   @setHovered="setHoveredAddress"
@@ -37,7 +37,7 @@
               <div class="address-direction">
                 <receive-icon class="send-icon" />
                 <Address
-                  :param="props.row.to"
+                  :address="props.row.to"
                   :hovered-address="hoveredAddress"
                   :disable="owner && owner === props.row.to"
                   @setHovered="setHoveredAddress"
