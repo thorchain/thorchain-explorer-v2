@@ -26,11 +26,7 @@
             class="tx-inbound"
           >
             <div v-if="o.asset" class="tx-asset">
-              <AssetIcon
-                :classes="['no-margin']"
-                :asset="o.asset"
-                :height="'2rem'"
-              />
+              <AssetIcon :asset="o.asset" :height="'2rem'" />
             </div>
             <div class="inbound-info">
               <template v-if="o.text">
@@ -120,11 +116,7 @@
             </div>
 
             <div v-if="o.asset" class="tx-asset">
-              <AssetIcon
-                :classes="['no-margin']"
-                :asset="o.asset"
-                :height="'2rem'"
-              />
+              <AssetIcon :asset="o.asset" :height="'2rem'" />
             </div>
             <div v-else class="tx-asset">
               <component

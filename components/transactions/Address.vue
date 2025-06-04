@@ -4,24 +4,26 @@
     @mouseover="emitHovered"
     @mouseleave="emitRemoveHovered"
   >
-    <template v-if="param">
+    <template v-if="address">
       <component
         :is="disable ? 'span' : 'nuxt-link'"
-        v-tooltip="tooltipText"
+        v-tooltip="address"
         :class="[
           'mono address',
-          { clickable: !disable, hovered: hoveredAddress === param },
+          { clickable: !disable, hovered: hoveredAddress === address },
         ]"
-        :to="!disable ? { path: `/address/${param}` } : undefined"
-        >{{ displayText }}</component
+        :to="!disable ? { path: `/address/${address}` } : undefined"
       >
+        {{ displayText }}
+      </component>
       <copy
-        v-if="!disable"
-        :str-copy="param"
+        v-if="!disable && showCopyIcon"
+        :str-copy="address"
+        :size="copySize"
         style="margin-left: 0.2rem"
-      ></copy>
+      />
     </template>
-    <span v-else :class="['mono', { 'no-hover': disable }]">-</span>
+    <span v-else class="mono no-hover">-</span>
   </div>
 </template>
 
@@ -30,34 +32,47 @@ import addressMap from '~/utils/address'
 
 export default {
   props: {
-    param: {
+    address: {
       type: String,
-      required: true,
+      default: '',
     },
     disable: {
       type: Boolean,
       default: false,
     },
-    hoveredAddress: String,
+    hoveredAddress: {
+      type: String,
+      default: undefined,
+    },
     useCustomName: {
       type: Boolean,
       default: false,
     },
+    copySize: {
+      type: String,
+      default: 'normal',
+      validator: (value) => ['small', 'normal'].includes(value),
+    },
+    showCopyIcon: {
+      type: Boolean,
+      default: true,
+    },
   },
   computed: {
     displayText() {
-      if (this.useCustomName && addressMap[this.param]) {
-        return addressMap[this.param]
+      if (!this.address) return ''
+
+      if (this.useCustomName && addressMap[this.address]) {
+        return addressMap[this.address]
       }
-      return this.addressFormatV2(this.param)
-    },
-    tooltipText() {
-      return this.param
+      return this.addressFormatV2
+        ? this.addressFormatV2(this.address)
+        : this.address
     },
   },
   methods: {
     emitHovered() {
-      if (this.param) this.$emit('setHovered', this.param)
+      if (this.address) this.$emit('setHovered', this.address)
     },
     emitRemoveHovered() {
       this.$emit('removeHovered')

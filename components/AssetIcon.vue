@@ -2,7 +2,7 @@
   <div
     :class="[
       'icon-asset-container',
-      { 'has-margin': isTokenFactory },
+      { 'is-factory': isTokenFactory },
       ...classes,
     ]"
     :style="heightStyle"
@@ -61,7 +61,11 @@ export default {
       }
     },
     isTokenFactory() {
-      return this.asset && typeof this.asset === 'object' && this.asset.id
+      let asset = this.asset
+      if (typeof asset === 'string') {
+        asset = assetFromString(this.asset)
+      }
+      return asset && typeof asset === 'object' && asset.id
     },
     tokens() {
       let asset = this.asset
@@ -133,12 +137,8 @@ export default {
     bottom: calc(var(--chain-asset-width) * -1 / 3);
   }
 
-  &.has-margin {
-    margin-right: 26px;
-  }
-
-  &.no-margin {
-    margin: $space-0;
+  &.is-factory {
+    width: calc(var(--asset-width) * 1.7);
   }
 }
 

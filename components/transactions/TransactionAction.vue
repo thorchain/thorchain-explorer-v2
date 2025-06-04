@@ -189,9 +189,7 @@
       <right-arrow class="action-type" />
       <span v-for="(ops, i) in row.out" :key="'out-' + i" class="asset-cell">
         <wallet-icon class="active-icon"></wallet-icon>
-        <nuxt-link class="clickable" :to="`/address/${ops.address}`">
-          {{ addressFormatV2(ops.address) }}
-        </nuxt-link>
+        <Address :address="ops.address" :show-copy-icon="false" />
       </span>
     </div>
 
@@ -361,12 +359,11 @@
             :height="'1.2rem'"
             :asset="baseChainAsset(row.metadata.thorname.chain)"
           />
-          <nuxt-link
-            class="clickable"
-            :to="`/address/${row.metadata.thorname.address}`"
-          >
-            {{ addressFormatV2(row.metadata.thorname.address, 4) }}
-          </nuxt-link>
+          <Address
+            :address="row.metadata.thorname.address"
+            :show-copy-icon="false"
+            :use-custom-name="true"
+          />
         </span>
       </template>
     </div>
@@ -415,10 +412,12 @@ import NodeIcon from '~/assets/images/node.svg?inline'
 import WalletIcon from '~/assets/images/wallet.svg?inline'
 import SubtractIcon from '~/assets/images/subtract.svg?inline'
 import { parseMemoToTxType } from '~/utils'
+import Address from '~/components/transactions/Address.vue'
 
 export default {
   components: {
     RightArrow,
+    Address,
     VaultIcon,
     InfoIcon,
     AddIcon,

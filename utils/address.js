@@ -11,4 +11,5 @@ export default {
   thor1ss8rrf3twa20kf9frdyru05dmu2kg9ll2efcyd: 'TCY claim',
   thor128a8hqnkaxyqv7qwajpggmfyudh64jl3c32vyv: 'TCY Stake',
   thor1v8ppstuf6e3x0r4glqc68d5jqcs2tf38cg2q6y: 'Synth Module',
+  thor1egnvuppm2pzy8v77hfzqdaetmcz302sraygate: 'Maya Vault',
 }

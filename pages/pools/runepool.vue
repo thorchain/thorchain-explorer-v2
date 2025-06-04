@@ -177,7 +177,7 @@
         >
           <template slot="table-row" slot-scope="props">
             <template v-if="props.column.field == 'rune_address'">
-              <address-bar :address-str="props.row.rune_address"></address-bar>
+              <Address :address="props.row.rune_address"></Address>
             </template>
             <span v-else-if="props.column.field == 'deposit_amount'">
               {{ $options.filters.number(props.row.deposit_amount, '0,0.00') }}
@@ -260,6 +260,7 @@ import VChart from 'vue-echarts'
 import { orderBy } from 'lodash'
 import RefreshIcon from '~/assets/images/refresh.svg?inline'
 import endpoints from '~/api/endpoints'
+import Address from '~/components/transactions/Address.vue'
 
 use([
   SVGRenderer,
@@ -272,7 +273,7 @@ use([
 ])
 
 export default {
-  components: { RefreshIcon, VChart },
+  components: { RefreshIcon, VChart, Address },
 
   data() {
     return {

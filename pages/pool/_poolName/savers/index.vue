@@ -39,7 +39,7 @@
       >
         <template slot="table-row" slot-scope="props">
           <template v-if="props.column.field.includes('asset_address')">
-            <address-bar :address-str="props.row.asset_address"></address-bar>
+            <Address :address="props.row.asset_address"></Address>
           </template>
           <template v-else-if="props.column.field.includes('asset')">
             <span>
@@ -60,8 +60,10 @@
 
 <script>
 import { orderBy, sumBy } from 'lodash'
+import Address from '~/components/transactions/Address.vue'
 
 export default {
+  components: { Address },
   props: ['saversData'],
   asyncData({ params }) {
     return { poolName: params.poolName }
