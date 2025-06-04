@@ -189,7 +189,7 @@
       <right-arrow class="action-type" />
       <span v-for="(ops, i) in row.out" :key="'out-' + i" class="asset-cell">
         <wallet-icon class="active-icon"></wallet-icon>
-        <Address :address="ops.address" :showCopyIcon="false" />
+        <Address :address="ops.address" :show-copy-icon="false" />
       </span>
     </div>
 
@@ -359,12 +359,11 @@
             :height="'1.2rem'"
             :asset="baseChainAsset(row.metadata.thorname.chain)"
           />
-          <nuxt-link
-            class="clickable"
-            :to="`/address/${row.metadata.thorname.address}`"
-          >
-            {{ addressFormatV2(row.metadata.thorname.address, 4) }}
-          </nuxt-link>
+          <Address
+            :address="row.metadata.thorname.address"
+            :show-copy-icon="false"
+            :use-custom-name="true"
+          />
         </span>
       </template>
     </div>

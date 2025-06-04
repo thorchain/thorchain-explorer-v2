@@ -274,6 +274,10 @@ export default {
         }
         let del = '.'
         const asset = assetFromString(assetStr)
+        // Format token factory
+        if (asset.id) {
+          return asset.ticker
+        }
         if (isSynthAsset(asset)) {
           del = '/'
         } else if (asset.trade) {

@@ -33,7 +33,10 @@
             <div class="txs">
               <span>
                 <small style="color: var(--font-color)">From</small>
-                <Address :address="t.in && t.in[0].address"></Address>
+                <Address
+                  :address="t.in && t.in[0].address"
+                  :use-custom-name="true"
+                ></Address>
               </span>
               <nuxt-link class="clickable header" :to="`/block/${t.height}`">
                 {{ t.height | number('0,0') }}
@@ -56,24 +59,24 @@
 
 <script>
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
+import moment from 'moment'
 import ArrowRightIcon from '~/assets/images/arrow-right.svg?inline'
 import TransactionAction from '~/components/transactions/TransactionAction.vue'
 import Address from '~/components/transactions/Address.vue'
-import moment from 'moment'
 
 export default {
   name: 'LatestTransactions',
-  props: {
-    transactions: {
-      type: Array,
-      default: null,
-    },
-  },
   components: {
     BounceLoader,
     ArrowRightIcon,
     TransactionAction,
     Address,
+  },
+  props: {
+    transactions: {
+      type: Array,
+      default: null,
+    },
   },
   data() {
     return {

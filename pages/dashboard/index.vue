@@ -1822,6 +1822,10 @@ export default {
   @include md {
     flex-direction: row;
     align-items: center;
+
+    .transactions {
+      flex: 2;
+    }
   }
 
   .txs {
@@ -1829,6 +1833,7 @@ export default {
     flex-direction: column;
     text-overflow: ellipsis;
     overflow: hidden;
+    flex: 1;
 
     > span {
       overflow: hidden;

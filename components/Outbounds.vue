@@ -185,7 +185,10 @@
           <div class="right-section">
             <span class="mono">
               <small style="color: var(--font-color)">Address</small>
-              <Address :address="swap.inputAsset.address"></Address>
+              <Address
+                :address="swap.inputAsset.address"
+                :use-custom-name="true"
+              ></Address>
             </span>
             <span>
               <small style="color: var(--font-color)">Date</small>
@@ -213,9 +216,9 @@
 </template>
 
 <script>
-import Address from '~/components/transactions/Address.vue'
 import { mapGetters } from 'vuex'
 import moment from 'moment'
+import Address from '~/components/transactions/Address.vue'
 import scheduleIcon from '@/assets/images/schedule.svg?inline'
 import ArrowToDown from '~/assets/images/arrow-down.svg?inline'
 import TransactionAction from '~/components/transactions/TransactionAction.vue'
