@@ -35,34 +35,35 @@
               <copy :str-copy="props.row.code" />
             </span>
 
-            <span v-else-if="props.column.field === 'deployers'">
+            <div
+              v-else-if="props.column.field === 'deployers'"
+              class="contracts"
+            >
               <span
-                class="asset-cell"
-                v-for="(deployer, index) in props.row.deployers"
+                v-for="deployer in props.row.deployers"
                 :key="deployer"
+                class="asset-cell"
               >
                 <nuxt-link :to="`/address/${deployer}`" class="clickable">
                   {{ deployer.slice(-4) }}
                 </nuxt-link>
-                <span v-if="index < props.row.deployers.length - 1">, </span>
               </span>
-            </span>
+            </div>
 
-            <span
+            <div
               v-else-if="props.column.field === 'contracts'"
               class="contracts"
             >
               <span
-                class="asset-cell"
-                v-for="(contract, index) in props.row.contracts"
+                v-for="contract in props.row.contracts"
                 :key="contract"
+                class="asset-cell"
               >
                 <nuxt-link :to="`/address/${contract}`" class="clickable">
                   {{ contract.slice(-4) }}
                 </nuxt-link>
-                <span v-if="index < props.row.contracts.length - 1"></span>
               </span>
-            </span>
+            </div>
 
             <span
               v-else-if="props.column.field === 'origin' && props.row.origin"
@@ -124,7 +125,6 @@ export default {
           label: 'Deployers',
           field: 'deployers',
           sortable: true,
-          tdClass: 'mono',
         },
         {
           label: 'Origin',
@@ -245,7 +245,9 @@ export default {
   gap: 0.5rem;
   align-items: center;
 }
+
 .asset-cell {
+  margin: $space-4;
   padding: $space-8;
   border-radius: $radius-sm;
   border: 1px solid var(--border-color);

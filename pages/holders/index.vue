@@ -172,6 +172,7 @@ export default {
         name: this.addressFormatV2(holder.address),
         value: this.showValue ? holder.value : holder.amount,
       }))
+
       const othersValue = sumBy(
         sortedData.slice(10),
         this.showValue ? 'value' : 'amount'
@@ -179,29 +180,33 @@ export default {
 
       this.pieData = [
         ...topHolders,
-        {
-          name: 'Others',
-          value: othersValue,
-        },
+        ...(othersValue > 0
+          ? [
+              {
+                name: 'Others',
+                value: othersValue,
+              },
+            ]
+          : []),
       ]
     },
     totalFormatter(param) {
       return `
-    <div class="tooltip-header">
-      <div class="data-color" style="background-color: ${param.color}"></div>
-      ${this.addressFormatV2(param.name)}
-    </div>
-    <div class="tooltip-body">
-      <span>
-        <span>${this.showValue ? 'Value' : 'Amount'}</span>
-        <b>${
-          this.showValue
-            ? `$${this.$options.filters.number(param.value, '0,0.00 a')} `
-            : `${this.$options.filters.number(param.value, '0,0.00 a')} ${this.showAsset(this.asset, true)}`
-        }</b>
-      </span>
-    </div>
-  `
+        <div class="tooltip-header">
+          <div class="data-color" style="background-color: ${param.color}"></div>
+          ${param.name.length > 30 ? this.addressFormatV2(param.name) : param.name}
+        </div>
+        <div class="tooltip-body">
+          <span>
+            <span>${this.showValue ? 'Value' : 'Amount'}</span>
+            <b>${
+              this.showValue
+                ? `$${this.$options.filters.number(param.value, '0,0.00 a')} `
+                : `${this.$options.filters.number(param.value, '0,0.00 a')} ${this.showAsset(this.asset, true)}`
+            }</b>
+          </span>
+        </div>
+      `
     },
   },
 }
