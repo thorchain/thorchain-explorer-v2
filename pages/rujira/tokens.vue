@@ -11,7 +11,12 @@
       </div>
     </div>
     <div class="metadata-grid">
-      <card v-for="metadata in filteredMetadata" :key="metadata.base">
+      <card
+        v-for="metadata in filteredMetadata"
+        :key="metadata.base"
+        class="metadata-card"
+        @click.native="$router.push('/holders?asset=' + metadata.base)"
+      >
         <div class="metadata-header">
           <h3 class="header-class">
             <asset-icon
@@ -196,6 +201,15 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.metadata-card {
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+
+  &:hover {
+    border-color: var(--primary-color);
+  }
+}
+
 .title-section {
   display: flex;
   align-items: center;
