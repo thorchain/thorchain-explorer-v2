@@ -1,6 +1,9 @@
 <template>
   <page>
     <Header :title="`${asset} Holders`"></Header>
+    <card title="Holder Distribution">
+      <pie-chart :pie-data="pieData" :formatter="totalFormatter" />
+    </card>
     <card>
       <TableLoader
         v-if="loading"
@@ -54,6 +57,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import { orderBy, sumBy } from 'lodash'
 import { assetFromString } from '~/utils'
 import Address from '~/components/transactions/Address.vue'
 
@@ -68,6 +72,7 @@ export default {
       asset: '',
       loading: true,
       showValue: false,
+      pieData: [],
     }
   },
   computed: {
@@ -155,6 +160,48 @@ export default {
       } finally {
         this.loading = false
       }
+      this.createRunePieData(this.holders)
+    },
+    createRunePieData(runeData) {
+      const sortedData = orderBy(
+        runeData,
+        this.showValue ? 'value' : 'amount',
+        'desc'
+      )
+      const topHolders = sortedData.slice(0, 10).map((holder) => ({
+        name: this.addressFormatV2(holder.address),
+        value: this.showValue ? holder.value : holder.amount,
+      }))
+      const othersValue = sumBy(
+        sortedData.slice(10),
+        this.showValue ? 'value' : 'amount'
+      )
+
+      this.pieData = [
+        ...topHolders,
+        {
+          name: 'Others',
+          value: othersValue,
+        },
+      ]
+    },
+    totalFormatter(param) {
+      return `
+    <div class="tooltip-header">
+      <div class="data-color" style="background-color: ${param.color}"></div>
+      ${this.addressFormatV2(param.name)}
+    </div>
+    <div class="tooltip-body">
+      <span>
+        <span>${this.showValue ? 'Value' : 'Amount'}</span>
+        <b>${
+          this.showValue
+            ? `$${this.$options.filters.number(param.value, '0,0.00 a')} `
+            : `${this.$options.filters.number(param.value, '0,0.00 a')} ${this.showAsset(this.asset, true)}`
+        }</b>
+      </span>
+    </div>
+  `
     },
   },
 }
