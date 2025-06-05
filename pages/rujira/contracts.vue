@@ -37,6 +37,7 @@
 
             <span v-else-if="props.column.field === 'deployers'">
               <span
+                class="asset-cell"
                 v-for="(deployer, index) in props.row.deployers"
                 :key="deployer"
               >
@@ -47,18 +48,19 @@
               </span>
             </span>
 
-            <span v-else-if="props.column.field === 'contracts'">
+            <span
+              v-else-if="props.column.field === 'contracts'"
+              class="contracts"
+            >
               <span
+                class="asset-cell"
                 v-for="(contract, index) in props.row.contracts"
                 :key="contract"
               >
-                <nuxt-link
-                  :to="`/address/${contract}`"
-                  class="clickable mini-bubble"
-                >
-                  {{ formatAddress(contract) }}
+                <nuxt-link :to="`/address/${contract}`" class="clickable">
+                  {{ contract.slice(-4) }}
                 </nuxt-link>
-                <span v-if="index < props.row.deployers.length - 1">, </span>
+                <span v-if="index < props.row.contracts.length - 1"></span>
               </span>
             </span>
 
@@ -97,7 +99,12 @@
 </template>
 
 <script>
+import Address from '~/components/transactions/Address.vue'
+
 export default {
+  components: {
+    Address,
+  },
   data() {
     return {
       loading: true,
@@ -233,6 +240,18 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.contracts {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.asset-cell {
+  padding: $space-8;
+  border-radius: $radius-sm;
+  border: 1px solid var(--border-color);
+  background-color: var(--bgl-color);
+}
+
 ::v-deep .vgt-table.net-table {
   background-color: var(--bg-color);
   .vgt-row-header {
