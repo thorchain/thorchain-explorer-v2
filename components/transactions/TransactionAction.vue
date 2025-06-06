@@ -14,7 +14,10 @@
           decimalFormat(ops.coins[0].amount / 1e8)
         }}</span>
       </span>
-      <right-arrow class="action-type" />
+      <stream-icon v-if="isPendingSwap(row)" class="action-type">
+        ~
+      </stream-icon>
+      <right-arrow v-else class="action-type" />
       <span
         v-for="(ops, i) in row.out.filter((o) => !o.affiliate)"
         :key="'out-' + i"
@@ -29,18 +32,36 @@
           decimalFormat(ops.coins[0].amount / 1e8)
         }}</span>
       </span>
-      <span
-        v-if="
-          row.out == undefined ||
-          row.out.length === 0 ||
-          row.status === 'pending'
-        "
-        class="pending-cell"
-      >
-        <span class="pending-dots">
-          <span class="pending-text">Pending</span>
+      <template v-if="isPendingSwap(row)">
+        <span
+          v-if="
+            pools &&
+            row.metadata.swap &&
+            row.metadata.swap.streamingSwapMeta &&
+            row.metadata.swap.streamingSwapMeta.outEstimation
+          "
+          :class="['asset-cell', { 'pending-dots': !noBorder }]"
+        >
+          <asset-icon
+            :asset="getOutAssetFromMemo(row.metadata.swap.memo, pools)"
+            :height="'1.2rem'"
+            :chain-height="'0.8rem'"
+          ></asset-icon>
+          <span class="asset-name">
+            {{
+              decimalFormat(
+                row.metadata.swap &&
+                  row.metadata.swap.streamingSwapMeta.outEstimation / 1e8
+              )
+            }}
+          </span>
         </span>
-      </span>
+        <span v-else class="pending-cell">
+          <span class="pending-dots">
+            <span class="pending-text">Pending</span>
+          </span>
+        </span>
+      </template>
       <template v-if="hasAffiliate(row)">
         <span>|</span>
         <div class="asset-cell">
@@ -411,6 +432,7 @@ import AddIcon from '~/assets/images/add.svg?inline'
 import NodeIcon from '~/assets/images/node.svg?inline'
 import WalletIcon from '~/assets/images/wallet.svg?inline'
 import SubtractIcon from '~/assets/images/subtract.svg?inline'
+import StreamIcon from '~/assets/images/stream.svg?inline'
 import { parseMemoToTxType } from '~/utils'
 import Address from '~/components/transactions/Address.vue'
 
@@ -425,6 +447,7 @@ export default {
     WalletIcon,
     SubtractIcon,
     RedoIcon,
+    StreamIcon,
   },
   props: {
     row: {
@@ -447,6 +470,7 @@ export default {
   computed: {
     ...mapGetters({
       theme: 'getTheme',
+      pools: 'getPools',
     }),
     type() {
       if (this.row.type === 'swap') {
@@ -463,6 +487,11 @@ export default {
     },
   },
   methods: {
+    isPendingSwap(row) {
+      return (
+        row.out == undefined || row.out.length === 0 || row.status === 'pending'
+      )
+    },
     parseMemoToTxType(memo) {
       return parseMemoToTxType(memo)
     },
@@ -587,12 +616,18 @@ export default {
       height: 0.9rem;
     }
   }
+
   .pending-cell {
     display: flex;
     align-items: center;
     gap: $space-8;
     color: var(--sec-font-color);
     font-weight: bold;
+  }
+
+  .pending-text {
+    font-weight: bold;
+    color: #d86e58;
   }
 
   .pending-dots {
@@ -616,11 +651,10 @@ export default {
       transition: all 0.5s;
       animation: clippath 3s infinite linear;
     }
-  }
 
-  .pending-text {
-    color: #d86e58;
-    font-size: $font-size-xxs;
+    .pending-text {
+      font-size: $font-size-xxs;
+    }
   }
 
   @keyframes clippath {

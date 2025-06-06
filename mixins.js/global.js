@@ -930,5 +930,23 @@ export default {
 
       return `${hours}:${minutes}:${seconds}`
     },
+    getOutAssetFromMemo(memo, pools) {
+      if (!memo) {
+        return null
+      }
+
+      // OUT:hash
+      const parts = memo.split(':')
+      if (parts.length < 2) {
+        return null
+      }
+
+      const asset = this.parseMemoAsset(parts[1], pools)
+      if (!asset) {
+        return null
+      }
+
+      return assetToString(asset)
+    },
   },
 }

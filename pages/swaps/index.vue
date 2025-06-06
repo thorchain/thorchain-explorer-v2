@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <page>
     <swap />
     <div class="header-top-swap">
       <Header title="Top Swaps" />
@@ -16,7 +16,7 @@
         </template>
       </transactions>
     </div>
-  </div>
+  </page>
 </template>
 
 <script>
@@ -54,7 +54,7 @@ export default {
       this.fetchTableData(newPeriod)
     },
   },
-  async mounted() {
+  mounted() {
     const queryTablePeriod = this.$route.query.tablePeriod
 
     let shouldUpdateQuery = false

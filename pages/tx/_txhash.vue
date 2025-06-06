@@ -1114,7 +1114,7 @@ export default {
 
       return {
         cards: {
-          title: 'Contract Call',
+          title: 'Contract Event',
           in: [
             {
               icon: require('@/assets/images/wallet.svg?inline'),
