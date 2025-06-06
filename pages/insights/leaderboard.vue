@@ -155,6 +155,7 @@ export default {
           total_volume_usd: item.total_volume_usd,
           vc: item.vc,
           avg_bps: item.avg_affiliate_fee_basis_points / 1e4,
+          multi: item.multi || false,
         }
       })
     },

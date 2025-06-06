@@ -25,6 +25,11 @@
                 :style="{ color: colorizeIndex(index) }"
               >
                 <slot :row="row" :index="index"></slot>
+                <api-icon
+                  v-if="row.multi"
+                  v-tooltip="'Aggregator'"
+                  class="agg-icon"
+                ></api-icon>
               </div>
             </div>
           </nuxt-link>
@@ -48,8 +53,12 @@
 
 <script>
 import { orderBy } from 'lodash'
+import ApiIcon from '~/assets/images/api.svg?inline'
 
 export default {
+  components: {
+    ApiIcon,
+  },
   props: {
     title: {
       type: String,
@@ -190,10 +199,19 @@ export default {
         gap: 1rem;
 
         .affiliate-value {
+          display: flex;
+          gap: $space-4;
           line-height: 1.4;
           font-size: $font-size-smm;
           color: var(--sec-font-color);
           font-weight: bold;
+          align-items: center;
+
+          .agg-icon {
+            width: 1.2rem;
+            height: 1.2rem;
+            fill: var(--font-color);
+          }
         }
       }
     }
