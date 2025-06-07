@@ -1,7 +1,7 @@
 <template>
   <page>
     <Header :title="`TCY Stakers`"></Header>
-    <card title="Staker Distribution">
+    <card title="TCY Staker Distribution">
       <pie-chart :pie-data="pieData" :formatter="totalFormatter" />
     </card>
     <card>
@@ -55,9 +55,8 @@ import { orderBy, sumBy } from 'lodash'
 import Address from '~/components/transactions/Address.vue'
 
 export default {
-  components: { Address },
-
   name: 'TCYStakers',
+  components: { Address },
 
   data() {
     return {
