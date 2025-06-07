@@ -114,32 +114,38 @@ export default {
         {
           label: 'Name',
           field: 'name',
+          width: '160px',
         },
         {
           label: 'Checksum',
           field: 'checksum',
           sortable: true,
           tdClass: 'mono',
+          width: '160px',
         },
         {
           label: 'Deployers',
           field: 'deployers',
           sortable: true,
+          width: '160px',
         },
         {
           label: 'Origin',
           field: 'origin',
           sortable: true,
+          width: '160px',
         },
         {
           label: 'Version',
           field: 'version',
           sortable: false,
+          width: '150px',
         },
         {
           label: 'Audit',
           field: 'audit',
           sortable: false,
+          width: '250px',
         },
         {
           label: 'Contracts',
@@ -242,13 +248,13 @@ export default {
 <style lang="scss" scoped>
 .contracts {
   display: flex;
-  gap: 0.5rem;
+  gap: $space-4;
   align-items: center;
 }
 
 .asset-cell {
-  margin: $space-4;
-  padding: $space-8;
+  margin: $space-2;
+  padding: $space-4 $space-8;
   border-radius: $radius-sm;
   border: 1px solid var(--border-color);
   background-color: var(--bgl-color);
@@ -256,12 +262,22 @@ export default {
 
 ::v-deep .vgt-table.net-table {
   background-color: var(--bg-color);
+  table-layout: fixed;
+  width: 100%;
+
+  th,
+  td {
+    white-space: nowrap;
+  }
   .vgt-row-header {
     background-color: var(--bg-color);
     cursor: pointer;
     font-weight: bold;
     border-top: 1px solid var(--border-color) !important;
     border-bottom: 1px solid var(--border-color) !important;
+    &:hover {
+      color: var(--primary-color);
+    }
   }
 
   tr.vgt-row:not(.vgt-row-header) {
