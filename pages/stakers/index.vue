@@ -1,6 +1,9 @@
 <template>
   <page>
     <Header :title="`TCY Stakers`"></Header>
+    <card title="Staker Distribution">
+      <pie-chart :pie-data="pieData" :formatter="totalFormatter" />
+    </card>
     <card>
       <TableLoader v-if="loading" :cols="columns" :rows="Array(10).fill({})" />
       <vue-good-table
@@ -48,6 +51,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import { orderBy, sumBy } from 'lodash'
 import Address from '~/components/transactions/Address.vue'
 
 export default {
@@ -80,6 +84,7 @@ export default {
       rows: [],
       loading: true,
       error: null,
+      pieData: [],
     }
   },
   computed: {
@@ -111,14 +116,51 @@ export default {
         this.rows = data.tcy_stakers.map((staker) => ({
           address: staker.address,
           amount: +staker.amount / 1e8,
-          value: (+staker.amount * this.tcyPrice) / 1e8,
+          value: this.tcyPrice ? (+staker.amount * this.tcyPrice) / 1e8 : 0,
         }))
+
+        this.createPieData(this.rows)
       } catch (err) {
         this.error = 'Failed to fetch stakers data'
         console.error('Error fetching stakers:', err)
       } finally {
         this.loading = false
       }
+    },
+    createPieData(stakersData) {
+      const sortedData = orderBy(stakersData, 'amount', 'desc')
+      const topStakers = sortedData.slice(0, 10).map((staker) => ({
+        name: this.addressFormatV2(staker.address),
+        value: staker.amount,
+      }))
+
+      const othersValue = sumBy(sortedData.slice(10), 'amount')
+
+      this.pieData = [
+        ...topStakers,
+        ...(othersValue > 0
+          ? [
+              {
+                name: 'Others',
+                value: othersValue,
+              },
+            ]
+          : []),
+      ]
+    },
+    totalFormatter(param) {
+      return `
+        <div class="tooltip-header">
+          <div class="data-color" style="background-color: ${param.color}"></div>
+          ${param.name.length > 30 ? this.addressFormatV2(param.name) : param.name}
+        </div>
+        <div class="tooltip-body">
+          <span>
+            <span>Amount</span>
+            <b>${this.$options.filters.number(param.value, '0,0.00 a')} TCY</b>
+          </span>
+        </div>
+      `
     },
   },
 }
