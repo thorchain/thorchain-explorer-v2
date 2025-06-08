@@ -480,26 +480,23 @@ export default {
         const liquidityFee =
           (+tcy?.totalLiquidityFeesRune * +interval.runePriceUSD) / 10 ** 8
 
-        pe.push(earnings)
-        pf.push(liquidityFee)
+        if (index === d?.intervals.length - 1) {
+          pe.push({
+            value:
+              (this.tcyInfo?.tcy_stake_eod / 1e8) * this.runePrice || earnings,
+            itemStyle: { color: '#F3BA2F' },
+          })
+          pf.push({
+            value:
+              (this.tcyInfo?.tcy_pool_eod / 1e8) * this.runePrice ||
+              liquidityFee,
+            itemStyle: { color: '#F3BA2F' },
+          })
+        } else {
+          pe.push(earnings)
+          pf.push(liquidityFee)
+        }
       })
-      if (pe.length > 0) {
-        pe[pe.length - 1] = {
-          value:
-            (this.tcyInfo?.tcy_stake_eod / 1e8) * this.runePrice ||
-            pe[pe.length - 1],
-          itemStyle: { color: '#F3BA2F' },
-        }
-      }
-
-      if (pf.length > 0) {
-        pf[pf.length - 1] = {
-          value:
-            (this.tcyInfo?.tcy_pool_eod / 1e8) * this.runePrice ||
-            pf[pf.length - 1],
-          itemStyle: { color: '#F3BA2F' },
-        }
-      }
 
       return this.basicChartFormat(
         (value) => `$ ${this.normalFormat(value)}`,
