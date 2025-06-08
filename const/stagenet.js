@@ -132,3 +132,23 @@ export const stagenetNav = {
     },
   ],
 }
+export const dynamicLinks = {
+  txLink: {
+    basePath: '/tx/',
+  },
+  addressLink: {
+    basePath: '/address/',
+  },
+  stakersLink: {
+    basePath: '/stakers',
+  },
+  chartsLink: {
+    basePath: '/charts/',
+  },
+  blockLink: {
+    basePath: '/block/',
+  },
+  poolLink: {
+    basePath: '/pool/',
+  },
+}

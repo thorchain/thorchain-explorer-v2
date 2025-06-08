@@ -1,5 +1,6 @@
 import { mainnetNav } from '~/const/mainnet'
 import { stagenetNav } from '~/const/stagenet'
+import { dynamicLinks } from '~/const/mainnet'
 
 export default function ({ app }) {
   const ENV = process.env.NETWORK || 'mainnet'
@@ -13,9 +14,21 @@ export default function ({ app }) {
     }
     return routes
   })
+  const dynamicBasePaths = Object.values(dynamicLinks)
+    .filter((link) => !!link.basePath)
+    .map((link) => link.basePath)
 
   app.router.beforeEach((to, from, next) => {
-    if (allowedRoutes.includes(to.path) || to.path === '/404') {
+    if (to.path === '/') {
+      return next()
+    }
+
+    const isAllowedStatic = allowedRoutes.includes(to.path)
+    const isAllowedDynamic = dynamicBasePaths.some((base) =>
+      to.path.startsWith(base)
+    )
+
+    if (isAllowedStatic || isAllowedDynamic || to.path === '/404') {
       next()
     } else {
       next('/404')
