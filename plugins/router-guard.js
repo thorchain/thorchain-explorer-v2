@@ -1,6 +1,5 @@
-import { mainnetNav } from '~/const/mainnet'
+import { mainnetNav, dynamicLinks } from '~/const/mainnet'
 import { stagenetNav } from '~/const/stagenet'
-import { dynamicLinks } from '~/const/mainnet'
 
 export default function ({ app }) {
   const ENV = process.env.NETWORK || 'mainnet'
@@ -14,6 +13,7 @@ export default function ({ app }) {
     }
     return routes
   })
+
   const dynamicBasePaths = Object.values(dynamicLinks)
     .filter((link) => !!link.basePath)
     .map((link) => link.basePath)

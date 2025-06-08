@@ -187,4 +187,7 @@ export const dynamicLinks = {
   poolLink: {
     basePath: '/pool/',
   },
+  nodeLink: {
+    basePath: '/node/',
+  },
 }
