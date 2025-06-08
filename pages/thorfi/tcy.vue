@@ -467,11 +467,6 @@ export default {
       const pe = []
       const pf = []
       d?.intervals.forEach((interval, index) => {
-        // ignore the last index
-        if (index === d?.intervals?.length - 1) {
-          pe.push((this.tcyInfo?.tcy_stake_eod / 1e8) * this.runePrice)
-          pf.push((this.tcyInfo?.tcy_pool_eod / 1e8) * this.runePrice)
-        }
         xAxis.push(
           moment(
             Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
@@ -488,6 +483,23 @@ export default {
         pe.push(earnings)
         pf.push(liquidityFee)
       })
+      if (pe.length > 0) {
+        pe[pe.length - 1] = {
+          value:
+            (this.tcyInfo?.tcy_stake_eod / 1e8) * this.runePrice ||
+            pe[pe.length - 1],
+          itemStyle: { color: '#F3BA2F' },
+        }
+      }
+
+      if (pf.length > 0) {
+        pf[pf.length - 1] = {
+          value:
+            (this.tcyInfo?.tcy_pool_eod / 1e8) * this.runePrice ||
+            pf[pf.length - 1],
+          itemStyle: { color: '#F3BA2F' },
+        }
+      }
 
       return this.basicChartFormat(
         (value) => `$ ${this.normalFormat(value)}`,
@@ -521,26 +533,26 @@ export default {
           if (param.length === 0) return ''
 
           return `
-          <div class="tooltip-header">
+        <div class="tooltip-header">
             ${param[0].name}
-          </div>
-          <div class="tooltip-body">
+        </div>
+        <div class="tooltip-body">
             ${param
               .map(
                 (p) => `
-                <span>
-                  <div class="tooltip-item">
-                    <div class="data-color" style="background-color: ${p.color}"></div>
+            <span>
+              <div class="tooltip-item">
+                <div class="data-color" style="background-color: ${p.color}"></div>
                     <span style="text-align: left;">
                       ${p.seriesName}
                     </span>
-                  </div>
-                  <b>$${this.$options.filters.number(p.value, '0,0.00a')}</b>
+              </div>
+              <b>$${this.$options.filters.number(p.value, '0,0.00a')}</b>
                 </span>`
               )
               .join('')}
-          </div>
-          `
+        </div>
+      `
         }
       )
     },
