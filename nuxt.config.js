@@ -99,6 +99,7 @@ export default {
     '@/plugins/floating-vue',
     '@/plugins/vgt',
     '@/api/index.js',
+    '@/plugins/router-guard.js',
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components

@@ -26,7 +26,12 @@ import ErrorIcon from '~/assets/images/500.svg?inline'
 
 export default {
   components: { Lost, ErrorIcon },
-  props: ['error'],
+  props: {
+    error: {
+      type: Object,
+      default: () => ({ statusCode: 404 }),
+    },
+  },
   computed: {
     is404() {
       return this.error && this.error.statusCode === 404

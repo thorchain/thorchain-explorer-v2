@@ -176,6 +176,8 @@ import CrossIcon from '~/assets/images/cross.svg?inline'
 import MoonIcon from '~/assets/images/moon-icon.svg?inline'
 import SunIcon from '~/assets/images/sun-icon.svg?inline'
 import links from '~/const/links'
+import { mainnetNav } from '~/const/mainnet'
+import { stagenetNav } from '~/const/stagenet'
 
 export default {
   name: 'NavBar',
@@ -194,183 +196,6 @@ export default {
       showExternalMenu: false,
       showSettings: false,
       isDropdownOpen: false,
-
-      navbarLists: [
-        {
-          name: 'Overview',
-          unicon: 'appsUnselected',
-          icon: 'appsSelected',
-          link: '/dashboard',
-        },
-        {
-          name: 'Nodes',
-          unicon: 'layersUnselected',
-          icon: 'layersSelected',
-          link: '/nodes',
-        },
-        {
-          name: 'Network',
-          unicon: 'vectorUnselected',
-          icon: 'vectorSelected',
-          link: '/network',
-          submenu: [
-            {
-              name: 'Overview',
-              link: '/network',
-            },
-            {
-              name: 'Constants',
-              link: '/network/settings',
-            },
-            {
-              name: 'Votes',
-              link: '/network/votes',
-            },
-            {
-              name: 'Churn',
-              link: '/network/churn',
-            },
-            {
-              name: 'Pendulum',
-              link: '/network/pendulum',
-            },
-            {
-              name: 'Outbound Fees',
-              link: '/network/outbounds',
-            },
-          ],
-        },
-        {
-          name: 'Transactions',
-          unicon: 'exchangeUnselected',
-          icon: 'exchangeSelected',
-          link: '/txs',
-          submenu: [
-            {
-              name: 'Transactions',
-              link: '/txs',
-            },
-            {
-              name: 'TOP Swaps',
-              link: '/swaps',
-            },
-              {
-              name: 'Holders',
-              link: '/holders',
-            },
-          ],
-        },
-        {
-          name: 'Pools',
-          unicon: 'swimmerUnselected',
-          icon: 'swimmerSelected',
-          link: '/pools',
-          submenu: [
-            {
-              name: 'Pools',
-              link: '/pools/main',
-            },
-            process.env.NETWORK === 'mainnet'
-              ? {
-                  name: 'Pool Earnings',
-                  link: '/pools/earnings',
-                }
-              : false,
-            {
-              name: 'TVL by Chain',
-              link: '/pools/tvl',
-            },
-            process.env.NETWORK === 'mainnet'
-              ? {
-                  name: 'Rune Pool',
-                  link: '/pools/runepool',
-                }
-              : false,
-          ],
-        },
-        {
-          name: 'THORFi',
-          unicon: 'financeUnselected',
-          icon: 'financeSelected',
-          link: '/thorfi',
-          submenu: [
-            {
-              name: 'TCY',
-              link: '/thorfi/tcy',
-            },
-            {
-              name: 'Savers',
-              link: '/thorfi/savers',
-            },
-            {
-              name: 'Synths',
-              link: '/thorfi/synths',
-            },
-            {
-              name: 'Trade Assets',
-              link: '/thorfi/trades',
-            },
-          ],
-        },
-        {
-          name: 'Vaults',
-          unicon: 'shieldUnselected',
-          icon: 'shieldSelected',
-          link: '/vaults',
-        },
-        {
-          name: 'Rujira',
-          unicon: 'chartUnselected',
-          icon: 'chartSelected',
-          link: '/rujira',
-          submenu: [
-            {
-              name: 'Secured Assets',
-              link: '/rujira/secured',
-            },
-            {
-              name: 'Contracts',
-              link: '/rujira/contracts',
-            },
-            process.env.NETWORK === 'mainnet'
-              ? {
-                  name: 'Merge',
-                  link: '/rujira/merge',
-                }
-              : false,
-            {
-              name: 'Tokens',
-              link: '/rujira/tokens',
-            },
-          ],
-        },
-        process.env.NETWORK === 'mainnet'
-          ? {
-              name: 'Insights',
-              unicon: 'chartUnselected',
-              icon: 'chartSelected',
-              link: '/insights',
-              submenu: [
-                {
-                  name: 'Overview',
-                  link: '/insights/main',
-                },
-                {
-                  name: 'Leaderboard',
-                  link: '/insights/leaderboard',
-                },
-                {
-                  name: 'Burn',
-                  link: '/insights/burn',
-                },
-                {
-                  name: 'Execution Quality',
-                  link: '/insights/execution',
-                },
-              ],
-            }
-          : false,
-      ],
     }
   },
   computed: {
@@ -383,6 +208,16 @@ export default {
     },
     networkEnv() {
       return process.env.NETWORK
+    },
+    navbarLists() {
+      switch (this.networkEnv) {
+        case 'mainnet':
+          return mainnetNav.navbarLists
+        case 'stagenet':
+          return stagenetNav.navbarLists
+        default:
+          return stagenetNav.navbarLists
+      }
     },
   },
   mounted() {
