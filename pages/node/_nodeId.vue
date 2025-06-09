@@ -9,7 +9,10 @@
       </template>
       <template #hash="{ item }">
         <div style="display: flex; align-items: center; gap: 0.5rem">
-          <Address :address="item.value"></Address>
+          <span v-tooltip="item.value" class="mono">
+            {{ addressFormatV2(item.value) }}
+          </span>
+          <Copy :str-copy="item.value"></Copy>
           <color-hash
             v-tooltip="
               'Vault colors are identical to the nodes vault membership'
