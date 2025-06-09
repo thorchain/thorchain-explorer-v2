@@ -4,10 +4,19 @@
       Node:<span class="node-id">{{ nodeId }}</span>
     </div>
     <info-card :options="nodeSettings">
-      <template #address>
-        <span class="clickable">
-          {{ address }}
-        </span>
+      <template #address="{ item }">
+        <Address :address="item.value"></Address>
+      </template>
+      <template #hash="{ item }">
+        <div style="display: flex; align-items: center; gap: 0.5rem">
+          <Address :address="item.value"></Address>
+          <color-hash
+            v-tooltip="
+              'Vault colors are identical to the nodes vault membership'
+            "
+            :name="item.value"
+          ></color-hash>
+        </div>
       </template>
     </info-card>
 
@@ -93,8 +102,12 @@
 
 <script>
 import moment from 'moment'
+import Address from '~/components/transactions/Address.vue'
 
 export default {
+  components: {
+    Address,
+  },
   async asyncData({ params }) {
     return { nodeId: params.nodeId }
   },
@@ -192,23 +205,18 @@ export default {
               value: this.node?.pub_key_set?.ed25519,
               filter: (v) => this.addressFormatV2(v),
             },
-            ...(this.asgardVault
-              ? [
-                  {
-                    name: 'Vault Address',
-                    value: this.asgardVault?.addresses?.find(
-                      (a) => a.chain === 'THOR'
-                    )?.address,
-                    link: `/address/${this.asgardVault?.addresses?.find((a) => a.chain === 'THOR')?.address}`,
-                    filter: (v) => this.addressFormatV2(v),
-                  },
-                  {
-                    name: 'Vault Public Hash',
-                    value: this.asgardVault?.pub_key,
-                    filter: (v) => this.addressFormatV2(v),
-                  },
-                ]
-              : []),
+            {
+              name: 'Vault Address',
+              valueSlot: 'address',
+              value: this.asgardVault?.addresses?.find(
+                (a) => a.chain === 'THOR'
+              )?.address,
+            },
+            {
+              name: 'Vault Public Hash',
+              value: this.asgardVault?.pub_key,
+              valueSlot: 'hash',
+            },
           ],
         },
         {
@@ -345,6 +353,7 @@ export default {
   align-items: center;
   background-color: var(--card-bg-color);
   color: var(--sec-font-color);
+  border: 1px solid var(--border-color);
   border-radius: $radius-lg;
   padding: $space-16;
   margin-bottom: $space-16;

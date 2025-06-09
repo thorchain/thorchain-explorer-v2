@@ -115,8 +115,6 @@
 </template>
 
 <script>
-import { duration } from 'moment'
-import { props } from 'qrcode.vue'
 import { mapGetters } from 'vuex'
 import { runeCur } from '~/utils'
 
