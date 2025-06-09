@@ -262,4 +262,9 @@ export default {
   display: flex;
   flex-direction: column;
 }
+
+.fixed-height {
+  max-height: 550px;
+  overflow-y: auto;
+}
 </style>

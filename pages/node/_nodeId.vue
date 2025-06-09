@@ -79,8 +79,9 @@
           node && node.signer_membership && node.signer_membership.length > 0
         "
         title="Signer Membership"
-        style="margin-top: 1rem; max-height: 550px; overflow-y: auto"
         :is-loading="loading"
+        style="margin-top: 1rem"
+        :body-class="'fixed-height'"
       >
         <div class="providers-container">
           <div
