@@ -82,12 +82,27 @@
                         <slot :name="item.valueSlot" :item="item" />
                       </template>
                       <template v-else>
-                        <span v-if="item.filter && item.value !== undefined">
-                          {{ item.filter(item.value) }}
-                        </span>
-                        <span v-else>
-                          {{ item.value || '-' }}
-                        </span>
+                        <template v-if="item.link">
+                          <nuxt-link :to="item.link" class="clickable">
+                            <span
+                              v-if="item.filter && item.value !== undefined"
+                            >
+                              {{ item.filter(item.value) }}
+                            </span>
+                            <span v-else>
+                              {{ item.value || '-' }}
+                            </span>
+                          </nuxt-link>
+                        </template>
+                        <template v-else>
+                          <span v-if="item.filter && item.value !== undefined">
+                            {{ item.filter(item.value) }}
+                          </span>
+                          <span v-else>
+                            {{ item.value || '-' }}
+                          </span>
+                        </template>
+
                         <progress-icon
                           v-if="item.progress"
                           :data-number="item.progress.data"

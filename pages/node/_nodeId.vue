@@ -10,6 +10,32 @@
         </span>
       </template>
     </info-card>
+
+    <div v-if="filteredVotes.length > 0" style="margin-top: 1rem">
+      <Header title="Last 30 Days vote"></Header>
+      <div class="votes-container">
+        <card
+          v-for="(vote, index) in filteredVotes"
+          :key="index"
+          class="vote-card"
+          :title="vote.value"
+        >
+          <div class="vote-details">
+            <div class="vote-row">
+              <small class="vote-label">Key:</small>
+              <span class="mono vote-value">{{ vote.key }}</span>
+            </div>
+            <div class="vote-row">
+              <small class="vote-label">Date:</small>
+              <span class="mono vote-value">{{
+                formatVoteDate(vote.date)
+              }}</span>
+            </div>
+          </div>
+        </card>
+      </div>
+    </div>
+
     <div class="cards-node">
       <card title="Providers" style="margin-top: 1rem" :is-loading="loading">
         <div v-if="node">
@@ -44,7 +70,7 @@
           node && node.signer_membership && node.signer_membership.length > 0
         "
         title="Signer Membership"
-        style="margin-top: 1rem"
+        style="margin-top: 1rem; max-height: 550px; overflow-y: auto"
         :is-loading="loading"
       >
         <div class="providers-container">
@@ -66,6 +92,8 @@
 </template>
 
 <script>
+import moment from 'moment'
+
 export default {
   async asyncData({ params }) {
     return { nodeId: params.nodeId }
@@ -73,6 +101,8 @@ export default {
   data() {
     return {
       node: undefined,
+      asgardVault: null,
+      votes: [],
       loading: true,
     }
   },
@@ -162,6 +192,23 @@ export default {
               value: this.node?.pub_key_set?.ed25519,
               filter: (v) => this.addressFormatV2(v),
             },
+            ...(this.asgardVault
+              ? [
+                  {
+                    name: 'Vault Address',
+                    value: this.asgardVault?.addresses?.find(
+                      (a) => a.chain === 'THOR'
+                    )?.address,
+                    link: `/address/${this.asgardVault?.addresses?.find((a) => a.chain === 'THOR')?.address}`,
+                    filter: (v) => this.addressFormatV2(v),
+                  },
+                  {
+                    name: 'Vault Public Hash',
+                    value: this.asgardVault?.pub_key,
+                    filter: (v) => this.addressFormatV2(v),
+                  },
+                ]
+              : []),
           ],
         },
         {
@@ -202,25 +249,96 @@ export default {
         },
       ]
     },
+    filteredVotes() {
+      if (!this.votes?.length || !this.node?.node_address) return []
+
+      const nodeAddress = this.node.node_address
+      const matchedVotes = []
+
+      for (const voteItem of this.votes) {
+        const match = voteItem.votes.find((v) => v.address === nodeAddress)
+        if (match) {
+          matchedVotes.push({
+            key: match.key,
+            date: match.date / 1e6,
+            value: voteItem.value,
+          })
+        }
+      }
+
+      return matchedVotes
+    },
   },
   mounted() {
     this.loading = true
-    this.$api
-      .getNode(this.nodeId)
-      .then(({ data }) => {
-        this.node = data
+    Promise.all([
+      this.$api.getNode(this.nodeId),
+      this.$api.getAsgard(),
+      this.$api.getVotes(),
+    ])
+      .then(([nodeRes, asgardRes, votesRes]) => {
+        this.node = nodeRes.data
+        this.votes = votesRes.data
+        this.findAsgardVault(asgardRes.data)
       })
       .catch((error) => {
-        console.error('Error fetching node data:', error)
+        console.error('Error fetching data:', error)
       })
       .finally(() => {
         this.loading = false
       })
   },
+  methods: {
+    findAsgardVault(asgardList) {
+      if (!this.node?.signer_membership) return
+
+      for (const vault of asgardList) {
+        const match =
+          vault.pub_key && this.node.signer_membership.includes(vault.pub_key)
+        if (match) {
+          this.asgardVault = vault
+          break
+        }
+      }
+    },
+    formatVoteDate(date) {
+      return moment(date).format('MM/DD/YYYY HH:mm:ss')
+    },
+  },
 }
 </script>
 
 <style lang="scss" scoped>
+.votes-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 0.5rem;
+
+  .vote-card {
+    word-break: break-all;
+  }
+  .vote-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    .vote-row {
+      display: flex;
+      align-items: flex-start;
+      align-items: center;
+    }
+
+    .vote-label {
+      color: var(--sec-font-color);
+      margin-right: 0.5rem;
+    }
+
+    .vote-value {
+      font-weight: bold;
+      color: var(--sec-font-color);
+    }
+  }
+}
 .node-header {
   display: flex;
   flex-direction: row;
