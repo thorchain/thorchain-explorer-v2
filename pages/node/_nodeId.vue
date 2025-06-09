@@ -10,7 +10,9 @@
         </span>
       </template>
     </info-card>
+
     <div v-if="filteredVotes.length > 0" style="margin-top: 1rem">
+      <Header title="Last 30 Days vote"></Header>
       <div class="votes-container">
         <card
           v-for="(vote, index) in filteredVotes"
