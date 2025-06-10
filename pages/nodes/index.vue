@@ -842,7 +842,7 @@ export default {
 
             if (
               this.mimirs &&
-              +this.mimirs?.DESIREDVALIDATORSET > actNodes.length + extraChurn
+              +this.mimirs?.DESIREDVALIDATORSET >= actNodes.length + extraChurn
             ) {
               extraChurn += 1
             }
