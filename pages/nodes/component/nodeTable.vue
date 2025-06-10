@@ -460,6 +460,22 @@
               style="fill: #ef5350"
             />
           </span>
+          <span
+            v-else-if="
+              props.column.field === 'rpcHealth' ||
+              props.column.field === 'bifrostHealth'
+            "
+          >
+            <span
+              v-html="
+                formatHealthStatus(
+                  props.row[props.column.field],
+                  props.row,
+                  props.column
+                )
+              "
+            ></span>
+          </span>
           <span v-else>
             {{ props.formattedRow[props.column.field] }}
           </span>
@@ -584,6 +600,20 @@ export default {
     window.addEventListener('visibilitychange', this.unloadRank)
   },
   methods: {
+    formatHealthStatus(value, row, column) {
+      if (value === undefined) return '-'
+      const status = value ? 'OK' : 'BAD'
+      const color = value ? 'var(--primary-color)' : 'var(--red)'
+      const field = column.label
+      const ip = row.ip
+      let url = ''
+      if (field === 'BFR') {
+        url = `http://${ip}:6040/p2pid`
+      } else if (field === 'RPC') {
+        url = `http://${ip}:27147/health?`
+      }
+      return `<a href="${url}" target="_blank" style="color: ${color}; text-decoration: none">${status}</a>`
+    },
     rankChange(address, rank) {
       const na = this.favs.find((f) => f.address === address)
       return na.rank - rank

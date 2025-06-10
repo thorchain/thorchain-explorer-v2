@@ -555,6 +555,8 @@ export function fillNodeData(nodes, el, index) {
     operator: el.node_operator_address,
     vault: el.vaultMembership,
     preflight: el.preflight_status,
+    rpcHealth: el.rpcHealth,
+    bifrostHealth: el.bifrostHealth,
     ...(rank && { rank }),
   })
 }
