@@ -766,7 +766,7 @@ export default {
   color: var(--red) !important;
 
   &:hover {
-    color: var(--active-primary-color);
+    color: var(--active-primary-color) !important;
   }
 }
 .number {
