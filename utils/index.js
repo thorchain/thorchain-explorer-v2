@@ -555,6 +555,8 @@ export function fillNodeData(nodes, el, index) {
     operator: el.node_operator_address,
     vault: el.vaultMembership,
     preflight: el.preflight_status,
+    rpcHealth: el.rpcHealth,
+    bifrostHealth: el.bifrostHealth,
     ...(rank && { rank }),
   })
 }
@@ -617,6 +619,7 @@ const hashMapShorts = {
   l: 'LTC.LTC',
   r: 'THOR.RUNE',
   f: 'BASE.ETH',
+  x: 'XRP.XRP',
 }
 
 export function shortAssetName(name) {

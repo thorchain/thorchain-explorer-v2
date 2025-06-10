@@ -79,6 +79,20 @@
           <caret :class="['filter-icon', { disable: hides.age }]" />
           Age
         </button>
+        <button
+          class="filter-button"
+          :class="{ 'enabled-btn': !(hides.RPC && hides.BFR) }"
+          @click="
+            hides.RPC = !hides.RPC
+            hides.BFR = !hides.BFR
+            saveFilters()
+          "
+        >
+          <caret
+            :class="['filter-icon', { disable: hides.RPC && hides.BFR }]"
+          />
+          Health
+        </button>
       </div>
     </div>
 
@@ -175,6 +189,8 @@ export default {
         score: true,
         fee: false,
         age: false,
+        RPC: true,
+        BFR: true,
       },
       sortColumn: null,
       sortOrder: null,
@@ -318,6 +334,22 @@ export default {
         },
         ...chains,
         {
+          label: 'RPC',
+          field: 'rpcHealth',
+          type: 'text',
+          tdClass: 'mono center',
+          thClass: 'center no-padding',
+          hidden: this.hides?.RPC ?? false,
+        },
+        {
+          label: 'BFR',
+          field: 'bifrostHealth',
+          type: 'text',
+          tdClass: 'mono center',
+          thClass: 'center no-padding',
+          hidden: this.hides?.BFR ?? false,
+        },
+        {
           label: 'Age',
           field: 'age',
           type: 'number',
@@ -428,6 +460,24 @@ export default {
           tdClass: 'mono',
         },
         ...chains,
+        {
+          label: 'RPC',
+          field: 'rpcHealth',
+          type: 'text',
+          width: '40px',
+          tdClass: 'mono center',
+          thClass: 'center no-padding',
+          hidden: this.hides?.RPC ?? false,
+        },
+        {
+          label: 'BFR',
+          field: 'bifrostHealth',
+          type: 'text',
+          width: '40px',
+          tdClass: 'mono center',
+          thClass: 'center no-padding',
+          hidden: this.hides?.BFR ?? false,
+        },
         {
           label: 'Age',
           field: 'age',
@@ -1082,6 +1132,10 @@ export default {
         this.activeCols.push({ field: 'score', label: 'Score' })
       } else if (col === 'age') {
         this.activeCols.push({ field: 'age', label: 'Age' })
+      } else if (col === 'RPC') {
+        this.activeCols.push({ field: 'RPC', label: 'RPC' })
+      } else if (col === 'BFR') {
+        this.activeCols.push({ field: 'BFR', label: 'BFR' })
       }
     },
     setNewNodesChurn(num) {
