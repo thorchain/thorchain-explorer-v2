@@ -14,6 +14,10 @@
             />
             <span
               v-if="runeToken && runeToken.price > 0 && !isNaN(runeToken.price)"
+              v-tooltip="
+                runeToken &&
+                formatCurrency(runeToken.quantity * runeToken.price)
+              "
               class="mono"
             >
               {{ balanceFormat(runeToken.quantity) }} RUNE
@@ -31,7 +35,11 @@
               :chain="false"
             />
             <div class="bonds">
-              <span v-if="totalBond !== undefined" class="mono">
+              <span
+                v-if="totalBond !== undefined"
+                v-tooltip="formatCurrency((runePrice * totalBond) / 1e8)"
+                class="mono"
+              >
                 {{ balanceFormat(totalBond / 1e8) }} RUNE
                 <nuxt-link
                   v-if="isNodeAddress"
@@ -41,7 +49,11 @@
                   View Node
                 </nuxt-link>
               </span>
-              <span v-else-if="bonds && bonds.total !== undefined" class="mono">
+              <span
+                v-else-if="bonds && bonds.total !== undefined"
+                v-tooltip="formatCurrency(runePrice * bonds.total)"
+                class="mono"
+              >
                 {{ balanceFormat(bonds.total) }} RUNE
               </span>
               <span v-else class="mono">-</span>
