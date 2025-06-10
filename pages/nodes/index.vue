@@ -339,7 +339,6 @@ export default {
           type: 'text',
           tdClass: 'mono center',
           thClass: 'center no-padding',
-          formatFn: this.formatHealthStatus,
           hidden: this.hides?.RPC ?? false,
         },
         {
@@ -348,7 +347,6 @@ export default {
           type: 'text',
           tdClass: 'mono center',
           thClass: 'center no-padding',
-          formatFn: this.formatHealthStatus,
           hidden: this.hides?.BFR ?? false,
         },
         {
@@ -469,7 +467,6 @@ export default {
           width: '40px',
           tdClass: 'mono center',
           thClass: 'center no-padding',
-          formatFn: this.formatHealthStatus,
           hidden: this.hides?.RPC ?? false,
         },
         {
@@ -479,7 +476,6 @@ export default {
           width: '40px',
           tdClass: 'mono center',
           thClass: 'center no-padding',
-          formatFn: this.formatHealthStatus,
           hidden: this.hides?.BFR ?? false,
         },
         {
