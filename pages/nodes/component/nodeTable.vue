@@ -468,6 +468,7 @@
           >
             <template v-if="getHealth(props).text !== '-'">
               <a
+                v-tooltip="getHealth(props).title"
                 :class="[
                   'clickable',
                   'hoverable',
@@ -475,7 +476,6 @@
                 ]"
                 :href="getHealth(props).url"
                 target="_blank"
-                v-tooltip="getHealth(props).title"
                 style="text-decoration: none"
               >
                 {{ getHealth(props).text }}
@@ -552,7 +552,6 @@ import { mapGetters } from 'vuex'
 import { remove, orderBy } from 'lodash'
 import { rcompare } from 'semver'
 
-import { props } from 'qrcode.vue'
 import JsonIcon from '@/assets/images/json.svg?inline'
 import InfoIcon from '@/assets/images/info.svg?inline'
 import StarIcon from '@/assets/images/bookmark.svg?inline'

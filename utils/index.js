@@ -619,6 +619,7 @@ const hashMapShorts = {
   l: 'LTC.LTC',
   r: 'THOR.RUNE',
   f: 'BASE.ETH',
+  x: 'XRP.XRP',
 }
 
 export function shortAssetName(name) {
