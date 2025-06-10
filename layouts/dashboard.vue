@@ -236,6 +236,7 @@ Vue.mixin(global)
   margin-bottom: -4.5rem;
 
   @include md {
+    background-size: contain;
     padding: $space-0 3rem;
   }
 
