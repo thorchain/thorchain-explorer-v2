@@ -466,15 +466,22 @@
               props.column.field === 'bifrostHealth'
             "
           >
-            <span
-              v-html="
-                formatHealthStatus(
-                  props.row[props.column.field],
-                  props.row,
-                  props.column
-                )
-              "
-            ></span>
+            <template v-if="getHealth(props).text !== '-'">
+              <a
+                :class="[
+                  'clickable',
+                  'hoverable',
+                  { 'bad-link': getHealth(props).text === 'BAD' },
+                ]"
+                :href="getHealth(props).url"
+                target="_blank"
+                v-tooltip="getHealth(props).title"
+                style="text-decoration: none"
+              >
+                {{ getHealth(props).text }}
+              </a>
+            </template>
+            <template v-else> - </template>
           </span>
           <span v-else>
             {{ props.formattedRow[props.column.field] }}
@@ -600,10 +607,11 @@ export default {
     window.addEventListener('visibilitychange', this.unloadRank)
   },
   methods: {
-    formatHealthStatus(value, row, column) {
-      if (value === undefined) return '-'
-      const status = value ? 'OK' : 'BAD'
-      const color = value ? 'var(--primary-color)' : 'var(--red)'
+    getHealthStatus(value, row, column) {
+      if (value === null || value === undefined) {
+        return { text: '-', url: '', title: '' }
+      }
+
       const field = column.label
       const ip = row.ip
       let url = ''
@@ -612,7 +620,28 @@ export default {
       } else if (field === 'RPC') {
         url = `http://${ip}:27147/health?`
       }
-      return `<a href="${url}" target="_blank" style="color: ${color}; text-decoration: none">${status}</a>`
+
+      if (value === true) {
+        return { text: 'OK', url, title: '' }
+      }
+
+      if (value === false) {
+        return { text: 'BAD', url, title: '' }
+      }
+
+      if (typeof value === 'string') {
+        return { text: 'BAD', url, title: value }
+      }
+
+      return { text: '-', url: '', color: '', title: '' }
+    },
+
+    getHealth(props) {
+      return this.getHealthStatus(
+        props.row[props.column.field],
+        props.row,
+        props.column
+      )
     },
     rankChange(address, rank) {
       const na = this.favs.find((f) => f.address === address)
@@ -733,6 +762,13 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.bad-link {
+  color: var(--red) !important;
+
+  &:hover {
+    color: var(--active-primary-color);
+  }
+}
 .number {
   color: #ffc107;
 }
