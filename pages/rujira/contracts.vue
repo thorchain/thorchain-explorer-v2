@@ -1,100 +1,100 @@
 <template>
   <page>
     <card title="Contracts">
-      <TableLoader v-if="loading" :cols="columns" :rows="Array(7).fill({})" />
-      <vue-good-table
-        v-else
-        :columns="columns"
-        :rows="codes"
-        style-class="vgt-table net-table"
-        :sort-options="{
-          enabled: true,
-          initialSortBy: { field: 'name', type: 'asc' },
-        }"
-        :group-options="{
-          enabled: true,
-          collapsable: true,
-          rowKey: 'name',
-        }"
-      >
-        <template slot="table-row" slot-scope="props">
-          <span v-if="props.column.field === 'name' && props.row.children">
-            {{ props.row.name }}
-          </span>
-
-          <template v-else-if="!props.row.children">
-            <span v-if="props.column.field === 'name'">
+        <TableLoader v-if="loading" :cols="columns" :rows="Array(7).fill({})" />
+        <vue-good-table
+          v-else
+          :columns="columns"
+          :rows="codes"
+          style-class="vgt-table net-table"
+          :sort-options="{
+            enabled: true,
+            initialSortBy: { field: 'name', type: 'asc' },
+          }"
+          :group-options="{
+            enabled: true,
+            collapsable: true,
+            rowKey: 'name',
+          }"
+        >
+          <template slot="table-row" slot-scope="props">
+            <span v-if="props.column.field === 'name' && props.row.children">
               {{ props.row.name }}
             </span>
 
-            <span
-              v-else-if="props.column.field === 'checksum' && props.row.code"
-              class="checksum"
-            >
+            <template v-else-if="!props.row.children">
+              <span v-if="props.column.field === 'name'">
+                {{ props.row.name }}
+              </span>
+
+              <span
+                v-else-if="props.column.field === 'checksum' && props.row.code"
+                class="checksum"
+              >
               {{ props.row.code.slice(0, 6) }}...{{ props.row.code.slice(-4) }}
-              <copy :str-copy="props.row.code" />
-            </span>
+                <copy :str-copy="props.row.code" />
+              </span>
 
-            <div
-              v-else-if="props.column.field === 'deployers'"
-              class="contracts"
-            >
+              <div
+                v-else-if="props.column.field === 'deployers'"
+                class="contracts"
+              >
+                <span
+                  v-for="deployer in props.row.deployers"
+                  :key="deployer"
+                  class="asset-cell"
+                >
+                  <nuxt-link :to="`/address/${deployer}`" class="clickable">
+                    {{ deployer.slice(-4) }}
+                  </nuxt-link>
+                </span>
+              </div>
+
+              <div
+                v-else-if="props.column.field === 'contracts'"
+                class="contracts"
+              >
+                <span
+                  v-for="contract in props.row.contracts"
+                  :key="contract"
+                  class="asset-cell"
+                >
+                  <nuxt-link :to="`/address/${contract}`" class="clickable">
+                    {{ contract.slice(-4) }}
+                  </nuxt-link>
+                </span>
+              </div>
+
               <span
-                v-for="deployer in props.row.deployers"
-                :key="deployer"
-                class="asset-cell"
+                v-else-if="props.column.field === 'origin' && props.row.origin"
               >
-                <nuxt-link :to="`/address/${deployer}`" class="clickable">
-                  {{ deployer.slice(-4) }}
-                </nuxt-link>
+                <a class="clickable" :href="props.row.origin" target="_blank">
+                  {{ props.row.displayOrigin }}
+                </a>
               </span>
-            </div>
 
-            <div
-              v-else-if="props.column.field === 'contracts'"
-              class="contracts"
-            >
-              <span
-                v-for="contract in props.row.contracts"
-                :key="contract"
-                class="asset-cell"
-              >
-                <nuxt-link :to="`/address/${contract}`" class="clickable">
-                  {{ contract.slice(-4) }}
-                </nuxt-link>
+              <span v-else-if="props.column.field === 'audit'">
+                <span v-if="!props.row.auditLink">
+                  {{ props.row.audit }}
+                </span>
+                <a
+                  v-else
+                  class="clickable"
+                  :href="props.row.auditLink"
+                  target="_blank"
+                >
+                  {{ props.row.audit }}
+                </a>
               </span>
-            </div>
 
-            <span
-              v-else-if="props.column.field === 'origin' && props.row.origin"
-            >
-              <a class="clickable" :href="props.row.origin" target="_blank">
-                {{ props.row.displayOrigin }}
-              </a>
-            </span>
-
-            <span v-else-if="props.column.field === 'audit'">
-              <span v-if="!props.row.auditLink">
-                {{ props.row.audit }}
+              <span v-else>
+                {{ props.row[props.column.field] || '' }}
               </span>
-              <a
-                v-else
-                class="clickable"
-                :href="props.row.auditLink"
-                target="_blank"
-              >
-                {{ props.row.audit }}
-              </a>
-            </span>
+            </template>
 
-            <span v-else>
-              {{ props.row[props.column.field] || '' }}
-            </span>
+            <span v-else></span>
           </template>
-
-          <span v-else></span>
-        </template>
-      </vue-good-table>
+        </vue-good-table>
     </card>
   </page>
 </template>
@@ -264,6 +264,7 @@ export default {
   background-color: var(--bg-color);
   table-layout: fixed;
   width: 100%;
+  min-width: 1400px;
 
   th,
   td {

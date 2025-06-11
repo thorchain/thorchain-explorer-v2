@@ -620,6 +620,12 @@ export default {
         url = `http://${ip}:27147/health?`
       }
 
+      const errorMessages = {
+        ERR_BAD_RESPONSE: 'Unexpected response from the server',
+        ECONNREFUSED: 'Connection Refused By Server',
+        ECONNABORTED: 'Connection was interrupted',
+      }
+
       if (value === true) {
         return { text: 'OK', url, title: '' }
       }
@@ -629,7 +635,7 @@ export default {
       }
 
       if (typeof value === 'string') {
-        return { text: 'BAD', url, title: value }
+        return { text: 'BAD', url, title: errorMessages[value] || value }
       }
 
       return { text: '-', url: '', color: '', title: '' }
