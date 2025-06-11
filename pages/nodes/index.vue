@@ -1311,6 +1311,10 @@ export default {
   display: flex;
   margin-left: $space-5;
   gap: $space-5;
+  overflow: auto;
+  scrollbar-width: thin;
+  padding-bottom: $space-8;
+  scrollbar-color: var(--border-color) var(--bg-color);
 
   .enabled-btn {
     color: var(--primary-color) !important;
