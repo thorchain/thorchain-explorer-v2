@@ -935,12 +935,6 @@ export default {
         stbNodes = orderBy(stbNodes, [(o) => +o.total_bond], ['desc'])
 
         const filteredNodes = []
-        if (
-          this.mimirs &&
-          +this.mimirs?.DESIREDVALIDATORSET === this.activeNodes.length
-        ) {
-          this.setNewNodesChurn(0)
-        }
         const churnInNumbers = 3 + this.newNodesChurn + this.extraNodeChurn
         let lastChurnIndex = 0
         let churnNodes = 0
@@ -979,6 +973,12 @@ export default {
               continue
             }
             if (+el.total_bond < this.minBond) {
+              continue
+            }
+            if (
+              +this.mimirs?.DESIREDVALIDATORSET === this.activeNodes?.length &&
+              churnNodes >= this.leavingCount
+            ) {
               continue
             }
             filteredNodes[i].churn.push({
