@@ -110,6 +110,22 @@
                 <JsonIcon class="table-icon item-link" />
               </a>
               <Ip v-tooltip="props.row.ip" :str-copy="props.row.ip" />
+              <a
+                :style="{
+                  color: isFav(props.row.address)
+                    ? vaultColor(props.row.address, true)
+                    : '',
+                  fill: isFav(props.row.address)
+                    ? vaultColor(props.row.address, true)
+                    : '',
+                  fontWeight: isFav(props.row.address) ? 'bold' : 'normal',
+                }"
+                style="height: 1rem"
+                :href="`https://thornode.ninerealms.com/thorchain/node/${props.row.address}`"
+                target="_blank"
+              >
+                <NodeIcon class="table-icon item-link" />
+              </a>
             </div>
           </span>
           <span v-else-if="props.column.field == 'highlight'">
@@ -565,6 +581,7 @@ import ExternalIcon from '@/assets/images/external.svg?inline'
 import VaultIcon from '@/assets/images/safe.svg?inline'
 import HighlightList from '@/assets/images/highlight-list.svg?inline'
 import CrossIcon from '~/assets/images/cross.svg?inline'
+import NodeIcon from '~/assets/images/node.svg?inline'
 
 export default {
   components: {
@@ -581,6 +598,7 @@ export default {
     HighlightList,
     ExternalIcon,
     VaultIcon,
+    NodeIcon,
   },
   props: ['rows', 'cols', 'name', 'searchTerm', 'sortColumn', 'sortOrder'],
   data() {
