@@ -936,6 +936,10 @@ export default {
 
         const filteredNodes = []
         const churnInNumbers = 3 + this.newNodesChurn + this.extraNodeChurn
+        const remainingCount =
+          +this.mimirs?.DESIREDVALIDATORSET -
+          this.activeNodes?.length +
+          this.leavingCount
         let lastChurnIndex = 0
         let churnNodes = 0
         let enteringBond = 0
@@ -975,10 +979,10 @@ export default {
             if (+el.total_bond < this.minBond) {
               continue
             }
-            if (
-              +this.mimirs?.DESIREDVALIDATORSET === this.activeNodes?.length &&
-              churnNodes >= this.leavingCount
-            ) {
+            if (el.status === 'Ready' && el.age.number < 300) {
+              continue
+            }
+            if (remainingCount <= churnNodes) {
               continue
             }
             filteredNodes[i].churn.push({
