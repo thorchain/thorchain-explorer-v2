@@ -119,13 +119,6 @@
             >
               Stagenet
             </a>
-            <a
-              :class="{ active: networkEnv === 'devnet' }"
-              :disabled="networkEnv === 'devnet'"
-              :href="gotoInstance('devnet', networkEnv === 'devnet')"
-            >
-              Devnet
-            </a>
           </div>
         </transition>
       </div>

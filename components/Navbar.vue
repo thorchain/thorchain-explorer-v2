@@ -149,16 +149,6 @@
                   Stagenet
                 </a>
               </div>
-              <div class="settings-option">
-                <a
-                  :class="{
-                    active: networkEnv === 'devnet',
-                  }"
-                  :href="gotoInstance('devnet', networkEnv === 'devnet')"
-                >
-                  Devnet
-                </a>
-              </div>
             </div>
           </div>
         </div>
