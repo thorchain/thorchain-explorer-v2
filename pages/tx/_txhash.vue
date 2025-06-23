@@ -1313,6 +1313,13 @@ export default {
         isSecure = true
       }
 
+      let error = false
+      let reason = ''
+      if (action.type === 'refund') {
+        error = true
+        reason = action.metadata?.refund?.reason
+      }
+
       const ins = [
         {
           asset: ast,
@@ -1344,9 +1351,10 @@ export default {
           title: this.camelCase(memo.type),
           in: ins,
           middle: {
+            fail: error,
             pending: false,
           },
-          out: outs,
+          out: error ? [] : outs,
         },
         accordions: {
           in: ins,
@@ -1356,8 +1364,10 @@ export default {
             height: action?.height,
             timeStamp,
             done: true,
+            error,
+            reason,
           },
-          out: outs,
+          out: error ? [] : outs,
         },
       }
     },
