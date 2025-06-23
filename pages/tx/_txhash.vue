@@ -1759,7 +1759,8 @@ export default {
         thorStatus?.stages.swap_status?.pending ||
         !thorStatus?.stages.inbound_observed?.completed ||
         !(thorStatus?.stages.inbound_confirmation_counted?.completed ?? true) ||
-        !thorStatus?.stages.inbound_finalised?.completed
+        !thorStatus?.stages.inbound_finalised?.completed ||
+        (inAsset?.chain === 'THOR' && addAction.status === 'pending')
 
       const memoText = thorStatus?.tx?.memo || isRefund?.metadata.refund.memo
 
@@ -1812,7 +1813,9 @@ export default {
               ? isRefund?.metadata?.refund?.reason
               : undefined,
             memo: memoText,
-            done: !thorStatus?.stages.swap_status?.pending,
+            done:
+              !thorStatus?.stages.swap_status?.pending &&
+              !(inAsset?.chain === 'THOR' && addAction.status === 'pending'),
           },
           out: [],
         },
