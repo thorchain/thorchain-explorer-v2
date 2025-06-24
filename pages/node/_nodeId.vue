@@ -50,32 +50,29 @@
 
     <div class="cards-node">
       <card title="Providers" style="margin-top: 1rem" :is-loading="loading">
-        <div v-if="node">
-          <div class="providers-container">
-            <div
-              v-for="p in node.bond_providers.providers"
-              :key="p.bond_address"
-              class="providers"
-            >
-              <div>
-                <b>Address: </b>
-                <nuxt-link
-                  class="clickable"
-                  :to="{ path: `/address/${p.bond_address}` }"
-                >
-                  {{ formatAddress(p.bond_address) }}
-                </nuxt-link>
-              </div>
-              <div>
-                <b>Bond: </b>
-                <span class="mono">
-                  {{ $options.filters.number(p.bond / 1e8, '0,0.00') }}
-                  {{ runeCur() }}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <pie-chart :pie-data="pieData" :formatter="formatter" />
+        <cards-header :table-general-stats="generalStatsDetails" />
+
+        <vue-good-table
+          :columns="columns"
+          :rows="providersTableData"
+          style-class="vgt-table net-table"
+        >
+          <template #table-row="{ column, row }">
+            <span v-if="column.field === 'bond_address'">
+              <Address :address="row.bond_address" />
+            </span>
+            <span v-else-if="column.field === 'bond'">
+              {{ $options.filters.number(row.bond / 1e8, '0,0.00') }} RUNE
+            </span>
+            <span v-else-if="column.field === 'bondPercentage'">
+              {{ row.bondPercentage | percent(2) }}
+            </span>
+            <span v-else>
+              {{ row[column.field] }}
+            </span>
+          </template>
+        </vue-good-table>
       </card>
       <card
         v-if="
@@ -107,6 +104,7 @@
 <script>
 import moment from 'moment'
 import Address from '~/components/transactions/Address.vue'
+import { orderBy, sumBy } from 'lodash'
 
 export default {
   components: {
@@ -121,6 +119,40 @@ export default {
       asgardVault: null,
       votes: [],
       loading: true,
+      pieData: [],
+      columns: [
+        {
+          label: 'Address',
+          field: 'bond_address',
+          sortable: true,
+          formatFn: (v) => this.addressFormatV2(v),
+          tdClass: 'mono',
+        },
+        {
+          label: 'Bond (RUNE)',
+          field: 'bond',
+          sortable: true,
+          type: 'number',
+          formatFn: (value) =>
+            this.$options.filters.number(value / 1e8, '0,0.00'),
+          tdClass: 'mono',
+        },
+        {
+          label: 'Percentage',
+          field: 'bondPercentage',
+          sortable: true,
+          type: 'number',
+          tdClass: 'mono',
+        },
+      ],
+      generalStatsDetails: [
+        {
+          name: 'Total Bond',
+        },
+        {
+          name: 'Providers Count',
+        },
+      ],
     }
   },
   head: {
@@ -280,6 +312,27 @@ export default {
 
       return matchedVotes
     },
+    providersTableData() {
+      if (!this.node?.bond_providers?.providers?.length) return []
+
+      const totalBond =
+        this.node.total_bond ??
+        this.node.bond_providers.providers.reduce((sum, p) => sum + p.bond, 0)
+
+      return this.node.bond_providers.providers.map((p) => ({
+        ...p,
+        bondPercentage: p.bond / totalBond,
+      }))
+    },
+    providersStats() {
+      const providers = this.providersTableData
+      const count = providers.length
+      const totalBond = providers.reduce((sum, p) => sum + p.bond, 0)
+      return {
+        count,
+        totalBond,
+      }
+    },
   },
   mounted() {
     this.loading = true
@@ -292,6 +345,8 @@ export default {
         this.node = nodeRes.data
         this.votes = votesRes.data
         this.findAsgardVault(asgardRes.data)
+        this.createProvidersPieData()
+        this.updateStatsDetails()
       })
       .catch((error) => {
         console.error('Error fetching data:', error)
@@ -313,20 +368,102 @@ export default {
         }
       }
     },
+    updateStatsDetails() {
+      this.generalStatsDetails = [
+        {
+          name: 'Total Bond',
+          value: `${this.$options.filters.number(this.node.total_bond / 1e8, '0.00a')} ${this.runeCur()}`,
+        },
+        {
+          name: 'Providers Count',
+          value: `${this.$options.filters.number(this.providersStats.count, '0.00a')}`,
+        },
+      ]
+    },
     formatVoteDate(date) {
       return moment(date).format('MM/DD/YYYY HH:mm:ss')
+    },
+    createProvidersPieData() {
+      if (!this.node?.bond_providers?.providers?.length) return
+
+      const sorted = [...this.node.bond_providers.providers].sort(
+        (a, b) => b.bond - a.bond
+      )
+
+      const topProviders = sorted.slice(0, 10).map((p) => ({
+        name: this.addressFormatV2(p.bond_address),
+        value: p.bond / 1e8,
+      }))
+
+      const others = sorted.slice(10)
+      const othersValue = others.reduce((sum, p) => sum + p.bond / 1e8, 0)
+
+      this.pieData = [
+        ...topProviders,
+        ...(othersValue > 0
+          ? [
+              {
+                name: 'Others',
+                value: othersValue,
+              },
+            ]
+          : []),
+      ]
+    },
+    formatter(param) {
+      const total = this.pieData.reduce((sum, item) => sum + item.value, 0)
+      const percent = this.$options.filters.percent(param.value / total, 2)
+      const formattedRune = this.$options.filters.number(param.value, '0,0.00')
+
+      return `
+    <div class="tooltip-header">
+      <div class="data-color" style="background-color: ${param.color}"></div>
+      ${param.name.length > 30 ? this.addressFormatV2(param.name) : param.name}
+    </div>
+    <div class="tooltip-body">
+      <span>
+        <span>Bond:</span>
+        <b>${formattedRune} RUNE</b>
+      </span>
+      <span>
+        <span>Percentage:</span>
+        <b>${percent}</b>
+      </span>
+    </div>
+  `
     },
   },
 }
 </script>
 
 <style lang="scss" scoped>
+.bond-info {
+  margin-bottom: 1rem;
+  font-size: 14px;
+  color: var(--sec-font-color);
+  display: flex;
+  justify-content: space-between;
+  b {
+    color: var(--font-color);
+    margin-right: 4px;
+  }
+}
+
 .votes-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 0.5rem;
+  display: flex;
+  flex-direction: row;
+  overflow: auto;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  gap: 8px;
+  margin: 0 10px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) var(--bg-color);
+  min-width: 1rem;
 
   .vote-card {
+    flex: 0 0 auto;
+    max-width: 18rem;
     word-break: break-all;
   }
   .vote-details {
