@@ -18,7 +18,11 @@ export function getExraNodesInfo() {
     endpoints[process.env.NETWORK].SERVER_URL + 'api/extraNodesInfo'
   )
 }
-
+export function getTCY(address) {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + `tcy/distribution/${address}`
+  )
+}
 export function getSaversInfo() {
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].SERVER_URL + 'api/saversInfo'

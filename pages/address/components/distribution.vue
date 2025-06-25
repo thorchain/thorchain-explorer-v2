@@ -14,12 +14,19 @@
     <div class="distributions">
       <div class="distribution-header">
         <h3 class="info-title">Distributions</h3>
-        <div
-          class="csv-download"
-          title="csv-download"
-          @click="downloadDistribution(distribution.distributions)"
-        >
-          <file-download class="clickable"></file-download>
+        <div class="icon-group">
+          <Business
+            @click="toggleValueDisplay"
+            :class="['rotate', { active: showPriceTimesAmount }]"
+          ></Business>
+
+          <div
+            class="csv-download"
+            title="csv-download"
+            @click="downloadDistribution(distribution.distributions)"
+          >
+            <file-download class="clickable"></file-download>
+          </div>
         </div>
       </div>
       <vue-good-table
@@ -41,8 +48,13 @@
             {{ props.formattedRow[props.column.field] }}
             <small>RUNE</small>
           </div>
-          <div v-else-if="props.column.field == 'value'">
-            {{ ((props.row.amount * runePrice) / 1e8) | currency() }}
+          <div v-else-if="props.column.field == 'value'" class="value-cell">
+            <span v-if="showPriceTimesAmount">
+              {{ formatPriceTimesAmount(props.row) | currency }}
+            </span>
+            <span v-else>
+              {{ formatRuneValue(props.row.amount) | currency }}
+            </span>
           </div>
           <span v-else>
             {{ props.formattedRow[props.column.field] }}
@@ -57,10 +69,12 @@
 import { mapGetters } from 'vuex'
 import moment from 'moment'
 import FileDownload from '~/assets/images/file-download.svg?inline'
+import Business from '~/assets/images/business.svg?inline'
 
 export default {
   components: {
     FileDownload,
+    Business,
   },
   props: {
     address: {
@@ -70,8 +84,11 @@ export default {
   },
   data() {
     return {
+      apr: 0,
       stakedAmount: 0,
       distribution: [],
+      price: 0,
+      showPriceTimesAmount: false,
       distributionsColumns: [
         {
           label: 'Earned',
@@ -138,9 +155,15 @@ export default {
           filter: (val) => {
             return `${this.$options.filters.number(val, '0,0.0000')} `
           },
+          subValue: this.$options.filters.currency(
+            this.showPriceTimesAmount
+              ? this.calculateTotalValuePriceBased()
+              : this.calculateTotalValueRuneBased()
+          ),
         },
       ]
     },
+
     dailyEarn() {
       const totalEarn = +this.distribution?.total / 1e8
       const days = this.distribution?.distributions?.length
@@ -152,6 +175,9 @@ export default {
       return totalEarn / days
     },
     tcyAPY() {
+      if (this.showPriceTimesAmount) {
+        return this.apr
+      }
       if (!this.dailyEarn || !this.tcyPrice) {
         return 0
       }
@@ -162,26 +188,63 @@ export default {
       return dailyReturn * 365
     },
   },
-  mounted() {
-    this.$api.getTCYDistribution(this.address).then((res) => {
-      this.distribution = res.data
-    })
+  async mounted() {
+    try {
+      const [tcyRes, distRes, stakerRes] = await Promise.all([
+        this.$api.getTCY(this.address),
+        this.$api.getTCYDistribution(this.address),
+        this.$api.getTCYStaker(this.address),
+      ])
 
-    this.$api.getTCYStaker(this.address).then((res) => {
-      this.stakedAmount = res.data?.amount / 1e8
-    })
+      this.distribution = tcyRes.data
+      this.price = tcyRes.data.price
+      this.apr = Number(tcyRes.data.apr)
+      this.stakedAmount = stakerRes.data?.amount / 1e8
+    } catch (error) {
+      console.error('Error loading data:', error)
+    }
   },
   methods: {
+    calculateTotalValueRuneBased() {
+      return (this.distribution.total * this.runePrice) / 1e8
+    },
+    calculateTotalValuePriceBased() {
+      if (!this.distribution?.distributions?.length) return 0
+      return this.distribution.distributions.reduce((sum, row) => {
+        return sum + (row.amount * row.price) / 1e16
+      }, 0)
+    },
+
+    toggleValueDisplay() {
+      this.showPriceTimesAmount = !this.showPriceTimesAmount
+    },
+    formatPriceTimesAmount(row) {
+      const amount = Number(row.amount)
+      const price = Number(row.price)
+      return (amount * price) / 1e16
+    },
+    formatRuneValue(amount) {
+      return (Number(amount) * this.runePrice) / 1e8
+    },
     downloadDistribution(data) {
       if (!data || !data.length) {
         console.error('No data provided for CSV download.')
         return
       }
 
-      data = data.map((d) => ({
-        amount: d.amount / 1e8,
-        date: d.date,
-      }))
+      data = data.map((d) => {
+        const row = {
+          amount: d.amount / 1e8,
+          date: d.date,
+        }
+
+        if (this.showPriceTimesAmount) {
+          row.value = (d.amount * d.price) / 1e16
+        } else {
+          row.value = (d.amount * this.runePrice) / 1e8
+        }
+        return row
+      })
 
       const csvContent = [
         Object.keys(data[0]).join(','), // Header row
@@ -284,6 +347,13 @@ export default {
     gap: $space-8;
     justify-content: space-between;
     align-items: center;
+    gap: $space-8;
+
+    .icon-group {
+      display: flex;
+      align-items: center;
+      gap: $space-8;
+    }
 
     .csv-download svg {
       fill: var(--sec-font-color);
@@ -292,6 +362,26 @@ export default {
 
       &:hover {
         fill: var(--primary-color);
+      }
+    }
+
+    .rotate {
+      color: var(--sec-font-color);
+      height: 1.4rem;
+      width: 1.4rem;
+      cursor: pointer;
+      align-items: center;
+      display: flex;
+      transition: transform 0.3s ease;
+      transform: rotate(0deg);
+      margin-bottom: 5px;
+      &.active {
+        transform: rotate(180deg);
+        color: var(--primary-color);
+      }
+
+      &:hover {
+        color: var(--primary-color);
       }
     }
   }
@@ -315,6 +405,15 @@ export default {
     .vgt-table__body {
       background-color: var(--bg-color);
     }
+  }
+}
+
+.toggle-icon {
+  margin-left: 8px;
+  cursor: pointer;
+  color: var(--primary-color);
+  &:hover {
+    opacity: 0.8;
   }
 }
 </style>
