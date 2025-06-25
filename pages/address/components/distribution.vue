@@ -16,8 +16,13 @@
         <h3 class="info-title">Distributions</h3>
         <div class="icon-group">
           <Business
-            @click="toggleValueDisplay"
-            :class="['rotate', { active: showPriceTimesAmount }]"
+            v-tooltip="
+              showPriceInterval
+                ? 'Showing Value based on RUNE price on its interval'
+                : 'Showing Value amount on the latest RUNE price'
+            "
+            :class="['rotate', { active: showPriceInterval }]"
+            @click="showPriceInterval = !showPriceInterval"
           ></Business>
 
           <div
@@ -49,7 +54,7 @@
             <small>RUNE</small>
           </div>
           <div v-else-if="props.column.field == 'value'" class="value-cell">
-            <span v-if="showPriceTimesAmount">
+            <span v-if="showPriceInterval">
               {{ formatPriceTimesAmount(props.row) | currency }}
             </span>
             <span v-else>
@@ -88,7 +93,7 @@ export default {
       stakedAmount: 0,
       distribution: [],
       price: 0,
-      showPriceTimesAmount: false,
+      showPriceInterval: true,
       distributionsColumns: [
         {
           label: 'Earned',
@@ -119,7 +124,6 @@ export default {
     }),
     tcyPrice() {
       const pools = this.$store.getters.getPools
-      console.log(pools)
 
       if (pools && pools.length > 0) {
         const tcyPool = pools.find((pool) => pool.asset === 'THOR.TCY')
@@ -138,7 +142,7 @@ export default {
           subValue: `${this.$options.filters.currency(this.stakedAmount * this.tcyPrice)}`,
         },
         {
-          label: 'APY',
+          label: 'APR',
           value: this.tcyAPY,
           filter: (val) => this.$options.filters.percent(val, 2),
         },
@@ -156,7 +160,7 @@ export default {
             return `${this.$options.filters.number(val, '0,0.0000')} `
           },
           subValue: this.$options.filters.currency(
-            this.showPriceTimesAmount
+            this.showPriceInterval
               ? this.calculateTotalValuePriceBased()
               : this.calculateTotalValueRuneBased()
           ),
@@ -175,9 +179,10 @@ export default {
       return totalEarn / days
     },
     tcyAPY() {
-      if (this.showPriceTimesAmount) {
+      if (this.showPriceInterval) {
         return this.apr
       }
+
       if (!this.dailyEarn || !this.tcyPrice) {
         return 0
       }
@@ -190,7 +195,7 @@ export default {
   },
   async mounted() {
     try {
-      const [tcyRes, distRes, stakerRes] = await Promise.all([
+      const [tcyRes, , stakerRes] = await Promise.all([
         this.$api.getTCY(this.address),
         this.$api.getTCYDistribution(this.address),
         this.$api.getTCYStaker(this.address),
@@ -198,7 +203,7 @@ export default {
 
       this.distribution = tcyRes.data
       this.price = tcyRes.data.price
-      this.apr = Number(tcyRes.data.apr)
+      this.apr = tcyRes.data.apr
       this.stakedAmount = stakerRes.data?.amount / 1e8
     } catch (error) {
       console.error('Error loading data:', error)
@@ -215,9 +220,6 @@ export default {
       }, 0)
     },
 
-    toggleValueDisplay() {
-      this.showPriceTimesAmount = !this.showPriceTimesAmount
-    },
     formatPriceTimesAmount(row) {
       const amount = Number(row.amount)
       const price = Number(row.price)
@@ -238,7 +240,7 @@ export default {
           date: d.date,
         }
 
-        if (this.showPriceTimesAmount) {
+        if (this.showPriceInterval) {
           row.value = (d.amount * d.price) / 1e16
         } else {
           row.value = (d.amount * this.runePrice) / 1e8
