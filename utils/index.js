@@ -974,6 +974,10 @@ export function getExplorerAddressUrl(chain, query, type) {
     isAddress = false
   }
 
+  if (!isAddress && query.includes('-')) {
+    query = query.split('-')[0]
+  }
+
   switch (chain) {
     case 'BCH':
       return isAddress
