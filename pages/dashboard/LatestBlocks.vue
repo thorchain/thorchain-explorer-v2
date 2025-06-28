@@ -31,7 +31,7 @@
               <div class="block-burned-item">
                 <small>Dev</small>
                 <div class="burn-item mini-bubble yellow">
-                  <rune class="rune-icon"></rune>
+                  <RuneAsset height="0.7rem" />
                   <div class="amount-burn">
                     {{ decimalFormat(block.devAmount / 1e8) }}
                   </div>
@@ -41,7 +41,7 @@
               <div class="block-burned-item">
                 <small>Pool</small>
                 <div class="burn-item mini-bubble info">
-                  <rune class="rune-icon"></rune>
+                  <RuneAsset height="0.7rem" />
                   <div class="amount-burn">
                     {{ decimalFormat(block.poolAmount / 1e8) }}
                   </div>
@@ -51,7 +51,7 @@
               <div class="block-burned-item">
                 <small>Bond</small>
                 <div class="burn-item mini-bubble">
-                  <rune class="rune-icon"></rune>
+                  <RuneAsset height="0.7rem" />
                   <div class="amount-burn">
                     {{ decimalFormat(block.bondAmount / 1e8) }}
                   </div>
@@ -86,18 +86,16 @@
 </template>
 
 <script>
-import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
 import Burn from '~/assets/images/burn.svg?inline'
-import Rune from '~/assets/images/rune.svg?inline'
 import SkeletonLoader from '~/components/SkeletonLoader.vue'
+import RuneAsset from '~/components/RuneAsset.vue'
 
 export default {
   name: 'LatestBlocks',
   components: {
-    BounceLoader,
     Burn,
-    Rune,
     SkeletonLoader,
+    RuneAsset,
   },
   props: {
     burnedBlocks: {

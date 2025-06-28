@@ -42,7 +42,7 @@
                   <template v-if="colItem.filter">
                     <pre
                       v-if="colItem.value && colItem.runeValue"
-                      class="rune-value">{{ colItem.value | number('0,0.00') }} <small>RUNE</small></pre>
+                      class="rune-value">{{ colItem.value | number('0,0.00') }} <RuneAsset :show-icon="false" /></pre>
                     <pre v-else-if="colItem.value !== 0">{{
                       colItem.value || '-'
                     }}</pre>
@@ -95,10 +95,11 @@
 import { mapGetters } from 'vuex'
 import { AssetCurrencySymbol } from '@xchainjs/xchain-util'
 import UnknownIcon from '~/assets/images/unknown.svg?inline'
+import RuneAsset from '~/components/RuneAsset.vue'
 
 export default {
   name: 'StatTable',
-  components: { UnknownIcon },
+  components: { UnknownIcon, RuneAsset },
   props: {
     iconSrc: String,
     header: String,

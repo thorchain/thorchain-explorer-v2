@@ -1,75 +1,73 @@
 <template>
-  <card>
-    <div>
-      <stats-panel style="margin: 0" :metrics="statsMetrics">
-        <template #metric-icon-0>
-          <asset-icon asset="THOR.TCY" height="1.2rem" />
-        </template>
-        <template #metric-icon-2>
-          <asset-icon asset="THOR.RUNE" height="1.2rem" />
-        </template>
-        <template #metric-icon-3>
-          <asset-icon asset="THOR.RUNE" height="1.2rem" />
-        </template>
-      </stats-panel>
-      <div class="distributions">
-        <div class="distribution-header">
-          <h3 class="info-title">Distributions</h3>
-          <div class="icon-group">
-            <Business
-              v-tooltip="
-                showPriceInterval
-                  ? 'Showing Value based on RUNE price on its interval'
-                  : 'Showing Value amount on the latest RUNE price'
-              "
-              :class="['rotate', { active: showPriceInterval }]"
-              @click="showPriceInterval = !showPriceInterval"
-            ></Business>
+  <div>
+    <stats-panel :metrics="statsMetrics">
+      <template #metric-icon-0>
+        <asset-icon asset="THOR.TCY" height="1.2rem" />
+      </template>
+      <template #metric-icon-2>
+        <RuneAsset asset="THOR.RUNE" :height="'1.2rem'" />
+      </template>
+      <template #metric-icon-3>
+        <RuneAsset asset="THOR.RUNE" :height="'1.2rem'" />
+      </template>
+    </stats-panel>
+    <div class="distributions">
+      <div class="distribution-header">
+        <h3 class="info-title">Distributions</h3>
+        <div class="icon-group">
+          <Business
+            v-tooltip="
+              showPriceInterval
+                ? 'Showing Value based on RUNE price on its interval'
+                : 'Showing Value amount on the latest RUNE price'
+            "
+            :class="['rotate', { active: showPriceInterval }]"
+            @click="showPriceInterval = !showPriceInterval"
+          ></Business>
 
-            <div
-              class="csv-download"
-              title="csv-download"
-              @click="downloadDistribution(distribution.distributions)"
-            >
-              <file-download class="clickable"></file-download>
-            </div>
+          <div
+            class="csv-download"
+            title="csv-download"
+            @click="downloadDistribution(distribution.distributions)"
+          >
+            <file-download class="clickable"></file-download>
           </div>
         </div>
-        <vue-good-table
-          :columns="distributionsColumns"
-          :rows="distribution && distribution.distributions"
-          :line-numbers="true"
-          max-height="200px"
-          style-class="vgt-table net-table"
-          :sort-options="{
-            enabled: true,
-            initialSortBy: { field: 'date', type: 'desc' },
-          }"
-        >
-          <template slot="table-row" slot-scope="props">
-            <div
-              v-if="props.column.field == 'amount'"
-              v-tooltip="props.row.amount * runePrice"
-            >
-              {{ props.formattedRow[props.column.field] }}
-              <small>RUNE</small>
-            </div>
-            <div v-else-if="props.column.field == 'value'" class="value-cell">
-              <span v-if="showPriceInterval">
-                {{ formatPriceTimesAmount(props.row) | currency }}
-              </span>
-              <span v-else>
-                {{ formatRuneValue(props.row.amount) | currency }}
-              </span>
-            </div>
-            <span v-else>
-              {{ props.formattedRow[props.column.field] }}
-            </span>
-          </template>
-        </vue-good-table>
       </div>
+      <vue-good-table
+        :columns="distributionsColumns"
+        :rows="distribution && distribution.distributions"
+        :line-numbers="true"
+        max-height="200px"
+        style-class="vgt-table net-table vgt-compact"
+        :sort-options="{
+          enabled: true,
+          initialSortBy: { field: 'date', type: 'desc' },
+        }"
+      >
+        <template slot="table-row" slot-scope="props">
+          <div
+            v-if="props.column.field == 'amount'"
+            v-tooltip="props.row.amount * runePrice"
+          >
+            {{ props.formattedRow[props.column.field] }}
+            <RuneAsset :show-icon="false" />
+          </div>
+          <div v-else-if="props.column.field == 'value'" class="value-cell">
+            <span v-if="showPriceInterval">
+              {{ formatPriceTimesAmount(props.row) | currency }}
+            </span>
+            <span v-else>
+              {{ formatRuneValue(props.row.amount) | currency }}
+            </span>
+          </div>
+          <span v-else>
+            {{ props.formattedRow[props.column.field] }}
+          </span>
+        </template>
+      </vue-good-table>
     </div>
-  </card>
+  </div>
 </template>
 
 <script>
@@ -77,11 +75,13 @@ import { mapGetters } from 'vuex'
 import moment from 'moment'
 import FileDownload from '~/assets/images/file-download.svg?inline'
 import Business from '~/assets/images/business.svg?inline'
+import RuneAsset from '~/components/RuneAsset.vue'
 
 export default {
   components: {
     FileDownload,
     Business,
+    RuneAsset,
   },
   props: {
     address: {

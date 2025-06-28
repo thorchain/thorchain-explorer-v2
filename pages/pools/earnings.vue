@@ -58,8 +58,8 @@
                 class="extra-text"
                 style="font-size: 0.6rem; font-weight: bold"
               >
-                {{ runeCur() }}
-              </span>
+              <RuneAsset height="0.7rem" />
+            </span>
               {{ props.formattedRow[props.column.field] }}
               <progress-icon
                 v-if="showChange"

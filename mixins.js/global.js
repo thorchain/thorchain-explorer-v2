@@ -490,6 +490,9 @@ export default {
         clearInterval(id)
       }
     },
+    formatRune(amount, format = '0,0.00') {
+      return `${this.$options.filters.number(amount, format)} RUNE`
+    },
     numberSort(x, y, col, rowX, rowY) {
       return +x < +y ? -1 : +x > +y ? 1 : 0
     },

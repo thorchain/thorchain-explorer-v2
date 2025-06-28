@@ -577,31 +577,30 @@ export default {
               name: 'Bond',
               value: this.bondMetrics?.totalActiveBond / 10 ** 8,
               usdValue: true,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0a'),
             },
             {
               name: 'Average',
               value: this.bondMetrics?.averageActiveBond / 10 ** 8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0a'),
               usdValue: true,
             },
             {
               name: 'Maximum',
               value: Math.floor(this.bondMetrics?.maximumActiveBond / 10 ** 8),
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0a'),
               usdValue: true,
             },
             {
               name: 'Minimum',
               value: Math.floor(this.bondMetrics?.minimumActiveBond / 10 ** 8),
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0a'),
               usdValue: true,
             },
             {
               name: 'Max efficient',
               value: this.calculateHardCap(),
-              filter: (v) =>
-                `${this.$options.filters.number(v, '0,0.00a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0.00a'),
               extraInfo: `${this.$options.filters.number(this.calculateHardCap(), '0,0.00')} RUNE`,
               usdValue: true,
             },
@@ -625,33 +624,31 @@ export default {
             {
               name: 'Bond',
               value: this.bondMetrics?.totalStandbyBond / 10 ** 8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0a'),
               usdValue: true,
             },
             {
               name: 'Average',
               value: this.bondMetrics?.averageStandbyBond / 10 ** 8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0a'),
               usdValue: true,
             },
             {
               name: 'Maximum',
               value: Math.floor(this.bondMetrics?.maximumStandbyBond / 10 ** 8),
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0a'),
               usdValue: true,
             },
             {
               name: 'Minimum',
               value: this.bondMetrics?.minimumStandbyBond / 10 ** 8,
-              filter: (v) =>
-                `${this.$options.filters.number(v, '0,0.00a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0.00a'),
               usdValue: true,
             },
             {
               name: 'Least Churn',
               value: this.leastBondChurn,
-              filter: (v) =>
-                `${this.$options.filters.number(v, '0,0.00a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0.00a'),
               usdValue: true,
             },
           ],
@@ -698,7 +695,7 @@ export default {
               name: 'Total Rewards',
               value: this.totalAwards / 1e8,
               usdValue: true,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0a'),
             },
             {
               name: 'Average APY ',
@@ -708,13 +705,13 @@ export default {
             {
               name: 'Monthly Node Return',
               value: this.monthlyNodeReturn() / 1e8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0a'),
               usdValue: true,
             },
             {
               name: 'Annual Node Return ',
               value: this.annualNodeReturn() / 1e8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0a'),
               usdValue: true,
             },
             {
@@ -747,8 +744,7 @@ export default {
             {
               name: 'Leaving Bond',
               value: this.leavingBond / 1e8,
-              filter: (v) =>
-                `${this.$options.filters.number(v, '0,0.00a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0.00a'),
               usdValue: true,
             },
             {
@@ -759,14 +755,13 @@ export default {
             {
               name: 'Entering Bond',
               value: this.enteringBond / 1e8,
-              filter: (v) =>
-                `${this.$options.filters.number(v, '0,0.00a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0.00a'),
               usdValue: true,
             },
             {
               name: 'Bond Difference',
               value: (this.enteringBond - this.leavingBond) / 1e8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0a'),
               usdValue: true,
             },
           ],
@@ -1288,6 +1283,9 @@ export default {
       this.sortColumn = column
       this.sortOrder = order
       localStorage.setItem('tableSorting', JSON.stringify({ column, order }))
+    },
+    formatRune(value, format) {
+      return this.$options.filters.number(value, format) + ' RUNE'
     },
   },
   head: {

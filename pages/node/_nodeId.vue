@@ -200,7 +200,7 @@ export default {
             {
               name: 'Total Bond',
               value: this.node?.total_bond / 10 ** 8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0a'),
               usdValue: true,
             },
             {
@@ -210,7 +210,7 @@ export default {
             {
               name: 'Current Reward',
               value: this.node?.current_award / 10 ** 8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0a'),
               usdValue: true,
             },
 

@@ -323,19 +323,19 @@ export default {
           {
             name: 'Outbound Fee (30D)',
             value: this.metaReserve?.gasFeeOutbound / 1e8,
-            filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+            filter: (v) => this.formatRune(v, '0,0a'),
             usdValue: true,
           },
           {
             name: 'Network Fee (30D)',
             value: this.metaReserve?.networkFee / 1e8,
-            filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+            filter: (v) => this.formatRune(v, '0,0a'),
             usdValue: true,
           },
           {
             name: 'Gas Reimbursement (30D)',
             value: this.metaReserve?.gasReimbursement / 1e8,
-            filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+            filter: (v) => this.formatRune(v, '0,0a'),
             usdValue: true,
           },
         ]
@@ -361,8 +361,7 @@ export default {
             {
               name: 'TOR Price in RUNE',
               value: this.thorNetwork?.tor_price_in_rune / 1e8,
-              filter: (v) =>
-                `${this.$options.filters.number(v, '0,0.0000a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0.0000a'),
               usdValue: true,
             },
             {
@@ -372,7 +371,7 @@ export default {
             {
               name: 'Effective Security Bond',
               value: this.thorNetwork?.effective_security_bond / 1e8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0a'),
               usdValue: true,
             },
             ...revenueOverview,

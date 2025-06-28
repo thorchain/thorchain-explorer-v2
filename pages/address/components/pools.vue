@@ -37,8 +37,8 @@
               )
             "
             >{{ props.row[props.column.field][0] | number('0,0.00') }}
-            <small>RUNE</small></span
-          >
+            <RuneAsset :show-icon="false"
+          /></span>
           <span
             v-if="props.row[props.column.field][1]"
             v-tooltip="showPrice(props.row, props.row[props.column.field][1])"
@@ -71,6 +71,7 @@
 <script>
 import moment from 'moment'
 import { mapGetters } from 'vuex'
+
 export default {
   props: ['address'],
   data() {

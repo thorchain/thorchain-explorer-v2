@@ -43,7 +43,7 @@
                 :loading="!totalBurned24h"
               >
                 {{ totalBurned24h | number('0,0.00') }}
-                <small>RUNE</small>
+                <RuneAsset :show-icon="false" />
               </skeleton-item>
               <span v-else>
                 {{ (totalBurned24h * runePrice) | currency() }}
@@ -59,7 +59,7 @@
                 :loading="!totalBurned7d"
               >
                 {{ totalBurned7d | number('0,0.00') }}
-                <small>RUNE</small>
+                <RuneAsset :show-icon="false" />
               </skeleton-item>
               <span v-else>
                 {{ (totalBurned7d * runePrice) | currency() }}
@@ -75,7 +75,7 @@
                 :loading="!totalBurned30d"
               >
                 {{ totalBurned30d | number('0,0.00') }}
-                <small>RUNE</small>
+                <RuneAsset :show-icon="false" />
               </skeleton-item>
               <span v-else>
                 {{ (totalBurned30d * runePrice) | currency() }}
@@ -124,7 +124,7 @@
           </div>
           <div class="right-section">
             <div class="burn-info">
-              {{ runeCur() }}
+              <RuneAsset :show-icon="false" />
               {{ block.burnedAmount / 1e8 }}
             </div>
             <small>
@@ -157,6 +157,7 @@ import {
 } from 'echarts/components'
 import VChart from 'vue-echarts'
 import Rune from '~/assets/images/rune.svg?inline'
+import RuneAsset from '~/components/RuneAsset.vue'
 import Burn from '~/assets/images/burn.svg?inline'
 
 use([
@@ -168,7 +169,7 @@ use([
   LegendComponent,
 ])
 export default {
-  components: { Burn, Rune, VChart },
+  components: { Burn, RuneAsset, VChart,Rune },
   data() {
     return {
       selectedUnit: 'rune',

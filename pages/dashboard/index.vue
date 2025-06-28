@@ -175,7 +175,7 @@ import LockIcon from '~/assets/images/lock.svg?inline'
 import ArrowRightIcon from '~/assets/images/arrow-right.svg?inline'
 import Exchange from '~/assets/images/exchange.svg?inline'
 import Burn from '~/assets/images/burn.svg?inline'
-import Rune from '~/assets/images/rune.svg?inline'
+import RuneAsset from '~/components/RuneAsset.vue'
 import Piggy from '~/assets/images/piggy.svg?inline'
 import Chart from '~/assets/images/chart.svg?inline'
 import TransactionAction from '~/components/transactions/TransactionAction.vue'
@@ -199,7 +199,7 @@ export default {
     Exchange,
     LockIcon,
     Burn,
-    Rune,
+    RuneAsset,
     Chart,
     StackDollar,
     ArrowRightIcon,
@@ -345,13 +345,13 @@ export default {
             {
               name: 'Active Bond',
               value: +this.network?.bondMetrics?.totalActiveBond / 10 ** 8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0a'),
               usdValue: true,
             },
             {
               name: 'Standby Bond',
               value: +this.network?.bondMetrics?.totalStandbyBond / 10 ** 8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0a'),
               usdValue: true,
             },
             {
@@ -447,13 +447,13 @@ export default {
             {
               name: 'Reserve',
               value: (this.network?.totalReserve ?? 0) / 10 ** 8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0a'),
               usdValue: true,
             },
             {
               name: 'Pools',
               value: (this.network?.totalPooledRune * 2 ?? 0) / 10 ** 8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0a'),
               usdValue: true,
             },
             {
@@ -464,7 +464,7 @@ export default {
             {
               name: 'RUNEPool',
               value: pol?.current_deposit / 1e8 || 0,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0a'),
               usdValue: true,
             },
             {

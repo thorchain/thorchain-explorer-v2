@@ -30,7 +30,8 @@
         <div class="crypto-stat">
           <span class="name">Total Supply</span>
           <skeleton-item :loading="!marketInfo.totalSupply" class="value">
-            {{ marketInfo.totalSupply | number('0,0') }}{{ runeCur() }}
+            {{ marketInfo.totalSupply | number('0,0') }}<RuneAsset height="0.7rem" />
+
           </skeleton-item>
         </div>
       </div>

@@ -111,7 +111,7 @@
               <template v-else-if="props.column.field === 'assetReward'">
                 <span>
                   {{ (props.row.assetReward / 1e8) | number('0,0.0000') }}
-                  <small>RUNE</small>
+                  <RuneAsset :show-icon="false" />
                 </span>
               </template>
             </template>
@@ -131,9 +131,10 @@ import Transactions from '~/components/Transactions.vue'
 import BlockIcon from '~/assets/images/block.svg?inline'
 import ClockkIcon from '~/assets/images/clock.svg?inline'
 import CalendarIcon from '~/assets/images/calendar.svg?inline'
+import RuneAsset from '~/components/RuneAsset.vue'
 
 export default {
-  components: { Transactions, BlockIcon, ClockkIcon, CalendarIcon },
+  components: { Transactions, BlockIcon, ClockkIcon, CalendarIcon, RuneAsset },
   asyncData({ params, redirect }) {
     if (!params.height) {
       return redirect('/')
@@ -187,26 +188,22 @@ export default {
             {
               name: 'Dev Fund',
               value: this.devFundReward,
-              filter: (v) =>
-                `${this.$options.filters.number(v / 1e8, '0,0.00')} RUNE`,
+              filter: (v) => this.formatRune(v),
             },
             {
               name: 'TCY Stake Reward',
               value: this.stakeReward,
-              filter: (v) =>
-                `${this.$options.filters.number(v / 1e8, '0,0.00')} RUNE`,
+              filter: (v) => this.formatRune(v),
             },
             {
               name: 'Burn',
               value: this.incomeBurn,
-              filter: (v) =>
-                `${this.$options.filters.number(v / 1e8, '0,0.00')} RUNE`,
+              filter: (v) => this.formatRune(v),
             },
             {
               name: 'Bond',
               value: this.bondReward,
-              filter: (v) =>
-                `${this.$options.filters.number(v / 1e8, '0,0.00')} RUNE`,
+              filter: (v) => this.formatRune(v),
             },
           ],
         },

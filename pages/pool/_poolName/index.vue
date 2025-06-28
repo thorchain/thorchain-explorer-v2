@@ -119,7 +119,7 @@ export default {
             {
               name: 'Rune Depth',
               value: this.pool?.runeDepth / 10 ** 8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0a'),
             },
             {
               header: 'All Time Stats',

@@ -86,8 +86,7 @@ export default {
               {
                 name: 'Affiliate Collector',
                 value: res.data?.affiliate_collector_rune,
-                filter: (v) =>
-                  `${this.$options.filters.number(v / 1e8, '0,0')} RUNE`,
+                filter: (v) => this.formatRune(v),
               },
               {
                 name: 'Preferred Asset',

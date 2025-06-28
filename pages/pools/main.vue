@@ -49,7 +49,7 @@
                 <div v-if="props.row.balances > 0">
                   <div class="balance-row">
                     {{ props.row.balances | number('0,0.00a') }}
-                    <small>RUNE</small>
+                    <RuneAsset :show-icon="false" />
                   </div>
                   <div class="balance-row">
                     {{ props.row.assetDepth | number('0,0.00a') }}
@@ -124,9 +124,10 @@ import SwapIcon from '~/assets/images/swap.svg?inline'
 import FinanceIcon from '~/assets/images/finance-selected.svg?inline'
 import InterfacesJSON from '~/assets/wallets/index'
 import { tradeToAsset } from '~/utils'
+import RuneAsset from '~/components/RuneAsset.vue'
 
 export default {
-  components: { SwapIcon, FinanceIcon },
+  components: { SwapIcon, FinanceIcon, RuneAsset },
   data() {
     return {
       loading: false,

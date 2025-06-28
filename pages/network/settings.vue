@@ -111,7 +111,7 @@ export default {
           items: [
             {
               ...this.parseConstant('OutboundTransactionFee'),
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0a'),
               valueSlot: 'usd',
             },
             {
@@ -216,7 +216,7 @@ export default {
             },
             {
               ...this.parseConstant('NativeTransactionFee'),
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0a'),
               valueSlot: 'usd',
             },
 
@@ -226,18 +226,18 @@ export default {
             {
               ...this.parseConstant('TNSFeeOnSale'),
               name: 'Fee On Sale',
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0a'),
             },
             {
               ...this.parseConstant('TNSFeePerBlock'),
               name: 'Fee Per Block',
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0a'),
             },
             {
               ...this.parseConstant('TNSRegisterFee'),
               name: 'Register Fee',
               filter: (v) =>
-                `${this.$options.filters.number(v / 1e8, '0,0a')} RUNE`,
+                this.formatRune(v / 1e8, '0,0a'),
               valueSlot: 'usd',
             },
           ],
@@ -300,7 +300,7 @@ export default {
             {
               ...this.parseConstant('MinimumBondInRune'),
               filter: (v) =>
-                `${this.$options.filters.number(v / 1e8, '0,0a')} RUNE`,
+                this.formatRune(v / 1e8, '0,0a'),
 
               valueSlot: 'usd',
             },

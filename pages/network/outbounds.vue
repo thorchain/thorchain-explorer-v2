@@ -21,7 +21,7 @@
           {{ showAsset(props.row.asset, true) }}
         </span>
         <span v-else-if="props.column.field === 'feeWithheld'">
-          {{ runeCur() }}
+          <RuneAsset height="0.7rem" />
           {{ (props.row.feeWithheld / 1e8) | number('0,0.00a') }}
           <small v-if="+props.row.feeWithheld > 0">
             (${{
@@ -30,7 +30,7 @@
           </small>
         </span>
         <span v-else-if="props.column.field === 'feeSpent'">
-          {{ runeCur() }}
+          <RuneAsset height="0.7rem" />
           {{ (props.row.feeSpent / 1e8) | number('0,0.00a') }}
           <small v-if="+props.row.feeSpent > 0">
             (${{
@@ -39,7 +39,7 @@
           </small>
         </span>
         <span v-else-if="props.column.field === 'surplus'">
-          {{ runeCur() }}
+          <RuneAsset height="0.7rem" />
           {{ (props.row.surplus / 1e8) | number('0,0.00a') }}
           <small v-if="+props.row.surplus > 0">
             (${{ ((props.row.surplus / 1e8) * runePrice) | number('0,0.00a') }})

@@ -11,7 +11,8 @@
             gap: '4px',
           }"
         >
-          {{ runeCur() }}<span v-if="!item.isDown">+</span>
+        <RuneAsset height="0.7rem" />
+        <span v-if="!item.isDown">+</span>
           {{ item.filter(item.value) }}
           <progress-icon
             v-if="item.progress"
@@ -38,9 +39,11 @@
           :custom-class="['runepool-cap-loader']"
         >
           <span v-if="runepoolCap">
-            {{ runeCur() }}{{ runepoolCap.current | number('0,0.00a') }} /
+            <RuneAsset height="0.7rem" />
+            {{ runepoolCap.current | number('0,0.00a') }} /
             <small
-              >{{ runeCur() }}{{ runepoolCap.max | number('0,0.00a') }}</small
+              >          <RuneAsset height="0.7rem" />
+              {{ runepoolCap.max | number('0,0.00a') }}</small
             >
           </span>
         </skeleton-item>
@@ -129,9 +132,9 @@
               v-else-if="props.column.field.startsWith('pool')"
               class="pool-cell ellipsis"
             >
-              <span v-if="props.row[props.column.field][0]">
+              <span v-if="props.row[props.column.field][0]" class="rune-asset">
                 {{ props.row[props.column.field][0] | number('0,0.00') }}
-                <small>RUNE</small>
+                <RuneAsset :show-icon="false" />
               </span>
               <span v-if="props.row[props.column.field][1]" class="ellipsis">
                 {{
@@ -181,18 +184,18 @@
             </template>
             <span v-else-if="props.column.field == 'deposit_amount'">
               {{ $options.filters.number(props.row.deposit_amount, '0,0.00') }}
-              <small>RUNE</small>
+              <RuneAsset :show-icon="false" />
             </span>
             <span v-else-if="props.column.field == 'value'">
               {{ $options.filters.number(props.row.value, '0,0.00') }}
-              <small>RUNE</small>
+              <RuneAsset :show-icon="false" />
             </span>
             <span
               v-else-if="props.column.field == 'pnl'"
               :style="[{ color: +props.row.pnl < 0 ? '#ff1744' : '#76ff03' }]"
             >
               {{ $options.filters.number(props.row.pnl, '0,0.00') }}
-              <small>RUNE</small>
+              <RuneAsset :show-icon="false" />
             </span>
             <span
               v-else-if="props.column.field == 'ror'"
@@ -261,6 +264,7 @@ import { orderBy } from 'lodash'
 import RefreshIcon from '~/assets/images/refresh.svg?inline'
 import endpoints from '~/api/endpoints'
 import Address from '~/components/transactions/Address.vue'
+import RuneAsset from '~/components/RuneAsset.vue'
 
 use([
   SVGRenderer,
@@ -273,7 +277,7 @@ use([
 ])
 
 export default {
-  components: { RefreshIcon, VChart, Address },
+  components: { RefreshIcon, VChart, Address, RuneAsset },
 
   data() {
     return {
@@ -654,7 +658,7 @@ export default {
               valueSlot: 'pnl',
               usdValue: true,
               value: (pol.value - +pol.current_deposit) / 1e8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0a'),
               isDown: pol.value - +pol.current_deposit <= 0,
               progress: {
                 data: (pol?.value - (oldRunePool?.pol?.value ?? 0)) / 1e8,
@@ -665,7 +669,7 @@ export default {
             {
               name: 'Current Deposited',
               value: pol?.current_deposit / 1e8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0a'),
               usdValue: true,
               progress: {
                 data:
@@ -681,7 +685,7 @@ export default {
             {
               name: 'Overall Deposited',
               value: this.polOverview?.rune_deposited / 1e8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0a'),
               usdValue: true,
               progress: {
                 data:
@@ -697,7 +701,7 @@ export default {
             {
               name: 'Overall Withdrawn',
               value: this.polOverview?.rune_withdrawn / 1e8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0a'),
               usdValue: true,
               progress: {
                 data:
@@ -722,7 +726,7 @@ export default {
               valueSlot: 'pnl',
               value: providers.pnl / 1e8,
               isDown: +providers.pnl <= 0,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0a'),
               usdValue: true,
               progress: {
                 data: (providers?.pnl - oldRunePool?.providers?.pnl) / 1e8,
@@ -734,7 +738,7 @@ export default {
               name: 'Current Deposited',
               value:
                 (+providers?.current_deposit + +providers?.pending_rune) / 1e8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0a'),
               usdValue: true,
               extraInfo:
                 'The amount rune deposited by providers (including pending)',
@@ -799,7 +803,7 @@ export default {
               valueSlot: 'pnl',
               value: reserve.pnl / 1e8,
               isDown: +reserve.pnl <= 0,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0a'),
               usdValue: true,
               progress: {
                 data: (reserve?.pnl - oldRunePool?.reserve?.pnl) / 1e8,
@@ -810,7 +814,7 @@ export default {
             {
               name: 'Current Deposited',
               value: reserve?.current_deposit / 1e8,
-              filter: (v) => `${this.$options.filters.number(v, '0,0a')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0a'),
               usdValue: true,
               progress: {
                 data:
@@ -1022,6 +1026,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.rune-asset{
+  display: inline-flex !important;
+  gap: 0.5rem;
+}
 .refresh-icon {
   width: 24px;
   height: 24px;

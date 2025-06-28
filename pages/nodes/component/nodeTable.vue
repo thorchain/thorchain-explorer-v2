@@ -49,60 +49,28 @@
       <template slot="table-row" slot-scope="props">
         <span
           :class="rowClassCallback(props.row)"
-          :style="{
-            color: isFav(props.row.address)
-              ? vaultColor(props.row.address, true)
-              : '',
-            fill: isFav(props.row.address)
-              ? vaultColor(props.row.address, true)
-              : '',
-            fontWeight: isFav(props.row.address) ? 'bold' : 'normal',
-          }"
+          :style="getHighlightStyle(props.row.address)"
         >
           <span v-if="props.column.field == 'address'">
             <div class="table-wrapper-row">
               <nuxt-link
                 v-tooltip="props.row.address"
                 class="clickable"
-                :style="{
-                  color: isFav(props.row.address)
-                    ? vaultColor(props.row.address, true)
-                    : '',
-                  fill: isFav(props.row.address)
-                    ? vaultColor(props.row.address, true)
-                    : '',
-                  fontWeight: isFav(props.row.address) ? 'bold' : 'normal',
-                }"
+                :style="getHighlightStyle(props.row.address)"
                 :to="`/address/${props.row.address}`"
               >
                 {{ addressFormatV2(props.row.address, 4, true) }}
               </nuxt-link>
               <Copy :str-copy="props.row.address" />
               <nuxt-link
-                :style="{
-                  color: isFav(props.row.address)
-                    ? vaultColor(props.row.address, true)
-                    : '',
-                  fill: isFav(props.row.address)
-                    ? vaultColor(props.row.address, true)
-                    : '',
-                  fontWeight: isFav(props.row.address) ? 'bold' : 'normal',
-                }"
+                :style="getHighlightStyle(props.row.address)"
                 :to="`/node/${props.row.address}`"
                 target="_blank"
               >
                 <info-icon class="table-icon item-link" />
               </nuxt-link>
               <a
-                :style="{
-                  color: isFav(props.row.address)
-                    ? vaultColor(props.row.address, true)
-                    : '',
-                  fill: isFav(props.row.address)
-                    ? vaultColor(props.row.address, true)
-                    : '',
-                  fontWeight: isFav(props.row.address) ? 'bold' : 'normal',
-                }"
+                :style="getHighlightStyle(props.row.address)"
                 style="height: 1rem"
                 :href="`http://${props.row.ip}:6040/status/scanner`"
                 target="_blank"
@@ -111,15 +79,7 @@
               </a>
               <Ip v-tooltip="props.row.ip" :str-copy="props.row.ip" />
               <a
-                :style="{
-                  color: isFav(props.row.address)
-                    ? vaultColor(props.row.address, true)
-                    : '',
-                  fill: isFav(props.row.address)
-                    ? vaultColor(props.row.address, true)
-                    : '',
-                  fontWeight: isFav(props.row.address) ? 'bold' : 'normal',
-                }"
+                :style="getHighlightStyle(props.row.address)"
                 style="height: 1rem"
                 :href="`https://thornode.ninerealms.com/thorchain/node/${props.row.address}`"
                 target="_blank"
@@ -132,7 +92,7 @@
             <StaredIcon
               v-if="isFav(props.row.address)"
               class="table-icon"
-              :style="{ fill: vaultColor(props.row.address, true) }"
+              :style="getHighlightStyle(props.row.address)"
               @click="delFav(props.row.address)"
             />
             <StarIcon
@@ -173,13 +133,19 @@
             class="hoverable"
           >
             <span v-tooltip="formatCurrency(runePrice * props.row.total_bond)">
-              <span class="extra">{{ runeCur() }}</span>
+              <RuneAsset 
+                height="0.7rem" 
+                :style="getHighlightStyle(props.row.address)"
+              />
               {{ normalFormat(props.row.total_bond) }}
             </span>
           </span>
           <span v-else-if="props.column.field == 'award'" class="hoverable">
             <span v-tooltip="formatCurrency(runePrice * props.row.award)">
-              <span class="extra">{{ runeCur() }}</span>
+              <RuneAsset 
+                height="0.7rem" 
+                :style="getHighlightStyle(props.row.address)"
+              />
               {{ props.row.award }}
             </span>
           </span>
@@ -197,15 +163,7 @@
                   white: props.row.status == 'Whitelisted',
                 },
               ]"
-              :style="{
-                color: isFav(props.row.address)
-                  ? vaultColor(props.row.address, true)
-                  : '',
-                fill: isFav(props.row.address)
-                  ? vaultColor(props.row.address, true)
-                  : '',
-                fontWeight: isFav(props.row.address) ? 'bold' : 'normal',
-              }"
+              :style="getHighlightStyle(props.row.address)"
             >
               <span>{{ props.row.status }}</span>
             </div>
@@ -245,15 +203,7 @@
                     class="clickable mono"
                     target="_blank"
                     :to="`/address/${props.row.operator}`"
-                    :style="{
-                      color: isFav(props.row.address)
-                        ? vaultColor(props.row.address, true)
-                        : '',
-                      fill: isFav(props.row.address)
-                        ? vaultColor(props.row.address, true)
-                        : '',
-                      fontWeight: isFav(props.row.address) ? 'bold' : 'normal',
-                    }"
+                    :style="getHighlightStyle(props.row.address)"
                     >{{ props.row.operator.slice(-4) }}</nuxt-link
                   >
                   <div
@@ -274,15 +224,7 @@
                   class="clickable mono"
                   target="_blank"
                   :to="`/address/${props.row.operator}`"
-                  :style="{
-                    color: isFav(props.row.address)
-                      ? vaultColor(props.row.address, true)
-                      : '',
-                    fill: isFav(props.row.address)
-                      ? vaultColor(props.row.address, true)
-                      : '',
-                    fontWeight: isFav(props.row.address) ? 'bold' : 'normal',
-                  }"
+                  :style="getHighlightStyle(props.row.address)"
                   >{{ props.row.operator.slice(-4) }}</nuxt-link
                 >
                 <div
@@ -319,9 +261,10 @@
                       ></copy>
                     </td>
                     <td class="mono">
-                      <small>
-                        {{ runeCur() }}
-                      </small>
+                      <RuneAsset 
+                        height="0.7rem" 
+                        :style="getHighlightStyle(props.row.address)"
+                      />
                       {{ $options.filters.number(p.bond / 10 ** 8, '0,0') }}
                     </td>
                     <td style="text-align: right">
@@ -348,15 +291,7 @@
                 class="clickable mono"
                 target="_blank"
                 :to="`/address/${props.row.operator}`"
-                :style="{
-                  color: isFav(props.row.address)
-                    ? vaultColor(props.row.address, true)
-                    : '',
-                  fill: isFav(props.row.address)
-                    ? vaultColor(props.row.address, true)
-                    : '',
-                  fontWeight: isFav(props.row.address) ? 'bold' : 'normal',
-                }"
+                :style="getHighlightStyle(props.row.address)"
                 >{{ props.row.operator.slice(-4) }}</nuxt-link
               >
             </div>
@@ -420,15 +355,7 @@
           <span v-else-if="props.column.field.includes('behind.')">
             <span
               v-if="parseInt(props.formattedRow[props.column.field]) == 0"
-              :style="{
-                color: isFav(props.row.address)
-                  ? vaultColor(props.row.address, true)
-                  : '',
-                fill: isFav(props.row.address)
-                  ? vaultColor(props.row.address, true)
-                  : '',
-                fontWeight: isFav(props.row.address) ? 'bold' : 'normal',
-              }"
+              :style="getHighlightStyle(props.row.address)"
               class="version"
               >OK</span
             >
@@ -440,15 +367,7 @@
                 0 < props.formattedRow[props.column.field] &&
                 props.formattedRow[props.column.field] < 10000
               "
-              :style="{
-                color: isFav(props.row.address)
-                  ? vaultColor(props.row.address, true)
-                  : '',
-                fill: isFav(props.row.address)
-                  ? vaultColor(props.row.address, true)
-                  : '',
-                fontWeight: isFav(props.row.address) ? 'bold' : 'normal',
-              }"
+              :style="getHighlightStyle(props.row.address)"
               class="number"
               >-{{
                 props.formattedRow[props.column.field] | number('0a')
@@ -481,6 +400,7 @@
               props.column.field === 'rpcHealth' ||
               props.column.field === 'bifrostHealth'
             "
+            :style="getHighlightStyle(props.row.address)"
           >
             <template v-if="getHealth(props).text !== '-'">
               <a
@@ -493,6 +413,7 @@
                 :href="getHealth(props).url"
                 target="_blank"
                 style="text-decoration: none"
+                :style="getHighlightStyle(props.row.address)"
               >
                 {{ getHealth(props).text }}
               </a>
@@ -534,9 +455,10 @@
               ></copy>
             </td>
             <td class="mono">
-              <small>
-                {{ runeCur() }}
-              </small>
+              <RuneAsset 
+                height="0.7rem" 
+                :style="getHighlightStyle(selectedRow.address)"
+              />
               {{ $options.filters.number(p.bond / 10 ** 8, '0,0') }}
             </td>
             <td style="text-align: right">
@@ -624,6 +546,17 @@ export default {
     window.addEventListener('visibilitychange', this.unloadRank)
   },
   methods: {
+    getHighlightStyle(address) {
+      return {
+        color: this.isFav(address)
+          ? this.vaultColor(address, true)
+          : '',
+        fill: this.isFav(address)
+          ? this.vaultColor(address, true)
+          : '',
+        fontWeight: this.isFav(address) ? 'bold' : 'normal',
+      }
+    },
     getHealthStatus(value, row, column) {
       if (value === null || value === undefined) {
         return { text: '-', url: '', title: '' }
