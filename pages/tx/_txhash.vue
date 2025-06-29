@@ -582,7 +582,7 @@ export default {
                 is: accordions.action?.memo,
               },
               {
-                key: 'Refund Reseaon',
+                key: 'Refund Reason',
                 value: accordions.action?.refundReason,
                 is: accordions.action?.refundReason,
               },
