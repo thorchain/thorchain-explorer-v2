@@ -437,6 +437,13 @@ export default {
     background-color: transparent;
     gap: $space-8;
 
+    em {
+      white-space: nowrap;
+      max-width: 78px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     img {
       height: 1.2rem;
       max-width: 78px;
