@@ -9,7 +9,7 @@
       >
         {{ addressFormatV2(param) }}
       </nuxt-link>
-      <copy :str-copy="param"></copy>
+      <copy v-if="showCopy" :str-copy="param"></copy>
     </template>
     <span v-else>-</span>
   </div>
@@ -17,7 +17,16 @@
 
 <script>
 export default {
-  props: ['param'],
+  props: {
+    param: {
+      type: String,
+      default: null,
+    },
+    showCopy: {
+      type: Boolean,
+      default: true,
+    },
+  },
 }
 </script>
 

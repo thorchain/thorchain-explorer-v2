@@ -38,7 +38,7 @@ export function getChainsHeight() {
 export function getHolders(asset = 'THOR.RUNE') {
   const baseUrl = endpoints[process.env.NETWORK].SERVER_URL + 'holders'
   return $axiosInstace.get(baseUrl, {
-    params: { asset }
+    params: { asset },
   })
 }
 
@@ -267,5 +267,11 @@ export function getDenoms() {
 export function getContracts() {
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].SERVER_URL + 'api/contracts'
+  )
+}
+
+export function search(query) {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + `search?filter=${query}`
   )
 }

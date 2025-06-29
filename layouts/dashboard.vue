@@ -19,17 +19,12 @@
         <div class="title-search">THORChain Blockchain Explorer</div>
         <div class="search-container">
           <div id="search-bar-container">
-            <input
-              ref="searchInput"
-              v-model="searchQuery"
-              class="search-input"
-              type="text"
-              placeholder="Search by Address / Txn Hash / THORName"
-              @keyup.enter="find"
-              @focus="isSearch = true"
-              @blur="isSearch = false"
+            <SearchComponent
+              ref="searchComponent"
+              :use-default-styles="false"
+              :show-search-icon="true"
+              @search="find"
             />
-            <SearchIcon class="search-icon" @click="find" />
           </div>
         </div>
       </div>
@@ -49,10 +44,12 @@ import Vue from 'vue'
 import { mapGetters } from 'vuex'
 import global from '~/mixins.js/global'
 import SearchIcon from '~/assets/images/search.svg?inline'
+import SearchComponent from '~/components/SearchComponent.vue'
 
 export default {
   name: 'DefaultLayout',
   components: {
+    SearchComponent,
     SearchIcon,
   },
   data() {
@@ -137,10 +134,10 @@ export default {
     clearInterval(this.updateInterval)
   },
   methods: {
-    find() {
-      const search = this.searchQuery.toUpperCase()
+    find(searchQuery) {
+      const search = searchQuery.toUpperCase()
       if (search.length <= 30) {
-        this.$api.getThorname(this.searchQuery).then((res) => {
+        this.$api.getThorname(searchQuery).then((res) => {
           if (
             res.status / 200 === 1 &&
             (res.data?.aliases?.length > 0 || res.data?.owner)
@@ -172,9 +169,9 @@ export default {
         search.startsWith('COSMOS') ||
         search.length <= 43
       ) {
-        this.$router.push({ path: `/address/${this.searchQuery}` })
+        this.$router.push({ path: `/address/${searchQuery}` })
       } else {
-        this.$router.push({ path: `/tx/${this.searchQuery}` })
+        this.$router.push({ path: `/tx/${searchQuery}` })
       }
     },
     search() {
@@ -269,58 +266,104 @@ Vue.mixin(global)
       &:hover {
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
       }
-      .search-input {
-        font-size: $font-size-s;
-        padding-right: 2.5rem;
-        padding-left: $space-12;
-        flex: 1;
-        border: none;
-        height: 40px;
-        border-radius: $radius-xl;
-        color: var(--sec-font-color);
-        background-color: var(--input-bg-color);
-        border: 1px solid var(--border-color);
-        transition: all 0.3s ease;
 
-        &:focus {
-          outline: none;
-          border-color: var(--primary-color);
+      :deep(#search-container) {
+        width: 100% !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        background: transparent !important;
+
+        .search-bar-input {
+          font-size: $font-size-s;
+          padding-right: 2.5rem;
+          padding-left: $space-12;
+          flex: 1;
+          border: none;
+          height: 40px;
+          border-radius: $radius-xl;
+          color: var(--sec-font-color);
+          background-color: var(--input-bg-color);
+          border: 1px solid var(--border-color);
+          transition: all 0.3s ease;
+
+          &:focus {
+            outline: none;
+            border-color: var(--primary-color);
+          }
+          @include lg {
+            font-size: $font-size-sm;
+          }
         }
-        @include lg {
-          font-size: $font-size-sm;
+
+        .search-icon {
+          position: absolute;
+          right: 0.6rem;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 35px;
+          height: 35px;
+          fill: #fff;
+          cursor: pointer;
+          transition: background-color 0.3s ease;
+          background-color: var(--search-color);
+          padding: $space-5;
+          border-radius: $radius-sm;
+
+          &:hover {
+            background-color: var(--active-primary-color);
+          }
         }
-      }
 
-      .search-icon {
-        position: absolute;
-        right: 0.6rem;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 35px;
-        height: 35px;
-        fill: #fff;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-        background-color: var(--search-color);
-        padding: $space-5;
-        border-radius: $radius-sm;
+        .loading-spinner {
+          position: absolute;
+          right: 0.6rem;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 35px;
+          height: 35px;
+          cursor: pointer;
+          transition: background-color 0.3s ease;
+          background-color: var(--search-color);
+          padding: $space-5;
+          border-radius: $radius-sm;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 2px;
 
-        &:hover {
-          background-color: var(--active-primary-color);
-        }
-      }
+          .dot {
+            width: 4px;
+            height: 4px;
+            background-color: #fff;
+            border-radius: 50%;
+            animation: blink 1.2s infinite;
+          }
 
-      @include lg {
-        width: 90%;
+          .dot:nth-child(2) {
+            animation-delay: 0.2s;
+          }
 
-        .search-input {
-          font-size: $font-size-desktop;
-          padding-right: 3rem;
-          padding-left: $space-16;
+          .dot:nth-child(3) {
+            animation-delay: 0.4s;
+          }
         }
       }
     }
   }
+
+  @keyframes blink {
+    0% {
+      opacity: 0;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
   .search-bar {
     padding-top: 2rem;
     margin: auto;
