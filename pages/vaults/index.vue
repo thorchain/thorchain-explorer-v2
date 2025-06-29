@@ -116,6 +116,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import moment from 'moment'
 import { runeCur } from '~/utils'
 
 export default {
@@ -245,7 +246,7 @@ export default {
         })
     },
     duration(since) {
-      return duration(since * 6, 's').humanize()
+      return moment.duration(since * 6, 'seconds').humanize()
     },
     updateGeneralStats() {
       const asgard = this.asgard.filter((a) => a.status === 'Active')
