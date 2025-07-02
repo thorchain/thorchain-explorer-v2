@@ -1,12 +1,12 @@
 <template>
   <div
     id="search-container"
-    @click="search"
     :class="{
       'default-styles': useDefaultStyles,
       'mobile-search': isMobile,
       expanded: isExpanded,
     }"
+    @click="search"
   >
     <input
       ref="searchInput"
@@ -45,8 +45,8 @@
               v-for="filter in availableFilters"
               :key="filter.type"
               :class="['filter-tab', { active: activeFilter === filter.type }]"
-              @click.stop="setActiveFilter(filter.type)"
               type="button"
+              @click.stop="setActiveFilter(filter.type)"
             >
               {{ filter.label }}
               <span class="filter-count">{{ filter.count }}</span>
@@ -115,7 +115,6 @@
 <script>
 import SearchIcon from '~/assets/images/search.svg?inline'
 import transaction from '~/assets/images/transaction.svg?inline'
-import { search } from '~/api/middleware.api.js'
 import Avatar from '~/components/Avatar.vue'
 import AssetIcon from '~/components/AssetIcon.vue'
 
@@ -229,12 +228,14 @@ export default {
         return
       }
 
+      const timeoutRace = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Timeout')), 2000)
+      )
+
       try {
         const result = await Promise.race([
-          search(query),
-          new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Timeout')), 2000)
-          ),
+          this.$api.search(query),
+          timeoutRace,
         ])
 
         let suggestions = []
@@ -285,7 +286,7 @@ export default {
             (typePriority[a.searchType] || 0)
           )
         })
-        this.suggestions = suggestions.slice(0, 15)
+        this.suggestions = suggestions
         this.activeFilter = 'all'
         this.selectedIndex = -1
         this.showNoResults = suggestions.length === 0
@@ -537,14 +538,10 @@ export default {
 
     determineSearchType(item) {
       const typeMap = {
-        Address: 'address',
         address: 'address',
-        Transaction: 'tx',
         transaction: 'tx',
         tx: 'tx',
-        THORName: 'thorname',
         thorname: 'thorname',
-        Pool: 'pool',
         pool: 'pool',
       }
       return typeMap[item.type] || 'address'
