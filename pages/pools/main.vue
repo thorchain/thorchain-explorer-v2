@@ -7,15 +7,17 @@
         :extra-classes="['pools-type-table']"
       />
     </div>
-    <Card :is-loading="loading">
-      <div v-if="pools && pools.length > 0" class="pools-box">
+    <Card>
+      <TableLoader v-if="loading" :cols="poolCols" :rows="Array(10).fill({})" />
+      <div v-else-if="pools && pools.length > 0" class="pools-box">
         <template v-for="(k, v, i) in tables">
           <template v-if="k.mode === tableMode && k.data.length === 0">
-            No Pools {{ k.mode | capitalize }}
+            <div class="no-pools-message">
+              No Pools {{ k.mode | capitalize }}
+            </div>
           </template>
           <vue-good-table
-            v-if="k.data.length > 0"
-            v-show="tableMode == k.mode"
+            v-else-if="k.data.length > 0 && tableMode === k.mode"
             :key="i"
             :columns="poolCols"
             :rows="k.data"
