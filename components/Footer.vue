@@ -2,7 +2,7 @@
   <div class="footer">
     <div class="footer-container">
       <div class="footer-text">
-        <span>THORChain Explorer 2025 🌸 - Made with ❤</span>
+        <span>THORChain Explorer 2025 ☀️ Made with ❤</span>
       </div>
 
       <div class="footer-text">

@@ -17,8 +17,8 @@
         }"
       >
         <template slot="table-row" slot-scope="props">
-          <span v-if="props.column.field === 'name' && props.row.children">
-            {{ props.row.name }}
+          <span v-if="props.column.field === 'product' && props.row.children">
+            {{ props.row.product }}
           </span>
 
           <template v-else-if="!props.row.children">
@@ -109,11 +109,7 @@ export default {
           label: 'Product',
           field: 'product',
           width: '160px',
-        },
-        {
-          label: 'Name',
-          field: 'name',
-          width: '160px',
+          tdClass: 'overflow',
         },
         {
           label: 'Checksum',
@@ -133,6 +129,7 @@ export default {
           field: 'origin',
           sortable: true,
           width: '160px',
+          tdClass: 'overflow',
         },
         {
           label: 'Version',
@@ -150,6 +147,7 @@ export default {
           label: 'Contracts',
           field: 'contracts',
           sortable: false,
+          tdClass: 'scrollable',
         },
       ],
     }
@@ -188,17 +186,15 @@ export default {
 
         if (!grouped[product]) {
           grouped[product] = {
+            mode: 'span',
             product,
-            name: displayName,
+            label: product,
             children: [],
-            totalDeployers: 0,
-            sampleOrigin: item.origin,
           }
         }
 
         grouped[product].children.push({
-          product,
-          name: displayName,
+          product: displayName,
           code: item.code,
           checksum: item.code,
           deployers: item.deployers || [],

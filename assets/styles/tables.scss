@@ -96,6 +96,32 @@
     text-align: center;
     padding-right: 10.5px;
   }
+
+  .overflow {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .scrollable {
+    overflow: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) var(--bg-color);
+
+    &::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 3px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: var(--bg-color);
+    }
+  }
 }
 
 .vgt-table:not(.node-table) > tbody > tr:last-child td {
