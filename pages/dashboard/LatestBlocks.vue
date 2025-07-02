@@ -1,67 +1,84 @@
 <template>
   <card title="Latest Blocks">
     <div>
-      <transition-group name="block" tag="div">
-        <div
-          v-for="block in burnedBlocks"
-          :key="block.blockHeight"
-          class="block-items"
-        >
+      <template v-if="burnedBlocks.length > 0">
+        <transition-group name="block" tag="div">
+          <div
+            v-for="block in burnedBlocks"
+            :key="block.blockHeight"
+            class="block-items"
+          >
+            <div class="block-info-overview">
+              <nuxt-link
+                class="height clickable"
+                :to="`/block/${block.blockHeight}`"
+              >
+                {{ block.blockHeight | number('0,0') }}
+              </nuxt-link>
+              <small class="duration">
+                {{ getDuration(block.timestamp) }} Seconds
+              </small>
+            </div>
+            <div class="middle-section-overview">
+              <div class="block-burned-item">
+                <small>Burned</small>
+                <div class="burn-item mini-bubble orange">
+                  <Burn class="burn-icon"></Burn>
+                  {{ decimalFormat(block.burnedAmount / 1e8) }}
+                </div>
+              </div>
+
+              <div class="block-burned-item">
+                <small>Dev</small>
+                <div class="burn-item mini-bubble yellow">
+                  <rune class="rune-icon"></rune>
+                  <div class="amount-burn">
+                    {{ decimalFormat(block.devAmount / 1e8) }}
+                  </div>
+                </div>
+              </div>
+
+              <div class="block-burned-item">
+                <small>Pool</small>
+                <div class="burn-item mini-bubble info">
+                  <rune class="rune-icon"></rune>
+                  <div class="amount-burn">
+                    {{ decimalFormat(block.poolAmount / 1e8) }}
+                  </div>
+                </div>
+              </div>
+
+              <div class="block-burned-item">
+                <small>Bond</small>
+                <div class="burn-item mini-bubble">
+                  <rune class="rune-icon"></rune>
+                  <div class="amount-burn">
+                    {{ decimalFormat(block.bondAmount / 1e8) }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </transition-group>
+      </template>
+      <template v-else>
+        <div v-for="index in 15" :key="index" class="block-items">
           <div class="block-info-overview">
-            <nuxt-link
-              class="height clickable"
-              :to="`/block/${block.blockHeight}`"
-            >
-              {{ block.blockHeight | number('0,0') }}
-            </nuxt-link>
-            <small class="duration">
-              {{ getDuration(block.timestamp) }} Seconds
-            </small>
+            <skeleton-loader width="80px"></skeleton-loader>
+            <skeleton-loader width="60px"></skeleton-loader>
           </div>
           <div class="middle-section-overview">
-            <div class="block-burned-item">
-              <small>Burned</small>
-              <div class="burn-item mini-bubble orange">
-                <Burn class="burn-icon"></Burn>
-                {{ decimalFormat(block.burnedAmount / 1e8) }}
-              </div>
-            </div>
-
-            <div class="block-burned-item">
-              <small>Dev</small>
-              <div class="burn-item mini-bubble yellow">
-                <rune class="rune-icon"></rune>
-                <div class="amount-burn">
-                  {{ decimalFormat(block.devAmount / 1e8) }}
-                </div>
-              </div>
-            </div>
-
-            <div class="block-burned-item">
-              <small>Pool</small>
-              <div class="burn-item mini-bubble info">
-                <rune class="rune-icon"></rune>
-                <div class="amount-burn">
-                  {{ decimalFormat(block.poolAmount / 1e8) }}
-                </div>
-              </div>
-            </div>
-
-            <div class="block-burned-item">
-              <small>Bond</small>
-              <div class="burn-item mini-bubble">
-                <rune class="rune-icon"></rune>
-                <div class="amount-burn">
-                  {{ decimalFormat(block.bondAmount / 1e8) }}
-                </div>
+            <div
+              v-for="(item, itemIndex) in skeletonItems"
+              :key="itemIndex"
+              class="block-burned-item"
+            >
+              <skeleton-loader :width="item.labelWidth"></skeleton-loader>
+              <div>
+                <skeleton-loader width="50px"></skeleton-loader>
               </div>
             </div>
           </div>
-        </div>
-      </transition-group>
-      <template v-if="burnedBlocks.length == 0">
-        <div class="loading">
-          <BounceLoader color="var(--font-color)" size="3rem" />
         </div>
       </template>
     </div>
@@ -72,18 +89,30 @@
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
 import Burn from '~/assets/images/burn.svg?inline'
 import Rune from '~/assets/images/rune.svg?inline'
+import SkeletonLoader from '~/components/SkeletonLoader.vue'
 
 export default {
   name: 'LatestBlocks',
   components: {
     BounceLoader,
     Burn,
-    Rune
+    Rune,
+    SkeletonLoader,
   },
   props: {
     burnedBlocks: {
       type: Array,
-      default: () => []
+      default: () => [],
+    },
+  },
+  data() {
+    return {
+      skeletonItems: [
+        { labelWidth: '40px' },
+        { labelWidth: '30px' },
+        { labelWidth: '35px' },
+        { labelWidth: '35px' },
+      ],
     }
   },
   methods: {
