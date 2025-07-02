@@ -62,7 +62,7 @@
         </transition-group>
       </template>
       <template v-else>
-        <div v-for="index in 15" :key="index" class="block-items">
+        <div v-for="index in 11" :key="index" class="block-items">
           <div class="block-info-overview">
             <skeleton-loader width="80px"></skeleton-loader>
             <skeleton-loader width="60px"></skeleton-loader>
@@ -115,8 +115,7 @@ export default {
       ],
     }
   },
-  methods: {
-  }
+  methods: {},
 }
 </script>
 
