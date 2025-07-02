@@ -545,7 +545,8 @@ export default {
         liquidityFees.push(
           (interval.liquidityFees * interval.runePriceUSD) / 1e8
         )
-        rewards.push((interval.blockRewards * interval.runePriceUSD) / 1e8)
+        const reward = (interval.blockRewards * interval.runePriceUSD) / 1e8
+        rewards.push(reward > 0 ? reward : 0)
         halfLine.push(0.5)
         totalVolume.push((interval.earnings * interval.runePriceUSD) / 1e8)
       })
@@ -649,6 +650,7 @@ export default {
       const pn = []
       const pt = []
       const ps = []
+      const psec = []
 
       d?.intervals.forEach((interval, index) => {
         if (index === d?.intervals?.length - 1) {
@@ -669,6 +671,10 @@ export default {
         pn.push(
           (+interval.toRuneVolumeUSD + +interval.toAssetVolumeUSD) / 10 ** 2
         )
+        psec.push(
+          (+interval.fromSecuredVolumeUSD + +interval.toSecuredVolumeUSD) /
+            10 ** 2
+        )
       })
 
       const totalVolume = xAxis.map((_, i) => pn[i] + pt[i] + ps[i])
@@ -677,6 +683,7 @@ export default {
         { name: 'Native Swap Volume', data: pn },
         { name: 'Trade Swap Volume', data: pt },
         { name: 'Synth Swap Volume', data: ps },
+        { name: 'Secured Swap Volume', data: psec },
       ].map((s) => {
         return {
           name: s.name,
@@ -729,6 +736,13 @@ export default {
             stack: 'total',
             showSymbol: false,
             data: ps,
+          },
+          {
+            type: 'bar',
+            name: 'Secured Swaps',
+            stack: 'total',
+            showSymbol: false,
+            data: psec,
           },
         ],
         xAxis,

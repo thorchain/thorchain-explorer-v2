@@ -212,6 +212,8 @@ export default {
       const pn = []
       const pt = []
       const ps = []
+      const psec = []
+
       d?.intervals.forEach((interval, index) => {
         if (index === d?.intervals?.length - 1) {
           return
@@ -230,6 +232,10 @@ export default {
         )
         pn.push(
           (+interval.toRuneVolumeUSD + +interval.toAssetVolumeUSD) / 10 ** 2
+        )
+        psec.push(
+          (+interval.fromSecuredVolumeUSD + +interval.toSecuredVolumeUSD) /
+            10 ** 2
         )
       })
       return this.basicChartFormat(
@@ -255,6 +261,13 @@ export default {
             stack: 'total',
             showSymbol: false,
             data: ps,
+          },
+          {
+            type: 'bar',
+            name: 'Secured Swaps',
+            stack: 'total',
+            showSymbol: false,
+            data: psec,
           },
         ],
         xAxis,
