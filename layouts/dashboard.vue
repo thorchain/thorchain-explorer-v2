@@ -23,6 +23,7 @@
               ref="searchComponent"
               :use-default-styles="false"
               :show-search-icon="true"
+              :is-dashboard-layout="true"
               @search="find"
             />
           </div>
