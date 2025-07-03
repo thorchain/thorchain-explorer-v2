@@ -96,12 +96,14 @@
       </div>
     </div>
 
-    <card
-      :img-src="require('@/assets/images/active.svg')"
-      title="Active Nodes"
-      :is-loading="!activeNodes"
-    >
+    <card :img-src="require('@/assets/images/active.svg')" title="Active Nodes">
+      <TableLoader
+        v-if="loading"
+        :cols="activeCols"
+        :rows="Array(10).fill({})"
+      />
       <node-table
+        v-else
         :rows="activeNodes"
         :cols="activeCols"
         :search-term="searchTerm"
@@ -114,9 +116,10 @@
     <card
       :img-src="require('@/assets/images/churn.svg')"
       title="Eligible Nodes"
-      :is-loading="!stbNodes"
     >
+      <TableLoader v-if="loading" :cols="stbCols" :rows="Array(10).fill({})" />
       <node-table
+        v-else
         :rows="stbNodes"
         :cols="stbCols"
         :search-term="searchTerm"
@@ -126,9 +129,14 @@
     <card
       :img-src="require('@/assets/images/whitelist.svg')"
       title="Whitelisted Nodes"
-      :is-loading="!whiteListedNodes"
     >
+      <TableLoader
+        v-if="loading"
+        :cols="otherNodes"
+        :rows="Array(10).fill({})"
+      />
       <node-table
+        v-else
         :rows="whiteListedNodes"
         :cols="otherNodes"
         :search-term="searchTerm"
@@ -147,6 +155,7 @@ import NodeTable from './component/nodeTable.vue'
 import { fillNodeData, availableChains, blockTime } from '~/utils'
 import SearchIcon from '~/assets/images/search.svg?inline'
 import Caret from '~/assets/images/caret.svg?inline'
+import TableLoader from '~/components/tableLoader.vue'
 
 export default {
   name: 'NodesPage',
@@ -154,6 +163,7 @@ export default {
     NodeTable,
     Caret,
     SearchIcon,
+    TableLoader,
   },
   data() {
     return {
@@ -205,21 +215,17 @@ export default {
       return !this.nodesQuery
     },
     activeCols() {
-      if (!this.nodesQuery) {
-        return this.cols
-      }
-
-      const chains = availableChains(
-        this.nodesQuery?.filter((n) => n.status === 'Active')
-      )
-        ?.sort()
-        .map((c) => ({
-          label: c,
-          field: `behind.${c}`,
-          type: 'number',
-          tdClass: 'mono center',
-          thClass: 'center no-padding',
-        }))
+      const chains = this.nodesQuery
+        ? availableChains(this.nodesQuery.filter((n) => n.status === 'Active'))
+            ?.sort()
+            ?.map((c) => ({
+              label: c,
+              field: `behind.${c}`,
+              type: 'number',
+              tdClass: 'mono center',
+              thClass: 'center no-padding',
+            })) || []
+        : []
 
       return [
         {
@@ -361,21 +367,17 @@ export default {
       ]
     },
     stbCols() {
-      if (!this.nodesQuery) {
-        return this.cols
-      }
-
-      const chains = availableChains(
-        this.nodesQuery?.filter((n) => n.status === 'Active')
-      )
-        ?.sort()
-        .map((c) => ({
-          label: c,
-          field: `behind.${c}`,
-          type: 'number',
-          tdClass: 'mono center',
-          thClass: 'center no-padding',
-        }))
+      const chains = this.nodesQuery
+        ? availableChains(this.nodesQuery.filter((n) => n.status === 'Active'))
+            ?.sort()
+            ?.map((c) => ({
+              label: c,
+              field: `behind.${c}`,
+              type: 'number',
+              tdClass: 'mono center',
+              thClass: 'center no-padding',
+            })) || []
+        : []
 
       return [
         {
@@ -490,10 +492,6 @@ export default {
       ]
     },
     otherNodes() {
-      if (!this.nodesQuery) {
-        return this.cols
-      }
-
       return [
         {
           label: 'Address',
