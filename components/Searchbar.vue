@@ -45,29 +45,18 @@
       </div>
     </div>
     <div class="right-section">
-      <div
-        v-show="isOverviewPage ? isScrolled : true"
-        id="search-container"
-        @click="search"
-      >
-        <input
-          ref="searchInput"
-          v-model="searchQuery"
-          :class="[
-            'search-bar-input',
-            { hidden: !(isSearch || innerWidth > 992) },
-          ]"
-          type="text"
-          :placeholder="
-            isSearch || innerWidth > 992
-              ? 'Search by Address / Txn Hash / THORName'
-              : false
-          "
-          @keyup.enter="find"
-          @focus="isSearch = true"
-          @blur="isSearch = false"
+      <div v-show="isOverviewPage ? isScrolled : true" id="search-container">
+        <SearchComponent
+          ref="searchComponent"
+          :use-default-styles="true"
+          :show-search-icon="true"
+          :is-mobile="innerWidth < 992"
+          :is-expanded="isSearch"
+          @search="handleSearch"
+          @update:isExpanded="handleExpandedUpdate"
+          @close-expanded="handleCloseExpanded"
+          @expand-search="handleExpandSearch"
         />
-        <SearchIcon class="search-icon" @click="find" />
       </div>
       <div v-show="innerWidth >= 990" id="theme-wrapper">
         <div
@@ -128,25 +117,24 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import SearchIcon from '~/assets/images/search.svg?inline'
 import MoonIcon from '~/assets/images/moon-icon.svg?inline'
 import SunIcon from '~/assets/images/sun-icon.svg?inline'
 import SettingsIcon from '~/assets/images/settings.svg?inline'
 import links from '~/const/links'
 import BlueElectra from '~/assets/images/blueelectra.svg?inline'
+import SearchComponent from '~/components/SearchComponent.vue'
 
 export default {
   name: 'SearchBar',
   components: {
     SunIcon,
     MoonIcon,
-    SearchIcon,
     SettingsIcon,
     BlueElectra,
+    SearchComponent,
   },
   data() {
     return {
-      searchQuery: '',
       isSearch: false,
       showDialog: false,
       showSettings: false,
@@ -179,9 +167,6 @@ export default {
     },
   },
   watch: {
-    $route(to, from) {
-      this.searchQuery = ''
-    },
     runePrice(n, o) {
       this.animate('header-info-1', 'animate')
     },
@@ -202,8 +187,6 @@ export default {
     if (this.isOverviewPage) {
       window.addEventListener('scroll', this.handleScroll)
     }
-    window.addEventListener('click', this.handleClickOutside)
-    window.addEventListener('touchstart', this.handleClickOutside)
     this.createListener('network', 'netDialog', { topM: 35 })
     this.createListener('themeContainer', 'themeDialog', {
       topM: 35,
@@ -213,7 +196,6 @@ export default {
     })
   },
   beforeDestroy() {
-    window.removeEventListener('click', this.handleClickOutside)
     window.removeEventListener('resize', this.onResize)
     if (this.isOverviewPage) {
       window.removeEventListener('scroll', this.handleScroll)
@@ -230,49 +212,17 @@ export default {
         this.isScrolled = scrollPosition > 100
       }
     },
-    find() {
-      if (!this.isSearch) {
-        this.$refs.searchInput.focus()
-        return
-      }
-      const search = this.searchQuery.toUpperCase()
-      if (search.length <= 30) {
-        this.$api.getThorname(this.searchQuery).then((res) => {
-          if (
-            res.status / 200 === 1 &&
-            (res.data?.aliases?.length > 0 || res.data?.owner)
-          ) {
-            let thorchainAddr = res.data?.aliases?.find(
-              (el) => el.chain === 'THOR'
-            )?.address
-            if (!thorchainAddr) {
-              thorchainAddr = res.data.owner
-            }
-            this.$router.push({ path: `/address/${thorchainAddr}` })
-          }
-        })
-      } else if (
-        // THORCHAIN
-        search.startsWith('THOR') ||
-        search.startsWith('TTHOR') ||
-        search.startsWith('STHOR') ||
-        // BNB
-        search.startsWith('BNB') ||
-        search.startsWith('TBNB') ||
-        // BITCOIN
-        search.startsWith('BC1') ||
-        search.startsWith('TB1') ||
-        // LTC
-        search.startsWith('LTC') ||
-        search.startsWith('TLTC') ||
-        // COSMOS
-        search.startsWith('COSMOS') ||
-        search.length <= 43
-      ) {
-        this.$router.push({ path: `/address/${this.searchQuery}` })
-      } else {
-        this.$router.push({ path: `/tx/${this.searchQuery}` })
-      }
+    handleSearch(query) {
+      this.isSearch = true
+    },
+    handleExpandedUpdate(expanded) {
+      this.isSearch = expanded
+    },
+    handleCloseExpanded() {
+      this.isSearch = false
+    },
+    handleExpandSearch() {
+      this.isSearch = true
     },
     setTheme(theme) {
       if (theme === 'BlueElectra') {
@@ -280,9 +230,6 @@ export default {
       } else {
         this.$store.commit('setTheme', theme === 'dark')
       }
-    },
-    search() {
-      this.isSearch = true
     },
     toggleDialog() {
       this.showDialog = !this.showDialog
@@ -306,14 +253,6 @@ export default {
         this.followContainer(parentContainer, childContainer, styles)
       })
       this.followContainer(parentContainer, childContainer, styles)
-    },
-    handleClickOutside(e) {
-      if (!this.$refs.network.contains(e.target)) {
-        this.showDialog = false
-      }
-      if (!this.$refs.themeContainer.contains(e.target)) {
-        this.showSettings = false
-      }
     },
   },
 }
@@ -341,10 +280,94 @@ export default {
       #search-container {
         flex: 1;
         display: flex;
+        overflow: hidden;
       }
     }
   }
+  .search-status {
+    padding: 1rem;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
 
+    &.error {
+      color: var(--error-color);
+    }
+
+    .loading-spinner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+
+      .dot {
+        width: 4px;
+        height: 4px;
+        background-color: var(--font-color);
+        border-radius: 50%;
+        animation: blink 1.2s infinite;
+      }
+
+      .dot:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+
+      .dot:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+
+      @keyframes blink {
+        0% {
+          opacity: 0;
+        }
+        50% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0;
+        }
+      }
+    }
+
+    p {
+      margin: 0;
+      font-size: 0.8rem;
+      color: var(--sec-font-color);
+      line-height: 1.4;
+    }
+  }
+
+  .no-results {
+    padding: $space-16 $space-16;
+    text-align: center;
+
+    .no-results-icon {
+      margin-bottom: 0.5rem;
+
+      svg {
+        width: 40px;
+        height: 40px;
+        opacity: 0.6;
+        fill: var(--sec-font-color);
+      }
+    }
+
+    h4 {
+      margin: 0.5rem 0 0.2rem;
+      font-size: 1rem;
+      color: var(--font-color);
+      font-weight: 500;
+    }
+
+    p {
+      margin: 0;
+      font-size: 0.8rem;
+      color: var(--sec-font-color);
+      line-height: 1.4;
+    }
+  }
   .header-info {
     display: flex;
     align-items: baseline;
@@ -465,72 +488,15 @@ export default {
     display: flex;
     position: relative;
     transition: all 0.5s ease;
-    border: 1px solid var(--border-color);
-    border-radius: $radius-lg;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
+    overflow: visible;
     width: 46px;
 
-    .search-bar-input {
-      flex: 1;
-      font-size: $font-size-desktop;
-      border: none;
-      height: 38px;
-      color: var(--sec-font-color);
-      background-color: var(--card-bg-color);
-      padding: $space-0 $space-16;
-      border-radius: $radius-lg;
-      transition: width 0.3s ease;
-      padding-right: 2.5rem;
-      padding-left: $space-16;
-
-      &:focus {
-        outline: none;
-        background-color: var(--card-bg-color);
-      }
-
-      &.hidden {
-        color: var(--card-bg-color);
-      }
-    }
-
-    .search-icon {
-      position: absolute;
-      width: 20px;
-      height: 24px;
-      fill: var(--font-color);
-      right: 0.8rem;
-      top: calc(50% - 0.8rem);
-      cursor: pointer;
-      transition: fill 0.3s ease;
-      box-sizing: content-box;
-      background: var(--card-bg-color);
-      padding-left: $space-5;
-
-      &:hover {
-        fill: var(--primary-color);
-      }
-    }
-
-    span {
-      display: none;
-      pointer-events: none;
-      font-size: $font-size-sm;
-      position: absolute;
-      left: 0.7rem;
-      top: calc(50% - 0.4rem);
+    @media (max-width: 991px) {
+      overflow: hidden;
     }
 
     @include lg {
       width: 30rem;
-
-      .search-bar-input {
-        width: 100%;
-      }
-
-      span {
-        display: block;
-      }
     }
   }
 }
