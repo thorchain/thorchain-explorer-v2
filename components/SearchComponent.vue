@@ -348,6 +348,7 @@ export default {
       this.selectedIndex = -1
       this.showNoResults = false
 
+      this.searchQuery = ''
       this.$emit('search', suggestion.id)
     },
 
