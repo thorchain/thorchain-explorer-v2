@@ -55,11 +55,12 @@
         </div>
 
         <div v-if="suggestions.length > 0" class="search-results">
-          <div
+          <nuxt-link
             v-for="(suggestion, index) in filteredSuggestions"
             :key="`suggestion-${index}`"
+            :to="getSuggestionRoute(suggestion)"
             :class="['suggestion-item', 'result-item']"
-            @click.stop="selectSuggestion(suggestion)"
+            @click.native="selectSuggestion(suggestion)"
             @mouseenter="selectedIndex = index"
           >
             <div class="suggestion-icon">
@@ -91,7 +92,7 @@
             <div class="suggestion-actions">
               <div class="suggestion-arrow">→</div>
             </div>
-          </div>
+          </nuxt-link>
         </div>
 
         <div v-else-if="showNoResults" class="no-results">
@@ -207,6 +208,11 @@ export default {
   },
   methods: {
     find() {
+      if (this.isMobile && !this.isExpanded) {
+        this.$emit('expand-search')
+        return
+      }
+
       if (!this.isSearch) {
         this.$refs.searchInput.focus()
         return
@@ -248,7 +254,6 @@ export default {
                 id: item.id,
                 type: item.type,
                 searchType: this.determineSearchType(item),
-                metadata: this.generateMetadata(item),
               }))
           } else if (
             result.data.results &&
@@ -260,7 +265,6 @@ export default {
                 id: item.id,
                 type: item.type,
                 searchType: this.determineSearchType(item),
-                metadata: this.generateMetadata(item),
               }))
           } else if (result.data.id && result.data.type) {
             suggestions = [
@@ -268,7 +272,6 @@ export default {
                 id: result.data.id,
                 type: result.data.type,
                 searchType: this.determineSearchType(result.data),
-                metadata: this.generateMetadata(result.data),
               },
             ]
           }
@@ -297,51 +300,6 @@ export default {
       } finally {
         this.isLoading = false
       }
-    },
-
-    processSearchResults(result) {
-      let suggestions = []
-
-      if (result?.data) {
-        if (Array.isArray(result.data)) {
-          suggestions = this.mapSearchItems(result.data)
-        } else if (result.data.results && Array.isArray(result.data.results)) {
-          suggestions = this.mapSearchItems(result.data.results)
-        } else if (result.data.id && result.data.type) {
-          suggestions = [this.mapSearchItem(result.data)]
-        }
-      }
-
-      return this.sortSuggestions(suggestions, this.searchQuery.trim())
-    },
-
-    mapSearchItems(items) {
-      return items
-        .filter((item) => item.id && item.type)
-        .map((item) => this.mapSearchItem(item))
-    },
-
-    mapSearchItem(item) {
-      return {
-        id: item.id,
-        type: item.type,
-        searchType: this.determineSearchType(item),
-        metadata: this.generateMetadata(item),
-      }
-    },
-
-    sortSuggestions(suggestions, query) {
-      return suggestions.sort((a, b) => {
-        const aExact = a.id.toLowerCase() === query.toLowerCase()
-        const bExact = b.id.toLowerCase() === query.toLowerCase()
-        if (aExact && !bExact) return -1
-        if (!aExact && bExact) return 1
-
-        const typePriority = { address: 4, pool: 3, thorname: 2, tx: 1 }
-        return (
-          (typePriority[b.searchType] || 0) - (typePriority[a.searchType] || 0)
-        )
-      })
     },
 
     navigateToSearchResult(search) {
@@ -405,23 +363,6 @@ export default {
       this.showNoResults = false
 
       this.$emit('search', suggestion.id)
-      this.navigateToSuggestion(suggestion)
-    },
-
-    navigateToSuggestion(suggestion) {
-      const routes = {
-        address: `/address/${suggestion.id}`,
-        tx: `/tx/${suggestion.id}`,
-        thorname: `/address/${suggestion.id}`,
-        pool: `/pool/${suggestion.id}`,
-      }
-
-      const route = routes[suggestion.searchType]
-      if (route) {
-        this.$nextTick(() => {
-          this.$router.push({ path: route })
-        })
-      }
     },
 
     onSearchInput() {
@@ -499,13 +440,20 @@ export default {
         this.$refs.searchInput?.closest('#search-container')
       const suggestionsContainer = this.$refs.suggestionsContainer
 
-      if (
-        searchContainer &&
-        !searchContainer.contains(e.target) &&
+      const isOutsideSearch =
+        searchContainer && !searchContainer.contains(e.target)
+
+      const isOutsideSuggestions =
+        this.showSuggestions &&
         suggestionsContainer &&
         !suggestionsContainer.contains(e.target)
-      ) {
+
+      if (isOutsideSearch && (isOutsideSuggestions || !this.showSuggestions)) {
         this.hideSuggestions()
+
+        if (this.isMobile && this.isExpanded) {
+          this.$emit('close-expanded')
+        }
       }
     },
 
@@ -547,19 +495,6 @@ export default {
       return typeMap[item.type] || 'address'
     },
 
-    generateMetadata(item) {
-      const searchType = this.determineSearchType(item)
-      const metadataMap = {
-        tx: item.blockHeight ? `Block ${item.blockHeight}` : 'Transaction',
-        address: item.balance ? `${item.balance} RUNE` : 'Address',
-        thorname: item.owner
-          ? `Owner: ${item.owner.slice(0, 8)}...`
-          : 'THORName',
-        pool: item.asset ? `${item.asset}` : 'Pool',
-      }
-      return metadataMap[searchType] || null
-    },
-
     getBadgeText(type) {
       const badgeMap = {
         address: 'Address',
@@ -568,6 +503,16 @@ export default {
         pool: 'Pool',
       }
       return badgeMap[type] || type
+    },
+
+    getSuggestionRoute(suggestion) {
+      const routes = {
+        address: `/address/${suggestion.id}`,
+        tx: `/tx/${suggestion.id}`,
+        thorname: `/address/${suggestion.id}`,
+        pool: `/pool/${suggestion.id}`,
+      }
+      return routes[suggestion.searchType] || `/address/${suggestion.id}`
     },
   },
 }
@@ -704,11 +649,16 @@ export default {
   &.mobile-search {
     width: 46px;
     overflow: hidden;
-    transition: width 0.3s ease;
+    transition: width 1s ease;
 
     &.expanded {
       width: 100%;
       overflow: visible;
+    }
+
+    &:not(.expanded) {
+      transition: width 4s ease;
+      opacity: 0.9;
     }
 
     .search-bar-input {
@@ -742,10 +692,10 @@ export default {
       left: 0;
       right: 0;
       width: calc(100% - #{$space-16} * 2);
-      max-height: 350px;
       min-height: 80px;
-      border-radius: $radius-lg $radius-lg 0 0;
-      border-bottom: none;
+      border-radius: $radius-lg;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
       z-index: 10001;
       transform: translateY(0);
       animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
@@ -859,7 +809,7 @@ export default {
             }
 
             .filter-count {
-              background-color: rgba(255, 255, 255, 0.2);
+              background-color: rgba(102, 126, 234, 0.2);
               padding: $space-2 $space-4;
               border-radius: $radius-sm;
               font-size: 10px;
@@ -927,6 +877,8 @@ export default {
           gap: $space-12;
           -webkit-tap-highlight-color: transparent;
           touch-action: manipulation;
+          text-decoration: none;
+          color: inherit;
 
           &:last-child {
             border-bottom: none;
@@ -935,6 +887,7 @@ export default {
           &:hover {
             background-color: var(--darker-bg);
             transform: translateX(2px);
+            margin-left: -3px;
 
             .suggestion-arrow {
               opacity: 1;

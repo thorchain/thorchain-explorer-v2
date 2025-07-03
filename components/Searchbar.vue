@@ -53,6 +53,9 @@
           :is-mobile="innerWidth < 992"
           :is-expanded="isSearch"
           @search="handleSearch"
+          @update:isExpanded="handleExpandedUpdate"
+          @close-expanded="handleCloseExpanded"
+          @expand-search="handleExpandSearch"
         />
       </div>
       <div v-show="innerWidth >= 990" id="theme-wrapper">
@@ -210,6 +213,15 @@ export default {
       }
     },
     handleSearch(query) {
+      this.isSearch = true
+    },
+    handleExpandedUpdate(expanded) {
+      this.isSearch = expanded
+    },
+    handleCloseExpanded() {
+      this.isSearch = false
+    },
+    handleExpandSearch() {
       this.isSearch = true
     },
     setTheme(theme) {
