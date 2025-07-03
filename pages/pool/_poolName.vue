@@ -14,6 +14,7 @@
         { link: `/pool/${poolName}`, text: 'Overview' },
         { link: `/pool/${poolName}/lp`, text: 'LP Positions' },
         { link: `/pool/${poolName}/savers`, text: 'Savers' },
+        { link: `/pool/${poolName}/txs`, text: 'Txs' },
       ]"
     />
     <nuxt-child keep-alive />
