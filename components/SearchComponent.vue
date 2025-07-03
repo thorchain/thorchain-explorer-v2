@@ -247,25 +247,23 @@ export default {
         let suggestions = []
 
         if (result?.data) {
-          if (Array.isArray(result.data)) {
-            suggestions = result.data
+          const processItems = (items) => {
+            return items
               .filter((item) => item.id && item.type)
               .map((item) => ({
                 id: item.id,
                 type: item.type,
                 searchType: this.determineSearchType(item),
               }))
+          }
+
+          if (Array.isArray(result.data)) {
+            suggestions = processItems(result.data)
           } else if (
             result.data.results &&
             Array.isArray(result.data.results)
           ) {
-            suggestions = result.data.results
-              .filter((item) => item.id && item.type)
-              .map((item) => ({
-                id: item.id,
-                type: item.type,
-                searchType: this.determineSearchType(item),
-              }))
+            suggestions = processItems(result.data.results)
           } else if (result.data.id && result.data.type) {
             suggestions = [
               {
@@ -307,7 +305,7 @@ export default {
 
       if (searchUpper.length <= 30) {
         this.handleThornameSearch(search)
-      } else if (this.isAddress(searchUpper)) {
+      } else if (searchUpper.length <= 43) {
         this.$router.push({ path: `/address/${search}` })
       } else {
         this.$router.push({ path: `/tx/${search}` })
@@ -332,25 +330,6 @@ export default {
       } catch (error) {
         console.error('THORName search error:', error)
       }
-    },
-
-    isAddress(search) {
-      const addressPrefixes = [
-        'THOR',
-        'TTHOR',
-        'STHOR',
-        'BNB',
-        'TBNB',
-        'BC1',
-        'TB1',
-        'LTC',
-        'TLTC',
-        'COSMOS',
-      ]
-      return (
-        addressPrefixes.some((prefix) => search.startsWith(prefix)) ||
-        search.length <= 43
-      )
     },
 
     selectSuggestion(suggestion) {
