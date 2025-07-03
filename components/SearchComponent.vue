@@ -21,7 +21,7 @@
       @keyup.enter="find"
       @keydown="handleKeydown"
       @input="onSearchInput"
-      @focus="isSearch = true"
+      @focus="atFocus()"
     />
 
     <div v-if="isLoading" class="loading-spinner">
@@ -224,6 +224,13 @@ export default {
 
     search() {
       this.isSearch = true
+    },
+
+    atFocus() {
+      this.isSearch = true
+      if (this.suggestions.length > 0) {
+        this.showSuggestions = true
+      }
     },
 
     async performSearch() {
