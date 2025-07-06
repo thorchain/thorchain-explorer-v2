@@ -8,6 +8,8 @@
     }"
     @click="search"
   >
+    <SearchIcon v-if="showSearchIcon" class="search-icon-left" @click="find" />
+
     <input
       ref="searchInput"
       v-model="searchQuery"
@@ -31,12 +33,18 @@
         <div class="dot"></div>
       </div>
     </div>
-    <EnterIcon
-      v-else-if="showSearchIcon && suggestions.length > 0"
-      class="enter-button"
-      @click="goToFirstResult"
-    />
-    <SearchIcon v-else-if="showSearchIcon" class="search-icon" @click="find" />
+    <div v-else-if="searchQuery.trim().length > 0" class="action-buttons">
+      <CrossIcon class="clear-button" @click="clearSearch" />
+      <EnterIcon
+        v-if="suggestions.length > 0"
+        class="enter-button"
+        @click="goToFirstResult"
+      />
+    </div>
+    <!-- "/" key indicator on the right -->
+    <div v-else-if="showSearchIcon" class="slash-key" @click="find">
+      <span>/</span>
+    </div>
 
     <div
       v-if="showSuggestions && !isLoading"
@@ -121,6 +129,7 @@
 <script>
 import SearchIcon from '~/assets/images/search.svg?inline'
 import EnterIcon from '~/assets/images/arrow-turn-down-right.svg?inline'
+import CrossIcon from '~/assets/images/cross.svg?inline'
 import transaction from '~/assets/images/transaction.svg?inline'
 import Avatar from '~/components/Avatar.vue'
 import AssetIcon from '~/components/AssetIcon.vue'
@@ -130,6 +139,7 @@ export default {
   components: {
     SearchIcon,
     EnterIcon,
+    CrossIcon,
     Avatar,
     transaction,
     AssetIcon,
@@ -549,6 +559,13 @@ export default {
       }
       return routes[suggestion.searchType] || `/address/${suggestion.id}`
     },
+
+    clearSearch() {
+      this.searchQuery = ''
+      this.hideSuggestions()
+      this.resetSearch()
+      this.$refs.searchInput.focus()
+    },
   },
 }
 </script>
@@ -569,8 +586,8 @@ export default {
 
   .search-bar-input {
     font-size: $font-size-s;
-    padding-right: 2.5rem;
-    padding-left: $space-12;
+    padding-right: 6rem;
+    padding-left: 2.5rem;
     flex: 1;
     border: none;
     height: 40px;
@@ -579,6 +596,7 @@ export default {
     background-color: var(--input-bg-color);
     border: 1px solid var(--border-color);
     transition: all 0.3s ease;
+    text-align: left;
 
     &:focus {
       outline: none;
@@ -636,62 +654,117 @@ export default {
     }
   }
 
-  .search-icon {
+  .search-icon-left {
     position: absolute;
     width: 20px;
     height: 24px;
     fill: var(--font-color);
-    right: 0.8rem;
+    left: 0.8rem;
     top: calc(50% - 0.8rem);
     cursor: pointer;
     transition: fill 0.3s ease;
     box-sizing: content-box;
     background: var(--card-bg-color);
-    padding-left: $space-5;
+    padding-right: $space-5;
+    z-index: 2;
 
     &:hover {
       fill: var(--primary-color);
     }
 
     @include sm {
-      right: 0.8rem;
+      left: 0.8rem;
       width: 20px;
       height: 24px;
-      left: auto;
+      right: auto;
     }
   }
 
-  .enter-button {
+  .slash-key {
     position: absolute;
     right: 0.8rem;
     top: 50%;
-    transform: translateY(-50%) scaleX(-1);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-sizing: content-box;
-    background: var(--card-bg-color);
-    width: 1.2rem;
-    height: 1rem;
-    color: var(--sec-font-color);
-    transition: color 0.2s;
-    border: 1px solid var(--border-color);
-    border-radius: $radius-sm;
-    padding: $space-2;
-    background-color: var(--bg-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    transform: translateY(-50%);
 
-    &:hover {
-      color: var(--primary-color);
-      transform: translateY(-50%) scaleX(-1) scale(1.05);
+    span {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--sec-font-color);
+      transition: all 0.2s ease;
+      opacity: 0.7;
     }
 
     @include sm {
       right: 0.8rem;
-      width: 1.2rem;
-      height: 1rem;
       left: auto;
+    }
+  }
+
+  .action-buttons {
+    position: absolute;
+    right: 0.8rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: $space-4;
+    background: var(--card-bg-color);
+    padding-left: $space-5;
+
+    @include sm {
+      right: 0.8rem;
+      left: auto;
+    }
+  }
+
+  .clear-button {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-sizing: content-box;
+    width: 16px;
+    height: 16px;
+    fill: var(--sec-font-color);
+    transition: fill 0.2s;
+    padding: $space-5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+    border-radius: 50%;
+
+    &:hover {
+      fill: var(--primary-color);
+      transform: scale(1.1);
+      opacity: 1;
+    }
+  }
+
+  .enter-button {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-sizing: content-box;
+    width: 13px;
+    height: 13px;
+    color: var(--sec-font-color);
+    transition: color 0.2s;
+    border: 1px solid var(--border-color);
+    border-radius: $radius-sm;
+    padding: $space-5 $space-8;
+    background-color: var(--bg-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+    transform: scaleX(-1);
+
+    &:hover {
+      color: var(--primary-color);
+      transform: scaleX(-1) scale(1.05);
     }
   }
 
