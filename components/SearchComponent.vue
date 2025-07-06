@@ -31,6 +31,11 @@
         <div class="dot"></div>
       </div>
     </div>
+    <EnterIcon
+      v-else-if="showSearchIcon && suggestions.length > 0"
+      class="enter-button"
+      @click="goToFirstResult"
+    />
     <SearchIcon v-else-if="showSearchIcon" class="search-icon" @click="find" />
 
     <div
@@ -115,6 +120,7 @@
 
 <script>
 import SearchIcon from '~/assets/images/search.svg?inline'
+import EnterIcon from '~/assets/images/arrow-turn-down-right.svg?inline'
 import transaction from '~/assets/images/transaction.svg?inline'
 import Avatar from '~/components/Avatar.vue'
 import AssetIcon from '~/components/AssetIcon.vue'
@@ -123,6 +129,7 @@ export default {
   name: 'SearchComponent',
   components: {
     SearchIcon,
+    EnterIcon,
     Avatar,
     transaction,
     AssetIcon,
@@ -194,16 +201,23 @@ export default {
     $route() {
       this.resetSearch()
     },
+    searchQuery(newValue) {
+      if (!newValue || newValue.trim().length === 0) {
+        this.hideSuggestions()
+      }
+    },
   },
   mounted() {
     window.addEventListener('click', this.handleClickOutside)
     window.addEventListener('touchstart', this.handleClickOutside, {
       passive: true,
     })
+    window.addEventListener('keydown', this.handleGlobalKeydown)
   },
   beforeDestroy() {
     window.removeEventListener('click', this.handleClickOutside)
     window.removeEventListener('touchstart', this.handleClickOutside)
+    window.removeEventListener('keydown', this.handleGlobalKeydown)
     this.clearTimeouts()
   },
   methods: {
@@ -218,8 +232,20 @@ export default {
         return
       }
 
+      if (this.suggestions.length > 0) {
+        this.goToFirstResult()
+        return
+      }
+
       this.$emit('search', this.searchQuery)
       this.navigateToSearchResult(this.searchQuery)
+    },
+
+    goToFirstResult() {
+      if (this.suggestions.length > 0) {
+        const firstSuggestion = this.suggestions[0]
+        this.selectSuggestion(firstSuggestion)
+      }
     },
 
     search() {
@@ -350,6 +376,9 @@ export default {
 
       this.searchQuery = ''
       this.$emit('search', suggestion.id)
+
+      const route = this.getSuggestionRoute(suggestion)
+      this.$router.push(route)
     },
 
     onSearchInput() {
@@ -362,6 +391,7 @@ export default {
         this.showSuggestions = false
         this.isLoading = false
         this.showNoResults = false
+        this.selectedIndex = -1
         return
       }
 
@@ -398,6 +428,22 @@ export default {
       }
     },
 
+    handleGlobalKeydown(e) {
+      if (e.key === '/' && !this.isInputFocused()) {
+        e.preventDefault()
+        this.$refs.searchInput.focus()
+        return
+      }
+
+      if (e.key === 'Escape' && this.showSuggestions) {
+        this.hideSuggestions()
+      }
+    },
+
+    isInputFocused() {
+      return document.activeElement === this.$refs.searchInput
+    },
+
     navigateSuggestion(direction) {
       if (this.filteredSuggestions.length === 0) return
 
@@ -419,6 +465,8 @@ export default {
         this.filteredSuggestions[this.selectedIndex]
       ) {
         this.selectSuggestion(this.filteredSuggestions[this.selectedIndex])
+      } else if (this.suggestions.length > 0) {
+        this.goToFirstResult()
       }
     },
 
@@ -609,6 +657,40 @@ export default {
       right: 0.8rem;
       width: 20px;
       height: 24px;
+      left: auto;
+    }
+  }
+
+  .enter-button {
+    position: absolute;
+    right: 0.8rem;
+    top: 50%;
+    transform: translateY(-50%) scaleX(-1);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-sizing: content-box;
+    background: var(--card-bg-color);
+    width: 1.2rem;
+    height: 1rem;
+    color: var(--sec-font-color);
+    transition: color 0.2s;
+    border: 1px solid var(--border-color);
+    border-radius: $radius-sm;
+    padding: $space-2;
+    background-color: var(--bg-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+      color: var(--primary-color);
+      transform: translateY(-50%) scaleX(-1) scale(1.05);
+    }
+
+    @include sm {
+      right: 0.8rem;
+      width: 1.2rem;
+      height: 1rem;
       left: auto;
     }
   }
