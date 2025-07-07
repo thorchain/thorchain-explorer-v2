@@ -8,6 +8,8 @@
     }"
     @click="search"
   >
+    <SearchIcon v-if="showSearchIcon" class="search-icon-left" @click="find" />
+
     <input
       ref="searchInput"
       v-model="searchQuery"
@@ -22,6 +24,7 @@
       @keydown="handleKeydown"
       @input="onSearchInput"
       @focus="atFocus()"
+      @blur="onBlur()"
     />
 
     <div v-if="isLoading" class="loading-spinner">
@@ -31,7 +34,18 @@
         <div class="dot"></div>
       </div>
     </div>
-    <SearchIcon v-else-if="showSearchIcon" class="search-icon" @click="find" />
+    <div v-else-if="searchQuery.trim().length > 0" class="action-buttons">
+      <CrossIcon class="clear-button" @click="clearSearch" />
+      <EnterIcon
+        v-if="suggestions.length > 0"
+        class="enter-button"
+        @click="goToFirstResult"
+      />
+    </div>
+    <!-- "/" key indicator on the right -->
+    <div v-else-if="showSearchIcon" class="slash-key" @click="find">
+      <span>/</span>
+    </div>
 
     <div
       v-if="showSuggestions && !isLoading"
@@ -108,6 +122,13 @@
             </div>
           </div>
         </div>
+
+        <div v-if="suggestions.length > 0" class="help-indicator">
+          <div class="help-content">
+            <div class="key-indicator">ESC</div>
+            <span class="help-text">close</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -115,6 +136,8 @@
 
 <script>
 import SearchIcon from '~/assets/images/search.svg?inline'
+import EnterIcon from '~/assets/images/arrow-turn-down-right.svg?inline'
+import CrossIcon from '~/assets/images/cross.svg?inline'
 import transaction from '~/assets/images/transaction.svg?inline'
 import Avatar from '~/components/Avatar.vue'
 import AssetIcon from '~/components/AssetIcon.vue'
@@ -123,6 +146,8 @@ export default {
   name: 'SearchComponent',
   components: {
     SearchIcon,
+    EnterIcon,
+    CrossIcon,
     Avatar,
     transaction,
     AssetIcon,
@@ -194,16 +219,23 @@ export default {
     $route() {
       this.resetSearch()
     },
+    searchQuery(newValue) {
+      if (!newValue || newValue.trim().length === 0) {
+        this.hideSuggestions()
+      }
+    },
   },
   mounted() {
     window.addEventListener('click', this.handleClickOutside)
     window.addEventListener('touchstart', this.handleClickOutside, {
       passive: true,
     })
+    window.addEventListener('keydown', this.handleGlobalKeydown)
   },
   beforeDestroy() {
     window.removeEventListener('click', this.handleClickOutside)
     window.removeEventListener('touchstart', this.handleClickOutside)
+    window.removeEventListener('keydown', this.handleGlobalKeydown)
     this.clearTimeouts()
   },
   methods: {
@@ -218,8 +250,20 @@ export default {
         return
       }
 
+      if (this.suggestions.length > 0) {
+        this.goToFirstResult()
+        return
+      }
+
       this.$emit('search', this.searchQuery)
       this.navigateToSearchResult(this.searchQuery)
+    },
+
+    goToFirstResult() {
+      if (this.suggestions.length > 0) {
+        const firstSuggestion = this.suggestions[0]
+        this.selectSuggestion(firstSuggestion)
+      }
     },
 
     search() {
@@ -231,6 +275,21 @@ export default {
       if (this.suggestions.length > 0) {
         this.showSuggestions = true
       }
+      this.$refs.searchInput.classList.remove('slash-focus')
+      const container = this.$refs.searchInput.closest('#search-container')
+      if (container) {
+        container.classList.remove('slash-focus-active')
+      }
+      this.$emit('slash-blur')
+    },
+
+    onBlur() {
+      this.$refs.searchInput.classList.remove('slash-focus')
+      const container = this.$refs.searchInput.closest('#search-container')
+      if (container) {
+        container.classList.remove('slash-focus-active')
+      }
+      this.$emit('slash-blur')
     },
 
     async performSearch() {
@@ -350,6 +409,9 @@ export default {
 
       this.searchQuery = ''
       this.$emit('search', suggestion.id)
+
+      const route = this.getSuggestionRoute(suggestion)
+      this.$router.push(route)
     },
 
     onSearchInput() {
@@ -362,6 +424,7 @@ export default {
         this.showSuggestions = false
         this.isLoading = false
         this.showNoResults = false
+        this.selectedIndex = -1
         return
       }
 
@@ -398,6 +461,30 @@ export default {
       }
     },
 
+    handleGlobalKeydown(e) {
+      if (e.key === '/' && !this.isInputFocused()) {
+        e.preventDefault()
+        this.$nextTick(() => {
+          this.$refs.searchInput.focus()
+          this.$refs.searchInput.classList.add('slash-focus')
+          const container = this.$refs.searchInput.closest('#search-container')
+          if (container) {
+            container.classList.add('slash-focus-active')
+          }
+          this.$emit('slash-focus')
+        })
+        return
+      }
+
+      if (e.key === 'Escape' && this.showSuggestions) {
+        this.hideSuggestions()
+      }
+    },
+
+    isInputFocused() {
+      return document.activeElement === this.$refs.searchInput
+    },
+
     navigateSuggestion(direction) {
       if (this.filteredSuggestions.length === 0) return
 
@@ -419,6 +506,8 @@ export default {
         this.filteredSuggestions[this.selectedIndex]
       ) {
         this.selectSuggestion(this.filteredSuggestions[this.selectedIndex])
+      } else if (this.suggestions.length > 0) {
+        this.goToFirstResult()
       }
     },
 
@@ -501,6 +590,13 @@ export default {
       }
       return routes[suggestion.searchType] || `/address/${suggestion.id}`
     },
+
+    clearSearch() {
+      this.searchQuery = ''
+      this.hideSuggestions()
+      this.resetSearch()
+      this.$refs.searchInput.focus()
+    },
   },
 }
 </script>
@@ -517,12 +613,21 @@ export default {
     border: 1px solid var(--border-color);
     border-radius: $radius-lg;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+    &:focus-within,
+    &.slash-focus-active {
+      border-color: #626262;
+      outline: 2px #626262 solid;
+      box-shadow:
+        0 0 0 2px rgba(106, 106, 106, 0.15),
+        0 8px 20px rgba(0, 0, 0, 0.2);
+    }
   }
 
   .search-bar-input {
     font-size: $font-size-s;
-    padding-right: 2.5rem;
-    padding-left: $space-12;
+    padding-right: 6rem;
+    padding-left: 2.5rem;
     flex: 1;
     border: none;
     height: 40px;
@@ -531,10 +636,18 @@ export default {
     background-color: var(--input-bg-color);
     border: 1px solid var(--border-color);
     transition: all 0.3s ease;
+    text-align: left;
 
     &:focus {
       outline: none;
-      border-color: var(--primary-color);
+    }
+
+    &.slash-focused {
+      border-color: #626262;
+      border-width: 2px;
+      box-shadow:
+        0 0 0 2px rgba(106, 106, 106, 0.15),
+        0 8px 20px rgba(0, 0, 0, 0.2);
     }
 
     @include lg {
@@ -588,28 +701,117 @@ export default {
     }
   }
 
-  .search-icon {
+  .search-icon-left {
     position: absolute;
     width: 20px;
     height: 24px;
     fill: var(--font-color);
-    right: 0.8rem;
+    left: 0.8rem;
     top: calc(50% - 0.8rem);
     cursor: pointer;
     transition: fill 0.3s ease;
     box-sizing: content-box;
     background: var(--card-bg-color);
-    padding-left: $space-5;
+    padding-right: $space-5;
+    z-index: 2;
 
     &:hover {
       fill: var(--primary-color);
     }
 
     @include sm {
-      right: 0.8rem;
+      left: 0.8rem;
       width: 20px;
       height: 24px;
+      right: auto;
+    }
+  }
+
+  .slash-key {
+    position: absolute;
+    right: 0.8rem;
+    top: 50%;
+    transform: translateY(-50%);
+
+    span {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--sec-font-color);
+      transition: all 0.2s ease;
+      opacity: 0.7;
+    }
+
+    @include sm {
+      right: 0.8rem;
       left: auto;
+    }
+  }
+
+  .action-buttons {
+    position: absolute;
+    right: 0rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    background: var(--card-bg-color);
+    padding-left: $space-3;
+
+    @include sm {
+      right: 0rem;
+      left: auto;
+    }
+  }
+
+  .clear-button {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-sizing: content-box;
+    width: 16px;
+    height: 16px;
+    fill: var(--sec-font-color);
+    transition: fill 0.2s;
+    padding: $space-3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+    border-radius: 50%;
+    margin-right: 0.3rem;
+
+    &:hover {
+      fill: var(--primary-color);
+      transform: scale(1.1);
+      opacity: 1;
+    }
+  }
+
+  .enter-button {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-sizing: content-box;
+    width: 13px;
+    height: 13px;
+    color: var(--sec-font-color);
+    transition: color 0.2s;
+    border: 1px solid var(--border-color);
+    border-radius: $radius-sm;
+    padding: $space-3 $space-6;
+    background-color: var(--bg-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+    transform: scaleX(-1);
+
+    &:hover {
+      color: var(--primary-color);
+      transform: scaleX(-1) scale(1.05);
     }
   }
 
@@ -859,7 +1061,7 @@ export default {
           padding: $space-10 $space-16;
           cursor: pointer;
           transition: all 0.2s ease;
-          border-bottom: 1px solid var(--border-color);
+          border-bottom: 1px solid rgb(124 124 124 / 20%);
           position: relative;
           gap: $space-12;
           -webkit-tap-highlight-color: transparent;
@@ -1076,6 +1278,70 @@ export default {
               p {
                 max-width: 240px;
               }
+            }
+          }
+        }
+      }
+
+      .help-indicator {
+        padding: $space-4 $space-12;
+        background-color: rgba(0, 0, 0, 0.02);
+        border-radius: 0 0 $radius-lg $radius-lg;
+        border-top: 1px solid rgb(124 124 124 / 20%);
+
+        .help-content {
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          justify-content: flex-start;
+          gap: $space-5;
+          font-size: 11px;
+          color: var(--sec-font-color);
+          opacity: 0.6;
+          padding-right: 0.2rem;
+          padding-top: 0.2rem;
+          padding-bottom: 0.2rem;
+
+          .help-text {
+            font-weight: 400;
+            text-transform: lowercase;
+            font-size: $font-size-s;
+          }
+
+          .key-indicator {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: $font-size-xxs;
+            letter-spacing: 0.3px;
+            border: 1px solid var(--border-color);
+            min-width: 20px;
+            text-align: center;
+            display: inline-block;
+            line-height: 1.2;
+          }
+        }
+
+        @media (max-width: 991px) {
+          padding: $space-3 $space-8;
+
+          .separator-line {
+            margin-bottom: $space-3;
+          }
+
+          .help-content {
+            font-size: $font-size-s;
+            gap: $space-2;
+
+            .help-text {
+              display: inline-block;
+              visibility: visible;
+              opacity: 1;
+            }
+
+            .key-indicator {
+              padding: 1px 4px;
+              font-size: $font-size-s;
+              min-width: 18px;
             }
           }
         }

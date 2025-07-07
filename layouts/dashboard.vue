@@ -18,13 +18,17 @@
       <div class="search-bar">
         <div class="title-search">THORChain Blockchain Explorer</div>
         <div class="search-container">
-          <div id="search-bar-container">
+          <div id="search-bar-container" :class="{ 'slash-focused': isSlashFocused }">
             <SearchComponent
               ref="searchComponent"
               :use-default-styles="false"
               :show-search-icon="true"
+              :show-slash-key="false"
               :is-dashboard-layout="true"
               @search="find"
+              @slash-focus-change="onSlashFocusChange"
+              @slash-focus="onSlashFocus"
+              @slash-blur="onSlashBlur"
             />
           </div>
         </div>
@@ -59,6 +63,7 @@ export default {
       isSearch: false,
       darkMode: false,
       updateInterval: undefined,
+      isSlashFocused: false,
     }
   },
   computed: {
@@ -175,6 +180,18 @@ export default {
         this.$router.push({ path: `/tx/${searchQuery}` })
       }
     },
+
+    onSlashFocusChange(isFocused) {
+      this.isSlashFocused = isFocused
+    },
+
+    onSlashFocus() {
+      this.isSlashFocused = true
+    },
+
+    onSlashBlur() {
+      this.isSlashFocused = false
+    },
     search() {
       this.isSearch = true
     },
@@ -268,12 +285,18 @@ Vue.mixin(global)
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
       }
 
-      :deep(#search-container) {
-        width: 100% !important;
-        border: none !important;
-        border-radius: 0 !important;
-        box-shadow: none !important;
-        background: transparent !important;
+      &.slash-focused {
+        border-color: #626262;
+        border-width: 2px;
+        box-shadow: 0 0 0 2px rgba(106, 106, 106, 0.15), 0 8px 20px rgba(0, 0, 0, 0.2);
+      }
+
+              :deep(#search-container) {
+          width: 100% !important;
+          border: none !important;
+          border-radius: 0 !important;
+          box-shadow: none !important;
+          background: transparent !important;
 
         .search-bar-input {
           font-size: $font-size-s;
