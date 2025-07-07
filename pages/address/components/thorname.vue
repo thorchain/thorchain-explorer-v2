@@ -1,45 +1,48 @@
 <template>
-  <div>
-    <bounce-loader v-if="loading" color="var(--font-color)" size="3rem" />
-    <template v-else>
-      <info-card :options="thornames" :inner="true">
-        <template #asset="{ item }">
-          <template v-for="al in item.aliases">
-            <div :key="`asset-` + al.chain" class="mini-bubble">
-              <asset-icon
-                :asset="baseChainAsset(al.chain)"
-                :height="'1.2rem'"
-              />
-              <nuxt-link class="clickable" :to="`/address/${al.address}`">
-                {{ formatAddress(al.address) }}
-              </nuxt-link>
-            </div>
+  <Card>
+    <div>
+      <bounce-loader v-if="loading" color="var(--font-color)" size="3rem" />
+      <template v-else>
+        <info-card :options="thornames" :inner="true">
+          <template #asset="{ item }">
+            <template v-for="al in item.aliases">
+              <div :key="`asset-` + al.chain" class="mini-bubble">
+                <asset-icon
+                  :asset="baseChainAsset(al.chain)"
+                  :height="'1.2rem'"
+                />
+                <nuxt-link class="clickable" :to="`/address/${al.address}`">
+                  {{ formatAddress(al.address) }}
+                </nuxt-link>
+              </div>
+            </template>
+            <span
+              v-if="!item.aliases || item.aliases.length == 0"
+              class="mini-bubble yellow"
+            >
+              No Aliases
+            </span>
           </template>
-          <span
-            v-if="!item.aliases || item.aliases.length == 0"
-            class="mini-bubble yellow"
-          >
-            No Aliases
-          </span>
-        </template>
-        <template #address="{ item }">
-          <nuxt-link class="clickable" :to="`/address/${item.value}`">
-            {{ formatAddress(item.value) }}
-          </nuxt-link>
-        </template>
-        <template #block="{ item }">
-          <nuxt-link class="clickable" :to="`/block/${item.value}`">
-            {{ item.filter(item.value) }}
-          </nuxt-link>
-        </template>
-      </info-card>
-      <span v-if="thornames.length == 0"> NO THORName </span>
-    </template>
-  </div>
+          <template #address="{ item }">
+            <nuxt-link class="clickable" :to="`/address/${item.value}`">
+              {{ formatAddress(item.value) }}
+            </nuxt-link>
+          </template>
+          <template #block="{ item }">
+            <nuxt-link class="clickable" :to="`/block/${item.value}`">
+              {{ item.filter(item.value) }}
+            </nuxt-link>
+          </template>
+        </info-card>
+        <span v-if="thornames.length == 0"> NO THORName </span>
+      </template>
+    </div>
+  </Card>
 </template>
 
 <script>
 import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
+import Card from '~/components/layouts/Card.vue'
 
 export default {
   components: {

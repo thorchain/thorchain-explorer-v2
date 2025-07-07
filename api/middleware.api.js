@@ -270,6 +270,18 @@ export function getContracts() {
   )
 }
 
+export function getBalanceHistory(address, interval = 'day', count = 30) {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + `history/balance/${address}`,
+    {
+      params: {
+        interval,
+        count,
+      },
+    }
+  )
+}
+
 export function search(query) {
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].SERVER_URL + `search?filter=${query}`

@@ -29,7 +29,7 @@
     </div>
     <template>
       <template v-if="!isVault">
-        <div class="stat-wrapper mb-1">
+        <div class="stat-wrapper">
           <div class="balance-nav-container">
             <balance
               class="card-balance"
@@ -37,37 +37,7 @@
               :state="addressStat"
               :loading="addressLoading"
             />
-            <Card
-              extra-class="node-address-card"
-              :navs="[
-                { title: 'LP/Savers', value: 'pools' },
-                { title: 'Bond', value: 'bond' },
-                { title: 'Thorname', value: 'thorname' },
-                { title: 'TCY', value: 'distribution' },
-              ]"
-              :is-loading="loading"
-              :act-nav.sync="activeMode"
-            >
-              <keep-alive>
-                <thorname v-if="activeMode == 'thorname'" :address="address" />
-              </keep-alive>
-              <keep-alive>
-                <pools v-if="activeMode == 'pools'" :address="address" />
-              </keep-alive>
-              <keep-alive>
-                <bonds
-                  v-if="activeMode == 'bond'"
-                  :address="address"
-                  :nodes="nodesData"
-                />
-              </keep-alive>
-              <keep-alive>
-                <distribution
-                  v-if="activeMode == 'distribution'"
-                  :address="address"
-                />
-              </keep-alive>
-            </Card>
+            <balance-history class="card-balance-history" :address="address" />
           </div>
         </div>
       </template>
@@ -174,27 +144,92 @@
           </card>
         </div>
       </template>
+
+      <div v-if="!isVault" class="action-buttons">
+        <button
+          class="action-btn"
+          :class="{ active: activeMode === 'transactions' }"
+          @click="activeMode = 'transactions'"
+        >
+          Transactions
+        </button>
+        <button
+          class="action-btn"
+          :class="{ active: activeMode === 'pools' }"
+          @click="activeMode = 'pools'"
+        >
+          LP/Savers
+        </button>
+        <button
+          class="action-btn"
+          :class="{ active: activeMode === 'bond' }"
+          @click="activeMode = 'bond'"
+        >
+          Bond
+        </button>
+        <button
+          class="action-btn"
+          :class="{ active: activeMode === 'thorname' }"
+          @click="activeMode = 'thorname'"
+        >
+          Thorname
+        </button>
+        <button
+          class="action-btn"
+          :class="{ active: activeMode === 'distribution' }"
+          @click="activeMode = 'distribution'"
+        >
+          TCY
+        </button>
+      </div>
+
+      <div v-if="!isVault" class="action-components mb-2">
+        <keep-alive>
+          <thorname v-if="activeMode == 'thorname'" :address="address" />
+        </keep-alive>
+        <keep-alive>
+          <pools v-if="activeMode == 'pools'" :address="address" />
+        </keep-alive>
+        <keep-alive>
+          <bonds
+            v-if="activeMode == 'bond'"
+            :address="address"
+            :nodes="nodesData"
+          />
+        </keep-alive>
+        <keep-alive>
+          <distribution
+            v-if="activeMode == 'distribution'"
+            :address="address"
+          />
+        </keep-alive>
+        <keep-alive>
+          <div v-if="activeMode == 'transactions'" class="transactions-section">
+            <transactions :txs="addrTxs" :owner="address" :loading="loading" />
+            <NewPagination
+              v-if="addrTxs && addrTxs.actions && count > -1"
+              :total-rows="+count"
+              :per-page="30"
+              :current-page="currentPage"
+              @change="onPageChange"
+            />
+            <pagination
+              v-else-if="addrTxs && addrTxs.actions"
+              :meta="addrTxs.actions"
+              :loading="loading"
+              @nextPage="goNext"
+              @prevPage="goPrev"
+            />
+          </div>
+        </keep-alive>
+      </div>
+
       <template>
-        <transactions :txs="addrTxs" :owner="address" :loading="loading" />
-        <NewPagination
-          v-if="addrTxs && addrTxs.actions && count > -1"
-          :total-rows="+count"
-          :per-page="30"
-          :current-page="currentPage"
-          @change="onPageChange"
-        />
-        <pagination
-          v-else-if="addrTxs && addrTxs.actions"
-          :meta="addrTxs.actions"
-          :loading="loading"
-          @nextPage="goNext"
-          @prevPage="goPrev"
-        />
+        <div v-show="!addrTxs && !loading" class="error-container">
+          Can't Fetch the Address! Please Try again Later.
+        </div>
       </template>
     </template>
-    <div v-show="!addrTxs && !loading" class="error-container">
-      Can't Fetch the Address! Please Try again Later.
-    </div>
   </page>
 </template>
 
@@ -204,6 +239,7 @@ import { compact } from 'lodash'
 import advancedFilter from '../txs/components/advancedFilter.vue'
 import Thorname from './components/thorname.vue'
 import Balance from './components/balance.vue'
+import BalanceHistory from './components/balanceHistory.vue'
 import Pools from './components/pools.vue'
 import Bonds from './components/bonds.vue'
 import Distribution from './components/distribution.vue'
@@ -212,6 +248,7 @@ export default {
   components: {
     Thorname,
     Balance,
+    BalanceHistory,
     Pools,
     Bonds,
     Distribution,
@@ -228,7 +265,7 @@ export default {
       loading: true,
       nextPageToken: undefined,
       prevPageToken: undefined,
-      activeMode: 'pools',
+      activeMode: 'transactions',
       isVault: false,
       chainAddresses: [],
       routers: [],
@@ -570,23 +607,27 @@ export default {
   }
   .balance-nav-container {
     display: flex;
-    flex-direction: column;
-    flex-wrap: nowrap;
-
+    flex-direction: row;
+    flex-wrap: wrap;
     justify-content: space-between;
     gap: 1rem;
     max-width: auto;
   }
 
   .card-balance,
+  .card-balance-history,
   .node-address-card {
     flex: 1 1 calc(50% - 1rem);
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
   }
 
   @include lg {
     .card-balance,
+    .card-balance-history,
     .node-address-card {
-      flex: 1 1 calc(20% - 1rem);
+      flex: 1 1 calc(50% - 1rem);
     }
     .balance-nav-container {
       flex-direction: row;
@@ -738,5 +779,49 @@ export default {
       fill: var(--sec-font-color);
     }
   }
+}
+
+.action-buttons {
+  display: flex;
+  gap: 5px;
+  overflow: auto;
+  justify-content: flex-start;
+  scrollbar-width: thin;
+  padding-bottom: $space-8;
+  scrollbar-color: var(--border-color) var(--bg-color);
+  margin: 0 10px;
+
+  .action-btn {
+    background-color: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: $radius-s;
+    padding: 4.8px 9.6px;
+    color: var(--sec-font-color);
+    font-size: $font-size-xxs;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: var(--primary-color);
+      color: var(--sec-font-color);
+      border-color: var(--primary-color);
+    }
+
+    &.active {
+      background-color: var(--primary-color);
+      color: var(--sec-font-color);
+      border-color: var(--primary-color);
+    }
+
+    @include md {
+      font-size: $font-size-xs;
+      padding: $space-5 $space-10;
+    }
+  }
+}
+
+.action-components {
+  margin-bottom: $space-16;
 }
 </style>

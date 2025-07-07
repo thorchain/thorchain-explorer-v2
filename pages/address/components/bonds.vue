@@ -1,4 +1,5 @@
 <template>
+  <card>
   <vue-good-table :columns="cols" :rows="bs" style-class="vgt-table net-table">
     <template slot="table-row" slot-scope="props">
       <div v-if="props.column.field == 'node'">
@@ -22,6 +23,7 @@
       </span>
     </template>
   </vue-good-table>
+</card>
 </template>
 
 <script>

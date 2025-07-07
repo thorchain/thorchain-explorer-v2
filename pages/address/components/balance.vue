@@ -2,78 +2,101 @@
   <div>
     <card v-if="state && explorers.length == 0">
       <div class="balance-container">
-        <span class="title-balance">Balances</span>
-        <div class="balance-label">
-          <span>RUNE Balance</span>
-          <skeleton-item :loading="loading" class="balance-content">
-            <asset-icon
-              v-if="runeToken && runeToken.price > 0 && !isNaN(runeToken.price)"
-              :asset="{ ticker: 'RUNE', chain: 'THOR' }"
-              :height="'16px'"
-              :chain="false"
-            />
-            <span
-              v-if="runeToken && runeToken.price > 0 && !isNaN(runeToken.price)"
-              v-tooltip="
-                runeToken &&
-                formatCurrency(runeToken.quantity * runeToken.price)
-              "
-              class="mono"
-            >
-              {{ balanceFormat(runeToken.quantity) }} RUNE
-            </span>
-            <span v-else>-</span>
-          </skeleton-item>
-        </div>
-
-        <div class="balance-label">
-          <span>{{ isNodeAddress ? 'Bonded Value' : 'Bond Balance' }}</span>
-          <skeleton-item :loading="loading || !nodes" class="balance-content">
-            <asset-icon
-              :asset="{ ticker: 'RUNE', chain: 'THOR' }"
-              :height="'16px'"
-              :chain="false"
-            />
-            <div class="bonds">
-              <span
-                v-if="totalBond !== undefined"
-                v-tooltip="formatCurrency((runePrice * totalBond) / 1e8)"
-                class="mono"
-              >
-                {{ balanceFormat(totalBond / 1e8) }} RUNE
-                <nuxt-link
-                  v-if="isNodeAddress"
-                  :to="'/node/' + address"
-                  class="clickable"
+        <div class="balance-content-wrapper">
+          <div class="balance-info">
+            <span class="title-balance">Balances</span>
+            <div class="balance-label">
+              <span>RUNE Balance</span>
+              <skeleton-item :loading="loading" class="balance-content">
+                <asset-icon
+                  v-if="
+                    runeToken && runeToken.price > 0 && !isNaN(runeToken.price)
+                  "
+                  :asset="{ ticker: 'RUNE', chain: 'THOR' }"
+                  :height="'16px'"
+                  :chain="false"
+                />
+                <span
+                  v-if="
+                    runeToken && runeToken.price > 0 && !isNaN(runeToken.price)
+                  "
+                  v-tooltip="
+                    runeToken &&
+                    formatCurrency(runeToken.quantity * runeToken.price)
+                  "
+                  class="mono"
                 >
-                  View Node
-                </nuxt-link>
-              </span>
-              <span
-                v-else-if="bonds && bonds.total !== undefined"
-                v-tooltip="formatCurrency(runePrice * bonds.total)"
-                class="mono"
-              >
-                {{ balanceFormat(bonds.total) }} RUNE
-              </span>
-              <span v-else class="mono">-</span>
+                  {{ balanceFormat(runeToken.quantity) }} RUNE
+                </span>
+                <span v-else>-</span>
+              </skeleton-item>
             </div>
-          </skeleton-item>
-        </div>
 
-        <div class="balance-label">
-          <span>Total Value</span>
-          <skeleton-item :loading="loading" class="balance-content">
-            <span
-              v-if="runeToken && runeToken.price > 0 && !isNaN(runeToken.price)"
-              class="mono"
-            >
-              {{ (runeToken.price * totalBalance) | currency }}
-            </span>
-            <span v-else>-</span>
-          </skeleton-item>
-        </div>
+            <div class="balance-label">
+              <span>{{ isNodeAddress ? 'Bonded Value' : 'Bond Balance' }}</span>
+              <skeleton-item
+                :loading="loading || !nodes"
+                class="balance-content"
+              >
+                <asset-icon
+                  :asset="{ ticker: 'RUNE', chain: 'THOR' }"
+                  :height="'16px'"
+                  :chain="false"
+                />
+                <div class="bonds">
+                  <span
+                    v-if="totalBond !== undefined"
+                    v-tooltip="formatCurrency((runePrice * totalBond) / 1e8)"
+                    class="mono"
+                  >
+                    {{ balanceFormat(totalBond / 1e8) }} RUNE
+                    <nuxt-link
+                      v-if="isNodeAddress"
+                      :to="'/node/' + address"
+                      class="clickable"
+                    >
+                      View Node
+                    </nuxt-link>
+                  </span>
+                  <span
+                    v-else-if="bonds && bonds.total !== undefined"
+                    v-tooltip="formatCurrency(runePrice * bonds.total)"
+                    class="mono"
+                  >
+                    {{ balanceFormat(bonds.total) }} RUNE
+                  </span>
+                  <span v-else class="mono">-</span>
+                </div>
+              </skeleton-item>
+            </div>
 
+            <div class="balance-label">
+              <span>Total Value</span>
+              <skeleton-item :loading="loading" class="balance-content">
+                <span
+                  v-if="
+                    runeToken && runeToken.price > 0 && !isNaN(runeToken.price)
+                  "
+                  class="mono"
+                >
+                  {{ (runeToken.price * totalBalance) | currency }}
+                </span>
+                <span v-else>-</span>
+              </skeleton-item>
+            </div>
+          </div>
+
+          <div
+            v-if="balanceAllocationData.length > 0"
+            class="balance-chart-section"
+          >
+            <pie-chart
+              :pie-data="balanceAllocationData"
+              :extra-series="chartExtraSeries"
+              :extra="chartExtra"
+            />
+          </div>
+        </div>
         <div v-if="totalValue.count > 0" class="dropdown-container">
           <label for="token-dropdown">Other Asset Holdings</label>
           <div ref="dropdownButton" class="custom-dropdown">
@@ -204,6 +227,7 @@ import AngleIcon from '~/assets/images/angle-down.svg?inline'
 import ArrowDownIcon from '~/assets/images/arrow-down-.svg?inline'
 import ArrowUpIcon from '~/assets/images/arrow-up-.svg?inline'
 import ExternalIcon from '@/assets/images/external.svg?inline'
+import PieChart from '~/components/PieChart.vue'
 
 export default {
   components: {
@@ -211,6 +235,7 @@ export default {
     ArrowDownIcon,
     ArrowUpIcon,
     ExternalIcon,
+    PieChart,
   },
   props: ['state', 'loading', 'address'],
   data() {
@@ -347,6 +372,61 @@ export default {
       }
       return ret
     },
+    balanceAllocationData() {
+      const data = []
+
+      if (this.runeToken && this.runeToken.quantity > 0) {
+        data.push({
+          name: 'RUNE Balance',
+          value: this.runeToken.quantity,
+        })
+      }
+
+      let bondValue = 0
+      if (this.totalBond !== undefined) {
+        bondValue = this.totalBond / 1e8
+      } else if (this.bonds && this.bonds.total > 0) {
+        bondValue = this.bonds.total
+      }
+
+      if (bondValue > 0) {
+        data.push({
+          name: 'Bond Balance',
+          value: bondValue,
+        })
+      }
+
+      return data
+    },
+    chartExtraSeries() {
+      return {
+        center: ['50%', '50%'],
+        radius: ['40%', '70%'],
+        label: {
+          show: false,
+        },
+      }
+    },
+    chartExtra() {
+      return {
+        legend: {
+          show: true,
+          type: 'scroll',
+          orient: 'vertical',
+          x: 'left',
+          y: 'top',
+          icon: 'circle',
+          textStyle: {
+            color: 'var(--font-color)',
+          },
+        },
+        tooltip: {
+          formatter: (a) => {
+            return `${a.name}: ${this.balanceFormat(a?.data?.value)} RUNE`
+          },
+        },
+      }
+    },
     explorers() {
       const blockChains = ['btc', 'eth', 'doge', 'bch', 'ltc', 'atom']
 
@@ -424,6 +504,21 @@ export default {
   height: 100%;
   min-height: 240px;
   gap: 24px;
+  flex: 1;
+}
+.balance-content-wrapper {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.balance-info {
+  flex: 0 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
 
   .balance-label {
     letter-spacing: 1px;
@@ -446,6 +541,11 @@ export default {
 
 .title-balance {
   font-weight: bold;
+}
+
+.balance-chart-section {
+  border-radius: $radius-md;
+  min-width: 210px;
 }
 .mono {
   font-size: $font-size-sm !important;
