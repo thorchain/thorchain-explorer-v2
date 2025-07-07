@@ -24,6 +24,7 @@
       @keydown="handleKeydown"
       @input="onSearchInput"
       @focus="atFocus()"
+      @blur="onBlur()"
     />
 
     <div v-if="isLoading" class="loading-spinner">
@@ -119,6 +120,13 @@
               <h4>No results found</h4>
               <p>Try different keywords or check spelling</p>
             </div>
+          </div>
+        </div>
+
+        <div v-if="suggestions.length > 0" class="help-indicator">
+          <div class="help-content">
+            <div class="key-indicator">ESC</div>
+            <span class="help-text">close</span>
           </div>
         </div>
       </div>
@@ -267,6 +275,21 @@ export default {
       if (this.suggestions.length > 0) {
         this.showSuggestions = true
       }
+      this.$refs.searchInput.classList.remove('slash-focus')
+      const container = this.$refs.searchInput.closest('#search-container')
+      if (container) {
+        container.classList.remove('slash-focus-active')
+      }
+      this.$emit('slash-blur')
+    },
+
+    onBlur() {
+      this.$refs.searchInput.classList.remove('slash-focus')
+      const container = this.$refs.searchInput.closest('#search-container')
+      if (container) {
+        container.classList.remove('slash-focus-active')
+      }
+      this.$emit('slash-blur')
     },
 
     async performSearch() {
@@ -441,7 +464,15 @@ export default {
     handleGlobalKeydown(e) {
       if (e.key === '/' && !this.isInputFocused()) {
         e.preventDefault()
-        this.$refs.searchInput.focus()
+        this.$nextTick(() => {
+          this.$refs.searchInput.focus()
+          this.$refs.searchInput.classList.add('slash-focus')
+          const container = this.$refs.searchInput.closest('#search-container')
+          if (container) {
+            container.classList.add('slash-focus-active')
+          }
+          this.$emit('slash-focus')
+        })
         return
       }
 
@@ -582,6 +613,14 @@ export default {
     border: 1px solid var(--border-color);
     border-radius: $radius-lg;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+    &.slash-focus-active {
+      border-color: #626262;
+      border-width: 2px;
+      box-shadow:
+        0 0 0 2px rgba(106, 106, 106, 0.15),
+        0 8px 20px rgba(0, 0, 0, 0.2);
+    }
   }
 
   .search-bar-input {
@@ -600,7 +639,14 @@ export default {
 
     &:focus {
       outline: none;
-      border-color: var(--primary-color);
+    }
+
+    &.slash-focused {
+      border-color: #626262;
+      border-width: 2px;
+      box-shadow:
+        0 0 0 2px rgba(106, 106, 106, 0.15),
+        0 8px 20px rgba(0, 0, 0, 0.2);
     }
 
     @include lg {
@@ -707,17 +753,16 @@ export default {
 
   .action-buttons {
     position: absolute;
-    right: 0.8rem;
+    right: 0rem;
     top: 50%;
     transform: translateY(-50%);
     display: flex;
     align-items: center;
-    gap: $space-4;
     background: var(--card-bg-color);
-    padding-left: $space-5;
+    padding-left: $space-3;
 
     @include sm {
-      right: 0.8rem;
+      right: 0rem;
       left: auto;
     }
   }
@@ -730,12 +775,13 @@ export default {
     height: 16px;
     fill: var(--sec-font-color);
     transition: fill 0.2s;
-    padding: $space-5;
+    padding: $space-3;
     display: flex;
     align-items: center;
     justify-content: center;
     opacity: 0.7;
     border-radius: 50%;
+    margin-right: 0.3rem;
 
     &:hover {
       fill: var(--primary-color);
@@ -754,7 +800,7 @@ export default {
     transition: color 0.2s;
     border: 1px solid var(--border-color);
     border-radius: $radius-sm;
-    padding: $space-5 $space-8;
+    padding: $space-3 $space-6;
     background-color: var(--bg-color);
     display: flex;
     align-items: center;
@@ -1014,7 +1060,7 @@ export default {
           padding: $space-10 $space-16;
           cursor: pointer;
           transition: all 0.2s ease;
-          border-bottom: 1px solid var(--border-color);
+          border-bottom: 1px solid rgb(124 124 124 / 20%);
           position: relative;
           gap: $space-12;
           -webkit-tap-highlight-color: transparent;
@@ -1231,6 +1277,70 @@ export default {
               p {
                 max-width: 240px;
               }
+            }
+          }
+        }
+      }
+
+      .help-indicator {
+        padding: $space-4 $space-12;
+        background-color: rgba(0, 0, 0, 0.02);
+        border-radius: 0 0 $radius-lg $radius-lg;
+        border-top: 1px solid rgb(124 124 124 / 20%);
+
+        .help-content {
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          justify-content: flex-start;
+          gap: $space-5;
+          font-size: 11px;
+          color: var(--sec-font-color);
+          opacity: 0.6;
+          padding-right: 0.2rem;
+          padding-top: 0.2rem;
+          padding-bottom: 0.2rem;
+
+          .help-text {
+            font-weight: 400;
+            text-transform: lowercase;
+            font-size: $font-size-s;
+          }
+
+          .key-indicator {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: $font-size-xxs;
+            letter-spacing: 0.3px;
+            border: 1px solid var(--border-color);
+            min-width: 20px;
+            text-align: center;
+            display: inline-block;
+            line-height: 1.2;
+          }
+        }
+
+        @media (max-width: 991px) {
+          padding: $space-3 $space-8;
+
+          .separator-line {
+            margin-bottom: $space-3;
+          }
+
+          .help-content {
+            font-size: $font-size-s;
+            gap: $space-2;
+
+            .help-text {
+              display: inline-block;
+              visibility: visible;
+              opacity: 1;
+            }
+
+            .key-indicator {
+              padding: 1px 4px;
+              font-size: $font-size-s;
+              min-width: 18px;
             }
           }
         }
