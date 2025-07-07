@@ -614,9 +614,10 @@ export default {
     border-radius: $radius-lg;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 
+    &:focus-within,
     &.slash-focus-active {
       border-color: #626262;
-      border-width: 2px;
+      outline: 2px #626262 solid;
       box-shadow:
         0 0 0 2px rgba(106, 106, 106, 0.15),
         0 8px 20px rgba(0, 0, 0, 0.2);
