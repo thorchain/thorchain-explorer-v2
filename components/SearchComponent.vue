@@ -44,7 +44,7 @@
     </div>
     <!-- "/" key indicator on the right -->
     <div v-else-if="showSearchIcon" class="slash-key" @click="find">
-      <span>/</span>
+      <span class="mono">/</span>
     </div>
 
     <div
@@ -125,8 +125,8 @@
 
         <div v-if="suggestions.length > 0" class="help-indicator">
           <div class="help-content">
-            <div class="key-indicator">ESC</div>
-            <span class="help-text">close</span>
+            <div class="key-indicator mono">ESC</div>
+            <small class="help-text">close</small>
           </div>
         </div>
       </div>
@@ -626,7 +626,7 @@ export default {
 
   .search-bar-input {
     font-size: $font-size-s;
-    padding-right: 6rem;
+    padding-right: 4rem;
     padding-left: 2.5rem;
     flex: 1;
     border: none;
@@ -1311,7 +1311,7 @@ export default {
           .key-indicator {
             padding: 2px 6px;
             border-radius: 3px;
-            font-size: $font-size-xxs;
+            font-size: $font-size-xs;
             letter-spacing: 0.3px;
             border: 1px solid var(--border-color);
             min-width: 20px;
