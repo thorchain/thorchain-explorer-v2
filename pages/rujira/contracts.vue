@@ -180,7 +180,7 @@ export default {
       const grouped = {}
 
       codes.forEach((item) => {
-        const product = item.product || 'Unknown'
+        const product = item.product || 'General'
         // const name = this.formatName(item.origin)
         const displayName = this.formatDisplayName(item.origin)
 
