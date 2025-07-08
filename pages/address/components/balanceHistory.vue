@@ -4,26 +4,29 @@
     :is-loading="loading"
     style="height: 100%; display: flex; flex-direction: column"
   >
-    <div class="chart-header">
-      <div class="unit-switcher">
-        <label class="switch">
-          <input
-            type="checkbox"
-            :checked="showValue"
-            @change="showValue = !showValue"
-          />
-          <span class="slider round"></span>
-        </label>
-        <span class="unit-label">{{ showValue ? 'USD' : 'RUNE' }}</span>
+    <template #header>
+      <div class="card-header-content">
+        <div class="unit-switcher">
+          <label class="switch">
+            <input
+              type="checkbox"
+              :checked="showValue"
+              @change="showValue = !showValue"
+            />
+            <span class="slider round"></span>
+          </label>
+          <span class="unit-label">{{ showValue ? 'USD' : 'RUNE' }}</span>
+        </div>
       </div>
-    </div>
+    </template>
     <VChart
+      v-if="!loading && chartOptions"
       :option="chartOptions"
       :loading="!chartOptions"
       :autoresize="true"
       :loading-options="showLoading"
       :theme="chartTheme"
-      style="flex: 1; min-height: 300px"
+      style="flex: 1; min-height: 280px"
     />
   </Card>
 </template>
@@ -103,6 +106,13 @@ export default {
         this.loading = false
       }
     },
+    getUniqueValues(values, precision = 2) {
+      const rounded = values.map(
+        (v) => Math.round(v * Math.pow(10, precision)) / Math.pow(10, precision)
+      )
+      return [...new Set(rounded)]
+    },
+
     formatBalanceHistory(d) {
       const xAxis = []
       const balanceSeries = []
@@ -120,6 +130,9 @@ export default {
         valueSeries.push(value)
       })
 
+      const currentSeries = this.showValue ? valueSeries : balanceSeries
+      const uniqueValues = this.getUniqueValues(currentSeries)
+
       const series = this.showValue
         ? [
             {
@@ -127,12 +140,24 @@ export default {
               name: 'Balance Value (USD)',
               showSymbol: false,
               data: valueSeries,
-              yAxisIndex: 0,
-              itemStyle: {
-                color: '#63FDD9',
-              },
               areaStyle: {
-                color: 'rgba(99, 253, 217, 0.1)',
+                color: {
+                  type: 'linear',
+                  x: 0,
+                  y: 0,
+                  x2: 0,
+                  y2: 1,
+                  colorStops: [
+                    {
+                      offset: 0,
+                      color: 'rgba(99, 253, 217, 0.3)',
+                    },
+                    {
+                      offset: 1,
+                      color: 'rgba(99, 253, 217, 0.05)',
+                    },
+                  ],
+                },
               },
               smooth: true,
             },
@@ -143,36 +168,62 @@ export default {
               name: 'Balance (RUNE)',
               showSymbol: false,
               data: balanceSeries,
-              yAxisIndex: 0,
-              itemStyle: {
-                color: '#63FDD9',
-              },
               areaStyle: {
-                color: 'rgba(99, 253, 217, 0.1)',
+                color: {
+                  type: 'linear',
+                  x: 0,
+                  y: 0,
+                  x2: 0,
+                  y2: 1,
+                  colorStops: [
+                    {
+                      offset: 0,
+                      color: 'rgba(99, 253, 217, 0.3)',
+                    },
+                    {
+                      offset: 1,
+                      color: 'rgba(99, 253, 217, 0.05)',
+                    },
+                  ],
+                },
               },
               smooth: true,
             },
           ]
 
       return this.basicChartFormat(
-        (value) =>
-          this.showValue
-            ? `$${this.$options.filters.currency(value, '0,0a')}`
-            : `${this.$options.filters.number(value, '0,0a')} RUNE`,
+        (value) => {
+          return this.showValue
+            ? `${this.$options.filters.currency(value, '0,0.00')}`
+            : `${this.$options.filters.number(value, '0,0.00')} RUNE`
+        },
         series,
         xAxis,
         {
+          legend: {
+            show: false,
+          },
           grid: {
-            left: '2%',
-            right: '2%',
+            left: '3%',
+            right: '3%',
+            bottom: '1%',
             containLabel: true,
           },
           xAxis: {
             type: 'category',
             boundaryGap: false,
-            axisLine: { show: false },
-            splitLine: { show: false },
-            axisTick: { show: false },
+            splitLine: {
+              show: true,
+              lineStyle: {
+                color: 'rgba(255, 255, 255, 0.05)',
+                type: 'dashed',
+              },
+            },
+            axisLabel: {
+              fontSize: 11,
+              margin: 12,
+              padding: [4, 8],
+            },
             data: xAxis,
             min: 'dataMin',
             max: 'dataMax',
@@ -181,20 +232,37 @@ export default {
           yAxis: [
             {
               type: 'value',
-              axisLine: { show: false },
-              splitLine: { show: false },
-              axisTick: { show: false },
-              minorTick: { show: false },
+              splitLine: {
+                show: true,
+                lineStyle: {
+                  color: 'rgba(255, 255, 255, 0.05)',
+                  type: 'dashed',
+                },
+              },
+              axisTick: {
+                show: true,
+                lineStyle: {
+                  color: 'rgba(255, 255, 255, 0.1)',
+                },
+              },
               position: 'left',
               min: 'dataMin',
               max: 'dataMax',
               show: true,
-              splitNumber: 2,
+              splitNumber: 4,
               axisLabel: {
-                formatter: (value) =>
-                  this.showValue
-                    ? `$${this.$options.filters.number(value, '0,0a')}`
-                    : `${this.$options.filters.number(value, '0,0a')} RUNE`,
+                fontSize: 10,
+                margin: 12,
+                padding: [4, 8],
+                formatter: (value) => {
+                  const roundedValue = Math.round(value * 100) / 100
+                  if (uniqueValues.includes(roundedValue)) {
+                    return this.showValue
+                      ? `$${this.$options.filters.number(value, '0,0a')}`
+                      : `${this.$options.filters.number(value, '0,0a')} RUNE`
+                  }
+                  return ''
+                },
               },
             },
           ],
@@ -205,31 +273,30 @@ export default {
           const date = param[0].name
 
           return `
-            <div class="tooltip-header">
-              ${date}
-            </div>
-            <div class="tooltip-body">
-              ${param
-                .map(
-                  (p) => `
-                  <span>
-                    <div class="tooltip-item">
-                      <div class="data-color" style="background-color: ${p.color}">
-                      </div>
-                      <span style="text-align: left;">
-                        ${p.seriesName}
-                      </span>
-                    </div>
-                    <b>${
-                      this.showValue
-                        ? `$${this.$options.filters.number(p.value, '0,0.00')}`
-                        : `${this.$options.filters.number(p.value, '0,0.00')} RUNE`
-                    }</b>
-                  </span>`
-                )
-                .join('')}
-            </div>
-          `
+          <div class="tooltip-header">
+            <div class="data-color" style="background-color: ${param[0].color}"></div>
+            ${date}
+          </div>
+          <div class="tooltip-body">
+            ${param
+              .map(
+                (p) => `
+                <span>
+                  <div class="tooltip-item">
+                    <span style="text-align: left;">
+                      ${p.seriesName}
+                    </span>
+                  </div>
+                  <b>${
+                    this.showValue
+                      ? `$${this.$options.filters.number(p.value, '0,0.00')}`
+                      : `${this.$options.filters.number(p.value, '0,0.00')} RUNE`
+                  }</b>
+                </span>`
+              )
+              .join('')}
+          </div>
+        `
         }
       )
     },
@@ -238,10 +305,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.chart-header {
+.card-header-content {
   display: flex;
-  justify-content: flex-end;
-  margin-bottom: 16px;
+  align-items: center;
 }
 
 .unit-switcher {
@@ -299,26 +365,5 @@ input:checked + .slider:before {
   font-size: 14px;
   color: var(--font-color);
   margin-left: 10px;
-}
-
-.tooltip-header {
-  font-weight: bold;
-  margin-bottom: 8px;
-  color: var(--font-color);
-}
-
-.tooltip-body {
-  .tooltip-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 4px;
-  }
-
-  .data-color {
-    width: 12px;
-    height: 12px;
-    border-radius: 2px;
-  }
 }
 </style>

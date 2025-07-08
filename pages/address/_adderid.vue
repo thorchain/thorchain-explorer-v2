@@ -28,20 +28,23 @@
       </div>
     </div>
     <template>
-      <template v-if="!isVault">
-        <div class="stat-wrapper">
-          <div class="balance-nav-container">
-            <balance
-              class="card-balance"
-              :address="address"
-              :state="addressStat"
-              :loading="addressLoading"
-            />
-            <balance-history class="card-balance-history" :address="address" />
-          </div>
+      <div v-if="!isVault" class="stat-wrapper">
+        <div class="balance-nav-container">
+          <balance
+            class="card-balance"
+            :address="address"
+            :state="addressStat"
+            :loading="addressLoading"
+          />
+          <balance-history
+            v-if="address && (hasBalances || addressLoading)"
+            class="card-balance-history"
+            :address="address"
+            :key="address"
+          />
         </div>
-      </template>
-      <template v-if="isVault">
+      </div>
+      <div v-if="isVault">
         <info-card
           :options="addressStat"
           style="margin-bottom: 8px"
@@ -143,7 +146,7 @@
             </vue-good-table>
           </card>
         </div>
-      </template>
+      </div>
 
       <div v-if="!isVault" class="action-buttons">
         <button
@@ -307,6 +310,13 @@ export default {
     }
   },
   computed: {
+    hasBalances() {
+      return (
+        this.otherBalances &&
+        this.otherBalances.length > 0 &&
+        this.otherBalances.some((balance) => balance.quantity > 0)
+      )
+    },
     addressStat() {
       const balances = this.otherBalances ?? []
       if (this.isVault) {
@@ -440,9 +450,13 @@ export default {
             ...synthBalances,
           ])
           this.addressLoading = false
+        } else {
+          this.otherBalances = []
+          this.addressLoading = false
         }
       } catch (e) {
         console.error(e)
+        this.addressLoading = false
       } finally {
         this.loading = false
       }

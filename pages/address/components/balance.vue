@@ -195,7 +195,7 @@
         </div>
       </div>
     </card>
-    <card v-else title="Chain Explorers">
+    <card v-else title="Chain Explorers" class="explorers-card">
       <div class="explorers">
         <div v-for="explorer in explorers" :key="explorer.chain">
           <a
@@ -400,8 +400,8 @@ export default {
     },
     chartExtraSeries() {
       return {
-        center: ['50%', '50%'],
-        radius: ['40%', '70%'],
+        center: ['50%', '45%'],
+        radius: ['35%', '60%'],
         label: {
           show: false,
         },
@@ -411,10 +411,10 @@ export default {
       return {
         legend: {
           show: true,
-          type: 'scroll',
+          type: 'plain',
           orient: 'vertical',
-          x: 'left',
-          y: 'top',
+          x: 'center',
+          y: 'bottom',
           icon: 'circle',
           textStyle: {
             color: 'var(--font-color)',
@@ -511,6 +511,7 @@ export default {
   gap: 24px;
   align-items: flex-start;
   justify-content: space-between;
+  flex-wrap: wrap;
 }
 
 .balance-info {
@@ -546,6 +547,7 @@ export default {
 .balance-chart-section {
   border-radius: $radius-md;
   min-width: 210px;
+  min-height: 280px;
 }
 .mono {
   font-size: $font-size-sm !important;
@@ -776,6 +778,11 @@ button[disabled] {
   padding-bottom: $space-14;
   margin-bottom: $space-10;
 }
+.explorers-card {
+  max-width: 400px;
+  min-height: 100%;
+}
+
 .explorers {
   display: flex;
   flex-wrap: wrap;
