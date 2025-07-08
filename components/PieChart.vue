@@ -5,7 +5,7 @@
     :loading-options="showLoading"
     :style="{
       width: width ? width : '100%',
-      height: '250px',
+      height: height ? height : '250px',
       minHeight: 'initial',
     }"
     :theme="chartTheme"
@@ -45,6 +45,7 @@ export default {
     'extraSeries',
     'extra',
     'width',
+    'height',
     'click',
   ],
   data() {

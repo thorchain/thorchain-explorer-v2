@@ -1,7 +1,7 @@
 <template>
   <card>
     <div>
-      <stats-panel :metrics="statsMetrics">
+      <stats-panel style="margin: 0" :metrics="statsMetrics">
         <template #metric-icon-0>
           <asset-icon asset="THOR.TCY" height="1.2rem" />
         </template>

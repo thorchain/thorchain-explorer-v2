@@ -26,7 +26,7 @@
       :autoresize="true"
       :loading-options="showLoading"
       :theme="chartTheme"
-      style="flex: 1; min-height: 280px"
+      class="address-history-chart"
     />
   </Card>
 </template>
@@ -159,7 +159,6 @@ export default {
                   ],
                 },
               },
-              smooth: true,
             },
           ]
         : [
@@ -187,7 +186,6 @@ export default {
                   ],
                 },
               },
-              smooth: true,
             },
           ]
 
@@ -204,9 +202,10 @@ export default {
             show: false,
           },
           grid: {
-            left: '3%',
-            right: '3%',
-            bottom: '1%',
+            left: '2%',
+            right: '2%',
+            bottom: '2%',
+            top: '2%',
             containLabel: true,
           },
           xAxis: {
@@ -224,6 +223,8 @@ export default {
               margin: 12,
               padding: [4, 8],
             },
+            axisTick: { show: false },
+            axisLine: { show: false },
             data: xAxis,
             min: 'dataMin',
             max: 'dataMax',
@@ -240,28 +241,26 @@ export default {
                 },
               },
               axisTick: {
-                show: true,
+                show: false,
                 lineStyle: {
                   color: 'rgba(255, 255, 255, 0.1)',
                 },
               },
               position: 'left',
-              min: 'dataMin',
+              min(val) {
+                const offset = val.max - val.min
+                return Math.max(0, val.min - offset)
+              },
               max: 'dataMax',
               show: true,
               splitNumber: 4,
+              axisLine: { show: false },
               axisLabel: {
                 fontSize: 10,
                 margin: 12,
                 padding: [4, 8],
                 formatter: (value) => {
-                  const roundedValue = Math.round(value * 100) / 100
-                  if (uniqueValues.includes(roundedValue)) {
-                    return this.showValue
-                      ? `$${this.$options.filters.number(value, '0,0a')}`
-                      : `${this.$options.filters.number(value, '0,0a')} RUNE`
-                  }
-                  return ''
+                  return `${this.$options.filters.number(value, '0,0a')} RUNE`
                 },
               },
             },
@@ -365,5 +364,10 @@ input:checked + .slider:before {
   font-size: 14px;
   color: var(--font-color);
   margin-left: 10px;
+}
+
+.address-history-chart {
+  height: 250px;
+  min-height: 250px;
 }
 </style>

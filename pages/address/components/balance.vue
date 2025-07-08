@@ -94,6 +94,7 @@
               :pie-data="balanceAllocationData"
               :extra-series="chartExtraSeries"
               :extra="chartExtra"
+              :height="'200px'"
             />
           </div>
         </div>
@@ -422,7 +423,7 @@ export default {
         },
         tooltip: {
           formatter: (a) => {
-            return `${a.name}: ${this.balanceFormat(a?.data?.value)} RUNE`
+            return `${a.name}: <span class='mono'>${this.numberFormat(a?.data?.value)}<span> <small>RUNE</small>`
           },
         },
       }
@@ -547,8 +548,8 @@ export default {
 .balance-chart-section {
   border-radius: $radius-md;
   min-width: 210px;
-  min-height: 280px;
 }
+
 .mono {
   font-size: $font-size-sm !important;
   color: var(--sec-font-color);
@@ -778,8 +779,9 @@ button[disabled] {
   padding-bottom: $space-14;
   margin-bottom: $space-10;
 }
+
 .explorers-card {
-  max-width: 400px;
+  max-width: 500px;
   min-height: 100%;
 }
 

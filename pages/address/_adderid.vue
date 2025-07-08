@@ -37,10 +37,10 @@
             :loading="addressLoading"
           />
           <balance-history
-            v-if="address && (hasBalances || addressLoading)"
+            v-if="address && (hasBalances || addressLoading) && addressStat"
+            :key="address"
             class="card-balance-history"
             :address="address"
-            :key="address"
           />
         </div>
       </div>
@@ -632,7 +632,6 @@ export default {
   .card-balance-history,
   .node-address-card {
     flex: 1 1 calc(50% - 1rem);
-    min-height: 400px;
     display: flex;
     flex-direction: column;
   }
@@ -801,7 +800,7 @@ export default {
   overflow: auto;
   justify-content: flex-start;
   scrollbar-width: thin;
-  padding-bottom: $space-8;
+  padding-top: $space-8;
   scrollbar-color: var(--border-color) var(--bg-color);
   margin: 0 10px;
 
