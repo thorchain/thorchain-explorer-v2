@@ -18,7 +18,10 @@
       <div class="search-bar">
         <div class="title-search">THORChain Blockchain Explorer</div>
         <div class="search-container">
-          <div id="search-bar-container" :class="{ 'slash-focused': isSlashFocused }">
+          <div
+            id="search-bar-container"
+            :class="{ 'slash-focused': isSlashFocused }"
+          >
             <SearchComponent
               ref="searchComponent"
               :use-default-styles="false"
@@ -285,18 +288,20 @@ Vue.mixin(global)
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
       }
 
-      &.slash-focused {
+      &:focus-within {
         border-color: #626262;
         border-width: 2px;
-        box-shadow: 0 0 0 2px rgba(106, 106, 106, 0.15), 0 8px 20px rgba(0, 0, 0, 0.2);
+        box-shadow:
+          0 0 0 2px rgba(106, 106, 106, 0.15),
+          0 8px 20px rgba(0, 0, 0, 0.2);
       }
 
-              :deep(#search-container) {
-          width: 100% !important;
-          border: none !important;
-          border-radius: 0 !important;
-          box-shadow: none !important;
-          background: transparent !important;
+      :deep(#search-container) {
+        width: 100% !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        background: transparent !important;
 
         .search-bar-input {
           font-size: $font-size-s;
