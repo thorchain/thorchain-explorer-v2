@@ -260,7 +260,7 @@ export default {
                 margin: 12,
                 padding: [4, 8],
                 formatter: (value) => {
-                  return `${this.$options.filters.number(value, '0,0a')} RUNE`
+                  return `${this.$options.filters.number(value, '0,0a')} ${this.showValue ? 'USD' : 'RUNE'}`
                 },
               },
             },

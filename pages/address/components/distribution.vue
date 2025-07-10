@@ -40,7 +40,7 @@
           :rows="distribution && distribution.distributions"
           :line-numbers="true"
           max-height="200px"
-          style-class="vgt-table net-table vgt-compact"
+          style-class="vgt-table net-table"
           :sort-options="{
             enabled: true,
             initialSortBy: { field: 'date', type: 'desc' },
