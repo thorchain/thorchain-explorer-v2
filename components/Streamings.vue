@@ -37,12 +37,12 @@
         <h3>There is no streaming swaps ongoing at the moment.</h3>
       </div>
       <template v-else-if="loading">
-        <div v-for="index in 6" :key="index" class="streaming-item">
+        <div v-for="index in 5" :key="index" class="streaming-item">
           <div class="upper-body">
             <div class="asset-container">
               <div class="asset-item">
                 <skeleton-loader width="24px" height="24px" />
-                <skeleton-loader width="80px" height="10px" />
+                <skeleton-loader width="80px" />
               </div>
               <!--
               <right-arrow class="action-type" />
@@ -52,9 +52,9 @@
             </div>
               -->
             </div>
-            <skeleton-loader width="120px" height="12px" />
+            <skeleton-loader width="120px" />
           </div>
-          <skeleton-loader width="200px" height="12px" />
+          <skeleton-loader width="200px" />
         </div>
       </template>
       <template v-else>
@@ -483,7 +483,7 @@ export default {
   overflow: hidden !important;
   margin-top: 5px !important;
   width: 50px !important;
-  height: 10px !important;
+  height: 7px !important;
   max-width: 60px !important;
 }
 </style>

@@ -12,14 +12,15 @@
         :act-nav.sync="swapMode"
       >
         <VChart
-          v-if="swapMode == 'swap-vol'"
+          v-if="swapMode == 'swap-vol' && swapHistory"
           :key="1"
           class="swap-volume-chart"
           :option="swapHistory"
-          :loading="!swapHistory"
           :autoresize="true"
-          :loading-options="showLoading"
           :theme="chartTheme"
+        />
+        <ChartLoader
+          v-if="swapMode == 'swap-vol' && !swapHistory"
         />
         <div
           v-if="swapMode == 'pools-vol'"
@@ -98,32 +99,35 @@
         </div>
         <div>
           <VChart
-            v-if="poolMode == 'total-earnings'"
+            v-if="poolMode == 'total-earnings' && earningsHistory"
             :key="1"
             :option="earningsHistory"
-            :loading="!earningsHistory"
             :autoresize="true"
-            :loading-options="showLoading"
             :theme="chartTheme"
+          />
+          <ChartLoader
+            v-if="poolMode == 'total-earnings' && !earningsHistory"
           />
         </div>
         <VChart
-          v-if="poolMode == 'pool-earnings'"
+          v-if="poolMode == 'pool-earnings' && poolEarnings"
           :key="2"
           :option="poolEarnings"
-          :loading="!poolEarnings"
           :autoresize="true"
-          :loading-options="showLoading"
           :theme="chartTheme"
         />
+        <ChartLoader
+          v-if="poolMode == 'pool-earnings' && !poolEarnings"
+        />
         <VChart
-          v-if="poolMode == 'affiliates-fees'"
+          v-if="poolMode == 'affiliates-fees' && affiliateChart"
           :key="3"
           :option="affiliateChart"
-          :loading="!affiliateChart"
           :autoresize="true"
-          :loading-options="showLoading"
           :theme="chartTheme"
+        />
+        <ChartLoader
+          v-if="poolMode == 'affiliates-fees' && !affiliateChart"
         />
       </Card>
     </div>
@@ -179,6 +183,7 @@ import RuneAsset from '~/components/RuneAsset.vue'
 import Piggy from '~/assets/images/piggy.svg?inline'
 import Chart from '~/assets/images/chart.svg?inline'
 import TransactionAction from '~/components/transactions/TransactionAction.vue'
+import ChartLoader from '~/components/ChartLoader.vue'
 use([
   SVGRenderer,
   GridComponent,
@@ -208,6 +213,7 @@ export default {
     NetworkStats,
     LatestTransactions,
     LatestBlocks,
+    ChartLoader,
   },
   layout: 'dashboard',
   data() {
