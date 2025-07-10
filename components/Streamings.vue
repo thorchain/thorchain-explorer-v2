@@ -1,8 +1,5 @@
 <template>
-  <Card
-    title="Ongoing Streaming Swaps"
-    body-class="streaming-flex"
-  >
+  <Card title="Ongoing Streaming Swaps" body-class="streaming-flex">
     <template #header>
       <dot-live />
     </template>
@@ -44,13 +41,15 @@
                 <skeleton-loader width="24px" height="24px" />
                 <skeleton-loader width="80px" />
               </div>
-              <!--
-              <right-arrow class="action-type" />
+
+              <right-arrow
+                style="fill: var(--active-bg-color)"
+                class="action-type"
+              />
               <div class="asset-item">
-             <skeleton-loader width="24px" height="24px" />
-            <skeleton-loader width="80px" height="10px" />
-            </div>
-              -->
+                <skeleton-loader width="24px" height="24px" />
+                <skeleton-loader width="80px" height="10px" />
+              </div>
             </div>
             <skeleton-loader width="120px" />
           </div>
