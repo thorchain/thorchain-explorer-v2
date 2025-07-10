@@ -120,6 +120,7 @@ import {
   getTcyInfo,
   getDenoms,
   getContracts,
+  getBalanceHistory,
   search,
 } from './middleware.api'
 import {
@@ -331,6 +332,7 @@ export default function ({ $axios }, inject) {
     getTcyInfo,
     getDenoms,
     getContracts,
+    getBalanceHistory,
     search,
   }
 
