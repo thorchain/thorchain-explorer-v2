@@ -5,7 +5,7 @@
         <div class="chart-area-skeleton">
           <div class="chart-bars">
             <skeleton-loader
-              v-for="i in barCount"
+              v-for="i in responsiveBarCount"
               :key="`bar-${i}`"
               class="bar-skeleton"
               :style="{
@@ -28,6 +28,34 @@ export default {
     barCount: {
       type: Number,
       default: 20,
+    },
+  },
+  data() {
+    return {
+      isMobile: false,
+    }
+  },
+  computed: {
+    responsiveBarCount() {
+      if (this.isMobile) {
+        return Math.max(Math.floor(this.barCount / 2), 8)
+      }
+      if (window.innerWidth < 1200) {
+        return Math.max(Math.floor(this.barCount * 0.7), 10)
+      }
+      return this.barCount
+    },
+  },
+  mounted() {
+    this.checkScreenSize()
+    window.addEventListener('resize', this.checkScreenSize)
+  },
+  beforeDestroy() {
+    window.removeEventListener('resize', this.checkScreenSize)
+  },
+  methods: {
+    checkScreenSize() {
+      this.isMobile = window.innerWidth < 990
     },
   },
 }
