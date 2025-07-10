@@ -1,6 +1,5 @@
 <template>
   <Card
-    :is-loading="loading"
     :navs="[
       { title: 'Ongoing Outbounds', value: 'ongoing-outbounds' },
       { title: 'TOP Swaps (24hr)', value: 'top-swaps' },
@@ -10,61 +9,92 @@
     <template #header>
       <dot-live />
     </template>
-    <template v-if="Mode == 'ongoing-outbounds'">
-      <template v-if="!noOutnound">
-        <Card class="overview-card">
-          <div class="overview-box">
-            <div :class="'mini-bubble info'">
-              <span>Scheduled</span>
-            </div>
-            <div class="stats-container">
-              <div>
-                <span class="item-value">Amount: </span>
-                <span
-                  class="outbound-overall mono"
-                  style="padding-right: 0.8rem"
-                >
-                  ${{ totalScheduledValue | number('0a') }}
-                </span>
+          <template v-if="Mode == 'ongoing-outbounds'">
+        <template v-if="!noOutnound">
+          <template v-if="!loading">
+            <Card class="overview-card">
+              <div class="overview-box">
+                <div :class="'mini-bubble info'">
+                  <span>Scheduled</span>
+                </div>
+                <div class="stats-container">
+                  <div>
+                    <span class="item-value">Amount: </span>
+                    <span
+                      class="outbound-overall mono"
+                      style="padding-right: 0.8rem"
+                    >
+                      ${{ totalScheduledValue | number('0a') }}
+                    </span>
+                  </div>
+                  <div>
+                    <span class="item-value">Count: </span>
+                    <span class="outbound-overall mono">{{ schData.length }}</span>
+                  </div>
+                </div>
               </div>
-              <div>
-                <span class="item-value">Count: </span>
-                <span class="outbound-overall mono">{{ schData.length }}</span>
+            </Card>
+            <ArrowToDown class="arrow-down-icon" />
+            <Card class="overview-card">
+              <div class="overview-box">
+                <div :class="'mini-bubble'">
+                  <span>Ongoing</span>
+                </div>
+                <div class="stats-container">
+                  <div>
+                    <span class="item-value">Amount: </span>
+                    <span
+                      class="outbound-overall mono"
+                      style="padding-right: 0.8rem"
+                    >
+                      ${{ totalOutboundValue | number('0a') }}</span
+                    >
+                  </div>
+                  <div>
+                    <span class="item-value">Count: </span>
+                    <span class="outbound-overall mono">
+                      {{ outData.length }}
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        </Card>
-        <ArrowToDown class="arrow-down-icon" />
-        <Card class="overview-card">
-          <div class="overview-box">
-            <div :class="'mini-bubble'">
-              <span>Ongoing</span>
-            </div>
-            <div class="stats-container">
-              <div>
-                <span class="item-value">Amount: </span>
-                <span
-                  class="outbound-overall mono"
-                  style="padding-right: 0.8rem"
-                >
-                  ${{ totalOutboundValue | number('0a') }}</span
-                >
+            </Card>
+          </template>
+          <template v-else>
+            <Card class="overview-card">
+              <div class="overview-box">
+                <skeleton-loader width="80px" />
+                <div style="display: flex;">
+                  <div>
+                    <skeleton-loader width="40px" height="10px" />
+                  </div>
+                  <div>
+                    <skeleton-loader width="30px" height="10px" />
+                  </div>
+                </div>
               </div>
-              <div>
-                <span class="item-value">Count: </span>
-                <span class="outbound-overall mono">
-                  {{ outData.length }}
-                </span>
+            </Card>
+            <ArrowToDown class="arrow-down-icon" />
+            <Card class="overview-card">
+              <div class="overview-box">
+                <skeleton-loader width="70px" />
+                <div style="display: flex;">
+                  <div>
+                    <skeleton-loader width="40px" height="10px" />
+                  </div>
+                  <div>
+                    <skeleton-loader width="30px" height="10px" />
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        </Card>
-      </template>
+            </Card>
+          </template>
+        </template>
       <div v-if="noOutnound" class="no-outbound">
         <scheduleIcon class="schedule-icon large-icon" />
         <h3>There is no outbound schedule inside THORChain.</h3>
       </div>
-      <template v-else>
+      <template v-else-if="!loading && filteredOutbounds.length > 0">
         <div
           v-for="(group, i) in filteredOutbounds"
           :key="i"
@@ -161,6 +191,25 @@
           <hr :key="i + '-hr'" class="hr-space" />
         </div>
       </template>
+      <template v-else>
+        <div v-for="index in 5" :key="index" class="outbound-item">
+          <div class="outbound-collapse">
+            <div class="asset-item">
+              <div class="asset-details">
+                <skeleton-loader width="24px" height="24px" />
+                <div class="asset-name-skeleton">
+                  <skeleton-loader width="120px" />
+                  <skeleton-loader width="80px" />
+                </div>
+              </div>
+              <div class="number-item">
+                <skeleton-loader width="16px" height="16px" />
+              </div>
+            </div>
+          </div>
+          <hr :key="index + '-hr'" class="hr-space" />
+        </div>
+      </template>
     </template>
     <template v-if="Mode == 'top-swaps'">
       <div v-if="!topSwaps || topSwaps.length == 0" class="no-outbound">
@@ -223,6 +272,7 @@ import scheduleIcon from '@/assets/images/schedule.svg?inline'
 import ArrowToDown from '~/assets/images/arrow-down.svg?inline'
 import TransactionAction from '~/components/transactions/TransactionAction.vue'
 import AngleIcon from '~/assets/images/angle-down.svg?inline'
+import SkeletonLoader from '~/components/SkeletonLoader.vue'
 
 export default {
   components: {
@@ -231,6 +281,7 @@ export default {
     TransactionAction,
     AngleIcon,
     Address,
+    SkeletonLoader,
   },
   data() {
     return {

@@ -54,7 +54,12 @@
               <span v-else>-</span>
             </div>
             <span v-else>
-              <span v-if="props.row[props.column.field]">
+              <span
+                v-if="
+                  props.row[props.column.field] !== null &&
+                  props.row[props.column.field] !== undefined
+                "
+              >
                 {{ props.formattedRow[props.column.field] }}
               </span>
               <span v-else>-</span>
@@ -68,7 +73,12 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { formatAsset, securedToAsset, assetFromString } from '~/utils'
+import {
+  formatAsset,
+  securedToAsset,
+  assetFromString,
+  assetToSecure,
+} from '~/utils'
 import UsdIcon from '~/assets/images/usd.svg?inline'
 import UsdFillIcon from '~/assets/images/usd-fill.svg?inline'
 
@@ -91,9 +101,10 @@ export default {
           tdClass: 'mono end',
         },
         {
-          label: 'Secured Supply',
-          field: 'securedSupply',
+          label: 'Volume 24H',
+          field: 'volume24h',
           type: 'number',
+          formatFn: (v) => this.formatCurrency(v),
           tdClass: 'mono',
         },
         {
@@ -109,6 +120,7 @@ export default {
       error: false,
       securedAssets: undefined,
       loading: true,
+      poolsHistory: [],
     }
   },
   computed: {
@@ -121,10 +133,12 @@ export default {
       this.securedAssets = (await this.$api.getSecuredAssets()).data
       this.pools = (await this.$api.getThorPools()).data
       this.asgard = (await this.$api.getAsgard()).data
+      this.poolsHistory = (await this.$api.getPoolsHistory()).data
       this.rows = this.fillSecuredData(
         this.securedAssets,
         this.pools,
-        this.asgard
+        this.asgard,
+        this.poolsHistory
       )
     } catch (e) {
       this.error = true
@@ -134,7 +148,7 @@ export default {
     }
   },
   methods: {
-    fillSecuredData(securedAssets, pools, asgard) {
+    fillSecuredData(securedAssets, pools, asgard, poolsHistory) {
       const assetPerVault = {}
       const asgardCoins = asgard.map((a) => a.coins)
       for (let i = 0; i < asgardCoins.length; i++) {
@@ -147,6 +161,18 @@ export default {
             assetPerVault[asset] += +amount
           }
         }
+      }
+
+      const volume24hMap = {}
+      const poolsToProcess = poolsHistory?.pools || poolsHistory
+
+      if (Array.isArray(poolsToProcess)) {
+        poolsToProcess.forEach((pool) => {
+          const securedAsset = assetToSecure(pool.pool)
+          if (securedAsset) {
+            volume24hMap[securedAsset] = (pool.securedVolume || 0) / 1e2
+          }
+        })
       }
 
       let totalSecuredDepth = 0
@@ -178,7 +204,7 @@ export default {
           assetImage: assetName,
           asset: asset.asset,
           securedDepth: securedDepth * assetPrice,
-          securedSupply,
+          volume24h: volume24hMap[asset.asset] || 0,
           securedDepthRatio: securedSupply / pool?.balance_asset || 0,
           depth: asset.depth * assetPrice ?? 0,
           price: assetPrice,
@@ -237,7 +263,8 @@ export default {
       this.rows = this.fillSecuredData(
         this.securedAssets,
         this.pools,
-        this.asgard
+        this.asgard,
+        this.poolsHistory
       )
     },
     securedToAsset(asset) {
