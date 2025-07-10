@@ -54,7 +54,12 @@
               <span v-else>-</span>
             </div>
             <span v-else>
-              <span v-if="props.row[props.column.field] !== null && props.row[props.column.field] !== undefined">
+              <span
+                v-if="
+                  props.row[props.column.field] !== null &&
+                  props.row[props.column.field] !== undefined
+                "
+              >
                 {{ props.formattedRow[props.column.field] }}
               </span>
               <span v-else>-</span>
@@ -99,6 +104,7 @@ export default {
           label: 'Volume 24H',
           field: 'volume24h',
           type: 'number',
+          formatFn: (v) => this.formatCurrency(v),
           tdClass: 'mono',
         },
         {
@@ -159,7 +165,7 @@ export default {
 
       const volume24hMap = {}
       const poolsToProcess = poolsHistory?.pools || poolsHistory
-      
+
       if (Array.isArray(poolsToProcess)) {
         poolsToProcess.forEach((pool) => {
           const securedAsset = assetToSecure(pool.pool)
