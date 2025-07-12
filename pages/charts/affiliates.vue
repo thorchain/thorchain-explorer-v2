@@ -19,14 +19,34 @@
 
       <card title="Affiliate Fees" :is-loading="loading">
         <VChart
+          v-if="affiliateChart"
           :key="affiliateChartKey"
           :option="affiliateChart"
-          :loading="!affiliateChart"
           :autoresize="true"
-          :loading-options="showLoading"
           :theme="chartTheme"
         />
+        <ChartLoader v-if="!affiliateChart" :bar-count="30" />
       </card>
+
+      <div class="affiliate-table-section">
+        <Header title="Affiliate Swaps" />
+        <Nav
+          :active-mode.sync="tablePeriod"
+          :nav-items="tablePeriods"
+          pre-text="Period :"
+        />
+        <transactions
+          :txs="affiliateSwaps"
+          :loading="!affiliateSwaps"
+          :props="formatProp"
+        >
+          <template #volume="{ props }">
+            <span class="mono">
+              {{ smallBaseAmountFormatWithCur(getVolume(props.row)) }}
+            </span>
+          </template>
+        </transactions>
+      </div>
     </div>
   </page>
 </template>
@@ -45,6 +65,7 @@ import {
 } from 'echarts/components'
 import VChart from 'vue-echarts'
 import SearchIcon from '~/assets/images/search.svg?inline'
+import ChartLoader from '~/components/ChartLoader.vue'
 
 use([
   SVGRenderer,
@@ -60,6 +81,7 @@ export default {
   components: {
     VChart,
     SearchIcon,
+    ChartLoader,
   },
   data() {
     return {
@@ -79,6 +101,20 @@ export default {
       ],
       affiliateInput: '',
       isFocused: false,
+      affiliateSwaps: undefined,
+      tablePeriod: '24h',
+      tablePeriods: [
+        { text: '1 Day', mode: '24h' },
+        { text: '1 Month', mode: '30d' },
+        { text: '1 Week', mode: '7d' },
+      ],
+      formatProp: [
+        {
+          label: 'Volume',
+          field: 'volume',
+          sortFn: this.volumeSort,
+        },
+      ],
     }
   },
   watch: {
@@ -91,6 +127,7 @@ export default {
         if (newVal.length > 1) {
           this.filters.affiliate = [newVal[newVal.length - 1]]
         }
+        this.fetchAffiliateSwaps()
       },
       deep: true,
     },
@@ -105,10 +142,15 @@ export default {
         this.fetchAffiliateHistory()
       }
     },
+    tablePeriod(newPeriod) {
+      this.updateQuery({ tablePeriod: newPeriod })
+      this.fetchAffiliateSwaps()
+    },
   },
   mounted() {
     const queryPeriod = this.$route.query.period
     const queryThorname = this.$route.query.thorname
+    const queryTablePeriod = this.$route.query.tablePeriod
 
     if (queryPeriod && this.chartPeriods.some((p) => p.mode === queryPeriod)) {
       this.chartPeriod = queryPeriod
@@ -119,7 +161,15 @@ export default {
       this.affiliateInput = queryThorname
     }
 
+    if (
+      queryTablePeriod &&
+      this.tablePeriods.some((p) => p.mode === queryTablePeriod)
+    ) {
+      this.tablePeriod = queryTablePeriod
+    }
+
     this.fetchAffiliateHistory()
+    this.fetchAffiliateSwaps()
   },
   methods: {
     addAffiliate() {
@@ -336,6 +386,39 @@ export default {
           console.error('Error fetching affiliate history:', error)
         })
     },
+    async fetchAffiliateSwaps() {
+      try {
+        if (this.filters.affiliate.length > 0) {
+          const thorname = this.filters.affiliate[0]
+          const response = await this.$api.getSwapsByThorname(
+            thorname,
+            this.tablePeriod
+          )
+          this.affiliateSwaps = response.data
+        } else {
+          const response = await this.$api.getSwapsByThorname(
+            null,
+            this.tablePeriod
+          )
+          this.affiliateSwaps = response.data
+        }
+      } catch (error) {
+        console.error('Error fetching swaps:', error)
+        this.affiliateSwaps = { actions: [] }
+      }
+    },
+    getVolume(props) {
+      const inPrice = +props?.metadata?.swap?.inPriceUSD ?? 0
+      const inAmount = +props?.in[0]?.coins[0].amount ?? 0
+      return inPrice * inAmount
+    },
+    volumeSort(x, y, col, rowX, rowY) {
+      return this.getVolume(rowX) < this.getVolume(rowY)
+        ? -1
+        : this.getVolume(rowX) > this.getVolume(rowY)
+          ? 1
+          : 0
+    },
     updateQuery(params) {
       this.$router.replace({ query: { ...this.$route.query, ...params } })
     },
@@ -387,5 +470,9 @@ export default {
     background: var(--card-bg-color);
     padding-left: 0.3rem;
   }
+}
+
+.affiliate-table-section {
+  margin-top: 1rem;
 }
 </style>
