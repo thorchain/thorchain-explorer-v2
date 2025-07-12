@@ -13,7 +13,14 @@
             placeholder="Enter Affiliate and press enter"
             class="search-input"
           />
-          <SearchIcon class="search-icon" />
+          <div v-if="isSearchLoading" class="loading-spinner">
+            <div class="loading-dots">
+              <div class="dot"></div>
+              <div class="dot"></div>
+              <div class="dot"></div>
+            </div>
+          </div>
+          <SearchIcon v-else class="search-icon" />
         </div>
       </div>
 
@@ -37,7 +44,7 @@
         />
         <transactions
           :txs="affiliateSwaps"
-          :loading="!affiliateSwaps"
+          :loading="!affiliateSwaps || isTableLoading"
           :props="formatProp"
         >
           <template #volume="{ props }">
@@ -115,6 +122,10 @@ export default {
           sortFn: this.volumeSort,
         },
       ],
+      debounceTimer: null,
+      tableDebounceTimer: null,
+      isTableLoading: false,
+      isSearchLoading: false,
     }
   },
   watch: {
@@ -132,19 +143,35 @@ export default {
       deep: true,
     },
     affiliateInput(newVal) {
-      if (newVal.trim() === '') {
-        this.filters.affiliate = []
-        this.updateQuery({ thorname: undefined, period: undefined })
-        this.fetchAffiliateHistory()
-      } else {
-        this.filters.affiliate = [newVal.trim()]
-        this.updateQuery({ thorname: newVal.trim() })
-        this.fetchAffiliateHistory()
+      if (this.debounceTimer) {
+        clearTimeout(this.debounceTimer)
       }
+
+      this.debounceTimer = setTimeout(() => {
+        if (newVal.trim() === '') {
+          this.filters.affiliate = []
+          this.updateQuery({ thorname: undefined, period: undefined })
+          this.fetchAffiliateHistory()
+        } else {
+          this.isSearchLoading = true
+          this.isTableLoading = true
+
+          this.filters.affiliate = [newVal.trim()]
+          this.updateQuery({ thorname: newVal.trim() })
+          this.fetchAffiliateHistory()
+        }
+      }, 500)
     },
     tablePeriod(newPeriod) {
-      this.updateQuery({ tablePeriod: newPeriod })
-      this.fetchAffiliateSwaps()
+      if (this.tableDebounceTimer) {
+        clearTimeout(this.tableDebounceTimer)
+      }
+      this.isTableLoading = true
+      this.tableDebounceTimer = setTimeout(() => {
+        this.updateQuery({ tablePeriod: newPeriod })
+        this.fetchAffiliateSwaps()
+        this.tableDebounceTimer = null
+      }, 300)
     },
   },
   mounted() {
@@ -170,6 +197,14 @@ export default {
 
     this.fetchAffiliateHistory()
     this.fetchAffiliateSwaps()
+  },
+  beforeDestroy() {
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer)
+    }
+    if (this.tableDebounceTimer) {
+      clearTimeout(this.tableDebounceTimer)
+    }
   },
   methods: {
     addAffiliate() {
@@ -385,6 +420,9 @@ export default {
         .catch((error) => {
           console.error('Error fetching affiliate history:', error)
         })
+        .finally(() => {
+          this.isSearchLoading = false
+        })
     },
     async fetchAffiliateSwaps() {
       try {
@@ -405,6 +443,8 @@ export default {
       } catch (error) {
         console.error('Error fetching swaps:', error)
         this.affiliateSwaps = { actions: [] }
+      } finally {
+        this.isTableLoading = false
       }
     },
     getVolume(props) {
@@ -469,6 +509,52 @@ export default {
     box-sizing: content-box;
     background: var(--card-bg-color);
     padding-left: 0.3rem;
+  }
+
+  .loading-spinner {
+    position: absolute;
+    right: 0.8rem;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    transition: fill 0.3s ease;
+    box-sizing: content-box;
+    background: var(--card-bg-color);
+    padding-left: 0.3rem;
+
+    .loading-dots {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+    }
+
+    .dot {
+      width: 4px;
+      height: 4px;
+      background-color: var(--font-color);
+      border-radius: 50%;
+      margin: 2px;
+      animation: blink 1.2s infinite;
+
+      &:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+
+      &:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+    }
+
+    @keyframes blink {
+      0%,
+      100% {
+        opacity: 0;
+      }
+      50% {
+        opacity: 1;
+      }
+    }
   }
 }
 
