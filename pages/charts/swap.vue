@@ -39,12 +39,12 @@
     </div>
     <card title="Swaps Volume" :is-loading="loading">
       <VChart
+        v-if="swapHistory"
         :option="swapHistory"
-        :loading="!swapHistory"
-        :loading-options="showLoading"
         :theme="chartTheme"
         :autoresize="true"
       />
+      <ChartLoader v-if="!swapHistory" :bar-count="30"/>
     </card>
   </div>
 </template>
@@ -63,6 +63,7 @@ import {
 } from 'echarts/components'
 import VChart from 'vue-echarts'
 import AngleIcon from '~/assets/images/angle-down.svg?inline'
+import ChartLoader from '~/components/ChartLoader.vue'
 
 use([
   SVGRenderer,
@@ -78,6 +79,7 @@ export default {
   components: {
     VChart,
     AngleIcon,
+    ChartLoader,
   },
   data() {
     return {

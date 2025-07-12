@@ -1,14 +1,14 @@
 <template>
   <div class="container-page tvl-page">
-    <Card :is-loading="!tvlOption">
+    <Card >
       <VChart
         v-if="tvlOption"
         class="chart"
         :option="tvlOption"
-        :loading="!tvlOption"
         :autoresize="true"
         :theme="chartTheme"
       />
+      <ChartLoader v-if="!tvlOption" :bar-count="30"/>
     </Card>
   </div>
 </template>
@@ -28,6 +28,7 @@ import { mapGetters } from 'vuex'
 import VChart from 'vue-echarts'
 import { assetFromString } from '@xchainjs/xchain-util'
 import { sortBy, orderBy } from 'lodash'
+import ChartLoader from '~/components/ChartLoader.vue'
 
 use([
   SVGRenderer,
@@ -42,6 +43,7 @@ export default {
   name: 'TVLPool',
   components: {
     VChart,
+    ChartLoader,
   },
   data() {
     return {

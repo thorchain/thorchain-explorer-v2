@@ -3,7 +3,6 @@
     <div class="grid-network">
       <card
         v-if="isMainnet()"
-        :is-loading="!reserveHistory"
         title="Reserve Breakdown"
         :img-src="require('@/assets/images/signal.svg')"
         :img-style="{
@@ -12,12 +11,12 @@
         }"
       >
         <VChart
+          v-if="reserveHistory"
           :option="reserveHistory"
-          :loading="!reserveHistory"
-          :loading-options="showLoading"
           :theme="chartTheme"
           :autoresize="true"
         />
+        <ChartLoader v-if="!reserveHistory" :bar-count="15"/>
       </card>
       <Card>
         <info-card :options="allocations" :inner="true" />
@@ -148,6 +147,7 @@ import {
 } from 'echarts/components'
 
 import VChart from 'vue-echarts'
+import ChartLoader from '~/components/ChartLoader.vue'
 
 import Checkmark from '~/assets/images/check-mark.svg?inline'
 import DangerIcon from '@/assets/images/danger.svg?inline'
@@ -169,6 +169,7 @@ export default {
     DangerIcon,
     Checkmark,
     VChart,
+    ChartLoader,
   },
   data() {
     return {

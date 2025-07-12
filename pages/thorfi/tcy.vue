@@ -17,13 +17,13 @@
           :extra="extra"
         />
         <VChart
+          v-if="earningsHistory"
           class="tcy-chart"
           :option="earningsHistory"
-          :loading="!earningsHistory"
-          :loading-options="showLoading"
           :theme="chartTheme"
           :autoresize="true"
         />
+        <ChartLoader v-if="!earningsHistory" />
       </card>
     </div>
     <div class="tcy-card">
@@ -109,6 +109,7 @@ import {
 import VChart from 'vue-echarts'
 import Xmark from '~/assets/images/xmark.svg?inline'
 import Checkmark from '~/assets/images/square-checkmark.svg?inline'
+import ChartLoader from '~/components/ChartLoader.vue'
 
 use([
   SVGRenderer,
@@ -124,6 +125,7 @@ export default {
     Checkmark,
     Xmark,
     VChart,
+    ChartLoader,
   },
   data() {
     return {
