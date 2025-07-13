@@ -19,9 +19,7 @@
           :autoresize="true"
           :theme="chartTheme"
         />
-        <ChartLoader
-          v-if="swapMode == 'swap-vol' && !swapHistory"
-        />
+        <ChartLoader v-if="swapMode == 'swap-vol' && !swapHistory" />
         <div
           v-if="swapMode == 'pools-vol'"
           :key="1"
@@ -116,9 +114,7 @@
           :autoresize="true"
           :theme="chartTheme"
         />
-        <ChartLoader
-          v-if="poolMode == 'pool-earnings' && !poolEarnings"
-        />
+        <ChartLoader v-if="poolMode == 'pool-earnings' && !poolEarnings" />
         <VChart
           v-if="poolMode == 'affiliates-fees' && affiliateChart"
           :key="3"
@@ -126,9 +122,7 @@
           :autoresize="true"
           :theme="chartTheme"
         />
-        <ChartLoader
-          v-if="poolMode == 'affiliates-fees' && !affiliateChart"
-        />
+        <ChartLoader v-if="poolMode == 'affiliates-fees' && !affiliateChart" />
       </Card>
     </div>
     <div class="cards-container">
@@ -140,6 +134,9 @@
       <info-card :options="networkSettings" />
     </div>
     <div v-if="isMainnet()">
+      <h4 style="color: var(--sec-font-color); margin-left: 0.5rem">
+        Affiliate (30D)
+      </h4>
       <affiliate-tables
         :affiliate-data="affiliateData"
         :is-overview="true"
