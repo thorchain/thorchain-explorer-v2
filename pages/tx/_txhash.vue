@@ -2361,6 +2361,7 @@ export default {
                 memo.quantity,
               lastHeight: null, // Add on midgard if available
             },
+            memo: actions?.actions[0]?.metadata?.swap?.memo,
             done:
               thorStatus?.stages?.inbound_finalised?.completed &&
               (thorStatus?.stages.swap_finalised?.completed ||
