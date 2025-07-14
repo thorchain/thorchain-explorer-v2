@@ -81,6 +81,8 @@ export default {
       depthHistory: undefined,
       swapHistory: undefined,
       loading: true,
+      periodFees: 0,
+      periodFeesUSD: 0,
     }
   },
   computed: {
@@ -100,9 +102,9 @@ export default {
               filter: (v) => `$${this.$options.filters.number(v, '0,0.00a')}`,
             },
             {
-              name: 'Earning Annual to Depth',
-              value: this.pool?.earningsAnnualAsPercentOfDepth,
-              filter: (v) => `${this.$options.filters.percent(v)}`,
+              name: 'Fees Annual to Depth (30D)',
+              value: (this.periodFeesUSD * 12) / this.pool?.assetDepth,
+              filter: (v) => `${this.$options.filters.percent(v, 2)}`,
             },
             {
               name: 'Status',
@@ -125,15 +127,15 @@ export default {
               header: 'All Time Stats',
             },
             {
-              name: 'Total Swaps',
+              name: 'Total Swaps (Overall)',
               value: this.pool?.swapVolume / 10 ** 8,
               filter: (v) =>
                 `${this.$options.filters.number(v, '0,0.00a')} RUNE`,
               usdValue: true,
             },
             {
-              name: 'Total Earning',
-              value: this.pool?.earnings / 10 ** 8,
+              name: 'Total Fees Earned by Pool (30D)',
+              value: this.periodFees / 10 ** 8,
               filter: (v) =>
                 `${this.$options.filters.number(v, '0,0.00a')} RUNE`,
               usdValue: true,
@@ -373,6 +375,9 @@ export default {
         const liquidityFee =
           (+pool?.totalLiquidityFeesRune * +interval.runePriceUSD) / 10 ** 8
 
+        this.periodFeesUSD +=
+          +pool?.totalLiquidityFeesRune * +interval.runePriceUSD
+        this.periodFees += +pool?.totalLiquidityFeesRune
         pe.push(earnings)
         pw.push(rewards < 0 ? null : rewards)
         pf.push(liquidityFee)
