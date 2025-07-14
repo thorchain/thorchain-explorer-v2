@@ -84,7 +84,7 @@ export default {
         { label: 'All', filter: {} },
         {
           label: 'L1 Swaps',
-          filter: { type: ['swap'], asset: ['l1', 'notrade', 'nosynth'] },
+          filter: { type: ['swap'], asset: ['notrade'] },
         },
         { label: 'Secure', filter: { type: ['secure'] } },
         { label: 'Trade Swaps', filter: { type: ['swap'], asset: ['trade'] } },
@@ -160,7 +160,7 @@ export default {
     if (Object.keys(this.$route.query).length === 0) {
       this.$router.replace({
         query: {
-          asset: 'l1,notrade,nosynth',
+          asset: 'notrade',
           type: 'swap',
         },
       })
