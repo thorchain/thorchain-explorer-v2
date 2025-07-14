@@ -103,7 +103,9 @@ export default {
             },
             {
               name: 'Fees Annual to Depth (30D)',
-              value: (this.periodFeesUSD * 12) / this.pool?.assetDepth,
+              value:
+                (this.periodFeesUSD * 12) /
+                (this.pool?.assetDepth * this.pool?.assetPriceUSD),
               filter: (v) => `${this.$options.filters.percent(v, 2)}`,
             },
             {
