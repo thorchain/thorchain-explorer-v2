@@ -172,15 +172,19 @@ export default {
       statsLoading: false,
       affiliateGeneralStats: [
         {
-          name: 'Total Volume',
+          name: 'Volume',
           value: '-',
         },
         {
-          name: 'Total Count',
+          name: 'Swaps',
           value: '-',
         },
         {
-          name: 'Total Earnings',
+          name: 'Earnings',
+          value: '-',
+        },
+        {
+          name: 'Volume per Swap',
           value: '-',
         },
       ],
@@ -193,6 +197,7 @@ export default {
   watch: {
     chartPeriod(newVal) {
       this.updateQuery({ period: newVal })
+      this.affiliateStatsChart = undefined
       this.fetchAffiliateHistory()
       this.fetchAffiliateStats()
       this.updateAffiliateStats()
@@ -205,6 +210,7 @@ export default {
         if (newVal.length > 1) {
           this.filters.affiliate = [newVal[newVal.length - 1]]
         }
+        this.affiliateStatsChart = undefined
         this.fetchAffiliateSwaps()
         this.fetchAffiliateStats()
         this.updateAffiliateStats()
@@ -282,7 +288,11 @@ export default {
         const date = moment(
           Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
         )
-        xAxis.push(date.format('dddd, MMM D'))
+        if (this.chartPeriod === '24h') {
+          xAxis.push(date.format('HH:mm'))
+        } else {
+          xAxis.push(date.format('dddd, MMM D'))
+        }
 
         const groupedThornames = interval.thornames.reduce((acc, thorname) => {
           const key = ['t', 'tl', 'T'].includes(thorname.thorname)
@@ -442,7 +452,10 @@ export default {
     },
     fetchAffiliateHistory() {
       let count, interval
-      if (this.chartPeriod.includes('w')) {
+      if (this.chartPeriod === '24h') {
+        count = 24
+        interval = 'hour'
+      } else if (this.chartPeriod.includes('w')) {
         count = parseInt(this.chartPeriod.replace('w', ''))
         interval = 'week'
       } else {
@@ -691,18 +704,24 @@ export default {
           })
         }
 
+        const volumePerSwap = totalCount > 0 ? totalVolume / totalCount : 0
+
         this.affiliateGeneralStats = [
           {
-            name: 'Total Volume',
+            name: 'Volume',
             value: '$' + this.$options.filters.number(totalVolume, '0,0a'),
           },
           {
-            name: 'Total Count',
+            name: 'Swaps',
             value: this.$options.filters.number(totalCount, '0,0'),
           },
           {
-            name: 'Total Earnings',
+            name: 'Earnings',
             value: '$' + this.$options.filters.number(totalEarnings, '0,0a'),
+          },
+          {
+            name: 'Volume per Swap',
+            value: '$' + this.$options.filters.number(volumePerSwap, '0,0a'),
           },
         ]
       } catch (error) {
@@ -723,6 +742,7 @@ export default {
       this.filters.affiliate = affiliate ? [affiliate] : []
       this.isDropdownOpen = false
       this.updateQuery({ affiliate: affiliate || undefined })
+      this.affiliateStatsChart = undefined
       this.fetchAffiliateHistory()
       this.fetchAffiliateStats()
       this.updateAffiliateStats()
