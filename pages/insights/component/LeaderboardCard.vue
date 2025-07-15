@@ -8,7 +8,7 @@
         <div v-for="(row, index) in sortedData" :key="index" class="data-item">
           <nuxt-link
             class="item-content hoverable"
-            :to="`/txs?type=swap&affiliate=${getAffiliateNames(row.affiliate)}`"
+            :to="`/charts/affiliates?period=14d&affiliate=${row.affiliate}`"
           >
             <span class="item-number" :style="{ color: colorizeIndex(index) }">
               {{ index + 1 }}.
