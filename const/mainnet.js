@@ -157,6 +157,10 @@ export const mainnetNav = {
           link: '/insights/leaderboard',
         },
         {
+          name: 'Affiliates',
+          link: '/charts/affiliates',
+        },
+        {
           name: 'Burn',
           link: '/insights/burn',
         },

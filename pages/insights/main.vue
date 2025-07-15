@@ -39,21 +39,21 @@
     <div class="chart-inner-container">
       <Card title="Type Swap Chart">
         <VChart
+          v-if="swapChartVolume"
           :option="swapChartVolume"
-          :loading="!swapChartVolume"
           :autoresize="true"
-          :loading-options="showLoading"
           :theme="chartTheme"
         />
+        <ChartLoader v-if="!swapChartVolume" :bar-count="15"/>
       </Card>
       <Card title="Swap Chart Normalized">
         <VChart
+          v-if="swapChartVolumeNorm"
           :option="swapChartVolumeNorm"
-          :loading="!swapChartVolumeNorm"
           :autoresize="true"
-          :loading-options="showLoading"
           :theme="chartTheme"
         />
+        <ChartLoader v-if="!swapChartVolumeNorm" :bar-count="15" />
       </Card>
     </div>
     <div class="chart-inner-container">
@@ -62,44 +62,44 @@
           <flip-side style="fill: var(--sec-font-color)"></flip-side>
         </template>
         <VChart
+          v-if="feesRewardsChart"
           :option="feesRewardsChart"
-          :loading="!feesRewardsChart"
           :autoresize="true"
-          :loading-options="showLoading"
           :theme="chartTheme"
         />
+        <ChartLoader v-if="!feesRewardsChart" :bar-count="15"/>
       </Card>
       <Card title="Fees/Block Reward Chart Normalized">
         <template #header>
           <flip-side style="fill: var(--sec-font-color)"></flip-side>
         </template>
         <VChart
+          v-if="feesRewardsChartNorm"
           :option="feesRewardsChartNorm"
-          :loading="!feesRewardsChartNorm"
           :autoresize="true"
-          :loading-options="showLoading"
           :theme="chartTheme"
         />
+        <ChartLoader v-if="!feesRewardsChartNorm" :bar-count="15"/>
       </Card>
     </div>
     <div class="chart-inner-container">
       <Card title="Reserve income from Pools">
         <VChart
+          v-if="rewardsHistory"
           :option="rewardsHistory"
-          :loading="!rewardsHistory"
           :autoresize="true"
-          :loading-options="showLoading"
           :theme="chartTheme"
         />
+        <ChartLoader v-if="!rewardsHistory" :bar-count="15"/>
       </Card>
       <Card title="Supply / Burn">
         <VChart
+          v-if="supplyHistory"
           :option="supplyHistory"
-          :loading="!supplyHistory"
           :autoresize="true"
-          :loading-options="showLoading"
           :theme="chartTheme"
         />
+        <ChartLoader v-if="!supplyHistory" :bar-count="15"/>
       </Card>
     </div>
   </div>
@@ -120,6 +120,7 @@ import VChart from 'vue-echarts'
 import { orderBy } from 'lodash'
 import FlipSide from '~/assets/images/flipside.svg?inline'
 import TradingViewChart from '~/components/TradingViewChart.vue'
+import ChartLoader from '~/components/ChartLoader.vue'
 
 use([
   SVGRenderer,
@@ -136,6 +137,7 @@ export default {
     VChart,
     FlipSide,
     TradingViewChart,
+    ChartLoader,
   },
   data() {
     return {

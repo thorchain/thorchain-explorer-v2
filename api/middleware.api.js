@@ -287,3 +287,29 @@ export function search(query) {
     endpoints[process.env.NETWORK].SERVER_URL + `search?filter=${query}`
   )
 }
+
+export function getSwapsByThorname(thorname, period = '30d') {
+  const params = {
+    period,
+  }
+
+  if (thorname) {
+    params.thorname = thorname
+  }
+
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + 'swaps',
+    {
+      params,
+    }
+  )
+}
+
+export function getAffiliateStats(params) {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + 'affiliate/stats',
+    {
+      params,
+    }
+  )
+}

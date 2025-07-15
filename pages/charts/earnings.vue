@@ -65,22 +65,22 @@
 
       <card title="Earnings" :is-loading="loading">
         <VChart
+          v-if="chartOptions"
           ref="mainChart"
           :option="chartOptions"
-          :loading="!chartOptions"
           :autoresize="true"
-          :loading-options="showLoading"
           :theme="chartTheme"
         />
+        <ChartLoader v-if="!chartOptions" :bar-count="30" />
       </card>
       <card title="Liquidity Fees" :is-loading="loading">
         <VChart
+          v-if="liquidityFees"
           :option="liquidityFees"
-          :loading="!liquidityFees"
           :autoresize="true"
-          :loading-options="showLoading"
           :theme="chartTheme"
         />
+        <ChartLoader v-if="!liquidityFees" :bar-count="30" />
       </card>
     </template>
 
@@ -105,13 +105,13 @@
         </div>
 
         <VChart
+          v-if="bondingEarnings"
           :key="'bonding-chart-' + bondingChartKey"
           :option="bondingEarnings"
-          :loading="!bondingEarnings"
           :autoresize="true"
-          :loading-options="showLoading"
           :theme="chartTheme"
         />
+        <ChartLoader v-if="!bondingEarnings" :bar-count="30" />
       </card>
     </template>
   </Page>
@@ -131,6 +131,7 @@ import {
 import VChart from 'vue-echarts'
 import { earnings } from '~/api/midgard.api'
 import AngleIcon from '~/assets/images/angle-down.svg?inline'
+import ChartLoader from '~/components/ChartLoader.vue'
 
 use([
   SVGRenderer,
@@ -146,6 +147,7 @@ export default {
   components: {
     VChart,
     AngleIcon,
+    ChartLoader,
   },
   data() {
     return {

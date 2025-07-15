@@ -56,15 +56,15 @@
         />
       </skeleton-item>
     </card>
-    <card :is-loading="loading" title="Members overview">
+    <card  title="Members overview">
       <VChart
+        v-if="chartOption"
         :option="chartOption"
-        :loading="!chartOption"
         :autoresize="true"
-        :loading-options="showLoading"
         style="width: 100%; height: 250px; min-height: initial"
         :theme="chartTheme"
       />
+      <ChartLoader v-if="!chartOption" :bar-count="30"/>
     </card>
 
     <Card
@@ -264,6 +264,7 @@ import { orderBy } from 'lodash'
 import RefreshIcon from '~/assets/images/refresh.svg?inline'
 import endpoints from '~/api/endpoints'
 import Address from '~/components/transactions/Address.vue'
+import ChartLoader from '~/components/ChartLoader.vue'
 import RuneAsset from '~/components/RuneAsset.vue'
 
 use([
@@ -277,7 +278,7 @@ use([
 ])
 
 export default {
-  components: { RefreshIcon, VChart, Address, RuneAsset },
+  components: { RefreshIcon, VChart, Address, ChartLoader,RuneAsset },
 
   data() {
     return {

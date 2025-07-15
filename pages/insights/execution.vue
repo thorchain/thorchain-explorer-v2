@@ -14,21 +14,21 @@
     <div v-if="pairOption.length > 0" class="chart-inner-container">
       <Card title="Execution Scatter">
         <VChart
+          v-if="scatterOptions"
           :option="scatterOptions"
-          :loading="!scatterOptions"
           :autoresize="true"
-          :loading-options="showLoading"
           :theme="chartTheme"
         />
+        <ChartLoader v-if="!scatterOptions" :bar-count="18"/>
       </Card>
       <Card title="Execution Line">
         <VChart
+          v-if="barOptions"
           :option="barOptions"
-          :loading="!barOptions"
           :autoresize="true"
-          :loading-options="showLoading"
           :theme="chartTheme"
         />
+        <ChartLoader v-if="!barOptions" />
       </Card>
     </div>
     <span v-else> No option selected </span>
@@ -52,6 +52,7 @@ import {
   GridComponent,
 } from 'echarts/components'
 import VChart from 'vue-echarts'
+import ChartLoader from '~/components/ChartLoader.vue'
 
 use([
   SVGRenderer,
@@ -67,6 +68,7 @@ use([
 export default {
   components: {
     VChart,
+    ChartLoader,
   },
   data() {
     return {
