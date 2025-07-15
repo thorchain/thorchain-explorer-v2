@@ -105,32 +105,6 @@ export default {
     AffiliateDropdown,
   },
 
-  computed: {
-    chartPeriod() {
-      const { period } = this.$route.query
-      return period && this.chartPeriods.some((p) => p.mode === period)
-        ? period
-        : '7d'
-    },
-
-    chartInterval() {
-      return this.chartPeriod === '24h' ? 'hour' : 'day'
-    },
-
-    chartCount() {
-      if (this.chartPeriod === '24h') return 24
-      if (this.chartPeriod.includes('w'))
-        return parseInt(this.chartPeriod.replace('w', ''))
-      return parseInt(this.chartPeriod)
-    },
-
-    selectedThorname() {
-      return this.filters.affiliate.length > 0
-        ? this.filters.affiliate[0]
-        : null
-    },
-  },
-
   data() {
     return {
       affiliateChart: null,
@@ -169,7 +143,31 @@ export default {
       ],
     }
   },
+  computed: {
+    chartPeriod() {
+      const { period } = this.$route.query
+      return period && this.chartPeriods.some((p) => p.mode === period)
+        ? period
+        : '7d'
+    },
 
+    chartInterval() {
+      return this.chartPeriod === '24h' ? 'hour' : 'day'
+    },
+
+    chartCount() {
+      if (this.chartPeriod === '24h') return 24
+      if (this.chartPeriod.includes('w'))
+        return parseInt(this.chartPeriod.replace('w', ''))
+      return parseInt(this.chartPeriod)
+    },
+
+    selectedThorname() {
+      return this.filters.affiliate.length > 0
+        ? this.filters.affiliate[0]
+        : null
+    },
+  },
   watch: {
     '$route.query': {
       handler(query) {
