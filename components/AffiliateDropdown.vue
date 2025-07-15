@@ -2,9 +2,9 @@
   <div class="custom-dropdown">
     <div class="dropdown-container">
       <div class="dropdown-select" @click="$emit('toggle')">
-        <div v-if="selectedAffiliate" class="selected-item">
+        <div v-if="selected" class="selected-item">
           <affiliate
-            :affiliate-address="selectedAffiliate"
+            :affiliate-address="selected"
             :use-new-icons="false"
             :show-link="false"
             class="item-label"
@@ -46,7 +46,7 @@ export default {
     AngleIcon,
   },
   props: {
-    selectedAffiliate: {
+    selected: {
       type: String,
       default: '',
     },

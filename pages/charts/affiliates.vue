@@ -10,7 +10,7 @@
         />
 
         <AffiliateDropdown
-          :selected-affiliate="selectedFilter"
+          :selected="selectedFilter"
           :affiliate-list="affiliateList"
           :is-open="isDropdownOpen"
           @toggle="toggleDropdown"
@@ -21,7 +21,7 @@
       <cards-header :table-general-stats="affiliateGeneralStats" />
       <div class="charts-container">
         <div class="chart-item">
-          <card title="Affiliate Fees">
+          <card title="Fees Stats">
             <VChart
               v-if="affiliateChart && !loading"
               :key="affiliateChartKey"
@@ -34,7 +34,7 @@
         </div>
 
         <div class="chart-item">
-          <card title="Affiliate Volume">
+          <card title="Swaps Stats">
             <VChart
               v-if="affiliateStatsChart && !loading"
               :key="affiliateStatsChartKey"
@@ -51,7 +51,7 @@
       </div>
 
       <div class="affiliate-table-section">
-        <Header title="Affiliate Swaps" />
+        <Header title="Top Swaps" />
         <transactions
           :txs="affiliateSwaps"
           :loading="!affiliateSwaps || isTableLoading"
@@ -84,7 +84,7 @@ import VChart from 'vue-echarts'
 import ChartLoader from '~/components/ChartLoader.vue'
 import CardsHeader from '~/components/CardsHeader.vue'
 import AffiliateDropdown from '~/components/AffiliateDropdown.vue'
-import { affiliateMap, interfaces } from '~/utils'
+import { affiliateList, affiliateMap, interfaces } from '~/utils'
 
 use([
   SVGRenderer,
@@ -117,8 +117,7 @@ export default {
 
       selectedFilter: '',
       isDropdownOpen: false,
-      affiliateList: [],
-      filters: { affiliate: [] },
+      affiliate: '',
 
       chartPeriods: [
         { text: '1 Day', mode: '24h' },
@@ -148,7 +147,7 @@ export default {
       const { period } = this.$route.query
       return period && this.chartPeriods.some((p) => p.mode === period)
         ? period
-        : '14d'
+        : '24h'
     },
 
     chartInterval() {
@@ -159,12 +158,11 @@ export default {
       return parseInt(this.chartPeriod)
     },
 
-    selectedThorname() {
-      return this.filters.affiliate.length > 0
-        ? this.filters.affiliate[0]
-        : null
+    affiliateList() {
+      return affiliateList().map(({ id }) => id)
     },
   },
+
   watch: {
     '$route.query': {
       handler(query) {
@@ -185,7 +183,10 @@ export default {
 
   methods: {
     async handleQueryChange(newQuery) {
-      this.filters.affiliate = newQuery.affiliate ? [newQuery.affiliate] : []
+      this.affiliate =
+        affiliateList()
+          .find((affiliate) => affiliate.id === newQuery.affiliate)
+          ?.thornames?.join(',') || ''
       this.selectedFilter = newQuery.affiliate || ''
       await this.fetchAllData()
     },
@@ -202,10 +203,6 @@ export default {
       try {
         this.loading = true
         this.isTableLoading = true
-
-        if (this.affiliateList.length === 0) {
-          this.affiliateList = Object.keys(affiliateMap)
-        }
 
         const [historyData, statsData, swapsData] = await Promise.all([
           this.fetchAffiliateHistoryData(),
@@ -228,8 +225,8 @@ export default {
           count: this.chartCount,
           interval: this.chartInterval,
         }
-        if (this.selectedThorname) {
-          params.thorname = this.selectedThorname
+        if (this.affiliate) {
+          params.thorname = this.affiliate
         }
         const { data } = await this.$api.getAffiliateHistory(params)
         return data
@@ -242,7 +239,7 @@ export default {
     async fetchAffiliateSwapsData() {
       try {
         const response = await this.$api.getSwapsByThorname(
-          this.selectedThorname,
+          this.affiliate,
           this.chartPeriod
         )
         return response.data
@@ -254,11 +251,14 @@ export default {
 
     async fetchAffiliateStatsData() {
       try {
-        const period = this.chartPeriod === '24h' ? '24h' : this.chartPeriod
-        const response = await this.$api.getAffiliateStats(
-          period,
-          this.selectedThorname
-        )
+        const params = {
+          count: this.chartCount,
+          interval: this.chartInterval,
+        }
+        if (this.affiliate) {
+          params.thorname = this.affiliate
+        }
+        const response = await this.$api.getAffiliateStats(params)
         return response.data
       } catch (error) {
         console.error('Error fetching affiliate stats:', error)
@@ -345,7 +345,7 @@ export default {
           ['desc']
         )
 
-        const topNames = 3
+        const topNames = 5
         let otherTotal = 0
 
         for (let ti = 0; ti < filteredNames.length; ti++) {
@@ -400,7 +400,7 @@ export default {
           },
         ],
         xAxis,
-        this.createFeesTooltip()
+        this.createTooltip()
       )
     },
 
@@ -417,43 +417,108 @@ export default {
       if (!data || !Array.isArray(data) || data.length === 0) return null
 
       const xAxis = []
-      const volumeSeries = []
-      const countSeries = []
+      const thornames = []
+      const others = []
 
-      data.forEach((item, index) => {
+      data.forEach((interval, index) => {
         if (index === data.length - 1) return
 
-        const date = moment(item.date * 1000)
-        xAxis.push(
-          this.chartPeriod === '24h'
-            ? date.format('MMM Do, HH A')
-            : date.format('dddd, MMM D')
+        const date = this.formatDate(interval)
+        xAxis.push(date)
+
+        let filteredNames = {}
+
+        filteredNames = interval.affiliates.reduce((acc, affiliate) => {
+          let key = ['t', 'tl', 'T', '-_/t'].includes(affiliate.affiliate)
+            ? 't'
+            : ['ti', 'te', 'tr', 'td', 'tb', 't1', '-_/t1'].includes(
+                  affiliate.affiliate
+                )
+              ? 'ti'
+              : ['va', 'vi', 'v0'].includes(affiliate.affiliate)
+                ? 'va'
+                : ['-_/ll'].includes(affiliate.affiliate)
+                  ? 'll'
+                  : affiliate.affiliate
+
+          if (key === '') {
+            key = 'No Affiliate'
+          }
+
+          if (acc[key]) {
+            acc[key].volume += +affiliate.volume
+            acc[key].count += +affiliate.count
+          } else {
+            acc[key] = {
+              volume: +affiliate.volume,
+              affiliate: key,
+              count: +affiliate.count,
+            }
+          }
+          return acc
+        }, {})
+
+        filteredNames = orderBy(
+          Object.values(filteredNames),
+          [(o) => +o.volume],
+          ['desc']
         )
 
-        volumeSeries.push(item.total_volume / 1e8)
-        countSeries.push(item.count)
+        const topNames = 5
+        let otherTotal = 0
+
+        for (let ti = 0; ti < filteredNames.length; ti++) {
+          if (topNames < ti) {
+            otherTotal += +filteredNames[ti]?.volume / 1e8
+            if (filteredNames.length - 1 === ti) {
+              others.push(otherTotal)
+            }
+            continue
+          }
+
+          const thornameIndex = thornames.findIndex(
+            (t) => t.name === filteredNames[ti].affiliate
+          )
+
+          if (thornameIndex >= 0) {
+            if (thornames[thornameIndex].data.length < index + 1) {
+              thornames[thornameIndex].data = this.fillArrayWithZero(
+                thornames[thornameIndex].data,
+                index
+              )
+            }
+            thornames[thornameIndex].data.push(+filteredNames[ti]?.volume / 1e8)
+          } else {
+            let data = []
+            if (index > 0) {
+              data = this.fillArrayWithZero(data, index)
+            }
+            data.push(+filteredNames[ti]?.volume / 1e8)
+            thornames.push({
+              type: 'bar',
+              name: filteredNames[ti].affiliate,
+              showSymbol: false,
+              stack: 'Total',
+              data,
+            })
+          }
+        }
       })
 
-      const series = [
-        {
-          type: 'bar',
-          name: 'Total Volume (USD)',
-          showSymbol: false,
-          stack: 'Total',
-          data: volumeSeries,
-          itemStyle: { color: '#00D4AA' },
-        },
-        {
-          type: 'bar',
-          name: 'Count',
-          showSymbol: false,
-          stack: 'Total',
-          data: countSeries,
-          itemStyle: { color: '#FF6B6B' },
-        },
-      ]
-
-      return this.createChartOption(series, xAxis, this.createStatsTooltip())
+      return this.createChartOption(
+        [
+          ...thornames,
+          {
+            type: 'bar',
+            name: 'Others',
+            showSymbol: false,
+            stack: 'Total',
+            data: others,
+          },
+        ],
+        xAxis,
+        this.createTooltip('Volume')
+      )
     },
 
     createChartOption(series, xAxis, tooltipFormatter) {
@@ -477,7 +542,7 @@ export default {
       )
     },
 
-    createFeesTooltip() {
+    createTooltip(label = 'Fees') {
       return (param) => {
         const getInterfaceIcon = (detail) => {
           if (!detail.icons) return ''
@@ -520,8 +585,8 @@ export default {
           <span style="border-top: 1px solid var(--border-color); margin: 2px 0;"></span>
           <hr>
           <span>
-            <span>Total Fees</span>
-            <b>$${this.$options.filters.number(totalFees, '0,0a')}</b>
+            <span>Total ${label}</span>
+            <b>$${this.$options.filters.number(totalFees, '0,0.00a')}</b>
           </span>
         `
       }
@@ -607,6 +672,7 @@ export default {
     },
 
     onAffiliateChange(affiliate) {
+      console.log(affiliate)
       const query = { ...this.$route.query }
       if (affiliate) {
         query.affiliate = affiliate

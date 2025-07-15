@@ -793,8 +793,15 @@ export function assetToString({ chain, synth, trade, symbol, secure }) {
 }
 
 export const nameMapping = {
-  t: ['t', 't/ct', 'T', 'thor160yye65pf9rzwrgqmtgav69n6zlsyfpgm9a7xk', 'tl'],
-  ti: ['ti', 'te', 'tr', 'td', 'tb', 't1'],
+  t: [
+    't',
+    't/ct',
+    'T',
+    'thor160yye65pf9rzwrgqmtgav69n6zlsyfpgm9a7xk',
+    'tl',
+    '-_/t',
+  ],
+  ti: ['ti', 'te', 'tr', 'td', 'tb', 't1', '-_/t1'],
   lifi: ['lifi', 'lifi/-_'],
   okw: ['okw', 'okw/-_'],
   va: ['va', 'vi', 'v0'],
@@ -812,6 +819,33 @@ export const nameMapping = {
   ],
   bgw: ['bgw', '-_/bgw'],
   ll: ['ll', '-_/ll'],
+  rg: ['rg', 'ro'],
+}
+
+export const affiliateList = () => {
+  const multipleAffiliates = [
+    ...Object.entries(nameMapping).map(([id, thornames]) => ({
+      id,
+      thornames,
+    })),
+  ]
+
+  let thornames = []
+  Object.values(nameMapping).forEach((names) => {
+    thornames = thornames.concat(names)
+  })
+
+  Object.entries(affiliateMap).forEach(([id, _]) => {
+    if (!thornames.includes(id)) {
+      thornames.push(id)
+      multipleAffiliates.push({
+        id,
+        thornames: [id],
+      })
+    }
+  })
+
+  return multipleAffiliates
 }
 
 export const interfaces = {
@@ -923,8 +957,8 @@ export const interfaces = {
 }
 
 export const affiliateMap = {
-  td: interfaces.trustwallet,
   ti: interfaces.trustwallet,
+  td: interfaces.trustwallet,
   tr: interfaces.trustwallet,
   te: interfaces.trustwallet,
   tb: interfaces.trustwallet,
@@ -934,8 +968,8 @@ export const affiliateMap = {
   tgt: interfaces.thorwallet,
   thorwallet: interfaces.thorwallet,
   thor160yye65pf9rzwrgqmtgav69n6zlsyfpgm9a7xk: interfaces.thorswap,
-  T: interfaces.thorswap,
   t: interfaces.thorswap,
+  T: interfaces.thorswap,
   tl: interfaces.thorswap,
   ts: interfaces.thorswap,
   thor17suv0n437snv68axkx64whutkrvefv7pzq7xep: interfaces.thorswap,
@@ -947,7 +981,7 @@ export const affiliateMap = {
   okw: interfaces.okx,
   oky: interfaces.onekey,
   sy: interfaces.symbiosis,
-  Eldorito: interfaces.eld,
+  Eldorito: interfaces.eldorito,
   v0: interfaces.vultisig,
   va: interfaces.vultisig,
   vi: interfaces.vultisig,

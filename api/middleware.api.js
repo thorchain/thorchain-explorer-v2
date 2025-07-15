@@ -292,11 +292,11 @@ export function getSwapsByThorname(thorname, period = '30d') {
   const params = {
     period,
   }
-  
+
   if (thorname) {
     params.thorname = thorname
   }
-  
+
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].SERVER_URL + 'swaps',
     {
@@ -305,15 +305,7 @@ export function getSwapsByThorname(thorname, period = '30d') {
   )
 }
 
-export function getAffiliateStats(period = '30d', thorname = null) {
-  const params = {
-    period,
-  }
-  
-  if (thorname) {
-    params.thorname = thorname
-  }
-  
+export function getAffiliateStats(params) {
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].SERVER_URL + 'affiliate/stats',
     {
