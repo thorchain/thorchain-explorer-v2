@@ -3,91 +3,63 @@
     <div class="header-affiliate">
       <div class="header-controls">
         <Nav
-          :active-mode.sync="chartPeriod"
+          :active-mode="chartPeriod"
           :nav-items="chartPeriods"
           pre-text="Period :"
+          @update:activeMode="onPeriodChange"
         />
 
-        <div class="custom-dropdown">
-          <div class="dropdown-container">
-            <div class="dropdown-select" @click="toggleDropdown">
-              <div v-if="selectedFilter" class="selected-item">
-                <affiliate
-                  :affiliate-address="selectedFilter"
-                  :use-new-icons="false"
-                  :show-link="false"
-                  class="item-label"
-                />
-              </div>
-              <div v-else class="placeholder">All Affiliates</div>
-              <angle-icon :class="{ trigger: true, rotated: isDropdownOpen }" />
-            </div>
-            <div v-if="isDropdownOpen" class="dropdown-menu">
-              <div class="dropdown-item" @click="selectAffiliate('')">
-                <span class="all-affiliates-text">All Affiliates</span>
-              </div>
-              <div
-                v-for="affiliate in affiliateList"
-                :key="affiliate"
-                class="dropdown-item"
-                @click="selectAffiliate(affiliate)"
-              >
-                <affiliate
-                  :affiliate-address="affiliate"
-                  :show-link="false"
-                  class="item-label"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
+        <AffiliateDropdown
+          :selected-affiliate="selectedFilter"
+          :affiliate-list="affiliateList"
+          :is-open="isDropdownOpen"
+          @toggle="toggleDropdown"
+          @select="onAffiliateChange"
+        />
       </div>
 
       <cards-header :table-general-stats="affiliateGeneralStats" />
-
       <div class="charts-container">
         <div class="chart-item">
-          <card title="Affiliate Fees" :is-loading="loading">
+          <card title="Affiliate Fees">
             <VChart
-              v-if="affiliateChart"
+              v-if="affiliateChart && !loading"
               :key="affiliateChartKey"
               :option="affiliateChart"
               :autoresize="true"
               :theme="chartTheme"
             />
-            <ChartLoader v-if="!affiliateChart" :bar-count="30" />
+            <ChartLoader v-if="!affiliateChart || loading" :bar-count="15" />
           </card>
         </div>
 
         <div class="chart-item">
           <card title="Affiliate Volume">
             <VChart
-              v-if="affiliateStatsChart"
+              v-if="affiliateStatsChart && !loading"
               :key="affiliateStatsChartKey"
               :option="affiliateStatsChart"
               :autoresize="true"
               :theme="chartTheme"
             />
-            <ChartLoader v-if="!affiliateStatsChart" :bar-count="30" />
+            <ChartLoader
+              v-if="!affiliateStatsChart || loading"
+              :bar-count="15"
+            />
           </card>
         </div>
       </div>
 
       <div class="affiliate-table-section">
         <Header title="Affiliate Swaps" />
-        <Nav
-          :active-mode.sync="tablePeriod"
-          :nav-items="tablePeriods"
-          pre-text="Period :"
-        />
         <transactions
           :txs="affiliateSwaps"
           :loading="!affiliateSwaps || isTableLoading"
-          :props="formatProp"
+          :props="tableColumns"
         >
           <template #volume="{ props }">
             <span class="mono">
-              {{ smallBaseAmountFormatWithCur(getVolume(props.row)) }}
+              {{ formatVolume(props.row) }}
             </span>
           </template>
         </transactions>
@@ -111,9 +83,8 @@ import {
 import VChart from 'vue-echarts'
 import ChartLoader from '~/components/ChartLoader.vue'
 import CardsHeader from '~/components/CardsHeader.vue'
-import Affiliate from '~/components/Affiliate.vue'
+import AffiliateDropdown from '~/components/AffiliateDropdown.vue'
 import { affiliateMap } from '~/utils'
-import AngleIcon from '~/assets/images/angle-down.svg?inline'
 
 use([
   SVGRenderer,
@@ -126,194 +97,229 @@ use([
 ])
 
 export default {
+  name: 'AffiliatesChart',
   components: {
     VChart,
     ChartLoader,
     CardsHeader,
-    Affiliate,
-    AngleIcon,
+    AffiliateDropdown,
   },
+
+  computed: {
+    chartPeriod() {
+      const { period } = this.$route.query
+      return period && this.chartPeriods.some((p) => p.mode === period)
+        ? period
+        : '7d'
+    },
+
+    chartInterval() {
+      return this.chartPeriod === '24h' ? 'hour' : 'day'
+    },
+
+    chartCount() {
+      if (this.chartPeriod === '24h') return 24
+      if (this.chartPeriod.includes('w'))
+        return parseInt(this.chartPeriod.replace('w', ''))
+      return parseInt(this.chartPeriod)
+    },
+
+    selectedThorname() {
+      return this.filters.affiliate.length > 0
+        ? this.filters.affiliate[0]
+        : null
+    },
+  },
+
   data() {
     return {
+      affiliateChart: null,
+      affiliateStatsChart: null,
       affiliateChartKey: 0,
-      isFetching: false,
-      affiliateChart: undefined,
-      affiliate: [],
-      filters: {
-        affiliate: [],
-      },
-      chartPeriod: '7d',
-      chartInterval: 'day',
+      affiliateStatsChartKey: 0,
+
+      loading: false,
+      isTableLoading: false,
+
+      selectedFilter: '',
+      isDropdownOpen: false,
+      affiliateList: [],
+      filters: { affiliate: [] },
+
       chartPeriods: [
         { text: '1 Day', mode: '24h' },
         { text: '7 Days', mode: '7d' },
         { text: '30 Days', mode: '30d' },
       ],
-      affiliateSwaps: undefined,
-      tablePeriod: '24h',
-      tablePeriods: [
-        { text: '1 Day', mode: '24h' },
-        { text: '1 Month', mode: '30d' },
-        { text: '1 Week', mode: '7d' },
+
+      affiliateSwaps: null,
+      affiliateGeneralStats: [
+        { name: 'Volume', value: '-' },
+        { name: 'Swaps', value: '-' },
+        { name: 'Earnings', value: '-' },
+        { name: 'Volume per Swap', value: '-' },
       ],
-      formatProp: [
+
+      tableColumns: [
         {
           label: 'Volume',
           field: 'volume',
-          sortFn: this.volumeSort,
+          sortFn: this.sortByVolume,
         },
       ],
-      debounceTimer: null,
-      tableDebounceTimer: null,
-      isTableLoading: false,
-      isSearchLoading: false,
-      affiliateStatsChart: undefined,
-      affiliateStatsChartKey: 0,
-      statsLoading: false,
-      affiliateGeneralStats: [
-        {
-          name: 'Volume',
-          value: '-',
-        },
-        {
-          name: 'Swaps',
-          value: '-',
-        },
-        {
-          name: 'Earnings',
-          value: '-',
-        },
-        {
-          name: 'Volume per Swap',
-          value: '-',
-        },
-      ],
-      selectedFilter: '',
-      isDropdownOpen: false,
-      affiliateList: [],
     }
   },
-  computed: {},
+
   watch: {
-    chartPeriod(newVal) {
-      this.updateQuery({ period: newVal })
-      this.affiliateStatsChart = undefined
-      this.fetchAffiliateHistory()
-      this.fetchAffiliateStats()
-      this.updateAffiliateStats()
-    },
-    selectedFilter(newVal) {
-      this.updateQuery({ affiliate: newVal })
-    },
-    'filters.affiliate': {
-      handler(newVal) {
-        if (newVal.length > 1) {
-          this.filters.affiliate = [newVal[newVal.length - 1]]
-        }
-        this.affiliateStatsChart = undefined
-        this.fetchAffiliateSwaps()
-        this.fetchAffiliateStats()
-        this.updateAffiliateStats()
+    '$route.query': {
+      handler(query) {
+        this.handleQueryChange(query)
       },
+      immediate: true,
       deep: true,
     },
-    tablePeriod(newPeriod) {
-      if (this.tableDebounceTimer) {
-        clearTimeout(this.tableDebounceTimer)
-      }
-      this.isTableLoading = true
-      this.tableDebounceTimer = setTimeout(() => {
-        this.updateQuery({ tablePeriod: newPeriod })
-        this.fetchAffiliateSwaps()
-        this.tableDebounceTimer = null
-      }, 300)
-    },
   },
+
   mounted() {
-    const queryPeriod = this.$route.query.period
-    const queryAffiliate = this.$route.query.affiliate
-    const queryTablePeriod = this.$route.query.tablePeriod
-
-    if (queryPeriod && this.chartPeriods.some((p) => p.mode === queryPeriod)) {
-      this.chartPeriod = queryPeriod
-    }
-
-    if (queryAffiliate) {
-      this.filters.affiliate = [queryAffiliate]
-      this.selectedFilter = queryAffiliate
-    }
-
-    if (
-      queryTablePeriod &&
-      this.tablePeriods.some((p) => p.mode === queryTablePeriod)
-    ) {
-      this.tablePeriod = queryTablePeriod
-    }
-
-    this.fetchAffiliateHistory()
-    this.fetchAffiliateStats()
-    this.fetchAffiliateSwaps()
-    this.updateAffiliateStats()
-    this.fetchAffiliateList()
-
-    document.addEventListener('click', this.handleClickOutside)
+    this.setupEventListeners()
   },
 
   beforeDestroy() {
-    if (this.debounceTimer) {
-      clearTimeout(this.debounceTimer)
-    }
-    if (this.tableDebounceTimer) {
-      clearTimeout(this.tableDebounceTimer)
-    }
-    document.removeEventListener('click', this.handleClickOutside)
+    this.cleanupEventListeners()
   },
+
   methods: {
-    fillArrayWithZero(array, length) {
-      while (array.length < length) {
-        array.push(0)
-      }
-      return array
+    async handleQueryChange(newQuery) {
+      this.filters.affiliate = newQuery.affiliate ? [newQuery.affiliate] : []
+      this.selectedFilter = newQuery.affiliate || ''
+      await this.fetchAllData()
     },
-    formatAffiliateHistory(d) {
-      const xAxis = []
-      const thornames = []
-      const others = []
 
-      d?.intervals.forEach((interval, index) => {
-        if (index === d.intervals.length - 1) {
-          return
+    setupEventListeners() {
+      document.addEventListener('click', this.handleClickOutside)
+    },
+
+    cleanupEventListeners() {
+      document.removeEventListener('click', this.handleClickOutside)
+    },
+
+    async fetchAllData() {
+      try {
+        this.loading = true
+        this.isTableLoading = true
+
+        if (this.affiliateList.length === 0) {
+          this.affiliateList = Object.keys(affiliateMap)
         }
 
-        const date = moment(
-          Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
+        const [historyData, statsData, swapsData] = await Promise.all([
+          this.fetchAffiliateHistoryData(),
+          this.fetchAffiliateStatsData(),
+          this.fetchAffiliateSwapsData(),
+        ])
+
+        this.processAllData(historyData, statsData, swapsData)
+      } catch (error) {
+        console.error('Error fetching data:', error)
+      } finally {
+        this.loading = false
+        this.isTableLoading = false
+      }
+    },
+
+    async fetchAffiliateHistoryData() {
+      try {
+        const params = {
+          count: this.chartCount,
+          interval: this.chartInterval,
+        }
+        if (this.selectedThorname) {
+          params.thorname = this.selectedThorname
+        }
+        const { data } = await this.$api.getAffiliateHistory(params)
+        return data
+      } catch (error) {
+        console.error('Error fetching affiliate history:', error)
+        return null
+      }
+    },
+
+    async fetchAffiliateSwapsData() {
+      try {
+        const response = await this.$api.getSwapsByThorname(
+          this.selectedThorname,
+          this.chartPeriod
         )
-        if (this.chartPeriod === '24h') {
-          xAxis.push(date.format('HH:mm'))
-        } else {
-          xAxis.push(date.format('dddd, MMM D'))
-        }
+        return response.data
+      } catch (error) {
+        console.error('Error fetching swaps:', error)
+        return { actions: [] }
+      }
+    },
 
-        const groupedThornames = interval.thornames.reduce((acc, thorname) => {
-          const key = ['t', 'tl', 'T'].includes(thorname.thorname)
-            ? 't'
-            : ['ti', 'te', 'tr', 'td', 'tb'].includes(thorname.thorname)
-              ? 'ti'
-              : ['va', 'vi', 'v0'].includes(thorname.thorname)
-                ? 'va'
-                : thorname.thorname
+    async fetchAffiliateStatsData() {
+      try {
+        const period = this.chartPeriod === '24h' ? '24h' : this.chartPeriod
+        const response = await this.$api.getAffiliateStats(
+          period,
+          this.selectedThorname
+        )
+        return response.data
+      } catch (error) {
+        console.error('Error fetching affiliate stats:', error)
+        return null
+      }
+    },
 
-          if (acc[key]) {
-            acc[key].volumeUSD += +thorname.volumeUSD
-          } else {
-            acc[key] = {
-              volumeUSD: +thorname.volumeUSD,
-              thorname: key,
-            }
-          }
-          return acc
-        }, {})
+    processAllData(historyData, statsData, swapsData) {
+      this.affiliateChart = this.formatAffiliateHistory(historyData)
+      this.affiliateStatsChart = this.formatAffiliateStats(statsData)
+      this.affiliateSwaps = swapsData
 
+      this.affiliateChartKey += 1
+      this.affiliateStatsChartKey += 1
+
+      this.updateStatsFromData(historyData, statsData)
+    },
+
+    updateStatsFromData(historyData, statsData) {
+      const { totalVolume, totalCount } = this.calculateStatsTotals(statsData)
+      const totalEarnings = this.calculateTotalEarnings(historyData)
+      const volumePerSwap = totalCount > 0 ? totalVolume / totalCount : 0
+
+      this.affiliateGeneralStats = [
+        {
+          name: 'Volume',
+          value: '$' + this.$options.filters.number(totalVolume, '0,0a'),
+        },
+        {
+          name: 'Swaps',
+          value: this.$options.filters.number(totalCount, '0,0'),
+        },
+        {
+          name: 'Earnings',
+          value: '$' + this.$options.filters.number(totalEarnings, '0,0a'),
+        },
+        {
+          name: 'Volume per Swap',
+          value: '$' + this.$options.filters.number(volumePerSwap, '0,0a'),
+        },
+      ]
+    },
+
+    formatAffiliateHistory(data) {
+      if (!data?.intervals) return null
+
+      const xAxis = []
+      const thornameData = {}
+
+      data.intervals.forEach((interval, index) => {
+        if (index === data.intervals.length - 1) return
+
+        const date = this.formatDate(interval)
+        xAxis.push(date)
+
+        const groupedThornames = this.groupThornames(interval.thornames)
         const sortedThornames = orderBy(
           Object.values(groupedThornames),
           [(o) => +o.volumeUSD],
@@ -321,249 +327,79 @@ export default {
         )
 
         const topThornames = sortedThornames.slice(0, 5)
-        const otherThornames = sortedThornames.slice(5)
-
-        let otherTotal = 0
-        otherThornames.forEach((thorname) => {
-          otherTotal += +thorname.volumeUSD / 1e2
-        })
+        const otherTotal = sortedThornames
+          .slice(5)
+          .reduce((sum, t) => sum + +t.volumeUSD / 1e2, 0)
 
         topThornames.forEach((thorname) => {
-          const thornameIndex = thornames.findIndex(
-            (t) => t.name === thorname.thorname
-          )
-
-          if (thornameIndex >= 0) {
-            if (thornames[thornameIndex].data.length < index + 1) {
-              thornames[thornameIndex].data = this.fillArrayWithZero(
-                thornames[thornameIndex].data,
-                index
-              )
-            }
-            thornames[thornameIndex].data.push(+thorname.volumeUSD / 1e2)
-          } else {
-            let data = []
-            if (index > 0) {
-              data = this.fillArrayWithZero(data, index)
-            }
-            data.push(+thorname.volumeUSD / 1e2)
-            thornames.push({
+          if (!thornameData[thorname.thorname]) {
+            thornameData[thorname.thorname] = {
               type: 'bar',
               name: thorname.thorname,
               showSymbol: false,
               stack: 'Total',
-              data,
-            })
+              data: new Array(index).fill(0),
+            }
           }
+          thornameData[thorname.thorname].data.push(+thorname.volumeUSD / 1e2)
         })
 
-        if (others.length < index + 1) {
-          others.push(0)
-        }
-        others[index] += otherTotal
-      })
-
-      const getInterfaceIcon = (detail) => {
-        if (!detail.icons) {
-          return ''
-        }
-        return this.theme === 'light' ? detail.icons.url : detail.icons.urlDark
-      }
-
-      const foramtchart = this.basicChartFormat(
-        (value) => `$ ${this.normalFormat(value, '0,0.00a')}`,
-        [
-          ...thornames,
-          {
+        if (!thornameData.Others) {
+          thornameData.Others = {
             type: 'bar',
             name: 'Others',
             showSymbol: false,
             stack: 'Total',
-            data: others,
-          },
-        ],
-        xAxis,
-        {
-          legend: {
-            show: false,
-          },
-          yAxis: [
-            {
-              type: 'value',
-              name: '',
-              position: 'right',
-              show: false,
-              splitLine: {
-                show: true,
-              },
-            },
-          ],
-        },
-        (param) => {
-          return `
-        <div class="tooltip-header">
-          ${param[0].name}
-        </div>
-        <div class="tooltip-body">
-          ${param
-            .filter((a) => a.value)
-            .sort((a, b) => {
-              if (a.seriesName === 'Others') return 1
-              if (b.seriesName === 'Others') return -1
-              return b.value - a.value
-            })
-            .map(
-              (p) => `
-                <span>
-                  <div class="tooltip-item">
-                    <div class="data-color" style="background-color: ${p.color}">
-                    </div>
-                    ${
-                      this.mapInterfaceName(p.seriesName)
-                        ? `<img class="tooltip-interface-icon" src="${getInterfaceIcon(this.mapInterfaceName(p.seriesName))}"/>`
-                        : `<span style="text-align: left;">
-                          ${p.seriesName}
-                        </span>`
-                    }
-
-                  </div>
-                  <b>$${p.value ? this.$options.filters.number(p.value, '0,0.00a') : '-'}</b>
-                </span>`
-            )
-            .join('')}
-        </div>
-        <span style="border-top: 1px solid var(--border-color); margin: 2px 0;"></span>
-        <hr>
-        <span>
-          <span>Total Fees</span>
-          <b>$${this.$options.filters.number(
-            param.reduce((a, c) => a + (c.value ? c.value : 0), 0),
-            '0,0a'
-          )}</b>
-        </span>
-      `
+            data: new Array(index).fill(0),
+          }
         }
-      )
-      return foramtchart
-    },
-    updateTags(type, tags) {
-      this.filters[type] = tags
-      this.fetchAffiliateHistory()
-    },
-    fetchAffiliateHistory() {
-      let count, interval
-      if (this.chartPeriod === '24h') {
-        count = 24
-        interval = 'hour'
-      } else if (this.chartPeriod.includes('w')) {
-        count = parseInt(this.chartPeriod.replace('w', ''))
-        interval = 'week'
-      } else {
-        count = parseInt(this.chartPeriod)
-        interval = 'day'
-      }
+        thornameData.Others.data.push(otherTotal)
+      })
 
-      const params = {
-        count,
-        interval,
-      }
-
-      if (this.filters.affiliate.length > 0) {
-        params.thorname = this.filters.affiliate.join(',')
-      }
-
-      this.$api
-        .getAffiliateHistory(params)
-        .then(async ({ data }) => {
-          const af = this.formatAffiliateHistory(data)
-          this.affiliateChart = af
-          this.affiliateChartKey += 1
-          await this.updateAffiliateStats()
-        })
-        .catch((error) => {
-          console.error('Error fetching affiliate history:', error)
-        })
-        .finally(() => {
-          this.isSearchLoading = false
-        })
-    },
-    async fetchAffiliateSwaps() {
-      try {
-        if (this.filters.affiliate.length > 0) {
-          const thorname = this.filters.affiliate[0]
-          const response = await this.$api.getSwapsByThorname(
-            thorname,
-            this.tablePeriod
-          )
-          this.affiliateSwaps = response.data
-        } else {
-          const response = await this.$api.getSwapsByThorname(
-            null,
-            this.tablePeriod
-          )
-          this.affiliateSwaps = response.data
-        }
-      } catch (error) {
-        console.error('Error fetching swaps:', error)
-        this.affiliateSwaps = { actions: [] }
-      } finally {
-        this.isTableLoading = false
-      }
-    },
-    getVolume(props) {
-      const inPrice = +props?.metadata?.swap?.inPriceUSD ?? 0
-      const inAmount = +props?.in[0]?.coins[0].amount ?? 0
-      return inPrice * inAmount
-    },
-    volumeSort(x, y, col, rowX, rowY) {
-      return this.getVolume(rowX) < this.getVolume(rowY)
-        ? -1
-        : this.getVolume(rowX) > this.getVolume(rowY)
-          ? 1
-          : 0
-    },
-    updateQuery(params) {
-      const newQuery = { ...this.$route.query }
-
-      // Update with new params
-      Object.keys(params).forEach((key) => {
-        if (
-          params[key] === undefined ||
-          params[key] === null ||
-          params[key] === ''
-        ) {
-          delete newQuery[key]
-        } else {
-          newQuery[key] = params[key]
+      Object.values(thornameData).forEach((series) => {
+        while (series.data.length < xAxis.length) {
+          series.data.push(0)
         }
       })
 
-      this.$router.replace({ query: newQuery })
+      return this.createChartOption(
+        Object.values(thornameData),
+        xAxis,
+        this.createFeesTooltip()
+      )
     },
-    async fetchAffiliateStats() {
-      try {
-        this.statsLoading = true
 
-        const period = this.chartPeriod === '24h' ? '24h' : this.chartPeriod
-        const thorname =
-          this.filters.affiliate.length > 0 ? this.filters.affiliate[0] : null
-
-        const response = await this.$api.getAffiliateStats(period, thorname)
-        const stats = this.formatAffiliateStats(response.data)
-        this.affiliateStatsChart = stats
-        this.affiliateStatsChartKey += 1
-        await this.updateAffiliateStats()
-      } catch (error) {
-        console.error('Error fetching affiliate stats:', error)
-        this.affiliateStatsChart = undefined
-      } finally {
-        this.statsLoading = false
-      }
+    formatDate(interval) {
+      const timestamp =
+        Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
+      const date = moment(timestamp)
+      return this.chartPeriod === '24h'
+        ? date.format('HH:mm')
+        : date.format('dddd, MMM D')
     },
+
+    groupThornames(thornames) {
+      return thornames.reduce((acc, thorname) => {
+        const key = this.getThornameGroup(thorname.thorname)
+
+        if (acc[key]) {
+          acc[key].volumeUSD += +thorname.volumeUSD
+        } else {
+          acc[key] = { volumeUSD: +thorname.volumeUSD, thorname: key }
+        }
+        return acc
+      }, {})
+    },
+
+    getThornameGroup(thorname) {
+      if (['t', 'tl', 'T'].includes(thorname)) return 't'
+      if (['ti', 'te', 'tr', 'td', 'tb'].includes(thorname)) return 'ti'
+      if (['va', 'vi', 'v0'].includes(thorname)) return 'va'
+      return thorname
+    },
+
     formatAffiliateStats(data) {
-      if (!data || !Array.isArray(data) || data.length === 0) {
-        return undefined
-      }
+      if (!data || !Array.isArray(data) || data.length === 0) return null
 
       const xAxis = []
       const volumeSeries = []
@@ -571,14 +407,13 @@ export default {
 
       data.forEach((item) => {
         const date = moment(item.date * 1000)
-        if (this.chartPeriod === '24h') {
-          xAxis.push(date.format('HH:mm'))
-        } else {
-          xAxis.push(date.format('dddd, MMM D'))
-        }
+        xAxis.push(
+          this.chartPeriod === '24h'
+            ? date.format('HH:mm')
+            : date.format('dddd, MMM D')
+        )
 
-        const volumeUSD = item.total_volume / 1e8
-        volumeSeries.push(volumeUSD)
+        volumeSeries.push(item.total_volume / 1e8)
         countSeries.push(item.count)
       })
 
@@ -589,9 +424,7 @@ export default {
           showSymbol: false,
           stack: 'Total',
           data: volumeSeries,
-          itemStyle: {
-            color: '#00D4AA',
-          },
+          itemStyle: { color: '#00D4AA' },
         },
         {
           type: 'bar',
@@ -599,153 +432,175 @@ export default {
           showSymbol: false,
           stack: 'Total',
           data: countSeries,
-          itemStyle: {
-            color: '#FF6B6B',
-          },
+          itemStyle: { color: '#FF6B6B' },
         },
       ]
 
-      const getInterfaceIcon = (detail) => {
-        if (!detail.icons) {
-          return ''
-        }
-        return this.theme === 'light' ? detail.icons.url : detail.icons.urlDark
-      }
+      return this.createChartOption(series, xAxis, this.createStatsTooltip())
+    },
 
-      const formattedChart = this.basicChartFormat(
+    createChartOption(series, xAxis, tooltipFormatter) {
+      return this.basicChartFormat(
         (value) => `$ ${this.normalFormat(value, '0,0.00a')}`,
         series,
         xAxis,
         {
-          legend: {
-            show: false,
-          },
+          legend: { show: false },
           yAxis: [
             {
               type: 'value',
               name: '',
               position: 'right',
               show: false,
-              splitLine: {
-                show: true,
-              },
+              splitLine: { show: true },
             },
           ],
         },
-        (param) => {
-          return `
-        <div class="tooltip-header">
-          ${param[0].name}
-        </div>
-        <div class="tooltip-body">
-          ${param
-            .filter((a) => a.value)
-            .sort((a, b) => {
-              return b.value - a.value
-            })
-            .map(
-              (p) => `
-                <span>
-                  <div class="tooltip-item">
-                    <div class="data-color" style="background-color: ${p.color}">
-                    </div>
-                    <span style="text-align: left;">
-                      ${p.seriesName}
-                    </span>
-                  </div>
-                  <b>${p.seriesName === 'Total Volume (USD)' ? '$' : ''}${p.value ? this.$options.filters.number(p.value, '0,0.00a') : '-'}</b>
-                </span>`
-            )
-            .join('')}
-        </div>
-      `
-        }
+        tooltipFormatter
       )
-      return formattedChart
     },
-    async updateAffiliateStats() {
-      try {
-        const period = this.chartPeriod
-        const thorname =
-          this.filters.affiliate.length > 0 ? this.filters.affiliate[0] : null
 
-        const statsResponse = await this.$api.getAffiliateStats(
-          period,
-          thorname
-        )
-        let totalVolume = 0
-        let totalCount = 0
+    createFeesTooltip() {
+      return (param) => {
+        const getInterfaceIcon = (detail) => {
+          if (!detail.icons) return ''
+          return this.theme === 'light'
+            ? detail.icons.url
+            : detail.icons.urlDark
+        }
 
-        if (statsResponse.data && Array.isArray(statsResponse.data)) {
-          statsResponse.data.forEach((item) => {
-            totalVolume += item.total_volume / 1e8
-            totalCount += item.count
+        const sortedParams = param
+          .filter((a) => a.value)
+          .sort((a, b) => {
+            if (a.seriesName === 'Others') return 1
+            if (b.seriesName === 'Others') return -1
+            return b.value - a.value
           })
-        }
 
-        const historyParams = {
-          count: period === '24h' ? 24 : period === '7d' ? 7 : 30,
-          interval: period === '24h' ? 'hour' : 'day',
-        }
+        const totalFees = param.reduce((sum, c) => sum + (c.value || 0), 0)
 
-        if (thorname) {
-          historyParams.thorname = thorname
-        }
-
-        const historyResponse =
-          await this.$api.getAffiliateHistory(historyParams)
-        let totalEarnings = 0
-
-        if (historyResponse.data && historyResponse.data.intervals) {
-          historyResponse.data.intervals.forEach((interval) => {
-            interval.thornames.forEach((thorname) => {
-              totalEarnings += +thorname.volumeUSD / 1e2
-            })
-          })
-        }
-
-        const volumePerSwap = totalCount > 0 ? totalVolume / totalCount : 0
-
-        this.affiliateGeneralStats = [
-          {
-            name: 'Volume',
-            value: '$' + this.$options.filters.number(totalVolume, '0,0a'),
-          },
-          {
-            name: 'Swaps',
-            value: this.$options.filters.number(totalCount, '0,0'),
-          },
-          {
-            name: 'Earnings',
-            value: '$' + this.$options.filters.number(totalEarnings, '0,0a'),
-          },
-          {
-            name: 'Volume per Swap',
-            value: '$' + this.$options.filters.number(volumePerSwap, '0,0a'),
-          },
-        ]
-      } catch (error) {
-        console.error('Error updating affiliate stats:', error)
+        return `
+          <div class="tooltip-header">${param[0].name}</div>
+          <div class="tooltip-body">
+            ${sortedParams
+              .map(
+                (p) => `
+              <span>
+                <div class="tooltip-item">
+                  <div class="data-color" style="background-color: ${p.color}"></div>
+                  ${
+                    this.mapInterfaceName(p.seriesName)
+                      ? `<img class="tooltip-interface-icon" src="${getInterfaceIcon(this.mapInterfaceName(p.seriesName))}"/>`
+                      : `<span style="text-align: left;">${p.seriesName}</span>`
+                  }
+                </div>
+                <b>$${p.value ? this.$options.filters.number(p.value, '0,0.00a') : '-'}</b>
+              </span>
+            `
+              )
+              .join('')}
+          </div>
+          <span style="border-top: 1px solid var(--border-color); margin: 2px 0;"></span>
+          <hr>
+          <span>
+            <span>Total Fees</span>
+            <b>$${this.$options.filters.number(totalFees, '0,0a')}</b>
+          </span>
+        `
       }
     },
 
-    onFilterChange() {
-      console.log('Selected filter:', this.selectedFilter)
+    createStatsTooltip() {
+      return (param) => {
+        const sortedParams = param
+          .filter((a) => a.value)
+          .sort((a, b) => b.value - a.value)
+
+        return `
+          <div class="tooltip-header">${param[0].name}</div>
+          <div class="tooltip-body">
+            ${sortedParams
+              .map(
+                (p) => `
+              <span>
+                <div class="tooltip-item">
+                  <div class="data-color" style="background-color: ${p.color}"></div>
+                  <span style="text-align: left;">${p.seriesName}</span>
+                </div>
+                <b>${p.seriesName === 'Total Volume (USD)' ? '$' : ''}${p.value ? this.$options.filters.number(p.value, '0,0.00a') : '-'}</b>
+              </span>
+            `
+              )
+              .join('')}
+          </div>
+        `
+      }
+    },
+
+    calculateStatsTotals(data) {
+      let totalVolume = 0
+      let totalCount = 0
+
+      if (data && Array.isArray(data)) {
+        data.forEach((item) => {
+          totalVolume += item.total_volume / 1e8
+          totalCount += item.count
+        })
+      }
+
+      return { totalVolume, totalCount }
+    },
+
+    calculateTotalEarnings(data) {
+      let totalEarnings = 0
+
+      if (data?.intervals) {
+        data.intervals.forEach((interval) => {
+          interval.thornames.forEach((thorname) => {
+            totalEarnings += +thorname.volumeUSD / 1e2
+          })
+        })
+      }
+
+      return totalEarnings
+    },
+
+    formatVolume(row) {
+      const inPrice = +row?.metadata?.swap?.inPriceUSD ?? 0
+      const inAmount = +row?.in[0]?.coins[0].amount ?? 0
+      return this.smallBaseAmountFormatWithCur(inPrice * inAmount)
+    },
+
+    sortByVolume(x, y, col, rowX, rowY) {
+      const volumeX = this.getVolumeFromRow(rowX)
+      const volumeY = this.getVolumeFromRow(rowY)
+      return volumeX < volumeY ? -1 : volumeX > volumeY ? 1 : 0
+    },
+
+    getVolumeFromRow(row) {
+      const inPrice = +row?.metadata?.swap?.inPriceUSD ?? 0
+      const inAmount = +row?.in[0]?.coins[0].amount ?? 0
+      return inPrice * inAmount
+    },
+
+    onPeriodChange(newPeriod) {
+      this.$router.push({
+        query: { ...this.$route.query, period: newPeriod },
+      })
+    },
+
+    onAffiliateChange(affiliate) {
+      const query = { ...this.$route.query }
+      if (affiliate) {
+        query.affiliate = affiliate
+      } else {
+        delete query.affiliate
+      }
+      this.$router.push({ query })
     },
 
     toggleDropdown() {
       this.isDropdownOpen = !this.isDropdownOpen
-    },
-
-    selectAffiliate(affiliate) {
-      this.selectedFilter = affiliate
-      this.filters.affiliate = affiliate ? [affiliate] : []
-      this.isDropdownOpen = false
-      this.updateQuery({ affiliate: affiliate || undefined })
-      this.affiliateStatsChart = undefined
-      this.fetchAffiliateHistory()
-      this.fetchAffiliateStats()
-      this.updateAffiliateStats()
     },
 
     handleClickOutside(event) {
@@ -753,10 +608,6 @@ export default {
       if (dropdown && !dropdown.contains(event.target)) {
         this.isDropdownOpen = false
       }
-    },
-
-    fetchAffiliateList() {
-      this.affiliateList = Object.keys(affiliateMap)
     },
   },
 }
@@ -771,114 +622,6 @@ export default {
   flex-wrap: wrap;
 }
 
-.custom-dropdown {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 0 10px 0px 10px;
-
-  @include md {
-    margin: 0 0px 0px 0px;
-  }
-
-  .dropdown-container {
-    position: relative;
-    min-width: 150px;
-    padding: 3px;
-
-    .dropdown-select {
-      padding: $space-10 $space-12;
-      border: 1px solid var(--border-color);
-      border-radius: $radius-lg;
-      background-color: var(--card-bg-color);
-      color: var(--sec-font-color);
-      font-size: $font-size-sm;
-      min-width: 150px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: relative;
-      transition:
-        border-color 0.3s ease,
-        box-shadow 0.3s ease;
-
-      &:hover {
-        border-color: var(--primary-color);
-        background-color: var(--active-bg-color);
-      }
-
-      &:focus {
-        outline: none;
-        border-color: var(--primary-color);
-      }
-
-      .selected-item {
-        display: flex;
-        align-items: center;
-        flex: 1;
-      }
-
-      .placeholder {
-        color: var(--sec-font-color);
-        font-size: $font-size-sm;
-      }
-
-      .trigger {
-        width: 1rem;
-        height: 1rem;
-        fill: var(--font-color);
-        cursor: pointer;
-        transition: transform 0.3s ease;
-
-        &.rotated {
-          transform: rotate(180deg);
-        }
-      }
-    }
-
-    .dropdown-menu {
-      position: absolute;
-      top: 100%;
-      left: 0;
-      right: 0;
-      background-color: var(--card-bg-color);
-      border: 1px solid var(--border-color);
-      border-radius: $radius-lg;
-      max-height: 200px;
-      overflow-y: auto;
-      z-index: 1000;
-      margin-top: $space-5;
-      padding: $space-5;
-
-      .dropdown-item {
-        padding: $space-10 $space-12;
-        cursor: pointer;
-        border-radius: $radius-s;
-        display: flex;
-        align-items: center;
-        transition: background-color 0.3s ease;
-        margin-bottom: $space-2;
-
-        &:hover {
-          background-color: var(--active-bg-color);
-          color: var(--primary-color);
-        }
-
-        &:last-child {
-          margin-bottom: 0;
-        }
-
-        .all-affiliates-text {
-          font-weight: 500;
-          color: var(--sec-font-color);
-          font-size: $font-size-sm;
-        }
-      }
-    }
-  }
-}
-
 .charts-container {
   display: flex;
   gap: 1rem;
@@ -887,6 +630,10 @@ export default {
 
 .chart-item {
   flex: 1;
+}
+
+.affiliate-table-section {
+  margin-top: 1rem;
 }
 
 @media (max-width: 768px) {
@@ -899,13 +646,5 @@ export default {
   .charts-container {
     flex-direction: column;
   }
-}
-
-.affiliate-table-section {
-  margin-top: 1rem;
-}
-
-.mt-4 {
-  margin-top: 1rem;
 }
 </style>
