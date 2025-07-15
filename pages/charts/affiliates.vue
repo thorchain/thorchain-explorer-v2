@@ -122,7 +122,7 @@ export default {
 
       chartPeriods: [
         { text: '1 Day', mode: '24h' },
-        { text: '7 Days', mode: '7d' },
+        { text: '14 Days', mode: '14d' },
         { text: '30 Days', mode: '30d' },
       ],
 
@@ -148,7 +148,7 @@ export default {
       const { period } = this.$route.query
       return period && this.chartPeriods.some((p) => p.mode === period)
         ? period
-        : '7d'
+        : '14d'
     },
 
     chartInterval() {
@@ -156,9 +156,6 @@ export default {
     },
 
     chartCount() {
-      if (this.chartPeriod === '24h') return 24
-      if (this.chartPeriod.includes('w'))
-        return parseInt(this.chartPeriod.replace('w', ''))
       return parseInt(this.chartPeriod)
     },
 
@@ -323,7 +320,7 @@ export default {
         filteredNames = interval.thornames.reduce((acc, thorname) => {
           const key = ['t', 'tl', 'T'].includes(thorname.thorname)
             ? 't'
-            : ['ti', 'te', 'tr', 'td', 'tb'].includes(thorname.thorname)
+            : ['ti', 'te', 'tr', 'td', 'tb', 't1'].includes(thorname.thorname)
               ? 'ti'
               : ['va', 'vi', 'v0'].includes(thorname.thorname)
                 ? 'va'
@@ -412,7 +409,7 @@ export default {
         Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
       const date = moment(timestamp)
       return this.chartPeriod === '24h'
-        ? date.format('HH:mm')
+        ? date.format('MMM Do, HH A')
         : date.format('dddd, MMM D')
     },
 
@@ -423,11 +420,13 @@ export default {
       const volumeSeries = []
       const countSeries = []
 
-      data.forEach((item) => {
+      data.forEach((item, index) => {
+        if (index === data.length - 1) return
+
         const date = moment(item.date * 1000)
         xAxis.push(
           this.chartPeriod === '24h'
-            ? date.format('HH:mm')
+            ? date.format('MMM Do, HH A')
             : date.format('dddd, MMM D')
         )
 

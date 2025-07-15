@@ -794,7 +794,7 @@ export function assetToString({ chain, synth, trade, symbol, secure }) {
 
 export const nameMapping = {
   t: ['t', 't/ct', 'T', 'thor160yye65pf9rzwrgqmtgav69n6zlsyfpgm9a7xk', 'tl'],
-  ti: ['ti', 'te', 'tr', 'td', 'tb'],
+  ti: ['ti', 'te', 'tr', 'td', 'tb', 't1'],
   lifi: ['lifi', 'lifi/-_'],
   okw: ['okw', 'okw/-_'],
   va: ['va', 'vi', 'v0'],
@@ -928,6 +928,7 @@ export const affiliateMap = {
   tr: interfaces.trustwallet,
   te: interfaces.trustwallet,
   tb: interfaces.trustwallet,
+  t1: interfaces.trustwallet,
   thor1a427q3v96psuj4fnughdw8glt5r7j38lj7rkp8: interfaces.thorwallet,
   wr: interfaces.thorwallet,
   tgt: interfaces.thorwallet,
