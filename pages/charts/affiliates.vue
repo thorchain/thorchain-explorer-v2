@@ -84,7 +84,7 @@ import VChart from 'vue-echarts'
 import ChartLoader from '~/components/ChartLoader.vue'
 import CardsHeader from '~/components/CardsHeader.vue'
 import AffiliateDropdown from '~/components/AffiliateDropdown.vue'
-import { affiliateMap } from '~/utils'
+import { affiliateMap, interfaces } from '~/utils'
 
 use([
   SVGRenderer,
@@ -309,7 +309,8 @@ export default {
       if (!data?.intervals) return null
 
       const xAxis = []
-      const thornameData = {}
+      const thornames = []
+      const others = []
 
       data.intervals.forEach((interval, index) => {
         if (index === data.intervals.length - 1) return
@@ -317,51 +318,90 @@ export default {
         const date = this.formatDate(interval)
         xAxis.push(date)
 
-        const groupedThornames = this.groupThornames(interval.thornames)
-        const sortedThornames = orderBy(
-          Object.values(groupedThornames),
+        let filteredNames = {}
+
+        filteredNames = interval.thornames.reduce((acc, thorname) => {
+          const key = ['t', 'tl', 'T'].includes(thorname.thorname)
+            ? 't'
+            : ['ti', 'te', 'tr', 'td', 'tb'].includes(thorname.thorname)
+              ? 'ti'
+              : ['va', 'vi', 'v0'].includes(thorname.thorname)
+                ? 'va'
+                : thorname.thorname
+
+          if (acc[key]) {
+            acc[key].volumeUSD += +thorname.volumeUSD
+            acc[key].count += +thorname.count
+          } else {
+            acc[key] = {
+              volumeUSD: +thorname.volumeUSD,
+              thorname: key,
+              count: +thorname.count,
+            }
+          }
+          return acc
+        }, {})
+
+        filteredNames = orderBy(
+          Object.values(filteredNames),
           [(o) => +o.volumeUSD],
           ['desc']
         )
 
-        const topThornames = sortedThornames.slice(0, 5)
-        const otherTotal = sortedThornames
-          .slice(5)
-          .reduce((sum, t) => sum + +t.volumeUSD / 1e2, 0)
+        const topNames = 3
+        let otherTotal = 0
 
-        topThornames.forEach((thorname) => {
-          if (!thornameData[thorname.thorname]) {
-            thornameData[thorname.thorname] = {
+        for (let ti = 0; ti < filteredNames.length; ti++) {
+          if (topNames < ti) {
+            otherTotal += +filteredNames[ti]?.volumeUSD / 1e2
+            if (filteredNames.length - 1 === ti) {
+              others.push(otherTotal)
+            }
+            continue
+          }
+
+          const thornameIndex = thornames.findIndex(
+            (t) => t.name === filteredNames[ti].thorname
+          )
+
+          if (thornameIndex >= 0) {
+            if (thornames[thornameIndex].data.length < index + 1) {
+              thornames[thornameIndex].data = this.fillArrayWithZero(
+                thornames[thornameIndex].data,
+                index
+              )
+            }
+            thornames[thornameIndex].data.push(
+              +filteredNames[ti]?.volumeUSD / 1e2
+            )
+          } else {
+            let data = []
+            if (index > 0) {
+              data = this.fillArrayWithZero(data, index)
+            }
+            data.push(+filteredNames[ti]?.volumeUSD / 1e2)
+            thornames.push({
               type: 'bar',
-              name: thorname.thorname,
+              name: filteredNames[ti].thorname,
               showSymbol: false,
               stack: 'Total',
-              data: new Array(index).fill(0),
-            }
+              data,
+            })
           }
-          thornameData[thorname.thorname].data.push(+thorname.volumeUSD / 1e2)
-        })
-
-        if (!thornameData.Others) {
-          thornameData.Others = {
-            type: 'bar',
-            name: 'Others',
-            showSymbol: false,
-            stack: 'Total',
-            data: new Array(index).fill(0),
-          }
-        }
-        thornameData.Others.data.push(otherTotal)
-      })
-
-      Object.values(thornameData).forEach((series) => {
-        while (series.data.length < xAxis.length) {
-          series.data.push(0)
         }
       })
 
       return this.createChartOption(
-        Object.values(thornameData),
+        [
+          ...thornames,
+          {
+            type: 'bar',
+            name: 'Others',
+            showSymbol: false,
+            stack: 'Total',
+            data: others,
+          },
+        ],
         xAxis,
         this.createFeesTooltip()
       )
@@ -374,26 +414,6 @@ export default {
       return this.chartPeriod === '24h'
         ? date.format('HH:mm')
         : date.format('dddd, MMM D')
-    },
-
-    groupThornames(thornames) {
-      return thornames.reduce((acc, thorname) => {
-        const key = this.getThornameGroup(thorname.thorname)
-
-        if (acc[key]) {
-          acc[key].volumeUSD += +thorname.volumeUSD
-        } else {
-          acc[key] = { volumeUSD: +thorname.volumeUSD, thorname: key }
-        }
-        return acc
-      }, {})
-    },
-
-    getThornameGroup(thorname) {
-      if (['t', 'tl', 'T'].includes(thorname)) return 't'
-      if (['ti', 'te', 'tr', 'td', 'tb'].includes(thorname)) return 'ti'
-      if (['va', 'vi', 'v0'].includes(thorname)) return 'va'
-      return thorname
     },
 
     formatAffiliateStats(data) {
@@ -605,6 +625,40 @@ export default {
       const dropdown = this.$el.querySelector('.dropdown-container')
       if (dropdown && !dropdown.contains(event.target)) {
         this.isDropdownOpen = false
+      }
+    },
+
+    fillArrayWithZero(array, length) {
+      while (array.length < length) {
+        array.push(0)
+      }
+      return array
+    },
+
+    mapInterfaceName(s) {
+      let ifc = interfaces[s.toLowerCase()]
+
+      if (!ifc) {
+        ifc = affiliateMap[s.toLowerCase()]
+        if (!ifc) {
+          return undefined
+        }
+      }
+
+      const icons = {
+        url: undefined,
+        urlDark: undefined,
+      }
+
+      if (ifc.icon) {
+        icons.url = require(`@/assets/images/${ifc.icon}.png`)
+        icons.urlDark = require(`@/assets/images/${ifc.icon}-dark.png`)
+      }
+
+      return {
+        name: ifc.name ?? ifc,
+        icons,
+        addName: ifc.addName ?? false,
       }
     },
   },
