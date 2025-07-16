@@ -956,6 +956,10 @@ export const interfaces = {
     name: 'Rujira',
     icon: 'rujira',
   },
+  leo: {
+    name: 'LEO Dex',
+    icon: 'Leodex',
+  },
 }
 
 export const affiliateMap = {
@@ -1000,6 +1004,7 @@ export const affiliateMap = {
   g1: interfaces.gemwallet,
   thor1xmaggkcln5m5fnha2780xrdrulmplvfrz6wj3l: interfaces.shapeshift,
   rj: interfaces.rujira,
+  leo: interfaces.leo,
 }
 
 export function getExplorerAddressUrl(chain, query, type) {

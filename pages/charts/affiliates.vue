@@ -405,7 +405,7 @@ export default {
     },
 
     formatDate(interval) {
-      const timestamp = +interval.endTime * 1e3
+      const timestamp = +interval.startTime * 1e3
       const date = moment.utc(timestamp).local()
       return this.chartPeriod === '24h'
         ? date.format('MMM Do, HH:mm')
