@@ -69,6 +69,7 @@ import {
   isInternalTx,
   tradeToAsset,
   assetToString,
+  securedToAsset,
 } from '~/utils'
 import Accordion from '~/components/Accordion.vue'
 
@@ -1399,7 +1400,7 @@ export default {
 
       const outs = [
         {
-          asset: tradeToAsset(ast),
+          asset: isSecure ? securedToAsset(ast) : tradeToAsset(ast),
           amount: thorStatus.out_txs
             ? thorStatus.out_txs[0]?.coins[0].amount
             : thorStatus?.tx.coins[0].amount,
