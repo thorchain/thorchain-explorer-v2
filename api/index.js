@@ -123,6 +123,7 @@ import {
   getContracts,
   search,
   getSwapsByThorname,
+  getBalanceHistory,
 } from './middleware.api'
 import {
   getChurnHistory,
@@ -336,6 +337,7 @@ export default function ({ $axios }, inject) {
     getContracts,
     search,
     getSwapsByThorname,
+    getBalanceHistory,
   }
 
   inject('api', api)
