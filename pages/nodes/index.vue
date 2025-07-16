@@ -959,6 +959,9 @@ export default {
             if (justLatest && el.version !== latestVersion) {
               continue
             }
+            if (!activeVersion.includes(el.version)) {
+              continue
+            }
             if (el.jail && el.jail.release_height > this.chainsHeight?.THOR) {
               continue
             }
