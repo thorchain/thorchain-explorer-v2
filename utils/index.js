@@ -828,7 +828,7 @@ export const affiliateList = () => {
   const multipleAffiliates = [
     ...Object.entries(nameMapping).map(([id, thornames]) => ({
       id,
-      thornames,
+      thornames: thornames.filter((name) => !name.includes('/')),
     })),
   ]
 

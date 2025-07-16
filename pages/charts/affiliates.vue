@@ -186,7 +186,9 @@ export default {
       this.affiliate =
         affiliateList()
           .find((affiliate) => affiliate.id === newQuery.affiliate)
-          ?.thornames?.join(',') || ''
+          ?.thornames?.join(',') ||
+        newQuery.affiliate ||
+        ''
       this.selectedFilter = newQuery.affiliate || ''
       await this.fetchAllData()
     },
@@ -671,7 +673,6 @@ export default {
     },
 
     onAffiliateChange(affiliate) {
-      console.log(affiliate)
       const query = { ...this.$route.query }
       if (affiliate) {
         query.affiliate = affiliate
