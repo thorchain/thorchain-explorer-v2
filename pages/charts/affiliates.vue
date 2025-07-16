@@ -405,11 +405,10 @@ export default {
     },
 
     formatDate(interval) {
-      const timestamp =
-        Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
-      const date = moment(timestamp)
+      const timestamp = +interval.endTime * 1e3
+      const date = moment.utc(timestamp).local()
       return this.chartPeriod === '24h'
-        ? date.format('MMM Do, HH A')
+        ? date.format('MMM Do, HH:mm')
         : date.format('dddd, MMM D')
     },
 

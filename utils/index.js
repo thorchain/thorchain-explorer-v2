@@ -811,7 +811,7 @@ export const nameMapping = {
     '-_',
     '-_/ll',
     '-_/t',
-    'lifi,-_',
+    'lifi/-_',
     '-_/t1',
     '-_/bgw',
     '-_/tps',
@@ -820,6 +820,7 @@ export const nameMapping = {
   bgw: ['bgw', '-_/bgw'],
   ll: ['ll', '-_/ll'],
   rg: ['rg', 'ro'],
+  xdf: ['xdf', '-_/xdf'],
 }
 
 export const affiliateList = () => {
