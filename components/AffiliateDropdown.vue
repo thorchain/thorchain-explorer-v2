@@ -77,7 +77,6 @@ export default {
   .dropdown-container {
     position: relative;
     min-width: 150px;
-    padding: 3px;
 
     .dropdown-select {
       padding: $space-10 $space-12;
