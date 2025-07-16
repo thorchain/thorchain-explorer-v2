@@ -577,31 +577,24 @@ export default {
               name: 'Bond',
               value: this.bondMetrics?.totalActiveBond / 10 ** 8,
               usdValue: true,
-              filter: (v) => this.formatRune(v, '0,0a'),
+              filter: (v) => this.formatRune(v, '0,0.00a'),
             },
             {
               name: 'Average',
               value: this.bondMetrics?.averageActiveBond / 10 ** 8,
-              filter: (v) => this.formatRune(v, '0,0a'),
-              usdValue: true,
-            },
-            {
-              name: 'Maximum',
-              value: Math.floor(this.bondMetrics?.maximumActiveBond / 10 ** 8),
-              filter: (v) => this.formatRune(v, '0,0a'),
+              filter: (v) => this.formatRune(v, '0,0'),
               usdValue: true,
             },
             {
               name: 'Minimum',
               value: Math.floor(this.bondMetrics?.minimumActiveBond / 10 ** 8),
-              filter: (v) => this.formatRune(v, '0,0a'),
+              filter: (v) => this.formatRune(v, '0,0'),
               usdValue: true,
             },
             {
-              name: 'Max efficient',
+              name: 'Max Effective',
               value: this.calculateHardCap(),
-              filter: (v) => this.formatRune(v, '0,0.00a'),
-              extraInfo: `${this.$options.filters.number(this.calculateHardCap(), '0,0.00')} RUNE`,
+              filter: (v) => this.formatRune(v, '0,0'),
               usdValue: true,
             },
           ],
@@ -1229,7 +1222,7 @@ export default {
     },
     calculateHardCap() {
       if (!this.nodesQuery) {
-        return null
+        return 0
       }
 
       const actNodes = this.nodesQuery?.filter((n) => n.status === 'Active')
@@ -1239,11 +1232,13 @@ export default {
       if (actNodes?.length < 2) {
         return actNodes[0].total_bond
       }
+
       actNodes?.sort((a, b) => +a.total_bond - +b.total_bond)
       const lowerNodes = actNodes?.slice(
         0,
         Math.floor((actNodes.length * 2) / 3)
       )
+
       return Math.floor(
         (Number.parseInt(lowerNodes?.slice(-1)[0]?.total_bond) ?? 0) / 10 ** 8
       )
