@@ -968,9 +968,9 @@ export default {
             if (+el.total_bond < this.minBond) {
               continue
             }
-            if (el.status === 'Ready' && el.age.number < 300) {
-              continue
-            }
+            // if (el.status === 'Ready' && el.age.number < 300) {
+            //   continue
+            // }
             if (remainingCount <= churnNodes) {
               continue
             }
