@@ -11,8 +11,10 @@
       v-if="isModalVisible"
       class="modal-overlay"
       @click="handleOverlayClick"
+      @keydown="handleKeydown"
+      tabindex="0"
     >
-      <div class="modal-content" @click.stop>
+      <div class="modal-content" @click.stop @keydown.stop>
         <div class="modal-header">
           <h3>Advanced Filters</h3>
           <CrossIcon class="close-btn" @click="toggleModal" />
@@ -51,6 +53,7 @@
                 v-model="filters.fromHeight"
                 type="text"
                 placeholder="Enter fromHeight, press enter"
+                @keydown.stop
               />
             </div>
             <div class="input-group">
@@ -60,6 +63,7 @@
                 v-model="filters.toHeight"
                 type="text"
                 placeholder="Enter toHeight, press enter"
+                @keydown.stop
               />
             </div>
           </div>
@@ -89,6 +93,7 @@
                 value-type="timestamp"
                 :range="true"
                 :disabled="isHeightFilled"
+                @keydown.stop
               />
             </div>
           </div>
@@ -211,10 +216,27 @@ export default {
   methods: {
     toggleModal() {
       this.isModalVisible = !this.isModalVisible
+      
+      if (this.isModalVisible) {
+        this.$nextTick(() => {
+          const modalOverlay = this.$el.querySelector('.modal-overlay')
+          if (modalOverlay) {
+            modalOverlay.focus()
+          }
+        })
+      }
     },
 
     handleOverlayClick(event) {
       if (event.target === event.currentTarget) {
+        this.toggleModal()
+      }
+    },
+
+    handleKeydown(event) {
+      event.stopPropagation()
+      
+      if (event.key === 'Escape') {
         this.toggleModal()
       }
     },
@@ -419,6 +441,7 @@ export default {
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  outline: none;
 }
 
 .modal-content {
@@ -520,6 +543,7 @@ export default {
   display: flex;
   justify-content: space-between;
   gap: 15px;
+  flex-wrap: wrap;
 }
 
 .input-group {
@@ -528,6 +552,8 @@ export default {
   gap: 5px;
   flex-grow: 1;
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
 
   label {
     font-size: $font-size-desktop;
@@ -546,6 +572,9 @@ export default {
     font-size: $font-size-sm;
     outline: none;
     flex-grow: 1;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   input:-webkit-autofill,
