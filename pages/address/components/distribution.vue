@@ -37,7 +37,7 @@
         :columns="distributionsColumns"
         :rows="distribution && distribution.distributions"
         :line-numbers="true"
-        max-height="200px"
+        max-height="1000px"
         style-class="vgt-table net-table vgt-compact"
         :sort-options="{
           enabled: true,
@@ -339,47 +339,41 @@ export default {
   }
 }
 
+.icon-group {
+  display: flex;
+  align-items: center;
+  gap: $space-8;
+  justify-content: space-between;
+}
 
+.csv-download svg {
+  fill: var(--sec-font-color);
+  height: 1.2rem;
+  width: 1.2rem;
 
- 
+  &:hover {
+    fill: var(--primary-color);
+  }
+}
 
-    .icon-group {
-      display: flex;
-      align-items: center;
-      gap: $space-8;
-      justify-content: space-between;
+.rotate {
+  color: var(--sec-font-color);
+  height: 1.4rem;
+  width: 1.4rem;
+  cursor: pointer;
+  align-items: center;
+  display: flex;
+  transition: transform 0.3s ease;
+  transform: rotate(0deg);
+  margin-bottom: 5px;
+  &.active {
+    transform: rotate(180deg);
+    color: var(--primary-color);
+  }
 
-    }
-
-    .csv-download svg {
-      fill: var(--sec-font-color);
-      height: 1.2rem;
-      width: 1.2rem;
-
-      &:hover {
-        fill: var(--primary-color);
-      }
-    }
-
-    .rotate {
-      color: var(--sec-font-color);
-      height: 1.4rem;
-      width: 1.4rem;
-      cursor: pointer;
-      align-items: center;
-      display: flex;
-      transition: transform 0.3s ease;
-      transform: rotate(0deg);
-      margin-bottom: 5px;
-      &.active {
-        transform: rotate(180deg);
-        color: var(--primary-color);
-      }
-
-      &:hover {
-        color: var(--primary-color);
-      }
-  
+  &:hover {
+    color: var(--primary-color);
+  }
 
   h3 {
     font-size: $font-size-md;

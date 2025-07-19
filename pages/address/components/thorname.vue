@@ -1,60 +1,114 @@
 <template>
   <Card>
     <div>
-      <bounce-loader v-if="loading" color="var(--font-color)" size="3rem" />
+      <TableLoader v-if="loading" :cols="columns" :rows="Array(5).fill({})" />
       <template v-else>
-        <info-card :options="thornames" :inner="true">
-          <template #asset="{ item }">
-            <template v-for="al in item.aliases">
-              <div :key="`asset-` + al.chain" class="mini-bubble">
-                <asset-icon
-                  :asset="baseChainAsset(al.chain)"
-                  :height="'1.2rem'"
-                />
-                <nuxt-link class="clickable" :to="`/address/${al.address}`">
-                  {{ formatAddress(al.address) }}
+        <div v-if="thornames.length > 0">
+          <vue-good-table
+            :columns="columns"
+            :rows="thornames"
+            style-class="vgt-table net-table"
+            :sort-options="{
+              enabled: true,
+              initialSortBy: { field: 'name', type: 'asc' },
+            }"
+          >
+            <template slot="table-row" slot-scope="props">
+              <span v-if="props.column.field === 'name'">
+                {{ props.row.name }}
+              </span>
+              <span v-else-if="props.column.field === 'owner'">
+                <Address :address="props.row.owner" />
+              </span>
+              <span v-else-if="props.column.field === 'affiliate_collector'">
+                {{ formatRune(props.row.affiliate_collector_rune) }}
+              </span>
+              <span v-else-if="props.column.field === 'preferred_asset'">
+                {{ props.row.preferred_asset || '-' }}
+              </span>
+              <span v-else-if="props.column.field === 'expire_block_height'">
+                <nuxt-link
+                  class="clickable"
+                  :to="`/block/${props.row.expire_block_height}`"
+                >
+                  {{
+                    $options.filters.number(
+                      props.row.expire_block_height,
+                      '0,0'
+                    )
+                  }}
                 </nuxt-link>
-              </div>
+              </span>
+              <span v-else-if="props.column.field === 'aliases'">
+                <template
+                  v-if="props.row.aliases && props.row.aliases.length > 0"
+                >
+                  <template v-for="al in props.row.aliases">
+                    <div :key="`asset-` + al.chain" class="mini-bubble">
+                      <asset-icon
+                        :asset="baseChainAsset(al.chain)"
+                        :height="'1.2rem'"
+                      />
+                      <Address :address="al.address" />
+                    </div>
+                  </template>
+                </template>
+                <span v-else class="mini-bubble yellow"> No Aliases </span>
+              </span>
             </template>
-            <span
-              v-if="!item.aliases || item.aliases.length == 0"
-              class="mini-bubble yellow"
-            >
-              No Aliases
-            </span>
-          </template>
-          <template #address="{ item }">
-            <nuxt-link class="clickable" :to="`/address/${item.value}`">
-              {{ formatAddress(item.value) }}
-            </nuxt-link>
-          </template>
-          <template #block="{ item }">
-            <nuxt-link class="clickable" :to="`/block/${item.value}`">
-              {{ item.filter(item.value) }}
-            </nuxt-link>
-          </template>
-        </info-card>
-        <span v-if="thornames.length == 0"> NO THORName </span>
+          </vue-good-table>
+        </div>
+        <span v-else> NO THORName </span>
       </template>
     </div>
   </Card>
 </template>
 
 <script>
-import BounceLoader from 'vue-spinner/src/BounceLoader.vue'
-import Card from '~/components/layouts/Card.vue'
+import Address from '~/components/transactions/Address.vue'
 
 export default {
   components: {
-    BounceLoader,
+    Address,
   },
   props: ['address'],
   data() {
     return {
       loading: true,
-      owner: undefined,
-      preferredAsset: undefined,
       thornames: [],
+      columns: [
+        {
+          label: 'Name',
+          field: 'name',
+          sortable: true,
+        },
+        {
+          label: 'Owner',
+          field: 'owner',
+          sortable: true,
+        },
+        {
+          label: 'Affiliate Collector',
+          field: 'affiliate_collector',
+          sortable: true,
+        },
+        {
+          label: 'Preferred Asset',
+          field: 'preferred_asset',
+          sortable: true,
+        },
+        {
+          label: 'Expire Block',
+          field: 'expire_block_height',
+          sortable: true,
+          type: 'number',
+        },
+        {
+          label: 'Aliases',
+          field: 'aliases',
+          sortable: false,
+        },
+      ],
     }
   },
   mounted() {
@@ -70,42 +124,12 @@ export default {
       names.forEach((n) => {
         const p = this.$api.getThorname(n).then((res) => {
           this.thornames.push({
-            title: '',
-            rowStart: 1,
-            colSpan: 1,
-            items: [
-              {
-                name: 'Name',
-                value: res.data?.name,
-              },
-              {
-                name: 'Owner',
-                value: res.data?.owner,
-                valueSlot: 'address',
-              },
-              {
-                name: 'Affiliate Collector',
-                value: res.data?.affiliate_collector_rune,
-                filter: (v) => this.formatRune(v),
-              },
-              {
-                name: 'Preferred Asset',
-                value: res.data?.preferred_asset,
-              },
-              {
-                name: 'Expire',
-                value: res.data?.expire_block_height,
-                format: this.normalFormat,
-                filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
-                valueSlot: 'block',
-              },
-              {
-                name: 'Aliases',
-                aliases: res.data?.aliases,
-                value: res.data?.aliases !== undefined,
-                valueSlot: 'asset',
-              },
-            ],
+            name: res.data?.name,
+            owner: res.data?.owner,
+            affiliate_collector_rune: res.data?.affiliate_collector_rune,
+            preferred_asset: res.data?.preferred_asset,
+            expire_block_height: res.data?.expire_block_height,
+            aliases: res.data?.aliases,
           })
         })
         promises.push(p)
@@ -131,28 +155,4 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
-.addresses-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 10px;
-  align-items: center;
-  justify-items: center;
-
-  .addresses {
-    display: flex;
-    align-items: center;
-  }
-}
-
-.s-header {
-  display: flex;
-  font-size: $font-size-xs;
-  color: var(--font-color);
-}
-
-.s-value {
-  display: flex;
-  align-items: center;
-}
-</style>
+<style lang="scss" scoped></style>
