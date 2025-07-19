@@ -11,9 +11,8 @@
         <RuneAsset asset="THOR.RUNE" :height="'1.2rem'" />
       </template>
     </stats-panel>
-    <div class="distributions">
-      <div class="distribution-header">
-        <h3 class="info-title">Distributions</h3>
+    <Card title="Distributions" class="distributions-card">
+      <template #header>
         <div class="icon-group">
           <Business
             v-tooltip="
@@ -33,7 +32,7 @@
             <file-download class="clickable"></file-download>
           </div>
         </div>
-      </div>
+      </template>
       <vue-good-table
         :columns="distributionsColumns"
         :rows="distribution && distribution.distributions"
@@ -66,7 +65,7 @@
           </span>
         </template>
       </vue-good-table>
-    </div>
+    </Card>
   </div>
 </template>
 
@@ -340,23 +339,16 @@ export default {
   }
 }
 
-.distributions {
-  padding: $space-16;
-  border: 1px solid var(--border-color);
-  border-radius: $radius-s;
-  margin-top: $space-16;
 
-  .distribution-header {
-    display: flex;
-    gap: $space-8;
-    justify-content: space-between;
-    align-items: center;
-    gap: $space-8;
+
+ 
 
     .icon-group {
       display: flex;
       align-items: center;
       gap: $space-8;
+      justify-content: space-between;
+
     }
 
     .csv-download svg {
@@ -387,8 +379,7 @@ export default {
       &:hover {
         color: var(--primary-color);
       }
-    }
-  }
+  
 
   h3 {
     font-size: $font-size-md;
@@ -419,5 +410,9 @@ export default {
   &:hover {
     opacity: 0.8;
   }
+}
+
+.distributions-card {
+  margin-top: $space-16;
 }
 </style>
