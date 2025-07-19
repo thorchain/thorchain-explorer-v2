@@ -133,8 +133,8 @@
             class="hoverable"
           >
             <span v-tooltip="formatCurrency(runePrice * props.row.total_bond)">
-              <RuneAsset 
-                height="0.7rem" 
+              <RuneAsset
+                height="0.7rem"
                 :style="getHighlightStyle(props.row.address)"
               />
               {{ normalFormat(props.row.total_bond) }}
@@ -142,8 +142,8 @@
           </span>
           <span v-else-if="props.column.field == 'award'" class="hoverable">
             <span v-tooltip="formatCurrency(runePrice * props.row.award)">
-              <RuneAsset 
-                height="0.7rem" 
+              <RuneAsset
+                height="0.7rem"
                 :style="getHighlightStyle(props.row.address)"
               />
               {{ props.row.award }}
@@ -261,8 +261,8 @@
                       ></copy>
                     </td>
                     <td class="mono">
-                      <RuneAsset 
-                        height="0.7rem" 
+                      <RuneAsset
+                        height="0.7rem"
                         :style="getHighlightStyle(props.row.address)"
                       />
                       {{ $options.filters.number(p.bond / 10 ** 8, '0,0') }}
@@ -455,8 +455,8 @@
               ></copy>
             </td>
             <td class="mono">
-              <RuneAsset 
-                height="0.7rem" 
+              <RuneAsset
+                height="0.7rem"
                 :style="getHighlightStyle(selectedRow.address)"
               />
               {{ $options.filters.number(p.bond / 10 ** 8, '0,0') }}
@@ -548,12 +548,8 @@ export default {
   methods: {
     getHighlightStyle(address) {
       return {
-        color: this.isFav(address)
-          ? this.vaultColor(address, true)
-          : '',
-        fill: this.isFav(address)
-          ? this.vaultColor(address, true)
-          : '',
+        color: this.isFav(address) ? this.vaultColor(address, true) : '',
+        fill: this.isFav(address) ? this.vaultColor(address, true) : '',
         fontWeight: this.isFav(address) ? 'bold' : 'normal',
       }
     },

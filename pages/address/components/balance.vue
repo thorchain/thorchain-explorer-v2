@@ -32,8 +32,8 @@
               </skeleton-item>
             </div>
 
-            <div class="balance-label">
-              <span>{{ isNodeAddress ? 'Bonded Value' : 'Bond Balance' }}</span>
+            <div v-if="isNodeAddress" class="balance-label">
+              <span>{{ 'Node Balance' }}</span>
               <skeleton-item
                 :loading="loading || !nodes"
                 class="balance-content"
@@ -54,12 +54,30 @@
                       v-if="isNodeAddress"
                       :to="'/node/' + address"
                       class="clickable"
+                      style="margin-left: 0.5rem"
                     >
                       View Node
                     </nuxt-link>
                   </span>
+                  <span v-else class="mono">-</span>
+                </div>
+              </skeleton-item>
+            </div>
+
+            <div class="balance-label">
+              <span>Bond Balance</span>
+              <skeleton-item
+                :loading="loading || !nodes"
+                class="balance-content"
+              >
+                <asset-icon
+                  :asset="{ ticker: 'RUNE', chain: 'THOR' }"
+                  :height="'16px'"
+                  :chain="false"
+                />
+                <div class="bonds">
                   <span
-                    v-else-if="bonds && bonds.total !== undefined"
+                    v-if="bonds && bonds.total !== undefined"
                     v-tooltip="formatCurrency(runePrice * bonds.total)"
                     class="mono"
                   >
