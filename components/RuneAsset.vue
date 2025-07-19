@@ -38,10 +38,10 @@ export default {
       type: String,
       default: 'RUNE',
     },
-    // icon: {
-    //   type: String,
-    //   default: runeIcon,
-    // },
+    icon: {
+      type: String,
+      default: runeIcon,
+    },
     environment: {
       type: String,
       default: 'mainnet',
