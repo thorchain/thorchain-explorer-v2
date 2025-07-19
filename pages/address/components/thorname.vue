@@ -8,7 +8,6 @@
             :columns="columns"
             :rows="thornames"
             style-class="vgt-table net-table"
-            :line-numbers="true"
             :sort-options="{
               enabled: true,
               initialSortBy: { field: 'name', type: 'asc' },
