@@ -443,7 +443,7 @@ export default {
           trigger: 'item',
           confine: true,
           formatter: (a) => {
-            return `${a.name}: <span class='mono'>${this.numberFormat(a?.data?.value)}<span> <small>RUNE</small>`
+            return `${a.name}: <small>${this.numberFormat(a?.data?.value)} RUNE</small> <span class='mono'>(${a.percent}%)</span>`
           },
         },
       }
