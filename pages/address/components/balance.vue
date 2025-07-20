@@ -440,6 +440,8 @@ export default {
           },
         },
         tooltip: {
+          trigger: 'item',
+          confine: true,
           formatter: (a) => {
             return `${a.name}: <span class='mono'>${this.numberFormat(a?.data?.value)}<span> <small>RUNE</small>`
           },

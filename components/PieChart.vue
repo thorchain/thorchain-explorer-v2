@@ -58,6 +58,7 @@ export default {
       return {
         formatter: this.formatter,
         tooltip: {
+          confine: true,
           trigger: 'item',
         },
         series: [
