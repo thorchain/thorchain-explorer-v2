@@ -434,6 +434,17 @@ export default {
           return affiliatesSplit.some((aff) => affiliates.includes(aff))
         }
 
+        const ignoreAggregator = (affiliates) => {
+          const affiliatesSplit = affiliates.split('/')
+          if (
+            affiliates.length > 0 &&
+            (affiliatesSplit.includes('-_') || affiliatesSplit.includes('ro'))
+          ) {
+            return affiliatesSplit.find((aff) => aff !== '-_' && aff !== 'ro')
+          }
+          return affiliates
+        }
+
         filteredNames = interval.affiliates.reduce((acc, affiliate) => {
           let key = affiliateIncludes(['t', 'tl', 'T'], affiliate.affiliate)
             ? 't'
@@ -444,15 +455,7 @@ export default {
               ? 'ti'
               : affiliateIncludes(['va', 'vi', 'v0'], affiliate.affiliate)
                 ? 'va'
-                : affiliateIncludes(['ll'], affiliate.affiliate)
-                  ? 'll'
-                  : affiliateIncludes(['bgw'], affiliate.affiliate)
-                    ? 'bgw'
-                    : affiliateIncludes(['ds'], affiliate.affiliate)
-                      ? 'ds'
-                      : affiliateIncludes(['tps'], affiliate.affiliate)
-                        ? 'tps'
-                        : affiliate.affiliate
+                : ignoreAggregator(affiliate.affiliate)
 
           if (key === '') {
             key = 'No Affiliate'
