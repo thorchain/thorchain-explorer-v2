@@ -429,18 +429,30 @@ export default {
 
         let filteredNames = {}
 
+        const affiliateIncludes = (affiliates, affiliateEntry) => {
+          const affiliatesSplit = affiliateEntry.split('/')
+          return affiliatesSplit.some((aff) => affiliates.includes(aff))
+        }
+
         filteredNames = interval.affiliates.reduce((acc, affiliate) => {
-          let key = ['t', 'tl', 'T', '-_/t'].includes(affiliate.affiliate)
+          let key = affiliateIncludes(['t', 'tl', 'T'], affiliate.affiliate)
             ? 't'
-            : ['ti', 'te', 'tr', 'td', 'tb', 't1', '-_/t1'].includes(
+            : affiliateIncludes(
+                  ['ti', 'te', 'tr', 'td', 'tb', 't1'],
                   affiliate.affiliate
                 )
               ? 'ti'
-              : ['va', 'vi', 'v0'].includes(affiliate.affiliate)
+              : affiliateIncludes(['va', 'vi', 'v0'], affiliate.affiliate)
                 ? 'va'
-                : ['-_/ll'].includes(affiliate.affiliate)
+                : affiliateIncludes(['ll'], affiliate.affiliate)
                   ? 'll'
-                  : affiliate.affiliate
+                  : affiliateIncludes(['bgw'], affiliate.affiliate)
+                    ? 'bgw'
+                    : affiliateIncludes(['ds'], affiliate.affiliate)
+                      ? 'ds'
+                      : affiliateIncludes(['tps'], affiliate.affiliate)
+                        ? 'tps'
+                        : affiliate.affiliate
 
           if (key === '') {
             key = 'No Affiliate'
