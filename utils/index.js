@@ -325,6 +325,7 @@ const memoToType = {
   tcy: 'tcyClaim',
   'tcy+': 'tcyStake',
   'tcy-': 'tcyUnstake',
+  rebond: 'rebond',
 }
 
 export function parseMemoToTxType(memo) {

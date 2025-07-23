@@ -1156,8 +1156,8 @@ export default {
       const { type } = this.parseMemo(action?.metadata?.failed.memo)
 
       const ins = action?.in.map((a) => ({
-        asset: this.parseMemoAsset(a.coins[0]?.asset),
-        amount: a.coins[0].amount,
+        asset: this.parseMemoAsset(a.coins[0]?.asset ?? 'THOR.RUNE'),
+        amount: a.coins[0]?.amount ?? 0,
         txid: a?.txID,
         from: a?.address,
         gas: thorStatus?.tx?.gas ? thorStatus?.tx?.gas[0].amount : null,
@@ -2249,6 +2249,10 @@ export default {
       if (onlyRefund) {
         timeStamp = refundAction?.date
       }
+      let isRefund = false
+      if (refundAction) {
+        isRefund = true
+      }
 
       // TODO: add nice check with animation (transition from pending to complete)
       // TODO: add failed swaps from midgard
@@ -2336,7 +2340,7 @@ export default {
             },
           ],
           action: {
-            type: onlyRefund ? 'refunded Swap' : 'swap',
+            type: onlyRefund || isRefund ? 'refunded Swap' : 'swap',
             timeStamp: timeStamp || null,
             limit: memo.limit,
             limitAsset: outMemoAsset,
@@ -2346,7 +2350,7 @@ export default {
               parseInt(actions?.actions[0]?.metadata?.swap?.liquidityFee) ||
               null,
             liquidityUnits: null,
-            refundReason: onlyRefund ? outboundRefundReason : null,
+            refundReason: onlyRefund || isRefund ? outboundRefundReason : null,
             asymmetry: null,
             affiliateOut: affiliateOut || undefined,
             swapSlip: parseInt(actions?.actions[0]?.metadata?.swap?.swapSlip),
@@ -2361,6 +2365,11 @@ export default {
                 thorStatus?.stages.swap_status?.streaming?.quantity ||
                 memo.quantity,
               lastHeight: null, // Add on midgard if available
+              failedSwaps: +swapAction?.metadata.swap.failedSwaps.length,
+              successRate:
+                1 -
+                +swapAction?.metadata.swap.failedSwaps.length /
+                  +swapAction?.metadata.swap.failedSwaps.quantity,
             },
             memo: actions?.actions[0]?.metadata?.swap?.memo,
             done:
