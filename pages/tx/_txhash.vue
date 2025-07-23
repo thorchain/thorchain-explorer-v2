@@ -2365,11 +2365,6 @@ export default {
                 thorStatus?.stages.swap_status?.streaming?.quantity ||
                 memo.quantity,
               lastHeight: null, // Add on midgard if available
-              failedSwaps: +swapAction?.metadata.swap.failedSwaps.length,
-              successRate:
-                1 -
-                +swapAction?.metadata.swap.failedSwaps.length /
-                  +swapAction?.metadata.swap.failedSwaps.quantity,
             },
             memo: actions?.actions[0]?.metadata?.swap?.memo,
             done:
