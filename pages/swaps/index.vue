@@ -7,7 +7,17 @@
         :active-mode.sync="tablePeriod"
         :nav-items="tablePeriods"
         pre-text="Period :"
-      />
+      >
+        <template #extra>
+          <div
+            class="csv-download"
+            title="Download CSV"
+            @click="downloadSwaps(swaps)"
+          >
+            <file-download class="clickable"></file-download>
+          </div>
+        </template>
+      </Nav>
       <transactions :txs="swaps" :loading="!swaps" :props="formatProp">
         <template #volume="{ props }">
           <span class="mono">
@@ -21,9 +31,13 @@
 
 <script>
 import swap from '../charts/swap.vue'
+import FileDownload from '~/assets/images/file-download.svg?inline'
+import moment from 'moment'
+
 export default {
   components: {
     swap,
+    FileDownload,
   },
   data() {
     return {
@@ -106,6 +120,78 @@ export default {
           ? 1
           : 0
     },
+    downloadSwaps(data) {
+      let swapsData = data
+      if (data.actions && Array.isArray(data.actions)) {
+        swapsData = data.actions
+      } else if (Array.isArray(data)) {
+        swapsData = data
+      } else {
+        console.error('Unexpected data structure:', data)
+        return
+      }
+
+      if (!swapsData.length) {
+        console.error('No swaps data available for CSV download.')
+        return
+      }
+
+      const csvData = swapsData.map((swap) => {
+        const inPrice = +swap?.metadata?.swap?.inPriceUSD ?? 0
+        const inAmount = +swap?.in[0]?.coins[0]?.amount ?? 0
+        const volume = inPrice * inAmount
+
+        const nonAffiliateOuts = swap.out?.filter(out => !out.affiliate) || []
+        const firstNonAffiliateOut = nonAffiliateOuts[0]
+
+        return {
+          hash:
+            swap.tx?.hash ||
+            swap.hash ||
+            swap.txHash ||
+            swap.in?.[0]?.txID ||
+            swap.tx?.id ||
+            '',
+          date: swap.tx?.date
+            ? moment.unix(swap.tx.date).format('YYYY-MM-DD HH:mm:ss')
+            : swap.date
+              ? moment(swap.date / 1e6).format('YYYY-MM-DD HH:mm:ss')
+              : '',
+          volume: volume / 1e8,
+          volumeUSD: this.$options.filters.number(volume / 1e8, '0,0.00a'),
+          from: swap.in?.[0]?.address || '',
+          to: firstNonAffiliateOut?.address || '',
+          inAsset: swap.in[0]?.coins[0]?.asset || '',
+          inAmount: (swap.in[0]?.coins[0]?.amount || 0) / 1e8,
+          outAsset: firstNonAffiliateOut?.coins[0]?.asset || '',
+          outAmount: (firstNonAffiliateOut?.coins[0]?.amount || 0) / 1e8,
+        }
+      })
+
+      const csvContent = [
+        Object.keys(csvData[0]).join(','),
+        ...csvData.map((row) =>
+          Object.values(row)
+            .map((value) => `"${value}"`)
+            .join(',')
+        ),
+      ].join('\n')
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+      const link = document.createElement('a')
+      const url = URL.createObjectURL(blob)
+
+      const period = this.tablePeriod
+      const timestamp = moment().format('YYYY-MM-DD')
+
+      link.setAttribute('href', url)
+      link.setAttribute('download', `top-swaps-${period}-${timestamp}.csv`)
+      link.style.visibility = 'hidden'
+
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    },
   },
 }
 </script>
@@ -113,5 +199,23 @@ export default {
 <style lang="scss">
 .header-top-swap {
   margin-top: 0.5rem;
+}
+
+.csv-download {
+  margin-left: auto;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  margin-right: 0.5rem;
+
+  svg {
+    fill: var(--sec-font-color);
+    height: 1.2rem;
+    width: 1.2rem;
+
+    &:hover {
+      fill: var(--primary-color);
+    }
+  }
 }
 </style>

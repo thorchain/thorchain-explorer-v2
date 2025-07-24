@@ -51,7 +51,16 @@
       </div>
 
       <div class="affiliate-table-section">
-        <Header title="Top Swaps" />
+        <div class="table-header">
+          <Header title="Top Swaps" />
+          <div
+            class="csv-download"
+            title="Download CSV"
+            @click="downloadAffiliateSwaps(affiliateSwaps)"
+          >
+            <file-download class="clickable"></file-download>
+          </div>
+        </div>
         <transactions
           :txs="affiliateSwaps"
           :loading="!affiliateSwaps || isTableLoading"
@@ -85,6 +94,7 @@ import ChartLoader from '~/components/ChartLoader.vue'
 import CardsHeader from '~/components/CardsHeader.vue'
 import AffiliateDropdown from '~/components/AffiliateDropdown.vue'
 import { affiliateList, affiliateMap, interfaces } from '~/utils'
+import FileDownload from '~/assets/images/file-download.svg?inline'
 
 use([
   SVGRenderer,
@@ -103,6 +113,7 @@ export default {
     ChartLoader,
     CardsHeader,
     AffiliateDropdown,
+    FileDownload,
   },
 
   data() {
@@ -741,6 +752,77 @@ export default {
         addName: ifc.addName ?? false,
       }
     },
+
+    downloadAffiliateSwaps(data) {
+      let swapsData = data
+      if (data.actions && Array.isArray(data.actions)) {
+        swapsData = data.actions
+      } else if (Array.isArray(data)) {
+        swapsData = data
+      } else {
+        console.error('Unexpected data structure:', data)
+        return
+      }
+
+      if (!swapsData.length) {
+        console.error('No swaps data available for CSV download.')
+        return
+      }
+
+      const csvData = swapsData.map((swap) => {
+        const inPrice = +swap?.metadata?.swap?.inPriceUSD ?? 0
+        const inAmount = +swap?.in[0]?.coins[0]?.amount ?? 0
+        const volume = inPrice * inAmount
+
+        const nonAffiliateOuts = swap.out?.filter(out => !out.affiliate) || []
+        const firstNonAffiliateOut = nonAffiliateOuts[0]
+
+        return {
+          hash: swap.tx?.hash || swap.hash || swap.txHash || swap.in?.[0]?.txID || swap.tx?.id || '',
+          date: swap.tx?.date
+            ? moment.unix(swap.tx.date).format('YYYY-MM-DD HH:mm:ss')
+            : swap.date
+              ? moment(swap.date / 1e6).format('YYYY-MM-DD HH:mm:ss')
+              : '',
+          volume: volume / 1e8,
+          volumeUSD: this.$options.filters.number(volume / 1e8, '0,0.00a'),
+          from: swap.in?.[0]?.address || '',
+          to: firstNonAffiliateOut?.address || '',
+          inAsset: swap.in[0]?.coins[0]?.asset || '',
+          inAmount: (swap.in[0]?.coins[0]?.amount || 0) / 1e8,
+          outAsset: firstNonAffiliateOut?.coins[0]?.asset || '',
+          outAmount: (firstNonAffiliateOut?.coins[0]?.amount || 0) / 1e8,
+        }
+      })
+
+      const csvContent = [
+        Object.keys(csvData[0]).join(','),
+        ...csvData.map((row) =>
+          Object.values(row)
+            .map((value) => `"${value}"`)
+            .join(',')
+        ),
+      ].join('\n')
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+      const link = document.createElement('a')
+      const url = URL.createObjectURL(blob)
+
+      const affiliateName = this.affiliate || 'all'
+      const period = this.chartPeriod
+      const timestamp = moment().format('YYYY-MM-DD')
+
+      link.setAttribute('href', url)
+      link.setAttribute(
+        'download',
+        `affiliate-swaps-${affiliateName}-${period}-${timestamp}.csv`
+      )
+      link.style.visibility = 'hidden'
+
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    },
   },
 }
 </script>
@@ -766,6 +848,33 @@ export default {
 
 .affiliate-table-section {
   margin-top: 1rem;
+}
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.csv-download {
+  padding: $space-6;
+  cursor: pointer;
+  background-color: var(--card-bg-color);
+  border-radius: $radius-s;
+  border: 1px solid var(--border-color);
+  margin: 0px 10px;
+  display: flex;
+  align-items: center;
+  svg {
+    fill: var(--sec-font-color);
+    height: 1.2rem;
+    width: 1.2rem;
+
+    &:hover {
+      fill: var(--primary-color);
+    }
+  }
 }
 
 @media (max-width: 768px) {
