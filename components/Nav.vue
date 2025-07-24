@@ -16,6 +16,7 @@
     >
       {{ navItem.text }}
     </component>
+    <slot name="extra"></slot>
   </div>
 </template>
 
