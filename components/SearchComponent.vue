@@ -1212,9 +1212,9 @@ export default {
               rgba(240, 147, 251, 0.1) 100%
             );
             border-radius: 50%;
-            margin-bottom: $space-8;
 
             .no-results-icon {
+              display: flex;
               svg {
                 width: 28px;
                 height: 28px;
