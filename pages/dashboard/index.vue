@@ -1499,7 +1499,6 @@ export default {
           return ''
         }
 
-        console.log(this.theme)
         return this.theme === 'light' ? detail.icons.url : detail.icons.urlDark
       }
 

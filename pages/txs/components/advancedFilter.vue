@@ -10,9 +10,9 @@
     <div
       v-if="isModalVisible"
       class="modal-overlay"
+      tabindex="0"
       @click="handleOverlayClick"
       @keydown="handleKeydown"
-      tabindex="0"
     >
       <div class="modal-content" @click.stop @keydown.stop>
         <div class="modal-header">
@@ -216,7 +216,7 @@ export default {
   methods: {
     toggleModal() {
       this.isModalVisible = !this.isModalVisible
-      
+
       if (this.isModalVisible) {
         this.$nextTick(() => {
           const modalOverlay = this.$el.querySelector('.modal-overlay')
@@ -235,7 +235,7 @@ export default {
 
     handleKeydown(event) {
       event.stopPropagation()
-      
+
       if (event.key === 'Escape') {
         this.toggleModal()
       }
@@ -252,7 +252,6 @@ export default {
     submitForm() {
       if (this.isFormValid()) {
         const query = this.prepareQueryParams()
-        console.log('Submitting query:', query)
         this.$router.push({ query })
         this.toggleModal()
       }
