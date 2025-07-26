@@ -15,8 +15,6 @@ export default {
     }),
     currentTheme() {
       const savedTheme = localStorage.getItem('theme')
-      console.log('Saved Theme from localStorage:', savedTheme)
-      console.log('Vuex Theme:', this.theme)
       return savedTheme || this.theme || 'light'
     },
   },
@@ -27,21 +25,15 @@ export default {
   },
   watch: {
     currentTheme(newTheme) {
-      console.log('Theme changed to:', newTheme)
       this.loadChart()
     },
   },
   mounted() {
     if (!localStorage.getItem('theme')) {
       localStorage.setItem('theme', 'light')
-      console.log('Setting default theme to light')
     }
 
     window.addEventListener('storage', () => {
-      console.log(
-        'Storage Event - Theme Changed:',
-        localStorage.getItem('theme')
-      )
       this.loadChart()
     })
 
@@ -49,8 +41,6 @@ export default {
   },
   methods: {
     loadChart() {
-      console.log('Loading chart with theme:', this.currentTheme)
-
       if (this.scriptAdded) {
         this.$refs.container.innerHTML = ''
       }

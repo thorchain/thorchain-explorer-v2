@@ -236,8 +236,7 @@ export default {
             {
               ...this.parseConstant('TNSRegisterFee'),
               name: 'Register Fee',
-              filter: (v) =>
-                this.formatRune(v / 1e8, '0,0a'),
+              filter: (v) => this.formatRune(v / 1e8, '0,0a'),
               valueSlot: 'usd',
             },
           ],
@@ -299,8 +298,7 @@ export default {
             },
             {
               ...this.parseConstant('MinimumBondInRune'),
-              filter: (v) =>
-                this.formatRune(v / 1e8, '0,0a'),
+              filter: (v) => this.formatRune(v / 1e8, '0,0a'),
 
               valueSlot: 'usd',
             },
@@ -438,7 +436,6 @@ export default {
             this.networkConst.int_64_values
           )) {
             const parsedConstant = this.parseConstant(key)
-            console.log(parsedConstant)
             combinedSettings.push({
               ...parsedConstant,
               status: parsedConstant.extraInfo ? 'Mimir' : 'Constant',
