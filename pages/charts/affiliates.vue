@@ -22,6 +22,15 @@
       <div class="charts-container">
         <div class="chart-item">
           <card title="Fees Stats">
+            <template #header>
+              <div
+                class="csv-download"
+                title="Download CSV"
+                @click="downloadAffiliateFeesChart()"
+              >
+                <file-download class="clickable"></file-download>
+              </div>
+            </template>
             <VChart
               v-if="affiliateChart && !loading"
               :key="affiliateChartKey"
@@ -35,6 +44,15 @@
 
         <div class="chart-item">
           <card title="Swaps Stats">
+            <template #header>
+              <div
+                class="csv-download"
+                title="Download CSV"
+                @click="downloadAffiliateSwapsChart()"
+              >
+                <file-download class="clickable"></file-download>
+              </div>
+            </template>
             <VChart
               v-if="affiliateStatsChart && !loading"
               :key="affiliateStatsChartKey"
@@ -823,6 +841,116 @@ export default {
       link.click()
       document.body.removeChild(link)
     },
+
+    downloadAffiliateFeesChart() {
+      if (!this.affiliateChart) {
+        console.error('No chart data available for CSV download.')
+        return
+      }
+
+      const series = this.affiliateChart.series
+      const xAxis = this.affiliateChart.xAxis.data
+
+      if (!xAxis || !Array.isArray(xAxis)) {
+        console.error('Invalid chart data structure.')
+        return
+      }
+
+      const csvData = []
+      xAxis.forEach((date, index) => {
+        const row = { date }
+        series.forEach(s => {
+          const value = s.data[index] || 0
+          if (s.name && s.name !== 'undefined') {
+            row[s.name] = value
+          }
+        })
+        csvData.push(row)
+      })
+
+      const csvContent = [
+        Object.keys(csvData[0]).join(','),
+        ...csvData.map((row) =>
+          Object.values(row)
+            .map((value) => `"${value}"`)
+            .join(',')
+        ),
+      ].join('\n')
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+      const link = document.createElement('a')
+      const url = URL.createObjectURL(blob)
+
+      const affiliateName = this.affiliate || 'all'
+      const period = this.chartPeriod
+      const timestamp = moment().format('YYYY-MM-DD')
+
+      link.setAttribute('href', url)
+      link.setAttribute(
+        'download',
+        `affiliate-fees-${affiliateName}-${period}-${timestamp}.csv`
+      )
+      link.style.visibility = 'hidden'
+
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    },
+
+    downloadAffiliateSwapsChart() {
+      if (!this.affiliateStatsChart) {
+        console.error('No chart data available for CSV download.')
+        return
+      }
+
+      const series = this.affiliateStatsChart.series
+      const xAxis = this.affiliateStatsChart.xAxis.data
+
+      if (!xAxis || !Array.isArray(xAxis)) {
+        console.error('Invalid chart data structure.')
+        return
+      }
+
+      const csvData = []
+      xAxis.forEach((date, index) => {
+        const row = { date }
+        series.forEach(s => {
+          const value = s.data[index] || 0
+          if (s.name && s.name !== 'undefined') {
+            row[s.name] = value
+          }
+        })
+        csvData.push(row)
+      })
+
+      const csvContent = [
+        Object.keys(csvData[0]).join(','),
+        ...csvData.map((row) =>
+          Object.values(row)
+            .map((value) => `"${value}"`)
+            .join(',')
+        ),
+      ].join('\n')
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+      const link = document.createElement('a')
+      const url = URL.createObjectURL(blob)
+
+      const affiliateName = this.affiliate || 'all'
+      const period = this.chartPeriod
+      const timestamp = moment().format('YYYY-MM-DD')
+
+      link.setAttribute('href', url)
+      link.setAttribute(
+        'download',
+        `affiliate-swaps-${affiliateName}-${period}-${timestamp}.csv`
+      )
+      link.style.visibility = 'hidden'
+
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    },
   },
 }
 </script>
@@ -866,6 +994,8 @@ export default {
   margin: 0px 10px;
   display: flex;
   align-items: center;
+  margin-left: auto;
+
   svg {
     fill: var(--sec-font-color);
     height: 1.2rem;

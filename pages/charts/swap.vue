@@ -38,6 +38,15 @@
       </div>
     </div>
     <card title="Swaps Volume" :is-loading="loading">
+      <template #header>
+        <div
+          class="csv-download"
+          title="Download CSV"
+          @click="downloadSwapChart()"
+        >
+          <file-download class="clickable"></file-download>
+        </div>
+      </template>
       <VChart
         v-if="swapHistory"
         :option="swapHistory"
@@ -64,6 +73,7 @@ import {
 import VChart from 'vue-echarts'
 import AngleIcon from '~/assets/images/angle-down.svg?inline'
 import ChartLoader from '~/components/ChartLoader.vue'
+import FileDownload from '~/assets/images/file-download.svg?inline'
 
 use([
   SVGRenderer,
@@ -80,6 +90,7 @@ export default {
     VChart,
     AngleIcon,
     ChartLoader,
+    FileDownload,
   },
   data() {
     return {
@@ -333,6 +344,68 @@ export default {
       localStorage.setItem('selectedAsset', option)
       this.fetchSwapHistory()
     },
+
+    downloadSwapChart() {
+      if (!this.swapHistory) {
+        console.error('No chart data available for CSV download.')
+        return
+      }
+
+      const series = this.swapHistory.series
+      const xAxis = this.swapHistory.xAxis.data
+
+      if (!xAxis || !Array.isArray(xAxis)) {
+        console.error('Invalid chart data structure.')
+        return
+      }
+
+      const csvData = []
+      xAxis.forEach((date, index) => {
+        const row = { date }
+        series.forEach((s) => {
+          const value = s.data[index] || 0
+          if (s.name && s.name !== 'undefined') {
+            row[s.name] = value
+          }
+        })
+        csvData.push(row)
+      })
+
+      const headers = Object.keys(csvData[0]).map(header => {
+        if (header !== 'date') {
+          return `${header} (USD)`
+        }
+        return header
+      })
+
+      const csvContent = [
+        headers.join(','),
+        ...csvData.map((row) =>
+          Object.values(row)
+            .map((value) => `"${value}"`)
+            .join(',')
+        ),
+      ].join('\n')
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+      const link = document.createElement('a')
+      const url = URL.createObjectURL(blob)
+
+      const poolName = this.selectedOption || 'all'
+      const period = this.chartPeriod
+      const timestamp = moment().format('YYYY-MM-DD')
+
+      link.setAttribute('href', url)
+      link.setAttribute(
+        'download',
+        `swap-volume-${poolName}-${period}-${timestamp}.csv`
+      )
+      link.style.visibility = 'hidden'
+
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    },
   },
 }
 </script>
@@ -428,6 +501,31 @@ export default {
       opacity: 1;
       transform: translateY(0);
       pointer-events: auto;
+    }
+  }
+}
+
+.csv-download {
+  padding: $space-6;
+  cursor: pointer;
+  background-color: var(--card-bg-color);
+  border-radius: $radius-s;
+  border: 1px solid var(--border-color);
+  margin: 0px 10px;
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  &:hover {
+    background-color: var(--active-bg-color);
+  }
+
+  svg {
+    fill: var(--sec-font-color);
+    height: 1.2rem;
+    width: 1.2rem;
+
+    &:hover {
+      fill: var(--primary-color);
     }
   }
 }
