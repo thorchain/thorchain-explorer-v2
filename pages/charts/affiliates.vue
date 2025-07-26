@@ -792,11 +792,17 @@ export default {
         const inAmount = +swap?.in[0]?.coins[0]?.amount ?? 0
         const volume = inPrice * inAmount
 
-        const nonAffiliateOuts = swap.out?.filter(out => !out.affiliate) || []
+        const nonAffiliateOuts = swap.out?.filter((out) => !out.affiliate) || []
         const firstNonAffiliateOut = nonAffiliateOuts[0]
 
         return {
-          hash: swap.tx?.hash || swap.hash || swap.txHash || swap.in?.[0]?.txID || swap.tx?.id || '',
+          hash:
+            swap.tx?.hash ||
+            swap.hash ||
+            swap.txHash ||
+            swap.in?.[0]?.txID ||
+            swap.tx?.id ||
+            '',
           date: swap.tx?.date
             ? moment.unix(swap.tx.date).format('YYYY-MM-DD HH:mm:ss')
             : swap.date
@@ -859,7 +865,7 @@ export default {
       const csvData = []
       xAxis.forEach((date, index) => {
         const row = { date }
-        series.forEach(s => {
+        series.forEach((s) => {
           const value = s.data[index] || 0
           if (s.name && s.name !== 'undefined') {
             row[s.name] = value
@@ -914,7 +920,7 @@ export default {
       const csvData = []
       xAxis.forEach((date, index) => {
         const row = { date }
-        series.forEach(s => {
+        series.forEach((s) => {
           const value = s.data[index] || 0
           if (s.name && s.name !== 'undefined') {
             row[s.name] = value
@@ -996,14 +1002,14 @@ export default {
   align-items: center;
   margin-left: auto;
 
+  &:hover svg {
+    fill: var(--primary-color);
+  }
+
   svg {
     fill: var(--sec-font-color);
     height: 1.2rem;
     width: 1.2rem;
-
-    &:hover {
-      fill: var(--primary-color);
-    }
   }
 }
 

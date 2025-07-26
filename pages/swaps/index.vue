@@ -30,9 +30,9 @@
 </template>
 
 <script>
+import moment from 'moment'
 import swap from '../charts/swap.vue'
 import FileDownload from '~/assets/images/file-download.svg?inline'
-import moment from 'moment'
 
 export default {
   components: {
@@ -141,7 +141,7 @@ export default {
         const inAmount = +swap?.in[0]?.coins[0]?.amount ?? 0
         const volume = inPrice * inAmount
 
-        const nonAffiliateOuts = swap.out?.filter(out => !out.affiliate) || []
+        const nonAffiliateOuts = swap.out?.filter((out) => !out.affiliate) || []
         const firstNonAffiliateOut = nonAffiliateOuts[0]
 
         return {
@@ -208,14 +208,14 @@ export default {
   align-items: center;
   margin-right: 0.5rem;
 
+  &:hover svg {
+    fill: var(--primary-color);
+  }
+
   svg {
     fill: var(--sec-font-color);
     height: 1.2rem;
     width: 1.2rem;
-
-    &:hover {
-      fill: var(--primary-color);
-    }
   }
 }
 </style>
