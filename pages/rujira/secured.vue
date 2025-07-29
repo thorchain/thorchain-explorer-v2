@@ -234,12 +234,13 @@ export default {
         {
           name: 'Total secured Depth',
           value:
-            '$' + this.$options.filters.number(totalSecuredDepth || 0, '0,0a'),
+            '$' +
+            this.$options.filters.number(totalSecuredDepth || 0, '0,0.00a'),
         },
         {
           name: 'Total Vault Depth',
           value:
-            '$' + this.$options.filters.number(totalVaultDepth || 0, '0,0a'),
+            '$' + this.$options.filters.number(totalVaultDepth || 0, '0,0.00a'),
         },
         {
           name: 'Total Vault / Pool',

@@ -458,7 +458,7 @@ export function assetToSecure(str) {
     str = assetToString(str)
   }
 
-  return str.replace('.', '-')
+  return str?.replace('.', '-') ?? str
 }
 
 export function tradeToAsset(str) {
