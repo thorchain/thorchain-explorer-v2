@@ -35,9 +35,9 @@ export default {
     typeName(type) {
       switch (type) {
         case 'addLiquidity':
-          return 'Add LP'
+          return this.detailedType(type)
         case 'withdraw':
-          return 'Remove LP'
+          return this.detailedType(type)
         case 'runePoolDeposit':
           return 'RUNEPool Deposit'
         case 'runePoolWithdraw':
@@ -84,6 +84,23 @@ export default {
     },
     emitRemoveHovered() {
       this.$emit('removeHoveredType')
+    },
+    detailedType(type) {
+      switch (type) {
+        case 'addLiquidity':
+          if (this.row.pools.some((pool) => pool?.includes('/'))) {
+            return 'Savers Deposit'
+          }
+          return 'Add LP'
+        case 'withdraw':
+          if (this.row.pools.some((pool) => pool?.includes('/'))) {
+            return 'Savers Withdraw'
+          }
+          return 'Withdraw LP'
+
+        default:
+          return type
+      }
     },
   },
 }

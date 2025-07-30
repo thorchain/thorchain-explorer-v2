@@ -37,7 +37,12 @@
             :loading="addressLoading"
           />
           <balance-history
-            v-if="address && (hasBalances || addressLoading) && addressStat"
+            v-if="
+              address &&
+              (hasBalances || addressLoading) &&
+              addressStat &&
+              addressStat.length > 0
+            "
             :key="address"
             class="card-balance-history"
             :address="address"
