@@ -449,7 +449,7 @@ export default {
       }
     },
     explorers() {
-      const blockChains = ['btc', 'eth', 'doge', 'bch', 'ltc', 'atom']
+      const blockChains = ['btc', 'eth', 'doge', 'bch', 'ltc', 'atom', 'xrp']
 
       const explorers = []
       for (let i = 0; i < blockChains.length; i++) {

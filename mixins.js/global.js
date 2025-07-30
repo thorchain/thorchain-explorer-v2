@@ -142,6 +142,8 @@ export default {
           return '#ffc300'
         case 'ETH.USDT-0XDAC17F958D2EE523A2206206994597C13D831EC7':
           return '#26A17B'
+        case 'XRP.XRP':
+          return '#23292F'
         default:
           return this.popRandomColor()
       }
@@ -167,6 +169,8 @@ export default {
           return '#F1B90A'
         case 'BASE':
           return '#1E6AFF'
+        case 'XRP':
+          return '#23292F'
         default:
           return this.popRandomColor()
       }
@@ -807,6 +811,8 @@ export default {
           return '#305DD4'
         case 'CBBTC':
           return '#1E6AFF'
+        case 'XRP':
+          return '#23292F'
         default:
           return null
       }
@@ -831,6 +837,7 @@ export default {
           return 3
         case 'BSC':
         case 'BASE':
+        case 'XRP':
           return 3
         case 'BNB':
           return 0.5
