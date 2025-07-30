@@ -53,7 +53,7 @@
         :theme="chartTheme"
         :autoresize="true"
       />
-      <ChartLoader v-if="!swapHistory" :bar-count="30"/>
+      <ChartLoader v-if="!swapHistory" :bar-count="30" />
     </card>
   </div>
 </template>
@@ -102,6 +102,7 @@ export default {
       selectedOption: 'All',
       chartPeriod: '90',
       chartInterval: 'day',
+      swapCount: [],
       chartPeriods: [
         { text: '90 D', mode: '90' },
         { text: '180 D', mode: '180' },
@@ -250,6 +251,8 @@ export default {
           (+interval.fromSecuredVolumeUSD + +interval.toSecuredVolumeUSD) /
             10 ** 2
         )
+
+        this.swapCount.push(interval.totalCount || 0)
       })
       return this.basicChartFormat(
         (value) => `$ ${this.$options.filters.number(+value, '0,0.00a')}`,
@@ -368,10 +371,11 @@ export default {
             row[s.name] = value
           }
         })
+        row['Swap Count'] = this.swapCount[index] || 0
         csvData.push(row)
       })
 
-      const headers = Object.keys(csvData[0]).map(header => {
+      const headers = Object.keys(csvData[0]).map((header) => {
         if (header !== 'date') {
           return `${header} (USD)`
         }
