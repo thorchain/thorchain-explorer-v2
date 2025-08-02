@@ -669,6 +669,15 @@ export default {
               is: accordions.action?.to,
               type: 'address',
               formatter: this.formatAddress,
+            },
+            {
+              key: 'Gas',
+              value:
+                `${accordions.action?.gas / 1e9} ${this.showAsset(accordions.action?.gasAsset)}` +
+                (this.pools
+                  ? ` (${this.formatCurrency(this.amountToUSD(accordions.action?.gasAsset, accordions.action?.gas, this.pools))})`
+                  : ''),
+              is: accordions.action?.gas && accordions.action?.gasAsset,
             }
           )
         }
@@ -1724,6 +1733,8 @@ export default {
           from: nativeTx?.in[0]?.address,
           to: nativeTx?.out[0]?.address,
           height: nativeTx?.height,
+          gas: nativeTx?.metadata?.send?.networkFees?.[0]?.amount,
+          gasAsset: 'THOR.RUNE',
           timeStamp,
           pending: false,
           error: isError,
