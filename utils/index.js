@@ -1060,6 +1060,10 @@ export function getExplorerAddressUrl(chain, query, type) {
       return isAddress
         ? `https://xrpscan.com/account/${query}`
         : `https://xrpscan.com/tx/${query}`
+    case 'TRON':
+      return isAddress
+        ? `https://tronscan.org/#/address/${query}`
+        : `https://tronscan.org/#/transaction/${query}`
     default:
       break
   }

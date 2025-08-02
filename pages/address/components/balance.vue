@@ -449,7 +449,16 @@ export default {
       }
     },
     explorers() {
-      const blockChains = ['btc', 'eth', 'doge', 'bch', 'ltc', 'atom', 'xrp']
+      const blockChains = [
+        'btc',
+        'eth',
+        'doge',
+        'bch',
+        'ltc',
+        'atom',
+        'xrp',
+        'trx',
+      ]
 
       const explorers = []
       for (let i = 0; i < blockChains.length; i++) {
@@ -468,6 +477,9 @@ export default {
           // Change atom to GAIA. its chain
           if (chain === 'atom') {
             chain = 'gaia'
+          }
+          if (chain === 'trx') {
+            chain = 'tron'
           }
           explorers.push({
             chain: chain.toUpperCase(),

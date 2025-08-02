@@ -70,6 +70,9 @@ export default {
         case 'BSC':
           asset = 'BSC.BNB'
           break
+        case 'TRON':
+          asset = 'TRON.TRX'
+          break
         case 'THOR':
           asset = 'THOR.RUNE'
           break
@@ -89,6 +92,8 @@ export default {
           return 'GAIA.ATOM'
         case 'BSC':
           return 'BSC.BNB'
+        case 'TRON':
+          return 'TRON.TRX'
         default:
           return `${chain}.${chain}`
       }
@@ -144,6 +149,8 @@ export default {
           return '#26A17B'
         case 'XRP.XRP':
           return '#23292F'
+        case 'TRON.TRX':
+          return '#E11221'
         default:
           return this.popRandomColor()
       }
@@ -171,6 +178,8 @@ export default {
           return '#1E6AFF'
         case 'XRP':
           return '#23292F'
+        case 'TRON':
+          return '#E11221'
         default:
           return this.popRandomColor()
       }
@@ -813,6 +822,8 @@ export default {
           return '#1E6AFF'
         case 'XRP':
           return '#23292F'
+        case 'TRX':
+          return '#E11221'
         default:
           return null
       }
