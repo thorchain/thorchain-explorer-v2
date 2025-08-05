@@ -362,7 +362,7 @@ export default {
           const accordionIn = {
             name: `accordion-in-${i}`,
             data: {
-              title: 'Inbound',
+              title: a?.type ?? 'Inbound',
               done: a?.done,
               pending: !a?.done,
               remainingTime: a.confirmationRemainingSeconds,
@@ -1115,6 +1115,7 @@ export default {
     },
     createContractState(thorStatus, action) {
       const ins = action?.in.map((a) => ({
+        type: 'Caller',
         asset: this.parseMemoAsset(a.coins[0]?.asset),
         amount: a.coins[0]?.amount,
         txid: a?.txID,
