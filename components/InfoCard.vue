@@ -23,8 +23,18 @@
                 </template>
                 <h4>{{ section.title }}</h4>
               </div>
+              <a
+                v-if="section.link && section.link.includes('https')"
+                :href="section.link"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="more-link clickable"
+              >
+                More
+                <right-arrow />
+              </a>
               <nuxt-link
-                v-if="section.link"
+                v-else-if="section.link"
                 :to="section.link"
                 class="more-link clickable"
               >
