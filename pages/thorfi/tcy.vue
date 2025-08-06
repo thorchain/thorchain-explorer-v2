@@ -303,8 +303,29 @@ export default {
           ],
         },
         {
-          title: 'Economics',
+          title: 'Auto Compounding TCY',
+          link: 'https://tcy.thorchain.org/manage',
           rowStart: 3,
+          colSpan: 1,
+          items: [
+            {
+              name: 'Total TCY Locked',
+              value: this.tcyInfo?.total_tcy_locked,
+              filter: (v) =>
+                `${this.$options.filters.number(v / 1e8, '0,0.00')} TCY`,
+              extraText: `${this.$options.filters.currency(this.tcyInfo?.total_tcy_locked_usd)}`,
+            },
+            {
+              name: 'sTCY Minted',
+              value: this.tcyInfo?.stcy_minted,
+              filter: (v) =>
+                `${this.$options.filters.number(v / 1e8, '0,0.00')} sTCY`,
+            },
+          ],
+        },
+        {
+          title: 'Economics',
+          rowStart: 4,
           colSpan: 1,
           items: [
             {
@@ -358,27 +379,6 @@ export default {
                   this.tcyInfo?.TCYSupply /
                   this.tcyInfo?.price),
               filter: (v) => `${this.$options.filters.number(v)}x`,
-            },
-          ],
-        },
-        {
-          title: 'Auto Compounding TCY',
-          link: 'https://tcy.thorchain.org/manage',
-          rowStart: 4,
-          colSpan: 1,
-          items: [
-            {
-              name: 'Total TCY Locked',
-              value: this.tcyInfo?.total_tcy_locked,
-              filter: (v) =>
-                `${this.$options.filters.number(v / 1e8, '0,0.00')} TCY`,
-              extraText: `${this.$options.filters.currency(this.tcyInfo?.total_tcy_locked_usd)}`,
-            },
-            {
-              name: 'sTCY Minted',
-              value: this.tcyInfo?.stcy_minted,
-              filter: (v) =>
-                `${this.$options.filters.number(v / 1e8, '0,0.00')} sTCY`,
             },
           ],
         },
