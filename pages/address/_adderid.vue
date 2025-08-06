@@ -6,9 +6,9 @@
           <Avatar :name="address" />
         </div>
         <div class="address-name">
-          <span class="address-value" style="color: var(--sec-font-color)">{{
-            address
-          }}</span>
+          <span class="address-value" style="color: var(--sec-font-color)">
+            {{ label }}
+          </span>
           <div class="qr-copy-wrapper">
             <div class="item">
               <Copy :str-copy="address" />
@@ -41,7 +41,8 @@
               address &&
               (hasBalances || addressLoading) &&
               addressStat &&
-              addressStat.length > 0
+              addressStat.length > 0 &&
+              !isContractAddress(address)
             "
             :key="address"
             class="card-balance-history"
@@ -264,6 +265,7 @@ export default {
   },
   data() {
     return {
+      label: this.$route.params.adderid,
       address: this.$route.params.adderid,
       addrTxs: null,
       count: undefined,
@@ -386,6 +388,7 @@ export default {
     },
   },
   mounted() {
+    this.updateLabel(this.address)
     const { nextPageToken, prevPageToken, page } = this.$route.query
     this.currentPage = page ? parseInt(page) : 1
     this.fetchAddressData(
@@ -398,6 +401,23 @@ export default {
     this.checkIsVault(this.address)
   },
   methods: {
+    isContractAddress(address) {
+      if (address.startsWith('thor') || address.startsWith('sthor')) {
+        return address.length > 42
+      }
+      return false
+    },
+    async updateLabel(address) {
+      const { data: labels } = await this.$api.getContractsLabel()
+      const label = labels.find((l) => {
+        if (l.address.toLowerCase() === address.toLowerCase()) {
+          return l.label
+        }
+        return false
+      })
+      console.log('label', label)
+      this.label = label ? label.label : address
+    },
     async fetchAddressData(address, offset = 0, limit = 30) {
       this.loading = true
       try {
@@ -689,6 +709,7 @@ export default {
     display: flex;
     align-items: center;
     gap: 0.6rem;
+    max-width: 100%;
   }
 
   .address-header {
@@ -723,6 +744,13 @@ export default {
     display: flex;
     padding: $space-8;
     font-size: $font-size-xxs;
+
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    &::-webkit-scrollbar {
+      display: none;
+    }
 
     @include md {
       font-size: $font-size-desktop;

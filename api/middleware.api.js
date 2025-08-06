@@ -319,3 +319,9 @@ export function getTCYDistribution(address) {
     endpoints[process.env.NETWORK].SERVER_URL + `tcy/distribution/${address}`
   )
 }
+
+export function getContractsLabel() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + 'api/contractsLabel'
+  )
+}
