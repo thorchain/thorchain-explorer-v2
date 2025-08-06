@@ -25,7 +25,6 @@ import {
   getSwapsHistory,
   getStats,
   getPools,
-  getTCYDistribution,
 } from './midgard.api'
 import {
   getRunePoolProviders,
@@ -124,6 +123,7 @@ import {
   search,
   getSwapsByThorname,
   getBalanceHistory,
+  getTCYDistribution,
 } from './middleware.api'
 import {
   getChurnHistory,

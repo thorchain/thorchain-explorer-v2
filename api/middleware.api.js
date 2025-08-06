@@ -313,3 +313,9 @@ export function getAffiliateStats(params) {
     }
   )
 }
+
+export function getTCYDistribution(address) {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + `tcy/distribution/${address}`
+  )
+}
