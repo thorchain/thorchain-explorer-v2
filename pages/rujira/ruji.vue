@@ -10,7 +10,7 @@
         style-class="vgt-table net-table"
         :sort-options="{
           enabled: true,
-          initialSortBy: { field: 'valueUsd', type: 'asc' },
+          initialSortBy: { field: 'valueUsd', type: 'desc' },
         }"
       >
         <template slot="table-column" slot-scope="props">
