@@ -220,7 +220,6 @@ export default {
       oldRunePool: [],
       polOverview: undefined,
       rune: '',
-      affiliateDaily: undefined,
       lastblock: undefined,
       stats: [],
       volumeHistory: undefined,
@@ -651,12 +650,6 @@ export default {
       .catch((error) => {
         console.error(error)
       })
-
-    this.$api.getAffiliateDaily().then(({ data }) => {
-      this.affiliateDaily = data
-      this.affiliateEarning =
-        data[data.length - 1]?.daily_affiliate_fees_usd ?? 0
-    })
 
     this.$api.getEarnings().then(({ data }) => {
       this.totalBurnedRune =

@@ -99,7 +99,6 @@ import {
   getAffiliateSwapsByWallet,
   getAffiliateSwapsWeekly,
   getNodeOverview,
-  getAffiliateDaily,
   getActions,
   getCoinMarketInfo,
   getNodesInfo,
@@ -125,6 +124,7 @@ import {
   getBalanceHistory,
   getTCYDistribution,
   getContractsLabel,
+  getRUJIStats,
 } from './middleware.api'
 import {
   getChurnHistory,
@@ -309,7 +309,6 @@ export default function ({ $axios }, inject) {
     getAffiliateSwapsWeekly,
     getAffiliateSwapsDaily,
     getNodeOverview,
-    getAffiliateDaily,
     getActions,
     getMidgardActions,
     getThorVersion,
@@ -340,6 +339,7 @@ export default function ({ $axios }, inject) {
     getSwapsByThorname,
     getBalanceHistory,
     getContractsLabel,
+    getRUJIStats,
   }
 
   inject('api', api)

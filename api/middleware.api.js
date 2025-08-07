@@ -138,12 +138,6 @@ export function getNodeOverview() {
   )
 }
 
-export function getAffiliateDaily() {
-  return $axiosInstace.get(
-    endpoints[process.env.NETWORK].SERVER_URL + 'api/affiliateDaily'
-  )
-}
-
 let fetchDataCancel = null
 
 export function getActions(params) {
@@ -323,5 +317,11 @@ export function getTCYDistribution(address) {
 export function getContractsLabel() {
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].SERVER_URL + 'api/contractsLabel'
+  )
+}
+
+export function getRUJIStats() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + 'api/rujiStats'
   )
 }
