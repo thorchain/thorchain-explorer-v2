@@ -10,6 +10,7 @@
         style-class="vgt-table net-table"
         :sort-options="{
           enabled: true,
+          initialSortBy: { field: 'valueUsd', type: 'asc' },
         }"
       >
         <template slot="table-column" slot-scope="props">
@@ -96,7 +97,7 @@ export default {
         },
         {
           label: 'RUJI Staked (USD)',
-          value: this.stats?.tvl_usd,
+          value: +this.stats?.tvl_usd,
           filter: (v) => this.$options.filters.currency(v / 1e8),
         },
         {
