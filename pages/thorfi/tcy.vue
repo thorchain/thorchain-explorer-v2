@@ -321,6 +321,15 @@ export default {
               filter: (v) =>
                 `${this.$options.filters.number(v / 1e8, '0,0.00')} sTCY`,
             },
+            {
+              name: 'Auto Compounding',
+              value:
+                this.tcyInfo?.total_tcy_locked /
+                1e8 /
+                (this.tcyInfo?.tcy_account_bond +
+                  this.tcyInfo?.total_tcy_locked / 1e8),
+              filter: (v) => `${this.$options.filters.percent(v, 2)}`,
+            },
           ],
         },
         {
