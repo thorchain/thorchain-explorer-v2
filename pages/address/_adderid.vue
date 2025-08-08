@@ -36,7 +36,6 @@
             :state="addressStat"
             :loading="addressLoading"
           />
-          {{ isContractAddress(address) }}
           <balance-history
             v-if="
               address &&
