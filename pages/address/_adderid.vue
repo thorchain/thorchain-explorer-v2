@@ -36,6 +36,7 @@
             :state="addressStat"
             :loading="addressLoading"
           />
+          {{ isContractAddress(address) }}
           <balance-history
             v-if="
               address &&
@@ -403,7 +404,7 @@ export default {
   methods: {
     isContractAddress(address) {
       if (address.startsWith('thor') || address.startsWith('sthor')) {
-        return address.length > 42
+        return address.length > 45
       }
       return false
     },
