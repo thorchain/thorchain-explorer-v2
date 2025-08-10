@@ -157,12 +157,12 @@ export default {
         .map((item) => {
           return {
             affiliate: this.mapMissing(item),
-            affiliate_fees_usd: +item.earnings / 1e2 ?? 0,
+            affiliate_fees_usd: +item.earnings ?? 0,
             total_swaps: +item.count,
-            total_volume_usd: +item.volume / 1e8,
-            vc: +item.volume / 1e8 / +item.count,
-            avg_bps: +item.volume ? (+item.earnings / +item.volume) * 1e6 : 0,
-            multi: item.affiliate === '-_' || item.affiliate === 'ro',
+            total_volume_usd: +item.volume,
+            vc: +item.volume / +item.count,
+            avg_bps: +item.volume ? +item.earnings / +item.volume : 0,
+            multi: item.multi,
           }
         })
         .filter((item) => item.affiliate !== '')
