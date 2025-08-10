@@ -73,17 +73,23 @@ export default {
     async fetchAffiliateData() {
       try {
         if (this.period === 'month') {
-          const { data } = await this.$api.getAffiliateSwapsByWallet()
+          const { data } = await this.$api.getAffiliateSwapsMonthly()
           this.affiliateDataMonthly = this.formatData(data)
-          this.overallInfoMonthly = this.calculateOverallInfo(data)
+          this.overallInfoMonthly = this.calculateOverallInfo(
+            this.affiliateDataMonthly
+          )
         } else if (this.period === 'week') {
           const { data } = await this.$api.getAffiliateSwapsWeekly()
           this.affiliateDataWeekly = this.formatData(data)
-          this.overallInfoWeekly = this.calculateOverallInfo(data)
+          this.overallInfoWeekly = this.calculateOverallInfo(
+            this.affiliateDataWeekly
+          )
         } else if (this.period === 'day') {
           const { data } = await this.$api.getAffiliateSwapsDaily()
           this.affiliateDataDaily = this.formatData(data)
-          this.overallInfoDaily = this.calculateOverallInfo(data)
+          this.overallInfoDaily = this.calculateOverallInfo(
+            this.affiliateDataDaily
+          )
         }
       } catch (error) {
         console.error(`Error fetching ${this.period} affiliate data:`, error)
@@ -122,7 +128,7 @@ export default {
 
       const avgFee = nonMultiData.reduce((sum, item) => {
         const volumeRatio = item.total_volume_usd / totalVolume
-        return sum + item.avg_affiliate_fee_basis_points * volumeRatio
+        return sum + item.avg_bps * volumeRatio
       }, 0)
 
       const volumePerSwap = totalVolume / totalSwaps
@@ -134,7 +140,7 @@ export default {
         },
         {
           name: 'AVG Fee',
-          value: `${this.$options.filters.percent(avgFee / 1e4, 2)}`,
+          value: `${this.$options.filters.percent(avgFee, 2)}`,
         },
         {
           name: 'Swap Count',
@@ -147,17 +153,19 @@ export default {
       ]
     },
     formatData(data) {
-      return data.map((item) => {
-        return {
-          affiliate: this.mapMissing(item),
-          affiliate_fees_usd: item.affiliate_fees_usd,
-          total_swaps: item.total_swaps,
-          total_volume_usd: item.total_volume_usd,
-          vc: item.vc,
-          avg_bps: item.avg_affiliate_fee_basis_points / 1e4,
-          multi: item.multi || false,
-        }
-      })
+      return data
+        .map((item) => {
+          return {
+            affiliate: this.mapMissing(item),
+            affiliate_fees_usd: +item.earnings / 1e2 ?? 0,
+            total_swaps: +item.count,
+            total_volume_usd: +item.volume / 1e8,
+            vc: +item.volume / 1e8 / +item.count,
+            avg_bps: +item.volume ? (+item.earnings / +item.volume) * 1e6 : 0,
+            multi: item.affiliate === '-_' || item.affiliate === 'ro',
+          }
+        })
+        .filter((item) => item.affiliate !== '')
     },
   },
 }

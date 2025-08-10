@@ -657,18 +657,20 @@ export default {
     })
 
     this.$api
-      .getAffiliateSwapsByWallet()
+      .getAffiliateSwapsMonthly()
       .then((data) => {
-        if (data && data.data) {
-          this.affiliateData = data.data.map((item) => ({
-            affiliate: item.affiliate,
-            affiliate_fees_usd: item.affiliate_fees_usd ?? 0,
-            total_swaps: item.total_swaps,
-            total_volume_usd: item.total_volume_usd,
-            vc: item.vc,
-            avg_bps: item.avg_affiliate_fee_basis_points / 1e4,
-            multi: item.multi,
-          }))
+        if (data) {
+          this.affiliateData = data.data
+            .map((item) => ({
+              affiliate: item.affiliate,
+              affiliate_fees_usd: +item.earnings / 1e2 ?? 0,
+              total_swaps: +item.count,
+              total_volume_usd: +item.volume / 1e8,
+              vc: +item.volume / 1e8 / +item.count,
+              avg_bps: (+item.earnings / +item.volume) * 1e6,
+              multi: item.affiliate === '-_' || item.affiliate === 'ro',
+            }))
+            .filter((item) => item.affiliate !== '')
         } else {
           console.error('Data structure is not as expected:', data)
         }

@@ -30,8 +30,8 @@
         <div class="crypto-stat">
           <span class="name">Total Supply</span>
           <skeleton-item :loading="!marketInfo.totalSupply" class="value">
-            {{ marketInfo.totalSupply | number('0,0') }}<RuneAsset height="0.7rem" />
-
+            {{ marketInfo.totalSupply | number('0,0')
+            }}<RuneAsset height="0.7rem" />
           </skeleton-item>
         </div>
       </div>
@@ -44,7 +44,7 @@
           :autoresize="true"
           :theme="chartTheme"
         />
-        <ChartLoader v-if="!swapChartVolume" :bar-count="15"/>
+        <ChartLoader v-if="!swapChartVolume" :bar-count="15" />
       </Card>
       <Card title="Swap Chart Normalized">
         <VChart
@@ -67,7 +67,7 @@
           :autoresize="true"
           :theme="chartTheme"
         />
-        <ChartLoader v-if="!feesRewardsChart" :bar-count="15"/>
+        <ChartLoader v-if="!feesRewardsChart" :bar-count="15" />
       </Card>
       <Card title="Fees/Block Reward Chart Normalized">
         <template #header>
@@ -79,7 +79,7 @@
           :autoresize="true"
           :theme="chartTheme"
         />
-        <ChartLoader v-if="!feesRewardsChartNorm" :bar-count="15"/>
+        <ChartLoader v-if="!feesRewardsChartNorm" :bar-count="15" />
       </Card>
     </div>
     <div class="chart-inner-container">
@@ -90,7 +90,7 @@
           :autoresize="true"
           :theme="chartTheme"
         />
-        <ChartLoader v-if="!rewardsHistory" :bar-count="15"/>
+        <ChartLoader v-if="!rewardsHistory" :bar-count="15" />
       </Card>
       <Card title="Supply / Burn">
         <VChart
@@ -99,7 +99,7 @@
           :autoresize="true"
           :theme="chartTheme"
         />
-        <ChartLoader v-if="!supplyHistory" :bar-count="15"/>
+        <ChartLoader v-if="!supplyHistory" :bar-count="15" />
       </Card>
     </div>
   </div>
@@ -193,7 +193,7 @@ export default {
         console.error('Error fetching swap history:', error)
       })
 
-    this.$api.getAffiliateSwapsByWallet().then(({ data }) => {
+    this.$api.getAffiliateSwapsMonthly().then(({ data }) => {
       this.affiliateWallets(data)
     })
 

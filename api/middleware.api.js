@@ -114,21 +114,21 @@ export function getFeesRewardsMonthly() {
   )
 }
 
-export function getAffiliateSwapsByWallet() {
+export function getAffiliateSwapsMonthly() {
   return $axiosInstace.get(
-    endpoints[process.env.NETWORK].SERVER_URL + 'api/affiliateSwapsByWallet'
+    endpoints[process.env.NETWORK].SERVER_URL + 'api/monthlyLeaderboard'
   )
 }
 
 export function getAffiliateSwapsWeekly() {
   return $axiosInstace.get(
-    endpoints[process.env.NETWORK].SERVER_URL + 'api/affiliateSwapsWeekly'
+    endpoints[process.env.NETWORK].SERVER_URL + 'api/weeklyLeaderboard'
   )
 }
 
 export function getAffiliateSwapsDaily() {
   return $axiosInstace.get(
-    endpoints[process.env.NETWORK].SERVER_URL + 'api/affiliateSwapsDaily'
+    endpoints[process.env.NETWORK].SERVER_URL + 'api/dailyLeaderboard'
   )
 }
 
