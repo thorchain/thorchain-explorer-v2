@@ -60,6 +60,8 @@ export const AssetImage = (assetStr) => {
           iconPath = require('~/assets/images/assets/auto.png')
         } else if (symbol === 'LQDY') {
           iconPath = require('~/assets/images/assets/lqdy.png')
+        } else if (symbol === 'sTCY') {
+          iconPath = require('~/assets/images/assets/stcy.svg')
         }
         break
 

@@ -9,7 +9,12 @@
       >
         <h6 class="metric-label">{{ metric.label }}</h6>
         <div class="metric-values">
-          <b class="metric-value" :title="metric.tooltip">
+          <component
+            :is="metric.link ? 'nuxt-link' : 'b'"
+            :to="metric.link || undefined"
+            :class="['metric-value', { clickable: metric.link }]"
+            :title="metric.tooltip"
+          >
             <template v-if="metric.valueSlot">
               <slot :name="metric.valueSlot" :metric="metric" />
             </template>
@@ -22,7 +27,7 @@
               </span>
             </template>
             <slot :name="`metric-icon-${idx}`"></slot>
-          </b>
+          </component>
           <div v-if="metric.subValue" class="metric-sub-value">
             {{ metric.subValue }}
           </div>
@@ -101,6 +106,18 @@ export default {
 
       @include lg {
         font-size: $font-size-md;
+      }
+    }
+
+    a.metric-value {
+      color: var(--primary-color);
+      text-decoration: none;
+      span {
+        font-weight: bold;
+      }
+
+      &:hover {
+        color: var(--active-primary-color);
       }
     }
 

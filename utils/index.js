@@ -691,10 +691,11 @@ export function assetFromString(s) {
     }
   }
 
-  // Handle "x/staking-x/" denoms
-  if (s.toLowerCase().startsWith('x/staking-x/')) {
-    const id = s.substring('x/staking-x/'.length)
-    const symbol = 's' + id.toUpperCase()
+  // Handle "x/staking-" denoms
+  if (s.toLowerCase().startsWith('x/staking-')) {
+    const id = s.substring('x/staking-'.length)
+    const sAsset = assetFromString(id)
+    const symbol = 's' + sAsset?.symbol?.toUpperCase()
     return {
       chain: 'THOR',
       symbol,
@@ -702,7 +703,6 @@ export function assetFromString(s) {
       synth: false,
       trade: false,
       secure: false,
-      id: s,
       type: 'native',
     }
   }

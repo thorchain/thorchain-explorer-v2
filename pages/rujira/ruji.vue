@@ -110,6 +110,12 @@ export default {
           value: this.stats?.compounding,
           filter: (v) => this.$options.filters.percent(v, 2),
         },
+        {
+          label: 'Holders',
+          value: this.stats?.holders,
+          filter: (v) => this.$options.filters.number(v, '0,0'),
+          link: '/holders?asset=x%2Fruji',
+        },
       ]
     },
   },

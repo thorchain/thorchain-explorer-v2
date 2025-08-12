@@ -60,7 +60,7 @@
             }}</a>
           </div>
 
-          <div v-if="metadata.supply" class="supplies">
+          <div class="supplies">
             <div v-if="metadata.supply" class="metadata-field">
               <label>Supply:</label>
               <div>{{ (metadata.supply / 1e8) | number('0,0.00') }}</div>
