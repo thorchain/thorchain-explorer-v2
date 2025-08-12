@@ -36,7 +36,7 @@ export default {
       overallInfoDaily: null,
       period: 'month',
       periods: [
-        { text: '24 Hours', mode: 'day' },
+        { text: 'Today', mode: 'day' },
         { text: '1 Week', mode: 'week' },
         { text: '1 Month', mode: 'month' },
       ],
