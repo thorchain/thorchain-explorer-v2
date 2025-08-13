@@ -631,6 +631,19 @@ export function shortAssetName(name) {
   return hashMapShorts[name.toLowerCase()] || name
 }
 
+function convertNamiToAsset(assetStr) {
+  switch (assetStr.toLowerCase()) {
+    case 'nav-thor1mlphkryw5g54yfkrp6xpqzlpv4f8wh6hyw27yyg4z2els8a9gxpqhfhekt-rcpt':
+      return 'yRUNE'
+    case 'nav-thor1h0hr0rm3dawkedh44hlrmgvya6plsryehcr46yda2vj0wfwgq5xqrs86px-rcpt':
+      return 'yTCY'
+    case 'fixed-thor1yqf5spdv8c4088zmvqsg32eq63fzepsjvntahdk0ek0yjnkt3qdqftp3lc-rcpt':
+      return 'RJI'
+    default:
+      return undefined
+  }
+}
+
 export function assetFromString(s) {
   if (typeof s === 'object') {
     return s
@@ -685,6 +698,20 @@ export function assetFromString(s) {
       chain: 'THOR',
       symbol: 'LQDY',
       ticker: 'LQDY',
+      synth: false,
+      trade: false,
+      secure: false,
+    }
+  }
+
+  // nami index
+  if (s.toLowerCase().startsWith('x/nami-index-')) {
+    const symbol = s.substring('x/nami-index-'.length).toUpperCase()
+    const converted = convertNamiToAsset(symbol)
+    return {
+      chain: 'THOR',
+      symbol: converted ?? symbol,
+      ticker: converted ?? symbol,
       synth: false,
       trade: false,
       secure: false,

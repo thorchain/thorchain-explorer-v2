@@ -415,7 +415,6 @@ export default {
         }
         return false
       })
-      console.log('label', label)
       this.label = label ? label.label : address
     },
     async fetchAddressData(address, offset = 0, limit = 30) {
