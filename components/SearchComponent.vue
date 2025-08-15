@@ -89,7 +89,12 @@
               <span v-else-if="suggestion.searchType === 'tx'">
                 <transaction />
               </span>
-              <span v-else-if="suggestion.searchType === 'pool'">
+              <span
+                v-else-if="
+                  suggestion.searchType === 'pool' ||
+                  suggestion.searchType === 'asset'
+                "
+              >
                 <AssetIcon :asset="suggestion.id" />
               </span>
             </div>
@@ -212,6 +217,7 @@ export default {
         { type: 'tx', label: 'Transactions', count: counts.tx },
         { type: 'thorname', label: 'THORNames', count: counts.thorname },
         { type: 'pool', label: 'Pools', count: counts.pool },
+        { type: 'asset', label: 'Asset', count: counts.asset },
       ].filter((filter) => filter.count > 0 || filter.type === 'all')
     },
   },
@@ -567,6 +573,7 @@ export default {
         tx: 'tx',
         thorname: 'thorname',
         pool: 'pool',
+        asset: 'asset',
       }
       return typeMap[item.type] || 'address'
     },
@@ -577,6 +584,7 @@ export default {
         tx: 'Transaction',
         thorname: 'THORName',
         pool: 'Pool',
+        asset: 'Asset',
       }
       return badgeMap[type] || type
     },
@@ -587,6 +595,7 @@ export default {
         tx: `/tx/${suggestion.id}`,
         thorname: `/address/${suggestion.id}`,
         pool: `/pool/${suggestion.id}`,
+        asset: `/holders?asset=${suggestion.id}`,
       }
       return routes[suggestion.searchType] || `/address/${suggestion.id}`
     },
@@ -1155,7 +1164,8 @@ export default {
                 color: #4facfe;
               }
 
-              &.badge-pool {
+              &.badge-pool,
+              &.badge-asset {
                 background-color: rgba(34, 197, 94, 0.1);
                 color: #22c55e;
               }
