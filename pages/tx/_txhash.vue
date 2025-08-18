@@ -2359,13 +2359,12 @@ export default {
             affiliateName: memo.affiliate,
             affiliateFee: memo.fee || 0,
             liquidityFee:
-              parseInt(actions?.actions[0]?.metadata?.swap?.liquidityFee) ||
-              null,
+              parseInt(swapAction?.metadata.swap?.liquidityFee) || null,
             liquidityUnits: null,
             refundReason: onlyRefund || isRefund ? outboundRefundReason : null,
             asymmetry: null,
             affiliateOut: affiliateOut || undefined,
-            swapSlip: parseInt(actions?.actions[0]?.metadata?.swap?.swapSlip),
+            swapSlip: parseInt(swapAction?.metadata.swap?.swapSlip),
             height,
             rate: rates,
             streaming: {
@@ -2378,7 +2377,7 @@ export default {
                 memo.quantity,
               lastHeight: null, // Add on midgard if available
             },
-            memo: actions?.actions[0]?.metadata?.swap?.memo,
+            memo: swapAction?.metadata.swap?.memo,
             done:
               thorStatus?.stages?.inbound_finalised?.completed &&
               (thorStatus?.stages.swap_finalised?.completed ||
