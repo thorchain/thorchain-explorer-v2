@@ -284,7 +284,7 @@
       <div class="asset-cell">
         <node-icon class="active-icon"></node-icon>
         <nuxt-link
-          class="clickable"
+          class="clickable mono"
           :to="`/node/${row.metadata.bond.nodeAddress}`"
         >
           {{ addressFormatV2(row.metadata.bond.nodeAddress) }}
@@ -299,7 +299,7 @@
       <div class="asset-cell">
         <node-icon class="active-icon"></node-icon>
         <nuxt-link
-          class="clickable"
+          class="clickable mono"
           :to="`/node/${row.metadata.bond.nodeAddress}`"
         >
           {{ addressFormatV2(row.metadata.bond.nodeAddress) }}
