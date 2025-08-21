@@ -81,7 +81,7 @@ export default {
     }
   },
   head: {
-    title: 'THORChain Network Explorer | Ruji Merge',
+    title: 'THORChain Network Explorer | Ruji',
   },
   computed: {
     ...mapGetters({

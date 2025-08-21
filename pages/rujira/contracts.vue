@@ -182,7 +182,7 @@ export default {
       codes.forEach((item) => {
         const product = item.product || 'General'
         // const name = this.formatName(item.origin)
-        const displayName = this.formatDisplayName(item.origin)
+        const displayName = item.name
 
         if (!grouped[product]) {
           grouped[product] = {
