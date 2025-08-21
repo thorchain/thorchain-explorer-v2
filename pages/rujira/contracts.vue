@@ -34,19 +34,14 @@
               <copy :str-copy="props.row.code" />
             </span>
 
-            <div
-              v-else-if="props.column.field === 'deployers'"
-              class="contracts"
-            >
-              <span
-                v-for="deployer in props.row.deployers"
-                :key="deployer"
-                class="asset-cell"
+            <div v-else-if="props.column.field === 'creator'" class="contracts">
+              <nuxt-link
+                v-if="props.row.creator"
+                :to="`/address/${props.row.creator}`"
+                class="clickable"
               >
-                <nuxt-link :to="`/address/${deployer}`" class="clickable">
-                  {{ deployer.slice(-4) }}
-                </nuxt-link>
-              </span>
+                {{ props.row.creator.slice(-4) }}
+              </nuxt-link>
             </div>
 
             <div
@@ -119,8 +114,8 @@ export default {
           width: '160px',
         },
         {
-          label: 'Deployers',
-          field: 'deployers',
+          label: 'Creator',
+          field: 'creator',
           sortable: true,
           width: '160px',
         },
@@ -195,9 +190,9 @@ export default {
 
         grouped[product].children.push({
           product: displayName,
-          code: item.code,
-          checksum: item.code,
-          deployers: item.deployers || [],
+          code: item.checksum,
+          checksum: item.checksum,
+          creator: item.deployer,
           origin: item.origin,
           displayOrigin: this.formatOrigin(item.origin),
           version: item.version,
@@ -205,8 +200,6 @@ export default {
           auditLink: item.url,
           contracts: item.contracts,
         })
-
-        grouped[product].totalDeployers += item.deployers?.length || 0
       })
 
       this.codes = Object.values(grouped)
@@ -229,15 +222,6 @@ export default {
         .split('-')
         .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ')
-    },
-    formatDeployers(deployers) {
-      if (!deployers || deployers.length === 0) return ''
-      return deployers
-        .map((d) => {
-          if (d.length <= 4) return d
-          return `${d.slice(-4)}`
-        })
-        .join(', ')
     },
   },
 }
