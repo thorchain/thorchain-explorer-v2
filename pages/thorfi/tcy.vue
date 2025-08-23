@@ -313,7 +313,7 @@ export default {
               value: this.tcyInfo?.total_tcy_locked,
               filter: (v) =>
                 `${this.$options.filters.number(v / 1e8, '0,0.00')} TCY`,
-              extraText: `${this.$options.filters.currency(this.tcyInfo?.total_tcy_locked_usd)}`,
+              extraText: `${this.$options.filters.currency(this.tcyInfo?.total_tcy_locked_usd / 1e8)}`,
             },
             {
               name: 'sTCY Minted',
