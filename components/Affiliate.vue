@@ -1,24 +1,36 @@
 <template>
   <div class="affiliate-content">
     <template v-if="affiliates && affiliates.length">
-      <component :is="showLink ? 'nuxt-link' : 'div'" class="affiliate-direct"
-        :to="showLink ? { path: navigateToAffiliate() } : undefined">
-        <div v-for="affiliate in affiliates" :key="affiliate" v-tooltip="affiliateWallet(affiliate).name"
-          class="executed">
-          <img v-if="affiliateWallet(affiliate).icon" :src="affiliateWallet(affiliate).icon"
-            :alt="affiliateWallet(affiliate).name" />
-          <em v-else>{{ affiliateWallet(affiliate).name }}</em>
-          <em v-if="affiliateWallet(affiliate).addName">
-            {{ affiliateWallet(affiliate).name }}
-          </em>
-        </div>
-      </component>
+      <div class="affiliate-direct">
+        <template v-for="affiliate in affiliates">
+          <component
+            :is="showLink ? 'nuxt-link' : 'div'"
+            :key="affiliate"
+            v-tooltip="affiliateWallet(affiliate).name"
+            class="executed"
+            :to="
+              showLink ? { path: navigateToAffiliate(affiliate) } : undefined
+            "
+          >
+            <img
+              v-if="affiliateWallet(affiliate).icon"
+              :src="affiliateWallet(affiliate).icon"
+              :alt="affiliateWallet(affiliate).name"
+            />
+            <em v-else>{{ affiliateWallet(affiliate).name }}</em>
+            <em v-if="affiliateWallet(affiliate).addName">
+              {{ affiliateWallet(affiliate).name }}
+            </em>
+          </component>
+        </template>
+      </div>
     </template>
   </div>
 </template>
 
 <script>
 import { interfaces, affiliateMap } from '@/utils'
+import { nameMapping } from '~/utils'
 
 export default {
   props: {
@@ -50,8 +62,8 @@ export default {
   },
 
   methods: {
-    navigateToAffiliate() {
-      return `/txs?affiliate=${this.affiliates.join('/')}`
+    navigateToAffiliate(affiliate) {
+      return `/txs?type=swap&affiliate=${this.getAffiliateNames(affiliate)}`
     },
 
     loadIconVariants(iconName, preferNoName = false) {
@@ -64,13 +76,19 @@ export default {
 
       const iconPaths = preferNoName
         ? [
-          { url: `${iconName}-no-name.png`, urlDark: `${iconName}-no-name-dark.png` },
-          { url: `${iconName}.png`, urlDark: `${iconName}-dark.png` }
-        ]
+            {
+              url: `${iconName}-no-name.png`,
+              urlDark: `${iconName}-no-name-dark.png`,
+            },
+            { url: `${iconName}.png`, urlDark: `${iconName}-dark.png` },
+          ]
         : [
-          { url: `${iconName}.png`, urlDark: `${iconName}-dark.png` },
-          { url: `${iconName}-no-name.png`, urlDark: `${iconName}-no-name-dark.png` }
-        ]
+            { url: `${iconName}.png`, urlDark: `${iconName}-dark.png` },
+            {
+              url: `${iconName}-no-name.png`,
+              urlDark: `${iconName}-no-name-dark.png`,
+            },
+          ]
 
       for (const path of iconPaths) {
         try {
@@ -88,6 +106,16 @@ export default {
       }
 
       return icons
+    },
+
+    getAffiliateNames(name) {
+      const affiliates = Object.values(nameMapping).find(
+        (arr) => Array.isArray(arr) && arr.includes(name)
+      )
+      if (affiliates && affiliates.length > 0) {
+        return affiliates.join(',')
+      }
+      return name
     },
 
     mapAffiliateName(s) {

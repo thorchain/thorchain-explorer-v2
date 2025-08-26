@@ -821,35 +821,12 @@ export function assetToString({ chain, synth, trade, symbol, secure }) {
 }
 
 export const nameMapping = {
-  t: [
-    't',
-    't/ct',
-    'T',
-    'thor160yye65pf9rzwrgqmtgav69n6zlsyfpgm9a7xk',
-    'tl',
-    '-_/t',
-    'ts',
-  ],
-  ti: ['ti', 'te', 'tr', 'td', 'tb', 't1', '-_/t1'],
-  lifi: ['lifi', 'lifi/-_'],
-  okw: ['okw', 'okw/-_'],
+  t: ['t', 'T', 'thor160yye65pf9rzwrgqmtgav69n6zlsyfpgm9a7xk', 'tl', 'ts'],
+  ti: ['ti', 'te', 'tr', 'td', 'tb', 't1'],
   va: ['va', 'vi', 'v0'],
   wr: ['wr', 'tgt', 'thor1a427q3v96psuj4fnughdw8glt5r7j38lj7rkp8'],
-  eld: ['eld', 'ELD', 'Eldorito'],
-  '-_': [
-    '-_',
-    '-_/ll',
-    '-_/t',
-    'lifi/-_',
-    '-_/t1',
-    '-_/bgw',
-    '-_/tps',
-    '-_/xdf',
-  ],
-  bgw: ['bgw', '-_/bgw'],
-  ll: ['ll', '-_/ll'],
+  eld: ['eld', 'Eldorito'],
   rg: ['rg', 'ro'],
-  xdf: ['xdf', '-_/xdf'],
 }
 
 export const affiliateList = () => {
