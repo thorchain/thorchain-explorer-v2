@@ -160,6 +160,9 @@ export default {
       },
     }
   },
+    head: {
+    title: 'THORChain Network Explorer | Ruji',
+  },
   computed: {
     ...mapGetters({
       chainsHeight: 'getChainsHeight',
@@ -326,7 +329,7 @@ export default {
               value:
                 this.tcyInfo?.total_tcy_locked /
                 1e8 /
-                (this.tcyInfo?.tcy_account_bond +
+                (this.tcyInfo?.tcy_account_bond / 1e8 +
                   this.tcyInfo?.total_tcy_locked / 1e8),
               filter: (v) => `${this.$options.filters.percent(v, 2)}`,
             },
