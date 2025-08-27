@@ -1148,11 +1148,11 @@ export default {
         accordions: {
           in: ins,
           action: {
-            type: action.metadata.contract.contractType,
+            type: 'Contract Call',
             attributes: {
-              attributes: action.metadata.contract.attributes,
-              funds: action.metadata.contract.funds,
-              msg: action.metadata.contract.msg,
+              attributes: action.metadata?.contract?.attributes,
+              funds: action.metadata?.contract?.funds,
+              msg: action.metadata?.contract?.msg,
             },
             done: true,
           },
