@@ -416,7 +416,7 @@
         </div>
       </template>
       <span v-else>
-        {{ row.metadata.contract.contractType }}
+        {{ row.metadata.contract.msg }}
       </span>
     </div>
   </div>
