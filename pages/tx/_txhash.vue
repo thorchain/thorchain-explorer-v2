@@ -32,6 +32,7 @@
               :error="s.data.error"
               :show-at-first="true"
               :attributes="s.data.attributes"
+              :events="s.data.events"
             />
           </template>
         </tx-card>
@@ -411,6 +412,19 @@ export default {
                   is: a?.gas && a?.gasAsset,
                 },
                 {
+                  key: 'Timestamp',
+                  value: `${a.timestamp?.format(
+                    'L LT'
+                  )} (${a.timestamp?.fromNow()})`,
+                  is: a.timestamp && a.timestamp?.isValid(),
+                },
+                {
+                  key: 'Block Height',
+                  value: `${a.height}`,
+                  is: a?.height,
+                  formatter: this.normalFormat,
+                },
+                {
                   key: 'Inbound Stage',
                   value: inboundStages,
                   type: 'bubble',
@@ -682,6 +696,21 @@ export default {
           )
         }
         ret.accordions.push(accordionAction)
+      }
+
+      if (accordions?.events) {
+        const events = {
+          name: 'accordion-events',
+          data: {
+            title: 'Events',
+            events: accordions?.events,
+            pending: false,
+            done: true,
+            error: false,
+          },
+        }
+
+        ret.accordions.push(events)
       }
 
       if (accordions.out) {
@@ -1120,6 +1149,8 @@ export default {
         amount: a.coins[0]?.amount,
         txid: a?.txID,
         from: a?.address,
+        height: action?.height,
+        timestamp: moment.unix(action?.date / 1e9),
         done: true,
       }))
 
@@ -1156,6 +1187,7 @@ export default {
             },
             done: true,
           },
+          events: action.metadata?.contract?.contractEvents,
           out: [],
         },
       }

@@ -137,6 +137,9 @@
       <!-- action accordion -->
       <slot name="accordion-action" />
 
+      <!-- events accordion -->
+      <slot name="accordion-events" />
+
       <!-- outbound accordion -->
       <slot name="accordion-out-0" />
       <slot name="accordion-out-1" />

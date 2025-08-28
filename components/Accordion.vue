@@ -95,68 +95,85 @@
       ref="aci"
       :class="['accordion-inner', { show: show }]"
     >
-      <div
-        v-for="(s, i) in stacks.filter((s) => s.is)"
-        :key="i"
-        class="stack-item"
-      >
-        <template v-if="!s.slotName">
-          <div class="key">
-            {{ s.key | capitalize }}
-          </div>
-          <div v-if="s.type === 'bubble'" class="value mono bubble-wrapper">
-            <div
-              v-for="(b, j) in s.value"
-              :key="j"
-              :class="['mini-bubble', ...b.class]"
-            >
-              {{ b.text | capitalize }}
+      <template v-if="stacks">
+        <div
+          v-for="(s, i) in stacks.filter((s) => s.is)"
+          :key="i"
+          class="stack-item"
+        >
+          <template v-if="!s.slotName">
+            <div class="key">
+              {{ s.key | capitalize }}
             </div>
-          </div>
-          <div v-else-if="s.type === 'rate' && s.is">
-            <div class="value mono">
-              <exchangeIcon class="rate" @click="changeRate()" />
-              <template v-if="rate">
-                {{ s.value[0] }}
-              </template>
-              <template v-else>
-                {{ s.value[1] }}
-              </template>
-            </div>
-          </div>
-          <div v-else :class="['value', { link: isLink(s.type) }]">
-            <component
-              :is="checkType(s.type)"
-              :class="['value mono']"
-              :to="toLink(s.type, s.value)"
-            >
-              {{ s.formatter ? s.formatter(s.value) : s.value }}
-              <arrow-icon
-                v-if="checkType(s.type) === 'nuxt-link'"
-                class="icon arrow-link"
-              />
-            </component>
-            <copy
-              v-if="s.type === 'address'"
-              :str-copy="s.value"
-              size="small"
-            ></copy>
-            <template v-if="isLink(s.type) && notTHOR(s.asset)">
-              <span> | </span>
-              <a
-                class="value"
-                target="_blank"
-                :href="getUrl(s.asset, s.value, s.type)"
-                rel="noopener noreferrer"
+            <div v-if="s.type === 'bubble'" class="value mono bubble-wrapper">
+              <div
+                v-for="(b, j) in s.value"
+                :key="j"
+                :class="['mini-bubble', ...b.class]"
               >
-                <external class="icon external-link" />
-              </a>
-            </template>
-          </div>
-        </template>
-        <slot v-else :name="s.slotName" />
-      </div>
+                {{ b.text | capitalize }}
+              </div>
+            </div>
+            <div v-else-if="s.type === 'rate' && s.is">
+              <div class="value mono">
+                <exchangeIcon class="rate" @click="changeRate()" />
+                <template v-if="rate">
+                  {{ s.value[0] }}
+                </template>
+                <template v-else>
+                  {{ s.value[1] }}
+                </template>
+              </div>
+            </div>
+            <div v-else :class="['value', { link: isLink(s.type) }]">
+              <component
+                :is="checkType(s.type)"
+                :class="['value mono']"
+                :to="toLink(s.type, s.value)"
+              >
+                {{ s.formatter ? s.formatter(s.value) : s.value }}
+                <arrow-icon
+                  v-if="checkType(s.type) === 'nuxt-link'"
+                  class="icon arrow-link"
+                />
+              </component>
+              <copy
+                v-if="s.type === 'address'"
+                :str-copy="s.value"
+                size="small"
+              ></copy>
+              <template v-if="isLink(s.type) && notTHOR(s.asset)">
+                <span> | </span>
+                <a
+                  class="value"
+                  target="_blank"
+                  :href="getUrl(s.asset, s.value, s.type)"
+                  rel="noopener noreferrer"
+                >
+                  <external class="icon external-link" />
+                </a>
+              </template>
+            </div>
+          </template>
+          <slot v-else :name="s.slotName" />
+        </div>
+      </template>
       <pre v-if="attributes" class="attributes">{{ showJSON(attributes) }}</pre>
+      <div v-if="events" class="events">
+        <div v-for="(event, index) in events" :key="index" class="event-item">
+          <div class="event-key">
+            {{ event.type }}
+          </div>
+          <div v-for="attr in event.attributes" :key="attr">
+            <div class="event-attributes">
+              <span style="color: var(--sec-font-color)">
+                {{ attr.key }}
+              </span>
+              <span class="value">{{ attr.value }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -194,6 +211,7 @@ export default {
     'error',
     'asset',
     'attributes',
+    'events',
   ],
   data() {
     return {
@@ -210,7 +228,7 @@ export default {
   },
   computed: {
     showAccordion() {
-      if (this.stacks.length > 0) {
+      if (this.stacks?.length > 0 || this.events) {
         return true
       }
       return false
@@ -691,6 +709,40 @@ export default {
   border: 1px solid var(--border-color);
   border-radius: $radius-lg;
   background: var(--card-bg-color);
-  padding:$space-10;
+  padding: $space-10;
+}
+
+.event-item {
+  margin: $space-8 $space-0;
+  padding: $space-5 $space-8;
+  background-color: var(--card-bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: $radius-lg;
+  margin-bottom: 0;
+  overflow: auto;
+
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  .event-key {
+    color: var(--primary-color);
+    font-size: $font-size-sm;
+    padding-bottom: $space-8;
+    font-weight: bold;
+  }
+
+  .event-attributes {
+    display: flex;
+    align-items: center;
+    gap: $space-10;
+    justify-content: space-between;
+
+    .value {
+      word-break: break-all;
+    }
+  }
 }
 </style>
