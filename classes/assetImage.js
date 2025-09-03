@@ -208,6 +208,9 @@ export const AssetImage = (assetStr) => {
         if (symbol === 'TRX') {
           iconPath =
             'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/tron/info/logo.png'
+        } else {
+          iconPath =
+            'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/tron/info/logo.png'
         }
         break
 
