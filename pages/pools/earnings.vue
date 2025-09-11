@@ -212,12 +212,6 @@ export default {
           tdClass: 'mono',
         },
         {
-          label: 'LP/Distributed',
-          field: 'lpDistributed',
-          type: 'percentage',
-          tdClass: 'mono',
-        },
-        {
           label: 'Est. Yr. Earnings',
           field: 'estEarnings',
           type: 'number',
