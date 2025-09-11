@@ -28,6 +28,18 @@
             initialSortBy: { field: 'swapVolume', type: 'desc' },
           }"
         >
+          <template slot="table-column" slot-scope="props">
+            <div
+              v-if="props.column.field == 'distributed'"
+              v-tooltip="
+                'The distributed amount to Node Operator, Burn, TCY and dev fund'
+              "
+              class="table-asset end"
+            >
+              {{ props.column.label }}
+              <info-icon class="header-icon" />
+            </div>
+          </template>
           <template slot="table-row" slot-scope="props">
             <div
               v-if="props.column.field == 'pool'"
@@ -58,8 +70,8 @@
                 class="extra-text"
                 style="font-size: 0.6rem; font-weight: bold"
               >
-              <RuneAsset height="0.7rem" />
-            </span>
+                <RuneAsset height="0.7rem" />
+              </span>
               {{ props.formattedRow[props.column.field] }}
               <progress-icon
                 v-if="showChange"
@@ -75,7 +87,8 @@
                 props.column.field === 'earnings' ||
                 props.column.field === 'swapVolume' ||
                 props.column.field === 'rewards' ||
-                props.column.field === 'estEarnings'
+                props.column.field === 'estEarnings' ||
+                props.column.field === 'distributed'
               "
             >
               $
@@ -96,7 +109,7 @@
             </div>
             <div
               v-else-if="
-                props.column.field === 'feesEarnings' ||
+                props.column.field === 'lpDistributed' ||
                 props.column.field === 'feesReward' ||
                 props.column.field === 'poolAPR'
               "
@@ -120,8 +133,10 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import InfoIcon from '~/assets/images/info.svg?inline'
 
 export default {
+  components: { InfoIcon },
   asyncData({ redirect }) {
     if (process.env.NETWORK === 'mainnet') {
       return
@@ -168,34 +183,31 @@ export default {
           tdClass: 'mono',
         },
         {
-          label: 'Earnings',
-          field: 'earnings',
-          type: 'number',
-          tdClass: 'mono',
-        },
-        {
-          label: 'Fees',
+          label: 'Swap Fees',
           field: 'swapFees',
           type: 'number',
           formatFn: this.smallBaseAmountFormat,
           tdClass: 'mono',
         },
         {
-          label: 'Rewards',
-          field: 'rewards',
+          label: 'LP Earnings',
+          field: 'earnings',
           type: 'number',
           formatFn: this.smallBaseAmountFormat,
           tdClass: 'mono',
         },
         {
-          label: 'Fees/Earnings',
-          field: 'feesEarnings',
-          type: 'percentage',
+          label: 'Distributed',
+          field: 'distributed',
+          type: 'number',
+          tooltip:
+            'The distributed amount to Node Operator, Burn, TCY and dev fund',
+          formatFn: this.smallBaseAmountFormat,
           tdClass: 'mono',
         },
         {
-          label: 'Fees/Reward',
-          field: 'feesReward',
+          label: 'LP/Distributed',
+          field: 'lpDistributed',
           type: 'percentage',
           tdClass: 'mono',
         },
@@ -246,16 +258,18 @@ export default {
     createTableData(poolsData, oldPoolsData) {
       this.tableData = poolsData.pools.map((p) => {
         const o = oldPoolsData.pools.find((op) => op.pool === p.pool)
-        const pe = p.earnings * this.getPPY(this.period)
+        const pe = p.swapFees * this.getPPY(this.period)
         const ea = pe / (+p.endRuneDepth * 2)
         const oea =
-          (o?.earnings * this.getPPY(this.period)) / (+p?.startRuneDepth * 2)
+          (o?.swapFees * this.getPPY(this.period)) / (+p?.startRuneDepth * 2)
+
         return {
           ...p,
-          feesEarnings: p.swapFees / p.earnings,
+          lpDistributed: p.earnings / (+p.rewards * -1),
           feesReward: p.swapFees / p.rewards,
           poolAPR: ea,
           estEarnings: pe,
+          distributed: +p.rewards * -1,
           change: {
             endAssetDepth: this.getChange(p.endAssetDepth, p.startAssetDepth),
             endRuneDepth: this.getChange(p.endRuneDepth, p.startRuneDepth),
@@ -263,9 +277,9 @@ export default {
             swapVolume: this.getChange(p.swapVolume, o?.swapVolume),
             swapFees: this.getChange(p.swapFees, o?.swapFees),
             rewards: this.getChange(p.rewards, o?.rewards),
-            feesEarnings: this.getChange(
-              p.swapFees / p.earnings,
-              o?.swapFees / o?.earnings
+            lpDistributed: this.getChange(
+              p.earnings / (+p.rewards * -1),
+              o?.earnings / (+o?.rewards * -1)
             ),
             feesReward: this.getChange(
               p.swapFees / p.rewards,
@@ -273,9 +287,10 @@ export default {
             ),
             estEarnings: this.getChange(
               pe,
-              o?.earnings * this.getPPY(this.period)
+              o?.swapFees * this.getPPY(this.period)
             ),
             poolAPR: this.getChange(ea, oea),
+            distributed: this.getChange(+p.rewards * -1, +o?.rewards * -1),
           },
         }
       })
