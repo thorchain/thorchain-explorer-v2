@@ -110,7 +110,7 @@
             <div
               v-else-if="
                 props.column.field === 'lpDistributed' ||
-                props.column.field === 'feesReward' ||
+                props.column.field === 'feesVolume' ||
                 props.column.field === 'poolAPR'
               "
             >
@@ -206,6 +206,12 @@ export default {
           tdClass: 'mono',
         },
         {
+          label: 'Fees/Volume',
+          field: 'feesVolume',
+          type: 'percentage',
+          tdClass: 'mono',
+        },
+        {
           label: 'LP/Distributed',
           field: 'lpDistributed',
           type: 'percentage',
@@ -266,7 +272,7 @@ export default {
         return {
           ...p,
           lpDistributed: p.earnings / (+p.rewards * -1),
-          feesReward: p.swapFees / p.rewards,
+          feesVolume: p.swapFees / p.swapVolume,
           poolAPR: ea,
           estEarnings: pe,
           distributed: +p.rewards * -1,
@@ -288,6 +294,10 @@ export default {
             estEarnings: this.getChange(
               pe,
               o?.swapFees * this.getPPY(this.period)
+            ),
+            feesVolume: this.getChange(
+              p.swapFees / p.swapVolume,
+              o?.swapFees / o?.swapVolume
             ),
             poolAPR: this.getChange(ea, oea),
             distributed: this.getChange(+p.rewards * -1, +o?.rewards * -1),
