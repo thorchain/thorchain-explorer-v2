@@ -920,7 +920,7 @@ export const interfaces = {
     name: 'Zengo',
     icon: 'zengo',
   },
-  dp: {
+  dh: {
     name: 'Depouch',
     icon: 'depouch',
   },
@@ -1014,7 +1014,7 @@ export const affiliateMap = {
   thor1xmaggkcln5m5fnha2780xrdrulmplvfrz6wj3l: interfaces.shapeshift,
   rj: interfaces.rujira,
   leo: interfaces.leo,
-  dp: interfaces.dp,
+  dh: interfaces.dh,
 }
 
 export function getExplorerAddressUrl(chain, query, type) {
