@@ -233,7 +233,7 @@ export default {
                 nonRUNE = true
               }
               swap.outputAsset = {
-                asset: outAsset,
+                asset: outAsset.toUpperCase(),
               }
             }
           }
