@@ -160,7 +160,7 @@ export default {
       },
     }
   },
-    head: {
+  head: {
     title: 'THORChain Network Explorer | Ruji',
   },
   computed: {
@@ -302,6 +302,14 @@ export default {
                 `${this.$options.filters.number(v / 1e8, '0,0.00a')} TCY`,
               extraInfo: `Total TCY bought back by the protocol`,
               extraText: `$${this.$options.filters.number((this.tcyInfo?.pol_tcy / 1e8) * this.tcyInfo?.price, '0,0.00a')}`,
+            },
+            {
+              name: 'Treasury Owned TCY',
+              value: this.tcyInfo?.treasury,
+              filter: (v) =>
+                `${this.$options.filters.number(v / 1e8, '0,0.00a')} TCY`,
+              extraInfo: `TCY bought by the treasury`,
+              extraText: `$${this.$options.filters.number((this.tcyInfo?.treasury / 1e8) * this.tcyInfo?.price, '0,0.00a')}`,
             },
           ],
         },
