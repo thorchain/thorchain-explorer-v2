@@ -974,6 +974,9 @@ export default {
             if (remainingCount <= churnNodes) {
               continue
             }
+            if (el.maintenance) {
+              continue
+            }
             filteredNodes[i].churn.push({
               name: 'Churning In',
               icon: require('@/assets/images/circle-up.svg?inline'),
@@ -992,6 +995,13 @@ export default {
             filteredNodes[i].churn.push({
               name: "Retiring Vault, Can't unbond",
               icon: require('@/assets/images/walker.svg?inline'),
+            })
+          }
+
+          if (el.maintenance) {
+            filteredNodes[i].churn.push({
+              name: "Maintenance mode, won't churn",
+              icon: require('@/assets/images/hammer.svg?inline'),
             })
           }
         }
