@@ -42,6 +42,9 @@
         <div v-else-if="props.column.field == 'vault'" class="table-asset">
           <vault-icon class="table-icon" />
         </div>
+        <div v-else-if="props.column.field == 'missing_blocks'" class="table-asset">
+          <missingblock class="table-icon" />
+        </div>
         <span v-else>
           {{ props.column.label }}
         </span>
@@ -156,12 +159,12 @@
             <div
               v-tooltip="props.row.preflight && props.row.preflight.reason"
               :class="[
-                'mini-bubble hoverable',
-                {
-                  yellow: props.row.status == 'Standby',
-                  danger: props.row.status == 'Disabled',
-                  white: props.row.status == 'Whitelisted',
-                },
+              'mini-bubble hoverable',
+              {
+                yellow: props.row.status == 'Standby',
+                danger: props.row.status == 'Disabled',
+                white: props.row.status == 'Whitelisted',
+              },
               ]"
               :style="getHighlightStyle(props.row.address)"
             >
@@ -328,9 +331,9 @@
             </div>
             <span
               v-if="
-                rows[props.row.originalIndex].churn &&
-                rows[props.row.originalIndex].churn.length === 0 &&
-                !isFav(props.row.address)
+              rows[props.row.originalIndex].churn &&
+              rows[props.row.originalIndex].churn.length === 0 &&
+              !isFav(props.row.address)
               "
               >-</span
             >
@@ -364,19 +367,19 @@
             >
             <span
               v-else-if="
-                0 < props.formattedRow[props.column.field] &&
-                props.formattedRow[props.column.field] < 10000
+              0 < props.formattedRow[props.column.field] &&
+              props.formattedRow[props.column.field] < 10000
               "
               :style="getHighlightStyle(props.row.address)"
               class="number"
               >-{{
-                props.formattedRow[props.column.field] | number('0a')
+              props.formattedRow[props.column.field] | number('0a')
               }}</span
             >
             <DangerIcon
               v-else-if="
-                0 > props.formattedRow[props.column.field] &&
-                props.formattedRow[props.column.field] > -10000
+              0 > props.formattedRow[props.column.field] &&
+              props.formattedRow[props.column.field] > -10000
               "
               v-tooltip="'Disabled'"
               class="table-icon"
@@ -395,10 +398,16 @@
               style="fill: #ef5350"
             />
           </span>
-          <span
-            v-else-if="
-              props.column.field === 'rpcHealth' ||
-              props.column.field === 'bifrostHealth'
+          <span v-else-if="props.column.field === 'missing_blocks'">
+            <span v-if="props.row.missing_blocks !== null && props.row.missing_blocks !== undefined"
+              :style="getHighlightStyle(props.row.address)" class="number">
+              {{ props.row.missing_blocks === 0 ? 0 : -props.row.missing_blocks | number('0,0') }}
+            </span>
+            <span v-else>-</span>
+          </span>
+          <span v-else-if="
+            props.column.field === 'rpcHealth' ||
+            props.column.field === 'bifrostHealth'
             "
             :style="getHighlightStyle(props.row.address)"
           >
@@ -406,9 +415,9 @@
               <a
                 v-tooltip="getHealth(props).title"
                 :class="[
-                  'clickable',
-                  'hoverable',
-                  { 'bad-link': getHealth(props).text === 'BAD' },
+                'clickable',
+                'hoverable',
+                { 'bad-link': getHealth(props).text === 'BAD' },
                 ]"
                 :href="getHealth(props).url"
                 target="_blank"
@@ -504,6 +513,7 @@ import VaultIcon from '@/assets/images/safe.svg?inline'
 import HighlightList from '@/assets/images/highlight-list.svg?inline'
 import CrossIcon from '~/assets/images/cross.svg?inline'
 import NodeIcon from '~/assets/images/node.svg?inline'
+import missingblock from '~/assets/images/missingblock.svg?inline'
 
 export default {
   components: {
@@ -521,6 +531,7 @@ export default {
     ExternalIcon,
     VaultIcon,
     NodeIcon,
+    missingblock,
   },
   props: ['rows', 'cols', 'name', 'searchTerm', 'sortColumn', 'sortOrder'],
   data() {

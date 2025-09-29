@@ -47,7 +47,7 @@ export function isInternalTx(hash) {
   }
   return (
     hash ===
-    '0000000000000000000000000000000000000000000000000000000000000000' ??
+      '0000000000000000000000000000000000000000000000000000000000000000' ??
     false
   )
 }
@@ -369,7 +369,7 @@ export function parseThornodeStatus(ttx) {
           address: txAction?.from_address ?? '',
           txID:
             txAction?.id ===
-              '0000000000000000000000000000000000000000000000000000000000000000'
+            '0000000000000000000000000000000000000000000000000000000000000000'
               ? ''
               : txAction?.id,
           asset: {
@@ -556,6 +556,7 @@ export function fillNodeData(nodes, el, index) {
     operator: el.node_operator_address,
     vault: el.vaultMembership,
     preflight: el.preflight_status,
+    missing_blocks: el.missing_blocks,
     rpcHealth: el.rpcHealth,
     bifrostHealth: el.bifrostHealth,
     ...(rank && { rank }),
