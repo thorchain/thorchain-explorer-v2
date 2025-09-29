@@ -396,6 +396,11 @@ export default {
         (this.effectiveBond - this.adjustedSecuredTotal) / this.effectiveBond
       this.nodeShare = 1 - this.poolShare
 
+      if (this.poolShare < 0) this.poolShare = 0
+      if (this.nodeShare < 0) this.nodeShare = 0
+      if (this.poolShare > 1) this.poolShare = 1
+      if (this.nodeShare > 1) this.nodeShare = 1
+
       this.securityDelta = this.securityBudget - this.totalVaultValue
 
       const nodeSharePct = this.nodeShare * 100
