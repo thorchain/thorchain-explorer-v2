@@ -1,39 +1,24 @@
 <template>
   <div>
-    <vue-good-table
-      v-if="rows"
-      :key="1"
-      :columns="cols"
-      :rows="rows"
-      style-class="vgt-table net-table bordered condensed node-table"
-      :line-numbers="true"
-      :row-style-class="rowClassCallback"
-      :search-options="{
+    <vue-good-table v-if="rows" :key="1" :columns="cols" :rows="rows"
+      style-class="vgt-table net-table bordered condensed node-table" :line-numbers="true"
+      :row-style-class="rowClassCallback" :search-options="{
         enabled: true,
         externalQuery: searchTerm,
-      }"
-      :sort-options="{
+      }" :sort-options="{
         enabled: true,
         initialSortBy: sortColumn
           ? [{ field: sortColumn, type: sortOrder }]
           : [],
-      }"
-      @on-sort-change="handleSortChange"
-    >
+      }" @on-sort-change="handleSortChange">
       <template slot="table-column" slot-scope="props">
         <div v-if="props.column.field.includes('behind')" class="table-asset">
-          <img
-            class="asset-chain"
-            :src="assetImage(`${props.column.label}.${props.column.label}`)"
-          />
+          <img class="asset-chain" :src="assetImage(`${props.column.label}.${props.column.label}`)" />
         </div>
         <span v-else-if="props.column.field == 'highlight'">
           <HighlightList class="table-icon"></HighlightList>
         </span>
-        <div
-          v-else-if="props.column.field == 'location'"
-          v-tooltip="'Node Location'"
-        >
+        <div v-else-if="props.column.field == 'location'" v-tooltip="'Node Location'">
           <MarkerIcon class="table-icon" />
         </div>
         <div v-else-if="props.column.field == 'churn'">
@@ -42,110 +27,66 @@
         <div v-else-if="props.column.field == 'vault'" class="table-asset">
           <vault-icon class="table-icon" />
         </div>
+        <div v-else-if="props.column.field == 'missing_blocks'" class="table-asset">
+          <missingblock class="table-icon" />
+        </div>
         <span v-else>
           {{ props.column.label }}
         </span>
       </template>
       <template slot="table-row" slot-scope="props">
-        <span
-          :class="rowClassCallback(props.row)"
-          :style="getHighlightStyle(props.row.address)"
-        >
+        <span :class="rowClassCallback(props.row)" :style="getHighlightStyle(props.row.address)">
           <span v-if="props.column.field == 'address'">
             <div class="table-wrapper-row">
-              <nuxt-link
-                v-tooltip="props.row.address"
-                class="clickable"
-                :style="getHighlightStyle(props.row.address)"
-                :to="`/address/${props.row.address}`"
-              >
+              <nuxt-link v-tooltip="props.row.address" class="clickable" :style="getHighlightStyle(props.row.address)"
+                :to="`/address/${props.row.address}`">
                 {{ addressFormatV2(props.row.address, 4, true) }}
               </nuxt-link>
               <Copy :str-copy="props.row.address" />
-              <nuxt-link
-                :style="getHighlightStyle(props.row.address)"
-                :to="`/node/${props.row.address}`"
-                target="_blank"
-              >
+              <nuxt-link :style="getHighlightStyle(props.row.address)" :to="`/node/${props.row.address}`"
+                target="_blank">
                 <info-icon class="table-icon item-link" />
               </nuxt-link>
-              <a
-                :style="getHighlightStyle(props.row.address)"
-                style="height: 1rem"
-                :href="`http://${props.row.ip}:6040/status/scanner`"
-                target="_blank"
-              >
+              <a :style="getHighlightStyle(props.row.address)" style="height: 1rem"
+                :href="`http://${props.row.ip}:6040/status/scanner`" target="_blank">
                 <JsonIcon class="table-icon item-link" />
               </a>
               <Ip v-tooltip="props.row.ip" :str-copy="props.row.ip" />
-              <a
-                :style="getHighlightStyle(props.row.address)"
-                style="height: 1rem"
-                :href="`https://thornode.ninerealms.com/thorchain/node/${props.row.address}`"
-                target="_blank"
-              >
+              <a :style="getHighlightStyle(props.row.address)" style="height: 1rem"
+                :href="`https://thornode.ninerealms.com/thorchain/node/${props.row.address}`" target="_blank">
                 <NodeIcon class="table-icon item-link" />
               </a>
             </div>
           </span>
           <span v-else-if="props.column.field == 'highlight'">
-            <StaredIcon
-              v-if="isFav(props.row.address)"
-              class="table-icon"
-              :style="getHighlightStyle(props.row.address)"
-              @click="delFav(props.row.address)"
-            />
-            <StarIcon
-              v-else
-              class="table-icon"
-              @click="addFav(props.row.address, props.row.rank)"
-            />
+            <StaredIcon v-if="isFav(props.row.address)" class="table-icon" :style="getHighlightStyle(props.row.address)"
+              @click="delFav(props.row.address)" />
+            <StarIcon v-else class="table-icon" @click="addFav(props.row.address, props.row.rank)" />
           </span>
           <span v-else-if="props.column.field == 'age'">
-            <span
-              v-if="props.row.age"
-              v-tooltip="props.row.age.info"
-              style="cursor: pointer"
-              >{{ props.row.age.number | number('0,0.00') }}</span
-            >
+            <span v-if="props.row.age" v-tooltip="props.row.age.info" style="cursor: pointer">{{ props.row.age.number |
+              number('0,0.00') }}</span>
             <span v-else>-</span>
           </span>
           <span v-else-if="props.column.field == 'isp'">
-            <cloud-image
-              v-if="props.row.isp"
-              :name="[props.row.isp, props.row.org]"
-            />
+            <cloud-image v-if="props.row.isp" :name="[props.row.isp, props.row.org]" />
             <span v-else>-</span>
           </span>
           <span v-else-if="props.column.field == 'location'">
-            <div
-              v-if="props.row.location"
-              v-tooltip="
-                `${props.row.location.code}, ${props.row.location.city}`
-              "
-              class="countries"
-            >
+            <div v-if="props.row.location" v-tooltip="`${props.row.location.code}, ${props.row.location.city}`
+              " class="countries">
               <VFlag :flag="props.row.location.code" />
             </div>
           </span>
-          <span
-            v-else-if="props.column.field == 'total_bond'"
-            class="hoverable"
-          >
+          <span v-else-if="props.column.field == 'total_bond'" class="hoverable">
             <span v-tooltip="formatCurrency(runePrice * props.row.total_bond)">
-              <RuneAsset
-                height="0.7rem"
-                :style="getHighlightStyle(props.row.address)"
-              />
+              <RuneAsset height="0.7rem" :style="getHighlightStyle(props.row.address)" />
               {{ normalFormat(props.row.total_bond) }}
             </span>
           </span>
           <span v-else-if="props.column.field == 'award'" class="hoverable">
             <span v-tooltip="formatCurrency(runePrice * props.row.award)">
-              <RuneAsset
-                height="0.7rem"
-                :style="getHighlightStyle(props.row.address)"
-              />
+              <RuneAsset height="0.7rem" :style="getHighlightStyle(props.row.address)" />
               {{ props.row.award }}
             </span>
           </span>
@@ -153,18 +94,14 @@
             <color-hash v-tooltip="props.row.vault" :name="props.row.vault" />
           </div>
           <span v-else-if="props.column.field == 'status'">
-            <div
-              v-tooltip="props.row.preflight && props.row.preflight.reason"
-              :class="[
-                'mini-bubble hoverable',
-                {
-                  yellow: props.row.status == 'Standby',
-                  danger: props.row.status == 'Disabled',
-                  white: props.row.status == 'Whitelisted',
-                },
-              ]"
-              :style="getHighlightStyle(props.row.address)"
-            >
+            <div v-tooltip="props.row.preflight && props.row.preflight.reason" :class="[
+              'mini-bubble hoverable',
+              {
+                yellow: props.row.status == 'Standby',
+                danger: props.row.status == 'Disabled',
+                white: props.row.status == 'Whitelisted',
+              },
+            ]" :style="getHighlightStyle(props.row.address)">
               <span>{{ props.row.status }}</span>
             </div>
           </span>
@@ -177,11 +114,7 @@
           </span>
           <span v-else-if="props.column.field == 'leave'">
             <div class="table-wrapper-row" style="justify-content: center">
-              <ExitIcon
-                v-if="props.row.leave == true"
-                class="table-icon"
-                style="fill: var(--red)"
-              />
+              <ExitIcon v-if="props.row.leave == true" class="table-icon" style="fill: var(--red)" />
             </div>
           </span>
           <span v-else-if="props.column.field == 'fee'">
@@ -190,26 +123,15 @@
           <span v-else-if="props.column.field == 'score'">
             <span>{{
               props.formattedRow[props.column.field] | number('0,0.00')
-            }}</span>
+              }}</span>
           </span>
           <span v-else-if="props.column.field == 'operator'">
-            <div
-              v-if="props.row.providers && props.row.providers.length > 10"
-              style="cursor: pointer"
-            >
+            <div v-if="props.row.providers && props.row.providers.length > 10" style="cursor: pointer">
               <v-menu>
                 <div class="hoverable">
-                  <nuxt-link
-                    class="clickable mono"
-                    target="_blank"
-                    :to="`/address/${props.row.operator}`"
-                    :style="getHighlightStyle(props.row.address)"
-                    >{{ props.row.operator.slice(-4) }}</nuxt-link
-                  >
-                  <div
-                    class="bubble-container grey"
-                    @click="openModal(props.row)"
-                  >
+                  <nuxt-link class="clickable mono" target="_blank" :to="`/address/${props.row.operator}`"
+                    :style="getHighlightStyle(props.row.address)">{{ props.row.operator.slice(-4) }}</nuxt-link>
+                  <div class="bubble-container grey" @click="openModal(props.row)">
                     {{ props.row.providers.length }}
                   </div>
                 </div>
@@ -220,17 +142,9 @@
             </div>
             <v-menu v-else>
               <div class="hoverable">
-                <nuxt-link
-                  class="clickable mono"
-                  target="_blank"
-                  :to="`/address/${props.row.operator}`"
-                  :style="getHighlightStyle(props.row.address)"
-                  >{{ props.row.operator.slice(-4) }}</nuxt-link
-                >
-                <div
-                  v-if="props.row.providers && props.row.providers.length !== 1"
-                  class="bubble-container grey"
-                >
+                <nuxt-link class="clickable mono" target="_blank" :to="`/address/${props.row.operator}`"
+                  :style="getHighlightStyle(props.row.address)">{{ props.row.operator.slice(-4) }}</nuxt-link>
+                <div v-if="props.row.providers && props.row.providers.length !== 1" class="bubble-container grey">
                   {{ props.row.providers ? props.row.providers.length : 0 }}
                 </div>
               </div>
@@ -241,30 +155,17 @@
                     <th>Bond</th>
                     <th style="text-align: right">Share</th>
                   </tr>
-                  <tr
-                    v-for="(p, i) in filterProviders(props.row.providers)"
-                    :key="i"
-                  >
+                  <tr v-for="(p, i) in filterProviders(props.row.providers)" :key="i">
                     <td style="display: flex">
-                      <nuxt-link
-                        class="hoverable mono external-link"
-                        target="_blank"
-                        :to="`/address/${p.bond_address}`"
-                      >
+                      <nuxt-link class="hoverable mono external-link" target="_blank"
+                        :to="`/address/${p.bond_address}`">
                         {{ addressFormatV2(p.bond_address, 4, true) }}
                         <external-icon class="asset-icon" />
                       </nuxt-link>
-                      <copy
-                        :str-copy="p.bond_address"
-                        size="small"
-                        :hide-toast="true"
-                      ></copy>
+                      <copy :str-copy="p.bond_address" size="small" :hide-toast="true"></copy>
                     </td>
                     <td class="mono">
-                      <RuneAsset
-                        height="0.7rem"
-                        :style="getHighlightStyle(props.row.address)"
-                      />
+                      <RuneAsset height="0.7rem" :style="getHighlightStyle(props.row.address)" />
                       {{ $options.filters.number(p.bond / 10 ** 8, '0,0') }}
                     </td>
                     <td style="text-align: right">
@@ -279,29 +180,18 @@
                 <hr />
                 <div style="margin-top: 5px">
                   <strong>Operator: </strong>
-                  <span class="mono"
-                    >{{ props.row.operator.slice(-4) }} -
-                    {{ props.formattedRow['fee'] }}</span
-                  >
+                  <span class="mono">{{ props.row.operator.slice(-4) }} -
+                    {{ props.formattedRow['fee'] }}</span>
                 </div>
               </template>
             </v-menu>
             <div v-else class="hoverable">
-              <nuxt-link
-                class="clickable mono"
-                target="_blank"
-                :to="`/address/${props.row.operator}`"
-                :style="getHighlightStyle(props.row.address)"
-                >{{ props.row.operator.slice(-4) }}</nuxt-link
-              >
+              <nuxt-link class="clickable mono" target="_blank" :to="`/address/${props.row.operator}`"
+                :style="getHighlightStyle(props.row.address)">{{ props.row.operator.slice(-4) }}</nuxt-link>
             </div>
           </span>
           <div v-else-if="props.column.field == 'churn'" class="churn-wrapper">
-            <div
-              v-for="(churnItem, index) in rows[props.row.originalIndex].churn"
-              :key="index"
-              class="churn-item"
-            >
+            <div v-for="(churnItem, index) in rows[props.row.originalIndex].churn" :key="index" class="churn-item">
               <v-menu>
                 <component :is="churnItem.icon" class="table-icon" />
                 <template #popper>
@@ -315,7 +205,7 @@
                         <span>Released Height:</span>
                         <span>{{
                           churnItem.name.release_height | number('0,0')
-                        }}</span>
+                          }}</span>
                       </div>
                       <div v-if="churnItem.name.releaseTime">
                         <span>Release Time:</span>
@@ -326,25 +216,17 @@
                 </template>
               </v-menu>
             </div>
-            <span
-              v-if="
-                rows[props.row.originalIndex].churn &&
-                rows[props.row.originalIndex].churn.length === 0 &&
-                !isFav(props.row.address)
-              "
-              >-</span
-            >
-            <div
-              v-if="isFav(props.row.address) && name === 'active-nodes'"
-              class="rank-wrap"
-            >
+            <span v-if="
+              rows[props.row.originalIndex].churn &&
+              rows[props.row.originalIndex].churn.length === 0 &&
+              !isFav(props.row.address)
+            ">-</span>
+            <div v-if="isFav(props.row.address) && name === 'active-nodes'" class="rank-wrap">
               <span>
                 {{ props.row.rank }}
               </span>
-              <progress-icon
-                :data-number="rankChange(props.row.address, props.row.rank)"
-                :is-down="rankChange(props.row.address, props.row.rank) < 0"
-              />
+              <progress-icon :data-number="rankChange(props.row.address, props.row.rank)"
+                :is-down="rankChange(props.row.address, props.row.rank) < 0" />
             </div>
           </div>
           <span v-else-if="props.column.field === 'version'">
@@ -353,68 +235,44 @@
             </span>
           </span>
           <span v-else-if="props.column.field.includes('behind.')">
-            <span
-              v-if="parseInt(props.formattedRow[props.column.field]) == 0"
-              :style="getHighlightStyle(props.row.address)"
-              class="version"
-              >OK</span
-            >
-            <span v-else-if="props.formattedRow[props.column.field] === ''"
-              >-</span
-            >
-            <span
-              v-else-if="
-                0 < props.formattedRow[props.column.field] &&
-                props.formattedRow[props.column.field] < 10000
-              "
-              :style="getHighlightStyle(props.row.address)"
-              class="number"
-              >-{{
-                props.formattedRow[props.column.field] | number('0a')
-              }}</span
-            >
-            <DangerIcon
-              v-else-if="
-                0 > props.formattedRow[props.column.field] &&
-                props.formattedRow[props.column.field] > -10000
-              "
-              v-tooltip="'Disabled'"
-              class="table-icon"
-              style="color: #ef5350"
-            />
-            <DangerIcon
-              v-else-if="props.formattedRow[props.column.field] > 10000"
-              v-tooltip="`${props.formattedRow[props.column.field]}`"
-              class="table-icon"
-              style="fill: #ffc107"
-            />
-            <DangerIcon
-              v-else
-              v-tooltip="`${props.formattedRow[props.column.field]}`"
-              class="table-icon"
-              style="fill: #ef5350"
-            />
+            <span v-if="parseInt(props.formattedRow[props.column.field]) == 0"
+              :style="getHighlightStyle(props.row.address)" class="version">OK</span>
+            <span v-else-if="props.formattedRow[props.column.field] === ''">-</span>
+            <span v-else-if="
+              0 < props.formattedRow[props.column.field] &&
+              props.formattedRow[props.column.field] < 10000
+            " :style="getHighlightStyle(props.row.address)" class="number">-{{
+              props.formattedRow[props.column.field] | number('0a')
+              }}</span>
+            <DangerIcon v-else-if="
+              0 > props.formattedRow[props.column.field] &&
+              props.formattedRow[props.column.field] > -10000
+            " v-tooltip="'Disabled'" class="table-icon" style="color: #ef5350" />
+            <DangerIcon v-else-if="props.formattedRow[props.column.field] > 10000"
+              v-tooltip="`${props.formattedRow[props.column.field]}`" class="table-icon" style="fill: #ffc107" />
+            <DangerIcon v-else v-tooltip="`${props.formattedRow[props.column.field]}`" class="table-icon"
+              style="fill: #ef5350" />
           </span>
-          <span
-            v-else-if="
-              props.column.field === 'rpcHealth' ||
-              props.column.field === 'bifrostHealth'
-            "
-            :style="getHighlightStyle(props.row.address)"
-          >
+          <span v-else-if="props.column.field === 'missing_blocks'">
+            <span v-if="props.row.missing_blocks === 0" :style="getHighlightStyle(props.row.address)"
+              class="version">OK</span>
+            <span v-else-if="props.row.missing_blocks !== null && props.row.missing_blocks !== undefined"
+              :style="getHighlightStyle(props.row.address)" class="number">
+              {{ -props.row.missing_blocks | number('0,0') }}
+            </span>
+            <span v-else>-</span>
+          </span>
+          <span v-else-if="
+            props.column.field === 'rpcHealth' ||
+            props.column.field === 'bifrostHealth'
+          " :style="getHighlightStyle(props.row.address)">
             <template v-if="getHealth(props).text !== '-'">
-              <a
-                v-tooltip="getHealth(props).title"
-                :class="[
-                  'clickable',
-                  'hoverable',
-                  { 'bad-link': getHealth(props).text === 'BAD' },
-                ]"
-                :href="getHealth(props).url"
-                target="_blank"
-                style="text-decoration: none"
-                :style="getHighlightStyle(props.row.address)"
-              >
+              <a v-tooltip="getHealth(props).title" :class="[
+                'clickable',
+                'hoverable',
+                { 'bad-link': getHealth(props).text === 'BAD' },
+              ]" :href="getHealth(props).url" target="_blank" style="text-decoration: none"
+                :style="getHighlightStyle(props.row.address)">
                 {{ getHealth(props).text }}
               </a>
             </template>
@@ -440,25 +298,14 @@
           </tr>
           <tr v-for="(p, i) in filterProviders(selectedRow.providers)" :key="i">
             <td style="display: flex">
-              <nuxt-link
-                class="hoverable mono external-link"
-                target="_blank"
-                :to="`/address/${p.bond_address}`"
-              >
+              <nuxt-link class="hoverable mono external-link" target="_blank" :to="`/address/${p.bond_address}`">
                 {{ addressFormatV2(p.bond_address, 4, true) }}
                 <external-icon class="asset-icon" />
               </nuxt-link>
-              <copy
-                :str-copy="p.bond_address"
-                size="small"
-                :hide-toast="true"
-              ></copy>
+              <copy :str-copy="p.bond_address" size="small" :hide-toast="true"></copy>
             </td>
             <td class="mono">
-              <RuneAsset
-                height="0.7rem"
-                :style="getHighlightStyle(selectedRow.address)"
-              />
+              <RuneAsset height="0.7rem" :style="getHighlightStyle(selectedRow.address)" />
               {{ $options.filters.number(p.bond / 10 ** 8, '0,0') }}
             </td>
             <td style="text-align: right">
@@ -471,11 +318,7 @@
         <div class="footer-table">
           <strong>Operator:</strong>
           <span class="mono" style="margin-left: 5px">
-            <nuxt-link
-              class="clickable"
-              :to="`/address/${selectedRow.operator}`"
-              target="_blank"
-            >
+            <nuxt-link class="clickable" :to="`/address/${selectedRow.operator}`" target="_blank">
               {{ selectedRow.operator.slice(-4) }}
             </nuxt-link>
             - {{ selectedRow.fee }}
@@ -504,6 +347,7 @@ import VaultIcon from '@/assets/images/safe.svg?inline'
 import HighlightList from '@/assets/images/highlight-list.svg?inline'
 import CrossIcon from '~/assets/images/cross.svg?inline'
 import NodeIcon from '~/assets/images/node.svg?inline'
+import missingblock from '~/assets/images/missingblock.svg?inline'
 
 export default {
   components: {
@@ -521,6 +365,7 @@ export default {
     ExternalIcon,
     VaultIcon,
     NodeIcon,
+    missingblock,
   },
   props: ['rows', 'cols', 'name', 'searchTerm', 'sortColumn', 'sortOrder'],
   data() {

@@ -39,8 +39,8 @@
           class="filter-button"
           :class="{ 'enabled-btn': !hides.isp }"
           @click="
-            hides.isp = !hides.isp
-            saveFilters()
+          hides.isp = !hides.isp
+        saveFilters()
           "
         >
           <caret :class="['filter-icon', { disable: hides.isp }]" />
@@ -50,8 +50,8 @@
           class="filter-button"
           :class="{ 'enabled-btn': !hides.fee }"
           @click="
-            hides.fee = !hides.fee
-            saveFilters()
+          hides.fee = !hides.fee
+        saveFilters()
           "
         >
           <caret :class="['filter-icon', { disable: hides.fee }]" />
@@ -61,8 +61,8 @@
           class="filter-button"
           :class="{ 'enabled-btn': !hides.score }"
           @click="
-            hides.score = !hides.score
-            saveFilters()
+          hides.score = !hides.score
+        saveFilters()
           "
         >
           <caret :class="['filter-icon', { disable: hides.score }]" />
@@ -72,8 +72,8 @@
           class="filter-button"
           :class="{ 'enabled-btn': !hides.age }"
           @click="
-            hides.age = !hides.age
-            saveFilters()
+          hides.age = !hides.age
+        saveFilters()
           "
         >
           <caret :class="['filter-icon', { disable: hides.age }]" />
@@ -83,9 +83,9 @@
           class="filter-button"
           :class="{ 'enabled-btn': !(hides.RPC && hides.BFR) }"
           @click="
-            hides.RPC = !hides.RPC
-            hides.BFR = !hides.BFR
-            saveFilters()
+          hides.RPC = !hides.RPC
+        hides.BFR = !hides.BFR
+        saveFilters()
           "
         >
           <caret
@@ -217,14 +217,14 @@ export default {
     activeCols() {
       const chains = this.nodesQuery
         ? availableChains(this.nodesQuery.filter((n) => n.status === 'Active'))
-            ?.sort()
-            ?.map((c) => ({
-              label: c,
-              field: `behind.${c}`,
-              type: 'number',
-              tdClass: 'mono center',
-              thClass: 'center no-padding',
-            })) || []
+          ?.sort()
+          ?.map((c) => ({
+            label: c,
+            field: `behind.${c}`,
+            type: 'number',
+            tdClass: 'mono center',
+            thClass: 'center no-padding',
+          })) || []
         : []
 
       return [
@@ -340,6 +340,13 @@ export default {
         },
         ...chains,
         {
+          label: '',
+          field: 'missing_blocks',
+          type: 'number',
+          tdClass: 'mono center',
+          thClass: 'center no-padding',
+        },
+        {
           label: 'RPC',
           field: 'rpcHealth',
           type: 'text',
@@ -369,14 +376,14 @@ export default {
     stbCols() {
       const chains = this.nodesQuery
         ? availableChains(this.nodesQuery.filter((n) => n.status === 'Active'))
-            ?.sort()
-            ?.map((c) => ({
-              label: c,
-              field: `behind.${c}`,
-              type: 'number',
-              tdClass: 'mono center',
-              thClass: 'center no-padding',
-            })) || []
+          ?.sort()
+          ?.map((c) => ({
+            label: c,
+            field: `behind.${c}`,
+            type: 'number',
+            tdClass: 'mono center',
+            thClass: 'center no-padding',
+          })) || []
         : []
 
       return [
@@ -462,6 +469,13 @@ export default {
           tdClass: 'mono',
         },
         ...chains,
+        {
+          label: '',
+          field: 'missing_blocks',
+          type: 'number',
+          tdClass: 'mono center',
+          thClass: 'center no-padding',
+        },
         {
           label: 'RPC',
           field: 'rpcHealth',
@@ -1225,7 +1239,7 @@ export default {
       const churnValue =
         1 -
         (this.network?.nextChurnHeight - this.chainsHeight?.THOR) /
-          this.churnInterval
+        this.churnInterval
 
       this.churnProgressValue = churnValue
 
