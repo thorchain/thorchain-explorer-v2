@@ -53,17 +53,11 @@ export function getPoolTxs(poolName, offset = 0, limit = 10) {
 }
 
 export function getPools(period) {
-  return $axiosInstace.get(
-    endpoints[process.env.NETWORK].SERVER_URL +
-      `pools?period=${period ?? '180d'}`
-  )
+  return $axiosInstace.get(`pools?period=${period ?? '180d'}`)
 }
 
 export function getPoolStats(poolName) {
-  return $axiosInstace.get(
-    endpoints[process.env.NETWORK].SERVER_URL +
-      `pool/${poolName}/stats?period=all`
-  )
+  return $axiosInstace.get(`pool/${poolName}/stats?period=all`)
 }
 
 export function getPoolDepth(poolName, count = 30, from = undefined) {
