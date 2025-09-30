@@ -312,3 +312,9 @@ export function getTCYStaker(address) {
       `thorchain/tcy_staker/${address}`
   )
 }
+
+export function getOraclePrices() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].THORNODE_URL + 'thorchain/oracle/prices'
+  )
+}

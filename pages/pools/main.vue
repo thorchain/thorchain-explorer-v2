@@ -1,11 +1,7 @@
 <template>
   <Page>
     <div>
-      <Nav
-        :active-mode.sync="tableMode"
-        :nav-items="tableModeItems"
-        :extra-classes="['pools-type-table']"
-      />
+      <Nav :active-mode.sync="tableMode" :nav-items="tableModeItems" :extra-classes="['pools-type-table']" />
     </div>
     <Card>
       <TableLoader v-if="loading" :cols="poolCols" :rows="Array(10).fill({})" />
@@ -16,28 +12,26 @@
               No Pools {{ k.mode | capitalize }}
             </div>
           </template>
-          <vue-good-table
-            v-else-if="k.data.length > 0 && tableMode === k.mode"
-            :key="i"
-            :columns="poolCols"
-            :rows="k.data"
-            style-class="vgt-table net-table"
-            :sort-options="{
+          <vue-good-table v-else-if="k.data.length > 0 && tableMode === k.mode" :key="i" :columns="poolCols"
+            :rows="k.data" style-class="vgt-table net-table" :sort-options="{
               enabled: true,
               initialSortBy: { field: 'depth', type: 'desc' },
-            }"
-            @on-row-click="gotoPoolTable"
-          >
+            }" @on-row-click="gotoPoolTable">
             <template slot="table-row" slot-scope="props">
-              <div
-                v-if="props.column.field == 'asset'"
-                v-tooltip="props.row.asset"
-                class="cell-content"
-              >
+              <div v-if="props.column.field == 'asset'" v-tooltip="props.row.asset" class="cell-content">
                 <AssetIcon :asset="props.row.asset" />
                 <span class="clickable">{{
                   props.formattedRow[props.column.field]
                 }}</span>
+              </div>
+              <div v-else-if="props.column.field == 'oraclePrice'">
+                <div v-if="props.row.oraclePrice">
+                  <div>{{ props.formattedRow[props.column.field] }}</div>
+                  <progress-icon v-if="props.row.oracleDiff !== 0"
+                    :data-number="percentageFormat(props.row.oracleDiff, 2)" :is-down="props.row.oracleDiff < 0"
+                    size="0.8rem" />
+                </div>
+                <span v-else>-</span>
               </div>
               <div v-else-if="props.column.field == 'volume'">
                 <span>{{ props.formattedRow[props.column.field] }}</span>
@@ -75,20 +69,12 @@
                 </span>
                 <span v-else> - </span>
               </div>
-              <div
-                v-else-if="props.column.field == 'actions'"
-                class="action-content"
-              >
+              <div v-else-if="props.column.field == 'actions'" class="action-content">
                 <drop-modal name="swap" :index="props.row.originalIndex">
                   <template #button>
                     <swap-icon />
                   </template>
-                  <a
-                    v-for="ie in interfaces"
-                    :href="ie.swap_url || ie.info_url"
-                    target="_blank"
-                    class="interface"
-                  >
+                  <a v-for="ie in interfaces" :href="ie.swap_url || ie.info_url" target="_blank" class="interface">
                     <span>{{ ie.name }}</span>
                   </a>
                 </drop-modal>
@@ -96,12 +82,8 @@
                   <template #button>
                     <finance-icon class="finance-icon" />
                   </template>
-                  <a
-                    v-for="ie in interfaces.filter((e) => e.earn_url)"
-                    :href="ie.earn_url"
-                    target="_blank"
-                    class="interface"
-                  >
+                  <a v-for="ie in interfaces.filter((e) => e.earn_url)" :href="ie.earn_url" target="_blank"
+                    class="interface">
                     <span>{{ ie.name }}</span>
                   </a>
                 </drop-modal>
@@ -125,9 +107,10 @@ import FinanceIcon from '~/assets/images/finance-selected.svg?inline'
 import InterfacesJSON from '~/assets/wallets/index'
 import { tradeToAsset } from '~/utils'
 import RuneAsset from '~/components/RuneAsset.vue'
+import ProgressIcon from '~/components/ProgressIcon.vue'
 
 export default {
-  components: { SwapIcon, FinanceIcon, RuneAsset },
+  components: { SwapIcon, FinanceIcon, RuneAsset, ProgressIcon },
   data() {
     return {
       loading: false,
@@ -158,6 +141,13 @@ export default {
         {
           label: 'USD Price',
           field: 'price',
+          type: 'number',
+          formatFn: this.curFormat,
+          tdClass: 'mono',
+        },
+        {
+          label: 'Oracle',
+          field: 'oraclePrice',
           type: 'number',
           formatFn: this.curFormat,
           tdClass: 'mono',
@@ -228,6 +218,7 @@ export default {
       },
       interfaces: [],
       runePoolData: [],
+      oraclePrices: [],
     }
   },
   computed: {
@@ -236,12 +227,14 @@ export default {
     }),
   },
   watch: {
-    period(period) {
+    async period(period) {
+      await this.loadOraclePrices()
       this.updatePool(period)
     },
   },
   async mounted() {
     this.loadInterfaces()
+    await this.loadOraclePrices()
     this.updatePool(this.period)
     try {
       this.runePoolData = await this.$api.getRunePoolsInfo()
@@ -252,6 +245,26 @@ export default {
   methods: {
     loadInterfaces() {
       this.interfaces = shuffle(InterfacesJSON)
+    },
+    async loadOraclePrices() {
+      try {
+        const oracleResponse = await this.$api.getOraclePrices()
+
+        if (Array.isArray(oracleResponse.data)) {
+          this.oraclePrices = oracleResponse.data
+        } else if (oracleResponse.data && Array.isArray(oracleResponse.data.prices)) {
+          this.oraclePrices = oracleResponse.data.prices
+        } else if (oracleResponse.data && typeof oracleResponse.data === 'object') {
+          this.oraclePrices = Object.keys(oracleResponse.data).map(symbol => ({
+            symbol: symbol,
+            price: oracleResponse.data[symbol]
+          }))
+        } else {
+          this.oraclePrices = []
+        }
+      } catch (error) {
+        this.oraclePrices = []
+      }
     },
     updatePool(period) {
       this.loading = true
@@ -268,9 +281,29 @@ export default {
               (e) => tradeToAsset(e.asset) === p.asset
             )
 
+            let usdPrice = 0
+
+            if (p.assetPriceUSD && +p.assetPriceUSD > 0) {
+              usdPrice = +p.assetPriceUSD
+            }
+            else if (p.priceUSD && +p.priceUSD > 0) {
+              usdPrice = +p.priceUSD
+            }
+            else if (p.price && +p.price > 0) {
+              usdPrice = +p.price
+            }
+            else if (p.assetPrice && +p.assetPrice > 0) {
+              usdPrice = +p.assetPrice
+            }
+
+            const oraclePrice = this.getOraclePriceForAsset(p.asset)
+            const oracleDiff = this.calculateOracleDifference(usdPrice, oraclePrice)
+
             return {
               status: p.status,
-              price: +p.assetPriceUSD,
+              price: usdPrice,
+              oraclePrice: oraclePrice,
+              oracleDiff: oracleDiff,
               depth: (+p.assetDepth / 10 ** 8) * p.assetPriceUSD,
               apy: p.annualPercentageRate,
               volume: (+p.volume24h / 10 ** 8) * this.runePrice,
@@ -279,9 +312,9 @@ export default {
               saversDepth: +p.saversDepth / 10 ** 8,
               depthToUnitsRatio: p.saversDepth
                 ? this.$options.filters.number(
-                    +p.saversDepth / +p.saversUnits,
-                    '0.00000'
-                  )
+                  +p.saversDepth / +p.saversUnits,
+                  '0.00000'
+                )
                 : 0,
               earning24hr: pe ? (pe.earnings * this.runePrice) / 10 ** 8 : 0,
               estEarnings: pe
@@ -337,6 +370,44 @@ export default {
         }
       }
       return 0
+    },
+    getOraclePriceForAsset(asset) {
+      if (!this.oraclePrices || this.oraclePrices.length === 0) {
+        return null
+      }
+
+      const assetParts = asset.split('.')
+      if (assetParts.length === 2) {
+        const [chain, symbolWithAddress] = assetParts
+        const baseSymbol = symbolWithAddress.split('-')[0]
+
+        const searchPatterns = [
+          asset,
+          baseSymbol,
+          `${chain}.${baseSymbol}`,
+        ]
+
+        for (const pattern of searchPatterns) {
+          const oraclePrice = this.oraclePrices.find(p =>
+            p.symbol && p.symbol.toUpperCase() === pattern.toUpperCase()
+          )
+          if (oraclePrice) {
+            const price = parseFloat(oraclePrice.price)
+            return price
+          }
+        }
+      }
+
+      return null
+    },
+    calculateOracleDifference(usdPrice, oraclePrice) {
+      if (!oraclePrice || oraclePrice <= 0 || !usdPrice || usdPrice <= 0) {
+        return 0
+      }
+
+      const diff = ((oraclePrice - usdPrice) / usdPrice) * 100
+
+      return diff
     },
     sepPools(pools) {
       if (!pools && pools.length <= 0) {

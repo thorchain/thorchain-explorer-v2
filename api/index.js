@@ -75,6 +75,7 @@ import {
   getTSSMetrics,
   getSecuredAssets,
   getTCYStaker,
+  getOraclePrices,
 } from './thornode.api'
 import { getTendermintLatestBlocks } from './tendermint.api'
 import {
@@ -332,6 +333,7 @@ export default function ({ $axios }, inject) {
     getInfraRUJIMerge,
     getTCYDistribution,
     getTCYStaker,
+    getOraclePrices,
     getTcyInfo,
     getDenoms,
     getContracts,
