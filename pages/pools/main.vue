@@ -28,7 +28,7 @@
                 <div v-if="props.row.oraclePrice">
                   <div>{{ props.formattedRow[props.column.field] }}</div>
                   <progress-icon v-if="props.row.oracleDiff !== 0"
-                    :data-number="percentageFormat(props.row.oracleDiff, 2)" :is-down="props.row.oracleDiff < 0"
+                    :data-number="percentageFormat(props.row.oracleDiff, 4)" :is-down="props.row.oracleDiff < 0"
                     size="0.8rem" />
                 </div>
                 <span v-else>-</span>
@@ -105,7 +105,7 @@ import { mapGetters } from 'vuex'
 import SwapIcon from '~/assets/images/swap.svg?inline'
 import FinanceIcon from '~/assets/images/finance-selected.svg?inline'
 import InterfacesJSON from '~/assets/wallets/index'
-import { tradeToAsset } from '~/utils'
+import { assetFromString, tradeToAsset } from '~/utils'
 import RuneAsset from '~/components/RuneAsset.vue'
 import ProgressIcon from '~/components/ProgressIcon.vue'
 
@@ -376,25 +376,18 @@ export default {
         return null
       }
 
-      const assetParts = asset.split('.')
-      if (assetParts.length === 2) {
-        const [chain, symbolWithAddress] = assetParts
-        const baseSymbol = symbolWithAddress.split('-')[0]
+      const {chain, ticker} = assetFromString(asset)
+      const searchPatterns = [ticker, `${chain}.${ticker}`]
 
-        const searchPatterns = [
-          asset,
-          baseSymbol,
-          `${chain}.${baseSymbol}`,
-        ]
+      console.log(this.oraclePrices)
+      for (const pattern of searchPatterns) {
+        const oraclePrice = this.oraclePrices.find(p =>
+          p.symbol && p.symbol.toUpperCase() === pattern.toUpperCase()
+        )
 
-        for (const pattern of searchPatterns) {
-          const oraclePrice = this.oraclePrices.find(p =>
-            p.symbol && p.symbol.toUpperCase() === pattern.toUpperCase()
-          )
-          if (oraclePrice) {
-            const price = parseFloat(oraclePrice.price)
-            return price
-          }
+        if (oraclePrice) {
+          const price = parseFloat(oraclePrice.price)
+          return price
         }
       }
 
@@ -405,7 +398,7 @@ export default {
         return 0
       }
 
-      const diff = ((oraclePrice - usdPrice) / usdPrice) * 100
+      const diff = (1 - (usdPrice / oraclePrice))
 
       return diff
     },
