@@ -1,16 +1,38 @@
 <template>
   <Page>
+    <div v-if="maintenanceStatus" class="maintenance-banner">
+      <div class="maintenance-content">
+        <Warning class="maintenance-icon"></Warning>
+        <span class="maintenance-text">Maintenance Mode is on</span>
+      </div>
+    </div>
+
+    <div v-if="isJailed" class="jail-banner">
+      <div class="jail-content">
+        <Warning class="jail-icon"></Warning>
+        <span class="jail-text">Node is Jailed</span>
+        <span v-if="jailInfo" class="jail-details">{{ jailInfo }}</span>
+      </div>
+    </div>
+
+    <div v-if="isRequestedToLeave" class="leave-banner">
+      <div class="leave-content">
+        <Warning class="leave-icon"></Warning>
+        <span class="leave-text">Node is requested to leave</span>
+      </div>
+    </div>
+
     <div class="node-container">
       <div class="node-header">
         Node:<span class="node-id">{{ nodeId }}</span>
       </div>
-      <div class="node-info">
+      <div v-if="!loading" class="node-info">
         <div class="node-icon">
           <VFlag v-if="node && node.location && node.location.code" :flag="node.location.code"
             v-tooltip="node && node.location ? `${node.location.code}, ${node.location.city || 'Unknown City'}` : ''" />
         </div>
       </div>
-      <div class="node-info">
+      <div v-if="!loading" class="node-info">
         <div class="node-icon">
           <cloud-image v-if="node && node.isp" :name="[node.isp, node.org]" />
         </div>
@@ -167,7 +189,7 @@
               <small class="vote-label">Date:</small>
               <span class="mono vote-value">{{
                 formatVoteDate(vote.date)
-              }}</span>
+                }}</span>
             </div>
           </div>
         </card>
@@ -215,6 +237,7 @@
 
 <script>
 import moment from 'moment'
+import { mapGetters } from 'vuex'
 import Address from '~/components/transactions/Address.vue'
 import { orderBy, sumBy } from 'lodash'
 import { availableChains } from '~/utils'
@@ -222,6 +245,7 @@ import missingblock from '~/assets/images/missingblock.svg?inline'
 import DangerIcon from '~/assets/images/danger.svg?inline'
 import VFlag from '~/components/VFlag.vue'
 import CloudImage from '~/components/CloudImage.vue'
+import Warning from '~/assets/images/Warning.svg?inline'
 
 export default {
   components: {
@@ -230,6 +254,7 @@ export default {
     DangerIcon,
     VFlag,
     CloudImage,
+    Warning,
   },
   async asyncData({ params }) {
     return { nodeId: params.nodeId }
@@ -240,6 +265,7 @@ export default {
       asgardVault: null,
       votes: [],
       loading: true,
+      isTestingMaintenance: false,
       pieData: [],
       columns: [
         {
@@ -280,6 +306,7 @@ export default {
     title: 'THORChain Network Explorer | Node',
   },
   computed: {
+    ...mapGetters(['getChainsHeight']),
     nodeMetrics() {
       return [
         {
@@ -388,9 +415,20 @@ export default {
               filter: (v) => this.addressFormatV2(v),
             },
             {
-              name: 'Vault Public Hash',
-              value: this.asgardVault ? this.asgardVault.pub_key : null,
-              valueSlot: 'hash',
+              name: 'Vault Address',
+              valueSlot: 'address',
+              value: (() => {
+                let vaultAddress = this.asgardVault?.addresses?.find(
+                  (a) => a.chain === 'THOR'
+                )?.address
+                if (!vaultAddress && this.node?.vaultMembership) {
+                  vaultAddress = this.node.vaultMembership
+                }
+                if (!vaultAddress && this.node?.pub_key_set?.secp256k1) {
+                  vaultAddress = this.node.pub_key_set.secp256k1
+                }
+                return vaultAddress
+              })(),
             },
           ],
         },
@@ -458,13 +496,50 @@ export default {
         (this.node && this.node.bifrostHealth !== null && this.node.bifrostHealth !== undefined)
       )
     },
+    isJailed() {
+      if (!this.node || !this.node.jail || !this.getChainsHeight) return false
+
+      const jailReleaseHeight = this.node.jail.release_height
+      const currentBlockHeight = this.getChainsHeight.THOR
+
+      return jailReleaseHeight > currentBlockHeight
+    },
+    jailInfo() {
+      if (!this.node || !this.node.jail || !this.getChainsHeight) return null
+
+      const reason = this.node.jail.reason || 'Unknown reason'
+      const releaseHeight = this.node.jail.release_height
+      const currentBlockHeight = this.getChainsHeight.THOR
+
+      if (releaseHeight && currentBlockHeight) {
+        const blocksRemaining = parseInt(releaseHeight) - parseInt(currentBlockHeight)
+        if (blocksRemaining > 0) {
+          const timeRemaining = moment.duration(blocksRemaining * 6, 'seconds').humanize()
+          return `Reason: ${reason} | Release in ~${timeRemaining}`
+        } else {
+          return `Reason: ${reason}`
+        }
+      }
+
+      return `Reason: ${reason}`
+    },
+    isRequestedToLeave() {
+      if (!this.node) {
+        return false
+      }
+
+      const result = this.node.requested_to_leave === true
+      return result
+    },
+    maintenanceStatus() {
+      return this.node && this.node.maintenance
+    },
   },
   mounted() {
     this.loading = true
 
     this.$api.getNodeInfo(this.nodeId)
       .then((response) => {
-        console.log('New API Response:', response.data)
         const data = response.data
 
         if (data && typeof data === 'object') {
@@ -527,11 +602,14 @@ export default {
   },
   methods: {
     findAsgardVault(asgardList) {
-      if (!this.node || !this.node.signer_membership) return
+      if (!this.node || !this.node.signer_membership) {
+        return
+      }
 
       for (const vault of asgardList) {
         const match =
           vault.pub_key && this.node.signer_membership.includes(vault.pub_key)
+
         if (match) {
           this.asgardVault = vault
           break
@@ -641,6 +719,7 @@ export default {
   flex-direction: row;
   align-items: center;
   gap: $space-8;
+  flex-wrap: wrap;
 
 
   .node-info {
@@ -665,10 +744,45 @@ export default {
   }
 }
 
+.maintenance-banner {
+  background-color: rgba(246, 198, 122, 0.2);
+  border: 2px solid #f9b343;
+  border-radius: 0.5rem;
+  margin-bottom: $space-16;
+  padding: 10px 15px;
+
+  .maintenance-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--sec-font-color);
+
+    .maintenance-icon {
+      width: 24px;
+      height: 24px;
+      fill: #f9a51e;
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .maintenance-text {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+  }
+}
+
 .node-overview {
   display: flex;
   flex-direction: row;
   gap: 0.5rem;
+  flex-wrap: wrap;
+
+  @include lg {
+    flex-wrap: nowrap;
+  }
 }
 
 
@@ -776,7 +890,11 @@ export default {
   border: 1px solid var(--border-color);
   border-radius: $radius-lg;
   padding: $space-10;
-  margin-bottom: $space-16;
+  margin-bottom: 0px;
+
+  @include lg {
+    margin-bottom: $space-16;
+  }
 }
 
 .node-id {
@@ -934,6 +1052,91 @@ export default {
 
     .chain-status-item {
       min-width: 50px;
+    }
+  }
+}
+
+.jail-banner {
+  background: rgba(246, 122, 122, 0.2);
+  border: 1px solid var(--red);
+  border-radius: 0.5rem;
+  margin-bottom: $space-16;
+  padding: 10px 15px;
+
+  .jail-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--sec-font-color);
+
+    .jail-icon {
+      width: 24px;
+      height: 24px;
+      fill: var(--red);
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .jail-text {
+      font-weight: 500;
+      font-size: 12px;
+      flex-grow: 1;
+
+      @include lg {
+        font-size: 14px;
+        font-weight: 600;
+      }
+    }
+
+    .jail-details {
+      background: rgba(197, 48, 48, 0.15);
+      color: var(--sec-font-color);
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 8px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border: 1px solid rgba(197, 48, 48, 0.2);
+
+      @include lg {
+        font-size: 12px;
+      }
+    }
+  }
+
+  &:hover .jail-details {
+    background: rgba(197, 48, 48, 0.25);
+    transition: all 0.2s ease;
+  }
+}
+
+.leave-banner {
+  background-color: rgba(122, 205, 246, 0.2);
+  border: 2px solid var(--highlight);
+  border-radius: 0.5rem;
+  margin-bottom: $space-16;
+  padding: 10px 15px;
+
+  .leave-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--sec-font-color);
+
+    .leave-icon {
+      width: 24px;
+      height: 24px;
+      fill: var(--highlight);
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .leave-text {
+      font-weight: 600;
+      font-size: 14px;
     }
   }
 }
