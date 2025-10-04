@@ -423,6 +423,10 @@ export default {
           value: this.tcyInfo?.pol_tcy / 1e8,
         },
         {
+          name: 'Treasury Owned',
+          value: this.tcyInfo?.treasury / 1e8,
+        },
+        {
           name: 'Unstaked',
           value: this.tcyInfo?.claimed_not_staked / 1e8,
         },
