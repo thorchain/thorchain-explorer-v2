@@ -28,8 +28,15 @@
       </div>
       <div v-if="!loading" class="node-info">
         <div class="node-icon">
-          <VFlag v-if="node && node.location && node.location.code" :flag="node.location.code"
-            v-tooltip="node && node.location ? `${node.location.code}, ${node.location.city || 'Unknown City'}` : ''" />
+          <VFlag
+            v-if="node && node.location && node.location.code"
+            v-tooltip="
+              node && node.location
+                ? `${node.location.code}, ${node.location.city || 'Unknown City'}`
+                : ''
+            "
+            :flag="node.location.code"
+          />
         </div>
       </div>
       <div v-if="!loading" class="node-info">
@@ -40,39 +47,84 @@
     </div>
     <div class="node-overview">
       <!-- Chain Information Section -->
-      <div v-if="node && (chainLags.length > 0 || hasHealthData)" style="margin-top: 1rem">
+      <template v-if="node && (chainLags.length > 0 || hasHealthData)">
         <card title="Chain Information" :is-loading="loading">
           <div class="chain-status-row">
             <!-- Chain Lags -->
-            <div v-for="chain in chainLags" :key="chain.name" class="chain-status-item">
+            <div
+              v-for="chain in chainLags"
+              :key="chain.name"
+              class="chain-status-item"
+            >
               <div class="chain-header">
-                <img class="chain-icon" :src="assetImage(`${chain.name}.${chain.name}`)" />
+                <img
+                  class="chain-icon"
+                  :src="assetImage(`${chain.name}.${chain.name}`)"
+                />
                 {{ chain.name }}
               </div>
               <div class="chain-status-value mono">
-                <span v-if="parseInt(chain.lag) == 0" class="version chain-ok">OK</span>
-                <span v-else-if="chain.lag === '' || chain.lag === null || chain.lag === undefined">-</span>
-                <span v-else-if="0 < chain.lag && chain.lag < 10000" class="number chain-warning">
+                <span v-if="parseInt(chain.lag) == 0" class="version chain-ok"
+                  >OK</span
+                >
+                <span
+                  v-else-if="
+                    chain.lag === '' ||
+                    chain.lag === null ||
+                    chain.lag === undefined
+                  "
+                  >-</span
+                >
+                <span
+                  v-else-if="0 < chain.lag && chain.lag < 10000"
+                  class="number chain-warning"
+                >
                   -{{ $options.filters.number(chain.lag, '0a') }}
                 </span>
-                <DangerIcon v-else-if="0 > chain.lag && chain.lag > -10000" v-tooltip="'Disabled'"
-                  class="table-icon chain-error" style="color: #ef5350" />
-                <DangerIcon v-else-if="chain.lag > 10000" v-tooltip="`${chain.lag}`" class="table-icon"
-                  style="fill: #ffc107" />
-                <DangerIcon v-else v-tooltip="`${chain.lag}`" class="table-icon chain-error" style="fill: #ef5350" />
+                <DangerIcon
+                  v-else-if="0 > chain.lag && chain.lag > -10000"
+                  v-tooltip="'Disabled'"
+                  class="table-icon chain-error"
+                  style="color: #ef5350"
+                />
+                <DangerIcon
+                  v-else-if="chain.lag > 10000"
+                  v-tooltip="`${chain.lag}`"
+                  class="table-icon"
+                  style="fill: #ffc107"
+                />
+                <DangerIcon
+                  v-else
+                  v-tooltip="`${chain.lag}`"
+                  class="table-icon chain-error"
+                  style="fill: #ef5350"
+                />
               </div>
             </div>
 
             <!-- Missing Blocks -->
-            <div v-if="node.missing_blocks !== null && node.missing_blocks !== undefined" class="chain-status-item">
+            <div
+              v-if="
+                node.missing_blocks !== null &&
+                node.missing_blocks !== undefined
+              "
+              class="chain-status-item"
+            >
               <div class="chain-header">
-                <missingblock class="chain-icon" />
+                <missingblock class="chain-icon missing" />
                 Missing
               </div>
               <div class="chain-status-value mono">
-                <span v-if="node.missing_blocks === 0" class="version health-ok">OK</span>
-                <span v-else-if="node.missing_blocks !== null && node.missing_blocks !== undefined"
-                  class="number health-error">
+                <span v-if="node.missing_blocks === 0" class="version health-ok"
+                  >OK</span
+                >
+                <span
+                  v-else-if="
+                    node.missing_blocks !== null &&
+                    node.missing_blocks !== undefined
+                  "
+                  class="number health-error"
+                >
                   {{ $options.filters.number(-node.missing_blocks, '0,0') }}
                 </span>
                 <span v-else>-</span>
@@ -80,14 +132,26 @@
             </div>
 
             <!-- RPC Health -->
-            <div v-if="node.rpcHealth !== null && node.rpcHealth !== undefined" class="chain-status-item">
+            <div
+              v-if="node.rpcHealth !== null && node.rpcHealth !== undefined"
+              class="chain-status-item"
+            >
               <div class="chain-header">RPC</div>
               <div class="chain-status-value mono">
                 <template v-if="getHealthText(node.rpcHealth) !== '-'">
-                  <a v-tooltip="getHealthTooltip(node.rpcHealth)"
-                    :class="['clickable', 'hoverable', { 'bad-link': getHealthText(node.rpcHealth) === 'BAD' }]"
-                    :href="getRPCUrl()" target="_blank" style="text-decoration: none"
-                    :style="getHealthStyle(node.rpcHealth)">
+                  <a
+                    v-tooltip="getHealthTooltip(node.rpcHealth)"
+                    :class="[
+                      'clickable',
+                      'hoverable',
+                      'version',
+                      { 'bad-link': getHealthText(node.rpcHealth) === 'BAD' },
+                    ]"
+                    :href="getRPCUrl()"
+                    target="_blank"
+                    style="text-decoration: none"
+                    :style="getHealthStyle(node.rpcHealth)"
+                  >
                     {{ getHealthText(node.rpcHealth) }}
                   </a>
                 </template>
@@ -96,14 +160,30 @@
             </div>
 
             <!-- BFR Health -->
-            <div v-if="node.bifrostHealth !== null && node.bifrostHealth !== undefined" class="chain-status-item">
+            <div
+              v-if="
+                node.bifrostHealth !== null && node.bifrostHealth !== undefined
+              "
+              class="chain-status-item"
+            >
               <div class="chain-header">BFR</div>
               <div class="chain-status-value mono">
                 <template v-if="getHealthText(node.bifrostHealth) !== '-'">
-                  <a v-tooltip="getHealthTooltip(node.bifrostHealth)"
-                    :class="['clickable', 'hoverable', { 'bad-link': getHealthText(node.bifrostHealth) === 'BAD' }]"
-                    :href="getBFRUrl()" target="_blank" style="text-decoration: none"
-                    :style="getHealthStyle(node.bifrostHealth)">
+                  <a
+                    v-tooltip="getHealthTooltip(node.bifrostHealth)"
+                    :class="[
+                      'clickable',
+                      'hoverable',
+                      'version',
+                      {
+                        'bad-link': getHealthText(node.bifrostHealth) === 'BAD',
+                      },
+                    ]"
+                    :href="getBFRUrl()"
+                    target="_blank"
+                    style="text-decoration: none"
+                    :style="getHealthStyle(node.bifrostHealth)"
+                  >
                     {{ getHealthText(node.bifrostHealth) }}
                   </a>
                 </template>
@@ -112,66 +192,89 @@
             </div>
           </div>
         </card>
-      </div>
+      </template>
 
       <!-- Node Status and Key Metrics -->
-      <info-card :options="nodeMetrics">
-        <template #status="{ item }">
-          <div v-if="item.value" v-tooltip="node && node.preflight_status && node.preflight_status.reason" :class="[
-            'mini-bubble hoverable',
-            {
-              yellow: item.value == 'Standby',
-              danger: item.value == 'Disabled',
-              white: item.value == 'Whitelisted',
-            },
-          ]">
-            <span>{{ item.value }}</span>
-          </div>
-        </template>
-        <template #age="{ item }">
-          <span v-if="item.value && node && node.age" v-tooltip="node.age.info" style="cursor: pointer">
-            {{ $options.filters.number(item.value, '0,0.00') }}
-          </span>
-          <span v-else>-</span>
-        </template>
-        <template #vault="{ item }">
-          <div v-if="item.value" style="display: flex; align-items: center; gap: 0.5rem">
-            <Address :address="item.value"></Address>
-          </div>
-          <div v-else class="metric-value">-</div>
-        </template>
-        <template #vaultHash="{ item }">
-          <div v-if="item.value" class="vault-wrapper">
-            <color-hash v-tooltip="item.value" :name="item.value" />
-          </div>
-          <span v-else>-</span>
-        </template>
-      </info-card>
+      <card title="Node Metrics">
+        <info-card :options="nodeMetrics" :inner="true">
+          <template #status="{ item }">
+            <div
+              v-if="item.value"
+              v-tooltip="
+                node && node.preflight_status && node.preflight_status.reason
+              "
+              :class="[
+                'mini-bubble hoverable',
+                {
+                  yellow: item.value == 'Standby',
+                  danger: item.value == 'Disabled',
+                  white: item.value == 'Whitelisted',
+                },
+              ]"
+            >
+              <span>{{ item.value }}</span>
+            </div>
+          </template>
+          <template #age="{ item }">
+            <span
+              v-if="item.value && node && node.age"
+              v-tooltip="node.age.info"
+              style="cursor: pointer"
+            >
+              {{ $options.filters.number(item.value, '0,0.00') }}
+            </span>
+            <span v-else>-</span>
+          </template>
+          <template #vault="{ item }">
+            <div
+              v-if="item.value"
+              style="display: flex; align-items: center; gap: 0.5rem"
+            >
+              <Address :address="item.value"></Address>
+            </div>
+            <div v-else class="metric-value">-</div>
+          </template>
+          <template #vaultHash="{ item }">
+            <div v-if="item.value" class="vault-wrapper">
+              <color-hash v-tooltip="item.value" :name="item.value" />
+              <Address :address="item.value"></Address>
+            </div>
+            <span v-else>-</span>
+          </template>
+        </info-card>
+      </card>
 
       <!-- Provider Information -->
-      <info-card :options="providerInfo">
-        <template #operator="{ item }">
-          <div v-if="item.value" class="hoverable">
-            <nuxt-link class="clickable mono" target="_blank" :to="`/address/${item.value}`">
-              {{ item.value.slice(-4) }}
-            </nuxt-link>
-          </div>
-          <span v-else>-</span>
-        </template>
-      </info-card>
+      <card title="Provider">
+        <info-card :options="providerInfo" :inner="true">
+          <template #operator="{ item }">
+            <div
+              v-if="item.value"
+              style="display: flex; align-items: center; gap: 0.5rem"
+            >
+              <Address :address="item.value"></Address>
+            </div>
+            <span v-else>-</span>
+          </template>
+        </info-card>
+      </card>
     </div>
     <info-card :options="nodeSettings">
       <template #address="{ item }">
         <Address :address="item.value"></Address>
       </template>
       <template #hash="{ item }">
-        <div style="display: flex; align-items: center; gap: 0.5rem">
+        <div>
           <span v-tooltip="item.value" class="mono">
             {{ addressFormatV2(item.value) }}
           </span>
           <Copy :str-copy="item.value"></Copy>
-          <color-hash v-tooltip="'Vault colors are identical to the nodes vault membership'
-            " :name="item.value"></color-hash>
+          <color-hash
+            v-tooltip="
+              'Vault colors are identical to the nodes vault membership'
+            "
+            :name="item.value"
+          ></color-hash>
         </div>
       </template>
     </info-card>
@@ -179,7 +282,12 @@
     <div v-if="filteredVotes.length > 0" style="margin-top: 1rem">
       <Header title="Last 30 Days vote"></Header>
       <div class="votes-container">
-        <card v-for="(vote, index) in filteredVotes" :key="index" class="vote-card" :title="vote.value">
+        <card
+          v-for="(vote, index) in filteredVotes"
+          :key="index"
+          class="vote-card"
+          :title="vote.value"
+        >
           <div class="vote-details">
             <div class="vote-row">
               <small class="vote-label">Key:</small>
@@ -189,7 +297,7 @@
               <small class="vote-label">Date:</small>
               <span class="mono vote-value">{{
                 formatVoteDate(vote.date)
-                }}</span>
+              }}</span>
             </div>
           </div>
         </card>
@@ -201,7 +309,11 @@
         <pie-chart :pie-data="pieData" :formatter="formatter" />
         <cards-header :table-general-stats="generalStatsDetails" />
 
-        <vue-good-table :columns="columns" :rows="providersTableData" style-class="vgt-table net-table">
+        <vue-good-table
+          :columns="columns"
+          :rows="providersTableData"
+          style-class="vgt-table net-table"
+        >
           <template #table-row="{ column, row }">
             <span v-if="column.field === 'bond_address'">
               <Address :address="row.bond_address" />
@@ -218,11 +330,21 @@
           </template>
         </vue-good-table>
       </card>
-      <card v-if="
-        node && node.signer_membership && node.signer_membership.length > 0
-      " title="Signer Membership" :is-loading="loading" style="margin-top: 1rem" :body-class="'fixed-height'">
+      <card
+        v-if="
+          node && node.signer_membership && node.signer_membership.length > 0
+        "
+        title="Signer Membership"
+        :is-loading="loading"
+        style="margin-top: 1rem"
+        :body-class="'fixed-height'"
+      >
         <div class="providers-container">
-          <div v-for="p in node.signer_membership" :key="p.signer_membership" class="providers">
+          <div
+            v-for="p in node.signer_membership"
+            :key="p.signer_membership"
+            class="providers"
+          >
             <div>
               <span class="mono">
                 {{ formatAddress(p) }}
@@ -238,8 +360,8 @@
 <script>
 import moment from 'moment'
 import { mapGetters } from 'vuex'
-import Address from '~/components/transactions/Address.vue'
 import { orderBy, sumBy } from 'lodash'
+import Address from '~/components/transactions/Address.vue'
 import { availableChains } from '~/utils'
 import missingblock from '~/assets/images/missingblock.svg?inline'
 import DangerIcon from '~/assets/images/danger.svg?inline'
@@ -310,7 +432,7 @@ export default {
     nodeMetrics() {
       return [
         {
-          title: 'Node Metrics',
+          title: '',
           rowStart: 1,
           colSpan: 1,
           items: [
@@ -327,13 +449,13 @@ export default {
             {
               name: 'Total Bond',
               value: this.node ? this.node.total_bond / 10 ** 8 : 0,
-              filter: (v) => this.formatRune(v, '0,0a'),
+              filter: (v) => this.formatRune(v, '0,0.00a'),
               usdValue: true,
             },
             {
               name: 'Current Reward',
               value: this.node ? this.node.current_award / 10 ** 8 : 0,
-              filter: (v) => this.formatRune(v, '0,0a'),
+              filter: (v) => this.formatRune(v, '0,0.00a'),
               usdValue: true,
             },
             {
@@ -342,7 +464,7 @@ export default {
             },
             {
               name: 'Vault',
-              value: this.node ? this.node.vaultMembership : null,
+              value: this.node ? this.node.vaultMembership : '',
               valueSlot: 'vaultHash',
             },
           ],
@@ -352,13 +474,16 @@ export default {
     providerInfo() {
       return [
         {
-          title: 'Provider',
+          title: '',
           rowStart: 1,
           colSpan: 1,
           items: [
             {
               name: 'Fee',
-              value: this.node && this.node.bond_providers ? this.node.bond_providers.node_operator_fee / 1e4 : null,
+              value:
+                this.node && this.node.bond_providers
+                  ? this.node.bond_providers.node_operator_fee / 1e4
+                  : null,
               type: 'percentage',
             },
             {
@@ -405,13 +530,19 @@ export default {
             },
             {
               name: 'Public Keys: Secp256k1',
-              value: this.node && this.node.pub_key_set ? this.node.pub_key_set.secp256k1 : null,
+              value:
+                this.node && this.node.pub_key_set
+                  ? this.node.pub_key_set.secp256k1
+                  : null,
               filter: (v) => this.addressFormatV2(v),
             },
 
             {
               name: 'Public Keys: Ed25519',
-              value: this.node && this.node.pub_key_set ? this.node.pub_key_set.ed25519 : null,
+              value:
+                this.node && this.node.pub_key_set
+                  ? this.node.pub_key_set.ed25519
+                  : null,
               filter: (v) => this.addressFormatV2(v),
             },
             {
@@ -435,7 +566,13 @@ export default {
       ]
     },
     filteredVotes() {
-      if (!this.votes || !this.votes.length || !this.node || !this.node.node_address) return []
+      if (
+        !this.votes ||
+        !this.votes.length ||
+        !this.node ||
+        !this.node.node_address
+      )
+        return []
 
       const nodeAddress = this.node.node_address
       const matchedVotes = []
@@ -454,7 +591,13 @@ export default {
       return matchedVotes
     },
     providersTableData() {
-      if (!this.node || !this.node.bond_providers || !this.node.bond_providers.providers || !this.node.bond_providers.providers.length) return []
+      if (
+        !this.node ||
+        !this.node.bond_providers ||
+        !this.node.bond_providers.providers ||
+        !this.node.bond_providers.providers.length
+      )
+        return []
 
       const totalBond =
         this.node.total_bond ??
@@ -479,21 +622,36 @@ export default {
 
       let chains = []
       if (this.node.scanner) {
-        chains = Object.keys(this.node.scanner).filter(chain => chain !== 'THOR')
+        chains = Object.keys(this.node.scanner).filter(
+          (chain) => chain !== 'THOR'
+        )
       } else if (this.node.behind) {
         chains = Object.keys(this.node.behind)
       }
 
-      return chains.sort().map(chain => ({
+      return chains.sort().map((chain) => ({
         name: chain,
-        lag: (this.node.behind && this.node.behind[chain] !== undefined) ? this.node.behind[chain] : (this.node.scanner && this.node.scanner[chain] && this.node.scanner[chain].height_lag !== undefined) ? this.node.scanner[chain].height_lag : null
+        lag:
+          this.node.behind && this.node.behind[chain] !== undefined
+            ? this.node.behind[chain]
+            : this.node.scanner &&
+                this.node.scanner[chain] &&
+                this.node.scanner[chain].height_lag !== undefined
+              ? this.node.scanner[chain].height_lag
+              : null,
       }))
     },
     hasHealthData() {
       return (
-        (this.node && this.node.missing_blocks !== null && this.node.missing_blocks !== undefined) ||
-        (this.node && this.node.rpcHealth !== null && this.node.rpcHealth !== undefined) ||
-        (this.node && this.node.bifrostHealth !== null && this.node.bifrostHealth !== undefined)
+        (this.node &&
+          this.node.missing_blocks !== null &&
+          this.node.missing_blocks !== undefined) ||
+        (this.node &&
+          this.node.rpcHealth !== null &&
+          this.node.rpcHealth !== undefined) ||
+        (this.node &&
+          this.node.bifrostHealth !== null &&
+          this.node.bifrostHealth !== undefined)
       )
     },
     isJailed() {
@@ -512,9 +670,12 @@ export default {
       const currentBlockHeight = this.getChainsHeight.THOR
 
       if (releaseHeight && currentBlockHeight) {
-        const blocksRemaining = parseInt(releaseHeight) - parseInt(currentBlockHeight)
+        const blocksRemaining =
+          parseInt(releaseHeight) - parseInt(currentBlockHeight)
         if (blocksRemaining > 0) {
-          const timeRemaining = moment.duration(blocksRemaining * 6, 'seconds').humanize()
+          const timeRemaining = moment
+            .duration(blocksRemaining * 6, 'seconds')
+            .humanize()
           return `Reason: ${reason} | Release in ~${timeRemaining}`
         } else {
           return `Reason: ${reason}`
@@ -538,7 +699,8 @@ export default {
   mounted() {
     this.loading = true
 
-    this.$api.getNodeInfo(this.nodeId)
+    this.$api
+      .getNodeInfo(this.nodeId)
       .then((response) => {
         const data = response.data
 
@@ -556,11 +718,14 @@ export default {
             throw new Error('Invalid response structure')
           }
 
-          if (this.node && (this.node.countryCode || this.node.regionName || this.node.city)) {
+          if (
+            this.node &&
+            (this.node.countryCode || this.node.regionName || this.node.city)
+          ) {
             this.node.location = {
               code: this.node.countryCode,
               region: this.node.regionName,
-              city: this.node.city
+              city: this.node.city,
             }
           }
 
@@ -580,11 +745,14 @@ export default {
         ])
           .then(([nodeRes, asgardRes, votesRes]) => {
             this.node = nodeRes.data
-            if (this.node && (this.node.countryCode || this.node.regionName || this.node.city)) {
+            if (
+              this.node &&
+              (this.node.countryCode || this.node.regionName || this.node.city)
+            ) {
               this.node.location = {
                 code: this.node.countryCode,
                 region: this.node.regionName,
-                city: this.node.city
+                city: this.node.city,
               }
             }
             this.votes = votesRes.data
@@ -632,7 +800,13 @@ export default {
       return moment(date).format('MM/DD/YYYY HH:mm:ss')
     },
     createProvidersPieData() {
-      if (!this.node || !this.node.bond_providers || !this.node.bond_providers.providers || !this.node.bond_providers.providers.length) return
+      if (
+        !this.node ||
+        !this.node.bond_providers ||
+        !this.node.bond_providers.providers ||
+        !this.node.bond_providers.providers.length
+      )
+        return
 
       const sorted = [...this.node.bond_providers.providers].sort(
         (a, b) => b.bond - a.bond
@@ -650,11 +824,11 @@ export default {
         ...topProviders,
         ...(othersValue > 0
           ? [
-            {
-              name: 'Others',
-              value: othersValue,
-            },
-          ]
+              {
+                name: 'Others',
+                value: othersValue,
+              },
+            ]
           : []),
       ]
     },
@@ -721,7 +895,6 @@ export default {
   gap: $space-8;
   flex-wrap: wrap;
 
-
   .node-info {
     display: flex;
     flex-direction: row;
@@ -770,7 +943,6 @@ export default {
       font-weight: 600;
       font-size: 14px;
     }
-
   }
 }
 
@@ -784,7 +956,6 @@ export default {
     flex-wrap: nowrap;
   }
 }
-
 
 .status-bubble {
   display: inline-flex;
@@ -814,7 +985,6 @@ export default {
   }
 }
 
-
 .vault-address-inline {
   display: flex;
   align-items: center;
@@ -825,6 +995,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 0.5rem;
 }
 
 .bond-info {
@@ -967,6 +1138,10 @@ export default {
         width: 16px;
         height: 16px;
         border-radius: 50%;
+
+        &.missing {
+          fill: var(--sec-font-color);
+        }
       }
     }
 
