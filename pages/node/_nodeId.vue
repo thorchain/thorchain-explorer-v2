@@ -24,7 +24,8 @@
 
     <div class="node-container">
       <div class="node-header">
-        Node:<span class="node-id">{{ nodeId }}</span>
+        Node:
+        <span class="node-id">{{ nodeId }}</span>
       </div>
       <div v-if="!loading" class="node-info">
         <div class="node-icon">
@@ -44,8 +45,77 @@
           <cloud-image v-if="node && node.isp" :name="[node.isp, node.org]" />
         </div>
       </div>
+      <div class="node-info">
+        <copy :str-copy="nodeId" />
+      </div>
     </div>
+
     <div class="node-overview">
+      <!-- Node Status and Key Metrics -->
+      <card title="Node Metrics">
+        <info-card :options="nodeMetrics" :inner="true">
+          <template #status="{ item }">
+            <div
+              v-if="item.value"
+              v-tooltip="
+                node && node.preflight_status && node.preflight_status.reason
+              "
+              :class="[
+                'mini-bubble hoverable',
+                {
+                  yellow: item.value == 'Standby',
+                  danger: item.value == 'Disabled',
+                  white: item.value == 'Whitelisted',
+                },
+              ]"
+            >
+              <span>{{ item.value }}</span>
+            </div>
+          </template>
+          <template #age="{ item }">
+            <span
+              v-if="item.value && node && node.age"
+              v-tooltip="node.age.info"
+              style="cursor: pointer"
+            >
+              {{ $options.filters.number(item.value, '0,0.00') }}
+            </span>
+            <span v-else>-</span>
+          </template>
+          <template #vault="{ item }">
+            <div
+              v-if="item.value"
+              style="display: flex; align-items: center; gap: 0.5rem"
+            >
+              <Address :address="item.value"></Address>
+            </div>
+            <div v-else class="metric-value">-</div>
+          </template>
+          <template #vaultHash="{ item }">
+            <div v-if="item.value" class="vault-wrapper">
+              <color-hash v-tooltip="item.value" :name="item.value" />
+              <Address :address="item.value"></Address>
+            </div>
+            <span v-else>-</span>
+          </template>
+        </info-card>
+      </card>
+
+      <!-- Provider Information -->
+      <card title="Provider">
+        <info-card :options="providerInfo" :inner="true">
+          <template #operator="{ item }">
+            <div
+              v-if="item.value"
+              style="display: flex; align-items: center; gap: 0.5rem"
+            >
+              <Address :address="item.value"></Address>
+            </div>
+            <span v-else>-</span>
+          </template>
+        </info-card>
+      </card>
+
       <!-- Chain Information Section -->
       <template v-if="node && (chainLags.length > 0 || hasHealthData)">
         <card title="Chain Information" :is-loading="loading">
@@ -193,91 +263,7 @@
           </div>
         </card>
       </template>
-
-      <!-- Node Status and Key Metrics -->
-      <card title="Node Metrics">
-        <info-card :options="nodeMetrics" :inner="true">
-          <template #status="{ item }">
-            <div
-              v-if="item.value"
-              v-tooltip="
-                node && node.preflight_status && node.preflight_status.reason
-              "
-              :class="[
-                'mini-bubble hoverable',
-                {
-                  yellow: item.value == 'Standby',
-                  danger: item.value == 'Disabled',
-                  white: item.value == 'Whitelisted',
-                },
-              ]"
-            >
-              <span>{{ item.value }}</span>
-            </div>
-          </template>
-          <template #age="{ item }">
-            <span
-              v-if="item.value && node && node.age"
-              v-tooltip="node.age.info"
-              style="cursor: pointer"
-            >
-              {{ $options.filters.number(item.value, '0,0.00') }}
-            </span>
-            <span v-else>-</span>
-          </template>
-          <template #vault="{ item }">
-            <div
-              v-if="item.value"
-              style="display: flex; align-items: center; gap: 0.5rem"
-            >
-              <Address :address="item.value"></Address>
-            </div>
-            <div v-else class="metric-value">-</div>
-          </template>
-          <template #vaultHash="{ item }">
-            <div v-if="item.value" class="vault-wrapper">
-              <color-hash v-tooltip="item.value" :name="item.value" />
-              <Address :address="item.value"></Address>
-            </div>
-            <span v-else>-</span>
-          </template>
-        </info-card>
-      </card>
-
-      <!-- Provider Information -->
-      <card title="Provider">
-        <info-card :options="providerInfo" :inner="true">
-          <template #operator="{ item }">
-            <div
-              v-if="item.value"
-              style="display: flex; align-items: center; gap: 0.5rem"
-            >
-              <Address :address="item.value"></Address>
-            </div>
-            <span v-else>-</span>
-          </template>
-        </info-card>
-      </card>
     </div>
-    <info-card :options="nodeSettings">
-      <template #address="{ item }">
-        <Address :address="item.value"></Address>
-      </template>
-      <template #hash="{ item }">
-        <div>
-          <span v-tooltip="item.value" class="mono">
-            {{ addressFormatV2(item.value) }}
-          </span>
-          <Copy :str-copy="item.value"></Copy>
-          <color-hash
-            v-tooltip="
-              'Vault colors are identical to the nodes vault membership'
-            "
-            :name="item.value"
-          ></color-hash>
-        </div>
-      </template>
-    </info-card>
 
     <div v-if="filteredVotes.length > 0" style="margin-top: 1rem">
       <Header title="Last 30 Days vote"></Header>
@@ -360,14 +346,12 @@
 <script>
 import moment from 'moment'
 import { mapGetters } from 'vuex'
-import { orderBy, sumBy } from 'lodash'
 import Address from '~/components/transactions/Address.vue'
-import { availableChains } from '~/utils'
 import missingblock from '~/assets/images/missingblock.svg?inline'
 import DangerIcon from '~/assets/images/danger.svg?inline'
 import VFlag from '~/components/VFlag.vue'
 import CloudImage from '~/components/CloudImage.vue'
-import Warning from '~/assets/images/Warning.svg?inline'
+import Warning from '~/assets/images/warning.svg?inline'
 
 export default {
   components: {
@@ -378,7 +362,7 @@ export default {
     CloudImage,
     Warning,
   },
-  async asyncData({ params }) {
+  asyncData({ params }) {
     return { nodeId: params.nodeId }
   },
   data() {
@@ -437,6 +421,10 @@ export default {
           colSpan: 1,
           items: [
             {
+              name: 'Version',
+              value: this.node ? this.node.version : null,
+            },
+            {
               name: 'Age',
               value: this.node && this.node.age ? this.node.age.number : null,
               valueSlot: 'age',
@@ -464,7 +452,18 @@ export default {
             },
             {
               name: 'Vault',
-              value: this.node ? this.node.vaultMembership : '',
+              value: (() => {
+                let vaultAddress = this.asgardVault?.addresses?.find(
+                  (a) => a.chain === 'THOR'
+                )?.address
+                if (!vaultAddress && this.node?.vaultMembership) {
+                  vaultAddress = this.node.vaultMembership
+                }
+                if (!vaultAddress && this.node?.pub_key_set?.secp256k1) {
+                  vaultAddress = this.node.pub_key_set.secp256k1
+                }
+                return vaultAddress
+              })(),
               valueSlot: 'vaultHash',
             },
           ],
@@ -484,6 +483,7 @@ export default {
                 this.node && this.node.bond_providers
                   ? this.node.bond_providers.node_operator_fee / 1e4
                   : null,
+              filter: (v) => `${this.$options.filters.percent(v, 2)}`,
               type: 'percentage',
             },
             {
@@ -495,71 +495,6 @@ export default {
               name: 'APY',
               value: this.node ? this.node.apy : null,
               filter: (v) => `${this.$options.filters.percent(v, 2)}`,
-            },
-          ],
-        },
-      ]
-    },
-    nodeSettings() {
-      return [
-        {
-          title: 'Overview',
-          rowStart: 1,
-          colSpan: 1,
-          items: [
-            {
-              name: 'Version',
-              value: this.node ? this.node.version : null,
-            },
-
-            {
-              name: 'Active Since (Block Height)',
-              value: this.node ? this.node.active_block_height : null,
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
-            },
-            {
-              name: 'Status Since (Block Height)',
-              value: this.node ? this.node.status_since : null,
-              filter: (v) => `${this.$options.filters.number(v, '0,0')}`,
-            },
-
-            {
-              name: 'Node operator address',
-              value: this.node ? this.node.node_operator_address : null,
-              filter: (v) => this.addressFormatV2(v),
-            },
-            {
-              name: 'Public Keys: Secp256k1',
-              value:
-                this.node && this.node.pub_key_set
-                  ? this.node.pub_key_set.secp256k1
-                  : null,
-              filter: (v) => this.addressFormatV2(v),
-            },
-
-            {
-              name: 'Public Keys: Ed25519',
-              value:
-                this.node && this.node.pub_key_set
-                  ? this.node.pub_key_set.ed25519
-                  : null,
-              filter: (v) => this.addressFormatV2(v),
-            },
-            {
-              name: 'Vault Address',
-              valueSlot: 'address',
-              value: (() => {
-                let vaultAddress = this.asgardVault?.addresses?.find(
-                  (a) => a.chain === 'THOR'
-                )?.address
-                if (!vaultAddress && this.node?.vaultMembership) {
-                  vaultAddress = this.node.vaultMembership
-                }
-                if (!vaultAddress && this.node?.pub_key_set?.secp256k1) {
-                  vaultAddress = this.node.pub_key_set.secp256k1
-                }
-                return vaultAddress
-              })(),
             },
           ],
         },
@@ -904,7 +839,6 @@ export default {
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: $space-10;
-    margin-bottom: 16px;
     max-width: 46px;
     justify-content: center;
 
@@ -1061,11 +995,6 @@ export default {
   border: 1px solid var(--border-color);
   border-radius: $radius-lg;
   padding: $space-10;
-  margin-bottom: 0px;
-
-  @include lg {
-    margin-bottom: $space-16;
-  }
 }
 
 .node-id {
