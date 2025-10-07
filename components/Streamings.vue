@@ -216,7 +216,7 @@
                   <NuxtLink
                     v-if="isValidTx(o.tx.id)"
                     class="clickable"
-                    :to="{ path: `/tx/${o.tx_id}` }"
+                    :to="{ path: `/tx/${o.tx.id}` }"
                   >
                     {{ formatAddress(o.tx.id) }}
                   </NuxtLink>
