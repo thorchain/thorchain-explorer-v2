@@ -9,7 +9,8 @@ export function getMimir() {
 }
 export function getDenom() {
   return $axiosInstace.get(
-    endpoints[process.env.NETWORK].THORNODE_URL + 'cosmos/bank/v1beta1/denoms_metadata'
+    endpoints[process.env.NETWORK].THORNODE_URL +
+      'cosmos/bank/v1beta1/denoms_metadata'
   )
 }
 export function getStakers() {
@@ -254,6 +255,12 @@ export function getStreamingSwap(txid) {
 export function getStreamingSwaps() {
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].THORNODE_URL + 'thorchain/swaps/streaming'
+  )
+}
+
+export function getSwapQueue() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].THORNODE_URL + 'thorchain/queue/swap'
   )
 }
 

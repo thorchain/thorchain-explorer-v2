@@ -9,87 +9,89 @@
     <template #header>
       <dot-live />
     </template>
-          <template v-if="Mode == 'ongoing-outbounds'">
-        <template v-if="!noOutnound">
-          <template v-if="!loading">
-            <Card class="overview-card">
-              <div class="overview-box">
-                <div :class="'mini-bubble info'">
-                  <span>Scheduled</span>
+    <template v-if="Mode == 'ongoing-outbounds'">
+      <template v-if="!noOutnound">
+        <template v-if="!loading">
+          <Card class="overview-card">
+            <div class="overview-box">
+              <div :class="'mini-bubble info'">
+                <span>Scheduled</span>
+              </div>
+              <div class="stats-container">
+                <div>
+                  <span class="item-value">Amount: </span>
+                  <span
+                    class="outbound-overall mono"
+                    style="padding-right: 0.8rem"
+                  >
+                    ${{ totalScheduledValue | number('0a') }}
+                  </span>
                 </div>
-                <div class="stats-container">
-                  <div>
-                    <span class="item-value">Amount: </span>
-                    <span
-                      class="outbound-overall mono"
-                      style="padding-right: 0.8rem"
-                    >
-                      ${{ totalScheduledValue | number('0a') }}
-                    </span>
-                  </div>
-                  <div>
-                    <span class="item-value">Count: </span>
-                    <span class="outbound-overall mono">{{ schData.length }}</span>
-                  </div>
+                <div>
+                  <span class="item-value">Count: </span>
+                  <span class="outbound-overall mono">{{
+                    schData.length
+                  }}</span>
                 </div>
               </div>
-            </Card>
-            <ArrowToDown class="arrow-down-icon" />
-            <Card class="overview-card">
-              <div class="overview-box">
-                <div :class="'mini-bubble'">
-                  <span>Ongoing</span>
+            </div>
+          </Card>
+          <ArrowToDown class="arrow-down-icon" />
+          <Card class="overview-card">
+            <div class="overview-box">
+              <div :class="'mini-bubble'">
+                <span>Ongoing</span>
+              </div>
+              <div class="stats-container">
+                <div>
+                  <span class="item-value">Amount: </span>
+                  <span
+                    class="outbound-overall mono"
+                    style="padding-right: 0.8rem"
+                  >
+                    ${{ totalOutboundValue | number('0a') }}</span
+                  >
                 </div>
-                <div class="stats-container">
-                  <div>
-                    <span class="item-value">Amount: </span>
-                    <span
-                      class="outbound-overall mono"
-                      style="padding-right: 0.8rem"
-                    >
-                      ${{ totalOutboundValue | number('0a') }}</span
-                    >
-                  </div>
-                  <div>
-                    <span class="item-value">Count: </span>
-                    <span class="outbound-overall mono">
-                      {{ outData.length }}
-                    </span>
-                  </div>
+                <div>
+                  <span class="item-value">Count: </span>
+                  <span class="outbound-overall mono">
+                    {{ outData.length }}
+                  </span>
                 </div>
               </div>
-            </Card>
-          </template>
-          <template v-else>
-            <Card class="overview-card">
-              <div class="overview-box">
-                <skeleton-loader width="80px" />
-                <div style="display: flex;">
-                  <div>
-                    <skeleton-loader width="40px" height="10px" />
-                  </div>
-                  <div>
-                    <skeleton-loader width="30px" height="10px" />
-                  </div>
-                </div>
-              </div>
-            </Card>
-            <ArrowToDown class="arrow-down-icon" />
-            <Card class="overview-card">
-              <div class="overview-box">
-                <skeleton-loader width="70px" />
-                <div style="display: flex;">
-                  <div>
-                    <skeleton-loader width="40px" height="10px" />
-                  </div>
-                  <div>
-                    <skeleton-loader width="30px" height="10px" />
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </template>
+            </div>
+          </Card>
         </template>
+        <template v-else>
+          <Card class="overview-card">
+            <div class="overview-box">
+              <skeleton-loader width="80px" />
+              <div style="display: flex">
+                <div>
+                  <skeleton-loader width="40px" height="10px" />
+                </div>
+                <div>
+                  <skeleton-loader width="30px" height="10px" />
+                </div>
+              </div>
+            </div>
+          </Card>
+          <ArrowToDown class="arrow-down-icon" />
+          <Card class="overview-card">
+            <div class="overview-box">
+              <skeleton-loader width="70px" />
+              <div style="display: flex">
+                <div>
+                  <skeleton-loader width="40px" height="10px" />
+                </div>
+                <div>
+                  <skeleton-loader width="30px" height="10px" />
+                </div>
+              </div>
+            </div>
+          </Card>
+        </template>
+      </template>
       <div v-if="noOutnound" class="no-outbound">
         <scheduleIcon class="schedule-icon large-icon" />
         <h3>There is no outbound schedule inside THORChain.</h3>

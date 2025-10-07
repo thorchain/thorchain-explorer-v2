@@ -39,8 +39,8 @@ export default {
       default: 'RUNE',
     },
     icon: {
-      type: String,
-      default: runeIcon,
+      type: [String, Object],
+      default: () => runeIcon,
     },
     environment: {
       type: String,

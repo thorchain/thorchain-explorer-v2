@@ -76,6 +76,7 @@ import {
   getSecuredAssets,
   getTCYStaker,
   getOraclePrices,
+  getSwapQueue,
 } from './thornode.api'
 import { getTendermintLatestBlocks } from './tendermint.api'
 import {
@@ -288,6 +289,7 @@ export default function ({ $axios }, inject) {
     getServerTx,
     earningLastDay,
     getStreamingSwaps,
+    getSwapQueue,
     getPoolsHistory,
     getOldPoolsHistory,
     getScheduled,
