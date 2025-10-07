@@ -216,6 +216,12 @@ export function getVotes(period = '30d') {
   )
 }
 
+export function getNodeInfo(nodeAddress) {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + `nodeInfo/${nodeAddress}`
+  )
+}
+
 export function getBurnedBlocks() {
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].SERVER_URL + 'api/burned'

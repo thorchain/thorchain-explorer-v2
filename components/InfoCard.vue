@@ -123,7 +123,7 @@
                       </template>
                       <template v-if="item.usdValue" class="item-value">
                         <small v-if="item.value && runePrice">
-                          (${{ (runePrice * item.value) | number('0a') }})
+                          (${{ (runePrice * item.value) | number('0.00a') }})
                         </small>
                       </template>
                       <template v-if="item.extraText" class="item-value">

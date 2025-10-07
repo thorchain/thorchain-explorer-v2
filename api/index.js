@@ -127,6 +127,7 @@ import {
   getTCYDistribution,
   getContractsLabel,
   getRUJIStats,
+  getNodeInfo,
 } from './middleware.api'
 import {
   getChurnHistory,
@@ -344,6 +345,7 @@ export default function ({ $axios }, inject) {
     getBalanceHistory,
     getContractsLabel,
     getRUJIStats,
+    getNodeInfo,
   }
 
   inject('api', api)
