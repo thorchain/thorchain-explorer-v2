@@ -857,6 +857,10 @@ export const affiliateList = () => {
 }
 
 export const interfaces = {
+  thorchain: {
+    name: 'swap.thorchain.org',
+    icon: 'thorchain'
+  },
   thorswap: {
     name: 'THORSwap',
     icon: 'thorswap',
@@ -1021,7 +1025,8 @@ export const affiliateMap = {
   leo: interfaces.leo,
   dh: interfaces.dh,
   ns: interfaces.nativeswap,
-  '-t': interfaces.thorswap
+  '-t': interfaces.thorswap,
+  sto: interfaces.thorchain,
 }
 
 export function getExplorerAddressUrl(chain, query, type) {
