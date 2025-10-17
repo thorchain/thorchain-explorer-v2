@@ -47,7 +47,7 @@ export function isInternalTx(hash) {
   }
   return (
     hash ===
-    '0000000000000000000000000000000000000000000000000000000000000000' ??
+      '0000000000000000000000000000000000000000000000000000000000000000' ??
     false
   )
 }
@@ -369,7 +369,7 @@ export function parseThornodeStatus(ttx) {
           address: txAction?.from_address ?? '',
           txID:
             txAction?.id ===
-              '0000000000000000000000000000000000000000000000000000000000000000'
+            '0000000000000000000000000000000000000000000000000000000000000000'
               ? ''
               : txAction?.id,
           asset: {
@@ -859,7 +859,7 @@ export const affiliateList = () => {
 export const interfaces = {
   thorchain: {
     name: 'swap.thorchain.org',
-    icon: 'thorchain'
+    icon: 'thorchain',
   },
   thorswap: {
     name: 'THORSwap',
@@ -976,8 +976,13 @@ export const interfaces = {
   },
   nativeswap: {
     name: 'Native Swap',
-    icon: 'nativeswap'
-  }
+    icon: 'nativeswap',
+  },
+  clypto: {
+    name: 'Clypto',
+    icon: 'clypto',
+    addName: true,
+  },
 }
 
 export const affiliateMap = {
@@ -1027,6 +1032,7 @@ export const affiliateMap = {
   ns: interfaces.nativeswap,
   '-t': interfaces.thorswap,
   sto: interfaces.thorchain,
+  c1: interfaces.clypto,
 }
 
 export function getExplorerAddressUrl(chain, query, type) {
