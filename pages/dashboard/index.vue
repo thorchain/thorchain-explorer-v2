@@ -966,7 +966,8 @@ export default {
           (p) =>
             p.pool !== 'dev_fund_reward' &&
             p.pool !== 'income_burn' &&
-            p.pool !== 'tcy_stake_reward'
+            p.pool !== 'tcy_stake_reward' && 
+            p.pool != 'marketing_fund_reward'
         )
         .map((p) => p.pool)
 
@@ -988,7 +989,8 @@ export default {
             !poolEarnings.slice(0, topPool).includes(p.pool) &&
             p.pool !== 'income_burn' &&
             p.pool !== 'dev_fund_reward' &&
-            p.pool !== 'tcy_stake_reward'
+            p.pool !== 'tcy_stake_reward' &&
+            p.pool !== 'marketing_fund_reward'
         )
 
         // sum them all
@@ -1167,7 +1169,6 @@ export default {
             ?.earnings /
             10 ** 8) *
           Number.parseFloat(interval.runePriceUSD)
-        console.log(interval.pools)
         const marketingFund =
           (+interval.pools.find((p) => p.pool === 'marketing_fund_reward')?.earnings /
             10 ** 8) *
