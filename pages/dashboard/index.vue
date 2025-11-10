@@ -1146,6 +1146,7 @@ export default {
       const df = []
       const ib = []
       const tc = []
+      const mf = []
       const EODEarning = []
       let affiliateEOD = 0
       d?.intervals.forEach((interval, index) => {
@@ -1166,13 +1167,18 @@ export default {
             ?.earnings /
             10 ** 8) *
           Number.parseFloat(interval.runePriceUSD)
-
+        console.log(interval.pools)
+        const marketingFund =
+          (+interval.pools.find((p) => p.pool === 'marketing_fund_reward')?.earnings /
+            10 ** 8) *
+          Number.parseFloat(interval.runePriceUSD)
         le.push(
           (+interval.liquidityEarnings / 10 ** 8) *
             Number.parseFloat(interval.runePriceUSD) -
             devFund -
             incomeBurn -
-            tcyStakeReward
+            tcyStakeReward -
+            marketingFund
         )
         be.push(
           (+interval.bondingEarnings / 10 ** 8) *
@@ -1181,6 +1187,7 @@ export default {
         df.push(devFund)
         ib.push(incomeBurn)
         tc.push(tcyStakeReward)
+        mf.push(marketingFund)
 
         const volumeUSD = (this.volumeUSDData[index] || 0) / 1e2
         af.push({
@@ -1226,6 +1233,9 @@ export default {
           }
           tc[index] = {
             value: tc[index],
+          }
+          mf[index] = {
+            value: mf[index],
           }
         } else {
           EODEarning.push(0)
@@ -1275,6 +1285,15 @@ export default {
             data: tc,
             smooth: true,
           },
+          {
+            type: 'bar',
+            name: 'Marketing Fund',
+            color: '#a47bad',
+            stack: 'Total',
+            showSymbol: false,
+            data: mf,
+            smooth: true,
+          },
           this.volumeUSDData && {
             type: 'bar',
             name: 'Affiliate Fee',
@@ -1309,7 +1328,8 @@ export default {
               'Dev Fund Earning',
               'Affiliate Fee',
               'Burn',
-              'TCY Stake Reward',
+              'Marketing Fund',
+              'TCY Stake Reward'
             ],
           },
         },
