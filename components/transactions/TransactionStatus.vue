@@ -48,6 +48,8 @@ export default {
           return 'TCY Stake'
         case 'tcy_unstake':
           return 'TCY Unstake'
+        case 'limit_swap':
+          return 'Limit Swap'
         default:
           return this.$options.filters?.capitalize(type) || type
       }

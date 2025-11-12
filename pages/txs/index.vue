@@ -105,6 +105,10 @@ export default {
           label: 'TCY',
           filter: { type: ['tcy_claim', 'tcy_stake', 'tcy_unstake'] },
         },
+        {
+          label: 'Limit Swap',
+          filter: { type: ['limit_swap'] },
+        }
       ],
     }
   },

@@ -72,6 +72,36 @@
         </div>
       </template>
     </div>
+
+    <div
+      v-if="row && (type === 'limit_swap')"
+      :class="['action-cell', { 'no-border': noBorder }]"
+    >
+      <span 
+        v-if="row.in && row.in.length > 0 && row.in[0].coins[0]" 
+        class="asset-cell"
+      >
+        <asset-icon
+          :asset="row.in[0].coins[0].asset"
+          :height="'1.2rem'"
+          :chain-height="'0.8rem'"
+        />
+        <span class="asset-name">{{ decimalFormat(row.in[0].coins[0].amount / 1e8) }}</span>
+      </span>
+      <stream-icon class="action-type"> ~ </stream-icon>
+      <span
+        v-if="row.out && row.out.length > 0 && row.out[0].coins[0]"
+        class="asset-cell"
+      >
+        <asset-icon
+          :asset="row.out[0].coins[0].asset"
+          :height="'1.2rem'"
+          :chain-height="'0.8rem'"
+        ></asset-icon>
+        <span class="asset-name">{{ decimalFormat(row.out[0].coins[0].amount / 1e8) }}</span>
+      </span>
+    </div>
+
     <div
       v-else-if="row && (type === 'withdraw' || type === 'runePoolWithdraw')"
       :class="['action-cell', { 'no-border': noBorder, wrap: wrap }]"
