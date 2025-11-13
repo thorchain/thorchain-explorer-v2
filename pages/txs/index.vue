@@ -84,7 +84,7 @@ export default {
         { label: 'All', filter: {} },
         {
           label: 'L1 Swaps',
-          filter: { type: ['swap'], asset: ['notrade'] },
+          filter: { type: ['swap'], asset: ['native'] },
         },
         { label: 'Secure', filter: { type: ['secure'] } },
         { label: 'Trade Swaps', filter: { type: ['swap'], asset: ['trade'] } },
@@ -118,7 +118,7 @@ export default {
   computed: {
     isLayerOne() {
       return (
-        this.$route.query.asset === 'nosynth,notrade,norune' &&
+        this.$route.query.asset === 'native' &&
         this.$route.query.type === 'swap'
       )
     },
@@ -164,7 +164,7 @@ export default {
     if (Object.keys(this.$route.query).length === 0) {
       this.$router.replace({
         query: {
-          asset: 'notrade',
+          asset: 'native',
           type: 'swap',
         },
       })
