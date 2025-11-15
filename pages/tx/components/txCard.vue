@@ -76,6 +76,7 @@
               <!-- <div class="border-bottom-spinner"></div> -->
             </div>
             <send-icon v-else-if="overall.middle.send" class="icon tx-icon" />
+            <refresh-icon v-else-if="overall.middle.refund" class="icon tx-icon" />
             <send-icon v-else class="icon tx-icon" />
           </div>
         </div>
@@ -151,11 +152,13 @@
 import { mapGetters } from 'vuex'
 import SendIcon from '~/assets/images/arrow-right.svg?inline'
 import WarningIcon from '~/assets/images/warning.svg?inline'
+import RefreshIcon from '~/assets/images/refresh.svg?inline'
 
 export default {
   components: {
     SendIcon,
     WarningIcon,
+    RefreshIcon
   },
   props: ['txData'],
   computed: {

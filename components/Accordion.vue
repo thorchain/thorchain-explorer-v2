@@ -289,7 +289,7 @@ export default {
       }
 
       asset = assetFromString(asset)
-      return asset.chain !== 'THOR' && !asset.synth && !asset.trade
+      return asset.chain !== 'THOR' && !asset.synth && !asset.trade && !asset.secure
     },
     toLink(type, value) {
       if (type === 'address') {
@@ -304,8 +304,8 @@ export default {
       }
 
       try {
-        const { chain, trade, synth } = assetFromString(assetString)
-        if (synth || trade) {
+        const { chain, trade, synth, secure } = assetFromString(assetString)
+        if (synth || trade || secure) {
           return
         }
         return getExplorerAddressUrl(chain, value, type)

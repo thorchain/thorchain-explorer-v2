@@ -334,6 +334,7 @@ export default {
               pending: cardBase.middle?.pending,
               send: cardBase.middle?.send ?? false,
               fail: cardBase.middle?.fail ?? false,
+              refund: cardBase.middle?.refund ?? false,
             },
             out: cardBase.out?.map((a) => ({
               asset: a?.asset,
@@ -1666,7 +1667,15 @@ export default {
         }
       }
 
-      let title = 'Action'
+      function kebabToTitle(kebab) {
+        if (!kebab || typeof kebab !== 'string') return ''
+        return kebab
+          .split('_')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+          .join(' ')
+      }
+
+      let title = kebabToTitle(action.type) ?? 'Action'
       if (action.type === 'tcy_claim') {
         title = 'Tcy Claim'
 
@@ -1687,7 +1696,8 @@ export default {
           title,
           in: ins,
           middle: {
-            fail: isRefund,
+            fail: false,
+            refund: isRefund,
             pending: false,
           },
           out: outs,
