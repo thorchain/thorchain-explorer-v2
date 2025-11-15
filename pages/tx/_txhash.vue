@@ -17,7 +17,7 @@
       <template v-if="cards && cards.length > 0">
         <tx-card v-for="(c, i) in cards" :key="i" :tx-data="c.details">
           <template
-            v-for="(s, j) in c.accordions.filter((c) => c.data.title)"
+            v-for="(s, j) in c.accordions.filter((c) => c.data.title && !c.data.hide)"
             #[s.name]
           >
             <accordion
@@ -659,6 +659,17 @@ export default {
                 value: `${accordions.action?.code}`,
                 is: accordions.action?.code,
               },
+              // Limit swap
+              {
+                key: 'Swap Limit',
+                value: `${accordions.action?.swapLimit}`,
+                is: accordions.action?.swapLimit,
+              },
+              {
+                key: 'Swap Expire',
+                value: `${accordions.action?.ttl} Blocks`,
+                is: accordions.action?.ttl,
+              },
             ],
           },
         }
@@ -741,6 +752,7 @@ export default {
               remainingTime: delay,
               totalTime: delay,
               asset: showAssets ? a?.asset : undefined,
+              hide: a.hide,
               stacks: [
                 {
                   key: 'Destination',
@@ -1646,7 +1658,7 @@ export default {
         done: true,
       }))
 
-      const outs = action?.out.map((a) => ({
+      let outs = action?.out.map((a) => ({
         asset: this.parseMemoAsset(a.coins[0]?.asset),
         amount: a.coins[0]?.amount,
         txid: a?.txID,
@@ -1665,6 +1677,15 @@ export default {
         if (Object.keys(action.metadata).length === 1) {
           isRefund = m === 'refund'
         }
+      }
+
+      let cardAction = {
+        type: 'Action',
+        timeStamp: moment.unix(action?.date / 1e9) || null,
+        height: action?.height,
+        memo,
+        reason,
+        done: true,
       }
 
       function kebabToTitle(kebab) {
@@ -1691,6 +1712,27 @@ export default {
         ]
       }
 
+      if (action.type === 'limit_swap') {
+        let ttl = 43200
+        let swapLimit = 'N/A'
+        if (memo.split(':')[3].split('/').length > 0) {
+          ttl = memo.split(':')[3].split('/')[1] ?? 43200
+          swapLimit = memo.split(':')[3].split('/')[0]
+        }
+
+        cardAction = {
+          type: 'Order',
+          timeStamp: moment.unix(action?.date / 1e9) || null,
+          height: action?.height,
+          memo,
+          ttl,
+          swapLimit,
+          done: true,
+        }
+
+        outs[0] = {...outs[0], hide: true}
+      }
+
       return {
         cards: {
           title,
@@ -1704,14 +1746,7 @@ export default {
         },
         accordions: {
           in: ins,
-          action: {
-            type: 'Action',
-            timeStamp: moment.unix(action?.date / 1e9) || null,
-            height: action?.height,
-            memo,
-            reason,
-            done: true,
-          },
+          action: cardAction,
           out: outs,
         },
       }
