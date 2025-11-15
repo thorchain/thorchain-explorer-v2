@@ -90,7 +90,7 @@
       </span>
       <stream-icon class="action-type"> ~ </stream-icon>
       <span
-        v-if="row.out && row.out.length > 0 && row.out[0].coins[0]"
+        v-if="row.out && row.out.length > 0 && row.out[0].coins.length > 0"
         class="asset-cell"
       >
         <asset-icon
@@ -196,14 +196,16 @@
         class="asset-cell yellow-type"
       >
         <redo-icon class="active-icon"></redo-icon>
-        <asset-icon
-          :asset="ops.coins[0].asset"
-          :height="'1.2rem'"
-          :chain-height="'0.8rem'"
-        ></asset-icon>
-        <span class="asset-name">{{
-          decimalFormat(ops.coins[0].amount / 1e8)
-        }}</span>
+        <template v-if="ops.coins[0]">
+          <asset-icon
+            :asset="ops.coins[0].asset"
+            :height="'1.2rem'"
+            :chain-height="'0.8rem'"
+          ></asset-icon>
+          <span class="asset-name">{{
+            decimalFormat(ops.coins[0].amount / 1e8)
+          }}</span>
+        </template>
       </span>
     </div>
 
