@@ -77,6 +77,7 @@ import {
   getTCYStaker,
   getOraclePrices,
   getSwapQueue,
+  getStreamingTxStatus,
 } from './thornode.api'
 import { getTendermintLatestBlocks } from './tendermint.api'
 import {
@@ -280,7 +281,7 @@ export default function ({ $axios }, inject) {
     getTxArchiveStatus,
     getChainsHeight,
     getHolders,
-
+    getStreamingTxStatus,
     getUserLpPosition,
     getPol,
     getBorrowers,

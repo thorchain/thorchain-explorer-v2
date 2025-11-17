@@ -10,7 +10,7 @@ export function getMimir() {
 export function getDenom() {
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].THORNODE_URL +
-      'cosmos/bank/v1beta1/denoms_metadata'
+    'cosmos/bank/v1beta1/denoms_metadata'
   )
 }
 export function getStakers() {
@@ -60,7 +60,7 @@ export function getRPCLastBlockHeight() {
 export function getNativeTx(txID) {
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].THORNODE_URL +
-      `cosmos/tx/v1beta1/txs/${txID}`
+    `cosmos/tx/v1beta1/txs/${txID}`
   )
 }
 
@@ -74,7 +74,7 @@ export function getThornodeArchiveTx(txID) {
   if (process.env.NETWORK === 'mainnet') {
     return $axiosInstace.get(
       endpoints[process.env.NETWORK].ARCHIVE_THORNODE +
-        `thorchain/tx/details/${txID}`
+      `thorchain/tx/details/${txID}`
     )
   }
 
@@ -87,7 +87,7 @@ export function getTxArchiveStatus(txID) {
   if (process.env.NETWORK === 'mainnet') {
     return $axiosInstace.get(
       endpoints[process.env.NETWORK].ARCHIVE_THORNODE +
-        `thorchain/tx/status/${txID}`
+      `thorchain/tx/status/${txID}`
     )
   }
 
@@ -117,14 +117,14 @@ export function getMimirVotes() {
 export function getLpPositions(poolName) {
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].THORNODE_URL +
-      `thorchain/pool/${poolName}/liquidity_providers`
+    `thorchain/pool/${poolName}/liquidity_providers`
   )
 }
 
 export function getUserLpPosition(poolName, address) {
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].THORNODE_URL +
-      `thorchain/pool/${poolName}/liquidity_provider/${address}`
+    `thorchain/pool/${poolName}/liquidity_provider/${address}`
   )
 }
 
@@ -149,13 +149,13 @@ export function getAssets() {
 export function getSupplyRune() {
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].THORNODE_URL +
-      'cosmos/bank/v1beta1/supply/rune'
+    'cosmos/bank/v1beta1/supply/rune'
   )
 }
 export function getSupply() {
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].THORNODE_URL +
-      'cosmos/bank/v1beta1/supply/by_denom?denom=rune'
+    'cosmos/bank/v1beta1/supply/by_denom?denom=rune'
   )
 }
 
@@ -216,7 +216,7 @@ export function getNode(addr) {
 export function getSavers(poolName) {
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].THORNODE_URL +
-      `thorchain/pool/${poolName}/savers`
+    `thorchain/pool/${poolName}/savers`
   )
 }
 
@@ -235,7 +235,7 @@ export function getRunePool() {
 export function getBorrowers(pool) {
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].THORNODE_URL +
-      `thorchain/pool/${pool}/borrowers`
+    `thorchain/pool/${pool}/borrowers`
   )
 }
 
@@ -248,7 +248,7 @@ export function getConstants() {
 export function getStreamingSwap(txid) {
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].THORNODE_URL +
-      `thorchain/swap/streaming/${txid}`
+    `thorchain/swap/streaming/${txid}`
   )
 }
 
@@ -285,7 +285,7 @@ export function getThorname(name) {
 export function getTradeAsset(address) {
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].THORNODE_URL +
-      `thorchain/trade/account/${address}`
+    `thorchain/trade/account/${address}`
   )
 }
 
@@ -316,12 +316,18 @@ export function getSecuredAssets() {
 export function getTCYStaker(address) {
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].THORNODE_URL +
-      `thorchain/tcy_staker/${address}`
+    `thorchain/tcy_staker/${address}`
   )
 }
 
 export function getOraclePrices() {
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].THORNODE_URL + 'thorchain/oracle/prices'
+  )
+}
+
+export function getStreamingTxStatus(txid) {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].THORNODE_URL + `thorchain/swap/streaming/${txid}`
   )
 }

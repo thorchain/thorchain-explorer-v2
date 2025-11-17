@@ -153,8 +153,9 @@ export default {
     },
     async updateStreamingDetail(txid) {
       const thorStatus = (await this.$api.getTxStatus(this.inboundHash))?.data
+      const streamingStatus = (await this.$api.getStreamingTxStatus(this.inboundHash))?.data
       const isSwap =
-        thorStatus?.stages.swap_status?.streaming &&
+        streamingStatus?.tx_id &&
         thorStatus?.stages.swap_status?.pending
 
       let blockDuration
@@ -165,7 +166,7 @@ export default {
       // change the remaining seconds to the first height
       if (isSwap) {
         const { count, interval, quantity } =
-          thorStatus?.stages?.swap_status?.streaming ?? false
+          (streamingStatus || thorStatus?.stages?.swap_status?.streaming) ?? false
         this.streamingDetail.fill = blockDuration
           ? blockDuration / interval / quantity
           : count / quantity
