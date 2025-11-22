@@ -1003,21 +1003,6 @@ export default {
           memo
         )
         this.$set(this, 'cards', [this.createCard(cards, accordions)])
-      } else if (
-        midgardAction.actions &&
-        midgardAction.actions[0]?.type === 'contract'
-      ) {
-        const finalCards = []
-        for (let i = 0; i < midgardAction?.actions?.length; i++) {
-          const { cards, accordions } = this.createContractState(
-            thorStatus,
-            midgardAction.actions[i],
-            thorTx,
-            memo
-          )
-          finalCards.push(this.createCard(cards, accordions))
-        }
-        this.$set(this, 'cards', finalCards)
       } else if (memo.type === 'loanRepayment') {
         const { cards, accordions } = this.createLoanRepayment(
           thorStatus,
@@ -1056,6 +1041,27 @@ export default {
           finalCards.push(this.createCard(cards, accordions))
         }
         this.$set(this, 'cards', finalCards)
+      }
+
+      if (
+        midgardAction?.actions &&
+        midgardAction?.actions.map(a => a.type).includes('contract')
+      ) {
+        const finalCards = []
+        for (let i = 0; i < midgardAction?.actions?.length; i++) {
+          if (midgardAction?.actions[i].type !== 'contract') {
+            continue
+          }
+          const { cards, accordions } = this.createContractState(
+            thorStatus,
+            midgardAction.actions[i],
+            thorTx,
+            memo
+          )
+          finalCards.push(this.createCard(cards, accordions))
+        }
+        console.log([...finalCards, ...this.cards])
+        this.$set(this, 'cards', [...finalCards, ...this.cards])
       }
     },
     createThornameState(thorStatus, action, thorTx) {
