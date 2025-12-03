@@ -201,6 +201,11 @@ export default {
           value: `$${this.formatNumber(this.totalTCYReward)}`,
           tooltip: 'Total tcy stake reward earnings',
         },
+        {
+          label: 'Total Marketing Fund',
+          value: `$${this.formatNumber(this.totalMarketing)}`,
+          tooltip: 'Total marketing fund earnings',
+        },
       ]
     },
     bondStats() {
@@ -285,10 +290,13 @@ export default {
           const tcyStake =
             interval.pools.find((p) => p.pool === 'tcy_stake_reward')
               ?.earnings || 0
+          const marketingFund =
+            interval.pools.find((p) => p.pool === 'marketing_fund_reward')
+              ?.earnings || 0
           const totalEarnings = +interval.liquidityEarnings
           return (
             total +
-            (totalEarnings - devFund - incomeBurn - tcyStake) *
+            (totalEarnings - devFund - incomeBurn - tcyStake - marketingFund) *
               +interval.runePriceUSD
           )
         }, 0) / 1e8
@@ -301,6 +309,16 @@ export default {
           const incomeBurn =
             interval.pools.find((p) => p.pool === 'income_burn')?.earnings || 0
           return total + +incomeBurn * +interval.runePriceUSD
+        }, 0) / 1e8
+      )
+    },
+    totalMarketing() {
+      if (!this.earningsData) return 0
+      return (
+        this.earningsData.intervals.reduce((total, interval) => {
+          const marketingFund =
+            interval.pools.find((p) => p.pool === 'marketing_fund_reward')?.earnings || 0
+          return total + +marketingFund * +interval.runePriceUSD
         }, 0) / 1e8
       )
     },
@@ -320,7 +338,7 @@ export default {
       if (this.selectedOption === 'All') {
         return this.selectedOption
       } else if (
-        ['income_burn', 'dev_fund_reward', 'tcy_stake_reward'].includes(
+        ['income_burn', 'dev_fund_reward', 'tcy_stake_reward', 'marketing_fund_reward'].includes(
           this.selectedOption
         )
       ) {
@@ -473,6 +491,7 @@ export default {
         'income_burn',
         'dev_fund_reward',
         'tcy_stake_reward',
+        'marketing_fund_reward'
       ]
 
       d?.intervals.forEach((interval, index) => {
