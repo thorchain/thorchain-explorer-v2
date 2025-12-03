@@ -169,6 +169,10 @@ export const mainnetNav = {
           link: '/insights/burn',
         },
         {
+          name: 'Earnings',
+          link: '/charts/earnings',
+        },
+        {
           name: 'Execution Quality',
           link: '/insights/execution',
         },
