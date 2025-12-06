@@ -34,77 +34,91 @@
         <SearchIcon class="search-icon" />
       </div>
 
-      <div class="filter-btns">
-        <button
-          class="filter-button"
-          :class="{ 'enabled-btn': !hides.isp }"
-          @click="
-          hides.isp = !hides.isp
-        saveFilters()
-          "
-        >
-          <caret :class="['filter-icon', { disable: hides.isp }]" />
-          ISP
+      <div class="dropdown-container" ref="dropdownContainer">
+        <button class="dropdown-toggle" @click="toggleDropdown">
+          <Caret :class="['dropdown-icon', { open: dropdownOpen }]" />
+          Filters
+          <span v-if="activeFilterCount > 0" class="filter-count">
+            {{ activeFilterCount }}
+          </span>
         </button>
-        <button
-          class="filter-button"
-          :class="{ 'enabled-btn': !hides.fee }"
-          @click="
-          hides.fee = !hides.fee
-        saveFilters()
-          "
-        >
-          <caret :class="['filter-icon', { disable: hides.fee }]" />
-          Fee
-        </button>
-        <button
-          class="filter-button"
-          :class="{ 'enabled-btn': !hides.score }"
-          @click="
-          hides.score = !hides.score
-        saveFilters()
-          "
-        >
-          <caret :class="['filter-icon', { disable: hides.score }]" />
-          Score
-        </button>
-        <button
-          class="filter-button"
-          :class="{ 'enabled-btn': !hides.age }"
-          @click="
-          hides.age = !hides.age
-        saveFilters()
-          "
-        >
-          <caret :class="['filter-icon', { disable: hides.age }]" />
-          Age
-        </button>
-        <button
-          class="filter-button"
-          :class="{ 'enabled-btn': !(hides.RPC && hides.BFR) }"
-          @click="
-          hides.RPC = !hides.RPC
-        hides.BFR = !hides.BFR
-        saveFilters()
-          "
-        >
-          <caret
-            :class="['filter-icon', { disable: hides.RPC && hides.BFR }]"
-          />
-          Health
-        </button>
-        <button
-          class="filter-button"
-          :class="{ 'enabled-btn': !hides.runebond }"
-          @click="
-          hides.runebond = !hides.runebond
-        saveFilters()"
-        >
-          <caret
-            :class="['filter-icon', { disable: hides.runebond }]"
-          />
-          Runebond
-        </button>
+
+        <transition name="dropdown">
+          <div v-if="dropdownOpen" class="dropdown-menu">
+            <div class="filter-options">
+              <label class="filter-option">
+                <input
+                  type="checkbox"
+                  :checked="!hides.isp"
+                  @change="toggleFilter('isp')"
+                  class="custom-checkbox"
+                />
+                <span class="custom-checkbox-label"></span>
+                <span class="filter-label">ISP</span>
+              </label>
+
+              <label class="filter-option">
+                <input
+                  type="checkbox"
+                  :checked="!hides.fee"
+                  @change="toggleFilter('fee')"
+                  class="custom-checkbox"
+                />
+                <span class="custom-checkbox-label"></span>
+                <span class="filter-label">Fee</span>
+              </label>
+
+              <label class="filter-option">
+                <input
+                  type="checkbox"
+                  :checked="!hides.score"
+                  @change="toggleFilter('score')"
+                  class="custom-checkbox"
+                />
+                <span class="custom-checkbox-label"></span>
+                <span class="filter-label">Score</span>
+              </label>
+
+              <label class="filter-option">
+                <input
+                  type="checkbox"
+                  :checked="!hides.age"
+                  @change="toggleFilter('age')"
+                  class="custom-checkbox"
+                />
+                <span class="custom-checkbox-label"></span>
+                <span class="filter-label">Age</span>
+              </label>
+
+              <label class="filter-option">
+                <input
+                  type="checkbox"
+                  :checked="!hides.RPC && !hides.BFR"
+                  @change="toggleHealthFilter"
+                  class="custom-checkbox"
+                />
+                <span class="custom-checkbox-label"></span>
+                <span class="filter-label">Health</span>
+              </label>
+
+              <label class="filter-option">
+                <input
+                  type="checkbox"
+                  :checked="!hides.runebond"
+                  @change="toggleFilter('runebond')"
+                  class="custom-checkbox"
+                />
+                <span class="custom-checkbox-label"></span>
+                <span class="filter-label">Runebond</span>
+              </label>
+            </div>
+            <div class="dropdown-footer">
+              <button class="clear-all-btn" @click="clearAllFilters">
+                Clear All
+              </button>
+            </div>
+          </div>
+        </transition>
       </div>
     </div>
 
@@ -217,6 +231,7 @@ export default {
       },
       sortColumn: null,
       sortOrder: null,
+      dropdownOpen: false,
     }
   },
   computed: {
@@ -227,17 +242,31 @@ export default {
     error() {
       return !this.nodesQuery
     },
+    activeFilterCount() {
+      let count = 0
+
+      if (!this.hides.isp) count++
+      if (!this.hides.fee) count++
+      if (!this.hides.score) count++
+      if (!this.hides.age) count++
+
+      if (!this.hides.RPC && !this.hides.BFR) count++
+      
+      if (!this.hides.runebond) count++
+
+      return count
+    },
     activeCols() {
       const chains = this.nodesQuery
         ? availableChains(this.nodesQuery.filter((n) => n.status === 'Active'))
-          ?.sort()
-          ?.map((c) => ({
-            label: c,
-            field: `behind.${c}`,
-            type: 'number',
-            tdClass: 'mono center',
-            thClass: 'center no-padding',
-          })) || []
+            ?.sort()
+            ?.map((c) => ({
+              label: c,
+              field: `behind.${c}`,
+              type: 'number',
+              tdClass: 'mono center',
+              thClass: 'center no-padding',
+            })) || []
         : []
 
       return [
@@ -389,14 +418,14 @@ export default {
     stbCols() {
       const chains = this.nodesQuery
         ? availableChains(this.nodesQuery.filter((n) => n.status === 'Active'))
-          ?.sort()
-          ?.map((c) => ({
-            label: c,
-            field: `behind.${c}`,
-            type: 'number',
-            tdClass: 'mono center',
-            thClass: 'center no-padding',
-          })) || []
+            ?.sort()
+            ?.map((c) => ({
+              label: c,
+              field: `behind.${c}`,
+              type: 'number',
+              tdClass: 'mono center',
+              thClass: 'center no-padding',
+            })) || []
         : []
 
       return [
@@ -1148,10 +1177,12 @@ export default {
       this.sortColumn = savedSorting.column
       this.sortOrder = savedSorting.order
     }
+    document.addEventListener('click', this.handleClickOutside)
   },
-  destroyed() {
+  beforeDestroy() {
     this.clearIntervalId(this.intervalId)
     this.clearIntervalId(this.secondInterval)
+    document.removeEventListener('click', this.handleClickOutside)
   },
   methods: {
     getRetiringVault(vaults) {
@@ -1182,8 +1213,40 @@ export default {
       const { data: nodesInfo } = await this.$api.getNodesInfo()
       this.nodesQuery = nodesInfo
     },
+    toggleDropdown() {
+      this.dropdownOpen = !this.dropdownOpen
+    },
+    toggleFilter(filterName) {
+      this.hides[filterName] = !this.hides[filterName]
+      this.saveFilters()
+    },
+    toggleHealthFilter() {
+      this.hides.RPC = !this.hides.RPC
+      this.hides.BFR = !this.hides.BFR
+      this.saveFilters()
+    },
+    clearAllFilters() {
+      this.hides = {
+        isp: true,
+        score: true,
+        fee: true,
+        age: true,
+        RPC: true,
+        BFR: true,
+        runebond: true,
+      }
+      this.saveFilters()
+    },
     saveFilters() {
       localStorage.setItem('filterSettings', JSON.stringify(this.hides))
+    },
+    handleClickOutside(event) {
+      if (
+        this.dropdownOpen &&
+        !this.$refs.dropdownContainer?.contains(event.target)
+      ) {
+        this.dropdownOpen = false
+      }
     },
     setActiveCol(col) {
       this.activeCols = []
@@ -1199,6 +1262,8 @@ export default {
         this.activeCols.push({ field: 'RPC', label: 'RPC' })
       } else if (col === 'BFR') {
         this.activeCols.push({ field: 'BFR', label: 'BFR' })
+      } else if (col === 'runebond') {
+        this.activeCols.push({ field: 'runebond', label: 'Runebond' })
       }
     },
     setNewNodesChurn(num) {
@@ -1285,7 +1350,7 @@ export default {
       const churnValue =
         1 -
         (this.network?.nextChurnHeight - this.chainsHeight?.THOR) /
-        this.churnInterval
+          this.churnInterval
 
       this.churnProgressValue = churnValue
 
@@ -1355,6 +1420,11 @@ export default {
     formatRune(value, format) {
       return this.$options.filters.number(value, format) + ' RUNE'
     },
+    clearIntervalId(intervalId) {
+      if (intervalId) {
+        clearInterval(intervalId)
+      }
+    },
   },
   head: {
     title: 'THORChain Network Explorer | Nodes',
@@ -1367,44 +1437,13 @@ export default {
   display: flex;
   flex-wrap: wrap;
   margin: $space-0 $space-10;
-  gap: 0.5rem;
+  gap: 1rem;
+  align-items: center;
+  position: relative;
 
   @include lg {
     margin: $space-0;
     gap: $space-0;
-  }
-}
-
-.filter-btns {
-  display: flex;
-  margin-left: $space-5;
-  gap: $space-5;
-  overflow: auto;
-  scrollbar-width: thin;
-  padding-bottom: $space-8;
-  scrollbar-color: var(--border-color) var(--bg-color);
-
-  .enabled-btn {
-    color: var(--primary-color) !important;
-    border: 1px solid var(--primary-color) !important;
-  }
-
-  .filter-button {
-    background-color: var(--bg-color);
-    color: var(--sec-font-color);
-    border: 1px solid var(--border-color);
-    border-radius: $radius-2lg;
-    margin: $space-2 $space-0;
-    padding: $space-8 $space-16;
-    display: inline-flex;
-    align-items: center;
-    gap: $space-5;
-    font-size: $font-size-sm;
-    cursor: pointer;
-
-    &:hover {
-      color: var(--primary-color);
-    }
   }
 }
 
@@ -1447,6 +1486,204 @@ export default {
   }
 }
 
+.dropdown-container {
+  position: relative;
+}
+
+.dropdown-toggle {
+  background-color: var(--bg-color);
+  color: var(--sec-font-color);
+  border: 1px solid var(--border-color);
+  border-radius: $radius-2lg;
+  padding: $space-12 $space-16;
+  display: inline-flex;
+  align-items: center;
+  gap: $space-8;
+  font-size: $font-size-sm;
+  cursor: pointer;
+  min-width: 120px;
+  justify-content: center;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+
+  &:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+  }
+
+  .filter-count {
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: $font-size-xs;
+    margin-left: auto;
+  }
+}
+
+.dropdown-icon {
+  fill: currentColor;
+  width: 1rem;
+  height: 1rem;
+  transition: transform 0.3s ease;
+
+  &.open {
+    transform: rotate(180deg);
+  }
+}
+
+.dropdown-enter-active,
+.dropdown-leave-active {
+  transition: all 0.3s ease;
+}
+
+.dropdown-enter-from,
+.dropdown-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: var(--card-bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: $radius-lg;
+  margin-top: $space-8;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  min-width: 200px;
+  overflow: hidden;
+}
+
+.dropdown-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: $space-12 $space-16;
+  border-top: 1px solid var(--border-color);
+  font-size: $font-size-sm;
+  font-weight: 500;
+
+  .clear-all-btn {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--sec-font-color);
+    font-size: $font-size-xs;
+    cursor: pointer;
+    padding: $space-4 $space-8;
+    border-radius: $radius-sm;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: rgba(var(--primary-color-rgb), 0.1);
+      color: var(--primary-color);
+    }
+  }
+}
+
+.filter-options {
+  padding: $space-8;
+}
+
+.filter-option {
+  display: flex;
+  align-items: center;
+  padding: $space-8 $space-12;
+  cursor: pointer;
+  border-radius: $radius-sm;
+  transition: all 0.2s ease;
+  position: relative;
+
+  &:hover {
+    background-color: rgba(var(--primary-color-rgb), 0.05);
+
+    .custom-checkbox-label {
+      border-color: var(--primary-color);
+    }
+  }
+
+  input[type='checkbox'] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    margin: 0;
+  }
+
+  .custom-checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border-color);
+    border-radius: 5px;
+    margin-right: $space-8;
+    position: relative;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    background-color: var(--card-bg-color);
+    flex-shrink: 0;
+
+    &::after {
+      content: '';
+      width: 12px;
+      height: 6px;
+      border-left: 2px solid transparent;
+      border-bottom: 2px solid transparent;
+      transform: rotate(-45deg) scale(0);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      position: absolute;
+      top: 2px;
+    }
+  }
+
+  input[type='checkbox']:checked + .custom-checkbox-label {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    animation: checkAnim 0.3s ease;
+
+    &::after {
+      border-color: white;
+      transform: rotate(-45deg) scale(1);
+    }
+  }
+
+  input[type='checkbox']:focus + .custom-checkbox-label {
+    box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.1);
+  }
+
+  .filter-label {
+    font-size: $font-size-sm;
+    color: var(--font-color);
+    flex: 1;
+    font-weight: 500;
+    transition: color 0.2s ease;
+  }
+
+  input[type='checkbox']:checked ~ .filter-label {
+    color: var(--primary-color);
+  }
+}
+
+@keyframes checkAnim {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
 .grid-network {
   width: 100%;
   display: grid;
@@ -1457,16 +1694,5 @@ export default {
 
 .extra {
   font-size: $font-size-xs;
-}
-
-.filter-icon {
-  fill: currentColor;
-  width: 1rem;
-  height: 1rem;
-  transform: rotate(180deg);
-
-  &.disable {
-    transform: rotate(0);
-  }
 }
 </style>
