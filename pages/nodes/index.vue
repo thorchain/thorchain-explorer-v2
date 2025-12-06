@@ -93,6 +93,18 @@
           />
           Health
         </button>
+        <button
+          class="filter-button"
+          :class="{ 'enabled-btn': !hides.runebond }"
+          @click="
+          hides.runebond = !hides.runebond
+        saveFilters()"
+        >
+          <caret
+            :class="['filter-icon', { disable: hides.runebond }]"
+          />
+          Runebond
+        </button>
       </div>
     </div>
 
@@ -201,6 +213,7 @@ export default {
         age: false,
         RPC: true,
         BFR: true,
+        runebond: false,
       },
       sortColumn: null,
       sortOrder: null,
@@ -900,7 +913,7 @@ export default {
             leavingCount += 1
           }
 
-          if (el.runebond && el.runebond.available === true) {
+          if (el.runebond && el.runebond.available === true && !this.hides.runebond) {
             filteredNodes[index].churn.push({
               name: 'This node is available to be bonded on RUNEBond',
               icon: require('@/assets/images/runebond.svg?inline'),
@@ -1030,7 +1043,7 @@ export default {
             })
           }
 
-          if (el.runebond && el.runebond.available === true) {
+          if (el.runebond && el.runebond.available === true && !this.hides.runebond) {
             filteredNodes[i].churn.push({
               name: 'This node is available to be bonded on RUNEBond',
               icon: require('@/assets/images/runebond.svg?inline'),
@@ -1072,7 +1085,7 @@ export default {
         whtNodes.forEach((el, index) => {
           fillNodeData(filteredNodes, el)
 
-          if (el.runebond && el.runebond.available === true) {
+          if (el.runebond && el.runebond.available === true && !this.hides.runebond) {
             filteredNodes[index].churn.push({
               name: 'This node is available to be bonded on RUNEBond',
               icon: require('@/assets/images/runebond.svg?inline'),
