@@ -227,7 +227,7 @@ export default {
         age: false,
         RPC: true,
         BFR: true,
-        runebond: false,
+        runebond: true,
       },
       sortColumn: null,
       sortOrder: null,
