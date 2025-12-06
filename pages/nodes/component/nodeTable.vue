@@ -192,29 +192,49 @@
           </span>
           <div v-else-if="props.column.field == 'churn'" class="churn-wrapper">
             <div v-for="(churnItem, index) in rows[props.row.originalIndex].churn" :key="index" class="churn-item">
-              <v-menu>
-                <component :is="churnItem.icon" class="table-icon" />
-                <template #popper>
-                  <span v-if="churnItem.type !== 'jail'">
-                    {{ churnItem.name }}
-                  </span>
-                  <div v-else>
-                    <strong>{{ churnItem.name.reason | capitalize }}</strong>
-                    <div style="margin-top: 0.5rem; padding: 4px">
-                      <div>
-                        <span>Released Height:</span>
-                        <span>{{
-                          churnItem.name.release_height | number('0,0')
-                          }}</span>
+              <component :is="churnItem.link ? 'a' : 'template'" :href="churnItem.link" target="_blank">
+                <v-menu>
+                  <component :is="churnItem.icon" class="table-icon" />
+                  <template #popper>
+                    <span v-if="churnItem.type === 'runebond'">
+                      <strong>Rune Bond Node</strong>
+                      <hr class="hr-space"/>
+                       <div style="margin-top: 0.5rem; padding: 4px">
+                        <div>
+                          <span>Capacity:</span>
+                          <span class="mono" :style="{ color: churnItem.maxRune < 0 ? 'red' : 'var(--primary-color)'}">{{
+                            churnItem.maxRune / 1e8 | number('0,0')
+                            }} {{ runeCur() }}</span>
+                        </div>
+                        <div>
+                          <span>Min:</span>
+                          <span class="mono">{{
+                            churnItem.minRune / 1e8 | number('0,0')
+                            }} {{ runeCur() }}</span>
+                        </div>
                       </div>
-                      <div v-if="churnItem.name.releaseTime">
-                        <span>Release Time:</span>
-                        <span>{{ churnItem.name.releaseTime }}</span>
+                    </span>
+                    <span v-else-if="churnItem.type !== 'jail'">
+                      {{ churnItem.name }}
+                    </span>
+                    <div v-else>
+                      <strong>{{ churnItem.name.reason | capitalize }}</strong>
+                      <div style="margin-top: 0.5rem; padding: 4px">
+                        <div>
+                          <span>Released Height:</span>
+                          <span>{{
+                            churnItem.name.release_height | number('0,0')
+                            }}</span>
+                        </div>
+                        <div v-if="churnItem.name.releaseTime">
+                          <span>Release Time:</span>
+                          <span>{{ churnItem.name.releaseTime }}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </template>
-              </v-menu>
+                  </template>
+                </v-menu>
+              </component>
             </div>
             <span v-if="
               rows[props.row.originalIndex].churn &&

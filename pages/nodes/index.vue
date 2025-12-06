@@ -899,6 +899,17 @@ export default {
             leavingBond += +el.total_bond
             leavingCount += 1
           }
+
+          if (el.runebond && el.runebond.available === true) {
+            filteredNodes[index].churn.push({
+              name: 'This node is available to be bonded on RUNEBond',
+              icon: require('@/assets/images/runebond.svg?inline'),
+              link: `https://runebond.com/nodes/${el.node_address}`,
+              type: 'runebond',
+              minRune: el.runebond.minRune,
+              maxRune: el.runebond.maxRune,
+            })
+          }
         })
 
         this.setExtraChurn(extraChurn)
