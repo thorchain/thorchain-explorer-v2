@@ -192,7 +192,7 @@
           </span>
           <div v-else-if="props.column.field == 'churn'" class="churn-wrapper">
             <div v-for="(churnItem, index) in rows[props.row.originalIndex].churn" :key="index" class="churn-item">
-              <component :is="churnItem.link ? 'a' : 'template'" :href="churnItem.link" target="_blank">
+              <component :is="churnItem.link ? 'a' : 'a'" :href="churnItem.link" target="_blank">
                 <v-menu>
                   <component :is="churnItem.icon" class="table-icon" />
                   <template #popper>
@@ -213,6 +213,8 @@
                             }} {{ runeCur() }}</span>
                         </div>
                       </div>
+                      <hr class="hr-space"/>
+                      <small>Click to view on RuneBond</small>
                     </span>
                     <span v-else-if="churnItem.type !== 'jail'">
                       {{ churnItem.name }}
@@ -769,6 +771,12 @@ export default {
 }
 
 .vault-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.churn-item {
   display: flex;
   align-items: center;
   justify-content: center;

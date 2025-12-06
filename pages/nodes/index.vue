@@ -1029,6 +1029,17 @@ export default {
               icon: require('@/assets/images/hammer.svg?inline'),
             })
           }
+
+          if (el.runebond && el.runebond.available === true) {
+            filteredNodes[i].churn.push({
+              name: 'This node is available to be bonded on RUNEBond',
+              icon: require('@/assets/images/runebond.svg?inline'),
+              link: `https://runebond.com/nodes/${el.node_address}`,
+              type: 'runebond',
+              minRune: el.runebond.minRune,
+              maxRune: el.runebond.maxRune,
+            })
+          }
         }
 
         this.setEntering(enteringBond, enteringCount)
@@ -1058,8 +1069,19 @@ export default {
 
         const filteredNodes = []
 
-        whtNodes.forEach((el) => {
+        whtNodes.forEach((el, index) => {
           fillNodeData(filteredNodes, el)
+
+          if (el.runebond && el.runebond.available === true) {
+            filteredNodes[index].churn.push({
+              name: 'This node is available to be bonded on RUNEBond',
+              icon: require('@/assets/images/runebond.svg?inline'),
+              link: `https://runebond.com/nodes/${el.node_address}`,
+              type: 'runebond',
+              minRune: el.runebond.minRune,
+              maxRune: el.runebond.maxRune,
+            })
+          }
         })
 
         return filteredNodes
