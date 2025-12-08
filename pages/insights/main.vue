@@ -682,7 +682,7 @@ export default {
         )
       })
 
-      const totalVolume = xAxis.map((_, i) => pn[i] + pt[i] + ps[i])
+      const totalVolume = xAxis.map((_, i) => pn[i] + pt[i] + ps[i] + psec[i])
 
       const normSeries = [
         { name: 'Native Swap Volume', data: pn },
