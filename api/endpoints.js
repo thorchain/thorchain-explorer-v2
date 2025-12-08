@@ -17,8 +17,8 @@ module.exports = {
     MODULE_ADDR: 'sthor1dheycdevq39qlkxs2a6wuuzyn4aqxhvepe6as4',
   },
   chainnet: {
-    MIDGARD_BASE_URL: 'https://chainnet.vanaheimex.com/v2/',
-    MIDGARD_GRAPH_QL: 'https://chainnet.vanaheimex.com/v2/',
+    MIDGARD_BASE_URL: 'https://chainnet-midgard.thorchain.network/v2/',
+    MIDGARD_GRAPH_QL: 'https://chainnet-midgard.thorchain.network/v2',
     THORNODE_URL: 'https://chainnet-thornode.thorchain.network/',
     TENDERMINT_URL: 'https://chainnet-rpc.thorchain.network/',
     SERVER_URL: 'https://vanaheimex.com/chainnet/',
