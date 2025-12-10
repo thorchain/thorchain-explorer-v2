@@ -5,7 +5,7 @@
         <div class="chart-area-skeleton">
           <div class="chart-bars">
             <skeleton-loader
-              v-for="i in responsiveBarCount"
+              v-for="i in barCount"
               :key="`bar-${i}`"
               class="bar-skeleton"
               :style="{
@@ -27,24 +27,13 @@ export default {
   props: {
     barCount: {
       type: Number,
-      default: 20,
+      default: 30,
     },
   },
   data() {
     return {
       isMobile: false,
     }
-  },
-  computed: {
-    responsiveBarCount() {
-      if (this.isMobile) {
-        return Math.max(Math.floor(this.barCount / 2), 8)
-      }
-      if (window.innerWidth < 1200) {
-        return Math.max(Math.floor(this.barCount * 0.7), 10)
-      }
-      return this.barCount
-    },
   },
   mounted() {
     this.checkScreenSize()
@@ -68,7 +57,9 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: stretch;
+  overflow: hidden;
 }
+
 .chart-skeleton {
   width: 100%;
   height: 100%;
@@ -76,12 +67,14 @@ export default {
   flex-direction: column;
   flex: 1;
 }
+
 .chart-content-skeleton {
   flex: 1;
   display: flex;
   align-items: stretch;
   min-height: 350px;
 }
+
 .chart-area-skeleton {
   flex: 1;
   display: flex;
@@ -90,28 +83,29 @@ export default {
   min-height: 350px;
   padding-bottom: 0;
 }
+
 .chart-bars {
   width: 100%;
   height: 100%;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 4px;
-  padding-left: 4px;
-  padding-right: 4px;
+  gap: 1px;
   z-index: 2;
 }
+
 .bar-skeleton {
   min-height: 30px;
 }
+
 @media (max-width: 768px) {
+
   .chart-bars {
-    gap: 2px;
-    padding-left: 2px;
-    padding-right: 2px;
+    gap: 1px;
   }
+
   .bar-skeleton {
-    width: 7px !important;
+    width: 10px !important;
   }
 }
 </style>

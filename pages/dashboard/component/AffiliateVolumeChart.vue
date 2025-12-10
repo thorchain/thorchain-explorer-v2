@@ -1,13 +1,13 @@
 <template>
   <div class="affiliate-volume-chart">
-    <!-- <VChart
+    <VChart
       v-if="affiliateStatsChart && !loading"
       :key="affiliateStatsChartKey"
       :option="affiliateStatsChart"
       :autoresize="true"
       :theme="chartTheme"
-    /> -->
-    <ChartLoader :bar-count="30" />
+    />
+    <ChartLoader v-if="!affiliateStatsChart || loading" :bar-count="30" />
   </div>
 </template>
 
