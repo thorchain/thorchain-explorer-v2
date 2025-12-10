@@ -81,7 +81,7 @@
           { title: 'Earnings & Fees', value: 'total-earnings' },
           { title: 'LP Earnings', value: 'pool-earnings' },
           ...(isMainnet()
-            ? [{ title: 'Affiliate Fees', value: 'affiliates-fees' }]
+            ? [{ title: 'Affiliate Volume', value: 'affiliate-volume' }, { title: 'Affiliate Fees', value: 'affiliates-fees' }]
             : []),
         ]"
         :act-nav.sync="poolMode"
@@ -95,34 +95,37 @@
             {{ poolMode === 'pool-earnings' ? 'Open Chart' : 'Open Chart' }}
           </button>
         </div>
-        <div>
+        <div v-if="poolMode == 'total-earnings'">
           <VChart
-            v-if="poolMode == 'total-earnings' && earningsHistory"
+            v-if="earningsHistory"
             :key="1"
             :option="earningsHistory"
             :autoresize="true"
             :theme="chartTheme"
           />
-          <ChartLoader
-            v-if="poolMode == 'total-earnings' && !earningsHistory"
-          />
+          <ChartLoader v-else />
         </div>
-        <VChart
-          v-if="poolMode == 'pool-earnings' && poolEarnings"
-          :key="2"
-          :option="poolEarnings"
-          :autoresize="true"
-          :theme="chartTheme"
-        />
-        <ChartLoader v-if="poolMode == 'pool-earnings' && !poolEarnings" />
-        <VChart
-          v-if="poolMode == 'affiliates-fees' && affiliateChart"
-          :key="3"
-          :option="affiliateChart"
-          :autoresize="true"
-          :theme="chartTheme"
-        />
-        <ChartLoader v-if="poolMode == 'affiliates-fees' && !affiliateChart" />
+        <div v-if="poolMode == 'pool-earnings'">
+          <VChart
+            v-if="poolEarnings"
+            :key="2"
+            :option="poolEarnings"
+            :autoresize="true"
+            :theme="chartTheme"
+          />
+          <ChartLoader v-else />
+        </div>
+        <div v-if="poolMode == 'affiliates-fees'">
+          <VChart
+            v-if="affiliateChart"
+            :key="3"
+            :option="affiliateChart"
+            :autoresize="true"
+            :theme="chartTheme"
+          />
+          <ChartLoader v-else />
+        </div>
+        <affiliate-volume-chart v-if="poolMode == 'affiliate-volume'" />
       </Card>
     </div>
     <div class="cards-container">
@@ -181,6 +184,7 @@ import Piggy from '~/assets/images/piggy.svg?inline'
 import Chart from '~/assets/images/chart.svg?inline'
 import TransactionAction from '~/components/transactions/TransactionAction.vue'
 import ChartLoader from '~/components/ChartLoader.vue'
+import AffiliateVolumeChart from './component/AffiliateVolumeChart.vue'
 use([
   SVGRenderer,
   GridComponent,
@@ -195,6 +199,7 @@ use([
 export default {
   name: 'OverviewPage',
   components: {
+    AffiliateVolumeChart,
     VChart,
     Piggy,
     BounceLoader,
