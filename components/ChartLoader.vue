@@ -1,9 +1,9 @@
 <template>
-  <div ref="container" class="chart-loader-container">
+  <div class="chart-loader-container">
     <div class="chart-skeleton">
-      <div class="chart-content-skeleton">
+      <div ref="container" class="chart-content-skeleton">
         <div class="chart-area-skeleton">
-          <div class="chart-bars">
+          <div class="chart-bars" :style="{ gap: gapWidth }">
             <skeleton-loader
               :height="`${Math.random() * 60 + 30}%`"
               :width="barWidth"
@@ -34,23 +34,80 @@ export default {
     }
   },
   computed: {
-    barWidth() {
-      // Linear interpolation from 11px to 15px based on container width
-      // Assuming min width ~450px -> 11px, max width ~720px -> 15px
+    gapAndWidth() {
+      if (!this.containerWidth || this.barCount === 0) {
+        return { gap: '6px', width: '15px' }
+      }
+
       const minWidth = 450
       const maxWidth = 720
-      const minBarWidth = 11
+      const minGap = 1
+      const maxGap = 6
+      const minBarWidth = 1
       const maxBarWidth = 15
 
+      // Calculate ratio based on container width for scaling
+      let ratio
       if (this.containerWidth <= minWidth) {
-        return minBarWidth + 'px'
-      }
-      if (this.containerWidth >= maxWidth) {
-        return maxBarWidth + 'px'
+        ratio = 0
+      } else if (this.containerWidth >= maxWidth) {
+        ratio = 1
+      } else {
+        ratio = (this.containerWidth - minWidth) / (maxWidth - minWidth)
       }
 
-      const ratio = (this.containerWidth - minWidth) / (maxWidth - minWidth)
-      return minBarWidth + (maxBarWidth - minBarWidth) * ratio + 'px'
+      // Start with ideal gap and width based on container width scaling
+      let targetGap = minGap + (maxGap - minGap) * ratio
+      let targetWidth = minBarWidth + (maxBarWidth - minBarWidth) * ratio
+
+      // Calculate what the total width would be with these values
+      const totalNeeded = this.barCount * targetWidth + (this.barCount - 1) * targetGap
+
+      // If it doesn't fit, we need to adjust
+      if (totalNeeded > this.containerWidth) {
+        // Scale down proportionally to fit
+        const scale = this.containerWidth / totalNeeded
+        targetGap *= scale
+        targetWidth *= scale
+      }
+
+      // Ensure gap stays within bounds
+      targetGap = Math.max(minGap, Math.min(maxGap, targetGap))
+
+      // Calculate width based on remaining space
+      const gapSpace = (this.barCount - 1) * targetGap
+      const availableForBars = this.containerWidth - gapSpace
+      let calculatedWidth = availableForBars / this.barCount
+
+      // If calculated width is outside bounds, adjust gap to bring it in bounds
+      if (calculatedWidth < minBarWidth) {
+        // Width too small, reduce gap to minimum needed
+        const maxGapAllowed = (this.containerWidth - this.barCount * minBarWidth) / (this.barCount - 1)
+        targetGap = Math.max(minGap, Math.min(maxGap, maxGapAllowed))
+        const newGapSpace = (this.barCount - 1) * targetGap
+        calculatedWidth = (this.containerWidth - newGapSpace) / this.barCount
+      } else if (calculatedWidth > maxBarWidth) {
+        // Width too large, increase gap to maximum allowed
+        const minGapNeeded = (this.containerWidth - this.barCount * maxBarWidth) / (this.barCount - 1)
+        targetGap = Math.max(minGap, Math.min(maxGap, minGapNeeded))
+        const newGapSpace = (this.barCount - 1) * targetGap
+        calculatedWidth = (this.containerWidth - newGapSpace) / this.barCount
+      }
+
+      // Final clamp to ensure bounds
+      const finalGap = Math.max(minGap, Math.min(maxGap, targetGap))
+      const finalWidth = Math.max(minBarWidth, Math.min(maxBarWidth, calculatedWidth))
+
+      return {
+        gap: finalGap + 'px',
+        width: finalWidth + 'px',
+      }
+    },
+    gapWidth() {
+      return this.gapAndWidth.gap
+    },
+    barWidth() {
+      return this.gapAndWidth.width
     },
   },
   mounted() {
@@ -118,19 +175,12 @@ export default {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 1px;
   z-index: 2;
 }
 
 .bar-skeleton {
   min-height: 30px;
   border-radius: 999px 999px 0 0;
-  margin: 0;
-}
-
-@media (max-width: 768px) {
-  .chart-bars {
-    gap: 1px;
-  }
+  margin: 0 !important;
 }
 </style>

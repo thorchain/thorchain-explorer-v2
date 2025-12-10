@@ -44,7 +44,7 @@
           :autoresize="true"
           :theme="chartTheme"
         />
-        <ChartLoader v-if="!swapChartVolume" :bar-count="15" />
+        <ChartLoader v-if="!swapChartVolume" :bar-count="30" />
       </Card>
       <Card title="Swap Chart Normalized">
         <VChart
@@ -53,7 +53,7 @@
           :autoresize="true"
           :theme="chartTheme"
         />
-        <ChartLoader v-if="!swapChartVolumeNorm" :bar-count="15" />
+        <ChartLoader v-if="!swapChartVolumeNorm" :bar-count="30" />
       </Card>
     </div>
     <div class="chart-inner-container">
@@ -67,7 +67,7 @@
           :autoresize="true"
           :theme="chartTheme"
         />
-        <ChartLoader v-if="!feesRewardsChart" :bar-count="15" />
+        <ChartLoader v-if="!feesRewardsChart" :bar-count="30" />
       </Card>
       <Card title="Fees/Block Reward Chart Normalized">
         <template #header>
@@ -79,7 +79,7 @@
           :autoresize="true"
           :theme="chartTheme"
         />
-        <ChartLoader v-if="!feesRewardsChartNorm" :bar-count="15" />
+        <ChartLoader v-if="!feesRewardsChartNorm" :bar-count="30" />
       </Card>
     </div>
     <div class="chart-inner-container">
@@ -90,7 +90,7 @@
           :autoresize="true"
           :theme="chartTheme"
         />
-        <ChartLoader v-if="!rewardsHistory" :bar-count="15" />
+        <ChartLoader v-if="!rewardsHistory" :bar-count="30" />
       </Card>
       <Card title="Supply / Burn">
         <VChart
@@ -99,7 +99,7 @@
           :autoresize="true"
           :theme="chartTheme"
         />
-        <ChartLoader v-if="!supplyHistory" :bar-count="15" />
+        <ChartLoader v-if="!supplyHistory" :bar-count="30" />
       </Card>
     </div>
   </div>

@@ -37,9 +37,10 @@
         </div>
       </div>
     </div>
-    <card title="Swaps Volume" :is-loading="loading">
+    <card title="Swaps Volume">
       <template #header>
         <div
+          v-if="swapHistory"
           class="csv-download"
           title="Download CSV"
           @click="downloadSwapChart()"
@@ -51,9 +52,11 @@
         v-if="swapHistory"
         :option="swapHistory"
         :theme="chartTheme"
+        :loading="!swapHistory"
+        :loading-options="showLoading"
         :autoresize="true"
       />
-      <ChartLoader v-if="!swapHistory" :bar-count="30" />
+      <ChartLoader v-else :bar-count="parseInt(chartPeriod)" />
     </card>
   </div>
 </template>
@@ -103,6 +106,7 @@ export default {
       chartPeriod: '90',
       chartInterval: 'day',
       swapCount: [],
+      loading: true,
       chartPeriods: [
         { text: '90 D', mode: '90' },
         { text: '180 D', mode: '180' },
@@ -174,6 +178,7 @@ export default {
       this.allSwapHistory = resSwaps
     },
     async fetchSwapHistory() {
+      this.loading = true
       this.allSwapHistory = undefined
       this.swapHistory = undefined
 
@@ -219,6 +224,7 @@ export default {
           intervals: this.allSwapHistory.intervals.slice(-count),
         }
         this.swapHistory = this.formatSwaps(filteredData)
+        this.loading = false
       }
     },
     formatSwaps(d) {

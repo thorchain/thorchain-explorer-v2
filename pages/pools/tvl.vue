@@ -8,7 +8,7 @@
         :autoresize="true"
         :theme="chartTheme"
       />
-      <ChartLoader v-if="!tvlOption" :bar-count="30"/>
+      <ChartLoader v-if="!tvlOption" :bar-count="90"/>
     </Card>
   </div>
 </template>

@@ -16,7 +16,7 @@
           :theme="chartTheme"
           :autoresize="true"
         />
-        <ChartLoader v-if="!reserveHistory" :bar-count="15"/>
+        <ChartLoader v-if="!reserveHistory" :bar-count="30"/>
       </card>
       <Card>
         <info-card :options="allocations" :inner="true" />

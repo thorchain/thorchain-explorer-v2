@@ -71,7 +71,7 @@
           :autoresize="true"
           :theme="chartTheme"
         />
-        <ChartLoader v-if="!chartOptions" :bar-count="30" />
+        <ChartLoader v-if="!chartOptions" :bar-count="parseInt(chartPeriod)" />
       </card>
       <card title="Liquidity Fees" :is-loading="loading">
         <VChart
@@ -80,7 +80,7 @@
           :autoresize="true"
           :theme="chartTheme"
         />
-        <ChartLoader v-if="!liquidityFees" :bar-count="30" />
+        <ChartLoader v-if="!liquidityFees" :bar-count="parseInt(chartPeriod)" />
       </card>
     </template>
 
@@ -111,7 +111,7 @@
           :autoresize="true"
           :theme="chartTheme"
         />
-        <ChartLoader v-if="!bondingEarnings" :bar-count="30" />
+        <ChartLoader v-if="!bondingEarnings" :bar-count="parseInt(chartPeriod)" />
       </card>
     </template>
   </Page>
