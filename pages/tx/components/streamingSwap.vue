@@ -1,5 +1,5 @@
 <template>
-  <card v-if="streamingDetail.is" class="streaming-card">
+  <card v-if="streamingDetail.is && streamingDetail.fill > 0" class="streaming-card">
     <div class="card-header streaming-header">
       <span>Streaming Swap <sup class="header-sup">Live</sup></span>
       <div
