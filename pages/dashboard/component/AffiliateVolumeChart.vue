@@ -1,13 +1,13 @@
 <template>
   <div class="affiliate-volume-chart">
-    <VChart
+    <!-- <VChart
       v-if="affiliateStatsChart && !loading"
       :key="affiliateStatsChartKey"
       :option="affiliateStatsChart"
       :autoresize="true"
       :theme="chartTheme"
-    />
-    <ChartLoader v-if="!affiliateStatsChart || loading" :bar-count="15" />
+    /> -->
+    <ChartLoader :bar-count="30" />
   </div>
 </template>
 
@@ -69,7 +69,28 @@ export default {
           interval: this.chartInterval,
         }
         const response = await this.$api.getAffiliateStats(params)
-        this.affiliateStatsChart = this.formatAffiliateStats(response.data)
+        let data = response.data || []
+
+        // Fetch the last day with from/to params
+        if (data.length > 0) {
+          const lastInterval = data[data.length - 1]
+          const lastDayStart = moment.utc(lastInterval.startTime * 1000).startOf('day')
+          const lastDayEnd = moment.utc(lastInterval.startTime * 1000).endOf('day')
+
+          try {
+            const lastDayResponse = await this.$api.getAffiliateStats( {
+            from: Math.floor(lastDayStart.valueOf() / 1000),
+            to: Math.floor(lastDayEnd.valueOf() / 1000),
+            })
+            if (lastDayResponse.data && lastDayResponse.data.length > 0) {
+              data[data.length - 1] = lastDayResponse.data[0]
+            }
+          } catch (error) {
+            console.error('Error fetching last day stats:', error)
+          }
+        }
+
+        this.affiliateStatsChart = this.formatAffiliateStats(data)
         this.affiliateStatsChartKey += 1
       } catch (error) {
         console.error('Error fetching affiliate stats:', error)
@@ -86,8 +107,6 @@ export default {
       const others = []
 
       data.forEach((interval, index) => {
-        if (index === data.length - 1) return
-
         const date = this.formatDate(interval)
         xAxis.push(date)
 
@@ -100,11 +119,15 @@ export default {
 
         const ignoreAggregator = (affiliates) => {
           const affiliatesSplit = affiliates.split('/')
+          if (affiliatesSplit.length === 1) {
+            return affiliates
+          }
           if (
-            affiliates.length > 0 &&
+            affiliatesSplit.length > 1 &&
             (affiliatesSplit.includes('-_') || affiliatesSplit.includes('ro'))
           ) {
-            return affiliatesSplit.find((aff) => aff !== '-_' && aff !== 'ro')
+            const nonAggregator = affiliatesSplit.find((aff) => aff !== '-_' && aff !== 'ro')
+            return nonAggregator || affiliates
           }
           return affiliates
         }

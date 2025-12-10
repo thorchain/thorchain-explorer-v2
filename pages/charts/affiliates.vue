@@ -38,7 +38,7 @@
               :autoresize="true"
               :theme="chartTheme"
             />
-            <ChartLoader v-if="!affiliateChart || loading" :bar-count="15" />
+            <ChartLoader v-if="!affiliateChart || loading" :bar-count="30" />
           </card>
         </div>
 
@@ -62,7 +62,7 @@
             />
             <ChartLoader
               v-if="!affiliateStatsChart || loading"
-              :bar-count="15"
+              :bar-count="30"
             />
           </card>
         </div>
@@ -465,13 +465,29 @@ export default {
 
         const ignoreAggregator = (affiliates) => {
           const affiliatesSplit = affiliates.split('/')
+          if (affiliatesSplit.length === 1) {
+            return affiliates
+          }
           if (
-            affiliates.length > 0 &&
+            affiliatesSplit.length > 1 &&
             (affiliatesSplit.includes('-_') || affiliatesSplit.includes('ro'))
           ) {
-            return affiliatesSplit.find((aff) => aff !== '-_' && aff !== 'ro')
+            const nonAggregator = affiliatesSplit.find((aff) => aff !== '-_' && aff !== 'ro')
+            return nonAggregator || affiliates
           }
           return affiliates
+        }
+
+        const normalizeAffiliate = (affiliate) => {
+          const affiliatesSplit = affiliate.split('/')
+          // If all parts are the same (e.g., "sto/sto"), return just one
+          if (affiliatesSplit.length > 1) {
+            const firstPart = affiliatesSplit[0]
+            if (affiliatesSplit.every((part) => part === firstPart)) {
+              return firstPart
+            }
+          }
+          return affiliate
         }
 
         filteredNames = interval.affiliates.reduce((acc, affiliate) => {
@@ -485,6 +501,11 @@ export default {
               : affiliateIncludes(['va', 'vi', 'v0'], affiliate.affiliate)
                 ? 'va'
                 : ignoreAggregator(affiliate.affiliate)
+
+          // Normalize the key to handle duplicates like "sto/sto" -> "sto"
+          if (key && key !== 't' && key !== 'ti' && key !== 'va') {
+            key = normalizeAffiliate(key)
+          }
 
           if (key === '') {
             key = 'No Affiliate'
