@@ -70,32 +70,30 @@
             <div :key="i" class="streaming-item">
               <div class="upper-body">
                 <div class="asset-container">
-                  <div v-if="o.inputAsset" class="asset-item">
-                    <asset-icon :asset="o.inputAsset.asset" />
+                  <div v-if="o.source_asset" class="asset-item">
+                    <asset-icon :asset="o.source_asset" />
                     <span class="asset-name">
                       {{
                         $options.filters.number(
-                          o.inputAsset.amount / 1e8,
+                          (o.deposit || 0) / 1e8,
                           '0,0.0000'
                         )
                       }}
                       <small class="asset-text sec-color">{{
-                        o.inputAsset.asset
+                        showAsset(o.source_asset)
                       }}</small>
                     </span>
                   </div>
-                  <right-arrow class="action-type" />
-                  <div v-if="o.outputAsset" class="asset-item">
-                    <asset-icon :asset="o.outputAsset.asset" />
+                  <stream-icon v-if="isTradeTargetZero(o)" class="action-type">
+                    ~
+                  </stream-icon>
+                  <right-arrow v-else class="action-type" />
+                  <div v-if="o.target_asset" class="asset-item">
+                    <asset-icon :asset="o.target_asset" />
                     <span class="asset-name">
-                      <template v-if="o.outputAsset.amount">{{
-                        $options.filters.number(
-                          o.outputAsset.amount / 1e8,
-                          '0,0.0000'
-                        )
-                      }}</template>
+                      {{getOutputAmount(o)}}
                       <small class="asset-text sec-color">
-                        {{ showAsset(o.outputAsset.asset) }}
+                        {{ showAsset(o.target_asset) }}
                       </small>
                     </span>
                   </div>
@@ -111,7 +109,7 @@
                 </small>
               </div>
 
-              <div class="extra-info">
+              <div v-if="o.quantity && o.count !== undefined" class="extra-info">
                 <progress-bar
                   v-if="o.quantity > 0"
                   :width="(o.count / o.quantity) * 100"
@@ -122,11 +120,11 @@
                 </small>
               </div>
 
-              <small style="margin-top: 5px"
+              <small v-if="o.interval && o.quantity && o.count !== undefined" style="margin-top: 5px"
                 >{{ o.interval }} Blocks / Swap
                 <span class="sec-color"
                   ><small style="color: var(--font-color)">(ETA </small>
-                  {{ o.remaningETA }}
+                  {{ calculateETA(o.interval, o.quantity, o.count) }}
                   <small style="color: var(--font-color)"
                     >, Remaining swaps: {{ o.quantity - o.count }}</small
                   >
@@ -249,13 +247,13 @@
 <script>
 import { mapGetters } from 'vuex'
 import moment from 'moment'
-import { shortAssetName } from '~/utils'
 import streamingIcon from '@/assets/images/streaming.svg?inline'
 import RightArrow from '~/assets/images/arrow-right.svg?inline'
+import StreamIcon from '~/assets/images/stream.svg?inline'
 import SkeletonLoader from '~/components/SkeletonLoader.vue'
 
 export default {
-  components: { streamingIcon, RightArrow, SkeletonLoader },
+  components: { streamingIcon, RightArrow, StreamIcon, SkeletonLoader },
   data() {
     return {
       currentPage: 1,
@@ -306,116 +304,51 @@ export default {
   },
   methods: {
     async updateStreamingSwap() {
-      this.noStreaming = false
-      const resData = (await this.$api.getStreamingSwaps()).data
-      this.totalSumAmount = resData?.reduce((a, c) => {
-        const inputUsdValue = this.amountToUSD(
-          c.source_asset,
-          c.deposit,
-          this.pools
-        )
-        return a + inputUsdValue
-      }, 0)
-
-      if (!resData || resData.length === 0) {
-        this.noStreaming = true
-        this.streamingSwaps = []
-        this.loading = false
-        return
-      }
       try {
-        const swaps = []
+        this.noStreaming = false
+        const resData = (await this.$api.getStreamingSwaps()).data
 
-        for (let i = 0; i < resData.length; i++) {
-          const swap = { ...resData[i] } // Clone swap data
-          const swapDetails = (await this.$api.getTxStatus(resData[i].tx_id))
-            .data // Fetch swap details
-
-          const txAsset = swapDetails?.tx
-          if (txAsset && txAsset.coins.length > 0) {
-            swap.inputAsset = {
-              asset: txAsset.coins[0].asset,
-              amount: txAsset.coins[0].amount,
-            }
-          }
-
-          let nonRUNE = false
-          if (!swap.outputAsset?.asset) {
-            const memo = swapDetails.tx?.memo
-            if (memo) {
-              const m = swapDetails.tx?.memo.split(':', 3)[1]
-              const outAsset = shortAssetName(m)
-              if (outAsset !== 'THOR.RUNE') {
-                nonRUNE = true
-              }
-              swap.outputAsset = {
-                asset: outAsset.toUpperCase(),
-              }
-            }
-          }
-
-          const outAsset = swapDetails?.out_txs
-          if (outAsset && outAsset.length > 0) {
-            const oa = outAsset.map((o) => ({
-              asset: o.coins[0]?.asset,
-              amount: o.coins[0].amount,
-            }))
-            const tmpOut = {
-              amount: 0,
-              asset: '',
-              new: false,
-            }
-            if (oa.every((a) => a.asset === 'THOR.RUNE') && !nonRUNE) {
-              tmpOut.amount = oa?.reduce((a, b) => Math.max(+a, +b), -Infinity)
-              tmpOut.asset = oa[0].asset
-              tmpOut.new = true
-            } else {
-              const nonRuneAsset = oa.find((a) => a.asset !== 'THOR.RUNE')
-              if (nonRuneAsset) {
-                tmpOut.amount = nonRuneAsset.amount
-                tmpOut.asset = nonRuneAsset.asset
-                tmpOut.new = true
-              }
-              if (tmpOut.new) {
-                swap.outputAsset = {
-                  asset: tmpOut.asset,
-                  amount: tmpOut.amount,
-                }
-              }
-            }
-          }
-
-          const plannedAsset = swapDetails?.planned_out_txs
-          if (plannedAsset && plannedAsset.length > 0) {
-            if (nonRUNE && plannedAsset[0].coin.asset !== 'THOR.RUNE') {
-              swap.outputAsset = {
-                asset: plannedAsset[0].coin?.asset,
-                amount: plannedAsset[0].coin?.amount,
-              }
-            }
-          }
-
-          swap.remaingIntervals =
-            resData[i].interval * (resData[i].quantity - resData[i].count)
-          swap.remaningETA = moment
-            .duration(swap.remaingIntervals * 6, 'seconds')
-            .humanize()
-
-          if (swap.outputAsset?.asset && this.pools) {
-            swap.outputAsset.asset = this.findAssetInPool(
-              swap.outputAsset?.asset,
-              this.pools
-            )
-          }
-          swaps.push(swap)
+        if (!resData || resData.length === 0) {
+          this.noStreaming = true
+          this.streamingSwaps = []
+          this.loading = false
+          this.totalSumAmount = 0
+          return
         }
-        this.streamingSwaps = swaps
+
+        this.totalSumAmount = resData.reduce((a, c) => {
+          const inputUsdValue = this.amountToUSD(
+            c.source_asset,
+            c.deposit,
+            this.pools
+          )
+          return a + inputUsdValue
+        }, 0)
+
+        this.streamingSwaps = resData
         this.loading = false
       } catch (error) {
         console.error(error)
         this.noStreaming = true
         this.loading = false
+        this.streamingSwaps = []
       }
+    },
+    calculateETA(interval, quantity, count) {
+      if (!interval || !quantity || count === undefined) return '-'
+      const remainingIntervals = interval * (quantity - count)
+      return moment.duration(remainingIntervals * 6, 'seconds').humanize()
+    },
+    getOutputAmount(swap) {
+      if (!swap) return 0
+      if (swap.trade_target === '0' || swap.trade_target === 0 || !swap.trade_target) {
+        return '> ' + this.$options.filters.number((swap.out || 0) / 1e8, '0,0.0000')
+      }
+      return this.$options.filters.number( swap.trade_target / 1e8, '0,0.0000')
+    },
+    isTradeTargetZero(swap) {
+      if (!swap) return false
+      return swap.trade_target === '0' || swap.trade_target === 0 || !swap.trade_target
     },
     async updateSwapQueue() {
       // Swap queue
