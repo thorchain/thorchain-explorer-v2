@@ -496,7 +496,6 @@ export default {
     > span {
       overflow: hidden;
       text-overflow: ellipsis;
-      white-space: nowrap;
       word-break: keep-all;
       font-size: $font-size-sm;
       color: var(--sec-font-color);
