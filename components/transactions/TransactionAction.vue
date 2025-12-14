@@ -19,17 +19,17 @@
       </stream-icon>
       <right-arrow v-else class="action-type" />
       <span
-        v-for="(ops, i) in row.out.filter((o) => !o.affiliate)"
+        v-for="(coin, i) in groupedOutCoins"
         :key="'out-' + i"
         class="asset-cell"
       >
         <asset-icon
-          :asset="ops.coins[0].asset"
+          :asset="coin.asset"
           :height="'1.2rem'"
           :chain-height="'0.8rem'"
         ></asset-icon>
         <span class="asset-name">{{
-          decimalFormat(ops.coins[0].amount / 1e8)
+          decimalFormat(coin.amount / 1e8)
         }}</span>
       </span>
       <template v-if="isPendingSwap(row)">
@@ -516,6 +516,32 @@ export default {
         return this.row?.type
       }
       return this.row?.type
+    },
+    groupedOutCoins() {
+      if (!this.row || !this.row.out) {
+        return []
+      }
+
+      const nonAffiliateOuts = this.row.out.filter((o) => !o.affiliate)
+      const grouped = {}
+
+      nonAffiliateOuts.forEach((ops) => {
+        if (ops.coins && ops.coins.length > 0) {
+          const coin = ops.coins[0]
+          const asset = coin.asset
+
+          if (grouped[asset]) {
+            grouped[asset].amount += +coin.amount
+          } else {
+            grouped[asset] = {
+              asset: asset,
+              amount: +coin.amount,
+            }
+          }
+        }
+      })
+
+      return Object.values(grouped)
     },
   },
   methods: {
