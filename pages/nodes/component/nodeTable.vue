@@ -192,7 +192,7 @@
           </span>
           <div v-else-if="props.column.field == 'churn'" class="churn-wrapper">
             <div v-for="(churnItem, index) in rows[props.row.originalIndex].churn" :key="index" class="churn-item">
-              <component :is="churnItem.link ? 'a' : 'a'" :href="churnItem.link" target="_blank">
+              <component :is="churnItem.link ? 'a' : 'a'" :href="churnItem.link" target="_blank" style="height: 1rem;">
                 <v-menu>
                   <component :is="churnItem.icon" class="table-icon" />
                   <template #popper>
