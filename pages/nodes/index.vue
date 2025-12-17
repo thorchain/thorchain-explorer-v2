@@ -946,7 +946,7 @@ export default {
             filteredNodes[index].churn.push({
               name: 'This node is available to be bonded on RUNEBond',
               icon: require('@/assets/images/runebond.svg?inline'),
-              link: `https://runebond.com/nodes/${el.node_address}`,
+              link: `https://app.runebond.com/nodes/${el.node_address}`,
               type: 'runebond',
               minRune: el.runebond.minRune,
               maxRune: el.runebond.maxRune,
@@ -1076,7 +1076,7 @@ export default {
             filteredNodes[i].churn.push({
               name: 'This node is available to be bonded on RUNEBond',
               icon: require('@/assets/images/runebond.svg?inline'),
-              link: `https://runebond.com/nodes/${el.node_address}`,
+              link: `https://app.runebond.com/nodes/${el.node_address}`,
               type: 'runebond',
               minRune: el.runebond.minRune,
               maxRune: el.runebond.maxRune,
@@ -1118,7 +1118,7 @@ export default {
             filteredNodes[index].churn.push({
               name: 'This node is available to be bonded on RUNEBond',
               icon: require('@/assets/images/runebond.svg?inline'),
-              link: `https://runebond.com/nodes/${el.node_address}`,
+              link: `https://app.runebond.com/nodes/${el.node_address}`,
               type: 'runebond',
               minRune: el.runebond.minRune,
               maxRune: el.runebond.maxRune,
