@@ -692,7 +692,7 @@ export default {
     this.ui = setInterval(() => {
       this.getNetworkStatus()
       this.getBurnData()
-    }, 10000)
+    }, 30000)
   },
   destroyed() {
     this.clearIntervalId(this.ui)
@@ -1609,12 +1609,12 @@ export default {
 
       if (+this.network?.nextChurnHeight - +this.chainsHeight.THOR > 500) {
         return blockTime(
-          this.network?.nextChurnHeight - this.chainsHeight?.THOR,
+          this.network?.nextChurnHeight - this.chainsHeight?.data?.THOR ?? 0,
           true
         )
       }
 
-      return `${this.network?.nextChurnHeight - this.chainsHeight?.THOR} Blocks`
+      return `${this.network?.nextChurnHeight - this.chainsHeight?.data?.THOR ?? 0} Blocks`
     },
     formatTendermintBlocks(blocks) {
       const blockJsons = []

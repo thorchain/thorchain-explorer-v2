@@ -200,13 +200,10 @@ export default {
     },
     getChainsHeight() {
       this.$api
-        .getChainsHeight()
-        .then(async ({ data }) => {
-          const chainsHeight = data
-          const thorHeight = (await this.$api.getTHORLastBlock()).data
+        .getTHORLastBlock()
+        .then(({ data }) => {
           this.$store.commit('setChainsHeight', {
-            ...chainsHeight,
-            THOR: thorHeight,
+            THOR: data,
           })
         })
         .catch((e) => console.error(e))
