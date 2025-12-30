@@ -4,7 +4,7 @@
       v-if="row && (type === 'swap' || type === 'switch')"
       :class="['action-cell', { 'no-border': noBorder }]"
     >
-      <span v-for="(ops, i) in row.in" :key="'in-' + i" class="asset-cell" v-tooltip="!showInlineUSD && getInUSD(row, ops)">
+      <span v-for="(ops, i) in row.in" :key="'in-' + i" class="asset-cell" v-tooltip="!showInlineUsd && getInUSD(row, ops)">
         <asset-icon
           :asset="ops.coins[0].asset"
           :height="'1.2rem'"
@@ -15,7 +15,7 @@
             decimalFormat(ops.coins[0].amount / 1e8)
           }}</span>
           <span
-            v-if="getInUSD(row, ops) && showInlineUSD"
+            v-if="getInUSD(row, ops) && showInlineUsd"
             class="asset-usd"
           >
             {{ getInUSD(row, ops) }}
@@ -30,7 +30,7 @@
         v-for="(coin, i) in groupedOutCoins"
         :key="'out-' + i"
         class="asset-cell"
-        v-tooltip="!showInlineUSD && getOutUSD(row, coin)"
+        v-tooltip="!showInlineUsd && getOutUSD(row, coin)"
       >
         <asset-icon
           :asset="coin.asset"
@@ -42,7 +42,7 @@
             decimalFormat(coin.amount / 1e8)
           }}</span>
           <span
-            v-if="getOutUSD(row, coin) && showInlineUSD"
+            v-if="getOutUSD(row, coin) && showInlineUsd"
             class="asset-usd"
           >
             {{ getOutUSD(row, coin) }}
@@ -515,7 +515,7 @@ export default {
       type: Boolean,
       default: false,
     },
-    showInlineUSD: {
+    showInlineUsd: {
       type: Boolean,
       default: false,
     },

@@ -61,7 +61,7 @@
             </nuxt-link>
           </div>
           <div v-else-if="props.column.field === 'action'">
-            <transaction-action :row="props.row"></transaction-action>
+            <transaction-action :row="props.row" :show-inline-usd="showInlineUsd"></transaction-action>
           </div>
           <div
             v-else-if="props.column.field === 'direction'"
@@ -167,6 +167,10 @@ export default {
       default() {
         return []
       },
+    },
+    showInlineUsd: {
+      type: Boolean,
+      default: false,
     },
   },
   data() {

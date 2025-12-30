@@ -18,7 +18,7 @@
           </div>
         </template>
       </Nav>
-      <transactions :txs="swaps" :loading="!swaps" :props="formatProp">
+      <transactions :txs="swaps" :loading="!swaps" :props="formatProp" :show-inline-usd="true">
         <template #volume="{ props }">
           <span class="mono">
             {{ smallBaseAmountFormatWithCur(getVolume(props.row)) }}
