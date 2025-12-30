@@ -465,7 +465,7 @@ import NodeIcon from '~/assets/images/node.svg?inline'
 import WalletIcon from '~/assets/images/wallet.svg?inline'
 import SubtractIcon from '~/assets/images/subtract.svg?inline'
 import StreamIcon from '~/assets/images/stream.svg?inline'
-import { parseMemoToTxType } from '~/utils'
+import { assetFromString, parseMemoToTxType } from '~/utils'
 import Address from '~/components/transactions/Address.vue'
 
 export default {
@@ -530,7 +530,12 @@ export default {
           const coin = ops.coins[0]
           const asset = coin.asset
 
+          const { trade, secure } = assetFromString(asset)
+
           if (grouped[asset]) {
+            if (trade || secure) {
+              return
+            }
             grouped[asset].amount += +coin.amount
           } else {
             grouped[asset] = {
