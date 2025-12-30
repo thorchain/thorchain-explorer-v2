@@ -4,15 +4,23 @@
       v-if="row && (type === 'swap' || type === 'switch')"
       :class="['action-cell', { 'no-border': noBorder }]"
     >
-      <span v-for="(ops, i) in row.in" :key="'in-' + i" class="asset-cell">
+      <span v-for="(ops, i) in row.in" :key="'in-' + i" class="asset-cell" v-tooltip="!showInlineUSD && getInUSD(row, ops)">
         <asset-icon
           :asset="ops.coins[0].asset"
           :height="'1.2rem'"
           :chain-height="'0.8rem'"
         />
-        <span class="asset-name">{{
-          decimalFormat(ops.coins[0].amount / 1e8)
-        }}</span>
+        <div class="asset-info">
+          <span class="asset-name">{{
+            decimalFormat(ops.coins[0].amount / 1e8)
+          }}</span>
+          <span
+            v-if="getInUSD(row, ops) && showInlineUSD"
+            class="asset-usd"
+          >
+            {{ getInUSD(row, ops) }}
+          </span>
+        </div>
       </span>
       <stream-icon v-if="isPendingSwap(row)" class="action-type">
         ~
@@ -22,15 +30,24 @@
         v-for="(coin, i) in groupedOutCoins"
         :key="'out-' + i"
         class="asset-cell"
+        v-tooltip="!showInlineUSD && getOutUSD(row, coin)"
       >
         <asset-icon
           :asset="coin.asset"
           :height="'1.2rem'"
           :chain-height="'0.8rem'"
         ></asset-icon>
-        <span class="asset-name">{{
-          decimalFormat(coin.amount / 1e8)
-        }}</span>
+        <div class="asset-info">
+          <span class="asset-name">{{
+            decimalFormat(coin.amount / 1e8)
+          }}</span>
+          <span
+            v-if="getOutUSD(row, coin) && showInlineUSD"
+            class="asset-usd"
+          >
+            {{ getOutUSD(row, coin) }}
+          </span>
+        </div>
       </span>
       <template v-if="isPendingSwap(row)">
         <span
@@ -498,6 +515,10 @@ export default {
       type: Boolean,
       default: false,
     },
+    showInlineUSD: {
+      type: Boolean,
+      default: false,
+    },
   },
   computed: {
     ...mapGetters({
@@ -570,6 +591,22 @@ export default {
         row.metadata?.addLiquidity?.affiliateAddress ||
         ''
       )
+    },
+    getInUSD(row, ops) {
+      if (!row?.metadata?.swap?.inPriceUSD || !ops?.coins?.[0]) {
+        return null
+      }
+      const inPriceUSD = row.metadata.swap.inPriceUSD
+      const inUSD = (inPriceUSD * ops.coins[0].amount) / 1e8
+      return this.$options.filters.currency(inUSD)
+    },
+    getOutUSD(row, coin) {
+      if (!row?.metadata?.swap?.outPriceUSD || !coin) {
+        return null
+      }
+      const outPriceUSD = row.metadata.swap.outPriceUSD
+      const outUSD = (outPriceUSD * coin.amount) / 1e8
+      return this.$options.filters.currency(outUSD)
     },
   },
 }
@@ -652,6 +689,12 @@ export default {
       width: 1rem;
       fill: var(--sec-font-color);
       margin-right: $space-5;
+    }
+
+    .asset-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
     }
 
     &.yellow-type {
@@ -754,6 +797,13 @@ export default {
   .asset-name {
     font-size: 0.9rem;
     line-height: $font-size-sm;
+  }
+
+  .asset-usd {
+    font-size: $font-size-xxs;
+    color: var(--sec-font-color);
+    opacity: 0.7;
+    line-height: 1;
   }
 
   small.asset-name {
