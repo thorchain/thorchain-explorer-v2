@@ -701,6 +701,13 @@ export default {
       border-style: dashed;
       border-color: #f39d1256;
     }
+
+    cursor: pointer;
+
+    &:hover {
+      background-color: rgba(33, 193, 135, 0.04);
+      border-color: rgba(33, 193, 135, 0.18);
+    }
   }
 
   &.no-border {
