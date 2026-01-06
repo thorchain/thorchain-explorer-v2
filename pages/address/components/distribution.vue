@@ -238,7 +238,7 @@ export default {
       data = data.map((d) => {
         const row = {
           amount: d.amount / 1e8,
-          date: d.date,
+          date: moment.unix(d.date).toISOString(),
         }
 
         if (this.showPriceInterval) {
