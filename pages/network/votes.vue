@@ -44,7 +44,7 @@
           <template #header>
             <div v-if="vote.mimirValue !== undefined" class="mini-bubble">
               Current:
-              <strong style="margin-left: 5px">{{ vote.mimirValue }}</strong>
+              <strong style="margin-left: 5px">{{ getVoteKeyLabel(vote.value, String(vote.mimirValue)) }}</strong>
             </div>
           </template>
           <div class="vote-card">
@@ -58,7 +58,7 @@
                   <div class="progress-overtext">
                     <div class="key-name">
                       <small>Value :</small>
-                      <b>{{ key }}</b>
+                      <b>{{ getVoteKeyLabel(vote.value, key) }}</b>
                     </div>
                     <div class="key-name">
                       <span
@@ -317,7 +317,7 @@ export default {
           recentVotes.push({
             nodeAddress: address,
             voteValue: vote.value,
-            value: key,
+            value: this.getVoteKeyLabel(vote.value, key),
             date: date / 1e6,
           })
         }
@@ -345,6 +345,22 @@ export default {
         '#f1c40f',
       ]
       return colors[+key % colors.length]
+    },
+    getVoteKeyLabel(voteValue, key) {
+      if (voteValue === 'SOL-RPC-PROVIDER') {
+        const providerMap = {
+          '1': 'Self Hosted',
+          '2': 'Liquify',
+          '3': 'QuickNode',
+          '4': 'Alchemy',
+          '5': 'Chainstack',
+          '6': 'Ankr',
+          '7': 'Blockdaemon',
+          '8': 'Helius',
+        }
+        return providerMap[key] || key
+      }
+      return key
     },
     updateStatsDetails() {
       this.generalStatsDetails = [
