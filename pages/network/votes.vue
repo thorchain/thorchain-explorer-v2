@@ -68,11 +68,11 @@
                         Active
                       </span>
                       <b>{{ o.addresses.length }}</b>
-                      <small>/ {{ votesRequired }}</small>
+                      <small>/ {{ getDisplayRequired(vote.value) }}</small>
                     </div>
                   </div>
                   <progress-bar
-                    :width="(o.addresses.length * 100) / votesRequired"
+                    :width="getProgressWidth(vote.value, o.addresses.length)"
                     height="8px"
                   />
                 </div>
@@ -349,18 +349,37 @@ export default {
     getVoteKeyLabel(voteValue, key) {
       if (voteValue === 'SOL-RPC-PROVIDER') {
         const providerMap = {
-          '1': 'Self Hosted',
-          '2': 'Liquify',
-          '3': 'QuickNode',
-          '4': 'Alchemy',
-          '5': 'Chainstack',
-          '6': 'Ankr',
-          '7': 'Blockdaemon',
-          '8': 'Helius',
+          '1': '(1) Self Hosted',
+          '2': '(2) Liquify',
+          '3': '(3) QuickNode',
+          '4': '(4) Alchemy',
+          '5': '(5) Chainstack',
+          '6': '(6) Ankr',
+          '7': '(7) Blockdaemon',
+          '8': '(8) Helius',
         }
         return providerMap[key] || key
       }
       return key
+    },
+    getDisplayRequired(voteValue) {
+      if (voteValue === 'SOL-RPC-PROVIDER') {
+        return Math.floor(this.activeNodes.length * 0.25)
+      }
+      return this.votesRequired
+    },
+    getProgressWidth(voteValue, count) {
+      if (!this.activeNodes.length || !this.votesRequired) {
+        return 0
+      }
+
+      if (voteValue === 'SOL-RPC-PROVIDER') {
+        const maxCount = Math.floor(this.activeNodes.length * 0.25)
+        const clampedCount = Math.min(count, maxCount)
+        return (clampedCount * 100) / maxCount
+      }
+
+      return (count * 100) / this.votesRequired
     },
     updateStatsDetails() {
       this.generalStatsDetails = [
