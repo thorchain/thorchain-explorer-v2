@@ -112,6 +112,7 @@ import sendIcon from '~/assets/images/send.svg?inline'
 import alertIcon from '~/assets/images/alert.svg?inline'
 import receiveIcon from '~/assets/images/receive.svg?inline'
 import { AssetImage } from '~/classes/assetImage'
+import { isScamAddress } from '~/const/scam-addresses'
 
 export default {
   components: {
@@ -284,6 +285,10 @@ export default {
           t.out?.find((e) => !e.affiliate && e.address)?.address || ''
         const direction = this.getDirection(fromAddr, toAddr)
 
+        const txIsScam =
+          suspiciousTxs.includes(t.in.find((e) => e.txID)?.txID) ||
+          isScamAddress(fromAddr) ||
+          isScamAddress(toAddr)
         actions.push({
           ...t,
           hash:
@@ -292,7 +297,7 @@ export default {
           from: fromAddr,
           to: toAddr,
           direction,
-          isScam: suspiciousTxs.includes(t.in.find((e) => e.txID)?.txID),
+          isScam: txIsScam,
         })
       }
 
@@ -344,6 +349,7 @@ export default {
 .scam-disabled {
   opacity: 0.2;
 }
+
 .loading {
   height: 10rem;
   align-items: center;

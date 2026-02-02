@@ -1,6 +1,10 @@
 <template>
   <page class="address-container">
     <div class="address-section">
+      <div v-if="isScamAddress" class="scam-warning">
+        <alert-icon class="scam-warning-icon" />
+        <span>This address has been reported as a scam.</span>
+      </div>
       <div class="left-section">
         <div class="address-header">
           <Avatar :name="address" />
@@ -253,6 +257,9 @@ import Pools from './components/pools.vue'
 import Bonds from './components/bonds.vue'
 import Distribution from './components/distribution.vue'
 import { formatAsset, assetFromString } from '~/utils'
+import { isScamAddress as checkScamAddress } from '~/const/scam-addresses'
+import alertIcon from '~/assets/images/alert.svg?inline'
+
 export default {
   components: {
     Thorname,
@@ -262,6 +269,7 @@ export default {
     Bonds,
     Distribution,
     advancedFilter,
+    alertIcon,
   },
   data() {
     return {
@@ -317,6 +325,9 @@ export default {
     }
   },
   computed: {
+    isScamAddress() {
+      return checkScamAddress(this.address)
+    },
     hasBalances() {
       return (
         this.otherBalances &&
@@ -733,6 +744,30 @@ export default {
     gap: 8px;
     text-overflow: ellipsis;
     overflow: hidden;
+  }
+
+  .scam-warning {
+    flex: 0 0 100%;
+    order: -1;
+    display: flex;
+    align-items: center;
+    gap: $space-8;
+    margin-bottom: $space-8;
+    padding: $space-8 $space-12;
+    background-color: rgba(var(--bs-warning-rgb), 0.15);
+    border: 1px solid rgba(var(--bs-warning-rgb), 0.5);
+    border-radius: $radius-sm;
+    font-size: $font-size-sm;
+    color: var(--sec-font-color);
+    width: 100%;
+    box-sizing: border-box;
+
+    .scam-warning-icon {
+      flex-shrink: 0;
+      width: 1.25rem;
+      height: 1.25rem;
+      fill: rgb(var(--bs-warning-rgb));
+    }
   }
 
   .address-value {
