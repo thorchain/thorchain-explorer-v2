@@ -14,7 +14,7 @@
     </div>
     <div class="card-body">
       <div class="info-item timer">
-        <span>Remaning Time</span>
+        <span>Remaining Times</span>
         <strong class="mono">
           {{ streamingDetail.remIntervalSec }}
         </strong>
@@ -69,7 +69,7 @@
         </span>
       </div>
       <span class="info-item">
-        <span>Remained Block</span>
+        <span>Remaining Block(s)</span>
         <span>
           {{ streamingDetail.remInterval }}
           <span style="color: var(--font-color); font-size: 0.75rem">
@@ -190,7 +190,7 @@ export default {
         }
 
         if (count < quantity) {
-          this.streamingDetail.status = 'On Going'
+          this.streamingDetail.status = 'Ongoing'
         } else {
           this.streamingDetail.status = 'Done'
         }
