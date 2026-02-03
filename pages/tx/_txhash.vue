@@ -1740,6 +1740,7 @@ export default {
       return {
         cards: {
           title: onlyRefund ? 'refunded Swap' : 'swap',
+          labels: onlyRefund ? [] : isRefund ? ['Refund'] : [],
           in: [
             {
               asset: inAsset,

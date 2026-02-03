@@ -174,7 +174,7 @@ import { mapGetters } from 'vuex'
 import SendIcon from '~/assets/images/arrow-right.svg?inline'
 import WarningIcon from '~/assets/images/warning.svg?inline'
 import RefreshIcon from '~/assets/images/refresh.svg?inline'
-import CheckIcon from '~/assets/images/check.svg?inline'
+import CheckIcon from '~/assets/images/checkbox.svg?inline'
 import ClockIcon from '~/assets/images/clock.svg?inline'
 
 export default {
@@ -237,11 +237,13 @@ export default {
         items.push(this.statusBubble)
       }
       this.labels.forEach((l) => {
+        const isRefund = String(l).toLowerCase() === 'refund'
+        const labelColorClass = isRefund ? 'bubble-pill--yellow' : 'bubble-pill--grey'
         items.push({
           label: l,
           type: 'label',
-          colorClass: 'bubble-pill--grey',
-          icon: null,
+          colorClass: labelColorClass,
+          icon: isRefund ? RefreshIcon : null,
         })
       })
       return items
@@ -364,7 +366,7 @@ $border-size: 2px;
       align-items: center;
       gap: 6px;
       padding: $space-5 $space-10;
-      border-radius: $radius-full;
+      border-radius: $radius-lg;
       font-size: $font-size-sm;
       font-weight: 600;
       line-height: 1;
@@ -373,7 +375,7 @@ $border-size: 2px;
       color: var(--sec-font-color);
       margin-left: 0;
       white-space: nowrap;
-      transition: margin-left 0.25s ease, clip-path 0.25s ease;
+      transition: margin-left 0.25s ease, clip-path 0.25s ease, filter 0.25s ease;
 
       &:first-child {
         z-index: 3;
@@ -383,17 +385,19 @@ $border-size: 2px;
       &:nth-child(2) {
         z-index: 2;
         clip-path: inset(0 0 0 50%);
+        filter: brightness(0.6);
       }
 
       &:nth-child(3),
       &:nth-child(n + 3) {
         z-index: 1;
         clip-path: inset(0 0 0 50%);
+        filter: brightness(0.6);
       }
 
       &:not(:first-child) {
         /* Overlap so ~10% of each pill remains visible */
-        margin-left: -50%;
+        margin-left: -80px;
       }
 
       .bubble-pill__icon {
@@ -408,21 +412,27 @@ $border-size: 2px;
       }
 
       &.bubble-pill--blue {
+        border-color: color-mix(in srgb, var(--highlight) 50%, var(--border-color));
         background-color: color-mix(in srgb, var(--highlight) 10%, var(--card-bg-color));
       }
       &.bubble-pill--green {
+        border-color: color-mix(in srgb, var(--green) 50%, var(--border-color));
         background-color: color-mix(in srgb, var(--green) 10%, var(--card-bg-color));
       }
       &.bubble-pill--yellow {
+        border-color: color-mix(in srgb, #f39c12 50%, var(--border-color));
         background-color: color-mix(in srgb, #f39c12 10%, var(--card-bg-color));
       }
       &.bubble-pill--red {
+        border-color: color-mix(in srgb, var(--red) 50%, var(--border-color));
         background-color: color-mix(in srgb, var(--red) 10%, var(--card-bg-color));
       }
       &.bubble-pill--alert {
+        border-color: color-mix(in srgb, #9b59b6 50%, var(--border-color));
         background-color: color-mix(in srgb, #9b59b6 10%, var(--card-bg-color));
       }
       &.bubble-pill--grey {
+        border-color: color-mix(in srgb, var(--highlight) 50%, var(--border-color));
         background-color: color-mix(in srgb, var(--highlight) 10%, var(--card-bg-color));
       }
     }
@@ -430,6 +440,7 @@ $border-size: 2px;
     &.bubble-stack--expanded .bubble-pill {
       margin-left: 0;
       clip-path: inset(0 0 0 0);
+      filter: none;
 
       &:not(:first-child) {
         margin-left: 6px;
