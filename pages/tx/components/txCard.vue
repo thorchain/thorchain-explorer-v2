@@ -180,7 +180,7 @@ import { mapGetters } from 'vuex'
 import SendIcon from '~/assets/images/arrow-right.svg?inline'
 import WarningIcon from '~/assets/images/warning.svg?inline'
 import RefreshIcon from '~/assets/images/refresh.svg?inline'
-import CheckIcon from '~/assets/images/checkbox.svg?inline'
+import CheckIcon from '~/assets/images/square-checkmark.svg?inline'
 import ClockIcon from '~/assets/images/clock.svg?inline'
 import Avatar from '~/components/Avatar.vue'
 
