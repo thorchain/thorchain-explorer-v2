@@ -481,12 +481,15 @@ export default {
         return
       }
 
-      // Default: one card per action (createAbstractState)
+      // Default: one card per action (createAbstractState). Skip contract
+      // actions here; appendContractCards adds proper "Contract Event" cards.
       const finalCards = []
       for (let i = 0; i < midgardAction?.actions?.length; i++) {
+        const action = midgardAction.actions[i]
+        if (action?.type === 'contract') continue
         const { cards, accordions } = this.createAbstractState(
           thorStatus,
-          midgardAction.actions[i],
+          action,
           thorTx,
           memo
         )
