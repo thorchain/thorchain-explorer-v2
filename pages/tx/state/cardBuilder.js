@@ -9,6 +9,7 @@ import { isInternalTx } from '~/utils'
 export function buildCardDetails(cardBase, ctx) {
   return {
     title: cardBase.title,
+    labels: cardBase.labels ?? [],
     overall: {
       in: cardBase.in?.map((a) => ({
         asset: a?.asset,
