@@ -46,6 +46,9 @@
             <div v-if="o.asset" class="tx-asset">
               <AssetIcon :asset="o.asset" :height="'2rem'" />
             </div>
+            <div v-else-if="o.address" class="tx-asset tx-asset--avatar">
+              <Avatar :name="o.address" />
+            </div>
             <div class="inbound-info">
               <template v-if="o.text">
                 <span class="mono sec-color">{{ o.text }}</span>
@@ -137,6 +140,9 @@
             <div v-if="o.asset" class="tx-asset">
               <AssetIcon :asset="o.asset" :height="'2rem'" />
             </div>
+            <div v-else-if="o.address" class="tx-asset tx-asset--avatar">
+              <Avatar :name="o.address" />
+            </div>
             <div v-else class="tx-asset">
               <component
                 :is="o.icon"
@@ -176,6 +182,7 @@ import WarningIcon from '~/assets/images/warning.svg?inline'
 import RefreshIcon from '~/assets/images/refresh.svg?inline'
 import CheckIcon from '~/assets/images/checkbox.svg?inline'
 import ClockIcon from '~/assets/images/clock.svg?inline'
+import Avatar from '~/components/Avatar.vue'
 
 export default {
   components: {
@@ -183,7 +190,8 @@ export default {
     WarningIcon,
     RefreshIcon,
     CheckIcon,
-    ClockIcon
+    ClockIcon,
+    Avatar,
   },
   props: ['txData'],
   data() {
@@ -479,6 +487,13 @@ $border-size: 2px;
         .pad-icon {
           padding: $space-3;
           fill: var(--bg-color);
+        }
+
+        &.tx-asset--avatar {
+          ::v-deep .avatar-container {
+            width: 2rem;
+            height: 2rem;
+          }
         }
       }
 
