@@ -141,9 +141,12 @@
       <!-- events accordion -->
       <slot name="accordion-events" />
 
-      <!-- outbound accordion -->
+      <!-- outbound accordions (support multiple outbounds) -->
       <slot name="accordion-out-0" />
       <slot name="accordion-out-1" />
+      <slot name="accordion-out-2" />
+      <slot name="accordion-out-3" />
+      <slot name="accordion-out-4" />
     </div>
   </div>
 </template>
