@@ -17,7 +17,9 @@
       <template v-if="cards && cards.length > 0">
         <tx-card v-for="(c, i) in cards" :key="i" :tx-data="c.details">
           <template
-            v-for="(s, j) in c.accordions.filter((c) => c.data.title && !c.data.hide)"
+            v-for="(s, j) in c.accordions.filter(
+              (c) => c.data.title && !c.data.hide
+            )"
             #[s.name]
           >
             <accordion
@@ -62,12 +64,16 @@ import { orderBy, groupBy, sumBy } from 'lodash'
 import { mapGetters } from 'vuex'
 import streamingSwap from './components/streamingSwap.vue'
 import txCard from './components/txCard.vue'
+import { createCard as buildCard } from './state/cardBuilder.js'
+import {
+  BUILDERS as BUILDERS_MODULE,
+  createFailedState as createFailedStateBuilder,
+} from './state/builders.js'
 import DisconnectIcon from '~/assets/images/disconnect.svg?inline'
 import {
   assetFromString,
   assetToTrade,
   assetToSecure,
-  isInternalTx,
   tradeToAsset,
   assetToString,
   securedToAsset,
@@ -103,6 +109,9 @@ export default {
       quote: undefined,
       height: undefined,
     }
+  },
+  head: {
+    title: 'THORChain Network Explorer | TX',
   },
   computed: {
     ...mapGetters({
@@ -312,551 +321,46 @@ export default {
 
       return !inboundFinalised || !actionFinalised || !outboundFinalised
     },
+    getBuilderContext() {
+      return {
+        parseMemo: this.parseMemo.bind(this),
+        parseMemoAsset: this.parseMemoAsset.bind(this),
+        pools: this.pools,
+      }
+    },
+    getCardContext() {
+      return {
+        amountToUSD: this.amountToUSD.bind(this),
+        formatAddress: this.formatAddress.bind(this),
+        showAsset: this.showAsset.bind(this),
+        formatCurrency: this.formatCurrency.bind(this),
+        formatSmallCurrency: this.formatSmallCurrency.bind(this),
+        percentageFormat: this.percentageFormat.bind(this),
+        baseAmountFormatOrZero: this.baseAmountFormatOrZero.bind(this),
+        normalFormat: this.normalFormat.bind(this),
+        getInboundStages: this.getInboundStages.bind(this),
+        getOutboundStages: this.getOutboundStages.bind(this),
+        chainsHeight: this.chainsHeight,
+        blockSeconds: this.blockSeconds.bind(this),
+        height: this.height,
+        runePrice: this.runePrice,
+        pools: this.pools,
+        pluralize: (value, singular, options) =>
+          this.$options.filters.pluralize(value, singular, options),
+      }
+    },
     createCard(cardBase, accordions) {
-      // What to show in the cards
-      const ret = {
-        details: {
-          title: cardBase.title,
-          overall: {
-            in: cardBase.in?.map((a) => ({
-              asset: a?.asset,
-              amount: a?.amount,
-              amountUSD:
-                a?.amountUSD ??
-                this.amountToUSD(a?.asset, a?.amount, this.pools),
-              filter: a?.filter,
-              text: a?.text,
-              icon: a?.icon,
-              address: a?.address,
-              class: a?.class,
-            })),
-            middle: {
-              pending: cardBase.middle?.pending,
-              send: cardBase.middle?.send ?? false,
-              fail: cardBase.middle?.fail ?? false,
-              refund: cardBase.middle?.refund ?? false,
-            },
-            out: cardBase.out?.map((a) => ({
-              asset: a?.asset,
-              amount: a?.amount,
-              amountUSD:
-                a?.amountUSD ??
-                this.amountToUSD(a?.asset, a?.amount, this.pools),
-              text: a?.text,
-              icon: a?.icon,
-              address: a?.address,
-              borderColor: a?.borderColor,
-              filter: a?.filter,
-              class: a?.class,
-            })),
-          },
-        },
-        accordions: [],
-      }
-
-      if (!accordions) {
-        return
-      }
-
-      if (accordions.in) {
-        accordions.in.forEach((a, i) => {
-          const inboundStages = this.getInboundStages(a)
-          const accordionIn = {
-            name: `accordion-in-${i}`,
-            data: {
-              title: a?.type ?? 'Inbound',
-              done: a?.done,
-              pending: !a?.done,
-              remainingTime: a.confirmationRemainingSeconds,
-              stacks: [
-                {
-                  key: 'From',
-                  value: a?.from,
-                  is: true,
-                  asset: a?.asset,
-                  type: 'address',
-                  formatter: this.formatAddress,
-                },
-                {
-                  key: 'Hash',
-                  value: a?.txid,
-                  is: true,
-                  asset: a?.asset,
-                  type: 'hash',
-                  formatter: this.formatAddress,
-                },
-                {
-                  key: 'Pre confirmation Count',
-                  value: [
-                    {
-                      text: `${a.preConfirmationCount} Nodes`,
-                      class: a.inboundObserved ? 'success' : 'yellow',
-                    },
-                  ],
-                  type: 'bubble',
-                  is: a.preConfirmationCount > 0,
-                },
-                {
-                  key: 'Inbound Confirmation Remaining',
-                  value: moment
-                    .duration(a.confirmationRemainingSeconds, 'seconds')
-                    .humanize(),
-                  is: a.confirmationRemainingSeconds > 0,
-                },
-                {
-                  key: 'Gas',
-                  value:
-                    `${a?.gas / 1e8} ${this.showAsset(a?.gasAsset)}` +
-                    (this.pools
-                      ? ` (${this.formatCurrency(this.amountToUSD(a?.gasAsset, a?.gas, this.pools))})`
-                      : ''),
-                  is: a?.gas && a?.gasAsset,
-                },
-                {
-                  key: 'Timestamp',
-                  value: `${a.timestamp?.format(
-                    'L LT'
-                  )} (${a.timestamp?.fromNow()})`,
-                  is: a.timestamp && a.timestamp?.isValid(),
-                },
-                {
-                  key: 'Block Height',
-                  value: `${a.height}`,
-                  is: a?.height,
-                  formatter: this.normalFormat,
-                },
-                {
-                  key: 'Inbound Stage',
-                  value: inboundStages,
-                  type: 'bubble',
-                  is: inboundStages.length > 0,
-                },
-              ],
-            },
-          }
-          ret.accordions.push(accordionIn)
-        })
-      }
-
-      if (accordions.action) {
-        ret.details.interface = ''
-        if (accordions.action.affiliateName) {
-          const affiliates = accordions.action.affiliateName
-          ret.details.interface = affiliates
-        }
-
-        let affiliateOutAmount
-        if (
-          accordions.action.affiliateOut &&
-          accordions.action.affiliateOut.length > 0
-        ) {
-          affiliateOutAmount = accordions.action.affiliateOut.reduce(
-            (a, b) => a + +b.coins[0].amount,
-            0
-          )
-        }
-
-        let liquidityFeeName = 'Liquidity Fee'
-        let totalLiquidityFees = accordions.action?.liquidityFee
-        if (
-          accordions.action.streaming?.count <
-          accordions.action.streaming?.quantity
-        ) {
-          liquidityFeeName = 'Liquidity Fee (est)'
-          const one =
-            +accordions.action?.liquidityFee /
-            accordions.action.streaming?.count
-          totalLiquidityFees +=
-            one *
-            (+accordions.action.streaming?.quantity -
-              +accordions.action.streaming?.count)
-        }
-
-        const blockDuration = this.chainsHeight?.THOR - this.height
-
-        const remainingTime =
-          (+accordions?.action?.streaming?.quantity *
-            +accordions.action.streaming?.interval -
-            blockDuration) *
-          6
-
-        const totalTime =
-          +accordions?.action?.streaming?.quantity *
-          +accordions.action.streaming?.interval *
-          6
-
-        const accordionAction = {
-          name: 'accordion-action',
-          data: {
-            title: accordions.action?.type ?? undefined,
-            remainingTime,
-            totalTime,
-            pending: !accordions.action?.done,
-            done: accordions.action?.done,
-            showAtFirst: accordions.action?.showAtFirst,
-            error: accordions.action?.error,
-            attributes: accordions?.action?.attributes,
-            stacks: [
-              {
-                key: 'Timestamp',
-                value: `${accordions.action?.timeStamp?.format(
-                  'L LT'
-                )} (${accordions.action?.timeStamp?.fromNow()})`,
-                is: accordions.action?.timeStamp?.isValid(),
-              },
-              {
-                key: 'Quantity',
-                value: `${accordions.action.streaming?.quantity} Swaps`,
-                is: accordions.action.streaming?.quantity,
-              },
-              {
-                key: 'Rate',
-                value: accordions.action.rate,
-                is: accordions.action.rate && accordions.action.rate.length > 0,
-                type: 'rate',
-              },
-              {
-                key: 'Stream',
-                value: `${accordions.action.streaming?.count} / ${accordions.action.streaming?.quantity}`,
-                is: accordions.action.streaming?.count,
-              },
-              {
-                key: 'Interval',
-                value: `${moment
-                  .duration(accordions.action.streaming?.interval * 6, 's')
-                  .as('seconds')} secs (${this.$options.filters.pluralize(
-                  accordions.action?.streaming?.interval,
-                  'Block',
-                  { includeNumber: true }
-                )})`,
-                is: accordions.action.streaming?.interval,
-              },
-              {
-                key: liquidityFeeName,
-                value: `${
-                  totalLiquidityFees / 1e8
-                } RUNE (${this.formatSmallCurrency(
-                  totalLiquidityFees * this.runePrice
-                )})`,
-                is: accordions.action.liquidityFee,
-              },
-              {
-                key: 'Swap Slip',
-                value: `${this.percentageFormat(accordions.action.swapSlip / 1e4, 2)}`,
-                is: accordions.action.swapSlip,
-              },
-              {
-                key: 'Interface Fee',
-                value: `${
-                  affiliateOutAmount / 1e8
-                } RUNE (${this.formatSmallCurrency(
-                  affiliateOutAmount * this.runePrice
-                )})`,
-                is:
-                  accordions.action.affiliateOut &&
-                  accordions.action.affiliateOut.length > 0,
-              },
-              {
-                key: 'Limit',
-                value:
-                  accordions.action.limit > 0
-                    ? `${accordions.action.limit / 1e8} ${this.showAsset(
-                        accordions.action.limitAsset
-                      )}`
-                    : 'No target limit',
-                is: accordions.action.limit,
-              },
-              {
-                key: 'Liquidity Units',
-                value: `${accordions.action.liquidityUnits}`,
-                is: accordions.action.liquidityUnits,
-              },
-              {
-                key: 'Units',
-                value: `${accordions.action.units}`,
-                is: accordions.action.units,
-              },
-              {
-                key: 'Affiliate Name',
-                value: `${accordions.action.affiliateName}`,
-                is: accordions.action.affiliateName,
-              },
-              {
-                key: 'Affiliate Basis',
-                value: `${accordions.action.affiliateFee}`,
-                is: accordions.action.affiliateFee,
-              },
-              {
-                key: 'Block Height',
-                value: `${accordions.action?.height}`,
-                is: accordions.action?.height,
-                formatter: this.normalFormat,
-              },
-              {
-                key: 'Memo',
-                value: accordions.action?.memo,
-                is: accordions.action?.memo,
-              },
-              {
-                key: 'Refund Reason',
-                value: accordions.action?.refundReason,
-                is: accordions.action?.refundReason,
-              },
-              // Bond
-              {
-                key: 'Node Address',
-                value: accordions.action?.nodeAddress,
-                is: accordions.action?.nodeAddress,
-                type: 'address',
-                formatter: this.formatAddress,
-              },
-              {
-                key: 'Bond Provider',
-                value: accordions.action?.provider,
-                is: accordions.action?.provider,
-                type: 'address',
-                formatter: this.formatAddress,
-              },
-              // THORName
-              {
-                key: 'THORName',
-                value: accordions.action?.thorname,
-                is: accordions.action?.thorname,
-              },
-              {
-                key: 'Address',
-                value: accordions.action?.address,
-                is: accordions.action?.address,
-                type: 'address',
-                formatter: this.formatAddress,
-              },
-              {
-                key: 'Owner',
-                value: accordions.action?.owner,
-                is: accordions.action?.owner,
-                type: 'address',
-                formatter: this.formatAddress,
-              },
-              {
-                key: 'Expire',
-                value: accordions.action?.expire,
-                is: accordions.action?.expire,
-                formatter: this.normalFormat,
-              },
-              {
-                key: 'Registration Fee',
-                value: `${accordions.action?.registrationFee}`,
-                is: accordions.action?.registrationFee,
-              },
-              // Failed Deposit
-              {
-                key: 'Reason',
-                value: `${accordions.action?.reason}`,
-                is: accordions.action?.reason,
-              },
-              {
-                key: 'Code',
-                value: `${accordions.action?.code}`,
-                is: accordions.action?.code,
-              },
-              // Limit swap
-              {
-                key: 'Swap Limit',
-                value: `${accordions.action?.swapLimit}`,
-                is: accordions.action?.swapLimit,
-              },
-              {
-                key: 'Swap Expire',
-                value: `${accordions.action?.ttl} Blocks`,
-                is: accordions.action?.ttl,
-              },
-            ],
-          },
-        }
-        if (accordions.action?.type === 'send') {
-          accordionAction?.data?.stacks.push(
-            {
-              key: 'Hash',
-              value: accordions.action?.txid,
-              is: accordions.action?.txid,
-              type: 'hash',
-              formatter: this.formatAddress,
-            },
-            {
-              key: 'From',
-              value: accordions.action?.from,
-              is: accordions.action?.from,
-              type: 'address',
-              formatter: this.formatAddress,
-            },
-            {
-              key: 'To',
-              value: accordions.action?.to,
-              is: accordions.action?.to,
-              type: 'address',
-              formatter: this.formatAddress,
-            },
-            {
-              key: 'Gas',
-              value:
-                `${accordions.action?.gas / 1e9} ${this.showAsset(accordions.action?.gasAsset)}` +
-                (this.pools
-                  ? ` (${this.formatCurrency(this.amountToUSD(accordions.action?.gasAsset, accordions.action?.gas, this.pools))})`
-                  : ''),
-              is: accordions.action?.gas && accordions.action?.gasAsset,
-            }
-          )
-        }
-        ret.accordions.push(accordionAction)
-      }
-
-      if (accordions?.events) {
-        const events = {
-          name: 'accordion-events',
-          data: {
-            title: 'Events',
-            events: accordions?.events,
-            pending: false,
-            done: true,
-            error: false,
-          },
-        }
-
-        ret.accordions.push(events)
-      }
-
-      if (accordions.out) {
-        let showAssets = false
-        if (accordions.out.length > 1) {
-          showAssets = true
-        }
-
-        accordions.out.forEach((a, i) => {
-          const outboundStages = this.getOutboundStages(a)
-          let delay = 0
-          if (a.outboundETA > this.chainsHeight?.THOR) {
-            delay =
-              this.blockSeconds('THOR') *
-              (+a.outboundETA - +this.chainsHeight?.THOR)
-          }
-          if (delay === 0) {
-            delay = a.outboundDelayRemaining
-          }
-
-          const accordionOut = {
-            name: `accordion-out-${i}`,
-            data: {
-              title: 'Outbound',
-              done: a.done,
-              pending: !a?.done,
-              remainingTime: delay,
-              totalTime: delay,
-              asset: showAssets ? a?.asset : undefined,
-              hide: a.hide,
-              stacks: [
-                {
-                  key: 'Destination',
-                  value: a?.to,
-                  is: a?.to,
-                  asset: a?.asset,
-                  type: 'address',
-                  formatter: this.formatAddress,
-                },
-                {
-                  key: 'Hash',
-                  value: a?.txid,
-                  is: !isInternalTx(a?.txid),
-                  asset: a?.asset,
-                  type: 'hash',
-                  formatter: this.formatAddress,
-                },
-                {
-                  key: 'Executed at',
-                  value: a.height,
-                  formatter: this.normalFormat,
-                  is: a.height,
-                },
-                {
-                  key: 'Gas',
-                  value: `${this.baseAmountFormatOrZero(
-                    a.gas
-                  )} ${this.showAsset(a.gasAsset)} (${this.formatCurrency(
-                    this.amountToUSD(a?.gasAsset, a?.gas, this.pools)
-                  )})`,
-                  is: a.fees?.length === 0 && a?.gas && a?.gasAsset,
-                },
-                {
-                  key: 'Outbound Est.',
-                  value: moment
-                    .duration(
-                      this.blockSeconds('THOR') *
-                        (+this.chainsHeight?.THOR - +a.outboundETA),
-                      'seconds'
-                    )
-                    .humanize(),
-                  is: a.outboundETA > this.chainsHeight?.THOR,
-                },
-                {
-                  key: 'Outbound Delay Est.',
-                  value: moment
-                    .duration(a.outboundDelayRemaining, 'seconds')
-                    .humanize(),
-                  is: a.outboundDelayRemaining,
-                },
-                {
-                  key: 'Outbound Delay Est.',
-                  value: [
-                    {
-                      text: 'Scheduled Passed',
-                      class: 'danger',
-                    },
-                  ],
-                  type: 'bubble',
-                  is:
-                    a.outboundETA > 0 &&
-                    a.outboundETA < this.chainsHeight?.THOR,
-                },
-                {
-                  key: 'Outbound Stage',
-                  value: outboundStages,
-                  type: 'bubble',
-                  is: outboundStages.length > 0,
-                },
-              ],
-            },
-          }
-          if (a.fees?.length > 0) {
-            accordionOut.data?.stacks?.push(
-              ...a.fees.map((f, j) => ({
-                key: 'Outbound Fee',
-                value:
-                  `${f / 1e8} ${this.showAsset(a.feeAssets[j])}` +
-                  (this.pools
-                    ? ` (${this.formatCurrency(
-                        this.amountToUSD(a.feeAssets[j], f, this.pools)
-                      )})`
-                    : ''),
-                is: f,
-              }))
-            )
-          }
-          ret.accordions.push(accordionOut)
-        })
-      }
-
-      return ret
+      return buildCard(cardBase, accordions, this.getCardContext())
     },
     async createTxState(midgardAction, thorTx, thorStatus, thorHeader, pools) {
-      // Push as much as data gathered along all endpoint into cards!
-      // Actions accordion, inbound accordion, outbound accordion
-
-      // Parse by Memo like thornode
       const memo = this.parseMemo(thorTx?.tx?.tx?.memo)
+
       if (memo.type === 'outbound') {
         this.gotoTx(memo.hash)
         return
       }
 
+      // Swap: fetch quote when pending, then build state
       if (memo.type === 'swap') {
         const inAsset = this.parseMemoAsset(
           thorStatus?.tx.coins[0].asset,
@@ -864,13 +368,7 @@ export default {
         )
         const inAmount = parseInt(thorStatus?.tx.coins[0].amount)
         const outAsset = this.parseMemoAsset(memo.asset, this.pools)
-
-        // get quote
-        const swapAction = midgardAction?.actions?.find(
-          (a) => a.type === 'swap'
-        )
-        const affiliateBasis = memo.fee
-        const affiliateFee = affiliateBasis || 0
+        const affiliateFee = memo.fee || 0
         if (thorStatus?.stages.swap_status?.pending && !this.quote) {
           try {
             const { data: quoteData } = await this.$api.getQuote({
@@ -890,7 +388,6 @@ export default {
             console.error(error)
           }
         }
-
         const { cards, accordions } = await this.createSwapState(
           thorStatus,
           thorTx,
@@ -899,7 +396,11 @@ export default {
           thorHeader
         )
         this.$set(this, 'cards', [this.createCard(cards, accordions)])
-      } else if (memo.type === 'add') {
+        return
+      }
+
+      // Add liquidity (possibly with asymmetry second card)
+      if (memo.type === 'add') {
         const finalCards = []
         const { cards, accordions } = this.createAddLiquidityState(
           thorStatus,
@@ -910,204 +411,106 @@ export default {
         finalCards.push(this.createCard(cards, accordions))
         if (memo.asymmetry) {
           const ts = await this.getOtherActionHash(midgardAction, thorStatus)
-          if (ts && ts.tx) {
+          if (ts?.tx) {
             const m = this.parseMemo(ts.tx?.memo)
-            const { cards, accordions } = this.createAddLiquidityState(
+            const addState = this.createAddLiquidityState(
               ts,
               midgardAction,
               thorTx,
               m
             )
-            finalCards.push(this.createCard(cards, accordions))
+            finalCards.push(
+              this.createCard(addState.cards, addState.accordions)
+            )
           }
         }
         this.$set(this, 'cards', finalCards)
-      } else if (memo.type === 'withdraw') {
-        const { cards, accordions } = this.createRemoveLiquidityState(
-          thorStatus,
-          midgardAction,
-          thorTx,
-          memo
-        )
-        this.$set(this, 'cards', [this.createCard(cards, accordions)])
-      } else if (memo.type === 'runePoolWithdraw') {
-        const { cards, accordions } = this.createRunePoolWithdraw(
-          thorStatus,
-          midgardAction,
-          thorTx,
-          memo
-        )
-        this.$set(this, 'cards', [this.createCard(cards, accordions)])
-      } else if (memo.type === 'runePoolDeposit') {
-        const { cards, accordions } = this.createRunePoolDeposit(
-          thorStatus,
-          midgardAction,
-          thorTx,
-          memo
-        )
-        this.$set(this, 'cards', [this.createCard(cards, accordions)])
-      } else if (
-        memo.type === 'tradeWithdraw' ||
-        memo.type === 'secureWithdraw'
-      ) {
-        const { cards, accordions } = this.createTradeWithdrawState(
-          thorStatus,
-          midgardAction,
-          thorTx,
-          memo
-        )
-        this.$set(this, 'cards', [this.createCard(cards, accordions)])
-      } else if (
-        memo.type === 'tradeDeposit' ||
-        memo.type === 'secureDeposit'
-      ) {
-        const { cards, accordions } = this.createTradeDepositState(
-          thorStatus,
-          midgardAction,
-          thorTx,
-          memo
-        )
-        this.$set(this, 'cards', [this.createCard(cards, accordions)])
-      } else if (memo.type === 'bond') {
-        const { cards, accordions } = this.createBondState(
-          thorStatus,
-          midgardAction,
-          thorTx,
-          memo
-        )
-        this.$set(this, 'cards', [this.createCard(cards, accordions)])
-      } else if (memo.type === 'unbound') {
-        const { cards, accordions } = this.createUnbondState(
-          thorStatus,
-          midgardAction,
-          thorTx,
-          memo
-        )
-        this.$set(this, 'cards', [this.createCard(cards, accordions)])
-      } else if (memo.type === 'thorname') {
-        const { cards, accordions } = this.createThornameState(
-          thorStatus,
-          midgardAction,
-          thorTx,
-          memo
-        )
-        this.$set(this, 'cards', [this.createCard(cards, accordions)])
-      } else if (
-        midgardAction.actions &&
+        return
+      }
+
+      // Registry: memo.type -> builder (method name or function from module)
+      const BUILDERS = {
+        withdraw: 'createRemoveLiquidityState',
+        runePoolWithdraw: 'createRunePoolWithdraw',
+        runePoolDeposit: 'createRunePoolDeposit',
+        tradeWithdraw: 'createTradeWithdrawState',
+        secureWithdraw: 'createTradeWithdrawState',
+        tradeDeposit: 'createTradeDepositState',
+        secureDeposit: 'createTradeDepositState',
+        bond: 'createBondState',
+        unbound: 'createUnbondState',
+        thorname: BUILDERS_MODULE.thorname,
+        loanRepayment: 'createLoanRepayment',
+        tcyUnstake: 'createTCYUnstake',
+        tcyStake: 'createTCYStake',
+      }
+
+      const builder = BUILDERS[memo.type]
+      if (builder) {
+        const result =
+          typeof builder === 'function'
+            ? builder(
+                thorStatus,
+                midgardAction,
+                thorTx,
+                memo,
+                this.getBuilderContext()
+              )
+            : this[builder](thorStatus, midgardAction, thorTx, memo)
+        this.$set(this, 'cards', [
+          this.createCard(result.cards, result.accordions),
+        ])
+        this.appendContractCards(midgardAction, thorStatus, thorTx, memo)
+        return
+      }
+
+      // Failed deposit (by action type, not memo)
+      if (
+        midgardAction?.actions?.length > 0 &&
         midgardAction.actions[0]?.type === 'failed'
       ) {
-        const { cards, accordions } = this.createFailedState(
+        const { cards, accordions } = createFailedStateBuilder(
           thorStatus,
           midgardAction,
           thorTx,
-          memo
+          memo,
+          this.getBuilderContext()
         )
         this.$set(this, 'cards', [this.createCard(cards, accordions)])
-      } else if (memo.type === 'loanRepayment') {
-        const { cards, accordions } = this.createLoanRepayment(
-          thorStatus,
-          midgardAction,
-          thorTx,
-          memo
-        )
-        this.$set(this, 'cards', [this.createCard(cards, accordions)])
-      } else if (memo.type === 'tcyUnstake') {
-        const { cards, accordions } = this.createTCYUnstake(
-          thorStatus,
-          midgardAction,
-          thorTx,
-          memo
-        )
-
-        this.$set(this, 'cards', [this.createCard(cards, accordions)])
-      } else if (memo.type === 'tcyStake') {
-        const { cards, accordions } = this.createTCYStake(
-          thorStatus,
-          midgardAction,
-          thorTx,
-          memo
-        )
-
-        this.$set(this, 'cards', [this.createCard(cards, accordions)])
-      } else {
-        const finalCards = []
-        for (let i = 0; i < midgardAction?.actions?.length; i++) {
-          const { cards, accordions } = this.createAbstractState(
-            thorStatus,
-            midgardAction.actions[i],
-            thorTx,
-            memo
-          )
-          finalCards.push(this.createCard(cards, accordions))
-        }
-        this.$set(this, 'cards', finalCards)
+        this.appendContractCards(midgardAction, thorStatus, thorTx, memo)
+        return
       }
 
-      if (
-        midgardAction?.actions &&
-        midgardAction?.actions.map(a => a.type).includes('contract')
-      ) {
-        const finalCards = []
-        for (let i = 0; i < midgardAction?.actions?.length; i++) {
-          if (midgardAction?.actions[i].type !== 'contract') {
-            continue
-          }
-          const { cards, accordions } = this.createContractState(
-            thorStatus,
-            midgardAction.actions[i],
-            thorTx,
-            memo
-          )
-          finalCards.push(this.createCard(cards, accordions))
-        }
-        console.log([...finalCards, ...this.cards])
-        this.$set(this, 'cards', [...finalCards, ...this.cards])
+      // Default: one card per action (createAbstractState)
+      const finalCards = []
+      for (let i = 0; i < midgardAction?.actions?.length; i++) {
+        const { cards, accordions } = this.createAbstractState(
+          thorStatus,
+          midgardAction.actions[i],
+          thorTx,
+          memo
+        )
+        finalCards.push(this.createCard(cards, accordions))
       }
+      this.$set(this, 'cards', finalCards)
+      this.appendContractCards(midgardAction, thorStatus, thorTx, memo)
     },
-    createThornameState(thorStatus, action, thorTx) {
-      action = action.actions[0]
-      const timeStamp = moment.unix(action?.date / 1e9)
-
-      const ins = action?.in.map((a) => ({
-        txid: a?.txID,
-        from: a?.address,
-        icon: require('@/assets/images/wallet.svg?inline'),
-        address: action.metadata?.thorname?.address,
-        done: true,
-      }))
-
-      const outs = action?.in.map((a) => ({
-        icon: require('@/assets/images/name.svg?inline'),
-        text: action.metadata?.thorname?.thorname,
-        class: 'pad-icon',
-      }))
-
-      return {
-        cards: {
-          title: 'THORName',
-          in: ins,
-          middle: {
-            pending: false,
-          },
-          out: outs,
-        },
-        accordions: {
-          in: ins,
-          action: {
-            type: 'THORName',
-            memo: action.metadata?.thorname?.memo,
-            expire: action.metadata?.thorname?.expire,
-            thorname: action.metadata?.thorname?.thorname,
-            owner: action.metadata?.thorname?.owner,
-            registrationFee: action.metadata?.thorname?.registrationFee,
-            address: action.metadata?.thorname?.address,
-            height: action?.height,
-            timeStamp,
-            done: true,
-          },
-          out: [],
-        },
+    appendContractCards(midgardAction, thorStatus, thorTx, memo) {
+      if (!midgardAction?.actions?.map((a) => a.type).includes('contract')) {
+        return
       }
+      const contractCards = []
+      for (let i = 0; i < midgardAction?.actions?.length; i++) {
+        if (midgardAction.actions[i].type !== 'contract') continue
+        const { cards, accordions } = this.createContractState(
+          thorStatus,
+          midgardAction.actions[i],
+          thorTx,
+          memo
+        )
+        contractCards.push(this.createCard(cards, accordions))
+      }
+      this.$set(this, 'cards', [...contractCards, ...this.cards])
     },
     createLoanRepayment(thorStatus, actions, thorTx) {
       const action = actions.actions[0]
@@ -1207,49 +610,6 @@ export default {
             done: true,
           },
           events: action.metadata?.contract?.contractEvents,
-          out: [],
-        },
-      }
-    },
-    createFailedState(thorStatus, action, thorTx) {
-      action = action.actions[0]
-      const timeStamp = moment.unix(action?.date / 1e9)
-      const { type } = this.parseMemo(action?.metadata?.failed.memo)
-
-      const ins = action?.in.map((a) => ({
-        asset: this.parseMemoAsset(a.coins[0]?.asset ?? 'THOR.RUNE'),
-        amount: a.coins[0]?.amount ?? 0,
-        txid: a?.txID,
-        from: a?.address,
-        gas: thorStatus?.tx?.gas ? thorStatus?.tx?.gas[0].amount : null,
-        gasAsset: thorStatus?.tx?.gas
-          ? this.parseMemoAsset(thorStatus?.tx?.gas[0].asset, this.pools)
-          : null,
-        done: true,
-      }))
-
-      return {
-        cards: {
-          title: type,
-          in: ins,
-          middle: {
-            pending: false,
-            fail: true,
-          },
-          out: [],
-        },
-        accordions: {
-          in: ins,
-          action: {
-            type,
-            memo: action.metadata?.failed?.memo,
-            reason: action.metadata?.failed?.reason,
-            code: action.metadata?.failed?.code,
-            height: action?.height,
-            timeStamp,
-            done: true,
-            error: true,
-          },
           out: [],
         },
       }
@@ -1664,7 +1024,7 @@ export default {
         done: true,
       }))
 
-      let outs = action?.out.map((a) => ({
+      const outs = action?.out.map((a) => ({
         asset: this.parseMemoAsset(a.coins[0]?.asset),
         amount: a.coins[0]?.amount,
         txid: a?.txID,
@@ -1698,7 +1058,9 @@ export default {
         if (!kebab || typeof kebab !== 'string') return ''
         return kebab
           .split('_')
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+          .map(
+            (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+          )
           .join(' ')
       }
 
@@ -1736,7 +1098,7 @@ export default {
           done: true,
         }
 
-        outs[0] = {...outs[0], hide: true}
+        outs[0] = { ...outs[0], hide: true }
       }
 
       return {
@@ -2398,7 +1760,7 @@ export default {
                 ? undefined
                 : (v) => `~ ${this.baseAmountFormatOrZero(v)}`,
             },
-            ...outTxs?.slice(1).map((o) => ({
+            ...(outTxs ?? []).slice(1).map((o) => ({
               asset: this.parseMemoAsset(o.coins[0].asset, this.pools),
               amount: parseInt(o.coins[0].amount),
             })),
@@ -2502,7 +1864,7 @@ export default {
                     outAsset.secure) &&
                   (thorStatus?.stages.outbound_delay?.completed ?? true)),
             },
-            ...outTxs?.slice(1).map((o) => ({
+            ...(outTxs ?? []).slice(1).map((o) => ({
               txid: o.id,
               to: o.to_address,
               asset: this.parseMemoAsset(o.coins[0].asset, this.pools),
@@ -2525,9 +1887,6 @@ export default {
         },
       }
     },
-  },
-  head: {
-    title: 'THORChain Network Explorer | TX',
   },
 }
 </script>
