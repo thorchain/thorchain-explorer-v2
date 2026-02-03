@@ -396,6 +396,7 @@ export default {
           thorHeader
         )
         this.$set(this, 'cards', [this.createCard(cards, accordions)])
+        this.appendContractCards(midgardAction, thorStatus, thorTx, memo)
         return
       }
 
@@ -425,6 +426,7 @@ export default {
           }
         }
         this.$set(this, 'cards', finalCards)
+        this.appendContractCards(midgardAction, thorStatus, thorTx, memo)
         return
       }
 
