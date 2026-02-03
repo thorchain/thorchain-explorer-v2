@@ -2493,13 +2493,14 @@ export default {
               outboundSigned:
                 thorStatus?.stages.outbound_signed?.completed ?? undefined,
               done:
-                !thorStatus?.stages.swap_status?.pending &&
-                (thorStatus?.stages.outbound_signed?.completed ||
-                  outAsset.chain === 'THOR' ||
-                  outAsset.synth ||
-                  outAsset.trade ||
-                  outAsset.secure) &&
-                (thorStatus?.stages.outbound_delay?.completed ?? true),
+                (outTxs?.length > 0 && outTxs[0]?.id) ||
+                (!thorStatus?.stages.swap_status?.pending &&
+                  (thorStatus?.stages.outbound_signed?.completed ||
+                    outAsset.chain === 'THOR' ||
+                    outAsset.synth ||
+                    outAsset.trade ||
+                    outAsset.secure) &&
+                  (thorStatus?.stages.outbound_delay?.completed ?? true)),
             },
             ...outTxs?.slice(1).map((o) => ({
               txid: o.id,
@@ -2512,12 +2513,13 @@ export default {
                 ? this.parseMemoAsset(o.gas[0].asset, this.pools)
                 : null,
               done:
-                !thorStatus?.stages.swap_status?.pending &&
-                (thorStatus?.stages.outbound_signed?.completed ||
-                  outAsset.chain === 'THOR' ||
-                  outAsset.synth ||
-                  outAsset.trade ||
-                  outAsset.secure),
+                !!o.id ||
+                (!thorStatus?.stages.swap_status?.pending &&
+                  (thorStatus?.stages.outbound_signed?.completed ||
+                    outAsset.chain === 'THOR' ||
+                    outAsset.synth ||
+                    outAsset.trade ||
+                    outAsset.secure)),
             })),
           ],
         },
