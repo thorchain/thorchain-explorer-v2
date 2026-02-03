@@ -4,6 +4,7 @@
  */
 export const SCAM_ADDRESSES = [
   'thor1w96sfmn0n00f94c82un8t95y44yzyf502pejyz',
+  'thor1rp6nedzez62nj3zan5h9q4zs2nlqy9s94vuccq'
 ]
 
 export function isScamAddress(address) {
