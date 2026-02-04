@@ -182,6 +182,8 @@ import WarningIcon from '~/assets/images/warning.svg?inline'
 import RefreshIcon from '~/assets/images/refresh.svg?inline'
 import CheckIcon from '~/assets/images/square-checkmark.svg?inline'
 import ClockIcon from '~/assets/images/clock.svg?inline'
+import SwapIcon from '~/assets/images/swap.svg?inline'
+import SendTypeIcon from '~/assets/images/send-outline.svg?inline'
 import Avatar from '~/components/Avatar.vue'
 
 export default {
@@ -191,6 +193,8 @@ export default {
     RefreshIcon,
     CheckIcon,
     ClockIcon,
+    SwapIcon,
+    SendTypeIcon,
     Avatar,
   },
   props: ['txData'],
@@ -238,7 +242,7 @@ export default {
           label: this.$options.filters?.capitalize?.(t) ?? t,
           type: typeKey,
           colorClass: this.typeToColorClass(typeKey),
-          icon: null,
+          icon: typeKey === 'swap' ? SwapIcon : typeKey === 'send' ? SendTypeIcon : null,
         })
       }
       if (this.statusBubble) {
@@ -374,7 +378,7 @@ $border-size: 2px;
       align-items: center;
       gap: 6px;
       padding: $space-5 $space-10;
-      border-radius: $radius-lg;
+      border-radius: $radius-sm;
       font-size: $font-size-sm;
       font-weight: 600;
       line-height: 1;
