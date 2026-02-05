@@ -19,8 +19,8 @@
             :class="item.colorClass"
           >
             <component
-              v-if="item.icon"
               :is="item.icon"
+              v-if="item.icon"
               class="bubble-pill__icon"
             />
             <span class="bubble-pill__label">{{ item.label }}</span>
@@ -97,7 +97,10 @@
               <!-- <div class="border-bottom-spinner"></div> -->
             </div>
             <send-icon v-else-if="overall.middle.send" class="icon tx-icon" />
-            <refresh-icon v-else-if="overall.middle.refund" class="icon tx-icon" />
+            <refresh-icon
+              v-else-if="overall.middle.refund"
+              class="icon tx-icon"
+            />
             <send-icon v-else class="icon tx-icon" />
           </div>
         </div>
@@ -228,10 +231,33 @@ export default {
     statusBubble() {
       const m = this.overall.middle
       if (!m) return null
-      if (m.fail) return { label: 'Failed', type: 'failed', colorClass: 'bubble-pill--red', icon: WarningIcon }
-      if (m.pending) return { label: 'Pending', type: 'pending', colorClass: 'bubble-pill--yellow', icon: ClockIcon }
-      if (m.refund) return { label: 'Refund', type: 'refund', colorClass: 'bubble-pill--yellow', icon: RefreshIcon }
-      return { label: 'Success', type: 'success', colorClass: 'bubble-pill--green', icon: CheckIcon }
+      if (m.fail)
+        return {
+          label: 'Failed',
+          type: 'failed',
+          colorClass: 'bubble-pill--red',
+          icon: WarningIcon,
+        }
+      if (m.pending)
+        return {
+          label: 'Pending',
+          type: 'pending',
+          colorClass: 'bubble-pill--yellow',
+          icon: ClockIcon,
+        }
+      if (m.refund)
+        return {
+          label: 'Refund',
+          type: 'refund',
+          colorClass: 'bubble-pill--yellow',
+          icon: RefreshIcon,
+        }
+      return {
+        label: 'Success',
+        type: 'success',
+        colorClass: 'bubble-pill--green',
+        icon: CheckIcon,
+      }
     },
     bubbleItems() {
       const items = []
@@ -242,7 +268,12 @@ export default {
           label: this.$options.filters?.capitalize?.(t) ?? t,
           type: typeKey,
           colorClass: this.typeToColorClass(typeKey),
-          icon: typeKey === 'swap' ? SwapIcon : typeKey === 'send' ? SendTypeIcon : null,
+          icon:
+            typeKey === 'swap'
+              ? SwapIcon
+              : typeKey === 'send'
+                ? SendTypeIcon
+                : null,
         })
       }
       if (this.statusBubble) {
@@ -250,7 +281,9 @@ export default {
       }
       this.labels.forEach((l) => {
         const isRefund = String(l).toLowerCase() === 'refund'
-        const labelColorClass = isRefund ? 'bubble-pill--yellow' : 'bubble-pill--grey'
+        const labelColorClass = isRefund
+          ? 'bubble-pill--yellow'
+          : 'bubble-pill--grey'
         items.push({
           label: l,
           type: 'label',
@@ -289,7 +322,8 @@ export default {
       if (s.includes('unbond')) return 'unbond'
       if (s.includes('bond')) return 'bond'
       if (s.includes('rune') && s.includes('deposit')) return 'runePoolDeposit'
-      if (s.includes('rune') && s.includes('withdraw')) return 'runePoolWithdraw'
+      if (s.includes('rune') && s.includes('withdraw'))
+        return 'runePoolWithdraw'
       if (s.includes('stake')) return 'tcy_stake'
       if (s.includes('unstake')) return 'tcy_unstake'
       if (s.includes('tcy') && s.includes('claim')) return 'tcy_claim'
@@ -357,8 +391,14 @@ $border-size: 2px;
     align-items: center;
     justify-content: space-between;
     gap: 5px;
-    padding: $space-16 $space-24;
+    padding: $space-16 $space-12;
     border-bottom: 1px solid var(--border-color);
+    overflow: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    &::-webkit-scrollbar {
+      display: none;
+    }
   }
 
   .bubble-stack {
@@ -387,7 +427,10 @@ $border-size: 2px;
       color: var(--sec-font-color);
       margin-left: 0;
       white-space: nowrap;
-      transition: margin-left 0.25s ease, clip-path 0.25s ease, filter 0.25s ease;
+      transition:
+        margin-left 0.25s ease,
+        clip-path 0.25s ease,
+        filter 0.25s ease;
 
       &:first-child {
         z-index: 3;
@@ -424,12 +467,24 @@ $border-size: 2px;
       }
 
       &.bubble-pill--blue {
-        border-color: color-mix(in srgb, var(--highlight) 50%, var(--border-color));
-        background-color: color-mix(in srgb, var(--highlight) 10%, var(--card-bg-color));
+        border-color: color-mix(
+          in srgb,
+          var(--highlight) 50%,
+          var(--border-color)
+        );
+        background-color: color-mix(
+          in srgb,
+          var(--highlight) 10%,
+          var(--card-bg-color)
+        );
       }
       &.bubble-pill--green {
         border-color: color-mix(in srgb, var(--green) 50%, var(--border-color));
-        background-color: color-mix(in srgb, var(--green) 10%, var(--card-bg-color));
+        background-color: color-mix(
+          in srgb,
+          var(--green) 10%,
+          var(--card-bg-color)
+        );
       }
       &.bubble-pill--yellow {
         border-color: color-mix(in srgb, #f39c12 50%, var(--border-color));
@@ -437,15 +492,27 @@ $border-size: 2px;
       }
       &.bubble-pill--red {
         border-color: color-mix(in srgb, var(--red) 50%, var(--border-color));
-        background-color: color-mix(in srgb, var(--red) 10%, var(--card-bg-color));
+        background-color: color-mix(
+          in srgb,
+          var(--red) 10%,
+          var(--card-bg-color)
+        );
       }
       &.bubble-pill--alert {
         border-color: color-mix(in srgb, #9b59b6 50%, var(--border-color));
         background-color: color-mix(in srgb, #9b59b6 10%, var(--card-bg-color));
       }
       &.bubble-pill--grey {
-        border-color: color-mix(in srgb, var(--highlight) 50%, var(--border-color));
-        background-color: color-mix(in srgb, var(--highlight) 10%, var(--card-bg-color));
+        border-color: color-mix(
+          in srgb,
+          var(--highlight) 50%,
+          var(--border-color)
+        );
+        background-color: color-mix(
+          in srgb,
+          var(--highlight) 10%,
+          var(--card-bg-color)
+        );
       }
     }
 
@@ -667,6 +734,11 @@ $border-size: 2px;
   display: flex;
   align-items: center;
   gap: 8px;
+
+  small {
+    word-break: keep-all;
+    white-space: nowrap;
+  }
 
   .interface-image {
     display: inline-block;

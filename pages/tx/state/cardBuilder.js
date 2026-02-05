@@ -1,5 +1,5 @@
 import moment from 'moment'
-import { isInternalTx } from '~/utils'
+import { isInternalTx, sumAffiliateFee } from '~/utils'
 
 /**
  * Build card details (title, overall in/middle/out) from cardBase.
@@ -134,7 +134,7 @@ export function buildActionAccordion(accordionsAction, ctx) {
   if (!accordionsAction) return null
 
   const action = accordionsAction
-  let affiliateOutAmount
+  let affiliateOutAmount = 0
   if (action.affiliateOut && action.affiliateOut.length > 0) {
     affiliateOutAmount = action.affiliateOut.reduce(
       (a, b) => a + +b.coins[0].amount,
@@ -236,8 +236,8 @@ export function buildActionAccordion(accordionsAction, ctx) {
     },
     {
       key: 'Affiliate Basis',
-      value: `${action.affiliateFee}`,
-      is: action.affiliateFee,
+      value: `${sumAffiliateFee(action.affiliateFee)}`,
+      is: action.affiliateFee != null && action.affiliateFee !== '',
     },
     {
       key: 'Block Height',

@@ -77,6 +77,7 @@ import {
   tradeToAsset,
   assetToString,
   securedToAsset,
+  sumAffiliateFee,
 } from '~/utils'
 import Accordion from '~/components/Accordion.vue'
 
@@ -368,7 +369,7 @@ export default {
         )
         const inAmount = parseInt(thorStatus?.tx.coins[0].amount)
         const outAsset = this.parseMemoAsset(memo.asset, this.pools)
-        const affiliateFee = memo.fee || 0
+        const affiliateFee = sumAffiliateFee(memo.fee || 0)
         if (thorStatus?.stages.swap_status?.pending && !this.quote) {
           try {
             const { data: quoteData } = await this.$api.getQuote({
@@ -1265,7 +1266,7 @@ export default {
               parseInt(addAction?.metadata?.addLiquidity?.liquidityUnits) ||
               null,
             affiliateName: memo.affiliate,
-            affiliateFee: parseInt(memo.fee),
+            affiliateFee: sumAffiliateFee(memo.fee),
             outboundDelayRemaining: outboundDelayRemaining || 0,
             outboundETA:
               thorStatus?.stages.outbound_signed?.scheduled_outbound_height -
@@ -1808,7 +1809,7 @@ export default {
             limit: memo.limit,
             limitAsset: outMemoAsset,
             affiliateName: memo.affiliate,
-            affiliateFee: memo.fee || 0,
+            affiliateFee: sumAffiliateFee(memo.fee || 0),
             liquidityFee:
               parseInt(swapAction?.metadata.swap?.liquidityFee) || null,
             liquidityUnits: null,

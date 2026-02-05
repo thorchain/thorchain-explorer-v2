@@ -52,6 +52,22 @@ export function isInternalTx(hash) {
   )
 }
 
+/**
+ * Sum affiliate fee when in "0/155" format (two affiliates).
+ * Returns the sum of parts for interface fee / basis calculation.
+ */
+export function sumAffiliateFee(fee) {
+  if (fee == null || fee === '') return 0
+  if (typeof fee === 'number' && !Number.isNaN(fee)) return fee
+  const s = String(fee).trim()
+  if (s.includes('/')) {
+    return s
+      .split('/')
+      .reduce((sum, part) => sum + (parseInt(part, 10) || 0), 0)
+  }
+  return parseInt(s, 10) || 0
+}
+
 export function parseCosmosTx(ntx) {
   const ret = []
   ntx.tx?.body?.messages?.forEach((el) => {
