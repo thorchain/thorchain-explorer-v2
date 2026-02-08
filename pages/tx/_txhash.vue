@@ -489,7 +489,7 @@ export default {
       const finalCards = []
       for (let i = 0; i < midgardAction?.actions?.length; i++) {
         const action = midgardAction.actions[i]
-        if (action?.type === 'contract') continue
+        if (action?.type === 'contract' || action?.type === 'refund') continue
         const { cards, accordions } = this.createAbstractState(
           thorStatus,
           action,
@@ -1030,13 +1030,27 @@ export default {
         done: true,
       }))
 
-      const outs = action?.out.map((a) => ({
+      let outs = action?.out.map((a) => ({
         asset: this.parseMemoAsset(a.coins[0]?.asset),
         amount: a.coins[0]?.amount,
         txid: a?.txID,
         to: a?.address,
         done: true,
-      }))
+      })) ?? []
+      // Trade/secure only: when multiple outbounds have same asset and amount, only show one
+      const hasTradeOrSecureOut = outs.some(
+        (o) => o?.asset?.trade || o?.asset?.secure
+      )
+      if (hasTradeOrSecureOut) {
+        const outKey = (o) => `${assetToString(o?.asset)}:${o?.amount ?? ''}`
+        const seenOuts = new Set()
+        outs = outs.filter((o) => {
+          const key = outKey(o)
+          if (seenOuts.has(key)) return false
+          seenOuts.add(key)
+          return true
+        })
+      }
 
       let memo
       let reason
@@ -1628,6 +1642,20 @@ export default {
         outTxs,
         (o) => o.coins[0].asset === thorStatus?.tx.coins[0].asset
       )
+
+      // Trade/secure asset swap only: when multiple outbounds have same asset and amount, only show one
+      const memoOutAsset = this.parseMemoAsset(memo.asset, this.pools)
+      if (memoOutAsset?.trade || memoOutAsset?.secure) {
+        const outboundKey = (o) =>
+          `${o.coins[0]?.asset ?? ''}:${o.coins[0]?.amount ?? ''}`
+        const seenOut = new Set()
+        outTxs = outTxs.filter((o) => {
+          const key = outboundKey(o)
+          if (seenOut.has(key)) return false
+          seenOut.add(key)
+          return true
+        })
+      }
 
       // Add native in/out search
       const inAsset = this.parseMemoAsset(
