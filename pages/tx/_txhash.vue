@@ -192,7 +192,7 @@ export default {
       // See if the hash is outbound
       const swapAction = md?.actions?.find((a) => a.type === 'swap')
       if (swapAction) {
-        hash = swapAction.in[0].txID
+        hash = swapAction.in?.[0]?.txID
       }
 
       // get inbound hash
@@ -283,7 +283,7 @@ export default {
       }
 
       const outAsset = this.parseMemoAsset(
-        outTxs?.length > 0 ? outTxs[0].coins[0].asset : memo.asset,
+        outTxs?.length > 0 ? outTxs[0]?.coins?.[0]?.asset : memo?.asset,
         this.pools
       )
 
@@ -364,18 +364,18 @@ export default {
       // Swap: fetch quote when pending, then build state
       if (memo.type === 'swap') {
         const inAsset = this.parseMemoAsset(
-          thorStatus?.tx.coins[0].asset,
+          thorStatus?.tx?.coins?.[0]?.asset,
           this.pools
         )
-        const inAmount = parseInt(thorStatus?.tx.coins[0].amount)
-        const outAsset = this.parseMemoAsset(memo.asset, this.pools)
+        const inAmount = parseInt(thorStatus?.tx?.coins?.[0]?.amount ?? 0)
+        const outAsset = this.parseMemoAsset(memo?.asset, this.pools)
         const affiliateFee = sumAffiliateFee(memo.fee || 0)
         if (thorStatus?.stages.swap_status?.pending && !this.quote) {
           try {
             const { data: quoteData } = await this.$api.getQuote({
               amount: inAmount,
-              from_asset: assetToString(inAsset),
-              to_asset: assetToString(outAsset),
+              from_asset: inAsset ? assetToString(inAsset) : '',
+              to_asset: outAsset ? assetToString(outAsset) : '',
               destination: memo.destAddr,
               streaming_interval:
                 thorStatus?.stages.swap_status?.streaming?.interval ||
@@ -522,8 +522,8 @@ export default {
       const action = actions.actions[0]
 
       const ins = action?.in.map((a) => ({
-        asset: this.parseMemoAsset(a.coins[0]?.asset),
-        amount: a.coins[0]?.amount,
+        asset: this.parseMemoAsset(a.coins?.[0]?.asset),
+        amount: a.coins?.[0]?.amount ?? 0,
         txid: a?.txID,
         from: a?.address,
         done: true,
@@ -531,8 +531,8 @@ export default {
 
       let outs = []
       outs = action?.out.map((a) => ({
-        asset: this.parseMemoAsset(a.coins[0]?.asset),
-        amount: a.coins[0]?.amount,
+        asset: this.parseMemoAsset(a.coins?.[0]?.asset),
+        amount: a.coins?.[0]?.amount ?? 0,
         txid: a?.txID,
         to: a?.address,
         height: a?.height,
@@ -573,8 +573,8 @@ export default {
     createContractState(thorStatus, action) {
       const ins = action?.in.map((a) => ({
         type: 'Caller',
-        asset: this.parseMemoAsset(a.coins[0]?.asset),
-        amount: a.coins[0]?.amount,
+        asset: this.parseMemoAsset(a.coins?.[0]?.asset),
+        amount: a.coins?.[0]?.amount ?? 0,
         txid: a?.txID,
         from: a?.address,
         height: action?.height,
@@ -625,11 +625,11 @@ export default {
       const timeStamp = moment.unix(action?.date / 1e9)
 
       const ins = action?.in.map((a) => ({
-        asset: this.parseMemoAsset(a.coins[0]?.asset),
-        amount: a.coins[0].amount,
-        gas: thorStatus?.tx?.gas ? thorStatus?.tx?.gas[0].amount : null,
+        asset: this.parseMemoAsset(a.coins?.[0]?.asset),
+        amount: a.coins?.[0]?.amount ?? 0,
+        gas: thorStatus?.tx?.gas ? thorStatus?.tx?.gas?.[0]?.amount : null,
         gasAsset: thorStatus?.tx?.gas
-          ? this.parseMemoAsset(thorStatus?.tx?.gas[0].asset, this.pools)
+          ? this.parseMemoAsset(thorStatus?.tx?.gas?.[0]?.asset, this.pools)
           : null,
         txid: a?.txID,
         from: a?.address,
@@ -637,8 +637,8 @@ export default {
       }))
 
       const outs = action?.out.map((a) => ({
-        asset: this.parseMemoAsset(a.coins[0]?.asset),
-        amount: a.coins[0].amount,
+        asset: this.parseMemoAsset(a.coins?.[0]?.asset),
+        amount: a.coins?.[0]?.amount ?? 0,
         txid: a?.txID,
         to: a?.address,
         done: true,
@@ -681,11 +681,11 @@ export default {
       const timeStamp = moment.unix(action?.date / 1e9)
 
       const ins = action?.in.map((a) => ({
-        asset: this.parseMemoAsset(a.coins[0]?.asset),
-        amount: a.coins[0]?.amount,
-        gas: thorStatus?.tx?.gas ? thorStatus?.tx?.gas[0].amount : null,
+        asset: this.parseMemoAsset(a.coins?.[0]?.asset),
+        amount: a.coins?.[0]?.amount ?? 0,
+        gas: thorStatus?.tx?.gas ? thorStatus?.tx?.gas?.[0]?.amount : null,
         gasAsset: thorStatus?.tx?.gas
-          ? this.parseMemoAsset(thorStatus?.tx?.gas[0].asset, this.pools)
+          ? this.parseMemoAsset(thorStatus?.tx?.gas?.[0]?.asset, this.pools)
           : null,
         txid: a?.txID,
         from: a?.address,
@@ -693,8 +693,8 @@ export default {
       }))
 
       const outs = action?.out.map((a) => ({
-        asset: this.parseMemoAsset(a.coins[0]?.asset),
-        amount: a.coins[0].amount,
+        asset: this.parseMemoAsset(a.coins?.[0]?.asset),
+        amount: a.coins?.[0]?.amount ?? 0,
         txid: a?.txID,
         to: a?.address,
         done: true,
@@ -734,10 +734,13 @@ export default {
       const timeStamp = moment.unix(action?.date / 1e9)
       const memo = this.parseMemo(thorStatus?.tx?.memo)
 
-      const ast = this.parseMemoAsset(thorStatus?.tx.coins[0].asset, this.pools)
+      const ast = this.parseMemoAsset(
+        thorStatus?.tx?.coins?.[0]?.asset,
+        this.pools
+      )
 
       let isSecure = false
-      if (memo.type.includes('secure')) {
+      if (memo?.type?.includes('secure')) {
         isSecure = true
       }
 
@@ -751,12 +754,12 @@ export default {
       const ins = [
         {
           asset: ast,
-          amount: thorStatus?.tx.coins[0].amount,
+          amount: thorStatus?.tx?.coins?.[0]?.amount ?? 0,
           txid: thorStatus?.tx?.id,
           from: thorStatus?.tx?.from_address,
-          gas: thorStatus?.tx?.gas ? thorStatus?.tx?.gas[0].amount : null,
+          gas: thorStatus?.tx?.gas ? thorStatus?.tx?.gas?.[0]?.amount : null,
           gasAsset: thorStatus?.tx?.gas
-            ? this.parseMemoAsset(thorStatus?.tx?.gas[0].asset, this.pools)
+            ? this.parseMemoAsset(thorStatus?.tx?.gas?.[0]?.asset, this.pools)
             : null,
           done: true,
         },
@@ -766,9 +769,9 @@ export default {
         {
           asset: isSecure ? assetToSecure(ast) : assetToTrade(ast),
           amount: thorStatus.out_txs
-            ? thorStatus.out_txs[0]?.coins[0].amount
-            : thorStatus?.tx.coins[0].amount,
-          txid: thorStatus.out_txs ? thorStatus.out_txs[0].id : null,
+            ? thorStatus.out_txs[0]?.coins?.[0]?.amount
+            : thorStatus?.tx?.coins?.[0]?.amount ?? 0,
+          txid: thorStatus.out_txs ? thorStatus.out_txs[0]?.id : null,
           to: memo.address,
           done: true,
         },
@@ -804,22 +807,25 @@ export default {
       const timeStamp = moment.unix(action?.date / 1e9)
       const memo = this.parseMemo(thorStatus?.tx?.memo)
 
-      const ast = this.parseMemoAsset(thorStatus?.tx.coins[0].asset, this.pools)
+      const ast = this.parseMemoAsset(
+        thorStatus?.tx?.coins?.[0]?.asset,
+        this.pools
+      )
 
       let isSecure = false
-      if (memo.type.includes('secure')) {
+      if (memo?.type?.includes('secure')) {
         isSecure = true
       }
 
       const ins = [
         {
           asset: isSecure ? assetToSecure(ast) : assetToTrade(ast),
-          amount: thorStatus?.tx.coins[0].amount,
+          amount: thorStatus?.tx?.coins?.[0]?.amount ?? 0,
           txid: thorStatus?.tx?.id,
           from: thorStatus?.tx?.from_address,
-          gas: thorStatus?.tx?.gas ? thorStatus?.tx?.gas[0].amount : null,
+          gas: thorStatus?.tx?.gas ? thorStatus?.tx?.gas?.[0]?.amount : null,
           gasAsset: thorStatus?.tx?.gas
-            ? this.parseMemoAsset(thorStatus?.tx?.gas[0].asset, this.pools)
+            ? this.parseMemoAsset(thorStatus?.tx?.gas?.[0]?.asset, this.pools)
             : null,
           done: true,
         },
@@ -829,14 +835,16 @@ export default {
         {
           asset: isSecure ? securedToAsset(ast) : tradeToAsset(ast),
           amount: thorStatus.out_txs
-            ? thorStatus.out_txs[0]?.coins[0].amount
-            : thorStatus?.tx.coins[0].amount,
-          txid: thorStatus.out_txs ? thorStatus.out_txs[0].id : null,
+            ? thorStatus.out_txs[0]?.coins?.[0]?.amount
+            : thorStatus?.tx?.coins?.[0]?.amount ?? 0,
+          txid: thorStatus.out_txs ? thorStatus.out_txs[0]?.id : null,
           to: memo.address,
-          gas: thorStatus.out_txs ? thorStatus.out_txs[0].gas[0].amount : null,
+          gas: thorStatus.out_txs
+            ? thorStatus.out_txs[0]?.gas?.[0]?.amount
+            : null,
           gasAsset: thorStatus.out_txs
             ? this.parseMemoAsset(
-                thorStatus.out_txs[0].gas[0].asset,
+                thorStatus.out_txs[0]?.gas?.[0]?.asset,
                 this.pools
               )
             : null,
@@ -899,8 +907,8 @@ export default {
       if (isRefund === false) {
         outs = [
           {
-            asset: TCYUnstake.out[0].coins[0].asset,
-            amount: TCYUnstake.out[0].coins[0].amount,
+            asset: TCYUnstake.out?.[0]?.coins?.[0]?.asset,
+            amount: TCYUnstake.out?.[0]?.coins?.[0]?.amount,
             txid: TCYUnstake.out[0].txID,
             to: TCYUnstake.out[0].address,
             done: true,
@@ -974,8 +982,8 @@ export default {
       if (isRefund === false) {
         ins = [
           {
-            asset: TCYStake.in[0].coins[0].asset,
-            amount: TCYStake.in[0].coins[0].amount,
+            asset: TCYStake.in?.[0]?.coins?.[0]?.asset,
+            amount: TCYStake.in?.[0]?.coins?.[0]?.amount,
             txid: TCYStake.in[0].txID,
             from: TCYStake.in[0].address,
             done: true,
@@ -1023,16 +1031,16 @@ export default {
     },
     createAbstractState(thorStatus, action, thorTx) {
       let ins = action?.in.map((a) => ({
-        asset: this.parseMemoAsset(a.coins[0]?.asset),
-        amount: a.coins[0]?.amount,
+        asset: this.parseMemoAsset(a.coins?.[0]?.asset),
+        amount: a.coins?.[0]?.amount ?? 0,
         txid: a?.txID,
         from: a?.address,
         done: true,
       }))
 
       let outs = action?.out.map((a) => ({
-        asset: this.parseMemoAsset(a.coins[0]?.asset),
-        amount: a.coins[0]?.amount,
+        asset: this.parseMemoAsset(a.coins?.[0]?.asset),
+        amount: a.coins?.[0]?.amount ?? 0,
         txid: a?.txID,
         to: a?.address,
         done: true,
@@ -1042,7 +1050,8 @@ export default {
         (o) => o?.asset?.trade || o?.asset?.secure
       )
       if (hasTradeOrSecureOut) {
-        const outKey = (o) => `${assetToString(o?.asset)}:${o?.amount ?? ''}`
+        const outKey = (o) =>
+          `${o?.asset ? assetToString(o.asset) : ''}:${o?.amount ?? ''}`
         const seenOuts = new Set()
         outs = outs.filter((o) => {
           const key = outKey(o)
@@ -1165,8 +1174,8 @@ export default {
       return ts
     },
     createNativeTx(nativeTx) {
-      const inAsset = nativeTx?.in[0]?.coins[0]?.asset
-      const inAmount = nativeTx?.in[0]?.coins[0]?.amount
+      const inAsset = nativeTx?.in?.[0]?.coins?.[0]?.asset
+      const inAmount = nativeTx?.in?.[0]?.coins?.[0]?.amount
       const timeStamp = moment(nativeTx.date / 1e6)
 
       const cards = {
@@ -1214,15 +1223,15 @@ export default {
       this.$set(this, 'cards', [this.createCard(cards, accordions)])
     },
     createAddLiquidityState(thorStatus, actions, thorTx, memo) {
-      const isSaver = this.parseMemoAsset(memo.asset)?.synth
+      const isSaver = this.parseMemoAsset(memo?.asset)?.synth
 
       const inAsset = this.parseMemoAsset(
-        thorStatus?.tx?.coins[0].asset,
+        thorStatus?.tx?.coins?.[0]?.asset,
         this.pools
       )
-      const inAmount = parseInt(thorStatus?.tx?.coins[0].amount)
+      const inAmount = parseInt(thorStatus?.tx?.coins?.[0]?.amount ?? 0)
       const addAction = actions?.actions?.find(
-        (a) => a.type === 'addLiquidity' && a.in[0].address !== ''
+        (a) => a.type === 'addLiquidity' && a.in?.[0]?.address !== ''
       )
       const timeStamp = moment.unix(addAction?.date / 1e9)
 
@@ -1240,7 +1249,8 @@ export default {
         !thorStatus?.stages.inbound_finalised?.completed ||
         (inAsset?.chain === 'THOR' && addAction.status === 'pending')
 
-      const memoText = thorStatus?.tx?.memo || isRefund?.metadata.refund.memo
+      const memoText =
+        thorStatus?.tx?.memo || isRefund?.metadata?.refund?.memo
 
       return {
         cards: {
@@ -1353,10 +1363,10 @@ export default {
     },
     createRemoveLiquidityState(thorStatus, actions, thorTx, memo) {
       const inAsset = this.parseMemoAsset(
-        thorStatus?.tx.coins[0].asset,
+        thorStatus?.tx?.coins?.[0]?.asset,
         this.pools
       )
-      const inAmount = parseInt(thorStatus?.tx.coins[0].amount)
+      const inAmount = parseInt(thorStatus?.tx?.coins?.[0]?.amount ?? 0)
       const withdrawAction = actions?.actions?.find(
         (a) => a.type === 'withdraw'
       )
@@ -1399,8 +1409,12 @@ export default {
       let outAmount
       const isOut = outTxs && outTxs[0]
       if (isOut) {
-        outAsset = this.parseMemoAsset(outTxs[0].coins[0].asset, this.pools)
-        outAmount = outTxs?.length > 0 ? parseInt(outTxs[0].coins[0].amount) : 0
+        outAsset = this.parseMemoAsset(
+          outTxs[0]?.coins?.[0]?.asset,
+          this.pools
+        )
+        outAmount =
+          outTxs?.length > 0 ? parseInt(outTxs[0]?.coins?.[0]?.amount ?? 0) : 0
       }
 
       const outs = []
@@ -1415,8 +1429,8 @@ export default {
       if (moreOuts && moreOuts.length > 0) {
         outs.push(
           ...moreOuts.map((o) => ({
-            asset: this.parseMemoAsset(o.coins[0].asset, this.pools),
-            amount: parseInt(o.coins[0].amount),
+            asset: this.parseMemoAsset(o.coins?.[0]?.asset, this.pools),
+            amount: parseInt(o.coins?.[0]?.amount ?? 0),
           }))
         )
       }
@@ -1452,11 +1466,11 @@ export default {
             ...moreOuts.map((o) => ({
               txid: o.id,
               to: o.to_address,
-              asset: this.parseMemoAsset(o.coins[0].asset, this.pools),
-              amount: parseInt(o.coins[0].amount),
-              gas: o.gas ? o.gas[0].amount : null,
+              asset: this.parseMemoAsset(o.coins?.[0]?.asset, this.pools),
+              amount: parseInt(o.coins?.[0]?.amount ?? 0),
+              gas: o.gas ? o.gas?.[0]?.amount : null,
               gasAsset: o.gas
-                ? this.parseMemoAsset(o.gas[0].asset, this.pools)
+                ? this.parseMemoAsset(o.gas?.[0]?.asset, this.pools)
                 : null,
               outboundSigned:
                 thorStatus?.stages.outbound_signed?.completed ?? false,
@@ -1470,7 +1484,7 @@ export default {
 
       let refundReason
       if (refundAction) {
-        refundReason = refundAction.metadata.refund?.reason
+        refundReason = refundAction?.metadata?.refund?.reason
       }
 
       return {
@@ -1515,16 +1529,16 @@ export default {
       const action = actions.actions.find((a) => a.type === 'runePoolDeposit')
 
       const ins = action?.in.map((a) => ({
-        asset: this.parseMemoAsset(a.coins[0]?.asset),
-        amount: a.coins[0]?.amount,
+        asset: this.parseMemoAsset(a.coins?.[0]?.asset),
+        amount: a.coins?.[0]?.amount ?? 0,
         txid: a?.txID,
         from: a?.address,
         done: true,
       }))
 
       const outs = action?.out.map((a) => ({
-        asset: this.parseMemoAsset(a.coins[0]?.asset),
-        amount: a.coins[0]?.amount,
+        asset: this.parseMemoAsset(a.coins?.[0]?.asset),
+        amount: a.coins?.[0]?.amount ?? 0,
         txid: a?.txID,
         to: a?.address,
         done: true,
@@ -1562,16 +1576,16 @@ export default {
       const action = actions.actions.find((a) => a.type === 'runePoolWithdraw')
 
       const ins = action?.in.map((a) => ({
-        asset: this.parseMemoAsset(a.coins[0]?.asset),
-        amount: a.coins[0]?.amount,
+        asset: this.parseMemoAsset(a.coins?.[0]?.asset),
+        amount: a.coins?.[0]?.amount ?? 0,
         txid: a?.txID,
         from: a?.address,
         done: true,
       }))
 
       const outs = action?.out.map((a) => ({
-        asset: this.parseMemoAsset(a.coins[0]?.asset),
-        amount: a.coins[0]?.amount,
+        asset: this.parseMemoAsset(a.coins?.[0]?.asset),
+        amount: a.coins?.[0]?.amount ?? 0,
         txid: a?.txID,
         to: a?.address,
         done: true,
@@ -1621,7 +1635,7 @@ export default {
       // get affiliate out if available
       const affiliateOut = thorStatus.out_txs?.filter(
         (tx) =>
-          !userAddresses.has(tx.to_address.toLowerCase()) &&
+          !userAddresses.has(tx.to_address?.toLowerCase()) &&
           (tx.id !==
             '0000000000000000000000000000000000000000000000000000000000000000' ||
             tx.id !== '')
@@ -1643,14 +1657,15 @@ export default {
       // order by target swapped asset if we have refund in swap
       outTxs = orderBy(
         outTxs,
-        (o) => o.coins[0].asset === thorStatus?.tx.coins[0].asset
+        (o) =>
+          o.coins?.[0]?.asset === thorStatus?.tx?.coins?.[0]?.asset
       )
 
       // Trade/secure asset swap only: when multiple outbounds have same asset and amount, only show one
-      const memoOutAsset = this.parseMemoAsset(memo.asset, this.pools)
+      const memoOutAsset = this.parseMemoAsset(memo?.asset, this.pools)
       if (memoOutAsset?.trade || memoOutAsset?.secure) {
         const outboundKey = (o) =>
-          `${o.coins[0]?.asset ?? ''}:${o.coins[0]?.amount ?? ''}`
+          `${o.coins?.[0]?.asset ?? ''}:${o.coins?.[0]?.amount ?? ''}`
         const seenOut = new Set()
         outTxs = outTxs.filter((o) => {
           const key = outboundKey(o)
@@ -1662,37 +1677,41 @@ export default {
 
       // Add native in/out search
       const inAsset = this.parseMemoAsset(
-        thorStatus?.tx.coins[0].asset,
+        thorStatus?.tx?.coins?.[0]?.asset,
         this.pools
       )
-      const inAmount = parseInt(thorStatus?.tx.coins[0].amount)
+      const inAmount = parseInt(thorStatus?.tx?.coins?.[0]?.amount ?? 0)
 
       const outAsset = this.parseMemoAsset(
-        outTxs?.length > 0 ? outTxs[0].coins[0].asset : memo.asset,
+        outTxs?.length > 0 ? outTxs[0]?.coins?.[0]?.asset : memo?.asset,
         this.pools
       )
       let outAmount =
-        outTxs?.length > 0 ? parseInt(outTxs[0].coins[0].amount) : 0
+        outTxs?.length > 0 ? parseInt(outTxs[0]?.coins?.[0]?.amount ?? 0) : 0
       if (
         !outAmount &&
         actions?.actions?.length > 0 &&
-        (outAsset.trade || outAsset.secure)
+        (outAsset?.trade || outAsset?.secure)
       ) {
+        const outAssetStr = outAsset ? assetToString(outAsset) : null
         outAmount = parseInt(
           Object.values(
             groupBy(
               actions?.actions
                 ?.find((a) => a.type === 'swap')
                 ?.out?.filter(
-                  (a) => a.coins[0].asset === assetToString(outAsset)
+                  (a) =>
+                    a.coins?.[0]?.asset === outAssetStr
                 ),
               'txID'
             )
-          ).map((group) => sumBy(group, (item) => +item.coins[0].amount))[0]
+          ).map((group) =>
+            sumBy(group, (item) => +(item.coins?.[0]?.amount ?? 0))
+          )[0]
         )
       }
 
-      const outMemoAsset = this.parseMemoAsset(memo.asset)
+      const outMemoAsset = this.parseMemoAsset(memo?.asset)
 
       // Midgard
       // There are multiple outbound fee
@@ -1732,7 +1751,7 @@ export default {
 
       const outboundRefundReason = actions?.actions.find(
         (action) => action.type === 'refund'
-      )?.metadata.refund.reason
+      )?.metadata?.refund?.reason
 
       // only refund happened
       const onlyRefund =
@@ -1799,8 +1818,8 @@ export default {
                 : (v) => `~ ${this.baseAmountFormatOrZero(v)}`,
             },
             ...(outTxs ?? []).slice(1).map((o) => ({
-              asset: this.parseMemoAsset(o.coins[0].asset, this.pools),
-              amount: parseInt(o.coins[0].amount),
+              asset: this.parseMemoAsset(o.coins?.[0]?.asset, this.pools),
+              amount: parseInt(o.coins?.[0]?.amount ?? 0),
             })),
           ],
         },
@@ -1811,9 +1830,9 @@ export default {
               from: thorStatus?.tx.from_address,
               asset: inAsset,
               amount: inAmount,
-              gas: thorStatus?.tx.gas ? thorStatus?.tx.gas[0].amount : null,
+              gas: thorStatus?.tx.gas ? thorStatus?.tx?.gas?.[0]?.amount : null,
               gasAsset: thorStatus?.tx.gas
-                ? this.parseMemoAsset(thorStatus?.tx.gas[0].asset, this.pools)
+                ? this.parseMemoAsset(thorStatus?.tx?.gas?.[0]?.asset, this.pools)
                 : null,
               preObservations:
                 thorStatus?.stages?.inbound_observed?.pre_confirmation_count,
@@ -1837,10 +1856,10 @@ export default {
           action: {
             type: onlyRefund || isRefund ? 'refunded Swap' : 'swap',
             timeStamp: timeStamp || null,
-            limit: memo.limit,
+            limit: memo?.limit,
             limitAsset: outMemoAsset,
-            affiliateName: memo.affiliate,
-            affiliateFee: sumAffiliateFee(memo.fee || 0),
+            affiliateName: memo?.affiliate,
+            affiliateFee: sumAffiliateFee(memo?.fee || 0),
             liquidityFee:
               parseInt(swapAction?.metadata.swap?.liquidityFee) || null,
             liquidityUnits: null,
@@ -1854,10 +1873,10 @@ export default {
               count: thorStatus?.stages.swap_status?.streaming?.count,
               interval:
                 thorStatus?.stages.swap_status?.streaming?.interval ||
-                memo.interval,
+                memo?.interval,
               quantity:
                 thorStatus?.stages.swap_status?.streaming?.quantity ||
-                memo.quantity,
+                memo?.quantity,
               lastHeight: null, // Add on midgard if available
             },
             memo: swapAction?.metadata.swap?.memo,
@@ -1870,18 +1889,18 @@ export default {
           out: [
             {
               txid: outTxs?.length > 0 ? outTxs[0]?.id : null,
-              to: (outTxs?.length > 0 && outTxs[0].to_address) || memo.destAddr,
+              to: (outTxs?.length > 0 && outTxs[0]?.to_address) || memo?.destAddr,
               asset: outAsset,
               amount: parseInt(outAmount),
               gas:
-                outTxs?.length > 0 && outTxs[0].gas
-                  ? outTxs[0].gas[0].amount
+                outTxs?.length > 0 && outTxs[0]?.gas
+                  ? outTxs[0]?.gas?.[0]?.amount
                   : null,
               gasAsset:
-                outTxs?.length > 0 && outTxs[0].gas
-                  ? this.parseMemoAsset(outTxs[0].gas[0].asset, this.pools)
+                outTxs?.length > 0 && outTxs[0]?.gas
+                  ? this.parseMemoAsset(outTxs[0]?.gas?.[0]?.asset, this.pools)
                   : null,
-              height: outTxs?.length > 0 ? outTxs[0].height : null,
+              height: outTxs?.length > 0 ? outTxs[0]?.height : null,
               fees: outboundFees,
               feeAssets: outboundFeeAssets,
               delayBlocksRemaining:
@@ -1896,30 +1915,30 @@ export default {
                 (outTxs?.length > 0 && outTxs[0]?.id) ||
                 (!thorStatus?.stages.swap_status?.pending &&
                   (thorStatus?.stages.outbound_signed?.completed ||
-                    outAsset.chain === 'THOR' ||
-                    outAsset.synth ||
-                    outAsset.trade ||
-                    outAsset.secure) &&
+                    outAsset?.chain === 'THOR' ||
+                    outAsset?.synth ||
+                    outAsset?.trade ||
+                    outAsset?.secure) &&
                   (thorStatus?.stages.outbound_delay?.completed ?? true)),
             },
             ...(outTxs ?? []).slice(1).map((o) => ({
               txid: o.id,
               to: o.to_address,
-              asset: this.parseMemoAsset(o.coins[0].asset, this.pools),
-              amount: parseInt(o.coins[0].amount),
-              gas: o.gas ? o.gas[0].amount : null,
+              asset: this.parseMemoAsset(o.coins?.[0]?.asset, this.pools),
+              amount: parseInt(o.coins?.[0]?.amount ?? 0),
+              gas: o.gas ? o.gas?.[0]?.amount : null,
               height: o.height,
               gasAsset: o.gas
-                ? this.parseMemoAsset(o.gas[0].asset, this.pools)
+                ? this.parseMemoAsset(o.gas?.[0]?.asset, this.pools)
                 : null,
               done:
                 !!o.id ||
                 (!thorStatus?.stages.swap_status?.pending &&
                   (thorStatus?.stages.outbound_signed?.completed ||
-                    outAsset.chain === 'THOR' ||
-                    outAsset.synth ||
-                    outAsset.trade ||
-                    outAsset.secure)),
+                    outAsset?.chain === 'THOR' ||
+                    outAsset?.synth ||
+                    outAsset?.trade ||
+                    outAsset?.secure)),
             })),
           ],
         },
