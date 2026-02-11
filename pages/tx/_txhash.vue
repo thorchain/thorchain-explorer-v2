@@ -1606,11 +1606,14 @@ export default {
         memo.destAddr?.toLowerCase(), // TODO: sometimes the memo destAddr will be THORName
       ])
       // Non affiliate outs
+      const memoAssetStr = (() => {
+        const parsed = this.parseMemoAsset(memo?.asset)
+        return parsed ? assetToString(parsed) : null
+      })()
       let outTxs = thorStatus.out_txs?.filter(
         (tx) =>
-          userAddresses.has(tx.to_address.toLowerCase()) ||
-          (tx.coins[0].asset ===
-            assetToString(this.parseMemoAsset(memo.asset)) &&
+          userAddresses.has(tx.to_address?.toLowerCase()) ||
+          (tx.coins?.[0]?.asset === memoAssetStr &&
             tx.id !==
               '0000000000000000000000000000000000000000000000000000000000000000' &&
             tx.id !== '')
