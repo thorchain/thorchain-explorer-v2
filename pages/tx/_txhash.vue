@@ -1817,10 +1817,19 @@ export default {
                 ? undefined
                 : (v) => `~ ${this.baseAmountFormatOrZero(v)}`,
             },
-            ...(outTxs ?? []).slice(1).map((o) => ({
-              asset: this.parseMemoAsset(o.coins?.[0]?.asset, this.pools),
-              amount: parseInt(o.coins?.[0]?.amount ?? 0),
-            })),
+            ...(outTxs ?? []).slice(1).map((o) => {
+              const oAmount = parseInt(o.coins?.[0]?.amount ?? 0)
+              const isRefundTx =
+                o.refund || o.memo?.toLowerCase().startsWith('refund')
+              const priceUSD = isRefundTx
+                ? +swapAction?.metadata?.swap?.inPriceUSD
+                : +swapAction?.metadata?.swap?.outPriceUSD
+              return {
+                asset: this.parseMemoAsset(o.coins?.[0]?.asset, this.pools),
+                amount: oAmount,
+                amountUSD: (priceUSD * oAmount) / 1e8,
+              }
+            }),
           ],
         },
         accordions: {

@@ -12,7 +12,7 @@
         />
         <div class="asset-info">
           <span class="asset-name">{{
-            decimalFormat(ops.coins[0].amount / 1e8)
+            decimalFormat(getEffectiveInAmount(row, ops) / 1e8)
           }}</span>
           <span
             v-if="getInUSD(row, ops) && showInlineUsd"
@@ -592,16 +592,35 @@ export default {
         ''
       )
     },
+    getEffectiveInAmount(row, ops) {
+      const amount = +ops?.coins?.[0]?.amount || 0
+      const streamingInCoin =
+        +row?.metadata?.swap?.streamingSwapMeta?.depositedCoin?.amount || 0
+      return streamingInCoin > amount ? streamingInCoin : amount
+    },
     getInUSD(row, ops) {
       if (!row?.metadata?.swap?.inPriceUSD || !ops?.coins?.[0]) {
         return null
       }
       const inPriceUSD = row.metadata.swap.inPriceUSD
-      const inUSD = (inPriceUSD * ops.coins[0].amount) / 1e8
+      const inAmount = this.getEffectiveInAmount(row, ops)
+      const inUSD = (inPriceUSD * inAmount) / 1e8
       return this.$options.filters.currency(inUSD)
     },
     getOutUSD(row, coin) {
-      if (!row?.metadata?.swap?.outPriceUSD || !coin) {
+      if (!coin) {
+        return null
+      }
+      // Refund coins (same asset as inbound) should use inPriceUSD
+      const inAsset = row?.in?.[0]?.coins?.[0]?.asset
+      const isRefund = inAsset && coin.asset === inAsset
+      if (isRefund) {
+        const inPriceUSD = row?.metadata?.swap?.inPriceUSD
+        if (!inPriceUSD) return null
+        const outUSD = (inPriceUSD * coin.amount) / 1e8
+        return this.$options.filters.currency(outUSD)
+      }
+      if (!row?.metadata?.swap?.outPriceUSD) {
         return null
       }
       const outPriceUSD = row.metadata.swap.outPriceUSD
