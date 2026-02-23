@@ -999,6 +999,46 @@ export const interfaces = {
     icon: 'clypto',
     addName: true,
   },
+  coolwallet: {
+    name: 'Coolwallet',
+    icon: 'coolwallet',
+  },
+  zypto: {
+    name: 'Zypto',
+    icon: 'zypto',
+  },
+  burrito: {
+    name: 'Burrito Wallet',
+    icon: 'burrito',
+  },
+  astrolescent: {
+    name: 'Astrolescent',
+    icon: 'astrolescent',
+  },
+  safepal: {
+    name: 'SafePal',
+    icon: 'safepal',
+  },
+  biorbank: {
+    name: 'BiorBank',
+    icon: 'biorbank',
+  },
+  coin98: {
+    name: 'Coin98',
+    icon: 'coin98',
+  },
+  keystone: {
+    name: 'Keystone',
+    icon: 'keystone',
+  },
+  coinex: {
+    name: 'Coinex Wallet',
+    icon: 'coinex',
+  },
+  xverse: {
+    name: 'Xverse',
+    icon: 'xverse',
+  },
 }
 
 export const affiliateMap = {
@@ -1049,6 +1089,16 @@ export const affiliateMap = {
   '-t': interfaces.thorswap,
   sto: interfaces.thorchain,
   c1: interfaces.clypto,
+  cbx: interfaces.coolwallet,
+  zyp: interfaces.zypto,
+  burrito: interfaces.burrito,
+  dp: interfaces.astrolescent,
+  hvl: interfaces.safepal,
+  byb: interfaces.biorbank,
+  c98: interfaces.coin98,
+  kns: interfaces.keystone,
+  mis: interfaces.coinex,
+  xv: interfaces.xverse,
 }
 
 export function getExplorerAddressUrl(chain, query, type) {
