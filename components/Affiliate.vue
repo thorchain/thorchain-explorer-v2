@@ -185,14 +185,14 @@ export default {
 
     em {
       white-space: nowrap;
-      max-width: 78px;
+      max-width: 85px;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
     img {
       height: 1.2rem;
-      max-width: 78px;
+      max-width: 85px;
     }
   }
 }
