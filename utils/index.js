@@ -1157,6 +1157,10 @@ export function getExplorerAddressUrl(chain, query, type) {
       return isAddress
         ? `https://tronscan.org/#/address/${query}`
         : `https://tronscan.org/#/transaction/${query}`
+    case 'SOL':
+      return isAddress
+        ? `https://solscan.io/address/${query}`
+        : `https://solscan.io/tx/${query}`
     default:
       break
   }
