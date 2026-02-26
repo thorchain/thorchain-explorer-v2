@@ -1039,6 +1039,10 @@ export const interfaces = {
     name: 'Xverse',
     icon: 'xverse',
   },
+  orangerock: {
+    name: 'OrangeRock',
+    icon: 'orangerock',
+  },
 }
 
 export const affiliateMap = {
@@ -1099,6 +1103,8 @@ export const affiliateMap = {
   kns: interfaces.keystone,
   mis: interfaces.coinex,
   xv: interfaces.xverse,
+  ahi: interfaces.xdefi,
+  bdc: interfaces.orangerock
 }
 
 export function getExplorerAddressUrl(chain, query, type) {
