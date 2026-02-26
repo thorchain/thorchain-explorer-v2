@@ -1043,6 +1043,10 @@ export const interfaces = {
     name: 'OrangeRock',
     icon: 'orangerock',
   },
+  xchain: {
+    name: 'XChainJS',
+    icon: 'xchain',
+  },
 }
 
 export const affiliateMap = {
@@ -1104,7 +1108,8 @@ export const affiliateMap = {
   mis: interfaces.coinex,
   xv: interfaces.xverse,
   ahi: interfaces.xdefi,
-  bdc: interfaces.orangerock
+  bdc: interfaces.orangerock,
+  xc: interfaces.xchain
 }
 
 export function getExplorerAddressUrl(chain, query, type) {
