@@ -582,6 +582,11 @@ export default {
         done: true,
       }))
 
+      const code = action.metadata?.contract?.code ?? 0
+      const logs = action.metadata?.contract?.logs
+      const memo = action.metadata?.contract?.memo
+      const hasError = code > 0
+
       return {
         cards: {
           title: 'Contract Event',
@@ -593,8 +598,8 @@ export default {
           ],
           middle: {
             pending: false,
-            fail: false,
-            success: true,
+            fail: hasError,
+            success: !hasError,
             empty: true,
           },
           out: [
@@ -613,6 +618,11 @@ export default {
               funds: action.metadata?.contract?.funds,
               msg: action.metadata?.contract?.msg,
             },
+            memo,
+            logs,
+            code,
+            error: hasError,
+            reason: hasError ? logs : undefined,
             done: true,
           },
           events: action.metadata?.contract?.contractEvents,
