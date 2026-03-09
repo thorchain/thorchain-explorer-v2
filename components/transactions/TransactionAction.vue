@@ -442,6 +442,12 @@
       v-else-if="row && type === 'contract' && row.metadata.contract"
       :class="['action-cell', { 'no-border': noBorder, wrap: wrap }]"
     >
+      <div v-if="hasContractFailure(row)" class="asset-cell">
+        <info-icon
+          v-tooltip="getContractFailureReason(row)"
+          class="action-type red reason"
+        />
+      </div>
       <template
         v-if="
           row.metadata.contract.contractType === 'wasm-rujira-merge/deposit'
@@ -626,6 +632,31 @@ export default {
       const outPriceUSD = row.metadata.swap.outPriceUSD
       const outUSD = (outPriceUSD * coin.amount) / 1e8
       return this.$options.filters.currency(outUSD)
+    },
+    hasContractFailure(row) {
+      const code = +(row?.metadata?.contract?.code ?? 0)
+      return code > 0 || !!this.getContractLogs(row)
+    },
+    getContractLogs(row) {
+      const logs = row?.metadata?.contract?.logs
+
+      if (Array.isArray(logs)) {
+        return logs
+          .map((log) =>
+            typeof log === 'string' ? log : JSON.stringify(log, null, 2)
+          )
+          .filter(Boolean)
+          .join('\n')
+      }
+
+      if (logs && typeof logs === 'object') {
+        return JSON.stringify(logs, null, 2)
+      }
+
+      return typeof logs === 'string' ? logs.trim() : ''
+    },
+    getContractFailureReason(row) {
+      return this.getContractLogs(row) || 'Contract call failed'
     },
   },
 }
