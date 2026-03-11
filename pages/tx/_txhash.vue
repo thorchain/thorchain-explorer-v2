@@ -486,10 +486,11 @@ export default {
 
       // Default: one card per action (createAbstractState). Skip contract
       // actions here; appendContractCards adds proper "Contract Event" cards.
+      // Refund is no longer skipped so standalone refunds (e.g. empty memo) get a card.
       const finalCards = []
       for (let i = 0; i < midgardAction?.actions?.length; i++) {
         const action = midgardAction.actions[i]
-        if (action?.type === 'contract' || action?.type === 'refund') continue
+        if (action?.type === 'contract') continue
         const { cards, accordions } = this.createAbstractState(
           thorStatus,
           action,
@@ -1085,7 +1086,7 @@ export default {
       }
 
       let cardAction = {
-        type: 'Action',
+        type: action?.type === 'refund' ? 'Refund' : 'Action',
         timeStamp: moment.unix(action?.date / 1e9) || null,
         height: action?.height,
         memo,
@@ -1145,7 +1146,7 @@ export default {
           title,
           in: ins,
           middle: {
-            fail: false,
+            fail: isRefund,
             refund: isRefund,
             pending: false,
           },
