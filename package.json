@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "nuxt",
-    "dev-mobile": "nuxt --hostname 0.0.0.0 --port 8000",
+    "dev": "nuxt dev",
+    "dev-mobile": "nuxt dev --hostname 0.0.0.0 --port 8000",
     "build": "nuxt build",
     "start": "nuxt start",
     "generate": "nuxt generate",
