@@ -183,14 +183,21 @@ export function buildActionAccordion(accordionsAction, ctx) {
     },
     {
       key: 'Interval',
-      value: `${moment
-        .duration(action.streaming?.interval * 6, 's')
-        .as('seconds')} secs (${ctx.pluralize(
-        action?.streaming?.interval,
-        'Block',
-        { includeNumber: true }
-      )})`,
-      is: action.streaming?.interval,
+      value:
+        (action?.streaming?.interval === 0 ||
+          action?.streaming?.interval === '0') &&
+        +action?.height > 25400000
+          ? 'Rapid Swap'
+          : `${moment
+              .duration(action.streaming?.interval * 6, 's')
+              .as('seconds')} secs (${ctx.pluralize(
+              action?.streaming?.interval,
+              'Block',
+              { includeNumber: true }
+            )})`,
+      is:
+        action?.streaming?.interval !== undefined &&
+        action?.streaming?.interval !== null,
     },
     {
       key: liquidityFeeName,

@@ -34,6 +34,11 @@ export default {
   methods: {
     typeName(type) {
       switch (type) {
+        case 'swap':
+          if (this.isRapidSwap(this.row)) {
+            return 'Rapid Swap'
+          }
+          return this.$options.filters?.capitalize(type) || type
         case 'addLiquidity':
           return this.detailedType(type)
         case 'withdraw':
@@ -103,6 +108,11 @@ export default {
         default:
           return type
       }
+    },
+    isRapidSwap(row) {
+      const interval = row?.metadata?.swap?.streamingSwapMeta?.interval
+      const height = Number(row?.height || 0)
+      return (interval === 0 || interval === '0') && height > 25400000
     },
   },
 }

@@ -1804,9 +1804,18 @@ export default {
         )
       }
 
+      const rapidInterval = swapAction?.metadata?.swap?.streamingSwapMeta?.interval
+      const isRapidSwap =
+        (rapidInterval === 0 || rapidInterval === '0') && +height > 25400000
+      const swapTypeLabel = isRapidSwap ? 'rapid Swap' : 'swap'
+      const refundedSwapTypeLabel = isRapidSwap
+        ? 'refunded Rapid Swap'
+        : 'refunded Swap'
+      const streamingMeta = swapAction?.metadata?.swap?.streamingSwapMeta
+
       return {
         cards: {
-          title: onlyRefund ? 'refunded Swap' : 'swap',
+          title: onlyRefund ? refundedSwapTypeLabel : swapTypeLabel,
           labels: onlyRefund ? [] : isRefund ? ['Refund'] : [],
           in: [
             {
@@ -1874,7 +1883,8 @@ export default {
             },
           ],
           action: {
-            type: onlyRefund || isRefund ? 'refunded Swap' : 'swap',
+            type:
+              onlyRefund || isRefund ? refundedSwapTypeLabel : swapTypeLabel,
             timeStamp: timeStamp || null,
             limit: memo?.limit,
             limitAsset: outMemoAsset,
@@ -1890,14 +1900,18 @@ export default {
             height,
             rate: rates,
             streaming: {
-              count: thorStatus?.stages.swap_status?.streaming?.count,
+              count:
+                thorStatus?.stages.swap_status?.streaming?.count ??
+                streamingMeta?.count,
               interval:
-                thorStatus?.stages.swap_status?.streaming?.interval ||
+                thorStatus?.stages.swap_status?.streaming?.interval ??
+                streamingMeta?.interval ??
                 memo?.interval,
               quantity:
-                thorStatus?.stages.swap_status?.streaming?.quantity ||
+                thorStatus?.stages.swap_status?.streaming?.quantity ??
+                streamingMeta?.quantity ??
                 memo?.quantity,
-              lastHeight: null, // Add on midgard if available
+              lastHeight: streamingMeta?.lastHeight || null,
             },
             memo: swapAction?.metadata.swap?.memo,
             done:
