@@ -83,6 +83,20 @@ $sidebar-margin-left: 100px !default;
     color: #191c1e;
     background-color: #3ca38b;
 }
+[theme='dark'] .mx-time {
+    background-color: var(--bg-color);
+}
+[theme='dark'] .mx-time-column .mx-time-item {
+    color: var(--sec-font-color);
+}
+[theme='dark'] .mx-time-column .mx-time-item:hover {
+    background-color: #004435;
+    color: #e6e6e6;
+}
+[theme='dark'] .mx-time-column .mx-time-item.active {
+    color: #191c1e;
+    background-color: #3ca38b;
+}
 [theme='light'] .mx-btn{
     color: #5c5c5c;
 }

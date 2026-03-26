@@ -25,6 +25,7 @@ import {
   getSwapsHistory,
   getStats,
   getPools,
+  getDebugBlock,
 } from './midgard.api'
 import {
   getRunePoolProviders,
@@ -217,6 +218,7 @@ export default function ({ $axios }, inject) {
     getBlockHeight,
     getRunePoolProviders,
     getStats,
+    getDebugBlock,
     getTxs,
     getConstants,
     getMimir,

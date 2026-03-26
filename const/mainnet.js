@@ -176,6 +176,10 @@ export const mainnetNav = {
           name: 'Execution Quality',
           link: '/insights/execution',
         },
+        {
+          name: 'Block Lookup',
+          link: '/insights/block-time',
+        },
       ],
     },
   ],

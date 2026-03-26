@@ -122,6 +122,10 @@ export function getNetwork() {
   return $axiosInstace.get('network')
 }
 
+export function getDebugBlock(blockParam) {
+  return $axiosInstace.get(`debug/block/${blockParam}`)
+}
+
 export async function getLatestBlocks(latestBlock, count = 10) {
   if (!latestBlock) {
     return
