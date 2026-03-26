@@ -316,7 +316,20 @@ export default {
           return
         }
 
-        this.totalSumAmount = resData.reduce((a, c) => {
+        // Only show streamings that have started (have non-zero input swapped).
+        const startedStreamings = resData.filter(
+          (s) => Number(s?.in || 0) > 0
+        )
+
+        if (startedStreamings.length === 0) {
+          this.noStreaming = true
+          this.streamingSwaps = []
+          this.loading = false
+          this.totalSumAmount = 0
+          return
+        }
+
+        this.totalSumAmount = startedStreamings.reduce((a, c) => {
           const inputUsdValue = this.amountToUSD(
             c.source_asset,
             c.deposit,
@@ -325,7 +338,7 @@ export default {
           return a + inputUsdValue
         }, 0)
 
-        this.streamingSwaps = resData
+        this.streamingSwaps = startedStreamings
         this.loading = false
       } catch (error) {
         console.error(error)

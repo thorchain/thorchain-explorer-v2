@@ -1,5 +1,5 @@
 <template>
-  <card v-if="streamingDetail.is && streamingDetail.fill > 0" class="streaming-card">
+  <card v-if="showStreamingCard" class="streaming-card">
     <div class="card-header streaming-header">
       <span>Streaming Swap <sup class="header-sup">Live</sup></span>
       <div
@@ -112,6 +112,10 @@ export default {
     }
   },
   computed: {
+    showStreamingCard() {
+      const streamedIn = Number(this.streamingData?.in || 0)
+      return this.streamingDetail.is && this.streamingDetail.fill > 0 && streamedIn > 0
+    },
     quoteQuality() {
       if (!this.quote || !this.streamingData) {
         return
