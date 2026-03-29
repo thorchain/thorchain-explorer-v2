@@ -367,7 +367,7 @@ export default {
           hidden: this.hides?.score ?? false,
         },
         {
-          label: 'APY',
+          label: 'APR',
           field: 'apy',
           type: 'percentage',
           tdClass: 'mono center',
@@ -747,7 +747,7 @@ export default {
               filter: (v) => this.formatRune(v, '0,0a'),
             },
             {
-              name: 'Average APY ',
+              name: 'Average APR ',
               value: this.averageApysCalc(),
               filter: (v) => `${this.$options.filters.percent(v, 2)} `,
             },

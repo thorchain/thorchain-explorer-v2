@@ -492,7 +492,7 @@ export default {
               valueSlot: 'operator',
             },
             {
-              name: 'APY',
+              name: 'APR',
               value: this.node ? this.node.apy : null,
               filter: (v) => `${this.$options.filters.percent(v, 2)}`,
             },
