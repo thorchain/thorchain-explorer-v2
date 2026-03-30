@@ -1,3 +1,11 @@
+const useLocalProxy = process.env.NODE_ENV === 'development'
+const devProxyOrigin = process.env.DEV_PROXY_ORIGIN || 'http://localhost:3000'
+
+const serverUrl = (path = '') =>
+  useLocalProxy
+    ? `${devProxyOrigin}/server-api/${path}`
+    : `https://vanaheimex.com/${path}`
+
 module.exports = {
   mainnet: {
     MIDGARD_BASE_URL: 'https://gateway.liquify.com/chain/thorchain_midgard/v2/',
@@ -13,7 +21,7 @@ module.exports = {
     MIDGARD_GRAPH_QL: 'https://stagenet-midgard.ninerealms.com/v2',
     THORNODE_URL: 'https://stagenet-thornode.ninerealms.com/',
     TENDERMINT_URL: 'https://stagenet-rpc.ninerealms.com/',
-    SERVER_URL: 'https://vanaheimex.com/stage/',
+    SERVER_URL: serverUrl('stage/'),
     MODULE_ADDR: 'sthor1dheycdevq39qlkxs2a6wuuzyn4aqxhvepe6as4',
   },
   chainnet: {
@@ -21,7 +29,7 @@ module.exports = {
     MIDGARD_GRAPH_QL: 'https://chainnet-midgard.thorchain.network/v2',
     THORNODE_URL: 'https://chainnet-thornode.thorchain.network/',
     TENDERMINT_URL: 'https://chainnet-rpc.thorchain.network/',
-    SERVER_URL: 'https://vanaheimex.com/chainnet/',
+    SERVER_URL: serverUrl('chainnet/'),
     MODULE_ADDR: '',
   },
 }
