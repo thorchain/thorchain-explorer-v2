@@ -120,7 +120,7 @@ import CrossIcon from '~/assets/images/cross.svg?inline'
 import FilterIcon from '~/assets/images/filter.svg?inline'
 
 export default {
-  name: 'Filter',
+  name: 'AdvancedFilterDialog',
   components: {
     CrossIcon,
     FilterIcon,
@@ -478,47 +478,44 @@ export default {
 .advanced-filter {
   display: flex;
   align-items: center;
-  padding: $space-10 $space-8;
-  font-size: $font-size-s;
-  background-color: var(--card-bg-color);
-  color: var(--font-color);
+  gap: $space-6;
+  min-height: 4rem;
+  padding: 0 $space-12;
+  font-size: $font-size-sm;
+  background-color: var(--bgl-color);
+  color: var(--sec-font-color);
   border: 1px solid var(--border-color);
-  border-radius: $radius-s;
+  border-radius: $radius-lg;
   cursor: pointer;
   width: auto;
-  margin: $space-8;
+  margin: 0;
   white-space: nowrap;
-  font-weight: 300;
+  font-weight: 450;
   transition:
     background-color 0.3s ease,
     transform 0.3s ease;
-  @include lg {
-    font-size: $font-size-sm;
-    font-weight: 450;
-  }
 
   .filter-icon {
     width: 1.2rem;
     height: 1.2rem;
-    margin-right: $space-5;
+    flex: 0 0 auto;
   }
 
   &:hover {
-    background-color: var(--active-bg-color);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    transform: translateY(-2px);
-    color: var(--sec-font-color);
+    background-color: color-mix(in srgb, var(--highlight) 8%, transparent);
+    border-color: color-mix(in srgb, var(--green) 35%, var(--border-color));
+    color: var(--green);
   }
 }
 
 .mini-bubble {
   font-size: $font-size-xs;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-left: $space-5;
+  margin-left: $space-2;
 }
 
 .close-btn {

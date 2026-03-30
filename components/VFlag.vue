@@ -19,7 +19,7 @@ export default {
         return undefined
       }
 
-      return require(`country-flag-icons/flags/3x2/${this.flag}.svg`)
+      return require(`country-flag-icons/3x2/${String(this.flag).toUpperCase()}.svg`)
     },
   },
 }
