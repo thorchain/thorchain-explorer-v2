@@ -1,10 +1,10 @@
 module.exports = {
   mainnet: {
-    MIDGARD_BASE_URL: 'https://midgard.ninerealms.com/v2/',
-    MIDGARD_GRAPH_QL: 'https://midgard.ninerealms.com/v2',
-    ARCHIVE_THORNODE: 'https://thornode-v1.ninerealms.com/',
-    THORNODE_URL: 'https://thornode.ninerealms.com/',
-    TENDERMINT_URL: 'https://rpc.ninerealms.com/',
+    MIDGARD_BASE_URL: 'https://gateway.liquify.com/chain/thorchain_midgard/v2/',
+    MIDGARD_GRAPH_QL: 'https://gateway.liquify.com/chain/thorchain_midgard/v2',
+    ARCHIVE_THORNODE: 'https://gateway.liquify.com/chain/thorchain_v1_api/',
+    THORNODE_URL: 'https://gateway.liquify.com/chain/thorchain_api/',
+    TENDERMINT_URL: 'https://gateway.liquify.com/chain/thorchain_rpc/',
     SERVER_URL: 'https://vanaheimex.com/',
     MODULE_ADDR: 'thor1dheycdevq39qlkxs2a6wuuzyn4aqxhve4qxtxt',
   },
