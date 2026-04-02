@@ -103,6 +103,7 @@ import {
   getAffiliateSwapsWeekly,
   getNodeOverview,
   getActions,
+  getActionsNoCancel,
   getCoinMarketInfo,
   getNodesInfo,
   getTopSwaps,
@@ -142,6 +143,22 @@ export var $axiosInstace
 
 // interceptor to catch errors
 const errorInterceptor = (error) => {
+  const requestUrl = error?.config?.url || ''
+
+  if (
+    error?.response?.status === 404 &&
+    requestUrl.includes('api/contractsLabel')
+  ) {
+    return Promise.resolve({
+      data: [],
+      status: 200,
+      statusText: 'OK',
+      headers: error.response.headers || {},
+      config: error.config,
+      request: error.request,
+    })
+  }
+
   // check if it's a server error
   if (!error.response) {
     console.warn('Network/Server error')
@@ -315,6 +332,7 @@ export default function ({ $axios }, inject) {
     getAffiliateSwapsDaily,
     getNodeOverview,
     getActions,
+    getActionsNoCancel,
     getMidgardActions,
     getThorVersion,
     getCoinMarketInfo,

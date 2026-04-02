@@ -1,6 +1,6 @@
 <template>
   <Page>
-    <div v-if="swapOverview" class="tx-detail-page">
+    <div v-if="swapOverview || contractOverview" class="tx-detail-page">
       <div class="tx-detail-back">
         <nuxt-link to="/txs" class="tx-back-link">
           ← All Transactions
@@ -8,14 +8,14 @@
       </div>
 
       <div class="tx-detail-meta">
-        <span>{{ swapOverview.metaLabel }}</span>
-        <span :class="['tx-detail-status', `tx-detail-status--${swapOverview.status.tone}`]">
-          {{ swapOverview.status.label }}
+        <span>{{ activeOverview.metaLabel }}</span>
+        <span :class="['tx-detail-status', `tx-detail-status--${activeOverview.status.tone}`]">
+          {{ activeOverview.status.label }}
         </span>
       </div>
 
       <h1 class="tx-detail-title">
-        {{ swapOverview.title }}
+        {{ activeOverview.title }}
       </h1>
 
       <div class="tx-detail-grid">
@@ -26,19 +26,19 @@
                 <div class="tx-asset-label">Input</div>
                 <div class="tx-asset-primary">
                   <AssetIcon
-                    v-if="swapOverview.input.asset"
-                    :asset="swapOverview.input.asset"
+                    v-if="activeOverview.input.asset"
+                    :asset="activeOverview.input.asset"
                     :height="'2.25rem'"
                   />
-                  <span>{{ swapOverview.input.name }}</span>
+                  <span>{{ activeOverview.input.name }}</span>
                 </div>
                 <div class="tx-asset-badge">
-                  {{ swapOverview.input.badge }}
+                  {{ activeOverview.input.badge }}
                 </div>
                 <div class="tx-asset-values">
-                  <span>{{ swapOverview.input.amount }}</span>
-                  <strong v-if="swapOverview.input.usd">{{
-                    swapOverview.input.usd
+                  <span>{{ activeOverview.input.amount }}</span>
+                  <strong v-if="activeOverview.input.usd">{{
+                    safeUsdDisplay(activeOverview.input.usd)
                   }}</strong>
                 </div>
               </div>
@@ -49,27 +49,27 @@
                 <div class="tx-asset-label">Output</div>
                 <div class="tx-asset-primary">
                   <AssetIcon
-                    v-if="swapOverview.output.asset"
-                    :asset="swapOverview.output.asset"
+                    v-if="activeOverview.output.asset"
+                    :asset="activeOverview.output.asset"
                     :height="'2.25rem'"
                   />
-                  <span>{{ swapOverview.output.name }}</span>
+                  <span>{{ activeOverview.output.name }}</span>
                 </div>
                 <div class="tx-asset-badge">
-                  {{ swapOverview.output.badge }}
+                  {{ activeOverview.output.badge }}
                 </div>
                 <div class="tx-asset-values">
-                  <span>{{ swapOverview.output.amount }}</span>
-                  <strong v-if="swapOverview.output.usd">{{
-                    swapOverview.output.usd
+                  <span>{{ activeOverview.output.amount }}</span>
+                  <strong v-if="activeOverview.output.usd">{{
+                    safeUsdDisplay(activeOverview.output.usd)
                   }}</strong>
                 </div>
               </div>
             </div>
 
-            <div v-if="swapOverview.metricRows.length" class="tx-metric-strip">
+            <div v-if="activeOverview.metricRows.length" class="tx-metric-strip">
               <div
-                v-for="metric in swapOverview.metricRows"
+                v-for="metric in activeOverview.metricRows"
                 :key="metric.label"
                 class="tx-metric-item"
               >
@@ -83,14 +83,14 @@
             <div class="tx-section-title">Details</div>
             <div class="tx-detail-rows">
               <div
-                v-for="row in swapOverview.detailRows"
+                v-for="row in activeOverview.detailRows"
                 :key="row.label"
                 class="tx-detail-row"
               >
                 <div class="tx-detail-key">{{ row.label }}</div>
                 <div class="tx-detail-value">
                   <template v-if="row.type === 'status'">
-                    <span :class="['tx-detail-status', `tx-detail-status--${swapOverview.status.tone}`]">
+                    <span :class="['tx-detail-status', `tx-detail-status--${activeOverview.status.tone}`]">
                       {{ row.value }}
                     </span>
                   </template>
@@ -107,11 +107,11 @@
             </div>
           </section>
 
-          <section v-if="swapOverview.lifecycleRows.length" class="tx-info-card card-bg">
+          <section v-if="activeOverview.lifecycleRows.length" class="tx-info-card card-bg">
             <div class="tx-section-title">Lifecycle Events</div>
             <div class="tx-lifecycle-list">
               <div
-                v-for="event in swapOverview.lifecycleRows"
+                v-for="event in activeOverview.lifecycleRows"
                 :key="event.title"
                 class="tx-lifecycle-item"
               >
@@ -145,11 +145,11 @@
             </div>
           </section>
 
-          <section v-if="swapOverview.feeRows.length" class="tx-info-card card-bg">
+          <section v-if="activeOverview.feeRows.length" class="tx-info-card card-bg">
             <div class="tx-section-title">Fee Breakdown</div>
             <div class="tx-fee-list">
               <div
-                v-for="fee in swapOverview.feeRows"
+                v-for="fee in activeOverview.feeRows"
                 :key="fee.label"
                 class="tx-fee-row"
               >
@@ -169,7 +169,7 @@
             </button>
             <div v-if="technicalExpanded" class="tx-tech-list">
               <div
-                v-for="row in swapOverview.technicalRows"
+                v-for="row in activeOverview.technicalRows"
                 :key="row.label"
                 class="tx-tech-row"
               >
@@ -280,6 +280,7 @@ import {
   sumAffiliateFee,
 } from '~/utils'
 import Accordion from '~/components/Accordion.vue'
+import { getRujiraContractLabel } from '~/utils/rujiraContracts'
 
 export default {
   components: {
@@ -305,6 +306,7 @@ export default {
       },
       updateInterval: undefined,
       cards: [],
+      rawActions: null,
       inboundHash: undefined,
       thorStatus: undefined,
       thorHeight: 0,
@@ -322,6 +324,9 @@ export default {
       pools: 'getPools',
       runePrice: 'getRunePrice',
     }),
+    activeOverview() {
+      return this.swapOverview || this.contractOverview || null
+    },
     swapCardIndex() {
       if (!this.cards?.length) return -1
       return this.cards.findIndex((card) =>
@@ -330,6 +335,7 @@ export default {
     },
     visibleCards() {
       if (!this.cards?.length) return []
+      if (this.contractOverview) return [] // hide all contract cards when contractOverview is active
       if (!this.swapOverview) return this.cards
       return this.cards.filter((_, index) => index !== this.swapCardIndex)
     },
@@ -372,11 +378,16 @@ export default {
       const rate = this.getStackDisplayValue(actionStacks, 'Rate')
       const slip = this.getStackDisplayValue(actionStacks, 'Swap Slip')
       const affiliateBasis = this.getStackDisplayValue(actionStacks, 'Affiliate Basis')
-      const liquidityFee = this.getStackDisplayValueByPrefix(actionStacks, 'Liquidity Fee')
-      const interfaceFee = this.getStackDisplayValue(actionStacks, 'Interface Fee')
+      const liquidityFee = this.formatFeeDisplay(
+        this.getStackDisplayValueByPrefix(actionStacks, 'Liquidity Fee')
+      )
+      const interfaceFee = this.formatFeeDisplay(
+        this.getStackDisplayValue(actionStacks, 'Interface Fee')
+      )
       const networkFees = outboundStacks
         .filter((stack) => stack.key === 'Outbound Fee' && stack.is)
-        .map((stack) => this.formatStackValue(stack.value))
+        .map((stack) => this.formatFeeDisplay(this.formatStackValue(stack.value)))
+        .filter(Boolean)
       const totalFees = [liquidityFee, interfaceFee, ...networkFees].filter(Boolean)
 
       return {
@@ -456,8 +467,7 @@ export default {
           totalFees.length
             ? {
                 label: 'Fee Entries',
-                value: `${totalFees.length}`,
-                subtle: totalFees.join(' · '),
+                value: `${totalFees.length} ${totalFees.length === 1 ? 'entry' : 'entries'}`,
               }
             : null,
         ].filter(Boolean),
@@ -469,6 +479,106 @@ export default {
           this.buildTechRow('Exchange rate', rate),
           this.buildTechRow('Affiliate basis', affiliateBasis),
           this.buildTechRow('Limit', this.getStackDisplayValue(actionStacks, 'Limit')),
+        ].filter(Boolean),
+      }
+    },
+    contractOverview() {
+      if (!this.rawActions?.length) return null
+
+      // Only applies when every action is a contract type
+      if (!this.rawActions.every((a) => a.type === 'contract')) return null
+
+      const contractTypes = this.rawActions.map(
+        (a) => a.metadata?.contract?.contractType ?? ''
+      )
+      const isCalc = contractTypes.some((ct) => ct.includes('calc'))
+      if (!isCalc) return null
+
+      const tradeActions = this.rawActions.filter((a) =>
+        (a.metadata?.contract?.contractType ?? '').includes('fin/trade')
+      )
+      const tradeCount = tradeActions.length
+
+      // Determine overall status from all actions
+      const hasError = this.rawActions.some(
+        (a) => (a.metadata?.contract?.code ?? 0) > 0
+      )
+      const allSuccess = this.rawActions.every((a) => a.status === 'success')
+      const status = hasError
+        ? { label: 'Failed', tone: 'red' }
+        : allSuccess
+          ? { label: 'Success', tone: 'green' }
+          : { label: 'Pending', tone: 'blue' }
+
+      // Strategy address from calc-manager action
+      const managerAction = this.rawActions.find((a) =>
+        (a.metadata?.contract?.contractType ?? '').includes('calc-manager')
+      )
+      const strategyAddress =
+        managerAction?.metadata?.contract?.attributes?.strategy_address ||
+        managerAction?.in?.[0]?.address ||
+        ''
+      const executorAddress =
+        managerAction?.metadata?.contract?.attributes?.executor || ''
+
+      // Collect unique pair contract addresses from fin/trade actions
+      const pairAddresses = [
+        ...new Set(tradeActions.map((a) => a.out?.[0]?.address).filter(Boolean)),
+      ]
+      const pairLabels = pairAddresses
+        .map((addr) => getRujiraContractLabel(addr) || this.formatAddress(addr))
+        .join(', ')
+
+      // Aggregate rates from fin/trade
+      const rates = tradeActions
+        .map((a) => {
+          const attrs = a.metadata?.contract?.attributes ?? {}
+          return attrs.rate ? parseFloat(attrs.rate) : null
+        })
+        .filter((r) => r !== null && !isNaN(r))
+      const avgRate = rates.length
+        ? rates.reduce((s, r) => s + r, 0) / rates.length
+        : null
+
+      const date = this.rawActions[0]?.date
+      const timestamp = date ? moment.unix(parseInt(date) / 1e9) : null
+
+      return {
+        title: `${tradeCount} Recurring Swap${tradeCount !== 1 ? 's' : ''} executed`,
+        metaLabel: 'Recurring Swaps · CALC',
+        status,
+        input: {
+          asset: 'THOR.RUJI',
+          name: 'Strategy',
+          badge: strategyAddress ? this.formatAddress(strategyAddress) : 'CALC',
+          amount: `${tradeCount} trade${tradeCount !== 1 ? 's' : ''}`,
+          usd: null,
+        },
+        output: {
+          asset: null,
+          name: 'RUJI Trade',
+          badge: pairLabels || 'Orderbook',
+          amount: avgRate ? `Avg rate ${avgRate.toFixed(6)}` : 'Executed',
+          usd: null,
+        },
+        metricRows: [
+          { label: 'Trades Executed', value: `${tradeCount}` },
+          pairLabels ? { label: 'Pairs', value: pairLabels } : null,
+          avgRate ? { label: 'Avg Exchange Rate', value: avgRate.toFixed(6) } : null,
+          timestamp ? { label: 'Time', value: timestamp.format('YYYY-MM-DD HH:mm:ss') } : null,
+        ].filter(Boolean),
+        detailRows: [
+          { label: 'Product', value: 'Recurring Swaps' },
+          { label: 'Action', value: 'Contract execution' },
+          { label: 'Status', value: status.label, type: 'status' },
+          timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
+          executorAddress ? { label: 'Executor', value: this.formatAddress(executorAddress) } : null,
+        ].filter(Boolean),
+        lifecycleRows: [],
+        feeRows: [],
+        technicalRows: [
+          strategyAddress ? this.buildTechRow('Strategy address', strategyAddress, 'address') : null,
+          executorAddress ? this.buildTechRow('Executor address', executorAddress, 'address') : null,
         ].filter(Boolean),
       }
     },
@@ -558,18 +668,73 @@ export default {
     formatAssetAmount(amount, asset) {
       const formattedAmount = `${this.baseAmountFormatOrZero(amount)}`
       const numericAmount = Number(formattedAmount.replace(/,/g, ''))
-      const displayAmount = Number.isFinite(numericAmount)
-        ? new Intl.NumberFormat('en-US', {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 2,
-          }).format(numericAmount)
-        : formattedAmount
-
-      return `${displayAmount} ${this.showAsset(asset)}`
+      if (!Number.isFinite(numericAmount)) {
+        return `${formattedAmount} ${this.getAssetSymbol(asset)}`
+      }
+      // Use enough decimals so small amounts (e.g. 0.00217 BTC) aren't rounded to 0
+      const maxDecimals = numericAmount > 0 && numericAmount < 0.01 ? 8 : 2
+      const displayAmount = new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: maxDecimals,
+      }).format(numericAmount)
+      return `${displayAmount} ${this.getAssetSymbol(asset)}`
     },
     formatUsdValue(value) {
-      if (value == null || value === '' || Number.isNaN(+value)) return ''
-      return this.formatCurrency(value)
+      const raw = `${value ?? ''}`.trim()
+      const numeric = Number(raw)
+
+      if (
+        value == null ||
+        raw === '' ||
+        /nan|infinity/i.test(raw) ||
+        !Number.isFinite(numeric)
+      ) {
+        return '$0'
+      }
+
+      return this.formatCurrency(numeric)
+    },
+    safeUsdDisplay(value) {
+      const text = `${value ?? ''}`.trim()
+      if (!text || /nan|infinity/i.test(text)) return '$0'
+      return text
+    },
+    formatFeeDisplay(value) {
+      if (!value) return ''
+
+      const cleaned = String(value)
+        .replace(/\(\$?NaN\)/gi, '')
+        .replace(/\bTHOR\.([A-Z0-9-]+)\b/g, '$1')
+        .replace(/\s+/g, ' ')
+        .trim()
+
+      const match = cleaned.match(
+        /^([+-]?(?:\d+\.?\d*|\d*\.?\d+)(?:e[+-]?\d+)?)(.*)$/i
+      )
+
+      if (!match) return cleaned
+
+      const numeric = Number(match[1])
+      if (!Number.isFinite(numeric)) return cleaned
+
+      const abs = Math.abs(numeric)
+      const maximumFractionDigits =
+        abs === 0 ? 2 : abs >= 1 ? 2 : abs >= 0.01 ? 4 : 8
+
+      const formatted = new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits,
+      }).format(numeric)
+
+      return `${formatted}${match[2]}`.trim()
+    },
+    getAssetSymbol(asset) {
+      if (!asset) return '-'
+      const parsed = assetFromString(asset)
+      if (parsed.chain === 'THOR' && parsed.ticker) {
+        return parsed.ticker
+      }
+      return this.showAsset(asset)
     },
     getAssetDisplayName(asset) {
       if (!asset) return '-'
@@ -662,7 +827,20 @@ export default {
     // TODO: check hash in saver with streaming
     async fetchTx(hash) {
       if (!this.pools) {
-        return true
+        const pools = (
+          await this.$api.getPools().catch((e) => {
+            console.error(e)
+            this.error.message =
+              "Can't load pool data. Please try again in a moment."
+          })
+        )?.data
+
+        if (pools) {
+          this.$store.commit('setPools', pools)
+          await this.$nextTick()
+        } else {
+          return true
+        }
       }
 
       // Here the hash can be outbound but the inbound should be caught if it's not
@@ -841,6 +1019,7 @@ export default {
       return buildCard(cardBase, accordions, this.getCardContext())
     },
     async createTxState(midgardAction, thorTx, thorStatus, thorHeader, pools) {
+      this.rawActions = midgardAction?.actions ?? null
       const memo = this.parseMemo(thorTx?.tx?.tx?.memo)
 
       if (memo.type === 'outbound') {
