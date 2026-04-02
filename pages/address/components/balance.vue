@@ -1,219 +1,112 @@
 <template>
   <div>
-    <card v-if="state && explorers.length == 0">
-      <div class="balance-container">
-        <div class="balance-content-wrapper">
-          <div class="balance-info">
-            <span class="title-balance">Balances</span>
-            <div class="balance-label">
-              <span>RUNE Balance</span>
-              <skeleton-item :loading="loading" class="balance-content">
-                <asset-icon
-                  v-if="
-                    runeToken && runeToken.price > 0 && !isNaN(runeToken.price)
-                  "
-                  :asset="{ ticker: 'RUNE', chain: 'THOR' }"
-                  :height="'16px'"
-                  :chain="false"
-                />
-                <span
-                  v-if="
-                    runeToken && runeToken.price > 0 && !isNaN(runeToken.price)
-                  "
-                  v-tooltip="
-                    runeToken &&
-                    formatCurrency(runeToken.quantity * runeToken.price)
-                  "
-                  class="mono"
-                >
-                  {{ balanceFormat(runeToken.quantity) }} RUNE
-                </span>
-                <span v-else>-</span>
-              </skeleton-item>
-            </div>
-
-            <div v-if="isNodeAddress" class="balance-label">
-              <span>{{ 'Node Balance' }}</span>
-              <skeleton-item
-                :loading="loading || !nodes"
-                class="balance-content"
-              >
-                <asset-icon
-                  :asset="{ ticker: 'RUNE', chain: 'THOR' }"
-                  :height="'16px'"
-                  :chain="false"
-                />
-                <div class="bonds">
-                  <span
-                    v-if="totalBond !== undefined"
-                    v-tooltip="formatCurrency((runePrice * totalBond) / 1e8)"
-                    class="mono"
-                  >
-                    {{ balanceFormat(totalBond / 1e8) }} RUNE
-                    <nuxt-link
-                      v-if="isNodeAddress"
-                      :to="'/node/' + address"
-                      class="clickable"
-                      style="margin-left: 0.5rem"
-                    >
-                      View Node
-                    </nuxt-link>
-                  </span>
-                  <span v-else class="mono">-</span>
-                </div>
-              </skeleton-item>
-            </div>
-
-            <div class="balance-label">
-              <span>Bond Balance</span>
-              <skeleton-item
-                :loading="loading || !nodes"
-                class="balance-content"
-              >
-                <asset-icon
-                  :asset="{ ticker: 'RUNE', chain: 'THOR' }"
-                  :height="'16px'"
-                  :chain="false"
-                />
-                <div class="bonds">
-                  <span
-                    v-if="bonds && bonds.total !== undefined"
-                    v-tooltip="formatCurrency(runePrice * bonds.total)"
-                    class="mono"
-                  >
-                    {{ balanceFormat(bonds.total) }} RUNE
-                  </span>
-                  <span v-else class="mono">-</span>
-                </div>
-              </skeleton-item>
-            </div>
-
-            <div class="balance-label">
-              <span>Total Value</span>
-              <skeleton-item :loading="loading" class="balance-content">
-                <span
-                  v-if="
-                    runeToken && runeToken.price > 0 && !isNaN(runeToken.price)
-                  "
-                  class="mono"
-                >
-                  {{ (runeToken.price * totalBalance) | currency }}
-                </span>
-                <span v-else>-</span>
-              </skeleton-item>
-            </div>
-          </div>
-
-          <div
-            v-if="balanceAllocationData.length > 0"
-            class="balance-chart-section"
-          >
-            <pie-chart
-              :pie-data="balanceAllocationData"
-              :extra-series="chartExtraSeries"
-              :extra="chartExtra"
-              :height="'200px'"
-            />
-          </div>
-        </div>
-        <div v-if="totalValue.count > 0" class="dropdown-container">
-          <label for="token-dropdown">Other Asset Holdings</label>
-          <div ref="dropdownButton" class="custom-dropdown">
+    <card v-if="state && explorers.length == 0" extra-class="address-overview-card">
+      <div class="overview-grid">
+        <section class="overview-panel holdings-panel">
+          <div class="panel-header">
+            <h3 class="panel-title panel-title--compact">Top 5 Holdings</h3>
             <button
-              class="dropdown-button"
-              :class="{ 'dropdown-open': isOpen }"
-              @click="toggleDropdown"
+              v-if="sortedTokens.length > 5"
+              class="view-all-button"
+              @click="expanded = !expanded"
             >
-              <div class="selected-options">
-                <span v-if="selectedToken">
-                  {{ showAsset(selectedToken.asset) }}
-                </span>
-                <div class="selected-options">
-                  <span v-if="selectedToken">
-                    {{ showAsset(selectedToken.asset) }}
-                  </span>
-                  <span v-else class="total-value">
-                    {{ totalValue.total | currency }}
-                  </span>
-                  <span class="count-value">
-                    ({{ totalValue.count }} Tokens)
-                  </span>
-                </div>
-              </div>
-              <AngleIcon class="dropdown-icon" />
+              {{ expanded ? 'Show less' : 'View all' }}
             </button>
           </div>
 
-          <div v-if="isOpen" class="dropdown-modal">
-            <input
-              v-model="searchQuery"
-              type="text"
-              placeholder="Search for Token Name"
-              class="search-input"
-            />
-            <div class="dropdown-options">
-              <div class="options-container">
-                <div
-                  v-if="filteredTokens(otherTokens).length === 0"
-                  class="no-results"
-                >
-                  Could not find any matches!
-                </div>
+          <div class="holdings-table">
+            <div class="holdings-head">
+              <span>Asset</span>
+              <span>Amount</span>
+              <span>Value</span>
+              <span>Allocation</span>
+            </div>
 
-                <div v-for="group in sortedGroupedTokens" :key="group.type">
-                  <div v-if="filteredTokens(group.tokens).length > 0">
-                    <div class="token-group-header">
-                      {{ group.type }} Assets ({{
-                        filteredTokens(group.tokens).length
-                      }})
-                      <div class="sort-controls">
-                        <span @click="changeSort(group.type)">
-                          <ArrowDownIcon
-                            v-if="sortDirection[group.type] === 'desc'"
-                            class="arrow-icon"
-                          />
-                          <ArrowUpIcon
-                            v-if="sortDirection[group.type] === 'asc'"
-                            class="arrow-icon"
-                          />
-                        </span>
-                      </div>
-                    </div>
-
-                    <div
-                      v-for="token in filteredTokens(group.tokens)"
-                      :key="token.asset"
-                      class="dropdown-option"
-                    >
-                      <div class="token-info">
-                        <div class="token-name">
-                          <asset-icon :asset="token.asset" :chain="false" />
-                          <span style="line-height: 1">{{
-                            showAsset(token.asset)
-                          }}</span>
-                        </div>
-                        <div v-if="token.asset" class="token-quantity">
-                          {{ token.quantity }} {{ token.asset.ticker }}
-                        </div>
-                      </div>
-                      <div class="token-value">
-                        <span v-if="token.price > 0 && !isNaN(token.price)">
-                          ${{ token.value | number('0,0.00') }}
-                        </span>
-                        <span v-else>-</span>
-                        <div class="token-price">
-                          @{{ token.price | number('0,0.0000') }}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+            <div
+              v-for="token in visibleHoldings"
+              :key="assetKey(token.asset)"
+              class="holding-row"
+            >
+              <div class="holding-asset">
+                <asset-icon :asset="holdingIconAsset(token.asset)" :chain="false" />
+                <div class="holding-asset-copy">
+                  <span class="holding-name">{{ getAssetDisplayName(token.asset) }}</span>
+                  <span class="holding-network">{{ getAssetSubtitle(token.asset) }}</span>
                 </div>
+              </div>
+
+              <div class="holding-amount mono">
+                {{ formatQuantity(token.quantity) }} {{ showAsset(token.asset, true) }}
+              </div>
+
+              <div class="holding-value mono">
+                {{ formatUsd(token.value) }}
+              </div>
+
+              <div class="holding-allocation">
+                <div class="allocation-track">
+                  <span
+                    class="allocation-fill"
+                    :style="{
+                      width: `${token.allocationPercent}%`,
+                      backgroundColor: getAllocationColor(token.asset),
+                    }"
+                  ></span>
+                </div>
+                <span class="allocation-percent mono">
+                  {{ formatPercent(token.allocationPercent) }}
+                </span>
+              </div>
+            </div>
+
+            <div v-if="visibleHoldings.length === 0" class="empty-state">
+              No asset balances available for this address.
+            </div>
+          </div>
+        </section>
+
+        <section class="overview-panel allocation-panel">
+          <div class="panel-header">
+            <div>
+              <span class="panel-eyebrow">Portfolio</span>
+              <h3 class="panel-title">Allocation</h3>
+            </div>
+          </div>
+
+          <div class="allocation-chart-shell">
+            <div class="allocation-chart-wrap">
+              <pie-chart
+                v-if="allocationPieData.length > 0"
+                :pie-data="allocationPieData"
+                :extra-series="chartExtraSeries"
+                :extra="chartExtra"
+                :height="'320px'"
+              />
+              <div class="allocation-center">
+                <span class="allocation-center__count">{{ tokenCount }}</span>
+                <span class="allocation-center__label">Assets</span>
+              </div>
+            </div>
+
+            <div class="allocation-legend">
+              <div
+                v-for="item in allocationLegendItems"
+                :key="item.name"
+                class="legend-item"
+              >
+                <span
+                  class="legend-dot"
+                  :style="{ backgroundColor: item.color }"
+                ></span>
+                <span class="legend-label">{{ item.label }}</span>
+                <span class="legend-value mono">{{ item.percent }}</span>
               </div>
             </div>
           </div>
-        </div>
+        </section>
       </div>
     </card>
+
     <card v-else title="Chain Explorers" class="explorers-card">
       <div class="explorers">
         <div v-for="explorer in explorers" :key="explorer.chain">
@@ -242,33 +135,60 @@ import { mapGetters } from 'vuex'
 import { orderBy } from 'lodash'
 import { validate } from '@swyftx/api-crypto-address-validator'
 import { assetFromString, getExplorerAddressUrl } from '~/utils'
-import AngleIcon from '~/assets/images/angle-down.svg?inline'
-import ArrowDownIcon from '~/assets/images/arrow-down-.svg?inline'
-import ArrowUpIcon from '~/assets/images/arrow-up-.svg?inline'
 import ExternalIcon from '@/assets/images/external.svg?inline'
 import PieChart from '~/components/PieChart.vue'
 
+const ALLOCATION_COLORS = {
+  BTC: '#F8A329',
+  ETH: '#D5D8DF',
+  RUNE: '#63F0D0',
+  USDC: '#4D9DFF',
+  USDT: '#2FBF9B',
+  SOL: '#8B5CF6',
+  RUJI: '#b878ff',
+  sRUJI: '#b878ff',
+  DEFAULT: '#566274',
+}
+
+const ASSET_NAMES = {
+  BTC: 'Bitcoin',
+  BCH: 'Bitcoin Cash',
+  DOGE: 'Dogecoin',
+  ETH: 'Ethereum',
+  LTC: 'Litecoin',
+  RUNE: 'RUNE',
+  SOL: 'Solana',
+  USDC: 'USDC',
+  USDT: 'USDT',
+  RUJI: 'RUJI',
+}
+
+const CHAIN_NAMES = {
+  AVAX: 'Avalanche',
+  BASE: 'Base',
+  BCH: 'Bitcoin Cash',
+  BNB: 'BNB Chain',
+  BSC: 'Binance Smart Chain',
+  BTC: 'Bitcoin',
+  DOGE: 'Dogecoin',
+  ETH: 'Ethereum',
+  GAIA: 'Cosmos',
+  LTC: 'Litecoin',
+  SOL: 'Solana',
+  THOR: 'THORChain',
+  TRON: 'TRON',
+  XRP: 'XRP Ledger',
+}
+
 export default {
   components: {
-    AngleIcon,
-    ArrowDownIcon,
-    ArrowUpIcon,
     ExternalIcon,
     PieChart,
   },
   props: ['state', 'loading', 'address'],
   data() {
     return {
-      selectedToken: null,
-      isOpen: false,
-      runeBalance: null,
-      sortField: 'value',
-      sortDirection: {
-        Native: 'desc',
-        Trade: 'desc',
-        Synth: 'desc',
-      },
-      searchQuery: '',
+      expanded: false,
     }
   },
   computed: {
@@ -277,204 +197,174 @@ export default {
       pools: 'getPools',
       nodes: 'getNodesData',
     }),
-    sortedGroupedTokens() {
-      return Object.entries(this.groupedTokens).map(([type, tokens]) => {
-        return {
-          type,
-          tokens: orderBy(
-            tokens,
-            [(token) => parseFloat(token.value)],
-            [this.sortDirection[type]]
-          ),
-        }
-      })
-    },
-
-    totalValue() {
-      const total = this.otherTokens.reduce(
-        (sum, token) => sum + Number(token.value),
-        0
-      )
-      const count = this.otherTokens.length
-      return { total, count }
-    },
     tokenRows() {
       if (!this.state) {
         return []
       }
 
-      const ret = []
+      const rows = []
       for (let i = 0; i < this.state.length; i++) {
-        const e = this.state[i]
+        const entry = this.state[i]
+        if (!entry?.asset) {
+          continue
+        }
+
         let poolAsset
-        this.pools?.forEach((p) => {
-          const pa = assetFromString(p.asset)
-          if (pa.chain === e.asset?.chain && pa?.ticker === e.asset?.ticker) {
-            poolAsset = p
+        this.pools?.forEach((pool) => {
+          const poolAssetData = assetFromString(pool.asset)
+          if (
+            poolAssetData.chain === entry.asset?.chain &&
+            poolAssetData.ticker === entry.asset?.ticker
+          ) {
+            poolAsset = pool
           }
         })
 
-        if (e.asset?.ticker === 'RUNE' && e.asset?.chain === 'THOR') {
-          poolAsset = {
-            assetPriceUSD: this.runePrice,
-          }
+        if (entry.asset?.ticker === 'RUNE' && entry.asset?.chain === 'THOR') {
+          poolAsset = { assetPriceUSD: this.runePrice }
         }
 
-        ret.push({
-          asset: e.asset,
-          quantity: e.quantity,
-          price: bnOrZero(poolAsset?.assetPriceUSD).toFixed(2),
-          value: bnOrZero(poolAsset?.assetPriceUSD * e.quantity).toFixed(2),
-          type: this.getAssetType(e.asset),
+        // sRUJI is staked RUJI — use the same price as RUJI
+        if (entry.asset?.ticker === 'sRUJI' && entry.asset?.chain === 'THOR') {
+          const rujiPool = this.pools?.find((pool) => {
+            const p = assetFromString(pool.asset)
+            return p.chain === 'THOR' && p.ticker === 'RUJI'
+          })
+          if (rujiPool) poolAsset = rujiPool
+        }
+
+        const quantity = Number(entry.quantity) || 0
+        const price = Number(bnOrZero(poolAsset?.assetPriceUSD).toFixed(4)) || 0
+        const value = Number((price * quantity).toFixed(2)) || 0
+
+        rows.push({
+          asset: entry.asset,
+          quantity,
+          price,
+          value,
         })
       }
 
-      return ret
+      return rows
     },
-    runeToken() {
-      return this.tokenRows.find(
-        (token) =>
-          token?.asset?.ticker === 'RUNE' && token?.asset?.chain === 'THOR'
-      )
+    totalPortfolioValue() {
+      return this.tokenRows.reduce((sum, token) => sum + token.value, 0)
     },
-    otherTokens() {
-      return this.tokenRows.filter(
-        (token) =>
-          !(token.asset?.ticker === 'RUNE' && token.asset?.chain === 'THOR')
-      )
+    sortedTokens() {
+      return orderBy(
+        this.tokenRows.filter((token) => token.asset),
+        [(token) => token.value, (token) => token.quantity],
+        ['desc', 'desc']
+      ).map((token) => ({
+        ...token,
+        allocationPercent:
+          this.totalPortfolioValue > 0
+            ? (token.value / this.totalPortfolioValue) * 100
+            : 0,
+      }))
     },
-    groupedTokens() {
-      return this.otherTokens
-        .filter((tok) => tok.asset)
-        .reduce((acc, token) => {
-          const type = this.getAssetType(token.asset)
-          if (!acc[type]) {
-            acc[type] = []
-          }
-          acc[type].push(token)
-          return acc
-        }, {})
-    },
-    isNodeAddress() {
-      return this.nodes?.some((node) => node.node_address === this.address)
-    },
-    totalBond() {
-      const foundNode = this.nodes?.find(
-        (node) => node.node_address === this.address
-      )
-      if (foundNode) {
-        return foundNode.total_bond
+    visibleHoldings() {
+      if (this.expanded) {
+        return this.sortedTokens
       }
-      return undefined
+      return this.sortedTokens.slice(0, 5)
     },
-    bonds() {
-      if (!this.nodes) {
-        return undefined
+    tokenCount() {
+      return this.sortedTokens.length
+    },
+    allocationSlices() {
+      const topTokens = this.sortedTokens.filter((token) => token.value > 0)
+      if (topTokens.length === 0) {
+        return []
       }
-      const ret = { total: 0 }
 
-      for (let i = 0; i < this.nodes.length; i++) {
-        const node = this.nodes[i]
-        const bond = node.bond_providers?.providers?.find(
-          (n) => n.bond_address === this.address
-        )
-        if (bond !== undefined) {
-          ret.total += +bond.bond / 1e8
+      const slices = topTokens.slice(0, 5).map((token) => ({
+        name: this.getAssetDisplayName(token.asset),
+        value: token.value,
+        color: this.getAllocationColor(token.asset),
+      }))
+
+      if (topTokens.length > 5) {
+        const otherValue = topTokens
+          .slice(5)
+          .reduce((sum, token) => sum + token.value, 0)
+        if (otherValue > 0) {
+          slices.push({
+            name: 'Other',
+            value: otherValue,
+            color: ALLOCATION_COLORS.DEFAULT,
+          })
         }
       }
-      return ret
+
+      return slices
     },
-    totalBalance() {
-      let ret = this.runeToken.quantity
-      if (this.bonds?.total > 0) {
-        ret += this.bonds.total
-      }
-      return ret
+    allocationPieData() {
+      return this.allocationSlices.map((slice) => ({
+        name: slice.name,
+        value: slice.value,
+        itemStyle: {
+          color: slice.color,
+        },
+      }))
     },
-    balanceAllocationData() {
-      const data = []
-
-      if (this.runeToken && this.runeToken.quantity > 0) {
-        data.push({
-          name: 'RUNE Balance',
-          value: this.runeToken.quantity,
-        })
-      }
-
-      let bondValue = 0
-      if (this.totalBond !== undefined) {
-        bondValue = this.totalBond / 1e8
-      } else if (this.bonds && this.bonds.total > 0) {
-        bondValue = this.bonds.total
-      }
-
-      if (bondValue > 0) {
-        data.push({
-          name: 'Bond Balance',
-          value: bondValue,
-        })
-      }
-
-      return data
+    allocationLegendItems() {
+      const total = this.allocationSlices.reduce(
+        (sum, slice) => sum + slice.value,
+        0
+      )
+      return this.allocationSlices.map((slice) => ({
+        ...slice,
+        label: slice.name,
+        percent:
+          total > 0
+            ? `${((slice.value / total) * 100).toFixed(0)}%`
+            : '0%',
+      }))
     },
     chartExtraSeries() {
       return {
-        center: ['50%', '45%'],
-        radius: ['35%', '60%'],
+        center: ['50%', '50%'],
+        radius: ['58%', '78%'],
         label: {
           show: false,
+        },
+        emphasis: {
+          scale: false,
         },
       }
     },
     chartExtra() {
       return {
         legend: {
-          show: true,
-          type: 'plain',
-          orient: 'vertical',
-          x: 'center',
-          y: 'bottom',
-          icon: 'circle',
-          textStyle: {
-            color: 'var(--font-color)',
-          },
+          show: false,
         },
         tooltip: {
-          trigger: 'item',
           confine: true,
-          formatter: (a) => {
-            return `${a.name}: <small>${this.numberFormat(a?.data?.value)} RUNE</small> <span class='mono'>(${a.percent}%)</span>`
+          trigger: 'item',
+          formatter: (params) => {
+            return `${params.name}: <span class="mono">${this.formatUsd(params.value)}</span> (${params.percent}%)`
           },
         },
       }
     },
     explorers() {
-      const blockChains = [
-        'btc',
-        'eth',
-        'doge',
-        'bch',
-        'ltc',
-        'atom',
-        'xrp',
-        'trx',
-      ]
-
+      const blockChains = ['btc', 'eth', 'doge', 'bch', 'ltc', 'atom', 'xrp', 'trx']
       const explorers = []
+
       for (let i = 0; i < blockChains.length; i++) {
         let chain = blockChains[i]
-        const res = validate(this.address, chain)
+        const valid = validate(this.address, chain)
 
-        if (res && chain === 'eth') {
+        if (valid && chain === 'eth') {
           const evms = ['ETH', 'BSC', 'AVAX', 'BASE']
-          evms.forEach((e) => {
+          evms.forEach((evm) => {
             explorers.push({
-              chain: e,
-              url: getExplorerAddressUrl(e, this.address),
+              chain: evm,
+              url: getExplorerAddressUrl(evm, this.address),
             })
           })
-        } else if (res) {
-          // Change atom to GAIA. its chain
+        } else if (valid) {
           if (chain === 'atom') {
             chain = 'gaia'
           }
@@ -491,325 +381,326 @@ export default {
       return explorers
     },
   },
+  watch: {
+    totalPortfolioValue: {
+      handler(value) {
+        this.$emit('portfolio-total', value)
+      },
+      immediate: true,
+    },
+  },
   methods: {
-    getAssetType(asset) {
-      if (asset?.synth) {
-        return 'Synth'
-      } else if (asset?.trade) {
-        return 'Trade'
-      } else {
-        return 'Native'
+    assetKey(asset) {
+      return asset?.toString ? asset.toString() : `${asset?.chain}.${asset?.ticker}`
+    },
+    getAllocationColor(asset) {
+      const ticker = this.showAsset(asset, true)
+      return ALLOCATION_COLORS[ticker] || ALLOCATION_COLORS.DEFAULT
+    },
+    getAssetDisplayName(asset) {
+      const ticker = this.showAsset(asset, true)
+      return ASSET_NAMES[ticker] || ticker
+    },
+    holdingIconAsset(asset) {
+      const ticker = this.showAsset(asset, true)
+      if (ticker === 'RUNE') {
+        return 'THOR.RUNE'
       }
+      if (ticker === 'sRUJI') {
+        return 'THOR.RUJI'
+      }
+      if (asset?.chain === 'THOR' && ticker === 'ETH') {
+        return 'ETH.ETH'
+      }
+      return asset
     },
-    toggleDropdown() {
-      this.isOpen = !this.isOpen
+    getChainName(chain) {
+      return CHAIN_NAMES[chain] || chain
     },
-    filteredTokens(tokens) {
-      return tokens.filter((token) => {
-        const nameMatch = this.showAsset(token.asset)
-          .toLowerCase()
-          .includes(this.searchQuery.toLowerCase())
-        const valueMatch = token.value.toString().includes(this.searchQuery)
-        const priceMatch = token.price.toString().includes(this.searchQuery)
-        return nameMatch || valueMatch || priceMatch
-      })
+    getAssetSubtitle(asset) {
+      const chainName = this.getChainName(asset?.chain)
+
+      if (asset?.secure) {
+        return `${chainName} · Secured`
+      }
+      if (asset?.trade) {
+        return `${chainName} · Trade`
+      }
+      if (asset?.synth) {
+        return `${chainName} · Synth`
+      }
+      if (asset?.chain === 'THOR') {
+        return 'THORChain'
+      }
+      return `${chainName} · Native`
     },
-    selectToken(token) {
-      this.selectedToken = token
-      this.isOpen = false
+    formatQuantity(quantity) {
+      if (!Number.isFinite(quantity)) {
+        return '0'
+      }
+
+      if (quantity >= 1000) {
+        return this.$options.filters.number(quantity, '0,0.00')
+      }
+      if (quantity >= 1) {
+        return this.$options.filters.number(quantity, '0,0.0000')
+      }
+      if (quantity < 1e-6) {
+        // numeral.js returns 'NaN' for sub-microsecond values with fixed decimal formats
+        return quantity.toFixed(8)
+      }
+      return this.$options.filters.number(quantity, '0,0.000000')
     },
-    changeSort(type) {
-      this.sortDirection[type] =
-        this.sortDirection[type] === 'asc' ? 'desc' : 'asc'
+    formatUsd(value) {
+      const amount = Number(value)
+      if (!Number.isFinite(amount) || amount <= 0) {
+        return '$0'
+      }
+      return this.formatCurrency(amount)
+    },
+    formatPercent(percent) {
+      const amount = Number(percent)
+      if (!Number.isFinite(amount) || amount <= 0) {
+        return '0%'
+      }
+      if (amount >= 10) {
+        return `${amount.toFixed(0)}%`
+      }
+      return `${amount.toFixed(1)}%`
     },
   },
 }
 </script>
 
 <style lang="scss" scoped>
-.bonds {
-  width: 100%;
-}
+.overview-grid {
+  display: grid;
+  gap: 1rem;
 
-.balance-container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-height: 240px;
-  gap: 24px;
-  flex: 1;
-}
-.balance-content-wrapper {
-  display: flex;
-  gap: 24px;
-  align-items: flex-start;
-  justify-content: space-between;
-  flex-wrap: wrap;
-}
-
-.balance-info {
-  flex: 0 1 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  min-width: 0;
-
-  .balance-label {
-    letter-spacing: 1px;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    font-size: $font-size-xs;
-  }
-  .balance-value {
-    display: flex;
-    align-items: center;
-    font-size: $font-size-desktop;
-    font-weight: bold;
-    align-items: center;
-  }
-  .balance-content {
-    display: flex;
+  @include lg {
+    grid-template-columns: minmax(0, 1.8fr) minmax(280px, 0.9fr);
+    align-items: stretch;
   }
 }
 
-.title-balance {
-  font-weight: bold;
+.overview-panel {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.02) 0%,
+    rgba(255, 255, 255, 0.01) 100%
+  );
+  border: 1px solid rgba(111, 130, 153, 0.18);
+  border-radius: 22px;
+  padding: 1.1rem 1.2rem;
+  min-height: 100%;
 }
 
-.balance-chart-section {
-  border-radius: $radius-md;
-  min-width: 210px;
-}
-
-.mono {
-  font-size: $font-size-sm !important;
-  color: var(--sec-font-color);
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
+.panel-header {
   align-items: center;
-}
-.thor-rune-details {
-  padding: $space-12;
-  margin-bottom: $space-24;
-}
-
-.token-details {
-  margin-top: $space-10;
-  padding: $space-10;
-  background-color: var(--bg-color-light);
-  border-radius: $radius-md;
-}
-
-.detail-item {
-  font-size: $font-size-desktop;
-  padding: $space-10;
-}
-
-button[disabled] {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-.dropdown-container {
-  font-size: $font-size-xs;
-  letter-spacing: 1px;
-  display: flex;
-  gap: 5px;
-  flex-direction: column;
-  position: relative;
-  margin-top: auto;
-
-  .search-input {
-    flex: 1;
-    padding: $space-8;
-    color: var(--sec-font-color);
-    background-color: var(--bg-color);
-    border: 1px solid var(--border-color) !important;
-    border-radius: $radius-lg;
-    margin: $space-8 $space-12;
-    margin-right: $space-20;
-    display: flex;
-    outline: none;
-    font-size: $font-size-mobile;
-    font-weight: 450;
-    &:focus {
-      border-color: transparent;
-      box-shadow: 0 0 0 0.15rem rgba(255, 255, 255, 0.1);
-    }
-  }
-}
-.options-container {
-  display: flex;
-  flex-direction: column;
-  margin: $space-0 $space-12;
-}
-
-.custom-dropdown {
-  position: relative;
-  display: inline-block;
-
-  .dropdown-button {
-    width: 100%;
-    padding: $space-10 $space-12;
-    font-size: $font-size-desktop;
-    border: none;
-    border-radius: $radius-md;
-    background-color: var(--bg-color);
-    color: var(--sec-font-color);
-    border: 1px solid var(--border-color);
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-sizing: border-box;
-    transition:
-      border-color 0.3s ease,
-      box-shadow 0.3s ease;
-
-    &:hover {
-      background-color: var(--bgt-color);
-      border-radius: $radius-s;
-    }
-    &.dropdown-open {
-      background-color: var(--bgt-color);
-    }
-
-    .dropdown-icon {
-      width: 1rem;
-      height: 1rem;
-      fill: var(--sec-font-color);
-    }
-  }
-}
-
-.dropdown-modal {
-  display: flex;
-  flex-direction: column;
-  background-color: var(--bg-color);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  border-radius: $radius-lg;
-  z-index: 1000;
-  position: absolute;
-  width: 100%;
-  box-sizing: border-box;
-  left: 0;
-  top: 108%;
-  padding-bottom: $space-8;
-}
-
-.dropdown-options {
-  max-height: 350px;
-  overflow-y: auto;
-
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background-color: var(--border-color);
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background-color: var(--font-color);
-    opacity: 50%;
-    border-radius: $radius-sm;
-  }
-
-  .dropdown-option {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: $space-10;
-    font-size: $font-size-sm;
-    transition: background-color 0.3s ease;
-    border-bottom: 1px solid var(--border-color);
-
-    &:last-child {
-      border-bottom: none;
-    }
-
-    &:hover {
-      background-color: var(--active-bg-color);
-      border-radius: $radius-s;
-    }
-
-    .token-info {
-      display: flex;
-      flex-direction: column;
-
-      .token-name {
-        color: var(--sec-font-color);
-        font-size: $font-size-xs;
-        display: flex;
-        padding-bottom: $space-5;
-        align-items: center;
-      }
-
-      .token-quantity {
-        font-size: $font-size-xs;
-      }
-    }
-
-    .token-value {
-      text-align: right;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      font-size: $font-size-xs;
-
-      .token-price {
-        font-size: $font-size-xs;
-      }
-    }
-  }
-}
-
-.no-results {
-  padding: $space-10;
-  text-align: center;
-  color: var(--bs-secondary-color);
-  font-size: $font-size-sm;
-}
-
-.total-value {
-  font-size: $font-size-mobile;
-  font-weight: bold;
-}
-
-.count-value {
-  color: var(--bs-secondary-color);
-  font-size: $font-size-sm;
-}
-
-.token-group-header {
-  font-weight: bold;
-  padding: $space-10;
-  font-size: $font-size-sm;
-  background-color: var(--border-color);
-  color: var(--sec-font-color);
-  border-radius: $radius-s;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
 }
-.sort-controls span {
+
+.panel-eyebrow {
+  color: var(--sec-font-color);
+  display: block;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  margin-bottom: 0.2rem;
+  text-transform: uppercase;
+}
+
+.panel-title {
+  color: var(--font-color);
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.panel-title--compact {
+  color: var(--sec-font-color);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.view-all-button {
+  background: transparent;
+  border: none;
+  color: var(--primary-color);
   cursor: pointer;
-  position: relative;
-  display: flex;
-  align-items: center;
-  padding-right: $space-2;
-}
-.arrow-icon {
-  fill: var(--primary-color);
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 0;
+
+  &:hover {
+    opacity: 0.85;
+  }
 }
 
-.title-explorers {
-  font-weight: bold;
-  border-bottom: 1px solid var(--border-color);
-  margin: $space-0;
-  padding-bottom: $space-14;
-  margin-bottom: $space-10;
+.holdings-table {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.holdings-head,
+.holding-row {
+  column-gap: 1rem;
+  display: grid;
+  grid-template-columns: minmax(220px, 1.6fr) minmax(120px, 0.8fr) minmax(100px, 0.7fr) minmax(140px, 0.8fr);
+}
+
+.holdings-head {
+  color: var(--sec-font-color);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  padding: 0 0.25rem 0.7rem;
+  text-transform: uppercase;
+}
+
+.holding-row {
+  align-items: center;
+  border-top: 1px solid rgba(111, 130, 153, 0.16);
+  min-height: 78px;
+  padding: 0.75rem 0.25rem;
+}
+
+.holding-asset {
+  align-items: center;
+  display: flex;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.holding-asset-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+  min-width: 0;
+}
+
+.holding-name {
+  color: var(--font-color);
+  font-size: 1.02rem;
+  font-weight: 600;
+}
+
+.holding-network {
+  color: var(--sec-font-color);
+  font-size: 0.85rem;
+}
+
+.holding-amount,
+.holding-value,
+.allocation-percent {
+  color: var(--font-color);
+  font-size: 0.92rem;
+}
+
+.holding-allocation {
+  align-items: center;
+  display: flex;
+  gap: 0.7rem;
+}
+
+.allocation-track {
+  background: rgba(113, 131, 154, 0.24);
+  border-radius: 999px;
+  flex: 1;
+  height: 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+.allocation-fill {
+  border-radius: 999px;
+  display: block;
+  height: 100%;
+  min-width: 8px;
+}
+
+.allocation-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.allocation-chart-shell {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100%;
+}
+
+.allocation-chart-wrap {
+  margin: 0 auto;
+  max-width: 320px;
+  position: relative;
+  width: 100%;
+}
+
+.allocation-center {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  inset: 0;
+  justify-content: center;
+  pointer-events: none;
+  position: absolute;
+}
+
+.allocation-center__count {
+  color: var(--font-color);
+  font-size: 1.45rem;
+  font-weight: 700;
+}
+
+.allocation-center__label {
+  color: var(--sec-font-color);
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.allocation-legend {
+  display: grid;
+  gap: 0.7rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 0.25rem;
+}
+
+.legend-item {
+  align-items: center;
+  display: grid;
+  gap: 0.55rem;
+  grid-template-columns: auto 1fr auto;
+}
+
+.legend-dot {
+  border-radius: 999px;
+  display: inline-flex;
+  height: 10px;
+  width: 10px;
+}
+
+.legend-label {
+  color: var(--sec-font-color);
+  font-size: 0.88rem;
+}
+
+.legend-value {
+  color: var(--font-color);
+  font-size: 0.82rem;
+}
+
+.empty-state {
+  color: var(--sec-font-color);
+  padding: 2rem 0;
+  text-align: center;
 }
 
 .explorers-card {
@@ -823,14 +714,46 @@ button[disabled] {
   gap: $space-8;
 
   .explorer-link {
-    display: flex;
     align-items: center;
+    display: flex;
     height: 2rem;
 
     .ext-icon {
       fill: currentColor;
       height: 0.8rem;
     }
+  }
+}
+
+@media (max-width: 1180px) {
+  .holdings-head,
+  .holding-row {
+    grid-template-columns: minmax(220px, 1.4fr) minmax(120px, 0.8fr) minmax(96px, 0.7fr);
+  }
+
+  .holdings-head span:last-child,
+  .holding-row .holding-allocation {
+    display: none;
+  }
+}
+
+@media (max-width: 860px) {
+  .overview-panel {
+    padding: 1rem;
+  }
+
+  .holdings-head,
+  .holding-row {
+    grid-template-columns: minmax(0, 1.5fr) minmax(100px, 0.8fr);
+  }
+
+  .holdings-head span:nth-child(3),
+  .holding-row .holding-value {
+    display: none;
+  }
+
+  .allocation-legend {
+    grid-template-columns: 1fr;
   }
 }
 </style>

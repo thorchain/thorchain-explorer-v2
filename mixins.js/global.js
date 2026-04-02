@@ -58,7 +58,9 @@ export default {
       if (!assetStr) {
         return
       }
-      const { chain, synth, trade, secure } = assetFromString(assetStr)
+      const parsed = assetFromString(assetStr)
+      if (!parsed) return
+      const { chain, synth, trade, secure } = parsed
       let asset = `${chain}.${chain}`
       if (synth || trade || secure) {
         return 'THOR.RUNE'
@@ -327,9 +329,10 @@ export default {
       }
     },
     baseAmountFormat(number) {
-      return number
-        ? this.$options.filters.number(+number / 10 ** 8, '0,0.0000')
-        : '-'
+      if (!number) return '-'
+      const value = +number / 10 ** 8
+      const format = value > 0 && value < 0.0001 ? '0,0.00000000' : '0,0.0000'
+      return this.$options.filters.number(value, format)
     },
     baseAmountFormatOrZero(number) {
       return formatBN(bnOrZero(number).div(1e8), 8)
