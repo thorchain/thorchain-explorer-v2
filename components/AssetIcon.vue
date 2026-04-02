@@ -13,6 +13,7 @@
           class="asset-icon"
           :src="assetImage(tokens[0])"
           alt="asset-icon"
+          loading="lazy"
           @error="imgErr"
         />
       </div>
@@ -21,6 +22,7 @@
           class="asset-icon"
           :src="assetImage(tokens[1])"
           alt="asset-icon"
+          loading="lazy"
           @error="imgErr"
         />
       </div>
@@ -30,6 +32,7 @@
         class="asset-icon"
         :src="assetImage(asset)"
         alt="asset-icon"
+        loading="lazy"
         @error="imgErr"
       />
       <img
@@ -37,6 +40,7 @@
         class="chain-asset-icon"
         :src="assetImage(chain ? chain : assetToChain(asset))"
         alt="asset-chain-icon"
+        loading="lazy"
       />
     </template>
   </div>
