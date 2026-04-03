@@ -10,6 +10,7 @@ export const state = () => ({
   pools: undefined,
   extraHeaderInfo: [],
   blueElectraTheme: false,
+  contractLabels: null,
 })
 
 export const getters = {
@@ -45,6 +46,9 @@ export const getters = {
   },
   getExtraHeaderInfo(state) {
     return state.extraHeaderInfo
+  },
+  getContractLabels(state) {
+    return state.contractLabels
   },
 }
 
@@ -93,5 +97,8 @@ export const mutations = {
   },
   resetExtraHeaderInfo(state) {
     state.extraHeaderInfo = []
+  },
+  setContractLabels(state, labels) {
+    state.contractLabels = labels
   },
 }

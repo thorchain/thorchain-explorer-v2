@@ -153,6 +153,13 @@ export function getActions(params) {
   )
 }
 
+export function getActionsNoCancel(params) {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + 'actions',
+    { params, timeout: 30000 }
+  )
+}
+
 export function getCoinMarketInfo() {
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].SERVER_URL + 'api/coinmarketCap'

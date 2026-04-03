@@ -9,7 +9,7 @@
       minHeight: 'initial',
     }"
     :theme="chartTheme"
-    @click="click"
+    @click="handleChartClick"
   />
 </template>
 
@@ -85,6 +85,11 @@ export default {
     window.removeEventListener('resize', this.handleResize)
   },
   methods: {
+    handleChartClick(...args) {
+      if (typeof this.click === 'function') {
+        this.click(...args)
+      }
+    },
     handleResize() {
       this.isMobile = window.innerWidth <= 990
     },

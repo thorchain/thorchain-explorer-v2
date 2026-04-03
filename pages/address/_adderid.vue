@@ -1,60 +1,189 @@
 <template>
   <page class="address-container">
-    <div class="address-section">
-      <div v-if="isScamAddress" class="scam-warning">
-        <alert-icon class="scam-warning-icon" />
-        <span>This address has been reported as a scam.</span>
-      </div>
-      <div class="left-section">
-        <div class="address-header">
-          <Avatar :name="address" />
-        </div>
-        <div class="address-name">
-          <span class="address-value" style="color: var(--sec-font-color)">
-            {{ label }}
-          </span>
-          <div class="qr-copy-wrapper">
-            <div class="item">
-              <Copy :str-copy="address" />
+    <div v-if="isScamAddress" class="scam-warning">
+      <alert-icon class="scam-warning-icon" />
+      <span>This address has been reported as a scam.</span>
+    </div>
+
+    <template v-if="!isVault">
+      <div class="address-hero">
+        <div class="address-hero__main">
+          <span class="address-hero__eyebrow">Address</span>
+          <div class="address-hero__identity">
+            <Avatar :name="address" />
+            <div class="address-hero__identity-copy">
+              <div
+                class="address-value address-hero__value"
+                style="color: var(--sec-font-color)"
+              >
+                {{ address }}
+              </div>
+              <span
+                v-if="label && label !== address"
+                class="address-hero__alias"
+              >
+                {{ label }}
+              </span>
             </div>
-            <div id="qrcode" class="item">
-              <qr-btn :qrcode="address"></qr-btn>
+            <div class="qr-copy-wrapper">
+              <div class="item">
+                <Copy :str-copy="address" />
+              </div>
+              <div id="qrcode" class="item">
+                <qr-btn :qrcode="address"></qr-btn>
+              </div>
             </div>
           </div>
+          <div class="address-hero__meta">
+            <span class="address-hero__meta-item">
+              <span class="address-hero__meta-dot"></span>
+              Last transaction {{ lastTransactionLabel }}
+            </span>
+            <span class="address-hero__meta-item">
+              {{ transactionCountLabel }}
+            </span>
+          </div>
+        </div>
+
+        <div class="address-hero__summary">
+          <span class="address-hero__summary-label">Total Balance</span>
+          <span class="address-hero__summary-value">
+            {{ portfolioTotalUsd | currency }}
+          </span>
         </div>
       </div>
-      <div class="action-types desktop-filters">
-        <advanced-filter
-          ref="advancedFilter"
-          :hide-address-filter="true"
-          class="desktop-filters"
+
+      <div class="stat-wrapper">
+        <balance
+          class="card-balance"
+          :address="address"
+          :state="addressStat"
+          :loading="addressLoading"
+          @portfolio-total="heroPortfolioTotalUsd = $event"
         />
       </div>
-    </div>
-    <template>
-      <div v-if="!isVault" class="stat-wrapper">
-        <div class="balance-nav-container">
-          <balance
-            class="card-balance"
-            :address="address"
-            :state="addressStat"
-            :loading="addressLoading"
-          />
-          <balance-history
-            v-if="
-              address &&
-              (hasBalances || addressLoading) &&
-              addressStat &&
-              addressStat.length > 0 &&
-              !isContractAddress(address)
-            "
-            :key="address"
-            class="card-balance-history"
-            :address="address"
-          />
+
+      <div class="activity-shell">
+        <div class="activity-shell__toolbar">
+          <div class="action-buttons">
+            <button
+              class="action-btn"
+              :class="{ active: activeMode === 'transactions' }"
+              @click="activeMode = 'transactions'"
+            >
+              Transactions
+            </button>
+            <button
+              class="action-btn"
+              :class="{ active: activeMode === 'pools' }"
+              @click="activeMode = 'pools'"
+            >
+              LP/Savers
+            </button>
+            <button
+              class="action-btn"
+              :class="{ active: activeMode === 'bond' }"
+              @click="activeMode = 'bond'"
+            >
+              Bond
+            </button>
+            <button
+              class="action-btn"
+              :class="{ active: activeMode === 'thorname' }"
+              @click="activeMode = 'thorname'"
+            >
+              Thorname
+            </button>
+            <button
+              class="action-btn"
+              :class="{ active: activeMode === 'distribution' }"
+              @click="activeMode = 'distribution'"
+            >
+              TCY
+            </button>
+          </div>
+
+          <div class="activity-shell__filters">
+            <advanced-filter
+              ref="advancedFilter"
+              :hide-address-filter="true"
+              class="desktop-filters"
+            />
+          </div>
+        </div>
+
+        <div class="action-components mb-2">
+          <keep-alive>
+            <thorname v-if="activeMode == 'thorname'" :address="address" />
+          </keep-alive>
+          <keep-alive>
+            <pools v-if="activeMode == 'pools'" :address="address" />
+          </keep-alive>
+          <keep-alive>
+            <bonds
+              v-if="activeMode == 'bond'"
+              :address="address"
+              :nodes="nodesData"
+            />
+          </keep-alive>
+          <keep-alive>
+            <distribution
+              v-if="activeMode == 'distribution'"
+              :address="address"
+            />
+          </keep-alive>
+          <keep-alive>
+            <div v-if="activeMode == 'transactions'" class="transactions-section">
+              <TxList :actions="addrTxs && addrTxs.actions" :loading="loading" />
+              <NewPagination
+                v-if="addrTxs && addrTxs.actions && count > -1"
+                :total-rows="+count"
+                :per-page="30"
+                :current-page="currentPage"
+                @change="onPageChange"
+              />
+              <pagination
+                v-else-if="addrTxs && addrTxs.actions"
+                :meta="addrTxs.actions"
+                :loading="loading"
+                @nextPage="goNext"
+                @prevPage="goPrev"
+              />
+            </div>
+          </keep-alive>
         </div>
       </div>
+    </template>
+
+    <template>
       <div v-if="isVault">
+        <div class="address-section">
+          <div class="left-section">
+            <div class="address-header">
+              <Avatar :name="address" />
+            </div>
+            <div class="address-name">
+              <span class="address-value" style="color: var(--sec-font-color)">
+                {{ label }}
+              </span>
+              <div class="qr-copy-wrapper">
+                <div class="item">
+                  <Copy :str-copy="address" />
+                </div>
+                <div id="qrcode" class="item">
+                  <qr-btn :qrcode="address"></qr-btn>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="action-types desktop-filters">
+            <advanced-filter
+              ref="advancedFilter"
+              :hide-address-filter="true"
+              class="desktop-filters"
+            />
+          </div>
+        </div>
         <info-card
           :options="addressStat"
           style="margin-bottom: 8px"
@@ -158,85 +287,6 @@
         </div>
       </div>
 
-      <div v-if="!isVault" class="action-buttons">
-        <button
-          class="action-btn"
-          :class="{ active: activeMode === 'transactions' }"
-          @click="activeMode = 'transactions'"
-        >
-          Transactions
-        </button>
-        <button
-          class="action-btn"
-          :class="{ active: activeMode === 'pools' }"
-          @click="activeMode = 'pools'"
-        >
-          LP/Savers
-        </button>
-        <button
-          class="action-btn"
-          :class="{ active: activeMode === 'bond' }"
-          @click="activeMode = 'bond'"
-        >
-          Bond
-        </button>
-        <button
-          class="action-btn"
-          :class="{ active: activeMode === 'thorname' }"
-          @click="activeMode = 'thorname'"
-        >
-          Thorname
-        </button>
-        <button
-          class="action-btn"
-          :class="{ active: activeMode === 'distribution' }"
-          @click="activeMode = 'distribution'"
-        >
-          TCY
-        </button>
-      </div>
-
-      <div v-if="!isVault" class="action-components mb-2">
-        <keep-alive>
-          <thorname v-if="activeMode == 'thorname'" :address="address" />
-        </keep-alive>
-        <keep-alive>
-          <pools v-if="activeMode == 'pools'" :address="address" />
-        </keep-alive>
-        <keep-alive>
-          <bonds
-            v-if="activeMode == 'bond'"
-            :address="address"
-            :nodes="nodesData"
-          />
-        </keep-alive>
-        <keep-alive>
-          <distribution
-            v-if="activeMode == 'distribution'"
-            :address="address"
-          />
-        </keep-alive>
-        <keep-alive>
-          <div v-if="activeMode == 'transactions'" class="transactions-section">
-            <transactions :txs="addrTxs" :owner="address" :loading="loading" />
-            <NewPagination
-              v-if="addrTxs && addrTxs.actions && count > -1"
-              :total-rows="+count"
-              :per-page="30"
-              :current-page="currentPage"
-              @change="onPageChange"
-            />
-            <pagination
-              v-else-if="addrTxs && addrTxs.actions"
-              :meta="addrTxs.actions"
-              :loading="loading"
-              @nextPage="goNext"
-              @prevPage="goPrev"
-            />
-          </div>
-        </keep-alive>
-      </div>
-
       <template>
         <div v-show="!addrTxs && !loading" class="error-container">
           Can't Fetch the Address! Please Try again Later.
@@ -248,28 +298,30 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import moment from 'moment'
 import { compact } from 'lodash'
 import advancedFilter from '../txs/components/advancedFilter.vue'
 import Thorname from './components/thorname.vue'
 import Balance from './components/balance.vue'
-import BalanceHistory from './components/balanceHistory.vue'
 import Pools from './components/pools.vue'
 import Bonds from './components/bonds.vue'
 import Distribution from './components/distribution.vue'
+import TxList from '~/components/TxList.vue'
 import { formatAsset, assetFromString } from '~/utils'
 import { isScamAddress as checkScamAddress } from '~/const/scam-addresses'
 import alertIcon from '~/assets/images/alert.svg?inline'
+import { getRujiraContractLabel } from '~/utils/rujiraContracts'
 
 export default {
   components: {
     Thorname,
     Balance,
-    BalanceHistory,
     Pools,
     Bonds,
     Distribution,
     advancedFilter,
     alertIcon,
+    TxList,
   },
   data() {
     return {
@@ -322,6 +374,7 @@ export default {
       pools: undefined,
       currentPage: 1,
       limit: 30,
+      heroPortfolioTotalUsd: 0,
     }
   },
   computed: {
@@ -334,6 +387,67 @@ export default {
         this.otherBalances.length > 0 &&
         this.otherBalances.some((balance) => balance.quantity > 0)
       )
+    },
+    portfolioRows() {
+      const balances = this.otherBalances ?? []
+      return balances.map((entry) => {
+        let poolAsset
+        this.pools?.forEach((pool) => {
+          const poolAssetData = assetFromString(pool.asset)
+          if (
+            poolAssetData.chain === entry.asset?.chain &&
+            poolAssetData.ticker === entry.asset?.ticker
+          ) {
+            poolAsset = pool
+          }
+        })
+
+        if (entry.asset?.ticker === 'RUNE' && entry.asset?.chain === 'THOR') {
+          poolAsset = { assetPriceUSD: this.runePrice }
+        }
+
+        const quantity = Number(entry.quantity) || 0
+        const price = Number(poolAsset?.assetPriceUSD || 0)
+        return {
+          asset: entry.asset,
+          quantity,
+          price,
+          value: price * quantity,
+        }
+      }).filter((token) => token.asset && Number.isFinite(token.quantity))
+    },
+    bondBalanceTotal() {
+      if (!this.nodes) {
+        return 0
+      }
+
+      return this.nodes.reduce((sum, node) => {
+        const bond = node.bond_providers?.providers?.find(
+          (provider) => provider.bond_address === this.address
+        )
+        if (!bond) {
+          return sum
+        }
+        return sum + +bond.bond / 1e8
+      }, 0)
+    },
+    portfolioTotalUsd() {
+      const walletValue = Number(this.heroPortfolioTotalUsd) || 0
+      return walletValue + this.bondBalanceTotal * (Number(this.runePrice) || 0)
+    },
+    lastTransactionLabel() {
+      const lastTx = this.addrTxs?.actions?.[0]
+      if (!lastTx?.date) {
+        return 'not available'
+      }
+      return moment(lastTx.date / 1e6).fromNow()
+    },
+    transactionCountLabel() {
+      if (this.count === undefined || this.count === null) {
+        return 'Loading transactions'
+      }
+      const label = this.$options.filters.number(this.count, '0,0')
+      return `${label} transactions total`
     },
     addressStat() {
       const balances = this.otherBalances ?? []
@@ -419,14 +533,16 @@ export default {
       return false
     },
     async updateLabel(address) {
-      const { data: labels } = await this.$api.getContractsLabel()
+      const { data: labels } = await this.$api.getContractsLabel().catch(
+        () => ({ data: [] })
+      )
       const label = labels.find((l) => {
         if (l.address.toLowerCase() === address.toLowerCase()) {
           return l.label
         }
         return false
       })
-      this.label = label ? label.label : address
+      this.label = label ? label.label : getRujiraContractLabel(address) || address
     },
     async fetchAddressData(address, offset = 0, limit = 30) {
       this.loading = true
@@ -453,6 +569,11 @@ export default {
                   asset: assetFromString('THOR.RUNE'),
                   quantity: Number.parseFloat(item?.amount) / 10 ** 8 ?? 0,
                 }
+                return false
+              }
+
+              // Skip ghost-vault share tokens (RUJI Money Market positions — not spendable assets)
+              if (item.denom.toLowerCase().startsWith('x/ghost-vault/')) {
                 return false
               }
 
@@ -642,6 +763,119 @@ export default {
 .address-container {
   margin: auto;
 
+  .address-hero {
+    align-items: flex-start;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.02) 0%,
+      rgba(255, 255, 255, 0.01) 100%
+    );
+    border: 1px solid rgba(111, 130, 153, 0.18);
+    border-radius: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    justify-content: space-between;
+    margin: 0 $space-12 $space-16;
+    padding: 1.35rem 1.45rem;
+
+    @include lg {
+      align-items: flex-end;
+      flex-direction: row;
+    }
+  }
+
+  .address-hero__main {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 0;
+  }
+
+  .address-hero__eyebrow,
+  .address-hero__summary-label {
+    color: var(--sec-font-color);
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .address-hero__identity {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+  }
+
+  .address-hero__identity-copy {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-width: 0;
+  }
+
+  .address-hero__value {
+    font-size: $font-size-mobile;
+    font-weight: 600;
+
+    @include md {
+      font-size: 1.05rem;
+    }
+  }
+
+  .address-hero__alias {
+    color: var(--font-color);
+    font-size: 1.55rem;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+
+  .address-hero__meta {
+    align-items: center;
+    color: var(--sec-font-color);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem 1.25rem;
+    font-size: 0.92rem;
+  }
+
+  .address-hero__meta-item {
+    align-items: center;
+    display: inline-flex;
+    gap: 0.5rem;
+  }
+
+  .address-hero__meta-dot {
+    background-color: #2ae6a0;
+    border-radius: 999px;
+    box-shadow: 0 0 12px rgba(42, 230, 160, 0.35);
+    display: inline-flex;
+    height: 8px;
+    width: 8px;
+  }
+
+  .address-hero__summary {
+    align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-width: 180px;
+
+    @include lg {
+      align-items: flex-end;
+      text-align: right;
+    }
+  }
+
+  .address-hero__summary-value {
+    color: var(--font-color);
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    line-height: 1;
+  }
+
   .icon {
     fill: var(--sec-font-color);
     height: 1.5rem;
@@ -654,34 +888,19 @@ export default {
   .nav {
     flex: 1;
   }
+
   .balance-nav-container {
     display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: space-between;
     gap: 1rem;
-    max-width: auto;
+    width: 100%;
   }
 
-  .card-balance,
-  .card-balance-history,
-  .node-address-card {
-    flex: 1 1 calc(50% - 1rem);
+  .card-balance {
+    width: 100%;
     display: flex;
     flex-direction: column;
   }
 
-  @include lg {
-    .card-balance,
-    .card-balance-history,
-    .node-address-card {
-      flex: 1 1 calc(50% - 1rem);
-    }
-    .balance-nav-container {
-      flex-direction: row;
-      flex-wrap: wrap;
-    }
-  }
   .content {
     margin-top: $space-8;
   }
@@ -814,6 +1033,7 @@ export default {
     color: var(--primary-color);
   }
 }
+
 .qr-copy-wrapper {
   display: flex;
   gap: 5px;
@@ -861,6 +1081,29 @@ export default {
   }
 }
 
+.activity-shell {
+  margin: 0 $space-12 $space-16;
+}
+
+.activity-shell__toolbar {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  justify-content: space-between;
+  margin-bottom: $space-10;
+}
+
+.activity-shell__filters {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+
+  @include lg {
+    width: auto;
+  }
+}
+
 .action-buttons {
   display: flex;
   gap: 5px;
@@ -903,5 +1146,11 @@ export default {
 
 .action-components {
   margin-bottom: $space-16;
+}
+
+.transactions-section {
+  display: flex;
+  flex-direction: column;
+  gap: $space-10;
 }
 </style>

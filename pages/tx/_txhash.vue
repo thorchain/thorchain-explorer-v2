@@ -1,6 +1,201 @@
 <template>
   <Page>
-    <div class="tx-header">
+    <div v-if="swapOverview || contractOverview" class="tx-detail-page">
+      <div class="tx-detail-back">
+        <nuxt-link to="/txs" class="tx-back-link">
+          ← All Transactions
+        </nuxt-link>
+      </div>
+
+      <div class="tx-detail-meta">
+        <span>{{ activeOverview.metaLabel }}</span>
+        <span :class="['tx-detail-status', `tx-detail-status--${activeOverview.status.tone}`]">
+          {{ activeOverview.status.label }}
+        </span>
+      </div>
+
+      <h1 class="tx-detail-title">
+        {{ activeOverview.title }}
+      </h1>
+
+      <div class="tx-detail-grid">
+        <div class="tx-detail-main">
+          <section class="tx-swap-card card-bg">
+            <div class="tx-swap-head">
+              <div class="tx-asset-panel">
+                <div class="tx-asset-label">Input</div>
+                <div class="tx-asset-primary">
+                  <AssetIcon
+                    v-if="activeOverview.input.asset"
+                    :asset="activeOverview.input.asset"
+                    :height="'2.25rem'"
+                  />
+                  <span>{{ activeOverview.input.name }}</span>
+                </div>
+                <div class="tx-asset-badge">
+                  {{ activeOverview.input.badge }}
+                </div>
+                <div class="tx-asset-values">
+                  <span>{{ activeOverview.input.amount }}</span>
+                  <strong v-if="activeOverview.input.usd">{{
+                    safeUsdDisplay(activeOverview.input.usd)
+                  }}</strong>
+                </div>
+              </div>
+
+              <div class="tx-swap-arrow">→</div>
+
+              <div class="tx-asset-panel tx-asset-panel--accent">
+                <div class="tx-asset-label">Output</div>
+                <div class="tx-asset-primary">
+                  <AssetIcon
+                    v-if="activeOverview.output.asset"
+                    :asset="activeOverview.output.asset"
+                    :height="'2.25rem'"
+                  />
+                  <span>{{ activeOverview.output.name }}</span>
+                </div>
+                <div class="tx-asset-badge">
+                  {{ activeOverview.output.badge }}
+                </div>
+                <div class="tx-asset-values">
+                  <span>{{ activeOverview.output.amount }}</span>
+                  <strong v-if="activeOverview.output.usd">{{
+                    safeUsdDisplay(activeOverview.output.usd)
+                  }}</strong>
+                </div>
+              </div>
+            </div>
+
+            <div v-if="activeOverview.metricRows.length" class="tx-metric-strip">
+              <div
+                v-for="metric in activeOverview.metricRows"
+                :key="metric.label"
+                class="tx-metric-item"
+              >
+                <div class="tx-asset-label">{{ metric.label }}</div>
+                <div class="tx-metric-value">{{ metric.value }}</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="tx-info-card card-bg">
+            <div class="tx-section-title">Details</div>
+            <div class="tx-detail-rows">
+              <div
+                v-for="row in activeOverview.detailRows"
+                :key="row.label"
+                class="tx-detail-row"
+              >
+                <div class="tx-detail-key">{{ row.label }}</div>
+                <div class="tx-detail-value">
+                  <template v-if="row.type === 'status'">
+                    <span :class="['tx-detail-status', `tx-detail-status--${activeOverview.status.tone}`]">
+                      {{ row.value }}
+                    </span>
+                  </template>
+                  <template v-else-if="row.type === 'link'">
+                    <nuxt-link :to="row.to" class="tx-link">
+                      {{ row.value }}
+                    </nuxt-link>
+                  </template>
+                  <template v-else>
+                    {{ row.value }}
+                  </template>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section v-if="activeOverview.lifecycleRows.length" class="tx-info-card card-bg">
+            <div class="tx-section-title">Lifecycle Events</div>
+            <div class="tx-lifecycle-list">
+              <div
+                v-for="event in activeOverview.lifecycleRows"
+                :key="event.title"
+                class="tx-lifecycle-item"
+              >
+                <div class="tx-lifecycle-dot">{{ event.icon }}</div>
+                <div class="tx-lifecycle-copy">
+                  <div class="tx-lifecycle-title">{{ event.title }}</div>
+                  <div class="tx-lifecycle-body">{{ event.body }}</div>
+                  <div v-if="event.meta" class="tx-lifecycle-meta">{{ event.meta }}</div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="tx-detail-side">
+          <section class="tx-info-card card-bg">
+            <div class="tx-section-title">Transaction Hash</div>
+            <div class="tx-hash-box">
+              <div class="tx-asset-label">Full hash</div>
+              <div class="tx-hash-full mono">{{ $route.params.txhash }}</div>
+            </div>
+            <div class="tx-hash-actions">
+              <div class="tx-hash-action">
+                <Copy :str-copy="$route.params.txhash" :hide-toast="true" />
+                <span>Copy</span>
+              </div>
+              <div class="tx-hash-action">
+                <qr-btn :qrcode="$route.params.txhash"></qr-btn>
+                <span>View QR</span>
+              </div>
+            </div>
+          </section>
+
+          <section v-if="activeOverview.feeRows.length" class="tx-info-card card-bg">
+            <div class="tx-section-title">Fee Breakdown</div>
+            <div class="tx-fee-list">
+              <div
+                v-for="fee in activeOverview.feeRows"
+                :key="fee.label"
+                class="tx-fee-row"
+              >
+                <div class="tx-fee-label">{{ fee.label }}</div>
+                <div class="tx-fee-value-wrap">
+                  <div class="tx-fee-value">{{ fee.value }}</div>
+                  <div v-if="fee.subtle" class="tx-fee-subtle">{{ fee.subtle }}</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="tx-info-card card-bg">
+            <button class="tx-tech-header" type="button" @click="technicalExpanded = !technicalExpanded">
+              <span class="tx-section-title">Technical Details</span>
+              <span class="tx-tech-arrow">{{ technicalExpanded ? '−' : '+' }}</span>
+            </button>
+            <div v-if="technicalExpanded" class="tx-tech-list">
+              <div
+                v-for="row in activeOverview.technicalRows"
+                :key="row.label"
+                class="tx-tech-row"
+              >
+                <div class="tx-tech-key">{{ row.label }}</div>
+                <div
+                  :class="[
+                    'tx-tech-value',
+                    { 'tx-tech-value--truncate': row.label === 'Memo' },
+                  ]"
+                >
+                  <template v-if="row.type === 'link'">
+                    <nuxt-link :to="row.to" class="tx-link">
+                      {{ row.value }}
+                    </nuxt-link>
+                  </template>
+                  <template v-else>
+                    {{ row.value }}
+                  </template>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+    <div v-else class="tx-header">
       <div class="item tx-id">
         <span class="mono">
           {{ $route.params.txhash }}
@@ -15,7 +210,11 @@
     </div>
     <template v-if="!isError && !isLoading && pools">
       <template v-if="cards && cards.length > 0">
-        <tx-card v-for="(c, i) in cards" :key="i" :tx-data="c.details">
+        <tx-card
+          v-for="(c, i) in visibleCards"
+          :key="i"
+          :tx-data="c.details"
+        >
           <template
             v-for="(s, j) in c.accordions.filter(
               (c) => c.data.title && !c.data.hide
@@ -70,6 +269,7 @@ import {
   createFailedState as createFailedStateBuilder,
 } from './state/builders.js'
 import DisconnectIcon from '~/assets/images/disconnect.svg?inline'
+import AssetIcon from '~/components/AssetIcon.vue'
 import {
   assetFromString,
   assetToTrade,
@@ -80,10 +280,12 @@ import {
   sumAffiliateFee,
 } from '~/utils'
 import Accordion from '~/components/Accordion.vue'
+import { getRujiraContractLabel } from '~/utils/rujiraContracts'
 
 export default {
   components: {
     DisconnectIcon,
+    AssetIcon,
     streamingSwap,
     txCard,
     Accordion,
@@ -104,11 +306,13 @@ export default {
       },
       updateInterval: undefined,
       cards: [],
+      rawActions: null,
       inboundHash: undefined,
       thorStatus: undefined,
       thorHeight: 0,
       quote: undefined,
       height: undefined,
+      technicalExpanded: false,
     }
   },
   head: {
@@ -120,6 +324,264 @@ export default {
       pools: 'getPools',
       runePrice: 'getRunePrice',
     }),
+    activeOverview() {
+      return this.swapOverview || this.contractOverview || null
+    },
+    swapCardIndex() {
+      if (!this.cards?.length) return -1
+      return this.cards.findIndex((card) =>
+        /swap/i.test(card?.details?.title || '')
+      )
+    },
+    visibleCards() {
+      if (!this.cards?.length) return []
+      if (this.contractOverview) return [] // hide all contract cards when contractOverview is active
+      if (!this.swapOverview) return this.cards
+      return this.cards.filter((_, index) => index !== this.swapCardIndex)
+    },
+    swapOverview() {
+      if (this.swapCardIndex < 0) return null
+
+      const card = this.cards[this.swapCardIndex]
+      const details = card?.details
+      const actionAccordion = card?.accordions?.find(
+        (entry) => entry.name === 'accordion-action'
+      )
+      const inboundAccordion = card?.accordions?.find((entry) =>
+        entry.name.startsWith('accordion-in-')
+      )
+      const outboundAccordion = card?.accordions?.find((entry) =>
+        entry.name.startsWith('accordion-out-')
+      )
+
+      const input = details?.overall?.in?.[0]
+      const output = details?.overall?.out?.[0]
+
+      if (!input?.asset || !output?.asset) {
+        return null
+      }
+
+      const actionStacks = actionAccordion?.data?.stacks || []
+      const inboundStacks = inboundAccordion?.data?.stacks || []
+      const outboundStacks = outboundAccordion?.data?.stacks || []
+
+      const inputAsset = assetFromString(input.asset)
+      const outputAsset = assetFromString(output.asset)
+      const status = this.getOverviewStatus(details?.overall?.middle)
+      const inboundHeight = this.getNumericStackValue(inboundStacks, 'Block Height')
+      const outboundHeight = this.getNumericStackValue(outboundStacks, 'Executed at')
+      const settledSeconds =
+        inboundHeight && outboundHeight && outboundHeight >= inboundHeight
+          ? (outboundHeight - inboundHeight) * this.blockSeconds('THOR')
+          : null
+
+      const rate = this.getStackDisplayValue(actionStacks, 'Rate')
+      const slip = this.getStackDisplayValue(actionStacks, 'Swap Slip')
+      const affiliateBasis = this.getStackDisplayValue(actionStacks, 'Affiliate Basis')
+      const liquidityFee = this.formatFeeDisplay(
+        this.getStackDisplayValueByPrefix(actionStacks, 'Liquidity Fee')
+      )
+      const interfaceFee = this.formatFeeDisplay(
+        this.getStackDisplayValue(actionStacks, 'Interface Fee')
+      )
+      const networkFees = outboundStacks
+        .filter((stack) => stack.key === 'Outbound Fee' && stack.is)
+        .map((stack) => this.formatFeeDisplay(this.formatStackValue(stack.value)))
+        .filter(Boolean)
+      const totalFees = [liquidityFee, interfaceFee, ...networkFees].filter(Boolean)
+
+      return {
+        title: `Swapped ${this.formatAssetAmount(input.amount, input.asset)} for ${this.formatAssetAmount(output.amount, output.asset)}`,
+        metaLabel: `${this.getSwapActionLabel(inputAsset, outputAsset)} · ${this.getSwapProductLabel(outputAsset)}`,
+        status,
+        input: {
+          asset: input.asset,
+          name: this.getAssetDisplayName(input.asset),
+          badge: this.getNetworkBadge(inputAsset),
+          amount: this.formatAssetAmount(input.amount, input.asset),
+          usd: this.formatUsdValue(input.amountUSD),
+        },
+        output: {
+          asset: output.asset,
+          name: this.getAssetDisplayName(output.asset),
+          badge: this.getNetworkBadge(outputAsset),
+          amount: this.formatAssetAmount(output.amount, output.asset),
+          usd: this.formatUsdValue(output.amountUSD),
+        },
+        metricRows: [
+          rate ? { label: 'Exchange Rate', value: rate } : null,
+          slip ? { label: 'Slippage', value: slip } : null,
+          settledSeconds
+            ? { label: 'Settled In', value: moment.duration(settledSeconds, 'seconds').humanize() }
+            : null,
+        ].filter(Boolean),
+        detailRows: [
+          { label: 'Product', value: this.getSwapProductLabel(outputAsset) },
+          { label: 'Action', value: this.getSwapActionLabel(inputAsset, outputAsset) },
+          { label: 'Status', value: status.label, type: 'status' },
+          {
+            label: 'Time',
+            value: this.getStackDisplayValue(actionStacks, 'Timestamp') || '-',
+          },
+          {
+            label: 'Block',
+            value: inboundHeight ? `#${this.normalFormat(inboundHeight)}` : '-',
+          },
+          {
+            label: 'User',
+            value: this.formatAddress(this.thorStatus?.tx?.from_address),
+            to: this.thorStatus?.tx?.from_address
+              ? `/address/${this.thorStatus.tx.from_address}`
+              : undefined,
+            type: this.thorStatus?.tx?.from_address ? 'link' : undefined,
+          },
+        ],
+        lifecycleRows: this.buildLifecycleRows({
+          input,
+          output,
+          inboundHeight,
+          outboundHeight,
+          actionStacks,
+          inboundStacks,
+          outboundStacks,
+          inputAsset,
+          outputAsset,
+        }),
+        feeRows: [
+          ...networkFees.map((value, index) => ({
+            label: index === 0 ? 'Network Fee' : `Network Fee ${index + 1}`,
+            value,
+          })),
+          liquidityFee
+            ? {
+                label: 'Liquidity Fee',
+                value: liquidityFee,
+              }
+            : null,
+          interfaceFee
+            ? {
+                label: 'Affiliate Fee',
+                value: interfaceFee,
+              }
+            : null,
+          totalFees.length
+            ? {
+                label: 'Fee Entries',
+                value: `${totalFees.length} ${totalFees.length === 1 ? 'entry' : 'entries'}`,
+              }
+            : null,
+        ].filter(Boolean),
+        technicalRows: [
+          this.buildTechRow('From address', this.getStackDisplayValue(inboundStacks, 'From'), 'address'),
+          this.buildTechRow('To address', this.getStackDisplayValue(outboundStacks, 'Destination'), 'address'),
+          this.buildTechRow('Memo', this.getStackDisplayValue(actionStacks, 'Memo')),
+          this.buildTechRow('Inbound stage', this.getStackDisplayValue(inboundStacks, 'Inbound Stage')),
+          this.buildTechRow('Exchange rate', rate),
+          this.buildTechRow('Affiliate basis', affiliateBasis),
+          this.buildTechRow('Limit', this.getStackDisplayValue(actionStacks, 'Limit')),
+        ].filter(Boolean),
+      }
+    },
+    contractOverview() {
+      if (!this.rawActions?.length) return null
+
+      // Only applies when every action is a contract type
+      if (!this.rawActions.every((a) => a.type === 'contract')) return null
+
+      const contractTypes = this.rawActions.map(
+        (a) => a.metadata?.contract?.contractType ?? ''
+      )
+      const isCalc = contractTypes.some((ct) => ct.includes('calc'))
+      if (!isCalc) return null
+
+      const tradeActions = this.rawActions.filter((a) =>
+        (a.metadata?.contract?.contractType ?? '').includes('fin/trade')
+      )
+      const tradeCount = tradeActions.length
+
+      // Determine overall status from all actions
+      const hasError = this.rawActions.some(
+        (a) => (a.metadata?.contract?.code ?? 0) > 0
+      )
+      const allSuccess = this.rawActions.every((a) => a.status === 'success')
+      const status = hasError
+        ? { label: 'Failed', tone: 'red' }
+        : allSuccess
+          ? { label: 'Success', tone: 'green' }
+          : { label: 'Pending', tone: 'blue' }
+
+      // Strategy address from calc-manager action
+      const managerAction = this.rawActions.find((a) =>
+        (a.metadata?.contract?.contractType ?? '').includes('calc-manager')
+      )
+      const strategyAddress =
+        managerAction?.metadata?.contract?.attributes?.strategy_address ||
+        managerAction?.in?.[0]?.address ||
+        ''
+      const executorAddress =
+        managerAction?.metadata?.contract?.attributes?.executor || ''
+
+      // Collect unique pair contract addresses from fin/trade actions
+      const pairAddresses = [
+        ...new Set(tradeActions.map((a) => a.out?.[0]?.address).filter(Boolean)),
+      ]
+      const pairLabels = pairAddresses
+        .map((addr) => getRujiraContractLabel(addr) || this.formatAddress(addr))
+        .join(', ')
+
+      // Aggregate rates from fin/trade
+      const rates = tradeActions
+        .map((a) => {
+          const attrs = a.metadata?.contract?.attributes ?? {}
+          return attrs.rate ? parseFloat(attrs.rate) : null
+        })
+        .filter((r) => r !== null && !isNaN(r))
+      const avgRate = rates.length
+        ? rates.reduce((s, r) => s + r, 0) / rates.length
+        : null
+
+      const date = this.rawActions[0]?.date
+      const timestamp = date ? moment.unix(parseInt(date) / 1e9) : null
+
+      return {
+        title: `${tradeCount} Recurring Swap${tradeCount !== 1 ? 's' : ''} executed`,
+        metaLabel: 'Recurring Swaps · CALC',
+        status,
+        input: {
+          asset: 'THOR.RUJI',
+          name: 'Strategy',
+          badge: strategyAddress ? this.formatAddress(strategyAddress) : 'CALC',
+          amount: `${tradeCount} trade${tradeCount !== 1 ? 's' : ''}`,
+          usd: null,
+        },
+        output: {
+          asset: null,
+          name: 'RUJI Trade',
+          badge: pairLabels || 'Orderbook',
+          amount: avgRate ? `Avg rate ${avgRate.toFixed(6)}` : 'Executed',
+          usd: null,
+        },
+        metricRows: [
+          { label: 'Trades Executed', value: `${tradeCount}` },
+          pairLabels ? { label: 'Pairs', value: pairLabels } : null,
+          avgRate ? { label: 'Avg Exchange Rate', value: avgRate.toFixed(6) } : null,
+          timestamp ? { label: 'Time', value: timestamp.format('YYYY-MM-DD HH:mm:ss') } : null,
+        ].filter(Boolean),
+        detailRows: [
+          { label: 'Product', value: 'Recurring Swaps' },
+          { label: 'Action', value: 'Contract execution' },
+          { label: 'Status', value: status.label, type: 'status' },
+          timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
+          executorAddress ? { label: 'Executor', value: this.formatAddress(executorAddress) } : null,
+        ].filter(Boolean),
+        lifecycleRows: [],
+        feeRows: [],
+        technicalRows: [
+          strategyAddress ? this.buildTechRow('Strategy address', strategyAddress, 'address') : null,
+          executorAddress ? this.buildTechRow('Executor address', executorAddress, 'address') : null,
+        ].filter(Boolean),
+      }
+    },
   },
   async mounted() {
     let txHash = this.$route.params.txhash
@@ -172,10 +634,213 @@ export default {
     this.clearIntervalId(this.updateInterval)
   },
   methods: {
+    getOverviewStatus(middle = {}) {
+      if (middle.fail) {
+        return { label: 'Failed', tone: 'red' }
+      }
+      if (middle.pending) {
+        return { label: 'Pending', tone: 'yellow' }
+      }
+      return { label: 'Success', tone: 'green' }
+    },
+    getStackDisplayValue(stacks = [], key) {
+      const stack = stacks.find((entry) => entry.key === key && entry.is)
+      return this.formatStackValue(stack?.value)
+    },
+    getStackDisplayValueByPrefix(stacks = [], prefix) {
+      const stack = stacks.find(
+        (entry) => entry.key?.startsWith(prefix) && entry.is
+      )
+      return this.formatStackValue(stack?.value)
+    },
+    getNumericStackValue(stacks = [], key) {
+      const stack = stacks.find((entry) => entry.key === key && entry.is)
+      const numeric = Number(String(this.formatStackValue(stack?.value)).replace(/[^0-9.-]/g, ''))
+      return Number.isFinite(numeric) && numeric > 0 ? numeric : null
+    },
+    formatStackValue(value) {
+      if (Array.isArray(value)) {
+        return value.map((item) => item?.text || '').filter(Boolean).join(' · ')
+      }
+      if (value == null || value === '') return ''
+      return `${value}`
+    },
+    formatAssetAmount(amount, asset) {
+      const formattedAmount = `${this.baseAmountFormatOrZero(amount)}`
+      const numericAmount = Number(formattedAmount.replace(/,/g, ''))
+      if (!Number.isFinite(numericAmount)) {
+        return `${formattedAmount} ${this.getAssetSymbol(asset)}`
+      }
+      // Use enough decimals so small amounts (e.g. 0.00217 BTC) aren't rounded to 0
+      const maxDecimals = numericAmount > 0 && numericAmount < 0.01 ? 8 : 2
+      const displayAmount = new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: maxDecimals,
+      }).format(numericAmount)
+      return `${displayAmount} ${this.getAssetSymbol(asset)}`
+    },
+    formatUsdValue(value) {
+      const raw = `${value ?? ''}`.trim()
+      const numeric = Number(raw)
+
+      if (
+        value == null ||
+        raw === '' ||
+        /nan|infinity/i.test(raw) ||
+        !Number.isFinite(numeric)
+      ) {
+        return '$0'
+      }
+
+      return this.formatCurrency(numeric)
+    },
+    safeUsdDisplay(value) {
+      const text = `${value ?? ''}`.trim()
+      if (!text || /nan|infinity/i.test(text)) return '$0'
+      return text
+    },
+    formatFeeDisplay(value) {
+      if (!value) return ''
+
+      const cleaned = String(value)
+        .replace(/\(\$?NaN\)/gi, '')
+        .replace(/\bTHOR\.([A-Z0-9-]+)\b/g, '$1')
+        .replace(/\s+/g, ' ')
+        .trim()
+
+      const match = cleaned.match(
+        /^([+-]?(?:\d+\.?\d*|\d*\.?\d+)(?:e[+-]?\d+)?)(.*)$/i
+      )
+
+      if (!match) return cleaned
+
+      const numeric = Number(match[1])
+      if (!Number.isFinite(numeric)) return cleaned
+
+      const abs = Math.abs(numeric)
+      const maximumFractionDigits =
+        abs === 0 ? 2 : abs >= 1 ? 2 : abs >= 0.01 ? 4 : 8
+
+      const formatted = new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits,
+      }).format(numeric)
+
+      return `${formatted}${match[2]}`.trim()
+    },
+    getAssetSymbol(asset) {
+      if (!asset) return '-'
+      const parsed = assetFromString(asset)
+      if (parsed.chain === 'THOR' && parsed.ticker) {
+        return parsed.ticker
+      }
+      return this.showAsset(asset)
+    },
+    getAssetDisplayName(asset) {
+      if (!asset) return '-'
+      const parsed = assetFromString(asset)
+      const chainNames = {
+        BTC: 'Bitcoin',
+        BCH: 'Bitcoin Cash',
+        ETH: 'Ethereum',
+        LTC: 'Litecoin',
+        BNB: 'Binance Coin',
+        BSC: 'Binance Smart Chain',
+        DOGE: 'Dogecoin',
+        SOL: 'Solana',
+        AVAX: 'Avalanche',
+        GAIA: 'Cosmos',
+        BASE: 'Base',
+        THOR: parsed.ticker === 'RUNE' ? 'RUNE' : parsed.ticker,
+      }
+      if (parsed.ticker === parsed.chain || (parsed.chain === 'THOR' && parsed.ticker === 'RUNE')) {
+        return chainNames[parsed.chain] || parsed.ticker
+      }
+      return parsed.ticker
+    },
+    getNetworkBadge(asset) {
+      if (!asset) return '-'
+      if (asset.trade) return 'Rujira network'
+      if (asset.secure) return 'Secure network'
+      if (asset.synth) return 'Synth network'
+      if (asset.chain === 'THOR') return 'THORChain network'
+      return `${this.getAssetDisplayName(`${asset.chain}.${asset.chain}`)} network`
+    },
+    getSwapActionLabel(inputAsset, outputAsset) {
+      if (inputAsset?.chain && outputAsset?.chain && inputAsset.chain !== outputAsset.chain) {
+        return 'Cross-chain Swap'
+      }
+      return 'Swap'
+    },
+    getSwapProductLabel(outputAsset) {
+      if (outputAsset?.trade || outputAsset?.secure) {
+        return 'RUJI Trade'
+      }
+      return 'THORChain'
+    },
+    buildTechRow(label, value, kind) {
+      if (!value) return null
+      if (kind === 'address') {
+        return {
+          label,
+          value: this.formatAddress(value),
+          to: `/address/${value}`,
+          type: 'link',
+        }
+      }
+      return { label, value }
+    },
+    buildLifecycleRows({
+      input,
+      output,
+      inboundHeight,
+      outboundHeight,
+      actionStacks,
+      inboundStacks,
+      outboundStacks,
+      outputAsset,
+    }) {
+      const rows = []
+      const timeText = this.getStackDisplayValue(actionStacks, 'Timestamp')
+      rows.push({
+        icon: '↓',
+        title: `${this.getAssetDisplayName(input.asset)} received by THORChain`,
+        body: `${this.formatAssetAmount(input.amount, input.asset)} entered the swap flow from ${this.formatAddress(this.getStackDisplayValue(inboundStacks, 'From'))}.`,
+        meta: [timeText, inboundHeight ? `Block #${this.normalFormat(inboundHeight)}` : '']
+          .filter(Boolean)
+          .join(' · '),
+      })
+      rows.push({
+        icon: '↻',
+        title: 'Swap executed',
+        body: `${this.getSwapProductLabel(outputAsset)} converted ${this.getAssetDisplayName(input.asset)} to ${this.getAssetDisplayName(output.asset)} at the current exchange rate.`,
+        meta: this.getStackDisplayValue(actionStacks, 'Rate'),
+      })
+      rows.push({
+        icon: '↑',
+        title: `${this.getAssetDisplayName(output.asset)} delivered`,
+        body: `${this.formatAssetAmount(output.amount, output.asset)} was sent to ${this.formatAddress(this.getStackDisplayValue(outboundStacks, 'Destination'))}.`,
+        meta: outboundHeight ? `Block #${this.normalFormat(outboundHeight)}` : '',
+      })
+      return rows
+    },
     // TODO: check hash in saver with streaming
     async fetchTx(hash) {
       if (!this.pools) {
-        return true
+        const pools = (
+          await this.$api.getPools().catch((e) => {
+            console.error(e)
+            this.error.message =
+              "Can't load pool data. Please try again in a moment."
+          })
+        )?.data
+
+        if (pools) {
+          this.$store.commit('setPools', pools)
+          await this.$nextTick()
+        } else {
+          return true
+        }
       }
 
       // Here the hash can be outbound but the inbound should be caught if it's not
@@ -354,6 +1019,7 @@ export default {
       return buildCard(cardBase, accordions, this.getCardContext())
     },
     async createTxState(midgardAction, thorTx, thorStatus, thorHeader, pools) {
+      this.rawActions = midgardAction?.actions ?? null
       const memo = this.parseMemo(thorTx?.tx?.tx?.memo)
 
       if (memo.type === 'outbound') {
@@ -1232,6 +1898,7 @@ export default {
       }
 
       this.$set(this, 'cards', [this.createCard(cards, accordions)])
+      this.technicalExpanded = false
     },
     createAddLiquidityState(thorStatus, actions, thorTx, memo) {
       const isSaver = this.parseMemoAsset(memo?.asset)?.synth
@@ -1983,6 +2650,430 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.tx-detail-page {
+  margin: $space-8 auto $space-24;
+  max-width: 1140px;
+  padding: 0 $space-16;
+}
+
+.tx-detail-back {
+  margin-bottom: $space-12;
+}
+
+.tx-back-link,
+.tx-link {
+  color: var(--font-color);
+  font-weight: 500;
+  text-decoration: none;
+
+  &:hover {
+    color: color-mix(in srgb, var(--green) 82%, white);
+  }
+}
+
+.tx-link {
+  color: var(--green);
+}
+
+.tx-detail-meta {
+  align-items: center;
+  color: var(--font-color);
+  display: flex;
+  font-size: $font-size-sm;
+  flex-wrap: wrap;
+  gap: $space-10;
+  margin-bottom: $space-12;
+}
+
+.tx-detail-status {
+  align-items: center;
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: $font-size-sm;
+  font-weight: 600;
+  padding: $space-4 $space-10;
+}
+
+.tx-detail-status--green {
+  background: color-mix(in srgb, var(--green) 12%, transparent);
+  color: #35f09a;
+}
+
+.tx-detail-status--yellow {
+  background: color-mix(in srgb, #e4bc47 15%, transparent);
+  color: #f0cf71;
+}
+
+.tx-detail-status--red {
+  background: color-mix(in srgb, var(--red) 12%, transparent);
+  color: #ff8d8d;
+}
+
+.tx-detail-title {
+  color: var(--sec-font-color);
+  font-size: clamp(2.1rem, 4.2vw, 3.4rem);
+  letter-spacing: -0.03em;
+  line-height: 1.06;
+  margin: 0 0 $space-24;
+}
+
+.tx-detail-grid {
+  display: grid;
+  gap: $space-18;
+
+  @include lg {
+    align-items: start;
+    grid-template-columns: minmax(0, 1.95fr) minmax(300px, 0.92fr);
+  }
+}
+
+.tx-detail-main,
+.tx-detail-side {
+  display: flex;
+  flex-direction: column;
+  gap: $space-18;
+}
+
+.tx-swap-card,
+.tx-info-card {
+  background: color-mix(in srgb, var(--card-bg-color) 96%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border-color) 92%, transparent);
+  border-radius: 20px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.16);
+  padding: $space-20;
+}
+
+.tx-detail-side {
+  @include lg {
+    position: sticky;
+    top: $space-20;
+  }
+}
+
+.tx-swap-head {
+  display: grid;
+  gap: $space-14;
+
+  @include md {
+    align-items: center;
+    grid-template-columns: minmax(0, 1fr) 60px minmax(0, 1fr);
+  }
+}
+
+.tx-asset-panel {
+  background: color-mix(in srgb, #26323d 60%, var(--card-bg-color));
+  border: 1px solid color-mix(in srgb, var(--border-color) 92%, transparent);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: $space-10;
+  min-height: 156px;
+  padding: $space-18 $space-20;
+}
+
+.tx-asset-panel--accent {
+  border-color: color-mix(in srgb, var(--green) 62%, var(--border-color));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--green) 14%, transparent);
+}
+
+.tx-asset-label {
+  color: var(--font-color);
+  font-size: $font-size-xxs;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tx-asset-primary {
+  align-items: center;
+  color: var(--sec-font-color);
+  display: flex;
+  font-size: 1.75rem;
+  font-weight: 700;
+  gap: $space-10;
+}
+
+.tx-asset-badge {
+  align-self: flex-start;
+  background: color-mix(in srgb, var(--highlight) 8%, transparent);
+  border-radius: 999px;
+  color: var(--font-color);
+  font-size: $font-size-sm;
+  padding: $space-6 $space-10;
+}
+
+.tx-asset-values {
+  align-items: end;
+  color: var(--font-color);
+  display: flex;
+  justify-content: space-between;
+  margin-top: auto;
+  gap: $space-12;
+
+  span,
+  strong {
+    color: var(--sec-font-color);
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  strong {
+    font-size: 1.25rem;
+  }
+}
+
+.tx-swap-arrow {
+  align-items: center;
+  background: color-mix(in srgb, #26323d 40%, var(--card-bg-color));
+  border: 1px solid color-mix(in srgb, var(--green) 18%, var(--border-color));
+  border-radius: 999px;
+  color: var(--green);
+  display: flex;
+  font-size: 1.15rem;
+  font-weight: 700;
+  height: 60px;
+  justify-content: center;
+  margin: auto;
+  width: 60px;
+}
+
+.tx-metric-strip {
+  display: grid;
+  gap: $space-12;
+  margin-top: $space-14;
+  padding-top: $space-14;
+  position: relative;
+
+  @include md {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  &::before {
+    background: color-mix(in srgb, var(--border-color) 92%, transparent);
+    content: '';
+    height: 1px;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+}
+
+.tx-metric-item {
+  min-height: 56px;
+
+  @include md {
+    padding-right: $space-12;
+
+    &:not(:last-child) {
+      border-right: 1px solid color-mix(in srgb, var(--border-color) 92%, transparent);
+    }
+  }
+}
+
+.tx-metric-value {
+  color: var(--sec-font-color);
+  font-size: $font-size-md;
+  font-weight: 600;
+  margin-top: $space-4;
+}
+
+.tx-section-title {
+  color: var(--font-color);
+  font-size: $font-size-xxs;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tx-detail-rows,
+.tx-fee-list,
+.tx-tech-list {
+  border-top: 1px solid color-mix(in srgb, var(--border-color) 92%, transparent);
+  margin-top: $space-16;
+  padding-top: $space-2;
+}
+
+.tx-detail-row,
+.tx-fee-row,
+.tx-tech-row {
+  align-items: start;
+  border-top: 1px solid color-mix(in srgb, var(--border-color) 90%, transparent);
+  display: grid;
+  gap: $space-10;
+  grid-template-columns: minmax(110px, 0.8fr) minmax(0, 1.2fr);
+  padding: $space-12 0;
+}
+
+.tx-detail-key,
+.tx-fee-label,
+.tx-tech-key {
+  color: var(--font-color);
+  font-size: $font-size-sm;
+}
+
+.tx-detail-value,
+.tx-fee-value,
+.tx-tech-value {
+  color: var(--sec-font-color);
+  font-size: $font-size-sm;
+  font-weight: 500;
+  text-align: right;
+}
+
+.tx-tech-value--truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tx-lifecycle-list {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: $space-20;
+  margin-top: $space-18;
+  padding-left: $space-4;
+
+  &::before {
+    background: color-mix(in srgb, var(--border-color) 88%, transparent);
+    bottom: $space-14;
+    content: '';
+    left: 20px;
+    position: absolute;
+    top: $space-14;
+    width: 1px;
+  }
+}
+
+.tx-lifecycle-item {
+  position: relative;
+  display: grid;
+  gap: $space-12;
+  grid-template-columns: 40px minmax(0, 1fr);
+}
+
+.tx-lifecycle-dot {
+  align-items: center;
+  background: color-mix(in srgb, var(--green) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--green) 35%, transparent);
+  border-radius: 999px;
+  color: var(--green);
+  display: flex;
+  font-size: 1rem;
+  height: 40px;
+  justify-content: center;
+  position: relative;
+  width: 40px;
+  z-index: 1;
+}
+
+.tx-lifecycle-title {
+  color: var(--sec-font-color);
+  font-weight: 600;
+  margin-bottom: $space-4;
+}
+
+.tx-lifecycle-body,
+.tx-lifecycle-meta,
+.tx-fee-subtle,
+.tx-hash-full {
+  color: var(--font-color);
+}
+
+.tx-lifecycle-meta {
+  margin-top: $space-4;
+}
+
+.tx-hash-box {
+  background: color-mix(in srgb, #26323d 60%, var(--card-bg-color));
+  border: 1px solid color-mix(in srgb, var(--border-color) 92%, transparent);
+  border-radius: 16px;
+  margin-top: $space-14;
+  padding: $space-14;
+}
+
+.tx-hash-full {
+  color: var(--sec-font-color);
+  font-size: $font-size-sm;
+  line-height: 1.55;
+  margin-top: $space-8;
+  overflow-wrap: anywhere;
+}
+
+.tx-hash-actions {
+  display: grid;
+  gap: $space-10;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: $space-14;
+}
+
+.tx-hash-action {
+  align-items: center;
+  background: color-mix(in srgb, #26323d 38%, var(--card-bg-color));
+  border: 1px solid color-mix(in srgb, var(--border-color) 92%, transparent);
+  border-radius: 14px;
+  color: var(--sec-font-color);
+  cursor: pointer;
+  display: flex;
+  font-size: $font-size-sm;
+  font-weight: 500;
+  gap: $space-8;
+  justify-content: center;
+  min-height: 50px;
+  padding: 0 $space-12;
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--green) 40%, var(--border-color));
+    color: var(--green);
+  }
+
+  :deep(.item) {
+    align-items: center;
+    background: transparent;
+    border: none;
+    display: flex;
+    justify-content: center;
+    min-height: auto;
+    min-width: 16px;
+    padding: 0;
+    width: auto;
+  }
+
+  :deep(svg),
+  :deep(path),
+  :deep(span) {
+    fill: var(--sec-font-color);
+    color: var(--sec-font-color);
+  }
+
+  &:hover :deep(svg),
+  &:hover :deep(path),
+  &:hover :deep(span) {
+    fill: var(--green);
+    color: var(--green);
+  }
+}
+
+.tx-fee-value-wrap {
+  text-align: right;
+}
+
+.tx-tech-header {
+  align-items: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  padding: 0;
+  width: 100%;
+}
+
+.tx-tech-arrow {
+  color: var(--font-color);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
 .tx-header {
   display: flex;
   max-width: 680px;

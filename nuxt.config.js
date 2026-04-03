@@ -129,11 +129,34 @@ export default {
   modules: [
     // https://go.nuxtjs.dev/axios
     '@nuxtjs/axios',
+    '@nuxtjs/proxy',
   ],
+
+  axios: {
+    proxy: true,
+  },
+
+  proxy: {
+    '/server-api/': {
+      target: 'https://vanaheimex.com/',
+      changeOrigin: true,
+      pathRewrite: {
+        '^/server-api/': '/',
+      },
+    },
+  },
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {
-    transpile: [/echarts/, /zrender/],
+    transpile: [
+      /echarts/,
+      /zrender/,
+      /@dicebear/,
+      /fast-xml-parser/,
+      /fast-xml-builder/,
+      /path-expression-matcher/,
+      /strnum/,
+    ],
   },
 
   styleResources: {
