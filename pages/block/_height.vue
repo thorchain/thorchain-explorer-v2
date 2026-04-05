@@ -119,6 +119,40 @@
         </card>
         <info-card :options="blockInfo" />
       </div>
+      <div v-if="hasBlockEvents" class="block-events-bar">
+        <div v-if="blockEventItems.length > 0" class="events-group">
+          <span class="events-group-label">Block Events</span>
+          <div class="events-chips">
+            <div
+              v-for="item in blockEventItems"
+              :key="item.type"
+              :class="[
+                'event-chip',
+                `event-chip--${item.type.replace(/_/g, '-')}`,
+              ]"
+            >
+              <span class="chip-count">{{ item.count }}</span>
+              <span class="chip-label">{{ item.label }}</span>
+            </div>
+          </div>
+        </div>
+        <div v-if="txTypeItems.length > 0" class="events-group">
+          <span class="events-group-label"
+            >Transactions &middot;
+            {{ txTypeItems.reduce((s, i) => s + i.count, 0) }} total</span
+          >
+          <div class="events-chips">
+            <div
+              v-for="item in txTypeItems"
+              :key="item.label"
+              class="event-chip event-chip--tx"
+            >
+              <span class="chip-count">{{ item.count }}</span>
+              <span class="chip-label">{{ item.label }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
       <Transactions :txs="txs" :loading="loading" />
     </template>
   </page>
@@ -160,6 +194,8 @@ export default {
       devFundReward: '',
       bondReward: '',
       swapActions: [],
+      endBlockEventCounts: {},
+      txTypeCounts: {},
       assetColumns: [
         { label: 'Asset', field: 'assetName' },
         { label: 'Reward', field: 'assetReward' },
@@ -217,6 +253,52 @@ export default {
         assetName: asset,
         assetReward: this.assetRewards[asset],
       }))
+    },
+
+    blockEventItems() {
+      const labelMap = {
+        swap: 'Swaps',
+        streaming_swap: 'Streaming Swaps',
+        refund: 'Refunds',
+        outbound: 'Outbounds',
+        scheduled_outbound: 'Scheduled Outbounds',
+        trade_account_withdraw: 'Trade Withdrawals',
+        trade_account_deposit: 'Trade Deposits',
+        secured_asset_withdraw: 'Secured Withdrawals',
+        affiliate_fee: 'Affiliate Fees',
+        fee: 'Fees',
+        gas: 'Gas',
+        execute: 'Wasm Executes',
+        schedule_add: 'Scheduled Ops',
+        mint_burn: 'Mint/Burns',
+        burn: 'Burns',
+        rewards: 'Rewards',
+      }
+      return Object.entries(this.endBlockEventCounts)
+        .filter(([k]) => labelMap[k])
+        .map(([k, v]) => ({ label: labelMap[k], count: v, type: k }))
+    },
+
+    txTypeItems() {
+      const labelMap = {
+        MsgDeposit: 'Deposits',
+        MsgExecuteContract: 'Contract Calls',
+        MsgPriceFeedQuorumBatch: 'Price Feeds',
+        MsgSend: 'Sends',
+        MsgObservedTxIn: 'Observed Txs In',
+        MsgObservedTxOut: 'Observed Txs Out',
+      }
+      return Object.entries(this.txTypeCounts).map(([k, v]) => ({
+        label: labelMap[k] || k,
+        count: v,
+      }))
+    },
+
+    hasBlockEvents() {
+      return (
+        Object.keys(this.endBlockEventCounts).length > 0 ||
+        Object.keys(this.txTypeCounts).length > 0
+      )
     },
   },
   watch: {
@@ -312,6 +394,46 @@ export default {
         this.stakeReward = ''
         this.assetRewards = {}
         this.swapActions = []
+        this.endBlockEventCounts = {}
+        this.txTypeCounts = {}
+
+        const countableTypes = [
+          'swap',
+          'streaming_swap',
+          'refund',
+          'outbound',
+          'scheduled_outbound',
+          'trade_account_withdraw',
+          'trade_account_deposit',
+          'secured_asset_withdraw',
+          'affiliate_fee',
+          'fee',
+          'gas',
+          'execute',
+          'schedule_add',
+          'mint_burn',
+          'burn',
+          'rewards',
+        ]
+        const evCounts = {}
+        if (Array.isArray(blockData.end_block_events)) {
+          blockData.end_block_events.forEach((e) => {
+            if (countableTypes.includes(e.type)) {
+              evCounts[e.type] = (evCounts[e.type] || 0) + 1
+            }
+          })
+        }
+        this.endBlockEventCounts = evCounts
+
+        const txCounts = {}
+        if (Array.isArray(blockData.txs)) {
+          blockData.txs.forEach((tx) => {
+            const msgType = tx.tx?.body?.messages?.[0]?.['@type'] || ''
+            const short = msgType.split('.').pop() || 'Unknown'
+            txCounts[short] = (txCounts[short] || 0) + 1
+          })
+        }
+        this.txTypeCounts = txCounts
 
         if (Array.isArray(blockData.end_block_events)) {
           const rewardEvent = blockData.end_block_events.find(
@@ -615,6 +737,169 @@ export default {
     max-width: 300px;
     margin: $space-14 $space-0;
     max-height: 31.42px;
+  }
+}
+.block-events-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-16;
+  padding: $space-12 $space-16;
+  margin-bottom: $space-8;
+  border: 1px solid var(--border-color);
+  border-radius: $radius-lg;
+  background: var(--card-bg-color);
+
+  .events-group {
+    display: flex;
+    flex-direction: column;
+    gap: $space-8;
+  }
+
+  .events-group-label {
+    font-size: $font-size-mobile;
+    color: var(--sec-font-color);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+
+  .events-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-5;
+  }
+
+  .event-chip {
+    display: flex;
+    align-items: center;
+    gap: $space-3;
+    padding: $space-3 $space-8;
+    border-radius: $radius-xl;
+    font-size: $font-size-mobile;
+    border: 1px solid transparent;
+
+    .chip-count {
+      font-weight: bold;
+    }
+
+    .chip-label {
+      color: var(--sec-font-color);
+    }
+
+    &--swap {
+      background: rgba(59, 130, 246, 0.1);
+      border-color: rgba(59, 130, 246, 0.3);
+      .chip-count {
+        color: #3b82f6;
+      }
+    }
+
+    &--refund {
+      background: rgba(239, 68, 68, 0.1);
+      border-color: rgba(239, 68, 68, 0.3);
+      .chip-count {
+        color: #ef4444;
+      }
+    }
+
+    &--outbound {
+      background: rgba(34, 197, 94, 0.1);
+      border-color: rgba(34, 197, 94, 0.3);
+      .chip-count {
+        color: #22c55e;
+      }
+    }
+
+    &--trade-account-withdraw,
+    &--trade-account-deposit {
+      background: rgba(168, 85, 247, 0.1);
+      border-color: rgba(168, 85, 247, 0.3);
+      .chip-count {
+        color: #a855f7;
+      }
+    }
+
+    &--execute {
+      background: rgba(245, 158, 11, 0.1);
+      border-color: rgba(245, 158, 11, 0.3);
+      .chip-count {
+        color: #f59e0b;
+      }
+    }
+
+    &--schedule-add {
+      background: rgba(20, 184, 166, 0.1);
+      border-color: rgba(20, 184, 166, 0.3);
+      .chip-count {
+        color: #14b8a6;
+      }
+    }
+
+    &--rewards {
+      background: rgba(234, 179, 8, 0.1);
+      border-color: rgba(234, 179, 8, 0.3);
+      .chip-count {
+        color: #eab308;
+      }
+    }
+
+    &--streaming-swap {
+      background: rgba(59, 130, 246, 0.06);
+      border-color: rgba(59, 130, 246, 0.2);
+      .chip-count {
+        color: #60a5fa;
+      }
+    }
+
+    &--scheduled-outbound {
+      background: rgba(34, 197, 94, 0.06);
+      border-color: rgba(34, 197, 94, 0.2);
+      .chip-count {
+        color: #4ade80;
+      }
+    }
+
+    &--secured-asset-withdraw {
+      background: rgba(168, 85, 247, 0.06);
+      border-color: rgba(168, 85, 247, 0.2);
+      .chip-count {
+        color: #c084fc;
+      }
+    }
+
+    &--affiliate-fee,
+    &--fee {
+      background: rgba(251, 146, 60, 0.1);
+      border-color: rgba(251, 146, 60, 0.3);
+      .chip-count {
+        color: #fb923c;
+      }
+    }
+
+    &--gas {
+      background: rgba(148, 163, 184, 0.1);
+      border-color: rgba(148, 163, 184, 0.3);
+      .chip-count {
+        color: #94a3b8;
+      }
+    }
+
+    &--mint-burn,
+    &--burn {
+      background: rgba(107, 114, 128, 0.1);
+      border-color: rgba(107, 114, 128, 0.3);
+      .chip-count {
+        color: var(--sec-font-color);
+      }
+    }
+
+    &--tx {
+      background: var(--active-bg-color);
+      border-color: var(--border-color);
+      .chip-count {
+        color: var(--primary-color);
+      }
+    }
   }
 }
 </style>
