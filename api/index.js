@@ -207,7 +207,7 @@ export default function ({ $axios }, inject) {
   })
   $axios.interceptors.response.use(responseInterceptor, errorInterceptor)
   if (process.env.NETWORK === 'mainnet') {
-    $axios.defaults.headers.common['X-Client-ID'] = 'thorchain.net'
+    $axios.defaults.headers.common.Referer = 'https://thorchain.net/'
   }
 
   // defining the inner Vue axios instace to the outer scope
