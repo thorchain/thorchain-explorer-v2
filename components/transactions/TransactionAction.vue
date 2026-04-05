@@ -1,10 +1,17 @@
 <template>
   <div>
     <div
-      v-if="row && (type === 'swap' || type === 'switch')"
+      v-if="
+        row && (type === 'swap' || type === 'switch' || type === 'swap event')
+      "
       :class="['action-cell', { 'no-border': noBorder }]"
     >
-      <span v-for="(ops, i) in row.in" :key="'in-' + i" class="asset-cell" v-tooltip="!showInlineUsd && getInUSD(row, ops)">
+      <span
+        v-for="(ops, i) in row.in"
+        :key="'in-' + i"
+        v-tooltip="!showInlineUsd && getInUSD(row, ops)"
+        class="asset-cell"
+      >
         <asset-icon
           :asset="ops.coins[0].asset"
           :height="'1.2rem'"
@@ -14,10 +21,7 @@
           <span class="asset-name">{{
             decimalFormat(getEffectiveInAmount(row, ops) / 1e8)
           }}</span>
-          <span
-            v-if="getInUSD(row, ops) && showInlineUsd"
-            class="asset-usd"
-          >
+          <span v-if="getInUSD(row, ops) && showInlineUsd" class="asset-usd">
             {{ getInUSD(row, ops) }}
           </span>
         </div>
@@ -29,8 +33,8 @@
       <span
         v-for="(coin, i) in groupedOutCoins"
         :key="'out-' + i"
-        class="asset-cell"
         v-tooltip="!showInlineUsd && getOutUSD(row, coin)"
+        class="asset-cell"
       >
         <asset-icon
           :asset="coin.asset"
@@ -38,13 +42,8 @@
           :chain-height="'0.8rem'"
         ></asset-icon>
         <div class="asset-info">
-          <span class="asset-name">{{
-            decimalFormat(coin.amount / 1e8)
-          }}</span>
-          <span
-            v-if="getOutUSD(row, coin) && showInlineUsd"
-            class="asset-usd"
-          >
+          <span class="asset-name">{{ decimalFormat(coin.amount / 1e8) }}</span>
+          <span v-if="getOutUSD(row, coin) && showInlineUsd" class="asset-usd">
             {{ getOutUSD(row, coin) }}
           </span>
         </div>
@@ -91,11 +90,11 @@
     </div>
 
     <div
-      v-if="row && (type === 'limit_swap')"
+      v-if="row && type === 'limit_swap'"
       :class="['action-cell', { 'no-border': noBorder }]"
     >
-      <span 
-        v-if="row.in && row.in.length > 0 && row.in[0].coins[0]" 
+      <span
+        v-if="row.in && row.in.length > 0 && row.in[0].coins[0]"
         class="asset-cell"
       >
         <asset-icon
@@ -103,7 +102,9 @@
           :height="'1.2rem'"
           :chain-height="'0.8rem'"
         />
-        <span class="asset-name">{{ decimalFormat(row.in[0].coins[0].amount / 1e8) }}</span>
+        <span class="asset-name">{{
+          decimalFormat(row.in[0].coins[0].amount / 1e8)
+        }}</span>
       </span>
       <stream-icon class="action-type"> ~ </stream-icon>
       <span
@@ -115,7 +116,9 @@
           :height="'1.2rem'"
           :chain-height="'0.8rem'"
         ></asset-icon>
-        <span class="asset-name">{{ decimalFormat(row.out[0].coins[0].amount / 1e8) }}</span>
+        <span class="asset-name">{{
+          decimalFormat(row.out[0].coins[0].amount / 1e8)
+        }}</span>
       </span>
     </div>
 
@@ -566,7 +569,7 @@ export default {
             grouped[asset].amount += +coin.amount
           } else {
             grouped[asset] = {
-              asset: asset,
+              asset,
               amount: +coin.amount,
             }
           }

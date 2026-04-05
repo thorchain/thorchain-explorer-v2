@@ -158,6 +158,8 @@ export default {
       incomeBurn: '',
       stakeReward: '',
       devFundReward: '',
+      bondReward: '',
+      swapActions: [],
       assetColumns: [
         { label: 'Asset', field: 'assetName' },
         { label: 'Reward', field: 'assetReward' },
@@ -225,10 +227,10 @@ export default {
       }
     },
   },
-  mounted() {
+  async mounted() {
     this.createDuration()
-    this.fetchBlockInfo(this.height)
-    this.getActions(this.height)
+    await this.fetchBlockInfo(this.height)
+    await this.getActions(this.height)
     this.startCountdown()
   },
   beforeDestroy() {
@@ -279,6 +281,9 @@ export default {
           height: +height + 1,
           fromHeight: height,
         })
+        const apiActions = res.data?.actions || []
+        res.data = res.data || {}
+        res.data.actions = [...apiActions, ...this.swapActions]
         this.txs = res.data
       } catch (error) {
         console.error('API Error:', error)
@@ -306,6 +311,7 @@ export default {
         this.incomeBurn = ''
         this.stakeReward = ''
         this.assetRewards = {}
+        this.swapActions = []
 
         if (Array.isArray(blockData.end_block_events)) {
           const rewardEvent = blockData.end_block_events.find(
@@ -323,11 +329,124 @@ export default {
               }
             })
           }
+
+          // Extract streaming swaps from end_block_events
+          const swapEvents = blockData.end_block_events.filter(
+            (event) =>
+              event.type === 'swap' && parseInt(event.streaming_swap_count) > 1
+          )
+          this.swapActions = swapEvents.map((event) =>
+            this.transformSwapEventToAction(
+              event,
+              this.blockNumber,
+              blockData.header.time
+            )
+          )
         }
       } catch (error) {
         console.error('Error fetching block info:', error)
       } finally {
         this.loading = false
+      }
+    },
+
+    parseAssetString(assetString) {
+      /**
+       * Parse asset string format: "67231043 ETH.ETH" or "364401015132 THOR.RUNE"
+       * Returns: { amount: string, asset: string }
+       */
+      if (!assetString) return { amount: '0', asset: '' }
+      const parts = assetString.trim().split(' ')
+      if (parts.length !== 2) return { amount: '0', asset: '' }
+      return {
+        amount: parts[0],
+        asset: parts[1],
+      }
+    },
+
+    parseMemoForSwapDetails(memo) {
+      /**
+       * Parse swap memo format: "=:c:qpwf58jk3...0/100/0"
+       * Breakdown: TYPE:MODE:DESTINATION:FEE/INTERVAL/QUANTITY
+       * Returns: { fee, interval, quantity, destAddr }
+       */
+      if (!memo) return { fee: 0, interval: 1, quantity: 1, destAddr: '' }
+      try {
+        const parts = memo.split(':')
+        if (parts.length < 4)
+          return { fee: 0, interval: 1, quantity: 1, destAddr: '' }
+        const destAddr = parts[2]
+        const swapParams = parts[3].split('/')
+        return {
+          fee: parseInt(swapParams[0]) || 0,
+          interval: parseInt(swapParams[1]) || 1,
+          quantity: parseInt(swapParams[2]) || 1,
+          destAddr,
+        }
+      } catch (e) {
+        console.error('Error parsing memo:', memo, e)
+        return { fee: 0, interval: 1, quantity: 1, destAddr: '' }
+      }
+    },
+
+    transformSwapEventToAction(event, blockHeight, blockTime) {
+      /**
+       * Transform end_block_events swap event to action object for Transactions component
+       */
+      const inAsset = this.parseAssetString(event.coin)
+      const outAsset = this.parseAssetString(event.emit_asset)
+      const memo = this.parseMemoForSwapDetails(event.memo)
+
+      const isCompleted =
+        parseInt(event.streaming_swap_count) >=
+        parseInt(event.streaming_swap_quantity)
+
+      return {
+        hash: event.id,
+        date: moment(blockTime).valueOf() * 1000000,
+        from: event.from,
+        to: event.to,
+        height: blockHeight,
+        type: 'swap event',
+        in: [
+          {
+            address: event.from,
+            txID: event.id,
+            coins: [
+              {
+                asset: inAsset.asset,
+                amount: parseInt(inAsset.amount),
+              },
+            ],
+          },
+        ],
+        out: [
+          {
+            address: event.to,
+            txID: event.id,
+            coins: [
+              {
+                asset: outAsset.asset,
+                amount: parseInt(outAsset.amount),
+              },
+            ],
+          },
+        ],
+        status: isCompleted ? 'completed' : 'ongoing',
+        metadata: {
+          swap: {
+            memo: event.memo,
+            streamingSwapMeta: {
+              count: parseInt(event.streaming_swap_count),
+              quantity: parseInt(event.streaming_swap_quantity),
+              interval: memo.interval,
+              liquidity_fee: event.liquidity_fee,
+              liquidity_fee_in_rune: event.liquidity_fee_in_rune,
+              swap_slip: event.swap_slip,
+              pool_slip: event.pool_slip,
+            },
+          },
+        },
       }
     },
   },

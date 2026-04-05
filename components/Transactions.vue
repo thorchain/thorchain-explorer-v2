@@ -20,9 +20,9 @@
                   :address="props.row[props.column.field]"
                   :hovered-address="hoveredAddress"
                   :disable="owner && owner === props.row[props.column.field]"
+                  :use-custom-name="true"
                   @setHovered="setHoveredAddress"
                   @removeHovered="removeHoveredAddress"
-                  :use-custom-name="true"
                 />
               </div>
             </div>
@@ -40,9 +40,9 @@
                   :address="props.row.to"
                   :hovered-address="hoveredAddress"
                   :disable="owner && owner === props.row.to"
+                  :use-custom-name="true"
                   @setHovered="setHoveredAddress"
                   @removeHovered="removeHoveredAddress"
-                  :use-custom-name="true"
                 />
               </div>
             </div>
@@ -61,7 +61,10 @@
             </nuxt-link>
           </div>
           <div v-else-if="props.column.field === 'action'">
-            <transaction-action :row="props.row" :show-inline-usd="showInlineUsd"></transaction-action>
+            <transaction-action
+              :row="props.row"
+              :show-inline-usd="showInlineUsd"
+            ></transaction-action>
           </div>
           <div
             v-else-if="props.column.field === 'direction'"
@@ -197,6 +200,7 @@ export default {
         {
           label: 'Age',
           field: 'age',
+          width: '100px',
           formatFn: this.since,
         },
         {
