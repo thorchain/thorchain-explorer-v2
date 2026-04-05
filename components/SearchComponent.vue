@@ -90,6 +90,11 @@
                 <transaction />
               </span>
               <span
+                v-else-if="suggestion.searchType === 'block'"
+                class="block-icon"
+                >#</span
+              >
+              <span
                 v-else-if="
                   suggestion.searchType === 'pool' ||
                   suggestion.searchType === 'asset'
@@ -190,7 +195,6 @@ export default {
       activeFilter: 'all',
       selectedIndex: -1,
       showNoResults: false,
-      noResultsTimeout: null,
     }
   },
   computed: {
@@ -209,6 +213,7 @@ export default {
         thorname: this.suggestions.filter((s) => s.searchType === 'thorname')
           .length,
         pool: this.suggestions.filter((s) => s.searchType === 'pool').length,
+        block: this.suggestions.filter((s) => s.searchType === 'block').length,
       }
 
       return [
@@ -218,6 +223,7 @@ export default {
         { type: 'thorname', label: 'THORNames', count: counts.thorname },
         { type: 'pool', label: 'Pools', count: counts.pool },
         { type: 'asset', label: 'Asset', count: counts.asset },
+        { type: 'block', label: 'Blocks', count: counts.block },
       ].filter((filter) => filter.count > 0 || filter.type === 'all')
     },
   },
@@ -307,7 +313,7 @@ export default {
       }
 
       const timeoutRace = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Timeout')), 2000)
+        setTimeout(() => reject(new Error('Timeout')), 8000)
       )
 
       try {
@@ -439,12 +445,6 @@ export default {
       this.suggestions = []
       this.showNoResults = false
 
-      this.noResultsTimeout = setTimeout(() => {
-        if (this.suggestions.length === 0 && !this.isLoading) {
-          this.showNoResults = true
-        }
-      }, 500)
-
       this.searchTimeout = setTimeout(() => {
         this.performSearch()
       }, 500)
@@ -556,9 +556,6 @@ export default {
       if (this.searchTimeout) {
         clearTimeout(this.searchTimeout)
       }
-      if (this.noResultsTimeout) {
-        clearTimeout(this.noResultsTimeout)
-      }
     },
 
     setActiveFilter(type) {
@@ -574,6 +571,7 @@ export default {
         thorname: 'thorname',
         pool: 'pool',
         asset: 'asset',
+        block: 'block',
       }
       return typeMap[item.type] || 'address'
     },
@@ -585,6 +583,7 @@ export default {
         thorname: 'THORName',
         pool: 'Pool',
         asset: 'Asset',
+        block: 'Block',
       }
       return badgeMap[type] || type
     },
@@ -596,6 +595,7 @@ export default {
         thorname: `/address/${suggestion.id}`,
         pool: `/pool/${suggestion.id}`,
         asset: `/holders?asset=${suggestion.id}`,
+        block: `/block/${suggestion.id}`,
       }
       return routes[suggestion.searchType] || `/address/${suggestion.id}`
     },
