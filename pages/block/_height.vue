@@ -188,22 +188,22 @@ export default {
             {
               name: 'Dev Fund',
               value: this.devFundReward,
-              filter: (v) => this.formatRune(v),
+              filter: (v) => this.formatRune(v / 1e8, '0,0.000000'),
             },
             {
               name: 'TCY Stake Reward',
               value: this.stakeReward,
-              filter: (v) => this.formatRune(v),
+              filter: (v) => this.formatRune(v / 1e8, '0,0.000000'),
             },
             {
               name: 'Burn',
               value: this.incomeBurn,
-              filter: (v) => this.formatRune(v),
+              filter: (v) => this.formatRune(v / 1e8, '0,0.000000'),
             },
             {
               name: 'Bond',
               value: this.bondReward,
-              filter: (v) => this.formatRune(v),
+              filter: (v) => this.formatRune(v / 1e8, '0,0.000000'),
             },
           ],
         },
