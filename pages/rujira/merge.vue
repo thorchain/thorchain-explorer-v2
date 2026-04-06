@@ -261,6 +261,10 @@ export default {
             item.maxSupply = 65000000
             item.Allocation = 1_440_000
             break
+          case 'GAIA.NAMI':
+            item.maxSupply = 74000000
+            item.Allocation = 962_000
+            break
           default:
             break
         }

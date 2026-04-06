@@ -163,6 +163,8 @@ export const AssetImage = (assetStr) => {
         } else if (symbol === 'RKUJI') {
           iconPath =
             'https://raw.githubusercontent.com/cosmos/chain-registry/master/kujira/images/rkuji.png'
+        } else if (symbol === 'NAMI') {
+          iconPath = require('~/assets/images/assets/nami.png')
         } else {
           iconPath =
             'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/cosmos/info/logo.png'
