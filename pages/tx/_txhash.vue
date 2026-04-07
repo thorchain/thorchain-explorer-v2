@@ -1665,6 +1665,32 @@ export default {
           }))
       }
 
+      // Add scheduled refund actions from thorTx.actions that aren't yet in out_txs
+      // e.g. streaming swap where some iterations failed → partial XRP refund is queued
+      const inboundAsset = thorStatus?.tx?.coins?.[0]?.asset
+      const scheduledRefundActions = (thorTx?.actions ?? []).filter(
+        (a) =>
+          a.coin?.asset === inboundAsset &&
+          a.memo?.toLowerCase().startsWith('refund:') &&
+          !outTxs?.some(
+            (o) =>
+              o.to_address?.toLowerCase() === a.to_address?.toLowerCase() &&
+              o.coins?.[0]?.asset === a.coin?.asset
+          )
+      )
+      if (scheduledRefundActions.length > 0) {
+        outTxs = [
+          ...(outTxs ?? []),
+          ...scheduledRefundActions.map((a) => ({
+            id: null,
+            to_address: a.to_address,
+            coins: [{ asset: a.coin.asset, amount: a.coin.amount }],
+            memo: a.memo,
+            refund: true,
+          })),
+        ]
+      }
+
       // order by target swapped asset if we have refund in swap
       outTxs = orderBy(
         outTxs,
