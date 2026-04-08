@@ -7,6 +7,7 @@ export default {
   thor1t2hav42urasnsvwa6x6fyezaex9f953plh72pq: 'Kraken Cold',
   thor1t60f02r8jvzjrhtnjgfj4ne6rs5wjnejwmj7fh: 'Binance Hot',
   thor10qh5272ktq4wes8ex343ky9rsuehcypddjh08k: 'Treasury Vultisig',
+  thor1lhufh0mwasa0lk9udppdegmvnkgqt08f0m9p5g: 'Treasury Vultisig 2',
   thor1nm0rrq86ucezaf8uj35pq9fpwr5r82clphp95t: 'Kraken Hot',
   thor1ss8rrf3twa20kf9frdyru05dmu2kg9ll2efcyd: 'TCY claim',
   thor128a8hqnkaxyqv7qwajpggmfyudh64jl3c32vyv: 'TCY Stake',
