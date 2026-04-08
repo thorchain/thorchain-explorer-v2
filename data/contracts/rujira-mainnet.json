@@ -1362,6 +1362,126 @@
       "checksum": "0A8C70B10158473F9EC304DE0EA8930BC3B4080894D481AA32CB2739AA73D63C",
       "admin": "thor1hmfsqvr4cyh02z6le3wej0v4y7l605zlxjw022",
       "description": "AMM strategy connecting THORChain base layer pools to RUJI Trade orderbook on the app layer."
+    },
+    "thor1f88gayqapexm5ywmdn85c2s62h84j7gjhg8582ctxyew42n308pqqyg7js": {
+      "family": "rujira-bow",
+      "product": "RUJI AMM",
+      "name": "BOW XYK Pool",
+      "role": "AMM strategy",
+      "description": "XYK Pool: ETH/USDC",
+      "inferred": true
+    },
+    "thor1g97844v7wuvz58m6p3vqp3u28nxaglqsag4dte2wrrry7sge9llq0t5tav": {
+      "family": "rujira-bow",
+      "product": "RUJI AMM",
+      "name": "BOW XYK Pool",
+      "role": "AMM strategy",
+      "description": "XYK Pool: BTC/USDC",
+      "inferred": true
+    },
+    "thor1z6drgxf8js4mycfqfgqr3v4paep4p5ur7ff0suehyg0a6alm8uks29zyv0": {
+      "family": "rujira-bow",
+      "product": "RUJI AMM",
+      "name": "BOW XYK Pool",
+      "role": "AMM strategy",
+      "description": "XYK Pool: RUJI/USDC",
+      "inferred": true
+    },
+    "thor1nwpkxz6ww2q6dz8ulkt804z8azm57s8lrrn67usrhpqxjt6sakeq24rf09": {
+      "family": "rujira-bow",
+      "product": "RUJI AMM",
+      "name": "BOW XYK Pool",
+      "role": "AMM strategy",
+      "description": "XYK Pool: ETH/BTC",
+      "inferred": true
+    },
+    "thor185dc632j6nv0apdcg5lq7uppast0nmd4awkgzcfcq7phx65w3mjq0mmwqh": {
+      "family": "rujira-bow",
+      "product": "RUJI AMM",
+      "name": "BOW XYK Pool",
+      "role": "AMM strategy",
+      "description": "XYK Pool: AUTO/USDC",
+      "inferred": true
+    },
+    "thor1c020ygq35hu6fp2hpd3ws0fa9xmlqhpw9g4nz624wnwmvlq7l49s877kkx": {
+      "family": "rujira-bow",
+      "product": "RUJI AMM",
+      "name": "BOW XYK Pool",
+      "role": "AMM strategy",
+      "description": "XYK Pool: LQDY/USDC",
+      "inferred": true
+    },
+    "thor1lpupl5c5yfa2shd0uk3t0clahsv237zz8a7nvrdrktrjrxwgz56s80kew4": {
+      "family": "rujira-bow",
+      "product": "RUJI AMM",
+      "name": "BOW XYK Pool",
+      "role": "AMM strategy",
+      "description": "XYK Pool: LQDY/BTC",
+      "inferred": true
+    },
+    "thor122f5ezcpnucazcjslwy4gg4q663lrn8xd0sum75ggv83v77tegpqclzq0v": {
+      "family": "rujira-bow",
+      "product": "RUJI AMM",
+      "name": "BOW XYK Pool",
+      "role": "AMM strategy",
+      "description": "XYK Pool: BNB/USDC",
+      "inferred": true
+    },
+    "thor1qk2g3e6pg0rcsa0w9079zvczlldjufulp5an8gs5qdqym297jv5qxm73rr": {
+      "family": "rujira-bow",
+      "product": "RUJI AMM",
+      "name": "BOW XYK Pool",
+      "role": "AMM strategy",
+      "description": "XYK Pool: BCH/USDC",
+      "inferred": true
+    },
+    "thor1s5g0rm6fk2cpcxmsy3zgft725azrxsmuxxrjzrgxzfe298g2m7uqt2ejw6": {
+      "family": "rujira-bow",
+      "product": "RUJI AMM",
+      "name": "BOW XYK Pool",
+      "role": "AMM strategy",
+      "description": "XYK Pool: DOGE/USDC",
+      "inferred": true
+    },
+    "thor1rw9awvqnl6n0slk6tl9pw6nan77kum5480r93stc6unzlaneh6wqzrw0za": {
+      "family": "rujira-bow",
+      "product": "RUJI AMM",
+      "name": "BOW XYK Pool",
+      "role": "AMM strategy",
+      "description": "XYK Pool: LTC/USDC",
+      "inferred": true
+    },
+    "thor19e8l7xkkkce0k5cjcz65ae9ntvjqft9cxcq2qn0tdtsc7339lv2szdqfhh": {
+      "family": "rujira-bow",
+      "product": "RUJI AMM",
+      "name": "BOW XYK Pool",
+      "role": "AMM strategy",
+      "description": "XYK Pool: ATOM/USDC",
+      "inferred": true
+    },
+    "thor1vjxfh0smv78zchf0jcdz2wfv80nuhe2lcfr3dewde9p6khh4g7hq6sgtjw": {
+      "family": "rujira-bow",
+      "product": "RUJI AMM",
+      "name": "BOW XYK Pool",
+      "role": "AMM strategy",
+      "description": "XYK Pool: AVAX/USDC",
+      "inferred": true
+    },
+    "thor193ec9vn36q9752ut6ntqpt94yfdcwxt4u47fmsv9ql4n7fkac38qucqckc": {
+      "family": "rujira-bow",
+      "product": "RUJI AMM",
+      "name": "BOW XYK Pool",
+      "role": "AMM strategy",
+      "description": "XYK Pool: XRP/USDC",
+      "inferred": true
+    },
+    "thor1j45s6a4ym8ru2zd70acnrwk4fkmew2a43eq2wngu46ur7yg4d8eqnvvfxx": {
+      "family": "rujira-bow",
+      "product": "RUJI AMM",
+      "name": "BOW XYK Pool",
+      "role": "AMM strategy",
+      "description": "XYK Pool: NAMI/USDC",
+      "inferred": true
     }
   }
 }
