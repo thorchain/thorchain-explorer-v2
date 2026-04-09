@@ -18,7 +18,7 @@
             </small>
             <small v-else>-</small>
           </div>
-          <nuxt-link ref="header-info-3" :to="'/thorfi/tcy'">
+          <nuxt-link v-if="networkEnv !== 'chainnet'" ref="header-info-3" :to="'/thorfi/tcy'">
             <small style="color: var(--sec-font-color)">TCY Price:</small>
             <small
               v-if="tcyPrice"

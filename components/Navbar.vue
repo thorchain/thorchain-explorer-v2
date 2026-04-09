@@ -205,6 +205,13 @@ export default {
           return mainnetNav.navbarLists
         case 'stagenet':
           return stagenetNav.navbarLists
+        case 'chainnet':
+          return stagenetNav.navbarLists.map((item) => {
+            if (item.submenu) {
+              return { ...item, submenu: item.submenu.filter((s) => s.link !== '/thorfi/tcy') }
+            }
+            return item
+          })
         default:
           return stagenetNav.navbarLists
       }

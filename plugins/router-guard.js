@@ -4,7 +4,12 @@ import { stagenetNav } from '~/const/stagenet'
 export default function ({ app }) {
   const ENV = process.env.NETWORK || 'mainnet'
 
-  const nav = (ENV === 'mainnet' ? mainnetNav : stagenetNav).navbarLists
+  const baseNav = (ENV === 'mainnet' ? mainnetNav : stagenetNav).navbarLists
+  const nav = ENV === 'chainnet'
+    ? baseNav.map((item) => item.submenu
+        ? { ...item, submenu: item.submenu.filter((s) => s.link !== '/thorfi/tcy') }
+        : item)
+    : baseNav
 
   const allowedRoutes = nav.flatMap((item) => {
     const routes = [item.link]

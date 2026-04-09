@@ -12,10 +12,9 @@ export default {
   data() {
     return {
       routes: [
-        {
-          link: '/thorfi/tcy',
-          text: 'TCY',
-        },
+        ...(process.env.NETWORK !== 'chainnet'
+          ? [{ link: '/thorfi/tcy', text: 'TCY' }]
+          : []),
         {
           link: '/thorfi/savers',
           text: 'Savers',

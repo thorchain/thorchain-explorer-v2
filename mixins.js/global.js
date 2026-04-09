@@ -394,6 +394,9 @@ export default {
     isMainnet() {
       return process.env.NETWORK === 'mainnet'
     },
+    isChainnet() {
+      return process.env.NETWORK === 'chainnet'
+    },
     gotoSaver(params) {
       if (!params) {
         return

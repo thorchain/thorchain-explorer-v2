@@ -390,7 +390,7 @@ export default {
             },
           ],
         },
-        {
+        ...(!this.isChainnet() ? [{
           title: 'TCY ',
           rowStart: 5,
           colSpan: 1,
@@ -415,7 +415,7 @@ export default {
               filter: (v) => this.$options.filters.percent(v, 2),
             },
           ],
-        },
+        }] : []),
       ]
     },
     statsSettings() {
@@ -485,14 +485,16 @@ export default {
     },
   },
   mounted() {
-    this.$api
-      .getTcyInfo()
-      .then(({ data }) => {
-        this.tcyInfo = data
-      })
-      .catch((error) => {
-        console.error('Error fetching TCY info:', error)
-      })
+    if (!this.isChainnet()) {
+      this.$api
+        .getTcyInfo()
+        .then(({ data }) => {
+          this.tcyInfo = data
+        })
+        .catch((error) => {
+          console.error('Error fetching TCY info:', error)
+        })
+    }
 
     this.$api
       .getDashboardData()
