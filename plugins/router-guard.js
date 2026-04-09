@@ -7,7 +7,7 @@ export default function ({ app }) {
   const baseNav = (ENV === 'mainnet' ? mainnetNav : stagenetNav).navbarLists
   const nav = ENV === 'chainnet'
     ? baseNav.map((item) => item.submenu
-        ? { ...item, submenu: item.submenu.filter((s) => s.link !== '/thorfi/tcy') }
+        ? { ...item, submenu: item.submenu.filter((s) => s.link !== '/thorfi/tcy' && s.link !== '/swaps') }
         : item)
     : baseNav
 

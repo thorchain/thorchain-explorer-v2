@@ -1,7 +1,7 @@
 <template>
   <page>
     <swap />
-    <div class="header-top-swap">
+    <div v-if="networkEnv !== 'chainnet'" class="header-top-swap">
       <Header title="Top Swaps" />
       <Nav
         :active-mode.sync="tablePeriod"
@@ -57,6 +57,11 @@ export default {
       ],
     }
   },
+  computed: {
+    networkEnv() {
+      return process.env.NETWORK
+    },
+  },
   watch: {
     tablePeriod(newPeriod) {
       this.$router.push({
@@ -88,7 +93,9 @@ export default {
       })
     }
 
-    this.fetchTableData(this.tablePeriod)
+    if (this.networkEnv !== 'chainnet') {
+      this.fetchTableData(this.tablePeriod)
+    }
   },
   methods: {
     async fetchTableData(period) {

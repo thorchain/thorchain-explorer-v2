@@ -208,7 +208,7 @@ export default {
         case 'chainnet':
           return stagenetNav.navbarLists.map((item) => {
             if (item.submenu) {
-              return { ...item, submenu: item.submenu.filter((s) => s.link !== '/thorfi/tcy') }
+              return { ...item, submenu: item.submenu.filter((s) => s.link !== '/thorfi/tcy' && s.link !== '/swaps') }
             }
             return item
           })
