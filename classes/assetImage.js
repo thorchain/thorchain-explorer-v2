@@ -64,19 +64,19 @@ export const AssetImage = (assetStr) => {
           iconPath = require('~/assets/images/assets/stcy.svg')
         } else if (
           symbol ===
-          'NAMI-INDEX-NAV-THOR1H0HR0RM3DAWKEDH44HLRMGVYA6PLSRYEHCR46YDA2VJ0WFWGQ5XQRS86PX-RCPT' ||
+            'NAMI-INDEX-NAV-THOR1H0HR0RM3DAWKEDH44HLRMGVYA6PLSRYEHCR46YDA2VJ0WFWGQ5XQRS86PX-RCPT' ||
           symbol === 'yTCY'
         ) {
           iconPath = require('~/assets/images/assets/yTCY.png')
         } else if (
           symbol ===
-          'NAMI-INDEX-FIXED-THOR1YQF5SPDV8C4088ZMVQSG32EQ63FZEPSJVNTAHDK0EK0YJNKT3QDQFTP3LC-RCPT' ||
+            'NAMI-INDEX-FIXED-THOR1YQF5SPDV8C4088ZMVQSG32EQ63FZEPSJVNTAHDK0EK0YJNKT3QDQFTP3LC-RCPT' ||
           symbol === 'RJI'
         ) {
           iconPath = require('~/assets/images/assets/rji.png')
         } else if (
           symbol ===
-          'NAMI-INDEX-NAV-THOR1MLPHKRYW5G54YFKRP6XPQZLPV4F8WH6HYW27YYG4Z2ELS8A9GXPQHFHEKT-RCPT' ||
+            'NAMI-INDEX-NAV-THOR1MLPHKRYW5G54YFKRP6XPQZLPV4F8WH6HYW27YYG4Z2ELS8A9GXPQHFHEKT-RCPT' ||
           symbol === 'yRUNE'
         ) {
           iconPath = require('~/assets/images/assets/yRUNE.png')
@@ -224,6 +224,11 @@ export const AssetImage = (assetStr) => {
           iconPath =
             'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/solana/info/logo.png'
         }
+        break
+
+      case 'ZEC':
+        iconPath =
+          'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/zcash/info/logo.png'
         break
 
       default:

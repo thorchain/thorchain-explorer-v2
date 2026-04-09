@@ -149,6 +149,8 @@ export default {
           return '#26A17B'
         case 'XRP.XRP':
           return '#23292F'
+        case 'ZEC.ZEC':
+          return '#F4B728'
         case 'TRON.TRX':
           return '#E11221'
         default:
@@ -178,6 +180,8 @@ export default {
           return '#1E6AFF'
         case 'XRP':
           return '#23292F'
+        case 'ZEC':
+          return '#F4B728'
         case 'TRON':
           return '#E11221'
         default:
@@ -822,6 +826,8 @@ export default {
           return '#1E6AFF'
         case 'XRP':
           return '#23292F'
+        case 'ZEC':
+          return '#F4B728'
         case 'TRX':
           return '#E11221'
         default:
