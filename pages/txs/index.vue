@@ -22,7 +22,10 @@
           </div>
 
           <div v-if="count > -1" class="count-inline">
-            {{ $options.filters.number(count, '0,0') }} transactions
+            <strong style="color: var(--sec-font-color)">{{
+              $options.filters.number(count, '0,0')
+            }}</strong>
+            transactions
           </div>
         </div>
       </section>
@@ -1401,7 +1404,7 @@ export default {
   gap: $space-18;
 
   @include lg {
-    align-items: flex-end;
+    align-items: flex-start;
     flex-direction: row;
     justify-content: space-between;
   }
