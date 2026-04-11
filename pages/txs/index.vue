@@ -1649,10 +1649,11 @@ export default {
 }
 
 .product-dot {
-  border-radius: 999px;
+  border-radius: 4px;
   display: inline-block;
-  height: 0.6rem;
-  width: 0.6rem;
+  flex-shrink: 0;
+  height: 10px;
+  width: 10px;
 }
 
 .tone-green {
