@@ -16,7 +16,7 @@
             <div class="stat-live">
               <span class="stat-live-dot" />
               <div class="stat-value">
-              {{ $options.filters.number(latestThorBlock, '0,0') }}
+                {{ $options.filters.number(latestThorBlock, '0,0') }}
               </div>
             </div>
           </div>
@@ -127,7 +127,12 @@
             </div>
 
             <div class="cell endpoint-cell">
-              <div :class="['endpoint-stack', { 'has-asset-icon': row.from.asset }]">
+              <div
+                :class="[
+                  'endpoint-stack',
+                  { 'has-asset-icon': row.from.asset },
+                ]"
+              >
                 <AssetIcon
                   v-if="row.from.asset"
                   :asset="row.from.asset"
@@ -156,7 +161,9 @@
             </div>
 
             <div class="cell endpoint-cell">
-              <div :class="['endpoint-stack', { 'has-asset-icon': row.to.asset }]">
+              <div
+                :class="['endpoint-stack', { 'has-asset-icon': row.to.asset }]"
+              >
                 <AssetIcon
                   v-if="row.to.asset"
                   :asset="row.to.asset"
@@ -219,7 +226,9 @@
           </div>
         </div>
 
-        <div v-else class="empty-state">No transactions found for this view.</div>
+        <div v-else class="empty-state">
+          No transactions found for this view.
+        </div>
       </section>
 
       <NewPagination
@@ -243,6 +252,7 @@
 <script>
 import { pick } from 'lodash'
 import moment from 'moment'
+import advancedFilter from './components/advancedFilter.vue'
 import { assetFromString } from '~/utils'
 import addressMap from '~/utils/address'
 import {
@@ -251,7 +261,6 @@ import {
   getRujiraContractLabelMap,
   getRujiraContractProduct,
 } from '~/utils/rujiraContracts'
-import advancedFilter from './components/advancedFilter.vue'
 import NewPagination from '~/components/NewPagination.vue'
 import Pagination from '~/components/Pagination.vue'
 import AssetIcon from '~/components/AssetIcon.vue'
@@ -410,7 +419,8 @@ export default {
 
       const addressSearch = query.address || query.affiliate || ''
       const freeAssetSearch =
-        query.asset && !this.assetOptions.some((option) => option.value === query.asset)
+        query.asset &&
+        !this.assetOptions.some((option) => option.value === query.asset)
           ? query.asset
           : ''
 
@@ -537,7 +547,11 @@ export default {
         value.startsWith('ltc1')
       ) {
         query.address = value
-      } else if (value.includes('.') || value.includes('-') || value.includes('/')) {
+      } else if (
+        value.includes('.') ||
+        value.includes('-') ||
+        value.includes('/')
+      ) {
         query.asset = value
       } else {
         query.affiliate = value
@@ -615,12 +629,22 @@ export default {
       const inputCoin =
         inputEntry?.coins?.[0] ||
         (type === 'contract'
-          ? this.getPrimaryContractEventCoin(action, 'input', fromAddress, toAddress)
+          ? this.getPrimaryContractEventCoin(
+              action,
+              'input',
+              fromAddress,
+              toAddress
+            )
           : null)
       const outputCoin =
         this.getPrimaryOutCoin(action) ||
         (type === 'contract'
-          ? this.getPrimaryContractEventCoin(action, 'output', fromAddress, toAddress)
+          ? this.getPrimaryContractEventCoin(
+              action,
+              'output',
+              fromAddress,
+              toAddress
+            )
           : null)
 
       return {
@@ -651,9 +675,13 @@ export default {
       return list.find((entry) => entry.address)?.address || ''
     },
     getPrimaryOutEntry(action) {
-      const nonAffiliateOuts = (action.out || []).filter((entry) => !entry.affiliate)
+      const nonAffiliateOuts = (action.out || []).filter(
+        (entry) => !entry.affiliate
+      )
       return (
-        nonAffiliateOuts.find((entry) => entry.coins?.length && entry.address) ||
+        nonAffiliateOuts.find(
+          (entry) => entry.coins?.length && entry.address
+        ) ||
         nonAffiliateOuts.find((entry) => entry.address) ||
         null
       )
@@ -725,7 +753,9 @@ export default {
       if (/limit/.test(normalized) && /cancel|close/.test(normalized)) {
         return 'Cancel Limit Order'
       }
-      if (/add.*liquidity|deposit.*liquidity|provide.*liquidity/.test(normalized)) {
+      if (
+        /add.*liquidity|deposit.*liquidity|provide.*liquidity/.test(normalized)
+      ) {
         return 'Add Liquidity'
       }
       if (/remove.*liquidity|withdraw.*liquidity/.test(normalized)) {
@@ -742,7 +772,10 @@ export default {
       if (/stake/.test(normalized) && /un/.test(normalized)) return 'Unstake'
       if (/stake/.test(normalized)) return 'Stake'
       if (/claim/.test(normalized)) return 'Claim'
-      if (/swap|trade|execute/.test(normalized) && /ruji trade/i.test(product)) {
+      if (
+        /swap|trade|execute/.test(normalized) &&
+        /ruji trade/i.test(product)
+      ) {
         return 'Swap'
       }
 
@@ -758,7 +791,9 @@ export default {
       if (action.type === 'contract') {
         const contractAction = action.metadata?.contract?.attributes?.action
         if (contractAction) {
-          return this.$options.filters.capitalize(contractAction.replace(/[_\.]/g, ' '))
+          return this.$options.filters.capitalize(
+            contractAction.replace(/[_\.]/g, ' ')
+          )
         }
       }
 
@@ -807,7 +842,13 @@ export default {
 
         // Detect RUJI Money Market by ghost-vault denom in contract events
         const eventCoins = this.getContractEventCoins(action)
-        if (eventCoins.some((c) => c?.asset?.toLowerCase?.().includes('ghost-vault') || c?.asset?.toLowerCase?.().includes('ghost_vault'))) {
+        if (
+          eventCoins.some(
+            (c) =>
+              c?.asset?.toLowerCase?.().includes('ghost-vault') ||
+              c?.asset?.toLowerCase?.().includes('ghost_vault')
+          )
+        ) {
           return { label: 'RUJI Money Market', tone: 'blue' }
         }
 
@@ -816,7 +857,8 @@ export default {
           this.getFirstAddress(action.in),
           action
         )
-        const productLabel = this.getProductLabelFromContractLabel(contractLabel)
+        const productLabel =
+          this.getProductLabelFromContractLabel(contractLabel)
         if (productLabel) {
           return {
             label: productLabel,
@@ -919,14 +961,18 @@ export default {
       if (type === 'send') {
         return {
           primary: this.getAddressLabel(toAddress),
-          secondary: this.getCoinSummary(outputCoin || action.out?.[0]?.coins?.[0]),
+          secondary: this.getCoinSummary(
+            outputCoin || action.out?.[0]?.coins?.[0]
+          ),
           link: toAddress ? `/address/${toAddress}` : undefined,
         }
       }
 
       if (type === 'refund') {
         return {
-          primary: this.getAddressLabel(toAddress || this.getFirstAddress(action.in)),
+          primary: this.getAddressLabel(
+            toAddress || this.getFirstAddress(action.in)
+          ),
           secondary: 'Returned to sender',
           link:
             toAddress || this.getFirstAddress(action.in)
@@ -938,12 +984,21 @@ export default {
       if (type === 'contract') {
         if (outputCoin) {
           // Ghost-vault share tokens: show product name + deposited/withdrawn amount
-          if (outputCoin.asset?.toLowerCase?.().includes('ghost-vault') || outputCoin.asset?.toLowerCase?.().includes('ghost_vault')) {
+          if (
+            outputCoin.asset?.toLowerCase?.().includes('ghost-vault') ||
+            outputCoin.asset?.toLowerCase?.().includes('ghost_vault')
+          ) {
             const eventCoins = this.getContractEventCoins(action)
-            const meaningfulCoin = eventCoins.find((c) => !c?.asset?.toLowerCase?.().includes('ghost-vault') && !c?.asset?.toLowerCase?.().includes('ghost_vault'))
+            const meaningfulCoin = eventCoins.find(
+              (c) =>
+                !c?.asset?.toLowerCase?.().includes('ghost-vault') &&
+                !c?.asset?.toLowerCase?.().includes('ghost_vault')
+            )
             return {
               primary: 'RUJI Money Market',
-              secondary: meaningfulCoin ? this.getCoinSummary(meaningfulCoin) : 'Vault position',
+              secondary: meaningfulCoin
+                ? this.getCoinSummary(meaningfulCoin)
+                : 'Vault position',
               link: toAddress ? `/address/${toAddress}` : undefined,
             }
           }
@@ -971,7 +1026,9 @@ export default {
 
       if (type === 'withdraw' || type === 'runePoolWithdraw') {
         return {
-          primary: this.getAddressLabel(toAddress || this.getFirstAddress(action.out)),
+          primary: this.getAddressLabel(
+            toAddress || this.getFirstAddress(action.out)
+          ),
           secondary: this.getJoinedCoinSummary(action.out),
           link:
             toAddress || this.getFirstAddress(action.out)
@@ -987,7 +1044,10 @@ export default {
       }
     },
     getContractTargetLabel(action, toAddress) {
-      return this.getResolvedContractLabel(toAddress, undefined, action) || this.getAddressLabel(toAddress)
+      return (
+        this.getResolvedContractLabel(toAddress, undefined, action) ||
+        this.getAddressLabel(toAddress)
+      )
     },
     getResolvedContractLabel(primaryAddress, fallbackAddress, action) {
       const primary = primaryAddress?.toLowerCase?.()
@@ -1007,7 +1067,9 @@ export default {
       return (
         getRujiraContractProduct(primaryAddress) ||
         getRujiraContractProduct(fallbackAddress) ||
-        getRujiraContractProduct(action?.metadata?.contract?.attributes?.contract) ||
+        getRujiraContractProduct(
+          action?.metadata?.contract?.attributes?.contract
+        ) ||
         getRujiraContractEntry(primaryAddress)?.product ||
         getRujiraContractEntry(fallbackAddress)?.product ||
         ''
@@ -1023,7 +1085,10 @@ export default {
         if (/borrow|secure|collateral|loan/.test(lower)) return 'RUJI Borrow'
         if (/pool|liquidity/.test(lower)) return 'RUJI Pools'
         if (/merge/.test(lower)) return 'RUJI Merge'
-        if (/ruji\b(?!ra)/.test(lower) && !/trade|pool|borrow|merge/.test(lower))
+        if (
+          /ruji\b(?!ra)/.test(lower) &&
+          !/trade|pool|borrow|merge/.test(lower)
+        )
           return 'RUJI'
         return 'RUJI Trade'
       }
@@ -1102,14 +1167,19 @@ export default {
         THOR: asset.ticker === 'RUNE' ? 'RUNE' : asset.ticker,
       }
 
-      if (asset.ticker === asset.chain || (asset.chain === 'THOR' && asset.ticker === 'RUNE')) {
+      if (
+        asset.ticker === asset.chain ||
+        (asset.chain === 'THOR' && asset.ticker === 'RUNE')
+      ) {
         return chainNames[asset.chain] || asset.ticker
       }
 
       return asset.ticker
     },
     getPrimaryOutCoin(action) {
-      const nonAffiliateOuts = (action.out || []).filter((entry) => !entry.affiliate)
+      const nonAffiliateOuts = (action.out || []).filter(
+        (entry) => !entry.affiliate
+      )
       const grouped = {}
 
       nonAffiliateOuts.forEach((entry) => {
@@ -1262,7 +1332,8 @@ export default {
       }
 
       const inUsd =
-        (action.metadata.swap.inPriceUSD * this.getEffectiveInAmount(action, entry)) /
+        (action.metadata.swap.inPriceUSD *
+          this.getEffectiveInAmount(action, entry)) /
         1e8
 
       return this.$options.filters.currency(inUsd)
@@ -1455,9 +1526,10 @@ export default {
 }
 
 .toolbar-icon {
+  fill: var(--font-color);
   color: var(--font-color);
-  height: 1rem;
-  width: 1rem;
+  height: 20px;
+  width: 20px;
 }
 
 .select-chip {
@@ -1584,7 +1656,8 @@ export default {
 
 .tx-row {
   align-items: center;
-  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 80%, transparent);
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--border-color) 80%, transparent);
   padding: $space-16 $space-18;
 
   &:last-child {
@@ -1783,7 +1856,6 @@ export default {
     letter-spacing: 0.05em;
     text-transform: uppercase;
   }
-
 }
 
 .open-btn__icon {
