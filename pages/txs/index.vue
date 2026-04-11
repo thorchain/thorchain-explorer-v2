@@ -45,11 +45,7 @@
             <select-filter
               chip
               single
-              :options="
-                assetOptions
-                  .filter((o) => o.value !== 'all')
-                  .map((o) => o.label)
-              "
+              :options="assetOptions.map((o) => o.label)"
               :default="assetSelect"
               label="Assets"
               @update:selectedOptions="
@@ -61,11 +57,7 @@
             <select-filter
               chip
               single
-              :options="
-                actionOptions
-                  .filter((o) => o.value !== 'all')
-                  .map((o) => o.label)
-              "
+              :options="actionOptions.map((o) => o.label)"
               :default="actionSelect"
               label="Action"
               @update:selectedOptions="
@@ -538,15 +530,13 @@ export default {
       delete query.address
       delete query.affiliate
 
-      if (this.assetSelect.length === 0) {
-        delete query.asset
+      const assetValue = this.assetSelect
+        .map((label) => this.assetOptions.find((o) => o.label === label)?.value)
+        .filter((v) => v && v !== 'all')[0]
+      if (assetValue) {
+        query.asset = assetValue
       } else {
-        query.asset = this.assetSelect
-          .map(
-            (label) => this.assetOptions.find((o) => o.label === label)?.value
-          )
-          .filter(Boolean)
-          .join(',')
+        delete query.asset
       }
 
       if (!value) {
@@ -581,26 +571,24 @@ export default {
         page: 1,
       }
 
-      if (this.assetSelect.length === 0) {
-        delete query.asset
+      const assetVal = this.assetSelect
+        .map((label) => this.assetOptions.find((o) => o.label === label)?.value)
+        .filter((v) => v && v !== 'all')[0]
+      if (assetVal) {
+        query.asset = assetVal
       } else {
-        query.asset = this.assetSelect
-          .map(
-            (label) => this.assetOptions.find((o) => o.label === label)?.value
-          )
-          .filter(Boolean)
-          .join(',')
+        delete query.asset
       }
 
-      if (this.actionSelect.length === 0) {
-        delete query.type
+      const actionVal = this.actionSelect
+        .map(
+          (label) => this.actionOptions.find((o) => o.label === label)?.value
+        )
+        .filter((v) => v && v !== 'all')[0]
+      if (actionVal) {
+        query.type = actionVal
       } else {
-        query.type = this.actionSelect
-          .map(
-            (label) => this.actionOptions.find((o) => o.label === label)?.value
-          )
-          .filter(Boolean)
-          .join(',')
+        delete query.type
       }
 
       this.$router.push({ query })
@@ -1561,7 +1549,6 @@ export default {
   gap: $space-10;
   margin-top: $space-16;
   overflow-x: auto;
-  padding-bottom: $space-4;
 }
 
 .preset-pill {
@@ -1833,19 +1820,15 @@ export default {
 }
 
 .open-btn__icon {
-  color: #a7b0bb;
+  fill: var(--font-color);
   flex: 0 0 auto;
-  height: 7px;
+  height: 15px;
+  width: 15px;
   transition: transform 0.15s ease;
-  width: 7px;
-
-  :deep(path) {
-    fill: #a7b0bb !important;
-    stroke: none !important;
-  }
 }
 
 .open-btn:hover .open-btn__icon {
+  fill: var(--primary-color);
   transform: translateX(3px);
 }
 
