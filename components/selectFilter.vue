@@ -1,9 +1,12 @@
 <template>
-  <div class="form-group">
-    <label>{{ label }}</label>
+  <div :class="['form-group', { 'chip-mode': chip }]">
+    <label v-if="!chip">{{ label }}</label>
     <div ref="dropdownButton" class="custom-dropdown">
       <div class="dropdown-button" @click="toggleDropdown">
         <div class="selected-options">
+          <span v-if="chip && selectedOptions.length === 0" class="chip-label">{{
+            label
+          }}</span>
           <span v-if="selectedOptions.length <= 3">
             <span
               v-for="option in selectedOptions"
@@ -21,7 +24,7 @@
             {{ selectedOptions.length }} selected
             <CrrosIcon class="remove-tag" @click.stop="clearSelections" />
           </span>
-          <span v-if="selectedOptions.length === 0">All</span>
+          <span v-if="!chip && selectedOptions.length === 0">All</span>
         </div>
         <AngleIcon class="dropdown-icon" />
       </div>
@@ -57,6 +60,14 @@ export default {
     label: String,
     options: Array,
     default: Array,
+    chip: {
+      type: Boolean,
+      default: false,
+    },
+    single: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {
@@ -77,8 +88,17 @@ export default {
   },
   mounted() {
     this.selectedOptions = this.default || []
+    document.addEventListener('click', this.handleOutsideClick)
+  },
+  beforeDestroy() {
+    document.removeEventListener('click', this.handleOutsideClick)
   },
   methods: {
+    handleOutsideClick(event) {
+      if (this.isOpen && !this.$el.contains(event.target)) {
+        this.isOpen = false
+      }
+    },
     toggleDropdown() {
       this.isOpen = !this.isOpen
       if (this.isOpen) {
@@ -95,6 +115,16 @@ export default {
       }
     },
     toggleOption(option) {
+      if (this.single) {
+        if (this.selectedOptions.includes(option)) {
+          this.selectedOptions = []
+        } else {
+          this.selectedOptions = [option]
+        }
+        this.$emit('update:selectedOptions', this.selectedOptions)
+        this.isOpen = false
+        return
+      }
       if (this.selectedOptions.includes(option)) {
         this.removeOption(option)
       } else {
@@ -192,6 +222,7 @@ export default {
     padding: $space-8 $space-0;
     box-sizing: border-box;
     max-height: 200px;
+    min-width: 160px;
     overflow: auto;
   }
   .dropdown-option {
@@ -229,6 +260,24 @@ export default {
   .dropdown-options::-webkit-scrollbar-thumb {
     background-color: var(--font-color);
     border-radius: $radius-sm;
+  }
+}
+
+.form-group.chip-mode {
+  flex: 0 0 auto;
+
+  .custom-dropdown .dropdown-button {
+    background: var(--bgl-color);
+    border-radius: $radius-lg;
+    min-height: 4rem;
+    padding: 0 $space-12;
+    font-size: $font-size-sm;
+    white-space: nowrap;
+  }
+
+  .chip-label {
+    color: var(--font-color);
+    font-size: $font-size-sm;
   }
 }
 </style>

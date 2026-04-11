@@ -39,31 +39,37 @@
           </form>
 
           <div class="toolbar-controls">
-            <label class="select-chip select-chip--fixed">
-              <span>Assets</span>
-              <select v-model="assetSelect" @change="applyToolbarFilters">
-                <option
-                  v-for="option in assetOptions"
-                  :key="option.value"
-                  :value="option.value"
-                >
-                  {{ option.label }}
-                </option>
-              </select>
-            </label>
+            <select-filter
+              chip
+              single
+              :options="
+                assetOptions
+                  .filter((o) => o.value !== 'all')
+                  .map((o) => o.label)
+              "
+              :default="assetSelect"
+              label="Assets"
+              @update:selectedOptions="
+                assetSelect = $event
+                applyToolbarFilters()
+              "
+            />
 
-            <label class="select-chip select-chip--fixed">
-              <span>Action</span>
-              <select v-model="actionSelect" @change="applyToolbarFilters">
-                <option
-                  v-for="option in actionOptions"
-                  :key="option.value"
-                  :value="option.value"
-                >
-                  {{ option.label }}
-                </option>
-              </select>
-            </label>
+            <select-filter
+              chip
+              single
+              :options="
+                actionOptions
+                  .filter((o) => o.value !== 'all')
+                  .map((o) => o.label)
+              "
+              :default="actionSelect"
+              label="Action"
+              @update:selectedOptions="
+                actionSelect = $event
+                applyToolbarFilters()
+              "
+            />
 
             <advanced-filter ref="advancedFilter" />
           </div>
@@ -264,6 +270,7 @@ import {
 import NewPagination from '~/components/NewPagination.vue'
 import Pagination from '~/components/Pagination.vue'
 import AssetIcon from '~/components/AssetIcon.vue'
+import selectFilter from '~/components/selectFilter.vue'
 import SearchIcon from '~/assets/images/search.svg?inline'
 import ArrowSmallRight from '~/assets/images/arrow-small-right.svg?inline'
 
@@ -276,6 +283,7 @@ export default {
     Pagination,
     SearchIcon,
     ArrowSmallRight,
+    selectFilter,
   },
   data() {
     return {
@@ -291,8 +299,8 @@ export default {
       latestThorBlock: undefined,
       contractLabels: {},
       searchValue: '',
-      assetSelect: 'native',
-      actionSelect: 'swap',
+      assetSelect: [],
+      actionSelect: [],
       filtersList: [
         { label: 'All', filter: {} },
         {
@@ -405,17 +413,15 @@ export default {
       this.$store.commit('setContractLabels', this.contractLabels)
     },
     syncToolbar(query) {
-      this.assetSelect = this.assetOptions.some(
-        (option) => option.value === query.asset
+      const matchedAsset = this.assetOptions.find(
+        (o) => o.value === query.asset && o.value !== 'all'
       )
-        ? query.asset
-        : 'all'
+      this.assetSelect = matchedAsset ? [matchedAsset.label] : []
 
-      this.actionSelect = this.actionOptions.some(
-        (option) => option.value === query.type
+      const matchedAction = this.actionOptions.find(
+        (o) => o.value === query.type && o.value !== 'all'
       )
-        ? query.type
-        : 'all'
+      this.actionSelect = matchedAction ? [matchedAction.label] : []
 
       const addressSearch = query.address || query.affiliate || ''
       const freeAssetSearch =
@@ -529,10 +535,15 @@ export default {
       delete query.address
       delete query.affiliate
 
-      if (this.assetSelect === 'all') {
+      if (this.assetSelect.length === 0) {
         delete query.asset
       } else {
         query.asset = this.assetSelect
+          .map(
+            (label) => this.assetOptions.find((o) => o.label === label)?.value
+          )
+          .filter(Boolean)
+          .join(',')
       }
 
       if (!value) {
@@ -567,16 +578,26 @@ export default {
         page: 1,
       }
 
-      if (this.assetSelect === 'all') {
+      if (this.assetSelect.length === 0) {
         delete query.asset
       } else {
         query.asset = this.assetSelect
+          .map(
+            (label) => this.assetOptions.find((o) => o.label === label)?.value
+          )
+          .filter(Boolean)
+          .join(',')
       }
 
-      if (this.actionSelect === 'all') {
+      if (this.actionSelect.length === 0) {
         delete query.type
       } else {
         query.type = this.actionSelect
+          .map(
+            (label) => this.actionOptions.find((o) => o.label === label)?.value
+          )
+          .filter(Boolean)
+          .join(',')
       }
 
       this.$router.push({ query })
@@ -1530,56 +1551,6 @@ export default {
   color: var(--font-color);
   height: 20px;
   width: 20px;
-}
-
-.select-chip {
-  align-items: center;
-  background: var(--bgl-color);
-  border: 1px solid var(--border-color);
-  border-radius: $radius-lg;
-  box-sizing: border-box;
-  color: var(--sec-font-color);
-  display: inline-flex;
-  gap: $space-8;
-  justify-content: space-between;
-  min-height: 4rem;
-  min-width: 10rem;
-  padding: 0 $space-12;
-
-  span {
-    color: var(--font-color);
-    font-size: $font-size-sm;
-  }
-
-  select {
-    appearance: none;
-    background: transparent;
-    border: none;
-    box-sizing: border-box;
-    color: var(--sec-font-color);
-    cursor: pointer;
-    flex: 1 1 auto;
-    min-width: 0;
-    outline: none;
-    padding-right: $space-8;
-    text-overflow: ellipsis;
-    width: 100%;
-  }
-}
-
-.select-chip--fixed {
-  @include lg {
-    flex: 0 0 13rem;
-    max-width: 13rem;
-    min-width: 13rem;
-    width: 13rem;
-
-    select {
-      max-width: 100%;
-      min-width: 100%;
-      width: 100%;
-    }
-  }
 }
 
 .preset-rail {
