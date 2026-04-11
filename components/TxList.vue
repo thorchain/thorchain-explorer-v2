@@ -966,7 +966,7 @@ export default {
 }
 
 .product-dot {
-  border-radius: 999px;
+  border-radius: 4px;
   display: inline-block;
   flex: 0 0 auto;
   height: 0.6rem;
