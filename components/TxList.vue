@@ -12,11 +12,7 @@
     </div>
 
     <div v-if="loading" class="list-body">
-      <div
-        v-for="n in 10"
-        :key="`skeleton-${n}`"
-        class="tx-row skeleton-row"
-      >
+      <div v-for="n in 10" :key="`skeleton-${n}`" class="tx-row skeleton-row">
         <div v-for="m in 8" :key="`skeleton-cell-${n}-${m}`" class="skel" />
       </div>
     </div>
@@ -40,7 +36,9 @@
         </div>
 
         <div class="cell endpoint-cell">
-          <div :class="['endpoint-stack', { 'has-asset-icon': row.from.asset }]">
+          <div
+            :class="['endpoint-stack', { 'has-asset-icon': row.from.asset }]"
+          >
             <AssetIcon
               v-if="row.from.asset"
               :asset="row.from.asset"
@@ -216,12 +214,22 @@ export default {
       const inputCoin =
         inputEntry?.coins?.[0] ||
         (type === 'contract'
-          ? this.getPrimaryContractEventCoin(action, 'input', fromAddress, toAddress)
+          ? this.getPrimaryContractEventCoin(
+              action,
+              'input',
+              fromAddress,
+              toAddress
+            )
           : null)
       const outputCoin =
         this.getPrimaryOutCoin(action) ||
         (type === 'contract'
-          ? this.getPrimaryContractEventCoin(action, 'output', fromAddress, toAddress)
+          ? this.getPrimaryContractEventCoin(
+              action,
+              'output',
+              fromAddress,
+              toAddress
+            )
           : null)
 
       return {
@@ -252,9 +260,13 @@ export default {
       return list.find((entry) => entry.address)?.address || ''
     },
     getPrimaryOutEntry(action) {
-      const nonAffiliateOuts = (action.out || []).filter((entry) => !entry.affiliate)
+      const nonAffiliateOuts = (action.out || []).filter(
+        (entry) => !entry.affiliate
+      )
       return (
-        nonAffiliateOuts.find((entry) => entry.coins?.length && entry.address) ||
+        nonAffiliateOuts.find(
+          (entry) => entry.coins?.length && entry.address
+        ) ||
         nonAffiliateOuts.find((entry) => entry.address) ||
         null
       )
@@ -319,18 +331,27 @@ export default {
       }
 
       if (/strategy[._-]?execute/.test(normalized)) return 'Strategy Execute'
-      if (/limit/.test(normalized) && /open|create|place/.test(normalized)) return 'Open Limit Order'
-      if (/limit/.test(normalized) && /cancel|close/.test(normalized)) return 'Cancel Limit Order'
-      if (/add.*liquidity|deposit.*liquidity|provide.*liquidity/.test(normalized)) return 'Add Liquidity'
-      if (/remove.*liquidity|withdraw.*liquidity/.test(normalized)) return 'Withdraw Liquidity'
-      if (/collateral.*deposit|deposit.*collateral/.test(normalized)) return 'Collateral Deposit'
-      if (/collateral.*withdraw|withdraw.*collateral/.test(normalized)) return 'Collateral Withdraw'
+      if (/limit/.test(normalized) && /open|create|place/.test(normalized))
+        return 'Open Limit Order'
+      if (/limit/.test(normalized) && /cancel|close/.test(normalized))
+        return 'Cancel Limit Order'
+      if (
+        /add.*liquidity|deposit.*liquidity|provide.*liquidity/.test(normalized)
+      )
+        return 'Add Liquidity'
+      if (/remove.*liquidity|withdraw.*liquidity/.test(normalized))
+        return 'Withdraw Liquidity'
+      if (/collateral.*deposit|deposit.*collateral/.test(normalized))
+        return 'Collateral Deposit'
+      if (/collateral.*withdraw|withdraw.*collateral/.test(normalized))
+        return 'Collateral Withdraw'
       if (/borrow/.test(normalized)) return 'Borrow'
       if (/repay/.test(normalized)) return 'Repay'
       if (/stake/.test(normalized) && /un/.test(normalized)) return 'Unstake'
       if (/stake/.test(normalized)) return 'Stake'
       if (/claim/.test(normalized)) return 'Claim'
-      if (/swap|trade|execute/.test(normalized) && /ruji trade/i.test(product)) return 'Swap'
+      if (/swap|trade|execute/.test(normalized) && /ruji trade/i.test(product))
+        return 'Swap'
 
       return this.$options.filters.capitalize(
         normalized
@@ -344,7 +365,9 @@ export default {
       if (action.type === 'contract') {
         const contractAction = action.metadata?.contract?.attributes?.action
         if (contractAction) {
-          return this.$options.filters.capitalize(contractAction.replace(/[_.]/g, ' '))
+          return this.$options.filters.capitalize(
+            contractAction.replace(/[_.]/g, ' ')
+          )
         }
       }
       if (action.type === 'refund') return 'Returned to sender'
@@ -378,7 +401,13 @@ export default {
 
         // Detect RUJI Money Market by ghost-vault denom in contract events
         const eventCoins = this.getContractEventCoins(action)
-        if (eventCoins.some((c) => c?.asset?.toLowerCase?.().includes('ghost-vault') || c?.asset?.toLowerCase?.().includes('ghost_vault'))) {
+        if (
+          eventCoins.some(
+            (c) =>
+              c?.asset?.toLowerCase?.().includes('ghost-vault') ||
+              c?.asset?.toLowerCase?.().includes('ghost_vault')
+          )
+        ) {
           return { label: 'RUJI Money Market', tone: 'blue' }
         }
 
@@ -387,7 +416,8 @@ export default {
           this.getFirstAddress(action.in),
           action
         )
-        const productLabel = this.getProductLabelFromContractLabel(contractLabel)
+        const productLabel =
+          this.getProductLabelFromContractLabel(contractLabel)
         if (productLabel) {
           return {
             label: productLabel,
@@ -478,14 +508,18 @@ export default {
       if (type === 'send') {
         return {
           primary: this.getAddressLabel(toAddress),
-          secondary: this.getCoinSummary(outputCoin || action.out?.[0]?.coins?.[0]),
+          secondary: this.getCoinSummary(
+            outputCoin || action.out?.[0]?.coins?.[0]
+          ),
           link: toAddress ? `/address/${toAddress}` : undefined,
         }
       }
 
       if (type === 'refund') {
         return {
-          primary: this.getAddressLabel(toAddress || this.getFirstAddress(action.in)),
+          primary: this.getAddressLabel(
+            toAddress || this.getFirstAddress(action.in)
+          ),
           secondary: 'Returned to sender',
           link:
             toAddress || this.getFirstAddress(action.in)
@@ -497,12 +531,21 @@ export default {
       if (type === 'contract') {
         if (outputCoin) {
           // Ghost-vault share tokens: show product name + deposited/withdrawn amount
-          if (outputCoin.asset?.toLowerCase?.().includes('ghost-vault') || outputCoin.asset?.toLowerCase?.().includes('ghost_vault')) {
+          if (
+            outputCoin.asset?.toLowerCase?.().includes('ghost-vault') ||
+            outputCoin.asset?.toLowerCase?.().includes('ghost_vault')
+          ) {
             const eventCoins = this.getContractEventCoins(action)
-            const meaningfulCoin = eventCoins.find((c) => !c?.asset?.toLowerCase?.().includes('ghost-vault') && !c?.asset?.toLowerCase?.().includes('ghost_vault'))
+            const meaningfulCoin = eventCoins.find(
+              (c) =>
+                !c?.asset?.toLowerCase?.().includes('ghost-vault') &&
+                !c?.asset?.toLowerCase?.().includes('ghost_vault')
+            )
             return {
               primary: 'RUJI Money Market',
-              secondary: meaningfulCoin ? this.getCoinSummary(meaningfulCoin) : 'Vault position',
+              secondary: meaningfulCoin
+                ? this.getCoinSummary(meaningfulCoin)
+                : 'Vault position',
               link: toAddress ? `/address/${toAddress}` : undefined,
             }
           }
@@ -530,7 +573,9 @@ export default {
 
       if (type === 'withdraw' || type === 'runePoolWithdraw') {
         return {
-          primary: this.getAddressLabel(toAddress || this.getFirstAddress(action.out)),
+          primary: this.getAddressLabel(
+            toAddress || this.getFirstAddress(action.out)
+          ),
           secondary: this.getJoinedCoinSummary(action.out),
           link:
             toAddress || this.getFirstAddress(action.out)
@@ -546,7 +591,10 @@ export default {
       }
     },
     getContractTargetLabel(action, toAddress) {
-      return this.getResolvedContractLabel(toAddress, undefined, action) || this.getAddressLabel(toAddress)
+      return (
+        this.getResolvedContractLabel(toAddress, undefined, action) ||
+        this.getAddressLabel(toAddress)
+      )
     },
     getResolvedContractLabel(primaryAddress, fallbackAddress, action) {
       const primary = primaryAddress?.toLowerCase?.()
@@ -566,7 +614,9 @@ export default {
       return (
         getRujiraContractProduct(primaryAddress) ||
         getRujiraContractProduct(fallbackAddress) ||
-        getRujiraContractProduct(action?.metadata?.contract?.attributes?.contract) ||
+        getRujiraContractProduct(
+          action?.metadata?.contract?.attributes?.contract
+        ) ||
         getRujiraContractEntry(primaryAddress)?.product ||
         getRujiraContractEntry(fallbackAddress)?.product ||
         ''
@@ -581,7 +631,11 @@ export default {
         if (/borrow|secure|collateral|loan/.test(lower)) return 'RUJI Borrow'
         if (/pool|liquidity/.test(lower)) return 'RUJI Pools'
         if (/merge/.test(lower)) return 'RUJI Merge'
-        if (/ruji\b(?!ra)/.test(lower) && !/trade|pool|borrow|merge/.test(lower)) return 'RUJI'
+        if (
+          /ruji\b(?!ra)/.test(lower) &&
+          !/trade|pool|borrow|merge/.test(lower)
+        )
+          return 'RUJI'
         return 'RUJI Trade'
       }
       if (/tcy/.test(lower)) return 'TCY'
@@ -647,14 +701,19 @@ export default {
         THOR: asset.ticker === 'RUNE' ? 'RUNE' : asset.ticker,
       }
 
-      if (asset.ticker === asset.chain || (asset.chain === 'THOR' && asset.ticker === 'RUNE')) {
+      if (
+        asset.ticker === asset.chain ||
+        (asset.chain === 'THOR' && asset.ticker === 'RUNE')
+      ) {
         return chainNames[asset.chain] || asset.ticker
       }
 
       return asset.ticker
     },
     getPrimaryOutCoin(action) {
-      const nonAffiliateOuts = (action.out || []).filter((entry) => !entry.affiliate)
+      const nonAffiliateOuts = (action.out || []).filter(
+        (entry) => !entry.affiliate
+      )
       const grouped = {}
 
       nonAffiliateOuts.forEach((entry) => {
@@ -783,7 +842,9 @@ export default {
     getInUsd(action, entry) {
       if (!action?.metadata?.swap?.inPriceUSD || !entry?.coins?.[0]) return null
       const inUsd =
-        (action.metadata.swap.inPriceUSD * this.getEffectiveInAmount(action, entry)) / 1e8
+        (action.metadata.swap.inPriceUSD *
+          this.getEffectiveInAmount(action, entry)) /
+        1e8
       return this.$options.filters.currency(inUsd)
     },
     getOutUsd(action, coin) {
@@ -856,7 +917,8 @@ export default {
 
 .tx-row {
   align-items: center;
-  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 80%, transparent);
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--border-color) 80%, transparent);
   padding: $space-16 $space-18;
 
   &:last-child {
@@ -877,8 +939,13 @@ export default {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
 }
 
 .cell {
@@ -906,12 +973,22 @@ export default {
   width: 0.6rem;
 }
 
-.tone-green { background: #35f09a; }
-.tone-blue { background: #45abff; }
-.tone-gold { background: #ffbf3f; }
+.tone-green {
+  background: #35f09a;
+}
+.tone-blue {
+  background: #45abff;
+}
+.tone-gold {
+  background: #ffbf3f;
+}
 .tone-purple,
-.tone-violet { background: #b878ff; }
-.tone-red { background: #ff695e; }
+.tone-violet {
+  background: #b878ff;
+}
+.tone-red {
+  background: #ff695e;
+}
 
 .action-primary,
 .endpoint-primary {
@@ -1001,19 +1078,25 @@ export default {
 .status-pill.tone-green {
   background: color-mix(in srgb, var(--green) 10%, transparent);
   color: #35f09a;
-  .status-dot { background: #35f09a; }
+  .status-dot {
+    background: #35f09a;
+  }
 }
 
 .status-pill.tone-blue {
   background: color-mix(in srgb, #45abff 12%, transparent);
   color: #45abff;
-  .status-dot { background: #45abff; }
+  .status-dot {
+    background: #45abff;
+  }
 }
 
 .status-pill.tone-red {
   background: color-mix(in srgb, var(--red) 12%, transparent);
   color: #ff695e;
-  .status-dot { background: #ff695e; }
+  .status-dot {
+    background: #ff695e;
+  }
 }
 
 .open-cell {
@@ -1045,23 +1128,18 @@ export default {
     letter-spacing: 0.05em;
     text-transform: uppercase;
   }
-
 }
 
 .open-btn__icon {
-  color: #a7b0bb;
+  fill: var(--font-color);
   flex: 0 0 auto;
-  height: 7px;
+  height: 15px;
+  width: 15px;
   transition: transform 0.15s ease;
-  width: 7px;
-
-  :deep(path) {
-    fill: #a7b0bb !important;
-    stroke: none !important;
-  }
 }
 
 .open-btn:hover .open-btn__icon {
+  fill: var(--primary-color);
   transform: translateX(3px);
 }
 
