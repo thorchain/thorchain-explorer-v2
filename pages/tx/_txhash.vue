@@ -190,9 +190,23 @@
                 :key="fee.label"
                 class="tx-fee-row"
               >
-                <div class="tx-fee-label">{{ fee.label }}</div>
+                <div
+                  :class="[
+                    'tx-fee-label',
+                    { 'tx-fee-label--total': fee.isTotal },
+                  ]"
+                >
+                  {{ fee.label }}
+                </div>
                 <div class="tx-fee-value-wrap">
-                  <div class="tx-fee-value">{{ fee.value }}</div>
+                  <div
+                    :class="[
+                      'tx-fee-value',
+                      { 'tx-fee-value--total': fee.isTotal },
+                    ]"
+                  >
+                    {{ fee.usd }}
+                  </div>
                   <div v-if="fee.subtle" class="tx-fee-subtle">
                     {{ fee.subtle }}
                   </div>
@@ -446,10 +460,6 @@ export default {
           this.formatFeeDisplay(this.formatStackValue(stack.value))
         )
         .filter(Boolean)
-      const totalFees = [liquidityFee, interfaceFee, ...networkFees].filter(
-        Boolean
-      )
-
       return {
         title: `Swapped ${this.formatAssetAmount(input.amount, input.asset)} for ${this.formatAssetAmount(output.amount, output.asset)}`,
         metaLabel: `${this.getSwapActionLabel(inputAsset, outputAsset)} · ${this.getSwapProductLabel(outputAsset)}`,
@@ -518,30 +528,40 @@ export default {
           inputAsset,
           outputAsset,
         }),
-        feeRows: [
-          ...networkFees.map((value, index) => ({
-            label: index === 0 ? 'Network Fee' : `Network Fee ${index + 1}`,
-            value,
-          })),
-          liquidityFee
-            ? {
-                label: 'Liquidity Fee',
-                value: liquidityFee,
-              }
-            : null,
-          interfaceFee
-            ? {
-                label: 'Affiliate Fee',
-                value: interfaceFee,
-              }
-            : null,
-          totalFees.length
-            ? {
-                label: 'Fee Entries',
-                value: `${totalFees.length} ${totalFees.length === 1 ? 'entry' : 'entries'}`,
-              }
-            : null,
-        ].filter(Boolean),
+        feeRows: (() => {
+          const toRow = (label, formatted) => {
+            const { usd, subtle } = this.splitFeeValue(formatted)
+            return { label, usd, subtle }
+          }
+          const rows = [
+            ...networkFees.map((value, i) =>
+              toRow(i === 0 ? 'Network Fee' : `Network Fee ${i + 1}`, value)
+            ),
+            liquidityFee ? toRow('Liquidity Fee', liquidityFee) : null,
+            toRow('Affiliate Fee', interfaceFee || null),
+          ].filter(Boolean)
+
+          const totalUsd = rows.reduce(
+            (sum, r) => sum + this.parseUsdAmount(r.usd),
+            0
+          )
+          const inputUsdNum = this.parseUsdAmount(
+            this.formatUsdValue(input.amountUSD)
+          )
+          const totalPct =
+            inputUsdNum > 0
+              ? `${((totalUsd / inputUsdNum) * 100).toFixed(3)}% of swap value`
+              : null
+
+          rows.push({
+            label: 'Total Fees Paid',
+            usd: `$${totalUsd.toFixed(2)}`,
+            subtle: totalPct,
+            isTotal: true,
+          })
+
+          return rows
+        })(),
         technicalRows: [
           this.buildTechRow(
             'From address',
@@ -808,6 +828,30 @@ export default {
       const text = `${value ?? ''}`.trim()
       if (!text || /nan|infinity/i.test(text)) return '$0'
       return text
+    },
+    splitFeeValue(str) {
+      if (!str) return { usd: '$0.00', subtle: null }
+      // Try "amount ASSET ($X.XX)" format (e.g. "0.02 RUNE ($1.23)")
+      const parenMatch = str.match(/^(.*?)\s*\((\$[^)]+)\)\s*$/)
+      if (parenMatch) {
+        return { usd: parenMatch[2], subtle: parenMatch[1].trim() || null }
+      }
+      // Try " · " separated (e.g. "0.02 RUNE · $1.23")
+      const parts = str.split(' · ').map((p) => p.trim())
+      if (parts.length > 1) {
+        const usdPart = parts.find((p) => /^\$/.test(p))
+        const rest = parts.filter((p) => !/^\$/.test(p))
+        return {
+          usd: usdPart || '$0.00',
+          subtle: rest.length ? rest.join(' · ') : null,
+        }
+      }
+      // Plain "$X.XX"
+      if (/^\$/.test(str.trim())) return { usd: str.trim(), subtle: null }
+      return { usd: '$0.00', subtle: str }
+    },
+    parseUsdAmount(usdStr) {
+      return parseFloat((usdStr || '').replace(/[^0-9.-]/g, '')) || 0
     },
     formatFeeDisplay(value) {
       if (!value) return ''
@@ -2979,12 +3023,12 @@ export default {
   span,
   strong {
     color: var(--sec-font-color);
-    font-size: 1.5rem;
+    font-size: 1.1rem;
     font-weight: 600;
   }
 
   strong {
-    font-size: 1.25rem;
+    font-size: 0.95rem;
   }
 }
 
@@ -3146,9 +3190,13 @@ export default {
 
 .tx-lifecycle-body,
 .tx-lifecycle-meta,
-.tx-fee-subtle,
 .tx-hash-full {
   color: var(--font-color);
+}
+
+.tx-fee-subtle {
+  color: var(--font-color);
+  font-size: 0.75rem;
 }
 
 .tx-lifecycle-meta {
@@ -3227,6 +3275,15 @@ export default {
 
 .tx-fee-value-wrap {
   text-align: right;
+}
+
+.tx-fee-label--total {
+  color: var(--sec-font-color);
+  font-weight: 600;
+}
+
+.tx-fee-value--total {
+  color: var(--green);
 }
 
 .tx-tech-header {
