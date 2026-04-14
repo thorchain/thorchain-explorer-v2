@@ -234,9 +234,11 @@
               >
                 <div class="tx-tech-key">{{ row.label }}</div>
                 <div
+                  v-tooltip="row.label === 'Memo' ? row.value : undefined"
                   :class="[
                     'tx-tech-value',
                     { 'tx-tech-value--truncate': row.label === 'Memo' },
+                    { hoverable: row.label === 'Memo' },
                   ]"
                 >
                   <template v-if="row.type === 'link'">
