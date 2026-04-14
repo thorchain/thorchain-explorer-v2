@@ -27,7 +27,7 @@
       <div class="tx-detail-grid">
         <div class="tx-detail-main">
           <section class="tx-swap-card card-bg">
-            <div class="tx-swap-head">
+            <div class="tx-swap-head" :style="panelVars">
               <div class="tx-asset-panel">
                 <div class="tx-asset-label">Input</div>
                 <div class="tx-asset-primary">
@@ -389,6 +389,18 @@ export default {
     }),
     activeOverview() {
       return this.swapOverview || this.contractOverview || null
+    },
+    panelVars() {
+      const overview = this.activeOverview
+      if (!overview) return {}
+      return {
+        '--left-border':
+          this.assetColorPalette(overview.input?.asset) ??
+          'var(--border-color)',
+        '--right-border':
+          this.assetColorPalette(overview.output?.asset) ??
+          'var(--border-color)',
+      }
     },
     swapCardIndex() {
       if (!this.cards?.length) return -1
@@ -2968,14 +2980,14 @@ export default {
   gap: $space-14;
 
   @include md {
-    align-items: center;
+    align-items: stretch;
     grid-template-columns: minmax(0, 1fr) 60px minmax(0, 1fr);
   }
 }
 
 .tx-asset-panel {
   background: color-mix(in srgb, #26323d 60%, var(--card-bg-color));
-  border: 1px solid color-mix(in srgb, var(--border-color) 92%, transparent);
+  border: 2px solid var(--left-border, var(--border-color));
   border-radius: 16px;
   display: flex;
   flex-direction: column;
@@ -2985,8 +2997,7 @@ export default {
 }
 
 .tx-asset-panel--accent {
-  border-color: color-mix(in srgb, var(--green) 62%, var(--border-color));
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--green) 14%, transparent);
+  border-color: var(--right-border, var(--border-color));
 }
 
 .tx-asset-label {
