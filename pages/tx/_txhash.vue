@@ -100,7 +100,10 @@
               >
                 <div class="tx-detail-key">{{ row.label }}</div>
                 <div class="tx-detail-value">
-                  <template v-if="row.type === 'status'">
+                  <template v-if="row.type === 'product'">
+                    <ProductBadge :label="row.value" :tone="row.tone" />
+                  </template>
+                  <template v-else-if="row.type === 'status'">
                     <span
                       :class="[
                         'tx-detail-status',
@@ -306,6 +309,7 @@ import {
   BUILDERS as BUILDERS_MODULE,
   createFailedState as createFailedStateBuilder,
 } from './state/builders.js'
+import ProductBadge from '~/components/ProductBadge.vue'
 import DisconnectIcon from '~/assets/images/disconnect.svg?inline'
 import ArrowIcon from '~/assets/images/arrow.svg?inline'
 import ExchangeIcon from '~/assets/images/exchange.svg?inline'
@@ -324,6 +328,7 @@ import { getRujiraContractLabel } from '~/utils/rujiraContracts'
 
 export default {
   components: {
+    ProductBadge,
     DisconnectIcon,
     ArrowIcon,
     ExchangeIcon,
@@ -474,7 +479,12 @@ export default {
             : null,
         ].filter(Boolean),
         detailRows: [
-          { label: 'Product', value: this.getSwapProductLabel(outputAsset) },
+          {
+            label: 'Product',
+            value: this.getSwapProductLabel(outputAsset),
+            tone: this.getProductTone(this.getSwapProductLabel(outputAsset)),
+            type: 'product',
+          },
           {
             label: 'Action',
             value: this.getSwapActionLabel(inputAsset, outputAsset),
@@ -652,7 +662,12 @@ export default {
             : null,
         ].filter(Boolean),
         detailRows: [
-          { label: 'Product', value: 'Recurring Swaps' },
+          {
+            label: 'Product',
+            value: 'Recurring Swaps',
+            tone: this.getProductTone('Recurring Swaps'),
+            type: 'product',
+          },
           { label: 'Action', value: 'Contract execution' },
           { label: 'Status', value: status.label, type: 'status' },
           timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
@@ -879,6 +894,13 @@ export default {
         return 'RUJI Trade'
       }
       return 'THORChain'
+    },
+    getProductTone(label) {
+      const l = (label || '').toLowerCase()
+      if (/ruji|rujira/.test(l)) return 'blue'
+      if (/tcy/.test(l)) return 'gold'
+      if (/contract/.test(l)) return 'purple'
+      return 'green'
     },
     buildTechRow(label, value, kind) {
       if (!value) return null
@@ -2986,37 +3008,28 @@ export default {
 }
 
 .tx-metric-strip {
+  background: color-mix(in srgb, var(--bg-color) 60%, var(--card-bg-color));
+  border: 1px solid var(--border-color);
+  border-radius: $radius-s;
   display: grid;
-  gap: $space-12;
-  margin-top: $space-14;
-  padding-top: $space-14;
-  position: relative;
-
-  @include md {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  &::before {
-    background: color-mix(in srgb, var(--border-color) 92%, transparent);
-    content: '';
-    height: 1px;
-    left: 0;
-    position: absolute;
-    right: 0;
-    top: 0;
-  }
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: $space-18;
+  padding: $space-16 $space-20;
 }
 
 .tx-metric-item {
-  min-height: 56px;
+  padding: 0 $space-16;
 
-  @include md {
-    padding-right: $space-12;
+  &:first-child {
+    padding-left: 0;
+  }
 
-    &:not(:last-child) {
-      border-right: 1px solid
-        color-mix(in srgb, var(--border-color) 92%, transparent);
-    }
+  &:last-child {
+    padding-right: 0;
+  }
+
+  &:not(:last-child) {
+    border-right: 1px solid var(--border-color);
   }
 }
 
