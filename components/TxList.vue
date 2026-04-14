@@ -24,8 +24,7 @@
         class="tx-row"
       >
         <div class="cell product-cell">
-          <span :class="['product-dot', `tone-${row.product.tone}`]" />
-          <span>{{ row.product.label }}</span>
+          <ProductBadge :label="row.product.label" :tone="row.product.tone" />
         </div>
 
         <div class="cell action-cell">
@@ -144,12 +143,14 @@ import {
 } from '~/utils/rujiraContracts'
 import AssetIcon from '~/components/AssetIcon.vue'
 import ArrowSmallRight from '~/assets/images/arrow-small-right.svg?inline'
+import ProductBadge from '~/components/ProductBadge.vue'
 
 export default {
   name: 'TxList',
   components: {
     AssetIcon,
     ArrowSmallRight,
+    ProductBadge,
   },
   props: {
     actions: {
@@ -961,33 +962,7 @@ export default {
 }
 
 .product-cell {
-  color: var(--sec-font-color);
-  font-weight: 600;
-}
-
-.product-dot {
-  border-radius: 4px;
-  display: inline-block;
-  flex: 0 0 auto;
-  height: 0.6rem;
-  width: 0.6rem;
-}
-
-.tone-green {
-  background: #35f09a;
-}
-.tone-blue {
-  background: #45abff;
-}
-.tone-gold {
-  background: #ffbf3f;
-}
-.tone-purple,
-.tone-violet {
-  background: #b878ff;
-}
-.tone-red {
-  background: #ff695e;
+  min-width: 0;
 }
 
 .action-primary,
