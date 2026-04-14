@@ -3,13 +3,19 @@
     <div v-if="swapOverview || contractOverview" class="tx-detail-page">
       <div class="tx-detail-back">
         <nuxt-link to="/txs" class="tx-back-link">
-          ← All Transactions
+          <ArrowIcon class="tx-back-icon" />
+          All Transactions
         </nuxt-link>
       </div>
 
       <div class="tx-detail-meta">
         <span>{{ activeOverview.metaLabel }}</span>
-        <span :class="['tx-detail-status', `tx-detail-status--${activeOverview.status.tone}`]">
+        <span
+          :class="[
+            'tx-detail-status',
+            `tx-detail-status--${activeOverview.status.tone}`,
+          ]"
+        >
           {{ activeOverview.status.label }}
         </span>
       </div>
@@ -43,7 +49,9 @@
                 </div>
               </div>
 
-              <div class="tx-swap-arrow">→</div>
+              <div class="tx-swap-arrow">
+                <ArrowIcon class="tx-swap-arrow-icon" />
+              </div>
 
               <div class="tx-asset-panel tx-asset-panel--accent">
                 <div class="tx-asset-label">Output</div>
@@ -67,7 +75,10 @@
               </div>
             </div>
 
-            <div v-if="activeOverview.metricRows.length" class="tx-metric-strip">
+            <div
+              v-if="activeOverview.metricRows.length"
+              class="tx-metric-strip"
+            >
               <div
                 v-for="metric in activeOverview.metricRows"
                 :key="metric.label"
@@ -90,7 +101,12 @@
                 <div class="tx-detail-key">{{ row.label }}</div>
                 <div class="tx-detail-value">
                   <template v-if="row.type === 'status'">
-                    <span :class="['tx-detail-status', `tx-detail-status--${activeOverview.status.tone}`]">
+                    <span
+                      :class="[
+                        'tx-detail-status',
+                        `tx-detail-status--${activeOverview.status.tone}`,
+                      ]"
+                    >
                       {{ row.value }}
                     </span>
                   </template>
@@ -107,7 +123,10 @@
             </div>
           </section>
 
-          <section v-if="activeOverview.lifecycleRows.length" class="tx-info-card card-bg">
+          <section
+            v-if="activeOverview.lifecycleRows.length"
+            class="tx-info-card card-bg"
+          >
             <div class="tx-section-title">Lifecycle Events</div>
             <div class="tx-lifecycle-list">
               <div
@@ -115,11 +134,23 @@
                 :key="event.title"
                 class="tx-lifecycle-item"
               >
-                <div class="tx-lifecycle-dot">{{ event.icon }}</div>
+                <div class="tx-lifecycle-dot">
+                  <component
+                    :is="event.icon"
+                    class="tx-lifecycle-icon"
+                    :style="
+                      event.iconRotate
+                        ? { transform: `rotate(${event.iconRotate}deg)` }
+                        : {}
+                    "
+                  />
+                </div>
                 <div class="tx-lifecycle-copy">
                   <div class="tx-lifecycle-title">{{ event.title }}</div>
                   <div class="tx-lifecycle-body">{{ event.body }}</div>
-                  <div v-if="event.meta" class="tx-lifecycle-meta">{{ event.meta }}</div>
+                  <div v-if="event.meta" class="tx-lifecycle-meta">
+                    {{ event.meta }}
+                  </div>
                 </div>
               </div>
             </div>
@@ -145,7 +176,10 @@
             </div>
           </section>
 
-          <section v-if="activeOverview.feeRows.length" class="tx-info-card card-bg">
+          <section
+            v-if="activeOverview.feeRows.length"
+            class="tx-info-card card-bg"
+          >
             <div class="tx-section-title">Fee Breakdown</div>
             <div class="tx-fee-list">
               <div
@@ -156,16 +190,24 @@
                 <div class="tx-fee-label">{{ fee.label }}</div>
                 <div class="tx-fee-value-wrap">
                   <div class="tx-fee-value">{{ fee.value }}</div>
-                  <div v-if="fee.subtle" class="tx-fee-subtle">{{ fee.subtle }}</div>
+                  <div v-if="fee.subtle" class="tx-fee-subtle">
+                    {{ fee.subtle }}
+                  </div>
                 </div>
               </div>
             </div>
           </section>
 
           <section class="tx-info-card card-bg">
-            <button class="tx-tech-header" type="button" @click="technicalExpanded = !technicalExpanded">
+            <button
+              class="tx-tech-header"
+              type="button"
+              @click="technicalExpanded = !technicalExpanded"
+            >
               <span class="tx-section-title">Technical Details</span>
-              <span class="tx-tech-arrow">{{ technicalExpanded ? '−' : '+' }}</span>
+              <span class="tx-tech-arrow">{{
+                technicalExpanded ? '−' : '+'
+              }}</span>
             </button>
             <div v-if="technicalExpanded" class="tx-tech-list">
               <div
@@ -210,11 +252,7 @@
     </div>
     <template v-if="!isError && !isLoading && pools">
       <template v-if="cards && cards.length > 0">
-        <tx-card
-          v-for="(c, i) in visibleCards"
-          :key="i"
-          :tx-data="c.details"
-        >
+        <tx-card v-for="(c, i) in visibleCards" :key="i" :tx-data="c.details">
           <template
             v-for="(s, j) in c.accordions.filter(
               (c) => c.data.title && !c.data.hide
@@ -269,6 +307,8 @@ import {
   createFailedState as createFailedStateBuilder,
 } from './state/builders.js'
 import DisconnectIcon from '~/assets/images/disconnect.svg?inline'
+import ArrowIcon from '~/assets/images/arrow.svg?inline'
+import ExchangeIcon from '~/assets/images/exchange.svg?inline'
 import AssetIcon from '~/components/AssetIcon.vue'
 import {
   assetFromString,
@@ -285,6 +325,8 @@ import { getRujiraContractLabel } from '~/utils/rujiraContracts'
 export default {
   components: {
     DisconnectIcon,
+    ArrowIcon,
+    ExchangeIcon,
     AssetIcon,
     streamingSwap,
     txCard,
@@ -368,8 +410,14 @@ export default {
       const inputAsset = assetFromString(input.asset)
       const outputAsset = assetFromString(output.asset)
       const status = this.getOverviewStatus(details?.overall?.middle)
-      const inboundHeight = this.getNumericStackValue(inboundStacks, 'Block Height')
-      const outboundHeight = this.getNumericStackValue(outboundStacks, 'Executed at')
+      const inboundHeight = this.getNumericStackValue(
+        inboundStacks,
+        'Block Height'
+      )
+      const outboundHeight = this.getNumericStackValue(
+        outboundStacks,
+        'Executed at'
+      )
       const settledSeconds =
         inboundHeight && outboundHeight && outboundHeight >= inboundHeight
           ? (outboundHeight - inboundHeight) * this.blockSeconds('THOR')
@@ -377,7 +425,10 @@ export default {
 
       const rate = this.getStackDisplayValue(actionStacks, 'Rate')
       const slip = this.getStackDisplayValue(actionStacks, 'Swap Slip')
-      const affiliateBasis = this.getStackDisplayValue(actionStacks, 'Affiliate Basis')
+      const affiliateBasis = this.getStackDisplayValue(
+        actionStacks,
+        'Affiliate Basis'
+      )
       const liquidityFee = this.formatFeeDisplay(
         this.getStackDisplayValueByPrefix(actionStacks, 'Liquidity Fee')
       )
@@ -386,9 +437,13 @@ export default {
       )
       const networkFees = outboundStacks
         .filter((stack) => stack.key === 'Outbound Fee' && stack.is)
-        .map((stack) => this.formatFeeDisplay(this.formatStackValue(stack.value)))
+        .map((stack) =>
+          this.formatFeeDisplay(this.formatStackValue(stack.value))
+        )
         .filter(Boolean)
-      const totalFees = [liquidityFee, interfaceFee, ...networkFees].filter(Boolean)
+      const totalFees = [liquidityFee, interfaceFee, ...networkFees].filter(
+        Boolean
+      )
 
       return {
         title: `Swapped ${this.formatAssetAmount(input.amount, input.asset)} for ${this.formatAssetAmount(output.amount, output.asset)}`,
@@ -412,12 +467,18 @@ export default {
           rate ? { label: 'Exchange Rate', value: rate } : null,
           slip ? { label: 'Slippage', value: slip } : null,
           settledSeconds
-            ? { label: 'Settled In', value: moment.duration(settledSeconds, 'seconds').humanize() }
+            ? {
+                label: 'Settled In',
+                value: moment.duration(settledSeconds, 'seconds').humanize(),
+              }
             : null,
         ].filter(Boolean),
         detailRows: [
           { label: 'Product', value: this.getSwapProductLabel(outputAsset) },
-          { label: 'Action', value: this.getSwapActionLabel(inputAsset, outputAsset) },
+          {
+            label: 'Action',
+            value: this.getSwapActionLabel(inputAsset, outputAsset),
+          },
           { label: 'Status', value: status.label, type: 'status' },
           {
             label: 'Time',
@@ -472,13 +533,30 @@ export default {
             : null,
         ].filter(Boolean),
         technicalRows: [
-          this.buildTechRow('From address', this.getStackDisplayValue(inboundStacks, 'From'), 'address'),
-          this.buildTechRow('To address', this.getStackDisplayValue(outboundStacks, 'Destination'), 'address'),
-          this.buildTechRow('Memo', this.getStackDisplayValue(actionStacks, 'Memo')),
-          this.buildTechRow('Inbound stage', this.getStackDisplayValue(inboundStacks, 'Inbound Stage')),
+          this.buildTechRow(
+            'From address',
+            this.getStackDisplayValue(inboundStacks, 'From'),
+            'address'
+          ),
+          this.buildTechRow(
+            'To address',
+            this.getStackDisplayValue(outboundStacks, 'Destination'),
+            'address'
+          ),
+          this.buildTechRow(
+            'Memo',
+            this.getStackDisplayValue(actionStacks, 'Memo')
+          ),
+          this.buildTechRow(
+            'Inbound stage',
+            this.getStackDisplayValue(inboundStacks, 'Inbound Stage')
+          ),
           this.buildTechRow('Exchange rate', rate),
           this.buildTechRow('Affiliate basis', affiliateBasis),
-          this.buildTechRow('Limit', this.getStackDisplayValue(actionStacks, 'Limit')),
+          this.buildTechRow(
+            'Limit',
+            this.getStackDisplayValue(actionStacks, 'Limit')
+          ),
         ].filter(Boolean),
       }
     },
@@ -523,7 +601,9 @@ export default {
 
       // Collect unique pair contract addresses from fin/trade actions
       const pairAddresses = [
-        ...new Set(tradeActions.map((a) => a.out?.[0]?.address).filter(Boolean)),
+        ...new Set(
+          tradeActions.map((a) => a.out?.[0]?.address).filter(Boolean)
+        ),
       ]
       const pairLabels = pairAddresses
         .map((addr) => getRujiraContractLabel(addr) || this.formatAddress(addr))
@@ -564,21 +644,31 @@ export default {
         metricRows: [
           { label: 'Trades Executed', value: `${tradeCount}` },
           pairLabels ? { label: 'Pairs', value: pairLabels } : null,
-          avgRate ? { label: 'Avg Exchange Rate', value: avgRate.toFixed(6) } : null,
-          timestamp ? { label: 'Time', value: timestamp.format('YYYY-MM-DD HH:mm:ss') } : null,
+          avgRate
+            ? { label: 'Avg Exchange Rate', value: avgRate.toFixed(6) }
+            : null,
+          timestamp
+            ? { label: 'Time', value: timestamp.format('YYYY-MM-DD HH:mm:ss') }
+            : null,
         ].filter(Boolean),
         detailRows: [
           { label: 'Product', value: 'Recurring Swaps' },
           { label: 'Action', value: 'Contract execution' },
           { label: 'Status', value: status.label, type: 'status' },
           timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
-          executorAddress ? { label: 'Executor', value: this.formatAddress(executorAddress) } : null,
+          executorAddress
+            ? { label: 'Executor', value: this.formatAddress(executorAddress) }
+            : null,
         ].filter(Boolean),
         lifecycleRows: [],
         feeRows: [],
         technicalRows: [
-          strategyAddress ? this.buildTechRow('Strategy address', strategyAddress, 'address') : null,
-          executorAddress ? this.buildTechRow('Executor address', executorAddress, 'address') : null,
+          strategyAddress
+            ? this.buildTechRow('Strategy address', strategyAddress, 'address')
+            : null,
+          executorAddress
+            ? this.buildTechRow('Executor address', executorAddress, 'address')
+            : null,
         ].filter(Boolean),
       }
     },
@@ -655,12 +745,17 @@ export default {
     },
     getNumericStackValue(stacks = [], key) {
       const stack = stacks.find((entry) => entry.key === key && entry.is)
-      const numeric = Number(String(this.formatStackValue(stack?.value)).replace(/[^0-9.-]/g, ''))
+      const numeric = Number(
+        String(this.formatStackValue(stack?.value)).replace(/[^0-9.-]/g, '')
+      )
       return Number.isFinite(numeric) && numeric > 0 ? numeric : null
     },
     formatStackValue(value) {
       if (Array.isArray(value)) {
-        return value.map((item) => item?.text || '').filter(Boolean).join(' · ')
+        return value
+          .map((item) => item?.text || '')
+          .filter(Boolean)
+          .join(' · ')
       }
       if (value == null || value === '') return ''
       return `${value}`
@@ -753,7 +848,10 @@ export default {
         BASE: 'Base',
         THOR: parsed.ticker === 'RUNE' ? 'RUNE' : parsed.ticker,
       }
-      if (parsed.ticker === parsed.chain || (parsed.chain === 'THOR' && parsed.ticker === 'RUNE')) {
+      if (
+        parsed.ticker === parsed.chain ||
+        (parsed.chain === 'THOR' && parsed.ticker === 'RUNE')
+      ) {
         return chainNames[parsed.chain] || parsed.ticker
       }
       return parsed.ticker
@@ -767,7 +865,11 @@ export default {
       return `${this.getAssetDisplayName(`${asset.chain}.${asset.chain}`)} network`
     },
     getSwapActionLabel(inputAsset, outputAsset) {
-      if (inputAsset?.chain && outputAsset?.chain && inputAsset.chain !== outputAsset.chain) {
+      if (
+        inputAsset?.chain &&
+        outputAsset?.chain &&
+        inputAsset.chain !== outputAsset.chain
+      ) {
         return 'Cross-chain Swap'
       }
       return 'Swap'
@@ -803,24 +905,32 @@ export default {
       const rows = []
       const timeText = this.getStackDisplayValue(actionStacks, 'Timestamp')
       rows.push({
-        icon: '↓',
+        icon: 'ArrowIcon',
+        iconRotate: 180,
         title: `${this.getAssetDisplayName(input.asset)} received by THORChain`,
         body: `${this.formatAssetAmount(input.amount, input.asset)} entered the swap flow from ${this.formatAddress(this.getStackDisplayValue(inboundStacks, 'From'))}.`,
-        meta: [timeText, inboundHeight ? `Block #${this.normalFormat(inboundHeight)}` : '']
+        meta: [
+          timeText,
+          inboundHeight ? `Block #${this.normalFormat(inboundHeight)}` : '',
+        ]
           .filter(Boolean)
           .join(' · '),
       })
       rows.push({
-        icon: '↻',
+        icon: 'ExchangeIcon',
+        iconRotate: 0,
         title: 'Swap executed',
         body: `${this.getSwapProductLabel(outputAsset)} converted ${this.getAssetDisplayName(input.asset)} to ${this.getAssetDisplayName(output.asset)} at the current exchange rate.`,
         meta: this.getStackDisplayValue(actionStacks, 'Rate'),
       })
       rows.push({
-        icon: '↑',
+        icon: 'ArrowIcon',
+        iconRotate: 0,
         title: `${this.getAssetDisplayName(output.asset)} delivered`,
         body: `${this.formatAssetAmount(output.amount, output.asset)} was sent to ${this.formatAddress(this.getStackDisplayValue(outboundStacks, 'Destination'))}.`,
-        meta: outboundHeight ? `Block #${this.normalFormat(outboundHeight)}` : '',
+        meta: outboundHeight
+          ? `Block #${this.normalFormat(outboundHeight)}`
+          : '',
       })
       return rows
     },
@@ -1447,7 +1557,7 @@ export default {
           asset: isSecure ? assetToSecure(ast) : assetToTrade(ast),
           amount: thorStatus.out_txs
             ? thorStatus.out_txs[0]?.coins?.[0]?.amount
-            : thorStatus?.tx?.coins?.[0]?.amount ?? 0,
+            : (thorStatus?.tx?.coins?.[0]?.amount ?? 0),
           txid: thorStatus.out_txs ? thorStatus.out_txs[0]?.id : null,
           to: memo.address,
           done: true,
@@ -1513,7 +1623,7 @@ export default {
           asset: isSecure ? securedToAsset(ast) : tradeToAsset(ast),
           amount: thorStatus.out_txs
             ? thorStatus.out_txs[0]?.coins?.[0]?.amount
-            : thorStatus?.tx?.coins?.[0]?.amount ?? 0,
+            : (thorStatus?.tx?.coins?.[0]?.amount ?? 0),
           txid: thorStatus.out_txs ? thorStatus.out_txs[0]?.id : null,
           to: memo.address,
           gas: thorStatus.out_txs
@@ -1715,13 +1825,14 @@ export default {
         done: true,
       }))
 
-      let outs = action?.out.map((a) => ({
-        asset: this.parseMemoAsset(a.coins?.[0]?.asset),
-        amount: a.coins?.[0]?.amount ?? 0,
-        txid: a?.txID,
-        to: a?.address,
-        done: true,
-      })) ?? []
+      let outs =
+        action?.out.map((a) => ({
+          asset: this.parseMemoAsset(a.coins?.[0]?.asset),
+          amount: a.coins?.[0]?.amount ?? 0,
+          txid: a?.txID,
+          to: a?.address,
+          done: true,
+        })) ?? []
       // Trade/secure only: when multiple outbounds have same asset and amount, only show one
       const hasTradeOrSecureOut = outs.some(
         (o) => o?.asset?.trade || o?.asset?.secure
@@ -1927,8 +2038,7 @@ export default {
         !thorStatus?.stages.inbound_finalised?.completed ||
         (inAsset?.chain === 'THOR' && addAction.status === 'pending')
 
-      const memoText =
-        thorStatus?.tx?.memo || isRefund?.metadata?.refund?.memo
+      const memoText = thorStatus?.tx?.memo || isRefund?.metadata?.refund?.memo
 
       return {
         cards: {
@@ -2087,10 +2197,7 @@ export default {
       let outAmount
       const isOut = outTxs && outTxs[0]
       if (isOut) {
-        outAsset = this.parseMemoAsset(
-          outTxs[0]?.coins?.[0]?.asset,
-          this.pools
-        )
+        outAsset = this.parseMemoAsset(outTxs[0]?.coins?.[0]?.asset, this.pools)
         outAmount =
           outTxs?.length > 0 ? parseInt(outTxs[0]?.coins?.[0]?.amount ?? 0) : 0
       }
@@ -2361,8 +2468,7 @@ export default {
       // order by target swapped asset if we have refund in swap
       outTxs = orderBy(
         outTxs,
-        (o) =>
-          o.coins?.[0]?.asset === thorStatus?.tx?.coins?.[0]?.asset
+        (o) => o.coins?.[0]?.asset === thorStatus?.tx?.coins?.[0]?.asset
       )
 
       // Trade/secure asset swap only: when multiple outbounds have same asset and amount, only show one
@@ -2403,10 +2509,7 @@ export default {
             groupBy(
               actions?.actions
                 ?.find((a) => a.type === 'swap')
-                ?.out?.filter(
-                  (a) =>
-                    a.coins?.[0]?.asset === outAssetStr
-                ),
+                ?.out?.filter((a) => a.coins?.[0]?.asset === outAssetStr),
               'txID'
             )
           ).map((group) =>
@@ -2497,7 +2600,8 @@ export default {
         )
       }
 
-      const rapidInterval = swapAction?.metadata?.swap?.streamingSwapMeta?.interval
+      const rapidInterval =
+        swapAction?.metadata?.swap?.streamingSwapMeta?.interval
       const isRapidSwap =
         (rapidInterval === 0 || rapidInterval === '0') && +height > 25400000
       const swapTypeLabel = isRapidSwap ? 'rapid Swap' : 'swap'
@@ -2554,7 +2658,10 @@ export default {
               amount: inAmount,
               gas: thorStatus?.tx.gas ? thorStatus?.tx?.gas?.[0]?.amount : null,
               gasAsset: thorStatus?.tx.gas
-                ? this.parseMemoAsset(thorStatus?.tx?.gas?.[0]?.asset, this.pools)
+                ? this.parseMemoAsset(
+                    thorStatus?.tx?.gas?.[0]?.asset,
+                    this.pools
+                  )
                 : null,
               preObservations:
                 thorStatus?.stages?.inbound_observed?.pre_confirmation_count,
@@ -2616,7 +2723,8 @@ export default {
           out: [
             {
               txid: outTxs?.length > 0 ? outTxs[0]?.id : null,
-              to: (outTxs?.length > 0 && outTxs[0]?.to_address) || memo?.destAddr,
+              to:
+                (outTxs?.length > 0 && outTxs[0]?.to_address) || memo?.destAddr,
               asset: outAsset,
               amount: parseInt(outAmount),
               gas:
@@ -2688,13 +2796,24 @@ export default {
 
 .tx-back-link,
 .tx-link {
+  align-items: center;
   color: var(--font-color);
+  display: inline-flex;
   font-weight: 500;
+  gap: $space-6;
   text-decoration: none;
 
   &:hover {
     color: color-mix(in srgb, var(--green) 82%, white);
   }
+}
+
+.tx-back-icon {
+  fill: currentColor;
+  flex: 0 0 auto;
+  height: 14px;
+  transform: rotate(-90deg);
+  width: 14px;
 }
 
 .tx-link {
@@ -2852,14 +2971,18 @@ export default {
   background: color-mix(in srgb, #26323d 40%, var(--card-bg-color));
   border: 1px solid color-mix(in srgb, var(--green) 18%, var(--border-color));
   border-radius: 999px;
-  color: var(--green);
   display: flex;
-  font-size: 1.15rem;
-  font-weight: 700;
   height: 60px;
   justify-content: center;
   margin: auto;
   width: 60px;
+}
+
+.tx-swap-arrow-icon {
+  fill: var(--green);
+  height: 20px;
+  transform: rotate(90deg);
+  width: 20px;
 }
 
 .tx-metric-strip {
@@ -2891,7 +3014,8 @@ export default {
     padding-right: $space-12;
 
     &:not(:last-child) {
-      border-right: 1px solid color-mix(in srgb, var(--border-color) 92%, transparent);
+      border-right: 1px solid
+        color-mix(in srgb, var(--border-color) 92%, transparent);
     }
   }
 }
@@ -2913,7 +3037,7 @@ export default {
 .tx-detail-rows,
 .tx-fee-list,
 .tx-tech-list {
-  border-top: 1px solid color-mix(in srgb, var(--border-color) 92%, transparent);
+  border-top: 3px solid color-mix(in srgb, var(--border-color) 92%, transparent);
   margin-top: $space-16;
   padding-top: $space-2;
 }
@@ -2927,6 +3051,10 @@ export default {
   gap: $space-10;
   grid-template-columns: minmax(110px, 0.8fr) minmax(0, 1.2fr);
   padding: $space-12 0;
+
+  &:first-of-type {
+    border-top: none;
+  }
 }
 
 .tx-detail-key,
@@ -2960,13 +3088,13 @@ export default {
   padding-left: $space-4;
 
   &::before {
-    background: color-mix(in srgb, var(--border-color) 88%, transparent);
+    background: var(--border-color);
     bottom: $space-14;
     content: '';
-    left: 20px;
+    left: 23px;
     position: absolute;
     top: $space-14;
-    width: 1px;
+    width: 2px;
   }
 }
 
@@ -2979,17 +3107,22 @@ export default {
 
 .tx-lifecycle-dot {
   align-items: center;
-  background: color-mix(in srgb, var(--green) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--green) 35%, transparent);
+  background: color-mix(in srgb, var(--green) 12%, var(--card-bg-color));
+  border: 1px solid color-mix(in srgb, var(--green) 35%, var(--card-bg-color));
   border-radius: 999px;
   color: var(--green);
   display: flex;
-  font-size: 1rem;
   height: 40px;
   justify-content: center;
   position: relative;
   width: 40px;
   z-index: 1;
+}
+
+.tx-lifecycle-icon {
+  fill: var(--green);
+  height: 16px;
+  width: 16px;
 }
 
 .tx-lifecycle-title {
