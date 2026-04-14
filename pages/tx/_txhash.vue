@@ -168,14 +168,41 @@
               <div class="tx-hash-full mono">{{ $route.params.txhash }}</div>
             </div>
             <div class="tx-hash-actions">
-              <div class="tx-hash-action">
-                <Copy :str-copy="$route.params.txhash" :hide-toast="true" />
+              <div
+                class="tx-hash-action"
+                @click="$refs.copyBtn.onlyCopy($route.params.txhash)"
+              >
+                <Copy
+                  ref="copyBtn"
+                  :str-copy="$route.params.txhash"
+                  :hide-toast="true"
+                />
                 <span>Copy</span>
               </div>
-              <div class="tx-hash-action">
-                <qr-btn :qrcode="$route.params.txhash"></qr-btn>
+              <div class="tx-hash-action" @click="$refs.qrBtn.showQR = true">
+                <qr-btn ref="qrBtn" :qrcode="$route.params.txhash" />
                 <span>View QR</span>
               </div>
+              <a
+                v-if="inputExplorerUrl"
+                class="tx-hash-action"
+                :href="inputExplorerUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <ExternalIcon class="tx-hash-action-icon" />
+                <span>Input Tx</span>
+              </a>
+              <a
+                v-if="outputExplorerUrl"
+                class="tx-hash-action"
+                :href="outputExplorerUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <ExternalIcon class="tx-hash-action-icon" />
+                <span>Output Tx</span>
+              </a>
             </div>
           </section>
 
@@ -338,9 +365,11 @@ import {
   assetToString,
   securedToAsset,
   sumAffiliateFee,
+  getExplorerAddressUrl,
 } from '~/utils'
 import Accordion from '~/components/Accordion.vue'
 import { getRujiraContractLabel } from '~/utils/rujiraContracts'
+import ExternalIcon from '~/assets/images/external.svg?inline'
 
 export default {
   components: {
@@ -349,6 +378,7 @@ export default {
     ArrowIcon,
     ExchangeIcon,
     AssetIcon,
+    ExternalIcon,
     streamingSwap,
     txCard,
     Accordion,
@@ -389,6 +419,26 @@ export default {
     }),
     activeOverview() {
       return this.swapOverview || this.contractOverview || null
+    },
+    inputExplorerUrl() {
+      const asset = this.activeOverview?.input?.asset
+      if (!asset) return null
+      const parsed = assetFromString(asset)
+      const chain = parsed?.chain
+      if (!chain || chain === 'THOR') return null
+      const inTxId = this.activeOverview?.input?.txId
+      if (!inTxId) return null
+      return getExplorerAddressUrl(chain, inTxId, 'hash')
+    },
+    outputExplorerUrl() {
+      const asset = this.activeOverview?.output?.asset
+      if (!asset) return null
+      const parsed = assetFromString(asset)
+      const chain = parsed?.chain
+      if (!chain || chain === 'THOR') return null
+      const outTxId = this.activeOverview?.output?.txId
+      if (!outTxId) return null
+      return getExplorerAddressUrl(chain, outTxId, 'hash')
     },
     panelVars() {
       const overview = this.activeOverview
@@ -451,6 +501,9 @@ export default {
         outboundStacks,
         'Executed at'
       )
+      const inboundHash = this.getStackDisplayValue(inboundStacks, 'Hash')
+      const outboundHash = this.getStackDisplayValue(outboundStacks, 'Hash')
+
       const settledSeconds =
         inboundHeight && outboundHeight && outboundHeight >= inboundHeight
           ? (outboundHeight - inboundHeight) * this.blockSeconds('THOR')
@@ -484,6 +537,7 @@ export default {
           badge: this.getNetworkBadge(inputAsset),
           amount: this.formatAssetAmount(input.amount, input.asset),
           usd: this.formatUsdValue(input.amountUSD),
+          txId: inboundHash,
         },
         output: {
           asset: output.asset,
@@ -491,6 +545,7 @@ export default {
           badge: this.getNetworkBadge(outputAsset),
           amount: this.formatAssetAmount(output.amount, output.asset),
           usd: this.formatUsdValue(output.amountUSD),
+          txId: outboundHash,
         },
         metricRows: [
           rate ? { label: 'Exchange Rate', value: rate } : null,
@@ -3253,6 +3308,7 @@ export default {
   justify-content: center;
   min-height: 50px;
   padding: 0 $space-12;
+  text-decoration: none;
 
   &:hover {
     border-color: color-mix(in srgb, var(--green) 40%, var(--border-color));
@@ -3281,8 +3337,18 @@ export default {
   &:hover :deep(svg),
   &:hover :deep(path),
   &:hover :deep(span) {
-    fill: var(--green);
-    color: var(--green);
+    fill: var(--primary-color);
+    color: var(--primary-color);
+  }
+
+  .tx-hash-action-icon {
+    fill: var(--sec-font-color);
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover .tx-hash-action-icon {
+    fill: var(--primary-color);
   }
 }
 
