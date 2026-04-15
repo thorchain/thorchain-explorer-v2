@@ -37,7 +37,7 @@
             <input
               v-model.trim="searchValue"
               type="text"
-              placeholder="Search Asset / Address / Product / Action..."
+              placeholder="Search Affiliate"
             />
           </form>
 
