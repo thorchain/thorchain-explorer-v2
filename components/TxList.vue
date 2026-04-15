@@ -32,6 +32,14 @@
           <div v-if="row.actionSecondary" class="action-secondary">
             {{ row.actionSecondary }}
           </div>
+          <div v-if="row.affiliateAddress" class="action-affiliate">
+            <span class="action-affiliate-label">via</span>
+            <Affiliate
+              :affiliate-address="row.affiliateAddress"
+              :use-new-icons="true"
+              :show-link="false"
+            />
+          </div>
         </div>
 
         <div class="cell endpoint-cell">
@@ -144,6 +152,7 @@ import {
 import AssetIcon from '~/components/AssetIcon.vue'
 import ArrowSmallRight from '~/assets/images/arrow-small-right.svg?inline'
 import ProductBadge from '~/components/ProductBadge.vue'
+import Affiliate from '~/components/Affiliate.vue'
 
 export default {
   name: 'TxList',
@@ -151,6 +160,7 @@ export default {
     AssetIcon,
     ArrowSmallRight,
     ProductBadge,
+    Affiliate,
   },
   props: {
     actions: {
@@ -239,6 +249,10 @@ export default {
         product: this.getProductMeta(action, toAddress),
         actionLabel: this.typeName(type, action),
         actionSecondary: this.getActionSecondary(action),
+        affiliateAddress:
+          action.metadata?.swap?.affiliateAddress ||
+          action.metadata?.addLiquidity?.affiliateAddress ||
+          null,
         from: this.getFromDisplay(action, fromAddress, inputEntry, inputCoin),
         to: this.getToDisplay(action, toAddress, outputCoin),
         user: {
@@ -876,26 +890,15 @@ export default {
   background: color-mix(in srgb, var(--card-bg-color) 94%, transparent);
   border: 1px solid var(--border-color);
   border-radius: $radius-xl;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .list-header,
 .tx-row {
   column-gap: $space-14;
   display: grid;
-  grid-template-columns:
-    minmax(110px, 1fr)
-    minmax(150px, 1fr)
-    minmax(180px, 1.5fr)
-    minmax(180px, 1.5fr)
-    minmax(110px, 0.9fr)
-    minmax(80px, 0.7fr)
-    minmax(110px, 0.8fr)
-    3rem;
-
-  @media (max-width: 1023px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+  grid-template-columns: 120px 160px 190px 190px 130px 90px 110px 50px;
 }
 
 .list-header {
@@ -905,10 +908,6 @@ export default {
   letter-spacing: 0.06em;
   padding: $space-14 $space-18;
   text-transform: uppercase;
-
-  @media (max-width: 1023px) {
-    display: none;
-  }
 }
 
 .list-body {
@@ -924,11 +923,6 @@ export default {
 
   &:last-child {
     border-bottom: none;
-  }
-
-  @media (max-width: 1023px) {
-    gap: $space-8;
-    padding: $space-14;
   }
 }
 
@@ -986,6 +980,32 @@ export default {
   margin-top: $space-4;
   min-width: 0;
   overflow-wrap: anywhere;
+}
+
+.action-affiliate {
+  align-items: center;
+  display: flex;
+  gap: $space-4;
+  margin-top: $space-6;
+
+  :deep(.affiliate-content) {
+    gap: $space-4;
+  }
+
+  :deep(.executed img) {
+    height: 1rem;
+  }
+
+  :deep(.executed em) {
+    font-size: $font-size-xs;
+    font-style: normal;
+  }
+}
+
+.action-affiliate-label {
+  color: var(--font-color);
+  font-size: $font-size-xs;
+  opacity: 0.6;
 }
 
 .endpoint-stack {
