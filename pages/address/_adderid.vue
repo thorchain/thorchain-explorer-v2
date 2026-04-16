@@ -54,13 +54,21 @@
       </div>
 
       <div class="stat-wrapper">
-        <balance
-          class="card-balance"
-          :address="address"
-          :state="addressStat"
-          :loading="addressLoading"
-          @portfolio-total="heroPortfolioTotalUsd = $event"
-        />
+        <div class="balance-nav-container">
+          <balance
+            class="card-balance"
+            :address="address"
+            :state="addressStat"
+            :loading="addressLoading"
+            @portfolio-total="heroPortfolioTotalUsd = $event"
+          />
+          <balance-history
+            v-if="address && (hasBalances || addressLoading) && addressStat"
+            :key="address"
+            class="card-balance-history"
+            :address="address"
+          />
+        </div>
       </div>
 
       <div class="activity-shell">
@@ -133,8 +141,15 @@
             />
           </keep-alive>
           <keep-alive>
-            <div v-if="activeMode == 'transactions'" class="transactions-section">
-              <TxList :actions="addrTxs && addrTxs.actions" :loading="loading" />
+            <div
+              v-if="activeMode == 'transactions'"
+              class="transactions-section"
+            >
+              <transactions
+                :txs="addrTxs"
+                :owner="address"
+                :loading="loading"
+              />
               <NewPagination
                 v-if="addrTxs && addrTxs.actions && count > -1"
                 :total-rows="+count"
@@ -306,7 +321,8 @@ import Balance from './components/balance.vue'
 import Pools from './components/pools.vue'
 import Bonds from './components/bonds.vue'
 import Distribution from './components/distribution.vue'
-import TxList from '~/components/TxList.vue'
+import BalanceHistory from './components/balanceHistory.vue'
+import Transactions from '~/components/Transactions.vue'
 import { formatAsset, assetFromString } from '~/utils'
 import { isScamAddress as checkScamAddress } from '~/const/scam-addresses'
 import alertIcon from '~/assets/images/alert.svg?inline'
@@ -316,12 +332,13 @@ export default {
   components: {
     Thorname,
     Balance,
+    BalanceHistory,
     Pools,
     Bonds,
     Distribution,
     advancedFilter,
     alertIcon,
-    TxList,
+    Transactions,
   },
   data() {
     return {
@@ -390,31 +407,33 @@ export default {
     },
     portfolioRows() {
       const balances = this.otherBalances ?? []
-      return balances.map((entry) => {
-        let poolAsset
-        this.pools?.forEach((pool) => {
-          const poolAssetData = assetFromString(pool.asset)
-          if (
-            poolAssetData.chain === entry.asset?.chain &&
-            poolAssetData.ticker === entry.asset?.ticker
-          ) {
-            poolAsset = pool
+      return balances
+        .map((entry) => {
+          let poolAsset
+          this.pools?.forEach((pool) => {
+            const poolAssetData = assetFromString(pool.asset)
+            if (
+              poolAssetData.chain === entry.asset?.chain &&
+              poolAssetData.ticker === entry.asset?.ticker
+            ) {
+              poolAsset = pool
+            }
+          })
+
+          if (entry.asset?.ticker === 'RUNE' && entry.asset?.chain === 'THOR') {
+            poolAsset = { assetPriceUSD: this.runePrice }
+          }
+
+          const quantity = Number(entry.quantity) || 0
+          const price = Number(poolAsset?.assetPriceUSD || 0)
+          return {
+            asset: entry.asset,
+            quantity,
+            price,
+            value: price * quantity,
           }
         })
-
-        if (entry.asset?.ticker === 'RUNE' && entry.asset?.chain === 'THOR') {
-          poolAsset = { assetPriceUSD: this.runePrice }
-        }
-
-        const quantity = Number(entry.quantity) || 0
-        const price = Number(poolAsset?.assetPriceUSD || 0)
-        return {
-          asset: entry.asset,
-          quantity,
-          price,
-          value: price * quantity,
-        }
-      }).filter((token) => token.asset && Number.isFinite(token.quantity))
+        .filter((token) => token.asset && Number.isFinite(token.quantity))
     },
     bondBalanceTotal() {
       if (!this.nodes) {
@@ -533,16 +552,18 @@ export default {
       return false
     },
     async updateLabel(address) {
-      const { data: labels } = await this.$api.getContractsLabel().catch(
-        () => ({ data: [] })
-      )
+      const { data: labels } = await this.$api
+        .getContractsLabel()
+        .catch(() => ({ data: [] }))
       const label = labels.find((l) => {
         if (l.address.toLowerCase() === address.toLowerCase()) {
           return l.label
         }
         return false
       })
-      this.label = label ? label.label : getRujiraContractLabel(address) || address
+      this.label = label
+        ? label.label
+        : getRujiraContractLabel(address) || address
     },
     async fetchAddressData(address, offset = 0, limit = 30) {
       this.loading = true
@@ -765,22 +786,17 @@ export default {
 
   .address-hero {
     align-items: flex-start;
-    background: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.02) 0%,
-      rgba(255, 255, 255, 0.01) 100%
-    );
-    border: 1px solid rgba(111, 130, 153, 0.18);
-    border-radius: 22px;
+    background: var(--card-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: $radius-lg;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
     justify-content: space-between;
-    margin: 0 $space-12 $space-16;
     padding: 1.35rem 1.45rem;
 
     @include lg {
-      align-items: flex-end;
+      align-items: center;
       flex-direction: row;
     }
   }
@@ -891,14 +907,25 @@ export default {
 
   .balance-nav-container {
     display: flex;
+    flex-direction: column;
     gap: 1rem;
     width: 100%;
+
+    @include lg {
+      flex-direction: row;
+    }
   }
 
-  .card-balance {
-    width: 100%;
+  .card-balance,
+  .card-balance-history {
     display: flex;
     flex-direction: column;
+    width: 100%;
+
+    @include lg {
+      flex: 1 1 0;
+      min-width: 0;
+    }
   }
 
   .content {
@@ -1079,10 +1106,6 @@ export default {
       fill: var(--sec-font-color);
     }
   }
-}
-
-.activity-shell {
-  margin: 0 $space-12 $space-16;
 }
 
 .activity-shell__toolbar {
