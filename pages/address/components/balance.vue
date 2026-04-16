@@ -20,61 +20,63 @@
           </button>
         </div>
 
-        <div class="holdings-table">
-          <div class="holdings-head">
-            <span>Asset</span>
-            <span>Amount</span>
-            <span>Value</span>
-            <span>Allocation</span>
-          </div>
+        <div class="holdings-scroll">
+          <div class="holdings-table">
+            <div class="holdings-head">
+              <span>Asset</span>
+              <span>Amount</span>
+              <span>Value</span>
+              <span>Allocation</span>
+            </div>
 
-          <div
-            v-for="token in visibleHoldings"
-            :key="assetKey(token.asset)"
-            class="holding-row"
-          >
-            <div class="holding-asset">
-              <asset-icon
-                :asset="holdingIconAsset(token.asset)"
-                :chain="false"
-              />
-              <div class="holding-asset-copy">
-                <span class="holding-name">{{
-                  getAssetDisplayName(token.asset)
-                }}</span>
-                <span class="holding-network">{{
-                  getAssetSubtitle(token.asset)
-                }}</span>
+            <div
+              v-for="token in visibleHoldings"
+              :key="assetKey(token.asset)"
+              class="holding-row"
+            >
+              <div class="holding-asset">
+                <asset-icon
+                  :asset="holdingIconAsset(token.asset)"
+                  :chain="false"
+                />
+                <div class="holding-asset-copy">
+                  <span class="holding-name">{{
+                    getAssetDisplayName(token.asset)
+                  }}</span>
+                  <span class="holding-network">{{
+                    getAssetSubtitle(token.asset)
+                  }}</span>
+                </div>
+              </div>
+
+              <div class="holding-amount mono">
+                {{ formatQuantity(token.quantity) }}
+                {{ showAsset(token.asset, true) }}
+              </div>
+
+              <div class="holding-value mono">
+                {{ formatUsd(token.value) }}
+              </div>
+
+              <div class="holding-allocation">
+                <div class="allocation-track">
+                  <span
+                    class="allocation-fill"
+                    :style="{
+                      width: `${token.allocationPercent}%`,
+                      backgroundColor: getAllocationColor(token.asset),
+                    }"
+                  ></span>
+                </div>
+                <span class="allocation-percent mono">
+                  {{ formatPercent(token.allocationPercent) }}
+                </span>
               </div>
             </div>
 
-            <div class="holding-amount mono">
-              {{ formatQuantity(token.quantity) }}
-              {{ showAsset(token.asset, true) }}
+            <div v-if="visibleHoldings.length === 0" class="empty-state">
+              No asset balances available for this address.
             </div>
-
-            <div class="holding-value mono">
-              {{ formatUsd(token.value) }}
-            </div>
-
-            <div class="holding-allocation">
-              <div class="allocation-track">
-                <span
-                  class="allocation-fill"
-                  :style="{
-                    width: `${token.allocationPercent}%`,
-                    backgroundColor: getAllocationColor(token.asset),
-                  }"
-                ></span>
-              </div>
-              <span class="allocation-percent mono">
-                {{ formatPercent(token.allocationPercent) }}
-              </span>
-            </div>
-          </div>
-
-          <div v-if="visibleHoldings.length === 0" class="empty-state">
-            No asset balances available for this address.
           </div>
         </div>
       </div>
@@ -298,28 +300,35 @@ export default {
       return this.sortedTokens.length
     },
     allocationSlices() {
-      const topTokens = this.sortedTokens.filter((token) => token.value > 0)
-      if (topTokens.length === 0) {
-        return []
-      }
+      const withValue = this.sortedTokens.filter((token) => token.value > 0)
+      if (withValue.length === 0) return []
 
-      const slices = topTokens.slice(0, 5).map((token) => ({
+      const bondedEntry = withValue.find((t) => t.asset?.bond)
+      const regular = withValue.filter((t) => !t.asset?.bond)
+
+      const slices = regular.slice(0, 5).map((token) => ({
         name: this.getAssetDisplayName(token.asset),
         value: token.value,
         color: this.getAllocationColor(token.asset),
       }))
 
-      if (topTokens.length > 5) {
-        const otherValue = topTokens
-          .slice(5)
-          .reduce((sum, token) => sum + token.value, 0)
-        if (otherValue > 0) {
-          slices.push({
-            name: 'Other',
-            value: otherValue,
-            color: ALLOCATION_COLORS.DEFAULT,
-          })
-        }
+      if (bondedEntry) {
+        slices.push({
+          name: 'Bonded RUNE',
+          value: bondedEntry.value,
+          color: '#2ae6a0',
+        })
+      }
+
+      const otherValue = regular
+        .slice(5)
+        .reduce((sum, token) => sum + token.value, 0)
+      if (otherValue > 0) {
+        slices.push({
+          name: 'Other',
+          value: otherValue,
+          color: ALLOCATION_COLORS.DEFAULT,
+        })
       }
 
       return slices
@@ -530,10 +539,16 @@ export default {
   }
 }
 
+.holdings-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .holdings-table {
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
+  min-width: 480px;
 }
 
 .holdings-head,
