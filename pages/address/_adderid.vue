@@ -465,6 +465,9 @@ export default {
       if (this.count === undefined || this.count === null) {
         return 'Loading transactions'
       }
+      if (this.count < 0) {
+        return 'Transactions count not available'
+      }
       const label = this.$options.filters.number(this.count, '0,0')
       return `${label} transactions total`
     },
