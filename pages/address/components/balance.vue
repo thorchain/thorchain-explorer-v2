@@ -1,109 +1,114 @@
 <template>
   <div>
-    <card v-if="state && explorers.length == 0" extra-class="address-overview-card">
-      <div class="overview-grid">
-        <section class="overview-panel holdings-panel">
-          <div class="panel-header">
-            <h3 class="panel-title panel-title--compact">Top 5 Holdings</h3>
-            <button
-              v-if="sortedTokens.length > 5"
-              class="view-all-button"
-              @click="expanded = !expanded"
-            >
-              {{ expanded ? 'Show less' : 'View all' }}
-            </button>
+    <card
+      v-if="state && explorers.length == 0"
+      :navs="[
+        { title: 'Holdings', value: 'holdings' },
+        { title: 'Portfolio', value: 'portfolio' },
+      ]"
+      :act-nav.sync="activeTab"
+    >
+      <!-- Holdings tab -->
+      <div v-if="activeTab === 'holdings'">
+        <div class="tab-toolbar">
+          <button
+            v-if="sortedTokens.length > 5"
+            class="view-all-button"
+            @click="expanded = !expanded"
+          >
+            {{ expanded ? 'Show less' : 'View all' }}
+          </button>
+        </div>
+
+        <div class="holdings-table">
+          <div class="holdings-head">
+            <span>Asset</span>
+            <span>Amount</span>
+            <span>Value</span>
+            <span>Allocation</span>
           </div>
 
-          <div class="holdings-table">
-            <div class="holdings-head">
-              <span>Asset</span>
-              <span>Amount</span>
-              <span>Value</span>
-              <span>Allocation</span>
-            </div>
-
-            <div
-              v-for="token in visibleHoldings"
-              :key="assetKey(token.asset)"
-              class="holding-row"
-            >
-              <div class="holding-asset">
-                <asset-icon :asset="holdingIconAsset(token.asset)" :chain="false" />
-                <div class="holding-asset-copy">
-                  <span class="holding-name">{{ getAssetDisplayName(token.asset) }}</span>
-                  <span class="holding-network">{{ getAssetSubtitle(token.asset) }}</span>
-                </div>
-              </div>
-
-              <div class="holding-amount mono">
-                {{ formatQuantity(token.quantity) }} {{ showAsset(token.asset, true) }}
-              </div>
-
-              <div class="holding-value mono">
-                {{ formatUsd(token.value) }}
-              </div>
-
-              <div class="holding-allocation">
-                <div class="allocation-track">
-                  <span
-                    class="allocation-fill"
-                    :style="{
-                      width: `${token.allocationPercent}%`,
-                      backgroundColor: getAllocationColor(token.asset),
-                    }"
-                  ></span>
-                </div>
-                <span class="allocation-percent mono">
-                  {{ formatPercent(token.allocationPercent) }}
-                </span>
-              </div>
-            </div>
-
-            <div v-if="visibleHoldings.length === 0" class="empty-state">
-              No asset balances available for this address.
-            </div>
-          </div>
-        </section>
-
-        <section class="overview-panel allocation-panel">
-          <div class="panel-header">
-            <div>
-              <span class="panel-eyebrow">Portfolio</span>
-              <h3 class="panel-title">Allocation</h3>
-            </div>
-          </div>
-
-          <div class="allocation-chart-shell">
-            <div class="allocation-chart-wrap">
-              <pie-chart
-                v-if="allocationPieData.length > 0"
-                :pie-data="allocationPieData"
-                :extra-series="chartExtraSeries"
-                :extra="chartExtra"
-                :height="'320px'"
+          <div
+            v-for="token in visibleHoldings"
+            :key="assetKey(token.asset)"
+            class="holding-row"
+          >
+            <div class="holding-asset">
+              <asset-icon
+                :asset="holdingIconAsset(token.asset)"
+                :chain="false"
               />
-              <div class="allocation-center">
-                <span class="allocation-center__count">{{ tokenCount }}</span>
-                <span class="allocation-center__label">Assets</span>
+              <div class="holding-asset-copy">
+                <span class="holding-name">{{
+                  getAssetDisplayName(token.asset)
+                }}</span>
+                <span class="holding-network">{{
+                  getAssetSubtitle(token.asset)
+                }}</span>
               </div>
             </div>
 
-            <div class="allocation-legend">
-              <div
-                v-for="item in allocationLegendItems"
-                :key="item.name"
-                class="legend-item"
-              >
+            <div class="holding-amount mono">
+              {{ formatQuantity(token.quantity) }}
+              {{ showAsset(token.asset, true) }}
+            </div>
+
+            <div class="holding-value mono">
+              {{ formatUsd(token.value) }}
+            </div>
+
+            <div class="holding-allocation">
+              <div class="allocation-track">
                 <span
-                  class="legend-dot"
-                  :style="{ backgroundColor: item.color }"
+                  class="allocation-fill"
+                  :style="{
+                    width: `${token.allocationPercent}%`,
+                    backgroundColor: getAllocationColor(token.asset),
+                  }"
                 ></span>
-                <span class="legend-label">{{ item.label }}</span>
-                <span class="legend-value mono">{{ item.percent }}</span>
               </div>
+              <span class="allocation-percent mono">
+                {{ formatPercent(token.allocationPercent) }}
+              </span>
             </div>
           </div>
-        </section>
+
+          <div v-if="visibleHoldings.length === 0" class="empty-state">
+            No asset balances available for this address.
+          </div>
+        </div>
+      </div>
+
+      <!-- Portfolio tab -->
+      <div v-if="activeTab === 'portfolio'" class="allocation-chart-shell">
+        <div class="allocation-chart-wrap">
+          <pie-chart
+            v-if="allocationPieData.length > 0"
+            :pie-data="allocationPieData"
+            :extra-series="chartExtraSeries"
+            :extra="chartExtra"
+            :height="'320px'"
+          />
+          <div class="allocation-center">
+            <span class="allocation-center__count">{{ tokenCount }}</span>
+            <span class="allocation-center__label">Assets</span>
+          </div>
+        </div>
+
+        <div class="allocation-legend">
+          <div
+            v-for="item in allocationLegendItems"
+            :key="item.name"
+            class="legend-item"
+          >
+            <span
+              class="legend-dot"
+              :style="{ backgroundColor: item.color }"
+            ></span>
+            <span class="legend-label">{{ item.label }}</span>
+            <span class="legend-value mono">{{ item.percent }}</span>
+          </div>
+        </div>
       </div>
     </card>
 
@@ -189,6 +194,7 @@ export default {
   data() {
     return {
       expanded: false,
+      activeTab: 'holdings',
     }
   },
   computed: {
@@ -197,6 +203,15 @@ export default {
       pools: 'getPools',
       nodes: 'getNodesData',
     }),
+    bondedRuneQuantity() {
+      if (!this.nodes || !this.address) return 0
+      return this.nodes.reduce((sum, node) => {
+        const bond = node.bond_providers?.providers?.find(
+          (p) => p.bond_address === this.address
+        )
+        return bond ? sum + +bond.bond / 1e8 : sum
+      }, 0)
+    },
     tokenRows() {
       if (!this.state) {
         return []
@@ -242,6 +257,16 @@ export default {
           quantity,
           price,
           value,
+        })
+      }
+
+      if (this.bondedRuneQuantity > 0) {
+        const price = Number(this.runePrice) || 0
+        rows.push({
+          asset: { ticker: 'RUNE', chain: 'THOR', bond: true },
+          quantity: this.bondedRuneQuantity,
+          price,
+          value: Number((price * this.bondedRuneQuantity).toFixed(2)),
         })
       }
 
@@ -317,9 +342,7 @@ export default {
         ...slice,
         label: slice.name,
         percent:
-          total > 0
-            ? `${((slice.value / total) * 100).toFixed(0)}%`
-            : '0%',
+          total > 0 ? `${((slice.value / total) * 100).toFixed(0)}%` : '0%',
       }))
     },
     chartExtraSeries() {
@@ -349,7 +372,16 @@ export default {
       }
     },
     explorers() {
-      const blockChains = ['btc', 'eth', 'doge', 'bch', 'ltc', 'atom', 'xrp', 'trx']
+      const blockChains = [
+        'btc',
+        'eth',
+        'doge',
+        'bch',
+        'ltc',
+        'atom',
+        'xrp',
+        'trx',
+      ]
       const explorers = []
 
       for (let i = 0; i < blockChains.length; i++) {
@@ -391,13 +423,16 @@ export default {
   },
   methods: {
     assetKey(asset) {
-      return asset?.toString ? asset.toString() : `${asset?.chain}.${asset?.ticker}`
+      return asset?.toString
+        ? asset.toString()
+        : `${asset?.chain}.${asset?.ticker}`
     },
     getAllocationColor(asset) {
       const ticker = this.showAsset(asset, true)
       return ALLOCATION_COLORS[ticker] || ALLOCATION_COLORS.DEFAULT
     },
     getAssetDisplayName(asset) {
+      if (asset?.bond) return 'Bonded RUNE'
       const ticker = this.showAsset(asset, true)
       return ASSET_NAMES[ticker] || ticker
     },
@@ -418,6 +453,7 @@ export default {
       return CHAIN_NAMES[chain] || chain
     },
     getAssetSubtitle(asset) {
+      if (asset?.bond) return 'THORChain · Bonded'
       const chainName = this.getChainName(asset?.chain)
 
       if (asset?.secure) {
@@ -473,58 +509,11 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.overview-grid {
-  display: grid;
-  gap: 1rem;
-
-  @include lg {
-    grid-template-columns: minmax(0, 1.8fr) minmax(280px, 0.9fr);
-    align-items: stretch;
-  }
-}
-
-.overview-panel {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.02) 0%,
-    rgba(255, 255, 255, 0.01) 100%
-  );
-  border: 1px solid rgba(111, 130, 153, 0.18);
-  border-radius: 22px;
-  padding: 1.1rem 1.2rem;
-  min-height: 100%;
-}
-
-.panel-header {
-  align-items: center;
+.tab-toolbar {
   display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.panel-eyebrow {
-  color: var(--sec-font-color);
-  display: block;
-  font-size: 0.68rem;
-  letter-spacing: 0.12em;
-  margin-bottom: 0.2rem;
-  text-transform: uppercase;
-}
-
-.panel-title {
-  color: var(--font-color);
-  font-size: 1.3rem;
-  font-weight: 600;
-  margin: 0;
-}
-
-.panel-title--compact {
-  color: var(--sec-font-color);
-  font-size: 0.72rem;
-  font-weight: 500;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  justify-content: flex-end;
+  margin-bottom: 0.5rem;
+  min-height: 1.5rem;
 }
 
 .view-all-button {
@@ -551,7 +540,9 @@ export default {
 .holding-row {
   column-gap: 1rem;
   display: grid;
-  grid-template-columns: minmax(220px, 1.6fr) minmax(120px, 0.8fr) minmax(100px, 0.7fr) minmax(140px, 0.8fr);
+  grid-template-columns:
+    minmax(220px, 1.6fr) minmax(120px, 0.8fr) minmax(100px, 0.7fr)
+    minmax(140px, 0.8fr);
 }
 
 .holdings-head {
@@ -621,11 +612,6 @@ export default {
   display: block;
   height: 100%;
   min-width: 8px;
-}
-
-.allocation-panel {
-  display: flex;
-  flex-direction: column;
 }
 
 .allocation-chart-shell {
@@ -728,7 +714,10 @@ export default {
 @media (max-width: 1180px) {
   .holdings-head,
   .holding-row {
-    grid-template-columns: minmax(220px, 1.4fr) minmax(120px, 0.8fr) minmax(96px, 0.7fr);
+    grid-template-columns: minmax(220px, 1.4fr) minmax(120px, 0.8fr) minmax(
+        96px,
+        0.7fr
+      );
   }
 
   .holdings-head span:last-child,
@@ -738,10 +727,6 @@ export default {
 }
 
 @media (max-width: 860px) {
-  .overview-panel {
-    padding: 1rem;
-  }
-
   .holdings-head,
   .holding-row {
     grid-template-columns: minmax(0, 1.5fr) minmax(100px, 0.8fr);
