@@ -10,14 +10,33 @@
 
       <div class="tx-detail-meta">
         <span>{{ activeOverview.metaLabel }}</span>
-        <span
-          :class="[
-            'tx-detail-status',
-            `tx-detail-status--${activeOverview.status.tone}`,
-          ]"
+        <div
+          class="bubble-stack"
+          :class="{ 'bubble-stack--expanded': overviewBubbleExpanded }"
+          tabindex="0"
+          @mouseenter="overviewBubbleExpanded = true"
+          @mouseleave="overviewBubbleExpanded = false"
+          @focusin="overviewBubbleExpanded = true"
+          @focusout="overviewBubbleExpanded = false"
         >
-          {{ activeOverview.status.label }}
-        </span>
+          <div
+            v-for="(item, index) in overviewBubbleItems"
+            :key="index"
+            class="bubble-pill"
+            :class="item.colorClass"
+          >
+            <component
+              :is="item.icon"
+              v-if="item.icon"
+              class="bubble-pill__icon"
+            />
+            <span class="bubble-pill__label">{{ item.label }}</span>
+          </div>
+        </div>
+        <affiliate
+          v-if="activeOverview.affiliateAddress"
+          :affiliate-address="activeOverview.affiliateAddress"
+        />
       </div>
 
       <h1 class="tx-detail-title">
@@ -106,8 +125,8 @@
                   <template v-else-if="row.type === 'status'">
                     <span
                       :class="[
-                        'tx-detail-status',
-                        `tx-detail-status--${activeOverview.status.tone}`,
+                        'mini-bubble',
+                        statusToneClass(activeOverview.status.tone),
                       ]"
                     >
                       {{ row.value }}
@@ -353,9 +372,16 @@ import {
   createFailedState as createFailedStateBuilder,
 } from './state/builders.js'
 import ProductBadge from '~/components/ProductBadge.vue'
+import Affiliate from '~/components/Affiliate.vue'
 import DisconnectIcon from '~/assets/images/disconnect.svg?inline'
 import ArrowIcon from '~/assets/images/arrow.svg?inline'
 import ExchangeIcon from '~/assets/images/exchange.svg?inline'
+import CheckIcon from '~/assets/images/square-checkmark.svg?inline'
+import ClockIcon from '~/assets/images/clock.svg?inline'
+import WarningIcon from '~/assets/images/warning.svg?inline'
+import SwapIcon from '~/assets/images/swap.svg?inline'
+import SendTypeIcon from '~/assets/images/send-outline.svg?inline'
+import RefreshIcon from '~/assets/images/refresh.svg?inline'
 import AssetIcon from '~/components/AssetIcon.vue'
 import {
   assetFromString,
@@ -374,9 +400,16 @@ import ExternalIcon from '~/assets/images/external.svg?inline'
 export default {
   components: {
     ProductBadge,
+    Affiliate,
     DisconnectIcon,
     ArrowIcon,
     ExchangeIcon,
+    CheckIcon,
+    ClockIcon,
+    WarningIcon,
+    SwapIcon,
+    SendTypeIcon,
+    RefreshIcon,
     AssetIcon,
     ExternalIcon,
     streamingSwap,
@@ -406,6 +439,7 @@ export default {
       quote: undefined,
       height: undefined,
       technicalExpanded: false,
+      overviewBubbleExpanded: false,
     }
   },
   head: {
@@ -451,6 +485,56 @@ export default {
           this.assetColorPalette(overview.output?.asset) ??
           'var(--border-color)',
       }
+    },
+    overviewBubbleItems() {
+      const overview = this.activeOverview
+      if (!overview) return []
+      const items = []
+      const typeTitle = overview.actionTypeTitle || ''
+      if (typeTitle) {
+        const typeKey = this.getBubbleTypeFromTitle(typeTitle)
+        items.push({
+          label: this.$options.filters?.capitalize?.(typeTitle) ?? typeTitle,
+          colorClass: this.bubbleTypeToColorClass(typeKey),
+          icon:
+            typeKey === 'swap'
+              ? SwapIcon
+              : typeKey === 'send'
+                ? SendTypeIcon
+                : null,
+        })
+      }
+      const s = overview.status
+      if (s) {
+        if (s.tone === 'red') {
+          items.push({
+            label: s.label,
+            colorClass: 'bubble-pill--red',
+            icon: WarningIcon,
+          })
+        } else if (s.tone === 'yellow') {
+          items.push({
+            label: s.label,
+            colorClass: 'bubble-pill--yellow',
+            icon: ClockIcon,
+          })
+        } else {
+          items.push({
+            label: s.label,
+            colorClass: 'bubble-pill--green',
+            icon: CheckIcon,
+          })
+        }
+      }
+      ;(overview.labels || []).forEach((l) => {
+        const isRefund = String(l).toLowerCase() === 'refund'
+        items.push({
+          label: l,
+          colorClass: isRefund ? 'bubble-pill--yellow' : 'bubble-pill--grey',
+          icon: isRefund ? RefreshIcon : null,
+        })
+      })
+      return items
     },
     swapCardIndex() {
       if (!this.cards?.length) return -1
@@ -531,6 +615,9 @@ export default {
         title: `Swapped ${this.formatAssetAmount(input.amount, input.asset)} for ${this.formatAssetAmount(output.amount, output.asset)}`,
         metaLabel: `${this.getSwapActionLabel(inputAsset, outputAsset)} · ${this.getSwapProductLabel(outputAsset)}`,
         status,
+        affiliateAddress: details?.interface || '',
+        actionTypeTitle: details?.title || '',
+        labels: details?.labels || [],
         input: {
           asset: input.asset,
           name: this.getAssetDisplayName(input.asset),
@@ -726,6 +813,9 @@ export default {
         title: `${tradeCount} Recurring Swap${tradeCount !== 1 ? 's' : ''} executed`,
         metaLabel: 'Recurring Swaps · CALC',
         status,
+        affiliateAddress: '',
+        actionTypeTitle: 'contract',
+        labels: [],
         input: {
           asset: 'THOR.RUJI',
           name: 'Strategy',
@@ -828,6 +918,40 @@ export default {
     this.clearIntervalId(this.updateInterval)
   },
   methods: {
+    getBubbleTypeFromTitle(title) {
+      if (!title || typeof title !== 'string') return 'default'
+      const s = title.toLowerCase()
+      if (s.includes('swap') && s.includes('refund')) return 'refund'
+      if (s.includes('swap')) return 'swap'
+      if (s.includes('send')) return 'send'
+      if (s.includes('add') && s.includes('liquidity')) return 'addLiquidity'
+      if (s.includes('withdraw')) return 'withdraw'
+      if (s.includes('unbond')) return 'unbond'
+      if (s.includes('bond')) return 'bond'
+      if (s.includes('contract')) return 'switch'
+      if (s.includes('failed')) return 'failed'
+      return 'default'
+    },
+    bubbleTypeToColorClass(type) {
+      switch (type) {
+        case 'send':
+          return 'bubble-pill--blue'
+        case 'swap':
+        case 'bond':
+          return 'bubble-pill--green'
+        case 'refund':
+          return 'bubble-pill--yellow'
+        case 'unbond':
+        case 'withdraw':
+        case 'failed':
+          return 'bubble-pill--red'
+        case 'switch':
+        case 'addLiquidity':
+          return 'bubble-pill--alert'
+        default:
+          return 'bubble-pill--grey'
+      }
+    },
     getOverviewStatus(middle = {}) {
       if (middle.fail) {
         return { label: 'Failed', tone: 'red' }
@@ -1007,6 +1131,10 @@ export default {
         return 'RUJI Trade'
       }
       return 'THORChain'
+    },
+    statusToneClass(tone) {
+      const map = { red: 'danger', blue: 'info', yellow: 'yellow' }
+      return map[tone] || null
     },
     getProductTone(label) {
       const l = (label || '').toLowerCase()
@@ -2963,30 +3091,106 @@ export default {
   flex-wrap: wrap;
   gap: $space-10;
   margin-bottom: $space-12;
-}
 
-.tx-detail-status {
-  align-items: center;
-  border-radius: 999px;
-  display: inline-flex;
-  font-size: $font-size-sm;
-  font-weight: 600;
-  padding: $space-4 $space-10;
-}
+  .bubble-stack {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: nowrap;
+    outline: none;
+    min-height: 28px;
+    cursor: pointer;
+    overflow: hidden;
 
-.tx-detail-status--green {
-  background: color-mix(in srgb, var(--green) 12%, transparent);
-  color: #35f09a;
-}
+    .bubble-pill {
+      flex-shrink: 0;
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: $space-5 $space-10;
+      border-radius: $radius-sm;
+      font-size: $font-size-sm;
+      font-weight: 600;
+      line-height: 1;
+      border: 1px solid var(--border-color);
+      background-color: var(--bgl-color);
+      color: var(--sec-font-color);
+      white-space: nowrap;
+      transition:
+        margin-left 0.25s ease,
+        clip-path 0.25s ease,
+        filter 0.25s ease;
 
-.tx-detail-status--yellow {
-  background: color-mix(in srgb, #e4bc47 15%, transparent);
-  color: #f0cf71;
-}
+      &:first-child {
+        z-index: 3;
+        clip-path: inset(0 0 0 0);
+      }
 
-.tx-detail-status--red {
-  background: color-mix(in srgb, var(--red) 12%, transparent);
-  color: #ff8d8d;
+      &:nth-child(2) {
+        z-index: 2;
+        clip-path: inset(0 0 0 50%);
+        filter: brightness(0.6);
+      }
+
+      &:nth-child(3),
+      &:nth-child(n + 3) {
+        z-index: 1;
+        clip-path: inset(0 0 0 50%);
+        filter: brightness(0.6);
+      }
+
+      &:not(:first-child) {
+        margin-left: -80px;
+      }
+
+      .bubble-pill__icon {
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
+        fill: currentColor;
+      }
+
+      .bubble-pill__label {
+        color: inherit;
+      }
+
+      &.bubble-pill--blue {
+        border-color: color-mix(in srgb, var(--highlight) 50%, var(--border-color));
+        background-color: color-mix(in srgb, var(--highlight) 10%, var(--card-bg-color));
+      }
+      &.bubble-pill--green {
+        border-color: color-mix(in srgb, var(--green) 50%, var(--border-color));
+        background-color: color-mix(in srgb, var(--green) 10%, var(--card-bg-color));
+      }
+      &.bubble-pill--yellow {
+        border-color: color-mix(in srgb, #f39c12 50%, var(--border-color));
+        background-color: color-mix(in srgb, #f39c12 10%, var(--card-bg-color));
+      }
+      &.bubble-pill--red {
+        border-color: color-mix(in srgb, var(--red) 50%, var(--border-color));
+        background-color: color-mix(in srgb, var(--red) 10%, var(--card-bg-color));
+      }
+      &.bubble-pill--alert {
+        border-color: color-mix(in srgb, #9b59b6 50%, var(--border-color));
+        background-color: color-mix(in srgb, #9b59b6 10%, var(--card-bg-color));
+      }
+      &.bubble-pill--grey {
+        border-color: color-mix(in srgb, var(--highlight) 50%, var(--border-color));
+        background-color: color-mix(in srgb, var(--highlight) 10%, var(--card-bg-color));
+      }
+    }
+
+    &.bubble-stack--expanded .bubble-pill {
+      margin-left: 0;
+      clip-path: inset(0 0 0 0);
+      filter: none;
+
+      &:not(:first-child) {
+        margin-left: 6px;
+      }
+    }
+  }
 }
 
 .tx-detail-title {
@@ -3041,7 +3245,7 @@ export default {
 }
 
 .tx-asset-panel {
-  background: color-mix(in srgb, #26323d 60%, var(--card-bg-color));
+  background: var(--card-bg);
   border: 2px solid var(--left-border, var(--border-color));
   border-radius: 16px;
   display: flex;
@@ -3102,7 +3306,7 @@ export default {
 
 .tx-swap-arrow {
   align-items: center;
-  background: color-mix(in srgb, #26323d 40%, var(--card-bg-color));
+  background: var(--card-bg);
   border: 1px solid color-mix(in srgb, var(--green) 18%, var(--border-color));
   border-radius: 999px;
   display: flex;
@@ -3272,7 +3476,7 @@ export default {
 }
 
 .tx-hash-box {
-  background: color-mix(in srgb, #26323d 60%, var(--card-bg-color));
+  background: var(--card-bg);
   border: 1px solid color-mix(in srgb, var(--border-color) 92%, transparent);
   border-radius: 16px;
   margin-top: $space-14;
@@ -3296,7 +3500,7 @@ export default {
 
 .tx-hash-action {
   align-items: center;
-  background: color-mix(in srgb, #26323d 38%, var(--card-bg-color));
+  background: var(--card-bg);
   border: 1px solid color-mix(in srgb, var(--border-color) 92%, transparent);
   border-radius: 14px;
   color: var(--sec-font-color);
