@@ -87,7 +87,8 @@
         Can't Fetch the actions! Please Try again Later.
       </div>
 
-      <TxList v-else :actions="txs && txs.actions" :loading="loading" />
+      <Transactions v-else :txs="txs" :loading="loading" />
+      <!-- <TxList v-else :actions="txs && txs.actions" :loading="loading" /> -->
 
       <NewPagination
         v-if="txs && txs.actions && count > -1"
