@@ -2734,10 +2734,15 @@ export default {
         ]
       }
 
-      // Add scheduled outbound actions from thorTx.actions not yet in out_txs
+      // Add scheduled outbound actions from thorTx.actions not yet in out_txs.
+      // Skip THOR.RUNE actions going to a non-user address — those are affiliate payments.
       const scheduledOutActions = (thorTx?.actions ?? []).filter(
         (a) =>
           a.memo?.toLowerCase().startsWith('out:') &&
+          !(
+            a.coin?.asset === 'THOR.RUNE' &&
+            !userAddresses.has(a.to_address?.toLowerCase())
+          ) &&
           !outTxs?.some(
             (o) =>
               o.to_address?.toLowerCase() === a.to_address?.toLowerCase() &&
