@@ -909,6 +909,7 @@ export default {
   }
 
   .balance-nav-container {
+    align-items: stretch;
     display: flex;
     flex-direction: column;
     gap: 1rem;

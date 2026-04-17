@@ -10,16 +10,6 @@
     >
       <!-- Holdings tab -->
       <div v-if="activeTab === 'holdings'">
-        <div class="tab-toolbar">
-          <button
-            v-if="sortedTokens.length > 5"
-            class="view-all-button"
-            @click="expanded = !expanded"
-          >
-            {{ expanded ? 'Show less' : 'View all' }}
-          </button>
-        </div>
-
         <div class="holdings-scroll">
           <div class="holdings-table">
             <div class="holdings-head">
@@ -30,7 +20,7 @@
             </div>
 
             <div
-              v-for="token in visibleHoldings"
+              v-for="token in sortedTokens"
               :key="assetKey(token.asset)"
               class="holding-row"
             >
@@ -74,7 +64,7 @@
               </div>
             </div>
 
-            <div v-if="visibleHoldings.length === 0" class="empty-state">
+            <div v-if="sortedTokens.length === 0" class="empty-state">
               No asset balances available for this address.
             </div>
           </div>
@@ -195,7 +185,6 @@ export default {
   props: ['state', 'loading', 'address'],
   data() {
     return {
-      expanded: false,
       activeTab: 'holdings',
     }
   },
@@ -289,12 +278,6 @@ export default {
             ? (token.value / this.totalPortfolioValue) * 100
             : 0,
       }))
-    },
-    visibleHoldings() {
-      if (this.expanded) {
-        return this.sortedTokens
-      }
-      return this.sortedTokens.slice(0, 5)
     },
     tokenCount() {
       return this.sortedTokens.length
@@ -525,22 +508,10 @@ export default {
   min-height: 1.5rem;
 }
 
-.view-all-button {
-  background: transparent;
-  border: none;
-  color: var(--primary-color);
-  cursor: pointer;
-  font-size: 0.88rem;
-  font-weight: 600;
-  padding: 0;
-
-  &:hover {
-    opacity: 0.85;
-  }
-}
-
 .holdings-scroll {
+  max-height: 250px;
   overflow-x: auto;
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
 

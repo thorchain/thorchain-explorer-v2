@@ -384,6 +384,7 @@ import SendTypeIcon from '~/assets/images/send-outline.svg?inline'
 import RefreshIcon from '~/assets/images/refresh.svg?inline'
 import AssetIcon from '~/components/AssetIcon.vue'
 import {
+  blockTime,
   assetFromString,
   assetToTrade,
   assetToSecure,
@@ -599,6 +600,19 @@ export default {
           ? (outboundHeight - inboundHeight) * this.blockSeconds('THOR')
           : null
 
+      const midgardSwap = (this.rawActions || []).find((a) => a.type === 'swap')
+      const actionHeight = midgardSwap ? parseInt(midgardSwap.height) : null
+      const outAssetStr = assetToString(outputAsset)
+      const outHeights = (midgardSwap?.out || [])
+        .filter((o) => !o.affiliate && o.coins?.[0]?.asset === outAssetStr)
+        .map((o) => parseInt(o.height))
+        .filter(Boolean)
+      const latestOutHeight = outHeights.length ? Math.max(...outHeights) : null
+      const duration =
+        actionHeight && latestOutHeight && latestOutHeight >= actionHeight
+          ? blockTime(latestOutHeight - actionHeight)
+          : null
+
       const rate = this.getStackDisplayValue(actionStacks, 'Rate')
       const slip = this.getStackDisplayValue(actionStacks, 'Swap Slip')
       const affiliateBasis = this.getStackDisplayValue(
@@ -643,6 +657,7 @@ export default {
         metricRows: [
           rate ? { label: 'Exchange Rate', value: rate } : null,
           slip ? { label: 'Slippage', value: slip } : null,
+          duration ? { label: 'Settled In', value: duration } : null,
           settledSeconds
             ? {
                 label: 'Settled In',
@@ -717,7 +732,7 @@ export default {
 
           rows.push({
             label: 'Total Fees Paid',
-            usd: `$${totalUsd.toFixed(2)}`,
+            usd: `$${this.formatFeeDisplay(totalUsd)}`,
             subtle: totalPct,
             isTotal: true,
           })
@@ -3190,12 +3205,24 @@ export default {
       }
 
       &.bubble-pill--blue {
-        border-color: color-mix(in srgb, var(--highlight) 50%, var(--border-color));
-        background-color: color-mix(in srgb, var(--highlight) 10%, var(--card-bg-color));
+        border-color: color-mix(
+          in srgb,
+          var(--highlight) 50%,
+          var(--border-color)
+        );
+        background-color: color-mix(
+          in srgb,
+          var(--highlight) 10%,
+          var(--card-bg-color)
+        );
       }
       &.bubble-pill--green {
         border-color: color-mix(in srgb, var(--green) 50%, var(--border-color));
-        background-color: color-mix(in srgb, var(--green) 10%, var(--card-bg-color));
+        background-color: color-mix(
+          in srgb,
+          var(--green) 10%,
+          var(--card-bg-color)
+        );
       }
       &.bubble-pill--yellow {
         border-color: color-mix(in srgb, #f39c12 50%, var(--border-color));
@@ -3203,15 +3230,27 @@ export default {
       }
       &.bubble-pill--red {
         border-color: color-mix(in srgb, var(--red) 50%, var(--border-color));
-        background-color: color-mix(in srgb, var(--red) 10%, var(--card-bg-color));
+        background-color: color-mix(
+          in srgb,
+          var(--red) 10%,
+          var(--card-bg-color)
+        );
       }
       &.bubble-pill--alert {
         border-color: color-mix(in srgb, #9b59b6 50%, var(--border-color));
         background-color: color-mix(in srgb, #9b59b6 10%, var(--card-bg-color));
       }
       &.bubble-pill--grey {
-        border-color: color-mix(in srgb, var(--highlight) 50%, var(--border-color));
-        background-color: color-mix(in srgb, var(--highlight) 10%, var(--card-bg-color));
+        border-color: color-mix(
+          in srgb,
+          var(--highlight) 50%,
+          var(--border-color)
+        );
+        background-color: color-mix(
+          in srgb,
+          var(--highlight) 10%,
+          var(--card-bg-color)
+        );
       }
     }
 
