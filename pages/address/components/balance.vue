@@ -41,7 +41,10 @@
 
               <div class="holding-amount mono">
                 {{ formatQuantity(token.quantity) }}
-                {{ showAsset(token.asset, true) }}
+                {{
+                  token.asset &&
+                  (token.asset.bond ? 'RUNE' : showAsset(token.asset, true))
+                }}
               </div>
 
               <div class="holding-value mono">
