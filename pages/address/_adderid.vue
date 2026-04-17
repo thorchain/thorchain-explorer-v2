@@ -435,24 +435,8 @@ export default {
         })
         .filter((token) => token.asset && Number.isFinite(token.quantity))
     },
-    bondBalanceTotal() {
-      if (!this.nodes) {
-        return 0
-      }
-
-      return this.nodes.reduce((sum, node) => {
-        const bond = node.bond_providers?.providers?.find(
-          (provider) => provider.bond_address === this.address
-        )
-        if (!bond) {
-          return sum
-        }
-        return sum + +bond.bond / 1e8
-      }, 0)
-    },
     portfolioTotalUsd() {
-      const walletValue = Number(this.heroPortfolioTotalUsd) || 0
-      return walletValue + this.bondBalanceTotal * (Number(this.runePrice) || 0)
+      return Number(this.heroPortfolioTotalUsd) || 0
     },
     lastTransactionLabel() {
       const lastTx = this.addrTxs?.actions?.[0]
