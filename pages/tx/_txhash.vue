@@ -553,6 +553,12 @@ export default {
 
       const card = this.cards[this.swapCardIndex]
       const details = card?.details
+      const middle = details?.overall?.middle || {}
+
+      // Fall back to old UI for refunds, pending, or multiple outputs
+      if (middle.fail || middle.refund || middle.pending) return null
+      if ((details?.overall?.out?.length ?? 0) > 1) return null
+
       const actionAccordion = card?.accordions?.find(
         (entry) => entry.name === 'accordion-action'
       )
