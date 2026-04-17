@@ -2734,6 +2734,29 @@ export default {
         ]
       }
 
+      // Add scheduled outbound actions from thorTx.actions not yet in out_txs
+      const scheduledOutActions = (thorTx?.actions ?? []).filter(
+        (a) =>
+          a.memo?.toLowerCase().startsWith('out:') &&
+          !outTxs?.some(
+            (o) =>
+              o.to_address?.toLowerCase() === a.to_address?.toLowerCase() &&
+              o.coins?.[0]?.asset === a.coin?.asset &&
+              String(o.coins?.[0]?.amount) === String(a.coin?.amount)
+          )
+      )
+      if (scheduledOutActions.length > 0) {
+        outTxs = [
+          ...(outTxs ?? []),
+          ...scheduledOutActions.map((a) => ({
+            id: null,
+            to_address: a.to_address,
+            coins: [{ asset: a.coin.asset, amount: a.coin.amount }],
+            memo: a.memo,
+          })),
+        ]
+      }
+
       // order by target swapped asset if we have refund in swap
       outTxs = orderBy(
         outTxs,
