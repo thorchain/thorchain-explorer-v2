@@ -781,6 +781,7 @@ export default {
     gap: 1.5rem;
     justify-content: space-between;
     padding: 1.35rem 1.45rem;
+    margin: 0 $space-10;
 
     @include lg {
       align-items: center;
@@ -816,7 +817,7 @@ export default {
     flex: 1;
     flex-direction: column;
     gap: 0.35rem;
-    min-width: 0;
+    min-width: 260px;
   }
 
   .address-hero__value {
@@ -908,7 +909,6 @@ export default {
   .card-balance-history {
     display: flex;
     flex-direction: column;
-    width: 100%;
 
     @include lg {
       flex: 1 1 0;
