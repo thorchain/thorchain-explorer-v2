@@ -783,6 +783,10 @@ export default {
     padding: 1.35rem 1.45rem;
     margin: 0 $space-10;
 
+    @include md {
+      margin: 0;
+    }
+
     @include lg {
       align-items: center;
       flex-direction: row;
