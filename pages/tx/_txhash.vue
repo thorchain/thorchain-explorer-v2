@@ -2913,7 +2913,8 @@ export default {
       }
 
       const rapidInterval =
-        swapAction?.metadata?.swap?.streamingSwapMeta?.interval
+        swapAction?.metadata?.swap?.streamingSwapMeta?.interval ??
+        memo?.interval
       const isRapidSwap =
         (rapidInterval === 0 || rapidInterval === '0') && +height > 25400000
       const swapTypeLabel = isRapidSwap ? 'rapid Swap' : 'swap'

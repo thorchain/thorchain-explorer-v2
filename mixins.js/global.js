@@ -551,7 +551,7 @@ export default {
           asset: parts[1] || null,
           destAddr: parts[2] || null,
           limit: limit || null,
-          interval: parseInt(interval) || null,
+          interval: interval !== undefined ? parseInt(interval) : null,
           quantity: parseInt(quantity) || null,
           affiliate: parts[4] || null,
           fee: parts[5] || null,
