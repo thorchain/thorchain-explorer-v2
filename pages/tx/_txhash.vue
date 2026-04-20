@@ -784,8 +784,7 @@ export default {
             if (firstTrade) {
               const pairAddr = toAttrs(firstTrade)._contract_address || ''
               const pairLabel =
-                getRujiraContractLabel(pairAddr) ||
-                this.formatAddress(pairAddr)
+                getRujiraContractLabel(pairAddr) || this.formatAddress(pairAddr)
               rows.push({ label: 'FIN Pair', value: pairLabel })
             }
 
@@ -827,9 +826,7 @@ export default {
                 .map((e) => parseFloat(toAttrs(e).rate))
                 .filter((r) => !isNaN(r))
               const avgRate = rates.length
-                ? (
-                    rates.reduce((s, r) => s + r, 0) / rates.length
-                  ).toFixed(6)
+                ? (rates.reduce((s, r) => s + r, 0) / rates.length).toFixed(6)
                 : null
               rows.push({
                 label: 'CCL Fills',
@@ -952,8 +949,30 @@ export default {
         const productLabel =
           getRujiraContractProduct(contractAddress) || 'RUJI Trade'
 
+        // Detect immediate CCL fills on placement
+        const events = action.metadata?.contract?.contractEvents || []
+        const toAttrs = (e) =>
+          Object.fromEntries(
+            (e.attributes || []).map(({ key, value }) => [key, value])
+          )
+        const cclFills = events
+          .filter((e) => e.type === 'wasm-rujira-fin/trade')
+          .map(toAttrs)
+          .filter((a) => String(a.price || '').startsWith('ccl:'))
+        const cclFillCount = cclFills.length
+        const fillRates = cclFills
+          .map((a) => parseFloat(a.rate))
+          .filter((r) => !isNaN(r))
+        const avgFillRate = fillRates.length
+          ? fillRates.reduce((s, r) => s + r, 0) / fillRates.length
+          : null
+
+        const titleSuffix = cclFillCount
+          ? ` · ${cclFillCount} fill${cclFillCount !== 1 ? 's' : ''} at avg ${avgFillRate.toFixed(2)}`
+          : ''
+
         return {
-          title: `${orderCount} Limit Order${orderCount !== 1 ? 's' : ''} placed on ${contractLabel}`,
+          title: `${orderCount} Limit Order${orderCount !== 1 ? 's' : ''} placed on ${contractLabel}${titleSuffix}`,
           metaLabel: `Limit Order · ${contractLabel}`,
           status,
           affiliateAddress: '',
@@ -971,14 +990,27 @@ export default {
             asset: null,
             name: 'FIN Pair',
             badge: contractLabel,
-            amount: priceList ? `At ${priceList}` : 'Placed',
+            amount: cclFillCount
+              ? `${cclFillCount} fill${cclFillCount !== 1 ? 's' : ''} · avg ${avgFillRate.toFixed(2)}`
+              : priceList
+                ? `At ${priceList}`
+                : 'Placed',
             usd: null,
           },
           metricRows: [
             { label: 'Orders Placed', value: `${orderCount}` },
-            priceList ? { label: 'Prices', value: priceList } : null,
+            priceList ? { label: 'Limit Prices', value: priceList } : null,
+            cclFillCount
+              ? { label: 'Immediate Fills', value: `${cclFillCount}` }
+              : null,
+            avgFillRate
+              ? { label: 'Avg Fill Rate', value: avgFillRate.toFixed(6) }
+              : null,
             timestamp
-              ? { label: 'Time', value: timestamp.format('YYYY-MM-DD HH:mm:ss') }
+              ? {
+                  label: 'Time',
+                  value: timestamp.format('YYYY-MM-DD HH:mm:ss'),
+                }
               : null,
           ].filter(Boolean),
           detailRows: [
@@ -1011,6 +1043,102 @@ export default {
               icon: 'CheckIcon',
               title: `${orderCount} limit order${orderCount !== 1 ? 's' : ''} submitted`,
               body: priceList ? `Fixed prices: ${priceList}` : '',
+            },
+            ...this.extractContractEventRows(action),
+          ],
+          feeRows: [],
+          technicalRows: [
+            userAddress
+              ? this.buildTechRow('From address', userAddress, 'address')
+              : null,
+            contractAddress
+              ? this.buildTechRow('To address', contractAddress, 'address')
+              : null,
+          ].filter(Boolean),
+        }
+      }
+
+      // Cancel strategy: single contract action with msg.cancel_instance
+      const cancelMsg = singleAction?.metadata?.contract?.msg?.cancel_instance
+      if (cancelMsg) {
+        const action = singleAction
+        const contractAddress = action.out?.[0]?.address || ''
+        const contractLabel =
+          getRujiraContractLabel(contractAddress) ||
+          this.formatAddress(contractAddress)
+        const productLabel =
+          getRujiraContractProduct(contractAddress) || 'AutoRujira'
+        const userAddress = action.in?.[0]?.address || ''
+        const instanceId = cancelMsg.instance_id
+        const hasError = (action.metadata?.contract?.code ?? 0) > 0
+        const status = hasError
+          ? { label: 'Failed', tone: 'red' }
+          : action.status === 'success'
+            ? { label: 'Success', tone: 'green' }
+            : { label: 'Pending', tone: 'blue' }
+        const date = action.date
+        const timestamp = date ? moment.unix(parseInt(date) / 1e9) : null
+        const height = parseInt(action.height)
+
+        return {
+          title: `Strategy #${instanceId} cancelled`,
+          metaLabel: `Cancel Strategy · ${productLabel}`,
+          status,
+          affiliateAddress: '',
+          actionTypeTitle: 'contract',
+          hasContractAction: true,
+          labels: [],
+          input: {
+            asset: null,
+            name: 'User',
+            badge: userAddress ? this.formatAddress(userAddress) : '',
+            amount: `Instance #${instanceId}`,
+            usd: null,
+          },
+          output: {
+            asset: null,
+            name: productLabel,
+            badge: contractLabel,
+            amount: 'Cancelled',
+            usd: null,
+          },
+          metricRows: [
+            { label: 'Instance ID', value: `#${instanceId}` },
+            timestamp
+              ? { label: 'Time', value: timestamp.format('YYYY-MM-DD HH:mm:ss') }
+              : null,
+          ].filter(Boolean),
+          detailRows: [
+            {
+              label: 'Product',
+              value: productLabel,
+              tone: this.getProductTone(productLabel),
+              type: 'product',
+            },
+            {
+              label: 'Action',
+              value: 'Cancel Strategy',
+              tone: this.getContractTypeTone('Cancel Strategy'),
+              type: 'product',
+            },
+            { label: 'Contract', value: contractLabel },
+            { label: 'Instance ID', value: `#${instanceId}` },
+            { label: 'Status', value: status.label, type: 'status' },
+            timestamp
+              ? { label: 'Time', value: timestamp.format('lll') }
+              : null,
+            height
+              ? { label: 'Block', value: `#${this.normalFormat(height)}` }
+              : null,
+            userAddress
+              ? { label: 'User', address: userAddress, type: 'address' }
+              : null,
+          ].filter(Boolean),
+          lifecycleRows: [
+            {
+              icon: 'CheckIcon',
+              title: `Strategy #${instanceId} cancelled`,
+              body: `Workflow instance cancelled on ${productLabel}`,
             },
           ],
           feeRows: [],
@@ -1408,6 +1536,7 @@ export default {
       if (!contractAction) return null
       const msg = contractAction.metadata?.contract?.msg || {}
       if (msg.order) return 'Limit Order'
+      if (msg.cancel_instance) return 'Cancel Strategy'
       const events = contractAction.metadata?.contract?.contractEvents || []
       if (events.some((e) => e.type === 'wasm-calc-manager/strategy.execute'))
         return 'CALC Strategy'
@@ -1419,6 +1548,7 @@ export default {
       if (type === 'Limit Order') return 'gold'
       if (type === 'Market Order') return 'blue'
       if (type === 'CALC Strategy') return 'purple'
+      if (type === 'Cancel Strategy') return 'red'
       return 'green'
     },
     getSwapProductLabel(action) {
@@ -1505,6 +1635,9 @@ export default {
           const hasCCL = fills.some((a) =>
             String(a.price || '').startsWith('ccl:')
           )
+          const hasVirtual = fills.some((a) =>
+            String(a.price || '').startsWith('thor1')
+          )
           const fillCount = fills.length
           const rates = fills
             .map((a) => parseFloat(a.rate))
@@ -1512,16 +1645,43 @@ export default {
           const avgRate = rates.length
             ? (rates.reduce((s, r) => s + r, 0) / rates.length).toFixed(6)
             : null
+          let fillType
+          if (hasCCL && hasVirtual) fillType = 'CCL + Virtualisation'
+          else if (hasVirtual) fillType = 'Virtualisation'
+          else if (hasCCL) fillType = 'CCL'
+          else fillType = 'Limit order'
           rows.push({
             icon: 'ExchangeIcon',
             iconRotate: 0,
-            title: `${hasCCL ? 'CCL' : 'Limit order'} fills: ${pairLabel}`,
+            title: `${fillType} fills: ${pairLabel}`,
             body: [
               `${fillCount} fill${fillCount !== 1 ? 's' : ''}`,
               avgRate ? `avg rate ${avgRate}` : null,
             ]
               .filter(Boolean)
               .join(' · '),
+          })
+        })
+      }
+
+      const virtualSwapEvents = events.filter(
+        (e) => e.type === 'wasm-rujira-thorchain-swap/swap'
+      )
+      if (virtualSwapEvents.length) {
+        virtualSwapEvents.forEach((e) => {
+          const attrs = toAttrs(e)
+          const amountIn = attrs.amount || ''
+          const returned = attrs.returned || attrs.quote_return || ''
+          rows.push({
+            icon: 'SwapIcon',
+            iconRotate: 0,
+            title: 'Virtualisation: THORChain base layer swap',
+            body: [
+              amountIn ? `in ${amountIn}` : null,
+              returned ? `out ${returned}` : null,
+            ]
+              .filter(Boolean)
+              .join(' → '),
           })
         })
       }
@@ -3823,21 +3983,52 @@ export default {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   margin-top: $space-18;
   padding: $space-16 $space-20;
+
+  @media (max-width: 767px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .tx-metric-item {
-  padding: 0 $space-16;
+  padding: $space-16;
 
-  &:first-child {
+  &:nth-child(3n + 1) {
     padding-left: 0;
   }
 
+  &:nth-child(3n),
   &:last-child {
     padding-right: 0;
   }
 
-  &:not(:last-child) {
+  &:not(:nth-child(3n)) {
     border-right: 1px solid var(--border-color);
+  }
+
+  &:nth-child(n + 4) {
+    border-top: 1px solid var(--border-color);
+  }
+
+  @media (max-width: 767px) {
+    padding: $space-16 0;
+
+    &:not(:first-child) {
+      border-right: none;
+      border-top: 1px solid var(--border-color);
+    }
+
+    &:nth-child(3n + 1) {
+      padding-left: 0;
+    }
+
+    &:nth-child(3n),
+    &:last-child {
+      padding-right: 0;
+    }
+
+    &:not(:nth-child(3n)):not(:last-child) {
+      border-right: none;
+    }
   }
 }
 
