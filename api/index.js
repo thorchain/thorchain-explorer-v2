@@ -223,7 +223,7 @@ export default function ({ $axios }, inject) {
     },
   })
   $axios.interceptors.response.use(responseInterceptor, errorInterceptor)
-  if (process.env.NETWORK === 'mainnet') {
+  if (process.env.NETWORK === 'mainnet' && !process.client) {
     $axios.defaults.headers.common.Referer = 'https://thorchain.net/'
   }
 
