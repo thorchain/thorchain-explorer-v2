@@ -713,36 +713,121 @@ export default {
             base.push({ label: 'FIN Pairs', value: String(finPairs) })
           return base
         })(),
-        detailRows: [
-          {
-            label: 'Product',
-            value: this.getSwapProductLabel(contractAction),
-            tone: this.getProductTone(this.getSwapProductLabel(contractAction)),
-            type: 'product',
-          },
-          {
-            label: 'Action',
-            value:
-              contractActionType ||
-              this.getSwapActionLabel(inputAsset, outputAsset),
-          },
-          { label: 'Status', value: status.label, type: 'status' },
-          {
-            label: 'Time',
-            value: this.getStackDisplayValue(actionStacks, 'Timestamp') || '-',
-          },
-          {
-            label: 'Block',
-            value: inboundHeight ? `#${this.normalFormat(inboundHeight)}` : '-',
-          },
-          {
-            label: 'User',
-            address:
-              contractAction?.in?.[0]?.address ||
-              this.thorStatus?.tx?.from_address,
-            type: 'address',
-          },
-        ],
+        detailRows: (() => {
+          const rows = [
+            {
+              label: 'Product',
+              value: this.getSwapProductLabel(contractAction),
+              tone: this.getProductTone(
+                this.getSwapProductLabel(contractAction)
+              ),
+              type: 'product',
+            },
+            {
+              label: 'Action',
+              value:
+                contractActionType ||
+                this.getSwapActionLabel(inputAsset, outputAsset),
+            },
+            { label: 'Status', value: status.label, type: 'status' },
+            {
+              label: 'Time',
+              value:
+                this.getStackDisplayValue(actionStacks, 'Timestamp') || '-',
+            },
+            {
+              label: 'Block',
+              value: (() => {
+                const h = parseInt(
+                  contractAction?.height || midgardSwap?.height
+                )
+                return h ? `#${this.normalFormat(h)}` : '-'
+              })(),
+            },
+            {
+              label: 'User',
+              address:
+                contractAction?.in?.[0]?.address ||
+                this.thorStatus?.tx?.from_address,
+              type: 'address',
+            },
+          ]
+
+          if (
+            contractAction &&
+            (contractActionType === 'Limit Order' ||
+              contractActionType === 'Market Order')
+          ) {
+            const cEvents =
+              contractAction.metadata?.contract?.contractEvents || []
+            const toAttrs = (e) =>
+              Object.fromEntries(
+                (e.attributes || []).map(({ key, value }) => [key, value])
+              )
+
+            const firstTrade = cEvents.find(
+              (e) => e.type === 'wasm-rujira-fin/trade'
+            )
+            if (firstTrade) {
+              const pairAddr = toAttrs(firstTrade)._contract_address || ''
+              const pairLabel =
+                getRujiraContractLabel(pairAddr) ||
+                this.formatAddress(pairAddr)
+              rows.push({ label: 'FIN Pair', value: pairLabel })
+            }
+
+            if (contractActionType === 'Limit Order') {
+              const msg = contractAction.metadata?.contract?.msg || {}
+              const fixedPrice = msg.order?.[0]?.[0]?.[1]?.fixed
+              const side = msg.order?.[0]?.[0]?.[0]
+              const orderWithdraw = cEvents.find(
+                (e) => e.type === 'wasm-rujira-fin/order.withdraw'
+              )
+              const withdrawAttrs = orderWithdraw ? toAttrs(orderWithdraw) : {}
+              const limitPrice =
+                fixedPrice || withdrawAttrs.price?.split(':')?.[1] || null
+              const orderSide = side || withdrawAttrs.side || null
+              const fillAmount = withdrawAttrs.amount || null
+
+              if (orderSide)
+                rows.push({
+                  label: 'Side',
+                  value:
+                    orderSide === 'quote'
+                      ? 'Buy'
+                      : orderSide === 'base'
+                        ? 'Sell'
+                        : orderSide,
+                })
+              if (limitPrice)
+                rows.push({
+                  label: 'Limit Price',
+                  value: parseFloat(limitPrice).toPrecision(6),
+                })
+              if (fillAmount)
+                rows.push({ label: 'Filled Amount', value: fillAmount })
+            } else {
+              const tradeEvents = cEvents.filter(
+                (e) => e.type === 'wasm-rujira-fin/trade'
+              )
+              const rates = tradeEvents
+                .map((e) => parseFloat(toAttrs(e).rate))
+                .filter((r) => !isNaN(r))
+              const avgRate = rates.length
+                ? (
+                    rates.reduce((s, r) => s + r, 0) / rates.length
+                  ).toFixed(6)
+                : null
+              rows.push({
+                label: 'CCL Fills',
+                value: String(tradeEvents.length),
+              })
+              if (avgRate) rows.push({ label: 'Avg Rate', value: avgRate })
+            }
+          }
+
+          return rows
+        })(),
         lifecycleRows: this.buildLifecycleRows({
           input,
           output,
