@@ -836,7 +836,7 @@ export default {
             }
           }
 
-          return rows
+          return rows.filter(Boolean)
         })(),
         lifecycleRows: this.buildLifecycleRows({
           input,
