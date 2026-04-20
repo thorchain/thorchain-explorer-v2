@@ -1131,7 +1131,7 @@ export default {
     },
     getNetworkBadge(asset) {
       if (!asset) return '-'
-      if (asset.trade) return 'Rujira network'
+      if (asset.trade) return 'Trade network'
       if (asset.secure) return 'Secure network'
       if (asset.synth) return 'Synth network'
       if (asset.chain === 'THOR') return 'THORChain network'
@@ -1148,7 +1148,7 @@ export default {
       return 'Swap'
     },
     getSwapProductLabel(outputAsset) {
-      if (outputAsset?.trade || outputAsset?.secure) {
+      if (outputAsset?.secure) {
         return 'RUJI Trade'
       }
       return 'THORChain'
