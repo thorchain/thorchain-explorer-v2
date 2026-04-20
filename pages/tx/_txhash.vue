@@ -395,7 +395,10 @@ import {
   getExplorerAddressUrl,
 } from '~/utils'
 import Accordion from '~/components/Accordion.vue'
-import { getRujiraContractLabel } from '~/utils/rujiraContracts'
+import {
+  getRujiraContractLabel,
+  getRujiraContractProduct,
+} from '~/utils/rujiraContracts'
 import ExternalIcon from '~/assets/images/external.svg?inline'
 
 export default {
@@ -601,6 +604,9 @@ export default {
           : null
 
       const midgardSwap = (this.rawActions || []).find((a) => a.type === 'swap')
+      const contractAction = (this.rawActions || []).find(
+        (a) => a.type === 'contract'
+      )
       const actionHeight = midgardSwap ? parseInt(midgardSwap.height) : null
       const outAssetStr = assetToString(outputAsset)
       const outHeights = (midgardSwap?.out || [])
@@ -633,7 +639,7 @@ export default {
         .filter(Boolean)
       return {
         title: `Swapped ${this.formatAssetAmount(input.amount, input.asset)} for ${this.formatAssetAmount(output.amount, output.asset)}`,
-        metaLabel: `${this.getSwapActionLabel(inputAsset, outputAsset)} · ${this.getSwapProductLabel(outputAsset)}`,
+        metaLabel: `${this.getSwapActionLabel(inputAsset, outputAsset)} · ${this.getSwapProductLabel(contractAction)}`,
         status,
         affiliateAddress: details?.interface || '',
         actionTypeTitle: details?.title || '',
@@ -668,8 +674,8 @@ export default {
         detailRows: [
           {
             label: 'Product',
-            value: this.getSwapProductLabel(outputAsset),
-            tone: this.getProductTone(this.getSwapProductLabel(outputAsset)),
+            value: this.getSwapProductLabel(contractAction),
+            tone: this.getProductTone(this.getSwapProductLabel(contractAction)),
             type: 'product',
           },
           {
@@ -704,6 +710,7 @@ export default {
           outboundStacks,
           inputAsset,
           outputAsset,
+          action: contractAction,
         }),
         feeRows: (() => {
           const toRow = (label, formatted) => {
@@ -1147,11 +1154,26 @@ export default {
       }
       return 'Swap'
     },
-    getSwapProductLabel(outputAsset) {
-      if (outputAsset?.secure) {
+    getSwapProductLabel(action) {
+      const outAddress = action?.out?.find((e) => e.address)?.address || ''
+      const inAddress = action?.in?.find((e) => e.address)?.address || ''
+      const product =
+        getRujiraContractProduct(outAddress) ||
+        getRujiraContractProduct(inAddress) ||
+        getRujiraContractProduct(
+          action?.metadata?.contract?.attributes?.contract
+        ) ||
+        ''
+      if (!product) return 'THORChain'
+      const lower = product.toLowerCase()
+      if (/ruji|rujira/.test(lower)) {
+        if (/borrow|secure|collateral|loan/.test(lower)) return 'RUJI Borrow'
+        if (/pool|liquidity/.test(lower)) return 'RUJI Pools'
+        if (/merge/.test(lower)) return 'RUJI Merge'
         return 'RUJI Trade'
       }
-      return 'THORChain'
+      if (/tcy/.test(lower)) return 'TCY'
+      return product
     },
     statusToneClass(tone) {
       const map = { red: 'danger', blue: 'info', yellow: 'yellow' }
@@ -1185,6 +1207,7 @@ export default {
       inboundStacks,
       outboundStacks,
       outputAsset,
+      action,
     }) {
       const rows = []
       const timeText = this.getStackDisplayValue(actionStacks, 'Timestamp')
@@ -1204,7 +1227,7 @@ export default {
         icon: 'ExchangeIcon',
         iconRotate: 0,
         title: 'Swap executed',
-        body: `${this.getSwapProductLabel(outputAsset)} converted ${this.getAssetDisplayName(input.asset)} to ${this.getAssetDisplayName(output.asset)} at the current exchange rate.`,
+        body: `${this.getSwapProductLabel(action)} converted ${this.getAssetDisplayName(input.asset)} to ${this.getAssetDisplayName(output.asset)} at the current exchange rate.`,
         meta: this.getStackDisplayValue(actionStacks, 'Rate'),
       })
       rows.push({
