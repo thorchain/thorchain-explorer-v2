@@ -723,12 +723,25 @@ export default {
               ),
               type: 'product',
             },
-            {
-              label: 'Action',
-              value:
-                contractActionType ||
-                this.getSwapActionLabel(inputAsset, outputAsset),
-            },
+            contractActionType
+              ? {
+                  label: 'Action',
+                  value: contractActionType,
+                  tone: this.getContractTypeTone(contractActionType),
+                  type: 'product',
+                }
+              : {
+                  label: 'Action',
+                  value: this.getSwapActionLabel(inputAsset, outputAsset),
+                },
+            contractAction
+              ? {
+                  label: 'Contract',
+                  value:
+                    getRujiraContractLabel(contractAction?.out?.[0]?.address) ||
+                    this.formatAddress(contractAction?.out?.[0]?.address),
+                }
+              : null,
             { label: 'Status', value: status.label, type: 'status' },
             {
               label: 'Time',
@@ -910,6 +923,108 @@ export default {
       // Only applies when every action is a contract type
       if (!this.rawActions.every((a) => a.type === 'contract')) return null
 
+      // Limit order placement: single contract action with msg.order
+      const singleAction =
+        this.rawActions.length === 1 ? this.rawActions[0] : null
+      const limitOrderMsg = singleAction?.metadata?.contract?.msg?.order
+      if (limitOrderMsg) {
+        const action = singleAction
+        const orders = limitOrderMsg[0] || []
+        const contractAddress = action.out?.[0]?.address || ''
+        const contractLabel =
+          getRujiraContractLabel(contractAddress) ||
+          this.formatAddress(contractAddress)
+        const userAddress = action.in?.[0]?.address || ''
+        const hasError = (action.metadata?.contract?.code ?? 0) > 0
+        const status = hasError
+          ? { label: 'Failed', tone: 'red' }
+          : action.status === 'success'
+            ? { label: 'Success', tone: 'green' }
+            : { label: 'Pending', tone: 'blue' }
+        const date = action.date
+        const timestamp = date ? moment.unix(parseInt(date) / 1e9) : null
+        const height = parseInt(action.height)
+        const orderCount = orders.length
+        const prices = orders
+          .map(([, priceSpec]) => parseFloat(priceSpec?.fixed))
+          .filter((p) => !isNaN(p))
+        const priceList = prices.map((p) => p.toFixed(2)).join(', ')
+        const productLabel =
+          getRujiraContractProduct(contractAddress) || 'RUJI Trade'
+
+        return {
+          title: `${orderCount} Limit Order${orderCount !== 1 ? 's' : ''} placed on ${contractLabel}`,
+          metaLabel: `Limit Order · ${contractLabel}`,
+          status,
+          affiliateAddress: '',
+          actionTypeTitle: 'contract',
+          hasContractAction: true,
+          labels: [],
+          input: {
+            asset: null,
+            name: 'User',
+            badge: userAddress ? this.formatAddress(userAddress) : '',
+            amount: `${orderCount} order${orderCount !== 1 ? 's' : ''}`,
+            usd: null,
+          },
+          output: {
+            asset: null,
+            name: 'FIN Pair',
+            badge: contractLabel,
+            amount: priceList ? `At ${priceList}` : 'Placed',
+            usd: null,
+          },
+          metricRows: [
+            { label: 'Orders Placed', value: `${orderCount}` },
+            priceList ? { label: 'Prices', value: priceList } : null,
+            timestamp
+              ? { label: 'Time', value: timestamp.format('YYYY-MM-DD HH:mm:ss') }
+              : null,
+          ].filter(Boolean),
+          detailRows: [
+            {
+              label: 'Product',
+              value: productLabel,
+              tone: this.getProductTone(productLabel),
+              type: 'product',
+            },
+            {
+              label: 'Action',
+              value: 'Limit Order',
+              tone: this.getContractTypeTone('Limit Order'),
+              type: 'product',
+            },
+            { label: 'Contract', value: contractLabel },
+            { label: 'Status', value: status.label, type: 'status' },
+            timestamp
+              ? { label: 'Time', value: timestamp.format('lll') }
+              : null,
+            height
+              ? { label: 'Block', value: `#${this.normalFormat(height)}` }
+              : null,
+            userAddress
+              ? { label: 'User', address: userAddress, type: 'address' }
+              : null,
+          ].filter(Boolean),
+          lifecycleRows: [
+            {
+              icon: 'CheckIcon',
+              title: `${orderCount} limit order${orderCount !== 1 ? 's' : ''} submitted`,
+              body: priceList ? `Fixed prices: ${priceList}` : '',
+            },
+          ],
+          feeRows: [],
+          technicalRows: [
+            userAddress
+              ? this.buildTechRow('From address', userAddress, 'address')
+              : null,
+            contractAddress
+              ? this.buildTechRow('To address', contractAddress, 'address')
+              : null,
+          ].filter(Boolean),
+        }
+      }
+
       const contractTypes = this.rawActions.map(
         (a) => a.metadata?.contract?.contractType ?? ''
       )
@@ -1005,7 +1120,12 @@ export default {
             tone: this.getProductTone('Recurring Swaps'),
             type: 'product',
           },
-          { label: 'Action', value: 'Contract execution' },
+          {
+            label: 'Action',
+            value: 'CALC Strategy',
+            tone: this.getContractTypeTone('CALC Strategy'),
+            type: 'product',
+          },
           { label: 'Status', value: status.label, type: 'status' },
           timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
           executorAddress
@@ -1294,6 +1414,12 @@ export default {
       if (events.some((e) => e.type === 'wasm-rujira-fin/trade'))
         return 'Market Order'
       return null
+    },
+    getContractTypeTone(type) {
+      if (type === 'Limit Order') return 'gold'
+      if (type === 'Market Order') return 'blue'
+      if (type === 'CALC Strategy') return 'purple'
+      return 'green'
     },
     getSwapProductLabel(action) {
       const outAddress = action?.out?.find((e) => e.address)?.address || ''
