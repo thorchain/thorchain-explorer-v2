@@ -69,7 +69,11 @@
               </div>
 
               <div class="tx-swap-arrow">
-                <ArrowIcon class="tx-swap-arrow-icon" />
+                <OrderIcon
+                  v-if="activeOverview.hasContractAction"
+                  class="tx-swap-arrow-icon order"
+                />
+                <ArrowIcon v-else class="tx-swap-arrow-icon" />
               </div>
 
               <div class="tx-asset-panel tx-asset-panel--accent">
@@ -131,6 +135,9 @@
                     >
                       {{ row.value }}
                     </span>
+                  </template>
+                  <template v-else-if="row.type === 'address'">
+                    <AddressComponent :address="row.address" />
                   </template>
                   <template v-else-if="row.type === 'link'">
                     <nuxt-link :to="row.to" class="tx-link">
@@ -287,7 +294,10 @@
                     { hoverable: row.label === 'Memo' },
                   ]"
                 >
-                  <template v-if="row.type === 'link'">
+                  <template v-if="row.type === 'address'">
+                    <AddressComponent :address="row.address" />
+                  </template>
+                  <template v-else-if="row.type === 'link'">
                     <nuxt-link :to="row.to" class="tx-link">
                       {{ row.value }}
                     </nuxt-link>
@@ -375,6 +385,7 @@ import ProductBadge from '~/components/ProductBadge.vue'
 import Affiliate from '~/components/Affiliate.vue'
 import DisconnectIcon from '~/assets/images/disconnect.svg?inline'
 import ArrowIcon from '~/assets/images/arrow.svg?inline'
+import OrderIcon from '~/assets/images/order.svg?inline'
 import ExchangeIcon from '~/assets/images/exchange.svg?inline'
 import CheckIcon from '~/assets/images/square-checkmark.svg?inline'
 import ClockIcon from '~/assets/images/clock.svg?inline'
@@ -383,6 +394,7 @@ import SwapIcon from '~/assets/images/swap.svg?inline'
 import SendTypeIcon from '~/assets/images/send-outline.svg?inline'
 import RefreshIcon from '~/assets/images/refresh.svg?inline'
 import AssetIcon from '~/components/AssetIcon.vue'
+import AddressComponent from '~/components/transactions/Address.vue'
 import {
   blockTime,
   assetFromString,
@@ -407,6 +419,7 @@ export default {
     Affiliate,
     DisconnectIcon,
     ArrowIcon,
+    OrderIcon,
     ExchangeIcon,
     CheckIcon,
     ClockIcon,
@@ -415,6 +428,7 @@ export default {
     SendTypeIcon,
     RefreshIcon,
     AssetIcon,
+    AddressComponent,
     ExternalIcon,
     streamingSwap,
     txCard,
@@ -637,9 +651,13 @@ export default {
           this.formatFeeDisplay(this.formatStackValue(stack.value))
         )
         .filter(Boolean)
+      const contractActionType = this.getContractActionType(contractAction)
       return {
-        title: `Swapped ${this.formatAssetAmount(input.amount, input.asset)} for ${this.formatAssetAmount(output.amount, output.asset)}`,
-        metaLabel: `${this.getSwapActionLabel(inputAsset, outputAsset)} · ${this.getSwapProductLabel(contractAction)}`,
+        title: contractActionType
+          ? `${contractActionType}: ${this.formatAssetAmount(input.amount, input.asset)} for ${this.formatAssetAmount(output.amount, output.asset)}`
+          : `Swapped ${this.formatAssetAmount(input.amount, input.asset)} for ${this.formatAssetAmount(output.amount, output.asset)}`,
+        metaLabel: `${contractActionType || this.getSwapActionLabel(inputAsset, outputAsset)} · ${this.getSwapProductLabel(contractAction)}`,
+        hasContractAction: !!contractAction,
         status,
         affiliateAddress: details?.interface || '',
         actionTypeTitle: details?.title || '',
@@ -660,17 +678,41 @@ export default {
           usd: this.formatUsdValue(output.amountUSD),
           txId: outboundHash,
         },
-        metricRows: [
-          rate ? { label: 'Exchange Rate', value: rate } : null,
-          slip ? { label: 'Slippage', value: slip } : null,
-          duration ? { label: 'Settled In', value: duration } : null,
-          settledSeconds
-            ? {
-                label: 'Settled In',
-                value: moment.duration(settledSeconds, 'seconds').humanize(),
-              }
-            : null,
-        ].filter(Boolean),
+        metricRows: (() => {
+          const base = [
+            rate ? { label: 'Exchange Rate', value: rate } : null,
+            slip ? { label: 'Slippage', value: slip } : null,
+            duration ? { label: 'Settled In', value: duration } : null,
+            settledSeconds
+              ? {
+                  label: 'Settled In',
+                  value: moment.duration(settledSeconds, 'seconds').humanize(),
+                }
+              : null,
+          ].filter(Boolean)
+
+          const cEvents =
+            contractAction?.metadata?.contract?.contractEvents || []
+          const strategyCount = cEvents.filter(
+            (e) => e.type === 'wasm-calc-manager/strategy.execute'
+          ).length
+          const finPairs = new Set(
+            cEvents
+              .filter((e) => e.type === 'wasm-rujira-fin/trade')
+              .map(
+                (e) =>
+                  Object.fromEntries(
+                    (e.attributes || []).map(({ key, value }) => [key, value])
+                  )._contract_address
+              )
+              .filter(Boolean)
+          ).size
+          if (strategyCount > 0)
+            base.push({ label: 'Strategies', value: String(strategyCount) })
+          if (finPairs > 0)
+            base.push({ label: 'FIN Pairs', value: String(finPairs) })
+          return base
+        })(),
         detailRows: [
           {
             label: 'Product',
@@ -680,7 +722,9 @@ export default {
           },
           {
             label: 'Action',
-            value: this.getSwapActionLabel(inputAsset, outputAsset),
+            value:
+              contractActionType ||
+              this.getSwapActionLabel(inputAsset, outputAsset),
           },
           { label: 'Status', value: status.label, type: 'status' },
           {
@@ -693,11 +737,10 @@ export default {
           },
           {
             label: 'User',
-            value: this.formatAddress(this.thorStatus?.tx?.from_address),
-            to: this.thorStatus?.tx?.from_address
-              ? `/address/${this.thorStatus.tx.from_address}`
-              : undefined,
-            type: this.thorStatus?.tx?.from_address ? 'link' : undefined,
+            address:
+              contractAction?.in?.[0]?.address ||
+              this.thorStatus?.tx?.from_address,
+            type: 'address',
           },
         ],
         lifecycleRows: this.buildLifecycleRows({
@@ -749,12 +792,14 @@ export default {
         technicalRows: [
           this.buildTechRow(
             'From address',
-            this.getStackDisplayValue(inboundStacks, 'From'),
+            contractAction?.in?.[0]?.address ||
+              this.getStackDisplayValue(inboundStacks, 'From'),
             'address'
           ),
           this.buildTechRow(
             'To address',
-            this.getStackDisplayValue(outboundStacks, 'Destination'),
+            contractAction?.out?.[0]?.address ||
+              this.getStackDisplayValue(outboundStacks, 'Destination'),
             'address'
           ),
           this.buildTechRow(
@@ -1154,6 +1199,17 @@ export default {
       }
       return 'Swap'
     },
+    getContractActionType(contractAction) {
+      if (!contractAction) return null
+      const msg = contractAction.metadata?.contract?.msg || {}
+      if (msg.order) return 'Limit Order'
+      const events = contractAction.metadata?.contract?.contractEvents || []
+      if (events.some((e) => e.type === 'wasm-calc-manager/strategy.execute'))
+        return 'CALC Strategy'
+      if (events.some((e) => e.type === 'wasm-rujira-fin/trade'))
+        return 'Market Order'
+      return null
+    },
     getSwapProductLabel(action) {
       const outAddress = action?.out?.find((e) => e.address)?.address || ''
       const inAddress = action?.in?.find((e) => e.address)?.address || ''
@@ -1189,14 +1245,137 @@ export default {
     buildTechRow(label, value, kind) {
       if (!value) return null
       if (kind === 'address') {
-        return {
-          label,
-          value: this.formatAddress(value),
-          to: `/address/${value}`,
-          type: 'link',
-        }
+        return { label, address: value, type: 'address' }
       }
       return { label, value }
+    },
+    extractContractEventRows(contractAction) {
+      const events = contractAction?.metadata?.contract?.contractEvents || []
+      if (!events.length) return []
+
+      const toAttrs = (e) =>
+        Object.fromEntries(
+          (e.attributes || []).map(({ key, value }) => [key, value])
+        )
+
+      const rows = []
+
+      const strategyEvents = events.filter(
+        (e) => e.type === 'wasm-calc-manager/strategy.execute'
+      )
+      if (strategyEvents.length) {
+        const executorAddr = toAttrs(strategyEvents[0]).executor || ''
+        const executorLabel =
+          getRujiraContractLabel(executorAddr) ||
+          this.formatAddress(executorAddr)
+        const n = strategyEvents.length
+        rows.push({
+          icon: 'SwapIcon',
+          iconRotate: 0,
+          title: `${n} ${n === 1 ? 'strategy' : 'strategies'} dispatched`,
+          body: `CALC Manager executed ${n} ${n === 1 ? 'strategy' : 'strategies'} via ${executorLabel}.`,
+        })
+      }
+
+      const finTradeEvents = events.filter(
+        (e) => e.type === 'wasm-rujira-fin/trade'
+      )
+      if (finTradeEvents.length) {
+        const byPair = {}
+        finTradeEvents.forEach((e) => {
+          const attrs = toAttrs(e)
+          const addr = attrs._contract_address || ''
+          if (!byPair[addr]) byPair[addr] = []
+          byPair[addr].push(attrs)
+        })
+        Object.entries(byPair).forEach(([addr, fills]) => {
+          const pairLabel =
+            getRujiraContractLabel(addr) || this.formatAddress(addr)
+          const hasCCL = fills.some((a) =>
+            String(a.price || '').startsWith('ccl:')
+          )
+          const fillCount = fills.length
+          const rates = fills
+            .map((a) => parseFloat(a.rate))
+            .filter((r) => !isNaN(r))
+          const avgRate = rates.length
+            ? (rates.reduce((s, r) => s + r, 0) / rates.length).toFixed(6)
+            : null
+          rows.push({
+            icon: 'ExchangeIcon',
+            iconRotate: 0,
+            title: `${hasCCL ? 'CCL' : 'Limit order'} fills: ${pairLabel}`,
+            body: [
+              `${fillCount} fill${fillCount !== 1 ? 's' : ''}`,
+              avgRate ? `avg rate ${avgRate}` : null,
+            ]
+              .filter(Boolean)
+              .join(' · '),
+          })
+        })
+      }
+
+      const orderWithdrawEvents = events.filter(
+        (e) => e.type === 'wasm-rujira-fin/order.withdraw'
+      )
+      orderWithdrawEvents.forEach((e) => {
+        const attrs = toAttrs(e)
+        const priceStr = attrs.price || ''
+        const priceVal = priceStr.split(':')[1] || priceStr
+        rows.push({
+          icon: 'CheckIcon',
+          iconRotate: 0,
+          title: 'Limit order settled',
+          body: [
+            attrs.amount ? `${attrs.amount} filled` : null,
+            priceVal ? `at price ${parseFloat(priceVal).toFixed(6)}` : null,
+          ]
+            .filter(Boolean)
+            .join(' '),
+        })
+      })
+
+      const rangeCreateEvents = events.filter(
+        (e) => e.type === 'wasm-rujira-fin/range.create'
+      )
+      if (rangeCreateEvents.length) {
+        const attrs0 = toAttrs(rangeCreateEvents[0])
+        const low = attrs0.low || ''
+        const high = attrs0.high || ''
+        const n = rangeCreateEvents.length
+        rows.push({
+          icon: 'ExchangeIcon',
+          iconRotate: 0,
+          title: `${n} CCL range${n !== 1 ? 's' : ''} created`,
+          body: low && high ? `Price range ${low}–${high}` : '',
+        })
+      }
+
+      const borrowEvents = events.filter(
+        (e) => e.type === 'wasm-rujira-ghost-vault/borrow'
+      )
+      const repayEvents = events.filter(
+        (e) => e.type === 'wasm-rujira-ghost-vault/repay'
+      )
+      if (borrowEvents.length || repayEvents.length) {
+        const parts = []
+        if (repayEvents.length)
+          parts.push(
+            `${repayEvents.length} repay${repayEvents.length !== 1 ? 's' : ''}`
+          )
+        if (borrowEvents.length)
+          parts.push(
+            `${borrowEvents.length} borrow${borrowEvents.length !== 1 ? 's' : ''}`
+          )
+        rows.push({
+          icon: 'RefreshIcon',
+          iconRotate: 0,
+          title: 'Ghost Vault rebalance',
+          body: parts.join(' · '),
+        })
+      }
+
+      return rows
     },
     buildLifecycleRows({
       input,
@@ -1223,6 +1402,7 @@ export default {
           .filter(Boolean)
           .join(' · '),
       })
+      rows.push(...this.extractContractEventRows(action))
       rows.push({
         icon: 'ExchangeIcon',
         iconRotate: 0,
@@ -3327,7 +3507,7 @@ export default {
 .tx-detail-side {
   @include lg {
     position: sticky;
-    top: $space-20;
+    top: 75px;
   }
 }
 
@@ -3418,6 +3598,10 @@ export default {
   height: 20px;
   transform: rotate(90deg);
   width: 20px;
+
+  &.order {
+    transform: rotate(0deg);
+  }
 }
 
 .tx-metric-strip {
