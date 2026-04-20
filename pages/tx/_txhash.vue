@@ -1068,7 +1068,7 @@ export default {
       return parseFloat((usdStr || '').replace(/[^0-9.-]/g, '')) || 0
     },
     formatFeeDisplay(value) {
-      if (!value) return ''
+      if (value === null || value === undefined || value === '') return ''
 
       const cleaned = String(value)
         .replace(/\(\$?NaN\)/gi, '')
