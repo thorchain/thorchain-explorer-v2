@@ -473,9 +473,24 @@
           }}</span>
         </div>
       </template>
-      <span v-else>
-        {{ row.metadata.contract.msg }}
-      </span>
+      <template v-else>
+        <div class="contract-action-stack">
+          <product-badge
+            v-if="getProductLabelForRow(row)"
+            :label="getProductLabelForRow(row)"
+            tone="blue"
+          />
+          <span v-if="getContractActionType(row)" class="contract-action-label">
+            {{ getContractActionType(row) }}
+          </span>
+          <span
+            v-if="!getContractActionType(row) && !getProductLabelForRow(row)"
+            class="asset-cell"
+          >
+            {{ row.metadata.contract.msg }}
+          </span>
+        </div>
+      </template>
     </div>
   </div>
 </template>
@@ -492,12 +507,18 @@ import WalletIcon from '~/assets/images/wallet.svg?inline'
 import SubtractIcon from '~/assets/images/subtract.svg?inline'
 import StreamIcon from '~/assets/images/stream.svg?inline'
 import { assetFromString, parseMemoToTxType } from '~/utils'
+import {
+  getRujiraContractLabel,
+  getRujiraContractProduct,
+} from '~/utils/rujiraContracts'
 import Address from '~/components/transactions/Address.vue'
+import ProductBadge from '~/components/ProductBadge.vue'
 
 export default {
   components: {
     RightArrow,
     Address,
+    ProductBadge,
     VaultIcon,
     InfoIcon,
     AddIcon,
@@ -660,6 +681,34 @@ export default {
     },
     getContractFailureReason(row) {
       return this.getContractLogs(row) || 'Contract call failed'
+    },
+    getContractActionType(row) {
+      const msg = row?.metadata?.contract?.msg || {}
+      if (msg.order) return 'Limit Order'
+      if (msg.cancel_instance) return 'Cancel Strategy'
+      const events = row?.metadata?.contract?.contractEvents || []
+      if (events.some((e) => e.type === 'wasm-calc-manager/strategy.execute'))
+        return 'CALC Strategy'
+      if (events.some((e) => e.type === 'wasm-rujira-fin/trade'))
+        return 'Market Order'
+      return null
+    },
+    getContractTypeTone(type) {
+      if (type === 'Limit Order') return 'gold'
+      if (type === 'Market Order') return 'blue'
+      if (type === 'CALC Strategy') return 'purple'
+      if (type === 'Cancel Strategy') return 'red'
+      return 'green'
+    },
+    getProductLabelForRow(row) {
+      const addr = row?.out?.[0]?.address || ''
+      return getRujiraContractProduct(addr) || ''
+    },
+    getContractLabelForRow(row) {
+      const addr = row?.out?.[0]?.address || ''
+      return (
+        getRujiraContractLabel(addr) || getRujiraContractProduct(addr) || ''
+      )
     },
   },
 }
@@ -874,5 +923,17 @@ export default {
     border-radius: $radius-lg;
     transition: all 0.2s ease;
   }
+}
+
+.contract-action-stack {
+  display: flex;
+  flex-direction: column;
+  gap: $space-4;
+}
+
+.contract-action-label {
+  font-size: $font-size-xs;
+  color: var(--sec-font-color);
+  opacity: 0.8;
 }
 </style>
