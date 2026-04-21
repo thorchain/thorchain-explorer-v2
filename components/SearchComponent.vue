@@ -262,6 +262,8 @@ export default {
         return
       }
 
+      if (this.isLoading) return
+
       if (this.suggestions.length > 0) {
         this.goToFirstResult()
         return
@@ -383,7 +385,10 @@ export default {
 
       if (searchUpper.length <= 30) {
         this.handleThornameSearch(search)
-      } else if (searchUpper.length <= 43) {
+      } else if (
+        searchUpper.length <= 43 ||
+        search.toLowerCase().startsWith('thor1')
+      ) {
         this.$router.push({ path: `/address/${search}` })
       } else {
         this.$router.push({ path: `/tx/${search}` })
