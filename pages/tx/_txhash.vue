@@ -136,6 +136,21 @@
                       {{ row.value }}
                     </span>
                   </template>
+                  <template v-else-if="row.type === 'exchange-rate'">
+                    <span class="exchange-rate-value">
+                      {{
+                        rateFlipped && row.valueFlipped
+                          ? row.valueFlipped
+                          : row.value
+                      }}
+                      <rate-change-icon
+                        v-if="row.valueFlipped"
+                        v-tooltip="'Flip exchange rate'"
+                        class="exchange-rate-flip-icon"
+                        @click="rateFlipped = !rateFlipped"
+                      />
+                    </span>
+                  </template>
                   <template v-else-if="row.type === 'address'">
                     <AddressComponent :address="row.address" />
                   </template>
@@ -387,6 +402,7 @@ import DisconnectIcon from '~/assets/images/disconnect.svg?inline'
 import ArrowIcon from '~/assets/images/arrow.svg?inline'
 import OrderIcon from '~/assets/images/order.svg?inline'
 import ExchangeIcon from '~/assets/images/exchange.svg?inline'
+import RateChangeIcon from '~/assets/images/rate-change.svg?inline'
 import CheckIcon from '~/assets/images/square-checkmark.svg?inline'
 import ClockIcon from '~/assets/images/clock.svg?inline'
 import WarningIcon from '~/assets/images/warning.svg?inline'
@@ -421,6 +437,7 @@ export default {
     ArrowIcon,
     OrderIcon,
     ExchangeIcon,
+    RateChangeIcon,
     CheckIcon,
     ClockIcon,
     WarningIcon,
@@ -458,6 +475,7 @@ export default {
       height: undefined,
       technicalExpanded: false,
       overviewBubbleExpanded: false,
+      rateFlipped: false,
     }
   },
   head: {
@@ -658,6 +676,10 @@ export default {
         inAmt > 0 && outAmt > 0
           ? `1 ${inputAsset?.ticker || ''} = ${this.decimalFormat(outAmt / inAmt)} ${outputAsset?.ticker || ''}`
           : null
+      const computedRateFlipped =
+        inAmt > 0 && outAmt > 0
+          ? `1 ${outputAsset?.ticker || ''} = ${this.decimalFormat(inAmt / outAmt)} ${inputAsset?.ticker || ''}`
+          : null
       return {
         title: contractActionType
           ? `${contractActionType}: ${this.formatAssetAmount(input.amount, input.asset)} for ${this.formatAssetAmount(output.amount, output.asset)}`
@@ -760,7 +782,12 @@ export default {
                 }
               : null,
             computedRate || rate
-              ? { label: 'Exchange Rate', value: computedRate || rate }
+              ? {
+                  label: 'Exchange Rate',
+                  value: computedRate || rate,
+                  valueFlipped: computedRateFlipped,
+                  type: 'exchange-rate',
+                }
               : null,
             { label: 'Status', value: status.label, type: 'status' },
             {
@@ -5072,6 +5099,24 @@ export default {
   font-size: $font-size-sm;
   font-weight: 500;
   text-align: right;
+}
+
+.exchange-rate-value {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-6;
+}
+
+.exchange-rate-flip-icon {
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  fill: var(--sec-font-color);
+
+  &:hover {
+    fill: var(--primary-color);
+  }
 }
 
 .tx-tech-value--truncate {
