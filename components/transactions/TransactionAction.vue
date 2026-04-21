@@ -142,48 +142,34 @@
         </span>
       </div>
       <right-arrow v-if="row.metadata.withdraw" class="action-type" />
-      <template v-for="(ops, i) in row.out">
-        <span :key="'out-' + i" class="asset-cell">
-          <subtract-icon class="active-icon"></subtract-icon>
-          <asset-icon
-            :asset="ops.coins[0].asset"
-            :height="'1.2rem'"
-            :chain-height="'0.8rem'"
-          ></asset-icon>
-          <span class="asset-name">
-            {{ decimalFormat(ops.coins[0].amount / 1e8) }}
-          </span>
+      <span v-for="(ops, i) in row.out" :key="'out-' + i" class="asset-cell">
+        <subtract-icon class="active-icon"></subtract-icon>
+        <asset-icon
+          :asset="ops.coins[0].asset"
+          :height="'1.2rem'"
+          :chain-height="'0.8rem'"
+        ></asset-icon>
+        <span class="asset-name">
+          {{ decimalFormat(ops.coins[0].amount / 1e8) }}
         </span>
-        <div
-          v-if="row.out.length > 1 && i + 1 !== row.out.length"
-          :key="'out-plus-' + i"
-        >
-          +
-        </div>
-      </template>
+        <span v-if="row.out.length > 1 && i + 1 !== row.out.length"> + </span>
+      </span>
     </div>
     <div
       v-else-if="row && (type === 'addLiquidity' || type === 'runePoolDeposit')"
       :class="['action-cell', { 'no-border': noBorder, wrap: wrap }]"
     >
-      <template v-for="(ops, i) in row.in">
-        <span :key="'in-' + i" class="asset-cell">
-          <asset-icon
-            :asset="ops.coins[0].asset"
-            :height="'1.2rem'"
-            :chain-height="'0.8rem'"
-          ></asset-icon>
-          <span class="asset-name">{{
-            decimalFormat(ops.coins[0].amount / 1e8)
-          }}</span>
-        </span>
-        <div
-          v-if="row.in.length > 1 && i + 1 !== row.in.length"
-          :key="'in-plus-' + i"
-        >
-          +
-        </div>
-      </template>
+      <span v-for="(ops, i) in row.in" :key="'in-' + i" class="asset-cell">
+        <asset-icon
+          :asset="ops.coins[0].asset"
+          :height="'1.2rem'"
+          :chain-height="'0.8rem'"
+        ></asset-icon>
+        <span class="asset-name">{{
+          decimalFormat(ops.coins[0].amount / 1e8)
+        }}</span>
+        <span v-if="row.in.length > 1 && i + 1 !== row.in.length"> + </span>
+      </span>
       <right-arrow class="action-type" />
       <div class="asset-cell">
         <asset-icon
@@ -603,7 +589,9 @@ export default {
   methods: {
     isPendingSwap(row) {
       return (
-        row.out == undefined || row.out.length === 0 || row.status === 'pending'
+        row.out === undefined ||
+        row.out.length === 0 ||
+        row.status === 'pending'
       )
     },
     parseMemoToTxType(memo) {
@@ -685,7 +673,13 @@ export default {
     getContractActionType(row) {
       const msg = row?.metadata?.contract?.msg || {}
       if (msg.order) return 'Limit Order'
+      if (msg.swap) return 'Market Order'
       if (msg.cancel_instance) return 'Cancel Strategy'
+      if (Array.isArray(msg.execute)) return 'Execute Strategies'
+      if (msg.liquid && 'bond' in msg.liquid) return 'Liquid Bond'
+      if (msg.liquid && 'unbond' in msg.liquid) return 'Liquid Unbond'
+      if ('withdraw' in msg) return 'Ghost Vault Withdraw'
+      if ('deposit' in msg) return 'Ghost Vault Deposit'
       const events = row?.metadata?.contract?.contractEvents || []
       if (events.some((e) => e.type === 'wasm-calc-manager/strategy.execute'))
         return 'CALC Strategy'

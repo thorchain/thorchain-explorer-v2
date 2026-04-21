@@ -1153,6 +1153,645 @@ export default {
         }
       }
 
+      // FIN market swap: single contract action with msg.swap
+      const swapMsg = singleAction?.metadata?.contract?.msg?.swap
+      if (swapMsg) {
+        const action = singleAction
+        const contractAddress = action.out?.[0]?.address || ''
+        const contractLabel =
+          getRujiraContractLabel(contractAddress) ||
+          this.formatAddress(contractAddress)
+        const productLabel =
+          getRujiraContractProduct(contractAddress) || 'RUJI Trade'
+        const userAddress = action.in?.[0]?.address || ''
+        const hasError = (action.metadata?.contract?.code ?? 0) > 0
+        const status = hasError
+          ? { label: 'Failed', tone: 'red' }
+          : action.status === 'success'
+            ? { label: 'Success', tone: 'green' }
+            : { label: 'Pending', tone: 'blue' }
+        const date = action.date
+        const timestamp = date ? moment.unix(parseInt(date) / 1e9) : null
+        const height = parseInt(action.height)
+        const events = action.metadata?.contract?.contractEvents || []
+        const toAttrs = (e) =>
+          Object.fromEntries(
+            (e.attributes || []).map(({ key, value }) => [key, value])
+          )
+        const fundsStr = action.metadata?.contract?.funds || ''
+        const fundsAmount = parseInt(fundsStr) || 0
+        const fundsAsset = fundsStr.replace(/^[\d]+/, '').trim()
+
+        const tradeEvents = events.filter(
+          (e) => e.type === 'wasm-rujira-fin/trade'
+        )
+        const rates = tradeEvents
+          .map((e) => parseFloat(toAttrs(e).rate))
+          .filter((r) => !isNaN(r))
+        const avgRate = rates.length
+          ? rates.reduce((s, r) => s + r, 0) / rates.length
+          : null
+
+        // Find the brune/output received by the user
+        const receivedTransfer = events
+          .filter((e) => e.type === 'coin_received')
+          .map(toAttrs)
+          .find(
+            (a) => a.receiver === userAddress && a.amount && !/^[\d]+rune$/.test(a.amount)
+          )
+        const receivedStr = receivedTransfer?.amount || ''
+        const receivedAmount = parseInt(receivedStr) || 0
+        const receivedAsset = receivedStr.replace(/^[\d]+/, '').trim()
+
+        return {
+          title: `Market Order: ${contractLabel}`,
+          metaLabel: `Market Order · ${productLabel}`,
+          status,
+          affiliateAddress: '',
+          actionTypeTitle: 'contract',
+          hasContractAction: true,
+          labels: [],
+          input: {
+            asset: null,
+            name: 'User',
+            badge: userAddress ? this.formatAddress(userAddress) : '',
+            amount: fundsAmount
+              ? `${this.baseAmountFormatOrZero(fundsAmount)} ${fundsAsset}`
+              : '-',
+            usd: null,
+          },
+          output: {
+            asset: null,
+            name: contractLabel,
+            badge: productLabel,
+            amount: receivedAmount
+              ? `${this.baseAmountFormatOrZero(receivedAmount)} ${receivedAsset}`
+              : avgRate
+                ? `Rate ${avgRate.toFixed(6)}`
+                : 'Filled',
+            usd: null,
+          },
+          metricRows: [
+            avgRate ? { label: 'Rate', value: avgRate.toFixed(6) } : null,
+            tradeEvents.length
+              ? { label: 'CCL Fills', value: String(tradeEvents.length) }
+              : null,
+            timestamp
+              ? { label: 'Time', value: timestamp.format('YYYY-MM-DD HH:mm:ss') }
+              : null,
+          ].filter(Boolean),
+          detailRows: [
+            {
+              label: 'Product',
+              value: productLabel,
+              tone: this.getProductTone(productLabel),
+              type: 'product',
+            },
+            {
+              label: 'Action',
+              value: 'Market Order',
+              tone: this.getContractTypeTone('Market Order'),
+              type: 'product',
+            },
+            { label: 'Contract', value: contractLabel },
+            { label: 'Status', value: status.label, type: 'status' },
+            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
+            height
+              ? { label: 'Block', value: `#${this.normalFormat(height)}` }
+              : null,
+            userAddress
+              ? { label: 'User', address: userAddress, type: 'address' }
+              : null,
+          ].filter(Boolean),
+          lifecycleRows: [
+            {
+              icon: 'CheckIcon',
+              title: 'Market order filled',
+              body: [
+                fundsAmount
+                  ? `${this.baseAmountFormatOrZero(fundsAmount)} ${fundsAsset} in`
+                  : null,
+                receivedAmount
+                  ? `${this.baseAmountFormatOrZero(receivedAmount)} ${receivedAsset} out`
+                  : null,
+                avgRate ? `avg rate ${avgRate.toFixed(6)}` : null,
+              ]
+                .filter(Boolean)
+                .join(' · '),
+            },
+            ...this.extractContractEventRows(action),
+          ],
+          feeRows: [],
+          technicalRows: [
+            userAddress
+              ? this.buildTechRow('From address', userAddress, 'address')
+              : null,
+            contractAddress
+              ? this.buildTechRow('To address', contractAddress, 'address')
+              : null,
+          ].filter(Boolean),
+        }
+      }
+
+      // Liquid bond / unbond
+      const liquidMsg = singleAction?.metadata?.contract?.msg?.liquid
+      if (liquidMsg && ('bond' in liquidMsg || 'unbond' in liquidMsg)) {
+        const isBond = 'bond' in liquidMsg
+        const action = singleAction
+        const contractAddress = action.out?.[0]?.address || ''
+        const contractLabel =
+          getRujiraContractLabel(contractAddress) ||
+          this.formatAddress(contractAddress)
+        const productLabel =
+          getRujiraContractProduct(contractAddress) || 'Utilities'
+        const userAddress = action.in?.[0]?.address || ''
+        const hasError = (action.metadata?.contract?.code ?? 0) > 0
+        const status = hasError
+          ? { label: 'Failed', tone: 'red' }
+          : action.status === 'success'
+            ? { label: 'Success', tone: 'green' }
+            : { label: 'Pending', tone: 'blue' }
+        const date = action.date
+        const timestamp = date ? moment.unix(parseInt(date) / 1e9) : null
+        const height = parseInt(action.height)
+        const events = action.metadata?.contract?.contractEvents || []
+        const toAttrs = (e) =>
+          Object.fromEntries(
+            (e.attributes || []).map(({ key, value }) => [key, value])
+          )
+        const bondEvent = events.find(
+          (e) =>
+            e.type === `wasm-rujira-staking/liquid.${isBond ? 'bond' : 'unbond'}`
+        )
+        const bondAttrs = bondEvent ? toAttrs(bondEvent) : {}
+        const amountRaw = parseInt(bondAttrs.amount || action.metadata?.contract?.funds || 0)
+        const sharesRaw = parseInt(bondAttrs.shares || 0)
+        const fundsStr = action.metadata?.contract?.funds || ''
+        const fundsAsset = fundsStr.replace(/^[\d]+/, '').trim()
+        const actionType = isBond ? 'Liquid Bond' : 'Liquid Unbond'
+
+        return {
+          title: `${actionType}: ${contractLabel}`,
+          metaLabel: `${actionType} · ${productLabel}`,
+          status,
+          affiliateAddress: '',
+          actionTypeTitle: 'contract',
+          hasContractAction: true,
+          labels: [],
+          input: {
+            asset: null,
+            name: 'User',
+            badge: userAddress ? this.formatAddress(userAddress) : '',
+            amount: amountRaw
+              ? `${this.baseAmountFormatOrZero(amountRaw)} ${fundsAsset || 'tokens'}`
+              : '-',
+            usd: null,
+          },
+          output: {
+            asset: null,
+            name: contractLabel,
+            badge: productLabel,
+            amount: sharesRaw
+              ? `${this.baseAmountFormatOrZero(sharesRaw)} shares`
+              : isBond
+                ? 'Bonded'
+                : 'Unbonded',
+            usd: null,
+          },
+          metricRows: [
+            amountRaw
+              ? {
+                  label: isBond ? 'Amount Bonded' : 'Amount Unbonded',
+                  value: `${this.baseAmountFormatOrZero(amountRaw)} ${fundsAsset}`,
+                }
+              : null,
+            sharesRaw
+              ? { label: 'Shares', value: this.baseAmountFormatOrZero(sharesRaw) }
+              : null,
+            timestamp
+              ? { label: 'Time', value: timestamp.format('YYYY-MM-DD HH:mm:ss') }
+              : null,
+          ].filter(Boolean),
+          detailRows: [
+            {
+              label: 'Product',
+              value: productLabel,
+              tone: this.getProductTone(productLabel),
+              type: 'product',
+            },
+            {
+              label: 'Action',
+              value: actionType,
+              tone: this.getContractTypeTone(actionType),
+              type: 'product',
+            },
+            { label: 'Contract', value: contractLabel },
+            { label: 'Status', value: status.label, type: 'status' },
+            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
+            height
+              ? { label: 'Block', value: `#${this.normalFormat(height)}` }
+              : null,
+            userAddress
+              ? { label: 'User', address: userAddress, type: 'address' }
+              : null,
+          ].filter(Boolean),
+          lifecycleRows: [
+            {
+              icon: 'CheckIcon',
+              title: actionType,
+              body: [
+                amountRaw
+                  ? `${this.baseAmountFormatOrZero(amountRaw)} ${fundsAsset} ${isBond ? 'deposited' : 'withdrawn'}`
+                  : null,
+                sharesRaw
+                  ? `${this.baseAmountFormatOrZero(sharesRaw)} shares ${isBond ? 'minted' : 'burned'}`
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(' → '),
+            },
+          ],
+          feeRows: [],
+          technicalRows: [
+            userAddress
+              ? this.buildTechRow('From address', userAddress, 'address')
+              : null,
+            contractAddress
+              ? this.buildTechRow('To address', contractAddress, 'address')
+              : null,
+          ].filter(Boolean),
+        }
+      }
+
+      // AutoRujira Reset Instance: msg.reset_instance
+      const resetInstanceMsg = singleAction?.metadata?.contract?.msg?.reset_instance
+      if (resetInstanceMsg) {
+        const action = singleAction
+        const contractAddress = action.out?.[0]?.address || ''
+        const contractLabel =
+          getRujiraContractLabel(contractAddress) ||
+          this.formatAddress(contractAddress)
+        const productLabel =
+          getRujiraContractProduct(contractAddress) || 'AutoRujira'
+        const callerAddress = action.in?.[0]?.address || ''
+        const instanceId = resetInstanceMsg.instance_id
+        const targetUser = resetInstanceMsg.user_address || ''
+        const hasError = (action.metadata?.contract?.code ?? 0) > 0
+        const status = hasError
+          ? { label: 'Failed', tone: 'red' }
+          : action.status === 'success'
+            ? { label: 'Success', tone: 'green' }
+            : { label: 'Pending', tone: 'blue' }
+        const date = action.date
+        const timestamp = date ? moment.unix(parseInt(date) / 1e9) : null
+        const height = parseInt(action.height)
+        const events = action.metadata?.contract?.contractEvents || []
+        const toAttrs = (e) =>
+          Object.fromEntries(
+            (e.attributes || []).map(({ key, value }) => [key, value])
+          )
+        const resetEvent = events.find(
+          (e) => e.type === 'wasm-autorujira-workflow-manager/reset_instance'
+        )
+        const resetAttrs = resetEvent ? toAttrs(resetEvent) : {}
+        const executionType = resetAttrs.execution_type || ''
+
+        return {
+          title: `Reset Instance #${instanceId}`,
+          metaLabel: `Reset Instance · ${productLabel}`,
+          status,
+          affiliateAddress: '',
+          actionTypeTitle: 'contract',
+          hasContractAction: true,
+          labels: [],
+          input: {
+            asset: null,
+            name: productLabel,
+            badge: contractLabel,
+            amount: `Instance #${instanceId}`,
+            usd: null,
+          },
+          output: {
+            asset: null,
+            name: 'User',
+            badge: targetUser ? this.formatAddress(targetUser) : '',
+            amount: executionType ? `${executionType} reset` : 'Reset',
+            usd: null,
+          },
+          metricRows: [
+            { label: 'Instance', value: `#${instanceId}` },
+            executionType
+              ? { label: 'Execution type', value: executionType }
+              : null,
+            timestamp
+              ? { label: 'Time', value: timestamp.format('YYYY-MM-DD HH:mm:ss') }
+              : null,
+          ].filter(Boolean),
+          detailRows: [
+            {
+              label: 'Product',
+              value: productLabel,
+              tone: this.getProductTone(productLabel),
+              type: 'product',
+            },
+            {
+              label: 'Action',
+              value: 'Reset Instance',
+              tone: this.getContractTypeTone('Reset Instance'),
+              type: 'product',
+            },
+            { label: 'Contract', value: contractLabel },
+            { label: 'Instance ID', value: `#${instanceId}` },
+            executionType ? { label: 'Execution type', value: executionType } : null,
+            { label: 'Status', value: status.label, type: 'status' },
+            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
+            height
+              ? { label: 'Block', value: `#${this.normalFormat(height)}` }
+              : null,
+            targetUser
+              ? { label: 'User', address: targetUser, type: 'address' }
+              : null,
+            callerAddress
+              ? { label: 'Caller', address: callerAddress, type: 'address' }
+              : null,
+          ].filter(Boolean),
+          lifecycleRows: [
+            {
+              icon: 'RefreshIcon',
+              title: `Instance #${instanceId} reset`,
+              body: [
+                executionType ? `Execution type: ${executionType}` : null,
+                targetUser ? `for ${this.formatAddress(targetUser)}` : null,
+              ].filter(Boolean).join(' · '),
+            },
+          ],
+          feeRows: [],
+          technicalRows: [
+            callerAddress
+              ? this.buildTechRow('Caller address', callerAddress, 'address')
+              : null,
+            targetUser
+              ? this.buildTechRow('User address', targetUser, 'address')
+              : null,
+            contractAddress
+              ? this.buildTechRow('To address', contractAddress, 'address')
+              : null,
+          ].filter(Boolean),
+        }
+      }
+
+      // Ghost Vault Withdraw / Deposit: msg.withdraw or msg.deposit
+      const ghostVaultMsg = singleAction?.metadata?.contract?.msg
+      const isGhostWithdraw = ghostVaultMsg && 'withdraw' in ghostVaultMsg
+      const isGhostDeposit = ghostVaultMsg && 'deposit' in ghostVaultMsg
+      if (isGhostWithdraw || isGhostDeposit) {
+        const action = singleAction
+        const contractAddress = action.out?.[0]?.address || ''
+        const contractLabel =
+          getRujiraContractLabel(contractAddress) ||
+          this.formatAddress(contractAddress)
+        const productLabel =
+          getRujiraContractProduct(contractAddress) || 'RUJI Money Market'
+        const userAddress = action.in?.[0]?.address || ''
+        const hasError = (action.metadata?.contract?.code ?? 0) > 0
+        const status = hasError
+          ? { label: 'Failed', tone: 'red' }
+          : action.status === 'success'
+            ? { label: 'Success', tone: 'green' }
+            : { label: 'Pending', tone: 'blue' }
+        const date = action.date
+        const timestamp = date ? moment.unix(parseInt(date) / 1e9) : null
+        const height = parseInt(action.height)
+        const events = action.metadata?.contract?.contractEvents || []
+        const toAttrs = (e) =>
+          Object.fromEntries(
+            (e.attributes || []).map(({ key, value }) => [key, value])
+          )
+        const vaultEvent = events.find(
+          (e) =>
+            e.type ===
+            `wasm-rujira-ghost-vault/${isGhostWithdraw ? 'withdraw' : 'deposit'}`
+        )
+        const vaultAttrs = vaultEvent ? toAttrs(vaultEvent) : {}
+
+        // Parse funds denom (e.g. "9158098048x/ghost-vault/eth-usdc-0xa...")
+        const fundsStr = action.metadata?.contract?.funds || ''
+        const fundsAmountRaw = parseInt(fundsStr) || 0
+        const fundsDenom = fundsStr.replace(/^\d+/, '').trim()
+        const vaultAssetName = fundsDenom.replace('x/ghost-vault/', '')
+
+        // Find the coin_received event for the user to get the actual output denom
+        const userCoinReceived = events.find(
+          (e) =>
+            e.type === 'coin_received' &&
+            (e.attributes || []).some(
+              (a) => a.key === 'receiver' && a.value === userAddress
+            ) &&
+            (e.attributes || []).some(
+              (a) => a.key === 'amount' && !a.value.includes('ghost-vault')
+            )
+        )
+        const userReceivedAmountStr = userCoinReceived
+          ? ((e) => (e.attributes || []).find((a) => a.key === 'amount')?.value || '')(userCoinReceived)
+          : ''
+        const userReceivedDenom = userReceivedAmountStr.replace(/^\d+/, '').trim()
+        // Convert trade-asset denom (e.g. "eth-usdc-0xa...") to asset string ("ETH.USDC-0XA...")
+        const underlyingAssetStr = userReceivedDenom
+          ? securedToAsset(userReceivedDenom).toUpperCase()
+          : vaultAssetName.toUpperCase()
+        const underlyingAssetParsed = assetFromString(underlyingAssetStr)
+        const underlyingTicker = underlyingAssetParsed?.ticker || underlyingAssetStr
+
+        // Underlying amount from vault event
+        const underlyingRaw = parseInt(vaultAttrs.amount || 0)
+        const sharesRaw = parseInt(vaultAttrs.shares || fundsAmountRaw || 0)
+
+        const actionType = isGhostWithdraw ? 'Ghost Vault Withdraw' : 'Ghost Vault Deposit'
+        const vaultName = contractLabel.replace('rujira-ghost-vault:', '') || contractLabel
+
+        return {
+          title: `${actionType}: ${vaultName}`,
+          metaLabel: `${actionType} · ${productLabel}`,
+          status,
+          affiliateAddress: '',
+          actionTypeTitle: 'contract',
+          hasContractAction: true,
+          labels: [],
+          input: {
+            asset: null,
+            name: isGhostWithdraw ? 'Shares burned' : 'User',
+            badge: isGhostWithdraw ? vaultName : (userAddress ? this.formatAddress(userAddress) : ''),
+            amount: isGhostWithdraw
+              ? (sharesRaw ? `${this.baseAmountFormatOrZero(sharesRaw)} shares` : '-')
+              : (fundsAmountRaw ? `${this.baseAmountFormatOrZero(fundsAmountRaw)} ${fundsDenom}` : '-'),
+            usd: null,
+          },
+          output: {
+            asset: isGhostWithdraw ? (underlyingAssetParsed ? underlyingAssetStr : null) : null,
+            name: isGhostWithdraw ? underlyingTicker : 'Shares minted',
+            badge: isGhostWithdraw ? (userAddress ? this.formatAddress(userAddress) : '') : vaultName,
+            amount: isGhostWithdraw
+              ? (underlyingRaw ? this.baseAmountFormatOrZero(underlyingRaw) : 'Withdrawn')
+              : (sharesRaw ? `${this.baseAmountFormatOrZero(sharesRaw)} shares` : 'Deposited'),
+            usd: null,
+          },
+          metricRows: [
+            sharesRaw
+              ? { label: 'Shares', value: this.baseAmountFormatOrZero(sharesRaw) }
+              : null,
+            underlyingRaw
+              ? {
+                  label: isGhostWithdraw ? 'Underlying Received' : 'Underlying Deposited',
+                  value: `${this.baseAmountFormatOrZero(underlyingRaw)} ${underlyingTicker}`,
+                }
+              : null,
+            timestamp
+              ? { label: 'Time', value: timestamp.format('YYYY-MM-DD HH:mm:ss') }
+              : null,
+          ].filter(Boolean),
+          detailRows: [
+            {
+              label: 'Product',
+              value: productLabel,
+              tone: this.getProductTone(productLabel),
+              type: 'product',
+            },
+            {
+              label: 'Action',
+              value: actionType,
+              tone: this.getContractTypeTone(actionType),
+              type: 'product',
+            },
+            { label: 'Vault', value: vaultName },
+            { label: 'Status', value: status.label, type: 'status' },
+            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
+            height
+              ? { label: 'Block', value: `#${this.normalFormat(height)}` }
+              : null,
+            userAddress
+              ? { label: 'User', address: userAddress, type: 'address' }
+              : null,
+          ].filter(Boolean),
+          lifecycleRows: [
+            {
+              icon: isGhostWithdraw ? 'SubtractIcon' : 'AddIcon',
+              title: actionType,
+              body: isGhostWithdraw
+                ? [
+                    sharesRaw ? `${this.baseAmountFormatOrZero(sharesRaw)} shares burned` : null,
+                    underlyingRaw ? `${this.baseAmountFormatOrZero(underlyingRaw)} ${underlyingTicker} received` : null,
+                  ].filter(Boolean).join(' → ')
+                : [
+                    fundsAmountRaw ? `${this.baseAmountFormatOrZero(fundsAmountRaw)} ${fundsDenom} deposited` : null,
+                    sharesRaw ? `${this.baseAmountFormatOrZero(sharesRaw)} shares minted` : null,
+                  ].filter(Boolean).join(' → '),
+            },
+          ],
+          feeRows: [],
+          technicalRows: [
+            userAddress
+              ? this.buildTechRow('From address', userAddress, 'address')
+              : null,
+            contractAddress
+              ? this.buildTechRow('To address', contractAddress, 'address')
+              : null,
+          ].filter(Boolean),
+        }
+      }
+
+      // CALC Scheduler batch execute: msg.execute is an array of instance IDs
+      const batchExecuteMsg = singleAction?.metadata?.contract?.msg?.execute
+      if (Array.isArray(batchExecuteMsg)) {
+        const action = singleAction
+        const contractAddress = action.out?.[0]?.address || ''
+        const contractLabel =
+          getRujiraContractLabel(contractAddress) ||
+          this.formatAddress(contractAddress)
+        const productLabel =
+          getRujiraContractProduct(contractAddress) || 'Recurring Swaps'
+        const userAddress = action.in?.[0]?.address || ''
+        const instanceCount = batchExecuteMsg.length
+        const hasError = (action.metadata?.contract?.code ?? 0) > 0
+        const status = hasError
+          ? { label: 'Failed', tone: 'red' }
+          : action.status === 'success'
+            ? { label: 'Success', tone: 'green' }
+            : { label: 'Pending', tone: 'blue' }
+        const date = action.date
+        const timestamp = date ? moment.unix(parseInt(date) / 1e9) : null
+        const height = parseInt(action.height)
+
+        return {
+          title: `${instanceCount} ${instanceCount === 1 ? 'Strategy' : 'Strategies'} executed by ${contractLabel}`,
+          metaLabel: `Execute Strategies · ${productLabel}`,
+          status,
+          affiliateAddress: '',
+          actionTypeTitle: 'contract',
+          hasContractAction: true,
+          labels: [],
+          input: {
+            asset: null,
+            name: 'Scheduler',
+            badge: contractLabel,
+            amount: `${instanceCount} instance${instanceCount !== 1 ? 's' : ''}`,
+            usd: null,
+          },
+          output: {
+            asset: null,
+            name: productLabel,
+            badge: userAddress ? this.formatAddress(userAddress) : '',
+            amount: 'Dispatched',
+            usd: null,
+          },
+          metricRows: [
+            { label: 'Instances', value: String(instanceCount) },
+            timestamp
+              ? { label: 'Time', value: timestamp.format('YYYY-MM-DD HH:mm:ss') }
+              : null,
+          ].filter(Boolean),
+          detailRows: [
+            {
+              label: 'Product',
+              value: productLabel,
+              tone: this.getProductTone(productLabel),
+              type: 'product',
+            },
+            {
+              label: 'Action',
+              value: 'Execute Strategies',
+              tone: this.getContractTypeTone('CALC Strategy'),
+              type: 'product',
+            },
+            { label: 'Contract', value: contractLabel },
+            { label: 'Instances', value: String(instanceCount) },
+            { label: 'Status', value: status.label, type: 'status' },
+            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
+            height
+              ? { label: 'Block', value: `#${this.normalFormat(height)}` }
+              : null,
+            userAddress
+              ? { label: 'Executor', address: userAddress, type: 'address' }
+              : null,
+          ].filter(Boolean),
+          lifecycleRows: [
+            {
+              icon: 'SwapIcon',
+              title: `${instanceCount} recurring swap ${instanceCount === 1 ? 'strategy' : 'strategies'} dispatched`,
+              body: `CALC Scheduler triggered ${instanceCount} ${instanceCount === 1 ? 'instance' : 'instances'} via ${contractLabel}`,
+            },
+          ],
+          feeRows: [],
+          technicalRows: [
+            userAddress
+              ? this.buildTechRow('Executor address', userAddress, 'address')
+              : null,
+            contractAddress
+              ? this.buildTechRow('To address', contractAddress, 'address')
+              : null,
+          ].filter(Boolean),
+        }
+      }
+
       const contractTypes = this.rawActions.map(
         (a) => a.metadata?.contract?.contractType ?? ''
       )
@@ -1536,7 +2175,14 @@ export default {
       if (!contractAction) return null
       const msg = contractAction.metadata?.contract?.msg || {}
       if (msg.order) return 'Limit Order'
+      if (msg.swap) return 'Market Order'
       if (msg.cancel_instance) return 'Cancel Strategy'
+      if (Array.isArray(msg.execute)) return 'Execute Strategies'
+      if (msg.liquid && 'bond' in msg.liquid) return 'Liquid Bond'
+      if (msg.liquid && 'unbond' in msg.liquid) return 'Liquid Unbond'
+      if ('withdraw' in msg) return 'Ghost Vault Withdraw'
+      if ('deposit' in msg) return 'Ghost Vault Deposit'
+      if (msg.reset_instance) return 'Reset Instance'
       const events = contractAction.metadata?.contract?.contractEvents || []
       if (events.some((e) => e.type === 'wasm-calc-manager/strategy.execute'))
         return 'CALC Strategy'
@@ -1549,6 +2195,11 @@ export default {
       if (type === 'Market Order') return 'blue'
       if (type === 'CALC Strategy') return 'purple'
       if (type === 'Cancel Strategy') return 'red'
+      if (type === 'Liquid Bond') return 'green'
+      if (type === 'Liquid Unbond') return 'red'
+      if (type === 'Ghost Vault Deposit') return 'green'
+      if (type === 'Ghost Vault Withdraw') return 'blue'
+      if (type === 'Reset Instance') return 'blue'
       return 'green'
     },
     getSwapProductLabel(action) {
