@@ -716,6 +716,18 @@ export default {
             base.push({ label: 'Strategies', value: String(strategyCount) })
           if (finPairs > 0)
             base.push({ label: 'FIN Pairs', value: String(finPairs) })
+          if (base.length < 3) {
+            const inUsd = parseFloat(input.amountUSD) || 0
+            const outUsd = parseFloat(output.amountUSD) || 0
+            if (inUsd > 0 && outUsd > 0) {
+              const impact = ((outUsd / inUsd - 1) * 100).toFixed(2)
+              const sign = parseFloat(impact) > 0 ? '+' : ''
+              base.unshift({
+                label: 'Price Impact',
+                value: `${sign}${impact}%`,
+              })
+            }
+          }
           return base
         })(),
         detailRows: (() => {
