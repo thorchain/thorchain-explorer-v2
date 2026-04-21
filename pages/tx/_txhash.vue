@@ -1105,7 +1105,10 @@ export default {
           metricRows: [
             { label: 'Instance ID', value: `#${instanceId}` },
             timestamp
-              ? { label: 'Time', value: timestamp.format('YYYY-MM-DD HH:mm:ss') }
+              ? {
+                  label: 'Time',
+                  value: timestamp.format('YYYY-MM-DD HH:mm:ss'),
+                }
               : null,
           ].filter(Boolean),
           detailRows: [
@@ -1197,7 +1200,10 @@ export default {
           .filter((e) => e.type === 'coin_received')
           .map(toAttrs)
           .find(
-            (a) => a.receiver === userAddress && a.amount && !/^[\d]+rune$/.test(a.amount)
+            (a) =>
+              a.receiver === userAddress &&
+              a.amount &&
+              !/^[\d]+rune$/.test(a.amount)
           )
         const receivedStr = receivedTransfer?.amount || ''
         const receivedAmount = parseInt(receivedStr) || 0
@@ -1237,7 +1243,10 @@ export default {
               ? { label: 'CCL Fills', value: String(tradeEvents.length) }
               : null,
             timestamp
-              ? { label: 'Time', value: timestamp.format('YYYY-MM-DD HH:mm:ss') }
+              ? {
+                  label: 'Time',
+                  value: timestamp.format('YYYY-MM-DD HH:mm:ss'),
+                }
               : null,
           ].filter(Boolean),
           detailRows: [
@@ -1255,7 +1264,9 @@ export default {
             },
             { label: 'Contract', value: contractLabel },
             { label: 'Status', value: status.label, type: 'status' },
-            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
+            timestamp
+              ? { label: 'Time', value: timestamp.format('lll') }
+              : null,
             height
               ? { label: 'Block', value: `#${this.normalFormat(height)}` }
               : null,
@@ -1321,10 +1332,13 @@ export default {
           )
         const bondEvent = events.find(
           (e) =>
-            e.type === `wasm-rujira-staking/liquid.${isBond ? 'bond' : 'unbond'}`
+            e.type ===
+            `wasm-rujira-staking/liquid.${isBond ? 'bond' : 'unbond'}`
         )
         const bondAttrs = bondEvent ? toAttrs(bondEvent) : {}
-        const amountRaw = parseInt(bondAttrs.amount || action.metadata?.contract?.funds || 0)
+        const amountRaw = parseInt(
+          bondAttrs.amount || action.metadata?.contract?.funds || 0
+        )
         const sharesRaw = parseInt(bondAttrs.shares || 0)
         const fundsStr = action.metadata?.contract?.funds || ''
         const fundsAsset = fundsStr.replace(/^[\d]+/, '').trim()
@@ -1366,10 +1380,16 @@ export default {
                 }
               : null,
             sharesRaw
-              ? { label: 'Shares', value: this.baseAmountFormatOrZero(sharesRaw) }
+              ? {
+                  label: 'Shares',
+                  value: this.baseAmountFormatOrZero(sharesRaw),
+                }
               : null,
             timestamp
-              ? { label: 'Time', value: timestamp.format('YYYY-MM-DD HH:mm:ss') }
+              ? {
+                  label: 'Time',
+                  value: timestamp.format('YYYY-MM-DD HH:mm:ss'),
+                }
               : null,
           ].filter(Boolean),
           detailRows: [
@@ -1387,7 +1407,9 @@ export default {
             },
             { label: 'Contract', value: contractLabel },
             { label: 'Status', value: status.label, type: 'status' },
-            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
+            timestamp
+              ? { label: 'Time', value: timestamp.format('lll') }
+              : null,
             height
               ? { label: 'Block', value: `#${this.normalFormat(height)}` }
               : null,
@@ -1459,19 +1481,26 @@ export default {
         const borrowAttrs = borrowEvent ? toAttrs(borrowEvent) : {}
         const borrowAmountStr = borrowAttrs.amount || ''
         const borrowAmountRaw = parseInt(borrowAmountStr) || 0
-        const borrowDenom = borrowAmountStr.replace(/^\d+/, '').trim() ||
-          borrowMsgs[0]?.borrow?.denom || ''
+        const borrowDenom =
+          borrowAmountStr.replace(/^\d+/, '').trim() ||
+          borrowMsgs[0]?.borrow?.denom ||
+          ''
         const borrowAssetStr = borrowDenom
           ? securedToAsset(borrowDenom).toUpperCase()
           : ''
-        const borrowAssetParsed = borrowAssetStr ? assetFromString(borrowAssetStr) : null
+        const borrowAssetParsed = borrowAssetStr
+          ? assetFromString(borrowAssetStr)
+          : null
         const borrowTicker = borrowAssetParsed?.ticker || borrowDenom
 
         // Extract FIN trade fill (CCL or limit)
-        const finTradeEvent = events.find((e) => e.type === 'wasm-rujira-fin/trade')
+        const finTradeEvent = events.find(
+          (e) => e.type === 'wasm-rujira-fin/trade'
+        )
         const finAttrs = finTradeEvent ? toAttrs(finTradeEvent) : {}
-        const finPairAddr = finAttrs['_contract_address'] || ''
-        const finPairLabel = getRujiraContractLabel(finPairAddr) || this.formatAddress(finPairAddr)
+        const finPairAddr = finAttrs._contract_address || ''
+        const finPairLabel =
+          getRujiraContractLabel(finPairAddr) || this.formatAddress(finPairAddr)
         const bidRaw = parseInt(finAttrs.bid || 0)
         const offerRaw = parseInt(finAttrs.offer || 0)
         const fillPrice = parseFloat(finAttrs.rate || 0)
@@ -1489,16 +1518,24 @@ export default {
             )
         )
         const outputAmountStr = creditReceivedEvent
-          ? ((e) => (e.attributes || []).find((a) => a.key === 'amount')?.value || '')(creditReceivedEvent)
+          ? ((e) =>
+              (e.attributes || []).find((a) => a.key === 'amount')?.value ||
+              '')(creditReceivedEvent)
           : ''
         const outputRaw = parseInt(outputAmountStr) || 0
         const outputDenom = outputAmountStr.replace(/^\d+/, '').trim()
-        const outputAssetStr = outputDenom ? securedToAsset(outputDenom).toUpperCase() : ''
-        const outputAssetParsed = outputAssetStr ? assetFromString(outputAssetStr) : null
+        const outputAssetStr = outputDenom
+          ? securedToAsset(outputDenom).toUpperCase()
+          : ''
+        const outputAssetParsed = outputAssetStr
+          ? assetFromString(outputAssetStr)
+          : null
         const outputTicker = outputAssetParsed?.ticker || outputDenom
 
         // Retract event
-        const retractEvent = events.find((e) => e.type === 'wasm-rujira-fin/order.retract')
+        const retractEvent = events.find(
+          (e) => e.type === 'wasm-rujira-fin/order.retract'
+        )
         const retractAttrs = retractEvent ? toAttrs(retractEvent) : {}
         const retractAmount = parseInt(retractAttrs.amount || 0)
 
@@ -1515,8 +1552,12 @@ export default {
           input: {
             asset: borrowAssetParsed ? borrowAssetStr : null,
             name: borrowTicker || 'Borrowed',
-            badge: borrowMsgs.length ? `${borrowMsgs.length} borrow${borrowMsgs.length !== 1 ? 's' : ''}` : '',
-            amount: borrowAmountRaw ? this.baseAmountFormatOrZero(borrowAmountRaw) : '-',
+            badge: borrowMsgs.length
+              ? `${borrowMsgs.length} borrow${borrowMsgs.length !== 1 ? 's' : ''}`
+              : '',
+            amount: borrowAmountRaw
+              ? this.baseAmountFormatOrZero(borrowAmountRaw)
+              : '-',
             usd: null,
           },
           output: {
@@ -1528,17 +1569,26 @@ export default {
           },
           metricRows: [
             borrowAmountRaw
-              ? { label: 'Borrowed', value: `${this.baseAmountFormatOrZero(borrowAmountRaw)} ${borrowTicker}` }
+              ? {
+                  label: 'Borrowed',
+                  value: `${this.baseAmountFormatOrZero(borrowAmountRaw)} ${borrowTicker}`,
+                }
               : null,
             outputRaw
-              ? { label: 'Received', value: `${this.baseAmountFormatOrZero(outputRaw)} ${outputTicker}` }
+              ? {
+                  label: 'Received',
+                  value: `${this.baseAmountFormatOrZero(outputRaw)} ${outputTicker}`,
+                }
               : null,
             fillPrice
               ? { label: 'Fill price', value: fillPrice.toFixed(2) }
               : null,
             { label: 'Sub-messages', value: String(subMsgCount) },
             timestamp
-              ? { label: 'Time', value: timestamp.format('YYYY-MM-DD HH:mm:ss') }
+              ? {
+                  label: 'Time',
+                  value: timestamp.format('YYYY-MM-DD HH:mm:ss'),
+                }
               : null,
           ].filter(Boolean),
           detailRows: [
@@ -1557,10 +1607,22 @@ export default {
             { label: 'Contract', value: contractLabel },
             { label: 'Sub-messages', value: String(subMsgCount) },
             { label: 'Status', value: status.label, type: 'status' },
-            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
-            height ? { label: 'Block', value: `#${this.normalFormat(height)}` } : null,
-            userAddress ? { label: 'User', address: userAddress, type: 'address' } : null,
-            creditAccountAddr ? { label: 'Credit account', address: creditAccountAddr, type: 'address' } : null,
+            timestamp
+              ? { label: 'Time', value: timestamp.format('lll') }
+              : null,
+            height
+              ? { label: 'Block', value: `#${this.normalFormat(height)}` }
+              : null,
+            userAddress
+              ? { label: 'User', address: userAddress, type: 'address' }
+              : null,
+            creditAccountAddr
+              ? {
+                  label: 'Credit account',
+                  address: creditAccountAddr,
+                  type: 'address',
+                }
+              : null,
           ].filter(Boolean),
           lifecycleRows: [
             borrowAmountRaw
@@ -1578,28 +1640,43 @@ export default {
                     offerRaw ? `${offerRaw} ${borrowTicker} offered` : null,
                     bidRaw ? `${bidRaw} ${outputTicker} received` : null,
                     fillPrice ? `@ ${fillPrice.toFixed(2)}` : null,
-                  ].filter(Boolean).join(' · '),
+                  ]
+                    .filter(Boolean)
+                    .join(' · '),
                 }
               : null,
             retractEvent
               ? {
                   icon: 'SubtractIcon',
                   title: 'Unfilled order retracted',
-                  body: retractAmount ? `${retractAmount} ${borrowTicker} returned` : '',
+                  body: retractAmount
+                    ? `${retractAmount} ${borrowTicker} returned`
+                    : '',
                 }
               : null,
           ].filter(Boolean),
           feeRows: [],
           technicalRows: [
-            userAddress ? this.buildTechRow('From address', userAddress, 'address') : null,
-            creditAccountAddr ? this.buildTechRow('Credit account', creditAccountAddr, 'address') : null,
-            contractAddress ? this.buildTechRow('To address', contractAddress, 'address') : null,
+            userAddress
+              ? this.buildTechRow('From address', userAddress, 'address')
+              : null,
+            creditAccountAddr
+              ? this.buildTechRow(
+                  'Credit account',
+                  creditAccountAddr,
+                  'address'
+                )
+              : null,
+            contractAddress
+              ? this.buildTechRow('To address', contractAddress, 'address')
+              : null,
           ].filter(Boolean),
         }
       }
 
       // AutoRujira Reset Instance: msg.reset_instance
-      const resetInstanceMsg = singleAction?.metadata?.contract?.msg?.reset_instance
+      const resetInstanceMsg =
+        singleAction?.metadata?.contract?.msg?.reset_instance
       if (resetInstanceMsg) {
         const action = singleAction
         const contractAddress = action.out?.[0]?.address || ''
@@ -1659,7 +1736,10 @@ export default {
               ? { label: 'Execution type', value: executionType }
               : null,
             timestamp
-              ? { label: 'Time', value: timestamp.format('YYYY-MM-DD HH:mm:ss') }
+              ? {
+                  label: 'Time',
+                  value: timestamp.format('YYYY-MM-DD HH:mm:ss'),
+                }
               : null,
           ].filter(Boolean),
           detailRows: [
@@ -1677,9 +1757,13 @@ export default {
             },
             { label: 'Contract', value: contractLabel },
             { label: 'Instance ID', value: `#${instanceId}` },
-            executionType ? { label: 'Execution type', value: executionType } : null,
+            executionType
+              ? { label: 'Execution type', value: executionType }
+              : null,
             { label: 'Status', value: status.label, type: 'status' },
-            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
+            timestamp
+              ? { label: 'Time', value: timestamp.format('lll') }
+              : null,
             height
               ? { label: 'Block', value: `#${this.normalFormat(height)}` }
               : null,
@@ -1697,7 +1781,9 @@ export default {
               body: [
                 executionType ? `Execution type: ${executionType}` : null,
                 targetUser ? `for ${this.formatAddress(targetUser)}` : null,
-              ].filter(Boolean).join(' · '),
+              ]
+                .filter(Boolean)
+                .join(' · '),
             },
           ],
           feeRows: [],
@@ -1767,22 +1853,30 @@ export default {
             )
         )
         const userReceivedAmountStr = userCoinReceived
-          ? ((e) => (e.attributes || []).find((a) => a.key === 'amount')?.value || '')(userCoinReceived)
+          ? ((e) =>
+              (e.attributes || []).find((a) => a.key === 'amount')?.value ||
+              '')(userCoinReceived)
           : ''
-        const userReceivedDenom = userReceivedAmountStr.replace(/^\d+/, '').trim()
+        const userReceivedDenom = userReceivedAmountStr
+          .replace(/^\d+/, '')
+          .trim()
         // Convert trade-asset denom (e.g. "eth-usdc-0xa...") to asset string ("ETH.USDC-0XA...")
         const underlyingAssetStr = userReceivedDenom
           ? securedToAsset(userReceivedDenom).toUpperCase()
           : vaultAssetName.toUpperCase()
         const underlyingAssetParsed = assetFromString(underlyingAssetStr)
-        const underlyingTicker = underlyingAssetParsed?.ticker || underlyingAssetStr
+        const underlyingTicker =
+          underlyingAssetParsed?.ticker || underlyingAssetStr
 
         // Underlying amount from vault event
         const underlyingRaw = parseInt(vaultAttrs.amount || 0)
         const sharesRaw = parseInt(vaultAttrs.shares || fundsAmountRaw || 0)
 
-        const actionType = isGhostWithdraw ? 'Ghost Vault Withdraw' : 'Ghost Vault Deposit'
-        const vaultName = contractLabel.replace('rujira-ghost-vault:', '') || contractLabel
+        const actionType = isGhostWithdraw
+          ? 'Ghost Vault Withdraw'
+          : 'Ghost Vault Deposit'
+        const vaultName =
+          contractLabel.replace('rujira-ghost-vault:', '') || contractLabel
 
         return {
           title: `${actionType}: ${vaultName}`,
@@ -1795,33 +1889,61 @@ export default {
           input: {
             asset: null,
             name: isGhostWithdraw ? 'Shares burned' : 'User',
-            badge: isGhostWithdraw ? vaultName : (userAddress ? this.formatAddress(userAddress) : ''),
+            badge: isGhostWithdraw
+              ? vaultName
+              : userAddress
+                ? this.formatAddress(userAddress)
+                : '',
             amount: isGhostWithdraw
-              ? (sharesRaw ? `${this.baseAmountFormatOrZero(sharesRaw)} shares` : '-')
-              : (fundsAmountRaw ? `${this.baseAmountFormatOrZero(fundsAmountRaw)} ${fundsDenom}` : '-'),
+              ? sharesRaw
+                ? `${this.baseAmountFormatOrZero(sharesRaw)} shares`
+                : '-'
+              : fundsAmountRaw
+                ? `${this.baseAmountFormatOrZero(fundsAmountRaw)} ${fundsDenom}`
+                : '-',
             usd: null,
           },
           output: {
-            asset: isGhostWithdraw ? (underlyingAssetParsed ? underlyingAssetStr : null) : null,
+            asset: isGhostWithdraw
+              ? underlyingAssetParsed
+                ? underlyingAssetStr
+                : null
+              : null,
             name: isGhostWithdraw ? underlyingTicker : 'Shares minted',
-            badge: isGhostWithdraw ? (userAddress ? this.formatAddress(userAddress) : '') : vaultName,
+            badge: isGhostWithdraw
+              ? userAddress
+                ? this.formatAddress(userAddress)
+                : ''
+              : vaultName,
             amount: isGhostWithdraw
-              ? (underlyingRaw ? this.baseAmountFormatOrZero(underlyingRaw) : 'Withdrawn')
-              : (sharesRaw ? `${this.baseAmountFormatOrZero(sharesRaw)} shares` : 'Deposited'),
+              ? underlyingRaw
+                ? this.baseAmountFormatOrZero(underlyingRaw)
+                : 'Withdrawn'
+              : sharesRaw
+                ? `${this.baseAmountFormatOrZero(sharesRaw)} shares`
+                : 'Deposited',
             usd: null,
           },
           metricRows: [
             sharesRaw
-              ? { label: 'Shares', value: this.baseAmountFormatOrZero(sharesRaw) }
+              ? {
+                  label: 'Shares',
+                  value: this.baseAmountFormatOrZero(sharesRaw),
+                }
               : null,
             underlyingRaw
               ? {
-                  label: isGhostWithdraw ? 'Underlying Received' : 'Underlying Deposited',
+                  label: isGhostWithdraw
+                    ? 'Underlying Received'
+                    : 'Underlying Deposited',
                   value: `${this.baseAmountFormatOrZero(underlyingRaw)} ${underlyingTicker}`,
                 }
               : null,
             timestamp
-              ? { label: 'Time', value: timestamp.format('YYYY-MM-DD HH:mm:ss') }
+              ? {
+                  label: 'Time',
+                  value: timestamp.format('YYYY-MM-DD HH:mm:ss'),
+                }
               : null,
           ].filter(Boolean),
           detailRows: [
@@ -1839,7 +1961,9 @@ export default {
             },
             { label: 'Vault', value: vaultName },
             { label: 'Status', value: status.label, type: 'status' },
-            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
+            timestamp
+              ? { label: 'Time', value: timestamp.format('lll') }
+              : null,
             height
               ? { label: 'Block', value: `#${this.normalFormat(height)}` }
               : null,
@@ -1853,13 +1977,25 @@ export default {
               title: actionType,
               body: isGhostWithdraw
                 ? [
-                    sharesRaw ? `${this.baseAmountFormatOrZero(sharesRaw)} shares burned` : null,
-                    underlyingRaw ? `${this.baseAmountFormatOrZero(underlyingRaw)} ${underlyingTicker} received` : null,
-                  ].filter(Boolean).join(' → ')
+                    sharesRaw
+                      ? `${this.baseAmountFormatOrZero(sharesRaw)} shares burned`
+                      : null,
+                    underlyingRaw
+                      ? `${this.baseAmountFormatOrZero(underlyingRaw)} ${underlyingTicker} received`
+                      : null,
+                  ]
+                    .filter(Boolean)
+                    .join(' → ')
                 : [
-                    fundsAmountRaw ? `${this.baseAmountFormatOrZero(fundsAmountRaw)} ${fundsDenom} deposited` : null,
-                    sharesRaw ? `${this.baseAmountFormatOrZero(sharesRaw)} shares minted` : null,
-                  ].filter(Boolean).join(' → '),
+                    fundsAmountRaw
+                      ? `${this.baseAmountFormatOrZero(fundsAmountRaw)} ${fundsDenom} deposited`
+                      : null,
+                    sharesRaw
+                      ? `${this.baseAmountFormatOrZero(sharesRaw)} shares minted`
+                      : null,
+                  ]
+                    .filter(Boolean)
+                    .join(' → '),
             },
           ],
           feeRows: [],
@@ -1921,7 +2057,10 @@ export default {
           metricRows: [
             { label: 'Instances', value: String(instanceCount) },
             timestamp
-              ? { label: 'Time', value: timestamp.format('YYYY-MM-DD HH:mm:ss') }
+              ? {
+                  label: 'Time',
+                  value: timestamp.format('YYYY-MM-DD HH:mm:ss'),
+                }
               : null,
           ].filter(Boolean),
           detailRows: [
@@ -1940,7 +2079,9 @@ export default {
             { label: 'Contract', value: contractLabel },
             { label: 'Instances', value: String(instanceCount) },
             { label: 'Status', value: status.label, type: 'status' },
-            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
+            timestamp
+              ? { label: 'Time', value: timestamp.format('lll') }
+              : null,
             height
               ? { label: 'Block', value: `#${this.normalFormat(height)}` }
               : null,
@@ -4671,7 +4812,7 @@ export default {
 
 .tx-detail-title {
   color: var(--sec-font-color);
-  font-size: clamp(2.1rem, 4.2vw, 3.4rem);
+  font-size: clamp(1.4rem, 2.4vw, 2rem);
   letter-spacing: -0.03em;
   line-height: 1.06;
   margin: 0 0 $space-24;
@@ -4706,7 +4847,7 @@ export default {
 .tx-detail-side {
   @include lg {
     position: sticky;
-    top: 75px;
+    top: 80px;
   }
 }
 
