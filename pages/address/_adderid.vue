@@ -63,10 +63,16 @@
             @portfolio-total="heroPortfolioTotalUsd = $event"
           />
           <balance-history
-            v-if="address && (hasBalances || addressLoading) && addressStat"
+            v-if="
+              showBalanceHistory &&
+              address &&
+              (hasBalances || addressLoading) &&
+              addressStat
+            "
             :key="address"
             class="card-balance-history"
             :address="address"
+            @negative-balance="showBalanceHistory = false"
           />
         </div>
       </div>
@@ -392,6 +398,7 @@ export default {
       currentPage: 1,
       limit: 30,
       heroPortfolioTotalUsd: 0,
+      showBalanceHistory: true,
     }
   },
   computed: {

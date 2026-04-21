@@ -97,6 +97,13 @@ export default {
           30
         )
         this.balanceData = response.data || []
+        const hasNegative = this.balanceData.some(
+          (item) => parseFloat(item.balance) < 0
+        )
+        if (hasNegative) {
+          this.$emit('negative-balance')
+          return
+        }
         this.chartOptions = this.formatBalanceHistory(this.balanceData)
       } catch (error) {
         console.error('Error fetching balance history:', error)
