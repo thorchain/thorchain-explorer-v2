@@ -1423,6 +1423,181 @@ export default {
         }
       }
 
+      // Ghost Credit Account: msg.account dispatches sub-messages through a credit sub-account
+      const creditAccountMsg = singleAction?.metadata?.contract?.msg?.account
+      if (creditAccountMsg) {
+        const action = singleAction
+        const contractAddress = action.out?.[0]?.address || ''
+        const contractLabel =
+          getRujiraContractLabel(contractAddress) ||
+          this.formatAddress(contractAddress)
+        const productLabel =
+          getRujiraContractProduct(contractAddress) || 'RUJI Money Market'
+        const userAddress = action.in?.[0]?.address || ''
+        const creditAccountAddr = creditAccountMsg.addr || ''
+        const subMsgs = creditAccountMsg.msgs || []
+        const hasError = (action.metadata?.contract?.code ?? 0) > 0
+        const status = hasError
+          ? { label: 'Failed', tone: 'red' }
+          : action.status === 'success'
+            ? { label: 'Success', tone: 'green' }
+            : { label: 'Pending', tone: 'blue' }
+        const date = action.date
+        const timestamp = date ? moment.unix(parseInt(date) / 1e9) : null
+        const height = parseInt(action.height)
+        const events = action.metadata?.contract?.contractEvents || []
+        const toAttrs = (e) =>
+          Object.fromEntries(
+            (e.attributes || []).map(({ key, value }) => [key, value])
+          )
+
+        // Extract borrow sub-messages
+        const borrowMsgs = subMsgs.filter((m) => m.borrow)
+        const borrowEvent = events.find(
+          (e) => e.type === 'wasm-rujira-ghost-credit/account.msg/borrow'
+        )
+        const borrowAttrs = borrowEvent ? toAttrs(borrowEvent) : {}
+        const borrowAmountStr = borrowAttrs.amount || ''
+        const borrowAmountRaw = parseInt(borrowAmountStr) || 0
+        const borrowDenom = borrowAmountStr.replace(/^\d+/, '').trim() ||
+          borrowMsgs[0]?.borrow?.denom || ''
+        const borrowAssetStr = borrowDenom
+          ? securedToAsset(borrowDenom).toUpperCase()
+          : ''
+        const borrowAssetParsed = borrowAssetStr ? assetFromString(borrowAssetStr) : null
+        const borrowTicker = borrowAssetParsed?.ticker || borrowDenom
+
+        // Extract FIN trade fill (CCL or limit)
+        const finTradeEvent = events.find((e) => e.type === 'wasm-rujira-fin/trade')
+        const finAttrs = finTradeEvent ? toAttrs(finTradeEvent) : {}
+        const finPairAddr = finAttrs['_contract_address'] || ''
+        const finPairLabel = getRujiraContractLabel(finPairAddr) || this.formatAddress(finPairAddr)
+        const bidRaw = parseInt(finAttrs.bid || 0)
+        const offerRaw = parseInt(finAttrs.offer || 0)
+        const fillPrice = parseFloat(finAttrs.rate || 0)
+        const isCCLFill = String(finAttrs.price || '').startsWith('ccl:')
+
+        // Find the output asset received by the credit account
+        const creditReceivedEvent = events.find(
+          (e) =>
+            e.type === 'coin_received' &&
+            (e.attributes || []).some(
+              (a) => a.key === 'receiver' && a.value === creditAccountAddr
+            ) &&
+            (e.attributes || []).some(
+              (a) => a.key === 'amount' && !a.value.includes(borrowDenom)
+            )
+        )
+        const outputAmountStr = creditReceivedEvent
+          ? ((e) => (e.attributes || []).find((a) => a.key === 'amount')?.value || '')(creditReceivedEvent)
+          : ''
+        const outputRaw = parseInt(outputAmountStr) || 0
+        const outputDenom = outputAmountStr.replace(/^\d+/, '').trim()
+        const outputAssetStr = outputDenom ? securedToAsset(outputDenom).toUpperCase() : ''
+        const outputAssetParsed = outputAssetStr ? assetFromString(outputAssetStr) : null
+        const outputTicker = outputAssetParsed?.ticker || outputDenom
+
+        // Retract event
+        const retractEvent = events.find((e) => e.type === 'wasm-rujira-fin/order.retract')
+        const retractAttrs = retractEvent ? toAttrs(retractEvent) : {}
+        const retractAmount = parseInt(retractAttrs.amount || 0)
+
+        const subMsgCount = subMsgs.length
+
+        return {
+          title: `Credit Account: ${this.formatAddress(creditAccountAddr)}`,
+          metaLabel: `Credit Account · ${productLabel}`,
+          status,
+          affiliateAddress: '',
+          actionTypeTitle: 'contract',
+          hasContractAction: true,
+          labels: [],
+          input: {
+            asset: borrowAssetParsed ? borrowAssetStr : null,
+            name: borrowTicker || 'Borrowed',
+            badge: borrowMsgs.length ? `${borrowMsgs.length} borrow${borrowMsgs.length !== 1 ? 's' : ''}` : '',
+            amount: borrowAmountRaw ? this.baseAmountFormatOrZero(borrowAmountRaw) : '-',
+            usd: null,
+          },
+          output: {
+            asset: outputAssetParsed ? outputAssetStr : null,
+            name: outputTicker || 'Received',
+            badge: isCCLFill ? 'CCL fill' : finTradeEvent ? 'Limit fill' : '',
+            amount: outputRaw ? this.baseAmountFormatOrZero(outputRaw) : '-',
+            usd: null,
+          },
+          metricRows: [
+            borrowAmountRaw
+              ? { label: 'Borrowed', value: `${this.baseAmountFormatOrZero(borrowAmountRaw)} ${borrowTicker}` }
+              : null,
+            outputRaw
+              ? { label: 'Received', value: `${this.baseAmountFormatOrZero(outputRaw)} ${outputTicker}` }
+              : null,
+            fillPrice
+              ? { label: 'Fill price', value: fillPrice.toFixed(2) }
+              : null,
+            { label: 'Sub-messages', value: String(subMsgCount) },
+            timestamp
+              ? { label: 'Time', value: timestamp.format('YYYY-MM-DD HH:mm:ss') }
+              : null,
+          ].filter(Boolean),
+          detailRows: [
+            {
+              label: 'Product',
+              value: productLabel,
+              tone: this.getProductTone(productLabel),
+              type: 'product',
+            },
+            {
+              label: 'Action',
+              value: 'Credit Account',
+              tone: this.getContractTypeTone('Credit Account'),
+              type: 'product',
+            },
+            { label: 'Contract', value: contractLabel },
+            { label: 'Sub-messages', value: String(subMsgCount) },
+            { label: 'Status', value: status.label, type: 'status' },
+            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
+            height ? { label: 'Block', value: `#${this.normalFormat(height)}` } : null,
+            userAddress ? { label: 'User', address: userAddress, type: 'address' } : null,
+            creditAccountAddr ? { label: 'Credit account', address: creditAccountAddr, type: 'address' } : null,
+          ].filter(Boolean),
+          lifecycleRows: [
+            borrowAmountRaw
+              ? {
+                  icon: 'RefreshIcon',
+                  title: 'Borrowed from Ghost Vault',
+                  body: `${this.baseAmountFormatOrZero(borrowAmountRaw)} ${borrowTicker}`,
+                }
+              : null,
+            finTradeEvent
+              ? {
+                  icon: 'ExchangeIcon',
+                  title: `${isCCLFill ? 'CCL' : 'Limit'} fill: ${finPairLabel}`,
+                  body: [
+                    offerRaw ? `${offerRaw} ${borrowTicker} offered` : null,
+                    bidRaw ? `${bidRaw} ${outputTicker} received` : null,
+                    fillPrice ? `@ ${fillPrice.toFixed(2)}` : null,
+                  ].filter(Boolean).join(' · '),
+                }
+              : null,
+            retractEvent
+              ? {
+                  icon: 'SubtractIcon',
+                  title: 'Unfilled order retracted',
+                  body: retractAmount ? `${retractAmount} ${borrowTicker} returned` : '',
+                }
+              : null,
+          ].filter(Boolean),
+          feeRows: [],
+          technicalRows: [
+            userAddress ? this.buildTechRow('From address', userAddress, 'address') : null,
+            creditAccountAddr ? this.buildTechRow('Credit account', creditAccountAddr, 'address') : null,
+            contractAddress ? this.buildTechRow('To address', contractAddress, 'address') : null,
+          ].filter(Boolean),
+        }
+      }
+
       // AutoRujira Reset Instance: msg.reset_instance
       const resetInstanceMsg = singleAction?.metadata?.contract?.msg?.reset_instance
       if (resetInstanceMsg) {
@@ -2183,6 +2358,7 @@ export default {
       if ('withdraw' in msg) return 'Ghost Vault Withdraw'
       if ('deposit' in msg) return 'Ghost Vault Deposit'
       if (msg.reset_instance) return 'Reset Instance'
+      if (msg.account) return 'Credit Account'
       const events = contractAction.metadata?.contract?.contractEvents || []
       if (events.some((e) => e.type === 'wasm-calc-manager/strategy.execute'))
         return 'CALC Strategy'
@@ -2200,6 +2376,7 @@ export default {
       if (type === 'Ghost Vault Deposit') return 'green'
       if (type === 'Ghost Vault Withdraw') return 'blue'
       if (type === 'Reset Instance') return 'blue'
+      if (type === 'Credit Account') return 'purple'
       return 'green'
     },
     getSwapProductLabel(action) {

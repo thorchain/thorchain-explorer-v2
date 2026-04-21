@@ -680,6 +680,7 @@ export default {
       if (msg.liquid && 'unbond' in msg.liquid) return 'Liquid Unbond'
       if ('withdraw' in msg) return 'Ghost Vault Withdraw'
       if ('deposit' in msg) return 'Ghost Vault Deposit'
+      if (msg.account) return 'Credit Account'
       const events = row?.metadata?.contract?.contractEvents || []
       if (events.some((e) => e.type === 'wasm-calc-manager/strategy.execute'))
         return 'CALC Strategy'
