@@ -652,6 +652,12 @@ export default {
         )
         .filter(Boolean)
       const contractActionType = this.getContractActionType(contractAction)
+      const inAmt = parseFloat(input.amount) / 1e8
+      const outAmt = parseFloat(output.amount) / 1e8
+      const computedRate =
+        inAmt > 0 && outAmt > 0
+          ? `1 ${inputAsset?.ticker || ''} = ${this.decimalFormat(outAmt / inAmt)} ${outputAsset?.ticker || ''}`
+          : null
       return {
         title: contractActionType
           ? `${contractActionType}: ${this.formatAssetAmount(input.amount, input.asset)} for ${this.formatAssetAmount(output.amount, output.asset)}`
@@ -680,7 +686,6 @@ export default {
         },
         metricRows: (() => {
           const base = [
-            rate ? { label: 'Exchange Rate', value: rate } : null,
             slip ? { label: 'Slippage', value: slip } : null,
             duration ? { label: 'Settled In', value: duration } : null,
             settledSeconds
@@ -741,6 +746,9 @@ export default {
                     getRujiraContractLabel(contractAction?.out?.[0]?.address) ||
                     this.formatAddress(contractAction?.out?.[0]?.address),
                 }
+              : null,
+            computedRate || rate
+              ? { label: 'Exchange Rate', value: computedRate || rate }
               : null,
             { label: 'Status', value: status.label, type: 'status' },
             {
