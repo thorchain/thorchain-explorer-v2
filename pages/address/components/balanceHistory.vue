@@ -1,6 +1,6 @@
 <template>
   <Card
-    title="Balance History"
+    title="RUNE Balance History"
     :is-loading="loading"
     style="height: 100%; display: flex; flex-direction: column"
   >
