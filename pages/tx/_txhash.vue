@@ -104,19 +104,24 @@
                 </div>
                 <template v-if="activeOverview.returnedOutput">
                   <div class="tx-asset-divider" />
-                  <div class="tx-asset-label tx-asset-label--returned">
-                    Returned
-                  </div>
-                  <div class="tx-asset-primary tx-asset-primary--muted">
-                    <AssetIcon
-                      v-if="activeOverview.returnedOutput.asset"
-                      :asset="activeOverview.returnedOutput.asset"
-                      :height="'1.75rem'"
-                    />
-                    <span>{{ activeOverview.returnedOutput.name }}</span>
-                  </div>
-                  <div class="tx-asset-values">
-                    <span>{{ activeOverview.returnedOutput.amount }}</span>
+                  <div class="tx-returned-panel">
+                    <div class="tx-asset-label tx-asset-label--returned">
+                      Returned
+                    </div>
+                    <div class="tx-returned-row">
+                      <AssetIcon
+                        v-if="activeOverview.returnedOutput.asset"
+                        :asset="activeOverview.returnedOutput.asset"
+                        :height="'1.1rem'"
+                        :chain-height="'0.7rem'"
+                      />
+                      <span class="tx-returned-name">{{
+                        activeOverview.returnedOutput.name
+                      }}</span>
+                      <span class="tx-returned-amount">{{
+                        activeOverview.returnedOutput.amount
+                      }}</span>
+                    </div>
                   </div>
                 </template>
               </div>
@@ -4628,16 +4633,19 @@ export default {
         )
       }
 
-      const rapidInterval =
-        swapAction?.metadata?.swap?.streamingSwapMeta?.interval ??
-        memo?.interval
+      const streamingMeta = swapAction?.metadata?.swap?.streamingSwapMeta
+      const depositAmountZero = !parseInt(
+        streamingMeta?.depositedCoin?.amount || 0
+      )
+      const rapidInterval = depositAmountZero
+        ? memo?.interval
+        : streamingMeta?.interval ?? memo?.interval
       const isRapidSwap =
         (rapidInterval === 0 || rapidInterval === '0') && +height > 25400000
       const swapTypeLabel = isRapidSwap ? 'rapid Swap' : 'swap'
       const refundedSwapTypeLabel = isRapidSwap
         ? 'refunded Rapid Swap'
         : 'refunded Swap'
-      const streamingMeta = swapAction?.metadata?.swap?.streamingSwapMeta
 
       return {
         cards: {
@@ -5236,11 +5244,30 @@ export default {
 .tx-asset-label--returned {
   color: var(--font-color);
   opacity: 0.7;
+  font-size: 0.75rem;
+  margin-bottom: $space-5;
 }
 
-.tx-asset-primary--muted {
-  font-size: 1.35rem;
+.tx-returned-panel {
+  padding-top: $space-5;
+}
+
+.tx-returned-row {
+  display: flex;
+  align-items: center;
+  gap: $space-8;
+  font-size: 0.85rem;
   opacity: 0.8;
+}
+
+.tx-returned-name {
+  color: var(--font-color);
+}
+
+.tx-returned-amount {
+  margin-left: auto;
+  color: var(--font-color);
+  font-weight: 500;
 }
 
 .exchange-rate-value {
