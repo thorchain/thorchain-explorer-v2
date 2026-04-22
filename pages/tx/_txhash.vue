@@ -76,7 +76,14 @@
                 <ArrowIcon v-else class="tx-swap-arrow-icon" />
               </div>
 
-              <div class="tx-asset-panel tx-asset-panel--accent">
+              <div
+                :class="[
+                  'tx-asset-panel',
+                  activeOverview.returnedOutput
+                    ? 'tx-asset-panel--accent tx-asset-panel--split'
+                    : 'tx-asset-panel--accent',
+                ]"
+              >
                 <div class="tx-asset-label">Output</div>
                 <div class="tx-asset-primary">
                   <AssetIcon
@@ -95,6 +102,23 @@
                     safeUsdDisplay(activeOverview.output.usd)
                   }}</strong>
                 </div>
+                <template v-if="activeOverview.returnedOutput">
+                  <div class="tx-asset-divider" />
+                  <div class="tx-asset-label tx-asset-label--returned">
+                    Returned
+                  </div>
+                  <div class="tx-asset-primary tx-asset-primary--muted">
+                    <AssetIcon
+                      v-if="activeOverview.returnedOutput.asset"
+                      :asset="activeOverview.returnedOutput.asset"
+                      :height="'1.75rem'"
+                    />
+                    <span>{{ activeOverview.returnedOutput.name }}</span>
+                  </div>
+                  <div class="tx-asset-values">
+                    <span>{{ activeOverview.returnedOutput.amount }}</span>
+                  </div>
+                </template>
               </div>
             </div>
 
@@ -869,12 +893,26 @@ export default {
               const tradeEvents = cEvents.filter(
                 (e) => e.type === 'wasm-rujira-fin/trade'
               )
-              const rates = tradeEvents
-                .map((e) => parseFloat(toAttrs(e).rate))
-                .filter((r) => !isNaN(r))
-              const avgRate = rates.length
-                ? (rates.reduce((s, r) => s + r, 0) / rates.length).toFixed(6)
-                : null
+              const avgRate = (() => {
+                let wSum = 0
+                let wTotal = 0
+                tradeEvents.forEach((e) => {
+                  const a = toAttrs(e)
+                  const r = parseFloat(a.rate)
+                  const w = parseInt(a.bid || 0)
+                  if (!isNaN(r) && w > 0) {
+                    wSum += r * w
+                    wTotal += w
+                  }
+                })
+                if (wTotal > 0) return (wSum / wTotal).toFixed(6)
+                const rs = tradeEvents
+                  .map((e) => parseFloat(toAttrs(e).rate))
+                  .filter((r) => !isNaN(r))
+                return rs.length
+                  ? (rs.reduce((s, r) => s + r, 0) / rs.length).toFixed(6)
+                  : null
+              })()
               rows.push({
                 label: 'CCL Fills',
                 value: String(tradeEvents.length),
@@ -1235,26 +1273,72 @@ export default {
         const tradeEvents = events.filter(
           (e) => e.type === 'wasm-rujira-fin/trade'
         )
-        const rates = tradeEvents
-          .map((e) => parseFloat(toAttrs(e).rate))
-          .filter((r) => !isNaN(r))
-        const avgRate = rates.length
-          ? rates.reduce((s, r) => s + r, 0) / rates.length
-          : null
+        const avgRate = (() => {
+          let wSum = 0
+          let wTotal = 0
+          tradeEvents.forEach((e) => {
+            const a = toAttrs(e)
+            const r = parseFloat(a.rate)
+            const w = parseInt(a.bid || 0)
+            if (!isNaN(r) && w > 0) {
+              wSum += r * w
+              wTotal += w
+            }
+          })
+          if (wTotal > 0) return wSum / wTotal
+          const rs = tradeEvents
+            .map((e) => parseFloat(toAttrs(e).rate))
+            .filter((r) => !isNaN(r))
+          return rs.length ? rs.reduce((s, r) => s + r, 0) / rs.length : null
+        })()
 
-        // Find the brune/output received by the user
-        const receivedTransfer = events
+        // Collect all coin_received for the user, group by denom and sum
+        const receivedByDenom = {}
+        events
           .filter((e) => e.type === 'coin_received')
           .map(toAttrs)
-          .find(
+          .filter(
             (a) =>
               a.receiver === userAddress &&
               a.amount &&
               !/^[\d]+rune$/.test(a.amount)
           )
-        const receivedStr = receivedTransfer?.amount || ''
-        const receivedAmount = parseInt(receivedStr) || 0
-        const receivedAsset = receivedStr.replace(/^[\d]+/, '').trim()
+          .forEach((a) => {
+            a.amount.split(',').forEach((part) => {
+              const p = part.trim()
+              const amt = parseInt(p) || 0
+              const denom = p.replace(/^\d+/, '').trim()
+              if (denom && amt > 0 && !/^rune$/i.test(denom))
+                receivedByDenom[denom] = (receivedByDenom[denom] || 0) + amt
+            })
+          })
+
+        // Prefer non-input denom (output asset), fall back to any received denom
+        const outputDenoms = Object.keys(receivedByDenom)
+        const primaryDenom =
+          outputDenoms.find((d) => d !== fundsAsset) || outputDenoms[0] || ''
+        const receivedAmount = receivedByDenom[primaryDenom] || 0
+        const receivedAssetDenom = primaryDenom
+
+        const fundsAssetStr = fundsAsset
+          ? securedToAsset(fundsAsset).toUpperCase()
+          : ''
+        const fundsAssetParsed = fundsAssetStr
+          ? assetFromString(fundsAssetStr)
+          : null
+        const fundsTicker = fundsAssetParsed?.ticker || fundsAsset
+
+        const receivedAssetStr = receivedAssetDenom
+          ? securedToAsset(receivedAssetDenom).toUpperCase()
+          : ''
+        const receivedAssetParsed = receivedAssetStr
+          ? assetFromString(receivedAssetStr)
+          : null
+        const receivedTicker = receivedAssetParsed?.ticker || receivedAssetDenom
+
+        const returnedAmount = receivedByDenom[fundsAsset] || 0
+        const filledAmount = fundsAmount - returnedAmount
+        const isPartialFill = returnedAmount > 0 && filledAmount > 0
 
         return {
           title: `Market Order: ${contractLabel}`,
@@ -1263,27 +1347,34 @@ export default {
           affiliateAddress: '',
           actionTypeTitle: 'contract',
           hasContractAction: true,
-          labels: [],
+          labels: isPartialFill ? ['Partial Fill'] : [],
           input: {
-            asset: null,
-            name: 'User',
-            badge: userAddress ? this.formatAddress(userAddress) : '',
+            asset: fundsAssetParsed ? fundsAssetStr : null,
+            name: fundsTicker || 'Input',
+            badge: this.getNetworkBadge(fundsAssetParsed) || '',
             amount: fundsAmount
-              ? `${this.baseAmountFormatOrZero(fundsAmount)} ${fundsAsset}`
+              ? `${this.baseAmountFormatOrZero(fundsAmount)} ${fundsTicker}`
               : '-',
             usd: null,
           },
           output: {
-            asset: null,
-            name: contractLabel,
-            badge: productLabel,
+            asset: receivedAssetParsed ? receivedAssetStr : null,
+            name: receivedTicker || contractLabel,
+            badge: this.getNetworkBadge(receivedAssetParsed) || productLabel,
             amount: receivedAmount
-              ? `${this.baseAmountFormatOrZero(receivedAmount)} ${receivedAsset}`
+              ? `${this.baseAmountFormatOrZero(receivedAmount)} ${receivedTicker}`
               : avgRate
                 ? `Rate ${avgRate.toFixed(6)}`
                 : 'Filled',
             usd: null,
           },
+          returnedOutput: isPartialFill
+            ? {
+                asset: fundsAssetParsed ? fundsAssetStr : null,
+                name: fundsTicker,
+                amount: `${this.baseAmountFormatOrZero(returnedAmount)} ${fundsTicker}`,
+              }
+            : null,
           metricRows: [
             avgRate ? { label: 'Rate', value: avgRate.toFixed(6) } : null,
             tradeEvents.length
@@ -1305,11 +1396,23 @@ export default {
             },
             {
               label: 'Action',
-              value: 'Market Order',
+              value: isPartialFill ? 'Partial Fill' : 'Market Order',
               tone: this.getContractTypeTone('Market Order'),
               type: 'product',
             },
             { label: 'Contract', value: contractLabel },
+            isPartialFill
+              ? {
+                  label: 'Filled',
+                  value: `${this.baseAmountFormatOrZero(filledAmount)} ${fundsTicker}`,
+                }
+              : null,
+            isPartialFill
+              ? {
+                  label: 'Returned',
+                  value: `${this.baseAmountFormatOrZero(returnedAmount)} ${fundsTicker}`,
+                }
+              : null,
             { label: 'Status', value: status.label, type: 'status' },
             timestamp
               ? { label: 'Time', value: timestamp.format('lll') }
@@ -1324,13 +1427,15 @@ export default {
           lifecycleRows: [
             {
               icon: 'CheckIcon',
-              title: 'Market order filled',
+              title: isPartialFill ? 'Market order partially filled' : 'Market order filled',
               body: [
-                fundsAmount
-                  ? `${this.baseAmountFormatOrZero(fundsAmount)} ${fundsAsset} in`
-                  : null,
+                isPartialFill
+                  ? `${this.baseAmountFormatOrZero(filledAmount)} ${fundsTicker} filled`
+                  : fundsAmount
+                    ? `${this.baseAmountFormatOrZero(fundsAmount)} ${fundsTicker} in`
+                    : null,
                 receivedAmount
-                  ? `${this.baseAmountFormatOrZero(receivedAmount)} ${receivedAsset} out`
+                  ? `${this.baseAmountFormatOrZero(receivedAmount)} ${receivedTicker} out`
                   : null,
                 avgRate ? `avg rate ${avgRate.toFixed(6)}` : null,
               ]
@@ -1338,7 +1443,15 @@ export default {
                 .join(' · '),
             },
             ...this.extractContractEventRows(action),
-          ],
+            isPartialFill
+              ? {
+                  icon: 'RefreshIcon',
+                  iconRotate: 0,
+                  title: 'Unfilled amount returned',
+                  body: `${this.baseAmountFormatOrZero(returnedAmount)} ${fundsTicker} returned to sender`,
+                }
+              : null,
+          ].filter(Boolean),
           feeRows: [],
           technicalRows: [
             userAddress
@@ -2655,12 +2768,25 @@ export default {
             String(a.price || '').startsWith('thor1')
           )
           const fillCount = fills.length
-          const rates = fills
-            .map((a) => parseFloat(a.rate))
-            .filter((r) => !isNaN(r))
-          const avgRate = rates.length
-            ? (rates.reduce((s, r) => s + r, 0) / rates.length).toFixed(6)
-            : null
+          const avgRate = (() => {
+            let wSum = 0
+            let wTotal = 0
+            fills.forEach((a) => {
+              const r = parseFloat(a.rate)
+              const w = parseInt(a.bid || 0)
+              if (!isNaN(r) && w > 0) {
+                wSum += r * w
+                wTotal += w
+              }
+            })
+            if (wTotal > 0) return (wSum / wTotal).toFixed(6)
+            const rs = fills
+              .map((a) => parseFloat(a.rate))
+              .filter((r) => !isNaN(r))
+            return rs.length
+              ? (rs.reduce((s, r) => s + r, 0) / rs.length).toFixed(6)
+              : null
+          })()
           let fillType
           if (hasCCL && hasVirtual) fillType = 'CCL + Virtualisation'
           else if (hasVirtual) fillType = 'Virtualisation'
@@ -5099,6 +5225,22 @@ export default {
   font-size: $font-size-sm;
   font-weight: 500;
   text-align: right;
+}
+
+.tx-asset-divider {
+  border-top: 1px dashed
+    color-mix(in srgb, var(--border-color) 80%, transparent);
+  margin: $space-10 0;
+}
+
+.tx-asset-label--returned {
+  color: var(--font-color);
+  opacity: 0.7;
+}
+
+.tx-asset-primary--muted {
+  font-size: 1.35rem;
+  opacity: 0.8;
 }
 
 .exchange-rate-value {
