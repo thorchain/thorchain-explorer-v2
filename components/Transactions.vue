@@ -86,13 +86,7 @@
             </span>
           </div>
 
-          <div
-            v-else-if="props.column.field === 'age'"
-            v-tooltip="getTime(props.row.age)"
-            class="hoverable"
-          >
-            {{ props.formattedRow[props.column.field] }}
-          </div>
+          <div v-else-if="props.column.field === 'age'" v-tooltip="getTime(props.row.age)" class="hoverable" style="white-space: nowrap">{{ props.formattedRow[props.column.field] }}</div>
           <template v-else-if="props.column.field === 'volume'">
             <slot :name="props.column.field" :props="props"></slot>
           </template>
