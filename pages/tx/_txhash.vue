@@ -522,6 +522,7 @@ export default {
     inputExplorerUrl() {
       const asset = this.activeOverview?.input?.asset
       if (!asset) return null
+      if (this.activeOverview?.input?.secure) return null
       const parsed = assetFromString(asset)
       const chain = parsed?.chain
       if (!chain || chain === 'THOR') return null
@@ -699,45 +700,196 @@ export default {
         )
         .filter(Boolean)
       const contractActionType = this.getContractActionType(contractAction)
-      const inAmt = parseFloat(input.amount) / 1e8
-      const outAmt = parseFloat(output.amount) / 1e8
+
+      // When the contract action is a Market Order (FIN DEX), extract the
+      // true user-facing amounts from the contract events rather than using
+      // the midgard amounts which only reflect the tiny THORChain-native leg.
+      let contractDisplay = null
+      if (contractAction && contractActionType) {
+        const cEvents =
+          contractAction.metadata?.contract?.contractEvents || []
+        const cToAttrs = (e) =>
+          Object.fromEntries(
+            (e.attributes || []).map(({ key, value }) => [key, value])
+          )
+        const cUserAddr = contractAction.in?.[0]?.address || ''
+
+        // Input: prefer metadata.funds, fall back to first non-rune coin_spent by user
+        let cFundsAmount = 0
+        let cFundsDenom = ''
+        const cFundsStr = contractAction.metadata?.contract?.funds || ''
+        if (cFundsStr) {
+          cFundsAmount = parseInt(cFundsStr) || 0
+          cFundsDenom = cFundsStr.replace(/^\d+/, '').trim()
+        }
+        if (!cFundsAmount && cUserAddr) {
+          const spentAttr = cEvents
+            .filter((e) => e.type === 'coin_spent')
+            .map(cToAttrs)
+            .find(
+              (a) =>
+                a.spender === cUserAddr &&
+                a.amount &&
+                !/rune$/i.test(a.amount)
+            )
+          if (spentAttr) {
+            cFundsAmount = parseInt(spentAttr.amount) || 0
+            cFundsDenom = spentAttr.amount.replace(/^\d+/, '').trim()
+          }
+        }
+
+        // Output: aggregate coin_received by user (non-rune, prefer non-input denom)
+        const cReceivedByDenom = {}
+        if (cUserAddr) {
+          cEvents
+            .filter((e) => e.type === 'coin_received')
+            .map(cToAttrs)
+            .filter(
+              (a) =>
+                a.receiver === cUserAddr &&
+                a.amount &&
+                !/^[\d]+rune$/.test(a.amount)
+            )
+            .forEach((a) => {
+              a.amount.split(',').forEach((part) => {
+                const p = part.trim()
+                const amt = parseInt(p) || 0
+                const denom = p.replace(/^\d+/, '').trim()
+                if (denom && amt > 0 && !/^rune$/i.test(denom))
+                  cReceivedByDenom[denom] =
+                    (cReceivedByDenom[denom] || 0) + amt
+              })
+            })
+        }
+        const cOutDenoms = Object.keys(cReceivedByDenom)
+        const cPrimaryDenom =
+          cOutDenoms.find((d) => d !== cFundsDenom) || cOutDenoms[0] || ''
+        const cReceivedAmt = cReceivedByDenom[cPrimaryDenom] || 0
+
+        if (cFundsAmount > 0 || cReceivedAmt > 0) {
+          const cInAssetStr = cFundsDenom
+            ? securedToAsset(cFundsDenom).toUpperCase()
+            : ''
+          // Preserve secure: true flag for badge; fall back to converted form
+          const cInAsset = cFundsDenom
+            ? (assetFromString(cFundsDenom.toUpperCase()) ??
+                assetFromString(cInAssetStr))
+            : null
+          const cInTicker = cInAsset?.ticker || cFundsDenom
+          const cOutAssetStr = cPrimaryDenom
+            ? securedToAsset(cPrimaryDenom).toUpperCase()
+            : ''
+          const cOutAsset = cPrimaryDenom
+            ? (assetFromString(cPrimaryDenom.toUpperCase()) ??
+                assetFromString(cOutAssetStr))
+            : null
+          const cOutTicker = cOutAsset?.ticker || cPrimaryDenom
+          const cInUsdRaw = this.amountToUSD(cInAssetStr, cFundsAmount, this.pools)
+          const cOutUsdRaw = this.amountToUSD(cOutAssetStr, cReceivedAmt, this.pools)
+          contractDisplay = {
+            inputAsset: cInAssetStr || null,
+            inputName:
+              this.getAssetDisplayName(cInAssetStr) || cInTicker || 'Input',
+            inputBadge: this.getNetworkBadge(cInAsset) || '',
+            inputAmount: cFundsAmount
+              ? `${this.baseAmountFormatOrZero(cFundsAmount)} ${cInTicker}`
+              : '-',
+            inputUsd: this.formatUsdValue(cInUsdRaw),
+            inputUsdRaw: cInUsdRaw,
+            outputAsset: cOutAssetStr || null,
+            outputName:
+              this.getAssetDisplayName(cOutAssetStr) || cOutTicker || 'Output',
+            outputBadge: this.getNetworkBadge(cOutAsset) || '',
+            outputAmount: cReceivedAmt
+              ? `${this.baseAmountFormatOrZero(cReceivedAmt)} ${cOutTicker}`
+              : '-',
+            outputUsd: this.formatUsdValue(cOutUsdRaw),
+            outputUsdRaw: cOutUsdRaw,
+            inAmt: cFundsAmount / 1e8,
+            outAmt: cReceivedAmt / 1e8,
+            inTicker: cInTicker,
+            outTicker: cOutTicker,
+            inputSecure: cInAsset?.secure ?? false,
+          }
+        }
+      }
+
+      const inAmt = contractDisplay
+        ? contractDisplay.inAmt
+        : parseFloat(input.amount) / 1e8
+      const outAmt = contractDisplay
+        ? contractDisplay.outAmt
+        : parseFloat(output.amount) / 1e8
+      const rateInTicker = contractDisplay
+        ? contractDisplay.inTicker
+        : inputAsset?.ticker || ''
+      const rateOutTicker = contractDisplay
+        ? contractDisplay.outTicker
+        : outputAsset?.ticker || ''
       const computedRate =
         inAmt > 0 && outAmt > 0
-          ? `1 ${inputAsset?.ticker || ''} = ${this.decimalFormat(outAmt / inAmt)} ${outputAsset?.ticker || ''}`
+          ? `1 ${rateInTicker} = ${this.decimalFormat(outAmt / inAmt)} ${rateOutTicker}`
           : null
       const computedRateFlipped =
         inAmt > 0 && outAmt > 0
-          ? `1 ${outputAsset?.ticker || ''} = ${this.decimalFormat(inAmt / outAmt)} ${inputAsset?.ticker || ''}`
+          ? `1 ${rateOutTicker} = ${this.decimalFormat(inAmt / outAmt)} ${rateInTicker}`
           : null
+      const displayInputAmount = contractDisplay
+        ? contractDisplay.inputAmount
+        : this.formatAssetAmount(input.amount, input.asset)
+      const displayOutputAmount = contractDisplay
+        ? contractDisplay.outputAmount
+        : this.formatAssetAmount(output.amount, output.asset)
       return {
         title: contractActionType
-          ? `${contractActionType}: ${this.formatAssetAmount(input.amount, input.asset)} for ${this.formatAssetAmount(output.amount, output.asset)}`
-          : `Swapped ${this.formatAssetAmount(input.amount, input.asset)} for ${this.formatAssetAmount(output.amount, output.asset)}`,
+          ? `${contractActionType}: ${displayInputAmount} for ${displayOutputAmount}`
+          : `Swapped ${displayInputAmount} for ${displayOutputAmount}`,
         metaLabel: `${contractActionType || this.getSwapActionLabel(inputAsset, outputAsset)} · ${this.getSwapProductLabel(contractAction)}`,
         hasContractAction: !!contractAction,
         status,
         affiliateAddress: details?.interface || '',
         actionTypeTitle: details?.title || '',
         labels: details?.labels || [],
-        input: {
-          asset: input.asset,
-          name: this.getAssetDisplayName(input.asset),
-          badge: this.getNetworkBadge(inputAsset),
-          amount: this.formatAssetAmount(input.amount, input.asset),
-          usd: this.formatUsdValue(input.amountUSD),
-          txId: inboundHash,
-        },
-        output: {
-          asset: output.asset,
-          name: this.getAssetDisplayName(output.asset),
-          badge: this.getNetworkBadge(outputAsset),
-          amount: this.formatAssetAmount(output.amount, output.asset),
-          usd: this.formatUsdValue(output.amountUSD),
-          txId: outboundHash,
-        },
+        input: contractDisplay
+          ? {
+              asset: contractDisplay.inputAsset,
+              name: contractDisplay.inputName,
+              badge: contractDisplay.inputBadge,
+              amount: contractDisplay.inputAmount,
+              usd: contractDisplay.inputUsd,
+              txId: inboundHash,
+              secure: contractDisplay.inputSecure ?? false,
+            }
+          : {
+              asset: input.asset,
+              name: this.getAssetDisplayName(input.asset),
+              badge: this.getNetworkBadge(inputAsset),
+              amount: this.formatAssetAmount(input.amount, input.asset),
+              usd: this.formatUsdValue(input.amountUSD),
+              txId: inboundHash,
+            },
+        output: contractDisplay
+          ? {
+              asset: contractDisplay.outputAsset,
+              name: contractDisplay.outputName,
+              badge: contractDisplay.outputBadge,
+              amount: contractDisplay.outputAmount,
+              usd: contractDisplay.outputUsd,
+              txId: outboundHash,
+            }
+          : {
+              asset: output.asset,
+              name: this.getAssetDisplayName(output.asset),
+              badge: this.getNetworkBadge(outputAsset),
+              amount: this.formatAssetAmount(output.amount, output.asset),
+              usd: this.formatUsdValue(output.amountUSD),
+              txId: outboundHash,
+            },
         metricRows: (() => {
           const base = [
-            slip ? { label: 'Slippage', value: slip } : null,
+            !contractDisplay && slip
+              ? { label: 'Slippage', value: slip }
+              : null,
             duration ? { label: 'Settled In', value: duration } : null,
             settledSeconds
               ? {
@@ -767,9 +919,14 @@ export default {
             base.push({ label: 'Strategies', value: String(strategyCount) })
           if (finPairs > 0)
             base.push({ label: 'FIN Pairs', value: String(finPairs) })
-          if (base.length < 3) {
-            const inUsd = parseFloat(input.amountUSD) || 0
-            const outUsd = parseFloat(output.amountUSD) || 0
+          const showPriceImpact = contractDisplay || base.length < 3
+          if (showPriceImpact) {
+            const inUsd = contractDisplay
+              ? contractDisplay.inputUsdRaw || 0
+              : parseFloat(input.amountUSD) || 0
+            const outUsd = contractDisplay
+              ? contractDisplay.outputUsdRaw || 0
+              : parseFloat(output.amountUSD) || 0
             if (inUsd > 0 && outUsd > 0) {
               const impact = ((outUsd / inUsd - 1) * 100).toFixed(2)
               const sign = parseFloat(impact) > 0 ? '+' : ''
@@ -945,6 +1102,43 @@ export default {
             const { usd, subtle } = this.splitFeeValue(formatted)
             return { label, usd, subtle }
           }
+
+          if (contractDisplay) {
+            const inUsd = contractDisplay.inputUsdRaw || 0
+            const outUsd = contractDisplay.outputUsdRaw || 0
+            const totalCost = inUsd - outUsd
+
+            const rows = networkFees.map((value, i) =>
+              toRow(i === 0 ? 'Network Fee' : `Network Fee ${i + 1}`, value)
+            )
+
+            const networkFeesUsd = rows.reduce(
+              (sum, r) => sum + this.parseUsdAmount(r.usd),
+              0
+            )
+            const dexCost = totalCost - networkFeesUsd
+            if (dexCost > 0) {
+              rows.push({
+                label: 'DEX Cost',
+                usd: `$${this.formatFeeDisplay(dexCost)}`,
+                subtle: null,
+              })
+            }
+
+            const totalPct =
+              inUsd > 0 && totalCost > 0
+                ? `${((totalCost / inUsd) * 100).toFixed(3)}% of swap value`
+                : null
+            rows.push({
+              label: 'Total Fees Paid',
+              usd: `$${this.formatFeeDisplay(Math.max(totalCost, 0))}`,
+              subtle: totalPct,
+              isTotal: true,
+            })
+
+            return rows
+          }
+
           const rows = [
             ...networkFees.map((value, i) =>
               toRow(i === 0 ? 'Network Fee' : `Network Fee ${i + 1}`, value)
@@ -1007,12 +1201,21 @@ export default {
     contractOverview() {
       if (!this.rawActions?.length) return null
 
-      // Only applies when every action is a contract type
-      if (!this.rawActions.every((a) => a.type === 'contract')) return null
+      // Applies when all actions are contract, or contract + refund combination
+      const contractActions = this.rawActions.filter(
+        (a) => a.type === 'contract'
+      )
+      if (contractActions.length === 0) return null
+      if (
+        this.rawActions.some(
+          (a) => a.type !== 'contract' && a.type !== 'refund'
+        )
+      )
+        return null
 
       // Limit order placement: single contract action with msg.order
       const singleAction =
-        this.rawActions.length === 1 ? this.rawActions[0] : null
+        contractActions.length === 1 ? contractActions[0] : null
       const limitOrderMsg = singleAction?.metadata?.contract?.msg?.order
       if (limitOrderMsg) {
         const action = singleAction
@@ -1328,22 +1531,29 @@ export default {
         const fundsAssetStr = fundsAsset
           ? securedToAsset(fundsAsset).toUpperCase()
           : ''
-        const fundsAssetParsed = fundsAssetStr
-          ? assetFromString(fundsAssetStr)
+        // Parse raw denom first so secure: true is preserved for badge display,
+        // fall back to the securedToAsset version for non-secured denoms
+        const fundsAssetParsed = fundsAsset
+          ? (assetFromString(fundsAsset.toUpperCase()) ??
+              assetFromString(fundsAssetStr))
           : null
         const fundsTicker = fundsAssetParsed?.ticker || fundsAsset
 
         const receivedAssetStr = receivedAssetDenom
           ? securedToAsset(receivedAssetDenom).toUpperCase()
           : ''
-        const receivedAssetParsed = receivedAssetStr
-          ? assetFromString(receivedAssetStr)
+        const receivedAssetParsed = receivedAssetDenom
+          ? (assetFromString(receivedAssetDenom.toUpperCase()) ??
+              assetFromString(receivedAssetStr))
           : null
         const receivedTicker = receivedAssetParsed?.ticker || receivedAssetDenom
 
         const returnedAmount = receivedByDenom[fundsAsset] || 0
         const filledAmount = fundsAmount - returnedAmount
         const isPartialFill = returnedAmount > 0 && filledAmount > 0
+
+        const refundAction = this.rawActions.find((a) => a.type === 'refund')
+        const refundReason = refundAction?.metadata?.refund?.reason || null
 
         return {
           title: `Market Order: ${contractLabel}`,
@@ -1360,7 +1570,10 @@ export default {
             amount: fundsAmount
               ? `${this.baseAmountFormatOrZero(fundsAmount)} ${fundsTicker}`
               : '-',
-            usd: null,
+            usd: this.formatUsdValue(
+              this.amountToUSD(fundsAssetStr, fundsAmount, this.pools)
+            ),
+            secure: fundsAssetParsed?.secure ?? false,
           },
           output: {
             asset: receivedAssetParsed ? receivedAssetStr : null,
@@ -1371,15 +1584,38 @@ export default {
               : avgRate
                 ? `Rate ${avgRate.toFixed(6)}`
                 : 'Filled',
-            usd: null,
+            usd: receivedAmount
+              ? this.formatUsdValue(
+                  this.amountToUSD(receivedAssetStr, receivedAmount, this.pools)
+                )
+              : null,
           },
-          returnedOutput: isPartialFill
-            ? {
+          returnedOutput: (() => {
+            if (isPartialFill) {
+              return {
                 asset: fundsAssetParsed ? fundsAssetStr : null,
                 name: fundsTicker,
                 amount: `${this.baseAmountFormatOrZero(returnedAmount)} ${fundsTicker}`,
               }
-            : null,
+            }
+            if (refundAction) {
+              const refundCoin = refundAction.out?.[0]?.coins?.[0]
+              if (refundCoin) {
+                const refundAssetStr = this.parseMemoAsset(refundCoin.asset)
+                const refundAssetParsed = assetFromString(
+                  refundAssetStr || refundCoin.asset
+                )
+                const refundTicker =
+                  refundAssetParsed?.ticker || refundCoin.asset
+                return {
+                  asset: refundAssetStr || null,
+                  name: refundTicker,
+                  amount: `${this.baseAmountFormatOrZero(refundCoin.amount)} ${refundTicker}`,
+                }
+              }
+            }
+            return null
+          })(),
           metricRows: [
             avgRate ? { label: 'Rate', value: avgRate.toFixed(6) } : null,
             tradeEvents.length
@@ -1419,6 +1655,9 @@ export default {
                 }
               : null,
             { label: 'Status', value: status.label, type: 'status' },
+            refundReason
+              ? { label: 'THORChain Refund', value: refundReason }
+              : null,
             timestamp
               ? { label: 'Time', value: timestamp.format('lll') }
               : null,
@@ -1454,6 +1693,14 @@ export default {
                   iconRotate: 0,
                   title: 'Unfilled amount returned',
                   body: `${this.baseAmountFormatOrZero(returnedAmount)} ${fundsTicker} returned to sender`,
+                }
+              : null,
+            refundAction
+              ? {
+                  icon: 'RefreshIcon',
+                  iconRotate: 0,
+                  title: 'THORChain swap refunded',
+                  body: refundReason || 'THORChain leg was refunded',
                 }
               : null,
           ].filter(Boolean),
