@@ -79,50 +79,50 @@
 
       <div class="activity-shell">
         <div class="activity-shell__toolbar">
-          <div class="action-buttons">
-            <button
-              class="action-btn"
-              :class="{ active: activeMode === 'transactions' }"
-              @click="activeMode = 'transactions'"
-            >
-              Transactions
-            </button>
-            <button
-              class="action-btn"
-              :class="{ active: activeMode === 'pools' }"
-              @click="activeMode = 'pools'"
-            >
-              LP/Savers
-            </button>
-            <button
-              class="action-btn"
-              :class="{ active: activeMode === 'bond' }"
-              @click="activeMode = 'bond'"
-            >
-              Bond
-            </button>
-            <button
-              class="action-btn"
-              :class="{ active: activeMode === 'thorname' }"
-              @click="activeMode = 'thorname'"
-            >
-              Thorname
-            </button>
-            <button
-              class="action-btn"
-              :class="{ active: activeMode === 'distribution' }"
-              @click="activeMode = 'distribution'"
-            >
-              TCY
-            </button>
-          </div>
-
-          <div class="activity-shell__filters">
-            <advanced-filter
-              ref="advancedFilter"
-              :hide-address-filter="true"
-              class="desktop-filters"
-            />
+          <div class="toolbar-row">
+            <div class="preset-rail">
+              <button
+                class="preset-pill"
+                :class="{ active: activeMode === 'transactions' }"
+                @click="activeMode = 'transactions'"
+              >
+                Transactions
+              </button>
+              <button
+                class="preset-pill"
+                :class="{ active: activeMode === 'pools' }"
+                @click="activeMode = 'pools'"
+              >
+                LP/Savers
+              </button>
+              <button
+                class="preset-pill"
+                :class="{ active: activeMode === 'bond' }"
+                @click="activeMode = 'bond'"
+              >
+                Bond
+              </button>
+              <button
+                class="preset-pill"
+                :class="{ active: activeMode === 'thorname' }"
+                @click="activeMode = 'thorname'"
+              >
+                Thorname
+              </button>
+              <button
+                class="preset-pill"
+                :class="{ active: activeMode === 'distribution' }"
+                @click="activeMode = 'distribution'"
+              >
+                TCY
+              </button>
+            </div>
+            <div class="toolbar-controls">
+              <advanced-filter
+                ref="advancedFilter"
+                :hide-address-filter="true"
+              />
+            </div>
           </div>
         </div>
 
@@ -1108,61 +1108,56 @@ export default {
 }
 
 .activity-shell__toolbar {
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.85rem;
-  justify-content: space-between;
+  background: color-mix(in srgb, var(--card-bg-color) 94%, transparent);
+  border: 1px solid var(--border-color);
+  border-radius: $radius-xl;
+  padding: $space-18 $space-20;
   margin-bottom: $space-10;
 }
 
-.activity-shell__filters {
+.toolbar-row {
   display: flex;
-  justify-content: flex-end;
-  width: 100%;
+  justify-content: space-between;
+}
 
-  @include lg {
-    width: auto;
+.toolbar-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: $space-8;
+
+  ::v-deep .advanced-filter {
+    min-height: unset;
+    padding: $space-12 $space-14;
   }
 }
 
-.action-buttons {
+.preset-rail {
   display: flex;
-  gap: 5px;
-  overflow: auto;
-  justify-content: flex-start;
-  scrollbar-width: thin;
-  padding-top: $space-8;
-  scrollbar-color: var(--border-color) var(--bg-color);
-  margin: 0 10px;
+  gap: $space-10;
+  overflow-x: auto;
+}
 
-  .action-btn {
-    background-color: var(--card-bg-color);
-    border: 1px solid var(--border-color);
-    border-radius: $radius-s;
-    padding: 4.8px 9.6px;
-    color: var(--sec-font-color);
-    font-size: $font-size-xxs;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
+.preset-pill {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: $radius-md;
+  color: var(--font-color);
+  cursor: pointer;
+  flex: 0 0 auto;
+  font-size: $font-size-sm;
+  padding: $space-12 $space-14;
+  transition: 0.2s ease;
 
-    &:hover {
-      background-color: var(--primary-color);
-      color: var(--sec-font-color);
-      border-color: var(--primary-color);
-    }
+  &:hover {
+    background: color-mix(in srgb, var(--highlight) 8%, transparent);
+    color: var(--green);
+  }
 
-    &.active {
-      background-color: var(--primary-color);
-      color: var(--sec-font-color);
-      border-color: var(--primary-color);
-    }
-
-    @include md {
-      font-size: $font-size-xs;
-      padding: $space-5 $space-10;
-    }
+  &.active {
+    background: color-mix(in srgb, var(--green) 12%, transparent);
+    border-color: color-mix(in srgb, var(--green) 60%, transparent);
+    color: var(--green);
   }
 }
 
