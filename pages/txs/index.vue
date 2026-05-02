@@ -199,10 +199,6 @@ export default {
     '$route.query': {
       handler(query) {
         this.syncToolbar(query)
-        if (Object.keys(query || {}).length === 0) {
-          this.loading = false
-          return
-        }
         this.fetchData(query)
       },
       immediate: true,
