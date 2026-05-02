@@ -483,6 +483,11 @@ export default {
   display: flex;
   flex-direction: column;
   gap: $space-18;
+  margin: 0 $space-10;
+
+  @include md {
+    margin: 0;
+  }
 
   @include lg {
     align-items: flex-start;
@@ -569,7 +574,12 @@ export default {
   background: color-mix(in srgb, var(--card-bg-color) 94%, transparent);
   border: 1px solid var(--border-color);
   border-radius: $radius-xl;
+  margin: 0 $space-10;
   padding: $space-18 $space-20;
+
+  @include md {
+    margin: 0;
+  }
 }
 
 .toolbar-row {

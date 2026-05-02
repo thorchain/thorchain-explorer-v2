@@ -1060,6 +1060,7 @@ export default {
   }
 }
 
+
 .qr-copy-wrapper {
   display: flex;
   gap: 5px;
@@ -1112,12 +1113,19 @@ export default {
   border: 1px solid var(--border-color);
   border-radius: $radius-xl;
   padding: $space-18 $space-20;
+  margin: 0 $space-10;
   margin-bottom: $space-10;
 }
 
 .toolbar-row {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: $space-10;
+
+  @include md {
+    flex-direction: row;
+    justify-content: space-between;
+  }
 }
 
 .toolbar-controls {
