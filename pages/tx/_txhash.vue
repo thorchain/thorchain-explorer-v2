@@ -3638,7 +3638,7 @@ export default {
         tradeDeposit: 'createTradeDepositState',
         secureDeposit: 'createTradeDepositState',
         bond: 'createBondState',
-        unbound: 'createUnbondState',
+        unbond: 'createUnbondState',
         thorname: BUILDERS_MODULE.thorname,
         loanRepayment: 'createLoanRepayment',
         tcyUnstake: 'createTCYUnstake',

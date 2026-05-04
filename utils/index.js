@@ -312,7 +312,7 @@ const memoToType = {
   donate: 'donate',
   d: 'donate',
   bond: 'bond',
-  unbond: 'unbound',
+  unbond: 'unbond',
   leave: 'leave',
   'yggdrasil+': 'YggdrasilFund',
   'yggdrasil-': 'YggdrasilReturn',
