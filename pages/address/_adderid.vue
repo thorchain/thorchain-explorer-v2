@@ -789,12 +789,9 @@ export default {
     justify-content: space-between;
     padding: 1.35rem 1.45rem;
     margin: 0 $space-10;
-
-    @include md {
-      margin: 0;
-    }
-
+    
     @include lg {
+      margin: 0;
       align-items: center;
       flex-direction: row;
     }
@@ -1115,6 +1112,11 @@ export default {
   padding: $space-18 $space-20;
   margin: 0 $space-10;
   margin-bottom: $space-10;
+
+  @include lg {
+    margin: 0;
+    margin-bottom: $space-10;
+  }
 }
 
 .toolbar-row {
