@@ -712,7 +712,12 @@ export default {
           Object.fromEntries(
             (e.attributes || []).map(({ key, value }) => [key, value])
           )
-        const cUserAddr = contractAction.in?.[0]?.address || ''
+        // Prefer the swap action's sender; the contractAction.in address is often
+        // the CosmWasm executor module account, not the actual user
+        const cUserAddr =
+          midgardSwap?.in?.[0]?.address ||
+          contractAction.in?.[0]?.address ||
+          ''
 
         // Input: prefer metadata.funds, fall back to first non-rune coin_spent by user
         let cFundsAmount = 0
@@ -738,9 +743,32 @@ export default {
           }
         }
 
-        // Output: aggregate coin_received by user (non-rune, prefer non-input denom)
+        // Output: prefer bid sum from fin/trade events (actual DEX distribution),
+        // fall back to coin_received by user for non-fin-trade contract actions
         const cReceivedByDenom = {}
-        if (cUserAddr) {
+        const finTradesForOutput = cEvents.filter(
+          (e) => e.type === 'wasm-rujira-fin/trade'
+        )
+        if (finTradesForOutput.length > 0) {
+          // bid = output token (base token) going to takers; only count real fills (offer > 0)
+          // Infer output denom from the swap action's outbound asset
+          const swapOutDenom =
+            midgardSwap?.out
+              ?.flatMap((o) => o.coins || [])
+              .find((c) => c.asset)
+              ?.asset?.toLowerCase() || ''
+          finTradesForOutput.forEach((e) => {
+            const a = cToAttrs(e)
+            const bid = parseInt(a.bid || 0)
+            const offer = parseInt(a.offer || 0)
+            if (bid > 0 && offer > 0 && swapOutDenom) {
+              cReceivedByDenom[swapOutDenom] =
+                (cReceivedByDenom[swapOutDenom] || 0) + bid
+            }
+          })
+        }
+        if (Object.keys(cReceivedByDenom).length === 0 && cUserAddr) {
+          // Fallback: aggregate coin_received by user
           cEvents
             .filter((e) => e.type === 'coin_received')
             .map(cToAttrs)
@@ -784,8 +812,16 @@ export default {
                 assetFromString(cOutAssetStr))
             : null
           const cOutTicker = cOutAsset?.ticker || cPrimaryDenom
-          const cInUsdRaw = this.amountToUSD(cInAssetStr, cFundsAmount, this.pools)
-          const cOutUsdRaw = this.amountToUSD(cOutAssetStr, cReceivedAmt, this.pools)
+          // Use historical prices from the swap event when available — these
+          // reflect the asset prices at the time the contract executed, giving
+          // accurate price impact and fee calculations rather than current prices.
+          const swapMeta = midgardSwap?.metadata?.swap
+          const cInUsdRaw = swapMeta?.inPriceUSD
+            ? (cFundsAmount / 1e8) * parseFloat(swapMeta.inPriceUSD)
+            : this.amountToUSD(cInAssetStr, cFundsAmount, this.pools)
+          const cOutUsdRaw = swapMeta?.outPriceUSD
+            ? (cReceivedAmt / 1e8) * parseFloat(swapMeta.outPriceUSD)
+            : this.amountToUSD(cOutAssetStr, cReceivedAmt, this.pools)
           contractDisplay = {
             inputAsset: cInAssetStr || null,
             inputName:
@@ -1085,18 +1121,64 @@ export default {
 
           return rows.filter(Boolean)
         })(),
-        lifecycleRows: this.buildLifecycleRows({
-          input,
-          output,
-          inboundHeight,
-          outboundHeight,
-          actionStacks,
-          inboundStacks,
-          outboundStacks,
-          inputAsset,
-          outputAsset,
-          action: contractAction,
-        }),
+        lifecycleRows: (() => {
+          if (contractDisplay) {
+            const userAddr =
+              contractAction?.in?.[0]?.address ||
+              this.thorStatus?.tx?.from_address ||
+              ''
+            const timeText = this.getStackDisplayValue(
+              actionStacks,
+              'Timestamp'
+            )
+            const contractFailed = (contractAction?.metadata?.contract?.code ?? 0) > 0
+            const contractLogs = contractAction?.metadata?.contract?.logs
+            return [
+              {
+                icon: 'ArrowIcon',
+                iconRotate: 180,
+                title: `${contractDisplay.inputName} sent to contract`,
+                body: `${contractDisplay.inputAmount}${contractDisplay.inputUsd ? ` (${contractDisplay.inputUsd})` : ''} provided as input${userAddr ? ` from ${this.formatAddress(userAddr)}` : ''}.`,
+                meta: [
+                  timeText,
+                  inboundHeight
+                    ? `Block #${this.normalFormat(inboundHeight)}`
+                    : '',
+                ]
+                  .filter(Boolean)
+                  .join(' · '),
+              },
+              ...this.extractContractEventRows(contractAction),
+              contractFailed
+                ? {
+                    icon: 'WarningIcon',
+                    title: 'Contract execution failed',
+                    body: contractLogs || '',
+                  }
+                : {
+                    icon: 'ArrowIcon',
+                    iconRotate: 0,
+                    title: `${contractDisplay.outputName} delivered`,
+                    body: `${contractDisplay.outputAmount}${contractDisplay.outputUsd ? ` (${contractDisplay.outputUsd})` : ''} sent to ${this.formatAddress(userAddr)}.`,
+                    meta: outboundHeight
+                      ? `Block #${this.normalFormat(outboundHeight)}`
+                      : '',
+                  },
+            ]
+          }
+          return this.buildLifecycleRows({
+            input,
+            output,
+            inboundHeight,
+            outboundHeight,
+            actionStacks,
+            inboundStacks,
+            outboundStacks,
+            inputAsset,
+            outputAsset,
+            action: contractAction,
+          })
+        })(),
         feeRows: (() => {
           const toRow = (label, formatted) => {
             const { usd, subtle } = this.splitFeeValue(formatted)
@@ -1226,6 +1308,7 @@ export default {
           this.formatAddress(contractAddress)
         const userAddress = action.in?.[0]?.address || ''
         const hasError = (action.metadata?.contract?.code ?? 0) > 0
+        const logs = action.metadata?.contract?.logs
         const status = hasError
           ? { label: 'Failed', tone: 'red' }
           : action.status === 'success'
@@ -1338,6 +1421,7 @@ export default {
               body: priceList ? `Fixed prices: ${priceList}` : '',
             },
             ...this.extractContractEventRows(action),
+            ...(hasError && logs ? [{ icon: 'WarningIcon', title: 'Contract execution failed', body: logs }] : []),
           ],
           feeRows: [],
           technicalRows: [
@@ -1364,6 +1448,7 @@ export default {
         const userAddress = action.in?.[0]?.address || ''
         const instanceId = cancelMsg.instance_id
         const hasError = (action.metadata?.contract?.code ?? 0) > 0
+        const logs = action.metadata?.contract?.logs
         const status = hasError
           ? { label: 'Failed', tone: 'red' }
           : action.status === 'success'
@@ -1436,6 +1521,7 @@ export default {
               title: `Strategy #${instanceId} cancelled`,
               body: `Workflow instance cancelled on ${productLabel}`,
             },
+            ...(hasError && logs ? [{ icon: 'WarningIcon', title: 'Contract execution failed', body: logs }] : []),
           ],
           feeRows: [],
           technicalRows: [
@@ -1461,6 +1547,7 @@ export default {
           getRujiraContractProduct(contractAddress) || 'RUJI Trade'
         const userAddress = action.in?.[0]?.address || ''
         const hasError = (action.metadata?.contract?.code ?? 0) > 0
+        const logs = action.metadata?.contract?.logs
         const status = hasError
           ? { label: 'Failed', tone: 'red' }
           : action.status === 'success'
@@ -1670,21 +1757,23 @@ export default {
           ].filter(Boolean),
           lifecycleRows: [
             {
-              icon: 'CheckIcon',
-              title: isPartialFill ? 'Market order partially filled' : 'Market order filled',
-              body: [
-                isPartialFill
-                  ? `${this.baseAmountFormatOrZero(filledAmount)} ${fundsTicker} filled`
-                  : fundsAmount
-                    ? `${this.baseAmountFormatOrZero(fundsAmount)} ${fundsTicker} in`
-                    : null,
-                receivedAmount
-                  ? `${this.baseAmountFormatOrZero(receivedAmount)} ${receivedTicker} out`
-                  : null,
-                avgRate ? `avg rate ${avgRate.toFixed(6)}` : null,
-              ]
-                .filter(Boolean)
-                .join(' · '),
+              icon: hasError ? 'WarningIcon' : 'CheckIcon',
+              title: hasError ? 'Contract execution failed' : isPartialFill ? 'Market order partially filled' : 'Market order filled',
+              body: hasError
+                ? logs || ''
+                : [
+                    isPartialFill
+                      ? `${this.baseAmountFormatOrZero(filledAmount)} ${fundsTicker} filled`
+                      : fundsAmount
+                        ? `${this.baseAmountFormatOrZero(fundsAmount)} ${fundsTicker} in`
+                        : null,
+                    receivedAmount
+                      ? `${this.baseAmountFormatOrZero(receivedAmount)} ${receivedTicker} out`
+                      : null,
+                    avgRate ? `avg rate ${avgRate.toFixed(6)}` : null,
+                  ]
+                    .filter(Boolean)
+                    .join(' · '),
             },
             ...this.extractContractEventRows(action),
             isPartialFill
@@ -1729,6 +1818,7 @@ export default {
           getRujiraContractProduct(contractAddress) || 'Utilities'
         const userAddress = action.in?.[0]?.address || ''
         const hasError = (action.metadata?.contract?.code ?? 0) > 0
+        const logs = action.metadata?.contract?.logs
         const status = hasError
           ? { label: 'Failed', tone: 'red' }
           : action.status === 'success'
@@ -1831,18 +1921,20 @@ export default {
           ].filter(Boolean),
           lifecycleRows: [
             {
-              icon: 'CheckIcon',
-              title: actionType,
-              body: [
-                amountRaw
-                  ? `${this.baseAmountFormatOrZero(amountRaw)} ${fundsAsset} ${isBond ? 'deposited' : 'withdrawn'}`
-                  : null,
-                sharesRaw
-                  ? `${this.baseAmountFormatOrZero(sharesRaw)} shares ${isBond ? 'minted' : 'burned'}`
-                  : null,
-              ]
-                .filter(Boolean)
-                .join(' → '),
+              icon: hasError ? 'WarningIcon' : 'CheckIcon',
+              title: hasError ? 'Contract execution failed' : actionType,
+              body: hasError
+                ? logs || ''
+                : [
+                    amountRaw
+                      ? `${this.baseAmountFormatOrZero(amountRaw)} ${fundsAsset} ${isBond ? 'deposited' : 'withdrawn'}`
+                      : null,
+                    sharesRaw
+                      ? `${this.baseAmountFormatOrZero(sharesRaw)} shares ${isBond ? 'minted' : 'burned'}`
+                      : null,
+                  ]
+                    .filter(Boolean)
+                    .join(' → '),
             },
           ],
           feeRows: [],
@@ -1871,6 +1963,7 @@ export default {
         const creditAccountAddr = creditAccountMsg.addr || ''
         const subMsgs = creditAccountMsg.msgs || []
         const hasError = (action.metadata?.contract?.code ?? 0) > 0
+        const logs = action.metadata?.contract?.logs
         const status = hasError
           ? { label: 'Failed', tone: 'red' }
           : action.status === 'success'
@@ -2066,6 +2159,7 @@ export default {
                     : '',
                 }
               : null,
+            hasError && logs ? { icon: 'WarningIcon', title: 'Contract execution failed', body: logs } : null,
           ].filter(Boolean),
           feeRows: [],
           technicalRows: [
@@ -2101,6 +2195,7 @@ export default {
         const instanceId = resetInstanceMsg.instance_id
         const targetUser = resetInstanceMsg.user_address || ''
         const hasError = (action.metadata?.contract?.code ?? 0) > 0
+        const logs = action.metadata?.contract?.logs
         const status = hasError
           ? { label: 'Failed', tone: 'red' }
           : action.status === 'success'
@@ -2188,14 +2283,16 @@ export default {
           ].filter(Boolean),
           lifecycleRows: [
             {
-              icon: 'RefreshIcon',
-              title: `Instance #${instanceId} reset`,
-              body: [
-                executionType ? `Execution type: ${executionType}` : null,
-                targetUser ? `for ${this.formatAddress(targetUser)}` : null,
-              ]
-                .filter(Boolean)
-                .join(' · '),
+              icon: hasError ? 'WarningIcon' : 'RefreshIcon',
+              title: hasError ? 'Contract execution failed' : `Instance #${instanceId} reset`,
+              body: hasError
+                ? logs || ''
+                : [
+                    executionType ? `Execution type: ${executionType}` : null,
+                    targetUser ? `for ${this.formatAddress(targetUser)}` : null,
+                  ]
+                    .filter(Boolean)
+                    .join(' · '),
             },
           ],
           feeRows: [],
@@ -2227,6 +2324,7 @@ export default {
           getRujiraContractProduct(contractAddress) || 'RUJI Money Market'
         const userAddress = action.in?.[0]?.address || ''
         const hasError = (action.metadata?.contract?.code ?? 0) > 0
+        const logs = action.metadata?.contract?.logs
         const status = hasError
           ? { label: 'Failed', tone: 'red' }
           : action.status === 'success'
@@ -2385,29 +2483,31 @@ export default {
           ].filter(Boolean),
           lifecycleRows: [
             {
-              icon: isGhostWithdraw ? 'SubtractIcon' : 'AddIcon',
-              title: actionType,
-              body: isGhostWithdraw
-                ? [
-                    sharesRaw
-                      ? `${this.baseAmountFormatOrZero(sharesRaw)} shares burned`
-                      : null,
-                    underlyingRaw
-                      ? `${this.baseAmountFormatOrZero(underlyingRaw)} ${underlyingTicker} received`
-                      : null,
-                  ]
-                    .filter(Boolean)
-                    .join(' → ')
-                : [
-                    fundsAmountRaw
-                      ? `${this.baseAmountFormatOrZero(fundsAmountRaw)} ${fundsDenom} deposited`
-                      : null,
-                    sharesRaw
-                      ? `${this.baseAmountFormatOrZero(sharesRaw)} shares minted`
-                      : null,
-                  ]
-                    .filter(Boolean)
-                    .join(' → '),
+              icon: hasError ? 'WarningIcon' : isGhostWithdraw ? 'SubtractIcon' : 'AddIcon',
+              title: hasError ? 'Contract execution failed' : actionType,
+              body: hasError
+                ? logs || ''
+                : isGhostWithdraw
+                  ? [
+                      sharesRaw
+                        ? `${this.baseAmountFormatOrZero(sharesRaw)} shares burned`
+                        : null,
+                      underlyingRaw
+                        ? `${this.baseAmountFormatOrZero(underlyingRaw)} ${underlyingTicker} received`
+                        : null,
+                    ]
+                      .filter(Boolean)
+                      .join(' → ')
+                  : [
+                      fundsAmountRaw
+                        ? `${this.baseAmountFormatOrZero(fundsAmountRaw)} ${fundsDenom} deposited`
+                        : null,
+                      sharesRaw
+                        ? `${this.baseAmountFormatOrZero(sharesRaw)} shares minted`
+                        : null,
+                    ]
+                      .filter(Boolean)
+                      .join(' → '),
             },
           ],
           feeRows: [],
@@ -2435,6 +2535,7 @@ export default {
         const userAddress = action.in?.[0]?.address || ''
         const instanceCount = batchExecuteMsg.length
         const hasError = (action.metadata?.contract?.code ?? 0) > 0
+        const logs = action.metadata?.contract?.logs
         const status = hasError
           ? { label: 'Failed', tone: 'red' }
           : action.status === 'success'
@@ -2503,9 +2604,11 @@ export default {
           ].filter(Boolean),
           lifecycleRows: [
             {
-              icon: 'SwapIcon',
-              title: `${instanceCount} recurring swap ${instanceCount === 1 ? 'strategy' : 'strategies'} dispatched`,
-              body: `CALC Scheduler triggered ${instanceCount} ${instanceCount === 1 ? 'instance' : 'instances'} via ${contractLabel}`,
+              icon: hasError ? 'WarningIcon' : 'SwapIcon',
+              title: hasError ? 'Contract execution failed' : `${instanceCount} recurring swap ${instanceCount === 1 ? 'strategy' : 'strategies'} dispatched`,
+              body: hasError
+                ? logs || ''
+                : `CALC Scheduler triggered ${instanceCount} ${instanceCount === 1 ? 'instance' : 'instances'} via ${contractLabel}`,
             },
           ],
           feeRows: [],
@@ -2535,6 +2638,7 @@ export default {
       const hasError = this.rawActions.some(
         (a) => (a.metadata?.contract?.code ?? 0) > 0
       )
+      const logs = this.rawActions.find((a) => (a.metadata?.contract?.code ?? 0) > 0)?.metadata?.contract?.logs
       const allSuccess = this.rawActions.every((a) => a.status === 'success')
       const status = hasError
         ? { label: 'Failed', tone: 'red' }
@@ -2627,7 +2731,7 @@ export default {
             ? { label: 'Executor', value: this.formatAddress(executorAddress) }
             : null,
         ].filter(Boolean),
-        lifecycleRows: [],
+        lifecycleRows: hasError && logs ? [{ icon: 'WarningIcon', title: 'Contract execution failed', body: logs }] : [],
         feeRows: [],
         technicalRows: [
           strategyAddress
@@ -2980,8 +3084,27 @@ export default {
           (e.attributes || []).map(({ key, value }) => [key, value])
         )
 
+      const weightedAvgRate = (fills) => {
+        let wSum = 0
+        let wTotal = 0
+        fills.forEach((a) => {
+          const r = parseFloat(a.rate)
+          const w = parseInt(a.bid || 0)
+          if (!isNaN(r) && w > 0) {
+            wSum += r * w
+            wTotal += w
+          }
+        })
+        if (wTotal > 0) return (wSum / wTotal).toFixed(6)
+        const rs = fills.map((a) => parseFloat(a.rate)).filter((r) => !isNaN(r))
+        return rs.length
+          ? (rs.reduce((s, r) => s + r, 0) / rs.length).toFixed(6)
+          : null
+      }
+
       const rows = []
 
+      // Strategy dispatch
       const strategyEvents = events.filter(
         (e) => e.type === 'wasm-calc-manager/strategy.execute'
       )
@@ -2999,6 +3122,8 @@ export default {
         })
       }
 
+      // FIN trades — split by fill type per pair: CCL (local range liquidity),
+      // Virtualisation (filled via a thor1… strategy address), other (resting limit orders)
       const finTradeEvents = events.filter(
         (e) => e.type === 'wasm-rujira-fin/trade'
       )
@@ -3007,79 +3132,146 @@ export default {
         finTradeEvents.forEach((e) => {
           const attrs = toAttrs(e)
           const addr = attrs._contract_address || ''
-          if (!byPair[addr]) byPair[addr] = []
-          byPair[addr].push(attrs)
+          if (!byPair[addr]) byPair[addr] = { ccl: [], virtual: [], other: [] }
+          const price = String(attrs.price || '')
+          if (price.startsWith('ccl:')) byPair[addr].ccl.push(attrs)
+          else if (price.startsWith('thor1')) byPair[addr].virtual.push(attrs)
+          else byPair[addr].other.push(attrs)
         })
-        Object.entries(byPair).forEach(([addr, fills]) => {
+        Object.entries(byPair).forEach(([addr, { ccl, virtual, other }]) => {
           const pairLabel =
             getRujiraContractLabel(addr) || this.formatAddress(addr)
-          const hasCCL = fills.some((a) =>
-            String(a.price || '').startsWith('ccl:')
-          )
-          const hasVirtual = fills.some((a) =>
-            String(a.price || '').startsWith('thor1')
-          )
-          const fillCount = fills.length
-          const avgRate = (() => {
-            let wSum = 0
-            let wTotal = 0
-            fills.forEach((a) => {
-              const r = parseFloat(a.rate)
-              const w = parseInt(a.bid || 0)
-              if (!isNaN(r) && w > 0) {
-                wSum += r * w
-                wTotal += w
-              }
+
+          if (ccl.length) {
+            const avgRate = weightedAvgRate(ccl)
+            rows.push({
+              icon: 'ExchangeIcon',
+              iconRotate: 0,
+              title: `CCL fills: ${pairLabel}`,
+              body: [
+                `${ccl.length} fill${ccl.length !== 1 ? 's' : ''} from local range liquidity`,
+                avgRate ? `avg rate ${avgRate}` : null,
+              ]
+                .filter(Boolean)
+                .join(' · '),
             })
-            if (wTotal > 0) return (wSum / wTotal).toFixed(6)
-            const rs = fills
-              .map((a) => parseFloat(a.rate))
-              .filter((r) => !isNaN(r))
-            return rs.length
-              ? (rs.reduce((s, r) => s + r, 0) / rs.length).toFixed(6)
-              : null
-          })()
-          let fillType
-          if (hasCCL && hasVirtual) fillType = 'CCL + Virtualisation'
-          else if (hasVirtual) fillType = 'Virtualisation'
-          else if (hasCCL) fillType = 'CCL'
-          else fillType = 'Limit order'
-          rows.push({
-            icon: 'ExchangeIcon',
-            iconRotate: 0,
-            title: `${fillType} fills: ${pairLabel}`,
-            body: [
-              `${fillCount} fill${fillCount !== 1 ? 's' : ''}`,
-              avgRate ? `avg rate ${avgRate}` : null,
-            ]
-              .filter(Boolean)
-              .join(' · '),
-          })
+          }
+
+          if (virtual.length) {
+            const stratAddr = String(virtual[0].price || '').split(':')[0]
+            const stratLabel = this.formatAddress(stratAddr)
+            const avgRate = weightedAvgRate(virtual)
+            rows.push({
+              icon: 'ExchangeIcon',
+              iconRotate: 0,
+              title: `Virtualisation fills: ${pairLabel}`,
+              body: [
+                `${virtual.length} fill${virtual.length !== 1 ? 's' : ''} via ${stratLabel}`,
+                avgRate ? `avg rate ${avgRate}` : null,
+              ]
+                .filter(Boolean)
+                .join(' · '),
+            })
+          }
+
+          if (other.length) {
+            const avgRate = weightedAvgRate(other)
+            rows.push({
+              icon: 'ExchangeIcon',
+              iconRotate: 0,
+              title: `Limit order fills: ${pairLabel}`,
+              body: [
+                `${other.length} fill${other.length !== 1 ? 's' : ''}`,
+                avgRate ? `avg rate ${avgRate}` : null,
+              ]
+                .filter(Boolean)
+                .join(' · '),
+            })
+          }
         })
       }
 
+      // Helper: find a coin_spent event near a given event index that matches amount
+      const findCoinDenom = (targetEvent, fallbackAmount) => {
+        const idx = events.indexOf(targetEvent)
+        // Look at coin_spent events within a small window around the target
+        const window = events.slice(Math.max(0, idx - 6), idx + 6)
+        const match = window.find((ev) => {
+          if (ev.type !== 'coin_spent') return false
+          const a = toAttrs(ev).amount || ''
+          return fallbackAmount && a.startsWith(fallbackAmount)
+        })
+        return match ? toAttrs(match).amount : fallbackAmount
+      }
+
+      // Ghost Vault: repay outstanding debts before borrowing
+      const repayEvents = events.filter(
+        (e) => e.type === 'wasm-rujira-ghost-vault/repay'
+      )
+      repayEvents.forEach((e) => {
+        const attrs = toAttrs(e)
+        const vaultAddr = attrs._contract_address || ''
+        const vaultLabel =
+          getRujiraContractLabel(vaultAddr) || this.formatAddress(vaultAddr)
+        const amountWithDenom = findCoinDenom(e, attrs.amount)
+        rows.push({
+          icon: 'RefreshIcon',
+          iconRotate: 180,
+          title: 'Ghost Vault: outstanding debt repaid',
+          body: [
+            amountWithDenom ? `Repaid ${amountWithDenom}` : null,
+            vaultLabel ? `to ${vaultLabel}` : null,
+          ]
+            .filter(Boolean)
+            .join(' '),
+        })
+      })
+
+      // Ghost Vault: borrow funds to execute the virtualisation swap portion
+      const borrowEvents = events.filter(
+        (e) => e.type === 'wasm-rujira-ghost-vault/borrow'
+      )
+      borrowEvents.forEach((e) => {
+        const attrs = toAttrs(e)
+        const vaultAddr = attrs._contract_address || ''
+        const vaultLabel =
+          getRujiraContractLabel(vaultAddr) || this.formatAddress(vaultAddr)
+        const amountWithDenom = findCoinDenom(e, attrs.amount)
+        rows.push({
+          icon: 'RefreshIcon',
+          iconRotate: 0,
+          title: 'Ghost Vault: funds borrowed for virtualisation',
+          body: [
+            amountWithDenom ? `Borrowed ${amountWithDenom}` : null,
+            vaultLabel ? `from ${vaultLabel}` : null,
+          ]
+            .filter(Boolean)
+            .join(' '),
+        })
+      })
+
+      // Virtualisation: THORChain base layer swap settles the outstanding fills
       const virtualSwapEvents = events.filter(
         (e) => e.type === 'wasm-rujira-thorchain-swap/swap'
       )
-      if (virtualSwapEvents.length) {
-        virtualSwapEvents.forEach((e) => {
-          const attrs = toAttrs(e)
-          const amountIn = attrs.amount || ''
-          const returned = attrs.returned || attrs.quote_return || ''
-          rows.push({
-            icon: 'SwapIcon',
-            iconRotate: 0,
-            title: 'Virtualisation: THORChain base layer swap',
-            body: [
-              amountIn ? `in ${amountIn}` : null,
-              returned ? `out ${returned}` : null,
-            ]
-              .filter(Boolean)
-              .join(' → '),
-          })
+      virtualSwapEvents.forEach((e) => {
+        const attrs = toAttrs(e)
+        const amountIn = attrs.amount || ''
+        const returned = attrs.returned || attrs.quote_return || ''
+        rows.push({
+          icon: 'SwapIcon',
+          iconRotate: 0,
+          title: 'Virtualisation: THORChain base layer swap',
+          body: [
+            amountIn ? `in ${amountIn}` : null,
+            returned ? `out ${returned}` : null,
+          ]
+            .filter(Boolean)
+            .join(' → '),
         })
-      }
+      })
 
+      // Limit order settled (withdraw)
       const orderWithdrawEvents = events.filter(
         (e) => e.type === 'wasm-rujira-fin/order.withdraw'
       )
@@ -3100,6 +3292,7 @@ export default {
         })
       })
 
+      // CCL range creation
       const rangeCreateEvents = events.filter(
         (e) => e.type === 'wasm-rujira-fin/range.create'
       )
@@ -3113,30 +3306,6 @@ export default {
           iconRotate: 0,
           title: `${n} CCL range${n !== 1 ? 's' : ''} created`,
           body: low && high ? `Price range ${low}–${high}` : '',
-        })
-      }
-
-      const borrowEvents = events.filter(
-        (e) => e.type === 'wasm-rujira-ghost-vault/borrow'
-      )
-      const repayEvents = events.filter(
-        (e) => e.type === 'wasm-rujira-ghost-vault/repay'
-      )
-      if (borrowEvents.length || repayEvents.length) {
-        const parts = []
-        if (repayEvents.length)
-          parts.push(
-            `${repayEvents.length} repay${repayEvents.length !== 1 ? 's' : ''}`
-          )
-        if (borrowEvents.length)
-          parts.push(
-            `${borrowEvents.length} borrow${borrowEvents.length !== 1 ? 's' : ''}`
-          )
-        rows.push({
-          icon: 'RefreshIcon',
-          iconRotate: 0,
-          title: 'Ghost Vault rebalance',
-          body: parts.join(' · '),
         })
       }
 
