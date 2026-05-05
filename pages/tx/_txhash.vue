@@ -180,6 +180,28 @@
                       />
                     </span>
                   </template>
+                  <template v-else-if="row.type === 'orders-table'">
+                    <table class="tx-orders-table">
+                      <thead>
+                        <tr>
+                          <th>Op</th>
+                          <th>Side</th>
+                          <th>Price</th>
+                          <th>Amount</th>
+                          <th>Return</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="(r, i) in row.rows" :key="i" :class="r.op === 'Retract' ? 'row-retract' : ''">
+                          <td :class="r.op === 'Retract' ? 'tone-retract' : 'tone-create'">{{ r.op }}</td>
+                          <td :class="r.side === 'Buy' ? 'tone-buy' : r.side === 'Sell' ? 'tone-sell' : ''">{{ r.side }}</td>
+                          <td>{{ r.price }}</td>
+                          <td>{{ r.amount }}</td>
+                          <td>{{ r.ret }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </template>
                   <template v-else-if="row.type === 'address'">
                     <AddressComponent :address="row.address" />
                   </template>
@@ -455,6 +477,7 @@ import Accordion from '~/components/Accordion.vue'
 import {
   getRujiraContractLabel,
   getRujiraContractProduct,
+  getRujiraContractEntry,
 } from '~/utils/rujiraContracts'
 import ExternalIcon from '~/assets/images/external.svg?inline'
 
@@ -1347,48 +1370,152 @@ export default {
           ? ` · ${cclFillCount} fill${cclFillCount !== 1 ? 's' : ''} at avg ${avgFillRate.toFixed(2)}`
           : ''
 
+        // Scale order: multiple limit orders placed in one execution
+        const isScaleOrder = orders.length > 1
+        const actionLabel = isScaleOrder ? 'Scale Order' : 'Limit Order'
+
+        // Total funds committed (for scale order input card)
+        const fundsStr = action.metadata?.contract?.funds || ''
+        const fundsAmount = parseInt(fundsStr) || 0
+        const fundsDenom = fundsStr.replace(/^\d+/, '').trim()
+        const fundsAssetStr = fundsDenom ? securedToAsset(fundsDenom).toUpperCase() : ''
+        const fundsAssetParsed = fundsAssetStr ? assetFromString(fundsAssetStr) : null
+        const fundsTicker = fundsAssetParsed?.ticker || fundsDenom
+
+        // Parse pair base/quote assets from registry contractLabel: "rujira-fin:{base}:{quote}"
+        const pairEntry = getRujiraContractEntry(contractAddress)
+        const pairLabelParts = (pairEntry?.contractLabel || '').split(':')
+        const baseDenom = pairLabelParts[1] || ''
+        const baseAssetStr = baseDenom ? securedToAsset(baseDenom).toUpperCase() : ''
+        const baseAssetParsed = baseAssetStr ? assetFromString(baseAssetStr) : null
+        const baseTicker = baseAssetParsed?.ticker || baseDenom
+
+        // Per-order table rows + raw totals for scale order display
+        // Order format: [side_string, { fixed: price }, amount_string_or_null]
+        //   side: "quote" = Buy (spend quote to get base), "base" = Sell (spend base to get quote)
+        //   amount: null = no-op (existing order kept), "0" = retract, positive = new order
+        let totalReturnRaw = 0
+        let orderSideIsBuy = true
+        const orderRows = isScaleOrder
+          ? orders
+              .filter((order) => order[2] !== null && order[2] !== undefined)
+              .map((order) => {
+                const sideStr = order[0]  // "quote" or "base"
+                const priceSpec = order[1] // { fixed: "2327.4" }
+                const amount = parseInt(order[2]) || 0
+                const price = parseFloat(priceSpec?.fixed) || 0
+                const isBuy = sideStr === 'quote'
+                const isRetract = amount === 0
+
+                // Return = what you receive when fully filled
+                // Buy: spent quote, receive base → ret = amount / price (base units)
+                // Sell: spent base, receive quote → ret = amount * price (quote units)
+                let ret = 0
+                if (!isRetract && price > 0) {
+                  ret = isBuy
+                    ? Math.round(amount / price)
+                    : Math.round(amount * price)
+                  totalReturnRaw += ret
+                  orderSideIsBuy = isBuy
+                }
+
+                return {
+                  op: isRetract ? 'Retract' : 'Create',
+                  side: isBuy ? 'Buy' : 'Sell',
+                  price: price > 0 ? price.toFixed(2) : '—',
+                  amount: isRetract ? '—' : this.baseAmountFormatOrZero(amount),
+                  ret: ret > 0 ? this.baseAmountFormatOrZero(ret) : '—',
+                }
+              })
+          : []
+
+        // Swap-style input/output for scale orders
+        // Buy orders: user spends quote (USDC), receives base (ETH) on fill
+        // Sell orders: user spends base (ETH), receives quote (USDC) on fill
+        const scaleInAssetStr = orderSideIsBuy ? fundsAssetStr : baseAssetStr
+        const scaleInAsset = orderSideIsBuy ? fundsAssetParsed : baseAssetParsed
+        const scaleInTicker = orderSideIsBuy ? fundsTicker : baseTicker
+        const scaleOutAssetStr = orderSideIsBuy ? baseAssetStr : fundsAssetStr
+        const scaleOutAsset = orderSideIsBuy ? baseAssetParsed : fundsAssetParsed
+        const scaleOutTicker = orderSideIsBuy ? baseTicker : fundsTicker
+
         return {
-          title: `${orderCount} Limit Order${orderCount !== 1 ? 's' : ''} placed on ${contractLabel}${titleSuffix}`,
-          metaLabel: `Limit Order · ${contractLabel}`,
+          title: isScaleOrder
+            ? `Scale Order: ${orderCount} orders on ${contractLabel}${titleSuffix}`
+            : `${orderCount} Limit Order${orderCount !== 1 ? 's' : ''} placed on ${contractLabel}${titleSuffix}`,
+          metaLabel: `${actionLabel} · ${contractLabel}`,
           status,
           affiliateAddress: '',
           actionTypeTitle: 'contract',
           hasContractAction: true,
           labels: [],
-          input: {
-            asset: null,
-            name: 'User',
-            badge: userAddress ? this.formatAddress(userAddress) : '',
-            amount: `${orderCount} order${orderCount !== 1 ? 's' : ''}`,
-            usd: null,
-          },
-          output: {
-            asset: null,
-            name: 'FIN Pair',
-            badge: contractLabel,
-            amount: cclFillCount
-              ? `${cclFillCount} fill${cclFillCount !== 1 ? 's' : ''} · avg ${avgFillRate.toFixed(2)}`
-              : priceList
-                ? `At ${priceList}`
-                : 'Placed',
-            usd: null,
-          },
-          metricRows: [
-            { label: 'Orders Placed', value: `${orderCount}` },
-            priceList ? { label: 'Limit Prices', value: priceList } : null,
-            cclFillCount
-              ? { label: 'Immediate Fills', value: `${cclFillCount}` }
-              : null,
-            avgFillRate
-              ? { label: 'Avg Fill Rate', value: avgFillRate.toFixed(6) }
-              : null,
-            timestamp
-              ? {
-                  label: 'Time',
-                  value: timestamp.format('YYYY-MM-DD HH:mm:ss'),
-                }
-              : null,
-          ].filter(Boolean),
+          input: isScaleOrder
+            ? {
+                asset: scaleInAssetStr || null,
+                name: scaleInTicker || contractLabel,
+                badge: this.getNetworkBadge(scaleInAsset) || '',
+                amount: fundsAmount
+                  ? `${this.baseAmountFormatOrZero(fundsAmount)} ${scaleInTicker}`
+                  : '-',
+                usd: this.formatUsdValue(
+                  this.amountToUSD(scaleInAssetStr, fundsAmount, this.pools)
+                ),
+              }
+            : {
+                asset: null,
+                name: 'User',
+                badge: userAddress ? this.formatAddress(userAddress) : '',
+                amount: `${orderCount} order${orderCount !== 1 ? 's' : ''}`,
+                usd: null,
+              },
+          output: isScaleOrder
+            ? {
+                asset: scaleOutAssetStr || null,
+                name: scaleOutTicker || 'Asset',
+                badge: this.getNetworkBadge(scaleOutAsset) || '',
+                amount: totalReturnRaw
+                  ? `${this.baseAmountFormatOrZero(totalReturnRaw)} ${scaleOutTicker}`
+                  : '-',
+                usd: this.formatUsdValue(
+                  this.amountToUSD(scaleOutAssetStr, totalReturnRaw, this.pools)
+                ),
+              }
+            : {
+                asset: null,
+                name: 'FIN Pair',
+                badge: contractLabel,
+                amount: cclFillCount
+                  ? `${cclFillCount} fill${cclFillCount !== 1 ? 's' : ''} · avg ${avgFillRate.toFixed(2)}`
+                  : priceList
+                    ? `At ${priceList}`
+                    : 'Placed',
+                usd: null,
+              },
+          metricRows: isScaleOrder
+            ? [
+                cclFillCount
+                  ? { label: 'Immediate Fills', value: `${cclFillCount}` }
+                  : null,
+                avgFillRate
+                  ? { label: 'Avg Fill Rate', value: avgFillRate.toFixed(6) }
+                  : null,
+              ].filter(Boolean)
+            : [
+                { label: 'Orders Placed', value: `${orderCount}` },
+                priceList ? { label: 'Limit Prices', value: priceList } : null,
+                cclFillCount
+                  ? { label: 'Immediate Fills', value: `${cclFillCount}` }
+                  : null,
+                avgFillRate
+                  ? { label: 'Avg Fill Rate', value: avgFillRate.toFixed(6) }
+                  : null,
+                timestamp
+                  ? {
+                      label: 'Time',
+                      value: timestamp.format('YYYY-MM-DD HH:mm:ss'),
+                    }
+                  : null,
+              ].filter(Boolean),
           detailRows: [
             {
               label: 'Product',
@@ -1398,13 +1525,13 @@ export default {
             },
             {
               label: 'Action',
-              value: 'Limit Order',
-              tone: this.getContractTypeTone('Limit Order'),
+              value: actionLabel,
+              tone: this.getContractTypeTone(actionLabel),
               type: 'product',
             },
             { label: 'Contract', value: contractLabel },
             { label: 'Status', value: status.label, type: 'status' },
-            timestamp
+            !isScaleOrder && timestamp
               ? { label: 'Time', value: timestamp.format('lll') }
               : null,
             height
@@ -1413,11 +1540,16 @@ export default {
             userAddress
               ? { label: 'User', address: userAddress, type: 'address' }
               : null,
+            isScaleOrder && orderRows.length
+              ? { label: 'Orders', type: 'orders-table', rows: orderRows }
+              : null,
           ].filter(Boolean),
           lifecycleRows: [
             {
               icon: 'CheckIcon',
-              title: `${orderCount} limit order${orderCount !== 1 ? 's' : ''} submitted`,
+              title: isScaleOrder
+                ? `Scale Order: ${orderCount} orders submitted`
+                : `${orderCount} limit order${orderCount !== 1 ? 's' : ''} submitted`,
               body: priceList ? `Fixed prices: ${priceList}` : '',
             },
             ...this.extractContractEventRows(action),
@@ -3024,6 +3156,7 @@ export default {
       return null
     },
     getContractTypeTone(type) {
+      if (type === 'Scale Order') return 'gold'
       if (type === 'Limit Order') return 'gold'
       if (type === 'Market Order') return 'blue'
       if (type === 'CALC Strategy') return 'purple'
@@ -6056,6 +6189,64 @@ export default {
   span {
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+}
+
+.tx-orders-table {
+  border-collapse: collapse;
+  font-size: $font-size-xs;
+  width: 100%;
+
+  th,
+  td {
+    padding: $space-4 $space-8;
+    text-align: right;
+
+    &:first-child {
+      padding-left: 0;
+      text-align: left;
+    }
+
+    &:last-child {
+      padding-right: 0;
+    }
+  }
+
+  th {
+    color: var(--font-color);
+    font-weight: 600;
+    border-bottom: 1px solid color-mix(in srgb, var(--border-color) 80%, transparent);
+    padding-bottom: $space-6;
+  }
+
+  td {
+    color: var(--sec-font-color);
+    border-top: 1px solid color-mix(in srgb, var(--border-color) 55%, transparent);
+  }
+
+  .tone-buy {
+    color: #35f09a;
+    font-weight: 600;
+  }
+
+  .tone-sell {
+    color: #ff695e;
+    font-weight: 600;
+  }
+
+  .tone-create {
+    color: #35f09a;
+    font-weight: 600;
+  }
+
+  .tone-retract {
+    color: var(--font-color);
+    font-weight: 500;
+    opacity: 0.5;
+  }
+
+  .row-retract td {
+    opacity: 0.55;
   }
 }
 </style>
