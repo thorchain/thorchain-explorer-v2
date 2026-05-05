@@ -672,7 +672,7 @@ export default {
     },
     getContractActionType(row) {
       const msg = row?.metadata?.contract?.msg || {}
-      if (msg.order) return 'Limit Order'
+      if (msg.order) return (msg.order[0] || []).length > 1 ? 'Scale Order' : 'Limit Order'
       if (msg.swap) return 'Market Order'
       if (msg.cancel_instance) return 'Cancel Strategy'
       if (Array.isArray(msg.execute)) return 'Execute Strategies'
