@@ -4,8 +4,35 @@ import endpoints from './endpoints'
 import { getInfraEarnings } from './infra'
 import { $axiosInstace } from './index'
 
+const _cache = {}
+
+function withCache(key, fn, ttl = 60_000) {
+  const entry = _cache[key]
+  const now = Date.now()
+
+  if (entry) {
+    if (entry.promise) return entry.promise
+    if (now - entry.ts < ttl) return Promise.resolve(entry.data)
+  }
+
+  const promise = fn()
+    .then((res) => {
+      _cache[key] = { data: res, ts: Date.now(), promise: null }
+      return res
+    })
+    .catch((err) => {
+      _cache[key] = null
+      throw err
+    })
+
+  _cache[key] = { ...(entry || {}), promise }
+  return promise
+}
+
 export function getStats() {
-  return $axiosInstace.get(`${endpoints[process.env.NETWORK].SERVER_URL}stats`)
+  return withCache('stats', () =>
+    $axiosInstace.get(`${endpoints[process.env.NETWORK].SERVER_URL}stats`)
+  )
 }
 
 export function getMidgardActions(params) {
@@ -52,8 +79,10 @@ export function getPoolTxs(poolName, offset = 0, limit = 10) {
   return $axiosInstace.get('actions', { params })
 }
 
-export function getPools(period) {
-  return $axiosInstace.get(`${endpoints[process.env.NETWORK].SERVER_URL}pools`)
+export function getPools() {
+  return withCache('pools', () =>
+    $axiosInstace.get(`${endpoints[process.env.NETWORK].SERVER_URL}pools`)
+  )
 }
 
 export function getPoolStats(poolName) {
