@@ -5,7 +5,7 @@ import { getInfraEarnings } from './infra'
 import { $axiosInstace } from './index'
 
 export function getStats() {
-  return $axiosInstace.get('stats')
+  return $axiosInstace.get(`${endpoints[process.env.NETWORK].SERVER_URL}stats`)
 }
 
 export function getMidgardActions(params) {
@@ -53,7 +53,7 @@ export function getPoolTxs(poolName, offset = 0, limit = 10) {
 }
 
 export function getPools(period) {
-  return $axiosInstace.get(`pools?period=${period ?? '180d'}`)
+  return $axiosInstace.get(`${endpoints[process.env.NETWORK].SERVER_URL}pools`)
 }
 
 export function getPoolStats(poolName) {
@@ -63,7 +63,7 @@ export function getPoolStats(poolName) {
 export function getPoolDepth(poolName, count = 30, from = undefined) {
   return $axiosInstace.get(
     `history/depths/${poolName}?interval=day&count=${count}` +
-      (from ? `&from=${from}` : '')
+    (from ? `&from=${from}` : '')
   )
 }
 
