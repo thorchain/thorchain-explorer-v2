@@ -47,6 +47,30 @@
         <div class="tx-detail-main">
           <section class="tx-swap-card card-bg">
             <div class="tx-swap-head" :style="panelVars">
+              <template v-if="activeOverview.pairDisplay">
+                <div class="tx-pair-display">
+                  <div class="tx-pair-icons">
+                    <AssetIcon
+                      v-if="activeOverview.pairDisplay.baseAsset"
+                      :asset="activeOverview.pairDisplay.baseAsset"
+                      :height="'2.25rem'"
+                    />
+                    <AssetIcon
+                      v-if="activeOverview.pairDisplay.quoteAsset"
+                      :asset="activeOverview.pairDisplay.quoteAsset"
+                      :height="'2.25rem'"
+                      class="tx-pair-icon-overlap"
+                    />
+                  </div>
+                  <div class="tx-pair-label">
+                    {{ activeOverview.pairDisplay.label }}
+                  </div>
+                  <div class="tx-asset-badge tx-pair-sublabel">
+                    {{ activeOverview.pairDisplay.sublabel }}
+                  </div>
+                </div>
+              </template>
+              <template v-else>
               <div class="tx-asset-panel">
                 <div class="tx-asset-label">Input</div>
                 <div class="tx-asset-primary">
@@ -125,6 +149,7 @@
                   </div>
                 </template>
               </div>
+              </template>
             </div>
 
             <div
@@ -193,7 +218,7 @@
                       </thead>
                       <tbody>
                         <tr v-for="(r, i) in row.rows" :key="i" :class="r.op === 'Retract' ? 'row-retract' : ''">
-                          <td :class="r.op === 'Retract' ? 'tone-retract' : 'tone-create'">{{ r.op }}</td>
+                          <td :class="r.op === 'Retract' ? 'tone-retract' : r.op === 'Keep' ? 'tone-keep' : 'tone-create'">{{ r.op }}</td>
                           <td :class="r.side === 'Buy' ? 'tone-buy' : r.side === 'Sell' ? 'tone-sell' : ''">{{ r.side }}</td>
                           <td>{{ r.price }}</td>
                           <td>{{ r.amount }}</td>
@@ -1389,6 +1414,10 @@ export default {
         const baseAssetStr = baseDenom ? securedToAsset(baseDenom).toUpperCase() : ''
         const baseAssetParsed = baseAssetStr ? assetFromString(baseAssetStr) : null
         const baseTicker = baseAssetParsed?.ticker || baseDenom
+        const quoteDenom = pairLabelParts[2] || ''
+        const quoteAssetStr = (quoteDenom ? securedToAsset(quoteDenom).toUpperCase() : '') || fundsAssetStr
+        const quoteAssetParsed = quoteAssetStr ? assetFromString(quoteAssetStr) : null
+        const quoteTicker = quoteAssetParsed?.ticker || quoteDenom || fundsTicker
 
         // Per-order table rows + raw totals for scale order display
         // Order format: [side_string, { fixed: price }, amount_string_or_null]
@@ -1397,47 +1426,48 @@ export default {
         let totalReturnRaw = 0
         let orderSideIsBuy = true
         const orderRows = isScaleOrder
-          ? orders
-              .filter((order) => order[2] !== null && order[2] !== undefined)
-              .map((order) => {
-                const sideStr = order[0]  // "quote" or "base"
-                const priceSpec = order[1] // { fixed: "2327.4" }
-                const amount = parseInt(order[2]) || 0
-                const price = parseFloat(priceSpec?.fixed) || 0
-                const isBuy = sideStr === 'quote'
-                const isRetract = amount === 0
+          ? orders.map((order) => {
+              const sideStr = order[0]  // "quote" or "base"
+              const priceSpec = order[1] // { fixed: "2327.4" }
+              const isKeep = order[2] === null || order[2] === undefined
+              const amount = isKeep ? 0 : (parseInt(order[2]) || 0)
+              const price = parseFloat(priceSpec?.fixed) || 0
+              const isBuy = sideStr === 'quote'
+              const isRetract = !isKeep && amount === 0
 
-                // Return = what you receive when fully filled
-                // Buy: spent quote, receive base → ret = amount / price (base units)
-                // Sell: spent base, receive quote → ret = amount * price (quote units)
-                let ret = 0
-                if (!isRetract && price > 0) {
-                  ret = isBuy
-                    ? Math.round(amount / price)
-                    : Math.round(amount * price)
-                  totalReturnRaw += ret
-                  orderSideIsBuy = isBuy
-                }
+              // Return = what you receive when fully filled
+              // Buy: spent quote, receive base → ret = amount / price (base units)
+              // Sell: spent base, receive quote → ret = amount * price (quote units)
+              let ret = 0
+              if (!isRetract && !isKeep && price > 0) {
+                ret = isBuy
+                  ? Math.round(amount / price)
+                  : Math.round(amount * price)
+                totalReturnRaw += ret
+                orderSideIsBuy = isBuy
+              } else if (isBuy !== undefined) {
+                orderSideIsBuy = isBuy
+              }
 
-                return {
-                  op: isRetract ? 'Retract' : 'Create',
-                  side: isBuy ? 'Buy' : 'Sell',
-                  price: price > 0 ? price.toFixed(2) : '—',
-                  amount: isRetract ? '—' : this.baseAmountFormatOrZero(amount),
-                  ret: ret > 0 ? this.baseAmountFormatOrZero(ret) : '—',
-                }
-              })
+              return {
+                op: isRetract ? 'Retract' : isKeep ? 'Keep' : 'Create',
+                side: isBuy ? 'Buy' : 'Sell',
+                price: price > 0 ? price.toFixed(2) : '—',
+                amount: isRetract || isKeep ? '—' : this.baseAmountFormatOrZero(amount),
+                ret: ret > 0 ? this.baseAmountFormatOrZero(ret) : '—',
+              }
+            })
           : []
 
         // Swap-style input/output for scale orders
         // Buy orders: user spends quote (USDC), receives base (ETH) on fill
         // Sell orders: user spends base (ETH), receives quote (USDC) on fill
-        const scaleInAssetStr = orderSideIsBuy ? fundsAssetStr : baseAssetStr
-        const scaleInAsset = orderSideIsBuy ? fundsAssetParsed : baseAssetParsed
-        const scaleInTicker = orderSideIsBuy ? fundsTicker : baseTicker
-        const scaleOutAssetStr = orderSideIsBuy ? baseAssetStr : fundsAssetStr
-        const scaleOutAsset = orderSideIsBuy ? baseAssetParsed : fundsAssetParsed
-        const scaleOutTicker = orderSideIsBuy ? baseTicker : fundsTicker
+        const scaleInAssetStr = orderSideIsBuy ? quoteAssetStr : baseAssetStr
+        const scaleInAsset = orderSideIsBuy ? quoteAssetParsed : baseAssetParsed
+        const scaleInTicker = orderSideIsBuy ? quoteTicker : baseTicker
+        const scaleOutAssetStr = orderSideIsBuy ? baseAssetStr : quoteAssetStr
+        const scaleOutAsset = orderSideIsBuy ? baseAssetParsed : quoteAssetParsed
+        const scaleOutTicker = orderSideIsBuy ? baseTicker : quoteTicker
 
         return {
           title: isScaleOrder
@@ -1449,6 +1479,14 @@ export default {
           actionTypeTitle: 'contract',
           hasContractAction: true,
           labels: [],
+          pairDisplay: isScaleOrder && !fundsAmount
+            ? {
+                baseAsset: baseAssetParsed,
+                quoteAsset: quoteAssetParsed,
+                label: `${baseTicker} / ${quoteTicker}`,
+                sublabel: contractLabel,
+              }
+            : null,
           input: isScaleOrder
             ? {
                 asset: scaleInAssetStr || null,
@@ -5591,6 +5629,35 @@ export default {
   }
 }
 
+.tx-pair-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $space-10;
+  padding: $space-20 0;
+  grid-column: 1 / -1;
+}
+
+.tx-pair-icons {
+  display: flex;
+  align-items: center;
+
+  .tx-pair-icon-overlap {
+    margin-left: -0.65rem;
+  }
+}
+
+.tx-pair-label {
+  color: var(--sec-font-color);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.tx-pair-sublabel {
+  text-align: center;
+}
+
 .tx-asset-panel {
   background: var(--card-bg);
   border: 2px solid var(--left-border, var(--border-color));
@@ -6243,6 +6310,12 @@ export default {
     color: var(--font-color);
     font-weight: 500;
     opacity: 0.5;
+  }
+
+  .tone-keep {
+    color: var(--sec-font-color);
+    font-weight: 500;
+    opacity: 0.7;
   }
 
   .row-retract td {
