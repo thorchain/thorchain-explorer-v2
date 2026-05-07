@@ -154,7 +154,19 @@
               }}
             </h2>
           </div>
-          <div class="period-pill">24h</div>
+          <select
+            v-model="selectedPeriod"
+            class="period-select"
+            @change="loadMap"
+          >
+            <option
+              v-for="period in periods"
+              :key="period.key"
+              :value="period.key"
+            >
+              {{ period.label }}
+            </option>
+          </select>
         </div>
 
         <div v-if="!selectedChainData" class="metric-tabs">
@@ -228,7 +240,7 @@
           </div>
 
           <button type="button" class="back-button" @click="clearSelection">
-            Back to rankings
+            Back
           </button>
         </div>
 
@@ -258,16 +270,16 @@
 
         <div class="summary">
           <div>
-            <span>Total volume</span>
-            <strong>{{ compactCurrency(totalVolume) }}</strong>
+            <span>Total</span>
+            <strong>{{ selectedMetricTotal }}</strong>
           </div>
           <div>
-            <span>Connected</span>
+            <span>Connected chains</span>
             <strong>{{ chains.length }}</strong>
           </div>
           <div>
             <span>Activity source</span>
-            <strong>Latest L1 swaps</strong>
+            <strong>All cross-chain actions</strong>
           </div>
         </div>
       </aside>
@@ -281,6 +293,7 @@ export default {
     return {
       loading: true,
       selectedMetric: 'volume',
+      selectedPeriod: '24h',
       selectedChain: null,
       chains: [],
       swapLinks: [],
@@ -293,7 +306,12 @@ export default {
       metrics: [
         { key: 'volume', label: 'Volume' },
         { key: 'txs', label: 'Txs' },
-        { key: 'dau', label: 'DAU' },
+        { key: 'dau', label: 'DAU', titleLabel: 'Daily Active Users' },
+      ],
+      periods: [
+        { key: '24h', label: '24h', days: 1 },
+        { key: '7d', label: '7d', days: 7 },
+        { key: '30d', label: '30d', days: 30 },
       ],
       chainLabels: {
         AVAX: 'Avalanche',
@@ -307,7 +325,7 @@ export default {
         LTC: 'Litecoin',
         SOL: 'Solana',
         TRON: 'Tron',
-        XRP: 'XRP Ledger',
+        XRP: 'XRP',
       },
     }
   },
@@ -316,8 +334,10 @@ export default {
   },
   computed: {
     selectedMetricLabel() {
-      return this.metrics.find((metric) => metric.key === this.selectedMetric)
-        ?.label
+      const metric = this.metrics.find(
+        (entry) => entry.key === this.selectedMetric
+      )
+      return metric?.titleLabel || metric?.label
     },
     rankedChains() {
       return [...this.chains].sort(
@@ -407,6 +427,22 @@ export default {
     totalVolume() {
       return this.chains.reduce((sum, chain) => sum + chain.volume, 0)
     },
+    totalTxs() {
+      return this.chains.reduce((sum, chain) => sum + chain.txs, 0)
+    },
+    totalDau() {
+      return this.chains.reduce((sum, chain) => sum + chain.dau, 0)
+    },
+    selectedMetricTotal() {
+      if (this.selectedMetric === 'volume') {
+        return this.compactCurrency(this.totalVolume)
+      }
+
+      return this.$options.filters.number(
+        this.selectedMetric === 'txs' ? this.totalTxs : this.totalDau,
+        '0,0'
+      )
+    },
     positionByChain() {
       return this.displayedChains.reduce((acc, chain) => {
         acc[chain.chain] = chain
@@ -467,12 +503,12 @@ export default {
       this.loading = true
 
       try {
-        const [inboundRes, poolsRes, actionsRes, statsRes] =
+        const [inboundRes, statsRes, poolsRes, actionsRes] =
           await Promise.allSettled([
             this.$api.getInboundAddresses(),
-            this.$api.getPools(),
-            this.loadL1SwapActions(),
             this.$api.getStats(),
+            this.loadPoolVolumes(),
+            this.loadActivityActions(),
           ])
 
         const inbound =
@@ -480,24 +516,21 @@ export default {
           Array.isArray(inboundRes.value.data)
             ? inboundRes.value.data
             : []
-        const pools =
-          poolsRes.status === 'fulfilled' && Array.isArray(poolsRes.value.data)
-            ? poolsRes.value.data
+        const poolVolumes =
+          poolsRes.status === 'fulfilled' && Array.isArray(poolsRes.value)
+            ? poolsRes.value
             : []
         const actions =
           actionsRes.status === 'fulfilled' && Array.isArray(actionsRes.value)
             ? actionsRes.value
             : []
-        const runePrice = Number(
-          this.$store.state.runePrice ||
-            statsRes.value?.data?.runePriceUSD ||
-            statsRes.value?.data?.runePrice ||
-            0
-        )
-
+        const runePrice =
+          statsRes.status === 'fulfilled'
+            ? Number(statsRes.value.data?.runePriceUSD || 0)
+            : 0
         const { metrics, swapLinks } = this.buildChainMetrics(
           inbound,
-          pools,
+          poolVolumes,
           actions,
           runePrice
         )
@@ -518,25 +551,47 @@ export default {
         this.loading = false
       }
     },
-    async loadL1SwapActions() {
+    async loadPoolVolumes() {
+      if (this.selectedPeriod === '24h') {
+        const res = await this.$api.getPools()
+        return Array.isArray(res.data)
+          ? res.data.map((pool) => ({
+              asset: pool.asset,
+              volume: Number(pool.volume24h || 0),
+            }))
+          : []
+      }
+
+      const res = await this.$api.getPoolsHistory(this.selectedPeriod)
+      return Array.isArray(res.data?.pools)
+        ? res.data.pools.map((pool) => ({
+            asset: pool.pool,
+            volume: Number(pool.swapVolume || 0),
+          }))
+        : []
+    },
+    loadActivityActions() {
+      return this.loadActionsByType({})
+    },
+    async loadActionsByType(filters) {
       const actions = []
       const seenIds = new Set()
-      const sinceSeconds = Math.floor(Date.now() / 1000) - 24 * 60 * 60
+      const sinceSeconds =
+        Math.floor(Date.now() / 1000) - this.selectedPeriodDays() * 24 * 60 * 60
       let nextPageToken
 
-      for (let page = 0; page < 24; page += 1) {
+      for (let page = 0; page < this.actionPageLimit(); page += 1) {
         let res
         try {
           const params = {
             limit: 20,
-            asset: 'native',
-            type: 'swap',
+            ...filters,
           }
           if (nextPageToken) params.nextPageToken = nextPageToken
 
           res = await this.$api.getActionsNoCancel(params)
         } catch (error) {
-          console.warn('Failed to load L1 swap actions page:', error)
+          console.warn('Failed to load map activity actions page:', error)
           break
         }
 
@@ -551,7 +606,7 @@ export default {
             return
           }
 
-          const id = action.in?.[0]?.txID || `${action.height}-${action.date}`
+          const id = this.actionId(action)
           if (!seenIds.has(id)) {
             seenIds.add(id)
             actions.push(action)
@@ -564,7 +619,7 @@ export default {
 
       return actions
     },
-    buildChainMetrics(inbound, pools, actions, runePrice) {
+    buildChainMetrics(inbound, poolVolumes, actions, runePrice) {
       const metrics = {}
       const links = {}
       inbound.forEach((entry) => {
@@ -575,11 +630,11 @@ export default {
         }
       })
 
-      pools.forEach((pool) => {
+      poolVolumes.forEach((pool) => {
         const chain = this.chainFromAsset(pool.asset)
         if (!metrics[chain]) return
 
-        metrics[chain].volume += (Number(pool.volume24h || 0) / 1e8) * runePrice
+        metrics[chain].volume += (Number(pool.volume || 0) / 1e8) * runePrice
       })
 
       actions.forEach((action) => {
@@ -598,6 +653,17 @@ export default {
             }
           })
         })
+        this.getContractEventCoins(action).forEach((coin) => {
+          const chain = this.chainFromAsset(coin.asset)
+          if (metrics[chain]) {
+            chains.add(chain)
+            ;[coin.sender, coin.recipient, coin.spender, coin.receiver].forEach(
+              (address) => {
+                if (address) metrics[chain].users.add(address)
+              }
+            )
+          }
+        })
 
         const sourceAddress = action.in?.[0]?.address
         const targetAddress = action.out?.find(
@@ -614,22 +680,19 @@ export default {
           metrics[chain].txs += 1
         })
 
-        if (
-          swapPair &&
-          metrics[swapPair.source] &&
-          metrics[swapPair.target] &&
-          swapPair.source !== swapPair.target
-        ) {
-          const key = [swapPair.source, swapPair.target].sort().join('-')
-          if (!links[key]) {
-            links[key] = {
-              source: swapPair.source,
-              target: swapPair.target,
-              count: 0,
+        this.actionLinkPairs(action, swapPair, chains, metrics).forEach(
+          (pair) => {
+            const key = [pair.source, pair.target].sort().join('-')
+            if (!links[key]) {
+              links[key] = {
+                source: pair.source,
+                target: pair.target,
+                count: 0,
+              }
             }
+            links[key].count += 1
           }
-          links[key].count += 1
-        }
+        )
       })
 
       return {
@@ -652,6 +715,88 @@ export default {
       }
 
       return { source, target }
+    },
+    actionLinkPairs(action, swapPair, chains, metrics) {
+      if (
+        swapPair &&
+        metrics[swapPair.source] &&
+        metrics[swapPair.target] &&
+        swapPair.source !== swapPair.target
+      ) {
+        return [swapPair]
+      }
+
+      const chainList = [...chains]
+      const pairs = []
+      chainList.forEach((source, sourceIndex) => {
+        chainList.slice(sourceIndex + 1).forEach((target) => {
+          pairs.push({ source, target })
+        })
+      })
+
+      return pairs
+    },
+    getContractEventCoins(action) {
+      const events = action?.metadata?.contract?.contractEvents || []
+      return events.flatMap((event) => {
+        const attrs = Object.fromEntries(
+          (event.attributes || []).map(({ key, value }) => [key, value])
+        )
+        if (!attrs.amount) return []
+
+        return `${attrs.amount}`
+          .split(',')
+          .map((value) => this.parseContractEventCoin(value, event.type, attrs))
+          .filter(Boolean)
+      })
+    },
+    parseContractEventCoin(value, eventType, attrs = {}) {
+      const match = `${value}`.trim().match(/^([0-9]+)(.+)$/)
+      if (!match) return null
+
+      const amount = Number(match[1])
+      const asset = this.normalizeContractEventAsset(match[2])
+      if (!asset || Number.isNaN(amount)) return null
+
+      return {
+        amount,
+        asset,
+        eventType,
+        sender: attrs.sender || '',
+        recipient: attrs.recipient || '',
+        spender: attrs.spender || '',
+        receiver: attrs.receiver || '',
+      }
+    },
+    normalizeContractEventAsset(denom = '') {
+      const raw = `${denom}`.trim()
+      const lower = raw.toLowerCase()
+      const thorMap = {
+        rune: 'THOR.RUNE',
+        ruji: 'THOR.RUJI',
+        sruji: 'THOR.sRUJI',
+        tcy: 'THOR.TCY',
+        nami: 'THOR.NAMI',
+        auto: 'THOR.AUTO',
+        lqdy: 'THOR.LQDY',
+      }
+
+      if (thorMap[lower]) return thorMap[lower]
+      if (lower.startsWith('x/')) return lower
+      if (raw.includes('.')) return raw
+      if (raw.includes('-')) {
+        const parts = raw.split('-')
+        if (parts[0]) parts[0] = parts[0].toUpperCase()
+        if (parts[1] && /^[a-z0-9]{2,20}$/i.test(parts[1])) {
+          parts[1] = parts[1].toUpperCase()
+        }
+        return parts.join('-')
+      }
+
+      return raw.toUpperCase()
+    },
+    actionId(action) {
+      return action.in?.[0]?.txID || `${action.height}-${action.date}`
     },
     chainFromAsset(asset) {
       if (!asset) return ''
@@ -707,6 +852,21 @@ export default {
     },
     chainName(chain) {
       return this.chainLabels[chain] || chain
+    },
+    selectedPeriodDays() {
+      return (
+        this.periods.find((period) => period.key === this.selectedPeriod)
+          ?.days || 1
+      )
+    },
+    actionPageLimit() {
+      return (
+        {
+          '24h': 24,
+          '7d': 60,
+          '30d': 120,
+        }[this.selectedPeriod] || 24
+      )
     },
     nodeTransform(position) {
       return {
@@ -1001,13 +1161,16 @@ button {
   overflow: hidden;
 }
 
-.period-pill {
+.period-select {
+  min-width: 64px;
   padding: $space-6 $space-10;
   border: 1px solid var(--border-color);
   border-radius: $radius-full;
   color: var(--primary-color);
+  background: var(--card-bg-color);
   font-size: $font-size-xs;
   font-weight: 700;
+  outline: none;
 }
 
 .metric-tabs {
