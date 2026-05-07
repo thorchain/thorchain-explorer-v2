@@ -46,6 +46,12 @@ export function getPoolsHistory(period = '') {
   if (period === 'day') {
     period = ''
   }
+  if (period === '7d') {
+    period = 'Week'
+  }
+  if (period === '30d') {
+    period = 'Month'
+  }
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].SERVER_URL + 'api/historyPools' + period
   )
