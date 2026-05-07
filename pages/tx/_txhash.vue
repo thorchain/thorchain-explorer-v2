@@ -1762,18 +1762,13 @@ export default {
         events
           .filter((e) => e.type === 'coin_received')
           .map(toAttrs)
-          .filter(
-            (a) =>
-              a.receiver === userAddress &&
-              a.amount &&
-              !/^[\d]+rune$/.test(a.amount)
-          )
+          .filter((a) => a.receiver === userAddress && a.amount)
           .forEach((a) => {
             a.amount.split(',').forEach((part) => {
               const p = part.trim()
               const amt = parseInt(p) || 0
               const denom = p.replace(/^\d+/, '').trim()
-              if (denom && amt > 0 && !/^rune$/i.test(denom))
+              if (denom && amt > 0)
                 receivedByDenom[denom] = (receivedByDenom[denom] || 0) + amt
             })
           })
