@@ -149,6 +149,8 @@ export default {
           return '#ffc300'
         case 'ETH.USDT-0XDAC17F958D2EE523A2206206994597C13D831EC7':
           return '#26A17B'
+        case 'THOR.BRUNE':
+          return '#E040B4'
         case 'XRP.XRP':
           return '#23292F'
         case 'ZEC.ZEC':
@@ -820,6 +822,8 @@ export default {
           return '#07AEFE'
         case 'RUNE':
           return '#1BE8C4'
+        case 'BRUNE':
+          return '#E040B4'
         case 'FLIP':
           return '#FC92C5'
         case 'VTHOR':
