@@ -92,7 +92,7 @@ export function getPoolStats(poolName) {
 export function getPoolDepth(poolName, count = 30, from = undefined) {
   return $axiosInstace.get(
     `history/depths/${poolName}?interval=day&count=${count}` +
-    (from ? `&from=${from}` : '')
+      (from ? `&from=${from}` : '')
   )
 }
 
@@ -148,7 +148,42 @@ export function getPoolVolume(poolName) {
 }
 
 export function getNetwork() {
-  return $axiosInstace.get('network')
+  return $axiosInstace.get('network').catch((error) => {
+    console.warn('Midgard network endpoint failed, using Thornode fallback')
+
+    return $axiosInstace
+      .get(endpoints[process.env.NETWORK].THORNODE_URL + 'thorchain/network')
+      .then((res) => ({
+        ...res,
+        data: normalizeThorNetwork(res.data),
+      }))
+      .catch(() => {
+        throw error
+      })
+  })
+}
+
+function normalizeThorNetwork(data = {}) {
+  return {
+    ...data,
+    totalReserve: data.totalReserve ?? data.total_reserve ?? 0,
+    totalPooledRune:
+      data.totalPooledRune ??
+      data.available_pools_rune ??
+      data.vaults_liquidity_rune ??
+      0,
+    bondRewardRune: data.bondRewardRune ?? data.bond_reward_rune ?? 0,
+    totalBondUnits: data.totalBondUnits ?? data.total_bond_units ?? 0,
+    activeNodeCount: data.activeNodeCount ?? 0,
+    standbyNodeCount: data.standbyNodeCount ?? 0,
+    bondingAPY: data.bondingAPY ?? 0,
+    liquidityAPY: data.liquidityAPY ?? 0,
+    poolShareFactor: data.poolShareFactor ?? 0,
+    bondMetrics: data.bondMetrics ?? {
+      totalActiveBond: data.effective_security_bond ?? 0,
+      totalStandbyBond: 0,
+    },
+  }
 }
 
 export function getDebugBlock(blockParam) {
