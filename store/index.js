@@ -1,3 +1,5 @@
+export const strict = false
+
 export const state = () => ({
   runePrice: 0,
   darkTheme: false,

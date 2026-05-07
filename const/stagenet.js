@@ -42,6 +42,10 @@ export const stagenetNav = {
           name: 'Outbound Fees',
           link: '/network/outbounds',
         },
+        {
+          name: 'Map of Chains',
+          link: '/mapofchains',
+        },
       ],
     },
     {
