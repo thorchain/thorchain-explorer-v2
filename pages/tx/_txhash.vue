@@ -565,7 +565,9 @@ export default {
       runePrice: 'getRunePrice',
     }),
     activeOverview() {
-      return this.swapOverview || this.contractOverview || null
+      const co = this.contractOverview
+      if (co?.priority) return co
+      return this.swapOverview || co || null
     },
     inputExplorerUrl() {
       const asset = this.activeOverview?.input?.asset
@@ -1336,6 +1338,126 @@ export default {
         (a) => a.type === 'contract'
       )
       if (contractActions.length === 0) return null
+
+      // DAO DAO proposal execution: check before the mixed-action guard because
+      // the proposal can trigger other action types (e.g., a swap) as side effects
+      const proposalAction = contractActions.find((a) => {
+        const msg = a.metadata?.contract?.msg
+        return (
+          msg?.execute &&
+          !Array.isArray(msg.execute) &&
+          msg.execute.proposal_id !== undefined
+        )
+      })
+      if (proposalAction) {
+        const action = proposalAction
+        const senderAddress = action.in?.[0]?.address || ''
+        const events = action.metadata?.contract?.contractEvents || []
+        const toAttrs = (e) =>
+          Object.fromEntries(
+            (e.attributes || []).map(({ key, value }) => [key, value])
+          )
+        const proposalId = action.metadata.contract.msg.execute.proposal_id
+        const hasError = (action.metadata?.contract?.code ?? 0) > 0
+        const logs = action.metadata?.contract?.logs
+        const status = hasError
+          ? { label: 'Failed', tone: 'red' }
+          : action.status === 'success'
+            ? { label: 'Success', tone: 'green' }
+            : { label: 'Pending', tone: 'blue' }
+        const date = action.date
+        const timestamp = date ? moment.unix(parseInt(date) / 1e9) : null
+        const height = parseInt(action.height)
+
+        const proposalWasmEvent = events.find(
+          (e) =>
+            e.type === 'wasm' &&
+            (e.attributes || []).some((a) => a.key === 'proposal_id')
+        )
+        const wasmAttrs = proposalWasmEvent ? toAttrs(proposalWasmEvent) : {}
+        const daoAddress = wasmAttrs.dao || ''
+        const daoLabel =
+          getRujiraContractLabel(daoAddress) ||
+          (daoAddress ? this.formatAddress(daoAddress) : 'DAO')
+
+        return {
+          title: `Execute Proposal #${proposalId}`,
+          metaLabel: `Execute Proposal · ${daoLabel}`,
+          status,
+          affiliateAddress: '',
+          actionTypeTitle: 'contract',
+          hasContractAction: true,
+          priority: true,
+          labels: [],
+          pairDisplay: null,
+          input: {
+            asset: null,
+            name: 'Executor',
+            badge: senderAddress ? this.formatAddress(senderAddress) : '',
+            amount: `Proposal #${proposalId}`,
+            usd: null,
+          },
+          output: {
+            asset: null,
+            name: 'DAO',
+            badge: daoAddress ? this.formatAddress(daoAddress) : '',
+            amount: status.label,
+            usd: null,
+          },
+          metricRows: [
+            { label: 'Proposal', value: `#${proposalId}` },
+            timestamp
+              ? { label: 'Time', value: timestamp.format('YYYY-MM-DD HH:mm:ss') }
+              : null,
+          ].filter(Boolean),
+          detailRows: [
+            {
+              label: 'Product',
+              value: daoLabel,
+              tone: this.getProductTone(daoLabel),
+              type: 'product',
+            },
+            {
+              label: 'Action',
+              value: 'Execute Proposal',
+              tone: this.getContractTypeTone('Execute Proposal'),
+              type: 'product',
+            },
+            { label: 'Proposal', value: `#${proposalId}` },
+            daoAddress
+              ? { label: 'DAO', address: daoAddress, type: 'address' }
+              : null,
+            { label: 'Status', value: status.label, type: 'status' },
+            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
+            height
+              ? { label: 'Block', value: `#${this.normalFormat(height)}` }
+              : null,
+            senderAddress
+              ? { label: 'Executor', address: senderAddress, type: 'address' }
+              : null,
+          ].filter(Boolean),
+          lifecycleRows: [
+            {
+              icon: 'CheckIcon',
+              title: `Proposal #${proposalId} executed`,
+              body: daoAddress ? `DAO: ${this.formatAddress(daoAddress)}` : '',
+            },
+            ...(hasError && logs
+              ? [{ icon: 'WarningIcon', title: 'Execution failed', body: logs }]
+              : []),
+          ],
+          feeRows: [],
+          technicalRows: [
+            senderAddress
+              ? this.buildTechRow('Executor', senderAddress, 'address')
+              : null,
+            daoAddress
+              ? this.buildTechRow('DAO address', daoAddress, 'address')
+              : null,
+          ].filter(Boolean),
+        }
+      }
+
       if (
         this.rawActions.some(
           (a) => a.type !== 'contract' && a.type !== 'refund'
@@ -3174,6 +3296,8 @@ export default {
       if (msg.order) return 'Limit Order'
       if (msg.swap) return 'Market Order'
       if (msg.cancel_instance) return 'Cancel Strategy'
+      if (!Array.isArray(msg.execute) && msg.execute?.proposal_id !== undefined)
+        return 'Execute Proposal'
       if (Array.isArray(msg.execute)) return 'Execute Strategies'
       if (msg.liquid && 'bond' in msg.liquid) return 'Liquid Bond'
       if (msg.liquid && 'unbond' in msg.liquid) return 'Liquid Unbond'
@@ -3191,6 +3315,7 @@ export default {
     getContractTypeTone(type) {
       if (type === 'Scale Order') return 'gold'
       if (type === 'Limit Order') return 'gold'
+      if (type === 'Execute Proposal') return 'blue'
       if (type === 'Market Order') return 'blue'
       if (type === 'CALC Strategy') return 'purple'
       if (type === 'Cancel Strategy') return 'red'
