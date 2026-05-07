@@ -2236,6 +2236,127 @@ export default {
         }
       }
 
+      // Staking rewards claim: msg.account.claim
+      const claimMsg = singleAction?.metadata?.contract?.msg?.account?.claim
+      if (claimMsg !== undefined) {
+        const action = singleAction
+        const contractAddress = action.out?.[0]?.address || ''
+        const contractLabel =
+          getRujiraContractLabel(contractAddress) ||
+          this.formatAddress(contractAddress)
+        const productLabel =
+          getRujiraContractProduct(contractAddress) || 'RUJI Staking'
+        const userAddress = action.in?.[0]?.address || ''
+        const hasError = (action.metadata?.contract?.code ?? 0) > 0
+        const logs = action.metadata?.contract?.logs
+        const status = hasError
+          ? { label: 'Failed', tone: 'red' }
+          : action.status === 'success'
+            ? { label: 'Success', tone: 'green' }
+            : { label: 'Pending', tone: 'blue' }
+        const date = action.date
+        const timestamp = date ? moment.unix(parseInt(date) / 1e9) : null
+        const height = parseInt(action.height)
+        const events = action.metadata?.contract?.contractEvents || []
+        const toAttrs = (e) =>
+          Object.fromEntries(
+            (e.attributes || []).map(({ key, value }) => [key, value])
+          )
+
+        // Read claimed amount from the staking claim event
+        const claimEvent = events.find(
+          (e) => e.type === 'wasm-rujira-staking/account.claim'
+        )
+        const claimAttrs = claimEvent ? toAttrs(claimEvent) : {}
+        const claimedAmount = parseInt(claimAttrs.amount) || 0
+
+        return {
+          title: `Claim Rewards · ${contractLabel}`,
+          metaLabel: `Claim Rewards · ${productLabel}`,
+          status,
+          affiliateAddress: '',
+          actionTypeTitle: 'contract',
+          hasContractAction: true,
+          labels: [],
+          pairDisplay: null,
+          input: {
+            asset: null,
+            name: 'User',
+            badge: userAddress ? this.formatAddress(userAddress) : '',
+            amount: 'Claim',
+            usd: null,
+          },
+          output: {
+            asset: 'THOR.RUNE',
+            name: 'RUNE',
+            badge: this.getNetworkBadge(null) || '',
+            amount: claimedAmount
+              ? `${this.baseAmountFormatOrZero(claimedAmount)} RUNE`
+              : '-',
+            usd: claimedAmount
+              ? this.formatUsdValue(
+                  this.amountToUSD('THOR.RUNE', claimedAmount, this.pools)
+                )
+              : null,
+          },
+          metricRows: [
+            claimedAmount
+              ? {
+                  label: 'Claimed',
+                  value: `${this.baseAmountFormatOrZero(claimedAmount)} RUNE`,
+                }
+              : null,
+            timestamp
+              ? { label: 'Time', value: timestamp.format('YYYY-MM-DD HH:mm:ss') }
+              : null,
+          ].filter(Boolean),
+          detailRows: [
+            {
+              label: 'Product',
+              value: productLabel,
+              tone: this.getProductTone(productLabel),
+              type: 'product',
+            },
+            {
+              label: 'Action',
+              value: 'Claim Rewards',
+              tone: this.getContractTypeTone('Claim Rewards'),
+              type: 'product',
+            },
+            { label: 'Contract', value: contractLabel },
+            { label: 'Status', value: status.label, type: 'status' },
+            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
+            height
+              ? { label: 'Block', value: `#${this.normalFormat(height)}` }
+              : null,
+            userAddress
+              ? { label: 'User', address: userAddress, type: 'address' }
+              : null,
+          ].filter(Boolean),
+          lifecycleRows: [
+            {
+              icon: 'CheckIcon',
+              title: `Rewards claimed`,
+              body: claimedAmount
+                ? `${this.baseAmountFormatOrZero(claimedAmount)} RUNE`
+                : '',
+            },
+            ...(hasError && logs
+              ? [{ icon: 'WarningIcon', title: 'Claim failed', body: logs }]
+              : []),
+          ],
+          feeRows: [],
+          technicalRows: [
+            userAddress
+              ? this.buildTechRow('From address', userAddress, 'address')
+              : null,
+            contractAddress
+              ? this.buildTechRow('To address', contractAddress, 'address')
+              : null,
+          ].filter(Boolean),
+        }
+      }
+
       // Ghost Credit Account: msg.account dispatches sub-messages through a credit sub-account
       const creditAccountMsg = singleAction?.metadata?.contract?.msg?.account
       if (creditAccountMsg) {
@@ -3304,6 +3425,7 @@ export default {
       if ('withdraw' in msg) return 'Ghost Vault Withdraw'
       if ('deposit' in msg) return 'Ghost Vault Deposit'
       if (msg.reset_instance) return 'Reset Instance'
+      if (msg.account?.claim !== undefined) return 'Claim Rewards'
       if (msg.account) return 'Credit Account'
       const events = contractAction.metadata?.contract?.contractEvents || []
       if (events.some((e) => e.type === 'wasm-calc-manager/strategy.execute'))
@@ -3324,6 +3446,7 @@ export default {
       if (type === 'Ghost Vault Deposit') return 'green'
       if (type === 'Ghost Vault Withdraw') return 'blue'
       if (type === 'Reset Instance') return 'blue'
+      if (type === 'Claim Rewards') return 'green'
       if (type === 'Credit Account') return 'purple'
       return 'green'
     },
