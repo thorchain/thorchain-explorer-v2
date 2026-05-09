@@ -91,7 +91,7 @@
       <!-- <TxList v-else :actions="txs && txs.actions" :loading="loading" /> -->
 
       <NewPagination
-        v-if="txs && txs.actions && count > -1"
+        v-if="txs && txs.actions && count > -1 && count <= 2000"
         :total-rows="count"
         :per-page="limit"
         :current-page="currentPage"
@@ -326,7 +326,10 @@ export default {
       const cleanParams = this.checkQuery(params)
 
       let offset
-      if (this.$route.query.page) {
+      if (
+        this.$route.query.page &&
+        (this.count === undefined || this.count <= 2000)
+      ) {
         this.currentPage = +this.$route.query.page
         offset = (+this.$route.query.page - 1) * this.limit
       }
