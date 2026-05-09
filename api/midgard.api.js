@@ -31,7 +31,7 @@ function withCache(key, fn, ttl = 60_000) {
 
 export function getStats() {
   return withCache('stats', () =>
-    $axiosInstace.get(`${endpoints[process.env.NETWORK].SERVER_URL}stats`)
+    $axiosInstace.get(`stats`)
   )
 }
 
@@ -79,9 +79,9 @@ export function getPoolTxs(poolName, offset = 0, limit = 10) {
   return $axiosInstace.get('actions', { params })
 }
 
-export function getPools() {
+export function getPools(period) {
   return withCache('pools', () =>
-    $axiosInstace.get(`${endpoints[process.env.NETWORK].SERVER_URL}pools`)
+    $axiosInstace.get(`pools?period=${period ?? '180d'}`)
   )
 }
 
