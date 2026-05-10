@@ -495,6 +495,11 @@
             />
           </div>
           <div class="events-modal-body">
+            <div v-if="activeOverview.rawMsg && !eventsSearchQuery" class="events-msg-block">
+              <div class="events-event-type">msg</div>
+              <pre class="events-msg-json">{{ JSON.stringify(activeOverview.rawMsg, null, 2) }}</pre>
+            </div>
+
             <div
               v-for="(event, i) in filteredContractEvents"
               :key="i"
@@ -1447,6 +1452,7 @@ export default {
 
         return {
           rawEvents: events,
+          rawMsg: action?.metadata?.contract?.msg || null,
           title: `Execute Proposal #${proposalId}`,
           metaLabel: `Execute Proposal · ${daoLabel}`,
           status,
@@ -1659,6 +1665,7 @@ export default {
 
         return {
           rawEvents: events,
+          rawMsg: action?.metadata?.contract?.msg || null,
           title: isScaleOrder
             ? `Scale Order: ${orderCount} orders on ${contractLabel}${titleSuffix}`
             : `${orderCount} Limit Order${orderCount !== 1 ? 's' : ''} placed on ${contractLabel}${titleSuffix}`,
@@ -1819,6 +1826,7 @@ export default {
 
         return {
           rawEvents: events,
+          rawMsg: action?.metadata?.contract?.msg || null,
           title: `Strategy #${instanceId} cancelled`,
           metaLabel: `Cancel Strategy · ${productLabel}`,
           status,
@@ -1999,6 +2007,7 @@ export default {
 
         return {
           rawEvents: events,
+          rawMsg: action?.metadata?.contract?.msg || null,
           title: `Market Order: ${contractLabel}`,
           metaLabel: `Market Order · ${productLabel}`,
           status,
@@ -2204,6 +2213,7 @@ export default {
 
         return {
           rawEvents: events,
+          rawMsg: action?.metadata?.contract?.msg || null,
           title: `${actionType}: ${contractLabel}`,
           metaLabel: `${actionType} · ${productLabel}`,
           status,
@@ -2342,6 +2352,7 @@ export default {
 
         return {
           rawEvents: events,
+          rawMsg: action?.metadata?.contract?.msg || null,
           title: `Claim Rewards · ${contractLabel}`,
           metaLabel: `Claim Rewards · ${productLabel}`,
           status,
@@ -2527,6 +2538,7 @@ export default {
 
         return {
           rawEvents: events,
+          rawMsg: action?.metadata?.contract?.msg || null,
           title: `Credit Account: ${this.formatAddress(creditAccountAddr)}`,
           metaLabel: `Credit Account · ${productLabel}`,
           status,
@@ -2697,6 +2709,7 @@ export default {
 
         return {
           rawEvents: events,
+          rawMsg: action?.metadata?.contract?.msg || null,
           title: `Reset Instance #${instanceId}`,
           metaLabel: `Reset Instance · ${productLabel}`,
           status,
@@ -2871,6 +2884,7 @@ export default {
 
         return {
           rawEvents: events,
+          rawMsg: action?.metadata?.contract?.msg || null,
           title: `${actionType}: ${vaultName}`,
           metaLabel: `${actionType} · ${productLabel}`,
           status,
@@ -3029,6 +3043,7 @@ export default {
 
         return {
           rawEvents: events,
+          rawMsg: action?.metadata?.contract?.msg || null,
           title: `${instanceCount} ${instanceCount === 1 ? 'Strategy' : 'Strategies'} executed by ${contractLabel}`,
           metaLabel: `Execute Strategies · ${productLabel}`,
           status,
@@ -6813,6 +6828,25 @@ export default {
   > * {
     flex-shrink: 0;
   }
+}
+
+.events-msg-block {
+  background: var(--card-bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: $radius-s;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.events-msg-json {
+  margin: 0;
+  padding: $space-10 $space-12;
+  font-size: $font-size-xs;
+  font-family: monospace;
+  color: var(--sec-font-color);
+  white-space: pre;
+  overflow-x: auto;
+  line-height: 1.5;
 }
 
 .events-event-block {
