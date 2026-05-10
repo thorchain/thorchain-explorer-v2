@@ -6670,6 +6670,10 @@ export default {
   span:not(:first-child) {
     text-align: right;
   }
+
+  span:last-child {
+    min-width: 60px;
+  }
 }
 
 .tx-order-book-row {
@@ -6743,7 +6747,8 @@ export default {
   text-transform: uppercase;
   color: var(--sec-font-color);
   opacity: 0.6;
-  min-width: 44px;
+  min-width: 60px;
+  text-align: right;
 }
 
 // ── Contract Events button & modal ───────────────────────────────────────────
