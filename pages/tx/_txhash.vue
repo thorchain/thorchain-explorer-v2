@@ -247,7 +247,18 @@
             v-if="activeOverview.lifecycleRows.length"
             class="tx-info-card card-bg"
           >
-            <div class="tx-section-title">Lifecycle Events</div>
+            <div class="tx-section-title-row">
+              <span class="tx-section-title">Lifecycle Events</span>
+              <button
+                v-if="activeOverview.rawEvents && activeOverview.rawEvents.length"
+                class="tx-events-btn"
+                @click="eventsModalOpen = true"
+              >
+                <ListIcon class="tx-events-btn-icon" />
+                View Events
+                <span class="tx-events-count">{{ activeOverview.rawEvents.length }}</span>
+              </button>
+            </div>
             <div class="tx-lifecycle-list">
               <div
                 v-for="event in activeOverview.lifecycleRows"
@@ -458,6 +469,54 @@
     <div v-else-if="isLoading && !isError">
       <tx-loader />
     </div>
+
+    <!-- Contract Events Modal -->
+    <transition name="fade">
+      <div
+        v-if="eventsModalOpen"
+        class="events-modal-backdrop"
+        @click.self="eventsModalOpen = false"
+      >
+        <div class="events-modal">
+          <div class="events-modal-header">
+            <span class="events-modal-title">Contract Events</span>
+            <CrossIcon
+              class="events-modal-close"
+              @click="eventsModalOpen = false"
+            />
+          </div>
+          <div class="events-modal-search">
+            <input
+              v-model="eventsSearchQuery"
+              class="events-search-input"
+              type="text"
+              placeholder="Filter by type or attribute…"
+              autofocus
+            />
+          </div>
+          <div class="events-modal-body">
+            <div
+              v-for="(event, i) in filteredContractEvents"
+              :key="i"
+              class="events-event-block"
+            >
+              <div class="events-event-type">{{ event.type }}</div>
+              <div
+                v-for="attr in event.attributes"
+                :key="attr.key"
+                class="events-attr-row"
+              >
+                <span class="events-attr-key">{{ attr.key }}</span>
+                <span class="events-attr-val">{{ attr.value }}</span>
+              </div>
+            </div>
+            <div v-if="!filteredContractEvents.length" class="events-empty">
+              No events match "{{ eventsSearchQuery }}"
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
   </Page>
 </template>
 
@@ -505,6 +564,8 @@ import {
   getRujiraContractEntry,
 } from '~/utils/rujiraContracts'
 import ExternalIcon from '~/assets/images/external.svg?inline'
+import CrossIcon from '~/assets/images/cross.svg?inline'
+import ListIcon from '~/assets/images/highlight-list.svg?inline'
 
 export default {
   components: {
@@ -524,6 +585,8 @@ export default {
     AssetIcon,
     AddressComponent,
     ExternalIcon,
+    CrossIcon,
+    ListIcon,
     streamingSwap,
     txCard,
     Accordion,
@@ -553,6 +616,8 @@ export default {
       technicalExpanded: false,
       overviewBubbleExpanded: false,
       rateFlipped: false,
+      eventsModalOpen: false,
+      eventsSearchQuery: '',
     }
   },
   head: {
@@ -1381,6 +1446,7 @@ export default {
           (daoAddress ? this.formatAddress(daoAddress) : 'DAO')
 
         return {
+          rawEvents: events,
           title: `Execute Proposal #${proposalId}`,
           metaLabel: `Execute Proposal · ${daoLabel}`,
           status,
@@ -1592,6 +1658,7 @@ export default {
         const scaleOutTicker = orderSideIsBuy ? baseTicker : quoteTicker
 
         return {
+          rawEvents: events,
           title: isScaleOrder
             ? `Scale Order: ${orderCount} orders on ${contractLabel}${titleSuffix}`
             : `${orderCount} Limit Order${orderCount !== 1 ? 's' : ''} placed on ${contractLabel}${titleSuffix}`,
@@ -1751,6 +1818,7 @@ export default {
         const height = parseInt(action.height)
 
         return {
+          rawEvents: events,
           title: `Strategy #${instanceId} cancelled`,
           metaLabel: `Cancel Strategy · ${productLabel}`,
           status,
@@ -1930,6 +1998,7 @@ export default {
         const refundReason = refundAction?.metadata?.refund?.reason || null
 
         return {
+          rawEvents: events,
           title: `Market Order: ${contractLabel}`,
           metaLabel: `Market Order · ${productLabel}`,
           status,
@@ -2134,6 +2203,7 @@ export default {
         const actionType = isBond ? 'Liquid Bond' : 'Liquid Unbond'
 
         return {
+          rawEvents: events,
           title: `${actionType}: ${contractLabel}`,
           metaLabel: `${actionType} · ${productLabel}`,
           status,
@@ -2271,6 +2341,7 @@ export default {
         const claimedAmount = parseInt(claimAttrs.amount) || 0
 
         return {
+          rawEvents: events,
           title: `Claim Rewards · ${contractLabel}`,
           metaLabel: `Claim Rewards · ${productLabel}`,
           status,
@@ -2455,6 +2526,7 @@ export default {
         const subMsgCount = subMsgs.length
 
         return {
+          rawEvents: events,
           title: `Credit Account: ${this.formatAddress(creditAccountAddr)}`,
           metaLabel: `Credit Account · ${productLabel}`,
           status,
@@ -2624,6 +2696,7 @@ export default {
         const executionType = resetAttrs.execution_type || ''
 
         return {
+          rawEvents: events,
           title: `Reset Instance #${instanceId}`,
           metaLabel: `Reset Instance · ${productLabel}`,
           status,
@@ -2797,6 +2870,7 @@ export default {
           contractLabel.replace('rujira-ghost-vault:', '') || contractLabel
 
         return {
+          rawEvents: events,
           title: `${actionType}: ${vaultName}`,
           metaLabel: `${actionType} · ${productLabel}`,
           status,
@@ -2954,6 +3028,7 @@ export default {
         const height = parseInt(action.height)
 
         return {
+          rawEvents: events,
           title: `${instanceCount} ${instanceCount === 1 ? 'Strategy' : 'Strategies'} executed by ${contractLabel}`,
           metaLabel: `Execute Strategies · ${productLabel}`,
           status,
@@ -3151,8 +3226,26 @@ export default {
         ].filter(Boolean),
       }
     },
+    filteredContractEvents() {
+      const events = this.activeOverview?.rawEvents || []
+      const q = (this.eventsSearchQuery || '').toLowerCase().trim()
+      if (!q) return events
+      return events.filter((e) => {
+        if (e.type?.toLowerCase().includes(q)) return true
+        return (e.attributes || []).some(
+          (a) =>
+            a.key?.toLowerCase().includes(q) ||
+            a.value?.toLowerCase().includes(q)
+        )
+      })
+    },
   },
   async mounted() {
+    this._escHandler = (e) => {
+      if (e.key === 'Escape') this.eventsModalOpen = false
+    }
+    window.addEventListener('keydown', this._escHandler)
+
     let txHash = this.$route.params.txhash
     if (txHash.toLowerCase().startsWith('0x')) {
       txHash = txHash.slice(2)
@@ -3201,6 +3294,7 @@ export default {
   },
   destroyed() {
     this.clearIntervalId(this.updateInterval)
+    window.removeEventListener('keydown', this._escHandler)
   },
   methods: {
     getBubbleTypeFromTitle(title) {
@@ -6564,5 +6658,216 @@ export default {
   .row-retract td {
     opacity: 0.55;
   }
+}
+
+// ── Contract Events button & modal ───────────────────────────────────────────
+
+.tx-section-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tx-events-btn {
+  align-items: center;
+  background: var(--card-bg);
+  border: 1px solid color-mix(in srgb, var(--border-color) 92%, transparent);
+  border-radius: 10px;
+  color: var(--sec-font-color);
+  cursor: pointer;
+  display: flex;
+  font-size: $font-size-xs;
+  font-weight: 500;
+  gap: $space-6;
+  justify-content: center;
+  padding: $space-6 $space-12;
+  text-decoration: none;
+  transition: border-color 0.15s, color 0.15s;
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--green) 40%, var(--border-color));
+    color: var(--green);
+  }
+
+  &:hover .tx-events-btn-icon {
+    fill: var(--primary-color);
+  }
+}
+
+.tx-events-btn-icon {
+  fill: var(--sec-font-color);
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+
+.tx-events-count {
+  background: color-mix(in srgb, var(--border-color) 80%, transparent);
+  border-radius: $radius-full;
+  font-size: 0.62rem;
+  padding: 1px 5px;
+  color: var(--sec-font-color);
+}
+
+.events-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 998;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: $space-16;
+  overflow-y: auto;
+
+  @include md {
+    padding: $space-24;
+  }
+}
+
+.events-modal {
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: $radius-s;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 680px;
+  height: calc(100vh - 80px - 2 * #{$space-16});
+  overflow: hidden;
+
+  @media (max-width: 575px) {
+    height: calc(100vh - 80px - 2 * #{$space-16});
+    border-radius: $radius-s;
+  }
+}
+
+.events-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $space-16 $space-20;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.events-modal-title {
+  font-size: $font-size-desktop;
+  font-weight: 600;
+  color: var(--font-color);
+}
+
+.events-modal-close {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  color: var(--sec-font-color);
+  flex-shrink: 0;
+
+  &:hover {
+    color: var(--primary-color);
+  }
+}
+
+.events-modal-search {
+  padding: $space-12 $space-20;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.events-search-input {
+  width: 100%;
+  background: var(--card-bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: $radius-s;
+  color: var(--font-color);
+  font-size: $font-size-sm;
+  padding: $space-8 $space-12;
+  outline: none;
+  transition: border-color 0.15s;
+
+  &::placeholder {
+    color: var(--sec-font-color);
+  }
+
+  &:focus {
+    border-color: var(--primary-color);
+  }
+}
+
+.events-modal-body {
+  overflow-y: auto;
+  padding: $space-12 $space-20;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: $space-12;
+
+  // Event blocks must never shrink — only the body scrolls
+  > * {
+    flex-shrink: 0;
+  }
+}
+
+.events-event-block {
+  background: var(--card-bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: $radius-s;
+  overflow: hidden;
+}
+
+.events-event-type {
+  background: color-mix(in srgb, var(--border-color) 40%, transparent);
+  color: var(--font-color);
+  font-size: $font-size-xs;
+  font-weight: 600;
+  padding: $space-6 $space-12;
+  font-family: monospace;
+  word-break: break-all;
+}
+
+.events-attr-row {
+  display: flex;
+  padding: $space-4 $space-12;
+  gap: $space-12;
+  border-top: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
+
+  @media (max-width: 575px) {
+    flex-direction: column;
+    gap: $space-2;
+  }
+}
+
+.events-attr-key {
+  color: var(--primary-color);
+  font-size: $font-size-xs;
+  font-family: monospace;
+  white-space: nowrap;
+  min-width: 120px;
+  flex-shrink: 0;
+
+  @media (max-width: 575px) {
+    min-width: unset;
+  }
+}
+
+.events-attr-val {
+  color: var(--sec-font-color);
+  font-size: $font-size-xs;
+  font-family: monospace;
+  word-break: break-all;
+}
+
+.events-empty {
+  color: var(--sec-font-color);
+  font-size: $font-size-sm;
+  text-align: center;
+  padding: $space-24 0;
 }
 </style>
