@@ -167,6 +167,43 @@
             </div>
           </section>
 
+          <section
+            v-if="activeOverview.orderRows && activeOverview.orderRows.length"
+            class="tx-info-card card-bg tx-order-book-card"
+          >
+            <div class="tx-order-book-header">
+              <span class="tx-section-title">Orders</span>
+              <span class="tx-order-book-count">{{ activeOverview.orderRows.length }}</span>
+            </div>
+            <div class="tx-order-book">
+              <div class="tx-order-book-cols">
+                <span>Side</span>
+                <span>Price<template v-if="activeOverview.orderPairTickers"> ({{ activeOverview.orderPairTickers.quote }})</template></span>
+                <span>Amount<template v-if="activeOverview.orderPairTickers"> ({{ activeOverview.orderPairTickers.base }})</template></span>
+                <span>Return<template v-if="activeOverview.orderPairTickers"> ({{ activeOverview.orderPairTickers.quote }})</template></span>
+                <span>Op</span>
+              </div>
+              <div
+                v-for="(r, i) in activeOverview.orderRows"
+                :key="i"
+                class="tx-order-book-row"
+                :class="{
+                  'ob-buy': r.side === 'Buy',
+                  'ob-sell': r.side === 'Sell',
+                  'ob-retract': r.op === 'Retract',
+                  'ob-keep': r.op === 'Keep',
+                }"
+                :style="`--depth: ${r.depth}%`"
+              >
+                <span class="ob-side" :class="r.side === 'Buy' ? 'ob-price--buy' : 'ob-price--sell'">{{ r.side }}</span>
+                <span class="ob-price">{{ r.price }}</span>
+                <span class="ob-amount">{{ r.amount }}</span>
+                <span class="ob-ret">{{ r.ret }}</span>
+                <span class="ob-op">{{ r.op }}</span>
+              </div>
+            </div>
+          </section>
+
           <section class="tx-info-card card-bg">
             <div class="tx-section-title">Details</div>
             <div class="tx-detail-rows">
@@ -204,28 +241,6 @@
                         @click="rateFlipped = !rateFlipped"
                       />
                     </span>
-                  </template>
-                  <template v-else-if="row.type === 'orders-table'">
-                    <table class="tx-orders-table">
-                      <thead>
-                        <tr>
-                          <th>Op</th>
-                          <th>Side</th>
-                          <th>Price</th>
-                          <th>Amount</th>
-                          <th>Return</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr v-for="(r, i) in row.rows" :key="i" :class="r.op === 'Retract' ? 'row-retract' : ''">
-                          <td :class="r.op === 'Retract' ? 'tone-retract' : r.op === 'Keep' ? 'tone-keep' : 'tone-create'">{{ r.op }}</td>
-                          <td :class="r.side === 'Buy' ? 'tone-buy' : r.side === 'Sell' ? 'tone-sell' : ''">{{ r.side }}</td>
-                          <td>{{ r.price }}</td>
-                          <td>{{ r.amount }}</td>
-                          <td>{{ r.ret }}</td>
-                        </tr>
-                      </tbody>
-                    </table>
                   </template>
                   <template v-else-if="row.type === 'address'">
                     <AddressComponent :address="row.address" />
@@ -1649,9 +1664,18 @@ export default {
                 price: price > 0 ? price.toFixed(2) : '—',
                 amount: isRetract || isKeep ? '—' : this.baseAmountFormatOrZero(amount),
                 ret: ret > 0 ? this.baseAmountFormatOrZero(ret) : '—',
+                amountRaw: amount,
               }
             })
           : []
+
+        // Compute depth % for order book bar (relative to largest order)
+        if (orderRows.length) {
+          const maxAmt = Math.max(...orderRows.map((r) => r.amountRaw || 0))
+          orderRows.forEach((r) => {
+            r.depth = maxAmt > 0 ? Math.round(((r.amountRaw || 0) / maxAmt) * 100) : 0
+          })
+        }
 
         // Swap-style input/output for scale orders
         // Buy orders: user spends quote (USDC), receives base (ETH) on fill
@@ -1666,6 +1690,8 @@ export default {
         return {
           rawEvents: events,
           rawMsg: action?.metadata?.contract?.msg || null,
+          orderRows: isScaleOrder ? orderRows : [],
+          orderPairTickers: isScaleOrder ? { base: baseTicker, quote: quoteTicker } : null,
           title: isScaleOrder
             ? `Scale Order: ${orderCount} orders on ${contractLabel}${titleSuffix}`
             : `${orderCount} Limit Order${orderCount !== 1 ? 's' : ''} placed on ${contractLabel}${titleSuffix}`,
@@ -1773,9 +1799,6 @@ export default {
               : null,
             userAddress
               ? { label: 'User', address: userAddress, type: 'address' }
-              : null,
-            isScaleOrder && orderRows.length
-              ? { label: 'Orders', type: 'orders-table', rows: orderRows }
               : null,
           ].filter(Boolean),
           lifecycleRows: [
@@ -6611,68 +6634,116 @@ export default {
   }
 }
 
-.tx-orders-table {
-  border-collapse: collapse;
+// ── Order book ───────────────────────────────────────────────────────────────
+
+.tx-order-book-header {
+  display: flex;
+  align-items: center;
+  gap: $space-8;
+  margin-bottom: $space-14;
+
+  .tx-order-book-count {
+    background: var(--border-color);
+    border-radius: $radius-full;
+    color: var(--sec-font-color);
+    font-size: 0.62rem;
+    padding: 1px 6px;
+  }
+}
+
+.tx-order-book {
   font-size: $font-size-xs;
-  width: 100%;
+  font-family: monospace;
+}
 
-  th,
-  td {
-    padding: $space-4 $space-8;
+.tx-order-book-cols {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr 1fr auto;
+  padding: 0 $space-12 $space-6;
+  color: var(--sec-font-color);
+  font-family: inherit;
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
+
+  span:not(:first-child) {
     text-align: right;
+  }
+}
 
-    &:first-child {
-      padding-left: 0;
-      text-align: left;
-    }
+.tx-order-book-row {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr 1fr auto;
+  align-items: center;
+  padding: $space-4 $space-12;
+  position: relative;
+  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 30%, transparent);
+  transition: background 0.1s;
 
-    &:last-child {
-      padding-right: 0;
-    }
+  // Depth bar fills from left for buys, right for sells
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: $radius-xs;
   }
 
-  th {
-    color: var(--font-color);
-    font-weight: 600;
-    border-bottom: 1px solid color-mix(in srgb, var(--border-color) 80%, transparent);
-    padding-bottom: $space-6;
+  &.ob-buy::before {
+    background: linear-gradient(
+      to right,
+      rgba(53, 240, 154, 0.12) var(--depth),
+      transparent var(--depth)
+    );
   }
 
-  td {
+  &.ob-sell::before {
+    background: linear-gradient(
+      to left,
+      rgba(255, 105, 94, 0.12) var(--depth),
+      transparent var(--depth)
+    );
+  }
+
+  &.ob-retract {
+    opacity: 0.45;
+  }
+
+  &.ob-keep {
+    opacity: 0.6;
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  span {
+    position: relative; // above the ::before bar
     color: var(--sec-font-color);
-    border-top: 1px solid color-mix(in srgb, var(--border-color) 55%, transparent);
+
+    &:not(:first-child) {
+      text-align: right;
+    }
   }
 
-  .tone-buy {
-    color: #35f09a;
+  .ob-price--buy  { color: #35f09a; }
+  .ob-price--sell { color: #ff695e; }
+
+  .ob-side {
     font-weight: 600;
+    min-width: 32px;
+    text-align: left;
   }
+}
 
-  .tone-sell {
-    color: #ff695e;
-    font-weight: 600;
-  }
-
-  .tone-create {
-    color: #35f09a;
-    font-weight: 600;
-  }
-
-  .tone-retract {
-    color: var(--font-color);
-    font-weight: 500;
-    opacity: 0.5;
-  }
-
-  .tone-keep {
-    color: var(--sec-font-color);
-    font-weight: 500;
-    opacity: 0.7;
-  }
-
-  .row-retract td {
-    opacity: 0.55;
-  }
+.ob-op {
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--sec-font-color);
+  opacity: 0.6;
+  min-width: 44px;
 }
 
 // ── Contract Events button & modal ───────────────────────────────────────────
