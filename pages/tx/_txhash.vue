@@ -179,8 +179,8 @@
               <div class="tx-order-book-cols">
                 <span>Side</span>
                 <span>Price<template v-if="activeOverview.orderPairTickers"> ({{ activeOverview.orderPairTickers.quote }})</template></span>
-                <span>Amount<template v-if="activeOverview.orderPairTickers"> ({{ activeOverview.orderPairTickers.base }})</template></span>
-                <span>Return<template v-if="activeOverview.orderPairTickers"> ({{ activeOverview.orderPairTickers.quote }})</template></span>
+                <span>Amount<template v-if="activeOverview.orderPairTickers"> ({{ activeOverview.orderPairTickers.isBuy ? activeOverview.orderPairTickers.quote : activeOverview.orderPairTickers.base }})</template></span>
+                <span>Return<template v-if="activeOverview.orderPairTickers"> ({{ activeOverview.orderPairTickers.isBuy ? activeOverview.orderPairTickers.base : activeOverview.orderPairTickers.quote }})</template></span>
                 <span>Op</span>
               </div>
               <div
@@ -1691,7 +1691,13 @@ export default {
           rawEvents: events,
           rawMsg: action?.metadata?.contract?.msg || null,
           orderRows: isScaleOrder ? orderRows : [],
-          orderPairTickers: isScaleOrder ? { base: baseTicker, quote: quoteTicker } : null,
+          orderPairTickers: isScaleOrder
+            ? {
+                base: baseTicker,
+                quote: quoteTicker,
+                isBuy: orderSideIsBuy,
+              }
+            : null,
           title: isScaleOrder
             ? `Scale Order: ${orderCount} orders on ${contractLabel}${titleSuffix}`
             : `${orderCount} Limit Order${orderCount !== 1 ? 's' : ''} placed on ${contractLabel}${titleSuffix}`,
