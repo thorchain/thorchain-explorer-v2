@@ -470,7 +470,7 @@ export default {
             this.positionByChain[link.target] &&
             (!this.selectedChain || this.isSelectedLink(link))
         )
-        .sort((a, b) => b.count - a.count)
+        .sort((a, b) => b.volume - a.volume)
         .slice(0, 48)
     },
     meshLinks() {
@@ -485,8 +485,8 @@ export default {
 
       return links
     },
-    maxSwapLinkCount() {
-      return Math.max(...this.visibleSwapLinks.map((link) => link.count), 1)
+    maxSwapLinkVolume() {
+      return Math.max(...this.visibleSwapLinks.map((link) => link.volume), 1)
     },
     selectedChainData() {
       return this.chains.find((chain) => chain.chain === this.selectedChain)
@@ -547,12 +547,17 @@ export default {
           }))
           .sort((a, b) => b.volume - a.volume)
 
-        this.swapLinks = (interactions || []).map((i) => ({
-          source: i.chainIn,
-          target: i.chainOut,
-          count: i.txCount,
-          volume: i.volumeUSD / 1e8,
-        }))
+        const linkMap = {}
+        ;(interactions || []).forEach((i) => {
+          const key = [i.chainIn, i.chainOut].sort().join('-')
+          if (!linkMap[key]) {
+            const [source, target] = [i.chainIn, i.chainOut].sort()
+            linkMap[key] = { source, target, count: 0, volume: 0 }
+          }
+          linkMap[key].count += i.txCount
+          linkMap[key].volume += i.volumeUSD / 1e8
+        })
+        this.swapLinks = Object.values(linkMap)
 
         this.selectedChain = null
       } catch (error) {
@@ -584,10 +589,10 @@ export default {
       return `M ${source.x} ${source.y} Q ${controlX} ${controlY} ${target.x} ${target.y}`
     },
     swapLinkStyle(link) {
-      const width = 1.4 + (link.count / this.maxSwapLinkCount) * 5
+      const width = 1.4 + (link.volume / this.maxSwapLinkVolume) * 5
       return {
-        '--swap-link-color': this.getChainColor(link.target),
-        '--swap-link-width': `${width}px`,
+        stroke: this.getChainColor(link.target),
+        strokeWidth: `${width}px`,
       }
     },
     nodeRadius(chain) {
@@ -855,8 +860,6 @@ button {
 
 .swap-links path {
   fill: none;
-  stroke: var(--swap-link-color);
-  stroke-width: var(--swap-link-width);
   stroke-linecap: round;
   stroke-dasharray: 7 9;
   opacity: 0.68;
