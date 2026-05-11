@@ -1167,13 +1167,31 @@ export default {
                 return h ? `#${this.normalFormat(h)}` : '-'
               })(),
             },
-            {
-              label: 'User',
-              address:
-                contractAction?.in?.[0]?.address ||
-                this.thorStatus?.tx?.from_address,
-              type: 'address',
-            },
+            contractAction
+              ? {
+                  label: 'User',
+                  address:
+                    contractAction?.in?.[0]?.address ||
+                    this.thorStatus?.tx?.from_address,
+                  type: 'address',
+                }
+              : {
+                  label: 'From',
+                  address:
+                    this.getStackDisplayValue(inboundStacks, 'From') ||
+                    this.thorStatus?.tx?.from_address,
+                  type: 'address',
+                },
+            !contractAction
+              ? {
+                  label: 'To',
+                  address:
+                    this.getStackDisplayValue(outboundStacks, 'Destination') ||
+                    outTxs?.[0]?.to_address ||
+                    memo?.destAddr,
+                  type: 'address',
+                }
+              : null,
           ]
 
           if (
@@ -1392,18 +1410,22 @@ export default {
           return rows
         })(),
         technicalRows: [
-          this.buildTechRow(
-            'From address',
-            contractAction?.in?.[0]?.address ||
-              this.getStackDisplayValue(inboundStacks, 'From'),
-            'address'
-          ),
-          this.buildTechRow(
-            'To address',
-            contractAction?.out?.[0]?.address ||
-              this.getStackDisplayValue(outboundStacks, 'Destination'),
-            'address'
-          ),
+          contractAction
+            ? this.buildTechRow(
+                'From',
+                contractAction?.in?.[0]?.address ||
+                  this.getStackDisplayValue(inboundStacks, 'From'),
+                'address'
+              )
+            : null,
+          contractAction
+            ? this.buildTechRow(
+                'To',
+                contractAction?.out?.[0]?.address ||
+                  this.getStackDisplayValue(outboundStacks, 'Destination'),
+                'address'
+              )
+            : null,
           this.buildTechRow(
             'Memo',
             this.getStackDisplayValue(actionStacks, 'Memo')
