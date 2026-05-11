@@ -65,6 +65,12 @@
                   <div class="tx-pair-label">
                     {{ activeOverview.pairDisplay.label }}
                   </div>
+                  <div
+                    v-if="activeOverview.pairDisplay.inputAmount"
+                    class="tx-pair-input-amount"
+                  >
+                    {{ activeOverview.pairDisplay.inputAmount }}
+                  </div>
                   <div class="tx-asset-badge tx-pair-sublabel">
                     {{ activeOverview.pairDisplay.sublabel }}
                   </div>
@@ -1715,6 +1721,10 @@ export default {
                   quoteAsset: quoteAssetParsed,
                   label: `${baseTicker} / ${quoteTicker}`,
                   sublabel: contractLabel,
+                  inputAmount:
+                    !isScaleOrder && fundsAmount
+                      ? `${this.baseAmountFormatOrZero(fundsAmount)} ${fundsTicker}`
+                      : null,
                 }
               : null,
           input: isScaleOrder
@@ -6035,6 +6045,13 @@ export default {
   color: var(--sec-font-color);
   font-size: 1.5rem;
   font-weight: 700;
+}
+
+.tx-pair-input-amount {
+  color: var(--font-color);
+  font-size: $font-size-desktop;
+  font-weight: 600;
+  font-family: monospace;
 }
 
 .tx-pair-sublabel {
