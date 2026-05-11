@@ -44,7 +44,7 @@ export const mainnetNav = {
         },
         {
           name: 'Map of Chains',
-          link: '/mapofchains',
+          link: '/network/mapofchains',
         },
       ],
     },

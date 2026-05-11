@@ -44,7 +44,7 @@ export const stagenetNav = {
         },
         {
           name: 'Map of Chains',
-          link: '/mapofchains',
+          link: '/network/mapofchains',
         },
       ],
     },
