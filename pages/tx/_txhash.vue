@@ -1707,14 +1707,16 @@ export default {
           actionTypeTitle: 'contract',
           hasContractAction: true,
           labels: [],
-          pairDisplay: isScaleOrder && !fundsAmount
-            ? {
-                baseAsset: baseAssetParsed,
-                quoteAsset: quoteAssetParsed,
-                label: `${baseTicker} / ${quoteTicker}`,
-                sublabel: contractLabel,
-              }
-            : null,
+          pairDisplay:
+            (isScaleOrder && !fundsAmount) ||
+            (!isScaleOrder && baseAssetParsed && quoteAssetParsed)
+              ? {
+                  baseAsset: baseAssetParsed,
+                  quoteAsset: quoteAssetParsed,
+                  label: `${baseTicker} / ${quoteTicker}`,
+                  sublabel: contractLabel,
+                }
+              : null,
           input: isScaleOrder
             ? {
                 asset: scaleInAssetStr || null,
