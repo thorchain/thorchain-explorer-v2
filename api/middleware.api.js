@@ -344,3 +344,21 @@ export function getRUJIStats() {
     endpoints[process.env.NETWORK].SERVER_URL + 'api/rujiStats'
   )
 }
+
+export function getChains() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + 'api/chains'
+  )
+}
+
+export function getChainsWeekly() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + 'api/chainsWeekly'
+  )
+}
+
+export function getChainsMonthly() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + 'api/chainsMonthly'
+  )
+}

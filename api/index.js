@@ -132,6 +132,9 @@ import {
   getContractsLabel,
   getRUJIStats,
   getNodeInfo,
+  getChains,
+  getChainsWeekly,
+  getChainsMonthly,
 } from './middleware.api'
 import {
   getChurnHistory,
@@ -369,6 +372,9 @@ export default function ({ $axios }, inject) {
     getContractsLabel,
     getRUJIStats,
     getNodeInfo,
+    getChains,
+    getChainsWeekly,
+    getChainsMonthly,
   }
 
   inject('api', api)

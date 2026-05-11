@@ -9,15 +9,11 @@
             <h1>Cross-chain activity map</h1>
           </div>
           <div class="toolbar-actions">
-            <button v-tooltip="'Zoom out'" type="button" @click="zoomOut">
-              -
+            <button v-tooltip="'Zoom out'" type="button" class="map-btn" @click="zoomOut">−</button>
+            <button v-tooltip="'Reset view'" type="button" class="map-btn" @click="resetView">
+              <RefreshIcon class="btn-icon" />
             </button>
-            <button v-tooltip="'Reset view'" type="button" @click="resetView">
-              Reset
-            </button>
-            <button v-tooltip="'Zoom in'" type="button" @click="zoomIn">
-              +
-            </button>
+            <button v-tooltip="'Zoom in'" type="button" class="map-btn" @click="zoomIn">+</button>
           </div>
         </div>
 
@@ -154,19 +150,28 @@
               }}
             </h2>
           </div>
-          <select
-            v-model="selectedPeriod"
-            class="period-select"
-            @change="loadMap"
-          >
-            <option
-              v-for="period in periods"
-              :key="period.key"
-              :value="period.key"
+          <div class="period-dropdown">
+            <button
+              type="button"
+              class="period-trigger"
+              @click="periodDropdownOpen = !periodDropdownOpen"
             >
-              {{ period.label }}
-            </option>
-          </select>
+              {{ selectedPeriod }}
+              <AngleIcon :class="['dropdown-arrow', { rotated: periodDropdownOpen }]" />
+            </button>
+            <div v-if="periodDropdownOpen" class="period-menu">
+              <button
+                v-for="period in periods"
+                :key="period.mode"
+                type="button"
+                class="period-option"
+                :class="{ active: selectedPeriod === period.mode }"
+                @click="onPeriodChange(period.mode)"
+              >
+                {{ period.text }}
+              </button>
+            </div>
+          </div>
         </div>
 
         <div v-if="!selectedChainData" class="metric-tabs">
@@ -235,7 +240,10 @@
                 <strong>{{ chainName(row.chain) }}</strong>
                 <small>{{ row.chain }}</small>
               </span>
-              <span class="chain-value">{{ row.count | number('0,0') }}</span>
+              <span class="chain-value">
+                <strong>{{ compactCurrency(row.volume) }}</strong>
+                <small>{{ row.count | number('0,0') }} txs</small>
+              </span>
             </button>
           </div>
 
@@ -288,13 +296,18 @@
 </template>
 
 <script>
+import RefreshIcon from '~/assets/images/refresh.svg?inline'
+import AngleIcon from '~/assets/images/angle-down.svg?inline'
+
 export default {
+  components: { RefreshIcon, AngleIcon },
   data() {
     return {
       loading: true,
       selectedMetric: 'volume',
       selectedPeriod: '24h',
       selectedChain: null,
+      periodDropdownOpen: false,
       chains: [],
       swapLinks: [],
       scale: 1,
@@ -309,9 +322,9 @@ export default {
         { key: 'dau', label: 'DAU', titleLabel: 'Daily Active Users' },
       ],
       periods: [
-        { key: '24h', label: '24h', days: 1 },
-        { key: '7d', label: '7d', days: 7 },
-        { key: '30d', label: '30d', days: 30 },
+        { text: '24h', mode: '24h' },
+        { text: '7d', mode: '7d' },
+        { text: '30d', mode: '30d' },
       ],
       chainLabels: {
         AVAX: 'Avalanche',
@@ -481,15 +494,23 @@ export default {
     selectedCounterpartyRows() {
       if (!this.selectedChain) return []
       const chainCodes = this.chains.map((chain) => chain.chain)
+      const totals = {}
 
-      return this.swapLinks
+      this.swapLinks
         .filter((link) => this.isSelectedLink(link))
-        .map((link) => ({
-          chain: link.source === this.selectedChain ? link.target : link.source,
-          count: link.count,
-        }))
-        .filter((row) => chainCodes.includes(row.chain))
-        .sort((a, b) => b.count - a.count)
+        .forEach((link) => {
+          const chain =
+            link.source === this.selectedChain ? link.target : link.source
+          if (chainCodes.includes(chain)) {
+            if (!totals[chain]) totals[chain] = { count: 0, volume: 0 }
+            totals[chain].count += link.count
+            totals[chain].volume += link.volume
+          }
+        })
+
+      return Object.entries(totals)
+        .map(([chain, { count, volume }]) => ({ chain, count, volume }))
+        .sort((a, b) => b.volume - a.volume)
     },
     selectedCounterparties() {
       return this.selectedCounterpartyRows.map((row) => row.chain)
@@ -497,52 +518,41 @@ export default {
   },
   mounted() {
     this.loadMap()
+    document.addEventListener('click', this.handleClickOutside)
+  },
+  beforeDestroy() {
+    document.removeEventListener('click', this.handleClickOutside)
   },
   methods: {
     async loadMap() {
       this.loading = true
 
       try {
-        const [inboundRes, statsRes, poolsRes, actionsRes] =
-          await Promise.allSettled([
-            this.$api.getInboundAddresses(),
-            this.$api.getStats(),
-            this.loadPoolVolumes(),
-            this.loadActivityActions(),
-          ])
+        const endpoint = {
+          '24h': this.$api.getChains,
+          '7d': this.$api.getChainsWeekly,
+          '30d': this.$api.getChainsMonthly,
+        }[this.selectedPeriod]
 
-        const inbound =
-          inboundRes.status === 'fulfilled' &&
-          Array.isArray(inboundRes.value.data)
-            ? inboundRes.value.data
-            : []
-        const poolVolumes =
-          poolsRes.status === 'fulfilled' && Array.isArray(poolsRes.value)
-            ? poolsRes.value
-            : []
-        const actions =
-          actionsRes.status === 'fulfilled' && Array.isArray(actionsRes.value)
-            ? actionsRes.value
-            : []
-        const runePrice =
-          statsRes.status === 'fulfilled'
-            ? Number(statsRes.value.data?.runePriceUSD || 0)
-            : 0
-        const { metrics, swapLinks } = this.buildChainMetrics(
-          inbound,
-          poolVolumes,
-          actions,
-          runePrice
-        )
-        this.chains = inbound
-          .map((entry) => ({
-            ...entry,
-            volume: metrics[entry.chain]?.volume ?? 0,
-            txs: metrics[entry.chain]?.txs ?? 0,
-            dau: metrics[entry.chain]?.users?.size ?? 0,
+        const res = await endpoint()
+        const { chains, interactions } = res.data
+
+        this.chains = (chains || [])
+          .filter((c) => c.chain !== 'THOR')
+          .map((c) => ({
+            chain: c.chain,
+            volume: c.volumeUSD / 1e8,
+            txs: c.txCount,
+            dau: c.uniqueAddresses,
           }))
           .sort((a, b) => b.volume - a.volume)
-        this.swapLinks = swapLinks
+
+        this.swapLinks = (interactions || []).map((i) => ({
+          source: i.chainIn,
+          target: i.chainOut,
+          count: i.txCount,
+          volume: i.volumeUSD / 1e8,
+        }))
 
         this.selectedChain = null
       } catch (error) {
@@ -550,257 +560,6 @@ export default {
       } finally {
         this.loading = false
       }
-    },
-    async loadPoolVolumes() {
-      if (this.selectedPeriod === '24h') {
-        const res = await this.$api.getPools()
-        return Array.isArray(res.data)
-          ? res.data.map((pool) => ({
-              asset: pool.asset,
-              volume: Number(pool.volume24h || 0),
-            }))
-          : []
-      }
-
-      const res = await this.$api.getPoolsHistory(this.selectedPeriod)
-      return Array.isArray(res.data?.pools)
-        ? res.data.pools.map((pool) => ({
-            asset: pool.pool,
-            volume: Number(pool.swapVolume || 0),
-          }))
-        : []
-    },
-    loadActivityActions() {
-      return this.loadActionsByType({})
-    },
-    async loadActionsByType(filters) {
-      const actions = []
-      const seenIds = new Set()
-      const sinceSeconds =
-        Math.floor(Date.now() / 1000) - this.selectedPeriodDays() * 24 * 60 * 60
-      let nextPageToken
-
-      for (let page = 0; page < this.actionPageLimit(); page += 1) {
-        let res
-        try {
-          const params = {
-            limit: 20,
-            ...filters,
-          }
-          if (nextPageToken) params.nextPageToken = nextPageToken
-
-          res = await this.$api.getActionsNoCancel(params)
-        } catch (error) {
-          console.warn('Failed to load map activity actions page:', error)
-          break
-        }
-
-        const batch = Array.isArray(res.data?.actions) ? res.data.actions : []
-        if (batch.length === 0) break
-
-        let reachedOlderActions = false
-        batch.forEach((action) => {
-          const actionSeconds = Number(String(action.date || '').slice(0, 10))
-          if (actionSeconds && actionSeconds < sinceSeconds) {
-            reachedOlderActions = true
-            return
-          }
-
-          const id = this.actionId(action)
-          if (!seenIds.has(id)) {
-            seenIds.add(id)
-            actions.push(action)
-          }
-        })
-
-        nextPageToken = res.data?.meta?.nextPageToken
-        if (reachedOlderActions || !nextPageToken) break
-      }
-
-      return actions
-    },
-    buildChainMetrics(inbound, poolVolumes, actions, runePrice) {
-      const metrics = {}
-      const links = {}
-      inbound.forEach((entry) => {
-        metrics[entry.chain] = {
-          volume: 0,
-          txs: 0,
-          users: new Set(),
-        }
-      })
-
-      poolVolumes.forEach((pool) => {
-        const chain = this.chainFromAsset(pool.asset)
-        if (!metrics[chain]) return
-
-        metrics[chain].volume += (Number(pool.volume || 0) / 1e8) * runePrice
-      })
-
-      actions.forEach((action) => {
-        const chains = new Set()
-        const swapPair = this.swapPairFromAction(action)
-        ;[...(action.pools || [])].forEach((asset) => {
-          const chain = this.chainFromAsset(asset)
-          if (metrics[chain]) chains.add(chain)
-        })
-        ;[...(action.in || []), ...(action.out || [])].forEach((tx) => {
-          ;(tx.coins || []).forEach((coin) => {
-            const chain = this.chainFromAsset(coin.asset)
-            if (metrics[chain]) {
-              chains.add(chain)
-              if (tx.address) metrics[chain].users.add(tx.address)
-            }
-          })
-        })
-        this.getContractEventCoins(action).forEach((coin) => {
-          const chain = this.chainFromAsset(coin.asset)
-          if (metrics[chain]) {
-            chains.add(chain)
-            ;[coin.sender, coin.recipient, coin.spender, coin.receiver].forEach(
-              (address) => {
-                if (address) metrics[chain].users.add(address)
-              }
-            )
-          }
-        })
-
-        const sourceAddress = action.in?.[0]?.address
-        const targetAddress = action.out?.find(
-          (tx) => tx.coins?.length && !tx.affiliate
-        )?.address
-        if (swapPair?.source && metrics[swapPair.source] && sourceAddress) {
-          metrics[swapPair.source].users.add(sourceAddress)
-        }
-        if (swapPair?.target && metrics[swapPair.target] && targetAddress) {
-          metrics[swapPair.target].users.add(targetAddress)
-        }
-
-        chains.forEach((chain) => {
-          metrics[chain].txs += 1
-        })
-
-        this.actionLinkPairs(action, swapPair, chains, metrics).forEach(
-          (pair) => {
-            const key = [pair.source, pair.target].sort().join('-')
-            if (!links[key]) {
-              links[key] = {
-                source: pair.source,
-                target: pair.target,
-                count: 0,
-              }
-            }
-            links[key].count += 1
-          }
-        )
-      })
-
-      return {
-        metrics,
-        swapLinks: Object.values(links),
-      }
-    },
-    swapPairFromAction(action) {
-      const inAsset = action.in?.[0]?.coins?.[0]?.asset
-      const outAsset = action.out?.find((tx) => tx.coins?.length)?.coins?.[0]
-        ?.asset
-      const poolAssets = action.pools || []
-      const source = this.chainFromAsset(inAsset || poolAssets[0])
-      const target = this.chainFromAsset(
-        outAsset || poolAssets[poolAssets.length - 1]
-      )
-
-      if (!source || !target || source === 'THOR' || target === 'THOR') {
-        return null
-      }
-
-      return { source, target }
-    },
-    actionLinkPairs(action, swapPair, chains, metrics) {
-      if (
-        swapPair &&
-        metrics[swapPair.source] &&
-        metrics[swapPair.target] &&
-        swapPair.source !== swapPair.target
-      ) {
-        return [swapPair]
-      }
-
-      const chainList = [...chains]
-      const pairs = []
-      chainList.forEach((source, sourceIndex) => {
-        chainList.slice(sourceIndex + 1).forEach((target) => {
-          pairs.push({ source, target })
-        })
-      })
-
-      return pairs
-    },
-    getContractEventCoins(action) {
-      const events = action?.metadata?.contract?.contractEvents || []
-      return events.flatMap((event) => {
-        const attrs = Object.fromEntries(
-          (event.attributes || []).map(({ key, value }) => [key, value])
-        )
-        if (!attrs.amount) return []
-
-        return `${attrs.amount}`
-          .split(',')
-          .map((value) => this.parseContractEventCoin(value, event.type, attrs))
-          .filter(Boolean)
-      })
-    },
-    parseContractEventCoin(value, eventType, attrs = {}) {
-      const match = `${value}`.trim().match(/^([0-9]+)(.+)$/)
-      if (!match) return null
-
-      const amount = Number(match[1])
-      const asset = this.normalizeContractEventAsset(match[2])
-      if (!asset || Number.isNaN(amount)) return null
-
-      return {
-        amount,
-        asset,
-        eventType,
-        sender: attrs.sender || '',
-        recipient: attrs.recipient || '',
-        spender: attrs.spender || '',
-        receiver: attrs.receiver || '',
-      }
-    },
-    normalizeContractEventAsset(denom = '') {
-      const raw = `${denom}`.trim()
-      const lower = raw.toLowerCase()
-      const thorMap = {
-        rune: 'THOR.RUNE',
-        ruji: 'THOR.RUJI',
-        sruji: 'THOR.sRUJI',
-        tcy: 'THOR.TCY',
-        nami: 'THOR.NAMI',
-        auto: 'THOR.AUTO',
-        lqdy: 'THOR.LQDY',
-      }
-
-      if (thorMap[lower]) return thorMap[lower]
-      if (lower.startsWith('x/')) return lower
-      if (raw.includes('.')) return raw
-      if (raw.includes('-')) {
-        const parts = raw.split('-')
-        if (parts[0]) parts[0] = parts[0].toUpperCase()
-        if (parts[1] && /^[a-z0-9]{2,20}$/i.test(parts[1])) {
-          parts[1] = parts[1].toUpperCase()
-        }
-        return parts.join('-')
-      }
-
-      return raw.toUpperCase()
-    },
-    actionId(action) {
-      return action.in?.[0]?.txID || `${action.height}-${action.date}`
-    },
-    chainFromAsset(asset) {
-      if (!asset) return ''
-      return asset.split(/[.~/-]/)[0]
     },
     linkPath(chain) {
       const controlX = (chain.x + this.thorPosition.x) * 0.24
@@ -853,25 +612,21 @@ export default {
     chainName(chain) {
       return this.chainLabels[chain] || chain
     },
-    selectedPeriodDays() {
-      return (
-        this.periods.find((period) => period.key === this.selectedPeriod)
-          ?.days || 1
-      )
-    },
-    actionPageLimit() {
-      return (
-        {
-          '24h': 24,
-          '7d': 60,
-          '30d': 120,
-        }[this.selectedPeriod] || 24
-      )
-    },
     nodeTransform(position) {
       return {
         transform: `translate(${position.x}px, ${position.y}px)`,
       }
+    },
+    handleClickOutside(event) {
+      const dropdown = this.$el?.querySelector('.period-dropdown')
+      if (dropdown && !dropdown.contains(event.target)) {
+        this.periodDropdownOpen = false
+      }
+    },
+    onPeriodChange(period) {
+      this.selectedPeriod = period
+      this.periodDropdownOpen = false
+      this.loadMap()
     },
     selectChain(chain) {
       this.selectedChain = chain
@@ -990,16 +745,36 @@ h2 {
 
 button {
   color: var(--sec-font-color);
-  background: var(--active-bg-color);
+  background: var(--bg-color);
   border: 1px solid var(--border-color);
   border-radius: $radius-md;
   cursor: pointer;
+
+  &:hover {
+    background: var(--active-bg-color);
+    color: var(--primary-color);
+  }
 }
 
-.toolbar-actions button {
-  min-width: 40px;
+.toolbar-actions {
+  gap: $space-6;
+}
+
+.map-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
   height: 36px;
-  padding: 0 $space-12;
+  padding: 0;
+  font-size: $font-size-md;
+  font-weight: 600;
+
+  .btn-icon {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+  }
 }
 
 .map-viewport {
@@ -1161,16 +936,72 @@ button {
   overflow: hidden;
 }
 
-.period-select {
-  min-width: 64px;
-  padding: $space-6 $space-10;
+.period-dropdown {
+  position: relative;
+}
+
+.period-trigger {
+  display: flex;
+  align-items: center;
+  gap: $space-8;
+  padding: $space-8 $space-12;
+  background: var(--bg-color);
   border: 1px solid var(--border-color);
-  border-radius: $radius-full;
-  color: var(--primary-color);
+  border-radius: $radius-md;
+  color: var(--sec-font-color);
+  font-size: $font-size-sm;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--active-bg-color);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+  }
+
+  .dropdown-arrow {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+    transition: transform 0.2s ease;
+
+    &.rotated {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+.period-menu {
+  position: absolute;
+  top: calc(100% + $space-5);
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+  padding: $space-5;
   background: var(--card-bg-color);
-  font-size: $font-size-xs;
-  font-weight: 700;
-  outline: none;
+  border: 1px solid var(--border-color);
+  border-radius: $radius-md;
+  z-index: 100;
+  min-width: 100%;
+}
+
+.period-option {
+  padding: $space-8 $space-12;
+  text-align: center;
+  background: transparent;
+  border-color: transparent;
+  border-radius: $radius-s;
+  color: var(--font-color);
+  font-size: $font-size-sm;
+  cursor: pointer;
+
+  &:hover,
+  &.active {
+    background: var(--active-bg-color);
+    border-color: var(--border-color);
+    color: var(--primary-color);
+  }
 }
 
 .metric-tabs {
@@ -1253,6 +1084,17 @@ button {
   color: var(--sec-font-color);
   font-family: monospace;
   font-size: $font-size-sm;
+  text-align: right;
+
+  strong,
+  small {
+    display: block;
+  }
+
+  small {
+    color: var(--font-color);
+    font-size: $font-size-xs;
+  }
 }
 
 .chain-detail {
