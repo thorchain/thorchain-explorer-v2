@@ -80,6 +80,7 @@ import {
   getSwapQueue,
   getStreamingTxStatus,
 } from './thornode.api'
+import { getContractSmartQuery } from './cosmwasm.api'
 import { getTendermintLatestBlocks } from './tendermint.api'
 import {
   getDashboardData,
@@ -254,6 +255,7 @@ export default function ({ $axios }, inject) {
     getNativeTx,
     getThorNetwork,
     getInboundAddresses,
+    getContractSmartQuery,
     getMimirVotes,
     getLpPositions,
     getPoolDetail,

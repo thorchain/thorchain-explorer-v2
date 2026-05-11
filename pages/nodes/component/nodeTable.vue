@@ -30,6 +30,12 @@
         <div v-else-if="props.column.field == 'missing_blocks'" class="table-asset">
           <missingblock class="table-icon" />
         </div>
+        <span
+          v-else-if="props.column.bRuneTooltip"
+          class="brune-heading"
+        >
+          {{ props.column.label }}
+        </span>
         <span v-else>
           {{ props.column.label }}
         </span>
@@ -300,6 +306,26 @@
             </template>
             <template v-else> - </template>
           </span>
+          <span
+            v-else-if="
+              props.column.field === 'bRuneWhitelisted' ||
+              props.column.field === 'bRuneWhitelistsContract'
+            "
+            :style="getHighlightStyle(props.row.address)"
+          >
+            <span
+              v-if="props.row[props.column.field]"
+              v-tooltip="getBRuneTooltip(props.row, props.column.field)"
+              class="brune-status"
+            >
+              <img
+                src="@/assets/images/brune.png"
+                alt="bRUNE"
+                class="brune-icon"
+              />
+            </span>
+            <span v-else>-</span>
+          </span>
           <span v-else>
             {{ props.formattedRow[props.column.field] }}
           </span>
@@ -389,7 +415,15 @@ export default {
     NodeIcon,
     missingblock,
   },
-  props: ['rows', 'cols', 'name', 'searchTerm', 'sortColumn', 'sortOrder'],
+  props: [
+    'rows',
+    'cols',
+    'name',
+    'searchTerm',
+    'sortColumn',
+    'sortOrder',
+    'bRuneContract',
+  ],
   data() {
     return {
       favs: [],
@@ -461,6 +495,19 @@ export default {
         props.row,
         props.column
       )
+    },
+    getBRuneTooltip(row, field) {
+      const bonded = this.$options.filters.number(
+        field === 'bRuneWhitelisted'
+          ? row.bRuneWhitelistedBond || 0
+          : row.bRuneBond || 0,
+        '0,0.00'
+      )
+
+      if (field === 'bRuneWhitelisted') {
+        return `bRUNE contract has whitelisted this node. Bonded: ${bonded} RUNE`
+      }
+      return `Node has whitelisted the bRUNE contract. Bonded: ${bonded} RUNE`
     },
     rankChange(address, rank) {
       const na = this.favs.find((f) => f.address === address)
@@ -593,6 +640,20 @@ export default {
 }
 .version {
   color: var(--primary-color);
+}
+.brune-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.brune-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  vertical-align: middle;
+}
+.brune-heading {
+  line-height: 1.1;
 }
 .asset-chain {
   height: 1.2rem;

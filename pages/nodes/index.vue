@@ -111,6 +111,17 @@
                 <span class="custom-checkbox-label"></span>
                 <span class="filter-label">Runebond</span>
               </label>
+
+              <label class="filter-option">
+                <input
+                  type="checkbox"
+                  :checked="!hides.brune"
+                  @change="toggleFilter('brune')"
+                  class="custom-checkbox"
+                />
+                <span class="custom-checkbox-label"></span>
+                <span class="filter-label">bRUNE</span>
+              </label>
             </div>
             <div class="dropdown-footer">
               <button class="clear-all-btn" @click="clearAllFilters">
@@ -136,6 +147,7 @@
         name="active-nodes"
         :sort-column="sortColumn"
         :sort-order="sortOrder"
+        :b-rune-contract="bRuneContract"
         @sort-changed="onSortChange"
       />
     </card>
@@ -150,6 +162,7 @@
         :cols="stbCols"
         :search-term="searchTerm"
         name="rdy-nodes"
+        :b-rune-contract="bRuneContract"
       />
     </card>
     <card
@@ -167,6 +180,7 @@
         :cols="otherNodes"
         :search-term="searchTerm"
         name="other-nodes"
+        :b-rune-contract="bRuneContract"
       />
     </card>
   </Page>
@@ -220,6 +234,12 @@ export default {
       enteringCount: 0,
       leavingBond: 0,
       leavingCount: 0,
+      bRuneContract:
+        'thor1enhmz57mpn4umspa8hqgqwwqpe02q4hpqmqr0k2zftxr8fu3nxmqjy3tqx',
+      bRuneWhitelistedNodes: [],
+      bRuneWhitelistedNodeBonds: {},
+      bRuneState: undefined,
+      bRuneError: undefined,
       hides: {
         isp: false,
         score: true,
@@ -227,7 +247,8 @@ export default {
         age: false,
         RPC: true,
         BFR: true,
-        runebond: true,
+        runebond: false,
+        brune: false,
       },
       sortColumn: null,
       sortOrder: null,
@@ -253,8 +274,33 @@ export default {
       if (!this.hides.RPC && !this.hides.BFR) count++
       
       if (!this.hides.runebond) count++
+      if (!this.hides.brune) count++
 
       return count
+    },
+    bRuneCols() {
+      return [
+        {
+          label: 'bRUNE WL',
+          field: 'bRuneWhitelisted',
+          bRuneTooltip:
+            'WL means whitelist. This column shows whether the bRUNE contract has whitelisted this node as a bonding target.',
+          type: 'boolean',
+          tdClass: 'center',
+          thClass: 'center',
+          hidden: this.hides?.brune ?? true,
+        },
+        {
+          label: 'Node WL',
+          field: 'bRuneWhitelistsContract',
+          bRuneTooltip:
+            'WL means whitelist. This column shows whether the node has whitelisted the bRUNE contract as one of its bond providers.',
+          type: 'boolean',
+          tdClass: 'center',
+          thClass: 'center',
+          hidden: this.hides?.brune ?? true,
+        },
+      ]
     },
     activeCols() {
       const chains = this.nodesQuery
@@ -289,6 +335,7 @@ export default {
           field: 'churn',
           thClass: 'center min-padding',
         },
+        ...this.bRuneCols,
         {
           label: 'ISP',
           field: 'isp',
@@ -448,6 +495,7 @@ export default {
           field: 'churn',
           thClass: 'center min-padding',
         },
+        ...this.bRuneCols,
         {
           label: 'ISP',
           field: 'isp',
@@ -606,6 +654,7 @@ export default {
           formatFn: this.normalFormat,
           tdClass: 'mono',
         },
+        ...this.bRuneCols,
         {
           label: 'Age',
           field: 'age',
@@ -869,7 +918,7 @@ export default {
         let leavingCount = 0
         let leavingBond = 0
         actNodes.forEach((el, index) => {
-          fillNodeData(filteredNodes, el, index)
+          this.fillNodeRow(filteredNodes, el, index)
 
           filteredNodes[index].churn = []
 
@@ -999,7 +1048,7 @@ export default {
         let enteringCount = 0
         for (let i = 0; i < stbNodes.length; i++) {
           const el = stbNodes[i]
-          fillNodeData(filteredNodes, el)
+          this.fillNodeRow(filteredNodes, el)
 
           const chainHeight = this.chainsHeight?.THOR
 
@@ -1112,7 +1161,7 @@ export default {
         const filteredNodes = []
 
         whtNodes.forEach((el, index) => {
-          fillNodeData(filteredNodes, el)
+          this.fillNodeRow(filteredNodes, el)
 
           if (el.runebond && el.runebond.available === true && !this.hides.runebond && filteredNodes[index] && filteredNodes[index].churn) {
             filteredNodes[index].churn.push({
@@ -1169,7 +1218,16 @@ export default {
     this.churnProgress()
     const savedFilters = localStorage.getItem('filterSettings')
     if (savedFilters) {
-      this.hides = JSON.parse(savedFilters)
+      this.hides = {
+        ...this.defaultHides(),
+        ...JSON.parse(savedFilters),
+      }
+    }
+    if (!localStorage.getItem('nodeRunebondBRuneDefaultsApplied')) {
+      this.hides.runebond = false
+      this.hides.brune = false
+      this.saveFilters()
+      localStorage.setItem('nodeRunebondBRuneDefaultsApplied', 'true')
     }
 
     const savedSorting = JSON.parse(localStorage.getItem('tableSorting'))
@@ -1210,7 +1268,10 @@ export default {
         })
     },
     async updateNodes() {
-      const { data: nodesInfo } = await this.$api.getNodesInfo()
+      const [{ data: nodesInfo }] = await Promise.all([
+        this.$api.getNodesInfo(),
+        this.updateBRuneState(),
+      ])
       this.nodesQuery = nodesInfo
     },
     toggleDropdown() {
@@ -1226,16 +1287,20 @@ export default {
       this.saveFilters()
     },
     clearAllFilters() {
-      this.hides = {
+      this.hides = this.defaultHides()
+      this.saveFilters()
+    },
+    defaultHides() {
+      return {
         isp: true,
         score: true,
         fee: true,
         age: true,
         RPC: true,
         BFR: true,
-        runebond: true,
+        runebond: false,
+        brune: false,
       }
-      this.saveFilters()
     },
     saveFilters() {
       localStorage.setItem('filterSettings', JSON.stringify(this.hides))
@@ -1264,7 +1329,105 @@ export default {
         this.activeCols.push({ field: 'BFR', label: 'BFR' })
       } else if (col === 'runebond') {
         this.activeCols.push({ field: 'runebond', label: 'Runebond' })
+      } else if (col === 'brune') {
+        this.activeCols.push({ field: 'brune', label: 'bRUNE' })
       }
+    },
+    async updateBRuneState() {
+      try {
+        const res = await this.$api.getContractSmartQuery(this.bRuneContract, {
+          state: {},
+        })
+        this.bRuneState = this.decodeSmartQueryData(res.data)
+        this.bRuneWhitelistedNodes =
+          this.extractBRuneWhitelistedNodes(this.bRuneState)
+        this.bRuneWhitelistedNodeBonds =
+          this.extractBRuneWhitelistedNodeBonds(this.bRuneState)
+        this.bRuneError = undefined
+      } catch (error) {
+        this.bRuneError = error
+        console.error('Failed to load bRUNE state:', error)
+      }
+    },
+    decodeSmartQueryData(data) {
+      if (!data) return {}
+      if (data.data && typeof data.data === 'object') return data.data
+      if (typeof data === 'object' && !data.data) return data
+
+      const encoded = data.data || data
+      if (typeof encoded !== 'string') return {}
+
+      try {
+        if (encoded.trim().startsWith('{')) {
+          return JSON.parse(encoded)
+        }
+        const decoded =
+          typeof globalThis.atob === 'function'
+            ? globalThis.atob(encoded)
+            : globalThis.Buffer.from(encoded, 'base64').toString('utf8')
+        return JSON.parse(decoded)
+      } catch (error) {
+        console.error('Failed to decode bRUNE state:', error)
+        return {}
+      }
+    },
+    extractThorAddresses(value) {
+      const addresses = new Set()
+      const collect = (entry) => {
+        if (typeof entry === 'string') {
+          const matches =
+            entry.match(/thor1[023456789acdefghjklmnpqrstuvwxyz]{38,90}/g) ||
+            []
+          matches.forEach((address) => addresses.add(address.toLowerCase()))
+          return
+        }
+        if (Array.isArray(entry)) {
+          entry.forEach(collect)
+          return
+        }
+        if (entry && typeof entry === 'object') {
+          Object.values(entry).forEach(collect)
+        }
+      }
+
+      collect(value)
+      return [...addresses]
+    },
+    extractBRuneWhitelistedNodes(state) {
+      const nodes = state?.nodes?.nodes || []
+      const addresses = nodes
+        .map((node) => node?.addr || node?.node?.node_address)
+        .filter(Boolean)
+        .map((address) => address.toLowerCase())
+
+      return addresses.length ? addresses : this.extractThorAddresses(state)
+    },
+    extractBRuneWhitelistedNodeBonds(state) {
+      const nodes = state?.nodes?.nodes || []
+
+      return nodes.reduce((bonds, node) => {
+        const address = (node?.addr || node?.node?.node_address)?.toLowerCase()
+        if (!address) return bonds
+        bonds[address] = Number(node?.bond || 0) / 1e8
+        return bonds
+      }, {})
+    },
+    fillNodeRow(rows, node, index) {
+      fillNodeData(rows, node, index)
+      const row = rows[rows.length - 1]
+      if (!row) return
+
+      const nodeAddress = node.node_address?.toLowerCase()
+      const bRuneProvider = node.bond_providers?.providers?.find(
+        (provider) =>
+          provider.bond_address?.toLowerCase() === this.bRuneContract
+      )
+
+      row.bRuneWhitelisted = this.bRuneWhitelistedNodes.includes(nodeAddress)
+      row.bRuneWhitelistedBond =
+        this.bRuneWhitelistedNodeBonds[nodeAddress] || 0
+      row.bRuneWhitelistsContract = Boolean(bRuneProvider)
+      row.bRuneBond = Number(bRuneProvider?.bond || 0) / 1e8
     },
     setNewNodesChurn(num) {
       this.newNodesChurn = num
