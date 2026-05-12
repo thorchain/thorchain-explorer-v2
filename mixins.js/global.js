@@ -188,6 +188,8 @@ export default {
           return '#F4B728'
         case 'TRON':
           return '#E11221'
+        case 'SOL':
+          return '#9945FF'
         default:
           return this.popRandomColor()
       }
