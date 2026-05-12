@@ -279,28 +279,7 @@ export default {
       return count
     },
     bRuneCols() {
-      return [
-        {
-          label: 'bRUNE WL',
-          field: 'bRuneWhitelisted',
-          bRuneTooltip:
-            'WL means whitelist. This column shows whether the bRUNE contract has whitelisted this node as a bonding target.',
-          type: 'boolean',
-          tdClass: 'center',
-          thClass: 'center',
-          hidden: this.hides?.brune ?? true,
-        },
-        {
-          label: 'Node WL',
-          field: 'bRuneWhitelistsContract',
-          bRuneTooltip:
-            'WL means whitelist. This column shows whether the node has whitelisted the bRUNE contract as one of its bond providers.',
-          type: 'boolean',
-          tdClass: 'center',
-          thClass: 'center',
-          hidden: this.hides?.brune ?? true,
-        },
-      ]
+      return []
     },
     activeCols() {
       const chains = this.nodesQuery
@@ -1001,6 +980,18 @@ export default {
               maxRune: el.runebond.maxRune,
             })
           }
+
+          const bRuneRow = filteredNodes[index]
+          if ((bRuneRow.bRuneWhitelisted || bRuneRow.bRuneWhitelistsContract) && !this.hides.brune) {
+            filteredNodes[index].churn.push({
+              iconSrc: require('@/assets/images/assets/brune.png'),
+              type: 'brune',
+              bRuneWhitelisted: bRuneRow.bRuneWhitelisted,
+              bRuneWhitelistedBond: bRuneRow.bRuneWhitelistedBond,
+              bRuneWhitelistsContract: bRuneRow.bRuneWhitelistsContract,
+              bRuneBond: bRuneRow.bRuneBond,
+            })
+          }
         })
 
         this.setExtraChurn(extraChurn)
@@ -1131,6 +1122,18 @@ export default {
               maxRune: el.runebond.maxRune,
             })
           }
+
+          const bRuneRow = filteredNodes[i]
+          if ((bRuneRow.bRuneWhitelisted || bRuneRow.bRuneWhitelistsContract) && !this.hides.brune) {
+            filteredNodes[i].churn.push({
+              iconSrc: require('@/assets/images/assets/brune.png'),
+              type: 'brune',
+              bRuneWhitelisted: bRuneRow.bRuneWhitelisted,
+              bRuneWhitelistedBond: bRuneRow.bRuneWhitelistedBond,
+              bRuneWhitelistsContract: bRuneRow.bRuneWhitelistsContract,
+              bRuneBond: bRuneRow.bRuneBond,
+            })
+          }
         }
 
         this.setEntering(enteringBond, enteringCount)
@@ -1171,6 +1174,18 @@ export default {
               type: 'runebond',
               minRune: el.runebond.minRune,
               maxRune: el.runebond.maxRune,
+            })
+          }
+
+          const bRuneRow = filteredNodes[index]
+          if (bRuneRow && bRuneRow.churn && (bRuneRow.bRuneWhitelisted || bRuneRow.bRuneWhitelistsContract) && !this.hides.brune) {
+            filteredNodes[index].churn.push({
+              iconSrc: require('@/assets/images/assets/brune.png'),
+              type: 'brune',
+              bRuneWhitelisted: bRuneRow.bRuneWhitelisted,
+              bRuneWhitelistedBond: bRuneRow.bRuneWhitelistedBond,
+              bRuneWhitelistsContract: bRuneRow.bRuneWhitelistsContract,
+              bRuneBond: bRuneRow.bRuneBond,
             })
           }
         })
