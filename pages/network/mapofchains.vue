@@ -111,7 +111,7 @@
                   connected: isSelectedCounterparty(chain.chain),
                   muted: selectedChain && !isSelectedCounterparty(chain.chain),
                 }"
-                :style="nodeTransform(chain)"
+                :style="[nodeTransform(chain), { '--node-color': getChainColor(chain.chain) }]"
                 @click.stop="selectChain(chain.chain)"
               >
                 <circle :r="nodeRadius(chain)" class="node-halo" />
@@ -872,10 +872,15 @@ button {
   opacity: 0.88;
 }
 
-.thor-core,
-.node-core {
+.thor-core {
   fill: var(--card-bg-color);
   stroke: var(--primary-color);
+  stroke-width: 2;
+}
+
+.node-core {
+  fill: var(--card-bg-color);
+  stroke: var(--node-color, var(--primary-color));
   stroke-width: 2;
 }
 
@@ -900,12 +905,8 @@ button {
   }
 
   &.selected .node-halo {
-    stroke: var(--primary-color);
+    stroke: var(--node-color, var(--primary-color));
     stroke-width: 3;
-  }
-
-  &.connected:not(.selected) .node-halo {
-    stroke: rgba(44, 190, 140, 0.72);
   }
 
   &.muted {
