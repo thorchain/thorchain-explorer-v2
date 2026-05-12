@@ -200,7 +200,8 @@
             <div v-for="(churnItem, index) in rows[props.row.originalIndex].churn" :key="index" class="churn-item">
               <component :is="churnItem.link ? 'a' : 'a'" :href="churnItem.link" target="_blank" style="height: 1rem;">
                 <v-menu>
-                  <component :is="churnItem.icon" class="table-icon" />
+                  <img v-if="churnItem.iconSrc" :src="churnItem.iconSrc" class="table-icon brune-icon" alt="bRUNE" />
+              <component v-else :is="churnItem.icon" class="table-icon" />
                   <template #popper>
                     <span v-if="churnItem.type === 'runebond'">
                       <strong>Rune Bond Node</strong>
@@ -221,6 +222,26 @@
                       </div>
                       <hr class="hr-space"/>
                       <small>Click to view on RuneBond</small>
+                    </span>
+                    <span v-else-if="churnItem.type === 'brune'">
+                      <strong>bRUNE</strong>
+                      <hr class="hr-space"/>
+                      <div style="margin-top: 0.5rem; padding: 4px">
+                        <div>
+                          <span>bRUNE contract has whitelisted this node: </span>
+                          <span class="mono" :style="{ color: churnItem.bRuneWhitelisted ? 'var(--primary-color)' : 'var(--sec-font-color)' }">
+                            {{ churnItem.bRuneWhitelisted ? 'WL' : '-' }}
+                          </span>
+                          <span v-if="churnItem.bRuneWhitelistedBond > 0" class="mono">{{ churnItem.bRuneWhitelistedBond | number('0,0.00') }} RUNE</span>
+                        </div>
+                        <div style="margin-top: 0.25rem">
+                          <span>Node has whitelisted the bRUNE contract: </span>
+                          <span class="mono" :style="{ color: churnItem.bRuneWhitelistsContract ? 'var(--primary-color)' : 'var(--sec-font-color)' }">
+                            {{ churnItem.bRuneWhitelistsContract ? 'WL' : '-' }}
+                          </span>
+                          <span v-if="churnItem.bRuneBond > 0" class="mono">{{ churnItem.bRuneBond | number('0,0.00') }} RUNE</span>
+                        </div>
+                      </div>
                     </span>
                     <span v-else-if="churnItem.type !== 'jail'">
                       {{ churnItem.name }}
@@ -305,26 +326,6 @@
               </a>
             </template>
             <template v-else> - </template>
-          </span>
-          <span
-            v-else-if="
-              props.column.field === 'bRuneWhitelisted' ||
-              props.column.field === 'bRuneWhitelistsContract'
-            "
-            :style="getHighlightStyle(props.row.address)"
-          >
-            <span
-              v-if="props.row[props.column.field]"
-              v-tooltip="getBRuneTooltip(props.row, props.column.field)"
-              class="brune-status"
-            >
-              <img
-                src="@/assets/images/brune.png"
-                alt="bRUNE"
-                class="brune-icon"
-              />
-            </span>
-            <span v-else>-</span>
           </span>
           <span v-else>
             {{ props.formattedRow[props.column.field] }}
@@ -496,19 +497,6 @@ export default {
         props.column
       )
     },
-    getBRuneTooltip(row, field) {
-      const bonded = this.$options.filters.number(
-        field === 'bRuneWhitelisted'
-          ? row.bRuneWhitelistedBond || 0
-          : row.bRuneBond || 0,
-        '0,0.00'
-      )
-
-      if (field === 'bRuneWhitelisted') {
-        return `bRUNE contract has whitelisted this node. Bonded: ${bonded} RUNE`
-      }
-      return `Node has whitelisted the bRUNE contract. Bonded: ${bonded} RUNE`
-    },
     rankChange(address, rank) {
       const na = this.favs.find((f) => f.address === address)
       return na.rank - rank
@@ -641,14 +629,10 @@ export default {
 .version {
   color: var(--primary-color);
 }
-.brune-status {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
+
 .brune-icon {
-  width: 18px;
-  height: 18px;
+  width: 1rem;
+  height: 1rem;
   object-fit: contain;
   vertical-align: middle;
 }
