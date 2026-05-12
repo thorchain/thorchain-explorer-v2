@@ -86,8 +86,10 @@
 
               <g
                 class="thor-node"
+                :class="{ selectable: selectedChain }"
                 :style="nodeTransform(thorPosition)"
                 filter="url(#softGlow)"
+                @click.stop="clearSelection"
               >
                 <circle r="128" fill="url(#thorGlow)" />
                 <circle r="52" class="thor-core" />
@@ -916,6 +918,10 @@ button {
 
 .thor-node {
   cursor: default;
+
+  &.selectable {
+    cursor: pointer;
+  }
 }
 
 .node-label {
