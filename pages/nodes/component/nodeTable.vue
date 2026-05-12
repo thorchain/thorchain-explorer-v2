@@ -198,8 +198,8 @@
           </span>
           <div v-else-if="props.column.field == 'churn'" class="churn-wrapper">
             <div v-for="(churnItem, index) in rows[props.row.originalIndex].churn" :key="index" class="churn-item">
-              <component :is="churnItem.link ? 'a' : 'a'" :href="churnItem.link" target="_blank" style="height: 1rem;">
-                <v-menu>
+              <component :is="churnItem.link ? 'a' : 'a'" :href="churnItem.link" target="_blank" style="height: 1rem; display: flex; align-items: center;">
+                <v-menu class="churn-icon-menu">
                   <img v-if="churnItem.iconSrc" :src="churnItem.iconSrc" class="table-icon brune-icon" alt="bRUNE" />
               <component v-else :is="churnItem.icon" class="table-icon" />
                   <template #popper>
@@ -634,7 +634,7 @@ export default {
   width: 1rem;
   height: 1rem;
   object-fit: contain;
-  vertical-align: middle;
+  display: block;
 }
 .brune-heading {
   line-height: 1.1;
@@ -825,5 +825,11 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.churn-icon-menu {
+  display: flex;
+  align-items: center;
+  height: 1rem;
 }
 </style>
