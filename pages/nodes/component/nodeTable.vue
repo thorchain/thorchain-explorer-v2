@@ -227,21 +227,14 @@
                       <strong>bRUNE</strong>
                       <hr class="hr-space"/>
                       <div style="margin-top: 0.5rem; padding: 4px">
-                        <template v-if="!(churnItem.bRuneWhitelisted && churnItem.bRuneWhitelistsContract)">
-                          <div>
-                            <span>bRUNE contract has whitelisted this node: </span>
-                            <span class="mono" :style="{ color: churnItem.bRuneWhitelisted ? 'var(--primary-color)' : 'var(--sec-font-color)' }">
-                              {{ churnItem.bRuneWhitelisted ? 'WL' : '-' }}
-                            </span>
-                          </div>
-                          <div style="margin-top: 0.25rem">
-                            <span>Node has whitelisted the bRUNE contract: </span>
-                            <span class="mono" :style="{ color: churnItem.bRuneWhitelistsContract ? 'var(--primary-color)' : 'var(--sec-font-color)' }">
-                              {{ churnItem.bRuneWhitelistsContract ? 'WL' : '-' }}
-                            </span>
-                          </div>
-                        </template>
-                        <div v-if="churnItem.bRuneBond > 0" :style="{ marginTop: !(churnItem.bRuneWhitelisted && churnItem.bRuneWhitelistsContract) ? '0.25rem' : '0' }">
+                        <div style="color: var(--sec-font-color)">
+                          • bRUNE contract has whitelisted this node
+                        </div>
+                        <div style="margin-top: 0.25rem; color: var(--sec-font-color)">
+                          • Node has whitelisted the bRUNE contract
+                        </div>
+                        <hr class="hr-space" style="margin-top: 0.5rem"/>
+                        <div v-if="churnItem.bRuneBond > 0" style="margin-top: 0.25rem">
                           <span>RUNE bonded by the contract: </span>
                           <span class="mono" style="color: var(--primary-color)">{{ churnItem.bRuneBond | number('0,0.00') }} RUNE</span>
                         </div>
