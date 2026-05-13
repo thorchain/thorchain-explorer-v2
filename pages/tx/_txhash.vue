@@ -646,8 +646,12 @@ export default {
       eventsSearchQuery: '',
     }
   },
-  head: {
-    title: 'THORChain Network Explorer | TX',
+  head() {
+    const hash = this.$route.params.txhash || ''
+    const suffix = hash.slice(-4).toUpperCase()
+    return {
+      title: `THORChain Network Explorer | TX …${suffix}`,
+    }
   },
   computed: {
     ...mapGetters({
