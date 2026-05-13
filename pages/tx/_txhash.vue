@@ -1573,7 +1573,18 @@ export default {
         }
       }
 
+      // FIN market swaps may co-occur with a THORChain swap action (e.g. USDC→RUNE
+      // as a funding hop). Detect them before the mixed-action guard so they aren't
+      // silently suppressed in favour of the companion swap overview.
+      const hasFINMarketContract = contractActions.some((a) => {
+        if (a.metadata?.contract?.msg?.swap) return true
+        return (a.metadata?.contract?.contractEvents || []).some(
+          (e) => e.type === 'wasm-rujira-fin/trade'
+        )
+      })
+
       if (
+        !hasFINMarketContract &&
         this.rawActions.some(
           (a) => a.type !== 'contract' && a.type !== 'refund'
         )
@@ -1966,9 +1977,15 @@ export default {
         }
       }
 
-      // FIN market swap: single contract action with msg.swap
+      // FIN market swap: single contract action with msg.swap, or detected via
+      // wasm-rujira-fin/trade events when msg is absent from the API response
       const swapMsg = singleAction?.metadata?.contract?.msg?.swap
-      if (swapMsg) {
+      const isFinMarketByEvents =
+        !singleAction?.metadata?.contract?.msg?.order &&
+        (singleAction?.metadata?.contract?.contractEvents || []).some(
+          (e) => e.type === 'wasm-rujira-fin/trade'
+        )
+      if (swapMsg || isFinMarketByEvents) {
         const action = singleAction
         const contractAddress = action.out?.[0]?.address || ''
         const contractLabel =
@@ -1992,7 +2009,20 @@ export default {
           Object.fromEntries(
             (e.attributes || []).map(({ key, value }) => [key, value])
           )
-        const fundsStr = action.metadata?.contract?.funds || ''
+        let fundsStr = action.metadata?.contract?.funds || ''
+        if (!fundsStr && userAddress) {
+          const spentEvent = events.find(
+            (e) =>
+              e.type === 'coin_spent' &&
+              (e.attributes || []).some(
+                (a) => a.key === 'spender' && a.value === userAddress
+              )
+          )
+          const amountAttr = (spentEvent?.attributes || []).find(
+            (a) => a.key === 'amount'
+          )
+          if (amountAttr?.value) fundsStr = amountAttr.value
+        }
         const fundsAmount = parseInt(fundsStr) || 0
         const fundsAsset = fundsStr.replace(/^[\d]+/, '').trim()
 
@@ -2018,28 +2048,35 @@ export default {
           return rs.length ? rs.reduce((s, r) => s + r, 0) / rs.length : null
         })()
 
-        // Collect all coin_received for the user, group by denom and sum
-        const receivedByDenom = {}
+        // Collect all amounts received by the user address (non-input denom).
+        // Filtering by receiver = userAddress avoids picking up intermediate
+        // routing hops or fee events that use the same denom.
+        let receivedAmount = 0
+        let primaryDenom = ''
+        let receivedAssetDenom = ''
+
+        const userReceipts = {}
         events
           .filter((e) => e.type === 'coin_received')
-          .map(toAttrs)
-          .filter((a) => a.receiver === userAddress && a.amount)
-          .forEach((a) => {
-            a.amount.split(',').forEach((part) => {
+          .forEach((e) => {
+            const a = toAttrs(e)
+            if (userAddress && a.receiver !== userAddress) return
+            ;(a.amount || '').split(',').forEach((part) => {
               const p = part.trim()
               const amt = parseInt(p) || 0
               const denom = p.replace(/^\d+/, '').trim()
-              if (denom && amt > 0)
-                receivedByDenom[denom] = (receivedByDenom[denom] || 0) + amt
+              if (denom && denom !== fundsAsset && amt > 0) {
+                userReceipts[denom] = (userReceipts[denom] || 0) + amt
+              }
             })
           })
-
-        // Prefer non-input denom (output asset), fall back to any received denom
-        const outputDenoms = Object.keys(receivedByDenom)
-        const primaryDenom =
-          outputDenoms.find((d) => d !== fundsAsset) || outputDenoms[0] || ''
-        const receivedAmount = receivedByDenom[primaryDenom] || 0
-        const receivedAssetDenom = primaryDenom
+        Object.entries(userReceipts).forEach(([denom, amt]) => {
+          if (amt > receivedAmount) {
+            receivedAmount = amt
+            receivedAssetDenom = denom
+            primaryDenom = denom
+          }
+        })
 
         const fundsAssetStr = fundsAsset
           ? securedToAsset(fundsAsset).toUpperCase()
@@ -2061,7 +2098,22 @@ export default {
           : null
         const receivedTicker = receivedAssetParsed?.ticker || receivedAssetDenom
 
-        const returnedAmount = receivedByDenom[fundsAsset] || 0
+        // Detect partial fills: check if any input denom was returned to the user
+        const returnedAmount = (() => {
+          if (!fundsAsset || !userAddress) return 0
+          let total = 0
+          events
+            .filter((e) => e.type === 'coin_received')
+            .map(toAttrs)
+            .filter((a) => a.receiver === userAddress && a.amount)
+            .forEach((a) => {
+              a.amount.split(',').forEach((part) => {
+                const p = part.trim()
+                if (p.endsWith(fundsAsset)) total += parseInt(p) || 0
+              })
+            })
+          return total
+        })()
         const filledAmount = fundsAmount - returnedAmount
         const isPartialFill = returnedAmount > 0 && filledAmount > 0
 
@@ -2077,6 +2129,7 @@ export default {
           affiliateAddress: '',
           actionTypeTitle: 'contract',
           hasContractAction: true,
+          priority: true,
           labels: isPartialFill ? ['Partial Fill'] : [],
           input: {
             asset: fundsAssetParsed ? fundsAssetStr : null,
@@ -2204,6 +2257,16 @@ export default {
                     .join(' · '),
             },
             ...this.extractContractEventRows(action),
+            receivedAmount && receivedTicker
+              ? {
+                  icon: 'ArrowIcon',
+                  iconRotate: 0,
+                  title: `${this.baseAmountFormatOrZero(receivedAmount)} ${receivedTicker} received`,
+                  body: userAddress
+                    ? `Delivered to ${this.formatAddress(userAddress)}`
+                    : '',
+                }
+              : null,
             isPartialFill
               ? {
                   icon: 'RefreshIcon',
