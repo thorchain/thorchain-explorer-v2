@@ -85,6 +85,7 @@ import Piggy from '~/assets/images/piggy.svg?inline'
 import Burn from '~/assets/images/burn.svg?inline'
 import StackDollar from '~/assets/images/sack-dollar.svg?inline'
 import ArrowRightIcon from '~/assets/images/arrowup.svg?inline'
+import { mapGetters } from 'vuex'
 
 export default {
   components: {
@@ -123,12 +124,17 @@ export default {
     }
   },
   computed: {
+    ...mapGetters({ vuexRunePrice: 'getRunePrice' }),
+    effectiveRunePrice() {
+      const p = Number.parseFloat(this.stats.runePriceUSD)
+      return Number.isFinite(p) && p > 0 ? p : this.vuexRunePrice || 0
+    },
     tvl() {
       if (!this.network?.bondMetrics || !this.network?.totalPooledRune) return 0
       return (
         ((+this.network.totalPooledRune * 2 +
           +this.network.bondMetrics.totalActiveBond) *
-          this.stats.runePriceUSD) /
+          this.effectiveRunePrice) /
         1e8
       )
     },
@@ -144,7 +150,7 @@ export default {
       )
     },
     totalEarning24() {
-      return (this.stats.earnings24 / 1e8) * this.stats.runePriceUSD
+      return (this.stats.earnings24 / 1e8) * this.effectiveRunePrice
     },
   },
   async mounted() {

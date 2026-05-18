@@ -751,21 +751,19 @@ export default {
       const lv = []
       const wv = []
       const alv = []
-      d?.intervals.forEach((interval) => {
+      const runePrices = this.resolveRunePrices(d?.intervals || [])
+      d?.intervals.forEach((interval, i) => {
+        const runePrice = runePrices[i]
         xAxis.push(
           moment(
             Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
           ).format('dddd, MMM D')
         )
-        alv.push(
-          (+interval.addLiquidityVolume * +interval.runePriceUSD) / 10 ** 8
-        )
-        wv.push(
-          -1 * ((+interval.withdrawVolume * +interval.runePriceUSD) / 10 ** 8)
-        )
+        alv.push((+interval.addLiquidityVolume * runePrice) / 10 ** 8)
+        wv.push(-1 * ((+interval.withdrawVolume * runePrice) / 10 ** 8))
         lv.push(
           ((+interval.addLiquidityVolume - +interval.withdrawVolume) *
-            +interval.runePriceUSD) /
+            runePrice) /
             10 ** 8
         )
       })
@@ -797,6 +795,18 @@ export default {
         ],
         xAxis
       )
+    },
+    resolveRunePrices(intervals) {
+      // Midgard returns "NaN" for runePriceUSD when the chain is halted or the
+      // USDC anchor pool has no depth. Carry forward the last known valid price
+      // so historical bars remain visible; fall back to the live store price.
+      const fallback = this.runePrice || 0
+      let last = fallback
+      return intervals.map((interval) => {
+        const p = Number.parseFloat(interval.runePriceUSD)
+        if (Number.isFinite(p) && p > 0) last = p
+        return last
+      })
     },
     formatSwap(d) {
       const xAxis = []
@@ -937,16 +947,14 @@ export default {
     formatTvl(d) {
       const xAxis = []
       const tvp = []
-      d?.intervals.forEach((interval) => {
+      const runePrices = this.resolveRunePrices(d?.intervals || [])
+      d?.intervals.forEach((interval, i) => {
         xAxis.push(
           moment(
             Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
           ).format('dddd, MMM D')
         )
-        tvp.push(
-          (+interval.totalValuePooled / 10 ** 8) *
-            Number.parseFloat(interval.runePriceUSD)
-        )
+        tvp.push((+interval.totalValuePooled / 10 ** 8) * runePrices[i])
       })
 
       return this.basicChartFormat(
@@ -980,8 +988,10 @@ export default {
 
       const xAxis = []
       const pe = []
+      const runePrices = this.resolveRunePrices(d?.intervals || [])
 
       d?.intervals.forEach((interval, index) => {
+        const runePrice = runePrices[index]
         // Date
         const date = moment(
           Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
@@ -1002,7 +1012,7 @@ export default {
 
         // sum them all
         otherEarnings = otherEarnings.reduce(
-          (a, c) => a + (+c.earnings * +interval.runePriceUSD) / 1e8,
+          (a, c) => a + (+c.earnings * runePrice) / 1e8,
           0
         )
 
@@ -1027,7 +1037,7 @@ export default {
           )
 
           const earning = {
-            value: (+pool?.earnings / 1e8) * +interval.runePriceUSD,
+            value: (+pool?.earnings / 1e8) * runePrice,
             areaStyle: {
               color,
             },
@@ -1056,9 +1066,10 @@ export default {
 
       // Add EOD to the earnings
       const EODEarnings = range(0, d?.intervals.length - 1, 0)
+      const lastRunePrice = runePrices[runePrices.length - 1] ?? 0
       let EODValue =
         (+d?.intervals[d?.intervals.length - 1]?.EODLiquidityEarnings *
-          +d?.intervals[d?.intervals.length - 1].runePriceUSD) /
+          lastRunePrice) /
           1e8 ?? 0
       // subtract the dev_fund_reward
       const lastTotalEarning =
@@ -1158,7 +1169,9 @@ export default {
       const mf = []
       const EODEarning = []
       let affiliateEOD = 0
+      const runePrices = this.resolveRunePrices(d?.intervals || [])
       d?.intervals.forEach((interval, index) => {
+        const runePrice = runePrices[index]
         const date = moment(
           Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
         )
@@ -1166,32 +1179,28 @@ export default {
         const devFund =
           (+interval.pools.find((p) => p.pool === 'dev_fund_reward')?.earnings /
             10 ** 8) *
-          Number.parseFloat(interval.runePriceUSD)
+          runePrice
         const incomeBurn =
           (+interval.pools.find((p) => p.pool === 'income_burn')?.earnings /
             10 ** 8) *
-          Number.parseFloat(interval.runePriceUSD)
+          runePrice
         const tcyStakeReward =
           (+interval.pools.find((p) => p.pool === 'tcy_stake_reward')
             ?.earnings /
             10 ** 8) *
-          Number.parseFloat(interval.runePriceUSD)
+          runePrice
         const marketingFund =
           (+interval.pools.find((p) => p.pool === 'marketing_fund_reward')?.earnings /
             10 ** 8) *
-          Number.parseFloat(interval.runePriceUSD)
+          runePrice
         le.push(
-          (+interval.liquidityEarnings / 10 ** 8) *
-            Number.parseFloat(interval.runePriceUSD) -
+          (+interval.liquidityEarnings / 10 ** 8) * runePrice -
             devFund -
             incomeBurn -
             tcyStakeReward -
             marketingFund
         )
-        be.push(
-          (+interval.bondingEarnings / 10 ** 8) *
-            Number.parseFloat(interval.runePriceUSD)
-        )
+        be.push((+interval.bondingEarnings / 10 ** 8) * runePrice)
         df.push(devFund)
         ib.push(incomeBurn)
         tc.push(tcyStakeReward)
@@ -1216,7 +1225,7 @@ export default {
           EODEarning.push({
             value:
               ((+interval.EODBondEarnings + +interval.EODLiquidityEarnings) *
-                +interval.runePriceUSD) /
+                runePrice) /
                 1e8 +
               (affiliateEOD || 0),
             itemStyle: {
