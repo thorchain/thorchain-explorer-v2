@@ -1349,6 +1349,15 @@ export default {
               'TCY Stake Reward'
             ],
           },
+          yAxis: [
+            {
+              type: 'value',
+              position: 'right',
+              show: false,
+              min: 0,
+              splitLine: { show: true },
+            },
+          ],
         },
         (param) => {
           return `
