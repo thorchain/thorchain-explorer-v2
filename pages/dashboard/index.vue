@@ -79,7 +79,8 @@
       <Card
         :navs="[
           { title: 'Earnings & Fees', value: 'total-earnings' },
-          { title: 'LP Earnings', value: 'pool-earnings' },
+          { title: 'RUJIRA Revenue', value: 'rujira-earnings' },
+          // { title: 'LP Earnings', value: 'pool-earnings' },
           ...(isMainnet()
             ? [{ title: 'Affiliate Volume', value: 'affiliate-volume' }, { title: 'Affiliate Fees', value: 'affiliates-fees' }]
             : []),
@@ -88,7 +89,7 @@
       >
         <div class="open-button">
           <button
-            v-if="['pool-earnings', 'affiliates-fees'].includes(poolMode)"
+            v-if="['affiliates-fees'].includes(poolMode)"
             class="button-charts"
             @click="openChartEarnings"
           >
@@ -105,7 +106,7 @@
           />
           <ChartLoader v-else />
         </div>
-        <div v-if="poolMode == 'pool-earnings'">
+        <!-- <div v-if="poolMode == 'pool-earnings'">
           <VChart
             v-if="poolEarnings"
             :key="2"
@@ -114,7 +115,7 @@
             :theme="chartTheme"
           />
           <ChartLoader v-else />
-        </div>
+        </div> -->
         <div v-if="poolMode == 'affiliates-fees'">
           <VChart
             v-if="affiliateChart"
@@ -126,6 +127,16 @@
           <ChartLoader v-else />
         </div>
         <affiliate-volume-chart v-if="poolMode == 'affiliate-volume'" />
+        <div v-if="poolMode == 'rujira-earnings'">
+          <VChart
+            v-if="rujiEarningsChart"
+            :key="4"
+            :option="rujiEarningsChart"
+            :autoresize="true"
+            :theme="chartTheme"
+          />
+          <ChartLoader v-else />
+        </div>
       </Card>
     </div>
     <div class="cards-container">
@@ -248,6 +259,7 @@ export default {
       totalValuePooled: undefined,
       totalBurnedRune: undefined,
       earningsData: undefined,
+      rujiEarningsChart: undefined,
       poolMode: 'total-earnings',
       swapMode: 'swap-vol',
       inboundInfo: undefined,
@@ -662,6 +674,15 @@ export default {
       this.totalBurnedRune =
         data?.meta?.pools?.find((p) => p.pool === 'income_burn').earnings / 1e8
     })
+
+    this.$api
+      .getReveneuPaidToTc()
+      .then(({ data }) => {
+        this.rujiEarningsChart = this.formatRujiEarnings(data)
+      })
+      .catch((error) => {
+        console.error('Error fetching RUJIRA earnings:', error)
+      })
 
     this.$api
       .getAffiliateSwapsMonthly()
@@ -1615,6 +1636,44 @@ export default {
               )}</b>
             </span>
           `
+        }
+      )
+    },
+    formatRujiEarnings(data) {
+      const xAxis = []
+      const values = []
+      const dataByDay = {}
+      data.forEach((item) => {
+        dataByDay[moment(item.bin).format('YYYY-MM-DD')] = +item.value / 1e8
+      })
+      for (let i = 29; i >= 0; i--) {
+        const day = moment().utc().subtract(i, 'days').startOf('day')
+        xAxis.push(day.format('dddd, MMM D'))
+        values.push(dataByDay[day.format('YYYY-MM-DD')] ?? 0)
+      }
+      return this.basicChartFormat(
+        (v) => `$ ${this.normalFormat(v)}`,
+        [
+          {
+            type: 'bar',
+            name: 'Revenue (USD)',
+            showSymbol: false,
+            data: values,
+            smooth: true,
+            itemStyle: { borderRadius: [8, 8, 0, 0], color: '#C41CED' },
+          },
+        ],
+        xAxis,
+        {
+          yAxis: [
+            {
+              type: 'value',
+              position: 'right',
+              show: false,
+              min: 0,
+              splitLine: { show: true },
+            },
+          ],
         }
       )
     },

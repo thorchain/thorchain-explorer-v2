@@ -135,6 +135,7 @@ import {
   getChains,
   getChainsWeekly,
   getChainsMonthly,
+  getReveneuPaidToTc,
 } from './middleware.api'
 import {
   getChurnHistory,
@@ -375,6 +376,7 @@ export default function ({ $axios }, inject) {
     getChains,
     getChainsWeekly,
     getChainsMonthly,
+    getReveneuPaidToTc,
   }
 
   inject('api', api)

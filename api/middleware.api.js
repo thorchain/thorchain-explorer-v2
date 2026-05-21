@@ -362,3 +362,9 @@ export function getChainsMonthly() {
     endpoints[process.env.NETWORK].SERVER_URL + 'api/chainsMonthly'
   )
 }
+
+export function getReveneuPaidToTc() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + 'api/reveneuePaidToTc'
+  )
+}
