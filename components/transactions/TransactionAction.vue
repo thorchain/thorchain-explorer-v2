@@ -700,7 +700,12 @@ export default {
     },
     getProductLabelForRow(row) {
       const addr = row?.out?.[0]?.address || ''
-      return getRujiraContractProduct(addr) || ''
+      const product = getRujiraContractProduct(addr) || ''
+      const stakingTypes = ['Liquid Stake', 'Liquid Unstake', 'Yielding Stake', 'Yielding Unstake', 'Claim Rewards']
+      if (product === 'Utilities' && stakingTypes.includes(this.getContractActionType(row))) {
+        return 'Staking'
+      }
+      return product
     },
     getContractLabelForRow(row) {
       const addr = row?.out?.[0]?.address || ''

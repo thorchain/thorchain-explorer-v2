@@ -2312,8 +2312,9 @@ export default {
         const contractLabel =
           getRujiraContractLabel(contractAddress) ||
           this.formatAddress(contractAddress)
+        const _rawProduct1 = getRujiraContractProduct(contractAddress)
         const productLabel =
-          getRujiraContractProduct(contractAddress) || 'Staking'
+          (_rawProduct1 === 'Utilities' ? 'Staking' : _rawProduct1) || 'Staking'
         const userAddress = action.in?.[0]?.address || ''
         const hasError = (action.metadata?.contract?.code ?? 0) > 0
         const logs = action.metadata?.contract?.logs
@@ -2457,8 +2458,9 @@ export default {
         const contractLabel =
           getRujiraContractLabel(contractAddress) ||
           this.formatAddress(contractAddress)
+        const _rawProductClaim = getRujiraContractProduct(contractAddress)
         const productLabel =
-          getRujiraContractProduct(contractAddress) || 'RUJI Staking'
+          (_rawProductClaim === 'Utilities' ? 'Staking' : _rawProductClaim) || 'Staking'
         const userAddress = action.in?.[0]?.address || ''
         const hasError = (action.metadata?.contract?.code ?? 0) > 0
         const logs = action.metadata?.contract?.logs
@@ -2584,8 +2586,9 @@ export default {
         const contractLabel =
           getRujiraContractLabel(contractAddress) ||
           this.formatAddress(contractAddress)
+        const _rawProduct2 = getRujiraContractProduct(contractAddress)
         const productLabel =
-          getRujiraContractProduct(contractAddress) || 'Staking'
+          (_rawProduct2 === 'Utilities' ? 'Staking' : _rawProduct2) || 'Staking'
         const userAddress = action.in?.[0]?.address || ''
         const hasError = (action.metadata?.contract?.code ?? 0) > 0
         const logs = action.metadata?.contract?.logs
