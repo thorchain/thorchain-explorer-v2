@@ -107,6 +107,7 @@
               </div>
 
               <div
+                v-if="activeOverview.output"
                 :class="[
                   'tx-asset-panel',
                   activeOverview.returnedOutput
@@ -1986,6 +1987,8 @@ export default {
       const swapMsg = singleAction?.metadata?.contract?.msg?.swap
       const isFinMarketByEvents =
         !singleAction?.metadata?.contract?.msg?.order &&
+        !singleAction?.metadata?.contract?.msg?.account &&
+        !singleAction?.metadata?.contract?.msg?.liquid &&
         (singleAction?.metadata?.contract?.contractEvents || []).some(
           (e) => e.type === 'wasm-rujira-fin/trade'
         )
@@ -2310,7 +2313,7 @@ export default {
           getRujiraContractLabel(contractAddress) ||
           this.formatAddress(contractAddress)
         const productLabel =
-          getRujiraContractProduct(contractAddress) || 'Utilities'
+          getRujiraContractProduct(contractAddress) || 'Staking'
         const userAddress = action.in?.[0]?.address || ''
         const hasError = (action.metadata?.contract?.code ?? 0) > 0
         const logs = action.metadata?.contract?.logs
@@ -2339,7 +2342,7 @@ export default {
         const sharesRaw = parseInt(bondAttrs.shares || 0)
         const fundsStr = action.metadata?.contract?.funds || ''
         const fundsAsset = fundsStr.replace(/^[\d]+/, '').trim()
-        const actionType = isBond ? 'Liquid Bond' : 'Liquid Unbond'
+        const actionType = isBond ? 'Liquid Stake' : 'Liquid Unstake'
 
         return {
           rawEvents: events,
@@ -2566,6 +2569,149 @@ export default {
               ? this.buildTechRow('To address', contractAddress, 'address')
               : null,
           ].filter(Boolean),
+        }
+      }
+
+      // Yielding staking: msg.account.bond / msg.account.unbond
+      const yieldingAccountMsg = singleAction?.metadata?.contract?.msg?.account
+      if (
+        yieldingAccountMsg &&
+        ('bond' in yieldingAccountMsg || 'unbond' in yieldingAccountMsg)
+      ) {
+        const isStake = 'bond' in yieldingAccountMsg
+        const action = singleAction
+        const contractAddress = action.out?.[0]?.address || ''
+        const contractLabel =
+          getRujiraContractLabel(contractAddress) ||
+          this.formatAddress(contractAddress)
+        const productLabel =
+          getRujiraContractProduct(contractAddress) || 'Staking'
+        const userAddress = action.in?.[0]?.address || ''
+        const hasError = (action.metadata?.contract?.code ?? 0) > 0
+        const logs = action.metadata?.contract?.logs
+        const status = hasError
+          ? { label: 'Failed', tone: 'red' }
+          : action.status === 'success'
+            ? { label: 'Success', tone: 'green' }
+            : { label: 'Pending', tone: 'blue' }
+        const date = action.date
+        const timestamp = date ? moment.unix(parseInt(date) / 1e9) : null
+        const height = parseInt(action.height)
+        const events = action.metadata?.contract?.contractEvents || []
+        const toAttrs = (e) =>
+          Object.fromEntries(
+            (e.attributes || []).map(({ key, value }) => [key, value])
+          )
+        const actionType = isStake ? 'Yielding Stake' : 'Yielding Unstake'
+
+        // Input: funds string, fall back to first coin_spent from user
+        let fundsStr = action.metadata?.contract?.funds || ''
+        if (!fundsStr && userAddress) {
+          const spentEvent = events.find(
+            (e) =>
+              e.type === 'coin_spent' &&
+              (e.attributes || []).some(
+                (a) => a.key === 'spender' && a.value === userAddress
+              )
+          )
+          const amountAttr = (spentEvent?.attributes || []).find(
+            (a) => a.key === 'amount'
+          )
+          if (amountAttr?.value) fundsStr = amountAttr.value
+        }
+        const amountRaw = parseInt(fundsStr) || 0
+        const fundsAsset = fundsStr.replace(/^[\d]+/, '').trim()
+        const inputAssetStr = fundsAsset
+          ? securedToAsset(fundsAsset).toUpperCase()
+          : 'THOR.RUNE'
+        const inputAssetParsed = assetFromString(inputAssetStr)
+        const inputTicker = inputAssetParsed?.ticker || 'RUNE'
+
+        // Output: excess RUNE returned to user
+        const excessEvent = userAddress
+          ? events.find(
+              (e) =>
+                e.type === 'coin_received' &&
+                (e.attributes || []).some(
+                  (a) => a.key === 'receiver' && a.value === userAddress
+                ) &&
+                (e.attributes || []).some(
+                  (a) => a.key === 'amount' && a.value.endsWith('rune')
+                )
+            )
+          : null
+        const excessAmountStr = excessEvent
+          ? ((e) => (e.attributes || []).find((a) => a.key === 'amount')?.value || '')(excessEvent)
+          : ''
+        const excessAmount = parseInt(excessAmountStr) || 0
+        const excessAssetParsed = assetFromString('THOR.RUNE')
+        const excessTicker = 'RUNE'
+
+        return {
+          rawEvents: events,
+          rawMsg: action?.metadata?.contract?.msg || null,
+          title: `${actionType}: ${contractLabel}`,
+          metaLabel: `${actionType} · ${productLabel}`,
+          status,
+          affiliateAddress: '',
+          actionTypeTitle: 'contract',
+          hasContractAction: true,
+          labels: [],
+          input: {
+            asset: inputAssetParsed ? inputAssetStr : null,
+            name: inputTicker,
+            badge: this.getNetworkBadge(inputAssetParsed) || '',
+            amount: amountRaw
+              ? `${this.baseAmountFormatOrZero(amountRaw)} ${inputTicker}`
+              : '-',
+            usd: amountRaw
+              ? this.formatUsdValue(this.amountToUSD(inputAssetStr, amountRaw, this.pools))
+              : null,
+            secure: inputAssetParsed?.secure ?? false,
+          },
+          output: excessAmount
+            ? {
+                asset: 'THOR.RUNE',
+                name: excessTicker,
+                badge: 'Excess returned',
+                amount: `${this.baseAmountFormatOrZero(excessAmount)} ${excessTicker}`,
+                usd: this.formatUsdValue(
+                  this.amountToUSD('THOR.RUNE', excessAmount, this.pools)
+                ),
+              }
+            : null,
+          metricRows: [
+            amountRaw
+              ? { label: isStake ? 'Staked' : 'Unstaked', value: `${this.baseAmountFormatOrZero(amountRaw)} ${inputTicker}` }
+              : null,
+            excessAmount
+              ? { label: 'Excess returned', value: `${this.baseAmountFormatOrZero(excessAmount)} ${excessTicker}` }
+              : null,
+            timestamp
+              ? { label: 'Time', value: timestamp.format('YYYY-MM-DD HH:mm:ss') }
+              : null,
+          ].filter(Boolean),
+          detailRows: [
+            { label: 'Product', value: productLabel, tone: this.getProductTone(productLabel), type: 'product' },
+            { label: 'Action', value: actionType, tone: this.getContractTypeTone(actionType), type: 'product' },
+            { label: 'Contract', value: contractLabel },
+            { label: 'Status', value: status.label, type: 'status' },
+            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
+            height ? { label: 'Block', value: `#${this.normalFormat(height)}` } : null,
+            userAddress ? { label: 'User', address: userAddress, type: 'address' } : null,
+          ].filter(Boolean),
+          lifecycleRows: [
+            ...this.extractContractEventRows(action),
+            ...(hasError && logs
+              ? [{ icon: 'WarningIcon', title: `${actionType} failed`, body: logs }]
+              : []),
+          ],
+          feeRows: [],
+          technicalRows: [
+            userAddress ? this.buildTechRow('From address', userAddress, 'address') : null,
+            contractAddress ? this.buildTechRow('To address', contractAddress, 'address') : null,
+          ].filter(Boolean),
+          priority: true,
         }
       }
 
@@ -3659,12 +3805,14 @@ export default {
       if (!Array.isArray(msg.execute) && msg.execute?.proposal_id !== undefined)
         return 'Execute Proposal'
       if (Array.isArray(msg.execute)) return 'Execute Strategies'
-      if (msg.liquid && 'bond' in msg.liquid) return 'Liquid Bond'
-      if (msg.liquid && 'unbond' in msg.liquid) return 'Liquid Unbond'
+      if (msg.liquid && 'bond' in msg.liquid) return 'Liquid Stake'
+      if (msg.liquid && 'unbond' in msg.liquid) return 'Liquid Unstake'
       if ('withdraw' in msg) return 'Ghost Vault Withdraw'
       if ('deposit' in msg) return 'Ghost Vault Deposit'
       if (msg.reset_instance) return 'Reset Instance'
       if (msg.account?.claim !== undefined) return 'Claim Rewards'
+      if (msg.account && 'bond' in msg.account) return 'Yielding Stake'
+      if (msg.account && 'unbond' in msg.account) return 'Yielding Unstake'
       if (msg.account) return 'Credit Account'
       const events = contractAction.metadata?.contract?.contractEvents || []
       if (events.some((e) => e.type === 'wasm-calc-manager/strategy.execute'))
@@ -3680,12 +3828,14 @@ export default {
       if (type === 'Market Order') return 'blue'
       if (type === 'CALC Strategy') return 'purple'
       if (type === 'Cancel Strategy') return 'red'
-      if (type === 'Liquid Bond') return 'green'
-      if (type === 'Liquid Unbond') return 'red'
+      if (type === 'Liquid Stake') return 'green'
+      if (type === 'Liquid Unstake') return 'red'
       if (type === 'Ghost Vault Deposit') return 'green'
       if (type === 'Ghost Vault Withdraw') return 'blue'
       if (type === 'Reset Instance') return 'blue'
       if (type === 'Claim Rewards') return 'green'
+      if (type === 'Yielding Stake') return 'green'
+      if (type === 'Yielding Unstake') return 'red'
       if (type === 'Credit Account') return 'purple'
       return 'green'
     },

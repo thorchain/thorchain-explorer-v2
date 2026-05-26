@@ -735,6 +735,18 @@ export function assetFromString(s) {
     }
   }
 
+  // Handle "x/brune" denom
+  if (s.toLowerCase() === 'x/brune') {
+    return {
+      chain: 'THOR',
+      symbol: 'BRUNE',
+      ticker: 'BRUNE',
+      synth: false,
+      trade: false,
+      secure: false,
+    }
+  }
+
   // Handle "x/staking-" denoms
   if (s.toLowerCase().startsWith('x/staking-')) {
     const id = s.substring('x/staking-'.length)

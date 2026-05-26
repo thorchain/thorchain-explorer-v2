@@ -676,10 +676,13 @@ export default {
       if (msg.swap) return 'Market Order'
       if (msg.cancel_instance) return 'Cancel Strategy'
       if (Array.isArray(msg.execute)) return 'Execute Strategies'
-      if (msg.liquid && 'bond' in msg.liquid) return 'Liquid Bond'
-      if (msg.liquid && 'unbond' in msg.liquid) return 'Liquid Unbond'
+      if (msg.liquid && 'bond' in msg.liquid) return 'Liquid Stake'
+      if (msg.liquid && 'unbond' in msg.liquid) return 'Liquid Unstake'
       if ('withdraw' in msg) return 'Ghost Vault Withdraw'
       if ('deposit' in msg) return 'Ghost Vault Deposit'
+      if (msg.account?.claim !== undefined) return 'Claim Rewards'
+      if (msg.account && 'bond' in msg.account) return 'Yielding Stake'
+      if (msg.account && 'unbond' in msg.account) return 'Yielding Unstake'
       if (msg.account) return 'Credit Account'
       const events = row?.metadata?.contract?.contractEvents || []
       if (events.some((e) => e.type === 'wasm-calc-manager/strategy.execute'))
