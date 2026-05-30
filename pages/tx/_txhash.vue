@@ -2881,12 +2881,38 @@ export default {
               ? { label: 'Liquidator', address: userAddress, type: 'address' }
               : null,
           ].filter(Boolean),
-          lifecycleRows: [
-            ...this.extractContractEventRows(action),
-            ...(hasError && logs
-              ? [{ icon: 'WarningIcon', title: 'Liquidation failed', body: logs }]
-              : []),
-          ],
+          lifecycleRows: (() => {
+            if (hasError) {
+              return [{ icon: 'WarningIcon', title: 'Liquidation failed', body: logs || '' }]
+            }
+            const feeProtocolRaw = parseInt(repayAttrs.fee_liquidation || '') || 0
+            const totalFeesRaw = feeLiquidatorAmount + feeProtocolRaw
+            return [
+              collateralAmount
+                ? {
+                    icon: 'ArrowIcon',
+                    iconRotate: 90,
+                    title: 'Collateral seized',
+                    body: `${this.baseAmountFormatOrZero(collateralAmount)} ${collateralTicker}`,
+                  }
+                : null,
+              totalFeesRaw
+                ? {
+                    icon: 'ArrowIcon',
+                    iconRotate: 90,
+                    title: 'Fees paid',
+                    body: `${this.baseAmountFormatOrZero(totalFeesRaw)} ${repayTicker}`,
+                  }
+                : null,
+              repayAmount
+                ? {
+                    icon: 'CheckIcon',
+                    title: `${repayTicker} debt repaid`,
+                    body: `${this.baseAmountFormatOrZero(repayAmount)} ${repayTicker} repaid to Ghost Vault`,
+                  }
+                : null,
+            ].filter(Boolean)
+          })(),
           feeRows: (() => {
             const feeProtocolRaw = parseInt(repayAttrs.fee_liquidation || '') || 0
             const toUsd = (amount) =>
