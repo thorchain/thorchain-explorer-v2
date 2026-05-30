@@ -2853,9 +2853,6 @@ export default {
                   value: `${this.baseAmountFormatOrZero(feeLiquidatorAmount)} ${feeLiquidatorTicker}`,
                 }
               : null,
-            timestamp
-              ? { label: 'Time', value: timestamp.format('YYYY-MM-DD HH:mm:ss') }
-              : null,
           ].filter(Boolean),
           detailRows: [
             {
