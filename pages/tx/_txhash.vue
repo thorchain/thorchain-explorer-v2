@@ -2757,8 +2757,10 @@ export default {
         const feeLiquidatorAssetStr = feeLiquidatorDenom
           ? securedToAsset(feeLiquidatorDenom).toUpperCase()
           : ''
-        const feeLiquidatorAssetParsed = feeLiquidatorAssetStr
-          ? assetFromString(feeLiquidatorAssetStr)
+        // Try raw denom first so secure: true is preserved (e.g. eth-usdt → ETH-USDT)
+        const feeLiquidatorAssetParsed = feeLiquidatorDenom
+          ? (assetFromString(feeLiquidatorDenom.toUpperCase()) ??
+              assetFromString(feeLiquidatorAssetStr))
           : null
         const feeLiquidatorTicker =
           feeLiquidatorAssetParsed?.ticker || feeLiquidatorDenom
@@ -2786,8 +2788,9 @@ export default {
         const collateralAssetStr = collateralDenom
           ? securedToAsset(collateralDenom).toUpperCase()
           : ''
-        const collateralAssetParsed = collateralAssetStr
-          ? assetFromString(collateralAssetStr)
+        const collateralAssetParsed = collateralDenom
+          ? (assetFromString(collateralDenom.toUpperCase()) ??
+              assetFromString(collateralAssetStr))
           : null
         const collateralTicker = collateralAssetParsed?.ticker || collateralDenom
 
@@ -2802,8 +2805,9 @@ export default {
         const repayAssetStr = repayDenom
           ? securedToAsset(repayDenom).toUpperCase()
           : ''
-        const repayAssetParsed = repayAssetStr
-          ? assetFromString(repayAssetStr)
+        const repayAssetParsed = repayDenom
+          ? (assetFromString(repayDenom.toUpperCase()) ??
+              assetFromString(repayAssetStr))
           : null
         const repayTicker = repayAssetParsed?.ticker || repayDenom
 
@@ -6789,6 +6793,10 @@ export default {
   position: relative;
   width: 40px;
   z-index: 1;
+}
+
+.tx-lifecycle-item:last-child .tx-lifecycle-dot {
+  align-self: center;
 }
 
 .tx-lifecycle-icon {
