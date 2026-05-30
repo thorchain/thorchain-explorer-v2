@@ -79,10 +79,10 @@
       <Card
         :navs="[
           { title: 'Earnings & Fees', value: 'total-earnings' },
-          { title: 'RUJIRA Revenue', value: 'rujira-earnings' },
+          { title: 'Rujira revenue', value: 'rujira-earnings' },
           // { title: 'LP Earnings', value: 'pool-earnings' },
           ...(isMainnet()
-            ? [{ title: 'Affiliate Volume', value: 'affiliate-volume' }, { title: 'Affiliate Fees', value: 'affiliates-fees' }]
+            ? [{ title: 'Affiliate volume', value: 'affiliate-volume' }, { title: 'Affiliate fees', value: 'affiliates-fees' }]
             : []),
         ]"
         :act-nav.sync="poolMode"
@@ -260,6 +260,7 @@ export default {
       totalBurnedRune: undefined,
       earningsData: undefined,
       rujiEarningsChart: undefined,
+      rujiRevenueByLabel: {},
       poolMode: 'total-earnings',
       swapMode: 'swap-vol',
       inboundInfo: undefined,
@@ -1456,6 +1457,15 @@ export default {
           </span>`
               : ``
           }
+          ${
+            this.rujiRevenueByLabel[param[0].name] !== undefined
+              ? `<span style="border-top: 1px solid var(--border-color); margin: 2px 0;"></span>
+                 <span>
+                   <span>Rujira revenue</span>
+                   <b>$${this.$options.filters.number(this.rujiRevenueByLabel[param[0].name], '0,0a')}</b>
+                 </span>`
+              : ''
+          }
         </div>
       `
         }
@@ -1648,8 +1658,11 @@ export default {
       })
       for (let i = 29; i >= 0; i--) {
         const day = moment().utc().subtract(i, 'days').startOf('day')
-        xAxis.push(day.format('dddd, MMM D'))
-        values.push(dataByDay[day.format('YYYY-MM-DD')] ?? 0)
+        const label = day.format('dddd, MMM D')
+        xAxis.push(label)
+        const val = dataByDay[day.format('YYYY-MM-DD')] ?? 0
+        values.push(val)
+        this.rujiRevenueByLabel[label] = val
       }
       return this.basicChartFormat(
         (v) => `$ ${this.normalFormat(v)}`,

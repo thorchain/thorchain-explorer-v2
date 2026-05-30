@@ -676,6 +676,7 @@ export default {
       if (msg.swap) return 'Market Order'
       if (msg.cancel_instance) return 'Cancel Strategy'
       if (Array.isArray(msg.execute)) return 'Execute Strategies'
+      if (msg.liquidate) return 'Liquidation'
       if (msg.liquid && 'bond' in msg.liquid) return 'Liquid Stake'
       if (msg.liquid && 'unbond' in msg.liquid) return 'Liquid Unstake'
       if ('withdraw' in msg) return 'Ghost Vault Withdraw'

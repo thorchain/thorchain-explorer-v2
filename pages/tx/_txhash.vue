@@ -1989,6 +1989,7 @@ export default {
         !singleAction?.metadata?.contract?.msg?.order &&
         !singleAction?.metadata?.contract?.msg?.account &&
         !singleAction?.metadata?.contract?.msg?.liquid &&
+        !singleAction?.metadata?.contract?.msg?.liquidate &&
         (singleAction?.metadata?.contract?.contractEvents || []).some(
           (e) => e.type === 'wasm-rujira-fin/trade'
         )
@@ -2713,6 +2714,202 @@ export default {
           technicalRows: [
             userAddress ? this.buildTechRow('From address', userAddress, 'address') : null,
             contractAddress ? this.buildTechRow('To address', contractAddress, 'address') : null,
+          ].filter(Boolean),
+          priority: true,
+        }
+      }
+
+      // Ghost Credit Account liquidation: msg.liquidate
+      const liquidateMsg = singleAction?.metadata?.contract?.msg?.liquidate
+      if (liquidateMsg) {
+        const action = singleAction
+        const contractAddress = action.out?.[0]?.address || ''
+        const contractLabel =
+          getRujiraContractLabel(contractAddress) ||
+          this.formatAddress(contractAddress)
+        const productLabel = 'RUJI Money Market'
+        const userAddress = action.in?.[0]?.address || ''
+        const liquidatedAccount = liquidateMsg.addr || ''
+        const hasError = (action.metadata?.contract?.code ?? 0) > 0
+        const logs = action.metadata?.contract?.logs
+        const status = hasError
+          ? { label: 'Failed', tone: 'red' }
+          : action.status === 'success'
+            ? { label: 'Success', tone: 'green' }
+            : { label: 'Pending', tone: 'blue' }
+        const date = action.date
+        const timestamp = date ? moment.unix(parseInt(date) / 1e9) : null
+        const height = parseInt(action.height)
+        const events = action.metadata?.contract?.contractEvents || []
+        const toAttrs = (e) =>
+          Object.fromEntries(
+            (e.attributes || []).map(({ key, value }) => [key, value])
+          )
+
+        // Liquidation event: fee_liquidator attribute carries the reward
+        const liquidateEvent = events.find(
+          (e) => e.type === 'wasm-rujira-ghost-credit/account.liquidate'
+        )
+        const liquidateAttrs = liquidateEvent ? toAttrs(liquidateEvent) : {}
+        const feeLiquidatorStr = liquidateAttrs.fee_liquidator || ''
+        const feeLiquidatorAmount = parseInt(feeLiquidatorStr) || 0
+        const feeLiquidatorDenom = feeLiquidatorStr.replace(/^\d+/, '').trim()
+        const feeLiquidatorAssetStr = feeLiquidatorDenom
+          ? securedToAsset(feeLiquidatorDenom).toUpperCase()
+          : ''
+        const feeLiquidatorAssetParsed = feeLiquidatorAssetStr
+          ? assetFromString(feeLiquidatorAssetStr)
+          : null
+        const feeLiquidatorTicker =
+          feeLiquidatorAssetParsed?.ticker || feeLiquidatorDenom
+
+        // Collateral: coin_spent from the credit account being liquidated
+        let collateralAmount = 0
+        let collateralDenom = ''
+        if (liquidatedAccount) {
+          const spentEvent = events.find(
+            (e) =>
+              e.type === 'coin_spent' &&
+              (e.attributes || []).some(
+                (a) => a.key === 'spender' && a.value === liquidatedAccount
+              )
+          )
+          const amountAttr = (spentEvent?.attributes || []).find(
+            (a) => a.key === 'amount'
+          )
+          if (amountAttr?.value) {
+            const part = amountAttr.value.split(',')[0]?.trim() || ''
+            collateralAmount = parseInt(part) || 0
+            collateralDenom = part.replace(/^\d+/, '').trim()
+          }
+        }
+        const collateralAssetStr = collateralDenom
+          ? securedToAsset(collateralDenom).toUpperCase()
+          : ''
+        const collateralAssetParsed = collateralAssetStr
+          ? assetFromString(collateralAssetStr)
+          : null
+        const collateralTicker = collateralAssetParsed?.ticker || collateralDenom
+
+        // Debt repaid
+        const repayEvent = events.find(
+          (e) => e.type === 'wasm-rujira-ghost-credit/liquidate.msg/repay'
+        )
+        const repayAttrs = repayEvent ? toAttrs(repayEvent) : {}
+        const repayAmountStr = repayAttrs.amount || ''
+        const repayAmount = parseInt(repayAmountStr) || 0
+        const repayDenom = repayAmountStr.replace(/^\d+/, '').trim()
+        const repayAssetStr = repayDenom
+          ? securedToAsset(repayDenom).toUpperCase()
+          : ''
+        const repayAssetParsed = repayAssetStr
+          ? assetFromString(repayAssetStr)
+          : null
+        const repayTicker = repayAssetParsed?.ticker || repayDenom
+
+        return {
+          rawEvents: events,
+          rawMsg: action?.metadata?.contract?.msg || null,
+          title: `Liquidation: ${contractLabel}`,
+          metaLabel: `Liquidation · ${productLabel}`,
+          status,
+          affiliateAddress: '',
+          actionTypeTitle: 'contract',
+          hasContractAction: true,
+          labels: [],
+          input: {
+            asset: collateralAssetParsed ? collateralAssetStr : null,
+            name: collateralTicker || 'Collateral',
+            badge: this.getNetworkBadge(collateralAssetParsed) || '',
+            amount: collateralAmount
+              ? `${this.baseAmountFormatOrZero(collateralAmount)} ${collateralTicker}`
+              : '-',
+            usd: collateralAmount
+              ? this.formatUsdValue(
+                  this.amountToUSD(collateralAssetStr, collateralAmount, this.pools)
+                )
+              : null,
+            secure: collateralAssetParsed?.secure ?? false,
+          },
+          output: feeLiquidatorAmount
+            ? {
+                asset: feeLiquidatorAssetParsed ? feeLiquidatorAssetStr : null,
+                name: feeLiquidatorTicker || 'Reward',
+                badge: 'Liquidation fee',
+                amount: `${this.baseAmountFormatOrZero(feeLiquidatorAmount)} ${feeLiquidatorTicker}`,
+                usd: this.formatUsdValue(
+                  this.amountToUSD(
+                    feeLiquidatorAssetStr,
+                    feeLiquidatorAmount,
+                    this.pools
+                  )
+                ),
+              }
+            : null,
+          metricRows: [
+            collateralAmount
+              ? {
+                  label: 'Collateral seized',
+                  value: `${this.baseAmountFormatOrZero(collateralAmount)} ${collateralTicker}`,
+                }
+              : null,
+            repayAmount
+              ? {
+                  label: 'Debt repaid',
+                  value: `${this.baseAmountFormatOrZero(repayAmount)} ${repayTicker}`,
+                }
+              : null,
+            feeLiquidatorAmount
+              ? {
+                  label: 'Liquidator fee',
+                  value: `${this.baseAmountFormatOrZero(feeLiquidatorAmount)} ${feeLiquidatorTicker}`,
+                }
+              : null,
+            timestamp
+              ? { label: 'Time', value: timestamp.format('YYYY-MM-DD HH:mm:ss') }
+              : null,
+          ].filter(Boolean),
+          detailRows: [
+            {
+              label: 'Product',
+              value: productLabel,
+              tone: this.getProductTone(productLabel),
+              type: 'product',
+            },
+            {
+              label: 'Action',
+              value: 'Liquidation',
+              tone: this.getContractTypeTone('Liquidation'),
+              type: 'product',
+            },
+            { label: 'Contract', value: contractLabel },
+            liquidatedAccount
+              ? { label: 'Liquidated Account', address: liquidatedAccount, type: 'address' }
+              : null,
+            { label: 'Status', value: status.label, type: 'status' },
+            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
+            height ? { label: 'Block', value: `#${this.normalFormat(height)}` } : null,
+            userAddress
+              ? { label: 'Liquidator', address: userAddress, type: 'address' }
+              : null,
+          ].filter(Boolean),
+          lifecycleRows: [
+            ...this.extractContractEventRows(action),
+            ...(hasError && logs
+              ? [{ icon: 'WarningIcon', title: 'Liquidation failed', body: logs }]
+              : []),
+          ],
+          feeRows: [],
+          technicalRows: [
+            userAddress
+              ? this.buildTechRow('Liquidator', userAddress, 'address')
+              : null,
+            contractAddress
+              ? this.buildTechRow('Contract', contractAddress, 'address')
+              : null,
+            liquidatedAccount
+              ? this.buildTechRow('Liquidated account', liquidatedAccount, 'address')
+              : null,
           ].filter(Boolean),
           priority: true,
         }
@@ -3808,6 +4005,7 @@ export default {
       if (!Array.isArray(msg.execute) && msg.execute?.proposal_id !== undefined)
         return 'Execute Proposal'
       if (Array.isArray(msg.execute)) return 'Execute Strategies'
+      if (msg.liquidate) return 'Liquidation'
       if (msg.liquid && 'bond' in msg.liquid) return 'Liquid Stake'
       if (msg.liquid && 'unbond' in msg.liquid) return 'Liquid Unstake'
       if ('withdraw' in msg) return 'Ghost Vault Withdraw'
@@ -3831,6 +4029,7 @@ export default {
       if (type === 'Market Order') return 'blue'
       if (type === 'CALC Strategy') return 'purple'
       if (type === 'Cancel Strategy') return 'red'
+      if (type === 'Liquidation') return 'red'
       if (type === 'Liquid Stake') return 'green'
       if (type === 'Liquid Unstake') return 'red'
       if (type === 'Ghost Vault Deposit') return 'green'
