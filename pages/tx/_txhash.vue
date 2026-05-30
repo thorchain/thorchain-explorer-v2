@@ -2746,25 +2746,6 @@ export default {
             (e.attributes || []).map(({ key, value }) => [key, value])
           )
 
-        // Liquidation event: fee_liquidator attribute carries the reward
-        const liquidateEvent = events.find(
-          (e) => e.type === 'wasm-rujira-ghost-credit/account.liquidate'
-        )
-        const liquidateAttrs = liquidateEvent ? toAttrs(liquidateEvent) : {}
-        const feeLiquidatorStr = liquidateAttrs.fee_liquidator || ''
-        const feeLiquidatorAmount = parseInt(feeLiquidatorStr) || 0
-        const feeLiquidatorDenom = feeLiquidatorStr.replace(/^\d+/, '').trim()
-        const feeLiquidatorAssetStr = feeLiquidatorDenom
-          ? securedToAsset(feeLiquidatorDenom).toUpperCase()
-          : ''
-        // Try raw denom first so secure: true is preserved (e.g. eth-usdt → ETH-USDT)
-        const feeLiquidatorAssetParsed = feeLiquidatorDenom
-          ? (assetFromString(feeLiquidatorDenom.toUpperCase()) ??
-              assetFromString(feeLiquidatorAssetStr))
-          : null
-        const feeLiquidatorTicker =
-          feeLiquidatorAssetParsed?.ticker || feeLiquidatorDenom
-
         // Collateral: coin_spent from the credit account being liquidated
         let collateralAmount = 0
         let collateralDenom = ''
@@ -2794,14 +2775,14 @@ export default {
           : null
         const collateralTicker = collateralAssetParsed?.ticker || collateralDenom
 
-        // Debt repaid
+        // Repay event carries fee_liquidator (bare number) and the USDT denom via 'amount'
         const repayEvent = events.find(
           (e) => e.type === 'wasm-rujira-ghost-credit/liquidate.msg/repay'
         )
         const repayAttrs = repayEvent ? toAttrs(repayEvent) : {}
-        const repayAmountStr = repayAttrs.amount || ''
-        const repayAmount = parseInt(repayAmountStr) || 0
-        const repayDenom = repayAmountStr.replace(/^\d+/, '').trim()
+        // 'amount' = total USDT received from FIN swap, denom applies to all fee fields
+        const repayTotalStr = repayAttrs.amount || ''
+        const repayDenom = repayTotalStr.replace(/^\d+/, '').trim()
         const repayAssetStr = repayDenom
           ? securedToAsset(repayDenom).toUpperCase()
           : ''
@@ -2810,6 +2791,13 @@ export default {
               assetFromString(repayAssetStr))
           : null
         const repayTicker = repayAssetParsed?.ticker || repayDenom
+        // Debt repaid (net, after fees)
+        const repayAmount = parseInt(repayAttrs.repay_amount || '') || 0
+        // Liquidator fee: bare number in same denom as 'amount'
+        const feeLiquidatorAmount = parseInt(repayAttrs.fee_liquidator || '') || 0
+        const feeLiquidatorAssetStr = repayAssetStr
+        const feeLiquidatorAssetParsed = repayAssetParsed
+        const feeLiquidatorTicker = repayTicker
 
         return {
           rawEvents: events,
@@ -2835,18 +2823,14 @@ export default {
               : null,
             secure: collateralAssetParsed?.secure ?? false,
           },
-          output: feeLiquidatorAmount
+          output: repayAmount
             ? {
-                asset: feeLiquidatorAssetParsed ? feeLiquidatorAssetStr : null,
-                name: feeLiquidatorTicker || 'Reward',
-                badge: 'Liquidation fee',
-                amount: `${this.baseAmountFormatOrZero(feeLiquidatorAmount)} ${feeLiquidatorTicker}`,
+                asset: repayAssetParsed ? repayAssetStr : null,
+                name: repayTicker || 'USDT',
+                badge: 'Debt repaid to Ghost Vault',
+                amount: `${this.baseAmountFormatOrZero(repayAmount)} ${repayTicker}`,
                 usd: this.formatUsdValue(
-                  this.amountToUSD(
-                    feeLiquidatorAssetStr,
-                    feeLiquidatorAmount,
-                    this.pools
-                  )
+                  this.amountToUSD(repayAssetStr, repayAmount, this.pools)
                 ),
               }
             : null,
@@ -2903,7 +2887,41 @@ export default {
               ? [{ icon: 'WarningIcon', title: 'Liquidation failed', body: logs }]
               : []),
           ],
-          feeRows: [],
+          feeRows: (() => {
+            const feeProtocolRaw = parseInt(repayAttrs.fee_liquidation || '') || 0
+            const toUsd = (amount) =>
+              repayAssetStr
+                ? this.amountToUSD(repayAssetStr, amount, this.pools)
+                : 0
+            const rows = []
+            if (feeLiquidatorAmount) {
+              rows.push({
+                label: 'Liquidator Reward',
+                usd: `$${this.formatFeeDisplay(toUsd(feeLiquidatorAmount))}`,
+                subtle: `${this.baseAmountFormatOrZero(feeLiquidatorAmount)} ${feeLiquidatorTicker}`,
+              })
+            }
+            if (feeProtocolRaw) {
+              rows.push({
+                label: 'Protocol Fee',
+                usd: `$${this.formatFeeDisplay(toUsd(feeProtocolRaw))}`,
+                subtle: `${this.baseAmountFormatOrZero(feeProtocolRaw)} ${repayTicker}`,
+              })
+            }
+            if (rows.length > 1) {
+              const totalUsd = rows.reduce(
+                (s, r) => s + this.parseUsdAmount(r.usd),
+                0
+              )
+              rows.push({
+                label: 'Total Fees',
+                usd: `$${this.formatFeeDisplay(totalUsd)}`,
+                subtle: null,
+                isTotal: true,
+              })
+            }
+            return rows
+          })(),
           technicalRows: [
             userAddress
               ? this.buildTechRow('Liquidator', userAddress, 'address')
