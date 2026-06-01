@@ -1395,7 +1395,32 @@ export default {
             ...networkFees.map((value, i) =>
               toRow(i === 0 ? 'Network Fee' : `Network Fee ${i + 1}`, value)
             ),
-            liquidityFee ? toRow('Liquidity Fee', liquidityFee) : null,
+            // Fallback: outbound accordion has no 'Outbound Fee' stacks for native
+            // RUNE outputs (no on-chain tx), so read from midgard metadata instead
+            ...(networkFees.length === 0 && swapMeta?.networkFees?.length
+              ? swapMeta.networkFees.map((fee, i) => {
+                  const ticker = assetFromString(fee.asset)?.ticker || fee.asset
+                  const amount = parseInt(fee.amount) || 0
+                  const usdRaw = this.amountToUSD(fee.asset, amount, this.pools)
+                  return {
+                    label: i === 0 ? 'Network Fee' : `Network Fee ${i + 1}`,
+                    usd: `$${this.formatFeeDisplay(usdRaw)}`,
+                    subtle: `${this.baseAmountFormatOrZero(amount)} ${ticker}`,
+                  }
+                })
+              : []),
+            liquidityFee
+              ? toRow('Liquidity Fee', liquidityFee)
+              : (() => {
+                  const amount = parseInt(swapMeta?.liquidityFee || '') || 0
+                  if (!amount) return null
+                  const usdRaw = this.amountToUSD('THOR.RUNE', amount, this.pools)
+                  return {
+                    label: 'Liquidity Fee',
+                    usd: `$${this.formatFeeDisplay(usdRaw)}`,
+                    subtle: `${this.baseAmountFormatOrZero(amount)} RUNE`,
+                  }
+                })(),
             toRow('Affiliate Fee', interfaceFee || null),
           ].filter(Boolean)
 
