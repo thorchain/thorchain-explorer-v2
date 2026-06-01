@@ -847,6 +847,16 @@ export default {
         .filter(Boolean)
       const contractActionType = this.getContractActionType(contractAction)
 
+      // Historical prices at the time the swap executed — more accurate than
+      // current pool prices for displaying USD values.
+      const swapMeta = midgardSwap?.metadata?.swap
+      const nonContractInUsdRaw = swapMeta?.inPriceUSD
+        ? (parseFloat(input.amount) / 1e8) * parseFloat(swapMeta.inPriceUSD)
+        : parseFloat(input.amountUSD) || 0
+      const nonContractOutUsdRaw = swapMeta?.outPriceUSD
+        ? (parseFloat(output.amount) / 1e8) * parseFloat(swapMeta.outPriceUSD)
+        : parseFloat(output.amountUSD) || 0
+
       // When the contract action is a Market Order (FIN DEX), extract the
       // true user-facing amounts from the contract events rather than using
       // the midgard amounts which only reflect the tiny THORChain-native leg.
@@ -958,10 +968,6 @@ export default {
                 assetFromString(cOutAssetStr))
             : null
           const cOutTicker = cOutAsset?.ticker || cPrimaryDenom
-          // Use historical prices from the swap event when available — these
-          // reflect the asset prices at the time the contract executed, giving
-          // accurate price impact and fee calculations rather than current prices.
-          const swapMeta = midgardSwap?.metadata?.swap
           const cInUsdRaw = swapMeta?.inPriceUSD
             ? (cFundsAmount / 1e8) * parseFloat(swapMeta.inPriceUSD)
             : this.amountToUSD(cInAssetStr, cFundsAmount, this.pools)
@@ -1047,7 +1053,7 @@ export default {
               name: this.getAssetDisplayName(input.asset),
               badge: this.getNetworkBadge(inputAsset),
               amount: this.formatAssetAmount(input.amount, input.asset),
-              usd: this.formatUsdValue(input.amountUSD),
+              usd: this.formatUsdValue(nonContractInUsdRaw),
               txId: inboundHash,
             },
         output: contractDisplay
@@ -1064,7 +1070,7 @@ export default {
               name: this.getAssetDisplayName(output.asset),
               badge: this.getNetworkBadge(outputAsset),
               amount: this.formatAssetAmount(output.amount, output.asset),
-              usd: this.formatUsdValue(output.amountUSD),
+              usd: this.formatUsdValue(nonContractOutUsdRaw),
               txId: outboundHash,
             },
         metricRows: (() => {
@@ -1105,10 +1111,10 @@ export default {
           if (showPriceImpact) {
             const inUsd = contractDisplay
               ? contractDisplay.inputUsdRaw || 0
-              : parseFloat(input.amountUSD) || 0
+              : nonContractInUsdRaw
             const outUsd = contractDisplay
               ? contractDisplay.outputUsdRaw || 0
-              : parseFloat(output.amountUSD) || 0
+              : nonContractOutUsdRaw
             if (inUsd > 0 && outUsd > 0) {
               const impact = ((outUsd / inUsd - 1) * 100).toFixed(2)
               const sign = parseFloat(impact) > 0 ? '+' : ''
@@ -1397,9 +1403,7 @@ export default {
             (sum, r) => sum + this.parseUsdAmount(r.usd),
             0
           )
-          const inputUsdNum = this.parseUsdAmount(
-            this.formatUsdValue(input.amountUSD)
-          )
+          const inputUsdNum = nonContractInUsdRaw
           const totalPct =
             inputUsdNum > 0
               ? `${((totalUsd / inputUsdNum) * 100).toFixed(3)}% of swap value`
@@ -2795,8 +2799,6 @@ export default {
         const repayAmount = parseInt(repayAttrs.repay_amount || '') || 0
         // Liquidator fee: bare number in same denom as 'amount'
         const feeLiquidatorAmount = parseInt(repayAttrs.fee_liquidator || '') || 0
-        const feeLiquidatorAssetStr = repayAssetStr
-        const feeLiquidatorAssetParsed = repayAssetParsed
         const feeLiquidatorTicker = repayTicker
 
         return {
