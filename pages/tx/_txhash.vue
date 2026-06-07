@@ -2825,7 +2825,9 @@ export default {
         // Liquidator fee: bare number in same denom as 'amount'
         const feeLiquidatorAmount = parseInt(repayAttrs.fee_liquidator || '') || 0
         const feeLiquidatorTicker = repayTicker
-
+        
+        const feeProtocolRaw = parseInt(repayAttrs.fee_liquidation || '') || 0
+        
         return {
           rawEvents: events,
           rawMsg: action?.metadata?.contract?.msg || null,
@@ -2874,10 +2876,10 @@ export default {
                   value: `${this.baseAmountFormatOrZero(repayAmount)} ${repayTicker}`,
                 }
               : null,
-            feeLiquidatorAmount
+              feeProtocolRaw
               ? {
-                  label: 'Liquidator fee',
-                  value: `${this.baseAmountFormatOrZero(feeLiquidatorAmount)} ${feeLiquidatorTicker}`,
+                  label: 'Protocol fee',
+                  value: `${this.baseAmountFormatOrZero(feeProtocolRaw)} ${feeLiquidatorTicker}`,
                 }
               : null,
           ].filter(Boolean),
@@ -2909,7 +2911,6 @@ export default {
             if (hasError) {
               return [{ icon: 'WarningIcon', title: 'Liquidation failed', body: logs || '' }]
             }
-            const feeProtocolRaw = parseInt(repayAttrs.fee_liquidation || '') || 0
             const totalFeesRaw = feeLiquidatorAmount + feeProtocolRaw
             return [
               collateralAmount
