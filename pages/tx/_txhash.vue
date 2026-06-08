@@ -92,7 +92,11 @@
                 </div>
                 <div class="tx-asset-values">
                   <span>{{ activeOverview.input.amount }}</span>
-                  <strong v-if="activeOverview.input.usd">{{
+                  <strong
+                    v-if="activeOverview.input.usd"
+                    v-tooltip="'Based on current price, not price at the time of the transaction'"
+                    style="cursor: help"
+                  >{{
                     safeUsdDisplay(activeOverview.input.usd)
                   }}</strong>
                 </div>
@@ -129,7 +133,11 @@
                 </div>
                 <div class="tx-asset-values">
                   <span>{{ activeOverview.output.amount }}</span>
-                  <strong v-if="activeOverview.output.usd">{{
+                  <strong
+                    v-if="activeOverview.output.usd"
+                    v-tooltip="'Based on current price, not price at the time of the transaction'"
+                    style="cursor: help"
+                  >{{
                     safeUsdDisplay(activeOverview.output.usd)
                   }}</strong>
                 </div>
