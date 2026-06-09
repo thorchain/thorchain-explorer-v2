@@ -150,7 +150,7 @@ export default {
   methods: {
     fillSecuredData(securedAssets, pools, asgard, poolsHistory) {
       const assetPerVault = {}
-      const asgardCoins = asgard.map((a) => a.coins)
+      const asgardCoins = asgard.map((a) => a.coins ?? [])
       for (let i = 0; i < asgardCoins.length; i++) {
         const v = asgardCoins[i]
         for (let j = 0; j < v.length; j++) {
