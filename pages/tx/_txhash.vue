@@ -1684,6 +1684,10 @@ export default {
         const titleSuffix = cclFillCount
           ? ` · ${cclFillCount} fill${cclFillCount !== 1 ? 's' : ''} at avg ${avgFillRate.toFixed(2)}`
           : ''
+        const allNullQty = orders.every(
+          (o) => o[2] === null || o[2] === undefined
+        )
+        const orderVerb = allNullQty ? 'claimed' : 'placed'
 
         // Scale order: multiple limit orders placed in one execution
         const isScaleOrder = orders.length > 1
@@ -1781,7 +1785,7 @@ export default {
             : null,
           title: isScaleOrder
             ? `Scale Order: ${orderCount} orders on ${contractLabel}${titleSuffix}`
-            : `${orderCount} Limit Order${orderCount !== 1 ? 's' : ''} placed on ${contractLabel}${titleSuffix}`,
+            : `${orderCount} Limit Order${orderCount !== 1 ? 's' : ''} ${orderVerb} on ${contractLabel}${titleSuffix}`,
           metaLabel: `${actionLabel} · ${contractLabel}`,
           status,
           affiliateAddress: '',
