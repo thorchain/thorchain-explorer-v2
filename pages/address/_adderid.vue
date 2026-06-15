@@ -118,10 +118,78 @@
               </button>
             </div>
             <div class="toolbar-controls">
+              <button
+                v-if="activeMode === 'transactions'"
+                v-tooltip="koinlyCsvTooltip"
+                class="csv-export-button"
+                type="button"
+                :disabled="isCsvExporting || !hasTransactionsForExport"
+                @click="openCsvExportModal"
+              >
+                <download-icon class="csv-export-button__icon" />
+                <span>{{ csvExportButtonLabel }}</span>
+              </button>
               <advanced-filter
                 ref="advancedFilter"
                 :hide-address-filter="true"
               />
+            </div>
+          </div>
+        </div>
+
+        <div
+          v-if="isCsvExportModalVisible"
+          class="csv-modal-overlay"
+          tabindex="0"
+          @click="closeCsvExportModal"
+          @keydown.esc="closeCsvExportModal"
+        >
+          <div class="csv-modal-content" @click.stop @keydown.stop>
+            <div class="csv-modal-header">
+              <h3>Download CSV</h3>
+              <cross-icon
+                class="csv-modal-close"
+                @click="closeCsvExportModal"
+              />
+            </div>
+            <div class="csv-modal-fields">
+              <div class="csv-input-group">
+                <label for="csv-date-range">Date Range</label>
+                <date-picker
+                  id="csv-date-range"
+                  v-model="csvExportFilters.dateRange"
+                  placeholder="Select date range"
+                  value-type="timestamp"
+                  :range="true"
+                  :disabled="isCsvExporting"
+                  @keydown.stop
+                />
+              </div>
+              <select-filter
+                label="Assets"
+                :options="csvAssetOptions"
+                :default="csvExportFilters.assets"
+                :disabled="isCsvExporting"
+                @update:selectedOptions="setCsvAssetFilter"
+              />
+            </div>
+            <div class="csv-modal-actions">
+              <button
+                class="csv-modal-button secondary"
+                type="button"
+                :disabled="isCsvExporting"
+                @click="closeCsvExportModal"
+              >
+                Cancel
+              </button>
+              <button
+                class="csv-modal-button primary"
+                type="button"
+                :disabled="!isCsvExportReady || isCsvExporting"
+                @click="downloadKoinlyCsv"
+              >
+                {{ csvExportButtonLabel }}
+              </button>
             </div>
           </div>
         </div>
@@ -321,6 +389,7 @@
 import { mapGetters } from 'vuex'
 import moment from 'moment'
 import { compact } from 'lodash'
+import DatePicker from 'vue2-datepicker'
 import advancedFilter from '../txs/components/advancedFilter.vue'
 import Thorname from './components/thorname.vue'
 import Balance from './components/balance.vue'
@@ -330,9 +399,18 @@ import Distribution from './components/distribution.vue'
 import BalanceHistory from './components/balanceHistory.vue'
 import Transactions from '~/components/Transactions.vue'
 import { formatAsset, assetFromString } from '~/utils'
+import {
+  KOINLY_CSV_TOOLTIP,
+  buildKoinlyUniversalCsv,
+  downloadCsv,
+  makeKoinlyFilename,
+} from '~/utils/koinlyCsv'
 import { isScamAddress as checkScamAddress } from '~/const/scam-addresses'
 import alertIcon from '~/assets/images/alert.svg?inline'
+import downloadIcon from '~/assets/images/file-download.svg?inline'
+import crossIcon from '~/assets/images/cross.svg?inline'
 import { getRujiraContractLabel } from '~/utils/rujiraContracts'
+import SelectFilter from '~/components/selectFilter.vue'
 
 export default {
   components: {
@@ -344,6 +422,10 @@ export default {
     Distribution,
     advancedFilter,
     alertIcon,
+    crossIcon,
+    DatePicker,
+    downloadIcon,
+    SelectFilter,
     Transactions,
   },
   data() {
@@ -399,6 +481,12 @@ export default {
       limit: 30,
       heroPortfolioTotalUsd: 0,
       showBalanceHistory: true,
+      isCsvExporting: false,
+      isCsvExportModalVisible: false,
+      csvExportFilters: {
+        dateRange: [null, null],
+        assets: [],
+      },
     }
   },
   computed: {
@@ -461,6 +549,40 @@ export default {
       }
       const label = this.$options.filters.number(this.count, '0,0')
       return `${label} transactions total`
+    },
+    hasTransactionsForExport() {
+      return !!this.addrTxs?.actions?.length
+    },
+    csvExportButtonLabel() {
+      return this.isCsvExporting ? 'Preparing CSV' : 'Download CSV'
+    },
+    koinlyCsvTooltip() {
+      return KOINLY_CSV_TOOLTIP
+    },
+    csvAssetOptions() {
+      const poolAssets = (this.$store.state.pools || []).map(
+        (pool) => pool.asset
+      )
+      const txAssets =
+        this.addrTxs?.actions?.flatMap((action) => [
+          ...(action.pools || []),
+          ...(action.in || []).flatMap((entry) =>
+            (entry.coins || []).map((coin) => coin.asset)
+          ),
+          ...(action.out || []).flatMap((entry) =>
+            (entry.coins || []).map((coin) => coin.asset)
+          ),
+        ]) || []
+
+      return [...new Set(['THOR.RUNE', ...poolAssets, ...txAssets])]
+        .filter(Boolean)
+        .sort()
+    },
+    isCsvExportReady() {
+      return (
+        !!this.csvExportFilters.dateRange?.[0] &&
+        !!this.csvExportFilters.dateRange?.[1]
+      )
     },
     addressStat() {
       const balances = this.otherBalances ?? []
@@ -745,6 +867,153 @@ export default {
           console.error(error)
         })
     },
+    openCsvExportModal() {
+      if (this.isCsvExporting || !this.hasTransactionsForExport) {
+        return
+      }
+      this.isCsvExportModalVisible = true
+    },
+    closeCsvExportModal() {
+      if (this.isCsvExporting) {
+        return
+      }
+      this.isCsvExportModalVisible = false
+    },
+    setCsvAssetFilter(assets) {
+      this.csvExportFilters.assets = assets || []
+    },
+    async downloadKoinlyCsv() {
+      if (
+        this.isCsvExporting ||
+        !this.hasTransactionsForExport ||
+        !this.isCsvExportReady
+      ) {
+        return
+      }
+
+      this.isCsvExporting = true
+
+      try {
+        const actions = await this.fetchAllAddressActionsForExport(
+          this.getCsvExportQuery()
+        )
+        const csv = buildKoinlyUniversalCsv(actions, this.address)
+        downloadCsv(makeKoinlyFilename(this.address), csv)
+        this.isCsvExportModalVisible = false
+      } catch (error) {
+        console.error(error)
+        this.showCsvExportError()
+      } finally {
+        this.isCsvExporting = false
+      }
+    },
+    async fetchAllAddressActionsForExport(exportQuery = this.getExportQuery()) {
+      const minLimit = 25
+      let limit = 100
+      let offset = 0
+      let total = null
+      const actions = []
+
+      while (true) {
+        const { data, limit: usedLimit } = await this.fetchAddressExportPage({
+          params: {
+            ...exportQuery,
+            address: this.address,
+          },
+          limit,
+          offset,
+          minLimit,
+        })
+        limit = usedLimit
+        const batch = data?.actions || []
+        actions.push(...batch)
+
+        if (
+          total === null &&
+          Number.isFinite(+data?.count) &&
+          +data.count > -1
+        ) {
+          total = +data.count
+        }
+
+        if (
+          batch.length < limit ||
+          (total !== null && actions.length >= total)
+        ) {
+          break
+        }
+
+        offset += batch.length
+      }
+
+      return actions
+    },
+    async fetchAddressExportPage({ params, limit, offset, minLimit }) {
+      try {
+        const { data } = await this.$api.getActionsNoCancel({
+          ...params,
+          limit,
+          offset,
+        })
+
+        return { data, limit }
+      } catch (error) {
+        if (!this.isRequestTimeout(error) || limit <= minLimit) {
+          throw error
+        }
+
+        const nextLimit = Math.max(minLimit, Math.floor(limit / 2))
+        return this.fetchAddressExportPage({
+          params,
+          limit: nextLimit,
+          offset,
+          minLimit,
+        })
+      }
+    },
+    isRequestTimeout(error) {
+      return (
+        error?.code === 'ECONNABORTED' ||
+        error?.message?.toLowerCase().includes('timeout')
+      )
+    },
+    getExportQuery() {
+      const query = this.checkQuery(this.$route.query)
+      delete query.address
+      delete query.nextPageToken
+      delete query.prevPageToken
+      return query
+    },
+    getCsvExportQuery() {
+      const query = this.getExportQuery()
+      const [fromTimestamp, toTimestamp] = this.csvExportFilters.dateRange
+
+      query.fromTimestamp = Math.floor(fromTimestamp / 1000).toString()
+      query.timestamp = Math.floor(toTimestamp / 1000).toString()
+
+      if (this.csvExportFilters.assets.length > 0) {
+        query.asset = this.csvExportFilters.assets.join(',')
+      } else {
+        delete query.asset
+      }
+
+      return query
+    },
+    showCsvExportError() {
+      const message = 'Unable to prepare CSV export. Please try again later.'
+      if (this.$bvToast) {
+        this.$bvToast.toast(message, {
+          title: 'CSV export',
+          variant: 'danger',
+          solid: true,
+        })
+        return
+      }
+
+      if (process.client) {
+        window.alert(message)
+      }
+    },
     checkQuery(queries) {
       const validParams = [
         'address',
@@ -789,7 +1058,7 @@ export default {
     justify-content: space-between;
     padding: 1.35rem 1.45rem;
     margin: 0 $space-10;
-    
+
     @include lg {
       margin: 0;
       align-items: center;
@@ -1057,7 +1326,6 @@ export default {
   }
 }
 
-
 .qr-copy-wrapper {
   display: flex;
   gap: 5px;
@@ -1139,6 +1407,184 @@ export default {
   ::v-deep .advanced-filter {
     min-height: unset;
     padding: $space-12 $space-14;
+  }
+}
+
+.csv-export-button {
+  align-items: center;
+  background-color: var(--bgl-color);
+  border: 1px solid var(--border-color);
+  border-radius: $radius-lg;
+  color: var(--sec-font-color);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: $font-size-sm;
+  font-weight: 450;
+  gap: $space-6;
+  margin: 0;
+  min-height: unset;
+  padding: $space-12 $space-14;
+  transition: 0.2s ease;
+  white-space: nowrap;
+  width: auto;
+
+  &:hover:not(:disabled) {
+    background-color: color-mix(in srgb, var(--highlight) 8%, transparent);
+    border-color: color-mix(in srgb, var(--green) 60%, transparent);
+    color: var(--green);
+
+    .csv-export-button__icon {
+      fill: var(--green);
+    }
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+}
+
+.csv-export-button__icon {
+  fill: currentColor;
+  flex: 0 0 auto;
+  height: 1.2rem;
+  transition: 0.2s ease;
+  width: 1.2rem;
+}
+
+.csv-modal-overlay {
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  left: 0;
+  outline: none;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 1000;
+}
+
+.csv-modal-content {
+  background: var(--card-bg-color);
+  border-radius: $radius-lg;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+  color: var(--sec-font-color);
+  display: flex;
+  flex-direction: column;
+  gap: $space-16;
+  max-height: 85vh;
+  overflow-y: auto;
+  text-align: left;
+  width: min(500px, calc(100vw - 32px));
+}
+
+.csv-modal-header,
+.csv-modal-fields,
+.csv-modal-actions {
+  padding: $space-18;
+}
+
+.csv-modal-header {
+  align-items: center;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: $space-10;
+
+  h3 {
+    color: var(--sec-font-color);
+    font-size: $font-size-md;
+    margin: $space-0;
+  }
+}
+
+.csv-modal-close {
+  color: var(--sec-font-color);
+  cursor: pointer;
+  height: 2rem;
+  width: 1.5rem;
+
+  &:hover {
+    color: var(--primary-color);
+  }
+}
+
+.csv-modal-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.csv-input-group {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  gap: 5px;
+  min-width: 0;
+  width: 100%;
+
+  label {
+    color: var(--sec-font-color);
+    font-size: $font-size-desktop;
+    font-weight: bold;
+    margin-bottom: $space-8;
+  }
+
+  ::v-deep .mx-datepicker {
+    width: 100%;
+  }
+
+  ::v-deep input {
+    background-color: var(--bg-color) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: $radius-lg;
+    color: var(--sec-font-color) !important;
+    font-size: $font-size-sm;
+    height: 38px;
+    outline: none;
+    padding: $space-8;
+    width: 100%;
+  }
+}
+
+.csv-modal-actions {
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  gap: $space-10;
+  justify-content: flex-end;
+}
+
+.csv-modal-button {
+  border: 1px solid var(--border-color);
+  border-radius: $radius-lg;
+  color: var(--sec-font-color);
+  cursor: pointer;
+  font-size: $font-size-sm;
+  min-height: 38px;
+  padding: $space-10 $space-14;
+  transition: 0.2s ease;
+
+  &.primary {
+    background-color: color-mix(in srgb, var(--green) 16%, transparent);
+    border-color: color-mix(in srgb, var(--green) 60%, transparent);
+    color: var(--green);
+  }
+
+  &.secondary {
+    background-color: var(--bgl-color);
+  }
+
+  &:hover:not(:disabled) {
+    background-color: color-mix(in srgb, var(--highlight) 8%, transparent);
+    border-color: color-mix(in srgb, var(--green) 35%, var(--border-color));
+    color: var(--green);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
   }
 }
 
