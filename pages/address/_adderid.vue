@@ -173,6 +173,23 @@
                 @update:selectedOptions="setCsvAssetFilter"
               />
             </div>
+            <div v-if="showCsvExportProgress" class="csv-progress">
+              <div class="csv-progress__head">
+                <span class="csv-progress__label">Preparing your CSV…</span>
+                <span class="csv-progress__percent"
+                  >{{ csvExportPercent }}%</span
+                >
+              </div>
+              <div class="csv-progress__track">
+                <div
+                  class="csv-progress__fill"
+                  :style="{ width: csvExportPercent + '%' }"
+                />
+              </div>
+              <span class="csv-progress__count">{{
+                csvExportProgressLabel
+              }}</span>
+            </div>
             <div class="csv-modal-actions">
               <button
                 class="csv-modal-button secondary"
@@ -188,7 +205,8 @@
                 :disabled="!isCsvExportReady || isCsvExporting"
                 @click="downloadKoinlyCsv"
               >
-                {{ csvExportButtonLabel }}
+                <span v-if="isCsvExporting" class="csv-modal-spinner" />
+                <span>{{ csvExportButtonLabel }}</span>
               </button>
             </div>
           </div>
@@ -482,6 +500,8 @@ export default {
       heroPortfolioTotalUsd: 0,
       showBalanceHistory: true,
       isCsvExporting: false,
+      csvExportProgress: { loaded: 0, total: 0 },
+      csvExportMultiPage: false,
       isCsvExportModalVisible: false,
       csvExportFilters: {
         dateRange: [null, null],
@@ -555,6 +575,24 @@ export default {
     },
     csvExportButtonLabel() {
       return this.isCsvExporting ? 'Preparing CSV' : 'Download CSV'
+    },
+    showCsvExportProgress() {
+      return this.isCsvExporting && this.csvExportMultiPage
+    },
+    csvExportPercent() {
+      const { loaded, total } = this.csvExportProgress
+      if (!total) {
+        return 0
+      }
+      return Math.min(100, Math.round((loaded / total) * 100))
+    },
+    csvExportProgressLabel() {
+      const { loaded, total } = this.csvExportProgress
+      const format = (v) => this.$options.filters.number(v, '0,0')
+      if (!total) {
+        return 'Fetching transactions…'
+      }
+      return `${format(loaded)} of ${format(total)} transactions`
     },
     koinlyCsvTooltip() {
       return KOINLY_CSV_TOOLTIP
@@ -892,6 +930,8 @@ export default {
       }
 
       this.isCsvExporting = true
+      this.csvExportProgress = { loaded: 0, total: 0 }
+      this.csvExportMultiPage = false
 
       try {
         const actions = await this.fetchAllAddressActionsForExport(
@@ -909,7 +949,7 @@ export default {
     },
     async fetchAllAddressActionsForExport(exportQuery = this.getExportQuery()) {
       const minLimit = 25
-      let limit = 100
+      let limit = 50
       let offset = 0
       let total = null
       const actions = []
@@ -936,10 +976,21 @@ export default {
           total = +data.count
         }
 
-        if (
-          batch.length < limit ||
-          (total !== null && actions.length >= total)
-        ) {
+        const isLastPage =
+          batch.length < limit || (total !== null && actions.length >= total)
+
+        // Reveal the progress bar only once we know the export spans
+        // more than a single request.
+        if (!isLastPage) {
+          this.csvExportMultiPage = true
+        }
+
+        this.csvExportProgress = {
+          loaded: actions.length,
+          total: total ?? 0,
+        }
+
+        if (isLastPage) {
           break
         }
 
@@ -1556,12 +1607,91 @@ export default {
   justify-content: flex-end;
 }
 
+.csv-progress {
+  display: flex;
+  flex-direction: column;
+  gap: $space-8;
+  padding: $space-0 $space-18;
+}
+
+.csv-progress__head {
+  align-items: baseline;
+  display: flex;
+  justify-content: space-between;
+}
+
+.csv-progress__label {
+  color: var(--sec-font-color);
+  font-size: $font-size-sm;
+  font-weight: 500;
+}
+
+.csv-progress__percent {
+  color: var(--green);
+  font-size: $font-size-sm;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.csv-progress__track {
+  background-color: var(--border-color);
+  border-radius: 999px;
+  height: 8px;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.csv-progress__fill {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--green) 70%, transparent),
+    var(--green)
+  );
+  border-radius: 999px;
+  height: 100%;
+  min-width: 8px;
+  transition: width 0.4s ease;
+
+  // animated sheen to convey ongoing activity
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.25),
+      transparent
+    );
+    transform: translateX(-100%);
+    animation: csv-sheen 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes csv-sheen {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+.csv-progress__count {
+  color: var(--sec-font-color);
+  font-size: $font-size-xs;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.8;
+}
+
 .csv-modal-button {
+  align-items: center;
   border: 1px solid var(--border-color);
   border-radius: $radius-lg;
   color: var(--sec-font-color);
   cursor: pointer;
+  display: inline-flex;
   font-size: $font-size-sm;
+  gap: $space-8;
+  justify-content: center;
   min-height: 38px;
   padding: $space-10 $space-14;
   transition: 0.2s ease;
@@ -1585,6 +1715,23 @@ export default {
   &:disabled {
     cursor: not-allowed;
     opacity: 0.55;
+  }
+}
+
+.csv-modal-spinner {
+  border: 2px solid color-mix(in srgb, currentColor 25%, transparent);
+  border-radius: 50%;
+  border-top-color: currentColor;
+  display: inline-block;
+  flex: 0 0 auto;
+  height: 14px;
+  width: 14px;
+  animation: csv-spin 0.7s linear infinite;
+}
+
+@keyframes csv-spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 
