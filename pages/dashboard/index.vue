@@ -884,15 +884,21 @@ export default {
 
       const EODSwap = range(0, swapVolume.total.length - 1, 0)
 
-      EODSwap.push({
-        value: EODVolume,
-        itemStyle: {
-          color: 'transparent',
-          borderColor: '#F3BA2F',
-          borderWidth: 1,
-          borderRadius: [8, 8, 0, 0],
-        },
-      })
+      // When the EOD estimation is lower than the swap of the day, EODVolume is
+      // negative and the bar would render upside down. Disable it instead.
+      if (EODVolume > 0) {
+        EODSwap.push({
+          value: EODVolume,
+          itemStyle: {
+            color: 'transparent',
+            borderColor: '#F3BA2F',
+            borderWidth: 1,
+            borderRadius: [8, 8, 0, 0],
+          },
+        })
+      } else {
+        EODSwap.push(0)
+      }
 
       const resVolume = this.basicChartFormat(
         undefined,
