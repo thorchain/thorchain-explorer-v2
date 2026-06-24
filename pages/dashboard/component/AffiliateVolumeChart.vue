@@ -25,6 +25,7 @@ import {
 } from 'echarts/components'
 import VChart from 'vue-echarts'
 import ChartLoader from '~/components/ChartLoader.vue'
+import { mapGetters } from 'vuex'
 import { affiliateMap, interfaces } from '~/utils'
 
 use([
@@ -50,6 +51,9 @@ export default {
     }
   },
   computed: {
+    ...mapGetters({
+      theme: 'getTheme',
+    }),
     chartInterval() {
       return 'day'
     },
