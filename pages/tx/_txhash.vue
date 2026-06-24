@@ -94,7 +94,7 @@
                   <span>{{ activeOverview.input.amount }}</span>
                   <strong
                     v-if="activeOverview.input.usd"
-                    v-tooltip="'Based on current price, not price at the time of the transaction'"
+                    v-tooltip="activeOverview.input.usdAtExecution ? 'Price at the moment the transaction was executed' : 'Based on current price, not price at the time of the transaction'"
                     style="cursor: help"
                   >{{
                     safeUsdDisplay(activeOverview.input.usd)
@@ -135,7 +135,7 @@
                   <span>{{ activeOverview.output.amount }}</span>
                   <strong
                     v-if="activeOverview.output.usd"
-                    v-tooltip="'Based on current price, not price at the time of the transaction'"
+                    v-tooltip="activeOverview.output.usdAtExecution ? 'Price at the moment the transaction was executed' : 'Based on current price, not price at the time of the transaction'"
                     style="cursor: help"
                   >{{
                     safeUsdDisplay(activeOverview.output.usd)
@@ -858,6 +858,11 @@ export default {
       // Historical prices at the time the swap executed — more accurate than
       // current pool prices for displaying USD values.
       const swapMeta = midgardSwap?.metadata?.swap
+      // Whether the displayed USD value is derived from the historical
+      // inPriceUSD/outPriceUSD (price at the moment the swap executed) rather
+      // than a current-price fallback. Drives the USD tooltip wording.
+      const inUsdAtExecution = !!swapMeta?.inPriceUSD
+      const outUsdAtExecution = !!swapMeta?.outPriceUSD
       const nonContractInUsdRaw = swapMeta?.inPriceUSD
         ? (parseFloat(input.amount) / 1e8) * parseFloat(swapMeta.inPriceUSD)
         : parseFloat(input.amountUSD) || 0
@@ -1053,6 +1058,7 @@ export default {
               badge: contractDisplay.inputBadge,
               amount: contractDisplay.inputAmount,
               usd: contractDisplay.inputUsd,
+              usdAtExecution: inUsdAtExecution,
               txId: inboundHash,
               secure: contractDisplay.inputSecure ?? false,
             }
@@ -1062,6 +1068,7 @@ export default {
               badge: this.getNetworkBadge(inputAsset),
               amount: this.formatAssetAmount(input.amount, input.asset),
               usd: this.formatUsdValue(nonContractInUsdRaw),
+              usdAtExecution: inUsdAtExecution,
               txId: inboundHash,
             },
         output: contractDisplay
@@ -1071,6 +1078,7 @@ export default {
               badge: contractDisplay.outputBadge,
               amount: contractDisplay.outputAmount,
               usd: contractDisplay.outputUsd,
+              usdAtExecution: outUsdAtExecution,
               txId: outboundHash,
             }
           : {
@@ -1079,6 +1087,7 @@ export default {
               badge: this.getNetworkBadge(outputAsset),
               amount: this.formatAssetAmount(output.amount, output.asset),
               usd: this.formatUsdValue(nonContractOutUsdRaw),
+              usdAtExecution: outUsdAtExecution,
               txId: outboundHash,
             },
         metricRows: (() => {
@@ -6162,6 +6171,7 @@ export default {
               asset: inAsset,
               amount: inAmount,
               amountUSD: inAmountUSD,
+              usdAtExecution: true,
             },
           ],
           middle: {
@@ -6173,6 +6183,7 @@ export default {
               asset: outAsset,
               amount: outAmount || +this.quote?.expected_amount_out,
               amountUSD: outAmountUSD,
+              usdAtExecution: true,
               filter: outAmount
                 ? undefined
                 : (v) => `~ ${this.baseAmountFormatOrZero(v)}`,
@@ -6188,6 +6199,7 @@ export default {
                 asset: this.parseMemoAsset(o.coins?.[0]?.asset, this.pools),
                 amount: oAmount,
                 amountUSD: (priceUSD * oAmount) / 1e8,
+                usdAtExecution: true,
               }
             }),
           ],

@@ -73,9 +73,16 @@
                   >
                   <small class="mono sec-color">{{ showAsset(o.asset) }}</small>
                 </div>
-                <small v-if="o.amountUSD">{{
-                  formatBnCurrency(o.amountUSD)
-                }}</small>
+                <small
+                  v-if="o.amountUSD"
+                  v-tooltip="
+                    o.usdAtExecution
+                      ? 'Price at the moment the transaction was executed'
+                      : undefined
+                  "
+                  :style="o.usdAtExecution ? 'cursor: help' : undefined"
+                  >{{ formatBnCurrency(o.amountUSD) }}</small
+                >
                 <div class="tx-asset">
                   <component
                     :is="o.icon"
@@ -134,9 +141,16 @@
                   }}</span>
                   <small class="mono sec-color">{{ showAsset(o.asset) }}</small>
                 </div>
-                <small v-if="o.amountUSD">{{
-                  formatBnCurrency(o.amountUSD)
-                }}</small>
+                <small
+                  v-if="o.amountUSD"
+                  v-tooltip="
+                    o.usdAtExecution
+                      ? 'Price at the moment the transaction was executed'
+                      : undefined
+                  "
+                  :style="o.usdAtExecution ? 'cursor: help' : undefined"
+                  >{{ formatBnCurrency(o.amountUSD) }}</small
+                >
               </template>
             </div>
 
