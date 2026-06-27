@@ -263,40 +263,25 @@
     </template>
 
     <template>
-      <div v-if="isVault">
-        <div class="address-section">
-          <div class="left-section">
-            <div class="address-header">
-              <Avatar :name="address" />
-            </div>
-            <div class="address-name">
-              <span class="address-value" style="color: var(--sec-font-color)">
-                {{ label }}
-              </span>
-              <div class="qr-copy-wrapper">
-                <div class="item">
-                  <Copy :str-copy="address" />
-                </div>
-                <div id="qrcode" class="item">
-                  <qr-btn :qrcode="address"></qr-btn>
-                </div>
+      <div v-if="isVault" class="vault-container">
+        <div class="vault-header">
+          <Avatar :name="address" class="vault-header__avatar" />
+          <div class="vault-header__identity">
+            <span class="address-value" style="color: var(--sec-font-color)">
+              {{ label }}
+            </span>
+            <div class="qr-copy-wrapper">
+              <div class="item">
+                <Copy :str-copy="address" />
+              </div>
+              <div id="qrcode" class="item">
+                <qr-btn :qrcode="address"></qr-btn>
               </div>
             </div>
           </div>
-          <div class="action-types desktop-filters">
-            <advanced-filter
-              ref="advancedFilter"
-              :hide-address-filter="true"
-              class="desktop-filters"
-            />
-          </div>
         </div>
-        <info-card
-          :options="addressStat"
-          style="margin-bottom: 8px"
-        ></info-card>
+        <info-card :options="addressStat"></info-card>
         <Card
-          extra-class="mb-1"
           :navs="[
             { title: 'Chain Addresses', value: 'chain-addr' },
             { title: 'Node Members', value: 'node-mmb' },
@@ -350,48 +335,46 @@
             </div>
           </div>
         </Card>
-        <div>
-          <card title="Vault Balances">
-            <vue-good-table
-              v-if="vaultInfo"
-              :columns="cols"
-              :rows="vaultInfo.coins"
-              style-class="vgt-table net-table vgt-compact"
-              :pagination-options="{
-                enabled: true,
-                perPage: 30,
-                perPageDropdownEnabled: false,
-              }"
-            >
-              <template slot="table-row" slot-scope="props">
-                <div
-                  v-if="props.column.field == 'asset'"
-                  v-tooltip="props.row.asset"
-                  class="cell-content clickable"
-                  @click="gotoPool(props.row.asset)"
-                >
-                  <img
-                    class="table-asset-icon"
-                    :src="assetImage(props.row.asset)"
-                    alt="asset-icon"
-                  />
-                  <span>{{ props.formattedRow[props.column.field] }}</span>
-                </div>
-                <span v-else-if="props.column.field == 'amount'">
-                  <span
-                    >{{ props.formattedRow[props.column.field] }}
-                    <span class="extra-text">
-                      {{ showAsset(props.row.asset) }}
-                    </span>
+        <card title="Vault Balances">
+          <vue-good-table
+            v-if="vaultInfo"
+            :columns="cols"
+            :rows="vaultInfo.coins"
+            style-class="vgt-table net-table vgt-compact"
+            :pagination-options="{
+              enabled: true,
+              perPage: 30,
+              perPageDropdownEnabled: false,
+            }"
+          >
+            <template slot="table-row" slot-scope="props">
+              <div
+                v-if="props.column.field == 'asset'"
+                v-tooltip="props.row.asset"
+                class="cell-content clickable"
+                @click="gotoPool(props.row.asset)"
+              >
+                <img
+                  class="table-asset-icon"
+                  :src="assetImage(props.row.asset)"
+                  alt="asset-icon"
+                />
+                <span>{{ props.formattedRow[props.column.field] }}</span>
+              </div>
+              <span v-else-if="props.column.field == 'amount'">
+                <span
+                  >{{ props.formattedRow[props.column.field] }}
+                  <span class="extra-text">
+                    {{ showAsset(props.row.asset) }}
                   </span>
                 </span>
-                <span v-else>
-                  {{ props.formattedRow[props.column.field] }}
-                </span>
-              </template>
-            </vue-good-table>
-          </card>
-        </div>
+              </span>
+              <span v-else>
+                {{ props.formattedRow[props.column.field] }}
+              </span>
+            </template>
+          </vue-good-table>
+        </card>
       </div>
 
       <template>
@@ -847,12 +830,13 @@ export default {
               if (!this.pools) {
                 this.pools = (await this.$api.getPools()).data
               }
-              this.vaultInfo.coins = this.vaultInfo.coins.map((c) => ({
-                ...c,
-                amount: +c.amount < 1e3 ? 0 : c.amount,
-                price: this.amountToUSD(c.asset, 1e8, this.pools),
-                value: this.amountToUSD(c.asset, +c.amount, this.pools),
-              }))
+              this.vaultInfo.coins = this.vaultInfo.coins
+                .filter((c) => +c.amount >= 1e3)
+                .map((c) => ({
+                  ...c,
+                  price: this.amountToUSD(c.asset, 1e8, this.pools),
+                  value: this.amountToUSD(c.asset, +c.amount, this.pools),
+                }))
               this.fillNodesAddresses()
             }
           }
@@ -1267,45 +1251,32 @@ export default {
     line-height: 0.7rem;
   }
 
-  .address-section {
+  .vault-container {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: $space-10;
+  }
+
+  .vault-header {
+    display: flex;
+    align-items: center;
     flex-wrap: wrap;
-    align-items: center;
-    flex-direction: row;
-    align-items: center;
     gap: 0.6rem;
-    padding: $space-0 $space-12;
-  }
-  .left-section {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    max-width: 100%;
-  }
+    margin: $space-0 $space-10;
 
-  .address-header {
-    display: flex;
-    align-items: center;
-
-    span {
-      margin-left: $space-12;
-      line-height: 1.5rem;
-      font-size: $font-size-xl;
-      color: var(--sec-font-color);
+    @include lg {
+      margin: $space-0;
     }
   }
 
-  .address-name {
+  .vault-header__identity {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    margin: $space-5 $space-0;
+    gap: 8px;
+    min-width: 0;
     font-weight: bold;
     color: var(--font-color);
-    gap: 8px;
-    text-overflow: ellipsis;
-    overflow: hidden;
   }
 
   .scam-warning {
