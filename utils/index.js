@@ -558,6 +558,7 @@ export function fillNodeData(nodes, el, index) {
     providers: el.bond_providers?.providers,
     total_bond: el.total_bond / 10 ** 8 < 0.01 ? 0 : el.total_bond / 10 ** 8,
     behind: el.behind,
+    healthy: el.healthy,
     age: el.age,
     apy: el.apy,
     location:

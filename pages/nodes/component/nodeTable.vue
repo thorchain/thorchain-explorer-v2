@@ -281,7 +281,9 @@
             </span>
           </span>
           <span v-else-if="props.column.field.includes('behind.')">
-            <span v-if="parseInt(props.formattedRow[props.column.field]) == 0"
+            <UnhealthyIcon v-if="isChainUnhealthy(props)" v-tooltip="chainHealthTooltip(props)" class="table-icon"
+              style="fill: #ef5350" />
+            <span v-else-if="parseInt(props.formattedRow[props.column.field]) == 0"
               :style="getHighlightStyle(props.row.address)" class="version">OK</span>
             <span v-else-if="props.formattedRow[props.column.field] === ''">-</span>
             <span v-else-if="
@@ -386,6 +388,7 @@ import StaredIcon from '@/assets/images/bookmarked.svg?inline'
 import ExitIcon from '@/assets/images/arrow-down-square.svg?inline'
 import VoteIcon from '@/assets/images/vote.svg?inline'
 import DangerIcon from '@/assets/images/danger.svg?inline'
+import UnhealthyIcon from '@/assets/images/unhealthy.svg?inline'
 import MarkerIcon from '@/assets/images/marker.svg?inline'
 import RecycleIcon from '@/assets/images/recycle.svg?inline'
 import ExternalIcon from '@/assets/images/external.svg?inline'
@@ -407,6 +410,7 @@ export default {
     RecycleIcon,
     MarkerIcon,
     DangerIcon,
+    UnhealthyIcon,
     HighlightList,
     ExternalIcon,
     VaultIcon,
@@ -493,6 +497,14 @@ export default {
         props.row,
         props.column
       )
+    },
+    isChainUnhealthy(props) {
+      const chain = props.column.label
+      return props.row.healthy?.[chain] === false
+    },
+    chainHealthTooltip(props) {
+      const lag = parseInt(props.formattedRow[props.column.field])
+      return lag ? `Unhealthy (${lag} behind)` : 'Unhealthy'
     },
     rankChange(address, rank) {
       const na = this.favs.find((f) => f.address === address)
