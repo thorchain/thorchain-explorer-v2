@@ -30,8 +30,7 @@ export const AssetImage = (assetStr) => {
     switch (chain) {
       case 'THOR':
         if (ticker != null && ticker === 'RUNE') {
-          iconPath =
-            'https://raw.githubusercontent.com/asgardex/thorchain_explorer/main/assets/images/thorchain-logo.png'
+          iconPath = require('~/assets/images/assets/rune.svg')
           break
         }
         if (symbol === 'KUJI') {
