@@ -214,7 +214,6 @@ export default {
       nodesQuery: undefined,
       nodesExtra: undefined,
       minBond: 30000000000000,
-      extraNodeChurn: 0,
       newNodesChurn: 2,
       lastBlockHeight: undefined,
       churnInterval: undefined,
@@ -855,22 +854,41 @@ export default {
         actNodes = orderBy(actNodes, [(o) => +o.slash_points])
         const filteredNodes = []
 
-        // bond, slash, oldest, not updated
-        let lowestBond = null
-        let highestSlash = 0
-        let oldest = this.chainsHeight?.THOR ?? Number.MAX_SAFE_INTEGER
-        let oldestIndex
+        // Churn-out signals, mirroring THORNode's ValidatorMgr
+        // (x/thorchain/manager_validator_current.go). Values are read from the
+        // Mimir overrides where present, falling back to the
+        // constants/constants_v1.go defaults. `?? default` (not `|| default`)
+        // is used so a legitimate 0 override is preserved — THORNode treats
+        // BadValidatorRedline <= 0 and MaxNodeToChurnOutForLowVersion == 0 as
+        // "disabled". Note MINSLASHPOINTSFORBADVALIDATOR is not exposed by the
+        // thorchain/mimir endpoint unless voted on, so it relies on the default.
+        const desiredValidatorSet = +(this.mimirs?.DESIREDVALIDATORSET ?? 0)
+        const minSlashForBad = +(
+          this.mimirs?.MINSLASHPOINTSFORBADVALIDATOR ?? 100
+        )
+        const badRedline = +(this.mimirs?.BADVALIDATORREDLINE ?? 3)
+        const maxLowVersion = +(
+          this.mimirs?.MAXNODETOCHURNOUTFORLOWVERSION ?? 1
+        )
 
-        // get all active version
-        const lowVersions = []
+        // most popular active version (rcompare sorts highest-first)
         const nodesVersion = actNodes.map((r) => r.version).sort(rcompare)
         const versions = countBy(nodesVersion)
+        const latestVersion = Object.keys(versions)[0]
+        // markLowVersionValidators only fires once a 2/3 supermajority has
+        // upgraded (a proxy for GetMinJoinLast advancing).
+        const latestIsSupermajority =
+          versions[latestVersion] > Math.floor((actNodes.length * 2) / 3)
 
+        // findOldActor / findLowBondActor: single oldest and single
+        // lowest-bond node, skipping any that already requested to leave.
+        let lowestBond = null
+        let lowestBondIndex
+        let oldest = this.chainsHeight?.THOR ?? Number.MAX_SAFE_INTEGER
+        let oldestIndex
+        const lowVersions = []
         for (let i = 0; i < actNodes.length; i++) {
           const el = actNodes[i]
-          if (+el.slash_points > highestSlash) {
-            highestSlash = +el.slash_points
-          }
 
           if (el.status_since < oldest && el.requested_to_leave === false) {
             oldest = el.status_since
@@ -878,79 +896,118 @@ export default {
           }
 
           if (
-            (!lowestBond || lowestBond > +el.total_bond) &&
+            (lowestBond === null || lowestBond > +el.total_bond) &&
             el.requested_to_leave === false
           ) {
             lowestBond = +el.total_bond
+            lowestBondIndex = i
           }
 
           if (
-            Object.keys(versions).length > 1 &&
-            el.version !== Object.keys(versions)[0] &&
-            Object.keys(versions)[0] > Math.floor((actNodes.length * 2) / 3)
+            latestIsSupermajority &&
+            el.version !== latestVersion &&
+            el.requested_to_leave === false
           ) {
             lowVersions.push(el.node_address)
           }
         }
 
-        let extraChurn = 0
-        let leavingCount = 0
-        let leavingBond = 0
+        // findBadActors: score = (blocksSinceChurn * 1e8) / slashPoints.
+        // The (blocksSinceChurn * 1e8) factor is identical for every active
+        // node so it cancels out of the comparison, leaving the ranking a
+        // function of slash points only. A node is "bad" when its score is at
+        // or below avgScore / BadValidatorRedline, where avgScore divides the
+        // offenders' total score by the full active-set size. Only nodes above
+        // MinSlashPointsForBadValidator are considered; if none cross the
+        // redline, the single worst offender is churned out.
+        const badActors = new Set()
+        if (badRedline > 0) {
+          const offenders = actNodes.filter(
+            (n) => +n.slash_points > minSlashForBad
+          )
+          if (offenders.length > 0) {
+            const invSum = offenders.reduce(
+              (s, n) => s + 1 / +n.slash_points,
+              0
+            )
+            const redline = invSum / (badRedline * actNodes.length)
+            offenders.forEach((n) => {
+              if (1 / +n.slash_points <= redline) {
+                badActors.add(n.node_address)
+              }
+            })
+            if (badActors.size === 0) {
+              const worst = offenders.reduce((a, b) =>
+                +b.slash_points > +a.slash_points ? b : a
+              )
+              badActors.add(worst.node_address)
+            }
+          }
+        }
+
+        // markLowBondActor only churns out the lowest-bond node once the
+        // active set has reached DesiredValidatorSet.
+        const atCapacity =
+          desiredValidatorSet > 0 && actNodes.length >= desiredValidatorSet
+
+        const churnType =
+          this.churnProgressValue > 0.5 ? 'churn-out' : 'churn-out-candidate'
+        let lowVersionMarked = 0
+        const marked = new Map()
+        const markLeave = (el) => {
+          if (!marked.has(el.node_address)) {
+            marked.set(el.node_address, el)
+          }
+        }
         actNodes.forEach((el, index) => {
           this.fillNodeRow(filteredNodes, el, index)
 
           filteredNodes[index].churn = []
 
-          // Add churn data
-          if (+el.total_bond === lowestBond) {
+          // Lowest bond — markLowBondActor (only once the set is at capacity)
+          if (atCapacity && index === lowestBondIndex) {
             filteredNodes[index].churn.push({
               name: 'Lowest Bond',
               icon: require('@/assets/images/cheap.svg?inline'),
-              type:
-                this.churnProgressValue > 0.5
-                  ? 'churn-out'
-                  : 'churn-out-candidate',
+              type: churnType,
             })
-            leavingBond += +el.total_bond
-            leavingCount += 1
+            markLeave(el)
           }
 
+          // Oldest active node — markOldActor
           if (index === oldestIndex) {
             filteredNodes[index].churn.push({
               name: 'Oldest',
               icon: require('@/assets/images/old.svg?inline'),
-              type:
-                this.churnProgressValue > 0.5
-                  ? 'churn-out'
-                  : 'churn-out-candidate',
+              type: churnType,
             })
-            leavingBond += +el.total_bond
-            leavingCount += 1
+            markLeave(el)
           }
 
-          if (+el.slash_points === highestSlash) {
+          // Bad behaviour — markBadActor (slash points relative to the set)
+          if (badActors.has(el.node_address)) {
             filteredNodes[index].churn.push({
-              name: 'Highest Slashes',
+              name: 'Bad Actor',
               icon: require('@/assets/images/angry.svg?inline'),
-              type:
-                this.churnProgressValue > 0.5
-                  ? 'churn-out'
-                  : 'churn-out-candidate',
+              type: churnType,
             })
-            leavingBond += +el.total_bond
-            leavingCount += 1
+            markLeave(el)
           }
 
+          // Low version — markLowVersionValidators, capped at
+          // MaxNodeToChurnOutForLowVersion per churn
           if (
             lowVersions.includes(el.node_address) &&
+            lowVersionMarked < maxLowVersion &&
             this.churnProgressValue > 0.9
           ) {
             filteredNodes[index].churn.push({
               name: 'Low Version',
               icon: require('@/assets/images/version.svg?inline'),
-              type: this.churnProgressValue > 0.9 ? 'churn-out' : '',
+              type: 'churn-out',
             })
-            extraChurn += 1
+            lowVersionMarked += 1
+            markLeave(el)
           }
 
           if (el.requested_to_leave) {
@@ -959,15 +1016,7 @@ export default {
               icon: require('@/assets/images/arrow-down-square.svg?inline'),
               type: 'leave',
             })
-
-            if (
-              this.mimirs &&
-              +this.mimirs?.DESIREDVALIDATORSET >= actNodes.length + extraChurn
-            ) {
-              extraChurn += 1
-            }
-            leavingBond += +el.total_bond
-            leavingCount += 1
+            markLeave(el)
           }
 
           if (el.runebond && el.runebond.available === true && !this.hides.runebond) {
@@ -994,8 +1043,28 @@ export default {
           }
         })
 
-        this.setExtraChurn(extraChurn)
-        this.setLeaving(leavingBond, leavingCount)
+        // findCountToRemove: a churn never removes more than the network can
+        // safely afford (~1/3, never dropping the active set below the BFT
+        // floor of 4). Nodes are prioritised the way nextVaultNodeAccounts
+        // sorts them — requested-to-leave first, then worst behaviour (highest
+        // slash points, i.e. the lowest LeaveScore).
+        const markedNodes = [...marked.values()].sort((a, b) => {
+          if (!!a.requested_to_leave !== !!b.requested_to_leave) {
+            return a.requested_to_leave ? -1 : 1
+          }
+          return +b.slash_points - +a.slash_points
+        })
+        const maxRemove = this.findMaxAbleToLeave(actNodes.length)
+        let toRemove
+        if (maxRemove === 0) {
+          toRemove = markedNodes[0]?.requested_to_leave ? 1 : 0
+        } else {
+          toRemove = Math.min(markedNodes.length, maxRemove)
+        }
+        const leaving = markedNodes.slice(0, toRemove)
+        const leavingBond = leaving.reduce((s, n) => s + +n.total_bond, 0)
+
+        this.setLeaving(leavingBond, leaving.length)
         return filteredNodes
       } else {
         return undefined
@@ -1028,7 +1097,9 @@ export default {
         stbNodes = orderBy(stbNodes, [(o) => +o.total_bond], ['desc'])
 
         const filteredNodes = []
-        const churnInNumbers = 3 + this.newNodesChurn + this.extraNodeChurn
+        // nextVaultNodeAccounts: limit = toRemove + NumberOfNewNodesPerChurn.
+        // leavingCount is the capped toRemove computed in activeNodes().
+        const churnInNumbers = this.leavingCount + this.newNodesChurn
         const remainingCount =
           +this.mimirs?.DESIREDVALIDATORSET -
           this.activeNodes?.length +
@@ -1447,8 +1518,19 @@ export default {
     setNewNodesChurn(num) {
       this.newNodesChurn = num
     },
-    setExtraChurn(num) {
-      this.extraNodeChurn = num
+    findMaxAbleToLeave(count) {
+      // Mirrors findMaxAbleToLeave in THORNode (x/thorchain/manager_validator.go):
+      // cap removals at ~1/3 of the set and never let the active set drop below
+      // the BFT floor of 4.
+      const majority = Math.floor((count * 2) / 3) + 1
+      let max = count - majority
+      if (count - max < 4) {
+        max = count - 4
+        if (max < 0) {
+          max = 0
+        }
+      }
+      return max
     },
     setTheLeastBondChurn(bond) {
       this.leastBondChurn = bond
