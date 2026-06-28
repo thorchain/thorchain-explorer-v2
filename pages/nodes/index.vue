@@ -188,7 +188,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { rcompare } from 'semver'
+import { rcompare, lt, valid } from 'semver'
 import { orderBy, countBy } from 'lodash'
 import moment from 'moment'
 import NodeTable from './component/nodeTable.vue'
@@ -224,6 +224,10 @@ export default {
       intervalId: undefined,
       secondInterval: undefined,
       churnHalted: undefined,
+      // thorchain/version: next = min join version, nextSinceHeight = the
+      // height it last changed (drives low-version churn-out, see activeNodes).
+      minJoinVersion: undefined,
+      minJoinSinceHeight: undefined,
       searchTerm: '',
       churnProgressValue: 0,
       totalAwards: undefined,
@@ -871,14 +875,19 @@ export default {
           this.mimirs?.MAXNODETOCHURNOUTFORLOWVERSION ?? 1
         )
 
-        // most popular active version (rcompare sorts highest-first)
-        const nodesVersion = actNodes.map((r) => r.version).sort(rcompare)
-        const versions = countBy(nodesVersion)
-        const latestVersion = Object.keys(versions)[0]
-        // markLowVersionValidators only fires once a 2/3 supermajority has
-        // upgraded (a proxy for GetMinJoinLast advancing).
-        const latestIsSupermajority =
-          versions[latestVersion] > Math.floor((actNodes.length * 2) / 3)
+        // findLowVersionValidators compares each node against the minimum join
+        // version (thorchain/version -> `next`). markLowVersionValidators only
+        // churns them out once ChurnOutForLowVersionBlocks have elapsed since
+        // that minimum last changed (`next_since_height`).
+        const minJoinVersion = this.minJoinVersion
+        const churnOutForLowVersionBlocks = +(
+          this.mimirs?.CHURNOUTFORLOWVERSIONBLOCKS ?? 21600
+        )
+        const lowVersionGraceElapsed =
+          valid(minJoinVersion) &&
+          this.minJoinSinceHeight != null &&
+          this.chainsHeight?.THOR >=
+            this.minJoinSinceHeight + churnOutForLowVersionBlocks
 
         // findOldActor / findLowBondActor: single oldest and single
         // lowest-bond node, skipping any that already requested to leave.
@@ -904,8 +913,9 @@ export default {
           }
 
           if (
-            latestIsSupermajority &&
-            el.version !== latestVersion &&
+            valid(minJoinVersion) &&
+            valid(el.version) &&
+            lt(el.version, minJoinVersion) &&
             el.requested_to_leave === false
           ) {
             lowVersions.push(el.node_address)
@@ -995,11 +1005,12 @@ export default {
           }
 
           // Low version — markLowVersionValidators, capped at
-          // MaxNodeToChurnOutForLowVersion per churn
+          // MaxNodeToChurnOutForLowVersion per churn, and only after the
+          // ChurnOutForLowVersionBlocks grace period has elapsed.
           if (
             lowVersions.includes(el.node_address) &&
             lowVersionMarked < maxLowVersion &&
-            this.churnProgressValue > 0.9
+            lowVersionGraceElapsed
           ) {
             filteredNodes[index].churn.push({
               name: 'Low Version',
@@ -1292,6 +1303,16 @@ export default {
     this.$api.getMimir().then(({ data }) => {
       this.mimirs = data
     })
+
+    this.$api
+      .getBlockChainVersion()
+      .then(({ data }) => {
+        this.minJoinVersion = data?.next
+        this.minJoinSinceHeight = +data?.next_since_height || 0
+      })
+      .catch((e) => {
+        console.error(e)
+      })
 
     this.intervalId = setInterval(() => {
       this.updateNodes()
