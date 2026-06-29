@@ -1776,7 +1776,14 @@ export default {
                 },
               ].filter(Boolean),
           feeRows: [],
-          technicalRows: [],
+          technicalRows: [
+            senderAddr
+              ? this.buildTechRow('From address', senderAddr, 'address')
+              : null,
+            obClearingAction.metadata?.contract?.memo
+              ? this.buildTechRow('Memo', obClearingAction.metadata.contract.memo)
+              : null,
+          ].filter(Boolean),
         }
       }
 
