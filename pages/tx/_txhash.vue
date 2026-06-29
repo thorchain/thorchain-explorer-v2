@@ -912,47 +912,22 @@ export default {
           }
         }
 
-        // Output: prefer bid sum from fin/trade events (actual DEX distribution),
-        // fall back to coin_received by user for non-fin-trade contract actions
+        // Output: aggregate all coin_received events where the receiver is the
+        // tx sender (contractAction.in[0]). This reflects what actually arrived
+        // in the sender's wallet regardless of internal contract routing.
         const cReceivedByDenom = {}
-        const finTradesForOutput = cEvents.filter(
-          (e) => e.type === 'wasm-rujira-fin/trade'
-        )
-        if (finTradesForOutput.length > 0) {
-          // bid = output token (base token) going to takers; only count real fills (offer > 0)
-          // Infer output denom from the swap action's outbound asset
-          const swapOutDenom =
-            midgardSwap?.out
-              ?.flatMap((o) => o.coins || [])
-              .find((c) => c.asset)
-              ?.asset?.toLowerCase() || ''
-          finTradesForOutput.forEach((e) => {
-            const a = cToAttrs(e)
-            const bid = parseInt(a.bid || 0)
-            const offer = parseInt(a.offer || 0)
-            if (bid > 0 && offer > 0 && swapOutDenom) {
-              cReceivedByDenom[swapOutDenom] =
-                (cReceivedByDenom[swapOutDenom] || 0) + bid
-            }
-          })
-        }
-        if (Object.keys(cReceivedByDenom).length === 0 && cUserAddr) {
-          // Fallback: aggregate coin_received by user
+        const cSenderAddr = contractAction.in?.[0]?.address || ''
+        if (cSenderAddr) {
           cEvents
             .filter((e) => e.type === 'coin_received')
             .map(cToAttrs)
-            .filter(
-              (a) =>
-                a.receiver === cUserAddr &&
-                a.amount &&
-                !/^[\d]+rune$/.test(a.amount)
-            )
+            .filter((a) => a.receiver === cSenderAddr && a.amount)
             .forEach((a) => {
               a.amount.split(',').forEach((part) => {
                 const p = part.trim()
                 const amt = parseInt(p) || 0
                 const denom = p.replace(/^\d+/, '').trim()
-                if (denom && amt > 0 && !/^rune$/i.test(denom))
+                if (denom && amt > 0)
                   cReceivedByDenom[denom] =
                     (cReceivedByDenom[denom] || 0) + amt
               })
@@ -1479,7 +1454,8 @@ export default {
             : null,
           this.buildTechRow(
             'Memo',
-            this.getStackDisplayValue(actionStacks, 'Memo')
+            contractAction?.metadata?.contract?.memo ||
+              this.getStackDisplayValue(actionStacks, 'Memo')
           ),
           this.buildTechRow(
             'Inbound stage',
@@ -1641,6 +1617,168 @@ export default {
         )
       )
         return null
+
+      // Order Book Clearing: any contract action has memo "OB Clearing"
+      const obClearingAction = contractActions.find(
+        (a) => a.metadata?.contract?.memo === 'OB Clearing'
+      )
+      if (obClearingAction) {
+        const allEvents = contractActions.flatMap(
+          (a) => a.metadata?.contract?.contractEvents || []
+        )
+        const toAttrs = (e) =>
+          Object.fromEntries(
+            (e.attributes || []).map(({ key, value }) => [key, value])
+          )
+        const hasError = contractActions.some(
+          (a) => (a.metadata?.contract?.code ?? 0) > 0
+        )
+        const logs = obClearingAction.metadata?.contract?.logs
+        const status = hasError
+          ? { label: 'Failed', tone: 'red' }
+          : { label: 'Success', tone: 'green' }
+        const date = obClearingAction.date
+        const timestamp = date ? moment.unix(parseInt(date) / 1e9) : null
+        const height = parseInt(obClearingAction.height)
+
+        // FIN pair from first trade event
+        const firstTrade = allEvents.find(
+          (e) => e.type === 'wasm-rujira-fin/trade'
+        )
+        const finPairAddr = firstTrade
+          ? toAttrs(firstTrade)._contract_address || ''
+          : ''
+        const finPairLabel =
+          getRujiraContractLabel(finPairAddr) ||
+          this.formatAddress(finPairAddr)
+
+        // Count non-CCL fills and compute avg rate
+        const nonCCLTrades = allEvents
+          .filter((e) => e.type === 'wasm-rujira-fin/trade')
+          .map(toAttrs)
+          .filter((a) => !String(a.price || '').startsWith('ccl:'))
+        const fillCount = nonCCLTrades.length
+        const rates = nonCCLTrades
+          .map((a) => parseFloat(a.rate))
+          .filter((r) => !isNaN(r))
+        const avgRate =
+          rates.length
+            ? rates.reduce((s, r) => s + r, 0) / rates.length
+            : null
+
+        // Input/output: what the sender address actually sends and receives
+        const senderAddr = obClearingAction.in?.[0]?.address || ''
+        const sumByDenom = (events, addrKey, addrVal) => {
+          const byDenom = {}
+          events
+            .filter((e) => e.type === 'coin_spent' || e.type === 'coin_received')
+            .map(toAttrs)
+            .filter((a) => a[addrKey] === addrVal && a.amount)
+            .forEach((a) => {
+              a.amount.split(',').forEach((part) => {
+                const p = part.trim()
+                const amt = parseInt(p) || 0
+                const denom = p.replace(/^\d+/, '').trim()
+                if (denom && amt > 0)
+                  byDenom[denom] = (byDenom[denom] || 0) + amt
+              })
+            })
+          return byDenom
+        }
+        const spentByDenom = sumByDenom(allEvents, 'spender', senderAddr)
+        const receivedByDenom = sumByDenom(allEvents, 'receiver', senderAddr)
+
+        const denomToAssetStr = (denom) =>
+          denom === 'rune' ? 'THOR.RUNE' : securedToAsset(denom).toUpperCase()
+
+        const primaryInDenom = Object.keys(spentByDenom)[0] || ''
+        const primaryInAmt = spentByDenom[primaryInDenom] || 0
+        const primaryInAssetStr = primaryInDenom ? denomToAssetStr(primaryInDenom) : ''
+        const primaryInAsset = primaryInAssetStr ? assetFromString(primaryInAssetStr) : null
+        const primaryInTicker = primaryInAsset?.ticker || primaryInDenom
+
+        const primaryOutDenom =
+          Object.keys(receivedByDenom).find((d) => d !== primaryInDenom) ||
+          Object.keys(receivedByDenom)[0] ||
+          ''
+        const primaryOutAmt = receivedByDenom[primaryOutDenom] || 0
+        const primaryOutAssetStr = primaryOutDenom ? denomToAssetStr(primaryOutDenom) : ''
+        const primaryOutAsset = primaryOutAssetStr ? assetFromString(primaryOutAssetStr) : null
+        const primaryOutTicker = primaryOutAsset?.ticker || primaryOutDenom
+
+        return {
+          rawEvents: allEvents,
+          rawMsg: obClearingAction.metadata?.contract?.msg || null,
+          title: `Order Book Clearing · ${finPairLabel}`,
+          metaLabel: `Order Book Clearing · ${finPairLabel}`,
+          status,
+          affiliateAddress: '',
+          actionTypeTitle: 'contract',
+          hasContractAction: true,
+          priority: true,
+          labels: [],
+          pairDisplay: null,
+          input: primaryInAmt
+            ? {
+                asset: primaryInAssetStr || null,
+                name: primaryInTicker,
+                badge: this.getNetworkBadge(primaryInAsset) || '',
+                amount: `${this.baseAmountFormatOrZero(primaryInAmt)} ${primaryInTicker}`,
+                usd: this.formatUsdValue(
+                  this.amountToUSD(primaryInAssetStr, primaryInAmt, this.pools)
+                ),
+              }
+            : null,
+          output: primaryOutAmt
+            ? {
+                asset: primaryOutAssetStr || null,
+                name: primaryOutTicker,
+                badge: this.getNetworkBadge(primaryOutAsset) || '',
+                amount: `${this.baseAmountFormatOrZero(primaryOutAmt)} ${primaryOutTicker}`,
+                usd: this.formatUsdValue(
+                  this.amountToUSD(primaryOutAssetStr, primaryOutAmt, this.pools)
+                ),
+              }
+            : null,
+          metricRows: [
+            fillCount
+              ? { label: 'Fills', value: String(fillCount) }
+              : null,
+            avgRate
+              ? { label: 'Avg Rate', value: avgRate.toFixed(6) }
+              : null,
+          ].filter(Boolean),
+          detailRows: [
+            { label: 'Product', value: 'RUJI Trade', tone: this.getProductTone('RUJI Trade'), type: 'product' },
+            { label: 'Action', value: 'Order Book Clearing', tone: this.getContractTypeTone('OB Clearing'), type: 'product' },
+            { label: 'FIN Pair', value: finPairLabel },
+            { label: 'Status', value: status.label, type: 'status' },
+            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
+            height ? { label: 'Block', value: `#${this.normalFormat(height)}` } : null,
+          ].filter(Boolean),
+          lifecycleRows: hasError
+            ? [{ icon: 'WarningIcon', title: 'OB Clearing failed', body: logs || '' }]
+            : [
+                fillCount
+                  ? {
+                      icon: 'ArrowIcon',
+                      iconRotate: 90,
+                      title: `${fillCount} order${fillCount !== 1 ? 's' : ''} filled`,
+                      body: avgRate
+                        ? `avg rate ${avgRate.toFixed(6)} on ${finPairLabel}`
+                        : finPairLabel,
+                    }
+                  : null,
+                {
+                  icon: 'CheckIcon',
+                  title: 'Order Book Clearing complete',
+                  body: finPairLabel,
+                },
+              ].filter(Boolean),
+          feeRows: [],
+          technicalRows: [],
+        }
+      }
 
       // Limit order placement: single contract action with msg.order
       const singleAction =
@@ -4092,6 +4230,8 @@ export default {
     },
     getContractActionType(contractAction) {
       if (!contractAction) return null
+      if (contractAction.metadata?.contract?.memo === 'OB Clearing')
+        return 'OB Clearing'
       const msg = contractAction.metadata?.contract?.msg || {}
       if (msg.order) return 'Limit Order'
       if (msg.swap) return 'Market Order'
@@ -4117,6 +4257,7 @@ export default {
       return null
     },
     getContractTypeTone(type) {
+      if (type === 'OB Clearing') return 'blue'
       if (type === 'Scale Order') return 'gold'
       if (type === 'Limit Order') return 'gold'
       if (type === 'Execute Proposal') return 'blue'
