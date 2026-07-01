@@ -1916,6 +1916,29 @@ export default {
           })
         }
 
+        // coin_received by sender for non-scale (immediate CCL fills)
+        const limitReceivedByDenom = {}
+        if (!isScaleOrder && userAddress) {
+          events
+            .filter((e) => e.type === 'coin_received')
+            .map(toAttrs)
+            .filter((a) => a.receiver === userAddress && a.amount)
+            .forEach((a) => {
+              a.amount.split(',').forEach((part) => {
+                const p = part.trim()
+                const amt = parseInt(p) || 0
+                const denom = p.replace(/^\d+/, '').trim()
+                if (denom && denom !== fundsDenom && amt > 0)
+                  limitReceivedByDenom[denom] = (limitReceivedByDenom[denom] || 0) + amt
+              })
+            })
+        }
+        const limitRecvDenom = Object.keys(limitReceivedByDenom)[0] || ''
+        const limitRecvAmt = limitReceivedByDenom[limitRecvDenom] || 0
+        const limitRecvAssetStr = limitRecvDenom === 'rune' ? 'THOR.RUNE' : (limitRecvDenom ? securedToAsset(limitRecvDenom).toUpperCase() : '')
+        const limitRecvAssetParsed = limitRecvAssetStr ? assetFromString(limitRecvAssetStr) : null
+        const limitRecvTicker = limitRecvAssetParsed?.ticker || limitRecvDenom
+
         // Swap-style input/output for scale orders
         // Buy orders: user spends quote (USDC), receives base (ETH) on fill
         // Sell orders: user spends base (ETH), receives quote (USDC) on fill
@@ -1972,13 +1995,21 @@ export default {
                   this.amountToUSD(scaleInAssetStr, fundsAmount, this.pools)
                 ),
               }
-            : {
-                asset: null,
-                name: 'User',
-                badge: userAddress ? this.formatAddress(userAddress) : '',
-                amount: `${orderCount} order${orderCount !== 1 ? 's' : ''}`,
-                usd: null,
-              },
+            : fundsAmount
+              ? {
+                  asset: fundsAssetStr || null,
+                  name: fundsTicker || 'User',
+                  badge: this.getNetworkBadge(fundsAssetParsed) || '',
+                  amount: `${this.baseAmountFormatOrZero(fundsAmount)} ${fundsTicker}`,
+                  usd: this.formatUsdValue(this.amountToUSD(fundsAssetStr, fundsAmount, this.pools)),
+                }
+              : {
+                  asset: null,
+                  name: 'User',
+                  badge: userAddress ? this.formatAddress(userAddress) : '',
+                  amount: `${orderCount} order${orderCount !== 1 ? 's' : ''}`,
+                  usd: null,
+                },
           output: isScaleOrder
             ? {
                 asset: scaleOutAssetStr || null,
@@ -1991,17 +2022,25 @@ export default {
                   this.amountToUSD(scaleOutAssetStr, totalReturnRaw, this.pools)
                 ),
               }
-            : {
-                asset: null,
-                name: 'FIN Pair',
-                badge: contractLabel,
-                amount: cclFillCount
-                  ? `${cclFillCount} fill${cclFillCount !== 1 ? 's' : ''} · avg ${avgFillRate.toFixed(2)}`
-                  : priceList
-                    ? `At ${priceList}`
-                    : 'Placed',
-                usd: null,
-              },
+            : limitRecvAmt
+              ? {
+                  asset: limitRecvAssetStr || null,
+                  name: limitRecvTicker,
+                  badge: this.getNetworkBadge(limitRecvAssetParsed) || '',
+                  amount: `${this.baseAmountFormatOrZero(limitRecvAmt)} ${limitRecvTicker}`,
+                  usd: this.formatUsdValue(this.amountToUSD(limitRecvAssetStr, limitRecvAmt, this.pools)),
+                }
+              : {
+                  asset: null,
+                  name: 'FIN Pair',
+                  badge: contractLabel,
+                  amount: cclFillCount
+                    ? `${cclFillCount} fill${cclFillCount !== 1 ? 's' : ''} · avg ${avgFillRate.toFixed(2)}`
+                    : priceList
+                      ? `At ${priceList}`
+                      : 'Placed',
+                  usd: null,
+                },
           metricRows: isScaleOrder
             ? [
                 cclFillCount
@@ -2541,6 +2580,29 @@ export default {
         const fundsAsset = fundsStr.replace(/^[\d]+/, '').trim()
         const actionType = isBond ? 'Liquid Stake' : 'Liquid Unstake'
 
+        // coin_received by user (liquid staking tokens on bond, underlying on unbond)
+        const liquidReceivedByDenom = {}
+        if (userAddress) {
+          events
+            .filter((e) => e.type === 'coin_received')
+            .map(toAttrs)
+            .filter((a) => a.receiver === userAddress && a.amount)
+            .forEach((a) => {
+              a.amount.split(',').forEach((part) => {
+                const p = part.trim()
+                const amt = parseInt(p) || 0
+                const denom = p.replace(/^\d+/, '').trim()
+                if (denom && amt > 0)
+                  liquidReceivedByDenom[denom] = (liquidReceivedByDenom[denom] || 0) + amt
+              })
+            })
+        }
+        const liqRecvDenom = Object.keys(liquidReceivedByDenom)[0] || ''
+        const liqRecvAmt = liquidReceivedByDenom[liqRecvDenom] || 0
+        const liqRecvAssetStr = liqRecvDenom === 'rune' ? 'THOR.RUNE' : (liqRecvDenom ? securedToAsset(liqRecvDenom).toUpperCase() : '')
+        const liqRecvAssetParsed = liqRecvAssetStr ? assetFromString(liqRecvAssetStr) : null
+        const liqRecvTicker = liqRecvAssetParsed?.ticker || liqRecvDenom
+
         return {
           rawEvents: events,
           rawMsg: action?.metadata?.contract?.msg || null,
@@ -2560,17 +2622,25 @@ export default {
               : '-',
             usd: null,
           },
-          output: {
-            asset: null,
-            name: contractLabel,
-            badge: productLabel,
-            amount: sharesRaw
-              ? `${this.baseAmountFormatOrZero(sharesRaw)} shares`
-              : isBond
-                ? 'Bonded'
-                : 'Unbonded',
-            usd: null,
-          },
+          output: liqRecvAmt
+            ? {
+                asset: liqRecvAssetStr || null,
+                name: liqRecvTicker,
+                badge: this.getNetworkBadge(liqRecvAssetParsed) || '',
+                amount: `${this.baseAmountFormatOrZero(liqRecvAmt)} ${liqRecvTicker}`,
+                usd: this.formatUsdValue(this.amountToUSD(liqRecvAssetStr, liqRecvAmt, this.pools)),
+              }
+            : {
+                asset: null,
+                name: contractLabel,
+                badge: productLabel,
+                amount: sharesRaw
+                  ? `${this.baseAmountFormatOrZero(sharesRaw)} shares`
+                  : isBond
+                    ? 'Bonded'
+                    : 'Unbonded',
+                usd: null,
+              },
           metricRows: [
             amountRaw
               ? {
@@ -2679,7 +2749,30 @@ export default {
           (e) => e.type === 'wasm-rujira-staking/account.claim'
         )
         const claimAttrs = claimEvent ? toAttrs(claimEvent) : {}
-        const claimedAmount = parseInt(claimAttrs.amount) || 0
+        const claimedAmountFallback = parseInt(claimAttrs.amount) || 0
+
+        // coin_received by user (more reliable than wasm event)
+        const claimReceivedByDenom = {}
+        if (userAddress) {
+          events
+            .filter((e) => e.type === 'coin_received')
+            .map(toAttrs)
+            .filter((a) => a.receiver === userAddress && a.amount)
+            .forEach((a) => {
+              a.amount.split(',').forEach((part) => {
+                const p = part.trim()
+                const amt = parseInt(p) || 0
+                const denom = p.replace(/^\d+/, '').trim()
+                if (denom && amt > 0)
+                  claimReceivedByDenom[denom] = (claimReceivedByDenom[denom] || 0) + amt
+              })
+            })
+        }
+        const claimRecvDenom = Object.keys(claimReceivedByDenom)[0] || 'rune'
+        const claimRecvAmt = claimReceivedByDenom[claimRecvDenom] || claimedAmountFallback
+        const claimAssetStr = claimRecvDenom === 'rune' ? 'THOR.RUNE' : securedToAsset(claimRecvDenom).toUpperCase()
+        const claimAssetParsed = assetFromString(claimAssetStr)
+        const claimTicker = claimAssetParsed?.ticker || 'RUNE'
 
         return {
           rawEvents: events,
@@ -2700,23 +2793,21 @@ export default {
             usd: null,
           },
           output: {
-            asset: 'THOR.RUNE',
-            name: 'RUNE',
-            badge: this.getNetworkBadge(null) || '',
-            amount: claimedAmount
-              ? `${this.baseAmountFormatOrZero(claimedAmount)} RUNE`
+            asset: claimAssetStr,
+            name: claimTicker,
+            badge: this.getNetworkBadge(claimAssetParsed) || '',
+            amount: claimRecvAmt
+              ? `${this.baseAmountFormatOrZero(claimRecvAmt)} ${claimTicker}`
               : '-',
-            usd: claimedAmount
-              ? this.formatUsdValue(
-                  this.amountToUSD('THOR.RUNE', claimedAmount, this.pools)
-                )
+            usd: claimRecvAmt
+              ? this.formatUsdValue(this.amountToUSD(claimAssetStr, claimRecvAmt, this.pools))
               : null,
           },
           metricRows: [
-            claimedAmount
+            claimRecvAmt
               ? {
                   label: 'Claimed',
-                  value: `${this.baseAmountFormatOrZero(claimedAmount)} RUNE`,
+                  value: `${this.baseAmountFormatOrZero(claimRecvAmt)} ${claimTicker}`,
                 }
               : null,
             timestamp
@@ -3591,6 +3682,24 @@ export default {
         const underlyingRaw = parseInt(vaultAttrs.amount || 0)
         const sharesRaw = parseInt(vaultAttrs.shares || fundsAmountRaw || 0)
 
+        // For deposit: find vault shares received by user (denom includes 'ghost-vault')
+        // For withdraw: userCoinReceived already found above (underlying token)
+        let depositSharesAmt = 0
+        let depositSharesDenom = ''
+        if (isGhostDeposit && userAddress) {
+          const depositCoinReceived = events.find(
+            (e) =>
+              e.type === 'coin_received' &&
+              (e.attributes || []).some((a) => a.key === 'receiver' && a.value === userAddress) &&
+              (e.attributes || []).some((a) => a.key === 'amount' && a.value.includes('ghost-vault'))
+          )
+          const depositAmtStr = depositCoinReceived
+            ? ((e) => (e.attributes || []).find((a) => a.key === 'amount')?.value || '')(depositCoinReceived)
+            : ''
+          depositSharesAmt = parseInt(depositAmtStr) || 0
+          depositSharesDenom = depositAmtStr.replace(/^\d+/, '').trim()
+        }
+
         const actionType = isGhostWithdraw
           ? 'Ghost Vault Withdraw'
           : 'Ghost Vault Deposit'
@@ -3624,27 +3733,35 @@ export default {
                 : '-',
             usd: null,
           },
-          output: {
-            asset: isGhostWithdraw
-              ? underlyingAssetParsed
-                ? underlyingAssetStr
-                : null
-              : null,
-            name: isGhostWithdraw ? underlyingTicker : 'Shares minted',
-            badge: isGhostWithdraw
-              ? userAddress
-                ? this.formatAddress(userAddress)
-                : ''
-              : vaultName,
-            amount: isGhostWithdraw
-              ? underlyingRaw
-                ? this.baseAmountFormatOrZero(underlyingRaw)
-                : 'Withdrawn'
-              : sharesRaw
-                ? `${this.baseAmountFormatOrZero(sharesRaw)} shares`
-                : 'Deposited',
-            usd: null,
-          },
+          output: isGhostWithdraw
+            ? {
+                asset: underlyingAssetParsed ? underlyingAssetStr : null,
+                name: underlyingTicker,
+                badge: this.getNetworkBadge(underlyingAssetParsed) || (userAddress ? this.formatAddress(userAddress) : ''),
+                amount: underlyingRaw
+                  ? `${this.baseAmountFormatOrZero(underlyingRaw)} ${underlyingTicker}`
+                  : 'Withdrawn',
+                usd: underlyingRaw
+                  ? this.formatUsdValue(this.amountToUSD(underlyingAssetStr, underlyingRaw, this.pools))
+                  : null,
+              }
+            : depositSharesAmt
+              ? {
+                  asset: null,
+                  name: 'Vault shares',
+                  badge: vaultName,
+                  amount: `${this.baseAmountFormatOrZero(depositSharesAmt)} shares`,
+                  usd: null,
+                }
+              : {
+                  asset: null,
+                  name: 'Shares minted',
+                  badge: vaultName,
+                  amount: sharesRaw
+                    ? `${this.baseAmountFormatOrZero(sharesRaw)} shares`
+                    : 'Deposited',
+                  usd: null,
+                },
           metricRows: [
             sharesRaw
               ? {
