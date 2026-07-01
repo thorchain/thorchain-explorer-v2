@@ -4691,7 +4691,9 @@ export default {
       this.isLoading = false
 
       const nt = md?.actions?.find((a) => a.type === 'send')
-      const memo = this.parseMemo(td?.tx?.tx?.memo)
+      // Fall back to the tx-status memo: for early inbound-stage txs the THORNode
+      // detail endpoint (td) isn't populated yet, but getTxStatus (ts) is.
+      const memo = this.parseMemo(td?.tx?.tx?.memo || ts?.tx?.memo)
       // TODO: add proper error handling
       if (nt && (!memo.type || memo.type === 'unknown')) {
         this.createNativeTx(nt)
@@ -4798,7 +4800,9 @@ export default {
     },
     async createTxState(midgardAction, thorTx, thorStatus, thorHeader, pools) {
       this.rawActions = midgardAction?.actions ?? null
-      const memo = this.parseMemo(thorTx?.tx?.tx?.memo)
+      // Fall back to the tx-status memo: for early inbound-stage txs the THORNode
+      // detail endpoint (thorTx) isn't populated yet, but thorStatus is.
+      const memo = this.parseMemo(thorTx?.tx?.tx?.memo || thorStatus?.tx?.memo)
 
       if (memo.type === 'outbound') {
         this.gotoTx(memo.hash)
@@ -6371,7 +6375,7 @@ export default {
               observations: thorStatus?.stages?.inbound_observed?.final_count,
               observationsCompleted:
                 thorStatus?.stages?.inbound_observed?.completed,
-              finalisedHeight: thorTx.finalised_height,
+              finalisedHeight: thorTx?.finalised_height,
               inboundObserved:
                 thorStatus?.stages?.inbound_observed?.completed || false,
               inboundConfCount:
