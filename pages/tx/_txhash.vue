@@ -5657,6 +5657,8 @@ export default {
         height: action?.height,
         memo,
         reason,
+        mimirKey: action?.metadata?.mimir?.key,
+        mimirValue: action?.metadata?.mimir?.value,
         done: true,
       }
 
@@ -5705,6 +5707,29 @@ export default {
         }
 
         outs[0] = { ...outs[0], hide: true }
+      }
+
+      if (action.type === 'mimir') {
+        const nodeAddress = action?.in?.[0]?.address
+        ins = [
+          {
+            address: nodeAddress,
+            from: nodeAddress,
+            txid: action?.in?.[0]?.txID,
+            done: true,
+          },
+        ]
+        const mimirKey = action?.metadata?.mimir?.key
+        const mimirValue = action?.metadata?.mimir?.value
+        outs = [
+          {
+            voteKey: mimirKey,
+            voteValue: mimirValue,
+            icon: require('@/assets/images/vote.svg?inline'),
+            class: 'pad-icon',
+            done: true,
+          },
+        ]
       }
 
       return {

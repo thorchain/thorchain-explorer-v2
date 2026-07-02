@@ -79,6 +79,7 @@ export default {
           return 'red-type'
         case 'switch':
         case 'addLiquidity':
+        case 'mimir':
           return 'alert-type'
         default:
           return 'default-type'

@@ -34,6 +34,8 @@ export function buildCardDetails(cardBase, ctx) {
         amountUSD:
           a?.amountUSD ?? ctx.amountToUSD(a?.asset, a?.amount, ctx.pools),
         text: a?.text,
+        voteKey: a?.voteKey,
+        voteValue: a?.voteValue,
         icon: a?.icon,
         address: a?.address,
         borderColor: a?.borderColor,
@@ -315,6 +317,16 @@ export function buildActionAccordion(accordionsAction, ctx) {
       key: 'Code',
       value: `${action?.code}`,
       is: action?.code,
+    },
+    {
+      key: 'Mimir Key',
+      value: action?.mimirKey,
+      is: action?.mimirKey,
+    },
+    {
+      key: 'Mimir Value',
+      value: `${action?.mimirValue}`,
+      is: action?.mimirValue != null && action?.mimirValue !== '',
     },
     {
       key: 'Swap Limit',

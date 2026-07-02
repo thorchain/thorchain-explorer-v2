@@ -120,7 +120,13 @@
             :style="getBorderColor(o.asset)"
           >
             <div class="outbound-info">
-              <template v-if="o.text">
+              <template v-if="o.voteKey">
+                <div class="vote-info">
+                  <span class="mono vote-key">{{ o.voteKey }}</span>
+                  <span class="mini-bubble vote-value">{{ o.voteValue }}</span>
+                </div>
+              </template>
+              <template v-else-if="o.text">
                 <span class="mono sec-color">{{ o.text }}</span>
               </template>
               <template v-else-if="o.address">
@@ -641,6 +647,24 @@ $border-size: 2px;
           @include md {
             font-size: $font-size-mobile;
           }
+        }
+      }
+
+      .vote-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+
+        .vote-key {
+          font-size: $font-size-xs;
+          color: var(--sec-font-color);
+        }
+
+        .vote-value {
+          padding: $space-3 $space-8;
+          font-size: $font-size-xs;
+          border-radius: $radius-sm;
         }
       }
 

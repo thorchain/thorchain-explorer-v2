@@ -478,6 +478,20 @@
         </div>
       </template>
     </div>
+
+    <div
+      v-else-if="row && type === 'mimir' && row.metadata.mimir"
+      :class="['action-cell', { 'no-border': noBorder, wrap: wrap }]"
+    >
+      <div class="asset-cell">
+        <gear-icon class="active-icon"></gear-icon>
+        <span class="asset-name mono">{{ row.metadata.mimir.key }}</span>
+      </div>
+      <right-arrow class="action-type" />
+      <div class="asset-cell">
+        <span class="mini-bubble info">{{ row.metadata.mimir.value }}</span>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -492,6 +506,7 @@ import NodeIcon from '~/assets/images/node.svg?inline'
 import WalletIcon from '~/assets/images/wallet.svg?inline'
 import SubtractIcon from '~/assets/images/subtract.svg?inline'
 import StreamIcon from '~/assets/images/stream.svg?inline'
+import GearIcon from '~/assets/images/settings.svg?inline'
 import { assetFromString, parseMemoToTxType } from '~/utils'
 import {
   getRujiraContractLabel,
@@ -513,6 +528,7 @@ export default {
     SubtractIcon,
     RedoIcon,
     StreamIcon,
+    GearIcon,
   },
   props: {
     row: {
