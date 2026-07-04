@@ -59,7 +59,7 @@
               </a>
               <Ip v-tooltip="props.row.ip" :str-copy="props.row.ip" />
               <a :style="getHighlightStyle(props.row.address)" style="height: 1rem"
-                :href="`https://thornode.ninerealms.com/thorchain/node/${props.row.address}`" target="_blank">
+                :href="`https://gateway.liquify.com/chain/thorchain_api/thorchain/node/${props.row.address}`" target="_blank">
                 <NodeIcon class="table-icon item-link" />
               </a>
             </div>
