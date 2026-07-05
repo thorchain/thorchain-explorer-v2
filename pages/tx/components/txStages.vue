@@ -203,7 +203,10 @@ export default {
       }
 
       this.outbound.remOutSeconds = moment
-        .duration(this.outbound.remOutboundHeight * 5.5, 'seconds')
+        .duration(
+          this.outbound.remOutboundHeight * this.blockSeconds('THOR'),
+          'seconds'
+        )
         .humanize()
     },
   },
