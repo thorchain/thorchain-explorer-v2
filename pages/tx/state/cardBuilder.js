@@ -402,11 +402,13 @@ export function buildOutboundAccordions(accordionsOut, ctx) {
   accordionsOut.forEach((a, i) => {
     const outboundStages = ctx.getOutboundStages(a)
     let delay = 0
-    if (a.outboundETA > 0) {
-      delay = ctx.blockSeconds('THOR') * a.outboundETA
-    }
-    if (delay === 0) {
-      delay = a.outboundDelayRemaining
+    if (!a.done) {
+      if (a.outboundETA > 0) {
+        delay = ctx.blockSeconds('THOR') * a.outboundETA
+      }
+      if (delay === 0) {
+        delay = a.outboundDelayRemaining
+      }
     }
 
     const accordionOut = {
@@ -454,14 +456,14 @@ export function buildOutboundAccordions(accordionsOut, ctx) {
             value: moment
               .duration(ctx.blockSeconds('THOR') * a.outboundETA, 'seconds')
               .humanize(),
-            is: a.outboundETA > 0,
+            is: !a.done && a.outboundETA > 0,
           },
           {
             key: 'Outbound Delay Est.',
             value: moment
               .duration(a.outboundDelayRemaining, 'seconds')
               .humanize(),
-            is: a.outboundDelayRemaining,
+            is: !a.done && a.outboundDelayRemaining,
           },
           {
             key: 'Outbound Delay Est.',
@@ -472,7 +474,7 @@ export function buildOutboundAccordions(accordionsOut, ctx) {
               },
             ],
             type: 'bubble',
-            is: a.outboundSigned === false && a.outboundETA <= 0,
+            is: !a.done && a.outboundSigned === false && a.outboundETA <= 0,
           },
           {
             key: 'Outbound Stage',

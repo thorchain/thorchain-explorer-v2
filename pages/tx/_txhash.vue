@@ -4900,6 +4900,21 @@ export default {
 
       return !inboundFinalised || !actionFinalised || !outboundFinalised
     },
+    // Remaining THOR blocks until the scheduled outbound; undefined when the
+    // outbound is already signed or the current height isn't known, so the
+    // absolute schedule height never renders as a bogus multi-year ETA.
+    getScheduledOutboundETA(thorStatus) {
+      const outboundSigned = thorStatus?.stages?.outbound_signed
+      const currentHeight = this.thorHeight || this.chainsHeight?.THOR
+      if (
+        !outboundSigned?.scheduled_outbound_height ||
+        outboundSigned.completed ||
+        !currentHeight
+      ) {
+        return undefined
+      }
+      return outboundSigned.scheduled_outbound_height - currentHeight
+    },
     getBuilderContext() {
       return {
         parseMemo: this.parseMemo.bind(this),
@@ -5442,9 +5457,7 @@ export default {
             : null,
           outboundSigned:
             thorStatus?.stages.outbound_signed?.completed ?? false,
-          outboundETA:
-            thorStatus?.stages.outbound_signed?.scheduled_outbound_height -
-            this.thorHeight,
+          outboundETA: this.getScheduledOutboundETA(thorStatus),
           done: thorStatus?.stages?.outbound_signed?.completed === true,
         },
       ]
@@ -5910,9 +5923,7 @@ export default {
             affiliateName: memo.affiliate,
             affiliateFee: sumAffiliateFee(memo.fee),
             outboundDelayRemaining: outboundDelayRemaining || 0,
-            outboundETA:
-              thorStatus?.stages.outbound_signed?.scheduled_outbound_height -
-              this.thorHeight,
+            outboundETA: this.getScheduledOutboundETA(thorStatus),
             outboundSigned:
               thorStatus?.stages.outbound_signed?.completed ?? false,
             refundReason: isRefund
@@ -6055,12 +6066,7 @@ export default {
         (thorStatus?.stages.outbound_delay?.remaining_delay_blocks ?? 0) *
           this.blockSeconds('THOR')
 
-      const outboundETA =
-        this.thorHeight <
-        thorStatus?.stages.outbound_signed?.scheduled_outbound_height
-          ? thorStatus?.stages.outbound_signed?.scheduled_outbound_height -
-            this.thorHeight
-          : 0
+      const outboundETA = this.getScheduledOutboundETA(thorStatus)
 
       const outActions = []
       if (isOut) {
@@ -6606,9 +6612,7 @@ export default {
               delayBlocksRemaining:
                 thorStatus?.stages.outbound_delay?.remaining_delay_blocks || 0,
               outboundDelayRemaining: outboundDelayRemaining || 0,
-              outboundETA:
-                thorStatus?.stages.outbound_signed?.scheduled_outbound_height -
-                this.thorHeight,
+              outboundETA: this.getScheduledOutboundETA(thorStatus),
               outboundSigned:
                 thorStatus?.stages.outbound_signed?.completed ?? undefined,
               done:
