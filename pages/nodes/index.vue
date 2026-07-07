@@ -239,10 +239,6 @@ export default {
       leavingCount: 0,
       bRuneContract:
         'thor1enhmz57mpn4umspa8hqgqwwqpe02q4hpqmqr0k2zftxr8fu3nxmqjy3tqx',
-      bRuneWhitelistedNodes: [],
-      bRuneWhitelistedNodeBonds: {},
-      bRuneState: undefined,
-      bRuneError: undefined,
       hides: {
         isp: false,
         score: true,
@@ -1047,7 +1043,6 @@ export default {
               iconSrc: require('@/assets/images/assets/brune.png'),
               type: 'brune',
               bRuneWhitelisted: bRuneRow.bRuneWhitelisted,
-              bRuneWhitelistedBond: bRuneRow.bRuneWhitelistedBond,
               bRuneWhitelistsContract: bRuneRow.bRuneWhitelistsContract,
               bRuneBond: bRuneRow.bRuneBond,
             })
@@ -1211,7 +1206,6 @@ export default {
               iconSrc: require('@/assets/images/assets/brune.png'),
               type: 'brune',
               bRuneWhitelisted: bRuneRow.bRuneWhitelisted,
-              bRuneWhitelistedBond: bRuneRow.bRuneWhitelistedBond,
               bRuneWhitelistsContract: bRuneRow.bRuneWhitelistsContract,
               bRuneBond: bRuneRow.bRuneBond,
             })
@@ -1265,7 +1259,6 @@ export default {
               iconSrc: require('@/assets/images/assets/brune.png'),
               type: 'brune',
               bRuneWhitelisted: bRuneRow.bRuneWhitelisted,
-              bRuneWhitelistedBond: bRuneRow.bRuneWhitelistedBond,
               bRuneWhitelistsContract: bRuneRow.bRuneWhitelistsContract,
               bRuneBond: bRuneRow.bRuneBond,
             })
@@ -1375,10 +1368,7 @@ export default {
         })
     },
     async updateNodes() {
-      const [{ data: nodesInfo }] = await Promise.all([
-        this.$api.getNodesInfo(),
-        this.updateBRuneState(),
-      ])
+      const { data: nodesInfo } = await this.$api.getNodesInfo()
       this.nodesQuery = nodesInfo
     },
     toggleDropdown() {
@@ -1440,101 +1430,24 @@ export default {
         this.activeCols.push({ field: 'brune', label: 'bRUNE' })
       }
     },
-    async updateBRuneState() {
-      try {
-        const res = await this.$api.getContractSmartQuery(this.bRuneContract, {
-          state: {},
-        })
-        this.bRuneState = this.decodeSmartQueryData(res.data)
-        this.bRuneWhitelistedNodes =
-          this.extractBRuneWhitelistedNodes(this.bRuneState)
-        this.bRuneWhitelistedNodeBonds =
-          this.extractBRuneWhitelistedNodeBonds(this.bRuneState)
-        this.bRuneError = undefined
-      } catch (error) {
-        this.bRuneError = error
-        console.error('Failed to load bRUNE state:', error)
-      }
-    },
-    decodeSmartQueryData(data) {
-      if (!data) return {}
-      if (data.data && typeof data.data === 'object') return data.data
-      if (typeof data === 'object' && !data.data) return data
-
-      const encoded = data.data || data
-      if (typeof encoded !== 'string') return {}
-
-      try {
-        if (encoded.trim().startsWith('{')) {
-          return JSON.parse(encoded)
-        }
-        const decoded =
-          typeof globalThis.atob === 'function'
-            ? globalThis.atob(encoded)
-            : globalThis.Buffer.from(encoded, 'base64').toString('utf8')
-        return JSON.parse(decoded)
-      } catch (error) {
-        console.error('Failed to decode bRUNE state:', error)
-        return {}
-      }
-    },
-    extractThorAddresses(value) {
-      const addresses = new Set()
-      const collect = (entry) => {
-        if (typeof entry === 'string') {
-          const matches =
-            entry.match(/thor1[023456789acdefghjklmnpqrstuvwxyz]{38,90}/g) ||
-            []
-          matches.forEach((address) => addresses.add(address.toLowerCase()))
-          return
-        }
-        if (Array.isArray(entry)) {
-          entry.forEach(collect)
-          return
-        }
-        if (entry && typeof entry === 'object') {
-          Object.values(entry).forEach(collect)
-        }
-      }
-
-      collect(value)
-      return [...addresses]
-    },
-    extractBRuneWhitelistedNodes(state) {
-      const nodes = state?.nodes?.nodes || []
-      const addresses = nodes
-        .map((node) => node?.addr || node?.node?.node_address)
-        .filter(Boolean)
-        .map((address) => address.toLowerCase())
-
-      return addresses.length ? addresses : this.extractThorAddresses(state)
-    },
-    extractBRuneWhitelistedNodeBonds(state) {
-      const nodes = state?.nodes?.nodes || []
-
-      return nodes.reduce((bonds, node) => {
-        const address = (node?.addr || node?.node?.node_address)?.toLowerCase()
-        if (!address) return bonds
-        bonds[address] = Number(node?.bond || 0) / 1e8
-        return bonds
-      }, {})
-    },
     fillNodeRow(rows, node, index) {
       fillNodeData(rows, node, index)
       const row = rows[rows.length - 1]
       if (!row) return
 
-      const nodeAddress = node.node_address?.toLowerCase()
       const bRuneProvider = node.bond_providers?.providers?.find(
         (provider) =>
           provider.bond_address?.toLowerCase() === this.bRuneContract
       )
 
-      row.bRuneWhitelisted = this.bRuneWhitelistedNodes.includes(nodeAddress)
-      row.bRuneWhitelistedBond =
-        this.bRuneWhitelistedNodeBonds[nodeAddress] || 0
-      row.bRuneWhitelistsContract = Boolean(bRuneProvider)
       row.bRuneBond = Number(bRuneProvider?.bond || 0) / 1e8
+      // node -> contract: the node lists the bRUNE contract as a bond provider.
+      row.bRuneWhitelistsContract = Boolean(bRuneProvider)
+      // contract -> node: the contract has actually bonded RUNE to the node. A
+      // provider entry with a zero bond only means the node opted in; it does NOT
+      // mean the contract whitelisted it (the contract's own `state.nodes` list is
+      // just the opted-in set and matches this data exactly), so gate on bond > 0.
+      row.bRuneWhitelisted = row.bRuneBond > 0
     },
     setNewNodesChurn(num) {
       this.newNodesChurn = num

@@ -227,10 +227,10 @@
                       <strong>bRUNE</strong>
                       <hr class="hr-space"/>
                       <div style="margin-top: 0.5rem; padding: 4px">
-                        <div style="color: var(--sec-font-color)">
+                        <div v-if="churnItem.bRuneWhitelisted" style="color: var(--sec-font-color)">
                           • bRUNE contract has whitelisted this node
                         </div>
-                        <div style="margin-top: 0.25rem; color: var(--sec-font-color)">
+                        <div v-if="churnItem.bRuneWhitelistsContract" style="margin-top: 0.25rem; color: var(--sec-font-color)">
                           • Node has whitelisted the bRUNE contract
                         </div>
                         <hr class="hr-space" style="margin-top: 0.5rem"/>
