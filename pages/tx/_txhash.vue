@@ -1706,6 +1706,17 @@ export default {
         const primaryOutAsset = primaryOutAssetStr ? assetFromString(primaryOutAssetStr) : null
         const primaryOutTicker = primaryOutAsset?.ticker || primaryOutDenom
 
+        // Sender's own action: the resting limit order that triggered clearing.
+        // (The arb / trade / range.fee events settle OTHER users' resting orders
+        // and are intentionally not attributed to the sender.)
+        const senderOrderCreate = allEvents
+          .filter((e) => e.type === 'wasm-rujira-fin/order.create')
+          .map(toAttrs)
+          .find((a) => a.owner === senderAddr)
+        const senderOrderPrice = senderOrderCreate
+          ? String(senderOrderCreate.price || '').replace(/^fixed:/, '')
+          : ''
+
         return {
           rawEvents: allEvents,
           rawMsg: obClearingAction.metadata?.contract?.msg || null,
@@ -1759,14 +1770,19 @@ export default {
           lifecycleRows: hasError
             ? [{ icon: 'WarningIcon', title: 'OB Clearing failed', body: logs || '' }]
             : [
-                fillCount
+                senderOrderCreate
                   ? {
                       icon: 'ArrowIcon',
                       iconRotate: 90,
-                      title: `${fillCount} order${fillCount !== 1 ? 's' : ''} filled`,
-                      body: avgRate
-                        ? `avg rate ${avgRate.toFixed(6)} on ${finPairLabel}`
-                        : finPairLabel,
+                      title: 'Resting limit order placed',
+                      body: [
+                        primaryInAmt
+                          ? `${this.baseAmountFormatOrZero(primaryInAmt)} ${primaryInTicker} committed`
+                          : null,
+                        senderOrderPrice ? `at ${senderOrderPrice}` : null,
+                      ]
+                        .filter(Boolean)
+                        .join(' · ') || `on ${finPairLabel}`,
                     }
                   : null,
                 {
