@@ -17,13 +17,13 @@
               v-if="props.column.field == 'hash'"
               style="display: flex; gap: 5px; align-items: center"
             >
-              <span
+              <nuxt-link
                 v-tooltip="props.row.pubKey"
                 class="mono clickable"
-                @click="gotoAddr(props.row.hash)"
+                :to="`/address/${props.row.hash}`"
               >
                 {{ addressFormatV2(props.row.pubKey) }}
-              </span>
+              </nuxt-link>
               <color-hash
                 v-tooltip="
                   'Vault colors are identical to the nodes vault membership'
