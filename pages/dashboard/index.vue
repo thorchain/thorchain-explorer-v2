@@ -158,7 +158,7 @@
       />
     </div>
     <div class="cards-container">
-      <LatestBlocks :burned-blocks="burnedBlocks" />
+      <ChainStatus :inbound-data="inboundInfo" :mimir="mimirInfo" />
       <LatestTransactions :transactions="txs"></LatestTransactions>
     </div>
   </Page>
@@ -183,7 +183,7 @@ import { range, orderBy, fill } from 'lodash'
 import affiliateTables from '../insights/component/affiliateTables.vue'
 import NetworkStats from './NetworkStats.vue'
 import LatestTransactions from './LatestTransactions.vue'
-import LatestBlocks from './LatestBlocks.vue'
+import ChainStatus from './ChainStatus.vue'
 import { blockTime } from '~/utils'
 import StackDollar from '~/assets/images/sack-dollar.svg?inline'
 import LockIcon from '~/assets/images/lock.svg?inline'
@@ -225,13 +225,12 @@ export default {
     affiliateTables,
     NetworkStats,
     LatestTransactions,
-    LatestBlocks,
+    ChainStatus,
     ChartLoader,
   },
   layout: 'dashboard',
   data() {
     return {
-      burnedBlocks: [],
       affiliateData: [],
       oldRunePool: [],
       polOverview: undefined,
@@ -715,7 +714,6 @@ export default {
 
     this.ui = setInterval(() => {
       this.getNetworkStatus()
-      this.getBurnData()
     }, 30000)
   },
   destroyed() {
@@ -729,17 +727,6 @@ export default {
       } catch (error) {
         console.error('Error updating RUNE pool data:', error)
       }
-    },
-    getBurnData() {
-      this.$api
-        .getBurnedBlocks()
-        .then(({ data }) => {
-          this.totalBurned = 500_000_000 - +data.totalBurned / 1e8
-          this.burnedBlocks = data.burnedBlocks.reverse()
-        })
-        .catch((error) => {
-          console.error('Error fetching swap history:', error)
-        })
     },
     stringToPercentage(val) {
       return (Number.parseFloat(val ?? 0) * 100).toFixed(2).toString() + ' %'
@@ -765,8 +752,16 @@ export default {
       return false
     },
     async getNetworkStatus() {
-      const mi = (await this.$api.getMimir()).data
-      this.mimirInfo = mi
+      try {
+        const [mimirRes, inboundRes] = await Promise.all([
+          this.$api.getMimir(),
+          this.$api.getInboundAddresses(),
+        ])
+        this.mimirInfo = mimirRes.data
+        this.inboundInfo = inboundRes.data
+      } catch (error) {
+        console.error('Error fetching network status:', error)
+      }
     },
     formatLPChange(d) {
       const xAxis = []

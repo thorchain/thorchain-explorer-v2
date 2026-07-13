@@ -516,7 +516,8 @@ export default {
               ...Object.keys(mimirData)
                 .filter(
                   (key) =>
-                    new RegExp(`PAUSELP${chain.chain}`).test(key) &&
+                    (new RegExp(`PAUSELP${chain.chain}`).test(key) ||
+                      key === 'PAUSELP') &&
                     mimirData[key] !== 0
                 )
                 .map((key) => mimirData[key])
