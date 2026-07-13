@@ -6985,8 +6985,12 @@ export default {
 .tx-swap-arrow-icon {
   fill: var(--green);
   height: 20px;
-  transform: rotate(90deg);
+  transform: rotate(180deg);
   width: 20px;
+
+  @include md {
+    transform: rotate(90deg);
+  }
 
   &.order {
     transform: rotate(0deg);
