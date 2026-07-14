@@ -133,10 +133,29 @@
                 >
                   {{ group.scheduledCount }}
                 </span>
+                <span
+                  v-if="group.stuckCount > 0"
+                  v-tooltip="'Needs attention (>300 blocks past due)'"
+                  :class="'mini-bubble danger'"
+                  style="width: 1.3rem; height: 1.3rem; font-size: 12px"
+                >
+                  {{ group.stuckCount }}
+                </span>
                 <angle-icon
                   :class="{ trigger: true, rotated: angleRotated[i] }"
                 />
               </div>
+            </div>
+
+            <div v-if="group.stuckCount > 0" class="stuck-info-bar">
+              <span class="mini-bubble danger stuck-info-badge">Needs Attention</span>
+              <span class="stuck-info-text">
+                {{ group.stuckCount }}
+                {{ group.stuckCount === 1 ? 'outbound' : 'outbounds' }}
+                past due &mdash; max
+                <strong>{{ group.maxBlocksPastDue | number('0,0') }} blocks</strong>
+                (~{{ pastDueTime(group.maxBlocksPastDue) }})
+              </span>
             </div>
 
             <div v-if="isVisible[i]" class="extra-right">
@@ -173,9 +192,24 @@
                   </div>
                 </div>
                 <div class="right-part">
-                  <div v-if="o.height">
-                    <span style="color: var(--sec-font-color); font-size: 10px">
-                      {{ getOutboundEta(o.height) }}
+                  <div v-if="o.height" class="outbound-timing">
+                    <div
+                      v-if="isStuck(o.height)"
+                      class="mini-bubble danger outbound-stuck-badge"
+                    >
+                      Needs Attention
+                    </div>
+                    <span
+                      v-if="blocksPastDue(o.height) > 0"
+                      :class="['outbound-pastdue', { 'outbound-stuck-text': isStuck(o.height) }]"
+                    >
+                      {{ blocksPastDue(o.height) }} blocks past due
+                    </span>
+                    <span v-else class="outbound-eta">
+                      ~{{ getOutboundEta(o.height) }}
+                    </span>
+                    <span class="outbound-last-attempt">
+                      Last sched. #{{ o.height | number('0,0') }}
                     </span>
                   </div>
                   <small v-if="o.in_hash && o.label !== 'migrate'" class="mono">
@@ -331,6 +365,8 @@ export default {
             count: 0,
             scheduledCount: 0,
             ongoingCount: 0,
+            stuckCount: 0,
+            maxBlocksPastDue: 0,
             label: o.label,
             items: [],
           }
@@ -349,6 +385,14 @@ export default {
 
         if (o.label === 'Ongoing') {
           acc[key].ongoingCount += 1
+        }
+
+        if (this.isStuck(o.height)) {
+          acc[key].stuckCount += 1
+          const pastDue = this.blocksPastDue(o.height)
+          if (pastDue > (acc[key].maxBlocksPastDue || 0)) {
+            acc[key].maxBlocksPastDue = pastDue
+          }
         }
 
         acc[key].items.push(o)
@@ -445,11 +489,22 @@ export default {
       this.outbounds = resData
       this.loading = false
     },
+    blocksPastDue(height) {
+      if (!height || !this.chainsHeight?.THOR) return 0
+      return Math.max(0, this.chainsHeight.THOR - height)
+    },
+    isStuck(height) {
+      return this.blocksPastDue(height) > 300
+    },
+    pastDueTime(blocks) {
+      if (!blocks) return ''
+      return moment.duration(blocks * 6, 'seconds').humanize()
+    },
     getOutboundEta(height) {
-      if (this.chainsHeight) {
-        const remHeight = height - this.chainsHeight.THOR
-        return moment.duration(remHeight * 6, 'seconds').humanize()
-      }
+      if (!this.chainsHeight?.THOR || !height) return undefined
+      const remHeight = height - this.chainsHeight.THOR
+      if (remHeight <= 0) return undefined
+      return moment.duration(remHeight * 6, 'seconds').humanize()
     },
     toggleExtraRight(index) {
       this.$set(this.isVisible, index, !this.isVisible[index])
@@ -789,6 +844,67 @@ export default {
       display: flex;
       align-items: center;
       gap: 3px;
+    }
+
+    .stuck-info-bar {
+      display: flex;
+      align-items: center;
+      gap: $space-8;
+      padding: $space-5 $space-8;
+      border-radius: $radius-lg;
+      background-color: rgba(240, 72, 50, 0.06);
+      border: 1px solid rgba(240, 72, 50, 0.2);
+
+      .stuck-info-badge {
+        flex-shrink: 0;
+        font-size: 10px;
+        padding: 1px 5px;
+      }
+
+      .stuck-info-text {
+        font-size: 11px;
+        color: var(--sec-font-color);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        flex-wrap: wrap;
+
+        strong {
+          color: #f04832;
+        }
+      }
+    }
+
+    .outbound-timing {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 2px;
+    }
+
+    .outbound-stuck-badge {
+      font-size: 10px;
+      padding: 1px 5px;
+    }
+
+    .outbound-pastdue {
+      font-size: 10px;
+      color: var(--sec-font-color);
+    }
+
+    .outbound-stuck-text {
+      color: #f04832;
+    }
+
+    .outbound-eta {
+      font-size: 10px;
+      color: var(--sec-font-color);
+    }
+
+    .outbound-last-attempt {
+      font-size: 10px;
+      color: var(--sec-font-color);
+      opacity: 0.6;
     }
   }
 }

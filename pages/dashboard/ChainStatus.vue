@@ -14,7 +14,24 @@
         </span>
       </nuxt-link>
     </template>
-    <div v-if="chains.length > 0">
+    <template v-if="!inboundData || inboundData.length === 0 || !mimir">
+      <div v-for="index in 5" :key="index" class="status-row">
+        <div class="chain-cell">
+          <skeleton-loader width="80px"></skeleton-loader>
+        </div>
+        <div
+          v-for="(_, itemIndex) in statusFields"
+          :key="itemIndex"
+          class="status-cell"
+        >
+          <skeleton-loader width="30px"></skeleton-loader>
+        </div>
+      </div>
+    </template>
+    <template v-else-if="chains.length === 0">
+      <div class="all-operational">All chains operational</div>
+    </template>
+    <template v-else>
       <div class="status-row status-header">
         <span class="chain-cell">Chain</span>
         <span
@@ -46,20 +63,6 @@
             class="status-icon"
           />
           <span v-else class="mono ok">OK</span>
-        </div>
-      </div>
-    </div>
-    <template v-else>
-      <div v-for="index in 10" :key="index" class="status-row">
-        <div class="chain-cell">
-          <skeleton-loader width="80px"></skeleton-loader>
-        </div>
-        <div
-          v-for="(_, itemIndex) in statusFields"
-          :key="itemIndex"
-          class="status-cell"
-        >
-          <skeleton-loader width="30px"></skeleton-loader>
         </div>
       </div>
     </template>
@@ -126,28 +129,35 @@ export default {
         return []
       }
 
-      return this.inboundData.map((chain) => ({
-        chain: chain.chain,
-        haltHeight: this.maxMimirValue(
-          (key) =>
-            new RegExp(`.*HALT.*${chain.chain}CHAIN`).test(key) ||
-            key === 'HALTCHAINGLOBAL'
-        ),
-        haltTradingHeight: this.maxMimirValue(
-          (key) =>
-            new RegExp(`HALT${chain.chain}TRADING`).test(key) ||
-            key === 'HALTTRADING'
-        ),
-        haltLPHeight: this.maxMimirValue(
-          (key) =>
-            new RegExp(`PAUSELP${chain.chain}`).test(key) || key === 'PAUSELP'
-        ),
-        haltSigningHeight: this.maxMimirValue(
-          (key) =>
-            new RegExp(`HALTSIGNING${chain.chain}`).test(key) ||
-            key === 'HALTSIGNING'
-        ),
-      }))
+      return this.inboundData
+        .map((chain) => ({
+          chain: chain.chain,
+          haltHeight: this.maxMimirValue(
+            (key) =>
+              new RegExp(`.*HALT.*${chain.chain}CHAIN`).test(key) ||
+              key === 'HALTCHAINGLOBAL'
+          ),
+          haltTradingHeight: this.maxMimirValue(
+            (key) =>
+              new RegExp(`HALT${chain.chain}TRADING`).test(key) ||
+              key === 'HALTTRADING'
+          ),
+          haltLPHeight: this.maxMimirValue(
+            (key) =>
+              new RegExp(`PAUSELP${chain.chain}`).test(key) || key === 'PAUSELP'
+          ),
+          haltSigningHeight: this.maxMimirValue(
+            (key) =>
+              new RegExp(`HALTSIGNING${chain.chain}`).test(key) ||
+              key === 'HALTSIGNING'
+          ),
+        }))
+        .filter(
+          (c) =>
+            c.haltHeight >= 1 ||
+            c.haltTradingHeight >= 1 ||
+            c.haltSigningHeight >= 1
+        )
     },
     networkStatus() {
       // LP pauses don't stop the chain from operating: they only limit it
@@ -203,6 +213,14 @@ export default {
 <style lang="scss" scoped>
 .more-link {
   text-decoration: none;
+}
+
+.all-operational {
+  padding: $space-16;
+  text-align: center;
+  color: var(--green);
+  font-size: $font-size-sm;
+  font-weight: 600;
 }
 
 .churn-info {

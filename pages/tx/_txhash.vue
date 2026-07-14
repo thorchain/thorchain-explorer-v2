@@ -4900,17 +4900,24 @@ export default {
 
       return !inboundFinalised || !actionFinalised || !outboundFinalised
     },
-    // Remaining THOR blocks until the scheduled outbound; undefined when the
-    // outbound is already signed or the current height isn't known, so the
-    // absolute schedule height never renders as a bogus multi-year ETA.
+    // Remaining THOR blocks until the scheduled outbound (negative = past due).
+    // Returns undefined when the outbound is already signed, so the absolute
+    // schedule height never renders as a bogus multi-year ETA.
+    // Prefers blocks_since_scheduled from the status endpoint — it is computed
+    // server-side and avoids a separate current-height lookup; without it we
+    // fall back to scheduled_outbound_height minus the local chain height.
     getScheduledOutboundETA(thorStatus) {
       const outboundSigned = thorStatus?.stages?.outbound_signed
+      if (!outboundSigned?.scheduled_outbound_height || outboundSigned.completed) {
+        return undefined
+      }
+      // blocks_since_scheduled directly tells us how many blocks past the
+      // scheduled height we are; negate it so negative = overdue (ETA <= 0).
+      if (outboundSigned.blocks_since_scheduled != null) {
+        return -outboundSigned.blocks_since_scheduled
+      }
       const currentHeight = this.thorHeight || this.chainsHeight?.THOR
-      if (
-        !outboundSigned?.scheduled_outbound_height ||
-        outboundSigned.completed ||
-        !currentHeight
-      ) {
+      if (!currentHeight) {
         return undefined
       }
       return outboundSigned.scheduled_outbound_height - currentHeight
