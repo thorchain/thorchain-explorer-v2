@@ -4989,7 +4989,7 @@ export default {
               amount: inAmount,
               from_asset: inAsset ? assetToString(inAsset) : '',
               to_asset: outAsset ? assetToString(outAsset) : '',
-              destination: memo.destAddr,
+              destination: memo.destAddr?.split('/')[0],
               streaming_interval:
                 thorStatus?.stages.swap_status?.streaming?.interval ||
                 memo.interval,
@@ -6379,24 +6379,34 @@ export default {
       )
       let outAmount =
         outTxs?.length > 0 ? parseInt(outTxs[0]?.coins?.[0]?.amount ?? 0) : 0
-      if (
-        !outAmount &&
-        actions?.actions?.length > 0 &&
-        (outAsset?.trade || outAsset?.secure)
-      ) {
+      if (!outAmount && actions?.actions?.length > 0) {
         const outAssetStr = outAsset ? assetToString(outAsset) : null
-        outAmount = parseInt(
-          Object.values(
-            groupBy(
-              actions?.actions
-                ?.find((a) => a.type === 'swap')
-                ?.out?.filter((a) => a.coins?.[0]?.asset === outAssetStr),
-              'txID'
-            )
-          ).map((group) =>
-            sumBy(group, (item) => +(item.coins?.[0]?.amount ?? 0))
-          )[0]
-        )
+        const midgardSwapAction =
+          actions?.actions?.find((a) => a.type === 'swap') ??
+          actions?.actions?.find((a) => a.type === 'limit_swap')
+        // For trade/secure assets, sum across unique txIDs (multiple sub-outs per swap).
+        // For all other assets, use the first non-affiliate out matching the target asset.
+        if (outAsset?.trade || outAsset?.secure) {
+          outAmount = parseInt(
+            Object.values(
+              groupBy(
+                midgardSwapAction?.out?.filter(
+                  (a) => a.coins?.[0]?.asset === outAssetStr
+                ),
+                'txID'
+              )
+            ).map((group) =>
+              sumBy(group, (item) => +(item.coins?.[0]?.amount ?? 0))
+            )[0]
+          )
+        } else {
+          const midgardOut = midgardSwapAction?.out?.find(
+            (o) => !o.affiliate && o.coins?.[0]?.asset === outAssetStr
+          )
+          if (midgardOut) {
+            outAmount = parseInt(midgardOut.coins?.[0]?.amount ?? 0)
+          }
+        }
       }
 
       const outMemoAsset = this.parseMemoAsset(memo?.asset)
@@ -6429,12 +6439,30 @@ export default {
         tx.memo?.toLowerCase().startsWith('out')
       )
 
+      const streamingMeta = swapAction?.metadata?.swap?.streamingSwapMeta
+
+      // When the quote endpoint fails, estimate the final output by projecting
+      // the accumulated streaming output to the full swap quantity.
+      const streamingProgressEstimate = (() => {
+        // Prefer the direct outEstimation field when available.
+        const directEstimate = parseInt(streamingMeta?.outEstimation ?? 0)
+        if (directEstimate) return directEstimate
+        // Fall back to projecting partial progress to the full quantity.
+        const partialOut = parseInt(streamingMeta?.outCoin?.amount ?? 0)
+        const count = parseInt(streamingMeta?.count ?? 0)
+        const quantity = parseInt(streamingMeta?.quantity ?? 0)
+        if (!partialOut || !count || !quantity) return 0
+        return Math.round((partialOut * quantity) / count)
+      })()
+      const estimatedOutAmount =
+        outAmount ||
+        +this.quote?.expected_amount_out ||
+        streamingProgressEstimate
+
       const inAmountUSD =
         (+swapAction?.metadata.swap.inPriceUSD * inAmount) / 1e8
       let outAmountUSD =
-        (+swapAction?.metadata.swap.outPriceUSD *
-          (outAmount || +this.quote?.expected_amount_out)) /
-        1e8
+        (+swapAction?.metadata.swap.outPriceUSD * estimatedOutAmount) / 1e8
       if (!outboundHasSuccess && outboundHasRefund) {
         outAmountUSD = (+swapAction?.metadata.swap.inPriceUSD * outAmount) / 1e8
       }
@@ -6483,7 +6511,6 @@ export default {
         )
       }
 
-      const streamingMeta = swapAction?.metadata?.swap?.streamingSwapMeta
       const depositAmountZero = !parseInt(
         streamingMeta?.depositedCoin?.amount || 0
       )
@@ -6516,7 +6543,7 @@ export default {
           out: [
             {
               asset: outAsset,
-              amount: outAmount || +this.quote?.expected_amount_out,
+              amount: estimatedOutAmount,
               amountUSD: outAmountUSD,
               usdAtExecution: true,
               filter: outAmount
