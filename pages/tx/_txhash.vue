@@ -819,7 +819,9 @@ export default {
           ? (outboundHeight - inboundHeight) * this.blockSeconds('THOR')
           : null
 
-      const midgardSwap = (this.rawActions || []).find((a) => a.type === 'swap')
+      const midgardSwap =
+        (this.rawActions || []).find((a) => a.type === 'swap') ??
+        (this.rawActions || []).find((a) => a.type === 'limit_swap')
       const contractAction = (this.rawActions || []).find(
         (a) => a.type === 'contract'
       )
@@ -857,7 +859,8 @@ export default {
 
       // Historical prices at the time the swap executed — more accurate than
       // current pool prices for displaying USD values.
-      const swapMeta = midgardSwap?.metadata?.swap
+      const swapMeta =
+        midgardSwap?.metadata?.swap ?? midgardSwap?.metadata?.limit_swap
       // Whether the displayed USD value is derived from the historical
       // inPriceUSD/outPriceUSD (price at the moment the swap executed) rather
       // than a current-price fallback. Drives the USD tooltip wording.
@@ -4973,6 +4976,13 @@ export default {
         const inAmount = parseInt(thorStatus?.tx?.coins?.[0]?.amount ?? 0)
         const outAsset = this.parseMemoAsset(memo?.asset, this.pools)
         const affiliateFee = sumAffiliateFee(memo.fee || 0)
+        // Affiliate params are only valid when affiliate and BPS counts match.
+        // A mismatch (e.g. two affiliates but one BPS in the memo) causes the
+        // quote endpoint to reject the request.
+        const affiliateParts = memo.affiliate?.split('/') ?? []
+        const feeParts = memo.fee ? String(memo.fee).split('/') : []
+        const affiliateParamsValid =
+          affiliateFee > 0 && affiliateParts.length === feeParts.length
         if (thorStatus?.stages.swap_status?.pending && !this.quote) {
           try {
             const { data: quoteData } = await this.$api.getQuote({
@@ -4983,8 +4993,8 @@ export default {
               streaming_interval:
                 thorStatus?.stages.swap_status?.streaming?.interval ||
                 memo.interval,
-              ...(affiliateFee && { affiliate: memo.affiliate }),
-              ...(affiliateFee && { affiliate_bps: affiliateFee }),
+              ...(affiliateParamsValid && { affiliate: memo.affiliate }),
+              ...(affiliateParamsValid && { affiliate_bps: memo.fee }),
               height: midgardAction?.actions[0]?.height,
             })
             this.quote = quoteData
@@ -6394,7 +6404,9 @@ export default {
       // Midgard
       // There are multiple outbound fee
       // also there might be refund involved
-      const swapAction = actions?.actions?.find((a) => a.type === 'swap')
+      const swapAction =
+        actions?.actions?.find((a) => a.type === 'swap') ??
+        actions?.actions?.find((a) => a.type === 'limit_swap')
       const outboundFees =
         swapAction?.metadata.swap?.networkFees.map((n) => n?.amount) ?? []
       const outboundFeeAssets =
@@ -6566,6 +6578,7 @@ export default {
             timeStamp: timeStamp || null,
             limit: memo?.limit,
             limitAsset: outMemoAsset,
+            ttl: memo?.ttl || null,
             affiliateName: memo?.affiliate,
             affiliateFee: sumAffiliateFee(memo?.fee || 0),
             liquidityFee:

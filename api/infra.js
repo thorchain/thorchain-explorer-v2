@@ -16,7 +16,7 @@ export function getBlockHeight(height) {
 
 export function getQuote(params) {
   return $axiosInstace.get(
-    endpoints[process.env.NETWORK].SERVER_URL + 'quote',
+    endpoints[process.env.NETWORK].SERVER_URL + 'quote/swap',
     {
       params,
     }

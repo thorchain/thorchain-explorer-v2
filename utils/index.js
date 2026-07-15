@@ -306,6 +306,8 @@ const memoToType = {
   swap: 'swap',
   s: 'swap',
   '=': 'swap',
+  '=<': 'swap',
+  '=>': 'swap',
   limito: 'order',
   lo: 'order',
   out: 'outbound',

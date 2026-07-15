@@ -545,9 +545,27 @@ export default {
 
       // TXTYPE:STATE1:STATE2:STATE3:FINALMEMO
       const type = parseMemoToTxType(memo)
+      const memoPrefix = memo?.trim().toLowerCase().split(':', 2)[0]
 
       const parts = memo.split(':')
       if (type === 'swap') {
+        const isLimitOrder = memoPrefix === '=<' || memoPrefix === '=>'
+        if (isLimitOrder) {
+          // LIMIT ORDER: =<:ASSET:DESTADDR:LIMIT_PRICE/TTL:AFFILIATE:FEE
+          const [limitPrice, ttl] = parts[3] ? parts[3].split('/') : []
+          return {
+            type: type || null,
+            isLimitOrder: true,
+            asset: parts[1] || null,
+            destAddr: parts[2] || null,
+            limit: limitPrice || null,
+            ttl: parseInt(ttl) || null,
+            interval: null,
+            quantity: null,
+            affiliate: parts[4] || null,
+            fee: parts[5] || null,
+          }
+        }
         // SWAP:ASSET:DESTADDR:LIM/INTERVAL/QUANTITY:AFFILIATE:FEE
         const [limit, interval, quantity] = parts[3] ? parts[3].split('/') : []
         return {
