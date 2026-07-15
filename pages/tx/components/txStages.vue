@@ -79,6 +79,16 @@
             >
               {{ outbound.remOutSeconds }}</small
             >
+            <div
+              v-if="outbound.blocksPastDue > 0"
+              v-tooltip="'Blocks since the scheduled outbound height'"
+              class="mini-bubble danger"
+            >
+              ~{{ outbound.pastDueTime }} past due ({{
+                $options.filters.number(outbound.blocksPastDue, '0,0')
+              }}
+              blocks)
+            </div>
           </div>
         </span>
       </div>
@@ -176,6 +186,9 @@ export default {
         remOutboundHeight:
           data?.outbound_signed?.scheduled_outbound_height -
           this.chainsHeight?.THOR,
+        blocksPastDue: !data?.outbound_signed?.completed
+          ? (data?.outbound_signed?.blocks_since_scheduled ?? 0)
+          : 0,
         signedStatus: data?.outbound_signed?.completed
           ? 'Signed'
           : 'Not Signed',
@@ -208,6 +221,15 @@ export default {
           'seconds'
         )
         .humanize()
+
+      if (this.outbound.blocksPastDue > 0) {
+        this.outbound.pastDueTime = moment
+          .duration(
+            this.outbound.blocksPastDue * this.blockSeconds('THOR'),
+            'seconds'
+          )
+          .humanize()
+      }
     },
   },
 }

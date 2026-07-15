@@ -477,6 +477,18 @@ export function buildOutboundAccordions(accordionsOut, ctx) {
             is: !a.done && a.outboundSigned === false && a.outboundETA <= 0,
           },
           {
+            key: 'Past Due',
+            // outboundETA is negative of blocks_since_scheduled, so negate to get blocks overdue
+            value: (() => {
+              const blocksPastDue = -a.outboundETA
+              const timePastDue = moment
+                .duration(ctx.blockSeconds('THOR') * blocksPastDue, 'seconds')
+                .humanize()
+              return `~${timePastDue} (${blocksPastDue.toLocaleString()} blocks)`
+            })(),
+            is: !a.done && a.outboundSigned === false && a.outboundETA < 0,
+          },
+          {
             key: 'Outbound Stage',
             value: outboundStages,
             type: 'bubble',

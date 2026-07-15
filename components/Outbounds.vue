@@ -135,7 +135,7 @@
                 </span>
                 <span
                   v-if="group.stuckCount > 0"
-                  v-tooltip="'Needs attention (>300 blocks past due)'"
+                  v-tooltip="'Past due more than 300 blocks'"
                   :class="'mini-bubble danger'"
                   style="width: 1.3rem; height: 1.3rem; font-size: 12px"
                 >
@@ -148,13 +148,12 @@
             </div>
 
             <div v-if="group.stuckCount > 0" class="stuck-info-bar">
-              <span class="mini-bubble danger stuck-info-badge">Needs Attention</span>
               <span class="stuck-info-text">
                 {{ group.stuckCount }}
                 {{ group.stuckCount === 1 ? 'outbound' : 'outbounds' }}
-                past due &mdash; max
-                <strong>{{ group.maxBlocksPastDue | number('0,0') }} blocks</strong>
-                (~{{ pastDueTime(group.maxBlocksPastDue) }})
+                past due &mdash; oldest
+                <strong>~{{ pastDueTime(group.maxBlocksPastDue) }}</strong>
+                ({{ group.maxBlocksPastDue | number('0,0') }} blocks)
               </span>
             </div>
 
@@ -190,26 +189,38 @@
                   >
                     Scheduled
                   </div>
+                  <small
+                    v-if="o.to_address"
+                    class="mono outbound-destination"
+                  >
+                    &rarr; <Address :address="o.to_address" :show-copy-icon="false"></Address>
+                  </small>
                 </div>
                 <div class="right-part">
-                  <div v-if="o.height" class="outbound-timing">
-                    <div
-                      v-if="isStuck(o.height)"
-                      class="mini-bubble danger outbound-stuck-badge"
-                    >
-                      Needs Attention
-                    </div>
-                    <span
-                      v-if="blocksPastDue(o.height) > 0"
-                      :class="['outbound-pastdue', { 'outbound-stuck-text': isStuck(o.height) }]"
-                    >
-                      {{ blocksPastDue(o.height) }} blocks past due
-                    </span>
-                    <span v-else class="outbound-eta">
+                  <div v-if="o.height || o.blocksSinceScheduled != null" class="outbound-timing">
+                    <template v-if="blocksPastDue(o) > 0">
+                      <span
+                        :class="['outbound-pastdue', { 'outbound-stuck-text': isStuck(o) }]"
+                      >
+                        ~{{ pastDueTime(blocksPastDue(o)) }} past due
+                      </span>
+                      <span class="outbound-timing-sub mono">
+                        {{ blocksPastDue(o) | number('0,0') }} blocks
+                      </span>
+                    </template>
+                    <span v-else-if="getOutboundEta(o.height)" class="outbound-eta">
                       ~{{ getOutboundEta(o.height) }}
                     </span>
-                    <span class="outbound-last-attempt">
-                      Last sched. #{{ o.height | number('0,0') }}
+                    <span
+                      v-if="o.scheduledOutboundHeight && o.scheduledOutboundHeight !== o.height"
+                      v-tooltip="'Original schedule → latest queue attempt'"
+                      class="outbound-timing-sub mono"
+                    >
+                      #{{ o.scheduledOutboundHeight | number('0,0') }} &rarr;
+                      #{{ o.height | number('0,0') }}
+                    </span>
+                    <span v-else class="outbound-timing-sub mono">
+                      Sched. #{{ o.height | number('0,0') }}
                     </span>
                   </div>
                   <small v-if="o.in_hash && o.label !== 'migrate'" class="mono">
@@ -387,9 +398,9 @@ export default {
           acc[key].ongoingCount += 1
         }
 
-        if (this.isStuck(o.height)) {
+        if (this.isStuck(o)) {
           acc[key].stuckCount += 1
-          const pastDue = this.blocksPastDue(o.height)
+          const pastDue = this.blocksPastDue(o)
           if (pastDue > (acc[key].maxBlocksPastDue || 0)) {
             acc[key].maxBlocksPastDue = pastDue
           }
@@ -467,10 +478,26 @@ export default {
         this.loading = false
       }
     },
+    async fetchOutboundQueue() {
+      // Middleware endpoint returns queue items enriched with
+      // blocks_since_scheduled (queue `height` resets on every reschedule,
+      // so it underestimates how long an outbound has been waiting).
+      try {
+        const { data } = await this.$api.getOutboundsDetail()
+        return (data ?? []).map((o) => ({
+          ...o,
+          blocksSinceScheduled: o.blocks_since_scheduled ?? undefined,
+          scheduledOutboundHeight: o.scheduled_outbound_height ?? undefined,
+        }))
+      } catch (error) {
+        // Endpoint not deployed yet: fall back to the raw thornode queue
+        return (await this.$api.getOutbound()).data ?? []
+      }
+    },
     async updateOutbounds() {
       this.noOutnound = false
       const resData = []
-      this.outData = (await this.$api.getOutbound()).data ?? []
+      this.outData = await this.fetchOutboundQueue()
       this.schData = (await this.$api.getScheduled()).data ?? []
       resData.push(
         ...this.outData.map((s) => ({
@@ -489,12 +516,16 @@ export default {
       this.outbounds = resData
       this.loading = false
     },
-    blocksPastDue(height) {
+    blocksPastDue(o) {
+      // Prefer blocks_since_scheduled from tx status (reflects original schedule,
+      // not the most recent reschedule height stored in the queue).
+      if (o?.blocksSinceScheduled != null) return o.blocksSinceScheduled
+      const height = typeof o === 'number' ? o : o?.height
       if (!height || !this.chainsHeight?.THOR) return 0
       return Math.max(0, this.chainsHeight.THOR - height)
     },
-    isStuck(height) {
-      return this.blocksPastDue(height) > 300
+    isStuck(o) {
+      return this.blocksPastDue(o) > 300
     },
     pastDueTime(blocks) {
       if (!blocks) return ''
@@ -779,6 +810,30 @@ export default {
     transition: transform 0.3s ease;
   }
 
+  .stuck-info-bar {
+    display: flex;
+    align-items: center;
+    gap: $space-8;
+    margin: 0 $space-6;
+    padding: $space-5 $space-8;
+    border-radius: $radius-sm;
+    background-color: rgba(240, 72, 50, 0.06);
+    border: 1px solid rgba(240, 72, 50, 0.2);
+
+    .stuck-info-text {
+      font-size: 11px;
+      color: var(--sec-font-color);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+
+      strong {
+        color: #f04832;
+      }
+    }
+  }
+
   .asset-item {
     display: flex;
     align-items: center;
@@ -809,20 +864,32 @@ export default {
     .right-part {
       display: flex;
       align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
       gap: 7px;
       width: 100%;
-      justify-content: end;
+
+      @include md {
+        justify-content: end;
+        flex-wrap: nowrap;
+      }
     }
 
     .asset-info {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      flex-direction: column;
+      align-items: flex-start;
       width: 100%;
       gap: $space-8;
       padding: $space-8;
       &:last-child {
         border-bottom: none;
+      }
+
+      @include md {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
       }
     }
     .left-part {
@@ -846,49 +913,20 @@ export default {
       gap: 3px;
     }
 
-    .stuck-info-bar {
-      display: flex;
-      align-items: center;
-      gap: $space-8;
-      padding: $space-5 $space-8;
-      border-radius: $radius-lg;
-      background-color: rgba(240, 72, 50, 0.06);
-      border: 1px solid rgba(240, 72, 50, 0.2);
-
-      .stuck-info-badge {
-        flex-shrink: 0;
-        font-size: 10px;
-        padding: 1px 5px;
-      }
-
-      .stuck-info-text {
-        font-size: 11px;
-        color: var(--sec-font-color);
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        flex-wrap: wrap;
-
-        strong {
-          color: #f04832;
-        }
-      }
-    }
-
     .outbound-timing {
       display: flex;
       flex-direction: column;
-      align-items: flex-end;
+      align-items: flex-start;
       gap: 2px;
-    }
 
-    .outbound-stuck-badge {
-      font-size: 10px;
-      padding: 1px 5px;
+      @include md {
+        align-items: flex-end;
+      }
     }
 
     .outbound-pastdue {
-      font-size: 10px;
+      font-size: 11px;
+      font-weight: 600;
       color: var(--sec-font-color);
     }
 
@@ -901,10 +939,15 @@ export default {
       color: var(--sec-font-color);
     }
 
-    .outbound-last-attempt {
+    .outbound-timing-sub {
       font-size: 10px;
       color: var(--sec-font-color);
       opacity: 0.6;
+    }
+
+    .outbound-destination {
+      color: var(--sec-font-color);
+      opacity: 0.7;
     }
   }
 }

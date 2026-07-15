@@ -28,9 +28,6 @@
         </div>
       </div>
     </template>
-    <template v-else-if="chains.length === 0">
-      <div class="all-operational">All chains operational</div>
-    </template>
     <template v-else>
       <div class="status-row status-header">
         <span class="chain-cell">Chain</span>
@@ -52,17 +49,21 @@
           :key="status.field"
           class="status-cell"
         >
-          <danger-icon
+          <span
             v-if="chain[status.field] > 1"
             v-tooltip="`Scheduled halt: ${chain[status.field]}`"
-            class="status-icon"
-          />
-          <danger-icon
+            class="mini-bubble danger status-bubble"
+          >
+            Paused
+          </span>
+          <span
             v-else-if="chain[status.field] === 1"
             v-tooltip="`Mimir halt`"
-            class="status-icon"
-          />
-          <span v-else class="mono ok">OK</span>
+            class="mini-bubble danger status-bubble"
+          >
+            Paused
+          </span>
+          <span v-else class="mini-bubble status-bubble">Available</span>
         </div>
       </div>
     </template>
@@ -93,13 +94,11 @@
 
 <script>
 import moment from 'moment'
-import DangerIcon from '@/assets/images/danger.svg?inline'
 import SkeletonLoader from '~/components/SkeletonLoader.vue'
 
 export default {
   name: 'ChainStatus',
   components: {
-    DangerIcon,
     SkeletonLoader,
   },
   props: {
@@ -129,35 +128,28 @@ export default {
         return []
       }
 
-      return this.inboundData
-        .map((chain) => ({
-          chain: chain.chain,
-          haltHeight: this.maxMimirValue(
-            (key) =>
-              new RegExp(`.*HALT.*${chain.chain}CHAIN`).test(key) ||
-              key === 'HALTCHAINGLOBAL'
-          ),
-          haltTradingHeight: this.maxMimirValue(
-            (key) =>
-              new RegExp(`HALT${chain.chain}TRADING`).test(key) ||
-              key === 'HALTTRADING'
-          ),
-          haltLPHeight: this.maxMimirValue(
-            (key) =>
-              new RegExp(`PAUSELP${chain.chain}`).test(key) || key === 'PAUSELP'
-          ),
-          haltSigningHeight: this.maxMimirValue(
-            (key) =>
-              new RegExp(`HALTSIGNING${chain.chain}`).test(key) ||
-              key === 'HALTSIGNING'
-          ),
-        }))
-        .filter(
-          (c) =>
-            c.haltHeight >= 1 ||
-            c.haltTradingHeight >= 1 ||
-            c.haltSigningHeight >= 1
-        )
+      return this.inboundData.map((chain) => ({
+        chain: chain.chain,
+        haltHeight: this.maxMimirValue(
+          (key) =>
+            new RegExp(`.*HALT.*${chain.chain}CHAIN`).test(key) ||
+            key === 'HALTCHAINGLOBAL'
+        ),
+        haltTradingHeight: this.maxMimirValue(
+          (key) =>
+            new RegExp(`HALT${chain.chain}TRADING`).test(key) ||
+            key === 'HALTTRADING'
+        ),
+        haltLPHeight: this.maxMimirValue(
+          (key) =>
+            new RegExp(`PAUSELP${chain.chain}`).test(key) || key === 'PAUSELP'
+        ),
+        haltSigningHeight: this.maxMimirValue(
+          (key) =>
+            new RegExp(`HALTSIGNING${chain.chain}`).test(key) ||
+            key === 'HALTSIGNING'
+        ),
+      }))
     },
     networkStatus() {
       // LP pauses don't stop the chain from operating: they only limit it
@@ -213,14 +205,6 @@ export default {
 <style lang="scss" scoped>
 .more-link {
   text-decoration: none;
-}
-
-.all-operational {
-  padding: $space-16;
-  text-align: center;
-  color: var(--green);
-  font-size: $font-size-sm;
-  font-weight: 600;
 }
 
 .churn-info {
@@ -292,15 +276,9 @@ export default {
     justify-content: center;
     align-items: center;
 
-    .ok {
-      color: var(--green);
-      font-size: $font-size-sm;
-    }
-
-    .status-icon {
-      width: 1.1rem;
-      height: 1.1rem;
-      fill: var(--red);
+    .status-bubble {
+      min-width: 4.5rem;
+      text-align: center;
     }
   }
 }

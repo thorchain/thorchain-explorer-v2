@@ -27,6 +27,12 @@ export function getChurn() {
   return $axiosInstace.get(endpoints[process.env.NETWORK].SERVER_URL + 'churns')
 }
 
+export function getOutboundsDetail() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + 'api/outbounds'
+  )
+}
+
 export function getInfraEarnings(params) {
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].SERVER_URL + 'earnings',

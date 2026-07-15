@@ -143,7 +143,13 @@ import {
   getRunePrice,
   getDailySwap,
 } from './insights.api'
-import { getTHORLastBlock, getBlockHeight, getQuote, getChurn } from './infra'
+import {
+  getTHORLastBlock,
+  getBlockHeight,
+  getQuote,
+  getChurn,
+  getOutboundsDetail,
+} from './infra'
 import endpoints from './endpoints'
 export var $axiosInstace
 
@@ -332,6 +338,7 @@ export default function ({ $axios }, inject) {
     getRunePoolProvidersInfo,
     getBorrowersInfo,
     getTHORLastBlock,
+    getOutboundsDetail,
     getSwapsWeekly,
     getStatsDaily,
     getFeesRewardsMonthly,
