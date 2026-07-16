@@ -169,16 +169,45 @@ export default {
 
       // change the remaining seconds to the first height
       if (isSwap) {
-        const { count, interval, quantity } =
-          (streamingStatus || thorStatus?.stages?.swap_status?.streaming) ?? false
-        this.streamingDetail.fill = blockDuration
-          ? blockDuration / interval / quantity
-          : count / quantity
+        const memo = this.parseMemo(thorStatus.tx?.memo)
+        const {
+          interval,
+          quantity,
+          count: rawCount,
+          initial_height: initialHeight,
+        } = (streamingStatus || thorStatus?.stages?.swap_status?.streaming) ?? {}
+        // thornode's `count` is a cumulative retry-attempt counter — it
+        // increments on every price-check tick, including ones that don't
+        // clear the limit, so it can exceed `quantity` for resting/limit
+        // orders that retry many times before filling. The actual number of
+        // executed chunks is the attempt count minus the failed attempts.
+        const count = Math.max(
+          (rawCount || 0) - (streamingStatus?.failed_swaps?.length || 0),
+          0
+        )
+        this.streamingDetail.fill = quantity ? count / quantity : 0
+
+        // For a resting limit order, `interval` IS the full TTL window in
+        // blocks from order creation to expiry — thornode's own limit-order
+        // queue confirms blocks_since_created + time_to_expiry_blocks ===
+        // interval. A normal streaming swap instead executes `quantity`
+        // chunks roughly every `interval` blocks, so its window is
+        // interval * quantity. Using the wrong formula for a limit order
+        // previously inflated the remaining time ~100x (days vs the real
+        // hours-scale window).
+        const creationBlockDuration =
+          initialHeight && this.chainsHeight
+            ? this.chainsHeight?.THOR - initialHeight
+            : blockDuration
+        const remainingBlocks = Math.max(
+          memo?.isLimitOrder
+            ? interval - creationBlockDuration
+            : interval * quantity - blockDuration,
+          0
+        )
+
         if (!this.streamingDetail.count || count > this.streamingDetail.count) {
-          this.durationSeconds = moment.duration(
-            (interval * quantity - blockDuration) * 6,
-            'seconds'
-          )
+          this.durationSeconds = moment.duration(remainingBlocks * 6, 'seconds')
           this.streamingDetail.remIntervalSec = this.createDurationText(
             this.durationSeconds
           )
@@ -186,8 +215,7 @@ export default {
         this.streamingDetail.count = count
         this.streamingDetail.quantity = quantity
         this.streamingDetail.interval = interval
-        this.streamingDetail.remInterval =
-          interval * quantity - blockDuration ?? interval * (quantity - count)
+        this.streamingDetail.remInterval = remainingBlocks
 
         if (!this.countdownInterval) {
           this.countdownInterval = setInterval(this.updateCountdown, 1000)
@@ -210,8 +238,6 @@ export default {
         } else {
           this.streamingDetail.tradeTarget = 0
         }
-
-        const memo = this.parseMemo(thorStatus.tx?.memo)
 
         // swap user addresses
         const userAddresses = new Set([

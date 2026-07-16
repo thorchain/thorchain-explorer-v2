@@ -4175,6 +4175,8 @@ export default {
       if (s.includes('bond')) return 'bond'
       if (s.includes('contract')) return 'switch'
       if (s.includes('failed')) return 'failed'
+      if (s.includes('limit') && s.includes('refund')) return 'refund'
+      if (s.includes('limit')) return 'limit_swap'
       return 'default'
     },
     bubbleTypeToColorClass(type) {
@@ -4192,6 +4194,7 @@ export default {
           return 'bubble-pill--red'
         case 'switch':
         case 'addLiquidity':
+        case 'limit_swap':
           return 'bubble-pill--alert'
         default:
           return 'bubble-pill--grey'
@@ -6519,10 +6522,17 @@ export default {
         : streamingMeta?.interval ?? memo?.interval
       const isRapidSwap =
         (rapidInterval === 0 || rapidInterval === '0') && +height > 25400000
-      const swapTypeLabel = isRapidSwap ? 'rapid Swap' : 'swap'
-      const refundedSwapTypeLabel = isRapidSwap
-        ? 'refunded Rapid Swap'
-        : 'refunded Swap'
+      const isLimitOrder = !!memo?.isLimitOrder
+      const swapTypeLabel = isLimitOrder
+        ? 'limit order'
+        : isRapidSwap
+          ? 'rapid Swap'
+          : 'swap'
+      const refundedSwapTypeLabel = isLimitOrder
+        ? 'refunded limit order'
+        : isRapidSwap
+          ? 'refunded Rapid Swap'
+          : 'refunded Swap'
 
       return {
         cards: {
@@ -6606,6 +6616,13 @@ export default {
             limit: memo?.limit,
             limitAsset: outMemoAsset,
             ttl: memo?.ttl || null,
+            isLimitOrder,
+            // Live quote for the remaining amount — lets the UI show how far
+            // the market currently is from clearing a resting limit order.
+            currentQuoteOut:
+              isLimitOrder && this.quote?.expected_amount_out
+                ? parseInt(this.quote.expected_amount_out)
+                : null,
             affiliateName: memo?.affiliate,
             affiliateFee: sumAffiliateFee(memo?.fee || 0),
             liquidityFee:

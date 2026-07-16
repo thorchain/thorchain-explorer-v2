@@ -229,6 +229,17 @@ export function buildActionAccordion(accordionsAction, ctx) {
       is: action.limit,
     },
     {
+      key: 'Current Quote',
+      value:
+        action.isLimitOrder && action.currentQuoteOut && action.limit
+          ? `${action.currentQuoteOut / 1e8} ${ctx.showAsset(action.limitAsset)} (${ctx.percentageFormat(
+              (action.currentQuoteOut - action.limit) / action.limit,
+              2
+            )} vs limit)`
+          : null,
+      is: action.isLimitOrder && action.currentQuoteOut && action.limit,
+    },
+    {
       key: 'Liquidity Units',
       value: `${action.liquidityUnits}`,
       is: action.liquidityUnits,

@@ -347,6 +347,7 @@ export default {
       if (s.includes('stake')) return 'tcy_stake'
       if (s.includes('unstake')) return 'tcy_unstake'
       if (s.includes('tcy') && s.includes('claim')) return 'tcy_claim'
+      if (s.includes('limit') && s.includes('refund')) return 'refund'
       if (s.includes('limit')) return 'limit_swap'
       if (s.includes('loan') || s.includes('repay')) return 'send'
       if (s.includes('contract')) return 'switch'
@@ -374,6 +375,7 @@ export default {
           return 'bubble-pill--red'
         case 'switch':
         case 'addLiquidity':
+        case 'limit_swap':
           return 'bubble-pill--alert'
         default:
           return 'bubble-pill--grey'

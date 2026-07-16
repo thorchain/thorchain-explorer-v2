@@ -112,24 +112,40 @@
               <div v-if="o.quantity && o.count !== undefined" class="extra-info">
                 <progress-bar
                   v-if="o.quantity > 0"
-                  :width="(o.count / o.quantity) * 100"
+                  :width="(successfulCount(o) / o.quantity) * 100"
                   height="4px"
                 />
                 <small style="white-space: nowrap">
-                  {{ $options.filters.percent(o.count / o.quantity) }}
+                  {{ $options.filters.percent(successfulCount(o) / o.quantity) }}
                 </small>
               </div>
 
-              <small v-if="o.interval && o.quantity && o.count !== undefined" style="margin-top: 5px"
-                >{{ o.interval }} Blocks / Swap
-                <span class="sec-color"
-                  ><small style="color: var(--font-color)">(ETA </small>
-                  {{ calculateETA(o.interval, o.quantity, o.count) }}
-                  <small style="color: var(--font-color)"
-                    >, Remaining swaps: {{ o.quantity - o.count }}</small
-                  >
-                  <small style="color: var(--font-color)">)</small>
-                </span>
+              <small
+                v-if="o.interval && o.quantity && o.count !== undefined"
+                style="margin-top: 5px"
+              >
+                <template v-if="isLimitOrder(o)">
+                  Limit order
+                  <span class="sec-color"
+                    ><small style="color: var(--font-color)">(expires in </small>
+                    {{ calculateETA(o) }}
+                    <small style="color: var(--font-color)"
+                      >, filled: {{ successfulCount(o) }}/{{ o.quantity }}</small
+                    >
+                    <small style="color: var(--font-color)">)</small>
+                  </span>
+                </template>
+                <template v-else
+                  >{{ o.interval }} Blocks / Swap
+                  <span class="sec-color"
+                    ><small style="color: var(--font-color)">(ETA </small>
+                    {{ calculateETA(o) }}
+                    <small style="color: var(--font-color)"
+                      >, Remaining swaps: {{ o.quantity - successfulCount(o) }}</small
+                    >
+                    <small style="color: var(--font-color)">)</small>
+                  </span>
+                </template>
               </small>
             </div>
             <hr :key="i + '-hr'" class="hr-space" />
@@ -283,7 +299,18 @@ export default {
     },
     ...mapGetters({
       pools: 'getPools',
+      chainsHeight: 'getChainsHeight',
     }),
+    // Resting limit orders still show up in the swap queue (with `swap_type`
+    // and the raw memo) while they're active, so cross-reference by tx id to
+    // tell them apart from ordinary streaming swaps.
+    limitOrderTxIds() {
+      return new Set(
+        (this.swapQueue || [])
+          .filter((q) => q.swap_type === 'limit' && q.tx?.id)
+          .map((q) => q.tx.id)
+      )
+    },
   },
   watch: {
     pools(n, o) {
@@ -347,9 +374,38 @@ export default {
         this.streamingSwaps = []
       }
     },
-    calculateETA(interval, quantity, count) {
-      if (!interval || !quantity || count === undefined) return '-'
-      const remainingIntervals = interval * (quantity - count)
+    // thornode's `count` is a cumulative retry-attempt counter — it
+    // increments on every price-check tick, including failed ones, so it can
+    // exceed `quantity` for resting/limit orders that retry many times
+    // before filling. The actual number of executed chunks is the attempt
+    // count minus the failed attempts.
+    successfulCount(o) {
+      return Math.max((o.count || 0) - (o.failed_swaps?.length || 0), 0)
+    },
+    isLimitOrder(o) {
+      return this.limitOrderTxIds.has(o.tx_id)
+    },
+    calculateETA(o) {
+      const { interval, quantity } = o
+      if (!interval || !quantity || o.count === undefined) return '-'
+
+      if (this.isLimitOrder(o)) {
+        // For a resting limit order `interval` IS the full TTL window in
+        // blocks from order creation to expiry, not a per-chunk gap —
+        // thornode's own limit-order queue confirms blocks_since_created +
+        // time_to_expiry_blocks === interval. There's no way to predict
+        // when (or if) price will clear, so the only meaningful "ETA" here
+        // is the time left before the order expires.
+        const blockDuration =
+          o.initial_height && this.chainsHeight
+            ? this.chainsHeight.THOR - o.initial_height
+            : 0
+        const remainingBlocks = Math.max(interval - blockDuration, 0)
+        return moment.duration(remainingBlocks * 6, 'seconds').humanize()
+      }
+
+      const count = this.successfulCount(o)
+      const remainingIntervals = interval * Math.max(quantity - count, 0)
       return moment.duration(remainingIntervals * 6, 'seconds').humanize()
     },
     getOutputAmount(swap) {
