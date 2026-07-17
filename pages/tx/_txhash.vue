@@ -6420,12 +6420,14 @@ export default {
       const swapAction =
         actions?.actions?.find((a) => a.type === 'swap') ??
         actions?.actions?.find((a) => a.type === 'limit_swap')
+      const swapMetadata =
+        swapAction?.metadata?.swap ?? swapAction?.metadata?.limit_swap
       const outboundFees =
-        swapAction?.metadata.swap?.networkFees.map((n) => n?.amount) ?? []
+        swapMetadata?.networkFees?.map((n) => n?.amount) ?? []
       const outboundFeeAssets =
         outboundFees?.length > 0
           ? this.parseMemoAsset(
-              swapAction?.metadata.swap?.networkFees.map((n) => n?.asset),
+              swapMetadata?.networkFees?.map((n) => n?.asset),
               this.pools
             )
           : null
@@ -6442,7 +6444,7 @@ export default {
         tx.memo?.toLowerCase().startsWith('out')
       )
 
-      const streamingMeta = swapAction?.metadata?.swap?.streamingSwapMeta
+      const streamingMeta = swapMetadata?.streamingSwapMeta
 
       // When the quote endpoint fails, estimate the final output by projecting
       // the accumulated streaming output to the full swap quantity.
@@ -6463,11 +6465,11 @@ export default {
         streamingProgressEstimate
 
       const inAmountUSD =
-        (+swapAction?.metadata.swap.inPriceUSD * inAmount) / 1e8
+        (+(swapMetadata?.inPriceUSD ?? 0) * inAmount) / 1e8
       let outAmountUSD =
-        (+swapAction?.metadata.swap.outPriceUSD * estimatedOutAmount) / 1e8
+        (+(swapMetadata?.outPriceUSD ?? 0) * estimatedOutAmount) / 1e8
       if (!outboundHasSuccess && outboundHasRefund) {
-        outAmountUSD = (+swapAction?.metadata.swap.inPriceUSD * outAmount) / 1e8
+        outAmountUSD = (+(swapMetadata?.inPriceUSD ?? 0) * outAmount) / 1e8
       }
 
       const outboundRefundReason = actions?.actions.find(
@@ -6565,8 +6567,8 @@ export default {
               const isRefundTx =
                 o.refund || o.memo?.toLowerCase().startsWith('refund')
               const priceUSD = isRefundTx
-                ? +swapAction?.metadata?.swap?.inPriceUSD
-                : +swapAction?.metadata?.swap?.outPriceUSD
+                ? +(swapMetadata?.inPriceUSD ?? 0)
+                : +(swapMetadata?.outPriceUSD ?? 0)
               return {
                 asset: this.parseMemoAsset(o.coins?.[0]?.asset, this.pools),
                 amount: oAmount,
