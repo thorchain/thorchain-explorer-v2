@@ -5483,9 +5483,35 @@ export default {
       const outboundETA = this.getScheduledOutboundETA(thorStatus)
       const outDone = thorStatus?.stages?.outbound_signed?.completed === true
 
+      const plannedOuts = thorStatus.planned_out_txs ?? []
+      const completedOuts = thorStatus.out_txs ?? []
+
       let outs
-      if (thorStatus.out_txs?.length > 0) {
-        outs = thorStatus.out_txs.map((tx) => ({
+      if (plannedOuts.length > 0) {
+        // Use planned_out_txs as authoritative list; match each to a completed
+        // out_txs entry (by amount+asset) to get the hash and done status.
+        outs = plannedOuts.map((planned) => {
+          const completed = completedOuts.find(
+            (tx) =>
+              tx.coins?.[0]?.amount === planned.coin?.amount &&
+              tx.coins?.[0]?.asset === planned.coin?.asset
+          )
+          return {
+            asset: outAsset,
+            amount: planned.coin?.amount,
+            txid: completed?.id ?? null,
+            to: planned.to_address,
+            gas: completed?.gas?.[0]?.amount ?? null,
+            gasAsset: completed?.gas
+              ? this.parseMemoAsset(completed.gas[0]?.asset, this.pools)
+              : null,
+            outboundSigned,
+            outboundETA: completed ? null : outboundETA,
+            done: !!completed,
+          }
+        })
+      } else if (completedOuts.length > 0) {
+        outs = completedOuts.map((tx) => ({
           asset: outAsset,
           amount: tx.coins?.[0]?.amount,
           txid: tx.id,
