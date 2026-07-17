@@ -5356,8 +5356,9 @@ export default {
         },
       }
     },
-    createTradeDepositState(thorStatus, action, thorTx) {
-      action = action.actions[0]
+    createTradeDepositState(thorStatus, actions, thorTx) {
+      const midgardAction = actions.actions[0]
+      const action = midgardAction
       const timeStamp = moment.unix(action?.date / 1e9)
       const memo = this.parseMemo(thorStatus?.tx?.memo)
 
@@ -5392,17 +5393,35 @@ export default {
         },
       ]
 
-      const outs = [
-        {
-          asset: isSecure ? assetToSecure(ast) : assetToTrade(ast),
-          amount: thorStatus.out_txs
-            ? thorStatus.out_txs[0]?.coins?.[0]?.amount
-            : (thorStatus?.tx?.coins?.[0]?.amount ?? 0),
-          txid: thorStatus.out_txs ? thorStatus.out_txs[0]?.id : null,
+      const outAsset = isSecure ? assetToSecure(ast) : assetToTrade(ast)
+      let outs
+      if (thorStatus.out_txs?.length > 0) {
+        outs = thorStatus.out_txs.map((tx) => ({
+          asset: outAsset,
+          amount: tx.coins?.[0]?.amount,
+          txid: tx.id,
           to: memo.address,
           done: true,
-        },
-      ]
+        }))
+      } else if (midgardAction.out?.length > 0) {
+        outs = midgardAction.out.map((o) => ({
+          asset: outAsset,
+          amount: o.coins?.[0]?.amount,
+          txid: o.txID,
+          to: memo.address,
+          done: true,
+        }))
+      } else {
+        outs = [
+          {
+            asset: outAsset,
+            amount: thorStatus?.tx?.coins?.[0]?.amount ?? 0,
+            txid: null,
+            to: memo.address,
+            done: true,
+          },
+        ]
+      }
 
       return {
         cards: {
@@ -5429,8 +5448,9 @@ export default {
         },
       }
     },
-    createTradeWithdrawState(thorStatus, action, thorTx) {
-      action = action.actions[0]
+    createTradeWithdrawState(thorStatus, actions, thorTx) {
+      const midgardAction = actions.actions[0]
+      const action = midgardAction
       const timeStamp = moment.unix(action?.date / 1e9)
       const memo = this.parseMemo(thorStatus?.tx?.memo)
 
@@ -5458,29 +5478,49 @@ export default {
         },
       ]
 
-      const outs = [
-        {
-          asset: isSecure ? securedToAsset(ast) : tradeToAsset(ast),
-          amount: thorStatus.out_txs
-            ? thorStatus.out_txs[0]?.coins?.[0]?.amount
-            : (thorStatus?.tx?.coins?.[0]?.amount ?? 0),
-          txid: thorStatus.out_txs ? thorStatus.out_txs[0]?.id : null,
+      const outAsset = isSecure ? securedToAsset(ast) : tradeToAsset(ast)
+      const outboundSigned = thorStatus?.stages?.outbound_signed?.completed ?? false
+      const outboundETA = this.getScheduledOutboundETA(thorStatus)
+      const outDone = thorStatus?.stages?.outbound_signed?.completed === true
+
+      let outs
+      if (thorStatus.out_txs?.length > 0) {
+        outs = thorStatus.out_txs.map((tx) => ({
+          asset: outAsset,
+          amount: tx.coins?.[0]?.amount,
+          txid: tx.id,
           to: memo.address,
-          gas: thorStatus.out_txs
-            ? thorStatus.out_txs[0]?.gas?.[0]?.amount
+          gas: tx.gas?.[0]?.amount ?? null,
+          gasAsset: tx.gas
+            ? this.parseMemoAsset(tx.gas[0]?.asset, this.pools)
             : null,
-          gasAsset: thorStatus.out_txs
-            ? this.parseMemoAsset(
-                thorStatus.out_txs[0]?.gas?.[0]?.asset,
-                this.pools
-              )
-            : null,
-          outboundSigned:
-            thorStatus?.stages.outbound_signed?.completed ?? false,
-          outboundETA: this.getScheduledOutboundETA(thorStatus),
-          done: thorStatus?.stages?.outbound_signed?.completed === true,
-        },
-      ]
+          outboundSigned,
+          outboundETA,
+          done: outDone,
+        }))
+      } else if (midgardAction.out?.length > 0) {
+        outs = midgardAction.out.map((o) => ({
+          asset: outAsset,
+          amount: o.coins?.[0]?.amount,
+          txid: o.txID,
+          to: memo.address,
+          outboundSigned,
+          outboundETA,
+          done: outDone,
+        }))
+      } else {
+        outs = [
+          {
+            asset: outAsset,
+            amount: thorStatus?.tx?.coins?.[0]?.amount ?? 0,
+            txid: null,
+            to: memo.address,
+            outboundSigned,
+            outboundETA,
+            done: outDone,
+          },
+        ]
+      }
 
       return {
         cards: {
