@@ -201,8 +201,12 @@ export default {
             : blockDuration
         const remainingBlocks = Math.max(
           memo?.isLimitOrder
-            ? interval - creationBlockDuration
-            : interval * quantity - blockDuration,
+            ? creationBlockDuration != null
+              ? interval - creationBlockDuration
+              : interval * (1 - count / Math.max(quantity, 1))
+            : blockDuration != null
+              ? interval * quantity - blockDuration
+              : interval * (quantity - count),
           0
         )
 
