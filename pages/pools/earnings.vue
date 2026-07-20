@@ -39,6 +39,16 @@
               {{ props.column.label }}
               <info-icon class="header-icon" />
             </div>
+            <div
+              v-else-if="props.column.field == 'earnings'"
+              v-tooltip="
+                'Earnings paid to Liquidity Providers, not the pool\'s overall earnings from swap fees'
+              "
+              class="table-asset end"
+            >
+              {{ props.column.label }}
+              <info-icon class="header-icon" />
+            </div>
           </template>
           <template slot="table-row" slot-scope="props">
             <div
@@ -193,6 +203,8 @@ export default {
           label: 'LP Earnings',
           field: 'earnings',
           type: 'number',
+          tooltip:
+            "Earnings paid to Liquidity Providers, not the pool's overall earnings from swap fees",
           formatFn: this.smallBaseAmountFormat,
           tdClass: 'mono',
         },

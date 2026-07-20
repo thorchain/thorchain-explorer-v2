@@ -13,7 +13,15 @@
         </span>
       </skeleton-item>
       <skeleton-item class="stat-item" :loading="loading">
-        <span class="title">24hr Earnings:</span>
+        <span class="title"
+          >24hr Earnings:
+          <unknown-icon
+            v-tooltip="
+              'Earnings paid to Liquidity Providers, not the pool\'s overall earnings from swap fees'
+            "
+            class="header-icon"
+          />
+        </span>
         <span class="mono value">
           ${{ totalInfo.day.earnings | number('0a') }}
         </span>
@@ -58,7 +66,15 @@
         </span>
       </skeleton-item>
       <skeleton-item class="stat-item" :loading="loading">
-        <span class="title">7D Earnings:</span>
+        <span class="title"
+          >7D Earnings:
+          <unknown-icon
+            v-tooltip="
+              'Earnings paid to Liquidity Providers, not the pool\'s overall earnings from swap fees'
+            "
+            class="header-icon"
+          />
+        </span>
         <span class="mono value">
           ${{ totalInfo.week.earnings | number('0a') }}
         </span>
@@ -91,7 +107,15 @@
         </span>
       </skeleton-item>
       <skeleton-item class="stat-item" :loading="loading">
-        <span class="title">30D Earnings:</span>
+        <span class="title"
+          >30D Earnings:
+          <unknown-icon
+            v-tooltip="
+              'Earnings paid to Liquidity Providers, not the pool\'s overall earnings from swap fees'
+            "
+            class="header-icon"
+          />
+        </span>
         <span class="mono value">
           ${{ totalInfo.month.earnings | number('0a') }}
         </span>
@@ -124,7 +148,15 @@
         </span>
       </skeleton-item>
       <skeleton-item class="stat-item" :loading="loading">
-        <span class="title">Year Earnings:</span>
+        <span class="title"
+          >Year Earnings:
+          <unknown-icon
+            v-tooltip="
+              'Earnings paid to Liquidity Providers, not the pool\'s overall earnings from swap fees'
+            "
+            class="header-icon"
+          />
+        </span>
         <span class="mono value">
           ${{ totalInfo.year.earnings | number('0a') }}
         </span>
