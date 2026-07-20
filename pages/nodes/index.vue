@@ -312,6 +312,7 @@ export default {
           label: 'Churn',
           field: 'churn',
           thClass: 'center min-padding',
+          sortFn: this.churnSort,
         },
         ...this.bRuneCols,
         {
@@ -1588,6 +1589,15 @@ export default {
     },
     aSort(x, y, col, rowX, rowY) {
       return x?.number < y?.number ? -1 : x?.number > y?.number ? 1 : 0
+    },
+    churnPriority(item) {
+      const weights = { leave: 100, 'churn-out': 10, 'churn-out-candidate': 1 }
+      return weights[item?.type] ?? 0
+    },
+    churnSort(x, y) {
+      const score = (arr) =>
+        (arr || []).reduce((s, c) => s + this.churnPriority(c), 0)
+      return score(x) - score(y)
     },
     highlightSort(x, y, col, rowX, rowY, name) {
       const favs =
