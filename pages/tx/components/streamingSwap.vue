@@ -162,27 +162,27 @@ export default {
         streamingStatus?.tx_id &&
         thorStatus?.stages.swap_status?.pending
 
-      let blockDuration
-      if (this.height && this.chainsHeight) {
-        blockDuration = this.chainsHeight?.THOR - this.height
-      }
+      const blockDuration =
+        this.height && this.chainsHeight?.THOR
+          ? this.chainsHeight.THOR - this.height
+          : null
 
       // change the remaining seconds to the first height
       if (isSwap) {
         const memo = this.parseMemo(thorStatus.tx?.memo)
-        const {
-          interval,
-          quantity,
-          count: rawCount,
-          initial_height: initialHeight,
-        } = (streamingStatus || thorStatus?.stages?.swap_status?.streaming) ?? {}
+        const raw = (streamingStatus || thorStatus?.stages?.swap_status?.streaming) ?? {}
+        // Coerce all streaming fields to numbers — they arrive as strings from
+        // both the streaming endpoint and thorStatus.
+        const interval = +(raw.interval ?? 0)
+        const quantity = +(raw.quantity ?? 0)
+        const initialHeight = raw.initial_height ? +raw.initial_height : null
         // thornode's `count` is a cumulative retry-attempt counter — it
         // increments on every price-check tick, including ones that don't
         // clear the limit, so it can exceed `quantity` for resting/limit
         // orders that retry many times before filling. The actual number of
         // executed chunks is the attempt count minus the failed attempts.
         const count = Math.max(
-          (rawCount || 0) - (streamingStatus?.failed_swaps?.length || 0),
+          (+(raw.count || 0)) - (streamingStatus?.failed_swaps?.length || 0),
           0
         )
         this.streamingDetail.fill = quantity ? count / quantity : 0
@@ -195,18 +195,23 @@ export default {
         // interval * quantity. Using the wrong formula for a limit order
         // previously inflated the remaining time ~100x (days vs the real
         // hours-scale window).
+        //
+        // For rapid swaps (interval === 0) one sub-swap fires every block, so
+        // the remaining blocks is simply (quantity - count). The formula
+        // interval * quantity - blockDuration gives 0 - blockDuration which is
+        // negative and clamps to 0, incorrectly showing "Almost Done".
         const creationBlockDuration =
-          initialHeight && this.chainsHeight
-            ? this.chainsHeight?.THOR - initialHeight
+          initialHeight && this.chainsHeight?.THOR
+            ? this.chainsHeight.THOR - initialHeight
             : blockDuration
         const remainingBlocks = Math.max(
           memo?.isLimitOrder
-            ? creationBlockDuration != null
+            ? Number.isFinite(creationBlockDuration)
               ? interval - creationBlockDuration
               : interval * (1 - count / Math.max(quantity, 1))
-            : blockDuration != null
+            : interval > 0 && Number.isFinite(blockDuration)
               ? interval * quantity - blockDuration
-              : interval * (quantity - count),
+              : (interval || 1) * (quantity - count),
           0
         )
 
