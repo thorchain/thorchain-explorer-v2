@@ -280,27 +280,7 @@ export default {
       return count
     },
     bRuneCols() {
-      return [
-        {
-          label: 'bRUNE Whitelisted',
-          field: 'bRuneWhitelisted',
-          type: 'text',
-          width: '90px',
-          tdClass: 'center',
-          thClass: 'center',
-          hidden: this.hides?.brune ?? false,
-          formatFn: (v) => (v ? 'Yes' : 'No'),
-        },
-        {
-          label: 'bRUNE Capacity',
-          field: 'bRuneCapacity',
-          type: 'number',
-          tdClass: 'mono center',
-          thClass: 'center',
-          hidden: this.hides?.brune ?? false,
-          formatFn: this.normalFormat,
-        },
-      ]
+      return []
     },
     activeCols() {
       const chains = this.nodesQuery
