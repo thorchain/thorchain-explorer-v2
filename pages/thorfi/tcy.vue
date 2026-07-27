@@ -148,14 +148,25 @@ export default {
       tcyInfo: undefined,
       earningsHistory: undefined,
       extraSeries: {
-        center: ['55%', '50%'],
-        radius: ['40%', '70%'],
+        center: ['70%', '50%'],
+        radius: ['42%', '65%'],
+        minAngle: 3,
+        avoidLabelOverlap: true,
+        itemStyle: {
+          borderRadius: 6,
+          borderColor: 'var(--card-bg-color)',
+          borderWidth: 2,
+        },
         label: {
           formatter: (a) => {
-            return `${a.name}: ${this.$options.filters.number(a?.data?.value, '0,0.00a')} TCY\n(${a.percent}%)`
+            return `${a.name}: ${this.$options.filters.number(a?.data?.value, '0,0.00a')} TCY\n(${Number(a.percent).toFixed(2)}%)`
           },
           distanceToLabelLine: 5,
           fontFamily: 'Montserrat',
+        },
+        labelLine: {
+          length: 8,
+          length2: 12,
         },
       },
     }
@@ -168,7 +179,21 @@ export default {
       chainsHeight: 'getChainsHeight',
       runePrice: 'getRunePrice',
     }),
+    allocationTotal() {
+      return this.tcyAllocationItems().reduce(
+        (sum, { value }) => sum + (value || 0),
+        0
+      )
+    },
     extra() {
+      const total = this.allocationTotal
+      const formatPercent = (value) => {
+        if (!total) return ''
+        const pct = (value / total) * 100
+        if (pct > 0 && pct < 0.01) return '<0.01%'
+        return `${pct.toFixed(2)}%`
+      }
+
       return {
         legend: {
           show: true,
@@ -180,10 +205,14 @@ export default {
           textStyle: {
             color: 'var(--font-color)',
           },
+          formatter: (name) => {
+            const item = this.allocationPie.find((d) => d.name === name)
+            return `${name}  ${formatPercent(item?.value ?? 0)}`
+          },
         },
         tooltip: {
           formatter: (a) => {
-            return `${a.name}: ${this.$options.filters.number(a?.data?.value, '0,0.00a')} TCY`
+            return `${a.name}: ${this.$options.filters.number(a?.data?.value, '0,0.00a')} TCY (${formatPercent(a?.data?.value ?? 0)})`
           },
         },
       }
@@ -303,6 +332,13 @@ export default {
               extraInfo: `Total TCY bought back by the protocol`,
               extraText: `$${this.$options.filters.number((this.tcyInfo?.pol_tcy / 1e8) * this.tcyInfo?.price, '0,0.00a')}`,
             },
+          ],
+        },
+        {
+          title: 'Treasury',
+          rowStart: 3,
+          colSpan: 1,
+          items: [
             {
               name: 'Treasury Owned TCY',
               value: this.tcyInfo?.treasury,
@@ -311,12 +347,26 @@ export default {
               extraInfo: `TCY bought by the treasury`,
               extraText: `$${this.$options.filters.number((this.tcyInfo?.treasury / 1e8) * this.tcyInfo?.price, '0,0.00a')}`,
             },
+            {
+              name: 'Treasury Owned (Staked)',
+              value: this.tcyInfo?.treasury_staked,
+              filter: (v) =>
+                `${this.$options.filters.number(v / 1e8, '0,0.00a')} TCY`,
+              extraInfo: `Treasury owned TCY that is staked`,
+              extraText: `$${this.$options.filters.number((this.tcyInfo?.treasury_staked / 1e8) * this.tcyInfo?.price, '0,0.00a')}`,
+            },
+            {
+              name: 'Treasury Total',
+              value: this.tcyInfo?.treasury + this.tcyInfo?.treasury_staked,
+              filter: (v) => `${this.$options.filters.number(v / 1e8, '0,0.00a')} TCY`,
+              extraText: `$${this.$options.filters.number(((this.tcyInfo?.treasury + this.tcyInfo?.treasury_staked) / 1e8 * this.tcyInfo?.price), '0,0.00a')}`,
+            }
           ],
         },
         {
           title: 'Auto Compounding TCY',
           link: 'https://tcy.thorchain.org/manage',
-          rowStart: 3,
+          rowStart: 4,
           colSpan: 1,
           items: [
             {
@@ -345,7 +395,7 @@ export default {
         },
         {
           title: 'Economics',
-          rowStart: 4,
+          rowStart: 5,
           colSpan: 1,
           items: [
             {
@@ -405,32 +455,16 @@ export default {
       ]
     },
     allocationPie() {
-      return [
-        {
-          name: 'Staked',
-          value: this.tcyInfo?.staker_info.total / 1e8,
-        },
-        {
-          name: 'Unclaimed',
-          value: this.tcyInfo?.unclaim_info.total / 1e8,
-        },
-        {
-          name: 'Pooled',
-          value: this.tcyInfo?.tcy_in_pool / 1e8,
-        },
-        {
-          name: 'Protocol Owned',
-          value: this.tcyInfo?.pol_tcy / 1e8,
-        },
-        {
-          name: 'Treasury Owned',
-          value: this.tcyInfo?.treasury / 1e8,
-        },
-        {
-          name: 'Unstaked',
-          value: this.tcyInfo?.claimed_not_staked / 1e8,
-        },
-      ]
+      const total = this.allocationTotal
+
+      return this.tcyAllocationItems()
+        .sort((a, b) => (b.value || 0) - (a.value || 0))
+        .map((item) => {
+          const isSliver = total > 0 && (item.value || 0) / total < 0.02
+          return isSliver
+            ? { ...item, label: { show: false }, labelLine: { show: false } }
+            : item
+        })
     },
     mimirInfoCard() {
       const checkHaltStatus = (value) => {
@@ -509,6 +543,37 @@ export default {
     this.earningsHistory = this.formatEarnings(earnings)
   },
   methods: {
+    tcyAllocationItems() {
+      return [
+        {
+          name: 'Staked',
+          value:
+            (this.tcyInfo?.staker_info.total - this.tcyInfo?.treasury_staked) /
+            1e8,
+        },
+        {
+          name: 'Unclaimed',
+          value: this.tcyInfo?.unclaim_info.total / 1e8,
+        },
+        {
+          name: 'Pooled',
+          value: this.tcyInfo?.tcy_in_pool / 1e8,
+        },
+        {
+          name: 'Protocol Owned',
+          value: this.tcyInfo?.pol_tcy / 1e8,
+        },
+        {
+          name: 'Treasury Owned',
+          value:
+            (this.tcyInfo?.treasury + this.tcyInfo?.treasury_staked) / 1e8,
+        },
+        {
+          name: 'Unstaked',
+          value: this.tcyInfo?.claimed_not_staked / 1e8,
+        },
+      ]
+    },
     formatEarnings(d) {
       const xAxis = []
       const pe = []
