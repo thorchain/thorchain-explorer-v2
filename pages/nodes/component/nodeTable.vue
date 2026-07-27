@@ -227,16 +227,13 @@
                       <strong>bRUNE</strong>
                       <hr class="hr-space"/>
                       <div style="margin-top: 0.5rem; padding: 4px">
-                        <div v-if="churnItem.bRuneWhitelisted" style="color: var(--sec-font-color)">
-                          • bRUNE contract has whitelisted this node
+                        <div>
+                          <span>Capacity:</span>
+                          <span class="mono" style="color: var(--primary-color)">{{ churnItem.bRuneCapacity | number('0,0') }} {{ runeCur() }}</span>
                         </div>
-                        <div v-if="churnItem.bRuneWhitelistsContract" style="margin-top: 0.25rem; color: var(--sec-font-color)">
-                          • Node has whitelisted the bRUNE contract
-                        </div>
-                        <hr class="hr-space" style="margin-top: 0.5rem"/>
-                        <div v-if="churnItem.bRuneBond > 0" style="margin-top: 0.25rem">
-                          <span>RUNE bonded by the contract: </span>
-                          <span class="mono" style="color: var(--primary-color)">{{ churnItem.bRuneBond | number('0,0.00') }} RUNE</span>
+                        <div>
+                          <span>Bonded:</span>
+                          <span class="mono" style="color: var(--primary-color)">{{ churnItem.bRuneBond | number('0,0.00') }} {{ runeCur() }}</span>
                         </div>
                       </div>
                     </span>

@@ -223,6 +223,7 @@ export default {
       provDist: undefined,
       intervalId: undefined,
       secondInterval: undefined,
+      bRuneStateInterval: undefined,
       churnHalted: undefined,
       // thorchain/version: next = min join version, nextSinceHeight = the
       // height it last changed (drives low-version churn-out, see activeNodes).
@@ -239,6 +240,7 @@ export default {
       leavingCount: 0,
       bRuneContract:
         'thor1enhmz57mpn4umspa8hqgqwwqpe02q4hpqmqr0k2zftxr8fu3nxmqjy3tqx',
+      bRuneNodeState: {},
       hides: {
         isp: false,
         score: true,
@@ -278,7 +280,27 @@ export default {
       return count
     },
     bRuneCols() {
-      return []
+      return [
+        {
+          label: 'bRUNE Whitelisted',
+          field: 'bRuneWhitelisted',
+          type: 'text',
+          width: '90px',
+          tdClass: 'center',
+          thClass: 'center',
+          hidden: this.hides?.brune ?? false,
+          formatFn: (v) => (v ? 'Yes' : 'No'),
+        },
+        {
+          label: 'bRUNE Capacity',
+          field: 'bRuneCapacity',
+          type: 'number',
+          tdClass: 'mono center',
+          thClass: 'center',
+          hidden: this.hides?.brune ?? false,
+          formatFn: this.normalFormat,
+        },
+      ]
     },
     activeCols() {
       const chains = this.nodesQuery
@@ -1043,9 +1065,8 @@ export default {
             filteredNodes[index].churn.push({
               iconSrc: require('@/assets/images/assets/brune.png'),
               type: 'brune',
-              bRuneWhitelisted: bRuneRow.bRuneWhitelisted,
-              bRuneWhitelistsContract: bRuneRow.bRuneWhitelistsContract,
               bRuneBond: bRuneRow.bRuneBond,
+              bRuneCapacity: bRuneRow.bRuneCapacity,
             })
           }
         })
@@ -1206,9 +1227,8 @@ export default {
             filteredNodes[i].churn.push({
               iconSrc: require('@/assets/images/assets/brune.png'),
               type: 'brune',
-              bRuneWhitelisted: bRuneRow.bRuneWhitelisted,
-              bRuneWhitelistsContract: bRuneRow.bRuneWhitelistsContract,
               bRuneBond: bRuneRow.bRuneBond,
+              bRuneCapacity: bRuneRow.bRuneCapacity,
             })
           }
         }
@@ -1259,9 +1279,8 @@ export default {
             filteredNodes[index].churn.push({
               iconSrc: require('@/assets/images/assets/brune.png'),
               type: 'brune',
-              bRuneWhitelisted: bRuneRow.bRuneWhitelisted,
-              bRuneWhitelistsContract: bRuneRow.bRuneWhitelistsContract,
               bRuneBond: bRuneRow.bRuneBond,
+              bRuneCapacity: bRuneRow.bRuneCapacity,
             })
           }
         })
@@ -1293,6 +1312,11 @@ export default {
     this.updateNodes().then((_) => {
       this.loading = false
     })
+
+    this.fetchBRuneState()
+    this.bRuneStateInterval = setInterval(() => {
+      this.fetchBRuneState()
+    }, 60 * 1e3)
 
     this.$api.getMimir().then(({ data }) => {
       this.mimirs = data
@@ -1341,6 +1365,7 @@ export default {
   beforeDestroy() {
     this.clearIntervalId(this.intervalId)
     this.clearIntervalId(this.secondInterval)
+    this.clearIntervalId(this.bRuneStateInterval)
     document.removeEventListener('click', this.handleClickOutside)
   },
   methods: {
@@ -1371,6 +1396,24 @@ export default {
     async updateNodes() {
       const { data: nodesInfo } = await this.$api.getNodesInfo()
       this.nodesQuery = nodesInfo
+    },
+    async fetchBRuneState() {
+      try {
+        const { data } = await this.$api.getContractSmartQuery(
+          this.bRuneContract,
+          { state: {} }
+        )
+        const nodes = data?.data?.nodes?.nodes || []
+        this.bRuneNodeState = nodes.reduce((acc, n) => {
+          acc[n.addr] = {
+            bond: Number(n.bond || 0) / 1e8,
+            capacity: Number(n.capacity || 0) / 1e8,
+          }
+          return acc
+        }, {})
+      } catch (e) {
+        console.error(e)
+      }
     },
     toggleDropdown() {
       this.dropdownOpen = !this.dropdownOpen
@@ -1436,18 +1479,16 @@ export default {
       const row = rows[rows.length - 1]
       if (!row) return
 
-      const bRuneProvider = node.bond_providers?.providers?.find(
-        (provider) =>
-          provider.bond_address?.toLowerCase() === this.bRuneContract
-      )
+      const bRuneState = this.bRuneNodeState[node.node_address]
 
-      row.bRuneBond = Number(bRuneProvider?.bond || 0) / 1e8
-      // node -> contract: the node lists the bRUNE contract as a bond provider.
-      row.bRuneWhitelistsContract = Boolean(bRuneProvider)
-      // contract -> node: the contract has actually bonded RUNE to the node. A
-      // provider entry with a zero bond only means the node opted in; it does NOT
-      // mean the contract whitelisted it (the contract's own `state.nodes` list is
-      // just the opted-in set and matches this data exactly), so gate on bond > 0.
+      // node -> contract: the node appears in the contract's own node list,
+      // i.e. it has opted in as a bond provider (regardless of bond amount).
+      row.bRuneWhitelistsContract = Boolean(bRuneState)
+      row.bRuneBond = bRuneState?.bond || 0
+      row.bRuneCapacity = bRuneState?.capacity
+      // contract -> node: the contract has actually bonded RUNE to the node.
+      // Being in the node list only means the node opted in; that does NOT
+      // mean the contract whitelisted it, so gate on bond > 0.
       row.bRuneWhitelisted = row.bRuneBond > 0
     },
     setNewNodesChurn(num) {
