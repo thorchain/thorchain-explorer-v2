@@ -795,7 +795,7 @@ export default {
             },
             {
               name: 'Churn Duration',
-              value: this.churn ? `${this.churn.date}` : '',
+              value: this.churnDurationDays(),
             },
             {
               name: 'Churn Start',
@@ -1504,6 +1504,15 @@ export default {
       for (const a in this.nodesQuery) {
         this.totalAwards = this.totalAwards + +this.nodesQuery[a].current_award
       }
+    },
+    churnDurationDays() {
+      if (!this.chainsHeight?.THOR || !this.churn?.height) {
+        return ''
+      }
+
+      const blocksSinceChurn = this.chainsHeight.THOR - +this.churn.height
+      const days = Math.floor((blocksSinceChurn * 6) / 86400)
+      return `${days} day${days === 1 ? '' : 's'}`
     },
     monthlyNodeReturn() {
       if (!this.totalAwards || !this.churnProgressValue || !this.network) {

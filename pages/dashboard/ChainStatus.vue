@@ -189,7 +189,8 @@ export default {
       return moment.unix(timestamp / 1e9).format('MMM D, YYYY')
     },
     churnDuration(timestamp) {
-      return moment.unix(timestamp / 1e9).fromNow(true)
+      const days = moment().diff(moment.unix(timestamp / 1e9), 'days')
+      return `${days} day${days === 1 ? '' : 's'}`
     },
     maxMimirValue(matcher) {
       const values = Object.keys(this.mimir)
