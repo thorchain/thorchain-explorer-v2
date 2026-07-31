@@ -1082,6 +1082,10 @@ export const interfaces = {
     name: 'CacaoSwap',
     icon: 'cacaoswap',
   },
+  unstoppable: {
+    name: 'Unstoppable',
+    icon: 'unstoppable',
+  },
 }
 
 export const affiliateMap = {
@@ -1156,7 +1160,8 @@ export const affiliateMap = {
   bk: interfaces.bgw,
   'te-ios': interfaces.trustwallet,
   matias: interfaces.thorwallet,
-  cs: interfaces.cacaoswap
+  cs: interfaces.cacaoswap,
+  hrz: interfaces.unstoppable
 }
 
 export function getExplorerAddressUrl(chain, query, type) {
