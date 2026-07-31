@@ -1078,6 +1078,10 @@ export const interfaces = {
     name: 'IronWallet',
     icon: 'ironwallet',
   },
+  cacaoswap: {
+    name: 'CacaoSwap',
+    icon: 'cacaoswap',
+  },
 }
 
 export const affiliateMap = {
@@ -1144,7 +1148,15 @@ export const affiliateMap = {
   tan: interfaces.tangem,
   l1: interfaces.ledger,
   wgm: interfaces.wagmi,
-  few: interfaces.ironwallet
+  few: interfaces.ironwallet,
+  asgardex: interfaces.asgardex,
+  shapeshift: interfaces.shapeshift,
+  thorwallet: interfaces.thorwallet,
+  ma: interfaces.moca,
+  bk: interfaces.bgw,
+  'te-ios': interfaces.trustwallet,
+  matias: interfaces.thorwallet,
+  cs: interfaces.cacaoswap
 }
 
 export function getExplorerAddressUrl(chain, query, type) {
