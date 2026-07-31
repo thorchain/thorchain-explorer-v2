@@ -38,6 +38,12 @@ export default {
         return require('@/assets/images/clouds/cloudzy.png')
       } else if (name.includes('leaseweb')) {
         return require('@/assets/images/clouds/leaseweb.png')
+      } else if (name.includes('mevspace')) {
+        return require('@/assets/images/clouds/mevspace.png')
+      } else if (name.includes('lifeincloud')) {
+        return require('@/assets/images/clouds/lifeincloud.png')
+      } else if (name.includes('datanet')) {
+        return require('@/assets/images/clouds/datanet.png')
       }
 
       return ''
@@ -73,7 +79,13 @@ export default {
         return require('@/assets/images/clouds/comcast.svg?inline')
       } else if (name.includes('ionos')) {
         return require('@/assets/images/clouds/ionos.svg?inline')
-      } else if (name.includes('routerhosting') || name.includes('leaseweb')) {
+      } else if (
+        name.includes('routerhosting') ||
+        name.includes('leaseweb') ||
+        name.includes('mevspace') ||
+        name.includes('lifeincloud') ||
+        name.includes('datanet')
+      ) {
         return false
       }
 
