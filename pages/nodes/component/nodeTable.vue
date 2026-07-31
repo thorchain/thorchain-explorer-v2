@@ -236,6 +236,8 @@
                           <span class="mono" style="color: var(--primary-color)">{{ churnItem.bRuneBond | number('0,0.00') }} {{ runeCur() }}</span>
                         </div>
                       </div>
+                      <hr class="hr-space"/>
+                      <small>This node is whitelisted as a bRUNE bond provider. Bonded amount can be 0 if the contract hasn't allocated funds to it yet.</small>
                     </span>
                     <span v-else-if="churnItem.type !== 'jail'">
                       {{ churnItem.name }}

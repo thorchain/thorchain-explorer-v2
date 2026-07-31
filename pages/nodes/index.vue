@@ -1041,7 +1041,7 @@ export default {
           }
 
           const bRuneRow = filteredNodes[index]
-          if ((bRuneRow.bRuneWhitelisted || bRuneRow.bRuneWhitelistsContract) && !this.hides.brune) {
+          if (bRuneRow.bRuneWhitelisted && !this.hides.brune) {
             filteredNodes[index].churn.push({
               iconSrc: require('@/assets/images/assets/brune.png'),
               type: 'brune',
@@ -1203,7 +1203,7 @@ export default {
           }
 
           const bRuneRow = filteredNodes[i]
-          if ((bRuneRow.bRuneWhitelisted || bRuneRow.bRuneWhitelistsContract) && !this.hides.brune) {
+          if (bRuneRow.bRuneWhitelisted && !this.hides.brune) {
             filteredNodes[i].churn.push({
               iconSrc: require('@/assets/images/assets/brune.png'),
               type: 'brune',
@@ -1255,7 +1255,7 @@ export default {
           }
 
           const bRuneRow = filteredNodes[index]
-          if (bRuneRow && bRuneRow.churn && (bRuneRow.bRuneWhitelisted || bRuneRow.bRuneWhitelistsContract) && !this.hides.brune) {
+          if (bRuneRow && bRuneRow.churn && bRuneRow.bRuneWhitelisted && !this.hides.brune) {
             filteredNodes[index].churn.push({
               iconSrc: require('@/assets/images/assets/brune.png'),
               type: 'brune',
@@ -1461,15 +1461,13 @@ export default {
 
       const bRuneState = this.bRuneNodeState[node.node_address]
 
-      // node -> contract: the node appears in the contract's own node list,
-      // i.e. it has opted in as a bond provider (regardless of bond amount).
-      row.bRuneWhitelistsContract = Boolean(bRuneState)
+      // Per the rujira-brune contract, `state().nodes.nodes` IS the
+      // whitelist (StateResponse.nodes is documented as "Whitelisted
+      // nodes"): a node lands there once it registers as a bond provider,
+      // independent of whether the contract has bonded RUNE to it yet.
+      row.bRuneWhitelisted = Boolean(bRuneState)
       row.bRuneBond = bRuneState?.bond || 0
       row.bRuneCapacity = bRuneState?.capacity
-      // contract -> node: the contract has actually bonded RUNE to the node.
-      // Being in the node list only means the node opted in; that does NOT
-      // mean the contract whitelisted it, so gate on bond > 0.
-      row.bRuneWhitelisted = row.bRuneBond > 0
     },
     setNewNodesChurn(num) {
       this.newNodesChurn = num
