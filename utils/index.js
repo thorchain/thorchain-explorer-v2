@@ -1062,6 +1062,22 @@ export const interfaces = {
     name: 'XChainJS',
     icon: 'xchain',
   },
+  tangem: {
+    name: 'Tangem',
+    icon: 'tangem',
+  },
+  ledger: {
+    name: 'Ledger',
+    icon: 'ledger',
+  },
+  wagmi: {
+    name: 'WAGMI',
+    icon: 'wagmi',
+  },
+  ironwallet: {
+    name: 'IronWallet',
+    icon: 'ironwallet',
+  },
 }
 
 export const affiliateMap = {
@@ -1124,7 +1140,11 @@ export const affiliateMap = {
   xv: interfaces.xverse,
   ahi: interfaces.xdefi,
   bdc: interfaces.orangerock,
-  xc: interfaces.xchain
+  xc: interfaces.xchain,
+  tan: interfaces.tangem,
+  l1: interfaces.ledger,
+  wgm: interfaces.wagmi,
+  few: interfaces.ironwallet
 }
 
 export function getExplorerAddressUrl(chain, query, type) {
