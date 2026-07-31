@@ -85,15 +85,15 @@
             </div>
           </span>
           <span v-else-if="props.column.field == 'total_bond'" class="hoverable">
-            <span v-tooltip="formatCurrency(runePrice * props.row.total_bond)">
-              <RuneAsset height="0.7rem" :style="getHighlightStyle(props.row.address)" />
+            <span v-tooltip="formatCurrency(runePrice * props.row.total_bond)" class="currency-value">
               {{ normalFormat(props.row.total_bond) }}
+              <RuneAsset height="0.7rem" :style="getHighlightStyle(props.row.address)" />
             </span>
           </span>
           <span v-else-if="props.column.field == 'award'" class="hoverable">
-            <span v-tooltip="formatCurrency(runePrice * props.row.award)">
-              <RuneAsset height="0.7rem" :style="getHighlightStyle(props.row.address)" />
+            <span v-tooltip="formatCurrency(runePrice * props.row.award)" class="currency-value">
               {{ props.row.award }}
+              <RuneAsset height="0.7rem" :style="getHighlightStyle(props.row.address)" />
             </span>
           </span>
           <div v-else-if="props.column.field == 'vault'" class="vault-wrapper">
@@ -671,6 +671,13 @@ export default {
 }
 .version {
   color: var(--primary-color);
+}
+
+.currency-value {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
 }
 
 .brune-icon {
