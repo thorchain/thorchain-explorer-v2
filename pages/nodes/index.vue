@@ -1047,6 +1047,7 @@ export default {
               type: 'brune',
               bRuneBond: bRuneRow.bRuneBond,
               bRuneCapacity: bRuneRow.bRuneCapacity,
+              bRuneIsLeaving: bRuneRow.bRuneIsLeaving,
             })
           }
         })
@@ -1209,6 +1210,7 @@ export default {
               type: 'brune',
               bRuneBond: bRuneRow.bRuneBond,
               bRuneCapacity: bRuneRow.bRuneCapacity,
+              bRuneIsLeaving: bRuneRow.bRuneIsLeaving,
             })
           }
         }
@@ -1261,6 +1263,7 @@ export default {
               type: 'brune',
               bRuneBond: bRuneRow.bRuneBond,
               bRuneCapacity: bRuneRow.bRuneCapacity,
+              bRuneIsLeaving: bRuneRow.bRuneIsLeaving,
             })
           }
         })
@@ -1388,6 +1391,8 @@ export default {
           acc[n.addr] = {
             bond: Number(n.bond || 0) / 1e8,
             capacity: Number(n.capacity || 0) / 1e8,
+            status: n.status,
+            isLeaving: Boolean(n.is_leaving),
           }
           return acc
         }, {})
@@ -1468,6 +1473,8 @@ export default {
       row.bRuneWhitelisted = Boolean(bRuneState)
       row.bRuneBond = bRuneState?.bond || 0
       row.bRuneCapacity = bRuneState?.capacity
+      row.bRuneStatus = bRuneState?.status
+      row.bRuneIsLeaving = bRuneState?.isLeaving || false
     },
     setNewNodesChurn(num) {
       this.newNodesChurn = num

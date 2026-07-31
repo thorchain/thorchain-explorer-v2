@@ -225,6 +225,7 @@
                     </span>
                     <span v-else-if="churnItem.type === 'brune'">
                       <strong>bRUNE</strong>
+                      <span :class="['mini-bubble', bRuneStage(churnItem).cls]" style="margin-left: 6px">{{ bRuneStage(churnItem).label }}</span>
                       <hr class="hr-space"/>
                       <div style="margin-top: 0.5rem; padding: 4px">
                         <div>
@@ -237,7 +238,7 @@
                         </div>
                       </div>
                       <hr class="hr-space"/>
-                      <small>This node is whitelisted as a bRUNE bond provider. Bonded amount can be 0 if the contract hasn't allocated funds to it yet.</small>
+                      <small>{{ bRuneStage(churnItem).description }}</small>
                     </span>
                     <span v-else-if="churnItem.type !== 'jail'">
                       {{ churnItem.name }}
@@ -448,6 +449,40 @@ export default {
     window.addEventListener('visibilitychange', this.unloadRank)
   },
   methods: {
+    bRuneStage(churnItem) {
+      const capacity = churnItem.bRuneCapacity || 0
+      const bond = churnItem.bRuneBond || 0
+      if (capacity > 0) {
+        return {
+          cls: '',
+          label: 'Accepting bond',
+          description:
+            'The contract still has capacity to bond more RUNE to this node.',
+        }
+      }
+      if (bond > 0) {
+        return {
+          cls: 'info',
+          label: 'Fully bonded',
+          description:
+            "This node has reached the contract's max bond allocation, so no capacity remains.",
+        }
+      }
+      if (churnItem.bRuneIsLeaving) {
+        return {
+          cls: 'orange',
+          label: 'Leaving',
+          description:
+            'This node is leaving the active set; any bonded RUNE will be unbonded at the next churn.',
+        }
+      }
+      return {
+        cls: 'yellow',
+        label: 'Not yet eligible',
+        description:
+          "This node is whitelisted but isn't currently eligible to receive bond (e.g. still awaiting Standby preflight, or below the network's minimum bond).",
+      }
+    },
     getHighlightStyle(address) {
       return {
         color: this.isFav(address) ? this.vaultColor(address, true) : '',
