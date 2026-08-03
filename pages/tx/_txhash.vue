@@ -5156,8 +5156,8 @@ export default {
         done: true,
       }))
 
-      if (outs?.length === 0 && thorStatus.planned_out_txs?.length > 0) {
-        thorStatus.planned_out_txs.map((t) => ({
+      if (outs?.length === 0 && thorStatus?.planned_out_txs?.length > 0) {
+        thorStatus?.planned_out_txs.map((t) => ({
           asset: this.parseMemoAsset(t.coin.asset),
           amount: t.coin.amount,
           to: t.to_address,
@@ -5395,8 +5395,8 @@ export default {
 
       const outAsset = isSecure ? assetToSecure(ast) : assetToTrade(ast)
       let outs
-      if (thorStatus.out_txs?.length > 0) {
-        outs = thorStatus.out_txs.map((tx) => ({
+      if (thorStatus?.out_txs?.length > 0) {
+        outs = thorStatus?.out_txs.map((tx) => ({
           asset: outAsset,
           amount: tx.coins?.[0]?.amount,
           txid: tx.id,
@@ -5483,8 +5483,8 @@ export default {
       const outboundETA = this.getScheduledOutboundETA(thorStatus)
       const outDone = thorStatus?.stages?.outbound_signed?.completed === true
 
-      const plannedOuts = thorStatus.planned_out_txs ?? []
-      const completedOuts = thorStatus.out_txs ?? []
+      const plannedOuts = thorStatus?.planned_out_txs ?? []
+      const completedOuts = thorStatus?.out_txs ?? []
 
       let outs
       if (plannedOuts.length > 0) {
@@ -5505,7 +5505,7 @@ export default {
             gasAsset: completed?.gas
               ? this.parseMemoAsset(completed.gas[0]?.asset, this.pools)
               : null,
-            outboundSigned,
+            outboundSigned: completed ? true : outboundSigned,
             outboundETA: completed ? null : outboundETA,
             done: !!completed,
           }
@@ -6109,12 +6109,12 @@ export default {
         outTxs && new Set([outTxs.map((t) => t?.id?.toUpperCase())])
 
       let hasOngoing = false
-      if (thorStatus.planned_out_txs > 0) {
-        hasOngoing = thorStatus.planned_out_txs?.some(
+      if (thorStatus?.planned_out_txs > 0) {
+        hasOngoing = thorStatus?.planned_out_txs?.some(
           (tx) => !userTxs.has(tx.to_address.toUpperCase())
         )
         outTxs.push(
-          thorStatus.planned_out_txs?.filter(
+          thorStatus?.planned_out_txs?.filter(
             (tx) => !userTxs.has(tx.to_address.toUpperCase())
           )
         )
@@ -6129,11 +6129,16 @@ export default {
           outTxs?.length > 0 ? parseInt(outTxs[0]?.coins?.[0]?.amount ?? 0) : 0
       }
 
+      const outboundDone =
+        thorStatus?.stages.outbound_signed?.completed ||
+        outAsset?.chain === 'THOR'
+
       const outs = []
       if (outAsset) {
         outs.push({
           asset: outAsset,
           amount: outAmount,
+          done: outboundDone,
         })
       }
 
@@ -6143,6 +6148,7 @@ export default {
           ...moreOuts.map((o) => ({
             asset: this.parseMemoAsset(o.coins?.[0]?.asset, this.pools),
             amount: parseInt(o.coins?.[0]?.amount ?? 0),
+            done: outboundDone,
           }))
         )
       }
@@ -6163,9 +6169,7 @@ export default {
           outboundETA,
           outboundSigned:
             thorStatus?.stages.outbound_signed?.completed ?? false,
-          done:
-            thorStatus?.stages.outbound_signed?.completed ||
-            outAsset?.chain === 'THOR',
+          done: outboundDone,
         })
 
         if (moreOuts && moreOuts.length > 0) {
@@ -6181,9 +6185,7 @@ export default {
                 : null,
               outboundSigned:
                 thorStatus?.stages.outbound_signed?.completed ?? false,
-              done:
-                thorStatus?.stages.outbound_signed?.completed ||
-                outAsset?.chain === 'THOR',
+              done: outboundDone,
             }))
           )
         }
@@ -6331,21 +6333,43 @@ export default {
         const parsed = this.parseMemoAsset(memo?.asset)
         return parsed ? assetToString(parsed) : null
       })()
-      let outTxs = thorStatus.out_txs?.filter(
+      // Midgard already tells us, per outbound, whether it's an affiliate
+      // payout (`out[].affiliate`). THORNode's tx status/details have no such
+      // flag, so outTxs below is otherwise built from an address/asset
+      // heuristic that is wrong whenever an affiliate fee is paid in the
+      // swap's destination asset, or whenever the THORNode endpoints
+      // (tx/status, tx/details) fail or return incomplete data for this tx —
+      // which happens often enough to matter (load-balanced/archival nodes).
+      // Midgard's flag is unaffected by any of that, so it's used both to
+      // exclude affiliate addresses from the THORNode-derived list AND as the
+      // final fallback source of truth when THORNode gives us nothing usable.
+      const midgardSwapActionForAffiliate =
+        actions?.actions?.find((a) => a.type === 'swap') ??
+        actions?.actions?.find((a) => a.type === 'limit_swap')
+      const midgardOuts = midgardSwapActionForAffiliate?.out ?? []
+      const affiliateAddresses = new Set(
+        midgardOuts
+          .filter((o) => o.affiliate)
+          .map((o) => o.address?.toLowerCase())
+          .filter(Boolean)
+      )
+      const nonAffiliateMidgardOuts = midgardOuts.filter((o) => !o.affiliate)
+      let outTxs = thorStatus?.out_txs?.filter(
         (tx) =>
-          userAddresses.has(tx.to_address?.toLowerCase()) ||
-          (tx.coins?.[0]?.asset === memoAssetStr &&
-            tx.id !==
-              '0000000000000000000000000000000000000000000000000000000000000000' &&
-            tx.id !== '')
+          !affiliateAddresses.has(tx.to_address?.toLowerCase()) &&
+          (userAddresses.has(tx.to_address?.toLowerCase()) ||
+            (tx.coins?.[0]?.asset === memoAssetStr &&
+              tx.id !==
+                '0000000000000000000000000000000000000000000000000000000000000000' &&
+              tx.id !== ''))
       )
       // get affiliate out if available
-      const affiliateOut = thorStatus.out_txs?.filter(
+      // Note: affiliate payouts (esp. RUNE ones) are often internal transfers
+      // with a zero-hash id, so id is not a useful filter here — go by address.
+      const affiliateOut = thorStatus?.out_txs?.filter(
         (tx) =>
-          !userAddresses.has(tx.to_address?.toLowerCase()) &&
-          (tx.id !==
-            '0000000000000000000000000000000000000000000000000000000000000000' ||
-            tx.id !== '')
+          affiliateAddresses.has(tx.to_address?.toLowerCase()) ||
+          !userAddresses.has(tx.to_address?.toLowerCase())
       )
       // TODO: fix this in track code
       if (
@@ -6353,12 +6377,29 @@ export default {
         outTxs?.length === 0 ||
         outTxs.every((o) => o.to_address === thorStatus?.tx.from_address) // Add scheduled outbound while having a refund
       ) {
-        outTxs = thorStatus.planned_out_txs
-          ?.filter((tx) => userAddresses.has(tx.to_address.toLowerCase()))
+        outTxs = thorStatus?.planned_out_txs
+          ?.filter(
+            (tx) =>
+              userAddresses.has(tx.to_address.toLowerCase()) &&
+              !affiliateAddresses.has(tx.to_address.toLowerCase())
+          )
           .map((tx) => ({
             ...tx,
             coins: [{ amount: tx.coin.amount, asset: tx.coin.asset }],
           }))
+      }
+
+      // THORNode gave us nothing usable (tx/status and tx/details can both
+      // fail or come back incomplete, e.g. for older/archived transactions on
+      // load-balanced nodes) — fall back to Midgard's own outs directly. It
+      // already excludes affiliate payouts, so this can never surface one.
+      if (!outTxs || outTxs.length === 0) {
+        outTxs = nonAffiliateMidgardOuts.map((o) => ({
+          id: o.txID || null,
+          to_address: o.address,
+          coins: o.coins,
+          height: o.height,
+        }))
       }
 
       // Add scheduled refund actions from thorTx.actions that aren't yet in out_txs
@@ -6388,10 +6429,13 @@ export default {
       }
 
       // Add scheduled outbound actions from thorTx.actions not yet in out_txs.
-      // Skip THOR.RUNE actions going to a non-user address — those are affiliate payments.
+      // Skip anything Midgard flagged as an affiliate payout, and (as a
+      // fallback for when Midgard's out[] isn't available either) skip
+      // THOR.RUNE actions going to a non-user address — those are affiliate payments.
       const scheduledOutActions = (thorTx?.actions ?? []).filter(
         (a) =>
           a.memo?.toLowerCase().startsWith('out:') &&
+          !affiliateAddresses.has(a.to_address?.toLowerCase()) &&
           !(
             a.coin?.asset === 'THOR.RUNE' &&
             !userAddresses.has(a.to_address?.toLowerCase())
@@ -6602,6 +6646,24 @@ export default {
           ? 'refunded Rapid Swap'
           : 'refunded Swap'
 
+      const firstOutDone =
+        (outTxs?.length > 0 && !!outTxs[0]?.id) ||
+        (!thorStatus?.stages.swap_status?.pending &&
+          (thorStatus?.stages.outbound_signed?.completed ||
+            outAsset?.chain === 'THOR' ||
+            outAsset?.synth ||
+            outAsset?.trade ||
+            outAsset?.secure) &&
+          (thorStatus?.stages.outbound_delay?.completed ?? true))
+      const moreOutDone = (o) =>
+        !!o.id ||
+        (!thorStatus?.stages.swap_status?.pending &&
+          (thorStatus?.stages.outbound_signed?.completed ||
+            outAsset?.chain === 'THOR' ||
+            outAsset?.synth ||
+            outAsset?.trade ||
+            outAsset?.secure))
+
       return {
         cards: {
           title: onlyRefund ? refundedSwapTypeLabel : swapTypeLabel,
@@ -6627,6 +6689,7 @@ export default {
               filter: outAmount
                 ? undefined
                 : (v) => `~ ${this.baseAmountFormatOrZero(v)}`,
+              done: firstOutDone,
             },
             ...(outTxs ?? []).slice(1).map((o) => {
               const oAmount = parseInt(o.coins?.[0]?.amount ?? 0)
@@ -6640,6 +6703,7 @@ export default {
                 amount: oAmount,
                 amountUSD: (priceUSD * oAmount) / 1e8,
                 usdAtExecution: true,
+                done: moreOutDone(o),
               }
             }),
           ],
@@ -6747,15 +6811,7 @@ export default {
               outboundETA: this.getScheduledOutboundETA(thorStatus),
               outboundSigned:
                 thorStatus?.stages.outbound_signed?.completed ?? undefined,
-              done:
-                (outTxs?.length > 0 && outTxs[0]?.id) ||
-                (!thorStatus?.stages.swap_status?.pending &&
-                  (thorStatus?.stages.outbound_signed?.completed ||
-                    outAsset?.chain === 'THOR' ||
-                    outAsset?.synth ||
-                    outAsset?.trade ||
-                    outAsset?.secure) &&
-                  (thorStatus?.stages.outbound_delay?.completed ?? true)),
+              done: firstOutDone,
             },
             ...(outTxs ?? []).slice(1).map((o) => ({
               txid: o.id,
@@ -6767,14 +6823,7 @@ export default {
               gasAsset: o.gas
                 ? this.parseMemoAsset(o.gas?.[0]?.asset, this.pools)
                 : null,
-              done:
-                !!o.id ||
-                (!thorStatus?.stages.swap_status?.pending &&
-                  (thorStatus?.stages.outbound_signed?.completed ||
-                    outAsset?.chain === 'THOR' ||
-                    outAsset?.synth ||
-                    outAsset?.trade ||
-                    outAsset?.secure)),
+              done: moreOutDone(o),
             })),
           ],
         },

@@ -41,6 +41,7 @@ export function buildCardDetails(cardBase, ctx) {
         borderColor: a?.borderColor,
         filter: a?.filter,
         class: a?.class,
+        done: a?.done,
       })),
     },
   }

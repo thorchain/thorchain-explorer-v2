@@ -117,6 +117,7 @@
             v-for="(o, i) in overall.out"
             :key="i + '-o-out'"
             class="tx-outbound"
+            :class="{ 'tx-outbound--scheduled': o.done === false }"
             :style="getBorderColor(o.asset)"
           >
             <div class="outbound-info">
@@ -681,6 +682,10 @@ $border-size: 2px;
           .custom-icon {
             fill: var(--right-border);
           }
+        }
+
+        &.tx-outbound--scheduled {
+          border-style: dashed;
         }
       }
 
