@@ -45,7 +45,7 @@
       </div>
     </div>
     <div class="right-section">
-      <div v-show="isOverviewPage ? isScrolled : true" id="search-container">
+      <div v-show="isOverviewPage ? isScrolled : true" class="search-wrapper">
         <SearchComponent
           ref="searchComponent"
           :use-default-styles="true"
@@ -272,15 +272,18 @@ export default {
   &.expanded {
     gap: 0;
     .left-section {
-      display: none;
+      opacity: 0;
+      max-width: 0;
+      overflow: hidden;
+      pointer-events: none;
       gap: 0;
     }
 
     .right-section {
-      #search-container {
+      .search-wrapper {
         flex: 1;
         display: flex;
-        overflow: hidden;
+        overflow: visible;
       }
     }
   }
@@ -442,6 +445,10 @@ export default {
     align-items: center;
     gap: 0 8px;
     height: 35px;
+    max-width: 60vw;
+    transition:
+      opacity 0.2s ease,
+      max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .right-section {
@@ -484,10 +491,10 @@ export default {
       }
     }
   }
-  #search-container {
+  .search-wrapper {
     display: flex;
     position: relative;
-    transition: all 0.5s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: visible;
     width: 46px;
 

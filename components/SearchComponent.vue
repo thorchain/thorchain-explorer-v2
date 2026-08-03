@@ -852,16 +852,11 @@ export default {
   &.mobile-search {
     width: 46px;
     overflow: hidden;
-    transition: width 1s ease;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     &.expanded {
       width: 100%;
       overflow: visible;
-    }
-
-    &:not(.expanded) {
-      transition: width 4s ease;
-      opacity: 0.9;
     }
 
     .search-bar-input {
