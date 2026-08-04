@@ -272,10 +272,7 @@ export default {
   &.expanded {
     gap: 0;
     .left-section {
-      opacity: 0;
-      max-width: 0;
-      overflow: hidden;
-      pointer-events: none;
+      display: none;
       gap: 0;
     }
 
@@ -445,10 +442,6 @@ export default {
     align-items: center;
     gap: 0 8px;
     height: 35px;
-    max-width: 60vw;
-    transition:
-      opacity 0.2s ease,
-      max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .right-section {
@@ -494,7 +487,6 @@ export default {
   .search-wrapper {
     display: flex;
     position: relative;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: visible;
     width: 46px;
 

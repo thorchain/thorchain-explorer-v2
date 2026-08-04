@@ -8,18 +8,30 @@
     }"
     @click="search"
   >
-    <SearchIcon v-if="showSearchIcon" class="search-icon-left" @click="find" />
+    <button
+      v-show="isMobile && !isExpanded"
+      type="button"
+      class="search-toggle-btn"
+      aria-label="Open search"
+      @click="openMobileSearch"
+    >
+      <SearchIcon class="search-icon-left search-icon-static" />
+    </button>
+
+    <SearchIcon
+      v-if="showSearchIcon"
+      v-show="showExpandedContent"
+      class="search-icon-left"
+      @click="find"
+    />
 
     <input
       ref="searchInput"
       v-model="searchQuery"
-      :class="['search-bar-input', { hidden: isMobile && !isExpanded }]"
+      v-show="showExpandedContent"
+      class="search-bar-input"
       type="text"
-      :placeholder="
-        isMobile && !isExpanded
-          ? false
-          : 'Search by Address / Txn Hash / THORName'
-      "
+      placeholder="Search by Address / Txn Hash / THORName"
       @keyup.enter="find"
       @keydown="handleKeydown"
       @input="onSearchInput"
@@ -27,24 +39,26 @@
       @blur="onBlur()"
     />
 
-    <div v-if="isLoading" class="loading-spinner">
-      <div class="loading-dots">
-        <div class="dot"></div>
-        <div class="dot"></div>
-        <div class="dot"></div>
+    <div v-show="showExpandedContent">
+      <div v-if="isLoading" class="loading-spinner">
+        <div class="loading-dots">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
       </div>
-    </div>
-    <div v-else-if="searchQuery.trim().length > 0" class="action-buttons">
-      <CrossIcon class="clear-button" @click="clearSearch" />
-      <EnterIcon
-        v-if="suggestions.length > 0"
-        class="enter-button"
-        @click="goToFirstResult"
-      />
-    </div>
-    <!-- "/" key indicator on the right -->
-    <div v-else-if="showSearchIcon" class="slash-key" @click="find">
-      <span class="mono">/</span>
+      <div v-else-if="searchQuery.trim().length > 0" class="action-buttons">
+        <CrossIcon class="clear-button" @click="clearSearch" />
+        <EnterIcon
+          v-if="suggestions.length > 0"
+          class="enter-button"
+          @click="goToFirstResult"
+        />
+      </div>
+      <!-- "/" key indicator on the right -->
+      <div v-else-if="showSearchIcon" class="slash-key" @click="find">
+        <span class="mono">/</span>
+      </div>
     </div>
 
     <div
@@ -226,6 +240,9 @@ export default {
         { type: 'block', label: 'Blocks', count: counts.block },
       ].filter((filter) => filter.count > 0 || filter.type === 'all')
     },
+    showExpandedContent() {
+      return !(this.isMobile && !this.isExpanded)
+    },
   },
   watch: {
     $route() {
@@ -251,12 +268,14 @@ export default {
     this.clearTimeouts()
   },
   methods: {
-    find() {
-      if (this.isMobile && !this.isExpanded) {
-        this.$emit('expand-search')
-        return
-      }
+    openMobileSearch() {
+      this.$emit('expand-search')
+      this.$nextTick(() => {
+        this.$refs.searchInput.focus()
+      })
+    },
 
+    find() {
       if (!this.isSearch) {
         this.$refs.searchInput.focus()
         return
@@ -475,6 +494,11 @@ export default {
     handleGlobalKeydown(e) {
       if (e.key === '/' && !this.isInputFocused()) {
         e.preventDefault()
+
+        if (this.isMobile && !this.isExpanded) {
+          this.$emit('expand-search')
+        }
+
         this.$nextTick(() => {
           this.$refs.searchInput.focus()
           this.$refs.searchInput.classList.add('slash-focus')
@@ -851,19 +875,37 @@ export default {
 
   &.mobile-search {
     width: 46px;
-    overflow: hidden;
-    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: none;
 
     &.expanded {
       width: 100%;
-      overflow: visible;
+    }
+  }
+
+  .search-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 40px;
+    padding: 0;
+    border: none;
+    border-radius: $radius-xl;
+    background: transparent;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    transition: background-color 0.2s ease;
+
+    &:hover,
+    &:active {
+      background-color: var(--darker-bg);
     }
 
-    .search-bar-input {
-      &.hidden {
-        color: transparent;
-        background-color: transparent;
-      }
+    .search-icon-static {
+      position: static;
+      padding-right: 0;
+      background: transparent;
     }
   }
 
