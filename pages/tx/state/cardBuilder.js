@@ -42,6 +42,7 @@ export function buildCardDetails(cardBase, ctx) {
         filter: a?.filter,
         class: a?.class,
         done: a?.done,
+        affiliate: a?.affiliate,
       })),
     },
   }

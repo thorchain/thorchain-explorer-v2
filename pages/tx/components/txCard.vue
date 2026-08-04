@@ -117,7 +117,9 @@
             v-for="(o, i) in overall.out"
             :key="i + '-o-out'"
             class="tx-outbound"
-            :class="{ 'tx-outbound--scheduled': o.done === false }"
+            :class="{
+              'tx-outbound--scheduled': o.done === false && hasMultipleOutbounds,
+            }"
             :style="getBorderColor(o.asset)"
           >
             <div class="outbound-info">
@@ -248,6 +250,9 @@ export default {
         },
         out: this.txData?.overall?.out ?? [],
       }
+    },
+    hasMultipleOutbounds() {
+      return this.overall.out.filter((o) => !o.affiliate).length > 1
     },
     statusBubble() {
       const m = this.overall.middle
