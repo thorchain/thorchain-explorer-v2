@@ -131,7 +131,7 @@ export default {
     return {
       txs: undefined,
       loading: false,
-      limit: 10,
+      limit: 20,
       nextPageToken: undefined,
       prevPageToken: undefined,
       error: false,
