@@ -10,6 +10,9 @@
       <template #metric-icon-3>
         <RuneAsset asset="THOR.RUNE" :height="'1.2rem'" />
       </template>
+      <template #metric-icon-4>
+        <RuneAsset asset="THOR.RUNE" :height="'1.2rem'" />
+      </template>
     </stats-panel>
     <Card title="Distributions" class="distributions-card">
       <template #header>
@@ -155,6 +158,14 @@ export default {
           },
         },
         {
+          label: 'Monthly Payment',
+          value: this.monthlyEarn,
+          filter: (val) => {
+            return `${this.$options.filters.number(val, '0,0.0000')} `
+          },
+          subValue: `${this.$options.filters.currency(this.monthlyEarn * this.runePrice)}`,
+        },
+        {
           label: 'Total Earned',
           value: this.distribution.total / 1e8,
           filter: (val) => {
@@ -178,6 +189,19 @@ export default {
       }
 
       return totalEarn / days
+    },
+    monthlyEarn() {
+      const distributions = this.distribution?.distributions
+      if (distributions && distributions.length) {
+        const thirtyDaysAgo = moment().subtract(31, 'days').unix()
+        const recent = distributions.filter((d) => d.date >= thirtyDaysAgo)
+
+        if (recent.length) {
+          return recent.reduce((sum, d) => sum + Number(d.amount), 0) / 1e8
+        }
+      }
+
+      return this.dailyEarn * 30
     },
     tcyAPY() {
       if (this.showPriceInterval) {
