@@ -46,7 +46,11 @@
       <div class="tx-detail-grid">
         <div class="tx-detail-main">
           <section class="tx-swap-card card-bg">
-            <div class="tx-swap-head" :style="panelVars">
+            <div
+              v-if="activeOverview.pairDisplay || activeOverview.input || activeOverview.output"
+              class="tx-swap-head"
+              :style="panelVars"
+            >
               <template v-if="activeOverview.pairDisplay">
                 <div class="tx-pair-display">
                   <div class="tx-pair-icons">
@@ -77,7 +81,7 @@
                 </div>
               </template>
               <template v-else>
-              <div class="tx-asset-panel">
+              <div v-if="activeOverview.input" class="tx-asset-panel">
                 <div class="tx-asset-label">Input</div>
                 <div class="tx-asset-primary">
                   <AssetIcon
