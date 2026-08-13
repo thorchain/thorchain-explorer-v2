@@ -98,7 +98,7 @@
                   <span>{{ activeOverview.input.amount }}</span>
                   <strong
                     v-if="activeOverview.input.usd"
-                    v-tooltip="activeOverview.input.usdAtExecution ? 'Price at the moment the transaction was executed' : 'Based on current price, not price at the time of the transaction'"
+                    v-tooltip="activeOverview.input.usdAtExecution ? 'Value based on price at the time the transaction was executed' : 'Based on current price, not price at the time of the transaction'"
                     style="cursor: help"
                   >{{
                     safeUsdDisplay(activeOverview.input.usd)
@@ -139,7 +139,7 @@
                   <span>{{ activeOverview.output.amount }}</span>
                   <strong
                     v-if="activeOverview.output.usd"
-                    v-tooltip="activeOverview.output.usdAtExecution ? 'Price at the moment the transaction was executed' : 'Based on current price, not price at the time of the transaction'"
+                    v-tooltip="activeOverview.output.usdAtExecution ? 'Value based on price at the time the transaction was executed' : 'Based on current price, not price at the time of the transaction'"
                     style="cursor: help"
                   >{{
                     safeUsdDisplay(activeOverview.output.usd)
@@ -963,12 +963,8 @@ export default {
                 assetFromString(cOutAssetStr))
             : null
           const cOutTicker = cOutAsset?.ticker || cPrimaryDenom
-          const cInUsdRaw = swapMeta?.inPriceUSD
-            ? (cFundsAmount / 1e8) * parseFloat(swapMeta.inPriceUSD)
-            : this.amountToUSD(cInAssetStr, cFundsAmount, this.pools)
-          const cOutUsdRaw = swapMeta?.outPriceUSD
-            ? (cReceivedAmt / 1e8) * parseFloat(swapMeta.outPriceUSD)
-            : this.amountToUSD(cOutAssetStr, cReceivedAmt, this.pools)
+          const cInUsdRaw = this.amountToUSD(cInAssetStr, cFundsAmount, this.pools)
+          const cOutUsdRaw = this.amountToUSD(cOutAssetStr, cReceivedAmt, this.pools)
           contractDisplay = {
             inputAsset: cInAssetStr || null,
             inputName:
@@ -4854,7 +4850,9 @@ export default {
 
       const userAddresses = new Set([
         thorStatus?.tx?.from_address?.toLowerCase(),
-        memo.destAddr?.toLowerCase(),
+        // destAddr can be a dual-destination memo (PRIMARY/REFUND) — split so
+        // both addresses are recognized as belonging to the user.
+        ...(memo.destAddr?.split('/').map((a) => a.toLowerCase()) ?? []),
       ])
 
       let outTxs = thorStatus?.out_txs?.filter((tx) =>
@@ -6330,7 +6328,10 @@ export default {
       // swap user addresses
       const userAddresses = new Set([
         thorStatus?.tx.from_address.toLowerCase(),
-        memo.destAddr?.toLowerCase(), // TODO: sometimes the memo destAddr will be THORName
+        // destAddr can be a dual-destination memo (PRIMARY/REFUND) — split so
+        // both addresses are recognized as belonging to the user.
+        // TODO: sometimes the memo destAddr will be THORName
+        ...(memo.destAddr?.split('/').map((a) => a.toLowerCase()) ?? []),
       ])
       // Non affiliate outs
       const memoAssetStr = (() => {

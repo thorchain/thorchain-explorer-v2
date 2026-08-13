@@ -77,7 +77,7 @@
                   v-if="o.amountUSD"
                   v-tooltip="
                     o.usdAtExecution
-                      ? 'Price at the moment the transaction was executed'
+                      ? 'Value based on price at the time the transaction was executed'
                       : undefined
                   "
                   :style="o.usdAtExecution ? 'cursor: help' : undefined"
@@ -154,7 +154,7 @@
                   v-if="o.amountUSD"
                   v-tooltip="
                     o.usdAtExecution
-                      ? 'Price at the moment the transaction was executed'
+                      ? 'Value based on price at the time the transaction was executed'
                       : undefined
                   "
                   :style="o.usdAtExecution ? 'cursor: help' : undefined"
