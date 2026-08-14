@@ -3815,6 +3815,176 @@ export default {
         }
       }
 
+      // CCL range yield claim: msg.range.claim
+      const rangeClaimMsg = singleAction?.metadata?.contract?.msg?.range?.claim
+      if (rangeClaimMsg) {
+        const action = singleAction
+        const contractAddress = action.out?.[0]?.address || ''
+        const contractLabel =
+          getRujiraContractLabel(contractAddress) ||
+          this.formatAddress(contractAddress)
+        const productLabel =
+          getRujiraContractProduct(contractAddress) || 'RUJI Trade'
+        const userAddress = action.in?.[0]?.address || ''
+        const hasError = (action.metadata?.contract?.code ?? 0) > 0
+        const logs = action.metadata?.contract?.logs
+        const status = hasError
+          ? { label: 'Failed', tone: 'red' }
+          : action.status === 'success'
+            ? { label: 'Success', tone: 'green' }
+            : { label: 'Pending', tone: 'blue' }
+        const date = action.date
+        const timestamp = date ? moment.unix(parseInt(date) / 1e9) : null
+        const height = parseInt(action.height)
+        const events = action.metadata?.contract?.contractEvents || []
+        const toAttrs = (e) =>
+          Object.fromEntries(
+            (e.attributes || []).map(({ key, value }) => [key, value])
+          )
+
+        const rangeIdx = rangeClaimMsg.idx || ''
+
+        // Claimed amounts from the range.claim event
+        const claimEvent = events.find(
+          (e) => e.type === 'wasm-rujira-fin/range.claim'
+        )
+        const claimAttrs = claimEvent ? toAttrs(claimEvent) : {}
+        const baseAmt = parseInt(claimAttrs.base || 0)
+        const quoteAmt = parseInt(claimAttrs.quote || 0)
+
+        // Derive pair denoms from registry contractLabel ("rujira-fin:base:quote")
+        // Fall back to parsing the coin_received event
+        const pairEntry = getRujiraContractEntry(contractAddress)
+        const pairLabelParts = (pairEntry?.contractLabel || '').split(':')
+        let baseDenom = pairLabelParts[1] || ''
+        let quoteDenom = pairLabelParts[2] || ''
+
+        if (!baseDenom || !quoteDenom) {
+          const receivedEvent = events.find(
+            (e) =>
+              e.type === 'coin_received' &&
+              (e.attributes || []).some(
+                (a) => a.key === 'receiver' && a.value === userAddress
+              )
+          )
+          const receivedAmtStr = (receivedEvent?.attributes || []).find(
+            (a) => a.key === 'amount'
+          )?.value || ''
+          receivedAmtStr.split(',').forEach((part, i) => {
+            const denom = part.replace(/^\d+/, '').trim()
+            if (i === 0 && !baseDenom) baseDenom = denom
+            if (i === 1 && !quoteDenom) quoteDenom = denom
+          })
+        }
+
+        const denomToAssetStr = (denom) =>
+          !denom
+            ? ''
+            : denom === 'rune'
+              ? 'THOR.RUNE'
+              : securedToAsset(denom).toUpperCase()
+
+        const baseAssetStr = denomToAssetStr(baseDenom)
+        const quoteAssetStr = denomToAssetStr(quoteDenom)
+        const baseAssetParsed = baseAssetStr ? assetFromString(baseAssetStr) : null
+        const quoteAssetParsed = quoteAssetStr ? assetFromString(quoteAssetStr) : null
+        const baseTicker = baseAssetParsed?.ticker || baseDenom || 'Base'
+        const quoteTicker = quoteAssetParsed?.ticker || quoteDenom || 'Quote'
+
+        const pairLabel =
+          baseTicker && quoteTicker ? `${baseTicker}/${quoteTicker}` : contractLabel
+
+        const baseUsd = this.amountToUSD(baseAssetStr, baseAmt, this.pools)
+        const quoteUsd = this.amountToUSD(quoteAssetStr, quoteAmt, this.pools)
+
+        return {
+          rawEvents: events,
+          rawMsg: action?.metadata?.contract?.msg || null,
+          title: `Claim Yield: Range #${rangeIdx} on ${pairLabel}`,
+          metaLabel: `Claim Yield · ${pairLabel}`,
+          status,
+          affiliateAddress: '',
+          actionTypeTitle: 'contract',
+          hasContractAction: true,
+          labels: [],
+          pairDisplay: null,
+          input: {
+            asset: baseAssetStr || null,
+            name: `${baseTicker} (Base)`,
+            badge: this.getNetworkBadge(baseAssetParsed) || '',
+            amount: baseAmt
+              ? `${this.baseAmountFormatOrZero(baseAmt)} ${baseTicker}`
+              : '—',
+            usd: this.formatUsdValue(baseUsd),
+          },
+          output: {
+            asset: quoteAssetStr || null,
+            name: `${quoteTicker} (Quote)`,
+            badge: this.getNetworkBadge(quoteAssetParsed) || '',
+            amount: quoteAmt
+              ? `${this.baseAmountFormatOrZero(quoteAmt)} ${quoteTicker}`
+              : '—',
+            usd: this.formatUsdValue(quoteUsd),
+          },
+          metricRows: [
+            rangeIdx ? { label: 'Range Index', value: `#${rangeIdx}` } : null,
+            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
+          ].filter(Boolean),
+          detailRows: [
+            {
+              label: 'Product',
+              value: productLabel,
+              tone: this.getProductTone(productLabel),
+              type: 'product',
+            },
+            {
+              label: 'Action',
+              value: 'Claim Yield',
+              tone: this.getContractTypeTone('Claim Yield'),
+              type: 'product',
+            },
+            { label: 'Pair', value: pairLabel },
+            rangeIdx ? { label: 'Range Index', value: `#${rangeIdx}` } : null,
+            { label: 'Status', value: status.label, type: 'status' },
+            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
+            height
+              ? { label: 'Block', value: `#${this.normalFormat(height)}` }
+              : null,
+            userAddress
+              ? { label: 'Owner', address: userAddress, type: 'address' }
+              : null,
+          ].filter(Boolean),
+          lifecycleRows: [
+            {
+              icon: hasError ? 'WarningIcon' : 'CheckIcon',
+              title: hasError ? 'Claim failed' : `Yield claimed from range #${rangeIdx}`,
+              body: hasError
+                ? logs || ''
+                : [
+                    baseAmt
+                      ? `${this.baseAmountFormatOrZero(baseAmt)} ${baseTicker}`
+                      : null,
+                    quoteAmt
+                      ? `${this.baseAmountFormatOrZero(quoteAmt)} ${quoteTicker}`
+                      : null,
+                  ]
+                    .filter(Boolean)
+                    .join(' + ') +
+                  ` received from ${pairLabel} range #${rangeIdx}`,
+            },
+          ],
+          feeRows: [],
+          technicalRows: [
+            userAddress
+              ? this.buildTechRow('From address', userAddress, 'address')
+              : null,
+            contractAddress
+              ? this.buildTechRow('To address', contractAddress, 'address')
+              : null,
+          ].filter(Boolean),
+        }
+      }
+
       // Ghost Vault Withdraw / Deposit: msg.withdraw or msg.deposit
       const ghostVaultMsg = singleAction?.metadata?.contract?.msg
       const isGhostWithdraw = ghostVaultMsg && 'withdraw' in ghostVaultMsg
@@ -4582,6 +4752,7 @@ export default {
       if (msg.account && 'unbond' in msg.account) return 'Yielding Unstake'
       if (msg.account) return 'Credit Account'
       if (msg.range?.create) return 'CCL Range'
+      if (msg.range?.claim) return 'Claim Yield'
       const events = contractAction.metadata?.contract?.contractEvents || []
       if (events.some((e) => e.type === 'wasm-calc-manager/strategy.execute'))
         return 'CALC Strategy'
@@ -4608,6 +4779,7 @@ export default {
       if (type === 'Yielding Unstake') return 'red'
       if (type === 'Credit Account') return 'purple'
       if (type === 'CCL Range') return 'green'
+      if (type === 'Claim Yield') return 'green'
       return 'green'
     },
     getSwapProductLabel(action) {
