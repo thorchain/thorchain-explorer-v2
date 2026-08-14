@@ -3629,6 +3629,192 @@ export default {
         }
       }
 
+      // CCL range creation: msg.range.create
+      const rangeCreateMsg = singleAction?.metadata?.contract?.msg?.range?.create
+      if (rangeCreateMsg) {
+        const action = singleAction
+        const contractAddress = action.out?.[0]?.address || ''
+        const contractLabel =
+          getRujiraContractLabel(contractAddress) ||
+          this.formatAddress(contractAddress)
+        const productLabel =
+          getRujiraContractProduct(contractAddress) || 'RUJI Trade'
+        const userAddress = action.in?.[0]?.address || ''
+        const hasError = (action.metadata?.contract?.code ?? 0) > 0
+        const logs = action.metadata?.contract?.logs
+        const status = hasError
+          ? { label: 'Failed', tone: 'red' }
+          : action.status === 'success'
+            ? { label: 'Success', tone: 'green' }
+            : { label: 'Pending', tone: 'blue' }
+        const date = action.date
+        const timestamp = date ? moment.unix(parseInt(date) / 1e9) : null
+        const height = parseInt(action.height)
+        const events = action.metadata?.contract?.contractEvents || []
+        const toAttrs = (e) =>
+          Object.fromEntries(
+            (e.attributes || []).map(({ key, value }) => [key, value])
+          )
+
+        // Parse actual amounts used from range.create event
+        const rangeCreateEvents = events.filter(
+          (e) => e.type === 'wasm-rujira-fin/range.create'
+        )
+        const rangeAttrs = rangeCreateEvents.length ? toAttrs(rangeCreateEvents[0]) : {}
+        const rangeCount = rangeCreateEvents.length
+
+        const low = rangeAttrs.low || rangeCreateMsg.config?.low || ''
+        const high = rangeAttrs.high || rangeCreateMsg.config?.high || ''
+        const fee = rangeAttrs.fee || rangeCreateMsg.config?.fee || ''
+        const spread = rangeAttrs.spread || rangeCreateMsg.config?.spread || ''
+        const rangeIdx = rangeAttrs.idx || ''
+
+        // Actual amounts committed to the range (may differ from funds sent due to refund)
+        const baseAmt = parseInt(rangeAttrs.base || 0)
+        const quoteAmt = parseInt(rangeAttrs.quote || 0)
+
+        // Parse denoms from multi-asset funds string ("969729479647doge-doge,222781833369rune")
+        const fundsStr = action.metadata?.contract?.funds || ''
+        const fundsParts = fundsStr.split(',').map((part) => {
+          const amt = parseInt(part) || 0
+          const denom = part.replace(/^\d+/, '').trim()
+          return { amt, denom }
+        })
+
+        // Prefer registry pair info, fall back to funds order
+        const pairEntry = getRujiraContractEntry(contractAddress)
+        const pairLabelParts = (pairEntry?.contractLabel || '').split(':')
+        const baseDenom =
+          pairLabelParts[1] || fundsParts[0]?.denom || ''
+        const quoteDenom =
+          pairLabelParts[2] || fundsParts[1]?.denom || ''
+
+        const denomToAssetStr = (denom) =>
+          !denom
+            ? ''
+            : denom === 'rune'
+              ? 'THOR.RUNE'
+              : securedToAsset(denom).toUpperCase()
+
+        const baseAssetStr = denomToAssetStr(baseDenom)
+        const quoteAssetStr = denomToAssetStr(quoteDenom)
+        const baseAssetParsed = baseAssetStr ? assetFromString(baseAssetStr) : null
+        const quoteAssetParsed = quoteAssetStr ? assetFromString(quoteAssetStr) : null
+        const baseTicker = baseAssetParsed?.ticker || baseDenom || 'Base'
+        const quoteTicker = quoteAssetParsed?.ticker || quoteDenom || 'Quote'
+
+        const pairLabel =
+          baseTicker && quoteTicker ? `${baseTicker}/${quoteTicker}` : contractLabel
+
+        const baseUsd = this.amountToUSD(baseAssetStr, baseAmt, this.pools)
+        const quoteUsd = this.amountToUSD(quoteAssetStr, quoteAmt, this.pools)
+
+        const fmtPct = (val) =>
+          val ? `${(parseFloat(val) * 100).toFixed(3)}%` : ''
+        const fmtPrice = (val) =>
+          val ? parseFloat(val).toPrecision(6) : ''
+
+        return {
+          rawEvents: events,
+          rawMsg: action?.metadata?.contract?.msg || null,
+          title: `CCL Range Created on ${pairLabel}`,
+          metaLabel: `CCL Range · ${pairLabel}`,
+          status,
+          affiliateAddress: '',
+          actionTypeTitle: 'contract',
+          hasContractAction: true,
+          labels: [],
+          pairDisplay: null,
+          input: {
+            asset: baseAssetStr || null,
+            name: `${baseTicker} (Base)`,
+            badge: this.getNetworkBadge(baseAssetParsed) || '',
+            amount: baseAmt
+              ? `${this.baseAmountFormatOrZero(baseAmt)} ${baseTicker}`
+              : '—',
+            usd: this.formatUsdValue(baseUsd),
+          },
+          output: {
+            asset: quoteAssetStr || null,
+            name: `${quoteTicker} (Quote)`,
+            badge: this.getNetworkBadge(quoteAssetParsed) || '',
+            amount: quoteAmt
+              ? `${this.baseAmountFormatOrZero(quoteAmt)} ${quoteTicker}`
+              : '—',
+            usd: this.formatUsdValue(quoteUsd),
+          },
+          metricRows: [
+            low && high
+              ? { label: 'Price Range', value: `${fmtPrice(low)}–${fmtPrice(high)}` }
+              : null,
+            fee ? { label: 'Fee', value: fmtPct(fee) } : null,
+            spread ? { label: 'Spread', value: fmtPct(spread) } : null,
+            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
+          ].filter(Boolean),
+          detailRows: [
+            {
+              label: 'Product',
+              value: productLabel,
+              tone: this.getProductTone(productLabel),
+              type: 'product',
+            },
+            {
+              label: 'Action',
+              value: rangeCount > 1 ? `${rangeCount} CCL Ranges` : 'CCL Range',
+              tone: this.getContractTypeTone('CCL Range'),
+              type: 'product',
+            },
+            { label: 'Pair', value: pairLabel },
+            low && high
+              ? { label: 'Price Range', value: `${fmtPrice(low)}–${fmtPrice(high)}` }
+              : null,
+            fee ? { label: 'Fee Rate', value: fmtPct(fee) } : null,
+            spread ? { label: 'Spread', value: fmtPct(spread) } : null,
+            rangeIdx ? { label: 'Range Index', value: rangeIdx } : null,
+            { label: 'Status', value: status.label, type: 'status' },
+            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
+            height
+              ? { label: 'Block', value: `#${this.normalFormat(height)}` }
+              : null,
+            userAddress
+              ? { label: 'Owner', address: userAddress, type: 'address' }
+              : null,
+          ].filter(Boolean),
+          lifecycleRows: [
+            {
+              icon: hasError ? 'WarningIcon' : 'ExchangeIcon',
+              title: hasError
+                ? 'Contract execution failed'
+                : `CCL range position created`,
+              body: hasError
+                ? logs || ''
+                : [
+                    baseAmt
+                      ? `${this.baseAmountFormatOrZero(baseAmt)} ${baseTicker}`
+                      : null,
+                    quoteAmt
+                      ? `${this.baseAmountFormatOrZero(quoteAmt)} ${quoteTicker}`
+                      : null,
+                  ]
+                    .filter(Boolean)
+                    .join(' + ') +
+                  (low && high
+                    ? ` deposited into ${pairLabel} at price range ${fmtPrice(low)}–${fmtPrice(high)}`
+                    : ` deposited into ${pairLabel}`),
+            },
+          ],
+          feeRows: [],
+          technicalRows: [
+            userAddress
+              ? this.buildTechRow('From address', userAddress, 'address')
+              : null,
+            contractAddress
+              ? this.buildTechRow('To address', contractAddress, 'address')
+              : null,
+          ].filter(Boolean),
+        }
+      }
+
       // Ghost Vault Withdraw / Deposit: msg.withdraw or msg.deposit
       const ghostVaultMsg = singleAction?.metadata?.contract?.msg
       const isGhostWithdraw = ghostVaultMsg && 'withdraw' in ghostVaultMsg
@@ -4395,6 +4581,7 @@ export default {
       if (msg.account && 'bond' in msg.account) return 'Yielding Stake'
       if (msg.account && 'unbond' in msg.account) return 'Yielding Unstake'
       if (msg.account) return 'Credit Account'
+      if (msg.range?.create) return 'CCL Range'
       const events = contractAction.metadata?.contract?.contractEvents || []
       if (events.some((e) => e.type === 'wasm-calc-manager/strategy.execute'))
         return 'CALC Strategy'
@@ -4420,6 +4607,7 @@ export default {
       if (type === 'Yielding Stake') return 'green'
       if (type === 'Yielding Unstake') return 'red'
       if (type === 'Credit Account') return 'purple'
+      if (type === 'CCL Range') return 'green'
       return 'green'
     },
     getSwapProductLabel(action) {
