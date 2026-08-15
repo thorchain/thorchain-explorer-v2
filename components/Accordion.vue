@@ -82,7 +82,7 @@
             </div>
           </div>
 
-          <div v-if="pending && !remainingTime" class="loading">
+          <div v-if="pending && !(remainingTime > 0)" class="loading">
             <SandTimer class="loading-icon" />
             <span class="loading-text">Pending</span>
           </div>
