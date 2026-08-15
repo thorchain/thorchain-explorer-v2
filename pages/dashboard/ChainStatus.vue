@@ -14,59 +14,61 @@
         </span>
       </nuxt-link>
     </template>
-    <template v-if="!inboundData || inboundData.length === 0 || !mimir">
-      <div v-for="index in 5" :key="index" class="status-row">
-        <div class="chain-cell">
-          <skeleton-loader width="80px"></skeleton-loader>
-        </div>
-        <div
-          v-for="(_, itemIndex) in statusFields"
-          :key="itemIndex"
-          class="status-cell"
-        >
-          <skeleton-loader width="30px"></skeleton-loader>
-        </div>
-      </div>
-    </template>
-    <template v-else>
-      <div class="status-row status-header">
-        <span class="chain-cell">Chain</span>
-        <span
-          v-for="status in statusFields"
-          :key="status.field"
-          class="status-cell"
-        >
-          {{ status.label }}
-        </span>
-      </div>
-      <div v-for="chain in chains" :key="chain.chain" class="status-row">
-        <div class="chain-cell">
-          <asset-icon :asset="baseChainAsset(chain.chain)" height="1.2rem" />
-          <span class="chain-name">{{ chain.chain }}</span>
-        </div>
-        <div
-          v-for="status in statusFields"
-          :key="status.field"
-          class="status-cell"
-        >
-          <span
-            v-if="chain[status.field] > 1"
-            v-tooltip="`Scheduled halt: ${chain[status.field]}`"
-            class="mini-bubble danger status-bubble"
+    <div class="status-table">
+      <template v-if="!inboundData || inboundData.length === 0 || !mimir">
+        <div v-for="index in 5" :key="index" class="status-row">
+          <div class="chain-cell">
+            <skeleton-loader width="80px"></skeleton-loader>
+          </div>
+          <div
+            v-for="(_, itemIndex) in statusFields"
+            :key="itemIndex"
+            class="status-cell"
           >
-            Paused
-          </span>
-          <span
-            v-else-if="chain[status.field] === 1"
-            v-tooltip="`Mimir halt`"
-            class="mini-bubble danger status-bubble"
-          >
-            Paused
-          </span>
-          <span v-else class="mini-bubble status-bubble">Available</span>
+            <skeleton-loader width="30px"></skeleton-loader>
+          </div>
         </div>
-      </div>
-    </template>
+      </template>
+      <template v-else>
+        <div class="status-row status-header">
+          <span class="chain-cell">Chain</span>
+          <span
+            v-for="status in statusFields"
+            :key="status.field"
+            class="status-cell"
+          >
+            {{ status.label }}
+          </span>
+        </div>
+        <div v-for="chain in chains" :key="chain.chain" class="status-row">
+          <div class="chain-cell">
+            <asset-icon :asset="baseChainAsset(chain.chain)" height="1.2rem" />
+            <span class="chain-name">{{ chain.chain }}</span>
+          </div>
+          <div
+            v-for="status in statusFields"
+            :key="status.field"
+            class="status-cell"
+          >
+            <span
+              v-if="chain[status.field] > 1"
+              v-tooltip="`Scheduled halt: ${chain[status.field]}`"
+              class="mini-bubble danger status-bubble"
+            >
+              Paused
+            </span>
+            <span
+              v-else-if="chain[status.field] === 1"
+              v-tooltip="`Mimir halt`"
+              class="mini-bubble danger status-bubble"
+            >
+              Paused
+            </span>
+            <span v-else class="mini-bubble status-bubble">Available</span>
+          </div>
+        </div>
+      </template>
+    </div>
     <template #footer>
       <div class="churn-info">
         <div class="churn-item">
@@ -238,12 +240,29 @@ export default {
   }
 }
 
+.status-table {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 .status-row {
   display: grid;
-  grid-template-columns: 1.4fr repeat(4, 1fr);
+  grid-template-columns: 100px repeat(4, 76px);
+  column-gap: $space-8;
   align-items: center;
   padding: $space-8 $space-0;
   border-bottom: 1px solid var(--border-color);
+
+  @include sm {
+    grid-template-columns: 1.4fr repeat(4, 1fr);
+    column-gap: $space-0;
+  }
 
   &:last-child {
     border-bottom: none;
@@ -264,6 +283,7 @@ export default {
     display: flex;
     align-items: center;
     gap: 0.4rem;
+    white-space: nowrap;
 
     .chain-name {
       color: var(--sec-font-color);
