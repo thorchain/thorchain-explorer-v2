@@ -170,12 +170,19 @@
   border: 1px solid color-mix(in srgb, var(--border-color) 92%, transparent);
   border-radius: 20px;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.16);
+}
+
+.tx-swap-card {
+  padding: $space-16;
+}
+
+.tx-info-card {
   padding: $space-20;
 }
 
 .tx-swap-head {
   display: grid;
-  gap: $space-14;
+  gap: $space-12;
 
   @include md {
     align-items: stretch;
@@ -184,14 +191,12 @@
 }
 
 .tx-asset-panel {
-  background: var(--card-bg);
-  border: 2px solid var(--left-border, var(--border-color));
-  border-radius: 16px;
+  background: var(--surface-3-color);
+  border: 1px solid var(--left-border, var(--border-color));
+  border-radius: 10px;
   display: flex;
   flex-direction: column;
-  gap: $space-10;
-  min-height: 156px;
-  padding: $space-18 $space-20;
+  padding: $space-14;
 }
 
 .tx-asset-panel--accent {
@@ -199,19 +204,64 @@
 }
 
 .tx-asset-label {
-  color: var(--font-color);
+  color: var(--text-faint-color);
+  font-family: 'Montserrat', sans-serif;
   font-size: $font-size-xxs;
-  letter-spacing: 0.08em;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  line-height: 1;
   text-transform: uppercase;
+}
+
+// Panels stack label -> identity/value row -> chips; spacing lives here
+// (explicit margins) rather than a blanket flex `gap`, since .tx-asset-label
+// is shared with .tx-metric-item where the label-to-value gap is different
+// (7px, via .tx-metric-value's own margin-top below).
+.tx-asset-panel > .tx-asset-label {
+  margin-bottom: $space-10;
 }
 
 .tx-asset-primary {
   align-items: center;
   color: var(--sec-font-color);
   display: flex;
+  flex-wrap: wrap;
   font-size: 1.75rem;
   font-weight: 700;
   gap: $space-10;
+  overflow-wrap: break-word;
+  word-break: break-word;
+
+  // Below .tx-swap-head's 3-column breakpoint, panels are full-width
+  // (stacked), so there's room for the swap hero's full 1.75rem. At/above
+  // it, two panels sit side by side and the same content needs to fit a
+  // narrower column — smaller size keeps it on one line instead of
+  // wrapping (addresses, mimir keys, etc. are longer than "Bitcoin").
+  @include md {
+    font-size: 1.3rem;
+  }
+
+  // Long content (e.g. a mimir key like SYSTEMINCOMEBURNRATE, vs. a short
+  // asset name like "Bitcoin") needs a smaller size to stay readable
+  // instead of overflowing/wrapping awkwardly at the swap hero's default.
+  &--compact {
+    font-size: 1.2rem;
+
+    @include md {
+      font-size: 1.05rem;
+    }
+  }
+
+  // Identity rows (a wallet or node address) are a different kind of
+  // content than a prominent asset/value figure — monospace at a much
+  // smaller, fixed size, unaffected by the responsive/--compact rules
+  // above (an abbreviated address is a fixed length, unlike a long mimir
+  // key or a big asset amount).
+  &--identity {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1.0625rem;
+    font-weight: 600;
+  }
 }
 
 .tx-asset-badge {
@@ -220,6 +270,7 @@
   border-radius: 999px;
   color: var(--font-color);
   font-size: $font-size-sm;
+  margin-top: $space-10;
   padding: $space-6 $space-10;
 }
 
@@ -266,14 +317,15 @@
   }
 }
 
+// Boxed background/border removed (differs from the swap hero's own copy
+// in _txhash.vue on purpose) — the mockup's metric strip is plain, only
+// separated from the panels above by a top divider, not a boxed rectangle.
 .tx-metric-strip {
-  background: color-mix(in srgb, var(--bg-color) 60%, var(--card-bg-color));
-  border: 1px solid var(--border-color);
-  border-radius: $radius-s;
+  border-top: 1px solid var(--divider-color);
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin-top: $space-18;
-  padding: $space-16 $space-20;
+  margin-top: $space-16;
+  padding-top: $space-14;
 
   @media (max-width: 767px) {
     grid-template-columns: 1fr;
@@ -281,53 +333,46 @@
 }
 
 .tx-metric-item {
-  padding: $space-16;
+  // Vertical spacing lives in margin (outside the border box) rather than
+  // padding, so the divider only spans the item's own content height
+  // instead of stretching the item's full padded box. Columns are divided
+  // by a left border + left padding (not a right border), so the divider
+  // sits flush against each column's own content.
+  margin: $space-8 0;
+  padding: 0 0 0 $space-16;
 
   &:nth-child(3n + 1) {
+    border-left: none;
     padding-left: 0;
   }
 
-  &:nth-child(3n),
-  &:last-child {
-    padding-right: 0;
-  }
-
-  &:not(:nth-child(3n)) {
-    border-right: 1px solid var(--border-color);
+  &:not(:nth-child(3n + 1)) {
+    border-left: 1px solid var(--divider-color);
   }
 
   &:nth-child(n + 4) {
-    border-top: 1px solid var(--border-color);
+    border-top: 1px solid var(--divider-color);
   }
 
   @media (max-width: 767px) {
-    padding: $space-16 0;
+    border-left: none;
+    padding-left: 0;
 
     &:not(:first-child) {
-      border-right: none;
-      border-top: 1px solid var(--border-color);
-    }
-
-    &:nth-child(3n + 1) {
-      padding-left: 0;
-    }
-
-    &:nth-child(3n),
-    &:last-child {
-      padding-right: 0;
-    }
-
-    &:not(:nth-child(3n)):not(:last-child) {
-      border-right: none;
+      border-top: 1px solid var(--divider-color);
     }
   }
 }
 
+// Figures (bond amounts, fees, block heights) read as monospace; wordy
+// states (e.g. "Reached"/"Not reached") stay the page's default sans —
+// wrap numeric content in the global .mono class rather than forcing
+// every value monospace here.
 .tx-metric-value {
   color: var(--sec-font-color);
-  font-size: $font-size-md;
+  font-size: 15px;
   font-weight: 600;
-  margin-top: $space-4;
+  margin-top: $space-7;
 }
 
 .tx-section-title {
@@ -557,6 +602,10 @@
   color: var(--green) !important;
 }
 
+.tx-value-warning {
+  color: var(--warning-color) !important;
+}
+
 // ---- Genuinely new: no swap-hero equivalent (Phase 5 outbound work) ----
 
 // Inset box (recessed content within a card) — used by the Outbounds table
@@ -647,11 +696,53 @@
 
 // Fixed node-glyph avatar (as opposed to AssetIcon, used for wallet-style
 // identities elsewhere) — a Mimir voter and a Bond's node side are both
-// nodes, not assets, so they share this rather than AssetIcon.
-.tx-node-icon {
-  fill: var(--font-color);
-  height: 2.25rem;
-  width: 2.25rem;
+// nodes, not assets, so they share this rather than AssetIcon. Circular and
+// deliberately smaller than AssetIcon's 2.25rem so it sits comfortably next
+// to a full address at .tx-asset-primary's size without wrapping.
+.tx-node-avatar {
+  align-items: center;
+  background: var(--surface-4-color);
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  display: flex;
+  flex-shrink: 0;
+  height: 32px;
+  justify-content: center;
+  width: 32px;
+
+  svg {
+    fill: var(--font-color);
+    height: 16px;
+    width: 16px;
+  }
+}
+
+// Two-chip identity row (e.g. "Active node" + "Bond 1.02M RUNE") — the
+// swap hero's single .tx-asset-badge line only ever carries one fact, but a
+// node's status and stake are two distinct, differently-toned facts.
+.tx-panel-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-6;
+  margin-top: $space-11;
+}
+
+.tx-chip {
+  border-radius: $radius-s;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 3px $space-8;
+
+  &--active {
+    background: color-mix(in srgb, var(--green) 12%, var(--card-bg-color));
+    color: var(--green);
+  }
+
+  &--neutral {
+    background: var(--surface-4-color);
+    color: var(--font-color);
+  }
 }
 
 // Non-transfer connector: a vote moves no funds, so the swap hero's
@@ -661,17 +752,16 @@
   align-items: center;
   background: var(--card-bg);
   border: 1px solid var(--border-color);
-  border-radius: $radius-sm;
+  border-radius: 6px;
   color: var(--text-dim-color);
   display: flex;
   font-family: 'Montserrat', sans-serif;
   font-size: 10px;
   font-weight: 600;
-  height: 32px;
   justify-content: center;
   letter-spacing: 0.08em;
   margin: auto;
-  padding: 0 $space-6;
+  padding: 5px 10px;
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -692,7 +782,10 @@
 }
 
 .tx-tally-bar__other {
-  background: var(--border-color);
+  // --border-color is nearly the same darkness as the track it sits on
+  // (both are low-contrast dark blue-greys) — mixing toward --font-color
+  // gives it enough contrast to actually read as a second segment.
+  background: color-mix(in srgb, var(--font-color) 45%, var(--card-bg-color));
   height: 100%;
 }
 
@@ -702,5 +795,15 @@
   display: flex;
   font-size: $font-size-xxs;
   justify-content: space-between;
+  margin-top: $space-8;
+}
+
+// One-line restatement of the vote under a Mimir key's value — plain
+// sentence, not a pill label, so it's deliberately not .tx-asset-badge
+// (which is pill-shaped/tinted, meant for short chain/network tags).
+.tx-mimir-gloss {
+  color: var(--font-color);
+  font-size: $font-size-xs;
+  line-height: 1.5;
   margin-top: $space-8;
 }
