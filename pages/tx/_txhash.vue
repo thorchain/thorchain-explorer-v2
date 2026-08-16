@@ -1,6 +1,22 @@
 <template>
   <Page>
-    <div v-if="swapOverview || contractOverview" class="tx-detail-page">
+    <template v-if="sendOverview || bondOverview || mimirOverview">
+      <SendHero v-if="sendOverview" :overview="sendOverview" />
+      <BondHero
+        v-else-if="bondOverview"
+        :overview="bondOverview"
+        :node-snapshot="nodeSnapshot"
+        :network-info="networkInfo"
+        :current-height="chainsHeight && chainsHeight.THOR"
+      />
+      <MimirVoteHero
+        v-else-if="mimirOverview"
+        :overview="mimirOverview"
+        :node-snapshot="nodeSnapshot"
+        :consensus="mimirConsensus"
+      />
+    </template>
+    <div v-else-if="swapOverview || contractOverview" class="tx-detail-page">
       <div class="tx-detail-back">
         <nuxt-link to="/txs" class="tx-back-link">
           <ArrowIcon class="tx-back-icon" />
@@ -47,7 +63,11 @@
         <div class="tx-detail-main">
           <section class="tx-swap-card card-bg">
             <div
-              v-if="activeOverview.pairDisplay || activeOverview.input || activeOverview.output"
+              v-if="
+                activeOverview.pairDisplay ||
+                activeOverview.input ||
+                activeOverview.output
+              "
               class="tx-swap-head"
               :style="panelVars"
             >
@@ -81,93 +101,99 @@
                 </div>
               </template>
               <template v-else>
-              <div v-if="activeOverview.input" class="tx-asset-panel">
-                <div class="tx-asset-label">Input</div>
-                <div class="tx-asset-primary">
-                  <AssetIcon
-                    v-if="activeOverview.input.asset"
-                    :asset="activeOverview.input.asset"
-                    :height="'2.25rem'"
-                  />
-                  <span>{{ activeOverview.input.name }}</span>
-                </div>
-                <div class="tx-asset-badge">
-                  {{ activeOverview.input.badge }}
-                </div>
-                <div class="tx-asset-values">
-                  <span>{{ activeOverview.input.amount }}</span>
-                  <strong
-                    v-if="activeOverview.input.usd"
-                    v-tooltip="activeOverview.input.usdAtExecution ? 'Value based on price at the time the transaction was executed' : 'Based on current price, not price at the time of the transaction'"
-                    style="cursor: help"
-                  >{{
-                    safeUsdDisplay(activeOverview.input.usd)
-                  }}</strong>
-                </div>
-              </div>
-
-              <div class="tx-swap-arrow">
-                <OrderIcon
-                  v-if="activeOverview.hasContractAction"
-                  class="tx-swap-arrow-icon order"
-                />
-                <ArrowIcon v-else class="tx-swap-arrow-icon" />
-              </div>
-
-              <div
-                v-if="activeOverview.output"
-                :class="[
-                  'tx-asset-panel',
-                  activeOverview.returnedOutput
-                    ? 'tx-asset-panel--accent tx-asset-panel--split'
-                    : 'tx-asset-panel--accent',
-                ]"
-              >
-                <div class="tx-asset-label">Output</div>
-                <div class="tx-asset-primary">
-                  <AssetIcon
-                    v-if="activeOverview.output.asset"
-                    :asset="activeOverview.output.asset"
-                    :height="'2.25rem'"
-                  />
-                  <span>{{ activeOverview.output.name }}</span>
-                </div>
-                <div class="tx-asset-badge">
-                  {{ activeOverview.output.badge }}
-                </div>
-                <div class="tx-asset-values">
-                  <span>{{ activeOverview.output.amount }}</span>
-                  <strong
-                    v-if="activeOverview.output.usd"
-                    v-tooltip="activeOverview.output.usdAtExecution ? 'Value based on price at the time the transaction was executed' : 'Based on current price, not price at the time of the transaction'"
-                    style="cursor: help"
-                  >{{
-                    safeUsdDisplay(activeOverview.output.usd)
-                  }}</strong>
-                </div>
-                <template v-if="activeOverview.returnedOutput">
-                  <div class="tx-asset-divider" />
-                  <div class="tx-returned-panel">
-                    <div class="tx-asset-label tx-asset-label--returned">
-                      Returned
-                    </div>
-                    <div class="tx-returned-row">
-                      <AssetIcon
-                        v-if="activeOverview.returnedOutput.asset"
-                        :asset="activeOverview.returnedOutput.asset"
-                        :height="'1.1rem'"
-                        :chain-height="'0.7rem'"
-                      />
-                      <span class="tx-returned-name">{{
-                        activeOverview.returnedOutput.name
-                      }}</span>
-                      <span class="tx-returned-amount">{{
-                        activeOverview.returnedOutput.amount
-                      }}</span>
-                    </div>
+                <div v-if="activeOverview.input" class="tx-asset-panel">
+                  <div class="tx-asset-label">Input</div>
+                  <div class="tx-asset-primary">
+                    <AssetIcon
+                      v-if="activeOverview.input.asset"
+                      :asset="activeOverview.input.asset"
+                      :height="'2.25rem'"
+                    />
+                    <span>{{ activeOverview.input.name }}</span>
                   </div>
-                </template>
-              </div>
+                  <div class="tx-asset-badge">
+                    {{ activeOverview.input.badge }}
+                  </div>
+                  <div class="tx-asset-values">
+                    <span>{{ activeOverview.input.amount }}</span>
+                    <strong
+                      v-if="activeOverview.input.usd"
+                      v-tooltip="
+                        activeOverview.input.usdAtExecution
+                          ? 'Value based on price at the time the transaction was executed'
+                          : 'Based on current price, not price at the time of the transaction'
+                      "
+                      style="cursor: help"
+                      >{{ safeUsdDisplay(activeOverview.input.usd) }}</strong
+                    >
+                  </div>
+                </div>
+
+                <div class="tx-swap-arrow">
+                  <OrderIcon
+                    v-if="activeOverview.hasContractAction"
+                    class="tx-swap-arrow-icon order"
+                  />
+                  <ArrowIcon v-else class="tx-swap-arrow-icon" />
+                </div>
+
+                <div
+                  v-if="activeOverview.output"
+                  :class="[
+                    'tx-asset-panel',
+                    activeOverview.returnedOutput
+                      ? 'tx-asset-panel--accent tx-asset-panel--split'
+                      : 'tx-asset-panel--accent',
+                  ]"
+                >
+                  <div class="tx-asset-label">Output</div>
+                  <div class="tx-asset-primary">
+                    <AssetIcon
+                      v-if="activeOverview.output.asset"
+                      :asset="activeOverview.output.asset"
+                      :height="'2.25rem'"
+                    />
+                    <span>{{ activeOverview.output.name }}</span>
+                  </div>
+                  <div class="tx-asset-badge">
+                    {{ activeOverview.output.badge }}
+                  </div>
+                  <div class="tx-asset-values">
+                    <span>{{ activeOverview.output.amount }}</span>
+                    <strong
+                      v-if="activeOverview.output.usd"
+                      v-tooltip="
+                        activeOverview.output.usdAtExecution
+                          ? 'Value based on price at the time the transaction was executed'
+                          : 'Based on current price, not price at the time of the transaction'
+                      "
+                      style="cursor: help"
+                      >{{ safeUsdDisplay(activeOverview.output.usd) }}</strong
+                    >
+                  </div>
+                  <template v-if="activeOverview.returnedOutput">
+                    <div class="tx-asset-divider" />
+                    <div class="tx-returned-panel">
+                      <div class="tx-asset-label tx-asset-label--returned">
+                        Returned
+                      </div>
+                      <div class="tx-returned-row">
+                        <AssetIcon
+                          v-if="activeOverview.returnedOutput.asset"
+                          :asset="activeOverview.returnedOutput.asset"
+                          :height="'1.1rem'"
+                          :chain-height="'0.7rem'"
+                        />
+                        <span class="tx-returned-name">{{
+                          activeOverview.returnedOutput.name
+                        }}</span>
+                        <span class="tx-returned-amount">{{
+                          activeOverview.returnedOutput.amount
+                        }}</span>
+                      </div>
+                    </div>
+                  </template>
+                </div>
               </template>
             </div>
 
@@ -192,14 +218,36 @@
           >
             <div class="tx-order-book-header">
               <span class="tx-section-title">Orders</span>
-              <span class="tx-order-book-count">{{ activeOverview.orderRows.length }}</span>
+              <span class="tx-order-book-count">{{
+                activeOverview.orderRows.length
+              }}</span>
             </div>
             <div class="tx-order-book">
               <div class="tx-order-book-cols">
                 <span>Side</span>
-                <span>Price<template v-if="activeOverview.orderPairTickers"> ({{ activeOverview.orderPairTickers.quote }})</template></span>
-                <span>Amount<template v-if="activeOverview.orderPairTickers"> ({{ activeOverview.orderPairTickers.isBuy ? activeOverview.orderPairTickers.quote : activeOverview.orderPairTickers.base }})</template></span>
-                <span>Return<template v-if="activeOverview.orderPairTickers"> ({{ activeOverview.orderPairTickers.isBuy ? activeOverview.orderPairTickers.base : activeOverview.orderPairTickers.quote }})</template></span>
+                <span
+                  >Price<template v-if="activeOverview.orderPairTickers">
+                    ({{ activeOverview.orderPairTickers.quote }})</template
+                  ></span
+                >
+                <span
+                  >Amount<template v-if="activeOverview.orderPairTickers">
+                    ({{
+                      activeOverview.orderPairTickers.isBuy
+                        ? activeOverview.orderPairTickers.quote
+                        : activeOverview.orderPairTickers.base
+                    }})</template
+                  ></span
+                >
+                <span
+                  >Return<template v-if="activeOverview.orderPairTickers">
+                    ({{
+                      activeOverview.orderPairTickers.isBuy
+                        ? activeOverview.orderPairTickers.base
+                        : activeOverview.orderPairTickers.quote
+                    }})</template
+                  ></span
+                >
                 <span>Op</span>
               </div>
               <div
@@ -214,7 +262,11 @@
                 }"
                 :style="`--depth: ${r.depth}%`"
               >
-                <span class="ob-side" :class="r.side === 'Buy' ? 'ob-price--buy' : 'ob-price--sell'">{{ r.side }}</span>
+                <span
+                  class="ob-side"
+                  :class="r.side === 'Buy' ? 'ob-price--buy' : 'ob-price--sell'"
+                  >{{ r.side }}</span
+                >
                 <span class="ob-price">{{ r.price }}</span>
                 <span class="ob-amount">{{ r.amount }}</span>
                 <span class="ob-ret">{{ r.ret }}</span>
@@ -284,13 +336,17 @@
             <div class="tx-section-title-row">
               <span class="tx-section-title">Lifecycle Events</span>
               <button
-                v-if="activeOverview.rawEvents && activeOverview.rawEvents.length"
+                v-if="
+                  activeOverview.rawEvents && activeOverview.rawEvents.length
+                "
                 class="tx-events-btn"
                 @click="eventsModalOpen = true"
               >
                 <ListIcon class="tx-events-btn-icon" />
                 View Events
-                <span class="tx-events-count">{{ activeOverview.rawEvents.length }}</span>
+                <span class="tx-events-count">{{
+                  activeOverview.rawEvents.length
+                }}</span>
               </button>
             </div>
             <div class="tx-lifecycle-list">
@@ -529,9 +585,14 @@
             />
           </div>
           <div class="events-modal-body">
-            <div v-if="activeOverview.rawMsg && !eventsSearchQuery" class="events-msg-block">
+            <div
+              v-if="activeOverview.rawMsg && !eventsSearchQuery"
+              class="events-msg-block"
+            >
               <div class="events-event-type">msg</div>
-              <pre class="events-msg-json">{{ JSON.stringify(activeOverview.rawMsg, null, 2) }}</pre>
+              <pre class="events-msg-json">{{
+                JSON.stringify(activeOverview.rawMsg, null, 2)
+              }}</pre>
             </div>
 
             <div
@@ -570,6 +631,15 @@ import {
   BUILDERS as BUILDERS_MODULE,
   createFailedState as createFailedStateBuilder,
 } from './state/builders.js'
+import {
+  resolveOutboundSignal,
+  resolveOutboundLegState,
+} from './state/outboundStatus.js'
+import { parseSendFailure } from './state/parseSendFailure.js'
+import { computeMimirConsensus } from './state/mimirConsensus.js'
+import SendHero from './components/hero/SendHero.vue'
+import BondHero from './components/hero/BondHero.vue'
+import MimirVoteHero from './components/hero/MimirVoteHero.vue'
 import ProductBadge from '~/components/ProductBadge.vue'
 import Affiliate from '~/components/Affiliate.vue'
 import DisconnectIcon from '~/assets/images/disconnect.svg?inline'
@@ -629,6 +699,9 @@ export default {
     streamingSwap,
     txCard,
     Accordion,
+    SendHero,
+    BondHero,
+    MimirVoteHero,
   },
   data() {
     return {
@@ -657,6 +730,11 @@ export default {
       rateFlipped: false,
       eventsModalOpen: false,
       eventsSearchQuery: '',
+      nodeSnapshot: null,
+      nodeSnapshotAddress: null,
+      networkInfo: null,
+      mimirConsensus: null,
+      mimirConsensusKey: null,
     }
   },
   head() {
@@ -772,6 +850,169 @@ export default {
       if (!this.swapOverview) return this.cards
       return this.cards.filter((_, index) => index !== this.swapCardIndex)
     },
+    // Native RUNE sends never reach the swap/contract card pipeline — they
+    // short-circuit through createNativeTx (see fetchTx) straight into
+    // this.cards, tagged with title 'Send'. Independent of swapOverview so
+    // it renders through its own hero regardless of swap/contract state.
+    sendOverview() {
+      if (!this.cards?.length) return null
+      const index = this.cards.findIndex((c) => c?.details?.title === 'Send')
+      if (index < 0) return null
+
+      const card = this.cards[index]
+      const overall = card?.details?.overall
+      const input = overall?.in?.[0]
+      if (!input?.asset) return null
+
+      const actionAccordion = card?.accordions?.find(
+        (entry) => entry.name === 'accordion-action'
+      )
+      const stacks = actionAccordion?.data?.stacks || []
+      const gasDisplay = this.getStackDisplayValue(stacks, 'Gas')
+      const time = this.splitTrailingParen(
+        this.getStackDisplayValue(stacks, 'Timestamp')
+      )
+      const height = this.getNumericStackValue(stacks, 'Block Height')
+      const heightDisplay = height ? `#${this.normalFormat(height)}` : '-'
+      const failed = !!overall.middle?.fail
+      const failureCode = failed
+        ? this.getStackDisplayValue(stacks, 'Code')
+        : null
+      const failureReason = failed
+        ? this.getStackDisplayValue(stacks, 'Reason')
+        : null
+
+      return {
+        kind: 'send',
+        status: this.getOverviewStatus(overall.middle),
+        failed,
+        failure: failed
+          ? parseSendFailure(failureReason, failureCode, {
+              formatAmount: (raw) => this.formatAssetAmount(raw, input.asset),
+              heightDisplay,
+            })
+          : null,
+        failureReasonRaw: failureReason,
+        hash:
+          this.getStackDisplayValue(stacks, 'Hash') ||
+          this.$route.params.txhash,
+        from: this.getStackDisplayValue(stacks, 'From'),
+        to: this.getStackDisplayValue(stacks, 'To'),
+        asset: input.asset,
+        assetRaw: input.asset,
+        amountDisplay: this.formatAssetAmount(input.amount, input.asset),
+        zeroAmountDisplay: this.formatAssetAmount(0, input.asset),
+        amountUsdDisplay: this.formatUsdValue(input.amountUSD),
+        runePriceDisplay: this.formatUsdValue(this.runePrice),
+        gasDisplay,
+        gasRuneOnly: this.splitTrailingParen(gasDisplay).main || gasDisplay,
+        gasUsd: this.splitFeeValue(gasDisplay).usd,
+        confirmedIn: `${this.blockSeconds('THOR')} seconds`,
+        timeDisplay: time.main,
+        timeAgoDisplay: time.paren,
+        height,
+        heightDisplay,
+        memo: stacks.find((s) => s.key === 'Memo' && s.is)?.value || '',
+      }
+    },
+    // Bonds/whitelist-bonds always come through createBondState; the node's
+    // current status/total-bond/provider-count/next-churn aren't in that
+    // builder's output (the tx only carries the delta), so BondHero gets
+    // them from a small live fetch — see the bondOverview watcher below.
+    bondOverview() {
+      if (!this.cards?.length) return null
+      const index = this.cards.findIndex((c) =>
+        /^Bond\b/.test(c?.details?.title || '')
+      )
+      if (index < 0) return null
+
+      const card = this.cards[index]
+      const overall = card?.details?.overall
+      const input = overall?.in?.[0]
+      if (!input?.asset) return null
+
+      const actionAccordion = card?.accordions?.find(
+        (entry) => entry.name === 'accordion-action'
+      )
+      const stacks = actionAccordion?.data?.stacks || []
+      const inboundAccordion = card?.accordions?.find(
+        (entry) => entry.name === 'accordion-in-0'
+      )
+      const inboundStacks = inboundAccordion?.data?.stacks || []
+
+      const nodeAddress = this.getStackDisplayValue(stacks, 'Node Address')
+      const providerAddress =
+        this.getStackDisplayValue(stacks, 'Bond Provider') ||
+        this.getStackDisplayValue(inboundStacks, 'From')
+      const time = this.splitTrailingParen(
+        this.getStackDisplayValue(stacks, 'Timestamp')
+      )
+      const height = this.getNumericStackValue(stacks, 'Block Height')
+
+      return {
+        kind: 'bond',
+        status: this.getOverviewStatus(overall.middle),
+        hash: this.$route.params.txhash,
+        nodeAddress,
+        providerAddress,
+        isWhitelist: /whitelist/i.test(card.details.title || ''),
+        asset: input.asset,
+        amountDisplay: this.formatAssetAmount(input.amount, input.asset),
+        amountUsdDisplay: this.formatUsdValue(input.amountUSD),
+        amountRaw: Number(input.amount) || 0,
+        timeDisplay: time.main,
+        timeAgoDisplay: time.paren,
+        heightDisplay: height ? `#${this.normalFormat(height)}` : '-',
+        memo: stacks.find((s) => s.key === 'Memo' && s.is)?.value || '',
+      }
+    },
+    // Mimir votes always come through createAbstractState's mimir branch
+    // (no dedicated builder) — that branch only carries the tx's own vote
+    // (node address, key, value); the network-wide tally/threshold/current
+    // effective value come from a live fetch (fetchMimirConsensus, watched
+    // below), the same "gap" pattern as bondOverview's node snapshot.
+    mimirOverview() {
+      if (!this.cards?.length) return null
+      const index = this.cards.findIndex((c) => c?.details?.title === 'Mimir')
+      if (index < 0) return null
+
+      const card = this.cards[index]
+      const overall = card?.details?.overall
+
+      const actionAccordion = card?.accordions?.find(
+        (entry) => entry.name === 'accordion-action'
+      )
+      const stacks = actionAccordion?.data?.stacks || []
+      const inboundAccordion = card?.accordions?.find(
+        (entry) => entry.name === 'accordion-in-0'
+      )
+      const inboundStacks = inboundAccordion?.data?.stacks || []
+
+      const key = this.getStackDisplayValue(stacks, 'Mimir Key')
+      if (!key) return null
+      const value = this.getStackDisplayValue(stacks, 'Mimir Value')
+      const nodeAddress =
+        overall?.in?.[0]?.address ||
+        this.getStackDisplayValue(inboundStacks, 'From')
+      const time = this.splitTrailingParen(
+        this.getStackDisplayValue(stacks, 'Timestamp')
+      )
+      const height = this.getNumericStackValue(stacks, 'Block Height')
+
+      return {
+        kind: 'mimir',
+        status: this.getOverviewStatus(overall?.middle),
+        hash: this.$route.params.txhash,
+        nodeAddress,
+        key,
+        value,
+        memo: `mimir:${key}:${value}`,
+        timeDisplay: time.main,
+        timeAgoDisplay: time.paren,
+        height,
+        heightDisplay: height ? `#${this.normalFormat(height)}` : '-',
+      }
+    },
     swapOverview() {
       if (this.swapCardIndex < 0) return null
 
@@ -882,8 +1123,7 @@ export default {
       // the midgard amounts which only reflect the tiny THORChain-native leg.
       let contractDisplay = null
       if (contractAction && contractActionType) {
-        const cEvents =
-          contractAction.metadata?.contract?.contractEvents || []
+        const cEvents = contractAction.metadata?.contract?.contractEvents || []
         const cToAttrs = (e) =>
           Object.fromEntries(
             (e.attributes || []).map(({ key, value }) => [key, value])
@@ -891,9 +1131,7 @@ export default {
         // Prefer the swap action's sender; the contractAction.in address is often
         // the CosmWasm executor module account, not the actual user
         const cUserAddr =
-          midgardSwap?.in?.[0]?.address ||
-          contractAction.in?.[0]?.address ||
-          ''
+          midgardSwap?.in?.[0]?.address || contractAction.in?.[0]?.address || ''
 
         // Input: prefer metadata.funds, fall back to first non-rune coin_spent by user
         let cFundsAmount = 0
@@ -909,9 +1147,7 @@ export default {
             .map(cToAttrs)
             .find(
               (a) =>
-                a.spender === cUserAddr &&
-                a.amount &&
-                !/rune$/i.test(a.amount)
+                a.spender === cUserAddr && a.amount && !/rune$/i.test(a.amount)
             )
           if (spentAttr) {
             cFundsAmount = parseInt(spentAttr.amount) || 0
@@ -935,8 +1171,7 @@ export default {
                 const amt = parseInt(p) || 0
                 const denom = p.replace(/^\d+/, '').trim()
                 if (denom && amt > 0)
-                  cReceivedByDenom[denom] =
-                    (cReceivedByDenom[denom] || 0) + amt
+                  cReceivedByDenom[denom] = (cReceivedByDenom[denom] || 0) + amt
               })
             })
         }
@@ -952,7 +1187,7 @@ export default {
           // Preserve secure: true flag for badge; fall back to converted form
           const cInAsset = cFundsDenom
             ? (assetFromString(cFundsDenom.toUpperCase()) ??
-                assetFromString(cInAssetStr))
+              assetFromString(cInAssetStr))
             : null
           const cInTicker = cInAsset?.ticker || cFundsDenom
           const cOutAssetStr = cPrimaryDenom
@@ -960,11 +1195,19 @@ export default {
             : ''
           const cOutAsset = cPrimaryDenom
             ? (assetFromString(cPrimaryDenom.toUpperCase()) ??
-                assetFromString(cOutAssetStr))
+              assetFromString(cOutAssetStr))
             : null
           const cOutTicker = cOutAsset?.ticker || cPrimaryDenom
-          const cInUsdRaw = this.amountToUSD(cInAssetStr, cFundsAmount, this.pools)
-          const cOutUsdRaw = this.amountToUSD(cOutAssetStr, cReceivedAmt, this.pools)
+          const cInUsdRaw = this.amountToUSD(
+            cInAssetStr,
+            cFundsAmount,
+            this.pools
+          )
+          const cOutUsdRaw = this.amountToUSD(
+            cOutAssetStr,
+            cReceivedAmt,
+            this.pools
+          )
           contractDisplay = {
             inputAsset: cInAssetStr || null,
             inputName:
@@ -1296,7 +1539,8 @@ export default {
               actionStacks,
               'Timestamp'
             )
-            const contractFailed = (contractAction?.metadata?.contract?.code ?? 0) > 0
+            const contractFailed =
+              (contractAction?.metadata?.contract?.code ?? 0) > 0
             const contractLogs = contractAction?.metadata?.contract?.logs
             return [
               {
@@ -1409,7 +1653,11 @@ export default {
               : (() => {
                   const amount = parseInt(swapMeta?.liquidityFee || '') || 0
                   if (!amount) return null
-                  const usdRaw = this.amountToUSD('THOR.RUNE', amount, this.pools)
+                  const usdRaw = this.amountToUSD(
+                    'THOR.RUNE',
+                    amount,
+                    this.pools
+                  )
                   return {
                     label: 'Liquidity Fee',
                     usd: `$${this.formatFeeDisplay(usdRaw)}`,
@@ -1552,7 +1800,10 @@ export default {
           metricRows: [
             { label: 'Proposal', value: `#${proposalId}` },
             timestamp
-              ? { label: 'Time', value: timestamp.format('YYYY-MM-DD HH:mm:ss') }
+              ? {
+                  label: 'Time',
+                  value: timestamp.format('YYYY-MM-DD HH:mm:ss'),
+                }
               : null,
           ].filter(Boolean),
           detailRows: [
@@ -1573,7 +1824,9 @@ export default {
               ? { label: 'DAO', address: daoAddress, type: 'address' }
               : null,
             { label: 'Status', value: status.label, type: 'status' },
-            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
+            timestamp
+              ? { label: 'Time', value: timestamp.format('lll') }
+              : null,
             height
               ? { label: 'Block', value: `#${this.normalFormat(height)}` }
               : null,
@@ -1652,8 +1905,7 @@ export default {
           ? toAttrs(firstTrade)._contract_address || ''
           : ''
         const finPairLabel =
-          getRujiraContractLabel(finPairAddr) ||
-          this.formatAddress(finPairAddr)
+          getRujiraContractLabel(finPairAddr) || this.formatAddress(finPairAddr)
 
         // Count non-CCL fills and compute avg rate
         const nonCCLTrades = allEvents
@@ -1664,17 +1916,18 @@ export default {
         const rates = nonCCLTrades
           .map((a) => parseFloat(a.rate))
           .filter((r) => !isNaN(r))
-        const avgRate =
-          rates.length
-            ? rates.reduce((s, r) => s + r, 0) / rates.length
-            : null
+        const avgRate = rates.length
+          ? rates.reduce((s, r) => s + r, 0) / rates.length
+          : null
 
         // Input/output: what the sender address actually sends and receives
         const senderAddr = obClearingAction.in?.[0]?.address || ''
         const sumByDenom = (events, addrKey, addrVal) => {
           const byDenom = {}
           events
-            .filter((e) => e.type === 'coin_spent' || e.type === 'coin_received')
+            .filter(
+              (e) => e.type === 'coin_spent' || e.type === 'coin_received'
+            )
             .map(toAttrs)
             .filter((a) => a[addrKey] === addrVal && a.amount)
             .forEach((a) => {
@@ -1696,8 +1949,12 @@ export default {
 
         const primaryInDenom = Object.keys(spentByDenom)[0] || ''
         const primaryInAmt = spentByDenom[primaryInDenom] || 0
-        const primaryInAssetStr = primaryInDenom ? denomToAssetStr(primaryInDenom) : ''
-        const primaryInAsset = primaryInAssetStr ? assetFromString(primaryInAssetStr) : null
+        const primaryInAssetStr = primaryInDenom
+          ? denomToAssetStr(primaryInDenom)
+          : ''
+        const primaryInAsset = primaryInAssetStr
+          ? assetFromString(primaryInAssetStr)
+          : null
         const primaryInTicker = primaryInAsset?.ticker || primaryInDenom
 
         const primaryOutDenom =
@@ -1705,8 +1962,12 @@ export default {
           Object.keys(receivedByDenom)[0] ||
           ''
         const primaryOutAmt = receivedByDenom[primaryOutDenom] || 0
-        const primaryOutAssetStr = primaryOutDenom ? denomToAssetStr(primaryOutDenom) : ''
-        const primaryOutAsset = primaryOutAssetStr ? assetFromString(primaryOutAssetStr) : null
+        const primaryOutAssetStr = primaryOutDenom
+          ? denomToAssetStr(primaryOutDenom)
+          : ''
+        const primaryOutAsset = primaryOutAssetStr
+          ? assetFromString(primaryOutAssetStr)
+          : null
         const primaryOutTicker = primaryOutAsset?.ticker || primaryOutDenom
 
         // Sender's own action: the resting limit order that triggered clearing.
@@ -1750,42 +2011,63 @@ export default {
                 badge: this.getNetworkBadge(primaryOutAsset) || '',
                 amount: `${this.baseAmountFormatOrZero(primaryOutAmt)} ${primaryOutTicker}`,
                 usd: this.formatUsdValue(
-                  this.amountToUSD(primaryOutAssetStr, primaryOutAmt, this.pools)
+                  this.amountToUSD(
+                    primaryOutAssetStr,
+                    primaryOutAmt,
+                    this.pools
+                  )
                 ),
               }
             : null,
           metricRows: [
-            fillCount
-              ? { label: 'Fills', value: String(fillCount) }
-              : null,
-            avgRate
-              ? { label: 'Avg Rate', value: avgRate.toFixed(6) }
-              : null,
+            fillCount ? { label: 'Fills', value: String(fillCount) } : null,
+            avgRate ? { label: 'Avg Rate', value: avgRate.toFixed(6) } : null,
           ].filter(Boolean),
           detailRows: [
-            { label: 'Product', value: 'RUJI Trade', tone: this.getProductTone('RUJI Trade'), type: 'product' },
-            { label: 'Action', value: 'Order Book Clearing', tone: this.getContractTypeTone('OB Clearing'), type: 'product' },
+            {
+              label: 'Product',
+              value: 'RUJI Trade',
+              tone: this.getProductTone('RUJI Trade'),
+              type: 'product',
+            },
+            {
+              label: 'Action',
+              value: 'Order Book Clearing',
+              tone: this.getContractTypeTone('OB Clearing'),
+              type: 'product',
+            },
             { label: 'FIN Pair', value: finPairLabel },
             { label: 'Status', value: status.label, type: 'status' },
-            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
-            height ? { label: 'Block', value: `#${this.normalFormat(height)}` } : null,
+            timestamp
+              ? { label: 'Time', value: timestamp.format('lll') }
+              : null,
+            height
+              ? { label: 'Block', value: `#${this.normalFormat(height)}` }
+              : null,
           ].filter(Boolean),
           lifecycleRows: hasError
-            ? [{ icon: 'WarningIcon', title: 'OB Clearing failed', body: logs || '' }]
+            ? [
+                {
+                  icon: 'WarningIcon',
+                  title: 'OB Clearing failed',
+                  body: logs || '',
+                },
+              ]
             : [
                 senderOrderCreate
                   ? {
                       icon: 'ArrowIcon',
                       iconRotate: 90,
                       title: 'Resting limit order placed',
-                      body: [
-                        primaryInAmt
-                          ? `${this.baseAmountFormatOrZero(primaryInAmt)} ${primaryInTicker} committed`
-                          : null,
-                        senderOrderPrice ? `at ${senderOrderPrice}` : null,
-                      ]
-                        .filter(Boolean)
-                        .join(' · ') || `on ${finPairLabel}`,
+                      body:
+                        [
+                          primaryInAmt
+                            ? `${this.baseAmountFormatOrZero(primaryInAmt)} ${primaryInTicker} committed`
+                            : null,
+                          senderOrderPrice ? `at ${senderOrderPrice}` : null,
+                        ]
+                          .filter(Boolean)
+                          .join(' · ') || `on ${finPairLabel}`,
                     }
                   : null,
                 {
@@ -1800,7 +2082,10 @@ export default {
               ? this.buildTechRow('From address', senderAddr, 'address')
               : null,
             obClearingAction.metadata?.contract?.memo
-              ? this.buildTechRow('Memo', obClearingAction.metadata.contract.memo)
+              ? this.buildTechRow(
+                  'Memo',
+                  obClearingAction.metadata.contract.memo
+                )
               : null,
           ].filter(Boolean),
         }
@@ -1870,21 +2155,34 @@ export default {
         const fundsStr = action.metadata?.contract?.funds || ''
         const fundsAmount = parseInt(fundsStr) || 0
         const fundsDenom = fundsStr.replace(/^\d+/, '').trim()
-        const fundsAssetStr = fundsDenom ? securedToAsset(fundsDenom).toUpperCase() : ''
-        const fundsAssetParsed = fundsAssetStr ? assetFromString(fundsAssetStr) : null
+        const fundsAssetStr = fundsDenom
+          ? securedToAsset(fundsDenom).toUpperCase()
+          : ''
+        const fundsAssetParsed = fundsAssetStr
+          ? assetFromString(fundsAssetStr)
+          : null
         const fundsTicker = fundsAssetParsed?.ticker || fundsDenom
 
         // Parse pair base/quote assets from registry contractLabel: "rujira-fin:{base}:{quote}"
         const pairEntry = getRujiraContractEntry(contractAddress)
         const pairLabelParts = (pairEntry?.contractLabel || '').split(':')
         const baseDenom = pairLabelParts[1] || ''
-        const baseAssetStr = baseDenom ? securedToAsset(baseDenom).toUpperCase() : ''
-        const baseAssetParsed = baseAssetStr ? assetFromString(baseAssetStr) : null
+        const baseAssetStr = baseDenom
+          ? securedToAsset(baseDenom).toUpperCase()
+          : ''
+        const baseAssetParsed = baseAssetStr
+          ? assetFromString(baseAssetStr)
+          : null
         const baseTicker = baseAssetParsed?.ticker || baseDenom
         const quoteDenom = pairLabelParts[2] || ''
-        const quoteAssetStr = (quoteDenom ? securedToAsset(quoteDenom).toUpperCase() : '') || fundsAssetStr
-        const quoteAssetParsed = quoteAssetStr ? assetFromString(quoteAssetStr) : null
-        const quoteTicker = quoteAssetParsed?.ticker || quoteDenom || fundsTicker
+        const quoteAssetStr =
+          (quoteDenom ? securedToAsset(quoteDenom).toUpperCase() : '') ||
+          fundsAssetStr
+        const quoteAssetParsed = quoteAssetStr
+          ? assetFromString(quoteAssetStr)
+          : null
+        const quoteTicker =
+          quoteAssetParsed?.ticker || quoteDenom || fundsTicker
 
         // Per-order table rows + raw totals for scale order display
         // Order format: [side_string, { fixed: price }, amount_string_or_null]
@@ -1894,10 +2192,10 @@ export default {
         let orderSideIsBuy = true
         const orderRows = isScaleOrder
           ? orders.map((order) => {
-              const sideStr = order[0]  // "quote" or "base"
+              const sideStr = order[0] // "quote" or "base"
               const priceSpec = order[1] // { fixed: "2327.4" }
               const isKeep = order[2] === null || order[2] === undefined
-              const amount = isKeep ? 0 : (parseInt(order[2]) || 0)
+              const amount = isKeep ? 0 : parseInt(order[2]) || 0
               const price = parseFloat(priceSpec?.fixed) || 0
               const isBuy = sideStr === 'quote'
               const isRetract = !isKeep && amount === 0
@@ -1920,7 +2218,10 @@ export default {
                 op: isRetract ? 'Retract' : isKeep ? 'Keep' : 'Create',
                 side: isBuy ? 'Buy' : 'Sell',
                 price: price > 0 ? price.toFixed(2) : '—',
-                amount: isRetract || isKeep ? '—' : this.baseAmountFormatOrZero(amount),
+                amount:
+                  isRetract || isKeep
+                    ? '—'
+                    : this.baseAmountFormatOrZero(amount),
                 ret: ret > 0 ? this.baseAmountFormatOrZero(ret) : '—',
                 amountRaw: amount,
               }
@@ -1931,7 +2232,8 @@ export default {
         if (orderRows.length) {
           const maxAmt = Math.max(...orderRows.map((r) => r.amountRaw || 0))
           orderRows.forEach((r) => {
-            r.depth = maxAmt > 0 ? Math.round(((r.amountRaw || 0) / maxAmt) * 100) : 0
+            r.depth =
+              maxAmt > 0 ? Math.round(((r.amountRaw || 0) / maxAmt) * 100) : 0
           })
         }
 
@@ -1948,14 +2250,22 @@ export default {
                 const amt = parseInt(p) || 0
                 const denom = p.replace(/^\d+/, '').trim()
                 if (denom && denom !== fundsDenom && amt > 0)
-                  limitReceivedByDenom[denom] = (limitReceivedByDenom[denom] || 0) + amt
+                  limitReceivedByDenom[denom] =
+                    (limitReceivedByDenom[denom] || 0) + amt
               })
             })
         }
         const limitRecvDenom = Object.keys(limitReceivedByDenom)[0] || ''
         const limitRecvAmt = limitReceivedByDenom[limitRecvDenom] || 0
-        const limitRecvAssetStr = limitRecvDenom === 'rune' ? 'THOR.RUNE' : (limitRecvDenom ? securedToAsset(limitRecvDenom).toUpperCase() : '')
-        const limitRecvAssetParsed = limitRecvAssetStr ? assetFromString(limitRecvAssetStr) : null
+        const limitRecvAssetStr =
+          limitRecvDenom === 'rune'
+            ? 'THOR.RUNE'
+            : limitRecvDenom
+              ? securedToAsset(limitRecvDenom).toUpperCase()
+              : ''
+        const limitRecvAssetParsed = limitRecvAssetStr
+          ? assetFromString(limitRecvAssetStr)
+          : null
         const limitRecvTicker = limitRecvAssetParsed?.ticker || limitRecvDenom
 
         // Swap-style input/output for scale orders
@@ -1965,7 +2275,9 @@ export default {
         const scaleInAsset = orderSideIsBuy ? quoteAssetParsed : baseAssetParsed
         const scaleInTicker = orderSideIsBuy ? quoteTicker : baseTicker
         const scaleOutAssetStr = orderSideIsBuy ? baseAssetStr : quoteAssetStr
-        const scaleOutAsset = orderSideIsBuy ? baseAssetParsed : quoteAssetParsed
+        const scaleOutAsset = orderSideIsBuy
+          ? baseAssetParsed
+          : quoteAssetParsed
         const scaleOutTicker = orderSideIsBuy ? baseTicker : quoteTicker
 
         return {
@@ -2020,7 +2332,9 @@ export default {
                   name: fundsTicker || 'User',
                   badge: this.getNetworkBadge(fundsAssetParsed) || '',
                   amount: `${this.baseAmountFormatOrZero(fundsAmount)} ${fundsTicker}`,
-                  usd: this.formatUsdValue(this.amountToUSD(fundsAssetStr, fundsAmount, this.pools)),
+                  usd: this.formatUsdValue(
+                    this.amountToUSD(fundsAssetStr, fundsAmount, this.pools)
+                  ),
                 }
               : {
                   asset: null,
@@ -2047,7 +2361,13 @@ export default {
                   name: limitRecvTicker,
                   badge: this.getNetworkBadge(limitRecvAssetParsed) || '',
                   amount: `${this.baseAmountFormatOrZero(limitRecvAmt)} ${limitRecvTicker}`,
-                  usd: this.formatUsdValue(this.amountToUSD(limitRecvAssetStr, limitRecvAmt, this.pools)),
+                  usd: this.formatUsdValue(
+                    this.amountToUSD(
+                      limitRecvAssetStr,
+                      limitRecvAmt,
+                      this.pools
+                    )
+                  ),
                 }
               : {
                   asset: null,
@@ -2119,7 +2439,15 @@ export default {
               body: priceList ? `Fixed prices: ${priceList}` : '',
             },
             ...this.extractContractEventRows(action),
-            ...(hasError && logs ? [{ icon: 'WarningIcon', title: 'Contract execution failed', body: logs }] : []),
+            ...(hasError && logs
+              ? [
+                  {
+                    icon: 'WarningIcon',
+                    title: 'Contract execution failed',
+                    body: logs,
+                  },
+                ]
+              : []),
           ],
           feeRows: [],
           technicalRows: [
@@ -2221,7 +2549,15 @@ export default {
               title: `Strategy #${instanceId} cancelled`,
               body: `Workflow instance cancelled on ${productLabel}`,
             },
-            ...(hasError && logs ? [{ icon: 'WarningIcon', title: 'Contract execution failed', body: logs }] : []),
+            ...(hasError && logs
+              ? [
+                  {
+                    icon: 'WarningIcon',
+                    title: 'Contract execution failed',
+                    body: logs,
+                  },
+                ]
+              : []),
           ],
           feeRows: [],
           technicalRows: [
@@ -2346,7 +2682,7 @@ export default {
         // fall back to the securedToAsset version for non-secured denoms
         const fundsAssetParsed = fundsAsset
           ? (assetFromString(fundsAsset.toUpperCase()) ??
-              assetFromString(fundsAssetStr))
+            assetFromString(fundsAssetStr))
           : null
         const fundsTicker = fundsAssetParsed?.ticker || fundsAsset
 
@@ -2355,7 +2691,7 @@ export default {
           : ''
         const receivedAssetParsed = receivedAssetDenom
           ? (assetFromString(receivedAssetDenom.toUpperCase()) ??
-              assetFromString(receivedAssetStr))
+            assetFromString(receivedAssetStr))
           : null
         const receivedTicker = receivedAssetParsed?.ticker || receivedAssetDenom
 
@@ -2500,7 +2836,11 @@ export default {
           lifecycleRows: [
             {
               icon: hasError ? 'WarningIcon' : 'CheckIcon',
-              title: hasError ? 'Contract execution failed' : isPartialFill ? 'Market order partially filled' : 'Market order filled',
+              title: hasError
+                ? 'Contract execution failed'
+                : isPartialFill
+                  ? 'Market order partially filled'
+                  : 'Market order filled',
               body: hasError
                 ? logs || ''
                 : [
@@ -2612,14 +2952,22 @@ export default {
                 const amt = parseInt(p) || 0
                 const denom = p.replace(/^\d+/, '').trim()
                 if (denom && amt > 0)
-                  liquidReceivedByDenom[denom] = (liquidReceivedByDenom[denom] || 0) + amt
+                  liquidReceivedByDenom[denom] =
+                    (liquidReceivedByDenom[denom] || 0) + amt
               })
             })
         }
         const liqRecvDenom = Object.keys(liquidReceivedByDenom)[0] || ''
         const liqRecvAmt = liquidReceivedByDenom[liqRecvDenom] || 0
-        const liqRecvAssetStr = liqRecvDenom === 'rune' ? 'THOR.RUNE' : (liqRecvDenom ? securedToAsset(liqRecvDenom).toUpperCase() : '')
-        const liqRecvAssetParsed = liqRecvAssetStr ? assetFromString(liqRecvAssetStr) : null
+        const liqRecvAssetStr =
+          liqRecvDenom === 'rune'
+            ? 'THOR.RUNE'
+            : liqRecvDenom
+              ? securedToAsset(liqRecvDenom).toUpperCase()
+              : ''
+        const liqRecvAssetParsed = liqRecvAssetStr
+          ? assetFromString(liqRecvAssetStr)
+          : null
         const liqRecvTicker = liqRecvAssetParsed?.ticker || liqRecvDenom
 
         return {
@@ -2647,7 +2995,9 @@ export default {
                 name: liqRecvTicker,
                 badge: this.getNetworkBadge(liqRecvAssetParsed) || '',
                 amount: `${this.baseAmountFormatOrZero(liqRecvAmt)} ${liqRecvTicker}`,
-                usd: this.formatUsdValue(this.amountToUSD(liqRecvAssetStr, liqRecvAmt, this.pools)),
+                usd: this.formatUsdValue(
+                  this.amountToUSD(liqRecvAssetStr, liqRecvAmt, this.pools)
+                ),
               }
             : {
                 asset: null,
@@ -2745,7 +3095,8 @@ export default {
           this.formatAddress(contractAddress)
         const _rawProductClaim = getRujiraContractProduct(contractAddress)
         const productLabel =
-          (_rawProductClaim === 'Utilities' ? 'Staking' : _rawProductClaim) || 'Staking'
+          (_rawProductClaim === 'Utilities' ? 'Staking' : _rawProductClaim) ||
+          'Staking'
         const userAddress = action.in?.[0]?.address || ''
         const hasError = (action.metadata?.contract?.code ?? 0) > 0
         const logs = action.metadata?.contract?.logs
@@ -2783,13 +3134,18 @@ export default {
                 const amt = parseInt(p) || 0
                 const denom = p.replace(/^\d+/, '').trim()
                 if (denom && amt > 0)
-                  claimReceivedByDenom[denom] = (claimReceivedByDenom[denom] || 0) + amt
+                  claimReceivedByDenom[denom] =
+                    (claimReceivedByDenom[denom] || 0) + amt
               })
             })
         }
         const claimRecvDenom = Object.keys(claimReceivedByDenom)[0] || 'rune'
-        const claimRecvAmt = claimReceivedByDenom[claimRecvDenom] || claimedAmountFallback
-        const claimAssetStr = claimRecvDenom === 'rune' ? 'THOR.RUNE' : securedToAsset(claimRecvDenom).toUpperCase()
+        const claimRecvAmt =
+          claimReceivedByDenom[claimRecvDenom] || claimedAmountFallback
+        const claimAssetStr =
+          claimRecvDenom === 'rune'
+            ? 'THOR.RUNE'
+            : securedToAsset(claimRecvDenom).toUpperCase()
         const claimAssetParsed = assetFromString(claimAssetStr)
         const claimTicker = claimAssetParsed?.ticker || 'RUNE'
 
@@ -2819,7 +3175,9 @@ export default {
               ? `${this.baseAmountFormatOrZero(claimRecvAmt)} ${claimTicker}`
               : '-',
             usd: claimRecvAmt
-              ? this.formatUsdValue(this.amountToUSD(claimAssetStr, claimRecvAmt, this.pools))
+              ? this.formatUsdValue(
+                  this.amountToUSD(claimAssetStr, claimRecvAmt, this.pools)
+                )
               : null,
           },
           metricRows: [
@@ -2830,7 +3188,10 @@ export default {
                 }
               : null,
             timestamp
-              ? { label: 'Time', value: timestamp.format('YYYY-MM-DD HH:mm:ss') }
+              ? {
+                  label: 'Time',
+                  value: timestamp.format('YYYY-MM-DD HH:mm:ss'),
+                }
               : null,
           ].filter(Boolean),
           detailRows: [
@@ -2848,7 +3209,9 @@ export default {
             },
             { label: 'Contract', value: contractLabel },
             { label: 'Status', value: status.label, type: 'status' },
-            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
+            timestamp
+              ? { label: 'Time', value: timestamp.format('lll') }
+              : null,
             height
               ? { label: 'Block', value: `#${this.normalFormat(height)}` }
               : null,
@@ -2950,7 +3313,9 @@ export default {
             )
           : null
         const excessAmountStr = excessEvent
-          ? ((e) => (e.attributes || []).find((a) => a.key === 'amount')?.value || '')(excessEvent)
+          ? ((e) =>
+              (e.attributes || []).find((a) => a.key === 'amount')?.value ||
+              '')(excessEvent)
           : ''
         const excessAmount = parseInt(excessAmountStr) || 0
         const excessAssetParsed = assetFromString('THOR.RUNE')
@@ -2974,7 +3339,9 @@ export default {
               ? `${this.baseAmountFormatOrZero(amountRaw)} ${inputTicker}`
               : '-',
             usd: amountRaw
-              ? this.formatUsdValue(this.amountToUSD(inputAssetStr, amountRaw, this.pools))
+              ? this.formatUsdValue(
+                  this.amountToUSD(inputAssetStr, amountRaw, this.pools)
+                )
               : null,
             secure: inputAssetParsed?.secure ?? false,
           },
@@ -2991,34 +3358,69 @@ export default {
             : null,
           metricRows: [
             amountRaw
-              ? { label: isStake ? 'Staked' : 'Unstaked', value: `${this.baseAmountFormatOrZero(amountRaw)} ${inputTicker}` }
+              ? {
+                  label: isStake ? 'Staked' : 'Unstaked',
+                  value: `${this.baseAmountFormatOrZero(amountRaw)} ${inputTicker}`,
+                }
               : null,
             excessAmount
-              ? { label: 'Excess returned', value: `${this.baseAmountFormatOrZero(excessAmount)} ${excessTicker}` }
+              ? {
+                  label: 'Excess returned',
+                  value: `${this.baseAmountFormatOrZero(excessAmount)} ${excessTicker}`,
+                }
               : null,
             timestamp
-              ? { label: 'Time', value: timestamp.format('YYYY-MM-DD HH:mm:ss') }
+              ? {
+                  label: 'Time',
+                  value: timestamp.format('YYYY-MM-DD HH:mm:ss'),
+                }
               : null,
           ].filter(Boolean),
           detailRows: [
-            { label: 'Product', value: productLabel, tone: this.getProductTone(productLabel), type: 'product' },
-            { label: 'Action', value: actionType, tone: this.getContractTypeTone(actionType), type: 'product' },
+            {
+              label: 'Product',
+              value: productLabel,
+              tone: this.getProductTone(productLabel),
+              type: 'product',
+            },
+            {
+              label: 'Action',
+              value: actionType,
+              tone: this.getContractTypeTone(actionType),
+              type: 'product',
+            },
             { label: 'Contract', value: contractLabel },
             { label: 'Status', value: status.label, type: 'status' },
-            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
-            height ? { label: 'Block', value: `#${this.normalFormat(height)}` } : null,
-            userAddress ? { label: 'User', address: userAddress, type: 'address' } : null,
+            timestamp
+              ? { label: 'Time', value: timestamp.format('lll') }
+              : null,
+            height
+              ? { label: 'Block', value: `#${this.normalFormat(height)}` }
+              : null,
+            userAddress
+              ? { label: 'User', address: userAddress, type: 'address' }
+              : null,
           ].filter(Boolean),
           lifecycleRows: [
             ...this.extractContractEventRows(action),
             ...(hasError && logs
-              ? [{ icon: 'WarningIcon', title: `${actionType} failed`, body: logs }]
+              ? [
+                  {
+                    icon: 'WarningIcon',
+                    title: `${actionType} failed`,
+                    body: logs,
+                  },
+                ]
               : []),
           ],
           feeRows: [],
           technicalRows: [
-            userAddress ? this.buildTechRow('From address', userAddress, 'address') : null,
-            contractAddress ? this.buildTechRow('To address', contractAddress, 'address') : null,
+            userAddress
+              ? this.buildTechRow('From address', userAddress, 'address')
+              : null,
+            contractAddress
+              ? this.buildTechRow('To address', contractAddress, 'address')
+              : null,
           ].filter(Boolean),
           priority: true,
         }
@@ -3076,9 +3478,10 @@ export default {
           : ''
         const collateralAssetParsed = collateralDenom
           ? (assetFromString(collateralDenom.toUpperCase()) ??
-              assetFromString(collateralAssetStr))
+            assetFromString(collateralAssetStr))
           : null
-        const collateralTicker = collateralAssetParsed?.ticker || collateralDenom
+        const collateralTicker =
+          collateralAssetParsed?.ticker || collateralDenom
 
         // Repay event carries fee_liquidator (bare number) and the USDT denom via 'amount'
         const repayEvent = events.find(
@@ -3093,17 +3496,18 @@ export default {
           : ''
         const repayAssetParsed = repayDenom
           ? (assetFromString(repayDenom.toUpperCase()) ??
-              assetFromString(repayAssetStr))
+            assetFromString(repayAssetStr))
           : null
         const repayTicker = repayAssetParsed?.ticker || repayDenom
         // Debt repaid (net, after fees)
         const repayAmount = parseInt(repayAttrs.repay_amount || '') || 0
         // Liquidator fee: bare number in same denom as 'amount'
-        const feeLiquidatorAmount = parseInt(repayAttrs.fee_liquidator || '') || 0
+        const feeLiquidatorAmount =
+          parseInt(repayAttrs.fee_liquidator || '') || 0
         const feeLiquidatorTicker = repayTicker
-        
+
         const feeProtocolRaw = parseInt(repayAttrs.fee_liquidation || '') || 0
-        
+
         return {
           rawEvents: events,
           rawMsg: action?.metadata?.contract?.msg || null,
@@ -3123,7 +3527,11 @@ export default {
               : '-',
             usd: collateralAmount
               ? this.formatUsdValue(
-                  this.amountToUSD(collateralAssetStr, collateralAmount, this.pools)
+                  this.amountToUSD(
+                    collateralAssetStr,
+                    collateralAmount,
+                    this.pools
+                  )
                 )
               : null,
             secure: collateralAssetParsed?.secure ?? false,
@@ -3152,7 +3560,7 @@ export default {
                   value: `${this.baseAmountFormatOrZero(repayAmount)} ${repayTicker}`,
                 }
               : null,
-              feeProtocolRaw
+            feeProtocolRaw
               ? {
                   label: 'Protocol fee',
                   value: `${this.baseAmountFormatOrZero(feeProtocolRaw)} ${feeLiquidatorTicker}`,
@@ -3174,18 +3582,32 @@ export default {
             },
             { label: 'Contract', value: contractLabel },
             liquidatedAccount
-              ? { label: 'Liquidated Account', address: liquidatedAccount, type: 'address' }
+              ? {
+                  label: 'Liquidated Account',
+                  address: liquidatedAccount,
+                  type: 'address',
+                }
               : null,
             { label: 'Status', value: status.label, type: 'status' },
-            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
-            height ? { label: 'Block', value: `#${this.normalFormat(height)}` } : null,
+            timestamp
+              ? { label: 'Time', value: timestamp.format('lll') }
+              : null,
+            height
+              ? { label: 'Block', value: `#${this.normalFormat(height)}` }
+              : null,
             userAddress
               ? { label: 'Liquidator', address: userAddress, type: 'address' }
               : null,
           ].filter(Boolean),
           lifecycleRows: (() => {
             if (hasError) {
-              return [{ icon: 'WarningIcon', title: 'Liquidation failed', body: logs || '' }]
+              return [
+                {
+                  icon: 'WarningIcon',
+                  title: 'Liquidation failed',
+                  body: logs || '',
+                },
+              ]
             }
             const totalFeesRaw = feeLiquidatorAmount + feeProtocolRaw
             return [
@@ -3215,7 +3637,8 @@ export default {
             ].filter(Boolean)
           })(),
           feeRows: (() => {
-            const feeProtocolRaw = parseInt(repayAttrs.fee_liquidation || '') || 0
+            const feeProtocolRaw =
+              parseInt(repayAttrs.fee_liquidation || '') || 0
             const toUsd = (amount) =>
               repayAssetStr
                 ? this.amountToUSD(repayAssetStr, amount, this.pools)
@@ -3257,7 +3680,11 @@ export default {
               ? this.buildTechRow('Contract', contractAddress, 'address')
               : null,
             liquidatedAccount
-              ? this.buildTechRow('Liquidated account', liquidatedAccount, 'address')
+              ? this.buildTechRow(
+                  'Liquidated account',
+                  liquidatedAccount,
+                  'address'
+                )
               : null,
           ].filter(Boolean),
           priority: true,
@@ -3476,7 +3903,13 @@ export default {
                     : '',
                 }
               : null,
-            hasError && logs ? { icon: 'WarningIcon', title: 'Contract execution failed', body: logs } : null,
+            hasError && logs
+              ? {
+                  icon: 'WarningIcon',
+                  title: 'Contract execution failed',
+                  body: logs,
+                }
+              : null,
           ].filter(Boolean),
           feeRows: [],
           technicalRows: [
@@ -3603,7 +4036,9 @@ export default {
           lifecycleRows: [
             {
               icon: hasError ? 'WarningIcon' : 'RefreshIcon',
-              title: hasError ? 'Contract execution failed' : `Instance #${instanceId} reset`,
+              title: hasError
+                ? 'Contract execution failed'
+                : `Instance #${instanceId} reset`,
               body: hasError
                 ? logs || ''
                 : [
@@ -3630,7 +4065,8 @@ export default {
       }
 
       // CCL range creation: msg.range.create
-      const rangeCreateMsg = singleAction?.metadata?.contract?.msg?.range?.create
+      const rangeCreateMsg =
+        singleAction?.metadata?.contract?.msg?.range?.create
       if (rangeCreateMsg) {
         const action = singleAction
         const contractAddress = action.out?.[0]?.address || ''
@@ -3660,7 +4096,9 @@ export default {
         const rangeCreateEvents = events.filter(
           (e) => e.type === 'wasm-rujira-fin/range.create'
         )
-        const rangeAttrs = rangeCreateEvents.length ? toAttrs(rangeCreateEvents[0]) : {}
+        const rangeAttrs = rangeCreateEvents.length
+          ? toAttrs(rangeCreateEvents[0])
+          : {}
         const rangeCount = rangeCreateEvents.length
 
         const low = rangeAttrs.low || rangeCreateMsg.config?.low || ''
@@ -3684,10 +4122,8 @@ export default {
         // Prefer registry pair info, fall back to funds order
         const pairEntry = getRujiraContractEntry(contractAddress)
         const pairLabelParts = (pairEntry?.contractLabel || '').split(':')
-        const baseDenom =
-          pairLabelParts[1] || fundsParts[0]?.denom || ''
-        const quoteDenom =
-          pairLabelParts[2] || fundsParts[1]?.denom || ''
+        const baseDenom = pairLabelParts[1] || fundsParts[0]?.denom || ''
+        const quoteDenom = pairLabelParts[2] || fundsParts[1]?.denom || ''
 
         const denomToAssetStr = (denom) =>
           !denom
@@ -3698,21 +4134,26 @@ export default {
 
         const baseAssetStr = denomToAssetStr(baseDenom)
         const quoteAssetStr = denomToAssetStr(quoteDenom)
-        const baseAssetParsed = baseAssetStr ? assetFromString(baseAssetStr) : null
-        const quoteAssetParsed = quoteAssetStr ? assetFromString(quoteAssetStr) : null
+        const baseAssetParsed = baseAssetStr
+          ? assetFromString(baseAssetStr)
+          : null
+        const quoteAssetParsed = quoteAssetStr
+          ? assetFromString(quoteAssetStr)
+          : null
         const baseTicker = baseAssetParsed?.ticker || baseDenom || 'Base'
         const quoteTicker = quoteAssetParsed?.ticker || quoteDenom || 'Quote'
 
         const pairLabel =
-          baseTicker && quoteTicker ? `${baseTicker}/${quoteTicker}` : contractLabel
+          baseTicker && quoteTicker
+            ? `${baseTicker}/${quoteTicker}`
+            : contractLabel
 
         const baseUsd = this.amountToUSD(baseAssetStr, baseAmt, this.pools)
         const quoteUsd = this.amountToUSD(quoteAssetStr, quoteAmt, this.pools)
 
         const fmtPct = (val) =>
           val ? `${(parseFloat(val) * 100).toFixed(3)}%` : ''
-        const fmtPrice = (val) =>
-          val ? parseFloat(val).toPrecision(6) : ''
+        const fmtPrice = (val) => (val ? parseFloat(val).toPrecision(6) : '')
 
         return {
           rawEvents: events,
@@ -3745,11 +4186,16 @@ export default {
           },
           metricRows: [
             low && high
-              ? { label: 'Price Range', value: `${fmtPrice(low)}–${fmtPrice(high)}` }
+              ? {
+                  label: 'Price Range',
+                  value: `${fmtPrice(low)}–${fmtPrice(high)}`,
+                }
               : null,
             fee ? { label: 'Fee', value: fmtPct(fee) } : null,
             spread ? { label: 'Spread', value: fmtPct(spread) } : null,
-            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
+            timestamp
+              ? { label: 'Time', value: timestamp.format('lll') }
+              : null,
           ].filter(Boolean),
           detailRows: [
             {
@@ -3766,13 +4212,18 @@ export default {
             },
             { label: 'Pair', value: pairLabel },
             low && high
-              ? { label: 'Price Range', value: `${fmtPrice(low)}–${fmtPrice(high)}` }
+              ? {
+                  label: 'Price Range',
+                  value: `${fmtPrice(low)}–${fmtPrice(high)}`,
+                }
               : null,
             fee ? { label: 'Fee Rate', value: fmtPct(fee) } : null,
             spread ? { label: 'Spread', value: fmtPct(spread) } : null,
             rangeIdx ? { label: 'Range Index', value: rangeIdx } : null,
             { label: 'Status', value: status.label, type: 'status' },
-            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
+            timestamp
+              ? { label: 'Time', value: timestamp.format('lll') }
+              : null,
             height
               ? { label: 'Block', value: `#${this.normalFormat(height)}` }
               : null,
@@ -3867,9 +4318,9 @@ export default {
                 (a) => a.key === 'receiver' && a.value === userAddress
               )
           )
-          const receivedAmtStr = (receivedEvent?.attributes || []).find(
-            (a) => a.key === 'amount'
-          )?.value || ''
+          const receivedAmtStr =
+            (receivedEvent?.attributes || []).find((a) => a.key === 'amount')
+              ?.value || ''
           receivedAmtStr.split(',').forEach((part, i) => {
             const denom = part.replace(/^\d+/, '').trim()
             if (i === 0 && !baseDenom) baseDenom = denom
@@ -3886,13 +4337,19 @@ export default {
 
         const baseAssetStr = denomToAssetStr(baseDenom)
         const quoteAssetStr = denomToAssetStr(quoteDenom)
-        const baseAssetParsed = baseAssetStr ? assetFromString(baseAssetStr) : null
-        const quoteAssetParsed = quoteAssetStr ? assetFromString(quoteAssetStr) : null
+        const baseAssetParsed = baseAssetStr
+          ? assetFromString(baseAssetStr)
+          : null
+        const quoteAssetParsed = quoteAssetStr
+          ? assetFromString(quoteAssetStr)
+          : null
         const baseTicker = baseAssetParsed?.ticker || baseDenom || 'Base'
         const quoteTicker = quoteAssetParsed?.ticker || quoteDenom || 'Quote'
 
         const pairLabel =
-          baseTicker && quoteTicker ? `${baseTicker}/${quoteTicker}` : contractLabel
+          baseTicker && quoteTicker
+            ? `${baseTicker}/${quoteTicker}`
+            : contractLabel
 
         const baseUsd = this.amountToUSD(baseAssetStr, baseAmt, this.pools)
         const quoteUsd = this.amountToUSD(quoteAssetStr, quoteAmt, this.pools)
@@ -3928,7 +4385,9 @@ export default {
           },
           metricRows: [
             rangeIdx ? { label: 'Range Index', value: `#${rangeIdx}` } : null,
-            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
+            timestamp
+              ? { label: 'Time', value: timestamp.format('lll') }
+              : null,
           ].filter(Boolean),
           detailRows: [
             {
@@ -3946,7 +4405,9 @@ export default {
             { label: 'Pair', value: pairLabel },
             rangeIdx ? { label: 'Range Index', value: `#${rangeIdx}` } : null,
             { label: 'Status', value: status.label, type: 'status' },
-            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
+            timestamp
+              ? { label: 'Time', value: timestamp.format('lll') }
+              : null,
             height
               ? { label: 'Block', value: `#${this.normalFormat(height)}` }
               : null,
@@ -3957,7 +4418,9 @@ export default {
           lifecycleRows: [
             {
               icon: hasError ? 'WarningIcon' : 'CheckIcon',
-              title: hasError ? 'Claim failed' : `Yield claimed from range #${rangeIdx}`,
+              title: hasError
+                ? 'Claim failed'
+                : `Yield claimed from range #${rangeIdx}`,
               body: hasError
                 ? logs || ''
                 : [
@@ -4065,11 +4528,17 @@ export default {
           const depositCoinReceived = events.find(
             (e) =>
               e.type === 'coin_received' &&
-              (e.attributes || []).some((a) => a.key === 'receiver' && a.value === userAddress) &&
-              (e.attributes || []).some((a) => a.key === 'amount' && a.value.includes('ghost-vault'))
+              (e.attributes || []).some(
+                (a) => a.key === 'receiver' && a.value === userAddress
+              ) &&
+              (e.attributes || []).some(
+                (a) => a.key === 'amount' && a.value.includes('ghost-vault')
+              )
           )
           const depositAmtStr = depositCoinReceived
-            ? ((e) => (e.attributes || []).find((a) => a.key === 'amount')?.value || '')(depositCoinReceived)
+            ? ((e) =>
+                (e.attributes || []).find((a) => a.key === 'amount')?.value ||
+                '')(depositCoinReceived)
             : ''
           depositSharesAmt = parseInt(depositAmtStr) || 0
           depositSharesDenom = depositAmtStr.replace(/^\d+/, '').trim()
@@ -4112,12 +4581,20 @@ export default {
             ? {
                 asset: underlyingAssetParsed ? underlyingAssetStr : null,
                 name: underlyingTicker,
-                badge: this.getNetworkBadge(underlyingAssetParsed) || (userAddress ? this.formatAddress(userAddress) : ''),
+                badge:
+                  this.getNetworkBadge(underlyingAssetParsed) ||
+                  (userAddress ? this.formatAddress(userAddress) : ''),
                 amount: underlyingRaw
                   ? `${this.baseAmountFormatOrZero(underlyingRaw)} ${underlyingTicker}`
                   : 'Withdrawn',
                 usd: underlyingRaw
-                  ? this.formatUsdValue(this.amountToUSD(underlyingAssetStr, underlyingRaw, this.pools))
+                  ? this.formatUsdValue(
+                      this.amountToUSD(
+                        underlyingAssetStr,
+                        underlyingRaw,
+                        this.pools
+                      )
+                    )
                   : null,
               }
             : depositSharesAmt
@@ -4186,7 +4663,11 @@ export default {
           ].filter(Boolean),
           lifecycleRows: [
             {
-              icon: hasError ? 'WarningIcon' : isGhostWithdraw ? 'SubtractIcon' : 'AddIcon',
+              icon: hasError
+                ? 'WarningIcon'
+                : isGhostWithdraw
+                  ? 'SubtractIcon'
+                  : 'AddIcon',
               title: hasError ? 'Contract execution failed' : actionType,
               body: hasError
                 ? logs || ''
@@ -4310,7 +4791,9 @@ export default {
           lifecycleRows: [
             {
               icon: hasError ? 'WarningIcon' : 'SwapIcon',
-              title: hasError ? 'Contract execution failed' : `${instanceCount} recurring swap ${instanceCount === 1 ? 'strategy' : 'strategies'} dispatched`,
+              title: hasError
+                ? 'Contract execution failed'
+                : `${instanceCount} recurring swap ${instanceCount === 1 ? 'strategy' : 'strategies'} dispatched`,
               body: hasError
                 ? logs || ''
                 : `CALC Scheduler triggered ${instanceCount} ${instanceCount === 1 ? 'instance' : 'instances'} via ${contractLabel}`,
@@ -4343,7 +4826,9 @@ export default {
       const hasError = this.rawActions.some(
         (a) => (a.metadata?.contract?.code ?? 0) > 0
       )
-      const logs = this.rawActions.find((a) => (a.metadata?.contract?.code ?? 0) > 0)?.metadata?.contract?.logs
+      const logs = this.rawActions.find(
+        (a) => (a.metadata?.contract?.code ?? 0) > 0
+      )?.metadata?.contract?.logs
       const allSuccess = this.rawActions.every((a) => a.status === 'success')
       const status = hasError
         ? { label: 'Failed', tone: 'red' }
@@ -4436,7 +4921,16 @@ export default {
             ? { label: 'Executor', value: this.formatAddress(executorAddress) }
             : null,
         ].filter(Boolean),
-        lifecycleRows: hasError && logs ? [{ icon: 'WarningIcon', title: 'Contract execution failed', body: logs }] : [],
+        lifecycleRows:
+          hasError && logs
+            ? [
+                {
+                  icon: 'WarningIcon',
+                  title: 'Contract execution failed',
+                  body: logs,
+                },
+              ]
+            : [],
         feeRows: [],
         technicalRows: [
           strategyAddress
@@ -4460,6 +4954,36 @@ export default {
             a.value?.toLowerCase().includes(q)
         )
       })
+    },
+  },
+  watch: {
+    // BondHero's rail (node status/total-bond/provider-count/next-churn)
+    // and MimirVoteHero's voter panel (active/bond chips) both need a live
+    // node lookup neither builder fetches itself. Keyed on the resolved
+    // node address so a re-render (e.g. the pending poll in mounted())
+    // doesn't refetch once it's already loaded. A page only ever has one of
+    // bondOverview/mimirOverview active at a time, so sharing one
+    // nodeSnapshot field between the two watchers is safe.
+    bondOverview: {
+      immediate: true,
+      handler(overview) {
+        const nodeAddress = overview?.nodeAddress
+        if (nodeAddress && nodeAddress !== this.nodeSnapshotAddress) {
+          this.fetchNodeSnapshot(nodeAddress)
+        }
+      },
+    },
+    mimirOverview: {
+      immediate: true,
+      handler(overview) {
+        const nodeAddress = overview?.nodeAddress
+        if (nodeAddress && nodeAddress !== this.nodeSnapshotAddress) {
+          this.fetchNodeSnapshot(nodeAddress)
+        }
+        if (overview?.key && overview.key !== this.mimirConsensusKey) {
+          this.fetchMimirConsensus(overview.key, overview.value)
+        }
+      },
     },
   },
   async mounted() {
@@ -4519,6 +5043,47 @@ export default {
     window.removeEventListener('keydown', this._escHandler)
   },
   methods: {
+    async fetchNodeSnapshot(nodeAddress) {
+      this.nodeSnapshotAddress = nodeAddress
+      try {
+        const { data } = await this.$api.getNodeInfo(nodeAddress)
+        this.nodeSnapshot = data?.node || data
+      } catch (error) {
+        try {
+          const { data } = await this.$api.getNode(nodeAddress)
+          this.nodeSnapshot = data
+        } catch (fallbackError) {
+          console.error('Failed to fetch node snapshot:', fallbackError)
+        }
+      }
+      if (!this.networkInfo) {
+        try {
+          const { data } = await this.$api.getNetwork()
+          this.networkInfo = data
+        } catch (error) {
+          console.error('Failed to fetch network info:', error)
+        }
+      }
+    },
+    async fetchMimirConsensus(key, value) {
+      this.mimirConsensusKey = key
+      try {
+        const [votesRes, mimirRes, nodesRes] = await Promise.all([
+          this.$api.getVotes(),
+          this.$api.getMimir(),
+          this.$api.getNodes(),
+        ])
+        this.mimirConsensus = computeMimirConsensus({
+          votes: votesRes?.data,
+          mimirData: mimirRes?.data,
+          nodes: nodesRes?.data,
+          key,
+          value,
+        })
+      } catch (error) {
+        console.error('Failed to fetch mimir consensus:', error)
+      }
+    },
     getBubbleTypeFromTitle(title) {
       if (!title || typeof title !== 'string') return 'default'
       const s = title.toLowerCase()
@@ -4625,6 +5190,18 @@ export default {
       const text = `${value ?? ''}`.trim()
       if (!text || /nan|infinity/i.test(text)) return '$0'
       return text
+    },
+    // Splits "MAIN (TRAILING)" into its two parts, e.g. "08/15/2026 1:41 PM
+    // (12 minutes ago)" -> { main: '08/15/2026 1:41 PM', paren: '(12 minutes
+    // ago)' }, or "0.02 RUNE ($0.03)" -> { main: '0.02 RUNE', paren:
+    // '($0.03)' }. Unlike splitFeeValue, the parenthetical isn't required to
+    // start with '$' — used for both the muted relative-time suffix and for
+    // stripping a USD amount back off a combined display string.
+    splitTrailingParen(str) {
+      if (!str) return { main: '', paren: '' }
+      const match = str.match(/^(.*?)\s*(\([^)]*\))\s*$/)
+      if (!match) return { main: str, paren: '' }
+      return { main: match[1], paren: match[2] }
     },
     splitFeeValue(str) {
       if (!str) return { usd: '$0.00', subtle: null }
@@ -5276,7 +5853,10 @@ export default {
     // fall back to scheduled_outbound_height minus the local chain height.
     getScheduledOutboundETA(thorStatus) {
       const outboundSigned = thorStatus?.stages?.outbound_signed
-      if (!outboundSigned?.scheduled_outbound_height || outboundSigned.completed) {
+      if (
+        !outboundSigned?.scheduled_outbound_height ||
+        outboundSigned.completed
+      ) {
         return undefined
       }
       // blocks_since_scheduled directly tells us how many blocks past the
@@ -5295,6 +5875,12 @@ export default {
         parseMemo: this.parseMemo.bind(this),
         parseMemoAsset: this.parseMemoAsset.bind(this),
         pools: this.pools,
+      }
+    },
+    getOutboundStatusContext() {
+      return {
+        getScheduledOutboundETA: this.getScheduledOutboundETA.bind(this),
+        blockSeconds: this.blockSeconds.bind(this),
       }
     },
     getCardContext() {
@@ -5841,9 +6427,13 @@ export default {
       ]
 
       const outAsset = isSecure ? securedToAsset(ast) : tradeToAsset(ast)
-      const outboundSigned = thorStatus?.stages?.outbound_signed?.completed ?? false
-      const outboundETA = this.getScheduledOutboundETA(thorStatus)
-      const outDone = thorStatus?.stages?.outbound_signed?.completed === true
+      const outboundSignal = resolveOutboundSignal(
+        thorStatus,
+        this.getOutboundStatusContext()
+      )
+      const outboundSigned = outboundSignal.signed ?? false
+      const outboundETA = outboundSignal.eta
+      const outDone = outboundSignal.signed === true
 
       const plannedOuts = thorStatus?.planned_out_txs ?? []
       const completedOuts = thorStatus?.out_txs ?? []
@@ -5858,6 +6448,10 @@ export default {
               tx.coins?.[0]?.amount === planned.coin?.amount &&
               tx.coins?.[0]?.asset === planned.coin?.asset
           )
+          const legState = resolveOutboundLegState(completed, {
+            signed: outboundSigned,
+            eta: outboundETA,
+          })
           return {
             asset: outAsset,
             amount: planned.coin?.amount,
@@ -5867,8 +6461,8 @@ export default {
             gasAsset: completed?.gas
               ? this.parseMemoAsset(completed.gas[0]?.asset, this.pools)
               : null,
-            outboundSigned: completed ? true : outboundSigned,
-            outboundETA: completed ? null : outboundETA,
+            outboundSigned: legState.signed,
+            outboundETA: legState.eta,
             done: !!completed,
           }
         })
@@ -6256,6 +6850,7 @@ export default {
       const inAsset = nativeTx?.in?.[0]?.coins?.[0]?.asset
       const inAmount = nativeTx?.in?.[0]?.coins?.[0]?.amount
       const timeStamp = moment(nativeTx.date / 1e6)
+      const isError = nativeTx?.metadata?.send?.code !== '0'
 
       const cards = {
         title: 'Send',
@@ -6267,6 +6862,7 @@ export default {
         ],
         middle: {
           send: true,
+          fail: isError,
         },
         out: [
           {
@@ -6275,8 +6871,6 @@ export default {
           },
         ],
       }
-
-      const isError = nativeTx?.metadata?.send?.code !== '0'
 
       const accordions = {
         in: [],
@@ -6292,6 +6886,7 @@ export default {
           timeStamp,
           pending: false,
           error: isError,
+          code: isError ? nativeTx?.metadata?.send?.code : undefined,
           reason: isError ? nativeTx?.metadata?.send?.reason : undefined,
           done: true,
           showAtFirst: true,
@@ -6317,10 +6912,10 @@ export default {
 
       const isRefund = actions?.actions?.find((a) => a.type === 'refund')
 
-      const outboundDelayRemaining =
-        (thorStatus?.stages.outbound_delay?.remaining_delay_seconds ?? 0) ||
-        (thorStatus?.stages.outbound_delay?.remaining_delay_blocks ?? 0) *
-          this.blockSeconds('THOR')
+      const outboundSignal = resolveOutboundSignal(
+        thorStatus,
+        this.getOutboundStatusContext()
+      )
 
       const pending =
         thorStatus?.stages.swap_status?.pending ||
@@ -6370,10 +6965,9 @@ export default {
               null,
             affiliateName: memo.affiliate,
             affiliateFee: sumAffiliateFee(memo.fee),
-            outboundDelayRemaining: outboundDelayRemaining || 0,
-            outboundETA: this.getScheduledOutboundETA(thorStatus),
-            outboundSigned:
-              thorStatus?.stages.outbound_signed?.completed ?? false,
+            outboundDelayRemaining: outboundSignal.delayRemaining,
+            outboundETA: outboundSignal.eta,
+            outboundSigned: outboundSignal.signed ?? false,
             refundReason: isRefund
               ? isRefund?.metadata?.refund?.reason
               : undefined,
@@ -6515,22 +7109,19 @@ export default {
         )
       }
 
-      const outboundDelayRemaining =
-        (thorStatus?.stages.outbound_delay?.remaining_delay_seconds ?? 0) ||
-        (thorStatus?.stages.outbound_delay?.remaining_delay_blocks ?? 0) *
-          this.blockSeconds('THOR')
-
-      const outboundETA = this.getScheduledOutboundETA(thorStatus)
+      const outboundSignal = resolveOutboundSignal(
+        thorStatus,
+        this.getOutboundStatusContext()
+      )
 
       const outActions = []
       if (isOut) {
         outActions.push({
           fees: outboundFees,
           feeAssets: outboundFeeAssets,
-          outboundDelayRemaining: outboundDelayRemaining || 0,
-          outboundETA,
-          outboundSigned:
-            thorStatus?.stages.outbound_signed?.completed ?? false,
+          outboundDelayRemaining: outboundSignal.delayRemaining,
+          outboundETA: outboundSignal.eta,
+          outboundSigned: outboundSignal.signed ?? false,
           done: outboundDone,
         })
 
@@ -6545,8 +7136,7 @@ export default {
               gasAsset: o.gas
                 ? this.parseMemoAsset(o.gas?.[0]?.asset, this.pools)
                 : null,
-              outboundSigned:
-                thorStatus?.stages.outbound_signed?.completed ?? false,
+              outboundSigned: outboundSignal.signed ?? false,
               done: outboundDone,
             }))
           )
@@ -6939,8 +7529,7 @@ export default {
         +this.quote?.expected_amount_out ||
         streamingProgressEstimate
 
-      const inAmountUSD =
-        (+(swapMetadata?.inPriceUSD ?? 0) * inAmount) / 1e8
+      const inAmountUSD = (+(swapMetadata?.inPriceUSD ?? 0) * inAmount) / 1e8
       let outAmountUSD =
         (+(swapMetadata?.outPriceUSD ?? 0) * estimatedOutAmount) / 1e8
       if (!outboundHasSuccess && outboundHasRefund) {
@@ -6972,10 +7561,10 @@ export default {
       // TODO: fix streaming card when finished
       // TODO: sometimes the pools price is fetched after the status
 
-      const outboundDelayRemaining =
-        (thorStatus?.stages.outbound_delay?.remaining_delay_seconds ?? 0) ||
-        (thorStatus?.stages.outbound_delay?.remaining_delay_blocks ?? 0) *
-          this.blockSeconds('THOR')
+      const outboundSignal = resolveOutboundSignal(
+        thorStatus,
+        this.getOutboundStatusContext()
+      )
 
       if (timeStamp) {
         timeStamp = moment.unix(timeStamp / 1e9)
@@ -6996,7 +7585,7 @@ export default {
       )
       const rapidInterval = depositAmountZero
         ? memo?.interval
-        : streamingMeta?.interval ?? memo?.interval
+        : (streamingMeta?.interval ?? memo?.interval)
       const isRapidSwap =
         (rapidInterval === 0 || rapidInterval === '0') && +height > 25400000
       const isLimitOrder = !!memo?.isLimitOrder
@@ -7170,12 +7759,10 @@ export default {
               height: outTxs?.length > 0 ? outTxs[0]?.height : null,
               fees: outboundFees,
               feeAssets: outboundFeeAssets,
-              delayBlocksRemaining:
-                thorStatus?.stages.outbound_delay?.remaining_delay_blocks || 0,
-              outboundDelayRemaining: outboundDelayRemaining || 0,
-              outboundETA: this.getScheduledOutboundETA(thorStatus),
-              outboundSigned:
-                thorStatus?.stages.outbound_signed?.completed ?? undefined,
+              delayBlocksRemaining: outboundSignal.delayBlocksRemaining,
+              outboundDelayRemaining: outboundSignal.delayRemaining,
+              outboundETA: outboundSignal.eta,
+              outboundSigned: outboundSignal.signed,
               done: firstOutDone,
             },
             ...(outTxs ?? []).slice(1).map((o) => ({
@@ -8096,7 +8683,8 @@ export default {
   font-size: 0.65rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--border-color) 70%, transparent);
 
   span:not(:first-child) {
     text-align: right;
@@ -8113,7 +8701,8 @@ export default {
   align-items: center;
   padding: $space-4 $space-12;
   position: relative;
-  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 30%, transparent);
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--border-color) 30%, transparent);
   transition: background 0.1s;
 
   // Depth bar fills from left for buys, right for sells
@@ -8162,8 +8751,12 @@ export default {
     }
   }
 
-  .ob-price--buy  { color: #35f09a; }
-  .ob-price--sell { color: #ff695e; }
+  .ob-price--buy {
+    color: #35f09a;
+  }
+  .ob-price--sell {
+    color: #ff695e;
+  }
 
   .ob-side {
     font-weight: 600;
@@ -8204,7 +8797,9 @@ export default {
   justify-content: center;
   padding: $space-6 $space-12;
   text-decoration: none;
-  transition: border-color 0.15s, color 0.15s;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
 
   &:hover {
     border-color: color-mix(in srgb, var(--green) 40%, var(--border-color));

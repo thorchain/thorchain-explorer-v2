@@ -164,6 +164,7 @@ export default {
       './assets/styles/_colors.scss',
       '@/assets/styles/_breakpoints.scss',
       '@/assets/styles/variables.scss',
+      '@/assets/styles/_tx-detail.scss',
     ],
   },
 
