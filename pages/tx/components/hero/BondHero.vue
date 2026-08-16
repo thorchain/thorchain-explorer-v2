@@ -13,7 +13,7 @@
         <div class="tx-swap-head" :style="panelVars">
           <div class="tx-asset-panel">
             <div class="tx-asset-label">Bond provider</div>
-            <div class="tx-asset-primary">
+            <div class="tx-asset-primary tx-asset-primary--identity">
               <AssetIcon asset="THOR.RUNE" :height="'2.25rem'" />
               <span>{{ addressFormatV2(overview.providerAddress) }}</span>
             </div>
@@ -30,14 +30,29 @@
 
           <div class="tx-asset-panel tx-asset-panel--accent">
             <div class="tx-asset-label">Node</div>
-            <div class="tx-asset-primary">
-              <NodeIcon class="tx-node-icon" />
+            <div class="tx-asset-primary tx-asset-primary--identity">
+              <div class="tx-node-avatar">
+                <NodeIcon />
+              </div>
               <span>{{ addressFormatV2(overview.nodeAddress) }}</span>
             </div>
-            <div class="tx-asset-badge">
-              <span v-if="nodeStatus">{{ nodeStatus }}</span>
-              <span v-if="providerCount != null">
-                · {{ providerCount }} providers
+            <div class="tx-panel-chips">
+              <span
+                v-if="nodeStatus"
+                :class="[
+                  'tx-chip',
+                  nodeStatus === 'Active'
+                    ? 'tx-chip--active'
+                    : 'tx-chip--neutral',
+                ]"
+              >
+                {{ nodeStatus }}
+              </span>
+              <span
+                v-if="providerCount != null"
+                class="tx-chip tx-chip--neutral"
+              >
+                {{ providerCount }} providers
               </span>
             </div>
           </div>
@@ -46,17 +61,17 @@
         <div class="tx-metric-strip">
           <div class="tx-metric-item">
             <div class="tx-asset-label">Bond before</div>
-            <div class="tx-metric-value">{{ bondBeforeDisplay }}</div>
+            <div class="tx-metric-value mono">{{ bondBeforeDisplay }}</div>
           </div>
           <div class="tx-metric-item">
             <div class="tx-asset-label">Bond after</div>
-            <div class="tx-metric-value tx-value-positive">
+            <div class="tx-metric-value tx-value-positive mono">
               {{ bondAfterDisplay }}
             </div>
           </div>
           <div class="tx-metric-item">
             <div class="tx-asset-label">Provider share</div>
-            <div class="tx-metric-value">{{ providerShareDisplay }}</div>
+            <div class="tx-metric-value mono">{{ providerShareDisplay }}</div>
           </div>
         </div>
       </section>

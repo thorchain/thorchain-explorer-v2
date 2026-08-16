@@ -7,18 +7,29 @@
 
     <template #main>
       <section class="tx-swap-card">
-        <div class="tx-swap-head">
+        <div class="tx-swap-head" :style="panelVars">
           <div class="tx-asset-panel">
             <div class="tx-asset-label">Voter</div>
-            <div class="tx-asset-primary">
-              <NodeIcon class="tx-node-icon" />
+            <div class="tx-asset-primary tx-asset-primary--identity">
+              <div class="tx-node-avatar">
+                <NodeIcon />
+              </div>
               <span>{{ addressFormatV2(overview.nodeAddress) }}</span>
             </div>
-            <div class="tx-asset-badge">
-              <span v-if="nodeStatus">{{ nodeStatus }}</span>
-              <span v-if="bondDisplay">
-                <template v-if="nodeStatus"> · </template>Bond
-                {{ bondDisplay }}
+            <div class="tx-panel-chips">
+              <span
+                v-if="nodeStatus"
+                :class="[
+                  'tx-chip',
+                  nodeStatus === 'Active'
+                    ? 'tx-chip--active'
+                    : 'tx-chip--neutral',
+                ]"
+              >
+                {{ nodeStatus }} node
+              </span>
+              <span v-if="bondDisplay" class="tx-chip tx-chip--neutral">
+                Bond {{ bondDisplay }}
               </span>
             </div>
           </div>
@@ -27,22 +38,18 @@
 
           <div class="tx-asset-panel tx-asset-panel--accent">
             <div class="tx-asset-label">Mimir key</div>
-            <div class="tx-asset-primary">
-              <span>{{ overview.key }}</span>
-              <span class="tx-value-positive">= {{ overview.value }}</span>
+            <div class="tx-asset-primary tx-asset-primary--compact">
+              <span>{{ overview.key }} =</span>
+              <span class="tx-value-positive">{{ overview.value }}</span>
             </div>
+            <div class="tx-mimir-gloss">{{ keyDescription }}</div>
           </div>
         </div>
 
         <div class="tx-metric-strip">
           <div class="tx-metric-item">
             <div class="tx-asset-label">Consensus</div>
-            <div
-              :class="[
-                'tx-metric-value',
-                consensus && consensus.reached ? 'tx-value-positive' : null,
-              ]"
-            >
+            <div :class="['tx-metric-value', consensusToneClass]">
               {{
                 consensus
                   ? consensus.reached
@@ -54,11 +61,11 @@
           </div>
           <div class="tx-metric-item">
             <div class="tx-asset-label">Votes for {{ overview.value }}</div>
-            <div class="tx-metric-value">{{ voteFractionDisplay }}</div>
+            <div class="tx-metric-value mono">{{ voteFractionDisplay }}</div>
           </div>
           <div class="tx-metric-item">
             <div class="tx-asset-label">In effect since</div>
-            <div class="tx-metric-value">{{ inEffectSinceDisplay }}</div>
+            <div class="tx-metric-value mono">{{ inEffectSinceDisplay }}</div>
           </div>
         </div>
 
@@ -191,6 +198,24 @@ export default {
       // registry, so a plain 'NodeIcon' string wouldn't find anything
       // there — pass the imported component object directly instead.
       return [{ label: 'Network config', icon: NodeIcon }]
+    },
+    consensusToneClass() {
+      if (!this.consensus) return null
+      return this.consensus.reached ? 'tx-value-positive' : 'tx-value-warning'
+    },
+    // Swap hero picks --left-border/--right-border per-asset (panelVars);
+    // a vote has a fixed role instead of assets — the Mimir key panel is
+    // always the accented side, matching the mockup.
+    panelVars() {
+      return { '--right-border': 'var(--green)' }
+    },
+    // Generic, always-accurate restatement of the vote rather than a
+    // per-key explanation of what the key actually does — there's no
+    // source of truth in this codebase for that, and guessing would put
+    // false governance info in front of users. This phrasing works for any
+    // key/value pair.
+    keyDescription() {
+      return `Vote ${this.overview.key} rule set to ${this.overview.value}`
     },
     nodeStatus() {
       return this.nodeSnapshot?.status || null

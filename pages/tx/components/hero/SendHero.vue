@@ -25,7 +25,7 @@
         <div class="tx-swap-head" :style="panelVars">
           <div class="tx-asset-panel">
             <div class="tx-asset-label">Sender</div>
-            <div class="tx-asset-primary">
+            <div class="tx-asset-primary tx-asset-primary--identity">
               <AssetIcon asset="THOR.RUNE" :height="'2.25rem'" />
               <span>{{ addressFormatV2(overview.from) }}</span>
             </div>
@@ -70,7 +70,7 @@
                 · Never credited
               </template>
             </div>
-            <div class="tx-asset-primary">
+            <div class="tx-asset-primary tx-asset-primary--identity">
               <AssetIcon asset="THOR.RUNE" :height="'2.25rem'" />
               <span>{{ addressFormatV2(overview.to) }}</span>
             </div>
@@ -100,7 +100,7 @@
             <div class="tx-asset-label">
               {{ overview.failed ? 'Gas charged' : 'Network fee' }}
             </div>
-            <div class="tx-metric-value">
+            <div class="tx-metric-value mono">
               {{ overview.gasRuneOnly || '-' }}
             </div>
           </div>
