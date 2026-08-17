@@ -47,15 +47,37 @@ export function resolveOutboundLegState(completedTx, signal) {
 }
 
 /**
+ * Maps a single leg's raw signal onto the redesign's 4-word status
+ * vocabulary. Confirmed against a real multi-leg trade-withdraw tx: THORNode
+ * gives no per-leg scheduled height (each planned_out_txs entry is just
+ * {chain, to_address, coin, refund}) — the only ETA source is the tx-wide
+ * outbound_signed stage (see resolveOutboundSignal/getScheduledOutboundETA),
+ * whose eta is already negative-when-overdue by convention. This is the v1
+ * fallback the plan flagged: a single tx-wide overdue signal applied to
+ * every still-pending leg, not a genuinely per-leg one.
+ *
+ * @param {{ done: boolean, outboundETA: number|null|undefined, refund?: boolean }} leg
+ * @returns {'delivered'|'scheduled'|'overdue'|'refunded'}
+ */
+export function resolveOutboundLegStatus({ done, outboundETA, refund }) {
+  if (refund) return 'refunded'
+  if (done) return 'delivered'
+  if (outboundETA != null && outboundETA < 0) return 'overdue'
+  return 'scheduled'
+}
+
+/**
  * Derive-never-store totals across a transaction's outbound legs, per the
  * tx-detail redesign's state-management rule. `legs` must already carry a
  * `status` field ('delivered' | 'scheduled' | 'overdue' | 'refunded') and a
  * numeric `amount` (base units). `inputAmount`, when provided via ctx, lets
- * callers surface a withheld-fee figure (inbound − sum(outbounds)).
- *
- * Not yet wired into any UI — lands in Phase 0 so the outbound-status module
- * is complete, actually consumed starting with the multi-outbound/streaming
- * heroes in Phase 5.
+ * callers surface a withheld-fee figure (inbound − sum(outbounds)) and is
+ * used as the delivery percentage's denominator (percent of what was
+ * actually withdrawn, not just of what's been scheduled to go out) —
+ * confirmed against a real trade-withdraw mockup where 29.05973287 of a
+ * 254.30386364 withdrawal reads as 11.4%, not 29.05973287 /
+ * 253.54330841 (the outbound total, net of withheld fees). Falls back to
+ * the outbound total when inputAmount isn't supplied.
  */
 export function resolveTxOutboundTotals(legs, ctx = {}) {
   const toNum = (v) => parseInt(v ?? 0, 10) || 0
@@ -64,11 +86,13 @@ export function resolveTxOutboundTotals(legs, ctx = {}) {
     .filter((leg) => leg.status === 'delivered')
     .reduce((sum, leg) => sum + toNum(leg.amount), 0)
   const outstanding = Math.max(total - delivered, 0)
-  const percent = total > 0 ? delivered / total : 0
+  const percentBase = ctx.inputAmount != null ? toNum(ctx.inputAmount) : total
+  const percent = percentBase > 0 ? delivered / percentBase : 0
   const feesWithheld =
     ctx.inputAmount != null ? toNum(ctx.inputAmount) - total : undefined
 
   return {
+    total,
     delivered,
     outstanding,
     percent,
