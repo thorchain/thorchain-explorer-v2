@@ -762,6 +762,8 @@ export default {
       mimirConsensus: null,
       mimirConsensusKey: null,
       streamingProgress: null,
+      streamingProgressHash: null,
+      streamingProgressFetchedAt: 0,
     }
   },
   head() {
@@ -1415,17 +1417,28 @@ export default {
       )
       const outboundStacks = outboundAccordion?.data?.stacks || []
 
+      // A 'Stream' stack only exists for a genuine multi-chunk stream
+      // (quantity > 1) — a PLAIN swap never has one at all, so it can't be
+      // used to detect "swap done, outbound pending" generally. That state
+      // applies to any swap, streaming or not: the action accordion's own
+      // `done` (inbound finalised + swap finalised/not pending) is true
+      // once the swap itself has executed, independent of whether it
+      // streamed. Confirmed against a real plain (non-streaming) swap
+      // stuck exactly in this window, still on the legacy path before this
+      // fix — quantity<=1 alone was wrongly excluding it.
       const streamMatch = this.getStackDisplayValue(
         actionStacks,
         'Stream'
       ).match(/(\d+)\s*\/\s*(\d+)/)
-      if (!streamMatch) return null
-      const snapshotCount = Number(streamMatch[1])
-      const snapshotQuantity = Number(streamMatch[2])
-      if (snapshotQuantity <= 1) return null
-      const streamingDone = snapshotCount >= snapshotQuantity
-      if (streamingDone && output.done) return null
-      const phase = streamingDone ? 'outbound' : 'streaming'
+      const isStreaming = !!streamMatch && Number(streamMatch[2]) > 1
+      const swapExecuted = !!actionAccordion?.data?.done
+      if (!isStreaming && !swapExecuted) return null
+      if (output.done) return null
+
+      const snapshotCount = isStreaming ? Number(streamMatch[1]) : 1
+      const snapshotQuantity = isStreaming ? Number(streamMatch[2]) : 1
+      const streamingDone = isStreaming && snapshotCount >= snapshotQuantity
+      const phase = !isStreaming || streamingDone ? 'outbound' : 'streaming'
 
       const precise = (amount, asset) =>
         `${this.baseAmountFormatOrZero(amount)} ${this.showAsset(asset)}`
@@ -1484,6 +1497,12 @@ export default {
         from: this.getStackDisplayValue(inboundStacks, 'From'),
         destination: output.to || null,
         asset: input.asset,
+        // Full chain name for a chain's own gas asset (BTC.BTC ->
+        // "Bitcoin", ETH.ETH -> "Ethereum"), bare ticker otherwise (ETH.USDC
+        // -> "USDC") — matches the shipped swapOverview hero's own
+        // .tx-asset-primary convention (getAssetDisplayName, page-local
+        // only, not reachable from this child component).
+        inputName: this.getAssetDisplayName(input.asset),
         assetBadge: this.getNetworkBadge(assetFromString(input.asset)),
         amountDisplay: precise(input.amount, input.asset),
         amountUsdDisplay: this.formatUsdValue(
@@ -1491,8 +1510,10 @@ export default {
             this.amountToUSD(input.asset, input.amount, this.pools)
         ),
         outputAsset: output.asset,
+        outputName: this.getAssetDisplayName(output.asset),
         outputAssetBadge: this.getNetworkBadge(assetFromString(output.asset)),
         phase,
+        isStreaming,
         // The swap's full projected FINAL total (swapMetadata's
         // streamingSwapMeta.outEstimation, computed once at swap creation)
         // — a distinct figure from "so far" below. createSwapState
@@ -1510,7 +1531,7 @@ export default {
         ...this.buildStreamingProgress(
           { snapshotCount, snapshotQuantity, phase },
           input.asset,
-          output.asset
+          output
         ),
         // Outbound-phase fields — read straight from the accordion-out-N
         // stacks buildOutboundAccordions already builds from
@@ -1524,6 +1545,16 @@ export default {
           outboundStacks,
           'Outbound Delay Est.'
         ),
+        // Raw seconds for the live countdown bar — read straight off the
+        // accordion's own data.remainingTime/totalTime, the exact same pair
+        // the legacy Accordion.vue already drives its circular countdown
+        // timer from for this same outbound entry (buildOutboundAccordions
+        // sets both equal at build time; Accordion.vue ticks a local timer
+        // down from there client-side, see its startCountdown/updateCircle
+        // — StreamingSwapHero's bar mirrors that exact pattern rather than
+        // re-deriving from outboundDelayRemaining independently).
+        outboundDelayRemainingSeconds: outboundAccordion?.data?.remainingTime || 0,
+        outboundDelayTotalSeconds: outboundAccordion?.data?.totalTime || 0,
         outboundPastDueDisplay: this.getStackDisplayValue(
           outboundStacks,
           'Past Due'
@@ -5567,9 +5598,16 @@ export default {
         }
       },
     },
-    // Unlike the guarded watchers above, this refetches on every firing —
-    // streamingOverview is a new object each time the page's own 5s pending
-    // poll rebuilds this.cards, and progress genuinely changes each cycle.
+    // streamingOverview itself reads this.streamingProgress (via
+    // buildStreamingProgress), which fetchStreamingProgress below writes to
+    // — so every fetch response makes streamingOverview recompute into a
+    // new object, which re-fires this watcher, which fetches again
+    // immediately. Without the timestamp guard below that's a runaway
+    // self-triggering loop (back-to-back requests as fast as the network
+    // round-trip allows), not the page's 5s poll cadence — confirmed via a
+    // real tx firing requests milliseconds apart. The guard throttles to
+    // one fetch per 3s per hash while still picking up a hash change
+    // (navigating to a different streaming tx) immediately.
     streamingOverview: {
       immediate: true,
       handler(overview) {
@@ -5577,7 +5615,14 @@ export default {
         // returns zeroed data (it tracks active streams only) — nothing
         // useful to fetch, and buildStreamingProgress ignores it in that
         // phase anyway.
-        if (overview?.hash && overview.phase === 'streaming') {
+        if (!overview?.hash || overview.phase !== 'streaming') return
+        const now = Date.now()
+        if (
+          overview.hash !== this.streamingProgressHash ||
+          now - this.streamingProgressFetchedAt >= 3000
+        ) {
+          this.streamingProgressHash = overview.hash
+          this.streamingProgressFetchedAt = now
           this.fetchStreamingProgress(overview.hash)
         }
       },
@@ -5688,8 +5733,9 @@ export default {
     buildStreamingProgress(
       { snapshotCount, snapshotQuantity, phase },
       inputAsset,
-      outputAsset
+      output
     ) {
+      const outputAsset = output.asset
       // Once streaming itself is done (phase 'outbound'), THORNode's
       // streaming-status endpoint returns zeroed data (it only tracks
       // ACTIVE streams) — using it here would show "0 swapped so far" for
@@ -5768,10 +5814,17 @@ export default {
           outputSoFarRaw != null
             ? `${this.baseAmountFormatOrZero(outputSoFarRaw)} ${this.showAsset(outputAsset)}`
             : null,
+        // Scaled off output.amountUSD (the projected total's already-correct
+        // Midgard-priced USD value, outPriceUSD-based) rather than re-pricing
+        // via amountToUSD/pools: pool lookups match on the exact asset
+        // string including any contract suffix (e.g. an ERC20/TRC20 token's
+        // "-0x..." address), and outputAsset here often doesn't carry one —
+        // that silently priced at $0 for a real in-progress TRON.USDT stream
+        // even though outputProjectedUsdDisplay (Midgard-sourced) was fine.
         outputSoFarUsdDisplay:
-          outputSoFarRaw != null
+          outputSoFarRaw != null && +output.amount > 0
             ? this.formatUsdValue(
-                this.amountToUSD(outputAsset, outputSoFarRaw, this.pools)
+                (outputSoFarRaw / +output.amount) * (+output.amountUSD || 0)
               )
             : null,
       }
