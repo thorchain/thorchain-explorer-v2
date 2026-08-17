@@ -217,7 +217,7 @@
 // (explicit margins) rather than a blanket flex `gap`, since .tx-asset-label
 // is shared with .tx-metric-item where the label-to-value gap is different
 // (7px, via .tx-metric-value's own margin-top below).
-.tx-asset-panel > .tx-asset-label {
+.tx-asset-panel>.tx-asset-label {
   margin-bottom: $space-10;
 }
 
@@ -280,7 +280,7 @@
   display: flex;
   gap: $space-12;
   justify-content: space-between;
-  margin-top: auto;
+  margin-top: 10px;
 
   span,
   strong {
@@ -557,6 +557,18 @@
     border-color: color-mix(in srgb, var(--red) 35%, var(--card-bg-color));
     color: var(--red);
   }
+
+  // A refund isn't a failure (funds came back) or an outright success (the
+  // swap didn't complete as intended) — amber reads as neither.
+  &--warning {
+    background: color-mix(in srgb,
+        var(--warning-color) 12%,
+        var(--card-bg-color));
+    border-color: color-mix(in srgb,
+        var(--warning-color) 35%,
+        var(--card-bg-color));
+    color: var(--warning-color);
+  }
 }
 
 // currentColor (driven by the dot's own `color`) covers both fill-based
@@ -575,6 +587,10 @@
 
   &--danger {
     color: var(--red);
+  }
+
+  &--warning {
+    color: var(--warning-color);
   }
 }
 
@@ -638,6 +654,25 @@
   border: 1px solid color-mix(in srgb, var(--red) 35%, var(--border-color));
   border-radius: 20px;
   padding: $space-20;
+
+  // A refund explainer isn't reporting a failure — amber instead of red.
+  &--warning {
+    background: color-mix(in srgb,
+        var(--warning-color) 6%,
+        var(--card-bg-color));
+    border-color: color-mix(in srgb,
+        var(--warning-color) 35%,
+        var(--border-color));
+  }
+}
+
+// SendHero's explainer sits as a sibling above .tx-swap-card, spaced by
+// .tx-detail-main's own flex gap. RefundHero's nests it inside
+// .tx-swap-card, right after .tx-swap-head, where nothing else provides
+// that spacing — scoped to the direct-child case so SendHero's placement
+// is unaffected.
+.tx-swap-card > .tx-explainer {
+  margin-top: $space-16;
 }
 
 .tx-explainer-header {
@@ -647,6 +682,10 @@
   gap: $space-10;
   font-weight: 700;
   margin-bottom: $space-10;
+
+  .tx-explainer--warning & {
+    color: var(--warning-color);
+  }
 }
 
 .tx-explainer-icon {
@@ -679,6 +718,17 @@
 .tx-swap-arrow-icon--danger {
   color: var(--red);
   fill: var(--red);
+}
+
+.tx-swap-arrow--warning {
+  border-color: color-mix(in srgb,
+      var(--warning-color) 40%,
+      var(--border-color));
+}
+
+.tx-swap-arrow-icon--warning {
+  color: var(--warning-color);
+  fill: var(--warning-color);
 }
 
 // Recipient-never-credited panel: dashed red border instead of the normal

@@ -1,6 +1,8 @@
 <template>
   <Page>
-    <template v-if="sendOverview || bondOverview || mimirOverview">
+    <template
+      v-if="sendOverview || bondOverview || mimirOverview || refundOverview"
+    >
       <SendHero v-if="sendOverview" :overview="sendOverview" />
       <BondHero
         v-else-if="bondOverview"
@@ -15,6 +17,7 @@
         :node-snapshot="nodeSnapshot"
         :consensus="mimirConsensus"
       />
+      <RefundHero v-else-if="refundOverview" :overview="refundOverview" />
     </template>
     <div v-else-if="swapOverview || contractOverview" class="tx-detail-page">
       <div class="tx-detail-back">
@@ -635,11 +638,12 @@ import {
   resolveOutboundSignal,
   resolveOutboundLegState,
 } from './state/outboundStatus.js'
-import { parseSendFailure } from './state/parseSendFailure.js'
+import { parseActionReason } from './state/parseActionReason.js'
 import { computeMimirConsensus } from './state/mimirConsensus.js'
 import SendHero from './components/hero/SendHero.vue'
 import BondHero from './components/hero/BondHero.vue'
 import MimirVoteHero from './components/hero/MimirVoteHero.vue'
+import RefundHero from './components/hero/RefundHero.vue'
 import ProductBadge from '~/components/ProductBadge.vue'
 import Affiliate from '~/components/Affiliate.vue'
 import DisconnectIcon from '~/assets/images/disconnect.svg?inline'
@@ -702,6 +706,7 @@ export default {
     SendHero,
     BondHero,
     MimirVoteHero,
+    RefundHero,
   },
   data() {
     return {
@@ -881,16 +886,28 @@ export default {
       const failureReason = failed
         ? this.getStackDisplayValue(stacks, 'Reason')
         : null
+      const parsedFailure = failed
+        ? parseActionReason(failureReason, {
+            formatAmount: (raw) => this.formatAssetAmount(raw, input.asset),
+            heightDisplay,
+          })
+        : null
 
       return {
         kind: 'send',
         status: this.getOverviewStatus(overall.middle),
         failed,
         failure: failed
-          ? parseSendFailure(failureReason, failureCode, {
-              formatAmount: (raw) => this.formatAssetAmount(raw, input.asset),
-              heightDisplay,
-            })
+          ? {
+              title: parsedFailure?.title || 'Transaction failed',
+              body:
+                parsedFailure?.body ||
+                'The transaction was included in a block and rejected during execution — the transfer never happened, and the gas below was still charged.',
+              code: failureCode,
+              codeLine: parsedFailure
+                ? `code ${failureCode}`
+                : `code ${failureCode}${failureReason ? ` · ${failureReason}` : ''}`,
+            }
           : null,
         failureReasonRaw: failureReason,
         hash:
@@ -964,6 +981,84 @@ export default {
         timeAgoDisplay: time.paren,
         heightDisplay: height ? `#${this.normalFormat(height)}` : '-',
         memo: stacks.find((s) => s.key === 'Memo' && s.is)?.value || '',
+      }
+    },
+    // Standalone refunds (createSwapState's onlyRefund case: THORChain
+    // accepted the swap attempt but the whole thing came back — e.g. slip
+    // tolerance exceeded, invalid destination, no route) share the same
+    // swap card/builder swapOverview reads, so this reuses swapCardIndex.
+    // swapOverview already bails on middle.fail (which onlyRefund sets), so
+    // there's no risk of double-rendering. Distinguished from a generic
+    // protocol-level rejection (createFailedState, no swap ever attempted —
+    // left on the legacy path, out of scope here) by the card's title,
+    // which createSwapState always prefixes "refunded " for this exact
+    // case (createFailedState's title is just the bare memo type, never
+    // that prefix). Not gated on the reason text itself being present —
+    // THORNode sometimes returns an empty refund reason, and that's still
+    // this screen, just with a "not provided" fallback below.
+    refundOverview() {
+      if (this.swapCardIndex < 0) return null
+      const card = this.cards[this.swapCardIndex]
+      const overall = card?.details?.overall
+      if (!overall?.middle?.fail) return null
+      if (!/^refunded\b/i.test(card?.details?.title || '')) return null
+
+      const actionAccordion = card?.accordions?.find(
+        (entry) => entry.name === 'accordion-action'
+      )
+      const actionStacks = actionAccordion?.data?.stacks || []
+      const reasonRaw = this.getStackDisplayValue(actionStacks, 'Refund Reason')
+      const parsedReason = reasonRaw ? parseActionReason(reasonRaw) : null
+
+      const input = overall?.in?.[0]
+      const output = overall?.out?.[0]
+      if (!input?.asset || !output?.asset) return null
+
+      const inboundAccordion = card?.accordions?.find((entry) =>
+        entry.name.startsWith('accordion-in-')
+      )
+      const outboundAccordion = card?.accordions?.find((entry) =>
+        entry.name.startsWith('accordion-out-')
+      )
+      const inboundStacks = inboundAccordion?.data?.stacks || []
+      const outboundStacks = outboundAccordion?.data?.stacks || []
+
+      const time = this.splitTrailingParen(
+        this.getStackDisplayValue(actionStacks, 'Timestamp')
+      )
+      const height = this.getNumericStackValue(actionStacks, 'Block Height')
+      const networkFee = outboundStacks
+        .filter((stack) => stack.key === 'Outbound Fee' && stack.is)
+        .map((stack) =>
+          this.formatFeeDisplay(this.formatStackValue(stack.value))
+        )
+        .filter(Boolean)[0]
+
+      return {
+        kind: 'refund',
+        status: { label: 'Refunded', tone: 'yellow' },
+        hash: this.$route.params.txhash,
+        outboundHash: this.getStackDisplayValue(outboundStacks, 'Hash'),
+        from: this.getStackDisplayValue(inboundStacks, 'From'),
+        sentAsset: input.asset,
+        sentAmountDisplay: this.formatAssetAmount(input.amount, input.asset),
+        sentAmountUsdDisplay: this.formatUsdValue(input.amountUSD),
+        refundedAsset: output.asset,
+        refundedAmountDisplay: this.formatAssetAmount(
+          output.amount,
+          output.asset
+        ),
+        refundedAmountUsdDisplay: this.formatUsdValue(output.amountUSD),
+        reasonTitle: parsedReason?.title || null,
+        reason:
+          parsedReason?.body || reasonRaw || 'No reason provided by THORChain.',
+        reasonRaw,
+        networkFee: networkFee || null,
+        timeDisplay: time.main,
+        timeAgoDisplay: time.paren,
+        height,
+        heightDisplay: height ? `#${this.normalFormat(height)}` : '-',
+        memo: this.getStackDisplayValue(actionStacks, 'Memo'),
       }
     },
     // Mimir votes always come through createAbstractState's mimir branch
@@ -7441,7 +7536,7 @@ export default {
       )
       const inAmount = parseInt(thorStatus?.tx?.coins?.[0]?.amount ?? 0)
 
-      const outAsset = this.parseMemoAsset(
+      let outAsset = this.parseMemoAsset(
         outTxs?.length > 0 ? outTxs[0]?.coins?.[0]?.asset : memo?.asset,
         this.pools
       )
@@ -7477,6 +7572,23 @@ export default {
         }
       }
 
+      // only refund happened
+      const onlyRefund =
+        actions?.actions.length > 0 &&
+        actions?.actions.every((action) => action?.type === 'refund')
+      const refundAction = actions?.actions?.find((a) => a.type === 'refund')
+
+      // A trade/secure-asset refund settles as an internal THORChain ledger
+      // update, not an observed cross-chain outbound — out_txs stays empty,
+      // so outAsset/outAmount above fell back to the memo's intended
+      // DESTINATION asset and 0. A refund always returns the same asset
+      // (and, absent any withheld fee info, the same amount) that was sent
+      // in.
+      if (onlyRefund && !outTxs?.length) {
+        outAsset = inAsset
+        outAmount = inAmount
+      }
+
       const outMemoAsset = this.parseMemoAsset(memo?.asset)
 
       // Midgard
@@ -7497,8 +7609,7 @@ export default {
             )
           : null
       let timeStamp = swapAction?.date
-      const height = swapAction?.height
-      this.height = height
+      let height = swapAction?.height
 
       // Refunds
       const outboundHasRefund = outTxs?.some(
@@ -7529,26 +7640,41 @@ export default {
         +this.quote?.expected_amount_out ||
         streamingProgressEstimate
 
-      const inAmountUSD = (+(swapMetadata?.inPriceUSD ?? 0) * inAmount) / 1e8
+      // swapMetadata's historical inPriceUSD/outPriceUSD only exist on a
+      // Midgard 'swap'/'limit_swap' action — a pure refund has neither (see
+      // the height/timeStamp/memo fallbacks above), so it's always 0 here.
+      // Fall back to the current pool price (amountToUSD already converts
+      // trade assets to their native equivalent before the pool lookup —
+      // rule of thumb: trade/secure assets always need that conversion
+      // before pricing, never priced directly under their suffixed form).
+      const inAmountUSD =
+        (+(swapMetadata?.inPriceUSD ?? 0) * inAmount) / 1e8 ||
+        this.amountToUSD(inAsset, inAmount, this.pools) ||
+        0
       let outAmountUSD =
-        (+(swapMetadata?.outPriceUSD ?? 0) * estimatedOutAmount) / 1e8
+        (+(swapMetadata?.outPriceUSD ?? 0) * estimatedOutAmount) / 1e8 ||
+        this.amountToUSD(outAsset, estimatedOutAmount, this.pools) ||
+        0
       if (!outboundHasSuccess && outboundHasRefund) {
-        outAmountUSD = (+(swapMetadata?.inPriceUSD ?? 0) * outAmount) / 1e8
+        outAmountUSD =
+          (+(swapMetadata?.inPriceUSD ?? 0) * outAmount) / 1e8 ||
+          this.amountToUSD(outAsset, outAmount, this.pools) ||
+          0
       }
 
       const outboundRefundReason = actions?.actions.find(
         (action) => action.type === 'refund'
       )?.metadata?.refund?.reason
 
-      // only refund happened
-      const onlyRefund =
-        actions?.actions.length > 0 &&
-        actions?.actions.every((action) => action?.type === 'refund')
-
-      const refundAction = actions?.actions?.find((a) => a.type === 'refund')
       if (onlyRefund) {
+        // A pure refund has no Midgard 'swap' action at all (every action is
+        // type 'refund'), so swapAction above is undefined and neither its
+        // date nor its height are available — fall back to the refund
+        // action's own, which every Midgard action carries.
         timeStamp = refundAction?.date
+        height = refundAction?.height
       }
+      this.height = height
       let isRefund = false
       if (refundAction) {
         isRefund = true
@@ -7734,7 +7860,13 @@ export default {
                 memo?.quantity,
               lastHeight: streamingMeta?.lastHeight || null,
             },
-            memo: swapAction?.metadata.swap?.memo,
+            // A pure refund has no Midgard 'swap' action (swapAction is
+            // undefined — see the height/timeStamp fallback above), so its
+            // memo has to come from the refund action's own metadata
+            // instead.
+            memo:
+              swapAction?.metadata.swap?.memo ??
+              refundAction?.metadata?.refund?.memo,
             done:
               thorStatus?.stages?.inbound_finalised?.completed &&
               (thorStatus?.stages.swap_finalised?.completed ||
