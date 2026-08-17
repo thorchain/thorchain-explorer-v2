@@ -764,6 +764,13 @@
   border-style: dashed;
 }
 
+// Output panel while its outbound is held/pending — the amount itself is
+// final (unlike --danger-dashed's "never credited"), just not sent yet.
+.tx-asset-panel--warning-dashed {
+  border-color: var(--warning-color);
+  border-style: dashed;
+}
+
 .tx-value-strike {
   color: var(--red);
   text-decoration: line-through;
@@ -803,6 +810,16 @@
   margin-top: $space-11;
 }
 
+// Multiple .mini-bubble badges inside a single DetailRow value (e.g.
+// StreamingSwapHero's Outbound Stage row can show "delayed" + "not
+// signed" together) — .mini-bubble itself has no gap since it's normally
+// used solo.
+.tx-stage-row {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: $space-6;
+}
+
 .tx-chip {
   border-radius: $radius-s;
   font-family: 'Montserrat', sans-serif;
@@ -818,6 +835,11 @@
   &--neutral {
     background: var(--surface-4-color);
     color: var(--font-color);
+  }
+
+  &--warning {
+    background: color-mix(in srgb, var(--warning-color) 14%, var(--card-bg-color));
+    color: var(--warning-color);
   }
 }
 
@@ -1036,4 +1058,13 @@
   font-size: $font-size-xxs;
   justify-content: space-between;
   margin-bottom: $space-8;
+}
+
+// Muted explainer line under a bar, e.g. the outbound-delay countdown's
+// "held before signing" note — .tx-outbound-overdue-note is red/overdue-
+// specific, this is a neutral-toned equivalent for a non-error state.
+.tx-delivery-note {
+  color: var(--text-faint-color);
+  font-size: $font-size-xxs;
+  margin-top: $space-8;
 }

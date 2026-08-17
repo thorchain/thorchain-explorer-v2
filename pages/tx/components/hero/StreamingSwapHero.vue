@@ -1,5 +1,5 @@
 <template>
-  <TxHeroShell eyebrow="Streaming Swap · THORChain" :chips="chips">
+  <TxHeroShell :eyebrow="eyebrow" :chips="chips">
     <template #title>
       <template v-if="isOutbound">
         Swapped <span class="mono">{{ overview.amountDisplay }}</span> for
@@ -19,7 +19,7 @@
             <div class="tx-asset-label">Input</div>
             <div class="tx-asset-primary">
               <AssetIcon :asset="overview.asset" :height="'2.25rem'" />
-              <span>{{ inputTicker }}</span>
+              <span>{{ overview.inputName }}</span>
             </div>
             <div class="tx-asset-badge">{{ overview.assetBadge }}</div>
             <div class="tx-asset-values">
@@ -35,11 +35,25 @@
             <ArrowIcon class="tx-swap-arrow-icon" />
           </div>
 
-          <div class="tx-asset-panel tx-asset-panel--accent">
-            <div class="tx-asset-label">{{ isOutbound ? 'Output' : 'Output so far' }}</div>
+          <div
+            :class="[
+              'tx-asset-panel',
+              isOutbound
+                ? 'tx-asset-panel--warning-dashed'
+                : 'tx-asset-panel--accent',
+            ]"
+          >
+            <div class="tx-asset-panel-head">
+              <div class="tx-asset-label">
+                {{ isOutbound ? 'Output' : 'Output so far' }}
+              </div>
+              <span v-if="isOutbound" class="tx-chip tx-chip--warning">
+                Not yet sent
+              </span>
+            </div>
             <div class="tx-asset-primary">
               <AssetIcon :asset="overview.outputAsset" :height="'2.25rem'" />
-              <span>{{ outputTicker }}</span>
+              <span>{{ overview.outputName }}</span>
             </div>
             <div class="tx-asset-badge">{{ overview.outputAssetBadge }}</div>
             <div v-if="isOutbound" class="tx-asset-values">
@@ -60,7 +74,7 @@
           </div>
         </div>
 
-        <div class="tx-delivery">
+        <div v-if="overview.isStreaming" class="tx-delivery">
           <div class="tx-delivery-caption">
             <span class="tx-asset-label">Stream Progress</span>
             <span class="mono">
@@ -78,19 +92,92 @@
           />
         </div>
 
+        <div
+          v-if="isOutbound && overview.outboundDelayRemainingSeconds > 0"
+          class="tx-delivery"
+        >
+          <div class="tx-delivery-caption">
+            <span class="tx-asset-label">Outbound Delay</span>
+            <span class="mono">{{ outboundDelayCountdownDisplay }}</span>
+          </div>
+          <progress-bar
+            :width="outboundDelayFillPercent"
+            height="8px"
+            color="var(--warning-color)"
+          />
+          <div class="tx-delivery-note">
+            Outbounds this large are held before signing. Nothing is signed or
+            broadcast until the timer clears.
+          </div>
+        </div>
+
         <div class="tx-metric-strip">
           <div class="tx-metric-item">
-            <div class="tx-asset-label">Interval</div>
+            <div class="tx-asset-label">
+              {{ overview.isStreaming ? 'Interval' : 'Exchange rate' }}
+            </div>
             <div class="tx-metric-value mono">
-              {{ overview.intervalDisplay || '-' }}
+              {{
+                (overview.isStreaming
+                  ? overview.intervalDisplay
+                  : overview.rateDisplay) || '-'
+              }}
             </div>
           </div>
           <div class="tx-metric-item">
-            <div class="tx-asset-label">Avg. price impact</div>
+            <div class="tx-asset-label">
+              {{ overview.isStreaming ? 'Avg. price impact' : 'Price impact' }}
+            </div>
             <div class="tx-metric-value tx-value-negative mono">
               {{ overview.priceImpactDisplay || '-' }}
             </div>
           </div>
+        </div>
+      </section>
+
+      <section v-if="isOutbound" class="tx-info-card">
+        <div class="tx-section-title">Outbound</div>
+        <div class="tx-detail-rows">
+          <DetailRow
+            v-if="overview.destination"
+            label="Destination"
+            :value="overview.destination"
+            value-type="address"
+          />
+          <DetailRow
+            v-if="overview.outboundEstDisplay"
+            label="Outbound Est."
+            :value="overview.outboundEstDisplay"
+          />
+          <DetailRow
+            v-if="overview.outboundDelayEstDisplay"
+            label="Outbound Delay Est."
+            :value="overview.outboundDelayEstDisplay"
+          />
+          <DetailRow v-if="overview.outboundPastDueDisplay" label="Past Due">
+            <span class="tx-value-negative">
+              {{ overview.outboundPastDueDisplay }}
+            </span>
+          </DetailRow>
+          <DetailRow
+            v-if="overview.outboundStages.length"
+            label="Outbound Stage"
+          >
+            <span class="tx-stage-row">
+              <span
+                v-for="stage in overview.outboundStages"
+                :key="stage.text"
+                :class="['mini-bubble', stage.class]"
+              >
+                {{ stage.text }}
+              </span>
+            </span>
+          </DetailRow>
+          <DetailRow
+            v-if="overview.outboundFeeDisplay"
+            label="Outbound Fee"
+            :value="overview.outboundFeeDisplay"
+          />
         </div>
       </section>
 
@@ -100,17 +187,22 @@
           <DetailRow label="Product">
             <ProductBadge label="THORChain" tone="green" />
           </DetailRow>
-          <DetailRow label="Action" value="Streaming Swap" />
+          <DetailRow
+            label="Action"
+            :value="overview.isStreaming ? 'Streaming Swap' : 'Swap'"
+          />
           <DetailRow label="Status">
             <span class="mini-bubble yellow">{{ overview.status.label }}</span>
           </DetailRow>
-          <DetailRow label="Quantity" :value="`${overview.quantity} Swaps`" />
+          <template v-if="overview.isStreaming">
+            <DetailRow label="Quantity" :value="`${overview.quantity} Swaps`" />
+            <DetailRow
+              label="Stream"
+              :value="`${overview.count} / ${overview.quantity}`"
+            />
+          </template>
           <DetailRow
-            label="Stream"
-            :value="`${overview.count} / ${overview.quantity}`"
-          />
-          <DetailRow
-            v-if="overview.rateDisplay"
+            v-if="overview.rateDisplay && overview.isStreaming"
             label="Exchange rate"
             :value="overview.rateDisplay"
           />
@@ -123,7 +215,7 @@
           <DetailRow label="Block" :value="overview.heightDisplay" />
           <DetailRow label="From" :value="overview.from" value-type="address" />
           <DetailRow
-            v-if="overview.destination"
+            v-if="overview.destination && !isOutbound"
             label="Destination"
             :value="overview.destination"
             value-type="address"
@@ -183,21 +275,28 @@ import ProductBadge from '~/components/ProductBadge.vue'
 import ProgressBar from '~/components/ProgressBar.vue'
 import ArrowIcon from '~/assets/images/arrow.svg?inline'
 
-// Renders the `streamingOverview` computed from pages/tx/_txhash.vue
-// (screen 1d) — a swap still actively streaming, confirmed against a real
-// in-progress tx (ETH.ETH -> TRON.USDT, 13/85 sub-swaps done, no outbound
-// emitted yet). Once a stream finishes it's just a normal swap, already
-// served by the shipped swapOverview hero — this only ever renders the
-// in-progress window. Static fields come from the same cards/stacks every
-// other *Overview reads; count/quantity/fill/remaining/swapped-so-far come
-// from a dedicated live fetch (fetchStreamingProgress, watched in
-// _txhash.vue) folded into the overview itself, reusing the remaining-
-// blocks formula already proven in the always-mounted streamingSwap.vue.
-// Built from the shipped swapOverview hero's own classes/components
-// (two-panel .tx-swap-head + arrow, .tx-metric-strip, Fee Breakdown) so
-// it's visually identical to the already-completed swap page; the stream
-// progress bar reuses the existing ProgressBar.vue (its color prop already
-// accepts a raw gradient string) rather than a new component.
+// Renders the `streamingOverview` computed from pages/tx/_txhash.vue —
+// covers two related in-flight windows swapOverview bails on via
+// middle.pending: (1) screen 1d, a swap actively streaming (confirmed
+// against a real in-progress tx, 13/85 sub-swaps done), and (2) the
+// "swap executed, outbound not yet signed/delivered" window ANY swap
+// passes through — streaming or not (confirmed against a real PLAIN swap
+// stuck exactly there, still on the legacy path before this was added;
+// quantity>1 alone wrongly excluded it). overview.isStreaming/.phase
+// distinguish the three states (streaming / outbound-pending-after-stream
+// / outbound-pending-plain-swap) — the outbound section reads the same
+// accordion-out-N stacks the legacy UI's own Outbound accordion already
+// renders. Once output.done too, it's a fully settled swap — already
+// served by swapOverview. Static fields come from the same cards/stacks
+// every other *Overview reads; live streaming progress
+// (count/quantity/fill/remaining/swapped-so-far) comes from a dedicated
+// fetch (fetchStreamingProgress, watched in _txhash.vue, streaming phase
+// only) reusing the remaining-blocks formula already proven in the
+// always-mounted streamingSwap.vue. Built from the shipped swapOverview
+// hero's own classes/components so it's visually identical to the
+// already-completed swap page; the stream progress bar reuses the
+// existing ProgressBar.vue (its color prop already accepts a raw gradient
+// string) rather than a new component.
 export default {
   components: {
     TxHeroShell,
@@ -216,12 +315,35 @@ export default {
       required: true,
     },
   },
+  data() {
+    return {
+      // Client-side ticking countdown for the outbound-delay bar, mirroring
+      // Accordion.vue's own startCountdown/updateCircle for this exact
+      // outbound entry: resynced to the authoritative
+      // overview.outboundDelayRemainingSeconds on every ~5s poll (via the
+      // watcher below), ticking down locally every 1s in between so the bar
+      // animates smoothly rather than jumping once per poll.
+      outboundDelayTimer: 0,
+      outboundDelayTimerTotal: 0,
+      outboundDelayInterval: null,
+    }
+  },
   computed: {
+    isOutbound() {
+      return this.overview.phase === 'outbound'
+    },
+    eyebrow() {
+      return this.overview.isStreaming
+        ? 'Streaming Swap · THORChain'
+        : 'Swap · THORChain'
+    },
     chips() {
       return [
         { label: '⇄ Swap' },
         {
-          label: `Streaming ${this.overview.count}/${this.overview.quantity}`,
+          label: this.isOutbound
+            ? 'Outbound pending'
+            : `Streaming ${this.overview.count}/${this.overview.quantity}`,
           tone: 'yellow',
           dot: true,
         },
@@ -230,13 +352,10 @@ export default {
     inputTicker() {
       return this.showTicker(this.overview.asset)
     },
-    outputTicker() {
-      return this.showTicker(this.overview.outputAsset)
-    },
     // Full chain.ticker notation (e.g. "ETH.USDC") for the H1, matching
-    // overview.amountDisplay's own notation on the input side — outputTicker
-    // (bare "USDC") is for the panel's primary line only, a different,
-    // deliberately terser context.
+    // overview.amountDisplay's own notation on the input side —
+    // overview.outputName (chain display name / bare ticker) is for the
+    // panel's primary line only, a different, deliberately terser context.
     outputAssetNotation() {
       return this.showAsset(this.overview.outputAsset)
     },
@@ -250,13 +369,32 @@ export default {
           body: `${overview.amountDisplay} entered the swap flow from ${this.addressFormatV2(overview.from)}.`,
           meta: overview.timeDisplay,
         },
-        {
-          icon: 'ExchangeIcon',
-          title: 'Streaming in progress',
-          body: `${overview.count} of ${overview.quantity} sub-swaps executed${overview.intervalDisplay ? `, one every ${overview.intervalDisplay}` : ''}.`,
-        },
       ]
-      if (overview.outputSoFarDisplay) {
+      if (overview.isStreaming) {
+        events.push({
+          icon: 'ExchangeIcon',
+          title: this.isOutbound
+            ? 'Streaming complete'
+            : 'Streaming in progress',
+          body: `${overview.count} of ${overview.quantity} sub-swaps executed${overview.intervalDisplay ? `, one every ${overview.intervalDisplay}` : ''}.`,
+        })
+      } else {
+        events.push({
+          icon: 'ExchangeIcon',
+          title: 'Swap executed',
+          body: `${overview.amountDisplay} swapped for ${overview.outputProjectedDisplay}.`,
+        })
+      }
+      if (this.isOutbound) {
+        events.push({
+          icon: 'WarningIcon',
+          tone: 'warning',
+          title: 'Outbound pending',
+          body: overview.outboundPastDueDisplay
+            ? `Not yet signed by the vault — ${overview.outboundPastDueDisplay}.`
+            : `Not yet signed by the vault${overview.outboundEstDisplay ? ` — expected in ${overview.outboundEstDisplay}` : ''}.`,
+        })
+      } else if (overview.outputSoFarDisplay) {
         events.push({
           icon: 'ArrowIcon',
           iconRotate: 0,
@@ -265,6 +403,58 @@ export default {
         })
       }
       return events
+    },
+    outboundDelayFillPercent() {
+      if (!this.outboundDelayTimerTotal) return 0
+      const elapsed = this.outboundDelayTimerTotal - this.outboundDelayTimer
+      return Math.min((elapsed / this.outboundDelayTimerTotal) * 100, 100)
+    },
+    outboundDelayCountdownDisplay() {
+      if (!this.outboundDelayTimerTotal) return null
+      const elapsed = this.outboundDelayTimerTotal - this.outboundDelayTimer
+      return `${this.formatDelayClock(elapsed)} of ${this.formatDelayClock(this.outboundDelayTimerTotal)}`
+    },
+  },
+  watch: {
+    // Resyncs to the authoritative value every time the page's own poll
+    // rebuilds the overview (~5s while pending), same trigger cadence
+    // Accordion.vue's remainingTime watcher relies on for this same
+    // outbound entry — ticking every 1s locally is purely a smoothing
+    // layer between polls, not an independent source of truth.
+    'overview.outboundDelayRemainingSeconds': {
+      immediate: true,
+      handler(seconds) {
+        if (this.outboundDelayInterval)
+          clearInterval(this.outboundDelayInterval)
+        seconds = seconds || 0
+        this.outboundDelayTimer = seconds
+        if (seconds > this.outboundDelayTimerTotal) {
+          this.outboundDelayTimerTotal = seconds
+        }
+        if (seconds > 0) {
+          this.outboundDelayInterval = setInterval(() => {
+            if (this.outboundDelayTimer > 0) {
+              this.outboundDelayTimer--
+            } else {
+              clearInterval(this.outboundDelayInterval)
+            }
+          }, 1000)
+        }
+      },
+    },
+  },
+  beforeDestroy() {
+    if (this.outboundDelayInterval) clearInterval(this.outboundDelayInterval)
+  },
+  methods: {
+    formatDelayClock(totalSeconds) {
+      const s = Math.max(Math.round(totalSeconds), 0)
+      const hours = Math.floor(s / 3600)
+      const minutes = Math.floor((s % 3600) / 60)
+      const seconds = s % 60
+      const mm = `${minutes}`.padStart(hours > 0 ? 2 : 1, '0')
+      const ss = `${seconds}`.padStart(2, '0')
+      return hours > 0 ? `${hours}:${mm}:${ss}` : `${mm}:${ss}`
     },
   },
 }
