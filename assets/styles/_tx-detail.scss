@@ -383,14 +383,16 @@
 }
 
 .tx-detail-rows,
-.tx-tech-list {
+.tx-tech-list,
+.tx-fee-list {
   border-top: 3px solid color-mix(in srgb, var(--border-color) 92%, transparent);
   margin-top: $space-16;
   padding-top: $space-2;
 }
 
 .tx-detail-row,
-.tx-tech-row {
+.tx-tech-row,
+.tx-fee-row {
   align-items: start;
   border-top: 1px solid color-mix(in srgb, var(--border-color) 90%, transparent);
   display: grid;
@@ -404,17 +406,37 @@
 }
 
 .tx-detail-key,
-.tx-tech-key {
+.tx-tech-key,
+.tx-fee-label {
   color: var(--font-color);
   font-size: $font-size-sm;
 }
 
 .tx-detail-value,
-.tx-tech-value {
+.tx-tech-value,
+.tx-fee-value {
   color: var(--sec-font-color);
   font-size: $font-size-sm;
   font-weight: 500;
   text-align: right;
+}
+
+.tx-fee-value-wrap {
+  text-align: right;
+}
+
+.tx-fee-subtle {
+  color: var(--font-color);
+  font-size: 0.75rem;
+}
+
+.tx-fee-label--total {
+  color: var(--sec-font-color);
+  font-weight: 600;
+}
+
+.tx-fee-value--total {
+  color: var(--green);
 }
 
 .tx-tech-value--truncate {
@@ -675,6 +697,10 @@
   margin-top: $space-16;
 }
 
+.tx-swap-card > .tx-delivery {
+  margin-top: $space-16;
+}
+
 .tx-explainer-header {
   align-items: center;
   color: var(--red);
@@ -856,4 +882,158 @@
   font-size: $font-size-xs;
   line-height: 1.5;
   margin-top: $space-8;
+}
+
+// Panel eyebrow with a trailing status chip on the same line (e.g. "Sent to
+// wallet" + "3 outbounds · 1 overdue") — every other panel's .tx-asset-label
+// stands alone, so this is additive rather than a change to that class.
+.tx-asset-panel-head {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: $space-10;
+}
+
+// ---- Genuinely new: no swap-hero equivalent (Phase 5 multi-outbound work) ----
+
+// Per-leg outbound breakdown — a swap only ever has one outbound, so
+// .tx-detail-row's fixed 2-column (label/value) shape doesn't fit a row
+// that needs a status chip, a leg number, a hash, and an amount together.
+.tx-outbound-header {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-10;
+  justify-content: space-between;
+}
+
+.tx-outbound-destination {
+  align-items: center;
+  display: inline-flex;
+  font-size: $font-size-xxs;
+  gap: $space-4;
+}
+
+.tx-outbound-rows {
+  border-top: 3px solid color-mix(in srgb, var(--border-color) 92%, transparent);
+  margin-top: $space-16;
+  padding-top: $space-2;
+}
+
+.tx-outbound-row {
+  border-top: 1px solid color-mix(in srgb, var(--border-color) 90%, transparent);
+  padding: $space-12 0;
+
+  &:first-of-type {
+    border-top: none;
+  }
+}
+
+.tx-outbound-row-main {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-10;
+}
+
+.tx-outbound-leg {
+  color: var(--text-faint-color);
+  flex: 0 0 auto;
+  font-family: 'Montserrat', sans-serif;
+  font-size: $font-size-xxs;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tx-outbound-amount {
+  color: var(--sec-font-color);
+  flex: 1 1 auto;
+  font-weight: 600;
+  text-align: right;
+}
+
+// Per-leg overdue caption — only the still-pending leg(s) get this, so it's
+// additive under the row rather than a column every row needs to reserve
+// space for.
+.tx-outbound-overdue-note {
+  color: var(--red);
+  font-size: $font-size-xxs;
+  margin-top: $space-6;
+}
+
+.tx-outbound-total {
+  align-items: flex-start;
+  border-top: 1px solid var(--divider-color);
+  display: flex;
+  justify-content: space-between;
+  margin-top: $space-16;
+  padding-top: $space-14;
+
+  > span:first-child {
+    color: var(--sec-font-color);
+    font-weight: 600;
+  }
+}
+
+.tx-outbound-total-value {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: $space-4;
+
+  span:first-child {
+    color: var(--sec-font-color);
+    font-weight: 600;
+  }
+
+  span:last-child {
+    font-size: $font-size-xxs;
+  }
+}
+
+// Two-segment delivery progress — solid for what's landed, hatched for
+// what hasn't (repeating-linear-gradient rather than a flat tint, so
+// "still coming" reads visually distinct from "already here" at a glance).
+.tx-delivery-bar {
+  background: var(--divider-color);
+  border-radius: 999px;
+  display: flex;
+  height: 8px;
+  overflow: hidden;
+}
+
+.tx-delivery-bar__fill {
+  background: var(--green);
+  height: 100%;
+}
+
+.tx-delivery-bar__pending {
+  background: repeating-linear-gradient(
+    -45deg,
+    color-mix(in srgb, var(--warning-color) 55%, transparent),
+    color-mix(in srgb, var(--warning-color) 55%, transparent) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+  height: 100%;
+
+  &--overdue {
+    background: repeating-linear-gradient(
+      -45deg,
+      color-mix(in srgb, var(--red) 55%, transparent),
+      color-mix(in srgb, var(--red) 55%, transparent) 4px,
+      transparent 4px,
+      transparent 8px
+    );
+  }
+}
+
+.tx-delivery-caption {
+  align-items: center;
+  color: var(--font-color);
+  display: flex;
+  font-size: $font-size-xxs;
+  justify-content: space-between;
+  margin-bottom: $space-8;
 }

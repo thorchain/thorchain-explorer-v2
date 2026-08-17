@@ -43,6 +43,13 @@ export function buildCardDetails(cardBase, ctx) {
         class: a?.class,
         done: a?.done,
         affiliate: a?.affiliate,
+        // Per-leg detail the multi-outbound hero needs (createTradeWithdrawState
+        // is the only builder that currently sets these) — not used by any
+        // other card's visual, but dropping them here silently starved that
+        // hero of hash/destination/overdue-ETA for every leg.
+        txid: a?.txid,
+        to: a?.to,
+        outboundETA: a?.outboundETA,
       })),
     },
   }
