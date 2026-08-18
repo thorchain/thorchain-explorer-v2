@@ -1,5 +1,9 @@
 <template>
-  <TxHeroShell :eyebrow="`${overview.title} · THORChain`" :chips="chips">
+  <TxHeroShell
+    :eyebrow="`${overview.title} · THORChain`"
+    :chips="chips"
+    :affiliate-address="overview.affiliateAddress"
+  >
     <template #title>
       <template v-if="isSwap">
         Swapped <span class="mono">{{ overview.amountDisplay }}</span>
@@ -10,6 +14,12 @@
           —
           <span class="tx-value-warning">
             {{ overview.outstandingShortDisplay }} still to be delivered
+          </span>
+        </template>
+        <template v-if="overview.hasRefund">
+          —
+          <span class="tx-value-warning">
+            {{ overview.refundLeg.amountDisplay }} refunded
           </span>
         </template>
       </template>
@@ -29,7 +39,7 @@
 
     <template #main>
       <section class="tx-swap-card">
-        <div class="tx-swap-head">
+        <div class="tx-swap-head" :style="panelVars">
           <div class="tx-asset-panel">
             <div class="tx-asset-label">{{ withdrawnLabel }}</div>
             <div class="tx-asset-primary">
@@ -38,8 +48,15 @@
             </div>
             <div class="tx-asset-badge">{{ overview.assetTypeBadge }}</div>
             <div class="tx-asset-values">
-              <span>{{ overview.amountDisplay }}</span>
+              <AssetAmountValue
+                :amount="overview.amountRaw"
+                :asset="overview.asset"
+              />
               <strong>{{ overview.amountUsdDisplay }}</strong>
+            </div>
+            <div v-if="overview.hasRefund" class="tx-mimir-gloss">
+              {{ overview.refundLeg.amountDisplay }} of it was refunded — see
+              below.
             </div>
           </div>
 
@@ -63,9 +80,33 @@
             </div>
             <div class="tx-asset-badge">{{ overview.destinationBadge }}</div>
             <div class="tx-asset-values">
-              <span>{{ overview.totalOutboundDisplay }}</span>
+              <AssetAmountValue
+                :amount="overview.totalOutboundRaw"
+                :asset="overview.totalsAsset"
+              />
               <strong>{{ overview.totalOutboundUsdDisplay }}</strong>
             </div>
+          </div>
+        </div>
+
+        <div v-if="overview.hasRefund" class="tx-refund-callout">
+          <div class="tx-refund-callout-head">
+            <div class="tx-refund-callout-title">
+              <AssetIcon :asset="overview.refundLeg.asset" :height="'1.5rem'" />
+              <span>
+                <AssetAmountValue
+                  :amount="overview.refundLeg.amountRaw"
+                  :asset="overview.refundLeg.asset"
+                />
+                refunded
+              </span>
+            </div>
+            <span class="tx-detail-muted">
+              {{ overview.refundLeg.amountUsdDisplay }}
+            </span>
+          </div>
+          <div class="tx-refund-callout-body">
+            {{ overview.refundLeg.reason }}
           </div>
         </div>
 
@@ -124,6 +165,7 @@
       <OutboundsTable
         :legs="overview.legs"
         :destination="overview.destination"
+        :refund-leg="overview.refundLeg"
         :total="
           overview.totals
             ? {
@@ -147,6 +189,23 @@
               {{ overview.status.label }}
             </span>
           </DetailRow>
+          <DetailRow v-if="overview.hasRefund" label="Refunded">
+            <span class="tx-value-warning">
+              {{ overview.refundLeg.amountDisplay }}
+            </span>
+            <span
+              v-if="overview.refundLeg.amountUsdDisplay"
+              class="tx-detail-muted"
+            >
+              ({{ overview.refundLeg.amountUsdDisplay }})
+            </span>
+          </DetailRow>
+          <DetailRow
+            v-if="overview.hasRefund && overview.refundLeg.hash"
+            label="Refund tx"
+            :value="overview.refundLeg.hash"
+            value-type="hash"
+          />
           <DetailRow label="Time">
             {{ overview.timeDisplay }}
             <span v-if="overview.timeAgoDisplay" class="tx-detail-muted">
@@ -225,6 +284,7 @@ import LifecycleTimeline from '~/pages/tx/components/LifecycleTimeline.vue'
 import OutboundsTable from '~/pages/tx/components/OutboundsTable.vue'
 import DeliveryBar from '~/pages/tx/components/DeliveryBar.vue'
 import DetailRow from '~/components/transactions/DetailRow.vue'
+import AssetAmountValue from '~/components/transactions/AssetAmountValue.vue'
 import AssetIcon from '~/components/AssetIcon.vue'
 import ProductBadge from '~/components/ProductBadge.vue'
 import ArrowIcon from '~/assets/images/arrow.svg?inline'
@@ -252,6 +312,7 @@ export default {
     OutboundsTable,
     DeliveryBar,
     DetailRow,
+    AssetAmountValue,
     AssetIcon,
     ProductBadge,
     ArrowIcon,
@@ -266,6 +327,20 @@ export default {
   computed: {
     isSwap() {
       return this.overview.multiOutboundKind === 'swap'
+    },
+    // Same --left-border/--right-border custom-property pattern the shipped
+    // swap hero drives its own .tx-asset-panel/.tx-asset-panel--accent
+    // borders from (assetColorPalette is a global mixin method, reachable
+    // here directly) — StreamingSwapHero already does the same.
+    panelVars() {
+      return {
+        '--left-border':
+          this.assetColorPalette(this.overview.asset) ?? 'var(--border-color)',
+        '--right-border':
+          this.assetColorPalette(
+            this.overview.totalsAsset || this.overview.asset
+          ) ?? 'var(--border-color)',
+      }
     },
     withdrawnLabel() {
       if (this.isSwap) return 'You sent'
@@ -295,6 +370,9 @@ export default {
           tone: 'yellow',
           dot: true,
         })
+      }
+      if (this.overview.hasRefund) {
+        chips.push({ label: 'Partial refund', tone: 'yellow', dot: true })
       }
       return chips
     },
@@ -378,6 +456,15 @@ export default {
           tone: 'warning',
           title: `${overview.overdueCount > 1 ? 'Outbounds' : 'Outbound'} overdue`,
           body: `Not yet signed by the vault — ${overview.pastDueDisplay || 'past its scheduled window'}.`,
+        })
+      }
+      if (overview.hasRefund) {
+        events.push({
+          icon: 'ArrowIcon',
+          iconRotate: 0,
+          tone: 'warning',
+          title: 'Remainder refunded',
+          body: `${overview.refundLeg.amountDisplay} returned to ${this.addressFormatV2(overview.from)} — couldn't be filled within the swap's price limit.`,
         })
       }
       return events

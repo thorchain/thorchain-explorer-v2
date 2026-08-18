@@ -1,7 +1,7 @@
 <template>
   <section class="tx-info-card">
     <div class="tx-outbound-header">
-      <span class="tx-section-title">Outbounds ({{ legs.length }})</span>
+      <span class="tx-section-title">Outbounds ({{ legCount }})</span>
       <span v-if="destination" class="tx-detail-muted tx-outbound-destination">
         All to
         <Address :address="destination" />
@@ -27,12 +27,32 @@
           </template>
         </div>
       </div>
+
+      <!-- A swap's own partial-refund leg — different asset than every
+           other leg above, so it's kept out of the `legs` prop/totals
+           entirely (see multiOutboundOverview) and rendered as its own
+           trailing row instead, reusing the exact same row shape. -->
+      <div v-if="refundLeg" class="tx-outbound-row">
+        <div class="tx-outbound-row-main">
+          <StatusChip status="refund" />
+          <span class="tx-outbound-leg">Leg {{ refundLeg.index + 1 }}</span>
+          <Hash v-if="refundLeg.hash" :param="refundLeg.hash" />
+          <span v-else class="tx-detail-muted">No hash yet</span>
+          <span class="tx-outbound-amount mono">
+            {{ refundLeg.amountDisplay }}
+          </span>
+        </div>
+        <div class="tx-outbound-refund-note">{{ refundLeg.note }}</div>
+      </div>
     </div>
 
     <div v-if="total" class="tx-outbound-total">
       <span>Total outbound</span>
       <div class="tx-outbound-total-value">
         <span class="mono">{{ total.display }}</span>
+        <span v-if="refundLeg" class="tx-outbound-refund-total mono">
+          + {{ refundLeg.amountDisplay }} refunded
+        </span>
         <span class="tx-detail-muted">
           {{ total.deliveredDisplay }} delivered ·
           {{ total.outstandingDisplay }} pending
@@ -72,6 +92,19 @@ export default {
     total: {
       type: Object,
       default: null,
+    },
+    // A swap's own unfilled-remainder refund leg (multiOutboundOverview's
+    // overview.refundLeg) — { index, status: 'refund', hash, amountDisplay,
+    // note } | null. Kept as its own prop rather than folded into `legs`
+    // since it's a different asset and shouldn't count toward `total`.
+    refundLeg: {
+      type: Object,
+      default: null,
+    },
+  },
+  computed: {
+    legCount() {
+      return this.legs.length + (this.refundLeg ? 1 : 0)
     },
   },
   methods: {

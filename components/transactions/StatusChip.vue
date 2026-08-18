@@ -14,6 +14,7 @@ const LABELS = {
   scheduled: 'Scheduled',
   overdue: 'Overdue',
   refunded: 'Refunded',
+  refund: 'Refund',
 }
 
 const TONE_CLASSES = {
@@ -21,6 +22,12 @@ const TONE_CLASSES = {
   scheduled: 'yellow',
   overdue: 'orange',
   refunded: 'danger',
+  // Distinct from 'refunded' (danger/red — a leg that failed to deliver
+  // and got reversed): a swap's own unfilled-remainder refund is an
+  // expected outcome, not a failure, so it reads amber like the rest of
+  // this hero's refund treatment (the callout, the "Refund" chip in the
+  // mockup), not alarming red.
+  refund: 'yellow',
 }
 
 export default {

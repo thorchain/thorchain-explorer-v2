@@ -1,5 +1,9 @@
 <template>
-  <TxHeroShell :eyebrow="eyebrow" :chips="chips">
+  <TxHeroShell
+    :eyebrow="eyebrow"
+    :chips="chips"
+    :affiliate-address="overview.affiliateAddress"
+  >
     <template #title>
       <template v-if="isOutbound">
         Swapped <span class="mono">{{ overview.amountDisplay }}</span> for
@@ -14,7 +18,7 @@
 
     <template #main>
       <section class="tx-swap-card">
-        <div class="tx-swap-head">
+        <div class="tx-swap-head" :style="panelVars">
           <div class="tx-asset-panel">
             <div class="tx-asset-label">Input</div>
             <div class="tx-asset-primary">
@@ -23,7 +27,10 @@
             </div>
             <div class="tx-asset-badge">{{ overview.assetBadge }}</div>
             <div class="tx-asset-values">
-              <span>{{ overview.amountDisplay }}</span>
+              <AssetAmountValue
+                :amount="overview.amountRaw"
+                :asset="overview.asset"
+              />
               <strong>{{ overview.amountUsdDisplay }}</strong>
             </div>
             <div v-if="overview.swappedSoFarDisplay" class="tx-mimir-gloss">
@@ -57,12 +64,18 @@
             </div>
             <div class="tx-asset-badge">{{ overview.outputAssetBadge }}</div>
             <div v-if="isOutbound" class="tx-asset-values">
-              <span>{{ overview.outputProjectedDisplay }}</span>
+              <AssetAmountValue
+                :amount="overview.outputProjectedRaw"
+                :asset="overview.outputAsset"
+              />
               <strong>{{ overview.outputProjectedUsdDisplay }}</strong>
             </div>
             <template v-else>
               <div class="tx-asset-values">
-                <span>{{ overview.outputSoFarDisplay || '-' }}</span>
+                <AssetAmountValue
+                  :amount="overview.outputSoFarRaw"
+                  :asset="overview.outputAsset"
+                />
                 <strong>{{ overview.outputSoFarUsdDisplay || '' }}</strong>
               </div>
               <div class="tx-mimir-gloss">
@@ -270,6 +283,7 @@ import TxHashCard from '~/pages/tx/components/TxHashCard.vue'
 import TechnicalDetailsCard from '~/pages/tx/components/TechnicalDetailsCard.vue'
 import LifecycleTimeline from '~/pages/tx/components/LifecycleTimeline.vue'
 import DetailRow from '~/components/transactions/DetailRow.vue'
+import AssetAmountValue from '~/components/transactions/AssetAmountValue.vue'
 import AssetIcon from '~/components/AssetIcon.vue'
 import ProductBadge from '~/components/ProductBadge.vue'
 import ProgressBar from '~/components/ProgressBar.vue'
@@ -304,6 +318,7 @@ export default {
     TechnicalDetailsCard,
     LifecycleTimeline,
     DetailRow,
+    AssetAmountValue,
     AssetIcon,
     ProductBadge,
     ProgressBar,
@@ -331,6 +346,22 @@ export default {
   computed: {
     isOutbound() {
       return this.overview.phase === 'outbound'
+    },
+    // Same --left-border/--right-border custom-property pattern the shipped
+    // swap hero drives its own .tx-asset-panel/.tx-asset-panel--accent
+    // borders from (assetColorPalette is a global mixin method, reachable
+    // here directly). Only affects the output panel while it's using
+    // --accent (streaming/base) — the outbound-pending phase switches that
+    // panel to --warning-dashed instead, which hardcodes its own
+    // border-color and ignores --right-border.
+    panelVars() {
+      return {
+        '--left-border':
+          this.assetColorPalette(this.overview.asset) ?? 'var(--border-color)',
+        '--right-border':
+          this.assetColorPalette(this.overview.outputAsset) ??
+          'var(--border-color)',
+      }
     },
     eyebrow() {
       return this.overview.isStreaming
@@ -373,6 +404,10 @@ export default {
       if (overview.isStreaming) {
         events.push({
           icon: 'ExchangeIcon',
+          // Only the actively-in-progress step gets the yellow tone — once
+          // it's done, this reads as a completed success step like every
+          // other one above it.
+          tone: this.isOutbound ? null : 'warning',
           title: this.isOutbound
             ? 'Streaming complete'
             : 'Streaming in progress',
@@ -394,12 +429,28 @@ export default {
             ? `Not yet signed by the vault — ${overview.outboundPastDueDisplay}.`
             : `Not yet signed by the vault${overview.outboundEstDisplay ? ` — expected in ${overview.outboundEstDisplay}` : ''}.`,
         })
-      } else if (overview.outputSoFarDisplay) {
+      } else {
+        if (overview.outputSoFarDisplay) {
+          events.push({
+            icon: 'ArrowIcon',
+            iconRotate: 0,
+            // Dashed, not a solid completed-step border — the output is
+            // still partial, unlike every solid-bordered step above it.
+            dashed: true,
+            title: 'Output accumulating',
+            body: `${overview.outputSoFarDisplay} received so far${overview.destination ? ` at ${this.addressFormatV2(overview.destination)}` : ''}.`,
+          })
+        }
+        // Only reached while overview.isStreaming (a plain swap always has
+        // phase 'outbound', handled by the branch above) — the forward-
+        // looking counterpart to "Output accumulating"/"Streaming in
+        // progress": what the swap is expected to settle at once the
+        // stream itself finishes, not what's landed so far.
         events.push({
-          icon: 'ArrowIcon',
-          iconRotate: 0,
-          title: 'Output accumulating',
-          body: `${overview.outputSoFarDisplay} received so far${overview.destination ? ` at ${this.addressFormatV2(overview.destination)}` : ''}.`,
+          icon: 'AddIcon',
+          tone: 'upcoming',
+          title: 'Expected output',
+          body: `~${overview.outputProjectedDisplay} (${overview.outputProjectedUsdDisplay}) expected once streaming completes.`,
         })
       }
       return events

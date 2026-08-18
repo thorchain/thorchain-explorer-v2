@@ -1,5 +1,9 @@
 <template>
-  <TxHeroShell eyebrow="Refund · THORChain" :chips="chips">
+  <TxHeroShell
+    eyebrow="Refund · THORChain"
+    :chips="chips"
+    :affiliate-address="overview.affiliateAddress"
+  >
     <template #title>
       Swap refunded —
       <span class="mono">{{ overview.refundedAmountDisplay }}</span>
@@ -17,7 +21,10 @@
             </div>
             <div class="tx-asset-badge">THORChain network</div>
             <div class="tx-asset-values">
-              <span>{{ overview.sentAmountDisplay }}</span>
+              <AssetAmountValue
+                :amount="overview.sentAmountRaw"
+                :asset="overview.sentAsset"
+              />
               <strong>{{ overview.sentAmountUsdDisplay }}</strong>
             </div>
           </div>
@@ -36,9 +43,11 @@
             </div>
             <div class="tx-asset-badge">Back to sender</div>
             <div class="tx-asset-values">
-              <span class="tx-value-warning">
-                {{ overview.refundedAmountDisplay }}
-              </span>
+              <AssetAmountValue
+                :amount="overview.refundedAmountRaw"
+                :asset="overview.refundedAsset"
+                class="tx-value-warning"
+              />
               <strong>{{ overview.refundedAmountUsdDisplay }}</strong>
             </div>
           </div>
@@ -128,6 +137,7 @@ import TxHashCard from '~/pages/tx/components/TxHashCard.vue'
 import TechnicalDetailsCard from '~/pages/tx/components/TechnicalDetailsCard.vue'
 import LifecycleTimeline from '~/pages/tx/components/LifecycleTimeline.vue'
 import DetailRow from '~/components/transactions/DetailRow.vue'
+import AssetAmountValue from '~/components/transactions/AssetAmountValue.vue'
 import AssetIcon from '~/components/AssetIcon.vue'
 import ProductBadge from '~/components/ProductBadge.vue'
 import RefundIcon from '~/assets/images/refund.svg?inline'
@@ -148,6 +158,7 @@ export default {
     TechnicalDetailsCard,
     LifecycleTimeline,
     DetailRow,
+    AssetAmountValue,
     AssetIcon,
     ProductBadge,
     RefundIcon,

@@ -33,7 +33,7 @@ export default {
 
   .progress-bar {
     height: var(--bar-height);
-    border-radius: $radius-s;
+    border-radius: $radius-s 0 0 $radius-s;
     width: 1%;
     background-color: var(--primary-color);
 

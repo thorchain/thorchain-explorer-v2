@@ -19,7 +19,10 @@
             </div>
             <div class="tx-asset-badge">THORChain network</div>
             <div class="tx-asset-values">
-              <span>{{ overview.amountDisplay }}</span>
+              <AssetAmountValue
+                :amount="overview.amountRaw"
+                :asset="overview.asset"
+              />
               <strong>{{ overview.amountUsdDisplay }}</strong>
             </div>
           </div>
@@ -140,6 +143,7 @@ import TxHashCard from '~/pages/tx/components/TxHashCard.vue'
 import TechnicalDetailsCard from '~/pages/tx/components/TechnicalDetailsCard.vue'
 import LifecycleTimeline from '~/pages/tx/components/LifecycleTimeline.vue'
 import DetailRow from '~/components/transactions/DetailRow.vue'
+import AssetAmountValue from '~/components/transactions/AssetAmountValue.vue'
 import AssetIcon from '~/components/AssetIcon.vue'
 import ProductBadge from '~/components/ProductBadge.vue'
 import ArrowIcon from '~/assets/images/arrow.svg?inline'
@@ -161,6 +165,7 @@ export default {
     TechnicalDetailsCard,
     LifecycleTimeline,
     DetailRow,
+    AssetAmountValue,
     AssetIcon,
     ProductBadge,
     ArrowIcon,

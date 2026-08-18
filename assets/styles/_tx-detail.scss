@@ -128,6 +128,120 @@
   }
 }
 
+// The clipped/overlapping, expand-on-hover multi-badge stack — distinct
+// from the plain .bubble-pill above (which never had this behavior; it's
+// the simplified variant new heroes use). Dedup'd here from what were
+// verbatim-duplicated copies in _txhash.vue's own swap hero (the eyebrow's
+// type/product badges) and the legacy txCard.vue (its own per-card
+// badges) — nesting .bubble-pill under .bubble-stack keeps this from
+// touching the bare .bubble-pill rules above.
+.bubble-stack {
+  align-items: center;
+  cursor: pointer;
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  min-height: 28px;
+  outline: none;
+  overflow: hidden;
+
+  .bubble-pill {
+    background-color: var(--bgl-color);
+    border: 1px solid var(--border-color);
+    border-radius: $radius-sm;
+    color: var(--sec-font-color);
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    gap: 6px;
+    line-height: 1;
+    margin-left: 0;
+    padding: $space-5 $space-10;
+    position: relative;
+    white-space: nowrap;
+    transition:
+      margin-left 0.25s ease,
+      clip-path 0.25s ease,
+      filter 0.25s ease;
+
+    &:first-child {
+      z-index: 3;
+      clip-path: inset(0 0 0 0);
+    }
+
+    &:nth-child(2) {
+      z-index: 2;
+      clip-path: inset(0 0 0 50%);
+      filter: brightness(0.6);
+    }
+
+    &:nth-child(3),
+    &:nth-child(n + 3) {
+      z-index: 1;
+      clip-path: inset(0 0 0 50%);
+      filter: brightness(0.6);
+    }
+
+    &:not(:first-child) {
+      // Overlap so ~10% of each pill remains visible
+      margin-left: -80px;
+    }
+
+    .bubble-pill__icon {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+      fill: currentColor;
+    }
+
+    .bubble-pill__label {
+      color: inherit;
+    }
+
+    &.bubble-pill--blue {
+      border-color: color-mix(in srgb, var(--highlight) 50%, var(--border-color));
+      background-color: color-mix(in srgb, var(--highlight) 10%, var(--card-bg-color));
+    }
+
+    &.bubble-pill--green {
+      border-color: color-mix(in srgb, var(--green) 50%, var(--border-color));
+      background-color: color-mix(in srgb, var(--green) 10%, var(--card-bg-color));
+    }
+
+    &.bubble-pill--yellow {
+      border-color: color-mix(in srgb, #f39c12 50%, var(--border-color));
+      background-color: color-mix(in srgb, #f39c12 10%, var(--card-bg-color));
+    }
+
+    &.bubble-pill--red {
+      border-color: color-mix(in srgb, var(--red) 50%, var(--border-color));
+      background-color: color-mix(in srgb, var(--red) 10%, var(--card-bg-color));
+    }
+
+    &.bubble-pill--alert {
+      border-color: color-mix(in srgb, #9b59b6 50%, var(--border-color));
+      background-color: color-mix(in srgb, #9b59b6 10%, var(--card-bg-color));
+    }
+
+    &.bubble-pill--grey {
+      border-color: color-mix(in srgb, var(--highlight) 50%, var(--border-color));
+      background-color: color-mix(in srgb, var(--highlight) 10%, var(--card-bg-color));
+    }
+  }
+
+  &.bubble-stack--expanded .bubble-pill {
+    margin-left: 0;
+    clip-path: inset(0 0 0 0);
+    filter: none;
+
+    &:not(:first-child) {
+      margin-left: 6px;
+    }
+  }
+}
+
 .tx-detail-title {
   color: var(--sec-font-color);
   font-size: clamp(1.4rem, 2.4vw, 2rem);
@@ -591,6 +705,23 @@
         var(--card-bg-color));
     color: var(--warning-color);
   }
+
+  // A step that hasn't happened yet (e.g. streaming's final output, before
+  // it's landed) — dimmer than every other tone, including the neutral
+  // default, so it reads as "not yet" rather than "in progress" or "at
+  // risk" like --warning does.
+  &--upcoming {
+    background: var(--surface-3-color);
+    border-color: var(--divider-color);
+    color: var(--text-faint-color);
+  }
+
+  // A step that's only partially true so far (e.g. "Output accumulating" —
+  // some output has landed, but not all of it) — dashed instead of every
+  // other step's solid border, independent of tone.
+  &--dashed {
+    border-style: dashed;
+  }
 }
 
 // currentColor (driven by the dot's own `color`) covers both fill-based
@@ -614,11 +745,22 @@
   &--warning {
     color: var(--warning-color);
   }
+
+  &--upcoming {
+    color: var(--text-faint-color);
+  }
 }
 
 .tx-lifecycle-body,
 .tx-lifecycle-meta {
   color: var(--font-color);
+}
+
+// An upcoming step's body reads dimmer too, matching its title/dot — the
+// default .tx-lifecycle-body color above is for events that have already
+// happened.
+.tx-lifecycle-item:has(.tx-lifecycle-dot--upcoming) .tx-lifecycle-body {
+  color: var(--text-faint-color);
 }
 
 .tx-lifecycle-meta {
@@ -693,11 +835,11 @@
 // .tx-swap-card, right after .tx-swap-head, where nothing else provides
 // that spacing — scoped to the direct-child case so SendHero's placement
 // is unaffected.
-.tx-swap-card > .tx-explainer {
+.tx-swap-card>.tx-explainer {
   margin-top: $space-16;
 }
 
-.tx-swap-card > .tx-delivery {
+.tx-swap-card>.tx-delivery {
   margin-top: $space-16;
 }
 
@@ -992,7 +1134,7 @@
   margin-top: $space-16;
   padding-top: $space-14;
 
-  > span:first-child {
+  >span:first-child {
     color: var(--sec-font-color);
     font-weight: 600;
   }
@@ -1014,6 +1156,57 @@
   }
 }
 
+// Amber counterpart to .tx-outbound-overdue-note (red) — a swap's own
+// unfilled-remainder refund leg is an expected outcome, not something
+// gone wrong, so its caption reads amber rather than alarming red.
+.tx-outbound-refund-note {
+  color: var(--warning-color);
+  font-size: $font-size-xxs;
+  margin-top: $space-6;
+}
+
+// The refund line in the "Total outbound" summary — sits between the main
+// delivered total and the delivered/pending caption, in the same amber as
+// the refund row/callout above it.
+.tx-outbound-refund-total {
+  color: var(--warning-color);
+  font-weight: 600;
+}
+
+// Inline callout inside .tx-swap-card for a swap's partial-refund leg —
+// distinct from .tx-explainer (a standalone sibling card): this sits
+// nested between the swap-head and the metric strip, since the refund is
+// part of the SAME swap's story, not a separate topic.
+.tx-refund-callout {
+  background: color-mix(in srgb, var(--warning-color) 6%, var(--card-bg-color));
+  border: 1px solid color-mix(in srgb, var(--warning-color) 35%, var(--border-color));
+  border-radius: 14px;
+  margin-top: $space-16;
+  padding: $space-14;
+}
+
+.tx-refund-callout-head {
+  align-items: center;
+  display: flex;
+  gap: $space-10;
+  justify-content: space-between;
+}
+
+.tx-refund-callout-title {
+  align-items: center;
+  color: var(--warning-color);
+  display: flex;
+  font-weight: 700;
+  gap: $space-10;
+}
+
+.tx-refund-callout-body {
+  color: var(--font-color);
+  font-size: $font-size-sm;
+  line-height: 1.5;
+  margin-top: $space-6;
+}
+
 // Two-segment delivery progress — solid for what's landed, hatched for
 // what hasn't (repeating-linear-gradient rather than a flat tint, so
 // "still coming" reads visually distinct from "already here" at a glance).
@@ -1031,23 +1224,19 @@
 }
 
 .tx-delivery-bar__pending {
-  background: repeating-linear-gradient(
-    -45deg,
-    color-mix(in srgb, var(--warning-color) 55%, transparent),
-    color-mix(in srgb, var(--warning-color) 55%, transparent) 4px,
-    transparent 4px,
-    transparent 8px
-  );
+  background: repeating-linear-gradient(-45deg,
+      color-mix(in srgb, var(--warning-color) 55%, transparent),
+      color-mix(in srgb, var(--warning-color) 55%, transparent) 4px,
+      transparent 4px,
+      transparent 8px);
   height: 100%;
 
   &--overdue {
-    background: repeating-linear-gradient(
-      -45deg,
-      color-mix(in srgb, var(--red) 55%, transparent),
-      color-mix(in srgb, var(--red) 55%, transparent) 4px,
-      transparent 4px,
-      transparent 8px
-    );
+    background: repeating-linear-gradient(-45deg,
+        color-mix(in srgb, var(--red) 55%, transparent),
+        color-mix(in srgb, var(--red) 55%, transparent) 4px,
+        transparent 4px,
+        transparent 8px);
   }
 }
 
@@ -1055,9 +1244,17 @@
   align-items: center;
   color: var(--font-color);
   display: flex;
-  font-size: $font-size-xxs;
+  font-size: $font-size-xs;
   justify-content: space-between;
   margin-bottom: $space-8;
+
+  // The streaming/outbound-delay info text (e.g. "44/54 sub-swaps · ~a
+  // minute left") — its own .tx-asset-label sibling already sets its own
+  // faint color, this only overrides the caption's default --font-color
+  // for the trailing info span.
+  .mono {
+    color: var(--sec-font-color);
+  }
 }
 
 // Muted explainer line under a bar, e.g. the outbound-delay countdown's

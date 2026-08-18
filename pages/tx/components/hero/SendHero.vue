@@ -32,13 +32,16 @@
             <div class="tx-asset-badge">THORChain network</div>
             <div class="tx-asset-values">
               <template v-if="overview.failed">
-                <span>{{ overview.zeroAmountDisplay }}</span>
+                <AssetAmountValue :amount="0" :asset="overview.asset" />
                 <strong class="tx-detail-muted">not debited</strong>
               </template>
               <template v-else>
-                <span class="tx-value-negative">
-                  -{{ overview.amountDisplay }}
-                </span>
+                <AssetAmountValue
+                  :amount="overview.amountRaw"
+                  :asset="overview.asset"
+                  prefix="-"
+                  class="tx-value-negative"
+                />
                 <strong>{{ overview.amountUsdDisplay }}</strong>
               </template>
             </div>
@@ -77,15 +80,20 @@
             <div class="tx-asset-badge">THORChain network</div>
             <div class="tx-asset-values">
               <template v-if="overview.failed">
-                <span class="tx-value-strike">
-                  {{ overview.amountDisplay }}
-                </span>
+                <AssetAmountValue
+                  :amount="overview.amountRaw"
+                  :asset="overview.asset"
+                  class="tx-value-strike"
+                />
                 <strong class="tx-value-negative">attempted</strong>
               </template>
               <template v-else>
-                <span class="tx-value-positive">
-                  +{{ overview.amountDisplay }}
-                </span>
+                <AssetAmountValue
+                  :amount="overview.amountRaw"
+                  :asset="overview.asset"
+                  prefix="+"
+                  class="tx-value-positive"
+                />
               </template>
             </div>
           </div>
@@ -94,7 +102,9 @@
         <div class="tx-metric-strip">
           <div class="tx-metric-item">
             <div class="tx-asset-label">Asset</div>
-            <div class="tx-metric-value">{{ overview.assetRaw }}</div>
+            <div class="tx-metric-value">
+              {{ showAsset(overview.assetRaw) }}
+            </div>
           </div>
           <div class="tx-metric-item">
             <div class="tx-asset-label">
@@ -183,6 +193,7 @@ import TxHashCard from '~/pages/tx/components/TxHashCard.vue'
 import TechnicalDetailsCard from '~/pages/tx/components/TechnicalDetailsCard.vue'
 import LifecycleTimeline from '~/pages/tx/components/LifecycleTimeline.vue'
 import DetailRow from '~/components/transactions/DetailRow.vue'
+import AssetAmountValue from '~/components/transactions/AssetAmountValue.vue'
 import AssetIcon from '~/components/AssetIcon.vue'
 import ProductBadge from '~/components/ProductBadge.vue'
 import ArrowIcon from '~/assets/images/arrow.svg?inline'
@@ -208,6 +219,7 @@ export default {
     TechnicalDetailsCard,
     LifecycleTimeline,
     DetailRow,
+    AssetAmountValue,
     AssetIcon,
     ProductBadge,
     ArrowIcon,
