@@ -1008,31 +1008,52 @@ export default {
         memo: stacks.find((s) => s.key === 'Memo' && s.is)?.value || '',
       }
     },
-    // Standalone refunds (createSwapState's onlyRefund case: THORChain
-    // accepted the swap attempt but the whole thing came back — e.g. slip
-    // tolerance exceeded, invalid destination, no route) share the same
-    // swap card/builder swapOverview reads, so this reuses swapCardIndex.
-    // swapOverview already bails on middle.fail (which onlyRefund sets), so
-    // there's no risk of double-rendering. Distinguished from a generic
-    // protocol-level rejection (createFailedState, no swap ever attempted —
-    // left on the legacy path, out of scope here) by the card's title,
-    // which createSwapState always prefixes "refunded " for this exact
-    // case (createFailedState's title is just the bare memo type, never
-    // that prefix). Not gated on the reason text itself being present —
-    // THORNode sometimes returns an empty refund reason, and that's still
-    // this screen, just with a "not provided" fallback below.
+    // Two distinct builders produce a "standalone refund" card, and this
+    // covers both: (1) createSwapState's onlyRefund case — THORChain
+    // accepted the swap attempt and the whole thing came back (slip
+    // tolerance, invalid destination, no route) — title always prefixed
+    // "refunded ", found via swapCardIndex; and (2) createAbstractState's
+    // generic per-Midgard-action card for a Midgard `type: 'refund'` action
+    // with no matching swap/failed builder (confirmed against a real
+    // empty-memo deposit,
+    // 734A958BAAF44300E246BAD9FA9AF0FD8FD122B938F4ADD8367211324FF37312 —
+    // THORChain couldn't tell what the memo meant at all, so it refunded
+    // the deposit) — title is exactly "Refund" (no "swap" in it, so
+    // swapCardIndex never finds it), and its accordion-action stacks use
+    // plain 'Reason' (cardAction.reason) rather than createSwapState's
+    // 'Refund Reason' (action.refundReason) — two different field names
+    // for the same concept. Not gated on the reason text itself being
+    // present — THORNode sometimes returns an empty refund reason, and
+    // that's still this screen, just with a "not provided" fallback below.
     refundOverview() {
-      if (this.swapCardIndex < 0) return null
-      const card = this.cards[this.swapCardIndex]
-      const overall = card?.details?.overall
-      if (!overall?.middle?.fail) return null
-      if (!/^refunded\b/i.test(card?.details?.title || '')) return null
+      let card = null
+      if (this.swapCardIndex >= 0) {
+        const swapCard = this.cards[this.swapCardIndex]
+        if (
+          swapCard?.details?.overall?.middle?.fail &&
+          /^refunded\b/i.test(swapCard?.details?.title || '')
+        ) {
+          card = swapCard
+        }
+      }
+      if (!card) {
+        card =
+          this.cards?.find(
+            (c) =>
+              c?.details?.title === 'Refund' &&
+              c?.details?.overall?.middle?.fail
+          ) || null
+      }
+      if (!card) return null
+      const overall = card.details.overall
 
       const actionAccordion = card?.accordions?.find(
         (entry) => entry.name === 'accordion-action'
       )
       const actionStacks = actionAccordion?.data?.stacks || []
-      const reasonRaw = this.getStackDisplayValue(actionStacks, 'Refund Reason')
+      const reasonRaw =
+        this.getStackDisplayValue(actionStacks, 'Refund Reason') ||
+        this.getStackDisplayValue(actionStacks, 'Reason')
       const parsedReason = reasonRaw ? parseActionReason(reasonRaw) : null
 
       const input = overall?.in?.[0]
@@ -1505,6 +1526,17 @@ export default {
         totalOutboundUsdDisplay: sameAsset
           ? this.formatUsdValue(
               legs.reduce((sum, l) => sum + l.amountUsdRaw, 0)
+            )
+          : null,
+        // Delivered + refunded — for the OutboundsTable "Total outbound"
+        // summary specifically, which (once everything's settled) covers
+        // the whole original input, not just what was received. The
+        // RECEIVED panel above keeps totalOutboundUsdDisplay as-is (the
+        // refund isn't part of what was "received").
+        totalOutboundWithRefundUsdDisplay: sameAsset
+          ? this.formatUsdValue(
+              legs.reduce((sum, l) => sum + l.amountUsdRaw, 0) +
+                (refundLeg?.amountUsdRaw || 0)
             )
           : null,
         // Unit-less, 2dp-rounded — for the H1's trailing clause (e.g.

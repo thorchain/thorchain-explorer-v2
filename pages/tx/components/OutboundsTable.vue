@@ -53,7 +53,10 @@
         <span v-if="refundLeg" class="tx-outbound-refund-total mono">
           + {{ refundLeg.amountDisplay }} refunded
         </span>
-        <span class="tx-detail-muted">
+        <span v-if="total.allDelivered" class="tx-detail-muted">
+          {{ total.usdDisplay }}
+        </span>
+        <span v-else class="tx-detail-muted">
           {{ total.deliveredDisplay }} delivered ·
           {{ total.outstandingDisplay }} pending
         </span>
@@ -88,7 +91,9 @@ export default {
       type: String,
       default: null,
     },
-    // { display, deliveredDisplay, outstandingDisplay } | null
+    // { display, usdDisplay, deliveredDisplay, outstandingDisplay,
+    //   allDelivered } | null — once allDelivered, "0 pending" is a
+    //   pointless caption, so the total's USD value shows instead.
     total: {
       type: Object,
       default: null,
