@@ -170,8 +170,10 @@
           overview.totals
             ? {
                 display: overview.totalOutboundDisplay,
+                usdDisplay: overview.totalOutboundWithRefundUsdDisplay,
                 deliveredDisplay: overview.deliveredDisplay,
                 outstandingDisplay: overview.outstandingDisplay,
+                allDelivered: overview.totals.allDelivered,
               }
             : null
         "
