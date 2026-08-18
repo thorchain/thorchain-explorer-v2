@@ -941,6 +941,7 @@ export default {
         to: this.getStackDisplayValue(stacks, 'To'),
         asset: input.asset,
         assetRaw: input.asset,
+        amountRaw: Number(input.amount) || 0,
         amountDisplay: this.formatAssetAmount(input.amount, input.asset),
         zeroAmountDisplay: this.formatAssetAmount(0, input.asset),
         amountUsdDisplay: this.formatUsdValue(input.amountUSD),
@@ -1062,12 +1063,19 @@ export default {
         kind: 'refund',
         status: { label: 'Refunded', tone: 'yellow' },
         hash: this.$route.params.txhash,
+        // Same field the shipped swapOverview hero reads for its own
+        // Affiliate.vue badge — shown regardless of the refund (the
+        // interface that originated the tx is unrelated to whether the
+        // swap itself succeeded).
+        affiliateAddress: card?.details?.interface || null,
         outboundHash: this.getStackDisplayValue(outboundStacks, 'Hash'),
         from: this.getStackDisplayValue(inboundStacks, 'From'),
         sentAsset: input.asset,
+        sentAmountRaw: Number(input.amount) || 0,
         sentAmountDisplay: this.formatAssetAmount(input.amount, input.asset),
         sentAmountUsdDisplay: this.formatUsdValue(input.amountUSD),
         refundedAsset: output.asset,
+        refundedAmountRaw: Number(output.amount) || 0,
         refundedAmountDisplay: this.formatAssetAmount(
           output.amount,
           output.asset
@@ -1106,7 +1114,25 @@ export default {
         if (c?.details?.overall?.middle?.fail) return false
         if (/^(trade|secure)\s*withdraw/i.test(c?.details?.title || ''))
           return true
-        return i === this.swapCardIndex
+        if (i !== this.swapCardIndex) return false
+        // A swap card that's still actively streaming defers to
+        // streamingOverview instead (which bails safely if it ever sees
+        // multiple legs while still mid-stream, see its own comment) —
+        // don't show a "final" multi-leg summary while the stream could
+        // still be producing more of it. Same 'Stream' stack/regex
+        // streamingOverview itself reads to detect this.
+        const streamMatch = c?.accordions
+          ?.find((entry) => entry.name === 'accordion-action')
+          ?.data?.stacks?.find((s) => s.key === 'Stream' && s.is)
+          ?.value?.match(/(\d+)\s*\/\s*(\d+)/)
+        if (
+          streamMatch &&
+          Number(streamMatch[2]) > 1 &&
+          Number(streamMatch[1]) < Number(streamMatch[2])
+        ) {
+          return false
+        }
+        return true
       })
       if (index < 0) return null
 
@@ -1122,16 +1148,39 @@ export default {
         ? 'withdraw'
         : 'swap'
       // A swap's out[] can legitimately mix the main output with an
-      // affiliate-fee leg in a DIFFERENT asset — that's not the "one
-      // output split across several legs" case this hero handles, so bail
-      // rather than show a nonsensical cross-asset delivery bar/total.
+      // affiliate-fee leg in a DIFFERENT asset (excluded below, unverified
+      // shape) — but it can also legitimately mix the main output with a
+      // PARTIAL REFUND leg: a limit/streaming swap that couldn't fully fill
+      // within its price limit sends back whatever's left, in the input
+      // asset, alongside whatever did execute (confirmed against a real
+      // BTC->ETH limit/streaming swap,
+      // 536C7E37EC65410A52E70673703220C2D1F91315ABB9B592200F9FE3A0EC71E7 —
+      // out[] there is [ETH delivery, BTC refund]). A refund leg is
+      // reliably identified by its asset matching the swap's OWN input
+      // asset — a legitimate swap output is never the same asset as what
+      // went in. Only one refund leg is handled (no verified case has
+      // more); anything else mixed in still bails as unverified.
+      const inputAssetStr = assetToString(assetFromString(input.asset))
+      const refundLegsRaw =
+        kind === 'swap'
+          ? outs.filter(
+              (o) => assetToString(assetFromString(o.asset)) === inputAssetStr
+            )
+          : []
+      const deliveredOuts =
+        kind === 'swap'
+          ? outs.filter(
+              (o) => assetToString(assetFromString(o.asset)) !== inputAssetStr
+            )
+          : outs
       if (kind === 'swap') {
-        const outAssetsMatch = outs.every(
+        if (refundLegsRaw.length > 1 || deliveredOuts.length < 1) return null
+        const deliveredAssetsMatch = deliveredOuts.every(
           (o) =>
             assetToString(assetFromString(o.asset)) ===
-            assetToString(assetFromString(outs[0].asset))
+            assetToString(assetFromString(deliveredOuts[0].asset))
         )
-        if (!outAssetsMatch) return null
+        if (!deliveredAssetsMatch) return null
       }
 
       const actionAccordion = card?.accordions?.find(
@@ -1147,8 +1196,11 @@ export default {
       // reads as a ledger reconciliation, where formatAssetAmount's usual
       // rounding would hide exactly the cents-level detail the "amount
       // accounting" rail card exists to show.
+      // Bare ticker, not chain.ticker — the network's already shown by the
+      // panel's own badge chip below, so repeating it in the amount line
+      // (e.g. "458,000 ETH.USDT" instead of "458,000 USDT") is redundant.
       const precise = (amount, asset) =>
-        `${this.baseAmountFormatOrZero(amount)} ${this.showAsset(asset)}`
+        `${this.baseAmountFormatOrZero(amount)} ${this.showTicker(asset)}`
       // A THORChain-internal settlement (e.g. a trade/secure-asset leg that
       // never leaves THORChain) has no real cross-chain outbound, so
       // THORNode fills out_txs[].id with an all-zero placeholder rather
@@ -1158,7 +1210,7 @@ export default {
       const ZERO_HASH =
         '0000000000000000000000000000000000000000000000000000000000000000'
 
-      const legs = outs.map((leg, i) => {
+      const legs = deliveredOuts.map((leg, i) => {
         const etaBlocks = leg.outboundETA
         const pastDueBlocks =
           etaBlocks != null && etaBlocks < 0 ? -etaBlocks : null
@@ -1189,6 +1241,59 @@ export default {
             : null,
         }
       })
+
+      // The single partial-refund leg (see the guard above) — kept out of
+      // `legs`/totals/DeliveryBar entirely (it's a different asset, so it
+      // has no place in a same-asset delivery percentage), surfaced
+      // separately instead. The tx-wide 'Refund Reason' stack is unhelpful
+      // here ("swap has been completed" — confirmed against the real tx
+      // this was built for; parseActionReason doesn't recognize it either),
+      // so `reason` is synthesized from what's actually verifiable: the
+      // refunded share of the input. A PARTIAL refund (delivered legs +
+      // this one, as opposed to refundOverview's onlyRefund case) only
+      // happens one way in THORChain — a limit/streaming swap couldn't
+      // fill the remainder within its price limit — so that's stated
+      // directly rather than hedged.
+      const refundLegRaw = refundLegsRaw[0] || null
+      // Same accordion-out-N shape/ordering as accordions.out[] (built from
+      // the same reordered outTxs cards.out[] is), so index legs.length —
+      // one past the last delivered leg — is the refund's own accordion,
+      // which (unlike overall.out[]) also carries the block height.
+      const refundAccordionStacks = refundLegRaw
+        ? card?.accordions?.find(
+            (entry) => entry.name === `accordion-out-${legs.length}`
+          )?.data?.stacks || []
+        : []
+      const refundHeight = refundLegRaw
+        ? this.getNumericStackValue(refundAccordionStacks, 'Executed at')
+        : null
+      const refundPercent =
+        refundLegRaw && input.amount > 0
+          ? (Number(refundLegRaw.amount) / Number(input.amount)) * 100
+          : null
+      const refundLeg = refundLegRaw
+        ? {
+            // OutboundsTable numbers legs 1-based off this index — the
+            // refund sits one past the last delivered leg, matching the
+            // mockup ("Leg 5" after 4 delivered legs).
+            index: legs.length,
+            asset: refundLegRaw.asset,
+            hash:
+              refundLegRaw.txid && refundLegRaw.txid !== ZERO_HASH
+                ? refundLegRaw.txid
+                : null,
+            to: refundLegRaw.to || null,
+            amountRaw: Number(refundLegRaw.amount) || 0,
+            amountDisplay: precise(refundLegRaw.amount, refundLegRaw.asset),
+            amountUsdRaw: Number(refundLegRaw.amountUSD) || 0,
+            amountUsdDisplay: this.formatUsdValue(refundLegRaw.amountUSD),
+            note: `Unfilled remainder returned to the sender in the input asset — ${this.addressFormatV2(refundLegRaw.to)}.${refundHeight ? ` Delivered at block #${this.normalFormat(refundHeight)}.` : ''}`,
+            reason:
+              refundPercent != null
+                ? `${refundPercent.toFixed(2)}% of the input could not be filled inside the swap's price limit, so it was returned to the sender as a separate outbound — it is not part of the ${this.showTicker(legs[0].asset)} received above.`
+                : 'This portion could not be filled within the swap’s price limit, so it was returned to the sender.',
+          }
+        : null
 
       // Totals only mean anything when every leg is the same asset (true for
       // every trade/secure withdrawal, since they always split one asset
@@ -1271,27 +1376,65 @@ export default {
           const { usd, subtle } = this.splitFeeValue(formatted)
           return { label, usd, subtle }
         }
+        const rows = []
+        // The gas the sender paid on the source chain to get this tx
+        // observed by THORChain — same 'Gas' stack/derivation
+        // streamingOverview's own Fee Breakdown reads (also absent from
+        // the shipped swapOverview hero's own breakdown — additive here
+        // too, not a value that becomes available later).
+        const inboundFee = this.formatFeeDisplay(
+          this.getStackDisplayValue(inboundStacks, 'Gas')
+        )
+        if (inboundFee) rows.push(toRow('Inbound Fee', inboundFee))
         const outboundFeeStacks = card?.accordions
           ?.filter((entry) => entry.name.startsWith('accordion-out-'))
           .flatMap((entry) => entry.data?.stacks || [])
           .filter((stack) => stack.key === 'Outbound Fee' && stack.is)
-        const rows = (outboundFeeStacks || [])
-          .map((stack, i) =>
-            toRow(
-              i === 0 ? 'Network Fee' : `Network Fee ${i + 1}`,
-              this.formatFeeDisplay(this.formatStackValue(stack.value))
+        rows.push(
+          ...(outboundFeeStacks || [])
+            .map((stack, i) =>
+              toRow(
+                i === 0 ? 'Network Fee' : `Network Fee ${i + 1}`,
+                this.formatFeeDisplay(this.formatStackValue(stack.value))
+              )
             )
-          )
-          .filter((r) => r.usd !== '$0.00')
+            .filter((r) => r.usd !== '$0.00')
+        )
         if (kind === 'swap') {
           const liquidityFee = this.formatFeeDisplay(
             this.getStackDisplayValueByPrefix(actionStacks, 'Liquidity Fee')
           )
           if (liquidityFee) rows.push(toRow('Liquidity Fee', liquidityFee))
+          // Same realized-vs-estimated split streamingOverview's Fee
+          // Breakdown uses: 'Interface Fee' only has a value once THORChain
+          // has actually paid the affiliate out (action.affiliateOut — a
+          // leg tracked independently of the main delivery, so it can
+          // still be unsettled even once every delivered leg has landed).
+          // Fall back to the memo's own declared bps against the input
+          // value, same as streamingOverview.
           const interfaceFee = this.formatFeeDisplay(
             this.getStackDisplayValue(actionStacks, 'Interface Fee')
           )
-          if (interfaceFee) rows.push(toRow('Affiliate Fee', interfaceFee))
+          if (interfaceFee) {
+            rows.push(toRow('Affiliate Fee', interfaceFee))
+          } else {
+            const affiliateBps = this.getNumericStackValue(
+              actionStacks,
+              'Affiliate Basis'
+            )
+            const inputUsdForAffiliate =
+              input.amountUSD ??
+              this.amountToUSD(input.asset, input.amount, this.pools) ??
+              0
+            if (affiliateBps > 0 && inputUsdForAffiliate > 0) {
+              const estUsd = inputUsdForAffiliate * (affiliateBps / 10000)
+              rows.push({
+                label: 'Affiliate Fee (est.)',
+                usd: `$${this.formatFeeDisplay(estUsd)}`,
+                subtle: `${(affiliateBps / 100).toFixed(2)}% of input value`,
+              })
+            }
+          }
         }
         if (!rows.length) return []
 
@@ -1322,9 +1465,24 @@ export default {
         status,
         // camelCase() only spaces camelCase words ("trade Withdraw"), it
         // doesn't capitalize — fine for the legacy card title it was built
-        // for, not for this hero's eyebrow/H1, so capitalize here.
-        title: this.capitalizeFirst(card?.details?.title) || 'Transaction',
+        // for, not for this hero's eyebrow/H1, so capitalize here. A
+        // partial-refund swap's own legacy title is prefixed "refunded "
+        // (createSwapState sets it whenever isRefund is true, regardless of
+        // whether only PART of the swap was refunded) — misleading here
+        // since most of the value can have delivered fine, so strip it.
+        title:
+          this.capitalizeFirst(
+            card?.details?.title?.replace(/^refunded\s*/i, '')
+          ) || 'Transaction',
+        hasRefund: !!refundLeg,
+        refundLeg,
         hash: this.$route.params.txhash,
+        // Same field the shipped swapOverview hero reads for its own
+        // Affiliate.vue badge (card.details.interface, set by createCard
+        // from accordions.action.affiliateName) — shown regardless of
+        // whether an affiliate fee actually settled yet (see feeRows
+        // above), matching the base hero's own unconditional display.
+        affiliateAddress: card?.details?.interface || null,
         from: this.getStackDisplayValue(inboundStacks, 'From'),
         destination,
         asset: input.asset,
@@ -1340,6 +1498,7 @@ export default {
         sameAsset,
         totals,
         totalsAsset,
+        totalOutboundRaw: sameAsset ? totals.total : null,
         totalOutboundDisplay: sameAsset
           ? precise(totals.total, totalsAsset)
           : null,
@@ -1440,8 +1599,24 @@ export default {
       const streamingDone = isStreaming && snapshotCount >= snapshotQuantity
       const phase = !isStreaming || streamingDone ? 'outbound' : 'streaming'
 
+      // output above only reads the first leg — fine once the stream is
+      // done (multiOutboundOverview's swap-kind branch defers to this
+      // computed while still actively streaming, then takes over once it
+      // isn't, see its own 'Stream' stack check), but if the destination
+      // chain's per-tx cap ever splits an outbound before the stream
+      // itself finishes, a single-leg read here would silently understate
+      // the real total. No verified real tx has shown that actually
+      // happening mid-stream — THORChain's own out_txs only appeared once
+      // settlement started in every case checked — so this is a safety
+      // bail, not a confirmed gap: fall through to the legacy page rather
+      // than risk misrepresenting it.
+      if (phase === 'streaming' && (overall.out?.length ?? 0) > 1) return null
+
+      // Bare ticker, not chain.ticker — the network's already shown by the
+      // panel's own badge chip below, so repeating it in the amount line
+      // (e.g. "458,000 ETH.USDT" instead of "458,000 USDT") is redundant.
       const precise = (amount, asset) =>
-        `${this.baseAmountFormatOrZero(amount)} ${this.showAsset(asset)}`
+        `${this.baseAmountFormatOrZero(amount)} ${this.showTicker(asset)}`
 
       const time = this.splitTrailingParen(
         this.getStackDisplayValue(actionStacks, 'Timestamp')
@@ -1460,14 +1635,55 @@ export default {
           return { label, usd, subtle }
         }
         const rows = []
+        // The gas the sender paid on the source chain to get this tx
+        // observed by THORChain — buildInboundAccordions' own 'Gas' stack,
+        // same "amount ASSET ($usd)" shape every other fee stack here uses.
+        // Not shown by the shipped swapOverview hero's own Fee Breakdown
+        // either — genuinely new, not a value that becomes available later.
+        const inboundFee = this.formatFeeDisplay(
+          this.getStackDisplayValue(inboundStacks, 'Gas')
+        )
+        if (inboundFee) rows.push(toRow('Inbound Fee', inboundFee))
         const liquidityFee = this.formatFeeDisplay(
           this.getStackDisplayValueByPrefix(actionStacks, 'Liquidity Fee')
         )
         if (liquidityFee) rows.push(toRow('Liquidity Fee (est.)', liquidityFee))
+        // 'Interface Fee' (cardBuilder.js) only has a value once THORChain
+        // has actually paid the affiliate out — gated on
+        // action.affiliateOut.length > 0. For a streaming swap, that
+        // payout is only realized once the stream settles (confirmed: the
+        // stack is silently absent — not zero, absent — for the whole
+        // active-streaming window), so this row would otherwise vanish
+        // even though the fee is guaranteed to be charged. Fall back to
+        // estimating it from the memo's own declared bps ('Affiliate
+        // Basis', available immediately, independent of payout status)
+        // against the input value, labeled "(est.)" since it hasn't
+        // actually gone out yet — same reasoning as Liquidity Fee (est.)
+        // above, and the same "(est)" convention cardBuilder.js already
+        // uses for Liquidity Fee while a stream is still running.
         const interfaceFee = this.formatFeeDisplay(
           this.getStackDisplayValue(actionStacks, 'Interface Fee')
         )
-        if (interfaceFee) rows.push(toRow('Affiliate Fee', interfaceFee))
+        if (interfaceFee) {
+          rows.push(toRow('Affiliate Fee', interfaceFee))
+        } else {
+          const affiliateBps = this.getNumericStackValue(
+            actionStacks,
+            'Affiliate Basis'
+          )
+          const inputUsdForAffiliate =
+            input.amountUSD ??
+            this.amountToUSD(input.asset, input.amount, this.pools) ??
+            0
+          if (affiliateBps > 0 && inputUsdForAffiliate > 0) {
+            const estUsd = inputUsdForAffiliate * (affiliateBps / 10000)
+            rows.push({
+              label: 'Affiliate Fee (est.)',
+              usd: `$${this.formatFeeDisplay(estUsd)}`,
+              subtle: `${(affiliateBps / 100).toFixed(2)}% of input value`,
+            })
+          }
+        }
         if (!rows.length) return []
         const totalUsd = rows.reduce(
           (sum, r) => sum + this.parseUsdAmount(r.usd),
@@ -1494,6 +1710,10 @@ export default {
         kind: 'streaming',
         status: { label: 'In progress', tone: 'yellow' },
         hash: this.$route.params.txhash,
+        // Same field the shipped swapOverview hero reads for its own
+        // Affiliate.vue badge (card.details.interface, set by createCard
+        // from accordions.action.affiliateName) — not derived here.
+        affiliateAddress: card?.details?.interface || null,
         from: this.getStackDisplayValue(inboundStacks, 'From'),
         destination: output.to || null,
         asset: input.asset,
@@ -1504,6 +1724,7 @@ export default {
         // only, not reachable from this child component).
         inputName: this.getAssetDisplayName(input.asset),
         assetBadge: this.getNetworkBadge(assetFromString(input.asset)),
+        amountRaw: Number(input.amount) || 0,
         amountDisplay: precise(input.amount, input.asset),
         amountUsdDisplay: this.formatUsdValue(
           input.amountUSD ??
@@ -1520,6 +1741,7 @@ export default {
         // re-derives this on every rebuild, so no separate fetch needed.
         // Once phase is 'outbound' this is no longer just a projection —
         // streaming's done, so it's the real determined output.
+        outputProjectedRaw: Number(output.amount) || 0,
         outputProjectedDisplay: precise(output.amount, output.asset),
         outputProjectedUsdDisplay: this.formatUsdValue(output.amountUSD),
         // "So far" (outputSoFarDisplay/-UsdDisplay) comes from the live
@@ -1553,7 +1775,8 @@ export default {
         // down from there client-side, see its startCountdown/updateCircle
         // — StreamingSwapHero's bar mirrors that exact pattern rather than
         // re-deriving from outboundDelayRemaining independently).
-        outboundDelayRemainingSeconds: outboundAccordion?.data?.remainingTime || 0,
+        outboundDelayRemainingSeconds:
+          outboundAccordion?.data?.remainingTime || 0,
         outboundDelayTotalSeconds: outboundAccordion?.data?.totalTime || 0,
         outboundPastDueDisplay: this.getStackDisplayValue(
           outboundStacks,
@@ -5750,6 +5973,7 @@ export default {
           fillPercent: 100,
           remainingDisplay: null,
           swappedSoFarDisplay: null,
+          outputSoFarRaw: null,
           outputSoFarDisplay: null,
           outputSoFarUsdDisplay: null,
         }
@@ -5792,7 +6016,7 @@ export default {
             .humanize()
         }
         if (raw.in) {
-          swappedSoFarDisplay = `${this.baseAmountFormatOrZero(raw.in)} ${this.showAsset(inputAsset)} swapped so far`
+          swappedSoFarDisplay = `${this.baseAmountFormatOrZero(raw.in)} ${this.showTicker(inputAsset)} swapped so far`
         }
         // raw.out is a string — "0" (a genuine, valid zero, e.g. right
         // between sub-swap settlements) is truthy as a string, so this
@@ -5810,9 +6034,10 @@ export default {
         fillPercent,
         remainingDisplay,
         swappedSoFarDisplay,
+        outputSoFarRaw,
         outputSoFarDisplay:
           outputSoFarRaw != null
-            ? `${this.baseAmountFormatOrZero(outputSoFarRaw)} ${this.showAsset(outputAsset)}`
+            ? `${this.baseAmountFormatOrZero(outputSoFarRaw)} ${this.showTicker(outputAsset)}`
             : null,
         // Scaled off output.amountUSD (the projected total's already-correct
         // Midgard-priced USD value, outPriceUSD-based) rather than re-pricing
@@ -5924,8 +6149,11 @@ export default {
     formatAssetAmount(amount, asset) {
       const formattedAmount = `${this.baseAmountFormatOrZero(amount)}`
       const numericAmount = Number(formattedAmount.replace(/,/g, ''))
+      // Bare ticker, not chain.ticker — the network's already shown by the
+      // panel's own badge chip, so repeating it here (e.g. "458,000
+      // ETH.USDT" instead of "458,000 USDT") is redundant.
       if (!Number.isFinite(numericAmount)) {
-        return `${formattedAmount} ${this.getAssetSymbol(asset)}`
+        return `${formattedAmount} ${this.showTicker(asset)}`
       }
       // Use enough decimals so small amounts (e.g. 0.00217 BTC) aren't rounded to 0
       const maxDecimals = numericAmount > 0 && numericAmount < 0.01 ? 8 : 2
@@ -5933,7 +6161,7 @@ export default {
         minimumFractionDigits: 0,
         maximumFractionDigits: maxDecimals,
       }).format(numericAmount)
-      return `${displayAmount} ${this.getAssetSymbol(asset)}`
+      return `${displayAmount} ${this.showTicker(asset)}`
     },
     formatUsdValue(value) {
       const raw = `${value ?? ''}`.trim()
@@ -6026,14 +6254,6 @@ export default {
       }).format(numeric)
 
       return `${formatted}${match[2]}`.trim()
-    },
-    getAssetSymbol(asset) {
-      if (!asset) return '-'
-      const parsed = assetFromString(asset)
-      if (parsed.chain === 'THOR' && parsed.ticker) {
-        return parsed.ticker
-      }
-      return this.showAsset(asset)
     },
     getAssetDisplayName(asset) {
       if (!asset) return '-'
@@ -8653,129 +8873,8 @@ export default {
   gap: $space-10;
   margin-bottom: $space-12;
 
-  .bubble-stack {
-    display: inline-flex;
-    flex-direction: row;
-    align-items: center;
-    flex-wrap: nowrap;
-    outline: none;
-    min-height: 28px;
-    cursor: pointer;
-    overflow: hidden;
-
-    .bubble-pill {
-      flex-shrink: 0;
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: $space-5 $space-10;
-      border-radius: $radius-sm;
-      font-size: $font-size-sm;
-      font-weight: 600;
-      line-height: 1;
-      border: 1px solid var(--border-color);
-      background-color: var(--bgl-color);
-      color: var(--sec-font-color);
-      white-space: nowrap;
-      transition:
-        margin-left 0.25s ease,
-        clip-path 0.25s ease,
-        filter 0.25s ease;
-
-      &:first-child {
-        z-index: 3;
-        clip-path: inset(0 0 0 0);
-      }
-
-      &:nth-child(2) {
-        z-index: 2;
-        clip-path: inset(0 0 0 50%);
-        filter: brightness(0.6);
-      }
-
-      &:nth-child(3),
-      &:nth-child(n + 3) {
-        z-index: 1;
-        clip-path: inset(0 0 0 50%);
-        filter: brightness(0.6);
-      }
-
-      &:not(:first-child) {
-        margin-left: -80px;
-      }
-
-      .bubble-pill__icon {
-        width: 14px;
-        height: 14px;
-        flex-shrink: 0;
-        fill: currentColor;
-      }
-
-      .bubble-pill__label {
-        color: inherit;
-      }
-
-      &.bubble-pill--blue {
-        border-color: color-mix(
-          in srgb,
-          var(--highlight) 50%,
-          var(--border-color)
-        );
-        background-color: color-mix(
-          in srgb,
-          var(--highlight) 10%,
-          var(--card-bg-color)
-        );
-      }
-      &.bubble-pill--green {
-        border-color: color-mix(in srgb, var(--green) 50%, var(--border-color));
-        background-color: color-mix(
-          in srgb,
-          var(--green) 10%,
-          var(--card-bg-color)
-        );
-      }
-      &.bubble-pill--yellow {
-        border-color: color-mix(in srgb, #f39c12 50%, var(--border-color));
-        background-color: color-mix(in srgb, #f39c12 10%, var(--card-bg-color));
-      }
-      &.bubble-pill--red {
-        border-color: color-mix(in srgb, var(--red) 50%, var(--border-color));
-        background-color: color-mix(
-          in srgb,
-          var(--red) 10%,
-          var(--card-bg-color)
-        );
-      }
-      &.bubble-pill--alert {
-        border-color: color-mix(in srgb, #9b59b6 50%, var(--border-color));
-        background-color: color-mix(in srgb, #9b59b6 10%, var(--card-bg-color));
-      }
-      &.bubble-pill--grey {
-        border-color: color-mix(
-          in srgb,
-          var(--highlight) 50%,
-          var(--border-color)
-        );
-        background-color: color-mix(
-          in srgb,
-          var(--highlight) 10%,
-          var(--card-bg-color)
-        );
-      }
-    }
-
-    &.bubble-stack--expanded .bubble-pill {
-      margin-left: 0;
-      clip-path: inset(0 0 0 0);
-      filter: none;
-
-      &:not(:first-child) {
-        margin-left: 6px;
-      }
-    }
-  }
+  // .bubble-stack/.bubble-pill styling lives in assets/styles/_tx-detail.scss
+  // (shared with the legacy txCard.vue, which had its own verbatim copy).
 }
 
 .tx-detail-title {

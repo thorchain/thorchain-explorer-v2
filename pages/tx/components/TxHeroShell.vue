@@ -24,6 +24,10 @@
       >
         {{ statusPill.label }}
       </span>
+      <affiliate
+        v-if="affiliateAddress"
+        :affiliate-address="affiliateAddress"
+      />
     </div>
 
     <h1 class="tx-detail-title">
@@ -43,6 +47,7 @@
 
 <script>
 import ArrowIcon from '~/assets/images/arrow.svg?inline'
+import Affiliate from '~/components/Affiliate.vue'
 
 // Shared shell for every tx-detail hero screen (mimir/send/bond/streaming/
 // refund/multi-outbound). Reuses the shipped swapOverview hero's own shell
@@ -52,7 +57,7 @@ import ArrowIcon from '~/assets/images/arrow.svg?inline'
 // page, not a parallel design. Owns only layout + eyebrow/title chrome; all
 // screen-specific content is supplied via the #main and #rail slots.
 export default {
-  components: { ArrowIcon },
+  components: { ArrowIcon, Affiliate },
   props: {
     backTo: {
       type: String,
@@ -62,6 +67,14 @@ export default {
     eyebrow: {
       type: String,
       default: '',
+    },
+    // The interface/affiliate code from the tx's memo (e.g. "ti" for
+    // THORSwap) — same field the shipped swap hero passes to Affiliate.vue
+    // (card.details.interface). Renders that component's own icon+tooltip
+    // badge in the same spot, right after the status chip.
+    affiliateAddress: {
+      type: String,
+      default: null,
     },
     // [{ label, icon?, tone?: 'blue'|'green'|'yellow'|'red' }] — renders as
     // .bubble-pill, same as the swap hero's type/product badges.
