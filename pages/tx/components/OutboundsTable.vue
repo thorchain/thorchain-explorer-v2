@@ -13,7 +13,7 @@
         <div class="tx-outbound-row-main">
           <StatusChip :status="leg.status" />
           <span class="tx-outbound-leg">Leg {{ leg.index + 1 }}</span>
-          <Hash v-if="leg.hash" :param="leg.hash" />
+          <ExternalHash v-if="leg.hash" :param="leg.hash" :asset="leg.asset" />
           <span v-else class="tx-detail-muted">No hash yet</span>
           <span class="tx-outbound-amount mono">{{ leg.amountDisplay }}</span>
         </div>
@@ -36,7 +36,11 @@
         <div class="tx-outbound-row-main">
           <StatusChip status="refund" />
           <span class="tx-outbound-leg">Leg {{ refundLeg.index + 1 }}</span>
-          <Hash v-if="refundLeg.hash" :param="refundLeg.hash" />
+          <ExternalHash
+            v-if="refundLeg.hash"
+            :param="refundLeg.hash"
+            :asset="refundLeg.asset"
+          />
           <span v-else class="tx-detail-muted">No hash yet</span>
           <span class="tx-outbound-amount mono">
             {{ refundLeg.amountDisplay }}
@@ -67,7 +71,7 @@
 
 <script>
 import StatusChip from '~/components/transactions/StatusChip.vue'
-import Hash from '~/components/transactions/Hash.vue'
+import ExternalHash from '~/components/transactions/ExternalHash.vue'
 import Address from '~/components/transactions/Address.vue'
 
 // Per-leg outbound breakdown for a transaction whose output split across
@@ -78,7 +82,7 @@ import Address from '~/components/transactions/Address.vue'
 // different assets/addresses (see multiOutboundOverview's sameAsset/
 // sameDestination guards).
 export default {
-  components: { StatusChip, Hash, Address },
+  components: { StatusChip, ExternalHash, Address },
   props: {
     // [{ index, status: 'delivered'|'scheduled'|'overdue'|'refunded',
     //    hash: string|null, amountDisplay: string, pastDueDisplay?: string,

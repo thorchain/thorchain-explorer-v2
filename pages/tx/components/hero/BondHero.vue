@@ -23,7 +23,11 @@
                 :amount="overview.amountRaw"
                 :asset="overview.asset"
               />
-              <strong>{{ overview.amountUsdDisplay }}</strong>
+              <strong
+                v-tooltip="usdBasisTooltip(overview.amountUsdAtExecution)"
+                style="cursor: help"
+                >{{ overview.amountUsdDisplay }}</strong
+              >
             </div>
           </div>
 
@@ -90,7 +94,9 @@
             :value="overview.isWhitelist ? 'Bond Whitelist' : 'Bond'"
           />
           <DetailRow label="Status">
-            <span class="mini-bubble">{{ overview.status.label }}</span>
+            <span :class="['mini-bubble', statusToneClass]">
+              {{ overview.status.label }}
+            </span>
           </DetailRow>
           <DetailRow label="Time">
             {{ overview.timeDisplay }}
@@ -201,6 +207,14 @@ export default {
     },
     hashActions() {
       return [{ label: 'Node page', to: `/node/${this.overview.nodeAddress}` }]
+    },
+    // bondOverview.status.tone comes from the shared getOverviewStatus
+    // helper (page-local, same as the base swapOverview hero's own Status
+    // row reads via its statusToneClass method) — a bond tx can in
+    // principle fail/be pending like any other, not just succeed.
+    statusToneClass() {
+      const map = { red: 'danger', blue: 'info', yellow: 'yellow' }
+      return map[this.overview.status?.tone] || null
     },
     nodeStatus() {
       return this.nodeSnapshot?.status || null

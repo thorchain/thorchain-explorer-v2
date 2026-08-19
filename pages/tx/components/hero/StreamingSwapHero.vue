@@ -31,7 +31,11 @@
                 :amount="overview.amountRaw"
                 :asset="overview.asset"
               />
-              <strong>{{ overview.amountUsdDisplay }}</strong>
+              <strong
+                v-tooltip="usdBasisTooltip(overview.amountUsdAtExecution)"
+                style="cursor: help"
+                >{{ overview.amountUsdDisplay }}</strong
+              >
             </div>
             <div v-if="overview.swappedSoFarDisplay" class="tx-mimir-gloss">
               {{ overview.swappedSoFarDisplay }}
@@ -68,7 +72,11 @@
                 :amount="overview.outputProjectedRaw"
                 :asset="overview.outputAsset"
               />
-              <strong>{{ overview.outputProjectedUsdDisplay }}</strong>
+              <strong
+                v-tooltip="usdBasisTooltip(overview.outputUsdAtExecution)"
+                style="cursor: help"
+                >{{ overview.outputProjectedUsdDisplay }}</strong
+              >
             </div>
             <template v-else>
               <div class="tx-asset-values">
@@ -76,7 +84,11 @@
                   :amount="overview.outputSoFarRaw"
                   :asset="overview.outputAsset"
                 />
-                <strong>{{ overview.outputSoFarUsdDisplay || '' }}</strong>
+                <strong
+                  v-tooltip="usdBasisTooltip(overview.outputUsdAtExecution)"
+                  style="cursor: help"
+                  >{{ overview.outputSoFarUsdDisplay || '' }}</strong
+                >
               </div>
               <div class="tx-mimir-gloss">
                 ~{{ overview.outputProjectedDisplay }} ({{
@@ -157,6 +169,12 @@
             :value="overview.destination"
             value-type="address"
           />
+          <DetailRow v-if="overview.outboundHash" label="Hash">
+            <ExternalHash
+              :param="overview.outboundHash"
+              :asset="overview.outputAsset"
+            />
+          </DetailRow>
           <DetailRow
             v-if="overview.outboundEstDisplay"
             label="Outbound Est."
@@ -240,7 +258,7 @@
     </template>
 
     <template #rail>
-      <TxHashCard :hash="overview.hash" :actions="[]" />
+      <TxHashCard :hash="overview.hash" :actions="hashActions" />
 
       <section v-if="overview.feeRows.length" class="tx-info-card">
         <div class="tx-section-title">Fee Breakdown (est.)</div>
@@ -283,11 +301,13 @@ import TxHashCard from '~/pages/tx/components/TxHashCard.vue'
 import TechnicalDetailsCard from '~/pages/tx/components/TechnicalDetailsCard.vue'
 import LifecycleTimeline from '~/pages/tx/components/LifecycleTimeline.vue'
 import DetailRow from '~/components/transactions/DetailRow.vue'
+import ExternalHash from '~/components/transactions/ExternalHash.vue'
 import AssetAmountValue from '~/components/transactions/AssetAmountValue.vue'
 import AssetIcon from '~/components/AssetIcon.vue'
 import ProductBadge from '~/components/ProductBadge.vue'
 import ProgressBar from '~/components/ProgressBar.vue'
 import ArrowIcon from '~/assets/images/arrow.svg?inline'
+import { getLegExplorerUrl } from '~/utils'
 
 // Renders the `streamingOverview` computed from pages/tx/_txhash.vue —
 // covers two related in-flight windows swapOverview bails on via
@@ -318,6 +338,7 @@ export default {
     TechnicalDetailsCard,
     LifecycleTimeline,
     DetailRow,
+    ExternalHash,
     AssetAmountValue,
     AssetIcon,
     ProductBadge,
@@ -346,6 +367,16 @@ export default {
   computed: {
     isOutbound() {
       return this.overview.phase === 'outbound'
+    },
+    // Only "Input Tx" — the outbound hash (once it exists) already gets its
+    // own external-explorer link in the Outbound section's own Hash row
+    // above, so it isn't repeated here too.
+    hashActions() {
+      const url = getLegExplorerUrl(
+        this.overview.asset,
+        this.overview.inboundHash
+      )
+      return url ? [{ label: 'Input Tx', to: url, external: true }] : []
     },
     // Same --left-border/--right-border custom-property pattern the shipped
     // swap hero drives its own .tx-asset-panel/.tx-asset-panel--accent

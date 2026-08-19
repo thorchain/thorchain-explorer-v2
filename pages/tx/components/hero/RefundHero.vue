@@ -25,7 +25,11 @@
                 :amount="overview.sentAmountRaw"
                 :asset="overview.sentAsset"
               />
-              <strong>{{ overview.sentAmountUsdDisplay }}</strong>
+              <strong
+                v-tooltip="usdBasisTooltip(overview.sentAmountUsdAtExecution)"
+                style="cursor: help"
+                >{{ overview.sentAmountUsdDisplay }}</strong
+              >
             </div>
           </div>
 
@@ -48,7 +52,13 @@
                 :asset="overview.refundedAsset"
                 class="tx-value-warning"
               />
-              <strong>{{ overview.refundedAmountUsdDisplay }}</strong>
+              <strong
+                v-tooltip="
+                  usdBasisTooltip(overview.refundedAmountUsdAtExecution)
+                "
+                style="cursor: help"
+                >{{ overview.refundedAmountUsdDisplay }}</strong
+              >
             </div>
           </div>
         </div>
@@ -98,7 +108,7 @@
     </template>
 
     <template #rail>
-      <TxHashCard :hash="overview.hash" :actions="[]" />
+      <TxHashCard :hash="overview.hash" :actions="hashActions" />
 
       <section class="tx-info-card">
         <div class="tx-section-title">Refund summary</div>
@@ -114,12 +124,12 @@
           <DetailRow v-if="overview.networkFee" label="Network fee">
             {{ overview.networkFee }}
           </DetailRow>
-          <DetailRow
-            v-if="overview.outboundHash"
-            label="Refund tx"
-            :value="overview.outboundHash"
-            value-type="hash"
-          />
+          <DetailRow v-if="overview.outboundHash" label="Refund tx">
+            <ExternalHash
+              :param="overview.outboundHash"
+              :asset="overview.refundedAsset"
+            />
+          </DetailRow>
         </div>
       </section>
 
@@ -137,10 +147,12 @@ import TxHashCard from '~/pages/tx/components/TxHashCard.vue'
 import TechnicalDetailsCard from '~/pages/tx/components/TechnicalDetailsCard.vue'
 import LifecycleTimeline from '~/pages/tx/components/LifecycleTimeline.vue'
 import DetailRow from '~/components/transactions/DetailRow.vue'
+import ExternalHash from '~/components/transactions/ExternalHash.vue'
 import AssetAmountValue from '~/components/transactions/AssetAmountValue.vue'
 import AssetIcon from '~/components/AssetIcon.vue'
 import ProductBadge from '~/components/ProductBadge.vue'
 import RefundIcon from '~/assets/images/refund.svg?inline'
+import { getLegExplorerUrl } from '~/utils'
 
 // Renders the `refundOverview` computed from pages/tx/_txhash.vue (screen
 // 1e). This is createSwapState's "onlyRefund" case — a swap THORChain
@@ -158,6 +170,7 @@ export default {
     TechnicalDetailsCard,
     LifecycleTimeline,
     DetailRow,
+    ExternalHash,
     AssetAmountValue,
     AssetIcon,
     ProductBadge,
@@ -172,6 +185,16 @@ export default {
   computed: {
     chips() {
       return [{ label: 'Refund', tone: 'yellow', dot: true }]
+    },
+    // Only "Input Tx" — the refund's own outbound hash already gets its
+    // own external-explorer link in the rail's Refund summary card below,
+    // so it isn't repeated here too.
+    hashActions() {
+      const url = getLegExplorerUrl(
+        this.overview.sentAsset,
+        this.overview.inboundHash
+      )
+      return url ? [{ label: 'Input Tx', to: url, external: true }] : []
     },
     // Only surface a raw-text row when parsing actually changed something —
     // i.e. overview.reason is now the human-readable version, not the raw
