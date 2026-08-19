@@ -81,7 +81,7 @@ export function getPoolTxs(poolName, offset = 0, limit = 10) {
 
 export function getPools(period) {
   return withCache('pools', () =>
-    $axiosInstace.get(`pools?period=${period ?? '180d'}`)
+    $axiosInstace.get(`https://vanaheimex.com/pools?period=${period ?? '180d'}`)
   )
 }
 
@@ -92,7 +92,7 @@ export function getPoolStats(poolName) {
 export function getPoolDepth(poolName, count = 30, from = undefined) {
   return $axiosInstace.get(
     `history/depths/${poolName}?interval=day&count=${count}` +
-      (from ? `&from=${from}` : '')
+    (from ? `&from=${from}` : '')
   )
 }
 
