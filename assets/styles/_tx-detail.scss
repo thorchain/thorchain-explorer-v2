@@ -25,7 +25,8 @@
   margin-bottom: $space-12;
 }
 
-.tx-back-link {
+.tx-back-link,
+.tx-link {
   align-items: center;
   color: var(--font-color);
   display: inline-flex;
@@ -36,6 +37,13 @@
   &:hover {
     color: color-mix(in srgb, var(--green) 82%, white);
   }
+}
+
+// .tx-link (used by MimirVoteHero's "See all Mimir keys" and DetailRow's
+// value-type="link") is green at rest, unlike .tx-back-link — only the
+// hover tone above is shared between the two.
+.tx-link {
+  color: var(--green);
 }
 
 .tx-back-icon {
@@ -284,19 +292,12 @@
   border: 1px solid color-mix(in srgb, var(--border-color) 92%, transparent);
   border-radius: 20px;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.16);
-}
-
-.tx-swap-card {
-  padding: $space-16;
-}
-
-.tx-info-card {
   padding: $space-20;
 }
 
 .tx-swap-head {
   display: grid;
-  gap: $space-12;
+  gap: $space-14;
 
   @include md {
     align-items: stretch;
@@ -304,13 +305,18 @@
   }
 }
 
+// Matches the base swap hero's own (_txhash.vue) .tx-asset-panel recipe —
+// thicker border, bigger radius/padding, a fixed min-height, and spacing
+// via the panel's own flex `gap` rather than per-child margins.
 .tx-asset-panel {
-  background: var(--surface-3-color);
-  border: 1px solid var(--left-border, var(--border-color));
-  border-radius: 10px;
+  background: var(--card-bg);
+  border: 2px solid var(--left-border, var(--border-color));
+  border-radius: 16px;
   display: flex;
   flex-direction: column;
-  padding: $space-14;
+  gap: $space-10;
+  min-height: 156px;
+  padding: $space-18 $space-20;
 }
 
 .tx-asset-panel--accent {
@@ -327,12 +333,15 @@
   text-transform: uppercase;
 }
 
-// Panels stack label -> identity/value row -> chips; spacing lives here
-// (explicit margins) rather than a blanket flex `gap`, since .tx-asset-label
-// is shared with .tx-metric-item where the label-to-value gap is different
-// (7px, via .tx-metric-value's own margin-top below).
+// .tx-asset-label is shared well beyond .tx-asset-panel (.tx-metric-item,
+// panel-head rows, etc.), so the base-matching brighter/untracked style
+// below is scoped to panel labels only, rather than changed globally.
 .tx-asset-panel>.tx-asset-label {
-  margin-bottom: $space-10;
+  color: var(--font-color);
+  font-family: inherit;
+  font-weight: normal;
+  letter-spacing: 0.08em;
+  line-height: normal;
 }
 
 .tx-asset-primary {
@@ -340,29 +349,30 @@
   color: var(--sec-font-color);
   display: flex;
   flex-wrap: wrap;
-  font-size: 1.75rem;
+  font-size: 1.3rem;
   font-weight: 700;
   gap: $space-10;
   overflow-wrap: break-word;
   word-break: break-word;
 
-  // Below .tx-swap-head's 3-column breakpoint, panels are full-width
-  // (stacked), so there's room for the swap hero's full 1.75rem. At/above
-  // it, two panels sit side by side and the same content needs to fit a
-  // narrower column — smaller size keeps it on one line instead of
-  // wrapping (addresses, mimir keys, etc. are longer than "Bitcoin").
-  @include md {
-    font-size: 1.3rem;
+  // Full (base-matching) size only once there's real desktop room — at
+  // tablet width and below (including single-column stacked mobile, whose
+  // panels now carry base's bigger 18/20px padding too, leaving less room
+  // for the content itself), stay shrunk so long content doesn't overflow
+  // or wrap awkwardly (addresses, mimir keys, etc. are longer than
+  // "Bitcoin").
+  @include lg {
+    font-size: 1.75rem;
   }
 
   // Long content (e.g. a mimir key like SYSTEMINCOMEBURNRATE, vs. a short
   // asset name like "Bitcoin") needs a smaller size to stay readable
   // instead of overflowing/wrapping awkwardly at the swap hero's default.
   &--compact {
-    font-size: 1.2rem;
+    font-size: 1.05rem;
 
-    @include md {
-      font-size: 1.05rem;
+    @include lg {
+      font-size: 1.2rem;
     }
   }
 
@@ -384,7 +394,6 @@
   border-radius: 999px;
   color: var(--font-color);
   font-size: $font-size-sm;
-  margin-top: $space-10;
   padding: $space-6 $space-10;
 }
 
@@ -394,7 +403,7 @@
   display: flex;
   gap: $space-12;
   justify-content: space-between;
-  margin-top: 10px;
+  margin-top: auto;
 
   span,
   strong {
