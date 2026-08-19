@@ -535,7 +535,7 @@
         <qr-btn :qrcode="$route.params.txhash"></qr-btn>
       </div>
     </div>
-    <template v-if="!isError && !isLoading && pools">
+    <template v-if="!isError && !isLoading && pools && !hasNewHeroUi">
       <template v-if="cards && cards.length > 0">
         <tx-card v-for="(c, i) in visibleCards" :key="i" :tx-data="c.details">
           <template
@@ -783,6 +783,22 @@ export default {
       const co = this.contractOverview
       if (co?.priority) return co
       return this.swapOverview || co || null
+    },
+    // The legacy tx-card/Accordion list (template line ~538) is a sibling
+    // of the hero-selection v-if/else-if/else chain above it, not part of
+    // it — so without this guard it renders unconditionally underneath
+    // whichever hero matched. True whenever any hero owns the page.
+    hasNewHeroUi() {
+      return !!(
+        this.sendOverview ||
+        this.bondOverview ||
+        this.mimirOverview ||
+        this.refundOverview ||
+        this.multiOutboundOverview ||
+        this.streamingOverview ||
+        this.swapOverview ||
+        this.contractOverview
+      )
     },
     inputExplorerUrl() {
       const asset = this.activeOverview?.input?.asset
