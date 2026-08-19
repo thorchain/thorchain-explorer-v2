@@ -104,7 +104,9 @@
           </DetailRow>
           <DetailRow label="Action" value="Mimir Vote" />
           <DetailRow label="Status">
-            <span class="mini-bubble">{{ overview.status.label }}</span>
+            <span :class="['mini-bubble', statusToneClass]">
+              {{ overview.status.label }}
+            </span>
           </DetailRow>
           <DetailRow label="Time">
             {{ overview.timeDisplay }}
@@ -202,6 +204,14 @@ export default {
     consensusToneClass() {
       if (!this.consensus) return null
       return this.consensus.reached ? 'tx-value-positive' : 'tx-value-warning'
+    },
+    // mimirOverview.status.tone comes from the shared getOverviewStatus
+    // helper (page-local, same as the base swapOverview hero's own Status
+    // row reads via its statusToneClass method) — a vote tx can in
+    // principle fail/be pending like any other, not just succeed.
+    statusToneClass() {
+      const map = { red: 'danger', blue: 'info', yellow: 'yellow' }
+      return map[this.overview.status?.tone] || null
     },
     // Swap hero picks --left-border/--right-border per-asset (panelVars);
     // a vote has a fixed role instead of assets — the Mimir key panel is

@@ -435,44 +435,55 @@
 // in _txhash.vue on purpose) — the mockup's metric strip is plain, only
 // separated from the panels above by a top divider, not a boxed rectangle.
 .tx-metric-strip {
-  border-top: 1px solid var(--divider-color);
+  // Mobile-first: a 2-up grid of boxed items (see .tx-metric-item) rather
+  // than the desktop's single divided row — at narrow widths a 3-column
+  // divided row squeezes each value too tight, and a plain 1-column stack
+  // (the old max-width override) reads as a wall of text with no visual
+  // separation between metrics.
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin-top: $space-16;
-  padding-top: $space-14;
+  gap: $space-8;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: $space-12;
 
-  @media (max-width: 767px) {
-    grid-template-columns: 1fr;
+  @media (min-width: 768px) {
+    border-top: 1px solid var(--divider-color);
+    gap: 0;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: $space-16;
+    padding-top: $space-14;
   }
 }
 
 .tx-metric-item {
-  // Vertical spacing lives in margin (outside the border box) rather than
-  // padding, so the divider only spans the item's own content height
-  // instead of stretching the item's full padded box. Columns are divided
-  // by a left border + left padding (not a right border), so the divider
-  // sits flush against each column's own content.
-  margin: $space-8 0;
-  padding: 0 0 0 $space-16;
+  // Mobile: its own bordered/rounded box, matching .tx-asset-panel's own
+  // border/radius/background recipe so it reads as the same family.
+  background: var(--surface-3-color);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: $space-12 $space-14;
 
-  &:nth-child(3n + 1) {
-    border-left: none;
-    padding-left: 0;
-  }
+  @media (min-width: 768px) {
+    // Desktop: back to a plain divided row — no per-item box. Vertical
+    // spacing lives in margin (outside the border box) rather than
+    // padding, so the divider only spans the item's own content height
+    // instead of stretching the item's full padded box. Columns are
+    // divided by a left border + left padding (not a right border), so
+    // the divider sits flush against each column's own content.
+    background: none;
+    border: none;
+    border-radius: 0;
+    margin: $space-8 0;
+    padding: 0 0 0 $space-16;
 
-  &:not(:nth-child(3n + 1)) {
-    border-left: 1px solid var(--divider-color);
-  }
+    &:nth-child(3n + 1) {
+      padding-left: 0;
+    }
 
-  &:nth-child(n + 4) {
-    border-top: 1px solid var(--divider-color);
-  }
+    &:not(:nth-child(3n + 1)) {
+      border-left: 1px solid var(--divider-color);
+    }
 
-  @media (max-width: 767px) {
-    border-left: none;
-    padding-left: 0;
-
-    &:not(:first-child) {
+    &:nth-child(n + 4) {
       border-top: 1px solid var(--divider-color);
     }
   }

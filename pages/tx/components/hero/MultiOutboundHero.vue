@@ -44,7 +44,7 @@
             <div class="tx-asset-label">{{ withdrawnLabel }}</div>
             <div class="tx-asset-primary">
               <AssetIcon :asset="overview.asset" :height="'2.25rem'" />
-              <span>{{ overview.assetTicker }}</span>
+              <span>{{ assetTicker }}</span>
             </div>
             <div class="tx-asset-badge">{{ overview.assetTypeBadge }}</div>
             <div class="tx-asset-values">
@@ -52,7 +52,11 @@
                 :amount="overview.amountRaw"
                 :asset="overview.asset"
               />
-              <strong>{{ overview.amountUsdDisplay }}</strong>
+              <strong
+                v-tooltip="usdBasisTooltip(overview.amountUsdAtExecution)"
+                style="cursor: help"
+                >{{ overview.amountUsdDisplay }}</strong
+              >
             </div>
             <div v-if="overview.hasRefund" class="tx-mimir-gloss">
               {{ overview.refundLeg.amountDisplay }} of it was refunded — see
@@ -84,7 +88,13 @@
                 :amount="overview.totalOutboundRaw"
                 :asset="overview.totalsAsset"
               />
-              <strong>{{ overview.totalOutboundUsdDisplay }}</strong>
+              <strong
+                v-tooltip="
+                  usdBasisTooltip(overview.totalOutboundUsdAtExecution)
+                "
+                style="cursor: help"
+                >{{ overview.totalOutboundUsdDisplay }}</strong
+              >
             </div>
           </div>
         </div>
@@ -205,9 +215,12 @@
           <DetailRow
             v-if="overview.hasRefund && overview.refundLeg.hash"
             label="Refund tx"
-            :value="overview.refundLeg.hash"
-            value-type="hash"
-          />
+          >
+            <ExternalHash
+              :param="overview.refundLeg.hash"
+              :asset="overview.refundLeg.asset"
+            />
+          </DetailRow>
           <DetailRow label="Time">
             {{ overview.timeDisplay }}
             <span v-if="overview.timeAgoDisplay" class="tx-detail-muted">
@@ -229,7 +242,7 @@
     </template>
 
     <template #rail>
-      <TxHashCard :hash="overview.hash" :actions="[]" />
+      <TxHashCard :hash="overview.hash" :actions="hashActions" />
 
       <section v-if="overview.feeRows.length" class="tx-info-card">
         <div class="tx-section-title">Fee Breakdown</div>
@@ -286,11 +299,13 @@ import LifecycleTimeline from '~/pages/tx/components/LifecycleTimeline.vue'
 import OutboundsTable from '~/pages/tx/components/OutboundsTable.vue'
 import DeliveryBar from '~/pages/tx/components/DeliveryBar.vue'
 import DetailRow from '~/components/transactions/DetailRow.vue'
+import ExternalHash from '~/components/transactions/ExternalHash.vue'
 import AssetAmountValue from '~/components/transactions/AssetAmountValue.vue'
 import AssetIcon from '~/components/AssetIcon.vue'
 import ProductBadge from '~/components/ProductBadge.vue'
 import ArrowIcon from '~/assets/images/arrow.svg?inline'
 import WarningIcon from '~/assets/images/warning.svg?inline'
+import { getLegExplorerUrl } from '~/utils'
 
 // Renders the `multiOutboundOverview` computed from pages/tx/_txhash.vue
 // (screens 2a/2b) — a transaction whose output split across several
@@ -314,6 +329,7 @@ export default {
     OutboundsTable,
     DeliveryBar,
     DetailRow,
+    ExternalHash,
     AssetAmountValue,
     AssetIcon,
     ProductBadge,
@@ -329,6 +345,17 @@ export default {
   computed: {
     isSwap() {
       return this.overview.multiOutboundKind === 'swap'
+    },
+    // Only "Input Tx" — the delivered/refund legs already each get their
+    // own external-explorer link in OutboundsTable/the Refund tx row below,
+    // and there's no single "Output Tx" to point the hash card at once the
+    // output is split across several legs.
+    hashActions() {
+      const url = getLegExplorerUrl(
+        this.overview.asset,
+        this.overview.inboundHash
+      )
+      return url ? [{ label: 'Input Tx', to: url, external: true }] : []
     },
     // Same --left-border/--right-border custom-property pattern the shipped
     // swap hero drives its own .tx-asset-panel/.tx-asset-panel--accent
@@ -354,10 +381,10 @@ export default {
       return this.isSwap ? 'You received' : 'Sent to wallet'
     },
     assetTicker() {
-      return this.showTicker(this.overview.asset)
+      return this.overview.assetName
     },
     destinationAssetTicker() {
-      return this.showTicker(this.overview.totalsAsset || this.overview.asset)
+      return this.overview.totalsAssetName
     },
     chips() {
       const chips = []
@@ -379,12 +406,13 @@ export default {
       return chips
     },
     outboundsChipLabel() {
-      if (!this.overview.legs.length) return null
+      const count = this.overview.legs.length
+      if (!count) return null
       const suffix =
         this.overview.overdueCount > 0
           ? ` · ${this.overview.overdueCount} overdue`
           : ''
-      return `${this.overview.legs.length} outbounds${suffix}`
+      return `${count} outbound${count > 1 ? 's' : ''}${suffix}`
     },
     outboundsSummary() {
       const { deliveredCount, overdueCount, legs } = this.overview
@@ -398,6 +426,10 @@ export default {
       return this.overview.overdueCount > 0
     },
     overdueLegLabel() {
+      // "leg 1" only reads sensibly when there's more than one — a single-
+      // outbound trade/secure withdrawal (now routed here too) just has
+      // "the outbound".
+      if (this.overview.legs.length === 1) return 'is the outbound'
       const first = this.overview.legs.find((l) => l.status === 'overdue')
       return first ? `is leg ${first.index + 1}` : 'are the remaining outbounds'
     },
@@ -436,7 +468,10 @@ export default {
             {
               icon: 'ExchangeIcon',
               title: `${overview.title === 'Secure Withdraw' ? 'Secure' : 'Trade'} balance debited`,
-              body: `${overview.amountDisplay} left the account and was split into ${overview.legs.length} outbounds.`,
+              body:
+                overview.legs.length > 1
+                  ? `${overview.amountDisplay} left the account and was split into ${overview.legs.length} outbounds.`
+                  : `${overview.amountDisplay} left the account, to be delivered as a single outbound.`,
             },
           ]
       if (overview.deliveredCount > 0) {
@@ -445,7 +480,9 @@ export default {
           iconRotate: 0,
           title:
             overview.deliveredCount === overview.legs.length
-              ? 'All outbounds delivered'
+              ? overview.legs.length > 1
+                ? 'All outbounds delivered'
+                : 'Outbound delivered'
               : `${overview.deliveredCount} of ${overview.legs.length} outbounds delivered`,
           body: overview.destination
             ? `${overview.deliveredDisplay} reached ${this.addressFormatV2(overview.destination)}.`

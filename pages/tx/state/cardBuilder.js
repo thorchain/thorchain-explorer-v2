@@ -16,6 +16,14 @@ export function buildCardDetails(cardBase, ctx) {
         amount: a?.amount,
         amountUSD:
           a?.amountUSD ?? ctx.amountToUSD(a?.asset, a?.amount, ctx.pools),
+        // Whether amountUSD above is the historical price at the moment
+        // this leg executed (a builder-supplied a.amountUSD, e.g.
+        // createSwapState's swapMetadata-derived figure) rather than the
+        // live-pool fallback right above it — drives the USD tooltip
+        // wording the same way the base swap hero's own does. Only
+        // createSwapState currently sets this; every other builder leaves
+        // it undefined, which correctly means "always the live fallback".
+        usdAtExecution: !!a?.usdAtExecution,
         filter: a?.filter,
         text: a?.text,
         icon: a?.icon,
@@ -33,6 +41,8 @@ export function buildCardDetails(cardBase, ctx) {
         amount: a?.amount,
         amountUSD:
           a?.amountUSD ?? ctx.amountToUSD(a?.asset, a?.amount, ctx.pools),
+        // See the matching field on `in` above.
+        usdAtExecution: !!a?.usdAtExecution,
         text: a?.text,
         voteKey: a?.voteKey,
         voteValue: a?.voteValue,

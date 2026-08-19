@@ -42,7 +42,11 @@
                   prefix="-"
                   class="tx-value-negative"
                 />
-                <strong>{{ overview.amountUsdDisplay }}</strong>
+                <strong
+                  v-tooltip="usdBasisTooltip(overview.amountUsdAtExecution)"
+                  style="cursor: help"
+                  >{{ overview.amountUsdDisplay }}</strong
+                >
               </template>
             </div>
           </div>
@@ -274,7 +278,7 @@ export default {
             icon: 'CrossIcon',
             tone: 'danger',
             title: 'Rejected during execution',
-            body: `Balances unchanged apart from ${this.overview.gasRuneOnly} of gas. Nothing to retry automatically — the sender must resend with a lower amount.`,
+            body: `Balances unchanged apart from ${this.overview.gasRuneOnly} of gas. Nothing to retry automatically.`,
             meta: this.overview.timeDisplay,
           },
         ]

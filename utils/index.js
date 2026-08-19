@@ -1229,6 +1229,24 @@ export function getExplorerAddressUrl(chain, query, type) {
   }
 }
 
+// A tx-hash link for a specific leg's own asset — used for inbound/outbound
+// links on the tx-detail hero pages. A trade/secure/synth asset's notation
+// carries its underlying chain (e.g. BTC~BTC), but the hash itself is a
+// THORChain-native tx, not an on-chain BTC one (same guard Accordion.vue's
+// own getUrl uses) — and THOR-chain legs (native RUNE) have no external
+// explorer either way, since getExplorerAddressUrl has no THOR case. Both
+// return null rather than a wrong/broken link.
+export function getLegExplorerUrl(assetStr, hash) {
+  if (!assetStr || !hash) return null
+  try {
+    const parsed = assetFromString(assetStr)
+    if (parsed?.synth || parsed?.trade || parsed?.secure) return null
+    return getExplorerAddressUrl(parsed?.chain, hash, 'hash') || null
+  } catch (error) {
+    return null
+  }
+}
+
 export const darkTheme = {
   color: [
     '#63fdd9',

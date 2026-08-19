@@ -961,6 +961,7 @@ export default {
         amountDisplay: this.formatAssetAmount(input.amount, input.asset),
         zeroAmountDisplay: this.formatAssetAmount(0, input.asset),
         amountUsdDisplay: this.formatUsdValue(input.amountUSD),
+        amountUsdAtExecution: !!input.usdAtExecution,
         runePriceDisplay: this.formatUsdValue(this.runePrice),
         gasDisplay,
         gasRuneOnly: this.splitTrailingParen(gasDisplay).main || gasDisplay,
@@ -1017,6 +1018,7 @@ export default {
         asset: input.asset,
         amountDisplay: this.formatAssetAmount(input.amount, input.asset),
         amountUsdDisplay: this.formatUsdValue(input.amountUSD),
+        amountUsdAtExecution: !!input.usdAtExecution,
         amountRaw: Number(input.amount) || 0,
         timeDisplay: time.main,
         timeAgoDisplay: time.paren,
@@ -1106,11 +1108,13 @@ export default {
         // swap itself succeeded).
         affiliateAddress: card?.details?.interface || null,
         outboundHash: this.getStackDisplayValue(outboundStacks, 'Hash'),
+        inboundHash: this.getStackDisplayValue(inboundStacks, 'Hash'),
         from: this.getStackDisplayValue(inboundStacks, 'From'),
         sentAsset: input.asset,
         sentAmountRaw: Number(input.amount) || 0,
         sentAmountDisplay: this.formatAssetAmount(input.amount, input.asset),
         sentAmountUsdDisplay: this.formatUsdValue(input.amountUSD),
+        sentAmountUsdAtExecution: !!input.usdAtExecution,
         refundedAsset: output.asset,
         refundedAmountRaw: Number(output.amount) || 0,
         refundedAmountDisplay: this.formatAssetAmount(
@@ -1118,6 +1122,7 @@ export default {
           output.asset
         ),
         refundedAmountUsdDisplay: this.formatUsdValue(output.amountUSD),
+        refundedAmountUsdAtExecution: !!output.usdAtExecution,
         reasonTitle: parsedReason?.title || null,
         reason:
           parsedReason?.body || reasonRaw || 'No reason provided by THORChain.',
@@ -1147,10 +1152,20 @@ export default {
     multiOutboundOverview() {
       if (!this.cards?.length) return null
       const index = this.cards.findIndex((c, i) => {
-        if ((c?.details?.overall?.out?.length ?? 0) <= 1) return false
+        const isWithdraw = /^(trade|secure)\s*withdraw/i.test(
+          c?.details?.title || ''
+        )
+        const outCount = c?.details?.overall?.out?.length ?? 0
         if (c?.details?.overall?.middle?.fail) return false
-        if (/^(trade|secure)\s*withdraw/i.test(c?.details?.title || ''))
-          return true
+        // A trade/secure withdrawal's outbound can take real time to sign
+        // and deliver even when it's just ONE leg — this hero's delivery
+        // bar / "Outstanding" · "Past due" metrics / overdue explainer are
+        // exactly the "this might take a while" messaging that case needs,
+        // so (unlike a swap, whose single-outbound case is already served
+        // by swapOverview) it's routed here starting at 1 leg, not only
+        // when the output is split across several.
+        if (isWithdraw) return outCount >= 1
+        if (outCount <= 1) return false
         if (i !== this.swapCardIndex) return false
         // A swap card that's still actively streaming defers to
         // streamingOverview instead (which bails safely if it ever sees
@@ -1177,13 +1192,14 @@ export default {
       const overall = card?.details?.overall
       const input = overall?.in?.[0]
       const outs = overall?.out || []
-      if (!input?.asset || outs.length < 2) return null
-
       const kind = /^(trade|secure)\s*withdraw/i.test(
         card?.details?.title || ''
       )
         ? 'withdraw'
         : 'swap'
+      if (!input?.asset) return null
+      if (kind === 'swap' && outs.length < 2) return null
+      if (kind === 'withdraw' && outs.length < 1) return null
       // A swap's out[] can legitimately mix the main output with an
       // affiliate-fee leg in a DIFFERENT asset (excluded below, unverified
       // shape) — but it can also legitimately mix the main output with a
@@ -1271,6 +1287,7 @@ export default {
           // payouts before any of these legs existed, so there's no
           // affiliate amount to accidentally fold in here.
           amountUsdRaw: Number(leg.amountUSD) || 0,
+          usdAtExecution: !!leg.usdAtExecution,
           amountDisplay: precise(leg.amount, leg.asset),
           pastDueBlocks,
           pastDueDisplay: pastDueBlocks
@@ -1521,8 +1538,13 @@ export default {
         // above), matching the base hero's own unconditional display.
         affiliateAddress: card?.details?.interface || null,
         from: this.getStackDisplayValue(inboundStacks, 'From'),
+        inboundHash: this.getStackDisplayValue(inboundStacks, 'Hash'),
         destination,
         asset: input.asset,
+        // getAssetDisplayName is a page-local method (not a global mixin),
+        // so the hero component can't call it itself — resolved here, same
+        // as streamingOverview's own inputName/outputName.
+        assetName: this.getAssetDisplayName(input.asset),
         assetTypeBadge,
         destinationBadge,
         amountRaw: Number(input.amount) || 0,
@@ -1531,10 +1553,14 @@ export default {
           input.amountUSD ??
             this.amountToUSD(input.asset, input.amount, this.pools)
         ),
+        amountUsdAtExecution: !!input.usdAtExecution,
         legs,
         sameAsset,
         totals,
         totalsAsset,
+        totalsAssetName: totalsAsset
+          ? this.getAssetDisplayName(totalsAsset)
+          : this.getAssetDisplayName(input.asset),
         totalOutboundRaw: sameAsset ? totals.total : null,
         totalOutboundDisplay: sameAsset
           ? precise(totals.total, totalsAsset)
@@ -1544,6 +1570,11 @@ export default {
               legs.reduce((sum, l) => sum + l.amountUsdRaw, 0)
             )
           : null,
+        // True only when every delivered leg's own USD figure is itself
+        // execution-time-priced — one live-fallback leg makes the summed
+        // total a mix, which the tooltip can't honestly call "at execution".
+        totalOutboundUsdAtExecution:
+          sameAsset && legs.every((l) => l.usdAtExecution),
         // Delivered + refunded — for the OutboundsTable "Total outbound"
         // summary specifically, which (once everything's settled) covers
         // the whole original input, not just what was received. The
@@ -1763,6 +1794,7 @@ export default {
         // from accordions.action.affiliateName) — not derived here.
         affiliateAddress: card?.details?.interface || null,
         from: this.getStackDisplayValue(inboundStacks, 'From'),
+        inboundHash: this.getStackDisplayValue(inboundStacks, 'Hash'),
         destination: output.to || null,
         asset: input.asset,
         // Full chain name for a chain's own gas asset (BTC.BTC ->
@@ -1778,6 +1810,7 @@ export default {
           input.amountUSD ??
             this.amountToUSD(input.asset, input.amount, this.pools)
         ),
+        amountUsdAtExecution: !!input.usdAtExecution,
         outputAsset: output.asset,
         outputName: this.getAssetDisplayName(output.asset),
         outputAssetBadge: this.getNetworkBadge(assetFromString(output.asset)),
@@ -1792,6 +1825,11 @@ export default {
         outputProjectedRaw: Number(output.amount) || 0,
         outputProjectedDisplay: precise(output.amount, output.asset),
         outputProjectedUsdDisplay: this.formatUsdValue(output.amountUSD),
+        // Shared by both the projected total and "so far" USD figures
+        // below — outputSoFarUsdDisplay is scaled proportionally off this
+        // same output.amountUSD (see buildStreamingProgress), so it carries
+        // the same price basis.
+        outputUsdAtExecution: !!output.usdAtExecution,
         // "So far" (outputSoFarDisplay/-UsdDisplay) comes from the live
         // fetch below and stays null until it resolves (or once phase is
         // 'outbound' — see buildStreamingProgress) — deliberately not
@@ -1807,6 +1845,7 @@ export default {
         // stacks buildOutboundAccordions already builds from
         // resolveOutboundSignal's output (the same data the legacy
         // Outbound accordion renders), not re-derived here.
+        outboundHash: this.getStackDisplayValue(outboundStacks, 'Hash'),
         outboundEstDisplay: this.getStackDisplayValue(
           outboundStacks,
           'Outbound Est.'
@@ -8697,7 +8736,7 @@ export default {
               asset: inAsset,
               amount: inAmount,
               amountUSD: inAmountUSD,
-              usdAtExecution: true,
+              usdAtExecution: !!swapMetadata?.inPriceUSD,
             },
           ],
           middle: {
@@ -8709,7 +8748,13 @@ export default {
               asset: outAsset,
               amount: estimatedOutAmount,
               amountUSD: outAmountUSD,
-              usdAtExecution: true,
+              // Matches outAmountUSD's own two-branch derivation above —
+              // the refund reassignment prices off inPriceUSD, not
+              // outPriceUSD.
+              usdAtExecution:
+                !outboundHasSuccess && outboundHasRefund
+                  ? !!swapMetadata?.inPriceUSD
+                  : !!swapMetadata?.outPriceUSD,
               filter: outAmount
                 ? undefined
                 : (v) => `~ ${this.baseAmountFormatOrZero(v)}`,
@@ -8737,7 +8782,9 @@ export default {
                 asset: this.parseMemoAsset(o.coins?.[0]?.asset, this.pools),
                 amount: oAmount,
                 amountUSD: (priceUSD * oAmount) / 1e8,
-                usdAtExecution: true,
+                usdAtExecution: isRefundTx
+                  ? !!swapMetadata?.inPriceUSD
+                  : !!swapMetadata?.outPriceUSD,
                 done: moreOutDone(o),
                 txid: o.id ?? null,
                 to: o.to_address ?? null,
