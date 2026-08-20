@@ -522,6 +522,7 @@
         </div>
       </div>
     </div>
+    <TxHeroSkeleton v-else-if="isLoading && !isError" />
     <div v-else class="tx-header">
       <div class="item tx-id">
         <span class="mono">
@@ -573,9 +574,6 @@
       <h3>{{ error.title }}</h3>
       <span>{{ error.message }}</span>
       <DisconnectIcon class="disconnect-icon" />
-    </div>
-    <div v-else-if="isLoading && !isError">
-      <tx-loader />
     </div>
 
     <!-- Contract Events Modal -->
@@ -663,6 +661,7 @@ import MimirVoteHero from './components/hero/MimirVoteHero.vue'
 import RefundHero from './components/hero/RefundHero.vue'
 import MultiOutboundHero from './components/hero/MultiOutboundHero.vue'
 import StreamingSwapHero from './components/hero/StreamingSwapHero.vue'
+import TxHeroSkeleton from './components/TxHeroSkeleton.vue'
 import ProductBadge from '~/components/ProductBadge.vue'
 import Affiliate from '~/components/Affiliate.vue'
 import DisconnectIcon from '~/assets/images/disconnect.svg?inline'
@@ -728,6 +727,7 @@ export default {
     RefundHero,
     MultiOutboundHero,
     StreamingSwapHero,
+    TxHeroSkeleton,
   },
   data() {
     return {
@@ -8938,9 +8938,13 @@ export default {
 
 <style lang="scss" scoped>
 .tx-detail-page {
+  // See the identical rule + comment in assets/styles/_tx-detail.scss —
+  // width:100% keeps this a definite size so max-width actually caps it,
+  // instead of the flex item falling back to fit-content sizing.
   margin: $space-8 auto $space-24;
   max-width: 1140px;
   padding: 0 $space-16;
+  width: 100%;
 }
 
 .tx-detail-back {

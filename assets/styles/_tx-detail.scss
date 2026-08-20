@@ -16,9 +16,20 @@
 // ---- Reused verbatim from the shipped swap hero ----
 
 .tx-detail-page {
+  // .tx-detail-page is a flex item of Page.vue's .page-container
+  // (display:flex; flex-direction:column; align-items:stretch). Per the
+  // Flexbox spec, non-zero auto margins on the cross axis (margin-left/
+  // right here) override align-items:stretch, so without an explicit
+  // width the item falls back to fit-content sizing instead of filling
+  // the container — max-width then only caps a width that's already too
+  // small whenever this page's own content doesn't naturally want
+  // 1140px (e.g. a short send/bond, or a loading skeleton made of small
+  // fixed-width placeholder bars). width:100% makes the resolved width
+  // definite so max-width caps a real 100%-of-container value instead.
   margin: $space-8 auto $space-24;
   max-width: 1140px;
   padding: 0 $space-16;
+  width: 100%;
 }
 
 .tx-detail-back {
