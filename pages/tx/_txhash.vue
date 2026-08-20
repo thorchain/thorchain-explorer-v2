@@ -1444,8 +1444,22 @@ export default {
           ?.filter((entry) => entry.name.startsWith('accordion-out-'))
           .flatMap((entry) => entry.data?.stacks || [])
           .filter((stack) => stack.key === 'Outbound Fee' && stack.is)
+        // A trade/secure withdrawal's leg carries its network cost as a
+        // 'Gas' stack instead (createTradeWithdrawState threads
+        // out_txs[].gas straight through — confirmed against a real BTC
+        // trade withdrawal, 2F2A6BA57358AA14FC1738E20961EA600D9AF522FB6440329AF0EDF05D2D99F7,
+        // whose out_txs[0].gas is 1540 sats — never the richer
+        // fees[]/feeAssets[] array only createSwapState populates, so
+        // buildOutboundAccordions's cardBuilder.js never emits an
+        // 'Outbound Fee' stack for it). cardBuilder.js only builds the
+        // 'Gas' stack when fees[] is empty, so this never double-counts
+        // alongside outboundFeeStacks above.
+        const outboundGasStacks = card?.accordions
+          ?.filter((entry) => entry.name.startsWith('accordion-out-'))
+          .flatMap((entry) => entry.data?.stacks || [])
+          .filter((stack) => stack.key === 'Gas' && stack.is)
         rows.push(
-          ...(outboundFeeStacks || [])
+          ...[...(outboundFeeStacks || []), ...(outboundGasStacks || [])]
             .map((stack, i) =>
               toRow(
                 i === 0 ? 'Network Fee' : `Network Fee ${i + 1}`,

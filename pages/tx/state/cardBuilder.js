@@ -479,7 +479,15 @@ export function buildOutboundAccordions(accordionsOut, ctx) {
             value: `${ctx.baseAmountFormatOrZero(a.gas)} ${ctx.showAsset(a.gasAsset)} (${ctx.formatCurrency(
               ctx.amountToUSD(a?.gasAsset, a?.gas, ctx.pools)
             )})`,
-            is: a.fees?.length === 0 && a?.gas && a?.gasAsset,
+            // `a.fees` is only ever set by createSwapState (its richer
+            // fees[]/feeAssets[] breakdown, rendered as 'Outbound Fee'
+            // stacks below instead) — every other builder (e.g.
+            // createTradeWithdrawState) never sets it at all, so it must
+            // be checked as "empty or absent" (`!a.fees?.length`), not
+            // strictly `=== 0` — `undefined === 0` is false, which was
+            // silently suppressing this stack for every leg without a
+            // fees[] array, not just ones that legitimately have fees.
+            is: !a.fees?.length && a?.gas && a?.gasAsset,
           },
           {
             key: 'Outbound Est.',
