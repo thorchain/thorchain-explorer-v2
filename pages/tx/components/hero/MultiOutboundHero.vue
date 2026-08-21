@@ -58,9 +58,16 @@
                 >{{ overview.amountUsdDisplay }}</strong
               >
             </div>
-            <div v-if="overview.hasRefund" class="tx-mimir-gloss">
-              {{ overview.refundLeg.amountDisplay }} of it was refunded — see
-              below.
+            <div
+              v-if="overview.hasRefund"
+              class="tx-mimir-gloss tx-mimir-gloss--refund"
+            >
+              <AssetIcon :asset="overview.refundLeg.asset" :height="'1rem'" />
+              <AssetAmountValue
+                :amount="overview.refundLeg.amountRaw"
+                :asset="overview.refundLeg.asset"
+              />
+              <span>refunded — see below</span>
             </div>
           </div>
 

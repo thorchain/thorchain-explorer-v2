@@ -14,6 +14,9 @@
           <StatusChip :status="leg.status" />
           <span class="tx-outbound-leg">Leg {{ leg.index + 1 }}</span>
           <ExternalHash v-if="leg.hash" :param="leg.hash" :asset="leg.asset" />
+          <span v-else-if="isInternalAsset(leg.asset)" class="tx-detail-muted"
+            >Internal</span
+          >
           <span v-else class="tx-detail-muted">No hash yet</span>
           <span class="tx-outbound-amount mono">{{ leg.amountDisplay }}</span>
         </div>
@@ -41,6 +44,11 @@
             :param="refundLeg.hash"
             :asset="refundLeg.asset"
           />
+          <span
+            v-else-if="isInternalAsset(refundLeg.asset)"
+            class="tx-detail-muted"
+            >Internal</span
+          >
           <span v-else class="tx-detail-muted">No hash yet</span>
           <span class="tx-outbound-amount mono">
             {{ refundLeg.amountDisplay }}
@@ -73,6 +81,7 @@
 import StatusChip from '~/components/transactions/StatusChip.vue'
 import ExternalHash from '~/components/transactions/ExternalHash.vue'
 import Address from '~/components/transactions/Address.vue'
+import { assetFromString } from '~/utils'
 
 // Per-leg outbound breakdown for a transaction whose output split across
 // several outbound txs (e.g. a large trade/secure-asset withdrawal) — no
@@ -119,6 +128,14 @@ export default {
   methods: {
     normalFormat(n) {
       return this.$options.filters.number(n, '0,0')
+    },
+    // A trade/secure/synth leg settles as an internal THORChain ledger
+    // update, not an observed cross-chain tx — it will never get a hash,
+    // unlike an L1 leg that's simply still pending one. "No hash yet"
+    // would be misleading here (it's not "yet", it's never).
+    isInternalAsset(asset) {
+      const parsed = assetFromString(asset)
+      return !!(parsed?.trade || parsed?.secure || parsed?.synth)
     },
   },
 }

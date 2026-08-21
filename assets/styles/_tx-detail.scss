@@ -1079,6 +1079,19 @@
   margin-top: $space-8;
 }
 
+// Partial-refund gloss under the input tx-asset-panel — same text style as
+// .tx-mimir-gloss, plus an icon+amount and a plain dashed top border (not a
+// full-panel dashed border like --danger-dashed/--warning-dashed, just a
+// divider separating it from the amount above).
+.tx-mimir-gloss--refund {
+  align-items: center;
+  border-top: 1px dashed
+    color-mix(in srgb, var(--border-color) 80%, transparent);
+  display: flex;
+  gap: $space-6;
+  padding-top: $space-8;
+}
+
 // Panel eyebrow with a trailing status chip on the same line (e.g. "Sent to
 // wallet" + "3 outbounds · 1 overdue") — every other panel's .tx-asset-label
 // stands alone, so this is additive rather than a change to that class.
