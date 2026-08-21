@@ -8475,6 +8475,51 @@ export default {
         ]
       }
 
+      // Add a partial refund that only Midgard's own action feed knows
+      // about — a trade/secure-asset streaming swap whose leftover
+      // unswapped input (sub-swaps that missed their price limit) is
+      // refunded as an internal THORChain ledger credit, never a
+      // cross-chain outbound. THORNode has no record of it at all (no
+      // out_txs entry, no queued 'refund:' action), so the block above
+      // can't find it — it only shows up as a separate Midgard
+      // `type: 'refund'` action alongside the tx's `type: 'swap'` action.
+      // Confirmed against a real trade-asset streaming swap,
+      // 4DEE248E75FD4CD2ABEB46CBBB1F25C41C0C8A3BEE332A5108CEC44302F61E90 —
+      // 2 of 3 sub-swaps missed their price limit, and the unswapped 2/3 of
+      // the input only appears here. Read the refund action's own `in`
+      // coin (the actual refunded amount+asset) rather than its `out`,
+      // which duplicates the swap's own out asset/amount and can't be
+      // trusted.
+      const midgardRefundAction = actions?.actions?.find(
+        (a) => a.type === 'refund'
+      )
+      const midgardRefundCoin = midgardRefundAction?.in?.[0]?.coins?.[0]
+      const hasMidgardSwapAction = actions?.actions?.some(
+        (a) => a.type === 'swap' || a.type === 'limit_swap'
+      )
+      if (
+        midgardRefundCoin &&
+        hasMidgardSwapAction &&
+        midgardRefundCoin.asset === inboundAsset &&
+        !outTxs?.some(
+          (o) =>
+            o.coins?.[0]?.asset === midgardRefundCoin.asset &&
+            String(o.coins?.[0]?.amount) === String(midgardRefundCoin.amount)
+        )
+      ) {
+        outTxs = [
+          ...(outTxs ?? []),
+          {
+            id: null,
+            to_address:
+              midgardRefundAction.in?.[0]?.address ||
+              thorStatus?.tx?.from_address,
+            coins: [midgardRefundCoin],
+            refund: true,
+          },
+        ]
+      }
+
       // Add scheduled outbound actions from thorTx.actions not yet in out_txs.
       // Skip anything Midgard flagged as an affiliate payout, and (as a
       // fallback for when Midgard's out[] isn't available either) skip
