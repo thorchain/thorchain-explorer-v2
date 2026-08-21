@@ -2,6 +2,7 @@
   <div class="progress-wrapper" :style="vars">
     <div
       class="progress-bar"
+      :class="{ 'progress-bar--full': width >= 100 }"
       :style="{
         width: (width > 100 ? 100 : width) + '%',
         background: color,
@@ -38,6 +39,10 @@ export default {
     background-color: var(--primary-color);
 
     transition: width 700ms;
+
+    &--full {
+      border-radius: $radius-s;
+    }
   }
 
   .progress-text {
