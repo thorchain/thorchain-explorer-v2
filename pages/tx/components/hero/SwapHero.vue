@@ -439,12 +439,16 @@
             >
               <div class="tx-tech-key">{{ row.label }}</div>
               <div
-                v-tooltip="row.label === 'Memo' ? row.value : undefined"
+                v-tooltip="
+                  row.label === 'Memo' ? memoTooltip(row.value) : undefined
+                "
                 :class="[
                   'tx-tech-value',
                   { 'tx-tech-value--truncate': row.label === 'Memo' },
                   { hoverable: row.label === 'Memo' },
+                  { 'tx-tech-value--copyable': row.label === 'Memo' },
                 ]"
+                @click="row.label === 'Memo' ? copyMemo(row.value) : null"
               >
                 <template v-if="row.type === 'address'">
                   <AddressComponent :address="row.address" />
@@ -545,6 +549,7 @@ import ExternalIcon from '~/assets/images/external.svg?inline'
 import CrossIcon from '~/assets/images/cross.svg?inline'
 import ListIcon from '~/assets/images/highlight-list.svg?inline'
 import { assetFromString, getExplorerAddressUrl } from '~/utils'
+import copyMemo from '~/mixins.js/copyMemo'
 
 // Renders the merged `swapOverview`/`contractOverview` computed from
 // pages/tx/_txhash.vue (screen 1, the original swap page this whole hero
@@ -584,6 +589,7 @@ export default {
     CrossIcon,
     ListIcon,
   },
+  mixins: [copyMemo],
   props: {
     overview: {
       type: Object,

@@ -590,6 +590,23 @@
   white-space: nowrap;
 }
 
+// Click-to-copy memo. Deliberately understated — the feature is meant to be
+// found, not advertised, so there's no icon or persistent affordance: just a
+// pointer cursor and a faint lift on hover, with the existing memo tooltip
+// doubling as the "Copied!" confirmation (see mixins.js/copyMemo.js).
+.tx-tech-value--copyable {
+  cursor: pointer;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: var(--font-color);
+  }
+
+  &:active {
+    color: var(--green);
+  }
+}
+
 .tx-hash-box {
   background: var(--card-bg);
   border: 1px solid color-mix(in srgb, var(--border-color) 92%, transparent);
@@ -1265,6 +1282,14 @@
 .tx-delivery-bar__fill {
   background: var(--green);
   height: 100%;
+  transition: width 700ms;
+
+  // The outbound-delay countdown fills in the same amber as the hatched
+  // remainder it eats into — green would read as "delivered", but nothing
+  // has been delivered while the outbound is still being held.
+  &--delay {
+    background: var(--warning-color);
+  }
 }
 
 .tx-delivery-bar__pending {
@@ -1284,6 +1309,25 @@
   }
 }
 
+// The outbound-delay bar's right-hand readout — the ticking "MM:SS of
+// MM:SS" while the hold is counting down, or "N past due" once the
+// scheduled height has passed unsigned. Carries its own leading dot so the
+// live/waiting state reads at a glance, tinted by tone like .bubble-pill's
+// own dot does.
+.tx-delay-readout {
+  align-items: center;
+  display: flex;
+  gap: $space-6;
+
+  &__dot {
+    background: currentColor;
+    border-radius: 50%;
+    flex-shrink: 0;
+    height: 6px;
+    width: 6px;
+  }
+}
+
 .tx-delivery-caption {
   align-items: center;
   color: var(--font-color);
@@ -1298,6 +1342,17 @@
   // for the trailing info span.
   .mono {
     color: var(--sec-font-color);
+  }
+
+  // ...except the outbound-delay readout, which carries its own tone (amber
+  // while the hold counts down, red once it's past due) and so has to
+  // out-specify the .mono default above rather than sit beside it.
+  .tx-delay-readout {
+    color: var(--warning-color);
+  }
+
+  .tx-delay-readout--overdue {
+    color: var(--red);
   }
 }
 

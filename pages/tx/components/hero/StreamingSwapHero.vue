@@ -117,23 +117,38 @@
           />
         </div>
 
-        <div
-          v-if="isOutbound && overview.outboundDelayRemainingSeconds > 0"
-          class="tx-delivery"
-        >
+        <div v-if="isOutbound && showOutboundDelayBar" class="tx-delivery">
           <div class="tx-delivery-caption">
-            <span class="tx-asset-label">Outbound Delay</span>
-            <span class="mono">{{ outboundDelayCountdownDisplay }}</span>
+            <span class="tx-asset-label">{{ outboundDelayLabel }}</span>
+            <span
+              :class="[
+                'mono',
+                'tx-delay-readout',
+                outboundDelayOverdue ? 'tx-delay-readout--overdue' : null,
+              ]"
+            >
+              <span class="tx-delay-readout__dot" />
+              {{ outboundDelayReadout }}
+            </span>
           </div>
-          <progress-bar
-            :width="outboundDelayFillPercent"
-            height="8px"
-            color="var(--warning-color)"
-          />
-          <div class="tx-delivery-note">
-            Outbounds this large are held before signing. Nothing is signed or
-            broadcast until the timer clears.
+          <div class="tx-delivery-bar">
+            <div
+              v-if="outboundDelayFillPercent > 0"
+              class="tx-delivery-bar__fill tx-delivery-bar__fill--delay"
+              :style="{ width: `${outboundDelayFillPercent}%` }"
+            />
+            <div
+              v-if="outboundDelayFillPercent < 100"
+              :class="[
+                'tx-delivery-bar__pending',
+                outboundDelayOverdue
+                  ? 'tx-delivery-bar__pending--overdue'
+                  : null,
+              ]"
+              :style="{ width: `${100 - outboundDelayFillPercent}%` }"
+            />
           </div>
+          <div class="tx-delivery-note">{{ outboundDelayNote }}</div>
         </div>
 
         <div class="tx-metric-strip">
@@ -495,6 +510,42 @@ export default {
       if (!this.outboundDelayTimerTotal) return null
       const elapsed = this.outboundDelayTimerTotal - this.outboundDelayTimer
       return `${this.formatDelayClock(elapsed)} of ${this.formatDelayClock(this.outboundDelayTimerTotal)}`
+    },
+    // Two genuinely different waits share this one bar, because THORNode
+    // reports them as different stages and only ever one at a time:
+    //
+    //  1. outbound_delay is still counting down — a known window (large
+    //     outbounds are deliberately held before signing). Bar fills as the
+    //     window elapses, amber, "MM:SS of MM:SS".
+    //  2. outbound_delay is gone/zero but outbound_signed.completed is
+    //     false and its scheduled height has already passed — the vault
+    //     simply hasn't signed yet. Confirmed against a real tx whose
+    //     stages carried NO outbound_delay block at all and whose
+    //     scheduled_outbound_height equalled the swap's own height (no
+    //     delay was ever applied), sitting 224 blocks unsigned. There's no
+    //     window and so no denominator to fill against, so the bar is left
+    //     fully hatched in the overdue tone — an indeterminate wait, not a
+    //     0%-complete countdown.
+    outboundDelayOverdue() {
+      return (
+        !this.outboundDelayTimerTotal && !!this.overview.outboundPastDueDisplay
+      )
+    },
+    showOutboundDelayBar() {
+      return this.outboundDelayTimerTotal > 0 || this.outboundDelayOverdue
+    },
+    outboundDelayLabel() {
+      return this.outboundDelayOverdue ? 'Awaiting Signing' : 'Outbound Delay'
+    },
+    outboundDelayReadout() {
+      return this.outboundDelayOverdue
+        ? `${this.overview.outboundPastDueDisplay} past due`
+        : this.outboundDelayCountdownDisplay
+    },
+    outboundDelayNote() {
+      return this.outboundDelayOverdue
+        ? 'The outbound was scheduled but has not been signed by the vault yet. It stays queued and retries — no action is needed from the sender.'
+        : 'Outbounds this large are held before signing. Nothing is signed or broadcast until the timer clears.'
     },
   },
   watch: {
