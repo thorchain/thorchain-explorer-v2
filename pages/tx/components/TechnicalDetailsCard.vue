@@ -11,11 +11,13 @@
       <div v-for="row in rows" :key="row.label" class="tx-tech-row">
         <div class="tx-tech-key">{{ row.label }}</div>
         <div
-          v-tooltip="row.label === 'Memo' ? row.value : undefined"
+          v-tooltip="row.label === 'Memo' ? memoTooltip(memo) : undefined"
           :class="[
             'tx-tech-value',
             { 'tx-tech-value--truncate': row.label === 'Memo' },
+            { 'tx-tech-value--copyable': row.label === 'Memo' && memo },
           ]"
+          @click="row.label === 'Memo' ? copyMemo(memo) : null"
         >
           {{ row.value }}
         </div>
@@ -25,6 +27,8 @@
 </template>
 
 <script>
+import copyMemo from '~/mixins.js/copyMemo'
+
 // Collapsed-by-default memo/raw-fields reveal. Matches the shipped swap
 // hero's own Technical Details card exactly: .tx-tech-header/.tx-tech-arrow/
 // .tx-tech-list/.tx-tech-row, and collapsed shows ONLY the header by
@@ -35,6 +39,7 @@
 // expanded:false toggle rather than components/Accordion.vue, which bakes
 // in countdown-ring/pending/error semantics this card has no use for.
 export default {
+  mixins: [copyMemo],
   props: {
     memo: {
       type: String,
