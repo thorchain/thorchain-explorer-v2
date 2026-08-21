@@ -8,26 +8,35 @@
     </div>
 
     <div class="tx-detail-meta">
-      <span v-if="eyebrow">{{ eyebrow }}</span>
-      <span
-        v-for="chip in chips"
-        :key="chip.label"
-        :class="['bubble-pill', chip.tone ? `bubble-pill--${chip.tone}` : null]"
-      >
-        <component :is="chip.icon" v-if="chip.icon" class="bubble-pill__icon" />
-        <span v-if="chip.dot" class="bubble-pill__dot" />
-        {{ chip.label }}
-      </span>
-      <span
-        v-if="statusPill"
-        :class="['bubble-pill', `bubble-pill--${statusPill.tone}`]"
-      >
-        {{ statusPill.label }}
-      </span>
-      <affiliate
-        v-if="affiliateAddress"
-        :affiliate-address="affiliateAddress"
-      />
+      <slot name="meta">
+        <span v-if="eyebrow">{{ eyebrow }}</span>
+        <span
+          v-for="chip in chips"
+          :key="chip.label"
+          :class="[
+            'bubble-pill',
+            chip.tone ? `bubble-pill--${chip.tone}` : null,
+          ]"
+        >
+          <component
+            :is="chip.icon"
+            v-if="chip.icon"
+            class="bubble-pill__icon"
+          />
+          <span v-if="chip.dot" class="bubble-pill__dot" />
+          {{ chip.label }}
+        </span>
+        <span
+          v-if="statusPill"
+          :class="['bubble-pill', `bubble-pill--${statusPill.tone}`]"
+        >
+          {{ statusPill.label }}
+        </span>
+        <affiliate
+          v-if="affiliateAddress"
+          :affiliate-address="affiliateAddress"
+        />
+      </slot>
     </div>
 
     <h1 class="tx-detail-title">

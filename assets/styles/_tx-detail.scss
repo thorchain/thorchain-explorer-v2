@@ -1309,3 +1309,455 @@
   font-size: $font-size-xxs;
   margin-top: $space-8;
 }
+
+// The rest of SwapHero.vue's own classes (limit-order pair header, returned-
+// output panel, exchange-rate flip, order book, contract events button) —
+// moved here from _txhash.vue's own scoped <style> for the same reason as
+// the modal below: scoped styles don't cross component boundaries.
+.tx-pair-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $space-10;
+  padding: $space-20 0;
+  grid-column: 1 / -1;
+}
+
+.tx-pair-icons {
+  display: flex;
+  align-items: center;
+
+  .tx-pair-icon-overlap {
+    margin-left: -0.65rem;
+  }
+}
+
+.tx-pair-label {
+  color: var(--sec-font-color);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.tx-pair-input-amount {
+  color: var(--font-color);
+  font-size: $font-size-desktop;
+  font-weight: 600;
+  font-family: monospace;
+}
+
+.tx-pair-sublabel {
+  text-align: center;
+}
+
+.tx-asset-divider {
+  border-top: 1px dashed
+    color-mix(in srgb, var(--border-color) 80%, transparent);
+  margin: $space-10 0;
+}
+
+.tx-asset-label--returned {
+  color: var(--font-color);
+  opacity: 0.7;
+  font-size: 0.75rem;
+  margin-bottom: $space-5;
+}
+
+.tx-returned-panel {
+  padding-top: $space-5;
+}
+
+.tx-returned-row {
+  display: flex;
+  align-items: center;
+  gap: $space-8;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.tx-returned-name {
+  color: var(--font-color);
+}
+
+.tx-returned-amount {
+  margin-left: auto;
+  color: var(--font-color);
+  font-weight: 500;
+}
+
+.exchange-rate-value {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-6;
+}
+
+.exchange-rate-flip-icon {
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  fill: var(--sec-font-color);
+
+  &:hover {
+    fill: var(--primary-color);
+  }
+}
+
+// ── Order book ───────────────────────────────────────────────────────────────
+
+.tx-order-book-header {
+  display: flex;
+  align-items: center;
+  gap: $space-8;
+  margin-bottom: $space-14;
+
+  .tx-order-book-count {
+    background: var(--border-color);
+    border-radius: $radius-full;
+    color: var(--sec-font-color);
+    font-size: 0.62rem;
+    padding: 1px 6px;
+  }
+}
+
+.tx-order-book {
+  font-size: $font-size-xs;
+  font-family: monospace;
+}
+
+.tx-order-book-cols {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr 1fr auto;
+  padding: 0 $space-12 $space-6;
+  color: var(--sec-font-color);
+  font-family: inherit;
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--border-color) 70%, transparent);
+
+  span:not(:first-child) {
+    text-align: right;
+  }
+
+  span:last-child {
+    min-width: 60px;
+  }
+}
+
+.tx-order-book-row {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr 1fr auto;
+  align-items: center;
+  padding: $space-4 $space-12;
+  position: relative;
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--border-color) 30%, transparent);
+  transition: background 0.1s;
+
+  // Depth bar fills from left for buys, right for sells
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: $radius-xs;
+  }
+
+  &.ob-buy::before {
+    background: linear-gradient(
+      to right,
+      rgba(53, 240, 154, 0.12) var(--depth),
+      transparent var(--depth)
+    );
+  }
+
+  &.ob-sell::before {
+    background: linear-gradient(
+      to left,
+      rgba(255, 105, 94, 0.12) var(--depth),
+      transparent var(--depth)
+    );
+  }
+
+  &.ob-retract {
+    opacity: 0.45;
+  }
+
+  &.ob-keep {
+    opacity: 0.6;
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  span {
+    position: relative; // above the ::before bar
+    color: var(--sec-font-color);
+
+    &:not(:first-child) {
+      text-align: right;
+    }
+  }
+
+  .ob-price--buy {
+    color: #35f09a;
+  }
+  .ob-price--sell {
+    color: #ff695e;
+  }
+
+  .ob-side {
+    font-weight: 600;
+    min-width: 32px;
+    text-align: left;
+  }
+}
+
+.ob-op {
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--sec-font-color);
+  opacity: 0.6;
+  min-width: 60px;
+  text-align: right;
+}
+
+// ── Contract Events button & modal ───────────────────────────────────────────
+
+.tx-section-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tx-events-btn {
+  align-items: center;
+  background: var(--card-bg);
+  border: 1px solid color-mix(in srgb, var(--border-color) 92%, transparent);
+  border-radius: 10px;
+  color: var(--sec-font-color);
+  cursor: pointer;
+  display: flex;
+  font-size: $font-size-xs;
+  font-weight: 500;
+  gap: $space-6;
+  justify-content: center;
+  padding: $space-6 $space-12;
+  text-decoration: none;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--green) 40%, var(--border-color));
+    color: var(--green);
+  }
+
+  &:hover .tx-events-btn-icon {
+    fill: var(--primary-color);
+  }
+}
+
+.tx-events-btn-icon {
+  fill: var(--sec-font-color);
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+
+.tx-events-count {
+  background: color-mix(in srgb, var(--border-color) 80%, transparent);
+  border-radius: $radius-full;
+  font-size: 0.62rem;
+  padding: 1px 5px;
+  color: var(--sec-font-color);
+}
+
+// Contract Events modal (SwapHero's "View Events" button) — moved here from
+// _txhash.vue's own scoped <style> when the swap/contract screen was
+// extracted into SwapHero.vue, since scoped styles don't cross component
+// boundaries and every other hero-specific rule already lives in this file.
+.events-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 998;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: $space-16;
+  overflow-y: auto;
+
+  @include md {
+    padding: $space-24;
+  }
+}
+
+.events-modal {
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: $radius-s;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 680px;
+  height: calc(100vh - 80px - 2 * #{$space-16});
+  overflow: hidden;
+
+  @media (max-width: 575px) {
+    height: calc(100vh - 80px - 2 * #{$space-16});
+    border-radius: $radius-s;
+  }
+}
+
+.events-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $space-16 $space-20;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.events-modal-title {
+  font-size: $font-size-desktop;
+  font-weight: 600;
+  color: var(--font-color);
+}
+
+.events-modal-close {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  color: var(--sec-font-color);
+  flex-shrink: 0;
+
+  &:hover {
+    color: var(--primary-color);
+  }
+}
+
+.events-modal-search {
+  padding: $space-12 $space-20;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.events-search-input {
+  width: 100%;
+  background: var(--card-bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: $radius-s;
+  color: var(--font-color);
+  font-size: $font-size-sm;
+  padding: $space-8 $space-12;
+  outline: none;
+  transition: border-color 0.15s;
+
+  &::placeholder {
+    color: var(--sec-font-color);
+  }
+
+  &:focus {
+    border-color: var(--primary-color);
+  }
+}
+
+.events-modal-body {
+  overflow-y: auto;
+  padding: $space-12 $space-20;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: $space-12;
+
+  // Event blocks must never shrink — only the body scrolls
+  > * {
+    flex-shrink: 0;
+  }
+}
+
+.events-msg-block {
+  background: var(--card-bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: $radius-s;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.events-msg-json {
+  margin: 0;
+  padding: $space-10 $space-12;
+  font-size: $font-size-xs;
+  font-family: monospace;
+  color: var(--sec-font-color);
+  white-space: pre;
+  overflow-x: auto;
+  line-height: 1.5;
+}
+
+.events-event-block {
+  background: var(--card-bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: $radius-s;
+  overflow: hidden;
+}
+
+.events-event-type {
+  background: color-mix(in srgb, var(--border-color) 40%, transparent);
+  color: var(--font-color);
+  font-size: $font-size-xs;
+  font-weight: 600;
+  padding: $space-6 $space-12;
+  font-family: monospace;
+  word-break: break-all;
+}
+
+.events-attr-row {
+  display: flex;
+  padding: $space-4 $space-12;
+  gap: $space-12;
+  border-top: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
+
+  @media (max-width: 575px) {
+    flex-direction: column;
+    gap: $space-2;
+  }
+}
+
+.events-attr-key {
+  color: var(--primary-color);
+  font-size: $font-size-xs;
+  font-family: monospace;
+  white-space: nowrap;
+  min-width: 120px;
+  flex-shrink: 0;
+
+  @media (max-width: 575px) {
+    min-width: unset;
+  }
+}
+
+.events-attr-val {
+  color: var(--sec-font-color);
+  font-size: $font-size-xs;
+  font-family: monospace;
+  word-break: break-all;
+}
+
+.events-empty {
+  color: var(--sec-font-color);
+  font-size: $font-size-sm;
+  text-align: center;
+  padding: $space-24 0;
+}
