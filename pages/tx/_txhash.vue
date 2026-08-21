@@ -7,7 +7,9 @@
         mimirOverview ||
         refundOverview ||
         multiOutboundOverview ||
-        streamingOverview
+        streamingOverview ||
+        swapOverview ||
+        contractOverview
       "
     >
       <SendHero v-if="sendOverview" :overview="sendOverview" />
@@ -33,495 +35,11 @@
         v-else-if="streamingOverview"
         :overview="streamingOverview"
       />
+      <SwapHero
+        v-else-if="swapOverview || contractOverview"
+        :overview="activeOverview"
+      />
     </template>
-    <div v-else-if="swapOverview || contractOverview" class="tx-detail-page">
-      <div class="tx-detail-back">
-        <nuxt-link to="/txs" class="tx-back-link">
-          <ArrowIcon class="tx-back-icon" />
-          All Transactions
-        </nuxt-link>
-      </div>
-
-      <div class="tx-detail-meta">
-        <span>{{ activeOverview.metaLabel }}</span>
-        <div
-          class="bubble-stack"
-          :class="{ 'bubble-stack--expanded': overviewBubbleExpanded }"
-          tabindex="0"
-          @mouseenter="overviewBubbleExpanded = true"
-          @mouseleave="overviewBubbleExpanded = false"
-          @focusin="overviewBubbleExpanded = true"
-          @focusout="overviewBubbleExpanded = false"
-        >
-          <div
-            v-for="(item, index) in overviewBubbleItems"
-            :key="index"
-            class="bubble-pill"
-            :class="item.colorClass"
-          >
-            <component
-              :is="item.icon"
-              v-if="item.icon"
-              class="bubble-pill__icon"
-            />
-            <span class="bubble-pill__label">{{ item.label }}</span>
-          </div>
-        </div>
-        <affiliate
-          v-if="activeOverview.affiliateAddress"
-          :affiliate-address="activeOverview.affiliateAddress"
-        />
-      </div>
-
-      <h1 class="tx-detail-title">
-        {{ activeOverview.title }}
-      </h1>
-
-      <div class="tx-detail-grid">
-        <div class="tx-detail-main">
-          <section class="tx-swap-card card-bg">
-            <div
-              v-if="
-                activeOverview.pairDisplay ||
-                activeOverview.input ||
-                activeOverview.output
-              "
-              class="tx-swap-head"
-              :style="panelVars"
-            >
-              <template v-if="activeOverview.pairDisplay">
-                <div class="tx-pair-display">
-                  <div class="tx-pair-icons">
-                    <AssetIcon
-                      v-if="activeOverview.pairDisplay.baseAsset"
-                      :asset="activeOverview.pairDisplay.baseAsset"
-                      :height="'2.25rem'"
-                    />
-                    <AssetIcon
-                      v-if="activeOverview.pairDisplay.quoteAsset"
-                      :asset="activeOverview.pairDisplay.quoteAsset"
-                      :height="'2.25rem'"
-                      class="tx-pair-icon-overlap"
-                    />
-                  </div>
-                  <div class="tx-pair-label">
-                    {{ activeOverview.pairDisplay.label }}
-                  </div>
-                  <div
-                    v-if="activeOverview.pairDisplay.inputAmount"
-                    class="tx-pair-input-amount"
-                  >
-                    {{ activeOverview.pairDisplay.inputAmount }}
-                  </div>
-                  <div class="tx-asset-badge tx-pair-sublabel">
-                    {{ activeOverview.pairDisplay.sublabel }}
-                  </div>
-                </div>
-              </template>
-              <template v-else>
-                <div v-if="activeOverview.input" class="tx-asset-panel">
-                  <div class="tx-asset-label">Input</div>
-                  <div class="tx-asset-primary">
-                    <AssetIcon
-                      v-if="activeOverview.input.asset"
-                      :asset="activeOverview.input.asset"
-                      :height="'2.25rem'"
-                    />
-                    <span>{{ activeOverview.input.name }}</span>
-                  </div>
-                  <div class="tx-asset-badge">
-                    {{ activeOverview.input.badge }}
-                  </div>
-                  <div class="tx-asset-values">
-                    <span>{{ activeOverview.input.amount }}</span>
-                    <strong
-                      v-if="activeOverview.input.usd"
-                      v-tooltip="
-                        activeOverview.input.usdAtExecution
-                          ? 'Value based on price at the time the transaction was executed'
-                          : 'Based on current price, not price at the time of the transaction'
-                      "
-                      style="cursor: help"
-                      >{{ safeUsdDisplay(activeOverview.input.usd) }}</strong
-                    >
-                  </div>
-                </div>
-
-                <div class="tx-swap-arrow">
-                  <OrderIcon
-                    v-if="activeOverview.hasContractAction"
-                    class="tx-swap-arrow-icon order"
-                  />
-                  <ArrowIcon v-else class="tx-swap-arrow-icon" />
-                </div>
-
-                <div
-                  v-if="activeOverview.output"
-                  :class="[
-                    'tx-asset-panel',
-                    activeOverview.returnedOutput
-                      ? 'tx-asset-panel--accent tx-asset-panel--split'
-                      : 'tx-asset-panel--accent',
-                  ]"
-                >
-                  <div class="tx-asset-label">Output</div>
-                  <div class="tx-asset-primary">
-                    <AssetIcon
-                      v-if="activeOverview.output.asset"
-                      :asset="activeOverview.output.asset"
-                      :height="'2.25rem'"
-                    />
-                    <span>{{ activeOverview.output.name }}</span>
-                  </div>
-                  <div class="tx-asset-badge">
-                    {{ activeOverview.output.badge }}
-                  </div>
-                  <div class="tx-asset-values">
-                    <span>{{ activeOverview.output.amount }}</span>
-                    <strong
-                      v-if="activeOverview.output.usd"
-                      v-tooltip="
-                        activeOverview.output.usdAtExecution
-                          ? 'Value based on price at the time the transaction was executed'
-                          : 'Based on current price, not price at the time of the transaction'
-                      "
-                      style="cursor: help"
-                      >{{ safeUsdDisplay(activeOverview.output.usd) }}</strong
-                    >
-                  </div>
-                  <template v-if="activeOverview.returnedOutput">
-                    <div class="tx-asset-divider" />
-                    <div class="tx-returned-panel">
-                      <div class="tx-asset-label tx-asset-label--returned">
-                        Returned
-                      </div>
-                      <div class="tx-returned-row">
-                        <AssetIcon
-                          v-if="activeOverview.returnedOutput.asset"
-                          :asset="activeOverview.returnedOutput.asset"
-                          :height="'1.1rem'"
-                          :chain-height="'0.7rem'"
-                        />
-                        <span class="tx-returned-name">{{
-                          activeOverview.returnedOutput.name
-                        }}</span>
-                        <span class="tx-returned-amount">{{
-                          activeOverview.returnedOutput.amount
-                        }}</span>
-                      </div>
-                    </div>
-                  </template>
-                </div>
-              </template>
-            </div>
-
-            <div
-              v-if="activeOverview.metricRows.length"
-              class="tx-metric-strip"
-            >
-              <div
-                v-for="metric in activeOverview.metricRows"
-                :key="metric.label"
-                class="tx-metric-item"
-              >
-                <div class="tx-asset-label">{{ metric.label }}</div>
-                <div class="tx-metric-value">{{ metric.value }}</div>
-              </div>
-            </div>
-          </section>
-
-          <section
-            v-if="activeOverview.orderRows && activeOverview.orderRows.length"
-            class="tx-info-card card-bg tx-order-book-card"
-          >
-            <div class="tx-order-book-header">
-              <span class="tx-section-title">Orders</span>
-              <span class="tx-order-book-count">{{
-                activeOverview.orderRows.length
-              }}</span>
-            </div>
-            <div class="tx-order-book">
-              <div class="tx-order-book-cols">
-                <span>Side</span>
-                <span
-                  >Price<template v-if="activeOverview.orderPairTickers">
-                    ({{ activeOverview.orderPairTickers.quote }})</template
-                  ></span
-                >
-                <span
-                  >Amount<template v-if="activeOverview.orderPairTickers">
-                    ({{
-                      activeOverview.orderPairTickers.isBuy
-                        ? activeOverview.orderPairTickers.quote
-                        : activeOverview.orderPairTickers.base
-                    }})</template
-                  ></span
-                >
-                <span
-                  >Return<template v-if="activeOverview.orderPairTickers">
-                    ({{
-                      activeOverview.orderPairTickers.isBuy
-                        ? activeOverview.orderPairTickers.base
-                        : activeOverview.orderPairTickers.quote
-                    }})</template
-                  ></span
-                >
-                <span>Op</span>
-              </div>
-              <div
-                v-for="(r, i) in activeOverview.orderRows"
-                :key="i"
-                class="tx-order-book-row"
-                :class="{
-                  'ob-buy': r.side === 'Buy',
-                  'ob-sell': r.side === 'Sell',
-                  'ob-retract': r.op === 'Retract',
-                  'ob-keep': r.op === 'Keep',
-                }"
-                :style="`--depth: ${r.depth}%`"
-              >
-                <span
-                  class="ob-side"
-                  :class="r.side === 'Buy' ? 'ob-price--buy' : 'ob-price--sell'"
-                  >{{ r.side }}</span
-                >
-                <span class="ob-price">{{ r.price }}</span>
-                <span class="ob-amount">{{ r.amount }}</span>
-                <span class="ob-ret">{{ r.ret }}</span>
-                <span class="ob-op">{{ r.op }}</span>
-              </div>
-            </div>
-          </section>
-
-          <section class="tx-info-card card-bg">
-            <div class="tx-section-title">Details</div>
-            <div class="tx-detail-rows">
-              <div
-                v-for="row in activeOverview.detailRows"
-                :key="row.label"
-                class="tx-detail-row"
-              >
-                <div class="tx-detail-key">{{ row.label }}</div>
-                <div class="tx-detail-value">
-                  <template v-if="row.type === 'product'">
-                    <ProductBadge :label="row.value" :tone="row.tone" />
-                  </template>
-                  <template v-else-if="row.type === 'status'">
-                    <span
-                      :class="[
-                        'mini-bubble',
-                        statusToneClass(activeOverview.status.tone),
-                      ]"
-                    >
-                      {{ row.value }}
-                    </span>
-                  </template>
-                  <template v-else-if="row.type === 'exchange-rate'">
-                    <span class="exchange-rate-value">
-                      {{
-                        rateFlipped && row.valueFlipped
-                          ? row.valueFlipped
-                          : row.value
-                      }}
-                      <rate-change-icon
-                        v-if="row.valueFlipped"
-                        v-tooltip="'Flip exchange rate'"
-                        class="exchange-rate-flip-icon"
-                        @click="rateFlipped = !rateFlipped"
-                      />
-                    </span>
-                  </template>
-                  <template v-else-if="row.type === 'address'">
-                    <AddressComponent :address="row.address" />
-                  </template>
-                  <template v-else-if="row.type === 'link'">
-                    <nuxt-link :to="row.to" class="tx-link">
-                      {{ row.value }}
-                    </nuxt-link>
-                  </template>
-                  <template v-else>
-                    {{ row.value }}
-                  </template>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section
-            v-if="activeOverview.lifecycleRows.length"
-            class="tx-info-card card-bg"
-          >
-            <div class="tx-section-title-row">
-              <span class="tx-section-title">Lifecycle Events</span>
-              <button
-                v-if="
-                  activeOverview.rawEvents && activeOverview.rawEvents.length
-                "
-                class="tx-events-btn"
-                @click="eventsModalOpen = true"
-              >
-                <ListIcon class="tx-events-btn-icon" />
-                View Events
-                <span class="tx-events-count">{{
-                  activeOverview.rawEvents.length
-                }}</span>
-              </button>
-            </div>
-            <div class="tx-lifecycle-list">
-              <div
-                v-for="event in activeOverview.lifecycleRows"
-                :key="event.title"
-                class="tx-lifecycle-item"
-              >
-                <div class="tx-lifecycle-dot">
-                  <component
-                    :is="event.icon"
-                    class="tx-lifecycle-icon"
-                    :style="
-                      event.iconRotate
-                        ? { transform: `rotate(${event.iconRotate}deg)` }
-                        : {}
-                    "
-                  />
-                </div>
-                <div class="tx-lifecycle-copy">
-                  <div class="tx-lifecycle-title">{{ event.title }}</div>
-                  <div class="tx-lifecycle-body">{{ event.body }}</div>
-                  <div v-if="event.meta" class="tx-lifecycle-meta">
-                    {{ event.meta }}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-        </div>
-
-        <div class="tx-detail-side">
-          <section class="tx-info-card card-bg">
-            <div class="tx-section-title">Transaction Hash</div>
-            <div class="tx-hash-box">
-              <div class="tx-asset-label">Full hash</div>
-              <div class="tx-hash-full mono">{{ $route.params.txhash }}</div>
-            </div>
-            <div class="tx-hash-actions">
-              <div
-                class="tx-hash-action"
-                @click="$refs.copyBtn.onlyCopy($route.params.txhash)"
-              >
-                <Copy
-                  ref="copyBtn"
-                  :str-copy="$route.params.txhash"
-                  :hide-toast="true"
-                />
-                <span>Copy</span>
-              </div>
-              <div class="tx-hash-action" @click="$refs.qrBtn.showQR = true">
-                <qr-btn ref="qrBtn" :qrcode="$route.params.txhash" />
-                <span>View QR</span>
-              </div>
-              <a
-                v-if="inputExplorerUrl"
-                class="tx-hash-action"
-                :href="inputExplorerUrl"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <ExternalIcon class="tx-hash-action-icon" />
-                <span>Input Tx</span>
-              </a>
-              <a
-                v-if="outputExplorerUrl"
-                class="tx-hash-action"
-                :href="outputExplorerUrl"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <ExternalIcon class="tx-hash-action-icon" />
-                <span>Output Tx</span>
-              </a>
-            </div>
-          </section>
-
-          <section
-            v-if="activeOverview.feeRows.length"
-            class="tx-info-card card-bg"
-          >
-            <div class="tx-section-title">Fee Breakdown</div>
-            <div class="tx-fee-list">
-              <div
-                v-for="fee in activeOverview.feeRows"
-                :key="fee.label"
-                class="tx-fee-row"
-              >
-                <div
-                  :class="[
-                    'tx-fee-label',
-                    { 'tx-fee-label--total': fee.isTotal },
-                  ]"
-                >
-                  {{ fee.label }}
-                </div>
-                <div class="tx-fee-value-wrap">
-                  <div
-                    :class="[
-                      'tx-fee-value',
-                      { 'tx-fee-value--total': fee.isTotal },
-                    ]"
-                  >
-                    {{ fee.usd }}
-                  </div>
-                  <div v-if="fee.subtle" class="tx-fee-subtle">
-                    {{ fee.subtle }}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section class="tx-info-card card-bg">
-            <button
-              class="tx-tech-header"
-              type="button"
-              @click="technicalExpanded = !technicalExpanded"
-            >
-              <span class="tx-section-title">Technical Details</span>
-              <span class="tx-tech-arrow">{{
-                technicalExpanded ? '−' : '+'
-              }}</span>
-            </button>
-            <div v-if="technicalExpanded" class="tx-tech-list">
-              <div
-                v-for="row in activeOverview.technicalRows"
-                :key="row.label"
-                class="tx-tech-row"
-              >
-                <div class="tx-tech-key">{{ row.label }}</div>
-                <div
-                  v-tooltip="row.label === 'Memo' ? row.value : undefined"
-                  :class="[
-                    'tx-tech-value',
-                    { 'tx-tech-value--truncate': row.label === 'Memo' },
-                    { hoverable: row.label === 'Memo' },
-                  ]"
-                >
-                  <template v-if="row.type === 'address'">
-                    <AddressComponent :address="row.address" />
-                  </template>
-                  <template v-else-if="row.type === 'link'">
-                    <nuxt-link :to="row.to" class="tx-link">
-                      {{ row.value }}
-                    </nuxt-link>
-                  </template>
-                  <template v-else>
-                    {{ row.value }}
-                  </template>
-                </div>
-              </div>
-            </div>
-          </section>
-        </div>
-      </div>
-    </div>
     <TxHeroSkeleton v-else-if="isLoading && !isError" />
     <div v-else class="tx-header">
       <div class="item tx-id">
@@ -575,64 +93,6 @@
       <span>{{ error.message }}</span>
       <DisconnectIcon class="disconnect-icon" />
     </div>
-
-    <!-- Contract Events Modal -->
-    <transition name="fade">
-      <div
-        v-if="eventsModalOpen"
-        class="events-modal-backdrop"
-        @click.self="eventsModalOpen = false"
-      >
-        <div class="events-modal">
-          <div class="events-modal-header">
-            <span class="events-modal-title">Contract Events</span>
-            <CrossIcon
-              class="events-modal-close"
-              @click="eventsModalOpen = false"
-            />
-          </div>
-          <div class="events-modal-search">
-            <input
-              v-model="eventsSearchQuery"
-              class="events-search-input"
-              type="text"
-              placeholder="Filter by type or attribute…"
-              autofocus
-            />
-          </div>
-          <div class="events-modal-body">
-            <div
-              v-if="activeOverview.rawMsg && !eventsSearchQuery"
-              class="events-msg-block"
-            >
-              <div class="events-event-type">msg</div>
-              <pre class="events-msg-json">{{
-                JSON.stringify(activeOverview.rawMsg, null, 2)
-              }}</pre>
-            </div>
-
-            <div
-              v-for="(event, i) in filteredContractEvents"
-              :key="i"
-              class="events-event-block"
-            >
-              <div class="events-event-type">{{ event.type }}</div>
-              <div
-                v-for="attr in event.attributes"
-                :key="attr.key"
-                class="events-attr-row"
-              >
-                <span class="events-attr-key">{{ attr.key }}</span>
-                <span class="events-attr-val">{{ attr.value }}</span>
-              </div>
-            </div>
-            <div v-if="!filteredContractEvents.length" class="events-empty">
-              No events match "{{ eventsSearchQuery }}"
-            </div>
-          </div>
-        </div>
-      </div>
-    </transition>
   </Page>
 </template>
 
@@ -661,22 +121,9 @@ import MimirVoteHero from './components/hero/MimirVoteHero.vue'
 import RefundHero from './components/hero/RefundHero.vue'
 import MultiOutboundHero from './components/hero/MultiOutboundHero.vue'
 import StreamingSwapHero from './components/hero/StreamingSwapHero.vue'
+import SwapHero from './components/hero/SwapHero.vue'
 import TxHeroSkeleton from './components/TxHeroSkeleton.vue'
-import ProductBadge from '~/components/ProductBadge.vue'
-import Affiliate from '~/components/Affiliate.vue'
 import DisconnectIcon from '~/assets/images/disconnect.svg?inline'
-import ArrowIcon from '~/assets/images/arrow.svg?inline'
-import OrderIcon from '~/assets/images/order.svg?inline'
-import ExchangeIcon from '~/assets/images/exchange.svg?inline'
-import RateChangeIcon from '~/assets/images/rate-change.svg?inline'
-import CheckIcon from '~/assets/images/square-checkmark.svg?inline'
-import ClockIcon from '~/assets/images/clock.svg?inline'
-import WarningIcon from '~/assets/images/warning.svg?inline'
-import SwapIcon from '~/assets/images/swap.svg?inline'
-import SendTypeIcon from '~/assets/images/send-outline.svg?inline'
-import RefreshIcon from '~/assets/images/refresh.svg?inline'
-import AssetIcon from '~/components/AssetIcon.vue'
-import AddressComponent from '~/components/transactions/Address.vue'
 import {
   blockTime,
   assetFromString,
@@ -686,7 +133,6 @@ import {
   assetToString,
   securedToAsset,
   sumAffiliateFee,
-  getExplorerAddressUrl,
 } from '~/utils'
 import Accordion from '~/components/Accordion.vue'
 import {
@@ -694,30 +140,10 @@ import {
   getRujiraContractProduct,
   getRujiraContractEntry,
 } from '~/utils/rujiraContracts'
-import ExternalIcon from '~/assets/images/external.svg?inline'
-import CrossIcon from '~/assets/images/cross.svg?inline'
-import ListIcon from '~/assets/images/highlight-list.svg?inline'
 
 export default {
   components: {
-    ProductBadge,
-    Affiliate,
     DisconnectIcon,
-    ArrowIcon,
-    OrderIcon,
-    ExchangeIcon,
-    RateChangeIcon,
-    CheckIcon,
-    ClockIcon,
-    WarningIcon,
-    SwapIcon,
-    SendTypeIcon,
-    RefreshIcon,
-    AssetIcon,
-    AddressComponent,
-    ExternalIcon,
-    CrossIcon,
-    ListIcon,
     streamingSwap,
     txCard,
     Accordion,
@@ -727,6 +153,7 @@ export default {
     RefundHero,
     MultiOutboundHero,
     StreamingSwapHero,
+    SwapHero,
     TxHeroSkeleton,
   },
   data() {
@@ -751,11 +178,6 @@ export default {
       thorHeight: 0,
       quote: undefined,
       height: undefined,
-      technicalExpanded: false,
-      overviewBubbleExpanded: false,
-      rateFlipped: false,
-      eventsModalOpen: false,
-      eventsSearchQuery: '',
       nodeSnapshot: null,
       nodeSnapshotAddress: null,
       networkInfo: null,
@@ -799,89 +221,6 @@ export default {
         this.swapOverview ||
         this.contractOverview
       )
-    },
-    inputExplorerUrl() {
-      const asset = this.activeOverview?.input?.asset
-      if (!asset) return null
-      if (this.activeOverview?.input?.secure) return null
-      const parsed = assetFromString(asset)
-      const chain = parsed?.chain
-      if (!chain || chain === 'THOR') return null
-      const inTxId = this.activeOverview?.input?.txId
-      if (!inTxId) return null
-      return getExplorerAddressUrl(chain, inTxId, 'hash')
-    },
-    outputExplorerUrl() {
-      const asset = this.activeOverview?.output?.asset
-      if (!asset) return null
-      const parsed = assetFromString(asset)
-      const chain = parsed?.chain
-      if (!chain || chain === 'THOR') return null
-      const outTxId = this.activeOverview?.output?.txId
-      if (!outTxId) return null
-      return getExplorerAddressUrl(chain, outTxId, 'hash')
-    },
-    panelVars() {
-      const overview = this.activeOverview
-      if (!overview) return {}
-      return {
-        '--left-border':
-          this.assetColorPalette(overview.input?.asset) ??
-          'var(--border-color)',
-        '--right-border':
-          this.assetColorPalette(overview.output?.asset) ??
-          'var(--border-color)',
-      }
-    },
-    overviewBubbleItems() {
-      const overview = this.activeOverview
-      if (!overview) return []
-      const items = []
-      const typeTitle = overview.actionTypeTitle || ''
-      if (typeTitle) {
-        const typeKey = this.getBubbleTypeFromTitle(typeTitle)
-        items.push({
-          label: this.$options.filters?.capitalize?.(typeTitle) ?? typeTitle,
-          colorClass: this.bubbleTypeToColorClass(typeKey),
-          icon:
-            typeKey === 'swap'
-              ? SwapIcon
-              : typeKey === 'send'
-                ? SendTypeIcon
-                : null,
-        })
-      }
-      const s = overview.status
-      if (s) {
-        if (s.tone === 'red') {
-          items.push({
-            label: s.label,
-            colorClass: 'bubble-pill--red',
-            icon: WarningIcon,
-          })
-        } else if (s.tone === 'yellow') {
-          items.push({
-            label: s.label,
-            colorClass: 'bubble-pill--yellow',
-            icon: ClockIcon,
-          })
-        } else {
-          items.push({
-            label: s.label,
-            colorClass: 'bubble-pill--green',
-            icon: CheckIcon,
-          })
-        }
-      }
-      ;(overview.labels || []).forEach((l) => {
-        const isRefund = String(l).toLowerCase() === 'refund'
-        items.push({
-          label: l,
-          colorClass: isRefund ? 'bubble-pill--yellow' : 'bubble-pill--grey',
-          icon: isRefund ? RefreshIcon : null,
-        })
-      })
-      return items
     },
     swapCardIndex() {
       if (!this.cards?.length) return -1
@@ -5879,19 +5218,6 @@ export default {
         ].filter(Boolean),
       }
     },
-    filteredContractEvents() {
-      const events = this.activeOverview?.rawEvents || []
-      const q = (this.eventsSearchQuery || '').toLowerCase().trim()
-      if (!q) return events
-      return events.filter((e) => {
-        if (e.type?.toLowerCase().includes(q)) return true
-        return (e.attributes || []).some(
-          (a) =>
-            a.key?.toLowerCase().includes(q) ||
-            a.value?.toLowerCase().includes(q)
-        )
-      })
-    },
   },
   watch: {
     // BondHero's rail (node status/total-bond/provider-count/next-churn)
@@ -5953,11 +5279,6 @@ export default {
     },
   },
   async mounted() {
-    this._escHandler = (e) => {
-      if (e.key === 'Escape') this.eventsModalOpen = false
-    }
-    window.addEventListener('keydown', this._escHandler)
-
     let txHash = this.$route.params.txhash
     if (txHash.toLowerCase().startsWith('0x')) {
       txHash = txHash.slice(2)
@@ -6006,7 +5327,6 @@ export default {
   },
   destroyed() {
     this.clearIntervalId(this.updateInterval)
-    window.removeEventListener('keydown', this._escHandler)
   },
   methods: {
     async fetchNodeSnapshot(nodeAddress) {
@@ -6174,43 +5494,6 @@ export default {
         console.error('Failed to fetch mimir consensus:', error)
       }
     },
-    getBubbleTypeFromTitle(title) {
-      if (!title || typeof title !== 'string') return 'default'
-      const s = title.toLowerCase()
-      if (s.includes('swap') && s.includes('refund')) return 'refund'
-      if (s.includes('swap')) return 'swap'
-      if (s.includes('send')) return 'send'
-      if (s.includes('add') && s.includes('liquidity')) return 'addLiquidity'
-      if (s.includes('withdraw')) return 'withdraw'
-      if (s.includes('unbond')) return 'unbond'
-      if (s.includes('bond')) return 'bond'
-      if (s.includes('contract')) return 'switch'
-      if (s.includes('failed')) return 'failed'
-      if (s.includes('limit') && s.includes('refund')) return 'refund'
-      if (s.includes('limit')) return 'limit_swap'
-      return 'default'
-    },
-    bubbleTypeToColorClass(type) {
-      switch (type) {
-        case 'send':
-          return 'bubble-pill--blue'
-        case 'swap':
-        case 'bond':
-          return 'bubble-pill--green'
-        case 'refund':
-          return 'bubble-pill--yellow'
-        case 'unbond':
-        case 'withdraw':
-        case 'failed':
-          return 'bubble-pill--red'
-        case 'switch':
-        case 'addLiquidity':
-        case 'limit_swap':
-          return 'bubble-pill--alert'
-        default:
-          return 'bubble-pill--grey'
-      }
-    },
     getOverviewStatus(middle = {}) {
       if (middle.fail) {
         return { label: 'Failed', tone: 'red' }
@@ -6278,11 +5561,6 @@ export default {
       }
 
       return this.formatCurrency(numeric)
-    },
-    safeUsdDisplay(value) {
-      const text = `${value ?? ''}`.trim()
-      if (!text || /nan|infinity/i.test(text)) return '$0'
-      return text
     },
     // Splits "MAIN (TRAILING)" into its two parts, e.g. "08/15/2026 1:41 PM
     // (12 minutes ago)" -> { main: '08/15/2026 1:41 PM', paren: '(12 minutes
@@ -6471,10 +5749,6 @@ export default {
       }
       if (/tcy/.test(lower)) return 'TCY'
       return product
-    },
-    statusToneClass(tone) {
-      const map = { red: 'danger', blue: 'info', yellow: 'yellow' }
-      return map[tone] || null
     },
     getProductTone(label) {
       const l = (label || '').toLowerCase()
@@ -7987,7 +7261,6 @@ export default {
       }
 
       this.$set(this, 'cards', [this.createCard(cards, accordions)])
-      this.technicalExpanded = false
     },
     createAddLiquidityState(thorStatus, actions, thorTx, memo) {
       const isSaver = this.parseMemoAsset(memo?.asset)?.synth
@@ -9086,42 +8359,6 @@ export default {
   }
 }
 
-.tx-pair-display {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: $space-10;
-  padding: $space-20 0;
-  grid-column: 1 / -1;
-}
-
-.tx-pair-icons {
-  display: flex;
-  align-items: center;
-
-  .tx-pair-icon-overlap {
-    margin-left: -0.65rem;
-  }
-}
-
-.tx-pair-label {
-  color: var(--sec-font-color);
-  font-size: 1.5rem;
-  font-weight: 700;
-}
-
-.tx-pair-input-amount {
-  color: var(--font-color);
-  font-size: $font-size-desktop;
-  font-weight: 600;
-  font-family: monospace;
-}
-
-.tx-pair-sublabel {
-  text-align: center;
-}
-
 .tx-asset-panel {
   background: var(--card-bg);
   border: 2px solid var(--left-border, var(--border-color));
@@ -9253,59 +8490,6 @@ export default {
   font-size: $font-size-sm;
   font-weight: 500;
   text-align: right;
-}
-
-.tx-asset-divider {
-  border-top: 1px dashed
-    color-mix(in srgb, var(--border-color) 80%, transparent);
-  margin: $space-10 0;
-}
-
-.tx-asset-label--returned {
-  color: var(--font-color);
-  opacity: 0.7;
-  font-size: 0.75rem;
-  margin-bottom: $space-5;
-}
-
-.tx-returned-panel {
-  padding-top: $space-5;
-}
-
-.tx-returned-row {
-  display: flex;
-  align-items: center;
-  gap: $space-8;
-  font-size: 0.85rem;
-  opacity: 0.8;
-}
-
-.tx-returned-name {
-  color: var(--font-color);
-}
-
-.tx-returned-amount {
-  margin-left: auto;
-  color: var(--font-color);
-  font-weight: 500;
-}
-
-.exchange-rate-value {
-  display: inline-flex;
-  align-items: center;
-  gap: $space-6;
-}
-
-.exchange-rate-flip-icon {
-  width: 1rem;
-  height: 1rem;
-  cursor: pointer;
-  flex-shrink: 0;
-  fill: var(--sec-font-color);
-
-  &:hover {
-    fill: var(--primary-color);
-  }
 }
 
 .tx-tech-value--truncate {
@@ -9665,360 +8849,5 @@ export default {
     overflow: hidden;
     text-overflow: ellipsis;
   }
-}
-
-// ── Order book ───────────────────────────────────────────────────────────────
-
-.tx-order-book-header {
-  display: flex;
-  align-items: center;
-  gap: $space-8;
-  margin-bottom: $space-14;
-
-  .tx-order-book-count {
-    background: var(--border-color);
-    border-radius: $radius-full;
-    color: var(--sec-font-color);
-    font-size: 0.62rem;
-    padding: 1px 6px;
-  }
-}
-
-.tx-order-book {
-  font-size: $font-size-xs;
-  font-family: monospace;
-}
-
-.tx-order-book-cols {
-  display: grid;
-  grid-template-columns: auto 1fr 1fr 1fr auto;
-  padding: 0 $space-12 $space-6;
-  color: var(--sec-font-color);
-  font-family: inherit;
-  font-size: 0.65rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  border-bottom: 1px solid
-    color-mix(in srgb, var(--border-color) 70%, transparent);
-
-  span:not(:first-child) {
-    text-align: right;
-  }
-
-  span:last-child {
-    min-width: 60px;
-  }
-}
-
-.tx-order-book-row {
-  display: grid;
-  grid-template-columns: auto 1fr 1fr 1fr auto;
-  align-items: center;
-  padding: $space-4 $space-12;
-  position: relative;
-  border-bottom: 1px solid
-    color-mix(in srgb, var(--border-color) 30%, transparent);
-  transition: background 0.1s;
-
-  // Depth bar fills from left for buys, right for sells
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    border-radius: $radius-xs;
-  }
-
-  &.ob-buy::before {
-    background: linear-gradient(
-      to right,
-      rgba(53, 240, 154, 0.12) var(--depth),
-      transparent var(--depth)
-    );
-  }
-
-  &.ob-sell::before {
-    background: linear-gradient(
-      to left,
-      rgba(255, 105, 94, 0.12) var(--depth),
-      transparent var(--depth)
-    );
-  }
-
-  &.ob-retract {
-    opacity: 0.45;
-  }
-
-  &.ob-keep {
-    opacity: 0.6;
-  }
-
-  &:last-child {
-    border-bottom: none;
-  }
-
-  span {
-    position: relative; // above the ::before bar
-    color: var(--sec-font-color);
-
-    &:not(:first-child) {
-      text-align: right;
-    }
-  }
-
-  .ob-price--buy {
-    color: #35f09a;
-  }
-  .ob-price--sell {
-    color: #ff695e;
-  }
-
-  .ob-side {
-    font-weight: 600;
-    min-width: 32px;
-    text-align: left;
-  }
-}
-
-.ob-op {
-  font-size: 0.62rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--sec-font-color);
-  opacity: 0.6;
-  min-width: 60px;
-  text-align: right;
-}
-
-// ── Contract Events button & modal ───────────────────────────────────────────
-
-.tx-section-title-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.tx-events-btn {
-  align-items: center;
-  background: var(--card-bg);
-  border: 1px solid color-mix(in srgb, var(--border-color) 92%, transparent);
-  border-radius: 10px;
-  color: var(--sec-font-color);
-  cursor: pointer;
-  display: flex;
-  font-size: $font-size-xs;
-  font-weight: 500;
-  gap: $space-6;
-  justify-content: center;
-  padding: $space-6 $space-12;
-  text-decoration: none;
-  transition:
-    border-color 0.15s,
-    color 0.15s;
-
-  &:hover {
-    border-color: color-mix(in srgb, var(--green) 40%, var(--border-color));
-    color: var(--green);
-  }
-
-  &:hover .tx-events-btn-icon {
-    fill: var(--primary-color);
-  }
-}
-
-.tx-events-btn-icon {
-  fill: var(--sec-font-color);
-  width: 13px;
-  height: 13px;
-  flex-shrink: 0;
-}
-
-.tx-events-count {
-  background: color-mix(in srgb, var(--border-color) 80%, transparent);
-  border-radius: $radius-full;
-  font-size: 0.62rem;
-  padding: 1px 5px;
-  color: var(--sec-font-color);
-}
-
-.events-modal-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.55);
-  z-index: 998;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding: $space-16;
-  overflow-y: auto;
-
-  @include md {
-    padding: $space-24;
-  }
-}
-
-.events-modal {
-  background: var(--bg-color);
-  border: 1px solid var(--border-color);
-  border-radius: $radius-s;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  z-index: 999;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  max-width: 680px;
-  height: calc(100vh - 80px - 2 * #{$space-16});
-  overflow: hidden;
-
-  @media (max-width: 575px) {
-    height: calc(100vh - 80px - 2 * #{$space-16});
-    border-radius: $radius-s;
-  }
-}
-
-.events-modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: $space-16 $space-20;
-  border-bottom: 1px solid var(--border-color);
-  flex-shrink: 0;
-}
-
-.events-modal-title {
-  font-size: $font-size-desktop;
-  font-weight: 600;
-  color: var(--font-color);
-}
-
-.events-modal-close {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-  color: var(--sec-font-color);
-  flex-shrink: 0;
-
-  &:hover {
-    color: var(--primary-color);
-  }
-}
-
-.events-modal-search {
-  padding: $space-12 $space-20;
-  border-bottom: 1px solid var(--border-color);
-  flex-shrink: 0;
-}
-
-.events-search-input {
-  width: 100%;
-  background: var(--card-bg-color);
-  border: 1px solid var(--border-color);
-  border-radius: $radius-s;
-  color: var(--font-color);
-  font-size: $font-size-sm;
-  padding: $space-8 $space-12;
-  outline: none;
-  transition: border-color 0.15s;
-
-  &::placeholder {
-    color: var(--sec-font-color);
-  }
-
-  &:focus {
-    border-color: var(--primary-color);
-  }
-}
-
-.events-modal-body {
-  overflow-y: auto;
-  padding: $space-12 $space-20;
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  gap: $space-12;
-
-  // Event blocks must never shrink — only the body scrolls
-  > * {
-    flex-shrink: 0;
-  }
-}
-
-.events-msg-block {
-  background: var(--card-bg-color);
-  border: 1px solid var(--border-color);
-  border-radius: $radius-s;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-
-.events-msg-json {
-  margin: 0;
-  padding: $space-10 $space-12;
-  font-size: $font-size-xs;
-  font-family: monospace;
-  color: var(--sec-font-color);
-  white-space: pre;
-  overflow-x: auto;
-  line-height: 1.5;
-}
-
-.events-event-block {
-  background: var(--card-bg-color);
-  border: 1px solid var(--border-color);
-  border-radius: $radius-s;
-  overflow: hidden;
-}
-
-.events-event-type {
-  background: color-mix(in srgb, var(--border-color) 40%, transparent);
-  color: var(--font-color);
-  font-size: $font-size-xs;
-  font-weight: 600;
-  padding: $space-6 $space-12;
-  font-family: monospace;
-  word-break: break-all;
-}
-
-.events-attr-row {
-  display: flex;
-  padding: $space-4 $space-12;
-  gap: $space-12;
-  border-top: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
-
-  @media (max-width: 575px) {
-    flex-direction: column;
-    gap: $space-2;
-  }
-}
-
-.events-attr-key {
-  color: var(--primary-color);
-  font-size: $font-size-xs;
-  font-family: monospace;
-  white-space: nowrap;
-  min-width: 120px;
-  flex-shrink: 0;
-
-  @media (max-width: 575px) {
-    min-width: unset;
-  }
-}
-
-.events-attr-val {
-  color: var(--sec-font-color);
-  font-size: $font-size-xs;
-  font-family: monospace;
-  word-break: break-all;
-}
-
-.events-empty {
-  color: var(--sec-font-color);
-  font-size: $font-size-sm;
-  text-align: center;
-  padding: $space-24 0;
 }
 </style>
