@@ -6130,7 +6130,6 @@ export default {
       }
 
       this.thorStatus = ts
-      this.isLoading = false
 
       const nt = md?.actions?.find((a) => a.type === 'send')
       // Fall back to the tx-status memo: for early inbound-stage txs the THORNode
@@ -6139,12 +6138,15 @@ export default {
       // TODO: add proper error handling
       if (nt && (!memo.type || memo.type === 'unknown')) {
         this.createNativeTx(nt)
+        this.isLoading = false
         return false
       } else {
         if (tdh) {
           this.thorHeight = parseInt(tdh['x-thorchain-height'] ?? 0)
         }
-        this.createTxState(md, td, ts, tdh, this.pools)
+        this.createTxState(md, td, ts, tdh, this.pools).finally(() => {
+          this.isLoading = false
+        })
         return this.isTxInPending(ts, md)
       }
     },
