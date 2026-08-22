@@ -89,7 +89,7 @@ export default {
   },
 
   // Global CSS: https://go.nuxtjs.dev/config-css
-  css: ['@/assets/styles/main.scss'],
+  css: ['@/assets/styles/main.scss', '@/assets/styles/_tx-detail.scss'],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
@@ -164,7 +164,6 @@ export default {
       './assets/styles/_colors.scss',
       '@/assets/styles/_breakpoints.scss',
       '@/assets/styles/variables.scss',
-      '@/assets/styles/_tx-detail.scss',
     ],
   },
 
