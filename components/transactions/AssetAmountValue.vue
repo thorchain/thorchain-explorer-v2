@@ -3,11 +3,11 @@
 </template>
 
 <script>
-// A .tx-asset-values amount line, shown rounded to 2dp for scannability —
+// A .tx-asset-values amount line, shown rounded to 4dp for scannability —
 // full base-unit precision (baseAmountFormatOrZero's usual 8dp) is still
 // one hover/tap away via v-tooltip (floating-vue, already used elsewhere on
 // this page e.g. the swap hero's own USD value) rather than lost, since a
-// swap/withdrawal amount can carry meaningful detail past 2 decimals.
+// swap/withdrawal amount can carry meaningful detail past 4 decimals.
 // showTicker (not showAsset) throughout — the panel's own network badge
 // already states the chain, so repeating it here would be redundant (see
 // precise()/formatAssetAmount in _txhash.vue, which this mirrors exactly
@@ -41,7 +41,7 @@ export default {
       if (this.numeric == null || !this.asset) return '-'
       const displayAmount = new Intl.NumberFormat('en-US', {
         minimumFractionDigits: 0,
-        maximumFractionDigits: 2,
+        maximumFractionDigits: 4,
       }).format(this.numeric)
       return `${displayAmount} ${this.showTicker(this.asset)}`
     },

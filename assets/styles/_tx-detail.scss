@@ -1,6 +1,9 @@
 // Shared styles for the transaction-detail redesign's new hero components
 // (pages/tx/components/hero/**, pages/tx/components/*.vue).
 //
+@import './variables.scss';
+@import './_breakpoints.scss';
+//
 // Everything in the first section is an exact copy of pages/tx/_txhash.vue's
 // own shipped swap-hero classes (template ~lines 1-450, styles ~7354-8050).
 // Vue scoped CSS doesn't cross component boundaries, so standalone SFCs
@@ -112,12 +115,20 @@
   }
 
   &--blue {
-    background-color: color-mix(in srgb, var(--highlight) 10%, var(--card-bg-color));
+    background-color: color-mix(
+      in srgb,
+      var(--highlight) 10%,
+      var(--card-bg-color)
+    );
     border-color: color-mix(in srgb, var(--highlight) 50%, var(--border-color));
   }
 
   &--green {
-    background-color: color-mix(in srgb, var(--green) 10%, var(--card-bg-color));
+    background-color: color-mix(
+      in srgb,
+      var(--green) 10%,
+      var(--card-bg-color)
+    );
     border-color: color-mix(in srgb, var(--green) 50%, var(--border-color));
   }
 
@@ -220,13 +231,25 @@
     }
 
     &.bubble-pill--blue {
-      border-color: color-mix(in srgb, var(--highlight) 50%, var(--border-color));
-      background-color: color-mix(in srgb, var(--highlight) 10%, var(--card-bg-color));
+      border-color: color-mix(
+        in srgb,
+        var(--highlight) 50%,
+        var(--border-color)
+      );
+      background-color: color-mix(
+        in srgb,
+        var(--highlight) 10%,
+        var(--card-bg-color)
+      );
     }
 
     &.bubble-pill--green {
       border-color: color-mix(in srgb, var(--green) 50%, var(--border-color));
-      background-color: color-mix(in srgb, var(--green) 10%, var(--card-bg-color));
+      background-color: color-mix(
+        in srgb,
+        var(--green) 10%,
+        var(--card-bg-color)
+      );
     }
 
     &.bubble-pill--yellow {
@@ -236,7 +259,11 @@
 
     &.bubble-pill--red {
       border-color: color-mix(in srgb, var(--red) 50%, var(--border-color));
-      background-color: color-mix(in srgb, var(--red) 10%, var(--card-bg-color));
+      background-color: color-mix(
+        in srgb,
+        var(--red) 10%,
+        var(--card-bg-color)
+      );
     }
 
     &.bubble-pill--alert {
@@ -245,8 +272,16 @@
     }
 
     &.bubble-pill--grey {
-      border-color: color-mix(in srgb, var(--highlight) 50%, var(--border-color));
-      background-color: color-mix(in srgb, var(--highlight) 10%, var(--card-bg-color));
+      border-color: color-mix(
+        in srgb,
+        var(--highlight) 50%,
+        var(--border-color)
+      );
+      background-color: color-mix(
+        in srgb,
+        var(--highlight) 10%,
+        var(--card-bg-color)
+      );
     }
   }
 
@@ -347,7 +382,7 @@
 // .tx-asset-label is shared well beyond .tx-asset-panel (.tx-metric-item,
 // panel-head rows, etc.), so the base-matching brighter/untracked style
 // below is scoped to panel labels only, rather than changed globally.
-.tx-asset-panel>.tx-asset-label {
+.tx-asset-panel > .tx-asset-label {
   color: var(--font-color);
   font-family: inherit;
   font-weight: normal;
@@ -745,12 +780,16 @@
   // A refund isn't a failure (funds came back) or an outright success (the
   // swap didn't complete as intended) — amber reads as neither.
   &--warning {
-    background: color-mix(in srgb,
-        var(--warning-color) 12%,
-        var(--card-bg-color));
-    border-color: color-mix(in srgb,
-        var(--warning-color) 35%,
-        var(--card-bg-color));
+    background: color-mix(
+      in srgb,
+      var(--warning-color) 12%,
+      var(--card-bg-color)
+    );
+    border-color: color-mix(
+      in srgb,
+      var(--warning-color) 35%,
+      var(--card-bg-color)
+    );
     color: var(--warning-color);
   }
 
@@ -869,12 +908,16 @@
 
   // A refund explainer isn't reporting a failure — amber instead of red.
   &--warning {
-    background: color-mix(in srgb,
-        var(--warning-color) 6%,
-        var(--card-bg-color));
-    border-color: color-mix(in srgb,
-        var(--warning-color) 35%,
-        var(--border-color));
+    background: color-mix(
+      in srgb,
+      var(--warning-color) 6%,
+      var(--card-bg-color)
+    );
+    border-color: color-mix(
+      in srgb,
+      var(--warning-color) 35%,
+      var(--border-color)
+    );
   }
 }
 
@@ -883,11 +926,11 @@
 // .tx-swap-card, right after .tx-swap-head, where nothing else provides
 // that spacing — scoped to the direct-child case so SendHero's placement
 // is unaffected.
-.tx-swap-card>.tx-explainer {
+.tx-swap-card > .tx-explainer {
   margin-top: $space-16;
 }
 
-.tx-swap-card>.tx-delivery {
+.tx-swap-card > .tx-delivery {
   margin-top: $space-16;
 }
 
@@ -937,9 +980,11 @@
 }
 
 .tx-swap-arrow--warning {
-  border-color: color-mix(in srgb,
-      var(--warning-color) 40%,
-      var(--border-color));
+  border-color: color-mix(
+    in srgb,
+    var(--warning-color) 40%,
+    var(--border-color)
+  );
 }
 
 .tx-swap-arrow-icon--warning {
@@ -1028,7 +1073,11 @@
   }
 
   &--warning {
-    background: color-mix(in srgb, var(--warning-color) 14%, var(--card-bg-color));
+    background: color-mix(
+      in srgb,
+      var(--warning-color) 14%,
+      var(--card-bg-color)
+    );
     color: var(--warning-color);
   }
 }
@@ -1195,7 +1244,7 @@
   margin-top: $space-16;
   padding-top: $space-14;
 
-  >span:first-child {
+  > span:first-child {
     color: var(--sec-font-color);
     font-weight: 600;
   }
@@ -1240,7 +1289,8 @@
 // part of the SAME swap's story, not a separate topic.
 .tx-refund-callout {
   background: color-mix(in srgb, var(--warning-color) 6%, var(--card-bg-color));
-  border: 1px solid color-mix(in srgb, var(--warning-color) 35%, var(--border-color));
+  border: 1px solid
+    color-mix(in srgb, var(--warning-color) 35%, var(--border-color));
   border-radius: 14px;
   margin-top: $space-16;
   padding: $space-14;
@@ -1293,19 +1343,23 @@
 }
 
 .tx-delivery-bar__pending {
-  background: repeating-linear-gradient(-45deg,
-      color-mix(in srgb, var(--warning-color) 55%, transparent),
-      color-mix(in srgb, var(--warning-color) 55%, transparent) 4px,
-      transparent 4px,
-      transparent 8px);
+  background: repeating-linear-gradient(
+    -45deg,
+    color-mix(in srgb, var(--warning-color) 55%, transparent),
+    color-mix(in srgb, var(--warning-color) 55%, transparent) 4px,
+    transparent 4px,
+    transparent 8px
+  );
   height: 100%;
 
   &--overdue {
-    background: repeating-linear-gradient(-45deg,
-        color-mix(in srgb, var(--red) 55%, transparent),
-        color-mix(in srgb, var(--red) 55%, transparent) 4px,
-        transparent 4px,
-        transparent 8px);
+    background: repeating-linear-gradient(
+      -45deg,
+      color-mix(in srgb, var(--red) 55%, transparent),
+      color-mix(in srgb, var(--red) 55%, transparent) 4px,
+      transparent 4px,
+      transparent 8px
+    );
   }
 }
 
