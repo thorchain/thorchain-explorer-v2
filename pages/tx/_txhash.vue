@@ -239,17 +239,17 @@ export default {
         this.contractOverview
       )
     },
-    swapCardIndex() {
-      if (!this.cards?.length) return -1
-      return this.cards.findIndex((card) =>
-        /swap/i.test(card?.details?.title || '')
-      )
-    },
+    // The template only ever reads visibleCards inside `v-if="!hasNewHeroUi"`
+    // (Phase 3 of the tx-detail-UI raw-data migration — all 8 hero
+    // overviews, including swapOverview/contractOverview, now read raw data
+    // directly rather than this.cards) — so by the time this getter is
+    // actually evaluated for rendering, every overview is already known to
+    // be null. The old swapOverview-card/contractOverview-card filtering
+    // that used to live here was consequently dead: those branches could
+    // never be reached without hasNewHeroUi already being true, which hides
+    // this getter's result from the template entirely.
     visibleCards() {
-      if (!this.cards?.length) return []
-      if (this.contractOverview) return [] // hide all contract cards when contractOverview is active
-      if (!this.swapOverview) return this.cards
-      return this.cards.filter((_, index) => index !== this.swapCardIndex)
+      return this.cards || []
     },
     // Native RUNE sends never reach the swap/contract card pipeline — they
     // short-circuit through createNativeTx (see fetchTx), which sets
@@ -3094,23 +3094,6 @@ export default {
       }
       return { label: 'Success', tone: 'green' }
     },
-    getStackDisplayValue(stacks = [], key) {
-      const stack = stacks.find((entry) => entry.key === key && entry.is)
-      return this.formatStackValue(stack?.value)
-    },
-    getStackDisplayValueByPrefix(stacks = [], prefix) {
-      const stack = stacks.find(
-        (entry) => entry.key?.startsWith(prefix) && entry.is
-      )
-      return this.formatStackValue(stack?.value)
-    },
-    getNumericStackValue(stacks = [], key) {
-      const stack = stacks.find((entry) => entry.key === key && entry.is)
-      const numeric = Number(
-        String(this.formatStackValue(stack?.value)).replace(/[^0-9.-]/g, '')
-      )
-      return Number.isFinite(numeric) && numeric > 0 ? numeric : null
-    },
     formatStackValue(value) {
       if (Array.isArray(value)) {
         return value
@@ -4821,56 +4804,18 @@ export default {
 
       return ts
     },
+    // No cards/accordions built here (Phase 3 of the tx-detail-UI raw-data
+    // migration) — sendOverview reads nativeSendAction directly and its
+    // only bail conditions (!nt, !inCoin?.asset) are both impossible by the
+    // time this method runs: nt is this function's own argument, and
+    // inCoin?.asset is the exact same nativeTx?.in?.[0]?.coins?.[0]?.asset
+    // path the legacy card used unconditionally (with no fallback) for its
+    // own asset display — so a tx that failed sendOverview's guard would
+    // have rendered an equally broken legacy card, never a working one.
+    // sendOverview therefore always matches whenever createNativeTx runs,
+    // making the old per-send card/accordion pair pure dead weight.
     createNativeTx(nativeTx) {
       this.nativeSendAction = nativeTx
-      const inAsset = nativeTx?.in?.[0]?.coins?.[0]?.asset
-      const inAmount = nativeTx?.in?.[0]?.coins?.[0]?.amount
-      const timeStamp = moment(nativeTx.date / 1e6)
-      const isError = nativeTx?.metadata?.send?.code !== '0'
-
-      const cards = {
-        title: 'Send',
-        in: [
-          {
-            asset: inAsset,
-            amount: inAmount,
-          },
-        ],
-        middle: {
-          send: true,
-          fail: isError,
-        },
-        out: [
-          {
-            icon: require('@/assets/images/wallet.svg?inline'),
-            address: nativeTx?.out[0]?.address,
-          },
-        ],
-      }
-
-      const accordions = {
-        in: [],
-        action: {
-          type: 'send',
-          txid: nativeTx?.in[0]?.txID,
-          memo: nativeTx.metadata?.send?.memo || '',
-          from: nativeTx?.in[0]?.address,
-          to: nativeTx?.out[0]?.address,
-          height: nativeTx?.height,
-          gas: nativeTx?.metadata?.send?.networkFees?.[0]?.amount,
-          gasAsset: 'THOR.RUNE',
-          timeStamp,
-          pending: false,
-          error: isError,
-          code: isError ? nativeTx?.metadata?.send?.code : undefined,
-          reason: isError ? nativeTx?.metadata?.send?.reason : undefined,
-          done: true,
-          showAtFirst: true,
-        },
-        out: [],
-      }
-
-      this.$set(this, 'cards', [this.createCard(cards, accordions)])
     },
     createAddLiquidityState(thorStatus, actions, thorTx, memo) {
       const isSaver = this.parseMemoAsset(memo?.asset)?.synth
