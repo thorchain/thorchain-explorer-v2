@@ -1,0 +1,1872 @@
+// Shared styles for the transaction-detail redesign's new hero components
+// (pages/tx/components/hero/**, pages/tx/components/*.vue).
+//
+@import './variables.scss';
+@import './_breakpoints.scss';
+//
+// Everything in the first section is an exact copy of pages/tx/_txhash.vue's
+// own shipped swap-hero classes (template ~lines 1-450, styles ~7354-8050).
+// Vue scoped CSS doesn't cross component boundaries, so standalone SFCs
+// need their own copy to use the same classes — _txhash.vue's originals are
+// left untouched so the working swap page is never at risk. Do not invent
+// parallel classes for concepts the swap hero already solves; extend this
+// section instead. See the plan's §0 correction for the full rationale.
+//
+// The second section is genuinely new tokens/classes for concepts the swap
+// hero has no equivalent for (Phase 5's outbound-leg vocabulary, delivery
+// bar, inset boxes).
+
+// ---- Reused verbatim from the shipped swap hero ----
+
+.tx-detail-page {
+  // .tx-detail-page is a flex item of Page.vue's .page-container
+  // (display:flex; flex-direction:column; align-items:stretch). Per the
+  // Flexbox spec, non-zero auto margins on the cross axis (margin-left/
+  // right here) override align-items:stretch, so without an explicit
+  // width the item falls back to fit-content sizing instead of filling
+  // the container — max-width then only caps a width that's already too
+  // small whenever this page's own content doesn't naturally want
+  // 1140px (e.g. a short send/bond, or a loading skeleton made of small
+  // fixed-width placeholder bars). width:100% makes the resolved width
+  // definite so max-width caps a real 100%-of-container value instead.
+  margin: $space-8 auto $space-24;
+  max-width: 1140px;
+  padding: 0 $space-16;
+  width: 100%;
+}
+
+.tx-detail-back {
+  margin-bottom: $space-12;
+}
+
+.tx-back-link,
+.tx-link {
+  align-items: center;
+  color: var(--font-color);
+  display: inline-flex;
+  font-weight: 500;
+  gap: $space-6;
+  text-decoration: none;
+
+  &:hover {
+    color: color-mix(in srgb, var(--green) 82%, white);
+  }
+}
+
+// .tx-link (used by MimirVoteHero's "See all Mimir keys" and DetailRow's
+// value-type="link") is green at rest, unlike .tx-back-link — only the
+// hover tone above is shared between the two.
+.tx-link {
+  color: var(--green);
+}
+
+.tx-back-icon {
+  fill: currentColor;
+  flex: 0 0 auto;
+  height: 14px;
+  transform: rotate(-90deg);
+  width: 14px;
+}
+
+.tx-detail-meta {
+  align-items: center;
+  color: var(--font-color);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: $font-size-sm;
+  gap: $space-10;
+  margin-bottom: $space-12;
+}
+
+// Simplified from _txhash.vue's .bubble-stack: that version clips/overlaps
+// many pills and expands them on hover, tuned for a swap card's several
+// badges. The new heroes show at most a couple of chips up front, so the
+// pills render plainly in a row — same .bubble-pill look, no stack/hover
+// choreography.
+.bubble-pill {
+  align-items: center;
+  background-color: var(--bgl-color);
+  border: 1px solid var(--border-color);
+  border-radius: $radius-sm;
+  color: var(--sec-font-color);
+  display: inline-flex;
+  font-size: $font-size-sm;
+  font-weight: 600;
+  gap: 6px;
+  line-height: 1;
+  padding: $space-5 $space-10;
+  white-space: nowrap;
+
+  &__icon {
+    fill: currentColor;
+    flex-shrink: 0;
+    height: 14px;
+    width: 14px;
+  }
+
+  // Small solid dot before the label, e.g. "● Failed" — status-style pills
+  // the swap hero's own badges don't need (they're always icon-led).
+  &__dot {
+    background: currentColor;
+    border-radius: 50%;
+    flex-shrink: 0;
+    height: 6px;
+    width: 6px;
+  }
+
+  &--blue {
+    background-color: color-mix(
+      in srgb,
+      var(--highlight) 10%,
+      var(--card-bg-color)
+    );
+    border-color: color-mix(in srgb, var(--highlight) 50%, var(--border-color));
+  }
+
+  &--green {
+    background-color: color-mix(
+      in srgb,
+      var(--green) 10%,
+      var(--card-bg-color)
+    );
+    border-color: color-mix(in srgb, var(--green) 50%, var(--border-color));
+  }
+
+  &--yellow {
+    background-color: color-mix(in srgb, #f39c12 10%, var(--card-bg-color));
+    border-color: color-mix(in srgb, #f39c12 50%, var(--border-color));
+  }
+
+  &--red {
+    background-color: color-mix(in srgb, var(--red) 10%, var(--card-bg-color));
+    border-color: color-mix(in srgb, var(--red) 50%, var(--border-color));
+  }
+
+  // Status-style pills (carrying a leading dot, e.g. "● Failed") tint their
+  // text to match — plain kind chips (e.g. "↗ Send") keep neutral text even
+  // when toned, matching the swap hero's own badges.
+  &--red:has(.bubble-pill__dot) {
+    color: var(--red);
+  }
+
+  &--green:has(.bubble-pill__dot) {
+    color: var(--green);
+  }
+
+  &--yellow:has(.bubble-pill__dot) {
+    color: var(--warning-color);
+  }
+}
+
+// The clipped/overlapping, expand-on-hover multi-badge stack — distinct
+// from the plain .bubble-pill above (which never had this behavior; it's
+// the simplified variant new heroes use). Dedup'd here from what were
+// verbatim-duplicated copies in _txhash.vue's own swap hero (the eyebrow's
+// type/product badges) and the legacy txCard.vue (its own per-card
+// badges) — nesting .bubble-pill under .bubble-stack keeps this from
+// touching the bare .bubble-pill rules above.
+.bubble-stack {
+  align-items: center;
+  cursor: pointer;
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  min-height: 28px;
+  outline: none;
+  overflow: hidden;
+
+  .bubble-pill {
+    background-color: var(--bgl-color);
+    border: 1px solid var(--border-color);
+    border-radius: $radius-sm;
+    color: var(--sec-font-color);
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    gap: 6px;
+    line-height: 1;
+    margin-left: 0;
+    padding: $space-5 $space-10;
+    position: relative;
+    white-space: nowrap;
+    transition:
+      margin-left 0.25s ease,
+      clip-path 0.25s ease,
+      filter 0.25s ease;
+
+    &:first-child {
+      z-index: 3;
+      clip-path: inset(0 0 0 0);
+    }
+
+    &:nth-child(2) {
+      z-index: 2;
+      clip-path: inset(0 0 0 50%);
+      filter: brightness(0.6);
+    }
+
+    &:nth-child(3),
+    &:nth-child(n + 3) {
+      z-index: 1;
+      clip-path: inset(0 0 0 50%);
+      filter: brightness(0.6);
+    }
+
+    &:not(:first-child) {
+      // Overlap so ~10% of each pill remains visible
+      margin-left: -80px;
+    }
+
+    .bubble-pill__icon {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+      fill: currentColor;
+    }
+
+    .bubble-pill__label {
+      color: inherit;
+    }
+
+    &.bubble-pill--blue {
+      border-color: color-mix(
+        in srgb,
+        var(--highlight) 50%,
+        var(--border-color)
+      );
+      background-color: color-mix(
+        in srgb,
+        var(--highlight) 10%,
+        var(--card-bg-color)
+      );
+    }
+
+    &.bubble-pill--green {
+      border-color: color-mix(in srgb, var(--green) 50%, var(--border-color));
+      background-color: color-mix(
+        in srgb,
+        var(--green) 10%,
+        var(--card-bg-color)
+      );
+    }
+
+    &.bubble-pill--yellow {
+      border-color: color-mix(in srgb, #f39c12 50%, var(--border-color));
+      background-color: color-mix(in srgb, #f39c12 10%, var(--card-bg-color));
+    }
+
+    &.bubble-pill--red {
+      border-color: color-mix(in srgb, var(--red) 50%, var(--border-color));
+      background-color: color-mix(
+        in srgb,
+        var(--red) 10%,
+        var(--card-bg-color)
+      );
+    }
+
+    &.bubble-pill--alert {
+      border-color: color-mix(in srgb, #9b59b6 50%, var(--border-color));
+      background-color: color-mix(in srgb, #9b59b6 10%, var(--card-bg-color));
+    }
+
+    &.bubble-pill--grey {
+      border-color: color-mix(
+        in srgb,
+        var(--highlight) 50%,
+        var(--border-color)
+      );
+      background-color: color-mix(
+        in srgb,
+        var(--highlight) 10%,
+        var(--card-bg-color)
+      );
+    }
+  }
+
+  &.bubble-stack--expanded .bubble-pill {
+    margin-left: 0;
+    clip-path: inset(0 0 0 0);
+    filter: none;
+
+    &:not(:first-child) {
+      margin-left: 6px;
+    }
+  }
+}
+
+.tx-detail-title {
+  color: var(--sec-font-color);
+  font-size: clamp(1.4rem, 2.4vw, 2rem);
+  letter-spacing: -0.03em;
+  line-height: 1.06;
+  margin: 0 0 $space-24;
+
+  .mono {
+    font-family: 'Roboto Mono', monospace;
+  }
+}
+
+.tx-detail-grid {
+  display: grid;
+  gap: $space-18;
+
+  @include lg {
+    align-items: start;
+    grid-template-columns: minmax(0, 1.95fr) minmax(300px, 0.92fr);
+  }
+}
+
+.tx-detail-main,
+.tx-detail-side {
+  display: flex;
+  flex-direction: column;
+  gap: $space-18;
+}
+
+.tx-detail-side {
+  @include lg {
+    position: sticky;
+    top: 80px;
+  }
+}
+
+.tx-swap-card,
+.tx-info-card {
+  background: color-mix(in srgb, var(--card-bg-color) 96%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border-color) 92%, transparent);
+  border-radius: 20px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.16);
+  padding: $space-20;
+}
+
+.tx-swap-head {
+  display: grid;
+  gap: $space-14;
+
+  @include md {
+    align-items: stretch;
+    grid-template-columns: minmax(0, 1fr) 60px minmax(0, 1fr);
+  }
+}
+
+// Matches the base swap hero's own (_txhash.vue) .tx-asset-panel recipe —
+// thicker border, bigger radius/padding, a fixed min-height, and spacing
+// via the panel's own flex `gap` rather than per-child margins.
+.tx-asset-panel {
+  background: var(--card-bg);
+  border: 2px solid var(--left-border, var(--border-color));
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: $space-10;
+  min-height: 156px;
+  padding: $space-18 $space-20;
+}
+
+.tx-asset-panel--accent {
+  border-color: var(--right-border, var(--border-color));
+}
+
+.tx-asset-label {
+  color: var(--text-faint-color);
+  font-family: 'Montserrat', sans-serif;
+  font-size: $font-size-xxs;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+// .tx-asset-label is shared well beyond .tx-asset-panel (.tx-metric-item,
+// panel-head rows, etc.), so the base-matching brighter/untracked style
+// below is scoped to panel labels only, rather than changed globally.
+.tx-asset-panel > .tx-asset-label {
+  color: var(--font-color);
+  font-family: inherit;
+  font-weight: normal;
+  letter-spacing: 0.08em;
+  line-height: normal;
+}
+
+.tx-asset-primary {
+  align-items: center;
+  color: var(--sec-font-color);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 1.3rem;
+  font-weight: 700;
+  gap: $space-10;
+  overflow-wrap: break-word;
+  word-break: break-word;
+
+  // Full (base-matching) size only once there's real desktop room — at
+  // tablet width and below (including single-column stacked mobile, whose
+  // panels now carry base's bigger 18/20px padding too, leaving less room
+  // for the content itself), stay shrunk so long content doesn't overflow
+  // or wrap awkwardly (addresses, mimir keys, etc. are longer than
+  // "Bitcoin").
+  @include lg {
+    font-size: 1.75rem;
+  }
+
+  // Long content (e.g. a mimir key like SYSTEMINCOMEBURNRATE, vs. a short
+  // asset name like "Bitcoin") needs a smaller size to stay readable
+  // instead of overflowing/wrapping awkwardly at the swap hero's default.
+  &--compact {
+    font-size: 1.05rem;
+
+    @include lg {
+      font-size: 1.2rem;
+    }
+  }
+
+  // Identity rows (a wallet or node address) are a different kind of
+  // content than a prominent asset/value figure — monospace at a much
+  // smaller, fixed size, unaffected by the responsive/--compact rules
+  // above (an abbreviated address is a fixed length, unlike a long mimir
+  // key or a big asset amount).
+  &--identity {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 1.0625rem;
+    font-weight: 600;
+  }
+}
+
+.tx-asset-badge {
+  align-self: flex-start;
+  background: color-mix(in srgb, var(--highlight) 8%, transparent);
+  border-radius: 999px;
+  color: var(--font-color);
+  font-size: $font-size-sm;
+  padding: $space-6 $space-10;
+}
+
+.tx-asset-values {
+  align-items: end;
+  color: var(--font-color);
+  display: flex;
+  gap: $space-12;
+  justify-content: space-between;
+  margin-top: auto;
+
+  span,
+  strong {
+    color: var(--sec-font-color);
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  strong {
+    font-size: 0.95rem;
+  }
+}
+
+.tx-swap-arrow {
+  align-items: center;
+  background: var(--card-bg);
+  border: 1px solid color-mix(in srgb, var(--green) 18%, var(--border-color));
+  border-radius: 999px;
+  display: flex;
+  height: 60px;
+  justify-content: center;
+  margin: auto;
+  width: 60px;
+}
+
+.tx-swap-arrow-icon {
+  fill: var(--green);
+  height: 20px;
+  transform: rotate(180deg);
+  width: 20px;
+
+  @include md {
+    transform: rotate(90deg);
+  }
+}
+
+// Boxed background/border removed (differs from the swap hero's own copy
+// in _txhash.vue on purpose) — the mockup's metric strip is plain, only
+// separated from the panels above by a top divider, not a boxed rectangle.
+.tx-metric-strip {
+  // Mobile-first: a 2-up grid of boxed items (see .tx-metric-item) rather
+  // than the desktop's single divided row — at narrow widths a 3-column
+  // divided row squeezes each value too tight, and a plain 1-column stack
+  // (the old max-width override) reads as a wall of text with no visual
+  // separation between metrics.
+  display: grid;
+  gap: $space-8;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: $space-12;
+
+  @media (min-width: 768px) {
+    border-top: 1px solid var(--divider-color);
+    gap: 0;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: $space-16;
+    padding-top: $space-14;
+  }
+}
+
+.tx-metric-item {
+  // Mobile: its own bordered/rounded box, matching .tx-asset-panel's own
+  // border/radius/background recipe so it reads as the same family.
+  background: var(--surface-3-color);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: $space-12 $space-14;
+
+  @media (min-width: 768px) {
+    // Desktop: back to a plain divided row — no per-item box. Vertical
+    // spacing lives in margin (outside the border box) rather than
+    // padding, so the divider only spans the item's own content height
+    // instead of stretching the item's full padded box. Columns are
+    // divided by a left border + left padding (not a right border), so
+    // the divider sits flush against each column's own content.
+    background: none;
+    border: none;
+    border-radius: 0;
+    margin: $space-8 0;
+    padding: 0 0 0 $space-16;
+
+    &:nth-child(3n + 1) {
+      padding-left: 0;
+    }
+
+    &:not(:nth-child(3n + 1)) {
+      border-left: 1px solid var(--divider-color);
+    }
+
+    &:nth-child(n + 4) {
+      border-top: 1px solid var(--divider-color);
+    }
+  }
+}
+
+// Figures (bond amounts, fees, block heights) read as monospace; wordy
+// states (e.g. "Reached"/"Not reached") stay the page's default sans —
+// wrap numeric content in the global .mono class rather than forcing
+// every value monospace here.
+.tx-metric-value {
+  color: var(--sec-font-color);
+  font-size: 15px;
+  font-weight: 600;
+  margin-top: $space-7;
+}
+
+.tx-section-title {
+  color: var(--font-color);
+  font-size: $font-size-xxs;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tx-detail-rows,
+.tx-tech-list,
+.tx-fee-list {
+  border-top: 3px solid color-mix(in srgb, var(--border-color) 92%, transparent);
+  margin-top: $space-16;
+  padding-top: $space-2;
+}
+
+.tx-detail-row,
+.tx-tech-row,
+.tx-fee-row {
+  align-items: start;
+  border-top: 1px solid color-mix(in srgb, var(--border-color) 90%, transparent);
+  display: grid;
+  gap: $space-10;
+  grid-template-columns: minmax(110px, 0.8fr) minmax(0, 1.2fr);
+  padding: $space-12 0;
+
+  &:first-of-type {
+    border-top: none;
+  }
+}
+
+.tx-detail-key,
+.tx-tech-key,
+.tx-fee-label {
+  color: var(--font-color);
+  font-size: $font-size-sm;
+}
+
+.tx-detail-value,
+.tx-tech-value,
+.tx-fee-value {
+  color: var(--sec-font-color);
+  font-size: $font-size-sm;
+  font-weight: 500;
+  text-align: right;
+}
+
+.tx-fee-value-wrap {
+  text-align: right;
+}
+
+.tx-fee-subtle {
+  color: var(--font-color);
+  font-size: 0.75rem;
+}
+
+.tx-fee-label--total {
+  color: var(--sec-font-color);
+  font-weight: 600;
+}
+
+.tx-fee-value--total {
+  color: var(--green);
+}
+
+.tx-tech-value--truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Click-to-copy memo. Deliberately understated — the feature is meant to be
+// found, not advertised, so there's no icon or persistent affordance: just a
+// pointer cursor and a faint lift on hover, with the existing memo tooltip
+// doubling as the "Copied!" confirmation (see mixins.js/copyMemo.js).
+.tx-tech-value--copyable {
+  cursor: pointer;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: var(--font-color);
+  }
+
+  &:active {
+    color: var(--green);
+  }
+}
+
+.tx-hash-box {
+  background: var(--card-bg);
+  border: 1px solid color-mix(in srgb, var(--border-color) 92%, transparent);
+  border-radius: 16px;
+  margin-top: $space-14;
+  padding: $space-14;
+}
+
+.tx-hash-full {
+  color: var(--sec-font-color);
+  font-size: $font-size-sm;
+  line-height: 1.55;
+  margin-top: $space-8;
+  overflow-wrap: anywhere;
+}
+
+.tx-hash-actions {
+  display: grid;
+  gap: $space-10;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: $space-14;
+}
+
+.tx-hash-action {
+  align-items: center;
+  background: var(--card-bg);
+  border: 1px solid color-mix(in srgb, var(--border-color) 92%, transparent);
+  border-radius: 14px;
+  color: var(--sec-font-color);
+  cursor: pointer;
+  display: flex;
+  font-size: $font-size-sm;
+  font-weight: 500;
+  gap: $space-8;
+  justify-content: center;
+  min-height: 50px;
+  padding: 0 $space-12;
+  text-decoration: none;
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--green) 40%, var(--border-color));
+    color: var(--green);
+  }
+
+  svg {
+    fill: var(--sec-font-color);
+    height: 16px;
+    width: 16px;
+  }
+
+  &:hover svg {
+    fill: var(--primary-color);
+  }
+}
+
+.tx-tech-header {
+  align-items: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  padding: 0;
+  width: 100%;
+}
+
+.tx-tech-arrow {
+  color: var(--font-color);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+// Optional one-line summary under the collapsed header — additive, the
+// swap hero's own Technical Details never has anything here.
+.tx-tech-preview {
+  color: var(--font-color);
+  font-size: $font-size-sm;
+  margin-top: $space-8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tx-lifecycle-list {
+  margin-top: $space-18;
+  padding-left: $space-4;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: $space-20;
+
+  &::before {
+    background: var(--border-color);
+    bottom: $space-14;
+    content: '';
+    left: 23px;
+    position: absolute;
+    top: $space-14;
+    width: 2px;
+  }
+}
+
+.tx-lifecycle-item {
+  display: grid;
+  gap: $space-12;
+  grid-template-columns: 40px minmax(0, 1fr);
+  position: relative;
+
+  &:last-child .tx-lifecycle-dot {
+    align-self: end;
+  }
+}
+
+.tx-lifecycle-dot {
+  align-items: center;
+  background: color-mix(in srgb, var(--green) 12%, var(--card-bg-color));
+  border: 1px solid color-mix(in srgb, var(--green) 35%, var(--card-bg-color));
+  border-radius: 999px;
+  color: var(--green);
+  display: flex;
+  height: 40px;
+  justify-content: center;
+  position: relative;
+  width: 40px;
+  z-index: 1;
+
+  // The swap hero's lifecycle is always a success story (received ->
+  // executed -> delivered), so every dot is green. A failed send needs its
+  // final step to read as a failure, not a success — additive modifier.
+  &--danger {
+    background: color-mix(in srgb, var(--red) 12%, var(--card-bg-color));
+    border-color: color-mix(in srgb, var(--red) 35%, var(--card-bg-color));
+    color: var(--red);
+  }
+
+  // A refund isn't a failure (funds came back) or an outright success (the
+  // swap didn't complete as intended) — amber reads as neither.
+  &--warning {
+    background: color-mix(
+      in srgb,
+      var(--warning-color) 12%,
+      var(--card-bg-color)
+    );
+    border-color: color-mix(
+      in srgb,
+      var(--warning-color) 35%,
+      var(--card-bg-color)
+    );
+    color: var(--warning-color);
+  }
+
+  // A step that hasn't happened yet (e.g. streaming's final output, before
+  // it's landed) — dimmer than every other tone, including the neutral
+  // default, so it reads as "not yet" rather than "in progress" or "at
+  // risk" like --warning does.
+  &--upcoming {
+    background: var(--surface-3-color);
+    border-color: var(--divider-color);
+    color: var(--text-faint-color);
+  }
+
+  // A step that's only partially true so far (e.g. "Output accumulating" —
+  // some output has landed, but not all of it) — dashed instead of every
+  // other step's solid border, independent of tone.
+  &--dashed {
+    border-style: dashed;
+  }
+}
+
+// currentColor (driven by the dot's own `color`) covers both fill-based
+// icons (Arrow/Exchange/Block) and stroke-based ones (Cross uses
+// stroke="currentColor" in its source SVG) with one rule.
+.tx-lifecycle-icon {
+  fill: currentColor;
+  height: 16px;
+  width: 16px;
+}
+
+.tx-lifecycle-title {
+  color: var(--sec-font-color);
+  font-weight: 600;
+  margin-bottom: $space-4;
+
+  &--danger {
+    color: var(--red);
+  }
+
+  &--warning {
+    color: var(--warning-color);
+  }
+
+  &--upcoming {
+    color: var(--text-faint-color);
+  }
+}
+
+.tx-lifecycle-body,
+.tx-lifecycle-meta {
+  color: var(--font-color);
+}
+
+// An upcoming step's body reads dimmer too, matching its title/dot — the
+// default .tx-lifecycle-body color above is for events that have already
+// happened.
+.tx-lifecycle-item:has(.tx-lifecycle-dot--upcoming) .tx-lifecycle-body {
+  color: var(--text-faint-color);
+}
+
+.tx-lifecycle-meta {
+  margin-top: $space-4;
+}
+
+// ---- Genuinely new: no swap-hero equivalent ----
+
+// .tx-asset-values has no negative/positive concept — a swap's two panels
+// are always different assets, so there's nothing to color-code. A send's
+// sender/recipient panels are the same asset moving between two parties, so
+// the sign is meaningful; this is a minimal, additive modifier on top of
+// the existing class rather than a parallel value style.
+.tx-value-negative {
+  color: var(--red) !important;
+}
+
+.tx-value-positive {
+  color: var(--green) !important;
+}
+
+.tx-value-warning {
+  color: var(--warning-color) !important;
+}
+
+// ---- Genuinely new: no swap-hero equivalent (Phase 5 outbound work) ----
+
+// Inset box (recessed content within a card) — used by the Outbounds table
+// and delivery-bar captions, not by anything the swap hero already has.
+.tx-inset-box {
+  background: var(--surface-3-color);
+  border: 1px solid var(--border-color);
+  border-radius: $radius-lg;
+  padding: 11px;
+}
+
+.tx-row-divider {
+  border-top: 1px solid var(--divider-color);
+}
+
+// Muted trailing note on a detail-row value, e.g. the "(12 minutes ago)"
+// half of a Time row — the swap hero's own Time row has no relative-time
+// suffix at all, so this is additive, not a replacement for anything.
+.tx-detail-muted {
+  color: var(--font-color);
+}
+
+// "Why it failed" explainer card — a swap can fail (refund) but the swap
+// hero bails to the legacy path for that case rather than explaining it
+// inline, so there's no existing pattern to reuse here. Kept visually in
+// the same family as .tx-info-card (same radius/shadow) via a danger
+// border/tint instead of a parallel card style.
+.tx-explainer {
+  background: color-mix(in srgb, var(--red) 6%, var(--card-bg-color));
+  border: 1px solid color-mix(in srgb, var(--red) 35%, var(--border-color));
+  border-radius: 20px;
+  padding: $space-20;
+
+  // A refund explainer isn't reporting a failure — amber instead of red.
+  &--warning {
+    background: color-mix(
+      in srgb,
+      var(--warning-color) 6%,
+      var(--card-bg-color)
+    );
+    border-color: color-mix(
+      in srgb,
+      var(--warning-color) 35%,
+      var(--border-color)
+    );
+  }
+}
+
+// SendHero's explainer sits as a sibling above .tx-swap-card, spaced by
+// .tx-detail-main's own flex gap. RefundHero's nests it inside
+// .tx-swap-card, right after .tx-swap-head, where nothing else provides
+// that spacing — scoped to the direct-child case so SendHero's placement
+// is unaffected.
+.tx-swap-card > .tx-explainer {
+  margin-top: $space-16;
+}
+
+.tx-swap-card > .tx-delivery {
+  margin-top: $space-16;
+}
+
+.tx-explainer-header {
+  align-items: center;
+  color: var(--red);
+  display: flex;
+  gap: $space-10;
+  font-weight: 700;
+  margin-bottom: $space-10;
+
+  .tx-explainer--warning & {
+    color: var(--warning-color);
+  }
+}
+
+.tx-explainer-icon {
+  fill: currentColor;
+  flex-shrink: 0;
+  height: 18px;
+  width: 18px;
+}
+
+.tx-explainer-body {
+  color: var(--sec-font-color);
+  font-size: $font-size-sm;
+  line-height: 1.55;
+}
+
+.tx-explainer-code {
+  color: var(--font-color);
+  font-family: 'Roboto Mono', monospace;
+  font-size: $font-size-xxs;
+  margin-top: $space-10;
+}
+
+// Danger variant of .tx-swap-arrow, for a connector that means "rejected"
+// rather than "transferred to" — the swap hero's connector is always a
+// plain directional arrow since a swap never shows a failed leg this way.
+.tx-swap-arrow--danger {
+  border-color: color-mix(in srgb, var(--red) 40%, var(--border-color));
+}
+
+.tx-swap-arrow-icon--danger {
+  color: var(--red);
+  fill: var(--red);
+}
+
+.tx-swap-arrow--warning {
+  border-color: color-mix(
+    in srgb,
+    var(--warning-color) 40%,
+    var(--border-color)
+  );
+}
+
+.tx-swap-arrow-icon--warning {
+  color: var(--warning-color);
+  fill: var(--warning-color);
+}
+
+// Recipient-never-credited panel: dashed red border instead of the normal
+// solid --right-border accent.
+.tx-asset-panel--danger-dashed {
+  border-color: var(--red);
+  border-style: dashed;
+}
+
+// Output panel while its outbound is held/pending — the amount itself is
+// final (unlike --danger-dashed's "never credited"), just not sent yet.
+.tx-asset-panel--warning-dashed {
+  border-color: var(--warning-color);
+  border-style: dashed;
+}
+
+.tx-value-strike {
+  color: var(--red);
+  text-decoration: line-through;
+  text-decoration-color: var(--font-color);
+}
+
+// Fixed node-glyph avatar (as opposed to AssetIcon, used for wallet-style
+// identities elsewhere) — a Mimir voter and a Bond's node side are both
+// nodes, not assets, so they share this rather than AssetIcon. Circular and
+// deliberately smaller than AssetIcon's 2.25rem so it sits comfortably next
+// to a full address at .tx-asset-primary's size without wrapping.
+.tx-node-avatar {
+  align-items: center;
+  background: var(--surface-4-color);
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  display: flex;
+  flex-shrink: 0;
+  height: 32px;
+  justify-content: center;
+  width: 32px;
+
+  svg {
+    fill: var(--font-color);
+    height: 16px;
+    width: 16px;
+  }
+}
+
+// Two-chip identity row (e.g. "Active node" + "Bond 1.02M RUNE") — the
+// swap hero's single .tx-asset-badge line only ever carries one fact, but a
+// node's status and stake are two distinct, differently-toned facts.
+.tx-panel-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-6;
+  margin-top: $space-11;
+}
+
+// Multiple .mini-bubble badges inside a single DetailRow value (e.g.
+// StreamingSwapHero's Outbound Stage row can show "delayed" + "not
+// signed" together) — .mini-bubble itself has no gap since it's normally
+// used solo.
+.tx-stage-row {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: $space-6;
+}
+
+.tx-chip {
+  border-radius: $radius-s;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 3px $space-8;
+
+  &--active {
+    background: color-mix(in srgb, var(--green) 12%, var(--card-bg-color));
+    color: var(--green);
+  }
+
+  &--neutral {
+    background: var(--surface-4-color);
+    color: var(--font-color);
+  }
+
+  &--warning {
+    background: color-mix(
+      in srgb,
+      var(--warning-color) 14%,
+      var(--card-bg-color)
+    );
+    color: var(--warning-color);
+  }
+}
+
+// Non-transfer connector: a vote moves no funds, so the swap hero's
+// directional arrow would be misleading here — a plain labeled pill in the
+// same slot instead.
+.tx-connector-pill {
+  align-items: center;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-dim-color);
+  display: flex;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  justify-content: center;
+  letter-spacing: 0.08em;
+  margin: auto;
+  padding: 5px 10px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+// Two-segment vote tally bar — no swap-hero equivalent (a swap has no
+// concept of "share of a threshold").
+.tx-tally-bar {
+  background: var(--divider-color);
+  border-radius: 999px;
+  display: flex;
+  height: 6px;
+  overflow: hidden;
+}
+
+.tx-tally-bar__fill {
+  background: var(--green);
+  height: 100%;
+}
+
+.tx-tally-bar__other {
+  // --border-color is nearly the same darkness as the track it sits on
+  // (both are low-contrast dark blue-greys) — mixing toward --font-color
+  // gives it enough contrast to actually read as a second segment.
+  background: color-mix(in srgb, var(--font-color) 45%, var(--card-bg-color));
+  height: 100%;
+}
+
+.tx-tally-caption {
+  align-items: center;
+  color: var(--font-color);
+  display: flex;
+  font-size: $font-size-xxs;
+  justify-content: space-between;
+  margin-top: $space-8;
+}
+
+// One-line restatement of the vote under a Mimir key's value — plain
+// sentence, not a pill label, so it's deliberately not .tx-asset-badge
+// (which is pill-shaped/tinted, meant for short chain/network tags).
+.tx-mimir-gloss {
+  color: var(--font-color);
+  font-size: $font-size-xs;
+  line-height: 1.5;
+  margin-top: $space-8;
+}
+
+// Partial-refund gloss under the input tx-asset-panel — same text style as
+// .tx-mimir-gloss, plus an icon+amount and a plain dashed top border (not a
+// full-panel dashed border like --danger-dashed/--warning-dashed, just a
+// divider separating it from the amount above).
+.tx-mimir-gloss--refund {
+  align-items: center;
+  border-top: 1px dashed
+    color-mix(in srgb, var(--border-color) 80%, transparent);
+  display: flex;
+  gap: $space-6;
+  padding-top: $space-8;
+}
+
+// Panel eyebrow with a trailing status chip on the same line (e.g. "Sent to
+// wallet" + "3 outbounds · 1 overdue") — every other panel's .tx-asset-label
+// stands alone, so this is additive rather than a change to that class.
+.tx-asset-panel-head {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: $space-10;
+}
+
+// ---- Genuinely new: no swap-hero equivalent (Phase 5 multi-outbound work) ----
+
+// Per-leg outbound breakdown — a swap only ever has one outbound, so
+// .tx-detail-row's fixed 2-column (label/value) shape doesn't fit a row
+// that needs a status chip, a leg number, a hash, and an amount together.
+.tx-outbound-header {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-10;
+  justify-content: space-between;
+}
+
+.tx-outbound-destination {
+  align-items: center;
+  display: inline-flex;
+  font-size: $font-size-xxs;
+  gap: $space-4;
+}
+
+.tx-outbound-rows {
+  border-top: 3px solid color-mix(in srgb, var(--border-color) 92%, transparent);
+  margin-top: $space-16;
+  padding-top: $space-2;
+}
+
+.tx-outbound-row {
+  border-top: 1px solid color-mix(in srgb, var(--border-color) 90%, transparent);
+  padding: $space-12 0;
+
+  &:first-of-type {
+    border-top: none;
+  }
+}
+
+.tx-outbound-row-main {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-10;
+}
+
+.tx-outbound-leg {
+  color: var(--text-faint-color);
+  flex: 0 0 auto;
+  font-family: 'Montserrat', sans-serif;
+  font-size: $font-size-xxs;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tx-outbound-amount {
+  color: var(--sec-font-color);
+  flex: 1 1 auto;
+  font-weight: 600;
+  text-align: right;
+}
+
+// Per-leg overdue caption — only the still-pending leg(s) get this, so it's
+// additive under the row rather than a column every row needs to reserve
+// space for.
+.tx-outbound-overdue-note {
+  color: var(--red);
+  font-size: $font-size-xxs;
+  margin-top: $space-6;
+}
+
+.tx-outbound-total {
+  align-items: flex-start;
+  border-top: 1px solid var(--divider-color);
+  display: flex;
+  justify-content: space-between;
+  margin-top: $space-16;
+  padding-top: $space-14;
+
+  > span:first-child {
+    color: var(--sec-font-color);
+    font-weight: 600;
+  }
+}
+
+.tx-outbound-total-value {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: $space-4;
+
+  span:first-child {
+    color: var(--sec-font-color);
+    font-weight: 600;
+  }
+
+  span:last-child {
+    font-size: $font-size-xxs;
+  }
+}
+
+// Amber counterpart to .tx-outbound-overdue-note (red) — a swap's own
+// unfilled-remainder refund leg is an expected outcome, not something
+// gone wrong, so its caption reads amber rather than alarming red.
+.tx-outbound-refund-note {
+  color: var(--warning-color);
+  font-size: $font-size-xxs;
+  margin-top: $space-6;
+}
+
+// The refund line in the "Total outbound" summary — sits between the main
+// delivered total and the delivered/pending caption, in the same amber as
+// the refund row/callout above it.
+.tx-outbound-refund-total {
+  color: var(--warning-color);
+  font-weight: 600;
+}
+
+// Inline callout inside .tx-swap-card for a swap's partial-refund leg —
+// distinct from .tx-explainer (a standalone sibling card): this sits
+// nested between the swap-head and the metric strip, since the refund is
+// part of the SAME swap's story, not a separate topic.
+.tx-refund-callout {
+  background: color-mix(in srgb, var(--warning-color) 6%, var(--card-bg-color));
+  border: 1px solid
+    color-mix(in srgb, var(--warning-color) 35%, var(--border-color));
+  border-radius: 14px;
+  margin-top: $space-16;
+  padding: $space-14;
+}
+
+.tx-refund-callout-head {
+  align-items: center;
+  display: flex;
+  gap: $space-10;
+  justify-content: space-between;
+}
+
+.tx-refund-callout-title {
+  align-items: center;
+  color: var(--warning-color);
+  display: flex;
+  font-weight: 700;
+  gap: $space-10;
+}
+
+.tx-refund-callout-body {
+  color: var(--font-color);
+  font-size: $font-size-sm;
+  line-height: 1.5;
+  margin-top: $space-6;
+}
+
+// Two-segment delivery progress — solid for what's landed, hatched for
+// what hasn't (repeating-linear-gradient rather than a flat tint, so
+// "still coming" reads visually distinct from "already here" at a glance).
+.tx-delivery-bar {
+  background: var(--divider-color);
+  border-radius: 999px;
+  display: flex;
+  height: 8px;
+  overflow: hidden;
+}
+
+.tx-delivery-bar__fill {
+  background: var(--green);
+  height: 100%;
+  transition: width 700ms;
+
+  // The outbound-delay countdown fills in the same amber as the hatched
+  // remainder it eats into — green would read as "delivered", but nothing
+  // has been delivered while the outbound is still being held.
+  &--delay {
+    background: var(--warning-color);
+  }
+}
+
+.tx-delivery-bar__pending {
+  background: repeating-linear-gradient(
+    -45deg,
+    color-mix(in srgb, var(--warning-color) 55%, transparent),
+    color-mix(in srgb, var(--warning-color) 55%, transparent) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+  height: 100%;
+
+  &--overdue {
+    background: repeating-linear-gradient(
+      -45deg,
+      color-mix(in srgb, var(--red) 55%, transparent),
+      color-mix(in srgb, var(--red) 55%, transparent) 4px,
+      transparent 4px,
+      transparent 8px
+    );
+  }
+}
+
+// The outbound-delay bar's right-hand readout — the ticking "MM:SS of
+// MM:SS" while the hold is counting down, or "N past due" once the
+// scheduled height has passed unsigned. Carries its own leading dot so the
+// live/waiting state reads at a glance, tinted by tone like .bubble-pill's
+// own dot does.
+.tx-delay-readout {
+  align-items: center;
+  display: flex;
+  gap: $space-6;
+
+  &__dot {
+    background: currentColor;
+    border-radius: 50%;
+    flex-shrink: 0;
+    height: 6px;
+    width: 6px;
+  }
+}
+
+.tx-delivery-caption {
+  align-items: center;
+  color: var(--font-color);
+  display: flex;
+  font-size: $font-size-xs;
+  justify-content: space-between;
+  margin-bottom: $space-8;
+
+  // The streaming/outbound-delay info text (e.g. "44/54 sub-swaps · ~a
+  // minute left") — its own .tx-asset-label sibling already sets its own
+  // faint color, this only overrides the caption's default --font-color
+  // for the trailing info span.
+  .mono {
+    color: var(--sec-font-color);
+  }
+
+  // ...except the outbound-delay readout, which carries its own tone (amber
+  // while the hold counts down, red once it's past due) and so has to
+  // out-specify the .mono default above rather than sit beside it.
+  .tx-delay-readout {
+    color: var(--warning-color);
+  }
+
+  .tx-delay-readout--overdue {
+    color: var(--red);
+  }
+}
+
+// Muted explainer line under a bar, e.g. the outbound-delay countdown's
+// "held before signing" note — .tx-outbound-overdue-note is red/overdue-
+// specific, this is a neutral-toned equivalent for a non-error state.
+.tx-delivery-note {
+  color: var(--text-faint-color);
+  font-size: $font-size-xxs;
+  margin-top: $space-8;
+}
+
+// The rest of SwapHero.vue's own classes (limit-order pair header, returned-
+// output panel, exchange-rate flip, order book, contract events button) —
+// moved here from _txhash.vue's own scoped <style> for the same reason as
+// the modal below: scoped styles don't cross component boundaries.
+.tx-pair-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $space-10;
+  padding: $space-20 0;
+  grid-column: 1 / -1;
+}
+
+.tx-pair-icons {
+  display: flex;
+  align-items: center;
+
+  .tx-pair-icon-overlap {
+    margin-left: -0.65rem;
+  }
+}
+
+.tx-pair-label {
+  color: var(--sec-font-color);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.tx-pair-input-amount {
+  color: var(--font-color);
+  font-size: $font-size-desktop;
+  font-weight: 600;
+  font-family: monospace;
+}
+
+.tx-pair-sublabel {
+  text-align: center;
+}
+
+.tx-asset-divider {
+  border-top: 1px dashed
+    color-mix(in srgb, var(--border-color) 80%, transparent);
+  margin: $space-10 0;
+}
+
+.tx-asset-label--returned {
+  color: var(--font-color);
+  opacity: 0.7;
+  font-size: 0.75rem;
+  margin-bottom: $space-5;
+}
+
+.tx-returned-panel {
+  padding-top: $space-5;
+}
+
+.tx-returned-row {
+  display: flex;
+  align-items: center;
+  gap: $space-8;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.tx-returned-name {
+  color: var(--font-color);
+}
+
+.tx-returned-amount {
+  margin-left: auto;
+  color: var(--font-color);
+  font-weight: 500;
+}
+
+.exchange-rate-value {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-6;
+}
+
+.exchange-rate-flip-icon {
+  width: 1rem;
+  height: 1rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  fill: var(--sec-font-color);
+
+  &:hover {
+    fill: var(--primary-color);
+  }
+}
+
+// ── Order book ───────────────────────────────────────────────────────────────
+
+.tx-order-book-header {
+  display: flex;
+  align-items: center;
+  gap: $space-8;
+  margin-bottom: $space-14;
+
+  .tx-order-book-count {
+    background: var(--border-color);
+    border-radius: $radius-full;
+    color: var(--sec-font-color);
+    font-size: 0.62rem;
+    padding: 1px 6px;
+  }
+}
+
+.tx-order-book {
+  font-size: $font-size-xs;
+  font-family: monospace;
+}
+
+.tx-order-book-cols {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr 1fr auto;
+  padding: 0 $space-12 $space-6;
+  color: var(--sec-font-color);
+  font-family: inherit;
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--border-color) 70%, transparent);
+
+  span:not(:first-child) {
+    text-align: right;
+  }
+
+  span:last-child {
+    min-width: 60px;
+  }
+}
+
+.tx-order-book-row {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr 1fr auto;
+  align-items: center;
+  padding: $space-4 $space-12;
+  position: relative;
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--border-color) 30%, transparent);
+  transition: background 0.1s;
+
+  // Depth bar fills from left for buys, right for sells
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    border-radius: $radius-xs;
+  }
+
+  &.ob-buy::before {
+    background: linear-gradient(
+      to right,
+      rgba(53, 240, 154, 0.12) var(--depth),
+      transparent var(--depth)
+    );
+  }
+
+  &.ob-sell::before {
+    background: linear-gradient(
+      to left,
+      rgba(255, 105, 94, 0.12) var(--depth),
+      transparent var(--depth)
+    );
+  }
+
+  &.ob-retract {
+    opacity: 0.45;
+  }
+
+  &.ob-keep {
+    opacity: 0.6;
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  span {
+    position: relative; // above the ::before bar
+    color: var(--sec-font-color);
+
+    &:not(:first-child) {
+      text-align: right;
+    }
+  }
+
+  .ob-price--buy {
+    color: #35f09a;
+  }
+  .ob-price--sell {
+    color: #ff695e;
+  }
+
+  .ob-side {
+    font-weight: 600;
+    min-width: 32px;
+    text-align: left;
+  }
+}
+
+.ob-op {
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--sec-font-color);
+  opacity: 0.6;
+  min-width: 60px;
+  text-align: right;
+}
+
+// ── Contract Events button & modal ───────────────────────────────────────────
+
+.tx-section-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tx-events-btn {
+  align-items: center;
+  background: var(--card-bg);
+  border: 1px solid color-mix(in srgb, var(--border-color) 92%, transparent);
+  border-radius: 10px;
+  color: var(--sec-font-color);
+  cursor: pointer;
+  display: flex;
+  font-size: $font-size-xs;
+  font-weight: 500;
+  gap: $space-6;
+  justify-content: center;
+  padding: $space-6 $space-12;
+  text-decoration: none;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--green) 40%, var(--border-color));
+    color: var(--green);
+  }
+
+  &:hover .tx-events-btn-icon {
+    fill: var(--primary-color);
+  }
+}
+
+.tx-events-btn-icon {
+  fill: var(--sec-font-color);
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+
+.tx-events-count {
+  background: color-mix(in srgb, var(--border-color) 80%, transparent);
+  border-radius: $radius-full;
+  font-size: 0.62rem;
+  padding: 1px 5px;
+  color: var(--sec-font-color);
+}
+
+// Contract Events modal (SwapHero's "View Events" button) — moved here from
+// _txhash.vue's own scoped <style> when the swap/contract screen was
+// extracted into SwapHero.vue, since scoped styles don't cross component
+// boundaries and every other hero-specific rule already lives in this file.
+.events-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 998;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: $space-16;
+  overflow-y: auto;
+
+  @include md {
+    padding: $space-24;
+  }
+}
+
+.events-modal {
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: $radius-s;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 680px;
+  height: calc(100vh - 80px - 2 * #{$space-16});
+  overflow: hidden;
+
+  @media (max-width: 575px) {
+    height: calc(100vh - 80px - 2 * #{$space-16});
+    border-radius: $radius-s;
+  }
+}
+
+.events-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $space-16 $space-20;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.events-modal-title {
+  font-size: $font-size-desktop;
+  font-weight: 600;
+  color: var(--font-color);
+}
+
+.events-modal-close {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  color: var(--sec-font-color);
+  flex-shrink: 0;
+
+  &:hover {
+    color: var(--primary-color);
+  }
+}
+
+.events-modal-search {
+  padding: $space-12 $space-20;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.events-search-input {
+  width: 100%;
+  background: var(--card-bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: $radius-s;
+  color: var(--font-color);
+  font-size: $font-size-sm;
+  padding: $space-8 $space-12;
+  outline: none;
+  transition: border-color 0.15s;
+
+  &::placeholder {
+    color: var(--sec-font-color);
+  }
+
+  &:focus {
+    border-color: var(--primary-color);
+  }
+}
+
+.events-modal-body {
+  overflow-y: auto;
+  padding: $space-12 $space-20;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: $space-12;
+
+  // Event blocks must never shrink — only the body scrolls
+  > * {
+    flex-shrink: 0;
+  }
+}
+
+.events-msg-block {
+  background: var(--card-bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: $radius-s;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.events-msg-json {
+  margin: 0;
+  padding: $space-10 $space-12;
+  font-size: $font-size-xs;
+  font-family: monospace;
+  color: var(--sec-font-color);
+  white-space: pre;
+  overflow-x: auto;
+  line-height: 1.5;
+}
+
+.events-event-block {
+  background: var(--card-bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: $radius-s;
+  overflow: hidden;
+}
+
+.events-event-type {
+  background: color-mix(in srgb, var(--border-color) 40%, transparent);
+  color: var(--font-color);
+  font-size: $font-size-xs;
+  font-weight: 600;
+  padding: $space-6 $space-12;
+  font-family: monospace;
+  word-break: break-all;
+}
+
+.events-attr-row {
+  display: flex;
+  padding: $space-4 $space-12;
+  gap: $space-12;
+  border-top: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
+
+  @media (max-width: 575px) {
+    flex-direction: column;
+    gap: $space-2;
+  }
+}
+
+.events-attr-key {
+  color: var(--primary-color);
+  font-size: $font-size-xs;
+  font-family: monospace;
+  white-space: nowrap;
+  min-width: 120px;
+  flex-shrink: 0;
+
+  @media (max-width: 575px) {
+    min-width: unset;
+  }
+}
+
+.events-attr-val {
+  color: var(--sec-font-color);
+  font-size: $font-size-xs;
+  font-family: monospace;
+  word-break: break-all;
+}
+
+.events-empty {
+  color: var(--sec-font-color);
+  font-size: $font-size-sm;
+  text-align: center;
+  padding: $space-24 0;
+}

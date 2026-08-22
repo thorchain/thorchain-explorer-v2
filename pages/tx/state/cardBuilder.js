@@ -16,6 +16,14 @@ export function buildCardDetails(cardBase, ctx) {
         amount: a?.amount,
         amountUSD:
           a?.amountUSD ?? ctx.amountToUSD(a?.asset, a?.amount, ctx.pools),
+        // Whether amountUSD above is the historical price at the moment
+        // this leg executed (a builder-supplied a.amountUSD, e.g.
+        // createSwapState's swapMetadata-derived figure) rather than the
+        // live-pool fallback right above it — drives the USD tooltip
+        // wording the same way the base swap hero's own does. Only
+        // createSwapState currently sets this; every other builder leaves
+        // it undefined, which correctly means "always the live fallback".
+        usdAtExecution: !!a?.usdAtExecution,
         filter: a?.filter,
         text: a?.text,
         icon: a?.icon,
@@ -33,6 +41,8 @@ export function buildCardDetails(cardBase, ctx) {
         amount: a?.amount,
         amountUSD:
           a?.amountUSD ?? ctx.amountToUSD(a?.asset, a?.amount, ctx.pools),
+        // See the matching field on `in` above.
+        usdAtExecution: !!a?.usdAtExecution,
         text: a?.text,
         voteKey: a?.voteKey,
         voteValue: a?.voteValue,
@@ -43,6 +53,13 @@ export function buildCardDetails(cardBase, ctx) {
         class: a?.class,
         done: a?.done,
         affiliate: a?.affiliate,
+        // Per-leg detail the multi-outbound hero needs (createTradeWithdrawState
+        // is the only builder that currently sets these) — not used by any
+        // other card's visual, but dropping them here silently starved that
+        // hero of hash/destination/overdue-ETA for every leg.
+        txid: a?.txid,
+        to: a?.to,
+        outboundETA: a?.outboundETA,
       })),
     },
   }
@@ -462,7 +479,15 @@ export function buildOutboundAccordions(accordionsOut, ctx) {
             value: `${ctx.baseAmountFormatOrZero(a.gas)} ${ctx.showAsset(a.gasAsset)} (${ctx.formatCurrency(
               ctx.amountToUSD(a?.gasAsset, a?.gas, ctx.pools)
             )})`,
-            is: a.fees?.length === 0 && a?.gas && a?.gasAsset,
+            // `a.fees` is only ever set by createSwapState (its richer
+            // fees[]/feeAssets[] breakdown, rendered as 'Outbound Fee'
+            // stacks below instead) — every other builder (e.g.
+            // createTradeWithdrawState) never sets it at all, so it must
+            // be checked as "empty or absent" (`!a.fees?.length`), not
+            // strictly `=== 0` — `undefined === 0` is false, which was
+            // silently suppressing this stack for every leg without a
+            // fees[] array, not just ones that legitimately have fees.
+            is: !a.fees?.length && a?.gas && a?.gasAsset,
           },
           {
             key: 'Outbound Est.',

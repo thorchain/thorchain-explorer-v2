@@ -19,6 +19,10 @@
   outline: none;
   backdrop-filter: blur(5px);
   margin: 1px;
+  max-width: min(320px, calc(100vw - #{$space-16 * 2}));
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .v-popper--theme-dropdown .v-popper__arrow-outer,

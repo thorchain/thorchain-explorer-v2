@@ -1,453 +1,46 @@
 <template>
   <Page>
-    <div v-if="swapOverview || contractOverview" class="tx-detail-page">
-      <div class="tx-detail-back">
-        <nuxt-link to="/txs" class="tx-back-link">
-          <ArrowIcon class="tx-back-icon" />
-          All Transactions
-        </nuxt-link>
-      </div>
-
-      <div class="tx-detail-meta">
-        <span>{{ activeOverview.metaLabel }}</span>
-        <div
-          class="bubble-stack"
-          :class="{ 'bubble-stack--expanded': overviewBubbleExpanded }"
-          tabindex="0"
-          @mouseenter="overviewBubbleExpanded = true"
-          @mouseleave="overviewBubbleExpanded = false"
-          @focusin="overviewBubbleExpanded = true"
-          @focusout="overviewBubbleExpanded = false"
-        >
-          <div
-            v-for="(item, index) in overviewBubbleItems"
-            :key="index"
-            class="bubble-pill"
-            :class="item.colorClass"
-          >
-            <component
-              :is="item.icon"
-              v-if="item.icon"
-              class="bubble-pill__icon"
-            />
-            <span class="bubble-pill__label">{{ item.label }}</span>
-          </div>
-        </div>
-        <affiliate
-          v-if="activeOverview.affiliateAddress"
-          :affiliate-address="activeOverview.affiliateAddress"
-        />
-      </div>
-
-      <h1 class="tx-detail-title">
-        {{ activeOverview.title }}
-      </h1>
-
-      <div class="tx-detail-grid">
-        <div class="tx-detail-main">
-          <section class="tx-swap-card card-bg">
-            <div
-              v-if="activeOverview.pairDisplay || activeOverview.input || activeOverview.output"
-              class="tx-swap-head"
-              :style="panelVars"
-            >
-              <template v-if="activeOverview.pairDisplay">
-                <div class="tx-pair-display">
-                  <div class="tx-pair-icons">
-                    <AssetIcon
-                      v-if="activeOverview.pairDisplay.baseAsset"
-                      :asset="activeOverview.pairDisplay.baseAsset"
-                      :height="'2.25rem'"
-                    />
-                    <AssetIcon
-                      v-if="activeOverview.pairDisplay.quoteAsset"
-                      :asset="activeOverview.pairDisplay.quoteAsset"
-                      :height="'2.25rem'"
-                      class="tx-pair-icon-overlap"
-                    />
-                  </div>
-                  <div class="tx-pair-label">
-                    {{ activeOverview.pairDisplay.label }}
-                  </div>
-                  <div
-                    v-if="activeOverview.pairDisplay.inputAmount"
-                    class="tx-pair-input-amount"
-                  >
-                    {{ activeOverview.pairDisplay.inputAmount }}
-                  </div>
-                  <div class="tx-asset-badge tx-pair-sublabel">
-                    {{ activeOverview.pairDisplay.sublabel }}
-                  </div>
-                </div>
-              </template>
-              <template v-else>
-              <div v-if="activeOverview.input" class="tx-asset-panel">
-                <div class="tx-asset-label">Input</div>
-                <div class="tx-asset-primary">
-                  <AssetIcon
-                    v-if="activeOverview.input.asset"
-                    :asset="activeOverview.input.asset"
-                    :height="'2.25rem'"
-                  />
-                  <span>{{ activeOverview.input.name }}</span>
-                </div>
-                <div class="tx-asset-badge">
-                  {{ activeOverview.input.badge }}
-                </div>
-                <div class="tx-asset-values">
-                  <span>{{ activeOverview.input.amount }}</span>
-                  <strong
-                    v-if="activeOverview.input.usd"
-                    v-tooltip="activeOverview.input.usdAtExecution ? 'Value based on price at the time the transaction was executed' : 'Based on current price, not price at the time of the transaction'"
-                    style="cursor: help"
-                  >{{
-                    safeUsdDisplay(activeOverview.input.usd)
-                  }}</strong>
-                </div>
-              </div>
-
-              <div class="tx-swap-arrow">
-                <OrderIcon
-                  v-if="activeOverview.hasContractAction"
-                  class="tx-swap-arrow-icon order"
-                />
-                <ArrowIcon v-else class="tx-swap-arrow-icon" />
-              </div>
-
-              <div
-                v-if="activeOverview.output"
-                :class="[
-                  'tx-asset-panel',
-                  activeOverview.returnedOutput
-                    ? 'tx-asset-panel--accent tx-asset-panel--split'
-                    : 'tx-asset-panel--accent',
-                ]"
-              >
-                <div class="tx-asset-label">Output</div>
-                <div class="tx-asset-primary">
-                  <AssetIcon
-                    v-if="activeOverview.output.asset"
-                    :asset="activeOverview.output.asset"
-                    :height="'2.25rem'"
-                  />
-                  <span>{{ activeOverview.output.name }}</span>
-                </div>
-                <div class="tx-asset-badge">
-                  {{ activeOverview.output.badge }}
-                </div>
-                <div class="tx-asset-values">
-                  <span>{{ activeOverview.output.amount }}</span>
-                  <strong
-                    v-if="activeOverview.output.usd"
-                    v-tooltip="activeOverview.output.usdAtExecution ? 'Value based on price at the time the transaction was executed' : 'Based on current price, not price at the time of the transaction'"
-                    style="cursor: help"
-                  >{{
-                    safeUsdDisplay(activeOverview.output.usd)
-                  }}</strong>
-                </div>
-                <template v-if="activeOverview.returnedOutput">
-                  <div class="tx-asset-divider" />
-                  <div class="tx-returned-panel">
-                    <div class="tx-asset-label tx-asset-label--returned">
-                      Returned
-                    </div>
-                    <div class="tx-returned-row">
-                      <AssetIcon
-                        v-if="activeOverview.returnedOutput.asset"
-                        :asset="activeOverview.returnedOutput.asset"
-                        :height="'1.1rem'"
-                        :chain-height="'0.7rem'"
-                      />
-                      <span class="tx-returned-name">{{
-                        activeOverview.returnedOutput.name
-                      }}</span>
-                      <span class="tx-returned-amount">{{
-                        activeOverview.returnedOutput.amount
-                      }}</span>
-                    </div>
-                  </div>
-                </template>
-              </div>
-              </template>
-            </div>
-
-            <div
-              v-if="activeOverview.metricRows.length"
-              class="tx-metric-strip"
-            >
-              <div
-                v-for="metric in activeOverview.metricRows"
-                :key="metric.label"
-                class="tx-metric-item"
-              >
-                <div class="tx-asset-label">{{ metric.label }}</div>
-                <div class="tx-metric-value">{{ metric.value }}</div>
-              </div>
-            </div>
-          </section>
-
-          <section
-            v-if="activeOverview.orderRows && activeOverview.orderRows.length"
-            class="tx-info-card card-bg tx-order-book-card"
-          >
-            <div class="tx-order-book-header">
-              <span class="tx-section-title">Orders</span>
-              <span class="tx-order-book-count">{{ activeOverview.orderRows.length }}</span>
-            </div>
-            <div class="tx-order-book">
-              <div class="tx-order-book-cols">
-                <span>Side</span>
-                <span>Price<template v-if="activeOverview.orderPairTickers"> ({{ activeOverview.orderPairTickers.quote }})</template></span>
-                <span>Amount<template v-if="activeOverview.orderPairTickers"> ({{ activeOverview.orderPairTickers.isBuy ? activeOverview.orderPairTickers.quote : activeOverview.orderPairTickers.base }})</template></span>
-                <span>Return<template v-if="activeOverview.orderPairTickers"> ({{ activeOverview.orderPairTickers.isBuy ? activeOverview.orderPairTickers.base : activeOverview.orderPairTickers.quote }})</template></span>
-                <span>Op</span>
-              </div>
-              <div
-                v-for="(r, i) in activeOverview.orderRows"
-                :key="i"
-                class="tx-order-book-row"
-                :class="{
-                  'ob-buy': r.side === 'Buy',
-                  'ob-sell': r.side === 'Sell',
-                  'ob-retract': r.op === 'Retract',
-                  'ob-keep': r.op === 'Keep',
-                }"
-                :style="`--depth: ${r.depth}%`"
-              >
-                <span class="ob-side" :class="r.side === 'Buy' ? 'ob-price--buy' : 'ob-price--sell'">{{ r.side }}</span>
-                <span class="ob-price">{{ r.price }}</span>
-                <span class="ob-amount">{{ r.amount }}</span>
-                <span class="ob-ret">{{ r.ret }}</span>
-                <span class="ob-op">{{ r.op }}</span>
-              </div>
-            </div>
-          </section>
-
-          <section class="tx-info-card card-bg">
-            <div class="tx-section-title">Details</div>
-            <div class="tx-detail-rows">
-              <div
-                v-for="row in activeOverview.detailRows"
-                :key="row.label"
-                class="tx-detail-row"
-              >
-                <div class="tx-detail-key">{{ row.label }}</div>
-                <div class="tx-detail-value">
-                  <template v-if="row.type === 'product'">
-                    <ProductBadge :label="row.value" :tone="row.tone" />
-                  </template>
-                  <template v-else-if="row.type === 'status'">
-                    <span
-                      :class="[
-                        'mini-bubble',
-                        statusToneClass(activeOverview.status.tone),
-                      ]"
-                    >
-                      {{ row.value }}
-                    </span>
-                  </template>
-                  <template v-else-if="row.type === 'exchange-rate'">
-                    <span class="exchange-rate-value">
-                      {{
-                        rateFlipped && row.valueFlipped
-                          ? row.valueFlipped
-                          : row.value
-                      }}
-                      <rate-change-icon
-                        v-if="row.valueFlipped"
-                        v-tooltip="'Flip exchange rate'"
-                        class="exchange-rate-flip-icon"
-                        @click="rateFlipped = !rateFlipped"
-                      />
-                    </span>
-                  </template>
-                  <template v-else-if="row.type === 'address'">
-                    <AddressComponent :address="row.address" />
-                  </template>
-                  <template v-else-if="row.type === 'link'">
-                    <nuxt-link :to="row.to" class="tx-link">
-                      {{ row.value }}
-                    </nuxt-link>
-                  </template>
-                  <template v-else>
-                    {{ row.value }}
-                  </template>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section
-            v-if="activeOverview.lifecycleRows.length"
-            class="tx-info-card card-bg"
-          >
-            <div class="tx-section-title-row">
-              <span class="tx-section-title">Lifecycle Events</span>
-              <button
-                v-if="activeOverview.rawEvents && activeOverview.rawEvents.length"
-                class="tx-events-btn"
-                @click="eventsModalOpen = true"
-              >
-                <ListIcon class="tx-events-btn-icon" />
-                View Events
-                <span class="tx-events-count">{{ activeOverview.rawEvents.length }}</span>
-              </button>
-            </div>
-            <div class="tx-lifecycle-list">
-              <div
-                v-for="event in activeOverview.lifecycleRows"
-                :key="event.title"
-                class="tx-lifecycle-item"
-              >
-                <div class="tx-lifecycle-dot">
-                  <component
-                    :is="event.icon"
-                    class="tx-lifecycle-icon"
-                    :style="
-                      event.iconRotate
-                        ? { transform: `rotate(${event.iconRotate}deg)` }
-                        : {}
-                    "
-                  />
-                </div>
-                <div class="tx-lifecycle-copy">
-                  <div class="tx-lifecycle-title">{{ event.title }}</div>
-                  <div class="tx-lifecycle-body">{{ event.body }}</div>
-                  <div v-if="event.meta" class="tx-lifecycle-meta">
-                    {{ event.meta }}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-        </div>
-
-        <div class="tx-detail-side">
-          <section class="tx-info-card card-bg">
-            <div class="tx-section-title">Transaction Hash</div>
-            <div class="tx-hash-box">
-              <div class="tx-asset-label">Full hash</div>
-              <div class="tx-hash-full mono">{{ $route.params.txhash }}</div>
-            </div>
-            <div class="tx-hash-actions">
-              <div
-                class="tx-hash-action"
-                @click="$refs.copyBtn.onlyCopy($route.params.txhash)"
-              >
-                <Copy
-                  ref="copyBtn"
-                  :str-copy="$route.params.txhash"
-                  :hide-toast="true"
-                />
-                <span>Copy</span>
-              </div>
-              <div class="tx-hash-action" @click="$refs.qrBtn.showQR = true">
-                <qr-btn ref="qrBtn" :qrcode="$route.params.txhash" />
-                <span>View QR</span>
-              </div>
-              <a
-                v-if="inputExplorerUrl"
-                class="tx-hash-action"
-                :href="inputExplorerUrl"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <ExternalIcon class="tx-hash-action-icon" />
-                <span>Input Tx</span>
-              </a>
-              <a
-                v-if="outputExplorerUrl"
-                class="tx-hash-action"
-                :href="outputExplorerUrl"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <ExternalIcon class="tx-hash-action-icon" />
-                <span>Output Tx</span>
-              </a>
-            </div>
-          </section>
-
-          <section
-            v-if="activeOverview.feeRows.length"
-            class="tx-info-card card-bg"
-          >
-            <div class="tx-section-title">Fee Breakdown</div>
-            <div class="tx-fee-list">
-              <div
-                v-for="fee in activeOverview.feeRows"
-                :key="fee.label"
-                class="tx-fee-row"
-              >
-                <div
-                  :class="[
-                    'tx-fee-label',
-                    { 'tx-fee-label--total': fee.isTotal },
-                  ]"
-                >
-                  {{ fee.label }}
-                </div>
-                <div class="tx-fee-value-wrap">
-                  <div
-                    :class="[
-                      'tx-fee-value',
-                      { 'tx-fee-value--total': fee.isTotal },
-                    ]"
-                  >
-                    {{ fee.usd }}
-                  </div>
-                  <div v-if="fee.subtle" class="tx-fee-subtle">
-                    {{ fee.subtle }}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section class="tx-info-card card-bg">
-            <button
-              class="tx-tech-header"
-              type="button"
-              @click="technicalExpanded = !technicalExpanded"
-            >
-              <span class="tx-section-title">Technical Details</span>
-              <span class="tx-tech-arrow">{{
-                technicalExpanded ? '−' : '+'
-              }}</span>
-            </button>
-            <div v-if="technicalExpanded" class="tx-tech-list">
-              <div
-                v-for="row in activeOverview.technicalRows"
-                :key="row.label"
-                class="tx-tech-row"
-              >
-                <div class="tx-tech-key">{{ row.label }}</div>
-                <div
-                  v-tooltip="row.label === 'Memo' ? row.value : undefined"
-                  :class="[
-                    'tx-tech-value',
-                    { 'tx-tech-value--truncate': row.label === 'Memo' },
-                    { hoverable: row.label === 'Memo' },
-                  ]"
-                >
-                  <template v-if="row.type === 'address'">
-                    <AddressComponent :address="row.address" />
-                  </template>
-                  <template v-else-if="row.type === 'link'">
-                    <nuxt-link :to="row.to" class="tx-link">
-                      {{ row.value }}
-                    </nuxt-link>
-                  </template>
-                  <template v-else>
-                    {{ row.value }}
-                  </template>
-                </div>
-              </div>
-            </div>
-          </section>
-        </div>
-      </div>
-    </div>
+    <template
+      v-if="
+        sendOverview ||
+        bondOverview ||
+        mimirOverview ||
+        refundOverview ||
+        multiOutboundOverview ||
+        streamingOverview ||
+        swapOverview ||
+        contractOverview
+      "
+    >
+      <SendHero v-if="sendOverview" :overview="sendOverview" />
+      <BondHero
+        v-else-if="bondOverview"
+        :overview="bondOverview"
+        :node-snapshot="nodeSnapshot"
+        :network-info="networkInfo"
+        :current-height="chainsHeight && chainsHeight.THOR"
+      />
+      <MimirVoteHero
+        v-else-if="mimirOverview"
+        :overview="mimirOverview"
+        :node-snapshot="nodeSnapshot"
+        :consensus="mimirConsensus"
+      />
+      <RefundHero v-else-if="refundOverview" :overview="refundOverview" />
+      <MultiOutboundHero
+        v-else-if="multiOutboundOverview"
+        :overview="multiOutboundOverview"
+      />
+      <StreamingSwapHero
+        v-else-if="streamingOverview"
+        :overview="streamingOverview"
+      />
+      <SwapHero
+        v-else-if="swapOverview || contractOverview"
+        :overview="activeOverview"
+      />
+    </template>
+    <TxHeroSkeleton v-else-if="isLoading && !isError" />
     <div v-else class="tx-header">
       <div class="item tx-id">
         <span class="mono">
@@ -461,7 +54,7 @@
         <qr-btn :qrcode="$route.params.txhash"></qr-btn>
       </div>
     </div>
-    <template v-if="!isError && !isLoading && pools">
+    <template v-if="!isError && !isLoading && pools && !hasNewHeroUi">
       <template v-if="cards && cards.length > 0">
         <tx-card v-for="(c, i) in visibleCards" :key="i" :tx-data="c.details">
           <template
@@ -500,68 +93,12 @@
       <span>{{ error.message }}</span>
       <DisconnectIcon class="disconnect-icon" />
     </div>
-    <div v-else-if="isLoading && !isError">
-      <tx-loader />
-    </div>
-
-    <!-- Contract Events Modal -->
-    <transition name="fade">
-      <div
-        v-if="eventsModalOpen"
-        class="events-modal-backdrop"
-        @click.self="eventsModalOpen = false"
-      >
-        <div class="events-modal">
-          <div class="events-modal-header">
-            <span class="events-modal-title">Contract Events</span>
-            <CrossIcon
-              class="events-modal-close"
-              @click="eventsModalOpen = false"
-            />
-          </div>
-          <div class="events-modal-search">
-            <input
-              v-model="eventsSearchQuery"
-              class="events-search-input"
-              type="text"
-              placeholder="Filter by type or attribute…"
-              autofocus
-            />
-          </div>
-          <div class="events-modal-body">
-            <div v-if="activeOverview.rawMsg && !eventsSearchQuery" class="events-msg-block">
-              <div class="events-event-type">msg</div>
-              <pre class="events-msg-json">{{ JSON.stringify(activeOverview.rawMsg, null, 2) }}</pre>
-            </div>
-
-            <div
-              v-for="(event, i) in filteredContractEvents"
-              :key="i"
-              class="events-event-block"
-            >
-              <div class="events-event-type">{{ event.type }}</div>
-              <div
-                v-for="attr in event.attributes"
-                :key="attr.key"
-                class="events-attr-row"
-              >
-                <span class="events-attr-key">{{ attr.key }}</span>
-                <span class="events-attr-val">{{ attr.value }}</span>
-              </div>
-            </div>
-            <div v-if="!filteredContractEvents.length" class="events-empty">
-              No events match "{{ eventsSearchQuery }}"
-            </div>
-          </div>
-        </div>
-      </div>
-    </transition>
   </Page>
 </template>
 
 <script>
 import moment from 'moment'
-import { orderBy, groupBy, sumBy } from 'lodash'
+import { groupBy, sumBy } from 'lodash'
 import { mapGetters } from 'vuex'
 import streamingSwap from './components/streamingSwap.vue'
 import txCard from './components/txCard.vue'
@@ -570,21 +107,29 @@ import {
   BUILDERS as BUILDERS_MODULE,
   createFailedState as createFailedStateBuilder,
 } from './state/builders.js'
-import ProductBadge from '~/components/ProductBadge.vue'
-import Affiliate from '~/components/Affiliate.vue'
+import {
+  resolveOutboundSignal,
+  resolveOutboundLegState,
+  resolveOutboundLegStatus,
+  resolveTxOutboundTotals,
+} from './state/outboundStatus.js'
+import { resolveOutboundTxs } from './state/outboundTxs.js'
+import { parseActionReason } from './state/parseActionReason.js'
+import { computeMimirConsensus } from './state/mimirConsensus.js'
+import {
+  PRE_GUARD_BUILDERS as CONTRACT_PRE_GUARD_BUILDERS,
+  SINGLE_ACTION_BUILDERS as CONTRACT_SINGLE_ACTION_BUILDERS,
+  buildCalcAggregateOverview,
+} from './state/contract/index.js'
+import SendHero from './components/hero/SendHero.vue'
+import BondHero from './components/hero/BondHero.vue'
+import MimirVoteHero from './components/hero/MimirVoteHero.vue'
+import RefundHero from './components/hero/RefundHero.vue'
+import MultiOutboundHero from './components/hero/MultiOutboundHero.vue'
+import StreamingSwapHero from './components/hero/StreamingSwapHero.vue'
+import SwapHero from './components/hero/SwapHero.vue'
+import TxHeroSkeleton from './components/TxHeroSkeleton.vue'
 import DisconnectIcon from '~/assets/images/disconnect.svg?inline'
-import ArrowIcon from '~/assets/images/arrow.svg?inline'
-import OrderIcon from '~/assets/images/order.svg?inline'
-import ExchangeIcon from '~/assets/images/exchange.svg?inline'
-import RateChangeIcon from '~/assets/images/rate-change.svg?inline'
-import CheckIcon from '~/assets/images/square-checkmark.svg?inline'
-import ClockIcon from '~/assets/images/clock.svg?inline'
-import WarningIcon from '~/assets/images/warning.svg?inline'
-import SwapIcon from '~/assets/images/swap.svg?inline'
-import SendTypeIcon from '~/assets/images/send-outline.svg?inline'
-import RefreshIcon from '~/assets/images/refresh.svg?inline'
-import AssetIcon from '~/components/AssetIcon.vue'
-import AddressComponent from '~/components/transactions/Address.vue'
 import {
   blockTime,
   assetFromString,
@@ -594,41 +139,28 @@ import {
   assetToString,
   securedToAsset,
   sumAffiliateFee,
-  getExplorerAddressUrl,
+  isInternalTx,
 } from '~/utils'
 import Accordion from '~/components/Accordion.vue'
 import {
   getRujiraContractLabel,
   getRujiraContractProduct,
-  getRujiraContractEntry,
 } from '~/utils/rujiraContracts'
-import ExternalIcon from '~/assets/images/external.svg?inline'
-import CrossIcon from '~/assets/images/cross.svg?inline'
-import ListIcon from '~/assets/images/highlight-list.svg?inline'
 
 export default {
   components: {
-    ProductBadge,
-    Affiliate,
     DisconnectIcon,
-    ArrowIcon,
-    OrderIcon,
-    ExchangeIcon,
-    RateChangeIcon,
-    CheckIcon,
-    ClockIcon,
-    WarningIcon,
-    SwapIcon,
-    SendTypeIcon,
-    RefreshIcon,
-    AssetIcon,
-    AddressComponent,
-    ExternalIcon,
-    CrossIcon,
-    ListIcon,
     streamingSwap,
     txCard,
     Accordion,
+    SendHero,
+    BondHero,
+    MimirVoteHero,
+    RefundHero,
+    MultiOutboundHero,
+    StreamingSwapHero,
+    SwapHero,
+    TxHeroSkeleton,
   },
   data() {
     return {
@@ -647,16 +179,30 @@ export default {
       updateInterval: undefined,
       cards: [],
       rawActions: null,
+      // Raw Midgard 'send' action for a native RUNE send — set by
+      // createNativeTx. sendOverview reads this directly instead of
+      // this.cards (Phase 2 of the tx-detail-UI raw-data migration): a
+      // native send never goes through the swap/contract card pipeline, so
+      // this is its own dedicated raw-data source rather than a slot in the
+      // shared `cards` array.
+      nativeSendAction: null,
+      // Set by createTxState — the parsed memo and raw THORNode tx/details
+      // response, both needed by refundOverview's raw-data derivation.
+      txMemo: null,
+      thorTx: null,
       inboundHash: undefined,
       thorStatus: undefined,
       thorHeight: 0,
       quote: undefined,
       height: undefined,
-      technicalExpanded: false,
-      overviewBubbleExpanded: false,
-      rateFlipped: false,
-      eventsModalOpen: false,
-      eventsSearchQuery: '',
+      nodeSnapshot: null,
+      nodeSnapshotAddress: null,
+      networkInfo: null,
+      mimirConsensus: null,
+      mimirConsensusKey: null,
+      streamingProgress: null,
+      streamingProgressHash: null,
+      streamingProgressFetchedAt: 0,
     }
   },
   head() {
@@ -677,158 +223,1799 @@ export default {
       if (co?.priority) return co
       return this.swapOverview || co || null
     },
-    inputExplorerUrl() {
-      const asset = this.activeOverview?.input?.asset
-      if (!asset) return null
-      if (this.activeOverview?.input?.secure) return null
-      const parsed = assetFromString(asset)
-      const chain = parsed?.chain
-      if (!chain || chain === 'THOR') return null
-      const inTxId = this.activeOverview?.input?.txId
-      if (!inTxId) return null
-      return getExplorerAddressUrl(chain, inTxId, 'hash')
+    // The legacy tx-card/Accordion list (template line ~538) is a sibling
+    // of the hero-selection v-if/else-if/else chain above it, not part of
+    // it — so without this guard it renders unconditionally underneath
+    // whichever hero matched. True whenever any hero owns the page.
+    hasNewHeroUi() {
+      return !!(
+        this.sendOverview ||
+        this.bondOverview ||
+        this.mimirOverview ||
+        this.refundOverview ||
+        this.multiOutboundOverview ||
+        this.streamingOverview ||
+        this.swapOverview ||
+        this.contractOverview
+      )
     },
-    outputExplorerUrl() {
-      const asset = this.activeOverview?.output?.asset
-      if (!asset) return null
-      const parsed = assetFromString(asset)
-      const chain = parsed?.chain
-      if (!chain || chain === 'THOR') return null
-      const outTxId = this.activeOverview?.output?.txId
-      if (!outTxId) return null
-      return getExplorerAddressUrl(chain, outTxId, 'hash')
+    // The template only ever reads visibleCards inside `v-if="!hasNewHeroUi"`
+    // (Phase 3 of the tx-detail-UI raw-data migration — all 8 hero
+    // overviews, including swapOverview/contractOverview, now read raw data
+    // directly rather than this.cards) — so by the time this getter is
+    // actually evaluated for rendering, every overview is already known to
+    // be null. The old swapOverview-card/contractOverview-card filtering
+    // that used to live here was consequently dead: those branches could
+    // never be reached without hasNewHeroUi already being true, which hides
+    // this getter's result from the template entirely.
+    visibleCards() {
+      return this.cards || []
     },
-    panelVars() {
-      const overview = this.activeOverview
-      if (!overview) return {}
+    // Native RUNE sends never reach the swap/contract card pipeline — they
+    // short-circuit through createNativeTx (see fetchTx), which sets
+    // this.nativeSendAction to the raw Midgard 'send' action. Reads that
+    // directly (Phase 2 of the tx-detail-UI raw-data migration) instead of
+    // going through this.cards/accordion stacks the way this builder used
+    // to — the stack layer was just re-formatting the same raw fields
+    // (createNativeTx's own accordions.action was itself built from these
+    // exact fields), so this is a data-source swap, not a behavior change.
+    // Independent of swapOverview so it renders through its own hero
+    // regardless of swap/contract state.
+    sendOverview() {
+      const nt = this.nativeSendAction
+      if (!nt) return null
+      const inCoin = nt.in?.[0]?.coins?.[0]
+      if (!inCoin?.asset) return null
+
+      const failed = nt.metadata?.send?.code !== '0'
+      const gasAsset = 'THOR.RUNE'
+      const gasRaw = nt.metadata?.send?.networkFees?.[0]?.amount
+      const gasDisplay = gasRaw
+        ? `${gasRaw / 1e9} ${this.showAsset(gasAsset)}` +
+          (this.pools
+            ? ` (${this.formatCurrency(this.amountToUSD(gasAsset, gasRaw, this.pools))})`
+            : '')
+        : ''
+      const timeStamp = moment(nt.date / 1e6)
+      const time = this.splitTrailingParen(
+        timeStamp.isValid()
+          ? `${timeStamp.format('L LT')} (${timeStamp.fromNow()})`
+          : ''
+      )
+      const height = Number(nt.height) > 0 ? Number(nt.height) : null
+      const heightDisplay = height ? `#${this.normalFormat(height)}` : '-'
+      const failureCode = failed ? `${nt.metadata?.send?.code ?? ''}` : null
+      const failureReason = failed ? `${nt.metadata?.send?.reason ?? ''}` : null
+      const parsedFailure = failed
+        ? parseActionReason(failureReason, {
+            formatAmount: (raw) => this.formatAssetAmount(raw, inCoin.asset),
+            heightDisplay,
+          })
+        : null
+
       return {
-        '--left-border':
-          this.assetColorPalette(overview.input?.asset) ??
-          'var(--border-color)',
-        '--right-border':
-          this.assetColorPalette(overview.output?.asset) ??
-          'var(--border-color)',
+        kind: 'send',
+        status: this.getOverviewStatus({ fail: failed }),
+        failed,
+        failure: failed
+          ? {
+              title: parsedFailure?.title || 'Transaction failed',
+              body:
+                parsedFailure?.body ||
+                'The transaction was included in a block and rejected during execution — the transfer never happened, and the gas below was still charged.',
+              code: failureCode,
+              codeLine: parsedFailure
+                ? `code ${failureCode}`
+                : `code ${failureCode}${failureReason ? ` · ${failureReason}` : ''}`,
+            }
+          : null,
+        failureReasonRaw: failureReason,
+        hash: nt.in?.[0]?.txID || this.$route.params.txhash,
+        from: nt.in?.[0]?.address || '',
+        to: nt.out?.[0]?.address || '',
+        asset: inCoin.asset,
+        assetRaw: inCoin.asset,
+        amountRaw: Number(inCoin.amount) || 0,
+        amountDisplay: this.formatAssetAmount(inCoin.amount, inCoin.asset),
+        zeroAmountDisplay: this.formatAssetAmount(0, inCoin.asset),
+        amountUsdDisplay: this.formatUsdValue(
+          this.amountToUSD(inCoin.asset, inCoin.amount, this.pools)
+        ),
+        amountUsdAtExecution: false,
+        runePriceDisplay: this.formatUsdValue(this.runePrice),
+        gasDisplay,
+        gasRuneOnly: this.splitTrailingParen(gasDisplay).main || gasDisplay,
+        gasUsd: this.splitFeeValue(gasDisplay).usd,
+        confirmedIn: `${this.blockSeconds('THOR')} seconds`,
+        timeDisplay: time.main,
+        timeAgoDisplay: time.paren,
+        height,
+        heightDisplay,
+        memo: nt.metadata?.send?.memo || '',
       }
     },
-    overviewBubbleItems() {
-      const overview = this.activeOverview
-      if (!overview) return []
-      const items = []
-      const typeTitle = overview.actionTypeTitle || ''
-      if (typeTitle) {
-        const typeKey = this.getBubbleTypeFromTitle(typeTitle)
-        items.push({
-          label: this.$options.filters?.capitalize?.(typeTitle) ?? typeTitle,
-          colorClass: this.bubbleTypeToColorClass(typeKey),
-          icon:
-            typeKey === 'swap'
-              ? SwapIcon
-              : typeKey === 'send'
-                ? SendTypeIcon
-                : null,
-        })
+    // Bonds/whitelist-bonds always come through createBondState (memo.type
+    // === 'bond' — a plain unbond is a separate memo type/builder,
+    // createUnbondState, which this overview deliberately doesn't cover,
+    // matching the original card-title regex's `^Bond\b` — it never
+    // matched "Unbond" either). The node's current status/total-bond/
+    // provider-count/next-churn aren't in that builder's output (the tx
+    // only carries the delta), so BondHero gets them from a small live
+    // fetch — see the bondOverview watcher below. Reads raw
+    // rawActions/txMemo directly instead of this.cards/accordion stacks
+    // (Phase 2 of the tx-detail-UI raw-data migration) — createBondState
+    // unconditionally uses rawActions[0] (no type filter), so this mirrors
+    // that exactly rather than searching for a 'bond'-typed action.
+    bondOverview() {
+      if (this.txMemo?.type !== 'bond') return null
+      const action = this.rawActions?.[0]
+      if (!action) return null
+
+      const inCoin = action.in?.[0]?.coins?.[0]
+      const inAsset = inCoin?.asset ? this.parseMemoAsset(inCoin.asset) : null
+      if (!inAsset) return null
+      const inAmount = inCoin?.amount ?? 0
+
+      const nodeAddress = action.metadata?.bond?.nodeAddress || ''
+      const providerAddress =
+        action.metadata?.bond?.provider || action.in?.[0]?.address || ''
+      const timeStamp = action.date ? moment.unix(action.date / 1e9) : null
+      const time = this.splitTrailingParen(
+        timeStamp ? `${timeStamp.format('L LT')} (${timeStamp.fromNow()})` : ''
+      )
+      const height = Number(action.height) > 0 ? Number(action.height) : null
+
+      return {
+        kind: 'bond',
+        status: this.getOverviewStatus({}),
+        hash: this.$route.params.txhash,
+        nodeAddress,
+        providerAddress,
+        isWhitelist: !!action.metadata?.bond?.provider,
+        asset: inAsset,
+        amountDisplay: this.formatAssetAmount(inAmount, inAsset),
+        amountUsdDisplay: this.formatUsdValue(
+          this.amountToUSD(inAsset, inAmount, this.pools) || 0
+        ),
+        amountUsdAtExecution: false,
+        amountRaw: Number(inAmount) || 0,
+        timeDisplay: time.main,
+        timeAgoDisplay: time.paren,
+        heightDisplay: height ? `#${this.normalFormat(height)}` : '-',
+        memo: action.metadata?.bond?.memo || '',
       }
-      const s = overview.status
-      if (s) {
-        if (s.tone === 'red') {
-          items.push({
-            label: s.label,
-            colorClass: 'bubble-pill--red',
-            icon: WarningIcon,
-          })
-        } else if (s.tone === 'yellow') {
-          items.push({
-            label: s.label,
-            colorClass: 'bubble-pill--yellow',
-            icon: ClockIcon,
-          })
-        } else {
-          items.push({
-            label: s.label,
-            colorClass: 'bubble-pill--green',
-            icon: CheckIcon,
-          })
+    },
+    // Two distinct builders produce a "standalone refund" card, and this
+    // covers both, now reading raw thorStatus/rawActions data instead of
+    // going through this.cards/accordion stacks (Phase 2 of the
+    // tx-detail-UI raw-data migration): (1) createSwapState's onlyRefund
+    // case — THORChain accepted the swap attempt and the whole thing came
+    // back (slip tolerance, invalid destination, no route) — identified by
+    // this.txMemo.type === 'swap' with every rawActions entry being a
+    // refund; and (2) createAbstractState's generic per-Midgard-action
+    // card for a Midgard `type: 'refund'` action with no matching
+    // swap/failed builder (confirmed against a real empty-memo deposit,
+    // 734A958BAAF44300E246BAD9FA9AF0FD8FD122B938F4ADD8367211324FF37312 —
+    // THORChain couldn't tell what the memo meant at all, so it refunded
+    // the deposit). Both cases can produce a rawActions list that's
+    // entirely `type: 'refund'` entries, so that alone can't tell them
+    // apart — the original memo type is the actual discriminator, which is
+    // why this.txMemo is captured in createTxState. The two cases also
+    // read the refund reason from different raw fields (case 1 only ever
+    // has `.reason`; case 2 falls back to `.code` too) — mirrors
+    // createSwapState's 'Refund Reason' vs. createAbstractState's plain
+    // 'Reason' stack, two different field names for the same concept in
+    // the legacy builders. Not gated on the reason text itself being
+    // present — THORNode sometimes returns an empty refund reason, and
+    // that's still this screen, just with a "not provided" fallback below.
+    refundOverview() {
+      const refundAction = this.rawActions?.find((a) => a.type === 'refund')
+      if (!refundAction) return null
+
+      const isSwapOriginated =
+        this.txMemo?.type === 'swap' &&
+        this.rawActions.every((a) => a.type === 'refund')
+
+      if (isSwapOriginated) {
+        const inAsset = this.parseMemoAsset(
+          this.thorStatus?.tx?.coins?.[0]?.asset,
+          this.pools
+        )
+        if (!inAsset) return null
+        const inAmount = parseInt(this.thorStatus?.tx?.coins?.[0]?.amount ?? 0)
+
+        // A trade/secure-asset refund settles as an internal THORChain
+        // ledger update, not an observed cross-chain outbound — outTxs
+        // stays empty, so the refunded asset/amount fall back to the same
+        // asset+amount that was sent in (a refund always returns the
+        // original asset).
+        const { outTxs } = resolveOutboundTxs(
+          this.thorStatus,
+          this.thorTx,
+          { actions: this.rawActions },
+          this.txMemo,
+          {
+            parseMemoAsset: this.parseMemoAsset.bind(this),
+            assetToString,
+            pools: this.pools,
+          }
+        )
+        let outAsset = inAsset
+        let outAmount = inAmount
+        if (outTxs?.length) {
+          const oAsset = this.parseMemoAsset(
+            outTxs[0]?.coins?.[0]?.asset,
+            this.pools
+          )
+          if (oAsset) {
+            outAsset = oAsset
+            outAmount = parseInt(outTxs[0]?.coins?.[0]?.amount ?? 0)
+          }
+        }
+
+        const timeStamp = refundAction.date
+          ? moment.unix(refundAction.date / 1e9)
+          : null
+        const time = this.splitTrailingParen(
+          timeStamp
+            ? `${timeStamp.format('L LT')} (${timeStamp.fromNow()})`
+            : ''
+        )
+        const height =
+          Number(refundAction.height) > 0 ? Number(refundAction.height) : null
+        const reasonRaw = refundAction.metadata?.refund?.reason || ''
+        const parsedReason = reasonRaw ? parseActionReason(reasonRaw) : null
+        const outboundHash =
+          outTxs?.length && !isInternalTx(outTxs[0]?.id) ? outTxs[0].id : ''
+
+        return {
+          kind: 'refund',
+          status: { label: 'Refunded', tone: 'yellow' },
+          hash: this.$route.params.txhash,
+          // Same field the shipped swapOverview hero reads for its own
+          // Affiliate.vue badge — shown regardless of the refund (the
+          // interface that originated the tx is unrelated to whether the
+          // swap itself succeeded).
+          affiliateAddress: this.txMemo?.affiliate || null,
+          outboundHash,
+          inboundHash: this.thorStatus?.tx?.id || '',
+          from: this.thorStatus?.tx?.from_address || '',
+          sentAsset: inAsset,
+          sentAmountRaw: inAmount,
+          sentAmountDisplay: this.formatAssetAmount(inAmount, inAsset),
+          sentAmountUsdDisplay: this.formatUsdValue(
+            this.amountToUSD(inAsset, inAmount, this.pools) || 0
+          ),
+          sentAmountUsdAtExecution: false,
+          refundedAsset: outAsset,
+          refundedAmountRaw: outAmount,
+          refundedAmountDisplay: this.formatAssetAmount(outAmount, outAsset),
+          refundedAmountUsdDisplay: this.formatUsdValue(
+            this.amountToUSD(outAsset, outAmount, this.pools) || 0
+          ),
+          refundedAmountUsdAtExecution: false,
+          reasonTitle: parsedReason?.title || null,
+          reason:
+            parsedReason?.body ||
+            reasonRaw ||
+            'No reason provided by THORChain.',
+          reasonRaw,
+          // Never set: onlyRefund has no swap action to carry a network-fee
+          // breakdown from (matches the legacy builder's own output — its
+          // 'Outbound Fee' stack only ever gets pushed from a swap's
+          // networkFees, which doesn't exist for a pure refund either).
+          networkFee: null,
+          timeDisplay: time.main,
+          timeAgoDisplay: time.paren,
+          height,
+          heightDisplay: height ? `#${this.normalFormat(height)}` : '-',
+          memo: refundAction.metadata?.refund?.memo || '',
         }
       }
-      ;(overview.labels || []).forEach((l) => {
-        const isRefund = String(l).toLowerCase() === 'refund'
-        items.push({
-          label: l,
-          colorClass: isRefund ? 'bubble-pill--yellow' : 'bubble-pill--grey',
-          icon: isRefund ? RefreshIcon : null,
-        })
-      })
-      return items
+
+      // A swap that mostly succeeded, with only its unfilled remainder
+      // refunded, is NOT this screen — that's multiOutboundOverview's
+      // partial-refund case (or plain swapOverview for a single-leg
+      // delivery). Without this guard, this generic branch would win the
+      // v-if/-else-if race (refundOverview is checked before
+      // multiOutboundOverview) purely because Midgard happened to label one
+      // action 'refund', even with a real 'swap'/'limit_swap' action
+      // sitting right next to it in the same rawActions list. Confirmed
+      // against a real streaming swap that delivered ~$19,936 of USDC and
+      // only refunded a small unfilled remainder,
+      // 402F3496F288522EB87CB3DAD837E2BD8EF8E2FC3AD5610D09EDB4142F17C072 —
+      // Midgard's own 'refund' action there bundles ALL of the tx's outs
+      // (the delivered leg, the affiliate-fee leg, AND the refund leg) into
+      // one `out[]` array, so refundAction.out[0] below isn't even
+      // reliably the refund leg itself (it happened to be the affiliate
+      // RUNE payout here) — reading it at all is unsafe once a real swap
+      // occurred.
+      const hasSuccessfulSwapAction = this.rawActions?.some(
+        (a) => a.type === 'swap' || a.type === 'limit_swap'
+      )
+      if (hasSuccessfulSwapAction) return null
+
+      // Generic per-action refund card (createAbstractState's case).
+      const inCoin = refundAction.in?.[0]
+      const outCoin = refundAction.out?.[0]
+      const inAsset = inCoin?.coins?.[0]?.asset
+        ? this.parseMemoAsset(inCoin.coins[0].asset)
+        : null
+      const outAsset = outCoin?.coins?.[0]?.asset
+        ? this.parseMemoAsset(outCoin.coins[0].asset)
+        : null
+      if (!inAsset || !outAsset) return null
+
+      const inAmount = parseInt(inCoin?.coins?.[0]?.amount ?? 0)
+      const outAmount = parseInt(outCoin?.coins?.[0]?.amount ?? 0)
+      const timeStamp = refundAction.date
+        ? moment.unix(refundAction.date / 1e9)
+        : null
+      const time = this.splitTrailingParen(
+        timeStamp ? `${timeStamp.format('L LT')} (${timeStamp.fromNow()})` : ''
+      )
+      const height =
+        Number(refundAction.height) > 0 ? Number(refundAction.height) : null
+      const reasonRaw =
+        refundAction.metadata?.refund?.reason ??
+        refundAction.metadata?.refund?.code ??
+        ''
+      const parsedReason = reasonRaw ? parseActionReason(reasonRaw) : null
+      const outboundHash =
+        outCoin?.txID && !isInternalTx(outCoin.txID) ? outCoin.txID : ''
+
+      return {
+        kind: 'refund',
+        status: { label: 'Refunded', tone: 'yellow' },
+        hash: this.$route.params.txhash,
+        // createAbstractState never sets accordions.action.affiliateName
+        // for this path, so details.interface (and thus this field) is
+        // always empty in the legacy builder too.
+        affiliateAddress: null,
+        outboundHash,
+        inboundHash: inCoin?.txID || '',
+        from: inCoin?.address || '',
+        sentAsset: inAsset,
+        sentAmountRaw: inAmount,
+        sentAmountDisplay: this.formatAssetAmount(inAmount, inAsset),
+        sentAmountUsdDisplay: this.formatUsdValue(
+          this.amountToUSD(inAsset, inAmount, this.pools) || 0
+        ),
+        sentAmountUsdAtExecution: false,
+        refundedAsset: outAsset,
+        refundedAmountRaw: outAmount,
+        refundedAmountDisplay: this.formatAssetAmount(outAmount, outAsset),
+        refundedAmountUsdDisplay: this.formatUsdValue(
+          this.amountToUSD(outAsset, outAmount, this.pools) || 0
+        ),
+        refundedAmountUsdAtExecution: false,
+        reasonTitle: parsedReason?.title || null,
+        reason:
+          parsedReason?.body || reasonRaw || 'No reason provided by THORChain.',
+        reasonRaw,
+        networkFee: null,
+        timeDisplay: time.main,
+        timeAgoDisplay: time.paren,
+        height,
+        heightDisplay: height ? `#${this.normalFormat(height)}` : '-',
+        memo: refundAction.metadata?.refund?.memo || '',
+      }
     },
-    swapCardIndex() {
-      if (!this.cards?.length) return -1
-      return this.cards.findIndex((card) =>
-        /swap/i.test(card?.details?.title || '')
-      )
-    },
-    visibleCards() {
-      if (!this.cards?.length) return []
-      if (this.contractOverview) return [] // hide all contract cards when contractOverview is active
-      if (!this.swapOverview) return this.cards
-      return this.cards.filter((_, index) => index !== this.swapCardIndex)
-    },
-    swapOverview() {
-      if (this.swapCardIndex < 0) return null
+    // Multi-leg outbounds — either createTradeWithdrawState's output (title
+    // "trade Withdraw"/"secure Withdraw") or the swap card itself (e.g. one
+    // swap output split across several destination-chain txs by a per-tx
+    // amount cap — confirmed against a real 4-leg BTC->TRON.USDT streaming
+    // swap where TRON capped each outbound). Any OTHER multi-out card (e.g.
+    // createRemoveLiquidityState's "Withdraw Liquidity", or a swap with an
+    // affiliate-fee leg producing a MIXED-asset out[]) is deliberately
+    // excluded — unverified shape, and this hero's copy has no fitting
+    // narrative for either. `kind` ('withdraw'|'swap') drives the wording
+    // split in MultiOutboundHero. No per-leg scheduled height exists either
+    // way — every still-pending leg shares one tx-wide overdue signal (see
+    // resolveOutboundLegStatus). Reads rawActions/thorStatus/txMemo directly
+    // instead of this.cards/accordion stacks (Phase 2 of the tx-detail-UI
+    // raw-data migration) — the withdraw path re-derives
+    // createTradeWithdrawState's own out[] logic (self-contained, no shared
+    // helper needed); the swap path re-derives createSwapState's own out[]
+    // logic, sharing resolveOutboundTxs with createSwapState itself/
+    // refundOverview.
+    multiOutboundOverview() {
+      const memoType = this.txMemo?.type
+      const isWithdraw =
+        memoType === 'tradeWithdraw' || memoType === 'secureWithdraw'
+      const isSwap = memoType === 'swap'
+      if (!isWithdraw && !isSwap) return null
 
-      const card = this.cards[this.swapCardIndex]
-      const details = card?.details
-      const middle = details?.overall?.middle || {}
+      const ZERO_HASH =
+        '0000000000000000000000000000000000000000000000000000000000000000'
+      // Precise (full base-unit precision, no 2dp rounding) — this hero
+      // reads as a ledger reconciliation, where formatAssetAmount's usual
+      // rounding would hide exactly the cents-level detail the "amount
+      // accounting" rail card exists to show. Bare ticker, not chain.ticker
+      // — the network's already shown by the panel's own badge chip below,
+      // so repeating it in the amount line is redundant.
+      const precise = (amount, asset) =>
+        `${this.baseAmountFormatOrZero(amount)} ${this.showTicker(asset)}`
 
-      // Fall back to old UI for refunds, pending, or multiple outputs
-      if (middle.fail || middle.refund || middle.pending) return null
-      if ((details?.overall?.out?.length ?? 0) > 1) return null
+      let input, outs, kind, cardTitle, affiliateAddress, from, inboundHash
+      let inboundGasRaw = null
+      let inboundGasAsset = null
+      let timeStampRaw = null
+      let height = null
+      let memoText = ''
+      let intervalDisplay = null
+      let priceImpactDisplay = null
+      let liquidityFeeRawFormatted = null
+      let affiliateFeeInfo = null
 
-      const actionAccordion = card?.accordions?.find(
-        (entry) => entry.name === 'accordion-action'
-      )
-      const inboundAccordion = card?.accordions?.find((entry) =>
-        entry.name.startsWith('accordion-in-')
-      )
-      const outboundAccordion = card?.accordions?.find((entry) =>
-        entry.name.startsWith('accordion-out-')
-      )
+      if (isWithdraw) {
+        const action = this.rawActions?.[0]
+        if (!action) return null
+        const isSecure = memoType === 'secureWithdraw'
+        const ast = this.parseMemoAsset(
+          this.thorStatus?.tx?.coins?.[0]?.asset,
+          this.pools
+        )
+        if (!ast) return null
+        const inAsset = isSecure ? assetToSecure(ast) : assetToTrade(ast)
+        const inAmount = this.thorStatus?.tx?.coins?.[0]?.amount ?? 0
+        input = {
+          asset: inAsset,
+          amount: inAmount,
+          amountUSD: this.amountToUSD(inAsset, inAmount, this.pools),
+          usdAtExecution: false,
+        }
 
-      const input = details?.overall?.in?.[0]
-      const output = details?.overall?.out?.[0]
+        const outAsset = isSecure ? securedToAsset(ast) : tradeToAsset(ast)
+        const outboundSignal = resolveOutboundSignal(
+          this.thorStatus,
+          this.getOutboundStatusContext()
+        )
+        const outboundSigned = outboundSignal.signed ?? false
+        const outboundETA = outboundSignal.eta
+        const outDone = outboundSignal.signed === true
+        const plannedOuts = this.thorStatus?.planned_out_txs ?? []
+        const completedOuts = this.thorStatus?.out_txs ?? []
+        const memoAddress = this.txMemo?.address
 
-      if (!input?.asset || !output?.asset) {
-        return null
+        let rawOuts
+        if (plannedOuts.length > 0) {
+          rawOuts = plannedOuts.map((planned) => {
+            const completed = completedOuts.find(
+              (tx) =>
+                tx.coins?.[0]?.amount === planned.coin?.amount &&
+                tx.coins?.[0]?.asset === planned.coin?.asset
+            )
+            const legState = resolveOutboundLegState(completed, {
+              signed: outboundSigned,
+              eta: outboundETA,
+            })
+            return {
+              asset: outAsset,
+              amount: planned.coin?.amount,
+              txid: completed?.id ?? null,
+              to: planned.to_address,
+              gas: completed?.gas?.[0]?.amount ?? null,
+              gasAsset: completed?.gas
+                ? this.parseMemoAsset(completed.gas[0]?.asset, this.pools)
+                : null,
+              outboundETA: legState.eta,
+              done: !!completed,
+            }
+          })
+        } else if (completedOuts.length > 0) {
+          rawOuts = completedOuts.map((tx) => ({
+            asset: outAsset,
+            amount: tx.coins?.[0]?.amount,
+            txid: tx.id,
+            to: memoAddress,
+            gas: tx.gas?.[0]?.amount ?? null,
+            gasAsset: tx.gas
+              ? this.parseMemoAsset(tx.gas[0]?.asset, this.pools)
+              : null,
+            outboundETA,
+            done: outDone,
+          }))
+        } else if (action.out?.length > 0) {
+          rawOuts = action.out.map((o) => ({
+            asset: outAsset,
+            amount: o.coins?.[0]?.amount,
+            txid: o.txID,
+            to: memoAddress,
+            outboundETA,
+            done: outDone,
+          }))
+        } else {
+          rawOuts = [
+            {
+              asset: outAsset,
+              amount: this.thorStatus?.tx?.coins?.[0]?.amount ?? 0,
+              txid: null,
+              to: memoAddress,
+              outboundETA,
+              done: outDone,
+            },
+          ]
+        }
+
+        outs = rawOuts.map((o) => ({
+          asset: o.asset,
+          amount: o.amount,
+          amountUSD: this.amountToUSD(o.asset, o.amount, this.pools),
+          usdAtExecution: false,
+          txid: o.txid,
+          to: o.to,
+          outboundETA: o.outboundETA,
+          done: o.done,
+          height: null,
+          gas: o.gas ?? null,
+          gasAsset: o.gasAsset ?? null,
+          fees: null,
+          feeAssets: null,
+        }))
+
+        kind = 'withdraw'
+        cardTitle = this.capitalizeFirst(this.camelCase(memoType))
+        affiliateAddress = null
+        from = this.thorStatus?.tx?.from_address || ''
+        inboundHash = this.thorStatus?.tx?.id || ''
+        inboundGasRaw = this.thorStatus?.tx?.gas
+          ? this.thorStatus.tx.gas[0]?.amount
+          : null
+        inboundGasAsset = this.thorStatus?.tx?.gas
+          ? this.parseMemoAsset(this.thorStatus.tx.gas[0]?.asset, this.pools)
+          : null
+        timeStampRaw = action.date
+        height = action.height
+        memoText = this.thorStatus?.tx?.memo || ''
+      } else {
+        // A limit order's card title is always literally "limit order"
+        // (createSwapState: swapTypeLabel picks isLimitOrder before
+        // isRapidSwap) — never contains "swap", so the original
+        // swapCardIndex's `/swap/i` title match could never find it. That
+        // made swapOverview/multiOutboundOverview/streamingOverview all
+        // unreachable for a limit order in the pre-migration code (it fell
+        // through to the legacy card UI instead) — preserved here so this
+        // migration doesn't silently widen coverage to a case that was
+        // never actually handled/tested by this hero.
+        if (this.txMemo?.isLimitOrder) return null
+
+        const { outTxs, affiliateOut } = resolveOutboundTxs(
+          this.thorStatus,
+          this.thorTx,
+          { actions: this.rawActions },
+          this.txMemo,
+          {
+            parseMemoAsset: this.parseMemoAsset.bind(this),
+            assetToString,
+            pools: this.pools,
+          }
+        )
+        // A swap's single-outbound case is already served by swapOverview.
+        if (!outTxs || outTxs.length <= 1) return null
+
+        const swapAction =
+          this.rawActions?.find((a) => a.type === 'swap') ??
+          this.rawActions?.find((a) => a.type === 'limit_swap')
+        const swapMetadata =
+          swapAction?.metadata?.swap ?? swapAction?.metadata?.limit_swap
+        const streamingMeta = swapMetadata?.streamingSwapMeta
+        const streamingCount =
+          this.thorStatus?.stages?.swap_status?.streaming?.count ??
+          streamingMeta?.count
+        const streamingQuantity =
+          this.thorStatus?.stages?.swap_status?.streaming?.quantity ??
+          streamingMeta?.quantity ??
+          this.txMemo?.quantity
+        // A swap card that's still actively streaming defers to
+        // streamingOverview instead (which bails safely if it ever sees
+        // multiple legs while still mid-stream, see its own comment) —
+        // don't show a "final" multi-leg summary while the stream could
+        // still be producing more of it.
+        if (
+          Number(streamingQuantity) > 1 &&
+          Number(streamingCount) < Number(streamingQuantity)
+        ) {
+          return null
+        }
+
+        const inAsset = this.parseMemoAsset(
+          this.thorStatus?.tx?.coins?.[0]?.asset,
+          this.pools
+        )
+        if (!inAsset) return null
+        const inAmount = parseInt(this.thorStatus?.tx?.coins?.[0]?.amount ?? 0)
+        const inAmountUSD =
+          (+(swapMetadata?.inPriceUSD ?? 0) * inAmount) / 1e8 ||
+          this.amountToUSD(inAsset, inAmount, this.pools) ||
+          0
+        input = {
+          asset: inAsset,
+          amount: inAmount,
+          amountUSD: inAmountUSD,
+          usdAtExecution: !!swapMetadata?.inPriceUSD,
+        }
+
+        const outAsset0 = this.parseMemoAsset(
+          outTxs[0]?.coins?.[0]?.asset,
+          this.pools
+        )
+        const outAmount0 = parseInt(outTxs[0]?.coins?.[0]?.amount ?? 0)
+        const outboundHasRefund = outTxs.some(
+          (tx) => tx.refund || tx.memo?.toLowerCase().startsWith('refund')
+        )
+        const outboundHasSuccess = outTxs.some((tx) =>
+          tx.memo?.toLowerCase().startsWith('out')
+        )
+        let outAmountUSD0 =
+          (+(swapMetadata?.outPriceUSD ?? 0) * outAmount0) / 1e8 ||
+          this.amountToUSD(outAsset0, outAmount0, this.pools) ||
+          0
+        if (!outboundHasSuccess && outboundHasRefund) {
+          outAmountUSD0 =
+            (+(swapMetadata?.inPriceUSD ?? 0) * outAmount0) / 1e8 ||
+            this.amountToUSD(outAsset0, outAmount0, this.pools) ||
+            0
+        }
+
+        const outboundSignal = resolveOutboundSignal(
+          this.thorStatus,
+          this.getOutboundStatusContext()
+        )
+        const firstOutDone =
+          !!outTxs[0]?.id ||
+          (!this.thorStatus?.stages?.swap_status?.pending &&
+            (this.thorStatus?.stages?.outbound_signed?.completed ||
+              outAsset0?.chain === 'THOR' ||
+              outAsset0?.synth ||
+              outAsset0?.trade ||
+              outAsset0?.secure) &&
+            (this.thorStatus?.stages?.outbound_delay?.completed ?? true))
+        const moreOutDone = (o) =>
+          !!o.id ||
+          (!this.thorStatus?.stages?.swap_status?.pending &&
+            (this.thorStatus?.stages?.outbound_signed?.completed ||
+              outAsset0?.chain === 'THOR' ||
+              outAsset0?.synth ||
+              outAsset0?.trade ||
+              outAsset0?.secure))
+
+        const outboundFees =
+          swapMetadata?.networkFees?.map((n) => n?.amount) ?? []
+        const outboundFeeAssets =
+          outboundFees.length > 0
+            ? this.parseMemoAsset(
+                swapMetadata?.networkFees?.map((n) => n?.asset),
+                this.pools
+              )
+            : null
+
+        outs = [
+          {
+            asset: outAsset0,
+            amount: outAmount0,
+            amountUSD: outAmountUSD0,
+            usdAtExecution:
+              !outboundHasSuccess && outboundHasRefund
+                ? !!swapMetadata?.inPriceUSD
+                : !!swapMetadata?.outPriceUSD,
+            txid: outTxs[0]?.id ?? null,
+            to:
+              outTxs[0]?.to_address ??
+              this.txMemo?.destAddr?.split('/')[0] ??
+              null,
+            outboundETA: firstOutDone ? null : outboundSignal.eta,
+            done: firstOutDone,
+            height: outTxs[0]?.height ?? null,
+            gas: outTxs[0]?.gas?.[0]?.amount ?? null,
+            gasAsset: outTxs[0]?.gas
+              ? this.parseMemoAsset(outTxs[0].gas[0]?.asset, this.pools)
+              : null,
+            fees: outboundFees,
+            feeAssets: outboundFeeAssets,
+          },
+          ...outTxs.slice(1).map((o) => {
+            const oAmount = parseInt(o.coins?.[0]?.amount ?? 0)
+            const isRefundTx =
+              o.refund || o.memo?.toLowerCase().startsWith('refund')
+            const priceUSD = isRefundTx
+              ? +(swapMetadata?.inPriceUSD ?? 0)
+              : +(swapMetadata?.outPriceUSD ?? 0)
+            return {
+              asset: this.parseMemoAsset(o.coins?.[0]?.asset, this.pools),
+              amount: oAmount,
+              amountUSD: (priceUSD * oAmount) / 1e8,
+              usdAtExecution: isRefundTx
+                ? !!swapMetadata?.inPriceUSD
+                : !!swapMetadata?.outPriceUSD,
+              txid: o.id ?? null,
+              to: o.to_address ?? null,
+              outboundETA: moreOutDone(o) ? null : outboundSignal.eta,
+              done: moreOutDone(o),
+              height: o.height ?? null,
+              gas: o.gas ? o.gas[0]?.amount : null,
+              gasAsset: o.gas
+                ? this.parseMemoAsset(o.gas[0]?.asset, this.pools)
+                : null,
+              fees: null,
+              feeAssets: null,
+            }
+          }),
+        ]
+
+        kind = 'swap'
+        const isLimitOrder = !!this.txMemo?.isLimitOrder
+        const depositAmountZero = !parseInt(
+          streamingMeta?.depositedCoin?.amount || 0
+        )
+        const rapidInterval = depositAmountZero
+          ? this.txMemo?.interval
+          : (streamingMeta?.interval ?? this.txMemo?.interval)
+        const isRapidSwap =
+          (rapidInterval === 0 || rapidInterval === '0') &&
+          Number(swapAction?.height) > 25400000
+        cardTitle = this.capitalizeFirst(
+          isLimitOrder ? 'limit order' : isRapidSwap ? 'rapid Swap' : 'swap'
+        )
+        affiliateAddress = this.txMemo?.affiliate || null
+        from = this.thorStatus?.tx?.from_address || ''
+        inboundHash = this.thorStatus?.tx?.id || ''
+        inboundGasRaw = this.thorStatus?.tx?.gas
+          ? this.thorStatus.tx.gas[0]?.amount
+          : null
+        inboundGasAsset = this.thorStatus?.tx?.gas
+          ? this.parseMemoAsset(this.thorStatus.tx.gas[0]?.asset, this.pools)
+          : null
+        timeStampRaw = swapAction?.date
+        height = swapAction?.height
+        memoText = swapAction?.metadata?.swap?.memo ?? ''
+
+        const swapSlipRaw = parseInt(swapAction?.metadata?.swap?.swapSlip)
+        priceImpactDisplay = swapSlipRaw
+          ? `-${((swapSlipRaw / 1e4) * 100).toFixed(2)}%`
+          : null
+
+        const interval =
+          this.thorStatus?.stages?.swap_status?.streaming?.interval ??
+          streamingMeta?.interval ??
+          this.txMemo?.interval
+        intervalDisplay =
+          interval !== undefined && interval !== null
+            ? (interval === 0 || interval === '0') && Number(height) > 25400000
+              ? 'Rapid Swap'
+              : `${moment.duration(interval * 6, 's').as('seconds')} secs (${this.$options.filters.pluralize(interval, 'Block', { includeNumber: true })})`
+            : null
+
+        const liquidityFeeRaw =
+          parseInt(swapAction?.metadata?.swap?.liquidityFee) || null
+        if (liquidityFeeRaw) {
+          let totalLiquidityFees = liquidityFeeRaw
+          if (Number(streamingCount) < Number(streamingQuantity)) {
+            const one = liquidityFeeRaw / streamingCount
+            totalLiquidityFees += one * (streamingQuantity - streamingCount)
+          }
+          liquidityFeeRawFormatted = `${totalLiquidityFees / 1e8} RUNE (${this.formatSmallCurrency(totalLiquidityFees * this.runePrice)})`
+        }
+
+        if (affiliateOut && affiliateOut.length > 0) {
+          const affiliateOutAmount = affiliateOut.reduce(
+            (a, b) => a + +(b.coins?.[0]?.amount ?? 0),
+            0
+          )
+          affiliateFeeInfo = {
+            kind: 'interface',
+            formatted: `${affiliateOutAmount / 1e8} RUNE (${this.formatSmallCurrency(affiliateOutAmount * this.runePrice)})`,
+          }
+        } else {
+          const affiliateBps = sumAffiliateFee(this.txMemo?.fee || 0)
+          if (affiliateBps > 0) {
+            affiliateFeeInfo = { kind: 'estimate', bps: affiliateBps }
+          }
+        }
       }
 
-      const actionStacks = actionAccordion?.data?.stacks || []
-      const inboundStacks = inboundAccordion?.data?.stacks || []
-      const outboundStacks = outboundAccordion?.data?.stacks || []
+      if (!input?.asset) return null
+
+      // A swap's out[] can legitimately mix the main output with an
+      // affiliate-fee leg in a DIFFERENT asset (excluded below, unverified
+      // shape) — but it can also legitimately mix the main output with a
+      // PARTIAL REFUND leg: a limit/streaming swap that couldn't fully fill
+      // within its price limit sends back whatever's left, in the input
+      // asset, alongside whatever did execute (confirmed against a real
+      // BTC->ETH limit/streaming swap,
+      // 536C7E37EC65410A52E70673703220C2D1F91315ABB9B592200F9FE3A0EC71E7 —
+      // out[] there is [ETH delivery, BTC refund]). A refund leg is
+      // reliably identified by its asset matching the swap's OWN input
+      // asset — a legitimate swap output is never the same asset as what
+      // went in. Only one refund leg is handled (no verified case has
+      // more); anything else mixed in still bails as unverified.
+      const inputAssetStr = assetToString(assetFromString(input.asset))
+      const refundLegsRaw =
+        kind === 'swap'
+          ? outs.filter(
+              (o) => assetToString(assetFromString(o.asset)) === inputAssetStr
+            )
+          : []
+      const deliveredOuts =
+        kind === 'swap'
+          ? outs.filter(
+              (o) => assetToString(assetFromString(o.asset)) !== inputAssetStr
+            )
+          : outs
+      if (kind === 'swap') {
+        if (refundLegsRaw.length > 1 || deliveredOuts.length < 1) return null
+        const deliveredAssetsMatch = deliveredOuts.every(
+          (o) =>
+            assetToString(assetFromString(o.asset)) ===
+            assetToString(assetFromString(deliveredOuts[0].asset))
+        )
+        if (!deliveredAssetsMatch) return null
+      }
+
+      const legs = deliveredOuts.map((leg, i) => {
+        const etaBlocks = leg.outboundETA
+        const pastDueBlocks =
+          etaBlocks != null && etaBlocks < 0 ? -etaBlocks : null
+        return {
+          index: i,
+          status: resolveOutboundLegStatus({
+            done: !!leg.done,
+            outboundETA: etaBlocks,
+          }),
+          hash: leg.txid && leg.txid !== ZERO_HASH ? leg.txid : null,
+          to: leg.to || null,
+          asset: leg.asset,
+          amountRaw: Number(leg.amount) || 0,
+          amountUsdRaw: Number(leg.amountUSD) || 0,
+          usdAtExecution: !!leg.usdAtExecution,
+          amountDisplay: precise(leg.amount, leg.asset),
+          pastDueBlocks,
+          pastDueDisplay: pastDueBlocks
+            ? `~${moment.duration(pastDueBlocks * this.blockSeconds('THOR'), 'seconds').humanize()}`
+            : null,
+        }
+      })
+
+      // The single partial-refund leg (see the guard above) — kept out of
+      // `legs`/totals/DeliveryBar entirely (it's a different asset, so it
+      // has no place in a same-asset delivery percentage), surfaced
+      // separately instead. A PARTIAL refund (delivered legs + this one, as
+      // opposed to refundOverview's onlyRefund case) only happens one way
+      // in THORChain — a limit/streaming swap couldn't fill the remainder
+      // within its price limit — so that's stated directly rather than
+      // hedged.
+      const refundLegRaw = refundLegsRaw[0] || null
+      const refundHeight =
+        refundLegRaw && Number(refundLegRaw.height) > 0
+          ? Number(refundLegRaw.height)
+          : null
+      const refundPercent =
+        refundLegRaw && input.amount > 0
+          ? (Number(refundLegRaw.amount) / Number(input.amount)) * 100
+          : null
+      const refundLeg = refundLegRaw
+        ? {
+            // OutboundsTable numbers legs 1-based off this index — the
+            // refund sits one past the last delivered leg, matching the
+            // mockup ("Leg 5" after 4 delivered legs).
+            index: legs.length,
+            asset: refundLegRaw.asset,
+            hash:
+              refundLegRaw.txid && refundLegRaw.txid !== ZERO_HASH
+                ? refundLegRaw.txid
+                : null,
+            to: refundLegRaw.to || null,
+            amountRaw: Number(refundLegRaw.amount) || 0,
+            amountDisplay: precise(refundLegRaw.amount, refundLegRaw.asset),
+            amountUsdRaw: Number(refundLegRaw.amountUSD) || 0,
+            amountUsdDisplay: this.formatUsdValue(refundLegRaw.amountUSD),
+            note: `Unfilled remainder returned to the sender in the input asset — ${this.addressFormatV2(refundLegRaw.to)}.${refundHeight ? ` Delivered at block #${this.normalFormat(refundHeight)}.` : ''}`,
+            reason:
+              refundPercent != null
+                ? `${refundPercent.toFixed(2)}% of the input could not be filled inside the swap's price limit, so it was returned to the sender as a separate outbound — it is not part of the ${this.showTicker(legs[0].asset)} received above.`
+                : 'This portion could not be filled within the swap’s price limit, so it was returned to the sender.',
+          }
+        : null
+
+      // Totals only mean anything when every leg is the same asset (true for
+      // every trade/secure withdrawal, since they always split one asset
+      // across outbounds) — a mixed-asset multi-out (e.g. a swap's main
+      // output + a RUNE affiliate fee) has no single "percent delivered".
+      const sameAsset = legs.every(
+        (l) =>
+          assetToString(assetFromString(l.asset)) ===
+          assetToString(assetFromString(legs[0].asset))
+      )
+      // inputAmount is only a valid percent denominator when the input and
+      // outbound legs are the SAME asset (a trade/secure withdrawal: the
+      // trade-form and native-form amounts are 1:1 comparable). For a swap,
+      // input is a different asset entirely — resolveTxOutboundTotals
+      // already falls back to the outbound total (same-asset, always
+      // correct) as its denominator when inputAmount is omitted.
+      const totals = sameAsset
+        ? resolveTxOutboundTotals(
+            legs.map((l) => ({ status: l.status, amount: l.amountRaw })),
+            kind === 'withdraw' ? { inputAmount: input.amount } : {}
+          )
+        : null
+      const totalsAsset = sameAsset ? legs[0].asset : null
+
+      const sameDestination = legs.every((l) => l.to === legs[0].to)
+      const destination = sameDestination ? legs[0].to : null
+
+      const overdueLegs = legs.filter((l) => l.status === 'overdue')
+      const deliveredCount = legs.filter((l) => l.status === 'delivered').length
+      // Every still-pending leg shares one tx-wide overdue signal (see
+      // resolveOutboundLegStatus's doc comment), so the "past due" duration
+      // is the same for all of them — take the first.
+      const pastDueDisplay = overdueLegs[0]?.pastDueDisplay ?? null
+
+      let status
+      if (totals?.allDelivered) {
+        status = { label: 'Delivered', tone: 'green' }
+      } else if (deliveredCount === 0 && overdueLegs.length > 0) {
+        status = { label: 'Overdue', tone: 'orange' }
+      } else if (deliveredCount === 0) {
+        status = { label: 'Pending', tone: 'yellow' }
+      } else {
+        status = { label: 'Partially settled', tone: 'yellow' }
+      }
+
+      const inputAssetParsed = assetFromString(input.asset)
+      const assetTypeBadge = this.getNetworkBadge(inputAssetParsed)
+      const destinationBadge = destination
+        ? this.getNetworkBadge(assetFromString(totalsAsset || legs[0].asset))
+        : null
+
+      const timeStamp = timeStampRaw ? moment.unix(timeStampRaw / 1e9) : null
+      const time = this.splitTrailingParen(
+        timeStamp ? `${timeStamp.format('L LT')} (${timeStamp.fromNow()})` : ''
+      )
+      const heightNum = Number(height) > 0 ? Number(height) : null
+
+      // Swap-only metrics.
+      const swapSlipDisplay = kind === 'swap' ? priceImpactDisplay : null
+
+      // Fee breakdown — same derivation swapOverview uses (rows of
+      // {label, usd, subtle}, Total Fees Paid last), just gathering
+      // 'Outbound Fee'/'Gas' info across every leg's own raw record instead
+      // of a single leg's.
+      const feeRows = (() => {
+        const toRow = (label, formatted) => {
+          const { usd, subtle } = this.splitFeeValue(formatted)
+          return { label, usd, subtle }
+        }
+        const rows = []
+        // The gas the sender paid on the source chain to get this tx
+        // observed by THORChain — same 'Gas' derivation streamingOverview's
+        // own Fee Breakdown reads (also absent from the shipped swapOverview
+        // hero's own breakdown — additive here too, not a value that
+        // becomes available later).
+        const inboundFeeRaw =
+          inboundGasRaw && inboundGasAsset
+            ? `${this.baseAmountFormatOrZero(inboundGasRaw)} ${this.showAsset(inboundGasAsset)}` +
+              (this.pools
+                ? ` (${this.formatCurrency(this.amountToUSD(inboundGasAsset, inboundGasRaw, this.pools))})`
+                : '')
+            : ''
+        const inboundFee = this.formatFeeDisplay(inboundFeeRaw)
+        if (inboundFee) rows.push(toRow('Inbound Fee', inboundFee))
+
+        // A trade/secure withdrawal's leg carries its network cost as gas
+        // instead (createTradeWithdrawState threads out_txs[].gas straight
+        // through — confirmed against a real BTC trade withdrawal,
+        // 2F2A6BA57358AA14FC1738E20961EA600D9AF522FB6440329AF0EDF05D2D99F7,
+        // whose out_txs[0].gas is 1540 sats — never the richer
+        // fees[]/feeAssets[] array only createSwapState populates). A leg
+        // with fees[] set never also contributes a gas row (mirrors
+        // buildOutboundAccordions' own `is: !a.fees?.length && ...` gate on
+        // its Gas stack) — fee-array entries are collected leg-by-leg
+        // first, then gas entries, matching the legacy builder's own
+        // stack-collection order (fees stacks are collected across all
+        // out-accordions before any Gas stacks are).
+        const feeSourceRows = []
+        outs.forEach((leg) => {
+          if (leg.fees?.length) {
+            leg.fees.forEach((f, j) => {
+              feeSourceRows.push({
+                type: 'fee',
+                amount: f,
+                asset: leg.feeAssets?.[j],
+              })
+            })
+          }
+        })
+        outs.forEach((leg) => {
+          if (!leg.fees?.length && leg.gas && leg.gasAsset) {
+            feeSourceRows.push({
+              type: 'gas',
+              amount: leg.gas,
+              asset: leg.gasAsset,
+            })
+          }
+        })
+        rows.push(
+          ...feeSourceRows
+            .map((src, i) => {
+              const formatted = this.formatFeeDisplay(
+                src.type === 'fee'
+                  ? `${src.amount / 1e8} ${this.showAsset(src.asset)}` +
+                      (this.pools
+                        ? ` (${this.formatCurrency(this.amountToUSD(src.asset, src.amount, this.pools))})`
+                        : '')
+                  : `${this.baseAmountFormatOrZero(src.amount)} ${this.showAsset(src.asset)} (${this.formatCurrency(this.amountToUSD(src.asset, src.amount, this.pools))})`
+              )
+              return toRow(
+                i === 0 ? 'Network Fee' : `Network Fee ${i + 1}`,
+                formatted
+              )
+            })
+            .filter((r) => r.usd !== '$0.00')
+        )
+
+        if (kind === 'swap') {
+          if (liquidityFeeRawFormatted) {
+            const liquidityFee = this.formatFeeDisplay(liquidityFeeRawFormatted)
+            if (liquidityFee) rows.push(toRow('Liquidity Fee', liquidityFee))
+          }
+          // Same realized-vs-estimated split streamingOverview's Fee
+          // Breakdown uses: an 'Affiliate Fee' row only has a value once
+          // THORChain has actually paid the affiliate out (affiliateOut — a
+          // leg tracked independently of the main delivery, so it can still
+          // be unsettled even once every delivered leg has landed). Fall
+          // back to the memo's own declared bps against the input value,
+          // same as streamingOverview.
+          if (affiliateFeeInfo?.kind === 'interface') {
+            const interfaceFee = this.formatFeeDisplay(
+              affiliateFeeInfo.formatted
+            )
+            if (interfaceFee) rows.push(toRow('Affiliate Fee', interfaceFee))
+          } else if (affiliateFeeInfo?.kind === 'estimate') {
+            const inputUsdForAffiliate =
+              input.amountUSD ??
+              this.amountToUSD(input.asset, input.amount, this.pools) ??
+              0
+            if (affiliateFeeInfo.bps > 0 && inputUsdForAffiliate > 0) {
+              const estUsd =
+                inputUsdForAffiliate * (affiliateFeeInfo.bps / 10000)
+              rows.push({
+                label: 'Affiliate Fee (est.)',
+                usd: `$${this.formatFeeDisplay(estUsd)}`,
+                subtle: `${(affiliateFeeInfo.bps / 100).toFixed(2)}% of input value`,
+              })
+            }
+          }
+        }
+        if (!rows.length) return []
+
+        const totalUsd = rows.reduce(
+          (sum, r) => sum + this.parseUsdAmount(r.usd),
+          0
+        )
+        const inputUsdNum =
+          input.amountUSD ??
+          this.amountToUSD(input.asset, input.amount, this.pools) ??
+          0
+        const totalPct =
+          inputUsdNum > 0
+            ? `${((totalUsd / inputUsdNum) * 100).toFixed(3)}% of ${kind === 'swap' ? 'swap' : 'withdrawal'} value`
+            : null
+        rows.push({
+          label: 'Total Fees Paid',
+          usd: `$${this.formatFeeDisplay(totalUsd)}`,
+          subtle: totalPct,
+          isTotal: true,
+        })
+        return rows
+      })()
+
+      return {
+        kind: 'multiOutbound',
+        multiOutboundKind: kind,
+        status,
+        title:
+          this.capitalizeFirst(cardTitle?.replace(/^refunded\s*/i, '')) ||
+          'Transaction',
+        hasRefund: !!refundLeg,
+        refundLeg,
+        hash: this.$route.params.txhash,
+        // Same field the shipped swapOverview hero reads for its own
+        // Affiliate.vue badge — shown regardless of whether an affiliate
+        // fee actually settled yet (see feeRows above), matching the base
+        // hero's own unconditional display.
+        affiliateAddress,
+        from,
+        inboundHash,
+        destination,
+        asset: input.asset,
+        // getAssetDisplayName is a page-local method (not a global mixin),
+        // so the hero component can't call it itself — resolved here, same
+        // as streamingOverview's own inputName/outputName.
+        assetName: this.getAssetDisplayName(input.asset),
+        assetTypeBadge,
+        destinationBadge,
+        amountRaw: Number(input.amount) || 0,
+        amountDisplay: precise(input.amount, input.asset),
+        amountUsdDisplay: this.formatUsdValue(
+          input.amountUSD ??
+            this.amountToUSD(input.asset, input.amount, this.pools)
+        ),
+        amountUsdAtExecution: !!input.usdAtExecution,
+        legs,
+        sameAsset,
+        totals,
+        totalsAsset,
+        totalsAssetName: totalsAsset
+          ? this.getAssetDisplayName(totalsAsset)
+          : this.getAssetDisplayName(input.asset),
+        totalOutboundRaw: sameAsset ? totals.total : null,
+        totalOutboundDisplay: sameAsset
+          ? precise(totals.total, totalsAsset)
+          : null,
+        totalOutboundUsdDisplay: sameAsset
+          ? this.formatUsdValue(
+              legs.reduce((sum, l) => sum + l.amountUsdRaw, 0)
+            )
+          : null,
+        // True only when every delivered leg's own USD figure is itself
+        // execution-time-priced — one live-fallback leg makes the summed
+        // total a mix, which the tooltip can't honestly call "at execution".
+        totalOutboundUsdAtExecution:
+          sameAsset && legs.every((l) => l.usdAtExecution),
+        // Delivered + refunded — for the OutboundsTable "Total outbound"
+        // summary specifically, which (once everything's settled) covers
+        // the whole original input, not just what was received. The
+        // RECEIVED panel above keeps totalOutboundUsdDisplay as-is (the
+        // refund isn't part of what was "received").
+        totalOutboundWithRefundUsdDisplay: sameAsset
+          ? this.formatUsdValue(
+              legs.reduce((sum, l) => sum + l.amountUsdRaw, 0) +
+                (refundLeg?.amountUsdRaw || 0)
+            )
+          : null,
+        // Unit-less, 2dp-rounded — for the H1's trailing clause (e.g.
+        // "224.48 still to be delivered"), where the precise figure with
+        // its ticker is already stated earlier in the same sentence.
+        outstandingShortDisplay: sameAsset
+          ? this.formatAssetAmount(totals.outstanding, totalsAsset).replace(
+              /\s*\S+$/,
+              ''
+            )
+          : null,
+        intervalDisplay,
+        feeRows,
+        priceImpactDisplay: swapSlipDisplay,
+        deliveredDisplay: sameAsset
+          ? precise(totals.delivered, totalsAsset)
+          : null,
+        outstandingDisplay: sameAsset
+          ? precise(totals.outstanding, totalsAsset)
+          : null,
+        deliveredCount,
+        overdueCount: overdueLegs.length,
+        pastDueDisplay,
+        timeDisplay: time.main,
+        timeAgoDisplay: time.paren,
+        height: heightNum,
+        heightDisplay: heightNum ? `#${this.normalFormat(heightNum)}` : '-',
+        memo: memoText,
+      }
+    },
+    // A swap still actively streaming, or done streaming but not yet
+    // delivered (screen 1d + the outbound-pending transition the legacy UI
+    // already showed via its own Inbound/Rapid Swap/Outbound accordions).
+    // swapOverview bails on middle.pending for both, so this needs its own
+    // resolver. Confirmed against real txs in both phases. Distinguished
+    // from a plain single-swap "pending" (awaiting confirmation) by
+    // quantity > 1; the 'outbound' phase (count >= quantity, output not
+    // done yet) reads the same outbound-signal fields
+    // resolveOutboundSignal/buildOutboundAccordions already derive for the
+    // legacy Outbound accordion, re-derived directly here rather than
+    // through that accordion layer. Once output.done too, it's a fully
+    // settled swap — already served by swapOverview. Static fields
+    // (asset/amount/memo/etc.) come from the same raw thorStatus/rawActions
+    // every other *Overview reads; live streaming progress
+    // (count/quantity/interval/in/out/deposit) comes from a dedicated fetch
+    // (fetchStreamingProgress, watched below, only while phase is
+    // 'streaming' — that endpoint returns zeroed data once a stream is no
+    // longer active) since the accordion snapshot only has
+    // count/quantity/interval, not the partial in/out amounts. Reads
+    // rawActions/thorStatus/txMemo directly instead of
+    // this.cards/accordion stacks (Phase 2 of the tx-detail-UI raw-data
+    // migration) — shares its leg-0 (the swap's single outbound)
+    // derivation with multiOutboundOverview's swap-kind path/createSwapState,
+    // since it's reading the exact same underlying data.
+    streamingOverview() {
+      // See the matching comment in multiOutboundOverview's swap-kind
+      // branch — a limit order's card title never contains "swap", so the
+      // original swapCardIndex-based gate could never reach one either.
+      if (this.txMemo?.type !== 'swap' || this.txMemo?.isLimitOrder) return null
+
+      const pending = this.isTxInPending(this.thorStatus, {
+        actions: this.rawActions,
+      })
+      if (!pending) return null
+
+      const { outTxs } = resolveOutboundTxs(
+        this.thorStatus,
+        this.thorTx,
+        { actions: this.rawActions },
+        this.txMemo,
+        {
+          parseMemoAsset: this.parseMemoAsset.bind(this),
+          assetToString,
+          pools: this.pools,
+        }
+      )
+
+      const swapAction =
+        this.rawActions?.find((a) => a.type === 'swap') ??
+        this.rawActions?.find((a) => a.type === 'limit_swap')
+      const swapMetadata =
+        swapAction?.metadata?.swap ?? swapAction?.metadata?.limit_swap
+      const streamingMeta = swapMetadata?.streamingSwapMeta
+
+      // A 'Stream' stack (the legacy accordion source for isStreaming) only
+      // ever existed when count was truthy — a stream that hasn't landed
+      // its first sub-swap yet (count still 0) was never detected as
+      // "isStreaming" by the original either, so that gate is preserved
+      // here rather than "improved".
+      const streamCountRaw =
+        this.thorStatus?.stages?.swap_status?.streaming?.count ??
+        streamingMeta?.count
+      const streamQuantityRaw =
+        this.thorStatus?.stages?.swap_status?.streaming?.quantity ??
+        streamingMeta?.quantity ??
+        this.txMemo?.quantity
+      const isStreaming = !!streamCountRaw && Number(streamQuantityRaw) > 1
+      const swapExecuted = !!(
+        this.thorStatus?.stages?.inbound_finalised?.completed &&
+        (this.thorStatus?.stages?.swap_finalised?.completed ||
+          !this.thorStatus?.stages?.swap_status?.pending)
+      )
+      if (!isStreaming && !swapExecuted) return null
+
+      const inAsset = this.parseMemoAsset(
+        this.thorStatus?.tx?.coins?.[0]?.asset,
+        this.pools
+      )
+      if (!inAsset) return null
+      const inAmount = parseInt(this.thorStatus?.tx?.coins?.[0]?.amount ?? 0)
+      const inAmountUSD =
+        (+(swapMetadata?.inPriceUSD ?? 0) * inAmount) / 1e8 ||
+        this.amountToUSD(inAsset, inAmount, this.pools) ||
+        0
+      const input = {
+        asset: inAsset,
+        amount: inAmount,
+        amountUSD: inAmountUSD,
+        usdAtExecution: !!swapMetadata?.inPriceUSD,
+      }
+
+      const outAsset = this.parseMemoAsset(
+        outTxs?.length > 0 ? outTxs[0]?.coins?.[0]?.asset : this.txMemo?.asset,
+        this.pools
+      )
+      const outAmount =
+        outTxs?.length > 0 ? parseInt(outTxs[0]?.coins?.[0]?.amount ?? 0) : 0
+      const outboundHasRefund = outTxs?.some(
+        (tx) => tx.refund || tx.memo?.toLowerCase().startsWith('refund')
+      )
+      const outboundHasSuccess = outTxs?.some((tx) =>
+        tx.memo?.toLowerCase().startsWith('out')
+      )
+      const streamingProgressEstimate = (() => {
+        const directEstimate = parseInt(streamingMeta?.outEstimation ?? 0)
+        if (directEstimate) return directEstimate
+        const partialOut = parseInt(streamingMeta?.outCoin?.amount ?? 0)
+        const count = parseInt(streamingMeta?.count ?? 0)
+        const quantity = parseInt(streamingMeta?.quantity ?? 0)
+        if (!partialOut || !count || !quantity) return 0
+        return Math.round((partialOut * quantity) / count)
+      })()
+      const estimatedOutAmount =
+        outAmount ||
+        +this.quote?.expected_amount_out ||
+        streamingProgressEstimate
+      let outAmountUSD =
+        (+(swapMetadata?.outPriceUSD ?? 0) * estimatedOutAmount) / 1e8 ||
+        this.amountToUSD(outAsset, estimatedOutAmount, this.pools) ||
+        0
+      if (!outboundHasSuccess && outboundHasRefund) {
+        outAmountUSD =
+          (+(swapMetadata?.inPriceUSD ?? 0) * outAmount) / 1e8 ||
+          this.amountToUSD(outAsset, outAmount, this.pools) ||
+          0
+      }
+
+      const outboundSignal = resolveOutboundSignal(
+        this.thorStatus,
+        this.getOutboundStatusContext()
+      )
+      const firstOutDone =
+        (outTxs?.length > 0 && !!outTxs[0]?.id) ||
+        (!this.thorStatus?.stages?.swap_status?.pending &&
+          (this.thorStatus?.stages?.outbound_signed?.completed ||
+            outAsset?.chain === 'THOR' ||
+            outAsset?.synth ||
+            outAsset?.trade ||
+            outAsset?.secure) &&
+          (this.thorStatus?.stages?.outbound_delay?.completed ?? true))
+
+      const output = {
+        asset: outAsset,
+        amount: estimatedOutAmount,
+        amountUSD: outAmountUSD,
+        usdAtExecution:
+          !outboundHasSuccess && outboundHasRefund
+            ? !!swapMetadata?.inPriceUSD
+            : !!swapMetadata?.outPriceUSD,
+        done: firstOutDone,
+        to:
+          outTxs?.[0]?.to_address ??
+          this.txMemo?.destAddr?.split('/')[0] ??
+          null,
+      }
+      if (output.done) return null
+
+      const snapshotCount = isStreaming ? Number(streamCountRaw) : 1
+      const snapshotQuantity = isStreaming ? Number(streamQuantityRaw) : 1
+      const streamingDone = isStreaming && snapshotCount >= snapshotQuantity
+      const phase = !isStreaming || streamingDone ? 'outbound' : 'streaming'
+
+      // output above only reads the first leg — fine once the stream is
+      // done (multiOutboundOverview's swap-kind branch defers to this
+      // computed while still actively streaming, then takes over once it
+      // isn't, see its own comment), but if the destination chain's per-tx
+      // cap ever splits an outbound before the stream itself finishes, a
+      // single-leg read here would silently understate the real total. No
+      // verified real tx has shown that actually happening mid-stream —
+      // THORChain's own out_txs only appeared once settlement started in
+      // every case checked — so this is a safety bail, not a confirmed
+      // gap: fall through to the legacy page rather than risk
+      // misrepresenting it.
+      if (phase === 'streaming' && (outTxs?.length ?? 0) > 1) return null
+
+      // Bare ticker, not chain.ticker — the network's already shown by the
+      // panel's own badge chip below, so repeating it in the amount line
+      // (e.g. "458,000 ETH.USDT" instead of "458,000 USDT") is redundant.
+      const precise = (amount, asset) =>
+        `${this.baseAmountFormatOrZero(amount)} ${this.showTicker(asset)}`
+
+      const timeStamp = swapAction?.date
+        ? moment.unix(swapAction.date / 1e9)
+        : null
+      const time = this.splitTrailingParen(
+        timeStamp ? `${timeStamp.format('L LT')} (${timeStamp.fromNow()})` : ''
+      )
+      const height =
+        Number(swapAction?.height) > 0 ? Number(swapAction.height) : null
+      const swapSlipRaw = parseInt(swapAction?.metadata?.swap?.swapSlip)
+      const swapSlipPercent = swapSlipRaw ? (swapSlipRaw / 1e4) * 100 : null
+
+      // Outbound-phase fields — re-derived directly from resolveOutboundSignal
+      // (the same source buildOutboundAccordions/the legacy Outbound
+      // accordion already renders), not through that accordion layer.
+      const outboundETA = outboundSignal.eta
+      const outboundDelayRemaining = outboundSignal.delayRemaining
+      const outboundSigned = outboundSignal.signed
+      const outboundEstDisplay =
+        !firstOutDone && outboundETA > 0
+          ? moment
+              .duration(this.blockSeconds('THOR') * outboundETA, 'seconds')
+              .humanize()
+          : null
+      let outboundDelayEstDisplay = null
+      if (!firstOutDone && outboundDelayRemaining) {
+        outboundDelayEstDisplay = moment
+          .duration(outboundDelayRemaining, 'seconds')
+          .humanize()
+      } else if (
+        !firstOutDone &&
+        outboundSigned === false &&
+        outboundETA <= 0
+      ) {
+        outboundDelayEstDisplay = 'Scheduled Passed'
+      }
+      const outboundPastDueDisplay =
+        !firstOutDone && outboundSigned === false && outboundETA < 0
+          ? (() => {
+              const blocksPastDue = -outboundETA
+              const timePastDue = moment
+                .duration(this.blockSeconds('THOR') * blocksPastDue, 'seconds')
+                .humanize()
+              return `~${timePastDue} (${blocksPastDue.toLocaleString()} blocks)`
+            })()
+          : null
+      const outboundStages = this.getOutboundStages({
+        done: firstOutDone,
+        outboundDelayRemaining,
+        outboundSigned,
+      })
+      const outboundFees =
+        swapMetadata?.networkFees?.map((n) => n?.amount) ?? []
+      const outboundFeeAssets =
+        outboundFees.length > 0
+          ? this.parseMemoAsset(
+              swapMetadata?.networkFees?.map((n) => n?.asset),
+              this.pools
+            )
+          : null
+      const outboundFeeDisplay =
+        outboundFees
+          .map((f, j) =>
+            f
+              ? `${f / 1e8} ${this.showAsset(outboundFeeAssets?.[j])}` +
+                (this.pools
+                  ? ` (${this.formatCurrency(this.amountToUSD(outboundFeeAssets?.[j], f, this.pools))})`
+                  : '')
+              : null
+          )
+          .filter(Boolean)
+          .join(', ') || null
+
+      let outboundDelaySeconds = 0
+      if (!firstOutDone) {
+        if (outboundETA > 0) {
+          outboundDelaySeconds = this.blockSeconds('THOR') * outboundETA
+        }
+        if (outboundDelaySeconds === 0) {
+          outboundDelaySeconds = outboundDelayRemaining || 0
+        }
+      }
+
+      const rates = []
+      if (inAmount && outAmount) {
+        rates.push(
+          `1 ${this.showTicker(inAsset)} = ${outAmount / inAmount} ${this.showTicker(outAsset)}`
+        )
+        rates.push(
+          `1 ${this.showTicker(outAsset)} = ${inAmount / outAmount} ${this.showTicker(inAsset)}`
+        )
+      }
+      // The legacy 'Rate' stack's value is an array of plain strings, but
+      // formatStackValue's array branch expects {text} objects — it maps
+      // each string's nonexistent .text to '', so this has always rendered
+      // empty. Preserved via the same shared helper rather than hardcoded,
+      // in case that helper's behavior is ever revisited.
+      const rateDisplay = this.formatStackValue(rates)
+
+      const interval =
+        this.thorStatus?.stages?.swap_status?.streaming?.interval ??
+        streamingMeta?.interval ??
+        this.txMemo?.interval
+      const intervalDisplay =
+        interval !== undefined && interval !== null
+          ? (interval === 0 || interval === '0') && Number(height) > 25400000
+            ? 'Rapid Swap'
+            : `${moment.duration(interval * 6, 's').as('seconds')} secs (${this.$options.filters.pluralize(interval, 'Block', { includeNumber: true })})`
+          : null
+      // Fee breakdown — same derivation as multiOutboundOverview's, minus
+      // the per-leg outbound-fee gathering (nothing's been paid out yet).
+      const feeRows = (() => {
+        const toRow = (label, formatted) => {
+          const { usd, subtle } = this.splitFeeValue(formatted)
+          return { label, usd, subtle }
+        }
+        const rows = []
+        const inboundGasRaw = this.thorStatus?.tx?.gas
+          ? this.thorStatus.tx.gas[0]?.amount
+          : null
+        const inboundGasAsset = this.thorStatus?.tx?.gas
+          ? this.parseMemoAsset(this.thorStatus.tx.gas[0]?.asset, this.pools)
+          : null
+        const inboundFeeRaw =
+          inboundGasRaw && inboundGasAsset
+            ? `${this.baseAmountFormatOrZero(inboundGasRaw)} ${this.showAsset(inboundGasAsset)}` +
+              (this.pools
+                ? ` (${this.formatCurrency(this.amountToUSD(inboundGasAsset, inboundGasRaw, this.pools))})`
+                : '')
+            : ''
+        const inboundFee = this.formatFeeDisplay(inboundFeeRaw)
+        if (inboundFee) rows.push(toRow('Inbound Fee', inboundFee))
+
+        const liquidityFeeRaw =
+          parseInt(swapAction?.metadata?.swap?.liquidityFee) || null
+        if (liquidityFeeRaw) {
+          let totalLiquidityFees = liquidityFeeRaw
+          if (Number(streamCountRaw) < Number(streamQuantityRaw)) {
+            const one = liquidityFeeRaw / streamCountRaw
+            totalLiquidityFees += one * (streamQuantityRaw - streamCountRaw)
+          }
+          const liquidityFee = this.formatFeeDisplay(
+            `${totalLiquidityFees / 1e8} RUNE (${this.formatSmallCurrency(totalLiquidityFees * this.runePrice)})`
+          )
+          if (liquidityFee)
+            rows.push(toRow('Liquidity Fee (est.)', liquidityFee))
+        }
+        // 'Interface Fee' only has a value once THORChain has actually paid
+        // the affiliate out — gated on affiliateOut.length > 0. For a
+        // streaming swap, that payout is only realized once the stream
+        // settles (confirmed: absent — not zero, absent — for the whole
+        // active-streaming window), so this row would otherwise vanish even
+        // though the fee is guaranteed to be charged. Fall back to
+        // estimating it from the memo's own declared bps against the input
+        // value, labeled "(est.)" since it hasn't actually gone out yet —
+        // same reasoning as Liquidity Fee (est.) above.
+        const affiliateBps = sumAffiliateFee(this.txMemo?.fee || 0)
+        const inputUsdForAffiliate =
+          input.amountUSD ??
+          this.amountToUSD(input.asset, input.amount, this.pools) ??
+          0
+        if (affiliateBps > 0 && inputUsdForAffiliate > 0) {
+          const estUsd = inputUsdForAffiliate * (affiliateBps / 10000)
+          rows.push({
+            label: 'Affiliate Fee (est.)',
+            usd: `$${this.formatFeeDisplay(estUsd)}`,
+            subtle: `${(affiliateBps / 100).toFixed(2)}% of input value`,
+          })
+        }
+        if (!rows.length) return []
+        const totalUsd = rows.reduce(
+          (sum, r) => sum + this.parseUsdAmount(r.usd),
+          0
+        )
+        const totalPct =
+          inputUsdForAffiliate > 0
+            ? `${((totalUsd / inputUsdForAffiliate) * 100).toFixed(3)}% of swap value (est.)`
+            : null
+        rows.push({
+          label: 'Total Fees Paid (est.)',
+          usd: `$${this.formatFeeDisplay(totalUsd)}`,
+          subtle: totalPct,
+          isTotal: true,
+        })
+        return rows
+      })()
+
+      return {
+        kind: 'streaming',
+        status: { label: 'In progress', tone: 'yellow' },
+        hash: this.$route.params.txhash,
+        // Same field the shipped swapOverview hero reads for its own
+        // Affiliate.vue badge — not derived here.
+        affiliateAddress: this.txMemo?.affiliate || null,
+        from: this.thorStatus?.tx?.from_address || '',
+        inboundHash: this.thorStatus?.tx?.id || '',
+        destination: output.to || null,
+        asset: input.asset,
+        // Full chain name for a chain's own gas asset (BTC.BTC ->
+        // "Bitcoin", ETH.ETH -> "Ethereum"), bare ticker otherwise (ETH.USDC
+        // -> "USDC") — matches the shipped swapOverview hero's own
+        // .tx-asset-primary convention (getAssetDisplayName, page-local
+        // only, not reachable from this child component).
+        inputName: this.getAssetDisplayName(input.asset),
+        assetBadge: this.getNetworkBadge(assetFromString(input.asset)),
+        amountRaw: Number(input.amount) || 0,
+        amountDisplay: precise(input.amount, input.asset),
+        amountUsdDisplay: this.formatUsdValue(
+          input.amountUSD ??
+            this.amountToUSD(input.asset, input.amount, this.pools)
+        ),
+        amountUsdAtExecution: !!input.usdAtExecution,
+        outputAsset: output.asset,
+        outputName: this.getAssetDisplayName(output.asset),
+        outputAssetBadge: this.getNetworkBadge(assetFromString(output.asset)),
+        phase,
+        isStreaming,
+        // The swap's full projected FINAL total (swapMetadata's
+        // streamingSwapMeta.outEstimation, computed once at swap creation)
+        // — a distinct figure from "so far" below. Re-derived on every
+        // rebuild, so no separate fetch needed. Once phase is 'outbound'
+        // this is no longer just a projection — streaming's done, so it's
+        // the real determined output.
+        outputProjectedRaw: Number(output.amount) || 0,
+        outputProjectedDisplay: precise(output.amount, output.asset),
+        outputProjectedUsdDisplay: this.formatUsdValue(output.amountUSD),
+        // Shared by both the projected total and "so far" USD figures
+        // below — outputSoFarUsdDisplay is scaled proportionally off this
+        // same output.amountUSD (see buildStreamingProgress), so it carries
+        // the same price basis.
+        outputUsdAtExecution: !!output.usdAtExecution,
+        // "So far" (outputSoFarDisplay/-UsdDisplay) comes from the live
+        // fetch below and stays null until it resolves (or once phase is
+        // 'outbound' — see buildStreamingProgress) — deliberately not
+        // falling back to outputProjectedDisplay, which would overstate
+        // progress mid-stream (it's the full swap's total, not what's
+        // landed yet).
+        ...this.buildStreamingProgress(
+          { snapshotCount, snapshotQuantity, phase },
+          input.asset,
+          output
+        ),
+        outboundHash:
+          outTxs?.[0]?.id && !isInternalTx(outTxs[0].id) ? outTxs[0].id : '',
+        outboundEstDisplay,
+        outboundDelayEstDisplay,
+        // buildOutboundAccordions sets both remainingTime/totalTime to this
+        // exact same value (an ETA-derived delay, falling back to the raw
+        // outboundDelayRemaining only when that ETA-derived figure is 0) —
+        // StreamingSwapHero's own local countdown timer is what turns this
+        // single "current remaining" value into a real remaining-vs-total
+        // pair client-side (its outboundDelayTimerTotal only ever grows to
+        // the largest remaining value observed across polls).
+        outboundDelayRemainingSeconds: outboundDelaySeconds,
+        outboundDelayTotalSeconds: outboundDelaySeconds,
+        outboundPastDueDisplay,
+        outboundStages,
+        outboundFeeDisplay,
+        intervalDisplay,
+        rateDisplay,
+        priceImpactDisplay:
+          swapSlipPercent != null ? `-${swapSlipPercent.toFixed(2)}%` : null,
+        feeRows,
+        timeDisplay: time.main,
+        timeAgoDisplay: time.paren,
+        height,
+        heightDisplay: height ? `#${this.normalFormat(height)}` : '-',
+        memo: swapAction?.metadata?.swap?.memo ?? '',
+      }
+    },
+    // Mimir votes always come through createAbstractState's mimir branch
+    // (no dedicated builder) — that branch only carries the tx's own vote
+    // (node address, key, value); the network-wide tally/threshold/current
+    // effective value come from a live fetch (fetchMimirConsensus, watched
+    // below), the same "gap" pattern as bondOverview's node snapshot. Reads
+    // rawActions directly instead of this.cards/accordion stacks (Phase 2
+    // of the tx-detail-UI raw-data migration).
+    mimirOverview() {
+      const mimirAction = this.rawActions?.find((a) => a.type === 'mimir')
+      if (!mimirAction) return null
+
+      const key = mimirAction.metadata?.mimir?.key
+      if (!key) return null
+      const rawValue = mimirAction.metadata?.mimir?.value
+      const value = rawValue != null && rawValue !== '' ? `${rawValue}` : ''
+      const nodeAddress = mimirAction.in?.[0]?.address || ''
+      const timeStamp = mimirAction.date
+        ? moment.unix(mimirAction.date / 1e9)
+        : null
+      const time = this.splitTrailingParen(
+        timeStamp ? `${timeStamp.format('L LT')} (${timeStamp.fromNow()})` : ''
+      )
+      const height =
+        Number(mimirAction.height) > 0 ? Number(mimirAction.height) : null
+
+      return {
+        kind: 'mimir',
+        status: this.getOverviewStatus({}),
+        hash: this.$route.params.txhash,
+        nodeAddress,
+        key,
+        value,
+        memo: `mimir:${key}:${value}`,
+        timeDisplay: time.main,
+        timeAgoDisplay: time.paren,
+        height,
+        heightDisplay: height ? `#${this.normalFormat(height)}` : '-',
+      }
+    },
+    swapOverview() {
+      // Same limit-order gate as multiOutboundOverview/streamingOverview
+      // (see their matching comments) — a limit order's card title is
+      // literally 'limit order', which the original /swap/i-matching
+      // swapCardIndex could never find either, so swapOverview was
+      // unreachable for one before this migration too.
+      if (this.txMemo?.type !== 'swap' || this.txMemo?.isLimitOrder) return null
+
+      // A pure refund (every Midgard action is type 'refund') is
+      // refundOverview's case — matches createSwapState's own `onlyRefund`,
+      // which fed the legacy card's `middle.fail`.
+      const onlyRefund =
+        this.rawActions?.length > 0 &&
+        this.rawActions.every((a) => a.type === 'refund')
+      if (onlyRefund) return null
+      // Matches the legacy card's `middle.pending`.
+      if (this.isTxInPending(this.thorStatus, { actions: this.rawActions }))
+        return null
+
+      const { outTxs, affiliateOut } = resolveOutboundTxs(
+        this.thorStatus,
+        this.thorTx,
+        { actions: this.rawActions },
+        this.txMemo,
+        {
+          parseMemoAsset: this.parseMemoAsset.bind(this),
+          assetToString,
+          pools: this.pools,
+        }
+      )
+      // Multiple outbound legs is multiOutboundOverview's case.
+      if (outTxs && outTxs.length > 1) return null
+
+      const midgardSwap =
+        this.rawActions?.find((a) => a.type === 'swap') ??
+        this.rawActions?.find((a) => a.type === 'limit_swap')
+      const swapMeta =
+        midgardSwap?.metadata?.swap ?? midgardSwap?.metadata?.limit_swap
+      const refundAction = this.rawActions?.find((a) => a.type === 'refund')
+      const contractAction = this.rawActions?.find((a) => a.type === 'contract')
+
+      const inAsset = this.parseMemoAsset(
+        this.thorStatus?.tx?.coins?.[0]?.asset,
+        this.pools
+      )
+      const inAmount = parseInt(this.thorStatus?.tx?.coins?.[0]?.amount ?? 0)
+      const inAmountUSD =
+        (+(swapMeta?.inPriceUSD ?? 0) * inAmount) / 1e8 ||
+        this.amountToUSD(inAsset, inAmount, this.pools) ||
+        0
+      const inUsdAtExecution = !!swapMeta?.inPriceUSD
+      const input = {
+        asset: inAsset,
+        amount: inAmount,
+        amountUSD: inAmountUSD,
+      }
+
+      const outAsset = this.parseMemoAsset(
+        outTxs?.length > 0 ? outTxs[0]?.coins?.[0]?.asset : this.txMemo?.asset,
+        this.pools
+      )
+      if (!input.asset || !outAsset) {
+        return null
+      }
+      const outAmount =
+        outTxs?.length > 0 ? parseInt(outTxs[0]?.coins?.[0]?.amount ?? 0) : 0
+      const outboundHasRefund = outTxs?.some(
+        (tx) => tx.refund || tx.memo?.toLowerCase().startsWith('refund')
+      )
+      const outboundHasSuccess = outTxs?.some((tx) =>
+        tx.memo?.toLowerCase().startsWith('out')
+      )
+      const streamingMeta = swapMeta?.streamingSwapMeta
+      const streamingProgressEstimate = (() => {
+        const directEstimate = parseInt(streamingMeta?.outEstimation ?? 0)
+        if (directEstimate) return directEstimate
+        const partialOut = parseInt(streamingMeta?.outCoin?.amount ?? 0)
+        const count = parseInt(streamingMeta?.count ?? 0)
+        const quantity = parseInt(streamingMeta?.quantity ?? 0)
+        if (!partialOut || !count || !quantity) return 0
+        return Math.round((partialOut * quantity) / count)
+      })()
+      const estimatedOutAmount =
+        outAmount ||
+        +this.quote?.expected_amount_out ||
+        streamingProgressEstimate
+      let outAmountUSD =
+        (+(swapMeta?.outPriceUSD ?? 0) * estimatedOutAmount) / 1e8 ||
+        this.amountToUSD(outAsset, estimatedOutAmount, this.pools) ||
+        0
+      if (!outboundHasSuccess && outboundHasRefund) {
+        outAmountUSD =
+          (+(swapMeta?.inPriceUSD ?? 0) * outAmount) / 1e8 ||
+          this.amountToUSD(outAsset, outAmount, this.pools) ||
+          0
+      }
+      const outUsdAtExecution =
+        !outboundHasSuccess && outboundHasRefund
+          ? !!swapMeta?.inPriceUSD
+          : !!swapMeta?.outPriceUSD
+      const output = {
+        asset: outAsset,
+        amount: estimatedOutAmount,
+        amountUSD: outAmountUSD,
+      }
 
       const inputAsset = assetFromString(input.asset)
       const outputAsset = assetFromString(output.asset)
-      const status = this.getOverviewStatus(details?.overall?.middle)
-      const inboundHeight = this.getNumericStackValue(
-        inboundStacks,
-        'Block Height'
-      )
-      const outboundHeight = this.getNumericStackValue(
-        outboundStacks,
-        'Executed at'
-      )
-      const inboundHash = this.getStackDisplayValue(inboundStacks, 'Hash')
-      const outboundHash = this.getStackDisplayValue(outboundStacks, 'Hash')
+      const status = this.getOverviewStatus({})
+
+      // The legacy inbound accordion for a swap never carried a `height`
+      // field at all (createSwapState's accordions.in[0] omits it), so the
+      // 'Block Height' stack this used to read never actually had a value —
+      // preserved as always-null rather than "improved" with a real height.
+      const inboundHeight = null
+      const outboundHeight =
+        Number(outTxs?.[0]?.height) > 0 ? Number(outTxs[0].height) : null
+      const inboundHash = this.thorStatus?.tx?.id || ''
+      const outboundHash =
+        outTxs?.[0]?.id && !isInternalTx(outTxs[0].id) ? outTxs[0].id : ''
 
       const settledSeconds =
         inboundHeight && outboundHeight && outboundHeight >= inboundHeight
           ? (outboundHeight - inboundHeight) * this.blockSeconds('THOR')
           : null
 
-      const midgardSwap =
-        (this.rawActions || []).find((a) => a.type === 'swap') ??
-        (this.rawActions || []).find((a) => a.type === 'limit_swap')
-      const contractAction = (this.rawActions || []).find(
-        (a) => a.type === 'contract'
-      )
       const actionHeight = midgardSwap ? parseInt(midgardSwap.height) : null
       const outAssetStr = assetToString(outputAsset)
       const outHeights = (midgardSwap?.out || [])
@@ -841,35 +2028,73 @@ export default {
           ? blockTime(latestOutHeight - actionHeight)
           : null
 
-      const rate = this.getStackDisplayValue(actionStacks, 'Rate')
-      const slip = this.getStackDisplayValue(actionStacks, 'Swap Slip')
-      const affiliateBasis = this.getStackDisplayValue(
-        actionStacks,
-        'Affiliate Basis'
-      )
-      const liquidityFee = this.formatFeeDisplay(
-        this.getStackDisplayValueByPrefix(actionStacks, 'Liquidity Fee')
-      )
-      const interfaceFee = this.formatFeeDisplay(
-        this.getStackDisplayValue(actionStacks, 'Interface Fee')
-      )
-      const networkFees = outboundStacks
-        .filter((stack) => stack.key === 'Outbound Fee' && stack.is)
-        .map((stack) =>
-          this.formatFeeDisplay(this.formatStackValue(stack.value))
+      // The legacy 'Rate' stack's value was an array of plain strings —
+      // formatStackValue's array branch only ever reads an item's `.text`
+      // (absent here), so it always formatted to '' and never actually
+      // contributed to the computedRate-or-rate fallback below.
+      const rate = ''
+      const swapSlipRaw = parseInt(midgardSwap?.metadata?.swap?.swapSlip)
+      const slip = swapSlipRaw
+        ? `${this.percentageFormat(swapSlipRaw / 1e4, 2)}`
+        : ''
+      const affiliateBasis = String(sumAffiliateFee(this.txMemo?.fee || 0))
+      const streamingCount =
+        this.thorStatus?.stages?.swap_status?.streaming?.count ??
+        streamingMeta?.count
+      const streamingQuantity =
+        this.thorStatus?.stages?.swap_status?.streaming?.quantity ??
+        streamingMeta?.quantity ??
+        this.txMemo?.quantity
+      const liquidityFeeRaw =
+        parseInt(midgardSwap?.metadata?.swap?.liquidityFee) || null
+      let liquidityFee = null
+      if (liquidityFeeRaw) {
+        let totalLiquidityFees = liquidityFeeRaw
+        if (Number(streamingCount) < Number(streamingQuantity)) {
+          const one = liquidityFeeRaw / streamingCount
+          totalLiquidityFees += one * (streamingQuantity - streamingCount)
+        }
+        liquidityFee = this.formatFeeDisplay(
+          `${totalLiquidityFees / 1e8} RUNE (${this.formatSmallCurrency(totalLiquidityFees * this.runePrice)})`
         )
+      }
+      let interfaceFee = null
+      if (affiliateOut && affiliateOut.length > 0) {
+        const affiliateOutAmount = affiliateOut.reduce(
+          (a, b) => a + +(b.coins?.[0]?.amount ?? 0),
+          0
+        )
+        interfaceFee = this.formatFeeDisplay(
+          `${affiliateOutAmount / 1e8} RUNE (${this.formatSmallCurrency(affiliateOutAmount * this.runePrice)})`
+        )
+      }
+      const outboundFees = swapMeta?.networkFees?.map((n) => n?.amount) ?? []
+      const outboundFeeAssets =
+        outboundFees.length > 0
+          ? this.parseMemoAsset(
+              swapMeta?.networkFees?.map((n) => n?.asset),
+              this.pools
+            )
+          : null
+      const networkFees = outboundFees
+        .map((f, j) => {
+          if (!f) return null
+          const asset = Array.isArray(outboundFeeAssets)
+            ? outboundFeeAssets[j]
+            : outboundFeeAssets
+          const formatted =
+            `${f / 1e8} ${this.showAsset(asset)}` +
+            (this.pools
+              ? ` (${this.formatCurrency(this.amountToUSD(asset, f, this.pools))})`
+              : '')
+          return this.formatFeeDisplay(formatted)
+        })
         .filter(Boolean)
       const contractActionType = this.getContractActionType(contractAction)
 
       // Historical prices at the time the swap executed — more accurate than
-      // current pool prices for displaying USD values.
-      const swapMeta =
-        midgardSwap?.metadata?.swap ?? midgardSwap?.metadata?.limit_swap
-      // Whether the displayed USD value is derived from the historical
-      // inPriceUSD/outPriceUSD (price at the moment the swap executed) rather
-      // than a current-price fallback. Drives the USD tooltip wording.
-      const inUsdAtExecution = !!swapMeta?.inPriceUSD
-      const outUsdAtExecution = !!swapMeta?.outPriceUSD
+      // current pool prices for displaying USD values (swapMeta/
+      // inUsdAtExecution/outUsdAtExecution already computed above).
       const nonContractInUsdRaw = swapMeta?.inPriceUSD
         ? (parseFloat(input.amount) / 1e8) * parseFloat(swapMeta.inPriceUSD)
         : parseFloat(input.amountUSD) || 0
@@ -882,8 +2107,7 @@ export default {
       // the midgard amounts which only reflect the tiny THORChain-native leg.
       let contractDisplay = null
       if (contractAction && contractActionType) {
-        const cEvents =
-          contractAction.metadata?.contract?.contractEvents || []
+        const cEvents = contractAction.metadata?.contract?.contractEvents || []
         const cToAttrs = (e) =>
           Object.fromEntries(
             (e.attributes || []).map(({ key, value }) => [key, value])
@@ -891,9 +2115,7 @@ export default {
         // Prefer the swap action's sender; the contractAction.in address is often
         // the CosmWasm executor module account, not the actual user
         const cUserAddr =
-          midgardSwap?.in?.[0]?.address ||
-          contractAction.in?.[0]?.address ||
-          ''
+          midgardSwap?.in?.[0]?.address || contractAction.in?.[0]?.address || ''
 
         // Input: prefer metadata.funds, fall back to first non-rune coin_spent by user
         let cFundsAmount = 0
@@ -909,9 +2131,7 @@ export default {
             .map(cToAttrs)
             .find(
               (a) =>
-                a.spender === cUserAddr &&
-                a.amount &&
-                !/rune$/i.test(a.amount)
+                a.spender === cUserAddr && a.amount && !/rune$/i.test(a.amount)
             )
           if (spentAttr) {
             cFundsAmount = parseInt(spentAttr.amount) || 0
@@ -935,8 +2155,7 @@ export default {
                 const amt = parseInt(p) || 0
                 const denom = p.replace(/^\d+/, '').trim()
                 if (denom && amt > 0)
-                  cReceivedByDenom[denom] =
-                    (cReceivedByDenom[denom] || 0) + amt
+                  cReceivedByDenom[denom] = (cReceivedByDenom[denom] || 0) + amt
               })
             })
         }
@@ -952,7 +2171,7 @@ export default {
           // Preserve secure: true flag for badge; fall back to converted form
           const cInAsset = cFundsDenom
             ? (assetFromString(cFundsDenom.toUpperCase()) ??
-                assetFromString(cInAssetStr))
+              assetFromString(cInAssetStr))
             : null
           const cInTicker = cInAsset?.ticker || cFundsDenom
           const cOutAssetStr = cPrimaryDenom
@@ -960,11 +2179,19 @@ export default {
             : ''
           const cOutAsset = cPrimaryDenom
             ? (assetFromString(cPrimaryDenom.toUpperCase()) ??
-                assetFromString(cOutAssetStr))
+              assetFromString(cOutAssetStr))
             : null
           const cOutTicker = cOutAsset?.ticker || cPrimaryDenom
-          const cInUsdRaw = this.amountToUSD(cInAssetStr, cFundsAmount, this.pools)
-          const cOutUsdRaw = this.amountToUSD(cOutAssetStr, cReceivedAmt, this.pools)
+          const cInUsdRaw = this.amountToUSD(
+            cInAssetStr,
+            cFundsAmount,
+            this.pools
+          )
+          const cOutUsdRaw = this.amountToUSD(
+            cOutAssetStr,
+            cReceivedAmt,
+            this.pools
+          )
           contractDisplay = {
             inputAsset: cInAssetStr || null,
             inputName:
@@ -1019,6 +2246,28 @@ export default {
       const displayOutputAmount = contractDisplay
         ? contractDisplay.outputAmount
         : this.formatAssetAmount(output.amount, output.asset)
+
+      // Matches createSwapState's own swapTypeLabel (isLimitOrder already
+      // excluded by the guard above, so this reduces to rapid-vs-plain).
+      const depositAmountZero = !parseInt(
+        streamingMeta?.depositedCoin?.amount || 0
+      )
+      const rapidInterval = depositAmountZero
+        ? this.txMemo?.interval
+        : (streamingMeta?.interval ?? this.txMemo?.interval)
+      const isRapidSwap =
+        (rapidInterval === 0 || rapidInterval === '0') &&
+        Number(midgardSwap?.height) > 25400000
+      const swapTypeLabel = isRapidSwap ? 'rapid Swap' : 'swap'
+
+      const timeStampRaw = midgardSwap?.date
+      const timeStampMoment = timeStampRaw
+        ? moment.unix(timeStampRaw / 1e9)
+        : null
+      const timeDisplay = timeStampMoment?.isValid()
+        ? `${timeStampMoment.format('L LT')} (${timeStampMoment.fromNow()})`
+        : ''
+
       return {
         title: contractActionType
           ? `${contractActionType}: ${displayInputAmount} for ${displayOutputAmount}`
@@ -1026,9 +2275,9 @@ export default {
         metaLabel: `${contractActionType || this.getSwapActionLabel(inputAsset, outputAsset)} · ${this.getSwapProductLabel(contractAction)}`,
         hasContractAction: !!contractAction,
         status,
-        affiliateAddress: details?.interface || '',
-        actionTypeTitle: details?.title || '',
-        labels: details?.labels || [],
+        affiliateAddress: this.txMemo?.affiliate || '',
+        actionTypeTitle: swapTypeLabel,
+        labels: refundAction ? ['Refund'] : [],
         input: contractDisplay
           ? {
               asset: contractDisplay.inputAsset,
@@ -1161,8 +2410,7 @@ export default {
             { label: 'Status', value: status.label, type: 'status' },
             {
               label: 'Time',
-              value:
-                this.getStackDisplayValue(actionStacks, 'Timestamp') || '-',
+              value: timeDisplay || '-',
             },
             {
               label: 'Block',
@@ -1183,18 +2431,14 @@ export default {
                 }
               : {
                   label: 'From',
-                  address:
-                    this.getStackDisplayValue(inboundStacks, 'From') ||
-                    this.thorStatus?.tx?.from_address,
+                  address: this.thorStatus?.tx?.from_address,
                   type: 'address',
                 },
             !contractAction
               ? {
                   label: 'To',
                   address:
-                    this.getStackDisplayValue(outboundStacks, 'Destination') ||
-                    outTxs?.[0]?.to_address ||
-                    memo?.destAddr,
+                    outTxs?.[0]?.to_address || this.txMemo?.destAddr || null,
                   type: 'address',
                 }
               : null,
@@ -1292,11 +2536,9 @@ export default {
               contractAction?.in?.[0]?.address ||
               this.thorStatus?.tx?.from_address ||
               ''
-            const timeText = this.getStackDisplayValue(
-              actionStacks,
-              'Timestamp'
-            )
-            const contractFailed = (contractAction?.metadata?.contract?.code ?? 0) > 0
+            const timeText = timeDisplay
+            const contractFailed =
+              (contractAction?.metadata?.contract?.code ?? 0) > 0
             const contractLogs = contractAction?.metadata?.contract?.logs
             return [
               {
@@ -1336,11 +2578,10 @@ export default {
             output,
             inboundHeight,
             outboundHeight,
-            actionStacks,
-            inboundStacks,
-            outboundStacks,
-            inputAsset,
-            outputAsset,
+            fromAddress: this.thorStatus?.tx?.from_address,
+            destAddress:
+              outTxs?.[0]?.to_address || this.txMemo?.destAddr || null,
+            timeText: timeDisplay,
             action: contractAction,
           })
         })(),
@@ -1409,7 +2650,11 @@ export default {
               : (() => {
                   const amount = parseInt(swapMeta?.liquidityFee || '') || 0
                   if (!amount) return null
-                  const usdRaw = this.amountToUSD('THOR.RUNE', amount, this.pools)
+                  const usdRaw = this.amountToUSD(
+                    'THOR.RUNE',
+                    amount,
+                    this.pools
+                  )
                   return {
                     label: 'Liquidity Fee',
                     usd: `$${this.formatFeeDisplay(usdRaw)}`,
@@ -1443,7 +2688,7 @@ export default {
             ? this.buildTechRow(
                 'From',
                 contractAction?.in?.[0]?.address ||
-                  this.getStackDisplayValue(inboundStacks, 'From'),
+                  this.thorStatus?.tx?.from_address,
                 'address'
               )
             : null,
@@ -1451,24 +2696,38 @@ export default {
             ? this.buildTechRow(
                 'To',
                 contractAction?.out?.[0]?.address ||
-                  this.getStackDisplayValue(outboundStacks, 'Destination'),
+                  outTxs?.[0]?.to_address ||
+                  this.txMemo?.destAddr,
                 'address'
               )
             : null,
           this.buildTechRow(
             'Memo',
             contractAction?.metadata?.contract?.memo ||
-              this.getStackDisplayValue(actionStacks, 'Memo')
+              midgardSwap?.metadata?.swap?.memo ||
+              refundAction?.metadata?.refund?.memo
           ),
           this.buildTechRow(
             'Inbound stage',
-            this.getStackDisplayValue(inboundStacks, 'Inbound Stage')
+            this.formatStackValue(
+              this.getInboundStages({
+                done: this.thorStatus?.stages?.inbound_finalised?.completed,
+                inboundConfCount:
+                  this.thorStatus?.stages?.inbound_confirmation_counted,
+                observationsCompleted:
+                  this.thorStatus?.stages?.inbound_observed?.completed,
+              })
+            )
           ),
           this.buildTechRow('Exchange rate', rate),
           this.buildTechRow('Affiliate basis', affiliateBasis),
           this.buildTechRow(
             'Limit',
-            this.getStackDisplayValue(actionStacks, 'Limit')
+            this.txMemo?.limit
+              ? this.txMemo.limit > 0
+                ? `${this.txMemo.limit / 1e8} ${this.showAsset(this.parseMemoAsset(this.txMemo?.asset))}`
+                : 'No target limit'
+              : null
           ),
         ].filter(Boolean),
       }
@@ -1482,2992 +2741,102 @@ export default {
       )
       if (contractActions.length === 0) return null
 
-      // DAO DAO proposal execution: check before the mixed-action guard because
-      // the proposal can trigger other action types (e.g., a swap) as side effects
-      const proposalAction = contractActions.find((a) => {
-        const msg = a.metadata?.contract?.msg
-        return (
-          msg?.execute &&
-          !Array.isArray(msg.execute) &&
-          msg.execute.proposal_id !== undefined
-        )
-      })
-      if (proposalAction) {
-        const action = proposalAction
-        const senderAddress = action.in?.[0]?.address || ''
-        const events = action.metadata?.contract?.contractEvents || []
-        const toAttrs = (e) =>
-          Object.fromEntries(
-            (e.attributes || []).map(({ key, value }) => [key, value])
-          )
-        const proposalId = action.metadata.contract.msg.execute.proposal_id
-        const hasError = (action.metadata?.contract?.code ?? 0) > 0
-        const logs = action.metadata?.contract?.logs
-        const status = hasError
-          ? { label: 'Failed', tone: 'red' }
-          : action.status === 'success'
-            ? { label: 'Success', tone: 'green' }
-            : { label: 'Pending', tone: 'blue' }
-        const date = action.date
-        const timestamp = date ? moment.unix(parseInt(date) / 1e9) : null
-        const height = parseInt(action.height)
+      const ctx = this.getContractOverviewContext(contractActions)
 
-        const proposalWasmEvent = events.find(
-          (e) =>
-            e.type === 'wasm' &&
-            (e.attributes || []).some((a) => a.key === 'proposal_id')
-        )
-        const wasmAttrs = proposalWasmEvent ? toAttrs(proposalWasmEvent) : {}
-        const daoAddress = wasmAttrs.dao || ''
-        const daoLabel =
-          getRujiraContractLabel(daoAddress) ||
-          (daoAddress ? this.formatAddress(daoAddress) : 'DAO')
-
-        return {
-          rawEvents: events,
-          rawMsg: action?.metadata?.contract?.msg || null,
-          title: `Execute Proposal #${proposalId}`,
-          metaLabel: `Execute Proposal · ${daoLabel}`,
-          status,
-          affiliateAddress: '',
-          actionTypeTitle: 'contract',
-          hasContractAction: true,
-          priority: true,
-          labels: [],
-          pairDisplay: null,
-          input: {
-            asset: null,
-            name: 'Executor',
-            badge: senderAddress ? this.formatAddress(senderAddress) : '',
-            amount: `Proposal #${proposalId}`,
-            usd: null,
-          },
-          output: {
-            asset: null,
-            name: 'DAO',
-            badge: daoAddress ? this.formatAddress(daoAddress) : '',
-            amount: status.label,
-            usd: null,
-          },
-          metricRows: [
-            { label: 'Proposal', value: `#${proposalId}` },
-            timestamp
-              ? { label: 'Time', value: timestamp.format('YYYY-MM-DD HH:mm:ss') }
-              : null,
-          ].filter(Boolean),
-          detailRows: [
-            {
-              label: 'Product',
-              value: daoLabel,
-              tone: this.getProductTone(daoLabel),
-              type: 'product',
-            },
-            {
-              label: 'Action',
-              value: 'Execute Proposal',
-              tone: this.getContractTypeTone('Execute Proposal'),
-              type: 'product',
-            },
-            { label: 'Proposal', value: `#${proposalId}` },
-            daoAddress
-              ? { label: 'DAO', address: daoAddress, type: 'address' }
-              : null,
-            { label: 'Status', value: status.label, type: 'status' },
-            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
-            height
-              ? { label: 'Block', value: `#${this.normalFormat(height)}` }
-              : null,
-            senderAddress
-              ? { label: 'Executor', address: senderAddress, type: 'address' }
-              : null,
-          ].filter(Boolean),
-          lifecycleRows: [
-            {
-              icon: 'CheckIcon',
-              title: `Proposal #${proposalId} executed`,
-              body: daoAddress ? `DAO: ${this.formatAddress(daoAddress)}` : '',
-            },
-            ...(hasError && logs
-              ? [{ icon: 'WarningIcon', title: 'Execution failed', body: logs }]
-              : []),
-          ],
-          feeRows: [],
-          technicalRows: [
-            senderAddress
-              ? this.buildTechRow('Executor', senderAddress, 'address')
-              : null,
-            daoAddress
-              ? this.buildTechRow('DAO address', daoAddress, 'address')
-              : null,
-          ].filter(Boolean),
-        }
+      // DAO proposal execution and Order Book Clearing operate on the whole
+      // contractActions array and are checked before the mixed-action guard
+      // below (a DAO proposal can trigger other action types, e.g. a swap,
+      // as a side effect).
+      for (const build of CONTRACT_PRE_GUARD_BUILDERS) {
+        const result = build(ctx)
+        if (result) return result
       }
 
-      // FIN market swaps may co-occur with a THORChain swap action (e.g. USDC→RUNE
-      // as a funding hop). Detect them before the mixed-action guard so they aren't
-      // silently suppressed in favour of the companion swap overview.
-      const hasFINMarketContract = contractActions.some((a) => {
-        if (a.metadata?.contract?.msg?.swap) return true
-        return (a.metadata?.contract?.contractEvents || []).some(
-          (e) => e.type === 'wasm-rujira-fin/trade'
-        )
-      })
-
+      // FIN market swaps may co-occur with a THORChain swap action (e.g.
+      // USDC→RUNE as a funding hop) — ctx.hasFINMarketContract is checked
+      // before this guard so they aren't silently suppressed in favour of
+      // the companion swap overview.
       if (
-        !hasFINMarketContract &&
+        !ctx.hasFINMarketContract &&
         this.rawActions.some(
           (a) => a.type !== 'contract' && a.type !== 'refund'
         )
       )
         return null
 
-      // Order Book Clearing: any contract action has memo "OB Clearing"
-      const obClearingAction = contractActions.find(
-        (a) => a.metadata?.contract?.memo === 'OB Clearing'
-      )
-      if (obClearingAction) {
-        const allEvents = contractActions.flatMap(
-          (a) => a.metadata?.contract?.contractEvents || []
-        )
-        const toAttrs = (e) =>
-          Object.fromEntries(
-            (e.attributes || []).map(({ key, value }) => [key, value])
-          )
-        const hasError = contractActions.some(
-          (a) => (a.metadata?.contract?.code ?? 0) > 0
-        )
-        const logs = obClearingAction.metadata?.contract?.logs
-        const status = hasError
-          ? { label: 'Failed', tone: 'red' }
-          : { label: 'Success', tone: 'green' }
-        const date = obClearingAction.date
-        const timestamp = date ? moment.unix(parseInt(date) / 1e9) : null
-        const height = parseInt(obClearingAction.height)
-
-        // FIN pair from first trade event
-        const firstTrade = allEvents.find(
-          (e) => e.type === 'wasm-rujira-fin/trade'
-        )
-        const finPairAddr = firstTrade
-          ? toAttrs(firstTrade)._contract_address || ''
-          : ''
-        const finPairLabel =
-          getRujiraContractLabel(finPairAddr) ||
-          this.formatAddress(finPairAddr)
-
-        // Count non-CCL fills and compute avg rate
-        const nonCCLTrades = allEvents
-          .filter((e) => e.type === 'wasm-rujira-fin/trade')
-          .map(toAttrs)
-          .filter((a) => !String(a.price || '').startsWith('ccl:'))
-        const fillCount = nonCCLTrades.length
-        const rates = nonCCLTrades
-          .map((a) => parseFloat(a.rate))
-          .filter((r) => !isNaN(r))
-        const avgRate =
-          rates.length
-            ? rates.reduce((s, r) => s + r, 0) / rates.length
-            : null
-
-        // Input/output: what the sender address actually sends and receives
-        const senderAddr = obClearingAction.in?.[0]?.address || ''
-        const sumByDenom = (events, addrKey, addrVal) => {
-          const byDenom = {}
-          events
-            .filter((e) => e.type === 'coin_spent' || e.type === 'coin_received')
-            .map(toAttrs)
-            .filter((a) => a[addrKey] === addrVal && a.amount)
-            .forEach((a) => {
-              a.amount.split(',').forEach((part) => {
-                const p = part.trim()
-                const amt = parseInt(p) || 0
-                const denom = p.replace(/^\d+/, '').trim()
-                if (denom && amt > 0)
-                  byDenom[denom] = (byDenom[denom] || 0) + amt
-              })
-            })
-          return byDenom
-        }
-        const spentByDenom = sumByDenom(allEvents, 'spender', senderAddr)
-        const receivedByDenom = sumByDenom(allEvents, 'receiver', senderAddr)
-
-        const denomToAssetStr = (denom) =>
-          denom === 'rune' ? 'THOR.RUNE' : securedToAsset(denom).toUpperCase()
-
-        const primaryInDenom = Object.keys(spentByDenom)[0] || ''
-        const primaryInAmt = spentByDenom[primaryInDenom] || 0
-        const primaryInAssetStr = primaryInDenom ? denomToAssetStr(primaryInDenom) : ''
-        const primaryInAsset = primaryInAssetStr ? assetFromString(primaryInAssetStr) : null
-        const primaryInTicker = primaryInAsset?.ticker || primaryInDenom
-
-        const primaryOutDenom =
-          Object.keys(receivedByDenom).find((d) => d !== primaryInDenom) ||
-          Object.keys(receivedByDenom)[0] ||
-          ''
-        const primaryOutAmt = receivedByDenom[primaryOutDenom] || 0
-        const primaryOutAssetStr = primaryOutDenom ? denomToAssetStr(primaryOutDenom) : ''
-        const primaryOutAsset = primaryOutAssetStr ? assetFromString(primaryOutAssetStr) : null
-        const primaryOutTicker = primaryOutAsset?.ticker || primaryOutDenom
-
-        // Sender's own action: the resting limit order that triggered clearing.
-        // (The arb / trade / range.fee events settle OTHER users' resting orders
-        // and are intentionally not attributed to the sender.)
-        const senderOrderCreate = allEvents
-          .filter((e) => e.type === 'wasm-rujira-fin/order.create')
-          .map(toAttrs)
-          .find((a) => a.owner === senderAddr)
-        const senderOrderPrice = senderOrderCreate
-          ? String(senderOrderCreate.price || '').replace(/^fixed:/, '')
-          : ''
-
-        return {
-          rawEvents: allEvents,
-          rawMsg: obClearingAction.metadata?.contract?.msg || null,
-          title: `Order Book Clearing · ${finPairLabel}`,
-          metaLabel: `Order Book Clearing · ${finPairLabel}`,
-          status,
-          affiliateAddress: '',
-          actionTypeTitle: 'contract',
-          hasContractAction: true,
-          priority: true,
-          labels: [],
-          pairDisplay: null,
-          input: primaryInAmt
-            ? {
-                asset: primaryInAssetStr || null,
-                name: primaryInTicker,
-                badge: this.getNetworkBadge(primaryInAsset) || '',
-                amount: `${this.baseAmountFormatOrZero(primaryInAmt)} ${primaryInTicker}`,
-                usd: this.formatUsdValue(
-                  this.amountToUSD(primaryInAssetStr, primaryInAmt, this.pools)
-                ),
-              }
-            : null,
-          output: primaryOutAmt
-            ? {
-                asset: primaryOutAssetStr || null,
-                name: primaryOutTicker,
-                badge: this.getNetworkBadge(primaryOutAsset) || '',
-                amount: `${this.baseAmountFormatOrZero(primaryOutAmt)} ${primaryOutTicker}`,
-                usd: this.formatUsdValue(
-                  this.amountToUSD(primaryOutAssetStr, primaryOutAmt, this.pools)
-                ),
-              }
-            : null,
-          metricRows: [
-            fillCount
-              ? { label: 'Fills', value: String(fillCount) }
-              : null,
-            avgRate
-              ? { label: 'Avg Rate', value: avgRate.toFixed(6) }
-              : null,
-          ].filter(Boolean),
-          detailRows: [
-            { label: 'Product', value: 'RUJI Trade', tone: this.getProductTone('RUJI Trade'), type: 'product' },
-            { label: 'Action', value: 'Order Book Clearing', tone: this.getContractTypeTone('OB Clearing'), type: 'product' },
-            { label: 'FIN Pair', value: finPairLabel },
-            { label: 'Status', value: status.label, type: 'status' },
-            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
-            height ? { label: 'Block', value: `#${this.normalFormat(height)}` } : null,
-          ].filter(Boolean),
-          lifecycleRows: hasError
-            ? [{ icon: 'WarningIcon', title: 'OB Clearing failed', body: logs || '' }]
-            : [
-                senderOrderCreate
-                  ? {
-                      icon: 'ArrowIcon',
-                      iconRotate: 90,
-                      title: 'Resting limit order placed',
-                      body: [
-                        primaryInAmt
-                          ? `${this.baseAmountFormatOrZero(primaryInAmt)} ${primaryInTicker} committed`
-                          : null,
-                        senderOrderPrice ? `at ${senderOrderPrice}` : null,
-                      ]
-                        .filter(Boolean)
-                        .join(' · ') || `on ${finPairLabel}`,
-                    }
-                  : null,
-                {
-                  icon: 'CheckIcon',
-                  title: 'Order Book Clearing complete',
-                  body: finPairLabel,
-                },
-              ].filter(Boolean),
-          feeRows: [],
-          technicalRows: [
-            senderAddr
-              ? this.buildTechRow('From address', senderAddr, 'address')
-              : null,
-            obClearingAction.metadata?.contract?.memo
-              ? this.buildTechRow('Memo', obClearingAction.metadata.contract.memo)
-              : null,
-          ].filter(Boolean),
-        }
+      // Every remaining product keys off a single contract action
+      // (ctx.singleAction) — when there's more than one, none of them can
+      // match, matching the pre-extraction behavior exactly.
+      for (const build of CONTRACT_SINGLE_ACTION_BUILDERS) {
+        const result = build(ctx)
+        if (result) return result
       }
 
-      // Limit order placement: single contract action with msg.order
-      const singleAction =
-        contractActions.length === 1 ? contractActions[0] : null
-      const limitOrderMsg = singleAction?.metadata?.contract?.msg?.order
-      if (limitOrderMsg) {
-        const action = singleAction
-        const orders = limitOrderMsg[0] || []
-        const contractAddress = action.out?.[0]?.address || ''
-        const contractLabel =
-          getRujiraContractLabel(contractAddress) ||
-          this.formatAddress(contractAddress)
-        const userAddress = action.in?.[0]?.address || ''
-        const hasError = (action.metadata?.contract?.code ?? 0) > 0
-        const logs = action.metadata?.contract?.logs
-        const status = hasError
-          ? { label: 'Failed', tone: 'red' }
-          : action.status === 'success'
-            ? { label: 'Success', tone: 'green' }
-            : { label: 'Pending', tone: 'blue' }
-        const date = action.date
-        const timestamp = date ? moment.unix(parseInt(date) / 1e9) : null
-        const height = parseInt(action.height)
-        const orderCount = orders.length
-        const prices = orders
-          .map(([, priceSpec]) => parseFloat(priceSpec?.fixed))
-          .filter((p) => !isNaN(p))
-        const priceList = prices.map((p) => p.toFixed(2)).join(', ')
-        const productLabel =
-          getRujiraContractProduct(contractAddress) || 'RUJI Trade'
-
-        // Detect immediate CCL fills on placement
-        const events = action.metadata?.contract?.contractEvents || []
-        const toAttrs = (e) =>
-          Object.fromEntries(
-            (e.attributes || []).map(({ key, value }) => [key, value])
-          )
-        const cclFills = events
-          .filter((e) => e.type === 'wasm-rujira-fin/trade')
-          .map(toAttrs)
-          .filter((a) => String(a.price || '').startsWith('ccl:'))
-        const cclFillCount = cclFills.length
-        const fillRates = cclFills
-          .map((a) => parseFloat(a.rate))
-          .filter((r) => !isNaN(r))
-        const avgFillRate = fillRates.length
-          ? fillRates.reduce((s, r) => s + r, 0) / fillRates.length
-          : null
-
-        const titleSuffix = cclFillCount
-          ? ` · ${cclFillCount} fill${cclFillCount !== 1 ? 's' : ''} at avg ${avgFillRate.toFixed(2)}`
-          : ''
-        const allNullQty = orders.every(
-          (o) => o[2] === null || o[2] === undefined
-        )
-        const orderVerb = allNullQty ? 'claimed' : 'placed'
-
-        // Scale order: multiple limit orders placed in one execution
-        const isScaleOrder = orders.length > 1
-        const actionLabel = isScaleOrder ? 'Scale Order' : 'Limit Order'
-
-        // Total funds committed (for scale order input card)
-        const fundsStr = action.metadata?.contract?.funds || ''
-        const fundsAmount = parseInt(fundsStr) || 0
-        const fundsDenom = fundsStr.replace(/^\d+/, '').trim()
-        const fundsAssetStr = fundsDenom ? securedToAsset(fundsDenom).toUpperCase() : ''
-        const fundsAssetParsed = fundsAssetStr ? assetFromString(fundsAssetStr) : null
-        const fundsTicker = fundsAssetParsed?.ticker || fundsDenom
-
-        // Parse pair base/quote assets from registry contractLabel: "rujira-fin:{base}:{quote}"
-        const pairEntry = getRujiraContractEntry(contractAddress)
-        const pairLabelParts = (pairEntry?.contractLabel || '').split(':')
-        const baseDenom = pairLabelParts[1] || ''
-        const baseAssetStr = baseDenom ? securedToAsset(baseDenom).toUpperCase() : ''
-        const baseAssetParsed = baseAssetStr ? assetFromString(baseAssetStr) : null
-        const baseTicker = baseAssetParsed?.ticker || baseDenom
-        const quoteDenom = pairLabelParts[2] || ''
-        const quoteAssetStr = (quoteDenom ? securedToAsset(quoteDenom).toUpperCase() : '') || fundsAssetStr
-        const quoteAssetParsed = quoteAssetStr ? assetFromString(quoteAssetStr) : null
-        const quoteTicker = quoteAssetParsed?.ticker || quoteDenom || fundsTicker
-
-        // Per-order table rows + raw totals for scale order display
-        // Order format: [side_string, { fixed: price }, amount_string_or_null]
-        //   side: "quote" = Buy (spend quote to get base), "base" = Sell (spend base to get quote)
-        //   amount: null = no-op (existing order kept), "0" = retract, positive = new order
-        let totalReturnRaw = 0
-        let orderSideIsBuy = true
-        const orderRows = isScaleOrder
-          ? orders.map((order) => {
-              const sideStr = order[0]  // "quote" or "base"
-              const priceSpec = order[1] // { fixed: "2327.4" }
-              const isKeep = order[2] === null || order[2] === undefined
-              const amount = isKeep ? 0 : (parseInt(order[2]) || 0)
-              const price = parseFloat(priceSpec?.fixed) || 0
-              const isBuy = sideStr === 'quote'
-              const isRetract = !isKeep && amount === 0
-
-              // Return = what you receive when fully filled
-              // Buy: spent quote, receive base → ret = amount / price (base units)
-              // Sell: spent base, receive quote → ret = amount * price (quote units)
-              let ret = 0
-              if (!isRetract && !isKeep && price > 0) {
-                ret = isBuy
-                  ? Math.round(amount / price)
-                  : Math.round(amount * price)
-                totalReturnRaw += ret
-                orderSideIsBuy = isBuy
-              } else if (isBuy !== undefined) {
-                orderSideIsBuy = isBuy
-              }
-
-              return {
-                op: isRetract ? 'Retract' : isKeep ? 'Keep' : 'Create',
-                side: isBuy ? 'Buy' : 'Sell',
-                price: price > 0 ? price.toFixed(2) : '—',
-                amount: isRetract || isKeep ? '—' : this.baseAmountFormatOrZero(amount),
-                ret: ret > 0 ? this.baseAmountFormatOrZero(ret) : '—',
-                amountRaw: amount,
-              }
-            })
-          : []
-
-        // Compute depth % for order book bar (relative to largest order)
-        if (orderRows.length) {
-          const maxAmt = Math.max(...orderRows.map((r) => r.amountRaw || 0))
-          orderRows.forEach((r) => {
-            r.depth = maxAmt > 0 ? Math.round(((r.amountRaw || 0) / maxAmt) * 100) : 0
-          })
-        }
-
-        // coin_received by sender for non-scale (immediate CCL fills)
-        const limitReceivedByDenom = {}
-        if (!isScaleOrder && userAddress) {
-          events
-            .filter((e) => e.type === 'coin_received')
-            .map(toAttrs)
-            .filter((a) => a.receiver === userAddress && a.amount)
-            .forEach((a) => {
-              a.amount.split(',').forEach((part) => {
-                const p = part.trim()
-                const amt = parseInt(p) || 0
-                const denom = p.replace(/^\d+/, '').trim()
-                if (denom && denom !== fundsDenom && amt > 0)
-                  limitReceivedByDenom[denom] = (limitReceivedByDenom[denom] || 0) + amt
-              })
-            })
-        }
-        const limitRecvDenom = Object.keys(limitReceivedByDenom)[0] || ''
-        const limitRecvAmt = limitReceivedByDenom[limitRecvDenom] || 0
-        const limitRecvAssetStr = limitRecvDenom === 'rune' ? 'THOR.RUNE' : (limitRecvDenom ? securedToAsset(limitRecvDenom).toUpperCase() : '')
-        const limitRecvAssetParsed = limitRecvAssetStr ? assetFromString(limitRecvAssetStr) : null
-        const limitRecvTicker = limitRecvAssetParsed?.ticker || limitRecvDenom
-
-        // Swap-style input/output for scale orders
-        // Buy orders: user spends quote (USDC), receives base (ETH) on fill
-        // Sell orders: user spends base (ETH), receives quote (USDC) on fill
-        const scaleInAssetStr = orderSideIsBuy ? quoteAssetStr : baseAssetStr
-        const scaleInAsset = orderSideIsBuy ? quoteAssetParsed : baseAssetParsed
-        const scaleInTicker = orderSideIsBuy ? quoteTicker : baseTicker
-        const scaleOutAssetStr = orderSideIsBuy ? baseAssetStr : quoteAssetStr
-        const scaleOutAsset = orderSideIsBuy ? baseAssetParsed : quoteAssetParsed
-        const scaleOutTicker = orderSideIsBuy ? baseTicker : quoteTicker
-
-        return {
-          rawEvents: events,
-          rawMsg: action?.metadata?.contract?.msg || null,
-          orderRows: isScaleOrder ? orderRows : [],
-          orderPairTickers: isScaleOrder
-            ? {
-                base: baseTicker,
-                quote: quoteTicker,
-                isBuy: orderSideIsBuy,
-              }
-            : null,
-          title: isScaleOrder
-            ? `Scale Order: ${orderCount} orders on ${contractLabel}${titleSuffix}`
-            : `${orderCount} Limit Order${orderCount !== 1 ? 's' : ''} ${orderVerb} on ${contractLabel}${titleSuffix}`,
-          metaLabel: `${actionLabel} · ${contractLabel}`,
-          status,
-          affiliateAddress: '',
-          actionTypeTitle: 'contract',
-          hasContractAction: true,
-          labels: [],
-          pairDisplay:
-            (isScaleOrder && !fundsAmount) ||
-            (!isScaleOrder && baseAssetParsed && quoteAssetParsed)
-              ? {
-                  baseAsset: baseAssetParsed,
-                  quoteAsset: quoteAssetParsed,
-                  label: `${baseTicker} / ${quoteTicker}`,
-                  sublabel: contractLabel,
-                  inputAmount:
-                    !isScaleOrder && fundsAmount
-                      ? `${this.baseAmountFormatOrZero(fundsAmount)} ${fundsTicker}`
-                      : null,
-                }
-              : null,
-          input: isScaleOrder
-            ? {
-                asset: scaleInAssetStr || null,
-                name: scaleInTicker || contractLabel,
-                badge: this.getNetworkBadge(scaleInAsset) || '',
-                amount: fundsAmount
-                  ? `${this.baseAmountFormatOrZero(fundsAmount)} ${scaleInTicker}`
-                  : '-',
-                usd: this.formatUsdValue(
-                  this.amountToUSD(scaleInAssetStr, fundsAmount, this.pools)
-                ),
-              }
-            : fundsAmount
-              ? {
-                  asset: fundsAssetStr || null,
-                  name: fundsTicker || 'User',
-                  badge: this.getNetworkBadge(fundsAssetParsed) || '',
-                  amount: `${this.baseAmountFormatOrZero(fundsAmount)} ${fundsTicker}`,
-                  usd: this.formatUsdValue(this.amountToUSD(fundsAssetStr, fundsAmount, this.pools)),
-                }
-              : {
-                  asset: null,
-                  name: 'User',
-                  badge: userAddress ? this.formatAddress(userAddress) : '',
-                  amount: `${orderCount} order${orderCount !== 1 ? 's' : ''}`,
-                  usd: null,
-                },
-          output: isScaleOrder
-            ? {
-                asset: scaleOutAssetStr || null,
-                name: scaleOutTicker || 'Asset',
-                badge: this.getNetworkBadge(scaleOutAsset) || '',
-                amount: totalReturnRaw
-                  ? `${this.baseAmountFormatOrZero(totalReturnRaw)} ${scaleOutTicker}`
-                  : '-',
-                usd: this.formatUsdValue(
-                  this.amountToUSD(scaleOutAssetStr, totalReturnRaw, this.pools)
-                ),
-              }
-            : limitRecvAmt
-              ? {
-                  asset: limitRecvAssetStr || null,
-                  name: limitRecvTicker,
-                  badge: this.getNetworkBadge(limitRecvAssetParsed) || '',
-                  amount: `${this.baseAmountFormatOrZero(limitRecvAmt)} ${limitRecvTicker}`,
-                  usd: this.formatUsdValue(this.amountToUSD(limitRecvAssetStr, limitRecvAmt, this.pools)),
-                }
-              : {
-                  asset: null,
-                  name: 'FIN Pair',
-                  badge: contractLabel,
-                  amount: cclFillCount
-                    ? `${cclFillCount} fill${cclFillCount !== 1 ? 's' : ''} · avg ${avgFillRate.toFixed(2)}`
-                    : priceList
-                      ? `At ${priceList}`
-                      : 'Placed',
-                  usd: null,
-                },
-          metricRows: isScaleOrder
-            ? [
-                cclFillCount
-                  ? { label: 'Immediate Fills', value: `${cclFillCount}` }
-                  : null,
-                avgFillRate
-                  ? { label: 'Avg Fill Rate', value: avgFillRate.toFixed(6) }
-                  : null,
-              ].filter(Boolean)
-            : [
-                { label: 'Orders Placed', value: `${orderCount}` },
-                priceList ? { label: 'Limit Prices', value: priceList } : null,
-                cclFillCount
-                  ? { label: 'Immediate Fills', value: `${cclFillCount}` }
-                  : null,
-                avgFillRate
-                  ? { label: 'Avg Fill Rate', value: avgFillRate.toFixed(6) }
-                  : null,
-                timestamp
-                  ? {
-                      label: 'Time',
-                      value: timestamp.format('YYYY-MM-DD HH:mm:ss'),
-                    }
-                  : null,
-              ].filter(Boolean),
-          detailRows: [
-            {
-              label: 'Product',
-              value: productLabel,
-              tone: this.getProductTone(productLabel),
-              type: 'product',
-            },
-            {
-              label: 'Action',
-              value: actionLabel,
-              tone: this.getContractTypeTone(actionLabel),
-              type: 'product',
-            },
-            { label: 'Contract', value: contractLabel },
-            { label: 'Status', value: status.label, type: 'status' },
-            !isScaleOrder && timestamp
-              ? { label: 'Time', value: timestamp.format('lll') }
-              : null,
-            height
-              ? { label: 'Block', value: `#${this.normalFormat(height)}` }
-              : null,
-            userAddress
-              ? { label: 'User', address: userAddress, type: 'address' }
-              : null,
-          ].filter(Boolean),
-          lifecycleRows: [
-            {
-              icon: 'CheckIcon',
-              title: isScaleOrder
-                ? `Scale Order: ${orderCount} orders submitted`
-                : `${orderCount} limit order${orderCount !== 1 ? 's' : ''} submitted`,
-              body: priceList ? `Fixed prices: ${priceList}` : '',
-            },
-            ...this.extractContractEventRows(action),
-            ...(hasError && logs ? [{ icon: 'WarningIcon', title: 'Contract execution failed', body: logs }] : []),
-          ],
-          feeRows: [],
-          technicalRows: [
-            userAddress
-              ? this.buildTechRow('From address', userAddress, 'address')
-              : null,
-            contractAddress
-              ? this.buildTechRow('To address', contractAddress, 'address')
-              : null,
-          ].filter(Boolean),
-        }
-      }
-
-      // Cancel strategy: single contract action with msg.cancel_instance
-      const cancelMsg = singleAction?.metadata?.contract?.msg?.cancel_instance
-      if (cancelMsg) {
-        const action = singleAction
-        const contractAddress = action.out?.[0]?.address || ''
-        const contractLabel =
-          getRujiraContractLabel(contractAddress) ||
-          this.formatAddress(contractAddress)
-        const productLabel =
-          getRujiraContractProduct(contractAddress) || 'AutoRujira'
-        const userAddress = action.in?.[0]?.address || ''
-        const instanceId = cancelMsg.instance_id
-        const hasError = (action.metadata?.contract?.code ?? 0) > 0
-        const logs = action.metadata?.contract?.logs
-        const status = hasError
-          ? { label: 'Failed', tone: 'red' }
-          : action.status === 'success'
-            ? { label: 'Success', tone: 'green' }
-            : { label: 'Pending', tone: 'blue' }
-        const date = action.date
-        const timestamp = date ? moment.unix(parseInt(date) / 1e9) : null
-        const height = parseInt(action.height)
-
-        return {
-          rawEvents: events,
-          rawMsg: action?.metadata?.contract?.msg || null,
-          title: `Strategy #${instanceId} cancelled`,
-          metaLabel: `Cancel Strategy · ${productLabel}`,
-          status,
-          affiliateAddress: '',
-          actionTypeTitle: 'contract',
-          hasContractAction: true,
-          labels: [],
-          input: {
-            asset: null,
-            name: 'User',
-            badge: userAddress ? this.formatAddress(userAddress) : '',
-            amount: `Instance #${instanceId}`,
-            usd: null,
-          },
-          output: {
-            asset: null,
-            name: productLabel,
-            badge: contractLabel,
-            amount: 'Cancelled',
-            usd: null,
-          },
-          metricRows: [
-            { label: 'Instance ID', value: `#${instanceId}` },
-            timestamp
-              ? {
-                  label: 'Time',
-                  value: timestamp.format('YYYY-MM-DD HH:mm:ss'),
-                }
-              : null,
-          ].filter(Boolean),
-          detailRows: [
-            {
-              label: 'Product',
-              value: productLabel,
-              tone: this.getProductTone(productLabel),
-              type: 'product',
-            },
-            {
-              label: 'Action',
-              value: 'Cancel Strategy',
-              tone: this.getContractTypeTone('Cancel Strategy'),
-              type: 'product',
-            },
-            { label: 'Contract', value: contractLabel },
-            { label: 'Instance ID', value: `#${instanceId}` },
-            { label: 'Status', value: status.label, type: 'status' },
-            timestamp
-              ? { label: 'Time', value: timestamp.format('lll') }
-              : null,
-            height
-              ? { label: 'Block', value: `#${this.normalFormat(height)}` }
-              : null,
-            userAddress
-              ? { label: 'User', address: userAddress, type: 'address' }
-              : null,
-          ].filter(Boolean),
-          lifecycleRows: [
-            {
-              icon: 'CheckIcon',
-              title: `Strategy #${instanceId} cancelled`,
-              body: `Workflow instance cancelled on ${productLabel}`,
-            },
-            ...(hasError && logs ? [{ icon: 'WarningIcon', title: 'Contract execution failed', body: logs }] : []),
-          ],
-          feeRows: [],
-          technicalRows: [
-            userAddress
-              ? this.buildTechRow('From address', userAddress, 'address')
-              : null,
-            contractAddress
-              ? this.buildTechRow('To address', contractAddress, 'address')
-              : null,
-          ].filter(Boolean),
-        }
-      }
-
-      // FIN market swap: single contract action with msg.swap, or detected via
-      // wasm-rujira-fin/trade events when msg is absent from the API response
-      const swapMsg = singleAction?.metadata?.contract?.msg?.swap
-      const isFinMarketByEvents =
-        !singleAction?.metadata?.contract?.msg?.order &&
-        !singleAction?.metadata?.contract?.msg?.account &&
-        !singleAction?.metadata?.contract?.msg?.liquid &&
-        !singleAction?.metadata?.contract?.msg?.liquidate &&
-        (singleAction?.metadata?.contract?.contractEvents || []).some(
-          (e) => e.type === 'wasm-rujira-fin/trade'
-        )
-      if (swapMsg || isFinMarketByEvents) {
-        const action = singleAction
-        const contractAddress = action.out?.[0]?.address || ''
-        const contractLabel =
-          getRujiraContractLabel(contractAddress) ||
-          this.formatAddress(contractAddress)
-        const productLabel =
-          getRujiraContractProduct(contractAddress) || 'RUJI Trade'
-        const userAddress = action.in?.[0]?.address || ''
-        const hasError = (action.metadata?.contract?.code ?? 0) > 0
-        const logs = action.metadata?.contract?.logs
-        const status = hasError
-          ? { label: 'Failed', tone: 'red' }
-          : action.status === 'success'
-            ? { label: 'Success', tone: 'green' }
-            : { label: 'Pending', tone: 'blue' }
-        const date = action.date
-        const timestamp = date ? moment.unix(parseInt(date) / 1e9) : null
-        const height = parseInt(action.height)
-        const events = action.metadata?.contract?.contractEvents || []
-        const toAttrs = (e) =>
-          Object.fromEntries(
-            (e.attributes || []).map(({ key, value }) => [key, value])
-          )
-        let fundsStr = action.metadata?.contract?.funds || ''
-        if (!fundsStr && userAddress) {
-          const spentEvent = events.find(
-            (e) =>
-              e.type === 'coin_spent' &&
-              (e.attributes || []).some(
-                (a) => a.key === 'spender' && a.value === userAddress
-              )
-          )
-          const amountAttr = (spentEvent?.attributes || []).find(
-            (a) => a.key === 'amount'
-          )
-          if (amountAttr?.value) fundsStr = amountAttr.value
-        }
-        const fundsAmount = parseInt(fundsStr) || 0
-        const fundsAsset = fundsStr.replace(/^[\d]+/, '').trim()
-
-        const tradeEvents = events.filter(
-          (e) => e.type === 'wasm-rujira-fin/trade'
-        )
-        const avgRate = (() => {
-          let wSum = 0
-          let wTotal = 0
-          tradeEvents.forEach((e) => {
-            const a = toAttrs(e)
-            const r = parseFloat(a.rate)
-            const w = parseInt(a.bid || 0)
-            if (!isNaN(r) && w > 0) {
-              wSum += r * w
-              wTotal += w
-            }
-          })
-          if (wTotal > 0) return wSum / wTotal
-          const rs = tradeEvents
-            .map((e) => parseFloat(toAttrs(e).rate))
-            .filter((r) => !isNaN(r))
-          return rs.length ? rs.reduce((s, r) => s + r, 0) / rs.length : null
-        })()
-
-        // Collect all amounts received by the user address (non-input denom).
-        // Filtering by receiver = userAddress avoids picking up intermediate
-        // routing hops or fee events that use the same denom.
-        let receivedAmount = 0
-        let primaryDenom = ''
-        let receivedAssetDenom = ''
-
-        const userReceipts = {}
-        events
-          .filter((e) => e.type === 'coin_received')
-          .forEach((e) => {
-            const a = toAttrs(e)
-            if (userAddress && a.receiver !== userAddress) return
-            ;(a.amount || '').split(',').forEach((part) => {
-              const p = part.trim()
-              const amt = parseInt(p) || 0
-              const denom = p.replace(/^\d+/, '').trim()
-              if (denom && denom !== fundsAsset && amt > 0) {
-                userReceipts[denom] = (userReceipts[denom] || 0) + amt
-              }
-            })
-          })
-        Object.entries(userReceipts).forEach(([denom, amt]) => {
-          if (amt > receivedAmount) {
-            receivedAmount = amt
-            receivedAssetDenom = denom
-            primaryDenom = denom
-          }
-        })
-
-        const fundsAssetStr = fundsAsset
-          ? securedToAsset(fundsAsset).toUpperCase()
-          : ''
-        // Parse raw denom first so secure: true is preserved for badge display,
-        // fall back to the securedToAsset version for non-secured denoms
-        const fundsAssetParsed = fundsAsset
-          ? (assetFromString(fundsAsset.toUpperCase()) ??
-              assetFromString(fundsAssetStr))
-          : null
-        const fundsTicker = fundsAssetParsed?.ticker || fundsAsset
-
-        const receivedAssetStr = receivedAssetDenom
-          ? securedToAsset(receivedAssetDenom).toUpperCase()
-          : ''
-        const receivedAssetParsed = receivedAssetDenom
-          ? (assetFromString(receivedAssetDenom.toUpperCase()) ??
-              assetFromString(receivedAssetStr))
-          : null
-        const receivedTicker = receivedAssetParsed?.ticker || receivedAssetDenom
-
-        // Detect partial fills: check if any input denom was returned to the user
-        const returnedAmount = (() => {
-          if (!fundsAsset || !userAddress) return 0
-          let total = 0
-          events
-            .filter((e) => e.type === 'coin_received')
-            .map(toAttrs)
-            .filter((a) => a.receiver === userAddress && a.amount)
-            .forEach((a) => {
-              a.amount.split(',').forEach((part) => {
-                const p = part.trim()
-                if (p.endsWith(fundsAsset)) total += parseInt(p) || 0
-              })
-            })
-          return total
-        })()
-        const filledAmount = fundsAmount - returnedAmount
-        const isPartialFill = returnedAmount > 0 && filledAmount > 0
-
-        const refundAction = this.rawActions.find((a) => a.type === 'refund')
-        const refundReason = refundAction?.metadata?.refund?.reason || null
-
-        return {
-          rawEvents: events,
-          rawMsg: action?.metadata?.contract?.msg || null,
-          title: `Market Order: ${contractLabel}`,
-          metaLabel: `Market Order · ${productLabel}`,
-          status,
-          affiliateAddress: '',
-          actionTypeTitle: 'contract',
-          hasContractAction: true,
-          priority: true,
-          labels: isPartialFill ? ['Partial Fill'] : [],
-          input: {
-            asset: fundsAssetParsed ? fundsAssetStr : null,
-            name: fundsTicker || 'Input',
-            badge: this.getNetworkBadge(fundsAssetParsed) || '',
-            amount: fundsAmount
-              ? `${this.baseAmountFormatOrZero(fundsAmount)} ${fundsTicker}`
-              : '-',
-            usd: this.formatUsdValue(
-              this.amountToUSD(fundsAssetStr, fundsAmount, this.pools)
-            ),
-            secure: fundsAssetParsed?.secure ?? false,
-          },
-          output: {
-            asset: receivedAssetParsed ? receivedAssetStr : null,
-            name: receivedTicker || contractLabel,
-            badge: this.getNetworkBadge(receivedAssetParsed) || productLabel,
-            amount: receivedAmount
-              ? `${this.baseAmountFormatOrZero(receivedAmount)} ${receivedTicker}`
-              : avgRate
-                ? `Rate ${avgRate.toFixed(6)}`
-                : 'Filled',
-            usd: receivedAmount
-              ? this.formatUsdValue(
-                  this.amountToUSD(receivedAssetStr, receivedAmount, this.pools)
-                )
-              : null,
-          },
-          returnedOutput: (() => {
-            if (isPartialFill) {
-              return {
-                asset: fundsAssetParsed ? fundsAssetStr : null,
-                name: fundsTicker,
-                amount: `${this.baseAmountFormatOrZero(returnedAmount)} ${fundsTicker}`,
-              }
-            }
-            if (refundAction) {
-              const refundCoin = refundAction.out?.[0]?.coins?.[0]
-              if (refundCoin) {
-                const refundAssetStr = this.parseMemoAsset(refundCoin.asset)
-                const refundAssetParsed = assetFromString(
-                  refundAssetStr || refundCoin.asset
-                )
-                const refundTicker =
-                  refundAssetParsed?.ticker || refundCoin.asset
-                return {
-                  asset: refundAssetStr || null,
-                  name: refundTicker,
-                  amount: `${this.baseAmountFormatOrZero(refundCoin.amount)} ${refundTicker}`,
-                }
-              }
-            }
-            return null
-          })(),
-          metricRows: [
-            avgRate ? { label: 'Rate', value: avgRate.toFixed(6) } : null,
-            tradeEvents.length
-              ? { label: 'CCL Fills', value: String(tradeEvents.length) }
-              : null,
-            timestamp
-              ? {
-                  label: 'Time',
-                  value: timestamp.format('YYYY-MM-DD HH:mm:ss'),
-                }
-              : null,
-          ].filter(Boolean),
-          detailRows: [
-            {
-              label: 'Product',
-              value: productLabel,
-              tone: this.getProductTone(productLabel),
-              type: 'product',
-            },
-            {
-              label: 'Action',
-              value: isPartialFill ? 'Partial Fill' : 'Market Order',
-              tone: this.getContractTypeTone('Market Order'),
-              type: 'product',
-            },
-            { label: 'Contract', value: contractLabel },
-            isPartialFill
-              ? {
-                  label: 'Filled',
-                  value: `${this.baseAmountFormatOrZero(filledAmount)} ${fundsTicker}`,
-                }
-              : null,
-            isPartialFill
-              ? {
-                  label: 'Returned',
-                  value: `${this.baseAmountFormatOrZero(returnedAmount)} ${fundsTicker}`,
-                }
-              : null,
-            { label: 'Status', value: status.label, type: 'status' },
-            refundReason
-              ? { label: 'THORChain Refund', value: refundReason }
-              : null,
-            timestamp
-              ? { label: 'Time', value: timestamp.format('lll') }
-              : null,
-            height
-              ? { label: 'Block', value: `#${this.normalFormat(height)}` }
-              : null,
-            userAddress
-              ? { label: 'User', address: userAddress, type: 'address' }
-              : null,
-          ].filter(Boolean),
-          lifecycleRows: [
-            {
-              icon: hasError ? 'WarningIcon' : 'CheckIcon',
-              title: hasError ? 'Contract execution failed' : isPartialFill ? 'Market order partially filled' : 'Market order filled',
-              body: hasError
-                ? logs || ''
-                : [
-                    isPartialFill
-                      ? `${this.baseAmountFormatOrZero(filledAmount)} ${fundsTicker} filled`
-                      : fundsAmount
-                        ? `${this.baseAmountFormatOrZero(fundsAmount)} ${fundsTicker} in`
-                        : null,
-                    receivedAmount
-                      ? `${this.baseAmountFormatOrZero(receivedAmount)} ${receivedTicker} out`
-                      : null,
-                    avgRate ? `avg rate ${avgRate.toFixed(6)}` : null,
-                  ]
-                    .filter(Boolean)
-                    .join(' · '),
-            },
-            ...this.extractContractEventRows(action),
-            receivedAmount && receivedTicker
-              ? {
-                  icon: 'ArrowIcon',
-                  iconRotate: 0,
-                  title: `${this.baseAmountFormatOrZero(receivedAmount)} ${receivedTicker} received`,
-                  body: userAddress
-                    ? `Delivered to ${this.formatAddress(userAddress)}`
-                    : '',
-                }
-              : null,
-            isPartialFill
-              ? {
-                  icon: 'RefreshIcon',
-                  iconRotate: 0,
-                  title: 'Unfilled amount returned',
-                  body: `${this.baseAmountFormatOrZero(returnedAmount)} ${fundsTicker} returned to sender`,
-                }
-              : null,
-            refundAction
-              ? {
-                  icon: 'RefreshIcon',
-                  iconRotate: 0,
-                  title: 'THORChain swap refunded',
-                  body: refundReason || 'THORChain leg was refunded',
-                }
-              : null,
-          ].filter(Boolean),
-          feeRows: [],
-          technicalRows: [
-            userAddress
-              ? this.buildTechRow('From address', userAddress, 'address')
-              : null,
-            contractAddress
-              ? this.buildTechRow('To address', contractAddress, 'address')
-              : null,
-          ].filter(Boolean),
-        }
-      }
-
-      // Liquid bond / unbond
-      const liquidMsg = singleAction?.metadata?.contract?.msg?.liquid
-      if (liquidMsg && ('bond' in liquidMsg || 'unbond' in liquidMsg)) {
-        const isBond = 'bond' in liquidMsg
-        const action = singleAction
-        const contractAddress = action.out?.[0]?.address || ''
-        const contractLabel =
-          getRujiraContractLabel(contractAddress) ||
-          this.formatAddress(contractAddress)
-        const _rawProduct1 = getRujiraContractProduct(contractAddress)
-        const productLabel =
-          (_rawProduct1 === 'Utilities' ? 'Staking' : _rawProduct1) || 'Staking'
-        const userAddress = action.in?.[0]?.address || ''
-        const hasError = (action.metadata?.contract?.code ?? 0) > 0
-        const logs = action.metadata?.contract?.logs
-        const status = hasError
-          ? { label: 'Failed', tone: 'red' }
-          : action.status === 'success'
-            ? { label: 'Success', tone: 'green' }
-            : { label: 'Pending', tone: 'blue' }
-        const date = action.date
-        const timestamp = date ? moment.unix(parseInt(date) / 1e9) : null
-        const height = parseInt(action.height)
-        const events = action.metadata?.contract?.contractEvents || []
-        const toAttrs = (e) =>
-          Object.fromEntries(
-            (e.attributes || []).map(({ key, value }) => [key, value])
-          )
-        const bondEvent = events.find(
-          (e) =>
-            e.type ===
-            `wasm-rujira-staking/liquid.${isBond ? 'bond' : 'unbond'}`
-        )
-        const bondAttrs = bondEvent ? toAttrs(bondEvent) : {}
-        const amountRaw = parseInt(
-          bondAttrs.amount || action.metadata?.contract?.funds || 0
-        )
-        const sharesRaw = parseInt(bondAttrs.shares || 0)
-        const fundsStr = action.metadata?.contract?.funds || ''
-        const fundsAsset = fundsStr.replace(/^[\d]+/, '').trim()
-        const actionType = isBond ? 'Liquid Stake' : 'Liquid Unstake'
-
-        // coin_received by user (liquid staking tokens on bond, underlying on unbond)
-        const liquidReceivedByDenom = {}
-        if (userAddress) {
-          events
-            .filter((e) => e.type === 'coin_received')
-            .map(toAttrs)
-            .filter((a) => a.receiver === userAddress && a.amount)
-            .forEach((a) => {
-              a.amount.split(',').forEach((part) => {
-                const p = part.trim()
-                const amt = parseInt(p) || 0
-                const denom = p.replace(/^\d+/, '').trim()
-                if (denom && amt > 0)
-                  liquidReceivedByDenom[denom] = (liquidReceivedByDenom[denom] || 0) + amt
-              })
-            })
-        }
-        const liqRecvDenom = Object.keys(liquidReceivedByDenom)[0] || ''
-        const liqRecvAmt = liquidReceivedByDenom[liqRecvDenom] || 0
-        const liqRecvAssetStr = liqRecvDenom === 'rune' ? 'THOR.RUNE' : (liqRecvDenom ? securedToAsset(liqRecvDenom).toUpperCase() : '')
-        const liqRecvAssetParsed = liqRecvAssetStr ? assetFromString(liqRecvAssetStr) : null
-        const liqRecvTicker = liqRecvAssetParsed?.ticker || liqRecvDenom
-
-        return {
-          rawEvents: events,
-          rawMsg: action?.metadata?.contract?.msg || null,
-          title: `${actionType}: ${contractLabel}`,
-          metaLabel: `${actionType} · ${productLabel}`,
-          status,
-          affiliateAddress: '',
-          actionTypeTitle: 'contract',
-          hasContractAction: true,
-          labels: [],
-          input: {
-            asset: null,
-            name: 'User',
-            badge: userAddress ? this.formatAddress(userAddress) : '',
-            amount: amountRaw
-              ? `${this.baseAmountFormatOrZero(amountRaw)} ${fundsAsset || 'tokens'}`
-              : '-',
-            usd: null,
-          },
-          output: liqRecvAmt
-            ? {
-                asset: liqRecvAssetStr || null,
-                name: liqRecvTicker,
-                badge: this.getNetworkBadge(liqRecvAssetParsed) || '',
-                amount: `${this.baseAmountFormatOrZero(liqRecvAmt)} ${liqRecvTicker}`,
-                usd: this.formatUsdValue(this.amountToUSD(liqRecvAssetStr, liqRecvAmt, this.pools)),
-              }
-            : {
-                asset: null,
-                name: contractLabel,
-                badge: productLabel,
-                amount: sharesRaw
-                  ? `${this.baseAmountFormatOrZero(sharesRaw)} shares`
-                  : isBond
-                    ? 'Bonded'
-                    : 'Unbonded',
-                usd: null,
-              },
-          metricRows: [
-            amountRaw
-              ? {
-                  label: isBond ? 'Amount Bonded' : 'Amount Unbonded',
-                  value: `${this.baseAmountFormatOrZero(amountRaw)} ${fundsAsset}`,
-                }
-              : null,
-            sharesRaw
-              ? {
-                  label: 'Shares',
-                  value: this.baseAmountFormatOrZero(sharesRaw),
-                }
-              : null,
-            timestamp
-              ? {
-                  label: 'Time',
-                  value: timestamp.format('YYYY-MM-DD HH:mm:ss'),
-                }
-              : null,
-          ].filter(Boolean),
-          detailRows: [
-            {
-              label: 'Product',
-              value: productLabel,
-              tone: this.getProductTone(productLabel),
-              type: 'product',
-            },
-            {
-              label: 'Action',
-              value: actionType,
-              tone: this.getContractTypeTone(actionType),
-              type: 'product',
-            },
-            { label: 'Contract', value: contractLabel },
-            { label: 'Status', value: status.label, type: 'status' },
-            timestamp
-              ? { label: 'Time', value: timestamp.format('lll') }
-              : null,
-            height
-              ? { label: 'Block', value: `#${this.normalFormat(height)}` }
-              : null,
-            userAddress
-              ? { label: 'User', address: userAddress, type: 'address' }
-              : null,
-          ].filter(Boolean),
-          lifecycleRows: [
-            {
-              icon: hasError ? 'WarningIcon' : 'CheckIcon',
-              title: hasError ? 'Contract execution failed' : actionType,
-              body: hasError
-                ? logs || ''
-                : [
-                    amountRaw
-                      ? `${this.baseAmountFormatOrZero(amountRaw)} ${fundsAsset} ${isBond ? 'deposited' : 'withdrawn'}`
-                      : null,
-                    sharesRaw
-                      ? `${this.baseAmountFormatOrZero(sharesRaw)} shares ${isBond ? 'minted' : 'burned'}`
-                      : null,
-                  ]
-                    .filter(Boolean)
-                    .join(' → '),
-            },
-          ],
-          feeRows: [],
-          technicalRows: [
-            userAddress
-              ? this.buildTechRow('From address', userAddress, 'address')
-              : null,
-            contractAddress
-              ? this.buildTechRow('To address', contractAddress, 'address')
-              : null,
-          ].filter(Boolean),
-        }
-      }
-
-      // Staking rewards claim: msg.account.claim
-      const claimMsg = singleAction?.metadata?.contract?.msg?.account?.claim
-      if (claimMsg !== undefined) {
-        const action = singleAction
-        const contractAddress = action.out?.[0]?.address || ''
-        const contractLabel =
-          getRujiraContractLabel(contractAddress) ||
-          this.formatAddress(contractAddress)
-        const _rawProductClaim = getRujiraContractProduct(contractAddress)
-        const productLabel =
-          (_rawProductClaim === 'Utilities' ? 'Staking' : _rawProductClaim) || 'Staking'
-        const userAddress = action.in?.[0]?.address || ''
-        const hasError = (action.metadata?.contract?.code ?? 0) > 0
-        const logs = action.metadata?.contract?.logs
-        const status = hasError
-          ? { label: 'Failed', tone: 'red' }
-          : action.status === 'success'
-            ? { label: 'Success', tone: 'green' }
-            : { label: 'Pending', tone: 'blue' }
-        const date = action.date
-        const timestamp = date ? moment.unix(parseInt(date) / 1e9) : null
-        const height = parseInt(action.height)
-        const events = action.metadata?.contract?.contractEvents || []
-        const toAttrs = (e) =>
-          Object.fromEntries(
-            (e.attributes || []).map(({ key, value }) => [key, value])
-          )
-
-        // Read claimed amount from the staking claim event
-        const claimEvent = events.find(
-          (e) => e.type === 'wasm-rujira-staking/account.claim'
-        )
-        const claimAttrs = claimEvent ? toAttrs(claimEvent) : {}
-        const claimedAmountFallback = parseInt(claimAttrs.amount) || 0
-
-        // coin_received by user (more reliable than wasm event)
-        const claimReceivedByDenom = {}
-        if (userAddress) {
-          events
-            .filter((e) => e.type === 'coin_received')
-            .map(toAttrs)
-            .filter((a) => a.receiver === userAddress && a.amount)
-            .forEach((a) => {
-              a.amount.split(',').forEach((part) => {
-                const p = part.trim()
-                const amt = parseInt(p) || 0
-                const denom = p.replace(/^\d+/, '').trim()
-                if (denom && amt > 0)
-                  claimReceivedByDenom[denom] = (claimReceivedByDenom[denom] || 0) + amt
-              })
-            })
-        }
-        const claimRecvDenom = Object.keys(claimReceivedByDenom)[0] || 'rune'
-        const claimRecvAmt = claimReceivedByDenom[claimRecvDenom] || claimedAmountFallback
-        const claimAssetStr = claimRecvDenom === 'rune' ? 'THOR.RUNE' : securedToAsset(claimRecvDenom).toUpperCase()
-        const claimAssetParsed = assetFromString(claimAssetStr)
-        const claimTicker = claimAssetParsed?.ticker || 'RUNE'
-
-        return {
-          rawEvents: events,
-          rawMsg: action?.metadata?.contract?.msg || null,
-          title: `Claim Rewards · ${contractLabel}`,
-          metaLabel: `Claim Rewards · ${productLabel}`,
-          status,
-          affiliateAddress: '',
-          actionTypeTitle: 'contract',
-          hasContractAction: true,
-          labels: [],
-          pairDisplay: null,
-          input: {
-            asset: null,
-            name: 'User',
-            badge: userAddress ? this.formatAddress(userAddress) : '',
-            amount: 'Claim',
-            usd: null,
-          },
-          output: {
-            asset: claimAssetStr,
-            name: claimTicker,
-            badge: this.getNetworkBadge(claimAssetParsed) || '',
-            amount: claimRecvAmt
-              ? `${this.baseAmountFormatOrZero(claimRecvAmt)} ${claimTicker}`
-              : '-',
-            usd: claimRecvAmt
-              ? this.formatUsdValue(this.amountToUSD(claimAssetStr, claimRecvAmt, this.pools))
-              : null,
-          },
-          metricRows: [
-            claimRecvAmt
-              ? {
-                  label: 'Claimed',
-                  value: `${this.baseAmountFormatOrZero(claimRecvAmt)} ${claimTicker}`,
-                }
-              : null,
-            timestamp
-              ? { label: 'Time', value: timestamp.format('YYYY-MM-DD HH:mm:ss') }
-              : null,
-          ].filter(Boolean),
-          detailRows: [
-            {
-              label: 'Product',
-              value: productLabel,
-              tone: this.getProductTone(productLabel),
-              type: 'product',
-            },
-            {
-              label: 'Action',
-              value: 'Claim Rewards',
-              tone: this.getContractTypeTone('Claim Rewards'),
-              type: 'product',
-            },
-            { label: 'Contract', value: contractLabel },
-            { label: 'Status', value: status.label, type: 'status' },
-            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
-            height
-              ? { label: 'Block', value: `#${this.normalFormat(height)}` }
-              : null,
-            userAddress
-              ? { label: 'User', address: userAddress, type: 'address' }
-              : null,
-          ].filter(Boolean),
-          lifecycleRows: [
-            {
-              icon: 'CheckIcon',
-              title: `Rewards claimed`,
-              body: claimedAmount
-                ? `${this.baseAmountFormatOrZero(claimedAmount)} RUNE`
-                : '',
-            },
-            ...(hasError && logs
-              ? [{ icon: 'WarningIcon', title: 'Claim failed', body: logs }]
-              : []),
-          ],
-          feeRows: [],
-          technicalRows: [
-            userAddress
-              ? this.buildTechRow('From address', userAddress, 'address')
-              : null,
-            contractAddress
-              ? this.buildTechRow('To address', contractAddress, 'address')
-              : null,
-          ].filter(Boolean),
-        }
-      }
-
-      // Yielding staking: msg.account.bond / msg.account.unbond
-      const yieldingAccountMsg = singleAction?.metadata?.contract?.msg?.account
-      if (
-        yieldingAccountMsg &&
-        ('bond' in yieldingAccountMsg || 'unbond' in yieldingAccountMsg)
-      ) {
-        const isStake = 'bond' in yieldingAccountMsg
-        const action = singleAction
-        const contractAddress = action.out?.[0]?.address || ''
-        const contractLabel =
-          getRujiraContractLabel(contractAddress) ||
-          this.formatAddress(contractAddress)
-        const _rawProduct2 = getRujiraContractProduct(contractAddress)
-        const productLabel =
-          (_rawProduct2 === 'Utilities' ? 'Staking' : _rawProduct2) || 'Staking'
-        const userAddress = action.in?.[0]?.address || ''
-        const hasError = (action.metadata?.contract?.code ?? 0) > 0
-        const logs = action.metadata?.contract?.logs
-        const status = hasError
-          ? { label: 'Failed', tone: 'red' }
-          : action.status === 'success'
-            ? { label: 'Success', tone: 'green' }
-            : { label: 'Pending', tone: 'blue' }
-        const date = action.date
-        const timestamp = date ? moment.unix(parseInt(date) / 1e9) : null
-        const height = parseInt(action.height)
-        const events = action.metadata?.contract?.contractEvents || []
-        const toAttrs = (e) =>
-          Object.fromEntries(
-            (e.attributes || []).map(({ key, value }) => [key, value])
-          )
-        const actionType = isStake ? 'Yielding Stake' : 'Yielding Unstake'
-
-        // Input: funds string, fall back to first coin_spent from user
-        let fundsStr = action.metadata?.contract?.funds || ''
-        if (!fundsStr && userAddress) {
-          const spentEvent = events.find(
-            (e) =>
-              e.type === 'coin_spent' &&
-              (e.attributes || []).some(
-                (a) => a.key === 'spender' && a.value === userAddress
-              )
-          )
-          const amountAttr = (spentEvent?.attributes || []).find(
-            (a) => a.key === 'amount'
-          )
-          if (amountAttr?.value) fundsStr = amountAttr.value
-        }
-        const amountRaw = parseInt(fundsStr) || 0
-        const fundsAsset = fundsStr.replace(/^[\d]+/, '').trim()
-        const inputAssetStr = fundsAsset
-          ? securedToAsset(fundsAsset).toUpperCase()
-          : 'THOR.RUNE'
-        const inputAssetParsed = assetFromString(inputAssetStr)
-        const inputTicker = inputAssetParsed?.ticker || 'RUNE'
-
-        // Output: excess RUNE returned to user
-        const excessEvent = userAddress
-          ? events.find(
-              (e) =>
-                e.type === 'coin_received' &&
-                (e.attributes || []).some(
-                  (a) => a.key === 'receiver' && a.value === userAddress
-                ) &&
-                (e.attributes || []).some(
-                  (a) => a.key === 'amount' && a.value.endsWith('rune')
-                )
-            )
-          : null
-        const excessAmountStr = excessEvent
-          ? ((e) => (e.attributes || []).find((a) => a.key === 'amount')?.value || '')(excessEvent)
-          : ''
-        const excessAmount = parseInt(excessAmountStr) || 0
-        const excessAssetParsed = assetFromString('THOR.RUNE')
-        const excessTicker = 'RUNE'
-
-        return {
-          rawEvents: events,
-          rawMsg: action?.metadata?.contract?.msg || null,
-          title: `${actionType}: ${contractLabel}`,
-          metaLabel: `${actionType} · ${productLabel}`,
-          status,
-          affiliateAddress: '',
-          actionTypeTitle: 'contract',
-          hasContractAction: true,
-          labels: [],
-          input: {
-            asset: inputAssetParsed ? inputAssetStr : null,
-            name: inputTicker,
-            badge: this.getNetworkBadge(inputAssetParsed) || '',
-            amount: amountRaw
-              ? `${this.baseAmountFormatOrZero(amountRaw)} ${inputTicker}`
-              : '-',
-            usd: amountRaw
-              ? this.formatUsdValue(this.amountToUSD(inputAssetStr, amountRaw, this.pools))
-              : null,
-            secure: inputAssetParsed?.secure ?? false,
-          },
-          output: excessAmount
-            ? {
-                asset: 'THOR.RUNE',
-                name: excessTicker,
-                badge: 'Excess returned',
-                amount: `${this.baseAmountFormatOrZero(excessAmount)} ${excessTicker}`,
-                usd: this.formatUsdValue(
-                  this.amountToUSD('THOR.RUNE', excessAmount, this.pools)
-                ),
-              }
-            : null,
-          metricRows: [
-            amountRaw
-              ? { label: isStake ? 'Staked' : 'Unstaked', value: `${this.baseAmountFormatOrZero(amountRaw)} ${inputTicker}` }
-              : null,
-            excessAmount
-              ? { label: 'Excess returned', value: `${this.baseAmountFormatOrZero(excessAmount)} ${excessTicker}` }
-              : null,
-            timestamp
-              ? { label: 'Time', value: timestamp.format('YYYY-MM-DD HH:mm:ss') }
-              : null,
-          ].filter(Boolean),
-          detailRows: [
-            { label: 'Product', value: productLabel, tone: this.getProductTone(productLabel), type: 'product' },
-            { label: 'Action', value: actionType, tone: this.getContractTypeTone(actionType), type: 'product' },
-            { label: 'Contract', value: contractLabel },
-            { label: 'Status', value: status.label, type: 'status' },
-            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
-            height ? { label: 'Block', value: `#${this.normalFormat(height)}` } : null,
-            userAddress ? { label: 'User', address: userAddress, type: 'address' } : null,
-          ].filter(Boolean),
-          lifecycleRows: [
-            ...this.extractContractEventRows(action),
-            ...(hasError && logs
-              ? [{ icon: 'WarningIcon', title: `${actionType} failed`, body: logs }]
-              : []),
-          ],
-          feeRows: [],
-          technicalRows: [
-            userAddress ? this.buildTechRow('From address', userAddress, 'address') : null,
-            contractAddress ? this.buildTechRow('To address', contractAddress, 'address') : null,
-          ].filter(Boolean),
-          priority: true,
-        }
-      }
-
-      // Ghost Credit Account liquidation: msg.liquidate
-      const liquidateMsg = singleAction?.metadata?.contract?.msg?.liquidate
-      if (liquidateMsg) {
-        const action = singleAction
-        const contractAddress = action.out?.[0]?.address || ''
-        const contractLabel =
-          getRujiraContractLabel(contractAddress) ||
-          this.formatAddress(contractAddress)
-        const productLabel = 'RUJI Money Market'
-        const userAddress = action.in?.[0]?.address || ''
-        const liquidatedAccount = liquidateMsg.addr || ''
-        const hasError = (action.metadata?.contract?.code ?? 0) > 0
-        const logs = action.metadata?.contract?.logs
-        const status = hasError
-          ? { label: 'Failed', tone: 'red' }
-          : action.status === 'success'
-            ? { label: 'Success', tone: 'green' }
-            : { label: 'Pending', tone: 'blue' }
-        const date = action.date
-        const timestamp = date ? moment.unix(parseInt(date) / 1e9) : null
-        const height = parseInt(action.height)
-        const events = action.metadata?.contract?.contractEvents || []
-        const toAttrs = (e) =>
-          Object.fromEntries(
-            (e.attributes || []).map(({ key, value }) => [key, value])
-          )
-
-        // Collateral: coin_spent from the credit account being liquidated
-        let collateralAmount = 0
-        let collateralDenom = ''
-        if (liquidatedAccount) {
-          const spentEvent = events.find(
-            (e) =>
-              e.type === 'coin_spent' &&
-              (e.attributes || []).some(
-                (a) => a.key === 'spender' && a.value === liquidatedAccount
-              )
-          )
-          const amountAttr = (spentEvent?.attributes || []).find(
-            (a) => a.key === 'amount'
-          )
-          if (amountAttr?.value) {
-            const part = amountAttr.value.split(',')[0]?.trim() || ''
-            collateralAmount = parseInt(part) || 0
-            collateralDenom = part.replace(/^\d+/, '').trim()
-          }
-        }
-        const collateralAssetStr = collateralDenom
-          ? securedToAsset(collateralDenom).toUpperCase()
-          : ''
-        const collateralAssetParsed = collateralDenom
-          ? (assetFromString(collateralDenom.toUpperCase()) ??
-              assetFromString(collateralAssetStr))
-          : null
-        const collateralTicker = collateralAssetParsed?.ticker || collateralDenom
-
-        // Repay event carries fee_liquidator (bare number) and the USDT denom via 'amount'
-        const repayEvent = events.find(
-          (e) => e.type === 'wasm-rujira-ghost-credit/liquidate.msg/repay'
-        )
-        const repayAttrs = repayEvent ? toAttrs(repayEvent) : {}
-        // 'amount' = total USDT received from FIN swap, denom applies to all fee fields
-        const repayTotalStr = repayAttrs.amount || ''
-        const repayDenom = repayTotalStr.replace(/^\d+/, '').trim()
-        const repayAssetStr = repayDenom
-          ? securedToAsset(repayDenom).toUpperCase()
-          : ''
-        const repayAssetParsed = repayDenom
-          ? (assetFromString(repayDenom.toUpperCase()) ??
-              assetFromString(repayAssetStr))
-          : null
-        const repayTicker = repayAssetParsed?.ticker || repayDenom
-        // Debt repaid (net, after fees)
-        const repayAmount = parseInt(repayAttrs.repay_amount || '') || 0
-        // Liquidator fee: bare number in same denom as 'amount'
-        const feeLiquidatorAmount = parseInt(repayAttrs.fee_liquidator || '') || 0
-        const feeLiquidatorTicker = repayTicker
-        
-        const feeProtocolRaw = parseInt(repayAttrs.fee_liquidation || '') || 0
-        
-        return {
-          rawEvents: events,
-          rawMsg: action?.metadata?.contract?.msg || null,
-          title: `Liquidation: ${contractLabel}`,
-          metaLabel: `Liquidation · ${productLabel}`,
-          status,
-          affiliateAddress: '',
-          actionTypeTitle: 'contract',
-          hasContractAction: true,
-          labels: [],
-          input: {
-            asset: collateralAssetParsed ? collateralAssetStr : null,
-            name: collateralTicker || 'Collateral',
-            badge: this.getNetworkBadge(collateralAssetParsed) || '',
-            amount: collateralAmount
-              ? `${this.baseAmountFormatOrZero(collateralAmount)} ${collateralTicker}`
-              : '-',
-            usd: collateralAmount
-              ? this.formatUsdValue(
-                  this.amountToUSD(collateralAssetStr, collateralAmount, this.pools)
-                )
-              : null,
-            secure: collateralAssetParsed?.secure ?? false,
-          },
-          output: repayAmount
-            ? {
-                asset: repayAssetParsed ? repayAssetStr : null,
-                name: repayTicker || 'USDT',
-                badge: 'Debt repaid to Ghost Vault',
-                amount: `${this.baseAmountFormatOrZero(repayAmount)} ${repayTicker}`,
-                usd: this.formatUsdValue(
-                  this.amountToUSD(repayAssetStr, repayAmount, this.pools)
-                ),
-              }
-            : null,
-          metricRows: [
-            collateralAmount
-              ? {
-                  label: 'Collateral seized',
-                  value: `${this.baseAmountFormatOrZero(collateralAmount)} ${collateralTicker}`,
-                }
-              : null,
-            repayAmount
-              ? {
-                  label: 'Debt repaid',
-                  value: `${this.baseAmountFormatOrZero(repayAmount)} ${repayTicker}`,
-                }
-              : null,
-              feeProtocolRaw
-              ? {
-                  label: 'Protocol fee',
-                  value: `${this.baseAmountFormatOrZero(feeProtocolRaw)} ${feeLiquidatorTicker}`,
-                }
-              : null,
-          ].filter(Boolean),
-          detailRows: [
-            {
-              label: 'Product',
-              value: productLabel,
-              tone: this.getProductTone(productLabel),
-              type: 'product',
-            },
-            {
-              label: 'Action',
-              value: 'Liquidation',
-              tone: this.getContractTypeTone('Liquidation'),
-              type: 'product',
-            },
-            { label: 'Contract', value: contractLabel },
-            liquidatedAccount
-              ? { label: 'Liquidated Account', address: liquidatedAccount, type: 'address' }
-              : null,
-            { label: 'Status', value: status.label, type: 'status' },
-            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
-            height ? { label: 'Block', value: `#${this.normalFormat(height)}` } : null,
-            userAddress
-              ? { label: 'Liquidator', address: userAddress, type: 'address' }
-              : null,
-          ].filter(Boolean),
-          lifecycleRows: (() => {
-            if (hasError) {
-              return [{ icon: 'WarningIcon', title: 'Liquidation failed', body: logs || '' }]
-            }
-            const totalFeesRaw = feeLiquidatorAmount + feeProtocolRaw
-            return [
-              collateralAmount
-                ? {
-                    icon: 'ArrowIcon',
-                    iconRotate: 90,
-                    title: 'Collateral seized',
-                    body: `${this.baseAmountFormatOrZero(collateralAmount)} ${collateralTicker}`,
-                  }
-                : null,
-              totalFeesRaw
-                ? {
-                    icon: 'ArrowIcon',
-                    iconRotate: 90,
-                    title: 'Fees paid',
-                    body: `${this.baseAmountFormatOrZero(totalFeesRaw)} ${repayTicker}`,
-                  }
-                : null,
-              repayAmount
-                ? {
-                    icon: 'CheckIcon',
-                    title: `${repayTicker} debt repaid`,
-                    body: `${this.baseAmountFormatOrZero(repayAmount)} ${repayTicker} repaid to Ghost Vault`,
-                  }
-                : null,
-            ].filter(Boolean)
-          })(),
-          feeRows: (() => {
-            const feeProtocolRaw = parseInt(repayAttrs.fee_liquidation || '') || 0
-            const toUsd = (amount) =>
-              repayAssetStr
-                ? this.amountToUSD(repayAssetStr, amount, this.pools)
-                : 0
-            const rows = []
-            if (feeLiquidatorAmount) {
-              rows.push({
-                label: 'Liquidator Reward',
-                usd: `$${this.formatFeeDisplay(toUsd(feeLiquidatorAmount))}`,
-                subtle: `${this.baseAmountFormatOrZero(feeLiquidatorAmount)} ${feeLiquidatorTicker}`,
-              })
-            }
-            if (feeProtocolRaw) {
-              rows.push({
-                label: 'Protocol Fee',
-                usd: `$${this.formatFeeDisplay(toUsd(feeProtocolRaw))}`,
-                subtle: `${this.baseAmountFormatOrZero(feeProtocolRaw)} ${repayTicker}`,
-              })
-            }
-            if (rows.length > 1) {
-              const totalUsd = rows.reduce(
-                (s, r) => s + this.parseUsdAmount(r.usd),
-                0
-              )
-              rows.push({
-                label: 'Total Fees',
-                usd: `$${this.formatFeeDisplay(totalUsd)}`,
-                subtle: null,
-                isTotal: true,
-              })
-            }
-            return rows
-          })(),
-          technicalRows: [
-            userAddress
-              ? this.buildTechRow('Liquidator', userAddress, 'address')
-              : null,
-            contractAddress
-              ? this.buildTechRow('Contract', contractAddress, 'address')
-              : null,
-            liquidatedAccount
-              ? this.buildTechRow('Liquidated account', liquidatedAccount, 'address')
-              : null,
-          ].filter(Boolean),
-          priority: true,
-        }
-      }
-
-      // Ghost Credit Account: msg.account dispatches sub-messages through a credit sub-account
-      const creditAccountMsg = singleAction?.metadata?.contract?.msg?.account
-      if (creditAccountMsg) {
-        const action = singleAction
-        const contractAddress = action.out?.[0]?.address || ''
-        const contractLabel =
-          getRujiraContractLabel(contractAddress) ||
-          this.formatAddress(contractAddress)
-        const productLabel =
-          getRujiraContractProduct(contractAddress) || 'RUJI Money Market'
-        const userAddress = action.in?.[0]?.address || ''
-        const creditAccountAddr = creditAccountMsg.addr || ''
-        const subMsgs = creditAccountMsg.msgs || []
-        const hasError = (action.metadata?.contract?.code ?? 0) > 0
-        const logs = action.metadata?.contract?.logs
-        const status = hasError
-          ? { label: 'Failed', tone: 'red' }
-          : action.status === 'success'
-            ? { label: 'Success', tone: 'green' }
-            : { label: 'Pending', tone: 'blue' }
-        const date = action.date
-        const timestamp = date ? moment.unix(parseInt(date) / 1e9) : null
-        const height = parseInt(action.height)
-        const events = action.metadata?.contract?.contractEvents || []
-        const toAttrs = (e) =>
-          Object.fromEntries(
-            (e.attributes || []).map(({ key, value }) => [key, value])
-          )
-
-        // Extract borrow sub-messages
-        const borrowMsgs = subMsgs.filter((m) => m.borrow)
-        const borrowEvent = events.find(
-          (e) => e.type === 'wasm-rujira-ghost-credit/account.msg/borrow'
-        )
-        const borrowAttrs = borrowEvent ? toAttrs(borrowEvent) : {}
-        const borrowAmountStr = borrowAttrs.amount || ''
-        const borrowAmountRaw = parseInt(borrowAmountStr) || 0
-        const borrowDenom =
-          borrowAmountStr.replace(/^\d+/, '').trim() ||
-          borrowMsgs[0]?.borrow?.denom ||
-          ''
-        const borrowAssetStr = borrowDenom
-          ? securedToAsset(borrowDenom).toUpperCase()
-          : ''
-        const borrowAssetParsed = borrowAssetStr
-          ? assetFromString(borrowAssetStr)
-          : null
-        const borrowTicker = borrowAssetParsed?.ticker || borrowDenom
-
-        // Extract FIN trade fill (CCL or limit)
-        const finTradeEvent = events.find(
-          (e) => e.type === 'wasm-rujira-fin/trade'
-        )
-        const finAttrs = finTradeEvent ? toAttrs(finTradeEvent) : {}
-        const finPairAddr = finAttrs._contract_address || ''
-        const finPairLabel =
-          getRujiraContractLabel(finPairAddr) || this.formatAddress(finPairAddr)
-        const bidRaw = parseInt(finAttrs.bid || 0)
-        const offerRaw = parseInt(finAttrs.offer || 0)
-        const fillPrice = parseFloat(finAttrs.rate || 0)
-        const isCCLFill = String(finAttrs.price || '').startsWith('ccl:')
-
-        // Find the output asset received by the credit account
-        const creditReceivedEvent = events.find(
-          (e) =>
-            e.type === 'coin_received' &&
-            (e.attributes || []).some(
-              (a) => a.key === 'receiver' && a.value === creditAccountAddr
-            ) &&
-            (e.attributes || []).some(
-              (a) => a.key === 'amount' && !a.value.includes(borrowDenom)
-            )
-        )
-        const outputAmountStr = creditReceivedEvent
-          ? ((e) =>
-              (e.attributes || []).find((a) => a.key === 'amount')?.value ||
-              '')(creditReceivedEvent)
-          : ''
-        const outputRaw = parseInt(outputAmountStr) || 0
-        const outputDenom = outputAmountStr.replace(/^\d+/, '').trim()
-        const outputAssetStr = outputDenom
-          ? securedToAsset(outputDenom).toUpperCase()
-          : ''
-        const outputAssetParsed = outputAssetStr
-          ? assetFromString(outputAssetStr)
-          : null
-        const outputTicker = outputAssetParsed?.ticker || outputDenom
-
-        // Retract event
-        const retractEvent = events.find(
-          (e) => e.type === 'wasm-rujira-fin/order.retract'
-        )
-        const retractAttrs = retractEvent ? toAttrs(retractEvent) : {}
-        const retractAmount = parseInt(retractAttrs.amount || 0)
-
-        const subMsgCount = subMsgs.length
-
-        return {
-          rawEvents: events,
-          rawMsg: action?.metadata?.contract?.msg || null,
-          title: `Credit Account: ${this.formatAddress(creditAccountAddr)}`,
-          metaLabel: `Credit Account · ${productLabel}`,
-          status,
-          affiliateAddress: '',
-          actionTypeTitle: 'contract',
-          hasContractAction: true,
-          labels: [],
-          input: {
-            asset: borrowAssetParsed ? borrowAssetStr : null,
-            name: borrowTicker || 'Borrowed',
-            badge: borrowMsgs.length
-              ? `${borrowMsgs.length} borrow${borrowMsgs.length !== 1 ? 's' : ''}`
-              : '',
-            amount: borrowAmountRaw
-              ? this.baseAmountFormatOrZero(borrowAmountRaw)
-              : '-',
-            usd: null,
-          },
-          output: {
-            asset: outputAssetParsed ? outputAssetStr : null,
-            name: outputTicker || 'Received',
-            badge: isCCLFill ? 'CCL fill' : finTradeEvent ? 'Limit fill' : '',
-            amount: outputRaw ? this.baseAmountFormatOrZero(outputRaw) : '-',
-            usd: null,
-          },
-          metricRows: [
-            borrowAmountRaw
-              ? {
-                  label: 'Borrowed',
-                  value: `${this.baseAmountFormatOrZero(borrowAmountRaw)} ${borrowTicker}`,
-                }
-              : null,
-            outputRaw
-              ? {
-                  label: 'Received',
-                  value: `${this.baseAmountFormatOrZero(outputRaw)} ${outputTicker}`,
-                }
-              : null,
-            fillPrice
-              ? { label: 'Fill price', value: fillPrice.toFixed(2) }
-              : null,
-            { label: 'Sub-messages', value: String(subMsgCount) },
-            timestamp
-              ? {
-                  label: 'Time',
-                  value: timestamp.format('YYYY-MM-DD HH:mm:ss'),
-                }
-              : null,
-          ].filter(Boolean),
-          detailRows: [
-            {
-              label: 'Product',
-              value: productLabel,
-              tone: this.getProductTone(productLabel),
-              type: 'product',
-            },
-            {
-              label: 'Action',
-              value: 'Credit Account',
-              tone: this.getContractTypeTone('Credit Account'),
-              type: 'product',
-            },
-            { label: 'Contract', value: contractLabel },
-            { label: 'Sub-messages', value: String(subMsgCount) },
-            { label: 'Status', value: status.label, type: 'status' },
-            timestamp
-              ? { label: 'Time', value: timestamp.format('lll') }
-              : null,
-            height
-              ? { label: 'Block', value: `#${this.normalFormat(height)}` }
-              : null,
-            userAddress
-              ? { label: 'User', address: userAddress, type: 'address' }
-              : null,
-            creditAccountAddr
-              ? {
-                  label: 'Credit account',
-                  address: creditAccountAddr,
-                  type: 'address',
-                }
-              : null,
-          ].filter(Boolean),
-          lifecycleRows: [
-            borrowAmountRaw
-              ? {
-                  icon: 'RefreshIcon',
-                  title: 'Borrowed from Ghost Vault',
-                  body: `${this.baseAmountFormatOrZero(borrowAmountRaw)} ${borrowTicker}`,
-                }
-              : null,
-            finTradeEvent
-              ? {
-                  icon: 'ExchangeIcon',
-                  title: `${isCCLFill ? 'CCL' : 'Limit'} fill: ${finPairLabel}`,
-                  body: [
-                    offerRaw ? `${offerRaw} ${borrowTicker} offered` : null,
-                    bidRaw ? `${bidRaw} ${outputTicker} received` : null,
-                    fillPrice ? `@ ${fillPrice.toFixed(2)}` : null,
-                  ]
-                    .filter(Boolean)
-                    .join(' · '),
-                }
-              : null,
-            retractEvent
-              ? {
-                  icon: 'SubtractIcon',
-                  title: 'Unfilled order retracted',
-                  body: retractAmount
-                    ? `${retractAmount} ${borrowTicker} returned`
-                    : '',
-                }
-              : null,
-            hasError && logs ? { icon: 'WarningIcon', title: 'Contract execution failed', body: logs } : null,
-          ].filter(Boolean),
-          feeRows: [],
-          technicalRows: [
-            userAddress
-              ? this.buildTechRow('From address', userAddress, 'address')
-              : null,
-            creditAccountAddr
-              ? this.buildTechRow(
-                  'Credit account',
-                  creditAccountAddr,
-                  'address'
-                )
-              : null,
-            contractAddress
-              ? this.buildTechRow('To address', contractAddress, 'address')
-              : null,
-          ].filter(Boolean),
-        }
-      }
-
-      // AutoRujira Reset Instance: msg.reset_instance
-      const resetInstanceMsg =
-        singleAction?.metadata?.contract?.msg?.reset_instance
-      if (resetInstanceMsg) {
-        const action = singleAction
-        const contractAddress = action.out?.[0]?.address || ''
-        const contractLabel =
-          getRujiraContractLabel(contractAddress) ||
-          this.formatAddress(contractAddress)
-        const productLabel =
-          getRujiraContractProduct(contractAddress) || 'AutoRujira'
-        const callerAddress = action.in?.[0]?.address || ''
-        const instanceId = resetInstanceMsg.instance_id
-        const targetUser = resetInstanceMsg.user_address || ''
-        const hasError = (action.metadata?.contract?.code ?? 0) > 0
-        const logs = action.metadata?.contract?.logs
-        const status = hasError
-          ? { label: 'Failed', tone: 'red' }
-          : action.status === 'success'
-            ? { label: 'Success', tone: 'green' }
-            : { label: 'Pending', tone: 'blue' }
-        const date = action.date
-        const timestamp = date ? moment.unix(parseInt(date) / 1e9) : null
-        const height = parseInt(action.height)
-        const events = action.metadata?.contract?.contractEvents || []
-        const toAttrs = (e) =>
-          Object.fromEntries(
-            (e.attributes || []).map(({ key, value }) => [key, value])
-          )
-        const resetEvent = events.find(
-          (e) => e.type === 'wasm-autorujira-workflow-manager/reset_instance'
-        )
-        const resetAttrs = resetEvent ? toAttrs(resetEvent) : {}
-        const executionType = resetAttrs.execution_type || ''
-
-        return {
-          rawEvents: events,
-          rawMsg: action?.metadata?.contract?.msg || null,
-          title: `Reset Instance #${instanceId}`,
-          metaLabel: `Reset Instance · ${productLabel}`,
-          status,
-          affiliateAddress: '',
-          actionTypeTitle: 'contract',
-          hasContractAction: true,
-          labels: [],
-          input: {
-            asset: null,
-            name: productLabel,
-            badge: contractLabel,
-            amount: `Instance #${instanceId}`,
-            usd: null,
-          },
-          output: {
-            asset: null,
-            name: 'User',
-            badge: targetUser ? this.formatAddress(targetUser) : '',
-            amount: executionType ? `${executionType} reset` : 'Reset',
-            usd: null,
-          },
-          metricRows: [
-            { label: 'Instance', value: `#${instanceId}` },
-            executionType
-              ? { label: 'Execution type', value: executionType }
-              : null,
-            timestamp
-              ? {
-                  label: 'Time',
-                  value: timestamp.format('YYYY-MM-DD HH:mm:ss'),
-                }
-              : null,
-          ].filter(Boolean),
-          detailRows: [
-            {
-              label: 'Product',
-              value: productLabel,
-              tone: this.getProductTone(productLabel),
-              type: 'product',
-            },
-            {
-              label: 'Action',
-              value: 'Reset Instance',
-              tone: this.getContractTypeTone('Reset Instance'),
-              type: 'product',
-            },
-            { label: 'Contract', value: contractLabel },
-            { label: 'Instance ID', value: `#${instanceId}` },
-            executionType
-              ? { label: 'Execution type', value: executionType }
-              : null,
-            { label: 'Status', value: status.label, type: 'status' },
-            timestamp
-              ? { label: 'Time', value: timestamp.format('lll') }
-              : null,
-            height
-              ? { label: 'Block', value: `#${this.normalFormat(height)}` }
-              : null,
-            targetUser
-              ? { label: 'User', address: targetUser, type: 'address' }
-              : null,
-            callerAddress
-              ? { label: 'Caller', address: callerAddress, type: 'address' }
-              : null,
-          ].filter(Boolean),
-          lifecycleRows: [
-            {
-              icon: hasError ? 'WarningIcon' : 'RefreshIcon',
-              title: hasError ? 'Contract execution failed' : `Instance #${instanceId} reset`,
-              body: hasError
-                ? logs || ''
-                : [
-                    executionType ? `Execution type: ${executionType}` : null,
-                    targetUser ? `for ${this.formatAddress(targetUser)}` : null,
-                  ]
-                    .filter(Boolean)
-                    .join(' · '),
-            },
-          ],
-          feeRows: [],
-          technicalRows: [
-            callerAddress
-              ? this.buildTechRow('Caller address', callerAddress, 'address')
-              : null,
-            targetUser
-              ? this.buildTechRow('User address', targetUser, 'address')
-              : null,
-            contractAddress
-              ? this.buildTechRow('To address', contractAddress, 'address')
-              : null,
-          ].filter(Boolean),
-        }
-      }
-
-      // CCL range creation: msg.range.create
-      const rangeCreateMsg = singleAction?.metadata?.contract?.msg?.range?.create
-      if (rangeCreateMsg) {
-        const action = singleAction
-        const contractAddress = action.out?.[0]?.address || ''
-        const contractLabel =
-          getRujiraContractLabel(contractAddress) ||
-          this.formatAddress(contractAddress)
-        const productLabel =
-          getRujiraContractProduct(contractAddress) || 'RUJI Trade'
-        const userAddress = action.in?.[0]?.address || ''
-        const hasError = (action.metadata?.contract?.code ?? 0) > 0
-        const logs = action.metadata?.contract?.logs
-        const status = hasError
-          ? { label: 'Failed', tone: 'red' }
-          : action.status === 'success'
-            ? { label: 'Success', tone: 'green' }
-            : { label: 'Pending', tone: 'blue' }
-        const date = action.date
-        const timestamp = date ? moment.unix(parseInt(date) / 1e9) : null
-        const height = parseInt(action.height)
-        const events = action.metadata?.contract?.contractEvents || []
-        const toAttrs = (e) =>
-          Object.fromEntries(
-            (e.attributes || []).map(({ key, value }) => [key, value])
-          )
-
-        // Parse actual amounts used from range.create event
-        const rangeCreateEvents = events.filter(
-          (e) => e.type === 'wasm-rujira-fin/range.create'
-        )
-        const rangeAttrs = rangeCreateEvents.length ? toAttrs(rangeCreateEvents[0]) : {}
-        const rangeCount = rangeCreateEvents.length
-
-        const low = rangeAttrs.low || rangeCreateMsg.config?.low || ''
-        const high = rangeAttrs.high || rangeCreateMsg.config?.high || ''
-        const fee = rangeAttrs.fee || rangeCreateMsg.config?.fee || ''
-        const spread = rangeAttrs.spread || rangeCreateMsg.config?.spread || ''
-        const rangeIdx = rangeAttrs.idx || ''
-
-        // Actual amounts committed to the range (may differ from funds sent due to refund)
-        const baseAmt = parseInt(rangeAttrs.base || 0)
-        const quoteAmt = parseInt(rangeAttrs.quote || 0)
-
-        // Parse denoms from multi-asset funds string ("969729479647doge-doge,222781833369rune")
-        const fundsStr = action.metadata?.contract?.funds || ''
-        const fundsParts = fundsStr.split(',').map((part) => {
-          const amt = parseInt(part) || 0
-          const denom = part.replace(/^\d+/, '').trim()
-          return { amt, denom }
-        })
-
-        // Prefer registry pair info, fall back to funds order
-        const pairEntry = getRujiraContractEntry(contractAddress)
-        const pairLabelParts = (pairEntry?.contractLabel || '').split(':')
-        const baseDenom =
-          pairLabelParts[1] || fundsParts[0]?.denom || ''
-        const quoteDenom =
-          pairLabelParts[2] || fundsParts[1]?.denom || ''
-
-        const denomToAssetStr = (denom) =>
-          !denom
-            ? ''
-            : denom === 'rune'
-              ? 'THOR.RUNE'
-              : securedToAsset(denom).toUpperCase()
-
-        const baseAssetStr = denomToAssetStr(baseDenom)
-        const quoteAssetStr = denomToAssetStr(quoteDenom)
-        const baseAssetParsed = baseAssetStr ? assetFromString(baseAssetStr) : null
-        const quoteAssetParsed = quoteAssetStr ? assetFromString(quoteAssetStr) : null
-        const baseTicker = baseAssetParsed?.ticker || baseDenom || 'Base'
-        const quoteTicker = quoteAssetParsed?.ticker || quoteDenom || 'Quote'
-
-        const pairLabel =
-          baseTicker && quoteTicker ? `${baseTicker}/${quoteTicker}` : contractLabel
-
-        const baseUsd = this.amountToUSD(baseAssetStr, baseAmt, this.pools)
-        const quoteUsd = this.amountToUSD(quoteAssetStr, quoteAmt, this.pools)
-
-        const fmtPct = (val) =>
-          val ? `${(parseFloat(val) * 100).toFixed(3)}%` : ''
-        const fmtPrice = (val) =>
-          val ? parseFloat(val).toPrecision(6) : ''
-
-        return {
-          rawEvents: events,
-          rawMsg: action?.metadata?.contract?.msg || null,
-          title: `CCL Range Created on ${pairLabel}`,
-          metaLabel: `CCL Range · ${pairLabel}`,
-          status,
-          affiliateAddress: '',
-          actionTypeTitle: 'contract',
-          hasContractAction: true,
-          labels: [],
-          pairDisplay: null,
-          input: {
-            asset: baseAssetStr || null,
-            name: `${baseTicker} (Base)`,
-            badge: this.getNetworkBadge(baseAssetParsed) || '',
-            amount: baseAmt
-              ? `${this.baseAmountFormatOrZero(baseAmt)} ${baseTicker}`
-              : '—',
-            usd: this.formatUsdValue(baseUsd),
-          },
-          output: {
-            asset: quoteAssetStr || null,
-            name: `${quoteTicker} (Quote)`,
-            badge: this.getNetworkBadge(quoteAssetParsed) || '',
-            amount: quoteAmt
-              ? `${this.baseAmountFormatOrZero(quoteAmt)} ${quoteTicker}`
-              : '—',
-            usd: this.formatUsdValue(quoteUsd),
-          },
-          metricRows: [
-            low && high
-              ? { label: 'Price Range', value: `${fmtPrice(low)}–${fmtPrice(high)}` }
-              : null,
-            fee ? { label: 'Fee', value: fmtPct(fee) } : null,
-            spread ? { label: 'Spread', value: fmtPct(spread) } : null,
-            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
-          ].filter(Boolean),
-          detailRows: [
-            {
-              label: 'Product',
-              value: productLabel,
-              tone: this.getProductTone(productLabel),
-              type: 'product',
-            },
-            {
-              label: 'Action',
-              value: rangeCount > 1 ? `${rangeCount} CCL Ranges` : 'CCL Range',
-              tone: this.getContractTypeTone('CCL Range'),
-              type: 'product',
-            },
-            { label: 'Pair', value: pairLabel },
-            low && high
-              ? { label: 'Price Range', value: `${fmtPrice(low)}–${fmtPrice(high)}` }
-              : null,
-            fee ? { label: 'Fee Rate', value: fmtPct(fee) } : null,
-            spread ? { label: 'Spread', value: fmtPct(spread) } : null,
-            rangeIdx ? { label: 'Range Index', value: rangeIdx } : null,
-            { label: 'Status', value: status.label, type: 'status' },
-            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
-            height
-              ? { label: 'Block', value: `#${this.normalFormat(height)}` }
-              : null,
-            userAddress
-              ? { label: 'Owner', address: userAddress, type: 'address' }
-              : null,
-          ].filter(Boolean),
-          lifecycleRows: [
-            {
-              icon: hasError ? 'WarningIcon' : 'ExchangeIcon',
-              title: hasError
-                ? 'Contract execution failed'
-                : `CCL range position created`,
-              body: hasError
-                ? logs || ''
-                : [
-                    baseAmt
-                      ? `${this.baseAmountFormatOrZero(baseAmt)} ${baseTicker}`
-                      : null,
-                    quoteAmt
-                      ? `${this.baseAmountFormatOrZero(quoteAmt)} ${quoteTicker}`
-                      : null,
-                  ]
-                    .filter(Boolean)
-                    .join(' + ') +
-                  (low && high
-                    ? ` deposited into ${pairLabel} at price range ${fmtPrice(low)}–${fmtPrice(high)}`
-                    : ` deposited into ${pairLabel}`),
-            },
-          ],
-          feeRows: [],
-          technicalRows: [
-            userAddress
-              ? this.buildTechRow('From address', userAddress, 'address')
-              : null,
-            contractAddress
-              ? this.buildTechRow('To address', contractAddress, 'address')
-              : null,
-          ].filter(Boolean),
-        }
-      }
-
-      // CCL range yield claim: msg.range.claim
-      const rangeClaimMsg = singleAction?.metadata?.contract?.msg?.range?.claim
-      if (rangeClaimMsg) {
-        const action = singleAction
-        const contractAddress = action.out?.[0]?.address || ''
-        const contractLabel =
-          getRujiraContractLabel(contractAddress) ||
-          this.formatAddress(contractAddress)
-        const productLabel =
-          getRujiraContractProduct(contractAddress) || 'RUJI Trade'
-        const userAddress = action.in?.[0]?.address || ''
-        const hasError = (action.metadata?.contract?.code ?? 0) > 0
-        const logs = action.metadata?.contract?.logs
-        const status = hasError
-          ? { label: 'Failed', tone: 'red' }
-          : action.status === 'success'
-            ? { label: 'Success', tone: 'green' }
-            : { label: 'Pending', tone: 'blue' }
-        const date = action.date
-        const timestamp = date ? moment.unix(parseInt(date) / 1e9) : null
-        const height = parseInt(action.height)
-        const events = action.metadata?.contract?.contractEvents || []
-        const toAttrs = (e) =>
-          Object.fromEntries(
-            (e.attributes || []).map(({ key, value }) => [key, value])
-          )
-
-        const rangeIdx = rangeClaimMsg.idx || ''
-
-        // Claimed amounts from the range.claim event
-        const claimEvent = events.find(
-          (e) => e.type === 'wasm-rujira-fin/range.claim'
-        )
-        const claimAttrs = claimEvent ? toAttrs(claimEvent) : {}
-        const baseAmt = parseInt(claimAttrs.base || 0)
-        const quoteAmt = parseInt(claimAttrs.quote || 0)
-
-        // Derive pair denoms from registry contractLabel ("rujira-fin:base:quote")
-        // Fall back to parsing the coin_received event
-        const pairEntry = getRujiraContractEntry(contractAddress)
-        const pairLabelParts = (pairEntry?.contractLabel || '').split(':')
-        let baseDenom = pairLabelParts[1] || ''
-        let quoteDenom = pairLabelParts[2] || ''
-
-        if (!baseDenom || !quoteDenom) {
-          const receivedEvent = events.find(
-            (e) =>
-              e.type === 'coin_received' &&
-              (e.attributes || []).some(
-                (a) => a.key === 'receiver' && a.value === userAddress
-              )
-          )
-          const receivedAmtStr = (receivedEvent?.attributes || []).find(
-            (a) => a.key === 'amount'
-          )?.value || ''
-          receivedAmtStr.split(',').forEach((part, i) => {
-            const denom = part.replace(/^\d+/, '').trim()
-            if (i === 0 && !baseDenom) baseDenom = denom
-            if (i === 1 && !quoteDenom) quoteDenom = denom
-          })
-        }
-
-        const denomToAssetStr = (denom) =>
-          !denom
-            ? ''
-            : denom === 'rune'
-              ? 'THOR.RUNE'
-              : securedToAsset(denom).toUpperCase()
-
-        const baseAssetStr = denomToAssetStr(baseDenom)
-        const quoteAssetStr = denomToAssetStr(quoteDenom)
-        const baseAssetParsed = baseAssetStr ? assetFromString(baseAssetStr) : null
-        const quoteAssetParsed = quoteAssetStr ? assetFromString(quoteAssetStr) : null
-        const baseTicker = baseAssetParsed?.ticker || baseDenom || 'Base'
-        const quoteTicker = quoteAssetParsed?.ticker || quoteDenom || 'Quote'
-
-        const pairLabel =
-          baseTicker && quoteTicker ? `${baseTicker}/${quoteTicker}` : contractLabel
-
-        const baseUsd = this.amountToUSD(baseAssetStr, baseAmt, this.pools)
-        const quoteUsd = this.amountToUSD(quoteAssetStr, quoteAmt, this.pools)
-
-        return {
-          rawEvents: events,
-          rawMsg: action?.metadata?.contract?.msg || null,
-          title: `Claim Yield: Range #${rangeIdx} on ${pairLabel}`,
-          metaLabel: `Claim Yield · ${pairLabel}`,
-          status,
-          affiliateAddress: '',
-          actionTypeTitle: 'contract',
-          hasContractAction: true,
-          labels: [],
-          pairDisplay: null,
-          input: {
-            asset: baseAssetStr || null,
-            name: `${baseTicker} (Base)`,
-            badge: this.getNetworkBadge(baseAssetParsed) || '',
-            amount: baseAmt
-              ? `${this.baseAmountFormatOrZero(baseAmt)} ${baseTicker}`
-              : '—',
-            usd: this.formatUsdValue(baseUsd),
-          },
-          output: {
-            asset: quoteAssetStr || null,
-            name: `${quoteTicker} (Quote)`,
-            badge: this.getNetworkBadge(quoteAssetParsed) || '',
-            amount: quoteAmt
-              ? `${this.baseAmountFormatOrZero(quoteAmt)} ${quoteTicker}`
-              : '—',
-            usd: this.formatUsdValue(quoteUsd),
-          },
-          metricRows: [
-            rangeIdx ? { label: 'Range Index', value: `#${rangeIdx}` } : null,
-            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
-          ].filter(Boolean),
-          detailRows: [
-            {
-              label: 'Product',
-              value: productLabel,
-              tone: this.getProductTone(productLabel),
-              type: 'product',
-            },
-            {
-              label: 'Action',
-              value: 'Claim Yield',
-              tone: this.getContractTypeTone('Claim Yield'),
-              type: 'product',
-            },
-            { label: 'Pair', value: pairLabel },
-            rangeIdx ? { label: 'Range Index', value: `#${rangeIdx}` } : null,
-            { label: 'Status', value: status.label, type: 'status' },
-            timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
-            height
-              ? { label: 'Block', value: `#${this.normalFormat(height)}` }
-              : null,
-            userAddress
-              ? { label: 'Owner', address: userAddress, type: 'address' }
-              : null,
-          ].filter(Boolean),
-          lifecycleRows: [
-            {
-              icon: hasError ? 'WarningIcon' : 'CheckIcon',
-              title: hasError ? 'Claim failed' : `Yield claimed from range #${rangeIdx}`,
-              body: hasError
-                ? logs || ''
-                : [
-                    baseAmt
-                      ? `${this.baseAmountFormatOrZero(baseAmt)} ${baseTicker}`
-                      : null,
-                    quoteAmt
-                      ? `${this.baseAmountFormatOrZero(quoteAmt)} ${quoteTicker}`
-                      : null,
-                  ]
-                    .filter(Boolean)
-                    .join(' + ') +
-                  ` received from ${pairLabel} range #${rangeIdx}`,
-            },
-          ],
-          feeRows: [],
-          technicalRows: [
-            userAddress
-              ? this.buildTechRow('From address', userAddress, 'address')
-              : null,
-            contractAddress
-              ? this.buildTechRow('To address', contractAddress, 'address')
-              : null,
-          ].filter(Boolean),
-        }
-      }
-
-      // Ghost Vault Withdraw / Deposit: msg.withdraw or msg.deposit
-      const ghostVaultMsg = singleAction?.metadata?.contract?.msg
-      const isGhostWithdraw = ghostVaultMsg && 'withdraw' in ghostVaultMsg
-      const isGhostDeposit = ghostVaultMsg && 'deposit' in ghostVaultMsg
-      if (isGhostWithdraw || isGhostDeposit) {
-        const action = singleAction
-        const contractAddress = action.out?.[0]?.address || ''
-        const contractLabel =
-          getRujiraContractLabel(contractAddress) ||
-          this.formatAddress(contractAddress)
-        const productLabel =
-          getRujiraContractProduct(contractAddress) || 'RUJI Money Market'
-        const userAddress = action.in?.[0]?.address || ''
-        const hasError = (action.metadata?.contract?.code ?? 0) > 0
-        const logs = action.metadata?.contract?.logs
-        const status = hasError
-          ? { label: 'Failed', tone: 'red' }
-          : action.status === 'success'
-            ? { label: 'Success', tone: 'green' }
-            : { label: 'Pending', tone: 'blue' }
-        const date = action.date
-        const timestamp = date ? moment.unix(parseInt(date) / 1e9) : null
-        const height = parseInt(action.height)
-        const events = action.metadata?.contract?.contractEvents || []
-        const toAttrs = (e) =>
-          Object.fromEntries(
-            (e.attributes || []).map(({ key, value }) => [key, value])
-          )
-        const vaultEvent = events.find(
-          (e) =>
-            e.type ===
-            `wasm-rujira-ghost-vault/${isGhostWithdraw ? 'withdraw' : 'deposit'}`
-        )
-        const vaultAttrs = vaultEvent ? toAttrs(vaultEvent) : {}
-
-        // Parse funds denom (e.g. "9158098048x/ghost-vault/eth-usdc-0xa...")
-        const fundsStr = action.metadata?.contract?.funds || ''
-        const fundsAmountRaw = parseInt(fundsStr) || 0
-        const fundsDenom = fundsStr.replace(/^\d+/, '').trim()
-        const vaultAssetName = fundsDenom.replace('x/ghost-vault/', '')
-
-        // Find the coin_received event for the user to get the actual output denom
-        const userCoinReceived = events.find(
-          (e) =>
-            e.type === 'coin_received' &&
-            (e.attributes || []).some(
-              (a) => a.key === 'receiver' && a.value === userAddress
-            ) &&
-            (e.attributes || []).some(
-              (a) => a.key === 'amount' && !a.value.includes('ghost-vault')
-            )
-        )
-        const userReceivedAmountStr = userCoinReceived
-          ? ((e) =>
-              (e.attributes || []).find((a) => a.key === 'amount')?.value ||
-              '')(userCoinReceived)
-          : ''
-        const userReceivedDenom = userReceivedAmountStr
-          .replace(/^\d+/, '')
-          .trim()
-        // Convert trade-asset denom (e.g. "eth-usdc-0xa...") to asset string ("ETH.USDC-0XA...")
-        const underlyingAssetStr = userReceivedDenom
-          ? securedToAsset(userReceivedDenom).toUpperCase()
-          : vaultAssetName.toUpperCase()
-        const underlyingAssetParsed = assetFromString(underlyingAssetStr)
-        const underlyingTicker =
-          underlyingAssetParsed?.ticker || underlyingAssetStr
-
-        // Underlying amount from vault event
-        const underlyingRaw = parseInt(vaultAttrs.amount || 0)
-        const sharesRaw = parseInt(vaultAttrs.shares || fundsAmountRaw || 0)
-
-        // For deposit: find vault shares received by user (denom includes 'ghost-vault')
-        // For withdraw: userCoinReceived already found above (underlying token)
-        let depositSharesAmt = 0
-        let depositSharesDenom = ''
-        if (isGhostDeposit && userAddress) {
-          const depositCoinReceived = events.find(
-            (e) =>
-              e.type === 'coin_received' &&
-              (e.attributes || []).some((a) => a.key === 'receiver' && a.value === userAddress) &&
-              (e.attributes || []).some((a) => a.key === 'amount' && a.value.includes('ghost-vault'))
-          )
-          const depositAmtStr = depositCoinReceived
-            ? ((e) => (e.attributes || []).find((a) => a.key === 'amount')?.value || '')(depositCoinReceived)
-            : ''
-          depositSharesAmt = parseInt(depositAmtStr) || 0
-          depositSharesDenom = depositAmtStr.replace(/^\d+/, '').trim()
-        }
-
-        const actionType = isGhostWithdraw
-          ? 'Ghost Vault Withdraw'
-          : 'Ghost Vault Deposit'
-        const vaultName =
-          contractLabel.replace('rujira-ghost-vault:', '') || contractLabel
-
-        return {
-          rawEvents: events,
-          rawMsg: action?.metadata?.contract?.msg || null,
-          title: `${actionType}: ${vaultName}`,
-          metaLabel: `${actionType} · ${productLabel}`,
-          status,
-          affiliateAddress: '',
-          actionTypeTitle: 'contract',
-          hasContractAction: true,
-          labels: [],
-          input: {
-            asset: null,
-            name: isGhostWithdraw ? 'Shares burned' : 'User',
-            badge: isGhostWithdraw
-              ? vaultName
-              : userAddress
-                ? this.formatAddress(userAddress)
-                : '',
-            amount: isGhostWithdraw
-              ? sharesRaw
-                ? `${this.baseAmountFormatOrZero(sharesRaw)} shares`
-                : '-'
-              : fundsAmountRaw
-                ? `${this.baseAmountFormatOrZero(fundsAmountRaw)} ${fundsDenom}`
-                : '-',
-            usd: null,
-          },
-          output: isGhostWithdraw
-            ? {
-                asset: underlyingAssetParsed ? underlyingAssetStr : null,
-                name: underlyingTicker,
-                badge: this.getNetworkBadge(underlyingAssetParsed) || (userAddress ? this.formatAddress(userAddress) : ''),
-                amount: underlyingRaw
-                  ? `${this.baseAmountFormatOrZero(underlyingRaw)} ${underlyingTicker}`
-                  : 'Withdrawn',
-                usd: underlyingRaw
-                  ? this.formatUsdValue(this.amountToUSD(underlyingAssetStr, underlyingRaw, this.pools))
-                  : null,
-              }
-            : depositSharesAmt
-              ? {
-                  asset: null,
-                  name: 'Vault shares',
-                  badge: vaultName,
-                  amount: `${this.baseAmountFormatOrZero(depositSharesAmt)} shares`,
-                  usd: null,
-                }
-              : {
-                  asset: null,
-                  name: 'Shares minted',
-                  badge: vaultName,
-                  amount: sharesRaw
-                    ? `${this.baseAmountFormatOrZero(sharesRaw)} shares`
-                    : 'Deposited',
-                  usd: null,
-                },
-          metricRows: [
-            sharesRaw
-              ? {
-                  label: 'Shares',
-                  value: this.baseAmountFormatOrZero(sharesRaw),
-                }
-              : null,
-            underlyingRaw
-              ? {
-                  label: isGhostWithdraw
-                    ? 'Underlying Received'
-                    : 'Underlying Deposited',
-                  value: `${this.baseAmountFormatOrZero(underlyingRaw)} ${underlyingTicker}`,
-                }
-              : null,
-            timestamp
-              ? {
-                  label: 'Time',
-                  value: timestamp.format('YYYY-MM-DD HH:mm:ss'),
-                }
-              : null,
-          ].filter(Boolean),
-          detailRows: [
-            {
-              label: 'Product',
-              value: productLabel,
-              tone: this.getProductTone(productLabel),
-              type: 'product',
-            },
-            {
-              label: 'Action',
-              value: actionType,
-              tone: this.getContractTypeTone(actionType),
-              type: 'product',
-            },
-            { label: 'Vault', value: vaultName },
-            { label: 'Status', value: status.label, type: 'status' },
-            timestamp
-              ? { label: 'Time', value: timestamp.format('lll') }
-              : null,
-            height
-              ? { label: 'Block', value: `#${this.normalFormat(height)}` }
-              : null,
-            userAddress
-              ? { label: 'User', address: userAddress, type: 'address' }
-              : null,
-          ].filter(Boolean),
-          lifecycleRows: [
-            {
-              icon: hasError ? 'WarningIcon' : isGhostWithdraw ? 'SubtractIcon' : 'AddIcon',
-              title: hasError ? 'Contract execution failed' : actionType,
-              body: hasError
-                ? logs || ''
-                : isGhostWithdraw
-                  ? [
-                      sharesRaw
-                        ? `${this.baseAmountFormatOrZero(sharesRaw)} shares burned`
-                        : null,
-                      underlyingRaw
-                        ? `${this.baseAmountFormatOrZero(underlyingRaw)} ${underlyingTicker} received`
-                        : null,
-                    ]
-                      .filter(Boolean)
-                      .join(' → ')
-                  : [
-                      fundsAmountRaw
-                        ? `${this.baseAmountFormatOrZero(fundsAmountRaw)} ${fundsDenom} deposited`
-                        : null,
-                      sharesRaw
-                        ? `${this.baseAmountFormatOrZero(sharesRaw)} shares minted`
-                        : null,
-                    ]
-                      .filter(Boolean)
-                      .join(' → '),
-            },
-          ],
-          feeRows: [],
-          technicalRows: [
-            userAddress
-              ? this.buildTechRow('From address', userAddress, 'address')
-              : null,
-            contractAddress
-              ? this.buildTechRow('To address', contractAddress, 'address')
-              : null,
-          ].filter(Boolean),
-        }
-      }
-
-      // CALC Scheduler batch execute: msg.execute is an array of instance IDs
-      const batchExecuteMsg = singleAction?.metadata?.contract?.msg?.execute
-      if (Array.isArray(batchExecuteMsg)) {
-        const action = singleAction
-        const contractAddress = action.out?.[0]?.address || ''
-        const contractLabel =
-          getRujiraContractLabel(contractAddress) ||
-          this.formatAddress(contractAddress)
-        const productLabel =
-          getRujiraContractProduct(contractAddress) || 'Recurring Swaps'
-        const userAddress = action.in?.[0]?.address || ''
-        const instanceCount = batchExecuteMsg.length
-        const hasError = (action.metadata?.contract?.code ?? 0) > 0
-        const logs = action.metadata?.contract?.logs
-        const status = hasError
-          ? { label: 'Failed', tone: 'red' }
-          : action.status === 'success'
-            ? { label: 'Success', tone: 'green' }
-            : { label: 'Pending', tone: 'blue' }
-        const date = action.date
-        const timestamp = date ? moment.unix(parseInt(date) / 1e9) : null
-        const height = parseInt(action.height)
-
-        return {
-          rawEvents: events,
-          rawMsg: action?.metadata?.contract?.msg || null,
-          title: `${instanceCount} ${instanceCount === 1 ? 'Strategy' : 'Strategies'} executed by ${contractLabel}`,
-          metaLabel: `Execute Strategies · ${productLabel}`,
-          status,
-          affiliateAddress: '',
-          actionTypeTitle: 'contract',
-          hasContractAction: true,
-          labels: [],
-          input: {
-            asset: null,
-            name: 'Scheduler',
-            badge: contractLabel,
-            amount: `${instanceCount} instance${instanceCount !== 1 ? 's' : ''}`,
-            usd: null,
-          },
-          output: {
-            asset: null,
-            name: productLabel,
-            badge: userAddress ? this.formatAddress(userAddress) : '',
-            amount: 'Dispatched',
-            usd: null,
-          },
-          metricRows: [
-            { label: 'Instances', value: String(instanceCount) },
-            timestamp
-              ? {
-                  label: 'Time',
-                  value: timestamp.format('YYYY-MM-DD HH:mm:ss'),
-                }
-              : null,
-          ].filter(Boolean),
-          detailRows: [
-            {
-              label: 'Product',
-              value: productLabel,
-              tone: this.getProductTone(productLabel),
-              type: 'product',
-            },
-            {
-              label: 'Action',
-              value: 'Execute Strategies',
-              tone: this.getContractTypeTone('CALC Strategy'),
-              type: 'product',
-            },
-            { label: 'Contract', value: contractLabel },
-            { label: 'Instances', value: String(instanceCount) },
-            { label: 'Status', value: status.label, type: 'status' },
-            timestamp
-              ? { label: 'Time', value: timestamp.format('lll') }
-              : null,
-            height
-              ? { label: 'Block', value: `#${this.normalFormat(height)}` }
-              : null,
-            userAddress
-              ? { label: 'Executor', address: userAddress, type: 'address' }
-              : null,
-          ].filter(Boolean),
-          lifecycleRows: [
-            {
-              icon: hasError ? 'WarningIcon' : 'SwapIcon',
-              title: hasError ? 'Contract execution failed' : `${instanceCount} recurring swap ${instanceCount === 1 ? 'strategy' : 'strategies'} dispatched`,
-              body: hasError
-                ? logs || ''
-                : `CALC Scheduler triggered ${instanceCount} ${instanceCount === 1 ? 'instance' : 'instances'} via ${contractLabel}`,
-            },
-          ],
-          feeRows: [],
-          technicalRows: [
-            userAddress
-              ? this.buildTechRow('Executor address', userAddress, 'address')
-              : null,
-            contractAddress
-              ? this.buildTechRow('To address', contractAddress, 'address')
-              : null,
-          ].filter(Boolean),
-        }
-      }
-
-      const contractTypes = this.rawActions.map(
-        (a) => a.metadata?.contract?.contractType ?? ''
-      )
-      const isCalc = contractTypes.some((ct) => ct.includes('calc'))
-      if (!isCalc) return null
-
-      const tradeActions = this.rawActions.filter((a) =>
-        (a.metadata?.contract?.contractType ?? '').includes('fin/trade')
-      )
-      const tradeCount = tradeActions.length
-
-      // Determine overall status from all actions
-      const hasError = this.rawActions.some(
-        (a) => (a.metadata?.contract?.code ?? 0) > 0
-      )
-      const logs = this.rawActions.find((a) => (a.metadata?.contract?.code ?? 0) > 0)?.metadata?.contract?.logs
-      const allSuccess = this.rawActions.every((a) => a.status === 'success')
-      const status = hasError
-        ? { label: 'Failed', tone: 'red' }
-        : allSuccess
-          ? { label: 'Success', tone: 'green' }
-          : { label: 'Pending', tone: 'blue' }
-
-      // Strategy address from calc-manager action
-      const managerAction = this.rawActions.find((a) =>
-        (a.metadata?.contract?.contractType ?? '').includes('calc-manager')
-      )
-      const strategyAddress =
-        managerAction?.metadata?.contract?.attributes?.strategy_address ||
-        managerAction?.in?.[0]?.address ||
-        ''
-      const executorAddress =
-        managerAction?.metadata?.contract?.attributes?.executor || ''
-
-      // Collect unique pair contract addresses from fin/trade actions
-      const pairAddresses = [
-        ...new Set(
-          tradeActions.map((a) => a.out?.[0]?.address).filter(Boolean)
-        ),
-      ]
-      const pairLabels = pairAddresses
-        .map((addr) => getRujiraContractLabel(addr) || this.formatAddress(addr))
-        .join(', ')
-
-      // Aggregate rates from fin/trade
-      const rates = tradeActions
-        .map((a) => {
-          const attrs = a.metadata?.contract?.attributes ?? {}
-          return attrs.rate ? parseFloat(attrs.rate) : null
-        })
-        .filter((r) => r !== null && !isNaN(r))
-      const avgRate = rates.length
-        ? rates.reduce((s, r) => s + r, 0) / rates.length
-        : null
-
-      const date = this.rawActions[0]?.date
-      const timestamp = date ? moment.unix(parseInt(date) / 1e9) : null
-
-      return {
-        title: `${tradeCount} Recurring Swap${tradeCount !== 1 ? 's' : ''} executed`,
-        metaLabel: 'Recurring Swaps · CALC',
-        status,
-        affiliateAddress: '',
-        actionTypeTitle: 'contract',
-        labels: [],
-        input: {
-          asset: 'THOR.RUJI',
-          name: 'Strategy',
-          badge: strategyAddress ? this.formatAddress(strategyAddress) : 'CALC',
-          amount: `${tradeCount} trade${tradeCount !== 1 ? 's' : ''}`,
-          usd: null,
-        },
-        output: {
-          asset: null,
-          name: 'RUJI Trade',
-          badge: pairLabels || 'Orderbook',
-          amount: avgRate ? `Avg rate ${avgRate.toFixed(6)}` : 'Executed',
-          usd: null,
-        },
-        metricRows: [
-          { label: 'Trades Executed', value: `${tradeCount}` },
-          pairLabels ? { label: 'Pairs', value: pairLabels } : null,
-          avgRate
-            ? { label: 'Avg Exchange Rate', value: avgRate.toFixed(6) }
-            : null,
-          timestamp
-            ? { label: 'Time', value: timestamp.format('YYYY-MM-DD HH:mm:ss') }
-            : null,
-        ].filter(Boolean),
-        detailRows: [
-          {
-            label: 'Product',
-            value: 'Recurring Swaps',
-            tone: this.getProductTone('Recurring Swaps'),
-            type: 'product',
-          },
-          {
-            label: 'Action',
-            value: 'CALC Strategy',
-            tone: this.getContractTypeTone('CALC Strategy'),
-            type: 'product',
-          },
-          { label: 'Status', value: status.label, type: 'status' },
-          timestamp ? { label: 'Time', value: timestamp.format('lll') } : null,
-          executorAddress
-            ? { label: 'Executor', value: this.formatAddress(executorAddress) }
-            : null,
-        ].filter(Boolean),
-        lifecycleRows: hasError && logs ? [{ icon: 'WarningIcon', title: 'Contract execution failed', body: logs }] : [],
-        feeRows: [],
-        technicalRows: [
-          strategyAddress
-            ? this.buildTechRow('Strategy address', strategyAddress, 'address')
-            : null,
-          executorAddress
-            ? this.buildTechRow('Executor address', executorAddress, 'address')
-            : null,
-        ].filter(Boolean),
-      }
+      // Generic CALC aggregate fallback — reads ctx.rawActions directly and
+      // has its own internal guard, always runs last.
+      return buildCalcAggregateOverview(ctx)
     },
-    filteredContractEvents() {
-      const events = this.activeOverview?.rawEvents || []
-      const q = (this.eventsSearchQuery || '').toLowerCase().trim()
-      if (!q) return events
-      return events.filter((e) => {
-        if (e.type?.toLowerCase().includes(q)) return true
-        return (e.attributes || []).some(
-          (a) =>
-            a.key?.toLowerCase().includes(q) ||
-            a.value?.toLowerCase().includes(q)
-        )
-      })
+  },
+  watch: {
+    // BondHero's rail (node status/total-bond/provider-count/next-churn)
+    // and MimirVoteHero's voter panel (active/bond chips) both need a live
+    // node lookup neither builder fetches itself. Keyed on the resolved
+    // node address so a re-render (e.g. the pending poll in mounted())
+    // doesn't refetch once it's already loaded. A page only ever has one of
+    // bondOverview/mimirOverview active at a time, so sharing one
+    // nodeSnapshot field between the two watchers is safe.
+    bondOverview: {
+      immediate: true,
+      handler(overview) {
+        const nodeAddress = overview?.nodeAddress
+        if (nodeAddress && nodeAddress !== this.nodeSnapshotAddress) {
+          this.fetchNodeSnapshot(nodeAddress)
+        }
+      },
+    },
+    mimirOverview: {
+      immediate: true,
+      handler(overview) {
+        const nodeAddress = overview?.nodeAddress
+        if (nodeAddress && nodeAddress !== this.nodeSnapshotAddress) {
+          this.fetchNodeSnapshot(nodeAddress)
+        }
+        if (overview?.key && overview.key !== this.mimirConsensusKey) {
+          this.fetchMimirConsensus(overview.key, overview.value)
+        }
+      },
+    },
+    // streamingOverview itself reads this.streamingProgress (via
+    // buildStreamingProgress), which fetchStreamingProgress below writes to
+    // — so every fetch response makes streamingOverview recompute into a
+    // new object, which re-fires this watcher, which fetches again
+    // immediately. Without the timestamp guard below that's a runaway
+    // self-triggering loop (back-to-back requests as fast as the network
+    // round-trip allows), not the page's 5s poll cadence — confirmed via a
+    // real tx firing requests milliseconds apart. The guard throttles to
+    // one fetch per 3s per hash while still picking up a hash change
+    // (navigating to a different streaming tx) immediately.
+    streamingOverview: {
+      immediate: true,
+      handler(overview) {
+        // Once phase is 'outbound' the streaming-status endpoint only
+        // returns zeroed data (it tracks active streams only) — nothing
+        // useful to fetch, and buildStreamingProgress ignores it in that
+        // phase anyway.
+        if (!overview?.hash || overview.phase !== 'streaming') return
+        const now = Date.now()
+        if (
+          overview.hash !== this.streamingProgressHash ||
+          now - this.streamingProgressFetchedAt >= 3000
+        ) {
+          this.streamingProgressHash = overview.hash
+          this.streamingProgressFetchedAt = now
+          this.fetchStreamingProgress(overview.hash)
+        }
+      },
     },
   },
   async mounted() {
-    this._escHandler = (e) => {
-      if (e.key === 'Escape') this.eventsModalOpen = false
-    }
-    window.addEventListener('keydown', this._escHandler)
-
     let txHash = this.$route.params.txhash
     if (txHash.toLowerCase().startsWith('0x')) {
       txHash = txHash.slice(2)
@@ -4516,44 +2885,204 @@ export default {
   },
   destroyed() {
     this.clearIntervalId(this.updateInterval)
-    window.removeEventListener('keydown', this._escHandler)
   },
   methods: {
-    getBubbleTypeFromTitle(title) {
-      if (!title || typeof title !== 'string') return 'default'
-      const s = title.toLowerCase()
-      if (s.includes('swap') && s.includes('refund')) return 'refund'
-      if (s.includes('swap')) return 'swap'
-      if (s.includes('send')) return 'send'
-      if (s.includes('add') && s.includes('liquidity')) return 'addLiquidity'
-      if (s.includes('withdraw')) return 'withdraw'
-      if (s.includes('unbond')) return 'unbond'
-      if (s.includes('bond')) return 'bond'
-      if (s.includes('contract')) return 'switch'
-      if (s.includes('failed')) return 'failed'
-      if (s.includes('limit') && s.includes('refund')) return 'refund'
-      if (s.includes('limit')) return 'limit_swap'
-      return 'default'
+    // Builds the ctx object every pages/tx/state/contract/*.js module
+    // receives: the derived contractActions/singleAction/hasFINMarketContract
+    // values every branch used to compute inline, plus every shared helper
+    // method those branches call, bound so the modules can call
+    // ctx.<helper>(...) without needing a `this`.
+    getContractOverviewContext(contractActions) {
+      const hasFINMarketContract = contractActions.some((a) => {
+        if (a.metadata?.contract?.msg?.swap) return true
+        return (a.metadata?.contract?.contractEvents || []).some(
+          (e) => e.type === 'wasm-rujira-fin/trade'
+        )
+      })
+      return {
+        contractActions,
+        singleAction: contractActions.length === 1 ? contractActions[0] : null,
+        rawActions: this.rawActions,
+        pools: this.pools,
+        hasFINMarketContract,
+        buildTechRow: this.buildTechRow.bind(this),
+        formatAddress: this.formatAddress.bind(this),
+        formatUsdValue: this.formatUsdValue.bind(this),
+        amountToUSD: this.amountToUSD.bind(this),
+        getNetworkBadge: this.getNetworkBadge.bind(this),
+        baseAmountFormatOrZero: this.baseAmountFormatOrZero.bind(this),
+        normalFormat: this.normalFormat.bind(this),
+        getProductTone: this.getProductTone.bind(this),
+        getContractTypeTone: this.getContractTypeTone.bind(this),
+        formatFeeDisplay: this.formatFeeDisplay.bind(this),
+        parseUsdAmount: this.parseUsdAmount.bind(this),
+        parseMemoAsset: this.parseMemoAsset.bind(this),
+        extractContractEventRows: this.extractContractEventRows.bind(this),
+      }
     },
-    bubbleTypeToColorClass(type) {
-      switch (type) {
-        case 'send':
-          return 'bubble-pill--blue'
-        case 'swap':
-        case 'bond':
-          return 'bubble-pill--green'
-        case 'refund':
-          return 'bubble-pill--yellow'
-        case 'unbond':
-        case 'withdraw':
-        case 'failed':
-          return 'bubble-pill--red'
-        case 'switch':
-        case 'addLiquidity':
-        case 'limit_swap':
-          return 'bubble-pill--alert'
-        default:
-          return 'bubble-pill--grey'
+    async fetchNodeSnapshot(nodeAddress) {
+      this.nodeSnapshotAddress = nodeAddress
+      try {
+        const { data } = await this.$api.getNodeInfo(nodeAddress)
+        this.nodeSnapshot = data?.node || data
+      } catch (error) {
+        try {
+          const { data } = await this.$api.getNode(nodeAddress)
+          this.nodeSnapshot = data
+        } catch (fallbackError) {
+          console.error('Failed to fetch node snapshot:', fallbackError)
+        }
+      }
+      if (!this.networkInfo) {
+        try {
+          const { data } = await this.$api.getNetwork()
+          this.networkInfo = data
+        } catch (error) {
+          console.error('Failed to fetch network info:', error)
+        }
+      }
+    },
+    // StreamingSwapHero's live progress (count/quantity/interval/in/out/
+    // deposit) — the same endpoint the old always-mounted streamingSwap.vue
+    // already polls independently; this fetch is separate from (and
+    // doesn't touch) that component. No dedicated setInterval here: the
+    // page's own mounted() poll already refetches the whole tx every 5s
+    // while pending, which recomputes streamingOverview and re-triggers
+    // this watcher — piggybacking on that existing cadence.
+    async fetchStreamingProgress(hash) {
+      try {
+        const { data } = await this.$api.getStreamingTxStatus(hash)
+        this.streamingProgress = data
+      } catch (error) {
+        console.error('Failed to fetch streaming progress:', error)
+      }
+    },
+    // Live count/quantity/fill/remaining-time/swapped-so-far for
+    // streamingOverview — falls back to the accordion snapshot
+    // (count/quantity only, no in/remaining) until fetchStreamingProgress
+    // resolves. Remaining-blocks formula matches the one already proven in
+    // pages/tx/components/streamingSwap.vue's updateStreamingDetail: for a
+    // nonzero interval, the window is interval*quantity from the stream's
+    // own start height (not "now"), so it doesn't drift as more chunks
+    // land; a zero interval (rapid swap) just counts remaining chunks.
+    buildStreamingProgress(
+      { snapshotCount, snapshotQuantity, phase },
+      inputAsset,
+      output
+    ) {
+      const outputAsset = output.asset
+      // Once streaming itself is done (phase 'outbound'), THORNode's
+      // streaming-status endpoint returns zeroed data (it only tracks
+      // ACTIVE streams) — using it here would show "0 swapped so far" for
+      // a swap that's actually fully executed. The accordion snapshot
+      // (refreshed every 5s by the page's own pending-poll regardless of
+      // this hero) is always accurate for count/quantity, so just use that
+      // directly and skip the live in/out/remaining-time fields entirely.
+      if (phase === 'outbound') {
+        return {
+          count: snapshotCount,
+          quantity: snapshotQuantity,
+          fillPercent: 100,
+          remainingDisplay: null,
+          swappedSoFarDisplay: null,
+          outputSoFarRaw: null,
+          outputSoFarDisplay: null,
+          outputSoFarUsdDisplay: null,
+        }
+      }
+
+      const raw = this.streamingProgress
+      const count = raw ? Number(raw.count) || 0 : snapshotCount
+      const quantity = raw
+        ? Number(raw.quantity) || snapshotQuantity
+        : snapshotQuantity
+      const fillPercent = quantity ? Math.min((count / quantity) * 100, 100) : 0
+
+      let remainingDisplay = null
+      let swappedSoFarDisplay = null
+      // raw.out is the live PARTIAL output accumulated from completed
+      // sub-swaps so far — distinct from (and much smaller than, mid-
+      // stream) the accordion's output.amount, which is
+      // swapMetadata.streamingSwapMeta.outEstimation: the swap's full
+      // projected FINAL total, computed once at swap creation. Confirmed
+      // against a real in-progress stream where outEstimation already
+      // showed ~8,000 USDT (the full projected swap) while raw.out (what
+      // had actually landed from the 13 completed sub-swaps) was ~1,220 —
+      // using outEstimation here would have overstated progress ~6.5x.
+      let outputSoFarRaw = null
+      if (raw) {
+        const interval = Number(raw.interval) || 0
+        const initialHeight = Number(raw.initial_height) || 0
+        const currentHeight = this.chainsHeight?.THOR
+        const blockDuration =
+          currentHeight && initialHeight ? currentHeight - initialHeight : null
+        const remainingBlocks = Math.max(
+          interval > 0 && Number.isFinite(blockDuration)
+            ? interval * quantity - blockDuration
+            : (interval || 1) * (quantity - count),
+          0
+        )
+        if (remainingBlocks > 0) {
+          remainingDisplay = moment
+            .duration(remainingBlocks * this.blockSeconds('THOR'), 'seconds')
+            .humanize()
+        }
+        if (raw.in) {
+          swappedSoFarDisplay = `${this.baseAmountFormatOrZero(raw.in)} ${this.showTicker(inputAsset)} swapped so far`
+        }
+        // raw.out is a string — "0" (a genuine, valid zero, e.g. right
+        // between sub-swap settlements) is truthy as a string, so this
+        // check alone is enough; `Number(raw.out) || null` would have been
+        // the actual bug (0 is falsy as a number, silently discarding a
+        // real zero and leaving the panel blank instead of showing 0).
+        if (raw.out != null && raw.out !== '') {
+          outputSoFarRaw = Number(raw.out)
+        }
+      }
+
+      return {
+        count,
+        quantity,
+        fillPercent,
+        remainingDisplay,
+        swappedSoFarDisplay,
+        outputSoFarRaw,
+        outputSoFarDisplay:
+          outputSoFarRaw != null
+            ? `${this.baseAmountFormatOrZero(outputSoFarRaw)} ${this.showTicker(outputAsset)}`
+            : null,
+        // Scaled off output.amountUSD (the projected total's already-correct
+        // Midgard-priced USD value, outPriceUSD-based) rather than re-pricing
+        // via amountToUSD/pools: pool lookups match on the exact asset
+        // string including any contract suffix (e.g. an ERC20/TRC20 token's
+        // "-0x..." address), and outputAsset here often doesn't carry one —
+        // that silently priced at $0 for a real in-progress TRON.USDT stream
+        // even though outputProjectedUsdDisplay (Midgard-sourced) was fine.
+        outputSoFarUsdDisplay:
+          outputSoFarRaw != null && +output.amount > 0
+            ? this.formatUsdValue(
+                (outputSoFarRaw / +output.amount) * (+output.amountUSD || 0)
+              )
+            : null,
+      }
+    },
+    async fetchMimirConsensus(key, value) {
+      this.mimirConsensusKey = key
+      try {
+        const [votesRes, mimirRes, nodesRes] = await Promise.all([
+          this.$api.getVotes(),
+          this.$api.getMimir(),
+          this.$api.getNodes(),
+        ])
+        this.mimirConsensus = computeMimirConsensus({
+          votes: votesRes?.data,
+          mimirData: mimirRes?.data,
+          nodes: nodesRes?.data,
+          key,
+          value,
+        })
+      } catch (error) {
+        console.error('Failed to fetch mimir consensus:', error)
       }
     },
     getOverviewStatus(middle = {}) {
@@ -4564,23 +3093,6 @@ export default {
         return { label: 'Pending', tone: 'yellow' }
       }
       return { label: 'Success', tone: 'green' }
-    },
-    getStackDisplayValue(stacks = [], key) {
-      const stack = stacks.find((entry) => entry.key === key && entry.is)
-      return this.formatStackValue(stack?.value)
-    },
-    getStackDisplayValueByPrefix(stacks = [], prefix) {
-      const stack = stacks.find(
-        (entry) => entry.key?.startsWith(prefix) && entry.is
-      )
-      return this.formatStackValue(stack?.value)
-    },
-    getNumericStackValue(stacks = [], key) {
-      const stack = stacks.find((entry) => entry.key === key && entry.is)
-      const numeric = Number(
-        String(this.formatStackValue(stack?.value)).replace(/[^0-9.-]/g, '')
-      )
-      return Number.isFinite(numeric) && numeric > 0 ? numeric : null
     },
     formatStackValue(value) {
       if (Array.isArray(value)) {
@@ -4595,8 +3107,11 @@ export default {
     formatAssetAmount(amount, asset) {
       const formattedAmount = `${this.baseAmountFormatOrZero(amount)}`
       const numericAmount = Number(formattedAmount.replace(/,/g, ''))
+      // Bare ticker, not chain.ticker — the network's already shown by the
+      // panel's own badge chip, so repeating it here (e.g. "458,000
+      // ETH.USDT" instead of "458,000 USDT") is redundant.
       if (!Number.isFinite(numericAmount)) {
-        return `${formattedAmount} ${this.getAssetSymbol(asset)}`
+        return `${formattedAmount} ${this.showTicker(asset)}`
       }
       // Use enough decimals so small amounts (e.g. 0.00217 BTC) aren't rounded to 0
       const maxDecimals = numericAmount > 0 && numericAmount < 0.01 ? 8 : 2
@@ -4604,7 +3119,7 @@ export default {
         minimumFractionDigits: 0,
         maximumFractionDigits: maxDecimals,
       }).format(numericAmount)
-      return `${displayAmount} ${this.getAssetSymbol(asset)}`
+      return `${displayAmount} ${this.showTicker(asset)}`
     },
     formatUsdValue(value) {
       const raw = `${value ?? ''}`.trim()
@@ -4621,10 +3136,24 @@ export default {
 
       return this.formatCurrency(numeric)
     },
-    safeUsdDisplay(value) {
-      const text = `${value ?? ''}`.trim()
-      if (!text || /nan|infinity/i.test(text)) return '$0'
-      return text
+    // Splits "MAIN (TRAILING)" into its two parts, e.g. "08/15/2026 1:41 PM
+    // (12 minutes ago)" -> { main: '08/15/2026 1:41 PM', paren: '(12 minutes
+    // ago)' }, or "0.02 RUNE ($0.03)" -> { main: '0.02 RUNE', paren:
+    // '($0.03)' }. Unlike splitFeeValue, the parenthetical isn't required to
+    // start with '$' — used for both the muted relative-time suffix and for
+    // stripping a USD amount back off a combined display string.
+    splitTrailingParen(str) {
+      if (!str) return { main: '', paren: '' }
+      const match = str.match(/^(.*?)\s*(\([^)]*\))\s*$/)
+      if (!match) return { main: str, paren: '' }
+      return { main: match[1], paren: match[2] }
+    },
+    // camelCase() (the global mixin) only spaces camelCase words (e.g.
+    // "tradeWithdraw" -> "trade Withdraw"), it doesn't capitalize — fine for
+    // the legacy card title it was built for, not for a hero's eyebrow/H1.
+    capitalizeFirst(str) {
+      if (!str) return str
+      return str.charAt(0).toUpperCase() + str.slice(1)
     },
     splitFeeValue(str) {
       if (!str) return { usd: '$0.00', subtle: null }
@@ -4678,14 +3207,6 @@ export default {
       }).format(numeric)
 
       return `${formatted}${match[2]}`.trim()
-    },
-    getAssetSymbol(asset) {
-      if (!asset) return '-'
-      const parsed = assetFromString(asset)
-      if (parsed.chain === 'THOR' && parsed.ticker) {
-        return parsed.ticker
-      }
-      return this.showAsset(asset)
     },
     getAssetDisplayName(asset) {
       if (!asset) return '-'
@@ -4802,10 +3323,6 @@ export default {
       }
       if (/tcy/.test(lower)) return 'TCY'
       return product
-    },
-    statusToneClass(tone) {
-      const map = { red: 'danger', blue: 'info', yellow: 'yellow' }
-      return map[tone] || null
     },
     getProductTone(label) {
       const l = (label || '').toLowerCase()
@@ -5057,24 +3574,30 @@ export default {
 
       return rows
     },
+    // Raw-data equivalent of the accordion-stack args this used to read
+    // (actionStacks/inboundStacks/outboundStacks) — swapOverview is the only
+    // caller, migrated off `this.cards` onto thorStatus/rawActions directly.
+    // The 'Rate' meta on the middle row is preserved as always-empty: the
+    // legacy 'Rate' stack's value was an array of plain strings, and
+    // formatStackValue's array branch only ever reads an item's `.text`
+    // (absent here), so it always formatted to '' — never actually
+    // displayed anything.
     buildLifecycleRows({
       input,
       output,
       inboundHeight,
       outboundHeight,
-      actionStacks,
-      inboundStacks,
-      outboundStacks,
-      outputAsset,
+      fromAddress,
+      destAddress,
+      timeText,
       action,
     }) {
       const rows = []
-      const timeText = this.getStackDisplayValue(actionStacks, 'Timestamp')
       rows.push({
         icon: 'ArrowIcon',
         iconRotate: 180,
         title: `${this.getAssetDisplayName(input.asset)} received by THORChain`,
-        body: `${this.formatAssetAmount(input.amount, input.asset)} entered the swap flow from ${this.formatAddress(this.getStackDisplayValue(inboundStacks, 'From'))}.`,
+        body: `${this.formatAssetAmount(input.amount, input.asset)} entered the swap flow from ${this.formatAddress(fromAddress)}.`,
         meta: [
           timeText,
           inboundHeight ? `Block #${this.normalFormat(inboundHeight)}` : '',
@@ -5088,13 +3611,13 @@ export default {
         iconRotate: 0,
         title: 'Swap executed',
         body: `${this.getSwapProductLabel(action)} converted ${this.getAssetDisplayName(input.asset)} to ${this.getAssetDisplayName(output.asset)} at the current exchange rate.`,
-        meta: this.getStackDisplayValue(actionStacks, 'Rate'),
+        meta: '',
       })
       rows.push({
         icon: 'ArrowIcon',
         iconRotate: 0,
         title: `${this.getAssetDisplayName(output.asset)} delivered`,
-        body: `${this.formatAssetAmount(output.amount, output.asset)} was sent to ${this.formatAddress(this.getStackDisplayValue(outboundStacks, 'Destination'))}.`,
+        body: `${this.formatAssetAmount(output.amount, output.asset)} was sent to ${this.formatAddress(destAddress)}.`,
         meta: outboundHeight
           ? `Block #${this.normalFormat(outboundHeight)}`
           : '',
@@ -5187,7 +3710,6 @@ export default {
       }
 
       this.thorStatus = ts
-      this.isLoading = false
 
       const nt = md?.actions?.find((a) => a.type === 'send')
       // Fall back to the tx-status memo: for early inbound-stage txs the THORNode
@@ -5196,12 +3718,15 @@ export default {
       // TODO: add proper error handling
       if (nt && (!memo.type || memo.type === 'unknown')) {
         this.createNativeTx(nt)
+        this.isLoading = false
         return false
       } else {
         if (tdh) {
           this.thorHeight = parseInt(tdh['x-thorchain-height'] ?? 0)
         }
-        this.createTxState(md, td, ts, tdh, this.pools)
+        this.createTxState(md, td, ts, tdh, this.pools).finally(() => {
+          this.isLoading = false
+        })
         return this.isTxInPending(ts, md)
       }
     },
@@ -5276,7 +3801,10 @@ export default {
     // fall back to scheduled_outbound_height minus the local chain height.
     getScheduledOutboundETA(thorStatus) {
       const outboundSigned = thorStatus?.stages?.outbound_signed
-      if (!outboundSigned?.scheduled_outbound_height || outboundSigned.completed) {
+      if (
+        !outboundSigned?.scheduled_outbound_height ||
+        outboundSigned.completed
+      ) {
         return undefined
       }
       // blocks_since_scheduled directly tells us how many blocks past the
@@ -5295,6 +3823,12 @@ export default {
         parseMemo: this.parseMemo.bind(this),
         parseMemoAsset: this.parseMemoAsset.bind(this),
         pools: this.pools,
+      }
+    },
+    getOutboundStatusContext() {
+      return {
+        getScheduledOutboundETA: this.getScheduledOutboundETA.bind(this),
+        blockSeconds: this.blockSeconds.bind(this),
       }
     },
     getCardContext() {
@@ -5326,6 +3860,16 @@ export default {
       // Fall back to the tx-status memo: for early inbound-stage txs the THORNode
       // detail endpoint (thorTx) isn't populated yet, but thorStatus is.
       const memo = this.parseMemo(thorTx?.tx?.tx?.memo || thorStatus?.tx?.memo)
+      // refundOverview needs the parsed memo (destAddr/asset for
+      // resolveOutboundTxs, and .type to distinguish a swap-originated
+      // "only refund" — createSwapState's onlyRefund case — from a generic
+      // per-action refund card — createAbstractState's case; both can
+      // produce a rawActions list that's entirely `type: 'refund'` entries,
+      // so that alone can't tell them apart, the memo type is the actual
+      // discriminator) plus the raw THORNode tx/details response
+      // resolveOutboundTxs also reads.
+      this.txMemo = memo
+      this.thorTx = thorTx
 
       if (memo.type === 'outbound') {
         this.gotoTx(memo.hash)
@@ -5841,9 +4385,13 @@ export default {
       ]
 
       const outAsset = isSecure ? securedToAsset(ast) : tradeToAsset(ast)
-      const outboundSigned = thorStatus?.stages?.outbound_signed?.completed ?? false
-      const outboundETA = this.getScheduledOutboundETA(thorStatus)
-      const outDone = thorStatus?.stages?.outbound_signed?.completed === true
+      const outboundSignal = resolveOutboundSignal(
+        thorStatus,
+        this.getOutboundStatusContext()
+      )
+      const outboundSigned = outboundSignal.signed ?? false
+      const outboundETA = outboundSignal.eta
+      const outDone = outboundSignal.signed === true
 
       const plannedOuts = thorStatus?.planned_out_txs ?? []
       const completedOuts = thorStatus?.out_txs ?? []
@@ -5858,6 +4406,10 @@ export default {
               tx.coins?.[0]?.amount === planned.coin?.amount &&
               tx.coins?.[0]?.asset === planned.coin?.asset
           )
+          const legState = resolveOutboundLegState(completed, {
+            signed: outboundSigned,
+            eta: outboundETA,
+          })
           return {
             asset: outAsset,
             amount: planned.coin?.amount,
@@ -5867,8 +4419,8 @@ export default {
             gasAsset: completed?.gas
               ? this.parseMemoAsset(completed.gas[0]?.asset, this.pools)
               : null,
-            outboundSigned: completed ? true : outboundSigned,
-            outboundETA: completed ? null : outboundETA,
+            outboundSigned: legState.signed,
+            outboundETA: legState.eta,
             done: !!completed,
           }
         })
@@ -6252,55 +4804,18 @@ export default {
 
       return ts
     },
+    // No cards/accordions built here (Phase 3 of the tx-detail-UI raw-data
+    // migration) — sendOverview reads nativeSendAction directly and its
+    // only bail conditions (!nt, !inCoin?.asset) are both impossible by the
+    // time this method runs: nt is this function's own argument, and
+    // inCoin?.asset is the exact same nativeTx?.in?.[0]?.coins?.[0]?.asset
+    // path the legacy card used unconditionally (with no fallback) for its
+    // own asset display — so a tx that failed sendOverview's guard would
+    // have rendered an equally broken legacy card, never a working one.
+    // sendOverview therefore always matches whenever createNativeTx runs,
+    // making the old per-send card/accordion pair pure dead weight.
     createNativeTx(nativeTx) {
-      const inAsset = nativeTx?.in?.[0]?.coins?.[0]?.asset
-      const inAmount = nativeTx?.in?.[0]?.coins?.[0]?.amount
-      const timeStamp = moment(nativeTx.date / 1e6)
-
-      const cards = {
-        title: 'Send',
-        in: [
-          {
-            asset: inAsset,
-            amount: inAmount,
-          },
-        ],
-        middle: {
-          send: true,
-        },
-        out: [
-          {
-            icon: require('@/assets/images/wallet.svg?inline'),
-            address: nativeTx?.out[0]?.address,
-          },
-        ],
-      }
-
-      const isError = nativeTx?.metadata?.send?.code !== '0'
-
-      const accordions = {
-        in: [],
-        action: {
-          type: 'send',
-          txid: nativeTx?.in[0]?.txID,
-          memo: nativeTx.metadata?.send?.memo || '',
-          from: nativeTx?.in[0]?.address,
-          to: nativeTx?.out[0]?.address,
-          height: nativeTx?.height,
-          gas: nativeTx?.metadata?.send?.networkFees?.[0]?.amount,
-          gasAsset: 'THOR.RUNE',
-          timeStamp,
-          pending: false,
-          error: isError,
-          reason: isError ? nativeTx?.metadata?.send?.reason : undefined,
-          done: true,
-          showAtFirst: true,
-        },
-        out: [],
-      }
-
-      this.$set(this, 'cards', [this.createCard(cards, accordions)])
-      this.technicalExpanded = false
+      this.nativeSendAction = nativeTx
     },
     createAddLiquidityState(thorStatus, actions, thorTx, memo) {
       const isSaver = this.parseMemoAsset(memo?.asset)?.synth
@@ -6317,10 +4832,10 @@ export default {
 
       const isRefund = actions?.actions?.find((a) => a.type === 'refund')
 
-      const outboundDelayRemaining =
-        (thorStatus?.stages.outbound_delay?.remaining_delay_seconds ?? 0) ||
-        (thorStatus?.stages.outbound_delay?.remaining_delay_blocks ?? 0) *
-          this.blockSeconds('THOR')
+      const outboundSignal = resolveOutboundSignal(
+        thorStatus,
+        this.getOutboundStatusContext()
+      )
 
       const pending =
         thorStatus?.stages.swap_status?.pending ||
@@ -6370,10 +4885,9 @@ export default {
               null,
             affiliateName: memo.affiliate,
             affiliateFee: sumAffiliateFee(memo.fee),
-            outboundDelayRemaining: outboundDelayRemaining || 0,
-            outboundETA: this.getScheduledOutboundETA(thorStatus),
-            outboundSigned:
-              thorStatus?.stages.outbound_signed?.completed ?? false,
+            outboundDelayRemaining: outboundSignal.delayRemaining,
+            outboundETA: outboundSignal.eta,
+            outboundSigned: outboundSignal.signed ?? false,
             refundReason: isRefund
               ? isRefund?.metadata?.refund?.reason
               : undefined,
@@ -6515,22 +5029,19 @@ export default {
         )
       }
 
-      const outboundDelayRemaining =
-        (thorStatus?.stages.outbound_delay?.remaining_delay_seconds ?? 0) ||
-        (thorStatus?.stages.outbound_delay?.remaining_delay_blocks ?? 0) *
-          this.blockSeconds('THOR')
-
-      const outboundETA = this.getScheduledOutboundETA(thorStatus)
+      const outboundSignal = resolveOutboundSignal(
+        thorStatus,
+        this.getOutboundStatusContext()
+      )
 
       const outActions = []
       if (isOut) {
         outActions.push({
           fees: outboundFees,
           feeAssets: outboundFeeAssets,
-          outboundDelayRemaining: outboundDelayRemaining || 0,
-          outboundETA,
-          outboundSigned:
-            thorStatus?.stages.outbound_signed?.completed ?? false,
+          outboundDelayRemaining: outboundSignal.delayRemaining,
+          outboundETA: outboundSignal.eta,
+          outboundSigned: outboundSignal.signed ?? false,
           done: outboundDone,
         })
 
@@ -6545,8 +5056,7 @@ export default {
               gasAsset: o.gas
                 ? this.parseMemoAsset(o.gas?.[0]?.asset, this.pools)
                 : null,
-              outboundSigned:
-                thorStatus?.stages.outbound_signed?.completed ?? false,
+              outboundSigned: outboundSignal.signed ?? false,
               done: outboundDone,
             }))
           )
@@ -6685,164 +5195,18 @@ export default {
       }
     },
     createSwapState(thorStatus, thorTx, actions, memo, thorHeader, quote) {
-      // swap user addresses
-      const userAddresses = new Set([
-        thorStatus?.tx.from_address.toLowerCase(),
-        // destAddr can be a dual-destination memo (PRIMARY/REFUND) — split so
-        // both addresses are recognized as belonging to the user.
-        // TODO: sometimes the memo destAddr will be THORName
-        ...(memo.destAddr?.split('/').map((a) => a.toLowerCase()) ?? []),
-      ])
-      // Non affiliate outs
-      const memoAssetStr = (() => {
-        const parsed = this.parseMemoAsset(memo?.asset)
-        return parsed ? assetToString(parsed) : null
-      })()
-      // Midgard already tells us, per outbound, whether it's an affiliate
-      // payout (`out[].affiliate`). THORNode's tx status/details have no such
-      // flag, so outTxs below is otherwise built from an address/asset
-      // heuristic that is wrong whenever an affiliate fee is paid in the
-      // swap's destination asset, or whenever the THORNode endpoints
-      // (tx/status, tx/details) fail or return incomplete data for this tx —
-      // which happens often enough to matter (load-balanced/archival nodes).
-      // Midgard's flag is unaffected by any of that, so it's used both to
-      // exclude affiliate addresses from the THORNode-derived list AND as the
-      // final fallback source of truth when THORNode gives us nothing usable.
-      const midgardSwapActionForAffiliate =
-        actions?.actions?.find((a) => a.type === 'swap') ??
-        actions?.actions?.find((a) => a.type === 'limit_swap')
-      const midgardOuts = midgardSwapActionForAffiliate?.out ?? []
-      const affiliateAddresses = new Set(
-        midgardOuts
-          .filter((o) => o.affiliate)
-          .map((o) => o.address?.toLowerCase())
-          .filter(Boolean)
+      const { outTxs: resolvedOutTxs, affiliateOut } = resolveOutboundTxs(
+        thorStatus,
+        thorTx,
+        actions,
+        memo,
+        {
+          parseMemoAsset: this.parseMemoAsset.bind(this),
+          assetToString,
+          pools: this.pools,
+        }
       )
-      const nonAffiliateMidgardOuts = midgardOuts.filter((o) => !o.affiliate)
-      let outTxs = thorStatus?.out_txs?.filter(
-        (tx) =>
-          !affiliateAddresses.has(tx.to_address?.toLowerCase()) &&
-          (userAddresses.has(tx.to_address?.toLowerCase()) ||
-            (tx.coins?.[0]?.asset === memoAssetStr &&
-              tx.id !==
-                '0000000000000000000000000000000000000000000000000000000000000000' &&
-              tx.id !== ''))
-      )
-      // get affiliate out if available
-      // Note: affiliate payouts (esp. RUNE ones) are often internal transfers
-      // with a zero-hash id, so id is not a useful filter here — go by address.
-      const affiliateOut = thorStatus?.out_txs?.filter(
-        (tx) =>
-          affiliateAddresses.has(tx.to_address?.toLowerCase()) ||
-          !userAddresses.has(tx.to_address?.toLowerCase())
-      )
-      // TODO: fix this in track code
-      if (
-        !outTxs ||
-        outTxs?.length === 0 ||
-        outTxs.every((o) => o.to_address === thorStatus?.tx.from_address) // Add scheduled outbound while having a refund
-      ) {
-        outTxs = thorStatus?.planned_out_txs
-          ?.filter(
-            (tx) =>
-              userAddresses.has(tx.to_address.toLowerCase()) &&
-              !affiliateAddresses.has(tx.to_address.toLowerCase())
-          )
-          .map((tx) => ({
-            ...tx,
-            coins: [{ amount: tx.coin.amount, asset: tx.coin.asset }],
-          }))
-      }
-
-      // THORNode gave us nothing usable (tx/status and tx/details can both
-      // fail or come back incomplete, e.g. for older/archived transactions on
-      // load-balanced nodes) — fall back to Midgard's own outs directly. It
-      // already excludes affiliate payouts, so this can never surface one.
-      if (!outTxs || outTxs.length === 0) {
-        outTxs = nonAffiliateMidgardOuts.map((o) => ({
-          id: o.txID || null,
-          to_address: o.address,
-          coins: o.coins,
-          height: o.height,
-        }))
-      }
-
-      // Add scheduled refund actions from thorTx.actions that aren't yet in out_txs
-      // e.g. streaming swap where some iterations failed → partial XRP refund is queued
-      const inboundAsset = thorStatus?.tx?.coins?.[0]?.asset
-      const scheduledRefundActions = (thorTx?.actions ?? []).filter(
-        (a) =>
-          a.coin?.asset === inboundAsset &&
-          a.memo?.toLowerCase().startsWith('refund:') &&
-          !outTxs?.some(
-            (o) =>
-              o.to_address?.toLowerCase() === a.to_address?.toLowerCase() &&
-              o.coins?.[0]?.asset === a.coin?.asset
-          )
-      )
-      if (scheduledRefundActions.length > 0) {
-        outTxs = [
-          ...(outTxs ?? []),
-          ...scheduledRefundActions.map((a) => ({
-            id: null,
-            to_address: a.to_address,
-            coins: [{ asset: a.coin.asset, amount: a.coin.amount }],
-            memo: a.memo,
-            refund: true,
-          })),
-        ]
-      }
-
-      // Add scheduled outbound actions from thorTx.actions not yet in out_txs.
-      // Skip anything Midgard flagged as an affiliate payout, and (as a
-      // fallback for when Midgard's out[] isn't available either) skip
-      // THOR.RUNE actions going to a non-user address — those are affiliate payments.
-      const scheduledOutActions = (thorTx?.actions ?? []).filter(
-        (a) =>
-          a.memo?.toLowerCase().startsWith('out:') &&
-          !affiliateAddresses.has(a.to_address?.toLowerCase()) &&
-          !(
-            a.coin?.asset === 'THOR.RUNE' &&
-            !userAddresses.has(a.to_address?.toLowerCase())
-          ) &&
-          !outTxs?.some(
-            (o) =>
-              o.to_address?.toLowerCase() === a.to_address?.toLowerCase() &&
-              o.coins?.[0]?.asset === a.coin?.asset &&
-              String(o.coins?.[0]?.amount) === String(a.coin?.amount)
-          )
-      )
-      if (scheduledOutActions.length > 0) {
-        outTxs = [
-          ...(outTxs ?? []),
-          ...scheduledOutActions.map((a) => ({
-            id: null,
-            to_address: a.to_address,
-            coins: [{ asset: a.coin.asset, amount: a.coin.amount }],
-            memo: a.memo,
-          })),
-        ]
-      }
-
-      // order by target swapped asset if we have refund in swap
-      outTxs = orderBy(
-        outTxs,
-        (o) => o.coins?.[0]?.asset === thorStatus?.tx?.coins?.[0]?.asset
-      )
-
-      // Trade/secure asset swap only: when multiple outbounds have same asset and amount, only show one
-      const memoOutAsset = this.parseMemoAsset(memo?.asset, this.pools)
-      if (memoOutAsset?.trade || memoOutAsset?.secure) {
-        const outboundKey = (o) =>
-          `${o.coins?.[0]?.asset ?? ''}:${o.coins?.[0]?.amount ?? ''}`
-        const seenOut = new Set()
-        outTxs = outTxs.filter((o) => {
-          const key = outboundKey(o)
-          if (seenOut.has(key)) return false
-          seenOut.add(key)
-          return true
-        })
-      }
+      const outTxs = resolvedOutTxs
 
       // Add native in/out search
       const inAsset = this.parseMemoAsset(
@@ -6851,7 +5215,7 @@ export default {
       )
       const inAmount = parseInt(thorStatus?.tx?.coins?.[0]?.amount ?? 0)
 
-      const outAsset = this.parseMemoAsset(
+      let outAsset = this.parseMemoAsset(
         outTxs?.length > 0 ? outTxs[0]?.coins?.[0]?.asset : memo?.asset,
         this.pools
       )
@@ -6887,6 +5251,23 @@ export default {
         }
       }
 
+      // only refund happened
+      const onlyRefund =
+        actions?.actions.length > 0 &&
+        actions?.actions.every((action) => action?.type === 'refund')
+      const refundAction = actions?.actions?.find((a) => a.type === 'refund')
+
+      // A trade/secure-asset refund settles as an internal THORChain ledger
+      // update, not an observed cross-chain outbound — out_txs stays empty,
+      // so outAsset/outAmount above fell back to the memo's intended
+      // DESTINATION asset and 0. A refund always returns the same asset
+      // (and, absent any withheld fee info, the same amount) that was sent
+      // in.
+      if (onlyRefund && !outTxs?.length) {
+        outAsset = inAsset
+        outAmount = inAmount
+      }
+
       const outMemoAsset = this.parseMemoAsset(memo?.asset)
 
       // Midgard
@@ -6907,8 +5288,7 @@ export default {
             )
           : null
       let timeStamp = swapAction?.date
-      const height = swapAction?.height
-      this.height = height
+      let height = swapAction?.height
 
       // Refunds
       const outboundHasRefund = outTxs?.some(
@@ -6939,27 +5319,41 @@ export default {
         +this.quote?.expected_amount_out ||
         streamingProgressEstimate
 
+      // swapMetadata's historical inPriceUSD/outPriceUSD only exist on a
+      // Midgard 'swap'/'limit_swap' action — a pure refund has neither (see
+      // the height/timeStamp/memo fallbacks above), so it's always 0 here.
+      // Fall back to the current pool price (amountToUSD already converts
+      // trade assets to their native equivalent before the pool lookup —
+      // rule of thumb: trade/secure assets always need that conversion
+      // before pricing, never priced directly under their suffixed form).
       const inAmountUSD =
-        (+(swapMetadata?.inPriceUSD ?? 0) * inAmount) / 1e8
+        (+(swapMetadata?.inPriceUSD ?? 0) * inAmount) / 1e8 ||
+        this.amountToUSD(inAsset, inAmount, this.pools) ||
+        0
       let outAmountUSD =
-        (+(swapMetadata?.outPriceUSD ?? 0) * estimatedOutAmount) / 1e8
+        (+(swapMetadata?.outPriceUSD ?? 0) * estimatedOutAmount) / 1e8 ||
+        this.amountToUSD(outAsset, estimatedOutAmount, this.pools) ||
+        0
       if (!outboundHasSuccess && outboundHasRefund) {
-        outAmountUSD = (+(swapMetadata?.inPriceUSD ?? 0) * outAmount) / 1e8
+        outAmountUSD =
+          (+(swapMetadata?.inPriceUSD ?? 0) * outAmount) / 1e8 ||
+          this.amountToUSD(outAsset, outAmount, this.pools) ||
+          0
       }
 
       const outboundRefundReason = actions?.actions.find(
         (action) => action.type === 'refund'
       )?.metadata?.refund?.reason
 
-      // only refund happened
-      const onlyRefund =
-        actions?.actions.length > 0 &&
-        actions?.actions.every((action) => action?.type === 'refund')
-
-      const refundAction = actions?.actions?.find((a) => a.type === 'refund')
       if (onlyRefund) {
+        // A pure refund has no Midgard 'swap' action at all (every action is
+        // type 'refund'), so swapAction above is undefined and neither its
+        // date nor its height are available — fall back to the refund
+        // action's own, which every Midgard action carries.
         timeStamp = refundAction?.date
+        height = refundAction?.height
       }
+      this.height = height
       let isRefund = false
       if (refundAction) {
         isRefund = true
@@ -6972,10 +5366,10 @@ export default {
       // TODO: fix streaming card when finished
       // TODO: sometimes the pools price is fetched after the status
 
-      const outboundDelayRemaining =
-        (thorStatus?.stages.outbound_delay?.remaining_delay_seconds ?? 0) ||
-        (thorStatus?.stages.outbound_delay?.remaining_delay_blocks ?? 0) *
-          this.blockSeconds('THOR')
+      const outboundSignal = resolveOutboundSignal(
+        thorStatus,
+        this.getOutboundStatusContext()
+      )
 
       if (timeStamp) {
         timeStamp = moment.unix(timeStamp / 1e9)
@@ -6996,7 +5390,7 @@ export default {
       )
       const rapidInterval = depositAmountZero
         ? memo?.interval
-        : streamingMeta?.interval ?? memo?.interval
+        : (streamingMeta?.interval ?? memo?.interval)
       const isRapidSwap =
         (rapidInterval === 0 || rapidInterval === '0') && +height > 25400000
       const isLimitOrder = !!memo?.isLimitOrder
@@ -7038,7 +5432,7 @@ export default {
               asset: inAsset,
               amount: inAmount,
               amountUSD: inAmountUSD,
-              usdAtExecution: true,
+              usdAtExecution: !!swapMetadata?.inPriceUSD,
             },
           ],
           middle: {
@@ -7050,11 +5444,28 @@ export default {
               asset: outAsset,
               amount: estimatedOutAmount,
               amountUSD: outAmountUSD,
-              usdAtExecution: true,
+              // Matches outAmountUSD's own two-branch derivation above —
+              // the refund reassignment prices off inPriceUSD, not
+              // outPriceUSD.
+              usdAtExecution:
+                !outboundHasSuccess && outboundHasRefund
+                  ? !!swapMetadata?.inPriceUSD
+                  : !!swapMetadata?.outPriceUSD,
               filter: outAmount
                 ? undefined
                 : (v) => `~ ${this.baseAmountFormatOrZero(v)}`,
               done: firstOutDone,
+              // Per-leg detail a multi-outbound swap (e.g. one output split
+              // across several destination-chain txs by an amount cap) needs
+              // for its own hero — same v1 fallback as
+              // createTradeWithdrawState: no per-leg scheduled height exists,
+              // so every still-pending leg shares the tx-wide signal.
+              txid: outTxs?.[0]?.id ?? null,
+              to:
+                outTxs?.[0]?.to_address ??
+                memo?.destAddr?.split('/')[0] ??
+                null,
+              outboundETA: firstOutDone ? null : outboundSignal.eta,
             },
             ...(outTxs ?? []).slice(1).map((o) => {
               const oAmount = parseInt(o.coins?.[0]?.amount ?? 0)
@@ -7067,8 +5478,13 @@ export default {
                 asset: this.parseMemoAsset(o.coins?.[0]?.asset, this.pools),
                 amount: oAmount,
                 amountUSD: (priceUSD * oAmount) / 1e8,
-                usdAtExecution: true,
+                usdAtExecution: isRefundTx
+                  ? !!swapMetadata?.inPriceUSD
+                  : !!swapMetadata?.outPriceUSD,
                 done: moreOutDone(o),
+                txid: o.id ?? null,
+                to: o.to_address ?? null,
+                outboundETA: moreOutDone(o) ? null : outboundSignal.eta,
               }
             }),
           ],
@@ -7145,7 +5561,13 @@ export default {
                 memo?.quantity,
               lastHeight: streamingMeta?.lastHeight || null,
             },
-            memo: swapAction?.metadata.swap?.memo,
+            // A pure refund has no Midgard 'swap' action (swapAction is
+            // undefined — see the height/timeStamp fallback above), so its
+            // memo has to come from the refund action's own metadata
+            // instead.
+            memo:
+              swapAction?.metadata.swap?.memo ??
+              refundAction?.metadata?.refund?.memo,
             done:
               thorStatus?.stages?.inbound_finalised?.completed &&
               (thorStatus?.stages.swap_finalised?.completed ||
@@ -7170,12 +5592,10 @@ export default {
               height: outTxs?.length > 0 ? outTxs[0]?.height : null,
               fees: outboundFees,
               feeAssets: outboundFeeAssets,
-              delayBlocksRemaining:
-                thorStatus?.stages.outbound_delay?.remaining_delay_blocks || 0,
-              outboundDelayRemaining: outboundDelayRemaining || 0,
-              outboundETA: this.getScheduledOutboundETA(thorStatus),
-              outboundSigned:
-                thorStatus?.stages.outbound_signed?.completed ?? undefined,
+              delayBlocksRemaining: outboundSignal.delayBlocksRemaining,
+              outboundDelayRemaining: outboundSignal.delayRemaining,
+              outboundETA: outboundSignal.eta,
+              outboundSigned: outboundSignal.signed,
               done: firstOutDone,
             },
             ...(outTxs ?? []).slice(1).map((o) => ({
@@ -7199,701 +5619,12 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.tx-detail-page {
-  margin: $space-8 auto $space-24;
-  max-width: 1140px;
-  padding: 0 $space-16;
-}
-
-.tx-detail-back {
-  margin-bottom: $space-12;
-}
-
-.tx-back-link,
-.tx-link {
-  align-items: center;
-  color: var(--font-color);
-  display: inline-flex;
-  font-weight: 500;
-  gap: $space-6;
-  text-decoration: none;
-
-  &:hover {
-    color: color-mix(in srgb, var(--green) 82%, white);
-  }
-}
-
-.tx-back-icon {
-  fill: currentColor;
-  flex: 0 0 auto;
-  height: 14px;
-  transform: rotate(-90deg);
-  width: 14px;
-}
-
-.tx-link {
-  color: var(--green);
-}
-
-.tx-detail-meta {
-  align-items: center;
-  color: var(--font-color);
-  display: flex;
-  font-size: $font-size-sm;
-  flex-wrap: wrap;
-  gap: $space-10;
-  margin-bottom: $space-12;
-
-  .bubble-stack {
-    display: inline-flex;
-    flex-direction: row;
-    align-items: center;
-    flex-wrap: nowrap;
-    outline: none;
-    min-height: 28px;
-    cursor: pointer;
-    overflow: hidden;
-
-    .bubble-pill {
-      flex-shrink: 0;
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: $space-5 $space-10;
-      border-radius: $radius-sm;
-      font-size: $font-size-sm;
-      font-weight: 600;
-      line-height: 1;
-      border: 1px solid var(--border-color);
-      background-color: var(--bgl-color);
-      color: var(--sec-font-color);
-      white-space: nowrap;
-      transition:
-        margin-left 0.25s ease,
-        clip-path 0.25s ease,
-        filter 0.25s ease;
-
-      &:first-child {
-        z-index: 3;
-        clip-path: inset(0 0 0 0);
-      }
-
-      &:nth-child(2) {
-        z-index: 2;
-        clip-path: inset(0 0 0 50%);
-        filter: brightness(0.6);
-      }
-
-      &:nth-child(3),
-      &:nth-child(n + 3) {
-        z-index: 1;
-        clip-path: inset(0 0 0 50%);
-        filter: brightness(0.6);
-      }
-
-      &:not(:first-child) {
-        margin-left: -80px;
-      }
-
-      .bubble-pill__icon {
-        width: 14px;
-        height: 14px;
-        flex-shrink: 0;
-        fill: currentColor;
-      }
-
-      .bubble-pill__label {
-        color: inherit;
-      }
-
-      &.bubble-pill--blue {
-        border-color: color-mix(
-          in srgb,
-          var(--highlight) 50%,
-          var(--border-color)
-        );
-        background-color: color-mix(
-          in srgb,
-          var(--highlight) 10%,
-          var(--card-bg-color)
-        );
-      }
-      &.bubble-pill--green {
-        border-color: color-mix(in srgb, var(--green) 50%, var(--border-color));
-        background-color: color-mix(
-          in srgb,
-          var(--green) 10%,
-          var(--card-bg-color)
-        );
-      }
-      &.bubble-pill--yellow {
-        border-color: color-mix(in srgb, #f39c12 50%, var(--border-color));
-        background-color: color-mix(in srgb, #f39c12 10%, var(--card-bg-color));
-      }
-      &.bubble-pill--red {
-        border-color: color-mix(in srgb, var(--red) 50%, var(--border-color));
-        background-color: color-mix(
-          in srgb,
-          var(--red) 10%,
-          var(--card-bg-color)
-        );
-      }
-      &.bubble-pill--alert {
-        border-color: color-mix(in srgb, #9b59b6 50%, var(--border-color));
-        background-color: color-mix(in srgb, #9b59b6 10%, var(--card-bg-color));
-      }
-      &.bubble-pill--grey {
-        border-color: color-mix(
-          in srgb,
-          var(--highlight) 50%,
-          var(--border-color)
-        );
-        background-color: color-mix(
-          in srgb,
-          var(--highlight) 10%,
-          var(--card-bg-color)
-        );
-      }
-    }
-
-    &.bubble-stack--expanded .bubble-pill {
-      margin-left: 0;
-      clip-path: inset(0 0 0 0);
-      filter: none;
-
-      &:not(:first-child) {
-        margin-left: 6px;
-      }
-    }
-  }
-}
-
-.tx-detail-title {
-  color: var(--sec-font-color);
-  font-size: clamp(1.4rem, 2.4vw, 2rem);
-  letter-spacing: -0.03em;
-  line-height: 1.06;
-  margin: 0 0 $space-24;
-}
-
-.tx-detail-grid {
-  display: grid;
-  gap: $space-18;
-
-  @include lg {
-    align-items: start;
-    grid-template-columns: minmax(0, 1.95fr) minmax(300px, 0.92fr);
-  }
-}
-
-.tx-detail-main,
-.tx-detail-side {
-  display: flex;
-  flex-direction: column;
-  gap: $space-18;
-}
-
-.tx-swap-card,
-.tx-info-card {
-  background: color-mix(in srgb, var(--card-bg-color) 96%, transparent);
-  border: 1px solid color-mix(in srgb, var(--border-color) 92%, transparent);
-  border-radius: 20px;
-  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.16);
-  padding: $space-20;
-}
-
-.tx-detail-side {
-  @include lg {
-    position: sticky;
-    top: 80px;
-  }
-}
-
-.tx-swap-head {
-  display: grid;
-  gap: $space-14;
-
-  @include md {
-    align-items: stretch;
-    grid-template-columns: minmax(0, 1fr) 60px minmax(0, 1fr);
-  }
-}
-
-.tx-pair-display {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: $space-10;
-  padding: $space-20 0;
-  grid-column: 1 / -1;
-}
-
-.tx-pair-icons {
-  display: flex;
-  align-items: center;
-
-  .tx-pair-icon-overlap {
-    margin-left: -0.65rem;
-  }
-}
-
-.tx-pair-label {
-  color: var(--sec-font-color);
-  font-size: 1.5rem;
-  font-weight: 700;
-}
-
-.tx-pair-input-amount {
-  color: var(--font-color);
-  font-size: $font-size-desktop;
-  font-weight: 600;
-  font-family: monospace;
-}
-
-.tx-pair-sublabel {
-  text-align: center;
-}
-
-.tx-asset-panel {
-  background: var(--card-bg);
-  border: 2px solid var(--left-border, var(--border-color));
-  border-radius: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: $space-10;
-  min-height: 156px;
-  padding: $space-18 $space-20;
-}
-
-.tx-asset-panel--accent {
-  border-color: var(--right-border, var(--border-color));
-}
-
-.tx-asset-label {
-  color: var(--font-color);
-  font-size: $font-size-xxs;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.tx-asset-primary {
-  align-items: center;
-  color: var(--sec-font-color);
-  display: flex;
-  font-size: 1.75rem;
-  font-weight: 700;
-  gap: $space-10;
-}
-
-.tx-asset-badge {
-  align-self: flex-start;
-  background: color-mix(in srgb, var(--highlight) 8%, transparent);
-  border-radius: 999px;
-  color: var(--font-color);
-  font-size: $font-size-sm;
-  padding: $space-6 $space-10;
-}
-
-.tx-asset-values {
-  align-items: end;
-  color: var(--font-color);
-  display: flex;
-  justify-content: space-between;
-  margin-top: auto;
-  gap: $space-12;
-
-  span,
-  strong {
-    color: var(--sec-font-color);
-    font-size: 1.1rem;
-    font-weight: 600;
-  }
-
-  strong {
-    font-size: 0.95rem;
-  }
-}
-
-.tx-swap-arrow {
-  align-items: center;
-  background: var(--card-bg);
-  border: 1px solid color-mix(in srgb, var(--green) 18%, var(--border-color));
-  border-radius: 999px;
-  display: flex;
-  height: 60px;
-  justify-content: center;
-  margin: auto;
-  width: 60px;
-}
-
-.tx-swap-arrow-icon {
-  fill: var(--green);
-  height: 20px;
-  transform: rotate(180deg);
-  width: 20px;
-
-  @include md {
-    transform: rotate(90deg);
-  }
-
-  &.order {
-    transform: rotate(0deg);
-  }
-}
-
-.tx-metric-strip {
-  background: color-mix(in srgb, var(--bg-color) 60%, var(--card-bg-color));
-  border: 1px solid var(--border-color);
-  border-radius: $radius-s;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin-top: $space-18;
-  padding: $space-16 $space-20;
-
-  @media (max-width: 767px) {
-    grid-template-columns: 1fr;
-  }
-}
-
-.tx-metric-item {
-  padding: $space-16;
-
-  &:nth-child(3n + 1) {
-    padding-left: 0;
-  }
-
-  &:nth-child(3n),
-  &:last-child {
-    padding-right: 0;
-  }
-
-  &:not(:nth-child(3n)) {
-    border-right: 1px solid var(--border-color);
-  }
-
-  &:nth-child(n + 4) {
-    border-top: 1px solid var(--border-color);
-  }
-
-  @media (max-width: 767px) {
-    padding: $space-16 0;
-
-    &:not(:first-child) {
-      border-right: none;
-      border-top: 1px solid var(--border-color);
-    }
-
-    &:nth-child(3n + 1) {
-      padding-left: 0;
-    }
-
-    &:nth-child(3n),
-    &:last-child {
-      padding-right: 0;
-    }
-
-    &:not(:nth-child(3n)):not(:last-child) {
-      border-right: none;
-    }
-  }
-}
-
-.tx-metric-value {
-  color: var(--sec-font-color);
-  font-size: $font-size-md;
-  font-weight: 600;
-  margin-top: $space-4;
-}
-
-.tx-section-title {
-  color: var(--font-color);
-  font-size: $font-size-xxs;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.tx-detail-rows,
-.tx-fee-list,
-.tx-tech-list {
-  border-top: 3px solid color-mix(in srgb, var(--border-color) 92%, transparent);
-  margin-top: $space-16;
-  padding-top: $space-2;
-}
-
-.tx-detail-row,
-.tx-fee-row,
-.tx-tech-row {
-  align-items: start;
-  border-top: 1px solid color-mix(in srgb, var(--border-color) 90%, transparent);
-  display: grid;
-  gap: $space-10;
-  grid-template-columns: minmax(110px, 0.8fr) minmax(0, 1.2fr);
-  padding: $space-12 0;
-
-  &:first-of-type {
-    border-top: none;
-  }
-}
-
-.tx-detail-key,
-.tx-fee-label,
-.tx-tech-key {
-  color: var(--font-color);
-  font-size: $font-size-sm;
-}
-
-.tx-detail-value,
-.tx-fee-value,
-.tx-tech-value {
-  color: var(--sec-font-color);
-  font-size: $font-size-sm;
-  font-weight: 500;
-  text-align: right;
-}
-
-.tx-asset-divider {
-  border-top: 1px dashed
-    color-mix(in srgb, var(--border-color) 80%, transparent);
-  margin: $space-10 0;
-}
-
-.tx-asset-label--returned {
-  color: var(--font-color);
-  opacity: 0.7;
-  font-size: 0.75rem;
-  margin-bottom: $space-5;
-}
-
-.tx-returned-panel {
-  padding-top: $space-5;
-}
-
-.tx-returned-row {
-  display: flex;
-  align-items: center;
-  gap: $space-8;
-  font-size: 0.85rem;
-  opacity: 0.8;
-}
-
-.tx-returned-name {
-  color: var(--font-color);
-}
-
-.tx-returned-amount {
-  margin-left: auto;
-  color: var(--font-color);
-  font-weight: 500;
-}
-
-.exchange-rate-value {
-  display: inline-flex;
-  align-items: center;
-  gap: $space-6;
-}
-
-.exchange-rate-flip-icon {
-  width: 1rem;
-  height: 1rem;
-  cursor: pointer;
-  flex-shrink: 0;
-  fill: var(--sec-font-color);
-
-  &:hover {
-    fill: var(--primary-color);
-  }
-}
-
-.tx-tech-value--truncate {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.tx-lifecycle-list {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: $space-20;
-  margin-top: $space-18;
-  padding-left: $space-4;
-
-  &::before {
-    background: var(--border-color);
-    bottom: $space-14;
-    content: '';
-    left: 23px;
-    position: absolute;
-    top: $space-14;
-    width: 2px;
-  }
-}
-
-.tx-lifecycle-item {
-  position: relative;
-  display: grid;
-  gap: $space-12;
-  grid-template-columns: 40px minmax(0, 1fr);
-}
-
-.tx-lifecycle-dot {
-  align-items: center;
-  background: color-mix(in srgb, var(--green) 12%, var(--card-bg-color));
-  border: 1px solid color-mix(in srgb, var(--green) 35%, var(--card-bg-color));
-  border-radius: 999px;
-  color: var(--green);
-  display: flex;
-  height: 40px;
-  justify-content: center;
-  position: relative;
-  width: 40px;
-  z-index: 1;
-}
-
-.tx-lifecycle-item:last-child .tx-lifecycle-dot {
-  align-self: center;
-}
-
-.tx-lifecycle-icon {
-  fill: var(--green);
-  height: 16px;
-  width: 16px;
-}
-
-.tx-lifecycle-title {
-  color: var(--sec-font-color);
-  font-weight: 600;
-  margin-bottom: $space-4;
-}
-
-.tx-lifecycle-body,
-.tx-lifecycle-meta,
-.tx-hash-full {
-  color: var(--font-color);
-}
-
-.tx-fee-subtle {
-  color: var(--font-color);
-  font-size: 0.75rem;
-}
-
-.tx-lifecycle-meta {
-  margin-top: $space-4;
-}
-
-.tx-hash-box {
-  background: var(--card-bg);
-  border: 1px solid color-mix(in srgb, var(--border-color) 92%, transparent);
-  border-radius: 16px;
-  margin-top: $space-14;
-  padding: $space-14;
-}
-
-.tx-hash-full {
-  color: var(--sec-font-color);
-  font-size: $font-size-sm;
-  line-height: 1.55;
-  margin-top: $space-8;
-  overflow-wrap: anywhere;
-}
-
-.tx-hash-actions {
-  display: grid;
-  gap: $space-10;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin-top: $space-14;
-}
-
-.tx-hash-action {
-  align-items: center;
-  background: var(--card-bg);
-  border: 1px solid color-mix(in srgb, var(--border-color) 92%, transparent);
-  border-radius: 14px;
-  color: var(--sec-font-color);
-  cursor: pointer;
-  display: flex;
-  font-size: $font-size-sm;
-  font-weight: 500;
-  gap: $space-8;
-  justify-content: center;
-  min-height: 50px;
-  padding: 0 $space-12;
-  text-decoration: none;
-
-  &:hover {
-    border-color: color-mix(in srgb, var(--green) 40%, var(--border-color));
-    color: var(--green);
-  }
-
-  :deep(.item) {
-    align-items: center;
-    background: transparent;
-    border: none;
-    display: flex;
-    justify-content: center;
-    min-height: auto;
-    min-width: 16px;
-    padding: 0;
-    width: auto;
-  }
-
-  :deep(svg),
-  :deep(path),
-  :deep(span) {
-    fill: var(--sec-font-color);
-    color: var(--sec-font-color);
-  }
-
-  &:hover :deep(svg),
-  &:hover :deep(path),
-  &:hover :deep(span) {
-    fill: var(--primary-color);
-    color: var(--primary-color);
-  }
-
-  .tx-hash-action-icon {
-    fill: var(--sec-font-color);
-    width: 16px;
-    height: 16px;
-  }
-
-  &:hover .tx-hash-action-icon {
-    fill: var(--primary-color);
-  }
-}
-
-.tx-fee-value-wrap {
-  text-align: right;
-}
-
-.tx-fee-label--total {
-  color: var(--sec-font-color);
-  font-weight: 600;
-}
-
-.tx-fee-value--total {
-  color: var(--green);
-}
-
-.tx-tech-header {
-  align-items: center;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-  padding: 0;
-  width: 100%;
-}
-
-.tx-tech-arrow {
-  color: var(--font-color);
-  font-size: 1rem;
-  font-weight: 700;
-}
-
+// Everything the old swap/contract-hero markup needed here moved to
+// SwapHero.vue (and assets/styles/_tx-detail.scss, which now provides the
+// shared classes for every hero component) when that markup was extracted
+// out of this file's own template. What's left below is only what the
+// remaining template above actually renders: the plain tx-header fallback
+// shown before any hero/legacy-card data has loaded.
 .tx-header {
   display: flex;
   max-width: 680px;
@@ -7951,464 +5682,11 @@ export default {
   }
 }
 
-.qr-icon {
-  fill: var(--font-color);
-  width: 16px;
-  height: 16px;
-}
-
-.tx-wrapper {
-  position: relative;
-
-  .arrow {
-    display: none;
-    flex: 1;
-    justify-content: center;
-    align-items: center;
-
-    .icon {
-      margin-right: $space-0;
-    }
-
-    @include md {
-      display: flex;
-    }
-  }
-}
-.tx-container {
-  border: 1px solid var(--border-color);
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  background: var(--card-bg-color);
-  border-radius: $radius-s;
-  padding: $space-20;
-  gap: $space-10;
-}
-
-.tx-contain {
-  display: flex;
-  flex-direction: column;
-  gap: $space-10;
-
-  .asset-icon-container {
-    margin-top: $space-10;
-    display: flex;
-    align-items: center;
-
-    span {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 300px;
-    }
-  }
-
-  .address {
-    margin-top: $space-10;
-  }
-
-  .txid {
-    width: 300px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-
-    .tx-hash {
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-  }
-}
-
-.icon {
-  fill: var(--sec-font-color);
-  height: 1.5rem;
-
-  &.small {
-    margin-right: $space-0;
-    height: 0.8rem;
-    width: 0.8rem;
-  }
-}
-
-.extra-details {
-  margin-top: $space-16;
-
-  .pool-box {
-    margin: $space-5 $space-0;
-    display: flex;
-    align-items: center;
-  }
-}
-
-.utility,
-.tx-date {
-  padding: $space-0 $space-16;
-}
-
-.utility {
-  justify-content: space-between;
-  gap: $space-16;
-}
-
-.asset-text {
-  font-size: $font-size-md;
-}
-
 .tx-id {
   flex-shrink: 5;
   span {
     overflow: hidden;
     text-overflow: ellipsis;
   }
-}
-
-// ── Order book ───────────────────────────────────────────────────────────────
-
-.tx-order-book-header {
-  display: flex;
-  align-items: center;
-  gap: $space-8;
-  margin-bottom: $space-14;
-
-  .tx-order-book-count {
-    background: var(--border-color);
-    border-radius: $radius-full;
-    color: var(--sec-font-color);
-    font-size: 0.62rem;
-    padding: 1px 6px;
-  }
-}
-
-.tx-order-book {
-  font-size: $font-size-xs;
-  font-family: monospace;
-}
-
-.tx-order-book-cols {
-  display: grid;
-  grid-template-columns: auto 1fr 1fr 1fr auto;
-  padding: 0 $space-12 $space-6;
-  color: var(--sec-font-color);
-  font-family: inherit;
-  font-size: 0.65rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
-
-  span:not(:first-child) {
-    text-align: right;
-  }
-
-  span:last-child {
-    min-width: 60px;
-  }
-}
-
-.tx-order-book-row {
-  display: grid;
-  grid-template-columns: auto 1fr 1fr 1fr auto;
-  align-items: center;
-  padding: $space-4 $space-12;
-  position: relative;
-  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 30%, transparent);
-  transition: background 0.1s;
-
-  // Depth bar fills from left for buys, right for sells
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    border-radius: $radius-xs;
-  }
-
-  &.ob-buy::before {
-    background: linear-gradient(
-      to right,
-      rgba(53, 240, 154, 0.12) var(--depth),
-      transparent var(--depth)
-    );
-  }
-
-  &.ob-sell::before {
-    background: linear-gradient(
-      to left,
-      rgba(255, 105, 94, 0.12) var(--depth),
-      transparent var(--depth)
-    );
-  }
-
-  &.ob-retract {
-    opacity: 0.45;
-  }
-
-  &.ob-keep {
-    opacity: 0.6;
-  }
-
-  &:last-child {
-    border-bottom: none;
-  }
-
-  span {
-    position: relative; // above the ::before bar
-    color: var(--sec-font-color);
-
-    &:not(:first-child) {
-      text-align: right;
-    }
-  }
-
-  .ob-price--buy  { color: #35f09a; }
-  .ob-price--sell { color: #ff695e; }
-
-  .ob-side {
-    font-weight: 600;
-    min-width: 32px;
-    text-align: left;
-  }
-}
-
-.ob-op {
-  font-size: 0.62rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--sec-font-color);
-  opacity: 0.6;
-  min-width: 60px;
-  text-align: right;
-}
-
-// ── Contract Events button & modal ───────────────────────────────────────────
-
-.tx-section-title-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.tx-events-btn {
-  align-items: center;
-  background: var(--card-bg);
-  border: 1px solid color-mix(in srgb, var(--border-color) 92%, transparent);
-  border-radius: 10px;
-  color: var(--sec-font-color);
-  cursor: pointer;
-  display: flex;
-  font-size: $font-size-xs;
-  font-weight: 500;
-  gap: $space-6;
-  justify-content: center;
-  padding: $space-6 $space-12;
-  text-decoration: none;
-  transition: border-color 0.15s, color 0.15s;
-
-  &:hover {
-    border-color: color-mix(in srgb, var(--green) 40%, var(--border-color));
-    color: var(--green);
-  }
-
-  &:hover .tx-events-btn-icon {
-    fill: var(--primary-color);
-  }
-}
-
-.tx-events-btn-icon {
-  fill: var(--sec-font-color);
-  width: 13px;
-  height: 13px;
-  flex-shrink: 0;
-}
-
-.tx-events-count {
-  background: color-mix(in srgb, var(--border-color) 80%, transparent);
-  border-radius: $radius-full;
-  font-size: 0.62rem;
-  padding: 1px 5px;
-  color: var(--sec-font-color);
-}
-
-.events-modal-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.55);
-  z-index: 998;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding: $space-16;
-  overflow-y: auto;
-
-  @include md {
-    padding: $space-24;
-  }
-}
-
-.events-modal {
-  background: var(--bg-color);
-  border: 1px solid var(--border-color);
-  border-radius: $radius-s;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-  z-index: 999;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  max-width: 680px;
-  height: calc(100vh - 80px - 2 * #{$space-16});
-  overflow: hidden;
-
-  @media (max-width: 575px) {
-    height: calc(100vh - 80px - 2 * #{$space-16});
-    border-radius: $radius-s;
-  }
-}
-
-.events-modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: $space-16 $space-20;
-  border-bottom: 1px solid var(--border-color);
-  flex-shrink: 0;
-}
-
-.events-modal-title {
-  font-size: $font-size-desktop;
-  font-weight: 600;
-  color: var(--font-color);
-}
-
-.events-modal-close {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-  color: var(--sec-font-color);
-  flex-shrink: 0;
-
-  &:hover {
-    color: var(--primary-color);
-  }
-}
-
-.events-modal-search {
-  padding: $space-12 $space-20;
-  border-bottom: 1px solid var(--border-color);
-  flex-shrink: 0;
-}
-
-.events-search-input {
-  width: 100%;
-  background: var(--card-bg-color);
-  border: 1px solid var(--border-color);
-  border-radius: $radius-s;
-  color: var(--font-color);
-  font-size: $font-size-sm;
-  padding: $space-8 $space-12;
-  outline: none;
-  transition: border-color 0.15s;
-
-  &::placeholder {
-    color: var(--sec-font-color);
-  }
-
-  &:focus {
-    border-color: var(--primary-color);
-  }
-}
-
-.events-modal-body {
-  overflow-y: auto;
-  padding: $space-12 $space-20;
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  gap: $space-12;
-
-  // Event blocks must never shrink — only the body scrolls
-  > * {
-    flex-shrink: 0;
-  }
-}
-
-.events-msg-block {
-  background: var(--card-bg-color);
-  border: 1px solid var(--border-color);
-  border-radius: $radius-s;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-
-.events-msg-json {
-  margin: 0;
-  padding: $space-10 $space-12;
-  font-size: $font-size-xs;
-  font-family: monospace;
-  color: var(--sec-font-color);
-  white-space: pre;
-  overflow-x: auto;
-  line-height: 1.5;
-}
-
-.events-event-block {
-  background: var(--card-bg-color);
-  border: 1px solid var(--border-color);
-  border-radius: $radius-s;
-  overflow: hidden;
-}
-
-.events-event-type {
-  background: color-mix(in srgb, var(--border-color) 40%, transparent);
-  color: var(--font-color);
-  font-size: $font-size-xs;
-  font-weight: 600;
-  padding: $space-6 $space-12;
-  font-family: monospace;
-  word-break: break-all;
-}
-
-.events-attr-row {
-  display: flex;
-  padding: $space-4 $space-12;
-  gap: $space-12;
-  border-top: 1px solid color-mix(in srgb, var(--border-color) 50%, transparent);
-
-  @media (max-width: 575px) {
-    flex-direction: column;
-    gap: $space-2;
-  }
-}
-
-.events-attr-key {
-  color: var(--primary-color);
-  font-size: $font-size-xs;
-  font-family: monospace;
-  white-space: nowrap;
-  min-width: 120px;
-  flex-shrink: 0;
-
-  @media (max-width: 575px) {
-    min-width: unset;
-  }
-}
-
-.events-attr-val {
-  color: var(--sec-font-color);
-  font-size: $font-size-xs;
-  font-family: monospace;
-  word-break: break-all;
-}
-
-.events-empty {
-  color: var(--sec-font-color);
-  font-size: $font-size-sm;
-  text-align: center;
-  padding: $space-24 0;
 }
 </style>

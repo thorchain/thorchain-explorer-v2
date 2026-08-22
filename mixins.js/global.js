@@ -317,6 +317,15 @@ export default {
         console.error("Can't get the asset:", assetStr)
       }
     },
+    // Same wording the shipped swap hero's own USD tooltip uses (see
+    // pages/tx/_txhash.vue's input/output.usd v-tooltip) — shared here so
+    // every tx-detail hero surfaces the same execution-vs-current-price
+    // disclosure on its own .tx-asset-values USD figure.
+    usdBasisTooltip(atExecution) {
+      return atExecution
+        ? 'Value based on price at the time the transaction was executed'
+        : 'Based on current price, not price at the time of the transaction'
+    },
     showTicker(assetStr) {
       if (!assetStr) {
         return ''
@@ -749,6 +758,13 @@ export default {
       // Trade price would be same as non trade asset
       if (asset.trade) {
         copyAsset.trade = false
+      }
+      // Secure asset price would be same as its native asset — without
+      // this, assetToString below serializes as e.g. "BTC-BTC" (the secure
+      // delimiter), which never matches a pool's native "BTC.BTC" entry and
+      // silently prices at 0.
+      if (asset.secure) {
+        copyAsset.secure = false
       }
 
       if (copyAsset.chain === 'THOR' && copyAsset.symbol === 'RUNE') {
