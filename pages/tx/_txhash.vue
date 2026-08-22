@@ -98,7 +98,7 @@
 
 <script>
 import moment from 'moment'
-import { orderBy, groupBy, sumBy } from 'lodash'
+import { groupBy, sumBy } from 'lodash'
 import { mapGetters } from 'vuex'
 import streamingSwap from './components/streamingSwap.vue'
 import txCard from './components/txCard.vue'
@@ -113,6 +113,7 @@ import {
   resolveOutboundLegStatus,
   resolveTxOutboundTotals,
 } from './state/outboundStatus.js'
+import { resolveOutboundTxs } from './state/outboundTxs.js'
 import { parseActionReason } from './state/parseActionReason.js'
 import { computeMimirConsensus } from './state/mimirConsensus.js'
 import {
@@ -138,6 +139,7 @@ import {
   assetToString,
   securedToAsset,
   sumAffiliateFee,
+  isInternalTx,
 } from '~/utils'
 import Accordion from '~/components/Accordion.vue'
 import {
@@ -177,6 +179,17 @@ export default {
       updateInterval: undefined,
       cards: [],
       rawActions: null,
+      // Raw Midgard 'send' action for a native RUNE send — set by
+      // createNativeTx. sendOverview reads this directly instead of
+      // this.cards (Phase 2 of the tx-detail-UI raw-data migration): a
+      // native send never goes through the swap/contract card pipeline, so
+      // this is its own dedicated raw-data source rather than a slot in the
+      // shared `cards` array.
+      nativeSendAction: null,
+      // Set by createTxState — the parsed memo and raw THORNode tx/details
+      // response, both needed by refundOverview's raw-data derivation.
+      txMemo: null,
+      thorTx: null,
       inboundHash: undefined,
       thorStatus: undefined,
       thorHeight: 0,
@@ -239,46 +252,50 @@ export default {
       return this.cards.filter((_, index) => index !== this.swapCardIndex)
     },
     // Native RUNE sends never reach the swap/contract card pipeline — they
-    // short-circuit through createNativeTx (see fetchTx) straight into
-    // this.cards, tagged with title 'Send'. Independent of swapOverview so
-    // it renders through its own hero regardless of swap/contract state.
+    // short-circuit through createNativeTx (see fetchTx), which sets
+    // this.nativeSendAction to the raw Midgard 'send' action. Reads that
+    // directly (Phase 2 of the tx-detail-UI raw-data migration) instead of
+    // going through this.cards/accordion stacks the way this builder used
+    // to — the stack layer was just re-formatting the same raw fields
+    // (createNativeTx's own accordions.action was itself built from these
+    // exact fields), so this is a data-source swap, not a behavior change.
+    // Independent of swapOverview so it renders through its own hero
+    // regardless of swap/contract state.
     sendOverview() {
-      if (!this.cards?.length) return null
-      const index = this.cards.findIndex((c) => c?.details?.title === 'Send')
-      if (index < 0) return null
+      const nt = this.nativeSendAction
+      if (!nt) return null
+      const inCoin = nt.in?.[0]?.coins?.[0]
+      if (!inCoin?.asset) return null
 
-      const card = this.cards[index]
-      const overall = card?.details?.overall
-      const input = overall?.in?.[0]
-      if (!input?.asset) return null
-
-      const actionAccordion = card?.accordions?.find(
-        (entry) => entry.name === 'accordion-action'
-      )
-      const stacks = actionAccordion?.data?.stacks || []
-      const gasDisplay = this.getStackDisplayValue(stacks, 'Gas')
+      const failed = nt.metadata?.send?.code !== '0'
+      const gasAsset = 'THOR.RUNE'
+      const gasRaw = nt.metadata?.send?.networkFees?.[0]?.amount
+      const gasDisplay = gasRaw
+        ? `${gasRaw / 1e9} ${this.showAsset(gasAsset)}` +
+          (this.pools
+            ? ` (${this.formatCurrency(this.amountToUSD(gasAsset, gasRaw, this.pools))})`
+            : '')
+        : ''
+      const timeStamp = moment(nt.date / 1e6)
       const time = this.splitTrailingParen(
-        this.getStackDisplayValue(stacks, 'Timestamp')
+        timeStamp.isValid()
+          ? `${timeStamp.format('L LT')} (${timeStamp.fromNow()})`
+          : ''
       )
-      const height = this.getNumericStackValue(stacks, 'Block Height')
+      const height = Number(nt.height) > 0 ? Number(nt.height) : null
       const heightDisplay = height ? `#${this.normalFormat(height)}` : '-'
-      const failed = !!overall.middle?.fail
-      const failureCode = failed
-        ? this.getStackDisplayValue(stacks, 'Code')
-        : null
-      const failureReason = failed
-        ? this.getStackDisplayValue(stacks, 'Reason')
-        : null
+      const failureCode = failed ? `${nt.metadata?.send?.code ?? ''}` : null
+      const failureReason = failed ? `${nt.metadata?.send?.reason ?? ''}` : null
       const parsedFailure = failed
         ? parseActionReason(failureReason, {
-            formatAmount: (raw) => this.formatAssetAmount(raw, input.asset),
+            formatAmount: (raw) => this.formatAssetAmount(raw, inCoin.asset),
             heightDisplay,
           })
         : null
 
       return {
         kind: 'send',
-        status: this.getOverviewStatus(overall.middle),
+        status: this.getOverviewStatus({ fail: failed }),
         failed,
         failure: failed
           ? {
@@ -293,18 +310,18 @@ export default {
             }
           : null,
         failureReasonRaw: failureReason,
-        hash:
-          this.getStackDisplayValue(stacks, 'Hash') ||
-          this.$route.params.txhash,
-        from: this.getStackDisplayValue(stacks, 'From'),
-        to: this.getStackDisplayValue(stacks, 'To'),
-        asset: input.asset,
-        assetRaw: input.asset,
-        amountRaw: Number(input.amount) || 0,
-        amountDisplay: this.formatAssetAmount(input.amount, input.asset),
-        zeroAmountDisplay: this.formatAssetAmount(0, input.asset),
-        amountUsdDisplay: this.formatUsdValue(input.amountUSD),
-        amountUsdAtExecution: !!input.usdAtExecution,
+        hash: nt.in?.[0]?.txID || this.$route.params.txhash,
+        from: nt.in?.[0]?.address || '',
+        to: nt.out?.[0]?.address || '',
+        asset: inCoin.asset,
+        assetRaw: inCoin.asset,
+        amountRaw: Number(inCoin.amount) || 0,
+        amountDisplay: this.formatAssetAmount(inCoin.amount, inCoin.asset),
+        zeroAmountDisplay: this.formatAssetAmount(0, inCoin.asset),
+        amountUsdDisplay: this.formatUsdValue(
+          this.amountToUSD(inCoin.asset, inCoin.amount, this.pools)
+        ),
+        amountUsdAtExecution: false,
         runePriceDisplay: this.formatUsdValue(this.runePrice),
         gasDisplay,
         gasRuneOnly: this.splitTrailingParen(gasDisplay).main || gasDisplay,
@@ -314,235 +331,691 @@ export default {
         timeAgoDisplay: time.paren,
         height,
         heightDisplay,
-        memo: stacks.find((s) => s.key === 'Memo' && s.is)?.value || '',
+        memo: nt.metadata?.send?.memo || '',
       }
     },
-    // Bonds/whitelist-bonds always come through createBondState; the node's
-    // current status/total-bond/provider-count/next-churn aren't in that
-    // builder's output (the tx only carries the delta), so BondHero gets
-    // them from a small live fetch — see the bondOverview watcher below.
+    // Bonds/whitelist-bonds always come through createBondState (memo.type
+    // === 'bond' — a plain unbond is a separate memo type/builder,
+    // createUnbondState, which this overview deliberately doesn't cover,
+    // matching the original card-title regex's `^Bond\b` — it never
+    // matched "Unbond" either). The node's current status/total-bond/
+    // provider-count/next-churn aren't in that builder's output (the tx
+    // only carries the delta), so BondHero gets them from a small live
+    // fetch — see the bondOverview watcher below. Reads raw
+    // rawActions/txMemo directly instead of this.cards/accordion stacks
+    // (Phase 2 of the tx-detail-UI raw-data migration) — createBondState
+    // unconditionally uses rawActions[0] (no type filter), so this mirrors
+    // that exactly rather than searching for a 'bond'-typed action.
     bondOverview() {
-      if (!this.cards?.length) return null
-      const index = this.cards.findIndex((c) =>
-        /^Bond\b/.test(c?.details?.title || '')
-      )
-      if (index < 0) return null
+      if (this.txMemo?.type !== 'bond') return null
+      const action = this.rawActions?.[0]
+      if (!action) return null
 
-      const card = this.cards[index]
-      const overall = card?.details?.overall
-      const input = overall?.in?.[0]
-      if (!input?.asset) return null
+      const inCoin = action.in?.[0]?.coins?.[0]
+      const inAsset = inCoin?.asset ? this.parseMemoAsset(inCoin.asset) : null
+      if (!inAsset) return null
+      const inAmount = inCoin?.amount ?? 0
 
-      const actionAccordion = card?.accordions?.find(
-        (entry) => entry.name === 'accordion-action'
-      )
-      const stacks = actionAccordion?.data?.stacks || []
-      const inboundAccordion = card?.accordions?.find(
-        (entry) => entry.name === 'accordion-in-0'
-      )
-      const inboundStacks = inboundAccordion?.data?.stacks || []
-
-      const nodeAddress = this.getStackDisplayValue(stacks, 'Node Address')
+      const nodeAddress = action.metadata?.bond?.nodeAddress || ''
       const providerAddress =
-        this.getStackDisplayValue(stacks, 'Bond Provider') ||
-        this.getStackDisplayValue(inboundStacks, 'From')
+        action.metadata?.bond?.provider || action.in?.[0]?.address || ''
+      const timeStamp = action.date ? moment.unix(action.date / 1e9) : null
       const time = this.splitTrailingParen(
-        this.getStackDisplayValue(stacks, 'Timestamp')
+        timeStamp ? `${timeStamp.format('L LT')} (${timeStamp.fromNow()})` : ''
       )
-      const height = this.getNumericStackValue(stacks, 'Block Height')
+      const height = Number(action.height) > 0 ? Number(action.height) : null
 
       return {
         kind: 'bond',
-        status: this.getOverviewStatus(overall.middle),
+        status: this.getOverviewStatus({}),
         hash: this.$route.params.txhash,
         nodeAddress,
         providerAddress,
-        isWhitelist: /whitelist/i.test(card.details.title || ''),
-        asset: input.asset,
-        amountDisplay: this.formatAssetAmount(input.amount, input.asset),
-        amountUsdDisplay: this.formatUsdValue(input.amountUSD),
-        amountUsdAtExecution: !!input.usdAtExecution,
-        amountRaw: Number(input.amount) || 0,
+        isWhitelist: !!action.metadata?.bond?.provider,
+        asset: inAsset,
+        amountDisplay: this.formatAssetAmount(inAmount, inAsset),
+        amountUsdDisplay: this.formatUsdValue(
+          this.amountToUSD(inAsset, inAmount, this.pools) || 0
+        ),
+        amountUsdAtExecution: false,
+        amountRaw: Number(inAmount) || 0,
         timeDisplay: time.main,
         timeAgoDisplay: time.paren,
         heightDisplay: height ? `#${this.normalFormat(height)}` : '-',
-        memo: stacks.find((s) => s.key === 'Memo' && s.is)?.value || '',
+        memo: action.metadata?.bond?.memo || '',
       }
     },
     // Two distinct builders produce a "standalone refund" card, and this
-    // covers both: (1) createSwapState's onlyRefund case — THORChain
-    // accepted the swap attempt and the whole thing came back (slip
-    // tolerance, invalid destination, no route) — title always prefixed
-    // "refunded ", found via swapCardIndex; and (2) createAbstractState's
-    // generic per-Midgard-action card for a Midgard `type: 'refund'` action
-    // with no matching swap/failed builder (confirmed against a real
-    // empty-memo deposit,
+    // covers both, now reading raw thorStatus/rawActions data instead of
+    // going through this.cards/accordion stacks (Phase 2 of the
+    // tx-detail-UI raw-data migration): (1) createSwapState's onlyRefund
+    // case — THORChain accepted the swap attempt and the whole thing came
+    // back (slip tolerance, invalid destination, no route) — identified by
+    // this.txMemo.type === 'swap' with every rawActions entry being a
+    // refund; and (2) createAbstractState's generic per-Midgard-action
+    // card for a Midgard `type: 'refund'` action with no matching
+    // swap/failed builder (confirmed against a real empty-memo deposit,
     // 734A958BAAF44300E246BAD9FA9AF0FD8FD122B938F4ADD8367211324FF37312 —
     // THORChain couldn't tell what the memo meant at all, so it refunded
-    // the deposit) — title is exactly "Refund" (no "swap" in it, so
-    // swapCardIndex never finds it), and its accordion-action stacks use
-    // plain 'Reason' (cardAction.reason) rather than createSwapState's
-    // 'Refund Reason' (action.refundReason) — two different field names
-    // for the same concept. Not gated on the reason text itself being
+    // the deposit). Both cases can produce a rawActions list that's
+    // entirely `type: 'refund'` entries, so that alone can't tell them
+    // apart — the original memo type is the actual discriminator, which is
+    // why this.txMemo is captured in createTxState. The two cases also
+    // read the refund reason from different raw fields (case 1 only ever
+    // has `.reason`; case 2 falls back to `.code` too) — mirrors
+    // createSwapState's 'Refund Reason' vs. createAbstractState's plain
+    // 'Reason' stack, two different field names for the same concept in
+    // the legacy builders. Not gated on the reason text itself being
     // present — THORNode sometimes returns an empty refund reason, and
     // that's still this screen, just with a "not provided" fallback below.
     refundOverview() {
-      let card = null
-      if (this.swapCardIndex >= 0) {
-        const swapCard = this.cards[this.swapCardIndex]
-        if (
-          swapCard?.details?.overall?.middle?.fail &&
-          /^refunded\b/i.test(swapCard?.details?.title || '')
-        ) {
-          card = swapCard
+      const refundAction = this.rawActions?.find((a) => a.type === 'refund')
+      if (!refundAction) return null
+
+      const isSwapOriginated =
+        this.txMemo?.type === 'swap' &&
+        this.rawActions.every((a) => a.type === 'refund')
+
+      if (isSwapOriginated) {
+        const inAsset = this.parseMemoAsset(
+          this.thorStatus?.tx?.coins?.[0]?.asset,
+          this.pools
+        )
+        if (!inAsset) return null
+        const inAmount = parseInt(this.thorStatus?.tx?.coins?.[0]?.amount ?? 0)
+
+        // A trade/secure-asset refund settles as an internal THORChain
+        // ledger update, not an observed cross-chain outbound — outTxs
+        // stays empty, so the refunded asset/amount fall back to the same
+        // asset+amount that was sent in (a refund always returns the
+        // original asset).
+        const { outTxs } = resolveOutboundTxs(
+          this.thorStatus,
+          this.thorTx,
+          { actions: this.rawActions },
+          this.txMemo,
+          {
+            parseMemoAsset: this.parseMemoAsset.bind(this),
+            assetToString,
+            pools: this.pools,
+          }
+        )
+        let outAsset = inAsset
+        let outAmount = inAmount
+        if (outTxs?.length) {
+          const oAsset = this.parseMemoAsset(
+            outTxs[0]?.coins?.[0]?.asset,
+            this.pools
+          )
+          if (oAsset) {
+            outAsset = oAsset
+            outAmount = parseInt(outTxs[0]?.coins?.[0]?.amount ?? 0)
+          }
+        }
+
+        const timeStamp = refundAction.date
+          ? moment.unix(refundAction.date / 1e9)
+          : null
+        const time = this.splitTrailingParen(
+          timeStamp
+            ? `${timeStamp.format('L LT')} (${timeStamp.fromNow()})`
+            : ''
+        )
+        const height =
+          Number(refundAction.height) > 0 ? Number(refundAction.height) : null
+        const reasonRaw = refundAction.metadata?.refund?.reason || ''
+        const parsedReason = reasonRaw ? parseActionReason(reasonRaw) : null
+        const outboundHash =
+          outTxs?.length && !isInternalTx(outTxs[0]?.id) ? outTxs[0].id : ''
+
+        return {
+          kind: 'refund',
+          status: { label: 'Refunded', tone: 'yellow' },
+          hash: this.$route.params.txhash,
+          // Same field the shipped swapOverview hero reads for its own
+          // Affiliate.vue badge — shown regardless of the refund (the
+          // interface that originated the tx is unrelated to whether the
+          // swap itself succeeded).
+          affiliateAddress: this.txMemo?.affiliate || null,
+          outboundHash,
+          inboundHash: this.thorStatus?.tx?.id || '',
+          from: this.thorStatus?.tx?.from_address || '',
+          sentAsset: inAsset,
+          sentAmountRaw: inAmount,
+          sentAmountDisplay: this.formatAssetAmount(inAmount, inAsset),
+          sentAmountUsdDisplay: this.formatUsdValue(
+            this.amountToUSD(inAsset, inAmount, this.pools) || 0
+          ),
+          sentAmountUsdAtExecution: false,
+          refundedAsset: outAsset,
+          refundedAmountRaw: outAmount,
+          refundedAmountDisplay: this.formatAssetAmount(outAmount, outAsset),
+          refundedAmountUsdDisplay: this.formatUsdValue(
+            this.amountToUSD(outAsset, outAmount, this.pools) || 0
+          ),
+          refundedAmountUsdAtExecution: false,
+          reasonTitle: parsedReason?.title || null,
+          reason:
+            parsedReason?.body ||
+            reasonRaw ||
+            'No reason provided by THORChain.',
+          reasonRaw,
+          // Never set: onlyRefund has no swap action to carry a network-fee
+          // breakdown from (matches the legacy builder's own output — its
+          // 'Outbound Fee' stack only ever gets pushed from a swap's
+          // networkFees, which doesn't exist for a pure refund either).
+          networkFee: null,
+          timeDisplay: time.main,
+          timeAgoDisplay: time.paren,
+          height,
+          heightDisplay: height ? `#${this.normalFormat(height)}` : '-',
+          memo: refundAction.metadata?.refund?.memo || '',
         }
       }
-      if (!card) {
-        card =
-          this.cards?.find(
-            (c) =>
-              c?.details?.title === 'Refund' &&
-              c?.details?.overall?.middle?.fail
-          ) || null
-      }
-      if (!card) return null
-      const overall = card.details.overall
 
-      const actionAccordion = card?.accordions?.find(
-        (entry) => entry.name === 'accordion-action'
+      // A swap that mostly succeeded, with only its unfilled remainder
+      // refunded, is NOT this screen — that's multiOutboundOverview's
+      // partial-refund case (or plain swapOverview for a single-leg
+      // delivery). Without this guard, this generic branch would win the
+      // v-if/-else-if race (refundOverview is checked before
+      // multiOutboundOverview) purely because Midgard happened to label one
+      // action 'refund', even with a real 'swap'/'limit_swap' action
+      // sitting right next to it in the same rawActions list. Confirmed
+      // against a real streaming swap that delivered ~$19,936 of USDC and
+      // only refunded a small unfilled remainder,
+      // 402F3496F288522EB87CB3DAD837E2BD8EF8E2FC3AD5610D09EDB4142F17C072 —
+      // Midgard's own 'refund' action there bundles ALL of the tx's outs
+      // (the delivered leg, the affiliate-fee leg, AND the refund leg) into
+      // one `out[]` array, so refundAction.out[0] below isn't even
+      // reliably the refund leg itself (it happened to be the affiliate
+      // RUNE payout here) — reading it at all is unsafe once a real swap
+      // occurred.
+      const hasSuccessfulSwapAction = this.rawActions?.some(
+        (a) => a.type === 'swap' || a.type === 'limit_swap'
       )
-      const actionStacks = actionAccordion?.data?.stacks || []
-      const reasonRaw =
-        this.getStackDisplayValue(actionStacks, 'Refund Reason') ||
-        this.getStackDisplayValue(actionStacks, 'Reason')
-      const parsedReason = reasonRaw ? parseActionReason(reasonRaw) : null
+      if (hasSuccessfulSwapAction) return null
 
-      const input = overall?.in?.[0]
-      const output = overall?.out?.[0]
-      if (!input?.asset || !output?.asset) return null
+      // Generic per-action refund card (createAbstractState's case).
+      const inCoin = refundAction.in?.[0]
+      const outCoin = refundAction.out?.[0]
+      const inAsset = inCoin?.coins?.[0]?.asset
+        ? this.parseMemoAsset(inCoin.coins[0].asset)
+        : null
+      const outAsset = outCoin?.coins?.[0]?.asset
+        ? this.parseMemoAsset(outCoin.coins[0].asset)
+        : null
+      if (!inAsset || !outAsset) return null
 
-      const inboundAccordion = card?.accordions?.find((entry) =>
-        entry.name.startsWith('accordion-in-')
-      )
-      const outboundAccordion = card?.accordions?.find((entry) =>
-        entry.name.startsWith('accordion-out-')
-      )
-      const inboundStacks = inboundAccordion?.data?.stacks || []
-      const outboundStacks = outboundAccordion?.data?.stacks || []
-
+      const inAmount = parseInt(inCoin?.coins?.[0]?.amount ?? 0)
+      const outAmount = parseInt(outCoin?.coins?.[0]?.amount ?? 0)
+      const timeStamp = refundAction.date
+        ? moment.unix(refundAction.date / 1e9)
+        : null
       const time = this.splitTrailingParen(
-        this.getStackDisplayValue(actionStacks, 'Timestamp')
+        timeStamp ? `${timeStamp.format('L LT')} (${timeStamp.fromNow()})` : ''
       )
-      const height = this.getNumericStackValue(actionStacks, 'Block Height')
-      const networkFee = outboundStacks
-        .filter((stack) => stack.key === 'Outbound Fee' && stack.is)
-        .map((stack) =>
-          this.formatFeeDisplay(this.formatStackValue(stack.value))
-        )
-        .filter(Boolean)[0]
+      const height =
+        Number(refundAction.height) > 0 ? Number(refundAction.height) : null
+      const reasonRaw =
+        refundAction.metadata?.refund?.reason ??
+        refundAction.metadata?.refund?.code ??
+        ''
+      const parsedReason = reasonRaw ? parseActionReason(reasonRaw) : null
+      const outboundHash =
+        outCoin?.txID && !isInternalTx(outCoin.txID) ? outCoin.txID : ''
 
       return {
         kind: 'refund',
         status: { label: 'Refunded', tone: 'yellow' },
         hash: this.$route.params.txhash,
-        // Same field the shipped swapOverview hero reads for its own
-        // Affiliate.vue badge — shown regardless of the refund (the
-        // interface that originated the tx is unrelated to whether the
-        // swap itself succeeded).
-        affiliateAddress: card?.details?.interface || null,
-        outboundHash: this.getStackDisplayValue(outboundStacks, 'Hash'),
-        inboundHash: this.getStackDisplayValue(inboundStacks, 'Hash'),
-        from: this.getStackDisplayValue(inboundStacks, 'From'),
-        sentAsset: input.asset,
-        sentAmountRaw: Number(input.amount) || 0,
-        sentAmountDisplay: this.formatAssetAmount(input.amount, input.asset),
-        sentAmountUsdDisplay: this.formatUsdValue(input.amountUSD),
-        sentAmountUsdAtExecution: !!input.usdAtExecution,
-        refundedAsset: output.asset,
-        refundedAmountRaw: Number(output.amount) || 0,
-        refundedAmountDisplay: this.formatAssetAmount(
-          output.amount,
-          output.asset
+        // createAbstractState never sets accordions.action.affiliateName
+        // for this path, so details.interface (and thus this field) is
+        // always empty in the legacy builder too.
+        affiliateAddress: null,
+        outboundHash,
+        inboundHash: inCoin?.txID || '',
+        from: inCoin?.address || '',
+        sentAsset: inAsset,
+        sentAmountRaw: inAmount,
+        sentAmountDisplay: this.formatAssetAmount(inAmount, inAsset),
+        sentAmountUsdDisplay: this.formatUsdValue(
+          this.amountToUSD(inAsset, inAmount, this.pools) || 0
         ),
-        refundedAmountUsdDisplay: this.formatUsdValue(output.amountUSD),
-        refundedAmountUsdAtExecution: !!output.usdAtExecution,
+        sentAmountUsdAtExecution: false,
+        refundedAsset: outAsset,
+        refundedAmountRaw: outAmount,
+        refundedAmountDisplay: this.formatAssetAmount(outAmount, outAsset),
+        refundedAmountUsdDisplay: this.formatUsdValue(
+          this.amountToUSD(outAsset, outAmount, this.pools) || 0
+        ),
+        refundedAmountUsdAtExecution: false,
         reasonTitle: parsedReason?.title || null,
         reason:
           parsedReason?.body || reasonRaw || 'No reason provided by THORChain.',
         reasonRaw,
-        networkFee: networkFee || null,
+        networkFee: null,
         timeDisplay: time.main,
         timeAgoDisplay: time.paren,
         height,
         heightDisplay: height ? `#${this.normalFormat(height)}` : '-',
-        memo: this.getStackDisplayValue(actionStacks, 'Memo'),
+        memo: refundAction.metadata?.refund?.memo || '',
       }
     },
     // Multi-leg outbounds — either createTradeWithdrawState's output (title
     // "trade Withdraw"/"secure Withdraw") or the swap card itself (e.g. one
     // swap output split across several destination-chain txs by a per-tx
     // amount cap — confirmed against a real 4-leg BTC->TRON.USDT streaming
-    // swap where TRON capped each outbound). Both builders now thread
-    // per-leg done/txid/to/outboundETA onto each `out[]` entry (see
-    // createTradeWithdrawState and createSwapState). Any OTHER multi-out
-    // card (e.g. createRemoveLiquidityState's "Withdraw Liquidity", or a
-    // swap with an affiliate-fee leg producing a MIXED-asset out[]) is
-    // deliberately excluded — unverified shape, and this hero's copy has
-    // no fitting narrative for either. `kind` ('withdraw'|'swap') drives
-    // the wording split in MultiOutboundHero. No per-leg scheduled height
-    // exists either way — every still-pending leg shares one tx-wide
-    // overdue signal (see resolveOutboundLegStatus).
+    // swap where TRON capped each outbound). Any OTHER multi-out card (e.g.
+    // createRemoveLiquidityState's "Withdraw Liquidity", or a swap with an
+    // affiliate-fee leg producing a MIXED-asset out[]) is deliberately
+    // excluded — unverified shape, and this hero's copy has no fitting
+    // narrative for either. `kind` ('withdraw'|'swap') drives the wording
+    // split in MultiOutboundHero. No per-leg scheduled height exists either
+    // way — every still-pending leg shares one tx-wide overdue signal (see
+    // resolveOutboundLegStatus). Reads rawActions/thorStatus/txMemo directly
+    // instead of this.cards/accordion stacks (Phase 2 of the tx-detail-UI
+    // raw-data migration) — the withdraw path re-derives
+    // createTradeWithdrawState's own out[] logic (self-contained, no shared
+    // helper needed); the swap path re-derives createSwapState's own out[]
+    // logic, sharing resolveOutboundTxs with createSwapState itself/
+    // refundOverview.
     multiOutboundOverview() {
-      if (!this.cards?.length) return null
-      const index = this.cards.findIndex((c, i) => {
-        const isWithdraw = /^(trade|secure)\s*withdraw/i.test(
-          c?.details?.title || ''
+      const memoType = this.txMemo?.type
+      const isWithdraw =
+        memoType === 'tradeWithdraw' || memoType === 'secureWithdraw'
+      const isSwap = memoType === 'swap'
+      if (!isWithdraw && !isSwap) return null
+
+      const ZERO_HASH =
+        '0000000000000000000000000000000000000000000000000000000000000000'
+      // Precise (full base-unit precision, no 2dp rounding) — this hero
+      // reads as a ledger reconciliation, where formatAssetAmount's usual
+      // rounding would hide exactly the cents-level detail the "amount
+      // accounting" rail card exists to show. Bare ticker, not chain.ticker
+      // — the network's already shown by the panel's own badge chip below,
+      // so repeating it in the amount line is redundant.
+      const precise = (amount, asset) =>
+        `${this.baseAmountFormatOrZero(amount)} ${this.showTicker(asset)}`
+
+      let input, outs, kind, cardTitle, affiliateAddress, from, inboundHash
+      let inboundGasRaw = null
+      let inboundGasAsset = null
+      let timeStampRaw = null
+      let height = null
+      let memoText = ''
+      let intervalDisplay = null
+      let priceImpactDisplay = null
+      let liquidityFeeRawFormatted = null
+      let affiliateFeeInfo = null
+
+      if (isWithdraw) {
+        const action = this.rawActions?.[0]
+        if (!action) return null
+        const isSecure = memoType === 'secureWithdraw'
+        const ast = this.parseMemoAsset(
+          this.thorStatus?.tx?.coins?.[0]?.asset,
+          this.pools
         )
-        const outCount = c?.details?.overall?.out?.length ?? 0
-        if (c?.details?.overall?.middle?.fail) return false
-        // A trade/secure withdrawal's outbound can take real time to sign
-        // and deliver even when it's just ONE leg — this hero's delivery
-        // bar / "Outstanding" · "Past due" metrics / overdue explainer are
-        // exactly the "this might take a while" messaging that case needs,
-        // so (unlike a swap, whose single-outbound case is already served
-        // by swapOverview) it's routed here starting at 1 leg, not only
-        // when the output is split across several.
-        if (isWithdraw) return outCount >= 1
-        if (outCount <= 1) return false
-        if (i !== this.swapCardIndex) return false
+        if (!ast) return null
+        const inAsset = isSecure ? assetToSecure(ast) : assetToTrade(ast)
+        const inAmount = this.thorStatus?.tx?.coins?.[0]?.amount ?? 0
+        input = {
+          asset: inAsset,
+          amount: inAmount,
+          amountUSD: this.amountToUSD(inAsset, inAmount, this.pools),
+          usdAtExecution: false,
+        }
+
+        const outAsset = isSecure ? securedToAsset(ast) : tradeToAsset(ast)
+        const outboundSignal = resolveOutboundSignal(
+          this.thorStatus,
+          this.getOutboundStatusContext()
+        )
+        const outboundSigned = outboundSignal.signed ?? false
+        const outboundETA = outboundSignal.eta
+        const outDone = outboundSignal.signed === true
+        const plannedOuts = this.thorStatus?.planned_out_txs ?? []
+        const completedOuts = this.thorStatus?.out_txs ?? []
+        const memoAddress = this.txMemo?.address
+
+        let rawOuts
+        if (plannedOuts.length > 0) {
+          rawOuts = plannedOuts.map((planned) => {
+            const completed = completedOuts.find(
+              (tx) =>
+                tx.coins?.[0]?.amount === planned.coin?.amount &&
+                tx.coins?.[0]?.asset === planned.coin?.asset
+            )
+            const legState = resolveOutboundLegState(completed, {
+              signed: outboundSigned,
+              eta: outboundETA,
+            })
+            return {
+              asset: outAsset,
+              amount: planned.coin?.amount,
+              txid: completed?.id ?? null,
+              to: planned.to_address,
+              gas: completed?.gas?.[0]?.amount ?? null,
+              gasAsset: completed?.gas
+                ? this.parseMemoAsset(completed.gas[0]?.asset, this.pools)
+                : null,
+              outboundETA: legState.eta,
+              done: !!completed,
+            }
+          })
+        } else if (completedOuts.length > 0) {
+          rawOuts = completedOuts.map((tx) => ({
+            asset: outAsset,
+            amount: tx.coins?.[0]?.amount,
+            txid: tx.id,
+            to: memoAddress,
+            gas: tx.gas?.[0]?.amount ?? null,
+            gasAsset: tx.gas
+              ? this.parseMemoAsset(tx.gas[0]?.asset, this.pools)
+              : null,
+            outboundETA,
+            done: outDone,
+          }))
+        } else if (action.out?.length > 0) {
+          rawOuts = action.out.map((o) => ({
+            asset: outAsset,
+            amount: o.coins?.[0]?.amount,
+            txid: o.txID,
+            to: memoAddress,
+            outboundETA,
+            done: outDone,
+          }))
+        } else {
+          rawOuts = [
+            {
+              asset: outAsset,
+              amount: this.thorStatus?.tx?.coins?.[0]?.amount ?? 0,
+              txid: null,
+              to: memoAddress,
+              outboundETA,
+              done: outDone,
+            },
+          ]
+        }
+
+        outs = rawOuts.map((o) => ({
+          asset: o.asset,
+          amount: o.amount,
+          amountUSD: this.amountToUSD(o.asset, o.amount, this.pools),
+          usdAtExecution: false,
+          txid: o.txid,
+          to: o.to,
+          outboundETA: o.outboundETA,
+          done: o.done,
+          height: null,
+          gas: o.gas ?? null,
+          gasAsset: o.gasAsset ?? null,
+          fees: null,
+          feeAssets: null,
+        }))
+
+        kind = 'withdraw'
+        cardTitle = this.capitalizeFirst(this.camelCase(memoType))
+        affiliateAddress = null
+        from = this.thorStatus?.tx?.from_address || ''
+        inboundHash = this.thorStatus?.tx?.id || ''
+        inboundGasRaw = this.thorStatus?.tx?.gas
+          ? this.thorStatus.tx.gas[0]?.amount
+          : null
+        inboundGasAsset = this.thorStatus?.tx?.gas
+          ? this.parseMemoAsset(this.thorStatus.tx.gas[0]?.asset, this.pools)
+          : null
+        timeStampRaw = action.date
+        height = action.height
+        memoText = this.thorStatus?.tx?.memo || ''
+      } else {
+        // A limit order's card title is always literally "limit order"
+        // (createSwapState: swapTypeLabel picks isLimitOrder before
+        // isRapidSwap) — never contains "swap", so the original
+        // swapCardIndex's `/swap/i` title match could never find it. That
+        // made swapOverview/multiOutboundOverview/streamingOverview all
+        // unreachable for a limit order in the pre-migration code (it fell
+        // through to the legacy card UI instead) — preserved here so this
+        // migration doesn't silently widen coverage to a case that was
+        // never actually handled/tested by this hero.
+        if (this.txMemo?.isLimitOrder) return null
+
+        const { outTxs, affiliateOut } = resolveOutboundTxs(
+          this.thorStatus,
+          this.thorTx,
+          { actions: this.rawActions },
+          this.txMemo,
+          {
+            parseMemoAsset: this.parseMemoAsset.bind(this),
+            assetToString,
+            pools: this.pools,
+          }
+        )
+        // A swap's single-outbound case is already served by swapOverview.
+        if (!outTxs || outTxs.length <= 1) return null
+
+        const swapAction =
+          this.rawActions?.find((a) => a.type === 'swap') ??
+          this.rawActions?.find((a) => a.type === 'limit_swap')
+        const swapMetadata =
+          swapAction?.metadata?.swap ?? swapAction?.metadata?.limit_swap
+        const streamingMeta = swapMetadata?.streamingSwapMeta
+        const streamingCount =
+          this.thorStatus?.stages?.swap_status?.streaming?.count ??
+          streamingMeta?.count
+        const streamingQuantity =
+          this.thorStatus?.stages?.swap_status?.streaming?.quantity ??
+          streamingMeta?.quantity ??
+          this.txMemo?.quantity
         // A swap card that's still actively streaming defers to
         // streamingOverview instead (which bails safely if it ever sees
         // multiple legs while still mid-stream, see its own comment) —
         // don't show a "final" multi-leg summary while the stream could
-        // still be producing more of it. Same 'Stream' stack/regex
-        // streamingOverview itself reads to detect this.
-        const streamMatch = c?.accordions
-          ?.find((entry) => entry.name === 'accordion-action')
-          ?.data?.stacks?.find((s) => s.key === 'Stream' && s.is)
-          ?.value?.match(/(\d+)\s*\/\s*(\d+)/)
+        // still be producing more of it.
         if (
-          streamMatch &&
-          Number(streamMatch[2]) > 1 &&
-          Number(streamMatch[1]) < Number(streamMatch[2])
+          Number(streamingQuantity) > 1 &&
+          Number(streamingCount) < Number(streamingQuantity)
         ) {
-          return false
+          return null
         }
-        return true
-      })
-      if (index < 0) return null
 
-      const card = this.cards[index]
-      const overall = card?.details?.overall
-      const input = overall?.in?.[0]
-      const outs = overall?.out || []
-      const kind = /^(trade|secure)\s*withdraw/i.test(
-        card?.details?.title || ''
-      )
-        ? 'withdraw'
-        : 'swap'
+        const inAsset = this.parseMemoAsset(
+          this.thorStatus?.tx?.coins?.[0]?.asset,
+          this.pools
+        )
+        if (!inAsset) return null
+        const inAmount = parseInt(this.thorStatus?.tx?.coins?.[0]?.amount ?? 0)
+        const inAmountUSD =
+          (+(swapMetadata?.inPriceUSD ?? 0) * inAmount) / 1e8 ||
+          this.amountToUSD(inAsset, inAmount, this.pools) ||
+          0
+        input = {
+          asset: inAsset,
+          amount: inAmount,
+          amountUSD: inAmountUSD,
+          usdAtExecution: !!swapMetadata?.inPriceUSD,
+        }
+
+        const outAsset0 = this.parseMemoAsset(
+          outTxs[0]?.coins?.[0]?.asset,
+          this.pools
+        )
+        const outAmount0 = parseInt(outTxs[0]?.coins?.[0]?.amount ?? 0)
+        const outboundHasRefund = outTxs.some(
+          (tx) => tx.refund || tx.memo?.toLowerCase().startsWith('refund')
+        )
+        const outboundHasSuccess = outTxs.some((tx) =>
+          tx.memo?.toLowerCase().startsWith('out')
+        )
+        let outAmountUSD0 =
+          (+(swapMetadata?.outPriceUSD ?? 0) * outAmount0) / 1e8 ||
+          this.amountToUSD(outAsset0, outAmount0, this.pools) ||
+          0
+        if (!outboundHasSuccess && outboundHasRefund) {
+          outAmountUSD0 =
+            (+(swapMetadata?.inPriceUSD ?? 0) * outAmount0) / 1e8 ||
+            this.amountToUSD(outAsset0, outAmount0, this.pools) ||
+            0
+        }
+
+        const outboundSignal = resolveOutboundSignal(
+          this.thorStatus,
+          this.getOutboundStatusContext()
+        )
+        const firstOutDone =
+          !!outTxs[0]?.id ||
+          (!this.thorStatus?.stages?.swap_status?.pending &&
+            (this.thorStatus?.stages?.outbound_signed?.completed ||
+              outAsset0?.chain === 'THOR' ||
+              outAsset0?.synth ||
+              outAsset0?.trade ||
+              outAsset0?.secure) &&
+            (this.thorStatus?.stages?.outbound_delay?.completed ?? true))
+        const moreOutDone = (o) =>
+          !!o.id ||
+          (!this.thorStatus?.stages?.swap_status?.pending &&
+            (this.thorStatus?.stages?.outbound_signed?.completed ||
+              outAsset0?.chain === 'THOR' ||
+              outAsset0?.synth ||
+              outAsset0?.trade ||
+              outAsset0?.secure))
+
+        const outboundFees =
+          swapMetadata?.networkFees?.map((n) => n?.amount) ?? []
+        const outboundFeeAssets =
+          outboundFees.length > 0
+            ? this.parseMemoAsset(
+                swapMetadata?.networkFees?.map((n) => n?.asset),
+                this.pools
+              )
+            : null
+
+        outs = [
+          {
+            asset: outAsset0,
+            amount: outAmount0,
+            amountUSD: outAmountUSD0,
+            usdAtExecution:
+              !outboundHasSuccess && outboundHasRefund
+                ? !!swapMetadata?.inPriceUSD
+                : !!swapMetadata?.outPriceUSD,
+            txid: outTxs[0]?.id ?? null,
+            to:
+              outTxs[0]?.to_address ??
+              this.txMemo?.destAddr?.split('/')[0] ??
+              null,
+            outboundETA: firstOutDone ? null : outboundSignal.eta,
+            done: firstOutDone,
+            height: outTxs[0]?.height ?? null,
+            gas: outTxs[0]?.gas?.[0]?.amount ?? null,
+            gasAsset: outTxs[0]?.gas
+              ? this.parseMemoAsset(outTxs[0].gas[0]?.asset, this.pools)
+              : null,
+            fees: outboundFees,
+            feeAssets: outboundFeeAssets,
+          },
+          ...outTxs.slice(1).map((o) => {
+            const oAmount = parseInt(o.coins?.[0]?.amount ?? 0)
+            const isRefundTx =
+              o.refund || o.memo?.toLowerCase().startsWith('refund')
+            const priceUSD = isRefundTx
+              ? +(swapMetadata?.inPriceUSD ?? 0)
+              : +(swapMetadata?.outPriceUSD ?? 0)
+            return {
+              asset: this.parseMemoAsset(o.coins?.[0]?.asset, this.pools),
+              amount: oAmount,
+              amountUSD: (priceUSD * oAmount) / 1e8,
+              usdAtExecution: isRefundTx
+                ? !!swapMetadata?.inPriceUSD
+                : !!swapMetadata?.outPriceUSD,
+              txid: o.id ?? null,
+              to: o.to_address ?? null,
+              outboundETA: moreOutDone(o) ? null : outboundSignal.eta,
+              done: moreOutDone(o),
+              height: o.height ?? null,
+              gas: o.gas ? o.gas[0]?.amount : null,
+              gasAsset: o.gas
+                ? this.parseMemoAsset(o.gas[0]?.asset, this.pools)
+                : null,
+              fees: null,
+              feeAssets: null,
+            }
+          }),
+        ]
+
+        kind = 'swap'
+        const isLimitOrder = !!this.txMemo?.isLimitOrder
+        const depositAmountZero = !parseInt(
+          streamingMeta?.depositedCoin?.amount || 0
+        )
+        const rapidInterval = depositAmountZero
+          ? this.txMemo?.interval
+          : (streamingMeta?.interval ?? this.txMemo?.interval)
+        const isRapidSwap =
+          (rapidInterval === 0 || rapidInterval === '0') &&
+          Number(swapAction?.height) > 25400000
+        cardTitle = this.capitalizeFirst(
+          isLimitOrder ? 'limit order' : isRapidSwap ? 'rapid Swap' : 'swap'
+        )
+        affiliateAddress = this.txMemo?.affiliate || null
+        from = this.thorStatus?.tx?.from_address || ''
+        inboundHash = this.thorStatus?.tx?.id || ''
+        inboundGasRaw = this.thorStatus?.tx?.gas
+          ? this.thorStatus.tx.gas[0]?.amount
+          : null
+        inboundGasAsset = this.thorStatus?.tx?.gas
+          ? this.parseMemoAsset(this.thorStatus.tx.gas[0]?.asset, this.pools)
+          : null
+        timeStampRaw = swapAction?.date
+        height = swapAction?.height
+        memoText = swapAction?.metadata?.swap?.memo ?? ''
+
+        const swapSlipRaw = parseInt(swapAction?.metadata?.swap?.swapSlip)
+        priceImpactDisplay = swapSlipRaw
+          ? `-${((swapSlipRaw / 1e4) * 100).toFixed(2)}%`
+          : null
+
+        const interval =
+          this.thorStatus?.stages?.swap_status?.streaming?.interval ??
+          streamingMeta?.interval ??
+          this.txMemo?.interval
+        intervalDisplay =
+          interval !== undefined && interval !== null
+            ? (interval === 0 || interval === '0') && Number(height) > 25400000
+              ? 'Rapid Swap'
+              : `${moment.duration(interval * 6, 's').as('seconds')} secs (${this.$options.filters.pluralize(interval, 'Block', { includeNumber: true })})`
+            : null
+
+        const liquidityFeeRaw =
+          parseInt(swapAction?.metadata?.swap?.liquidityFee) || null
+        if (liquidityFeeRaw) {
+          let totalLiquidityFees = liquidityFeeRaw
+          if (Number(streamingCount) < Number(streamingQuantity)) {
+            const one = liquidityFeeRaw / streamingCount
+            totalLiquidityFees += one * (streamingQuantity - streamingCount)
+          }
+          liquidityFeeRawFormatted = `${totalLiquidityFees / 1e8} RUNE (${this.formatSmallCurrency(totalLiquidityFees * this.runePrice)})`
+        }
+
+        if (affiliateOut && affiliateOut.length > 0) {
+          const affiliateOutAmount = affiliateOut.reduce(
+            (a, b) => a + +(b.coins?.[0]?.amount ?? 0),
+            0
+          )
+          affiliateFeeInfo = {
+            kind: 'interface',
+            formatted: `${affiliateOutAmount / 1e8} RUNE (${this.formatSmallCurrency(affiliateOutAmount * this.runePrice)})`,
+          }
+        } else {
+          const affiliateBps = sumAffiliateFee(this.txMemo?.fee || 0)
+          if (affiliateBps > 0) {
+            affiliateFeeInfo = { kind: 'estimate', bps: affiliateBps }
+          }
+        }
+      }
+
       if (!input?.asset) return null
-      if (kind === 'swap' && outs.length < 2) return null
-      if (kind === 'withdraw' && outs.length < 1) return null
+
       // A swap's out[] can legitimately mix the main output with an
       // affiliate-fee leg in a DIFFERENT asset (excluded below, unverified
       // shape) — but it can also legitimately mix the main output with a
@@ -579,33 +1052,6 @@ export default {
         if (!deliveredAssetsMatch) return null
       }
 
-      const actionAccordion = card?.accordions?.find(
-        (entry) => entry.name === 'accordion-action'
-      )
-      const actionStacks = actionAccordion?.data?.stacks || []
-      const inboundAccordion = card?.accordions?.find((entry) =>
-        entry.name.startsWith('accordion-in-')
-      )
-      const inboundStacks = inboundAccordion?.data?.stacks || []
-
-      // Precise (full base-unit precision, no 2dp rounding) — this hero
-      // reads as a ledger reconciliation, where formatAssetAmount's usual
-      // rounding would hide exactly the cents-level detail the "amount
-      // accounting" rail card exists to show.
-      // Bare ticker, not chain.ticker — the network's already shown by the
-      // panel's own badge chip below, so repeating it in the amount line
-      // (e.g. "458,000 ETH.USDT" instead of "458,000 USDT") is redundant.
-      const precise = (amount, asset) =>
-        `${this.baseAmountFormatOrZero(amount)} ${this.showTicker(asset)}`
-      // A THORChain-internal settlement (e.g. a trade/secure-asset leg that
-      // never leaves THORChain) has no real cross-chain outbound, so
-      // THORNode fills out_txs[].id with an all-zero placeholder rather
-      // than leaving it empty — createSwapState already filters this same
-      // placeholder out elsewhere. A leg with this "hash" has no tx to
-      // link to.
-      const ZERO_HASH =
-        '0000000000000000000000000000000000000000000000000000000000000000'
-
       const legs = deliveredOuts.map((leg, i) => {
         const etaBlocks = leg.outboundETA
         const pastDueBlocks =
@@ -620,15 +1066,6 @@ export default {
           to: leg.to || null,
           asset: leg.asset,
           amountRaw: Number(leg.amount) || 0,
-          // buildCardDetails already carried this through as
-          // createSwapState's own leg.amountUSD (swapMetadata.outPriceUSD
-          // times the leg's amount — the same historical execution-time
-          // price the input side uses, not a fresh live pool lookup) or,
-          // for a withdrawal leg with no such price, its own pool-price
-          // fallback. Either way, sum this instead of re-deriving from the
-          // pool — outTxs was already filtered to exclude affiliate
-          // payouts before any of these legs existed, so there's no
-          // affiliate amount to accidentally fold in here.
           amountUsdRaw: Number(leg.amountUSD) || 0,
           usdAtExecution: !!leg.usdAtExecution,
           amountDisplay: precise(leg.amount, leg.asset),
@@ -642,28 +1079,16 @@ export default {
       // The single partial-refund leg (see the guard above) — kept out of
       // `legs`/totals/DeliveryBar entirely (it's a different asset, so it
       // has no place in a same-asset delivery percentage), surfaced
-      // separately instead. The tx-wide 'Refund Reason' stack is unhelpful
-      // here ("swap has been completed" — confirmed against the real tx
-      // this was built for; parseActionReason doesn't recognize it either),
-      // so `reason` is synthesized from what's actually verifiable: the
-      // refunded share of the input. A PARTIAL refund (delivered legs +
-      // this one, as opposed to refundOverview's onlyRefund case) only
-      // happens one way in THORChain — a limit/streaming swap couldn't
-      // fill the remainder within its price limit — so that's stated
-      // directly rather than hedged.
+      // separately instead. A PARTIAL refund (delivered legs + this one, as
+      // opposed to refundOverview's onlyRefund case) only happens one way
+      // in THORChain — a limit/streaming swap couldn't fill the remainder
+      // within its price limit — so that's stated directly rather than
+      // hedged.
       const refundLegRaw = refundLegsRaw[0] || null
-      // Same accordion-out-N shape/ordering as accordions.out[] (built from
-      // the same reordered outTxs cards.out[] is), so index legs.length —
-      // one past the last delivered leg — is the refund's own accordion,
-      // which (unlike overall.out[]) also carries the block height.
-      const refundAccordionStacks = refundLegRaw
-        ? card?.accordions?.find(
-            (entry) => entry.name === `accordion-out-${legs.length}`
-          )?.data?.stacks || []
-        : []
-      const refundHeight = refundLegRaw
-        ? this.getNumericStackValue(refundAccordionStacks, 'Executed at')
-        : null
+      const refundHeight =
+        refundLegRaw && Number(refundLegRaw.height) > 0
+          ? Number(refundLegRaw.height)
+          : null
       const refundPercent =
         refundLegRaw && input.amount > 0
           ? (Number(refundLegRaw.amount) / Number(input.amount)) * 100
@@ -704,9 +1129,7 @@ export default {
       // inputAmount is only a valid percent denominator when the input and
       // outbound legs are the SAME asset (a trade/secure withdrawal: the
       // trade-form and native-form amounts are 1:1 comparable). For a swap,
-      // input is a different asset entirely (e.g. BTC in, USDT out) — using
-      // it here would compare USDT delivered against a BTC total, off by
-      // whatever the exchange rate happens to be. resolveTxOutboundTotals
+      // input is a different asset entirely — resolveTxOutboundTotals
       // already falls back to the outbound total (same-asset, always
       // correct) as its denominator when inputAmount is omitted.
       const totals = sameAsset
@@ -744,30 +1167,19 @@ export default {
         ? this.getNetworkBadge(assetFromString(totalsAsset || legs[0].asset))
         : null
 
+      const timeStamp = timeStampRaw ? moment.unix(timeStampRaw / 1e9) : null
       const time = this.splitTrailingParen(
-        this.getStackDisplayValue(actionStacks, 'Timestamp')
+        timeStamp ? `${timeStamp.format('L LT')} (${timeStamp.fromNow()})` : ''
       )
-      const height = this.getNumericStackValue(actionStacks, 'Block Height')
+      const heightNum = Number(height) > 0 ? Number(height) : null
 
-      // Swap-only metrics — cardBuilder.js's action-accordion already
-      // builds an 'Interval' stack (streaming/rapid-swap wording included)
-      // and a 'Swap Slip' stack; withdrawals never set action.streaming or
-      // action.swapSlip, so both are simply empty there.
-      const intervalDisplay =
-        kind === 'swap'
-          ? this.getStackDisplayValue(actionStacks, 'Interval')
-          : null
-      const swapSlipPercent =
-        kind === 'swap'
-          ? this.getNumericStackValue(actionStacks, 'Swap Slip')
-          : null
-      const priceImpactDisplay =
-        swapSlipPercent != null ? `-${swapSlipPercent.toFixed(2)}%` : null
+      // Swap-only metrics.
+      const swapSlipDisplay = kind === 'swap' ? priceImpactDisplay : null
 
       // Fee breakdown — same derivation swapOverview uses (rows of
       // {label, usd, subtle}, Total Fees Paid last), just gathering
-      // 'Outbound Fee' stacks across every leg's own accordion-out-N
-      // instead of the single one a normal swap has.
+      // 'Outbound Fee'/'Gas' info across every leg's own raw record instead
+      // of a single leg's.
       const feeRows = (() => {
         const toRow = (label, formatted) => {
           const { usd, subtle } = this.splitFeeValue(formatted)
@@ -775,74 +1187,101 @@ export default {
         }
         const rows = []
         // The gas the sender paid on the source chain to get this tx
-        // observed by THORChain — same 'Gas' stack/derivation
-        // streamingOverview's own Fee Breakdown reads (also absent from
-        // the shipped swapOverview hero's own breakdown — additive here
-        // too, not a value that becomes available later).
-        const inboundFee = this.formatFeeDisplay(
-          this.getStackDisplayValue(inboundStacks, 'Gas')
-        )
+        // observed by THORChain — same 'Gas' derivation streamingOverview's
+        // own Fee Breakdown reads (also absent from the shipped swapOverview
+        // hero's own breakdown — additive here too, not a value that
+        // becomes available later).
+        const inboundFeeRaw =
+          inboundGasRaw && inboundGasAsset
+            ? `${this.baseAmountFormatOrZero(inboundGasRaw)} ${this.showAsset(inboundGasAsset)}` +
+              (this.pools
+                ? ` (${this.formatCurrency(this.amountToUSD(inboundGasAsset, inboundGasRaw, this.pools))})`
+                : '')
+            : ''
+        const inboundFee = this.formatFeeDisplay(inboundFeeRaw)
         if (inboundFee) rows.push(toRow('Inbound Fee', inboundFee))
-        const outboundFeeStacks = card?.accordions
-          ?.filter((entry) => entry.name.startsWith('accordion-out-'))
-          .flatMap((entry) => entry.data?.stacks || [])
-          .filter((stack) => stack.key === 'Outbound Fee' && stack.is)
-        // A trade/secure withdrawal's leg carries its network cost as a
-        // 'Gas' stack instead (createTradeWithdrawState threads
-        // out_txs[].gas straight through — confirmed against a real BTC
-        // trade withdrawal, 2F2A6BA57358AA14FC1738E20961EA600D9AF522FB6440329AF0EDF05D2D99F7,
+
+        // A trade/secure withdrawal's leg carries its network cost as gas
+        // instead (createTradeWithdrawState threads out_txs[].gas straight
+        // through — confirmed against a real BTC trade withdrawal,
+        // 2F2A6BA57358AA14FC1738E20961EA600D9AF522FB6440329AF0EDF05D2D99F7,
         // whose out_txs[0].gas is 1540 sats — never the richer
-        // fees[]/feeAssets[] array only createSwapState populates, so
-        // buildOutboundAccordions's cardBuilder.js never emits an
-        // 'Outbound Fee' stack for it). cardBuilder.js only builds the
-        // 'Gas' stack when fees[] is empty, so this never double-counts
-        // alongside outboundFeeStacks above.
-        const outboundGasStacks = card?.accordions
-          ?.filter((entry) => entry.name.startsWith('accordion-out-'))
-          .flatMap((entry) => entry.data?.stacks || [])
-          .filter((stack) => stack.key === 'Gas' && stack.is)
+        // fees[]/feeAssets[] array only createSwapState populates). A leg
+        // with fees[] set never also contributes a gas row (mirrors
+        // buildOutboundAccordions' own `is: !a.fees?.length && ...` gate on
+        // its Gas stack) — fee-array entries are collected leg-by-leg
+        // first, then gas entries, matching the legacy builder's own
+        // stack-collection order (fees stacks are collected across all
+        // out-accordions before any Gas stacks are).
+        const feeSourceRows = []
+        outs.forEach((leg) => {
+          if (leg.fees?.length) {
+            leg.fees.forEach((f, j) => {
+              feeSourceRows.push({
+                type: 'fee',
+                amount: f,
+                asset: leg.feeAssets?.[j],
+              })
+            })
+          }
+        })
+        outs.forEach((leg) => {
+          if (!leg.fees?.length && leg.gas && leg.gasAsset) {
+            feeSourceRows.push({
+              type: 'gas',
+              amount: leg.gas,
+              asset: leg.gasAsset,
+            })
+          }
+        })
         rows.push(
-          ...[...(outboundFeeStacks || []), ...(outboundGasStacks || [])]
-            .map((stack, i) =>
-              toRow(
-                i === 0 ? 'Network Fee' : `Network Fee ${i + 1}`,
-                this.formatFeeDisplay(this.formatStackValue(stack.value))
+          ...feeSourceRows
+            .map((src, i) => {
+              const formatted = this.formatFeeDisplay(
+                src.type === 'fee'
+                  ? `${src.amount / 1e8} ${this.showAsset(src.asset)}` +
+                      (this.pools
+                        ? ` (${this.formatCurrency(this.amountToUSD(src.asset, src.amount, this.pools))})`
+                        : '')
+                  : `${this.baseAmountFormatOrZero(src.amount)} ${this.showAsset(src.asset)} (${this.formatCurrency(this.amountToUSD(src.asset, src.amount, this.pools))})`
               )
-            )
+              return toRow(
+                i === 0 ? 'Network Fee' : `Network Fee ${i + 1}`,
+                formatted
+              )
+            })
             .filter((r) => r.usd !== '$0.00')
         )
+
         if (kind === 'swap') {
-          const liquidityFee = this.formatFeeDisplay(
-            this.getStackDisplayValueByPrefix(actionStacks, 'Liquidity Fee')
-          )
-          if (liquidityFee) rows.push(toRow('Liquidity Fee', liquidityFee))
+          if (liquidityFeeRawFormatted) {
+            const liquidityFee = this.formatFeeDisplay(liquidityFeeRawFormatted)
+            if (liquidityFee) rows.push(toRow('Liquidity Fee', liquidityFee))
+          }
           // Same realized-vs-estimated split streamingOverview's Fee
-          // Breakdown uses: 'Interface Fee' only has a value once THORChain
-          // has actually paid the affiliate out (action.affiliateOut — a
-          // leg tracked independently of the main delivery, so it can
-          // still be unsettled even once every delivered leg has landed).
-          // Fall back to the memo's own declared bps against the input
-          // value, same as streamingOverview.
-          const interfaceFee = this.formatFeeDisplay(
-            this.getStackDisplayValue(actionStacks, 'Interface Fee')
-          )
-          if (interfaceFee) {
-            rows.push(toRow('Affiliate Fee', interfaceFee))
-          } else {
-            const affiliateBps = this.getNumericStackValue(
-              actionStacks,
-              'Affiliate Basis'
+          // Breakdown uses: an 'Affiliate Fee' row only has a value once
+          // THORChain has actually paid the affiliate out (affiliateOut — a
+          // leg tracked independently of the main delivery, so it can still
+          // be unsettled even once every delivered leg has landed). Fall
+          // back to the memo's own declared bps against the input value,
+          // same as streamingOverview.
+          if (affiliateFeeInfo?.kind === 'interface') {
+            const interfaceFee = this.formatFeeDisplay(
+              affiliateFeeInfo.formatted
             )
+            if (interfaceFee) rows.push(toRow('Affiliate Fee', interfaceFee))
+          } else if (affiliateFeeInfo?.kind === 'estimate') {
             const inputUsdForAffiliate =
               input.amountUSD ??
               this.amountToUSD(input.asset, input.amount, this.pools) ??
               0
-            if (affiliateBps > 0 && inputUsdForAffiliate > 0) {
-              const estUsd = inputUsdForAffiliate * (affiliateBps / 10000)
+            if (affiliateFeeInfo.bps > 0 && inputUsdForAffiliate > 0) {
+              const estUsd =
+                inputUsdForAffiliate * (affiliateFeeInfo.bps / 10000)
               rows.push({
                 label: 'Affiliate Fee (est.)',
                 usd: `$${this.formatFeeDisplay(estUsd)}`,
-                subtle: `${(affiliateBps / 100).toFixed(2)}% of input value`,
+                subtle: `${(affiliateFeeInfo.bps / 100).toFixed(2)}% of input value`,
               })
             }
           }
@@ -874,28 +1313,19 @@ export default {
         kind: 'multiOutbound',
         multiOutboundKind: kind,
         status,
-        // camelCase() only spaces camelCase words ("trade Withdraw"), it
-        // doesn't capitalize — fine for the legacy card title it was built
-        // for, not for this hero's eyebrow/H1, so capitalize here. A
-        // partial-refund swap's own legacy title is prefixed "refunded "
-        // (createSwapState sets it whenever isRefund is true, regardless of
-        // whether only PART of the swap was refunded) — misleading here
-        // since most of the value can have delivered fine, so strip it.
         title:
-          this.capitalizeFirst(
-            card?.details?.title?.replace(/^refunded\s*/i, '')
-          ) || 'Transaction',
+          this.capitalizeFirst(cardTitle?.replace(/^refunded\s*/i, '')) ||
+          'Transaction',
         hasRefund: !!refundLeg,
         refundLeg,
         hash: this.$route.params.txhash,
         // Same field the shipped swapOverview hero reads for its own
-        // Affiliate.vue badge (card.details.interface, set by createCard
-        // from accordions.action.affiliateName) — shown regardless of
-        // whether an affiliate fee actually settled yet (see feeRows
-        // above), matching the base hero's own unconditional display.
-        affiliateAddress: card?.details?.interface || null,
-        from: this.getStackDisplayValue(inboundStacks, 'From'),
-        inboundHash: this.getStackDisplayValue(inboundStacks, 'Hash'),
+        // Affiliate.vue badge — shown regardless of whether an affiliate
+        // fee actually settled yet (see feeRows above), matching the base
+        // hero's own unconditional display.
+        affiliateAddress,
+        from,
+        inboundHash,
         destination,
         asset: input.asset,
         // getAssetDisplayName is a page-local method (not a global mixin),
@@ -954,7 +1384,7 @@ export default {
           : null,
         intervalDisplay,
         feeRows,
-        priceImpactDisplay,
+        priceImpactDisplay: swapSlipDisplay,
         deliveredDisplay: sameAsset
           ? precise(totals.delivered, totalsAsset)
           : null,
@@ -966,9 +1396,9 @@ export default {
         pastDueDisplay,
         timeDisplay: time.main,
         timeAgoDisplay: time.paren,
-        height,
-        heightDisplay: height ? `#${this.normalFormat(height)}` : '-',
-        memo: this.getStackDisplayValue(actionStacks, 'Memo'),
+        height: heightNum,
+        heightDisplay: heightNum ? `#${this.normalFormat(heightNum)}` : '-',
+        memo: memoText,
       }
     },
     // A swap still actively streaming, or done streaming but not yet
@@ -978,75 +1408,173 @@ export default {
     // resolver. Confirmed against real txs in both phases. Distinguished
     // from a plain single-swap "pending" (awaiting confirmation) by
     // quantity > 1; the 'outbound' phase (count >= quantity, output not
-    // done yet) reads the SAME accordion-out-N stacks the legacy UI's
-    // Outbound accordion already renders (Outbound Est./Outbound Delay
-    // Est./Outbound Stage/Outbound Fee — all populated by
-    // resolveOutboundSignal inside createSwapState), no new derivation
-    // needed. Once output.done too, it's a fully settled swap — already
-    // served by swapOverview. Static fields (asset/amount/memo/etc.) come
-    // from the same cards/stacks every other *Overview reads; live
-    // streaming progress (count/quantity/interval/in/out/deposit) comes
-    // from a dedicated fetch (fetchStreamingProgress, watched below, only
-    // while phase is 'streaming' — that endpoint returns zeroed data once
-    // a stream is no longer active) since the accordion snapshot only has
-    // count/quantity/interval, not the partial in/out amounts.
+    // done yet) reads the same outbound-signal fields
+    // resolveOutboundSignal/buildOutboundAccordions already derive for the
+    // legacy Outbound accordion, re-derived directly here rather than
+    // through that accordion layer. Once output.done too, it's a fully
+    // settled swap — already served by swapOverview. Static fields
+    // (asset/amount/memo/etc.) come from the same raw thorStatus/rawActions
+    // every other *Overview reads; live streaming progress
+    // (count/quantity/interval/in/out/deposit) comes from a dedicated fetch
+    // (fetchStreamingProgress, watched below, only while phase is
+    // 'streaming' — that endpoint returns zeroed data once a stream is no
+    // longer active) since the accordion snapshot only has
+    // count/quantity/interval, not the partial in/out amounts. Reads
+    // rawActions/thorStatus/txMemo directly instead of
+    // this.cards/accordion stacks (Phase 2 of the tx-detail-UI raw-data
+    // migration) — shares its leg-0 (the swap's single outbound)
+    // derivation with multiOutboundOverview's swap-kind path/createSwapState,
+    // since it's reading the exact same underlying data.
     streamingOverview() {
-      if (this.swapCardIndex < 0) return null
-      const card = this.cards[this.swapCardIndex]
-      const overall = card?.details?.overall
-      if (!overall?.middle?.pending) return null
-      const input = overall?.in?.[0]
-      const output = overall?.out?.[0]
-      if (!input?.asset || !output?.asset) return null
+      // See the matching comment in multiOutboundOverview's swap-kind
+      // branch — a limit order's card title never contains "swap", so the
+      // original swapCardIndex-based gate could never reach one either.
+      if (this.txMemo?.type !== 'swap' || this.txMemo?.isLimitOrder) return null
 
-      const actionAccordion = card?.accordions?.find(
-        (entry) => entry.name === 'accordion-action'
-      )
-      const actionStacks = actionAccordion?.data?.stacks || []
-      const inboundAccordion = card?.accordions?.find((entry) =>
-        entry.name.startsWith('accordion-in-')
-      )
-      const inboundStacks = inboundAccordion?.data?.stacks || []
-      const outboundAccordion = card?.accordions?.find((entry) =>
-        entry.name.startsWith('accordion-out-')
-      )
-      const outboundStacks = outboundAccordion?.data?.stacks || []
+      const pending = this.isTxInPending(this.thorStatus, {
+        actions: this.rawActions,
+      })
+      if (!pending) return null
 
-      // A 'Stream' stack only exists for a genuine multi-chunk stream
-      // (quantity > 1) — a PLAIN swap never has one at all, so it can't be
-      // used to detect "swap done, outbound pending" generally. That state
-      // applies to any swap, streaming or not: the action accordion's own
-      // `done` (inbound finalised + swap finalised/not pending) is true
-      // once the swap itself has executed, independent of whether it
-      // streamed. Confirmed against a real plain (non-streaming) swap
-      // stuck exactly in this window, still on the legacy path before this
-      // fix — quantity<=1 alone was wrongly excluding it.
-      const streamMatch = this.getStackDisplayValue(
-        actionStacks,
-        'Stream'
-      ).match(/(\d+)\s*\/\s*(\d+)/)
-      const isStreaming = !!streamMatch && Number(streamMatch[2]) > 1
-      const swapExecuted = !!actionAccordion?.data?.done
+      const { outTxs } = resolveOutboundTxs(
+        this.thorStatus,
+        this.thorTx,
+        { actions: this.rawActions },
+        this.txMemo,
+        {
+          parseMemoAsset: this.parseMemoAsset.bind(this),
+          assetToString,
+          pools: this.pools,
+        }
+      )
+
+      const swapAction =
+        this.rawActions?.find((a) => a.type === 'swap') ??
+        this.rawActions?.find((a) => a.type === 'limit_swap')
+      const swapMetadata =
+        swapAction?.metadata?.swap ?? swapAction?.metadata?.limit_swap
+      const streamingMeta = swapMetadata?.streamingSwapMeta
+
+      // A 'Stream' stack (the legacy accordion source for isStreaming) only
+      // ever existed when count was truthy — a stream that hasn't landed
+      // its first sub-swap yet (count still 0) was never detected as
+      // "isStreaming" by the original either, so that gate is preserved
+      // here rather than "improved".
+      const streamCountRaw =
+        this.thorStatus?.stages?.swap_status?.streaming?.count ??
+        streamingMeta?.count
+      const streamQuantityRaw =
+        this.thorStatus?.stages?.swap_status?.streaming?.quantity ??
+        streamingMeta?.quantity ??
+        this.txMemo?.quantity
+      const isStreaming = !!streamCountRaw && Number(streamQuantityRaw) > 1
+      const swapExecuted = !!(
+        this.thorStatus?.stages?.inbound_finalised?.completed &&
+        (this.thorStatus?.stages?.swap_finalised?.completed ||
+          !this.thorStatus?.stages?.swap_status?.pending)
+      )
       if (!isStreaming && !swapExecuted) return null
+
+      const inAsset = this.parseMemoAsset(
+        this.thorStatus?.tx?.coins?.[0]?.asset,
+        this.pools
+      )
+      if (!inAsset) return null
+      const inAmount = parseInt(this.thorStatus?.tx?.coins?.[0]?.amount ?? 0)
+      const inAmountUSD =
+        (+(swapMetadata?.inPriceUSD ?? 0) * inAmount) / 1e8 ||
+        this.amountToUSD(inAsset, inAmount, this.pools) ||
+        0
+      const input = {
+        asset: inAsset,
+        amount: inAmount,
+        amountUSD: inAmountUSD,
+        usdAtExecution: !!swapMetadata?.inPriceUSD,
+      }
+
+      const outAsset = this.parseMemoAsset(
+        outTxs?.length > 0 ? outTxs[0]?.coins?.[0]?.asset : this.txMemo?.asset,
+        this.pools
+      )
+      const outAmount =
+        outTxs?.length > 0 ? parseInt(outTxs[0]?.coins?.[0]?.amount ?? 0) : 0
+      const outboundHasRefund = outTxs?.some(
+        (tx) => tx.refund || tx.memo?.toLowerCase().startsWith('refund')
+      )
+      const outboundHasSuccess = outTxs?.some((tx) =>
+        tx.memo?.toLowerCase().startsWith('out')
+      )
+      const streamingProgressEstimate = (() => {
+        const directEstimate = parseInt(streamingMeta?.outEstimation ?? 0)
+        if (directEstimate) return directEstimate
+        const partialOut = parseInt(streamingMeta?.outCoin?.amount ?? 0)
+        const count = parseInt(streamingMeta?.count ?? 0)
+        const quantity = parseInt(streamingMeta?.quantity ?? 0)
+        if (!partialOut || !count || !quantity) return 0
+        return Math.round((partialOut * quantity) / count)
+      })()
+      const estimatedOutAmount =
+        outAmount ||
+        +this.quote?.expected_amount_out ||
+        streamingProgressEstimate
+      let outAmountUSD =
+        (+(swapMetadata?.outPriceUSD ?? 0) * estimatedOutAmount) / 1e8 ||
+        this.amountToUSD(outAsset, estimatedOutAmount, this.pools) ||
+        0
+      if (!outboundHasSuccess && outboundHasRefund) {
+        outAmountUSD =
+          (+(swapMetadata?.inPriceUSD ?? 0) * outAmount) / 1e8 ||
+          this.amountToUSD(outAsset, outAmount, this.pools) ||
+          0
+      }
+
+      const outboundSignal = resolveOutboundSignal(
+        this.thorStatus,
+        this.getOutboundStatusContext()
+      )
+      const firstOutDone =
+        (outTxs?.length > 0 && !!outTxs[0]?.id) ||
+        (!this.thorStatus?.stages?.swap_status?.pending &&
+          (this.thorStatus?.stages?.outbound_signed?.completed ||
+            outAsset?.chain === 'THOR' ||
+            outAsset?.synth ||
+            outAsset?.trade ||
+            outAsset?.secure) &&
+          (this.thorStatus?.stages?.outbound_delay?.completed ?? true))
+
+      const output = {
+        asset: outAsset,
+        amount: estimatedOutAmount,
+        amountUSD: outAmountUSD,
+        usdAtExecution:
+          !outboundHasSuccess && outboundHasRefund
+            ? !!swapMetadata?.inPriceUSD
+            : !!swapMetadata?.outPriceUSD,
+        done: firstOutDone,
+        to:
+          outTxs?.[0]?.to_address ??
+          this.txMemo?.destAddr?.split('/')[0] ??
+          null,
+      }
       if (output.done) return null
 
-      const snapshotCount = isStreaming ? Number(streamMatch[1]) : 1
-      const snapshotQuantity = isStreaming ? Number(streamMatch[2]) : 1
+      const snapshotCount = isStreaming ? Number(streamCountRaw) : 1
+      const snapshotQuantity = isStreaming ? Number(streamQuantityRaw) : 1
       const streamingDone = isStreaming && snapshotCount >= snapshotQuantity
       const phase = !isStreaming || streamingDone ? 'outbound' : 'streaming'
 
       // output above only reads the first leg — fine once the stream is
       // done (multiOutboundOverview's swap-kind branch defers to this
       // computed while still actively streaming, then takes over once it
-      // isn't, see its own 'Stream' stack check), but if the destination
-      // chain's per-tx cap ever splits an outbound before the stream
-      // itself finishes, a single-leg read here would silently understate
-      // the real total. No verified real tx has shown that actually
-      // happening mid-stream — THORChain's own out_txs only appeared once
-      // settlement started in every case checked — so this is a safety
-      // bail, not a confirmed gap: fall through to the legacy page rather
-      // than risk misrepresenting it.
-      if (phase === 'streaming' && (overall.out?.length ?? 0) > 1) return null
+      // isn't, see its own comment), but if the destination chain's per-tx
+      // cap ever splits an outbound before the stream itself finishes, a
+      // single-leg read here would silently understate the real total. No
+      // verified real tx has shown that actually happening mid-stream —
+      // THORChain's own out_txs only appeared once settlement started in
+      // every case checked — so this is a safety bail, not a confirmed
+      // gap: fall through to the legacy page rather than risk
+      // misrepresenting it.
+      if (phase === 'streaming' && (outTxs?.length ?? 0) > 1) return null
 
       // Bare ticker, not chain.ticker — the network's already shown by the
       // panel's own badge chip below, so repeating it in the amount line
@@ -1054,15 +1582,114 @@ export default {
       const precise = (amount, asset) =>
         `${this.baseAmountFormatOrZero(amount)} ${this.showTicker(asset)}`
 
+      const timeStamp = swapAction?.date
+        ? moment.unix(swapAction.date / 1e9)
+        : null
       const time = this.splitTrailingParen(
-        this.getStackDisplayValue(actionStacks, 'Timestamp')
+        timeStamp ? `${timeStamp.format('L LT')} (${timeStamp.fromNow()})` : ''
       )
-      const height = this.getNumericStackValue(actionStacks, 'Block Height')
-      const swapSlipPercent = this.getNumericStackValue(
-        actionStacks,
-        'Swap Slip'
-      )
+      const height =
+        Number(swapAction?.height) > 0 ? Number(swapAction.height) : null
+      const swapSlipRaw = parseInt(swapAction?.metadata?.swap?.swapSlip)
+      const swapSlipPercent = swapSlipRaw ? (swapSlipRaw / 1e4) * 100 : null
 
+      // Outbound-phase fields — re-derived directly from resolveOutboundSignal
+      // (the same source buildOutboundAccordions/the legacy Outbound
+      // accordion already renders), not through that accordion layer.
+      const outboundETA = outboundSignal.eta
+      const outboundDelayRemaining = outboundSignal.delayRemaining
+      const outboundSigned = outboundSignal.signed
+      const outboundEstDisplay =
+        !firstOutDone && outboundETA > 0
+          ? moment
+              .duration(this.blockSeconds('THOR') * outboundETA, 'seconds')
+              .humanize()
+          : null
+      let outboundDelayEstDisplay = null
+      if (!firstOutDone && outboundDelayRemaining) {
+        outboundDelayEstDisplay = moment
+          .duration(outboundDelayRemaining, 'seconds')
+          .humanize()
+      } else if (
+        !firstOutDone &&
+        outboundSigned === false &&
+        outboundETA <= 0
+      ) {
+        outboundDelayEstDisplay = 'Scheduled Passed'
+      }
+      const outboundPastDueDisplay =
+        !firstOutDone && outboundSigned === false && outboundETA < 0
+          ? (() => {
+              const blocksPastDue = -outboundETA
+              const timePastDue = moment
+                .duration(this.blockSeconds('THOR') * blocksPastDue, 'seconds')
+                .humanize()
+              return `~${timePastDue} (${blocksPastDue.toLocaleString()} blocks)`
+            })()
+          : null
+      const outboundStages = this.getOutboundStages({
+        done: firstOutDone,
+        outboundDelayRemaining,
+        outboundSigned,
+      })
+      const outboundFees =
+        swapMetadata?.networkFees?.map((n) => n?.amount) ?? []
+      const outboundFeeAssets =
+        outboundFees.length > 0
+          ? this.parseMemoAsset(
+              swapMetadata?.networkFees?.map((n) => n?.asset),
+              this.pools
+            )
+          : null
+      const outboundFeeDisplay =
+        outboundFees
+          .map((f, j) =>
+            f
+              ? `${f / 1e8} ${this.showAsset(outboundFeeAssets?.[j])}` +
+                (this.pools
+                  ? ` (${this.formatCurrency(this.amountToUSD(outboundFeeAssets?.[j], f, this.pools))})`
+                  : '')
+              : null
+          )
+          .filter(Boolean)
+          .join(', ') || null
+
+      let outboundDelaySeconds = 0
+      if (!firstOutDone) {
+        if (outboundETA > 0) {
+          outboundDelaySeconds = this.blockSeconds('THOR') * outboundETA
+        }
+        if (outboundDelaySeconds === 0) {
+          outboundDelaySeconds = outboundDelayRemaining || 0
+        }
+      }
+
+      const rates = []
+      if (inAmount && outAmount) {
+        rates.push(
+          `1 ${this.showTicker(inAsset)} = ${outAmount / inAmount} ${this.showTicker(outAsset)}`
+        )
+        rates.push(
+          `1 ${this.showTicker(outAsset)} = ${inAmount / outAmount} ${this.showTicker(inAsset)}`
+        )
+      }
+      // The legacy 'Rate' stack's value is an array of plain strings, but
+      // formatStackValue's array branch expects {text} objects — it maps
+      // each string's nonexistent .text to '', so this has always rendered
+      // empty. Preserved via the same shared helper rather than hardcoded,
+      // in case that helper's behavior is ever revisited.
+      const rateDisplay = this.formatStackValue(rates)
+
+      const interval =
+        this.thorStatus?.stages?.swap_status?.streaming?.interval ??
+        streamingMeta?.interval ??
+        this.txMemo?.interval
+      const intervalDisplay =
+        interval !== undefined && interval !== null
+          ? (interval === 0 || interval === '0') && Number(height) > 25400000
+            ? 'Rapid Swap'
+            : `${moment.duration(interval * 6, 's').as('seconds')} secs (${this.$options.filters.pluralize(interval, 'Block', { includeNumber: true })})`
+          : null
       // Fee breakdown — same derivation as multiOutboundOverview's, minus
       // the per-leg outbound-fee gathering (nothing's been paid out yet).
       const feeRows = (() => {
@@ -1071,67 +1698,66 @@ export default {
           return { label, usd, subtle }
         }
         const rows = []
-        // The gas the sender paid on the source chain to get this tx
-        // observed by THORChain — buildInboundAccordions' own 'Gas' stack,
-        // same "amount ASSET ($usd)" shape every other fee stack here uses.
-        // Not shown by the shipped swapOverview hero's own Fee Breakdown
-        // either — genuinely new, not a value that becomes available later.
-        const inboundFee = this.formatFeeDisplay(
-          this.getStackDisplayValue(inboundStacks, 'Gas')
-        )
+        const inboundGasRaw = this.thorStatus?.tx?.gas
+          ? this.thorStatus.tx.gas[0]?.amount
+          : null
+        const inboundGasAsset = this.thorStatus?.tx?.gas
+          ? this.parseMemoAsset(this.thorStatus.tx.gas[0]?.asset, this.pools)
+          : null
+        const inboundFeeRaw =
+          inboundGasRaw && inboundGasAsset
+            ? `${this.baseAmountFormatOrZero(inboundGasRaw)} ${this.showAsset(inboundGasAsset)}` +
+              (this.pools
+                ? ` (${this.formatCurrency(this.amountToUSD(inboundGasAsset, inboundGasRaw, this.pools))})`
+                : '')
+            : ''
+        const inboundFee = this.formatFeeDisplay(inboundFeeRaw)
         if (inboundFee) rows.push(toRow('Inbound Fee', inboundFee))
-        const liquidityFee = this.formatFeeDisplay(
-          this.getStackDisplayValueByPrefix(actionStacks, 'Liquidity Fee')
-        )
-        if (liquidityFee) rows.push(toRow('Liquidity Fee (est.)', liquidityFee))
-        // 'Interface Fee' (cardBuilder.js) only has a value once THORChain
-        // has actually paid the affiliate out — gated on
-        // action.affiliateOut.length > 0. For a streaming swap, that
-        // payout is only realized once the stream settles (confirmed: the
-        // stack is silently absent — not zero, absent — for the whole
-        // active-streaming window), so this row would otherwise vanish
-        // even though the fee is guaranteed to be charged. Fall back to
-        // estimating it from the memo's own declared bps ('Affiliate
-        // Basis', available immediately, independent of payout status)
-        // against the input value, labeled "(est.)" since it hasn't
-        // actually gone out yet — same reasoning as Liquidity Fee (est.)
-        // above, and the same "(est)" convention cardBuilder.js already
-        // uses for Liquidity Fee while a stream is still running.
-        const interfaceFee = this.formatFeeDisplay(
-          this.getStackDisplayValue(actionStacks, 'Interface Fee')
-        )
-        if (interfaceFee) {
-          rows.push(toRow('Affiliate Fee', interfaceFee))
-        } else {
-          const affiliateBps = this.getNumericStackValue(
-            actionStacks,
-            'Affiliate Basis'
-          )
-          const inputUsdForAffiliate =
-            input.amountUSD ??
-            this.amountToUSD(input.asset, input.amount, this.pools) ??
-            0
-          if (affiliateBps > 0 && inputUsdForAffiliate > 0) {
-            const estUsd = inputUsdForAffiliate * (affiliateBps / 10000)
-            rows.push({
-              label: 'Affiliate Fee (est.)',
-              usd: `$${this.formatFeeDisplay(estUsd)}`,
-              subtle: `${(affiliateBps / 100).toFixed(2)}% of input value`,
-            })
+
+        const liquidityFeeRaw =
+          parseInt(swapAction?.metadata?.swap?.liquidityFee) || null
+        if (liquidityFeeRaw) {
+          let totalLiquidityFees = liquidityFeeRaw
+          if (Number(streamCountRaw) < Number(streamQuantityRaw)) {
+            const one = liquidityFeeRaw / streamCountRaw
+            totalLiquidityFees += one * (streamQuantityRaw - streamCountRaw)
           }
+          const liquidityFee = this.formatFeeDisplay(
+            `${totalLiquidityFees / 1e8} RUNE (${this.formatSmallCurrency(totalLiquidityFees * this.runePrice)})`
+          )
+          if (liquidityFee)
+            rows.push(toRow('Liquidity Fee (est.)', liquidityFee))
+        }
+        // 'Interface Fee' only has a value once THORChain has actually paid
+        // the affiliate out — gated on affiliateOut.length > 0. For a
+        // streaming swap, that payout is only realized once the stream
+        // settles (confirmed: absent — not zero, absent — for the whole
+        // active-streaming window), so this row would otherwise vanish even
+        // though the fee is guaranteed to be charged. Fall back to
+        // estimating it from the memo's own declared bps against the input
+        // value, labeled "(est.)" since it hasn't actually gone out yet —
+        // same reasoning as Liquidity Fee (est.) above.
+        const affiliateBps = sumAffiliateFee(this.txMemo?.fee || 0)
+        const inputUsdForAffiliate =
+          input.amountUSD ??
+          this.amountToUSD(input.asset, input.amount, this.pools) ??
+          0
+        if (affiliateBps > 0 && inputUsdForAffiliate > 0) {
+          const estUsd = inputUsdForAffiliate * (affiliateBps / 10000)
+          rows.push({
+            label: 'Affiliate Fee (est.)',
+            usd: `$${this.formatFeeDisplay(estUsd)}`,
+            subtle: `${(affiliateBps / 100).toFixed(2)}% of input value`,
+          })
         }
         if (!rows.length) return []
         const totalUsd = rows.reduce(
           (sum, r) => sum + this.parseUsdAmount(r.usd),
           0
         )
-        const inputUsdNum =
-          input.amountUSD ??
-          this.amountToUSD(input.asset, input.amount, this.pools) ??
-          0
         const totalPct =
-          inputUsdNum > 0
-            ? `${((totalUsd / inputUsdNum) * 100).toFixed(3)}% of swap value (est.)`
+          inputUsdForAffiliate > 0
+            ? `${((totalUsd / inputUsdForAffiliate) * 100).toFixed(3)}% of swap value (est.)`
             : null
         rows.push({
           label: 'Total Fees Paid (est.)',
@@ -1147,11 +1773,10 @@ export default {
         status: { label: 'In progress', tone: 'yellow' },
         hash: this.$route.params.txhash,
         // Same field the shipped swapOverview hero reads for its own
-        // Affiliate.vue badge (card.details.interface, set by createCard
-        // from accordions.action.affiliateName) — not derived here.
-        affiliateAddress: card?.details?.interface || null,
-        from: this.getStackDisplayValue(inboundStacks, 'From'),
-        inboundHash: this.getStackDisplayValue(inboundStacks, 'Hash'),
+        // Affiliate.vue badge — not derived here.
+        affiliateAddress: this.txMemo?.affiliate || null,
+        from: this.thorStatus?.tx?.from_address || '',
+        inboundHash: this.thorStatus?.tx?.id || '',
         destination: output.to || null,
         asset: input.asset,
         // Full chain name for a chain's own gas asset (BTC.BTC ->
@@ -1175,10 +1800,10 @@ export default {
         isStreaming,
         // The swap's full projected FINAL total (swapMetadata's
         // streamingSwapMeta.outEstimation, computed once at swap creation)
-        // — a distinct figure from "so far" below. createSwapState
-        // re-derives this on every rebuild, so no separate fetch needed.
-        // Once phase is 'outbound' this is no longer just a projection —
-        // streaming's done, so it's the real determined output.
+        // — a distinct figure from "so far" below. Re-derived on every
+        // rebuild, so no separate fetch needed. Once phase is 'outbound'
+        // this is no longer just a projection — streaming's done, so it's
+        // the real determined output.
         outputProjectedRaw: Number(output.amount) || 0,
         outputProjectedDisplay: precise(output.amount, output.asset),
         outputProjectedUsdDisplay: this.formatUsdValue(output.amountUSD),
@@ -1198,44 +1823,24 @@ export default {
           input.asset,
           output
         ),
-        // Outbound-phase fields — read straight from the accordion-out-N
-        // stacks buildOutboundAccordions already builds from
-        // resolveOutboundSignal's output (the same data the legacy
-        // Outbound accordion renders), not re-derived here.
-        outboundHash: this.getStackDisplayValue(outboundStacks, 'Hash'),
-        outboundEstDisplay: this.getStackDisplayValue(
-          outboundStacks,
-          'Outbound Est.'
-        ),
-        outboundDelayEstDisplay: this.getStackDisplayValue(
-          outboundStacks,
-          'Outbound Delay Est.'
-        ),
-        // Raw seconds for the live countdown bar — read straight off the
-        // accordion's own data.remainingTime/totalTime, the exact same pair
-        // the legacy Accordion.vue already drives its circular countdown
-        // timer from for this same outbound entry (buildOutboundAccordions
-        // sets both equal at build time; Accordion.vue ticks a local timer
-        // down from there client-side, see its startCountdown/updateCircle
-        // — StreamingSwapHero's bar mirrors that exact pattern rather than
-        // re-deriving from outboundDelayRemaining independently).
-        outboundDelayRemainingSeconds:
-          outboundAccordion?.data?.remainingTime || 0,
-        outboundDelayTotalSeconds: outboundAccordion?.data?.totalTime || 0,
-        outboundPastDueDisplay: this.getStackDisplayValue(
-          outboundStacks,
-          'Past Due'
-        ),
-        outboundStages:
-          outboundStacks.find((s) => s.key === 'Outbound Stage' && s.is)
-            ?.value || [],
-        outboundFeeDisplay:
-          outboundStacks
-            .filter((s) => s.key === 'Outbound Fee' && s.is)
-            .map((s) => this.formatStackValue(s.value))
-            .join(', ') || null,
-        intervalDisplay: this.getStackDisplayValue(actionStacks, 'Interval'),
-        rateDisplay: this.getStackDisplayValue(actionStacks, 'Rate'),
+        outboundHash:
+          outTxs?.[0]?.id && !isInternalTx(outTxs[0].id) ? outTxs[0].id : '',
+        outboundEstDisplay,
+        outboundDelayEstDisplay,
+        // buildOutboundAccordions sets both remainingTime/totalTime to this
+        // exact same value (an ETA-derived delay, falling back to the raw
+        // outboundDelayRemaining only when that ETA-derived figure is 0) —
+        // StreamingSwapHero's own local countdown timer is what turns this
+        // single "current remaining" value into a real remaining-vs-total
+        // pair client-side (its outboundDelayTimerTotal only ever grows to
+        // the largest remaining value observed across polls).
+        outboundDelayRemainingSeconds: outboundDelaySeconds,
+        outboundDelayTotalSeconds: outboundDelaySeconds,
+        outboundPastDueDisplay,
+        outboundStages,
+        outboundFeeDisplay,
+        intervalDisplay,
+        rateDisplay,
         priceImpactDisplay:
           swapSlipPercent != null ? `-${swapSlipPercent.toFixed(2)}%` : null,
         feeRows,
@@ -1243,45 +1848,37 @@ export default {
         timeAgoDisplay: time.paren,
         height,
         heightDisplay: height ? `#${this.normalFormat(height)}` : '-',
-        memo: this.getStackDisplayValue(actionStacks, 'Memo'),
+        memo: swapAction?.metadata?.swap?.memo ?? '',
       }
     },
     // Mimir votes always come through createAbstractState's mimir branch
     // (no dedicated builder) — that branch only carries the tx's own vote
     // (node address, key, value); the network-wide tally/threshold/current
     // effective value come from a live fetch (fetchMimirConsensus, watched
-    // below), the same "gap" pattern as bondOverview's node snapshot.
+    // below), the same "gap" pattern as bondOverview's node snapshot. Reads
+    // rawActions directly instead of this.cards/accordion stacks (Phase 2
+    // of the tx-detail-UI raw-data migration).
     mimirOverview() {
-      if (!this.cards?.length) return null
-      const index = this.cards.findIndex((c) => c?.details?.title === 'Mimir')
-      if (index < 0) return null
+      const mimirAction = this.rawActions?.find((a) => a.type === 'mimir')
+      if (!mimirAction) return null
 
-      const card = this.cards[index]
-      const overall = card?.details?.overall
-
-      const actionAccordion = card?.accordions?.find(
-        (entry) => entry.name === 'accordion-action'
-      )
-      const stacks = actionAccordion?.data?.stacks || []
-      const inboundAccordion = card?.accordions?.find(
-        (entry) => entry.name === 'accordion-in-0'
-      )
-      const inboundStacks = inboundAccordion?.data?.stacks || []
-
-      const key = this.getStackDisplayValue(stacks, 'Mimir Key')
+      const key = mimirAction.metadata?.mimir?.key
       if (!key) return null
-      const value = this.getStackDisplayValue(stacks, 'Mimir Value')
-      const nodeAddress =
-        overall?.in?.[0]?.address ||
-        this.getStackDisplayValue(inboundStacks, 'From')
+      const rawValue = mimirAction.metadata?.mimir?.value
+      const value = rawValue != null && rawValue !== '' ? `${rawValue}` : ''
+      const nodeAddress = mimirAction.in?.[0]?.address || ''
+      const timeStamp = mimirAction.date
+        ? moment.unix(mimirAction.date / 1e9)
+        : null
       const time = this.splitTrailingParen(
-        this.getStackDisplayValue(stacks, 'Timestamp')
+        timeStamp ? `${timeStamp.format('L LT')} (${timeStamp.fromNow()})` : ''
       )
-      const height = this.getNumericStackValue(stacks, 'Block Height')
+      const height =
+        Number(mimirAction.height) > 0 ? Number(mimirAction.height) : null
 
       return {
         kind: 'mimir',
-        status: this.getOverviewStatus(overall?.middle),
+        status: this.getOverviewStatus({}),
         hash: this.$route.params.txhash,
         nodeAddress,
         key,
@@ -1294,62 +1891,131 @@ export default {
       }
     },
     swapOverview() {
-      if (this.swapCardIndex < 0) return null
+      // Same limit-order gate as multiOutboundOverview/streamingOverview
+      // (see their matching comments) — a limit order's card title is
+      // literally 'limit order', which the original /swap/i-matching
+      // swapCardIndex could never find either, so swapOverview was
+      // unreachable for one before this migration too.
+      if (this.txMemo?.type !== 'swap' || this.txMemo?.isLimitOrder) return null
 
-      const card = this.cards[this.swapCardIndex]
-      const details = card?.details
-      const middle = details?.overall?.middle || {}
-
-      // Fall back to old UI for refunds, pending, or multiple outputs
-      if (middle.fail || middle.refund || middle.pending) return null
-      if ((details?.overall?.out?.length ?? 0) > 1) return null
-
-      const actionAccordion = card?.accordions?.find(
-        (entry) => entry.name === 'accordion-action'
-      )
-      const inboundAccordion = card?.accordions?.find((entry) =>
-        entry.name.startsWith('accordion-in-')
-      )
-      const outboundAccordion = card?.accordions?.find((entry) =>
-        entry.name.startsWith('accordion-out-')
-      )
-
-      const input = details?.overall?.in?.[0]
-      const output = details?.overall?.out?.[0]
-
-      if (!input?.asset || !output?.asset) {
+      // A pure refund (every Midgard action is type 'refund') is
+      // refundOverview's case — matches createSwapState's own `onlyRefund`,
+      // which fed the legacy card's `middle.fail`.
+      const onlyRefund =
+        this.rawActions?.length > 0 &&
+        this.rawActions.every((a) => a.type === 'refund')
+      if (onlyRefund) return null
+      // Matches the legacy card's `middle.pending`.
+      if (this.isTxInPending(this.thorStatus, { actions: this.rawActions }))
         return null
+
+      const { outTxs, affiliateOut } = resolveOutboundTxs(
+        this.thorStatus,
+        this.thorTx,
+        { actions: this.rawActions },
+        this.txMemo,
+        {
+          parseMemoAsset: this.parseMemoAsset.bind(this),
+          assetToString,
+          pools: this.pools,
+        }
+      )
+      // Multiple outbound legs is multiOutboundOverview's case.
+      if (outTxs && outTxs.length > 1) return null
+
+      const midgardSwap =
+        this.rawActions?.find((a) => a.type === 'swap') ??
+        this.rawActions?.find((a) => a.type === 'limit_swap')
+      const swapMeta =
+        midgardSwap?.metadata?.swap ?? midgardSwap?.metadata?.limit_swap
+      const refundAction = this.rawActions?.find((a) => a.type === 'refund')
+      const contractAction = this.rawActions?.find((a) => a.type === 'contract')
+
+      const inAsset = this.parseMemoAsset(
+        this.thorStatus?.tx?.coins?.[0]?.asset,
+        this.pools
+      )
+      const inAmount = parseInt(this.thorStatus?.tx?.coins?.[0]?.amount ?? 0)
+      const inAmountUSD =
+        (+(swapMeta?.inPriceUSD ?? 0) * inAmount) / 1e8 ||
+        this.amountToUSD(inAsset, inAmount, this.pools) ||
+        0
+      const inUsdAtExecution = !!swapMeta?.inPriceUSD
+      const input = {
+        asset: inAsset,
+        amount: inAmount,
+        amountUSD: inAmountUSD,
       }
 
-      const actionStacks = actionAccordion?.data?.stacks || []
-      const inboundStacks = inboundAccordion?.data?.stacks || []
-      const outboundStacks = outboundAccordion?.data?.stacks || []
+      const outAsset = this.parseMemoAsset(
+        outTxs?.length > 0 ? outTxs[0]?.coins?.[0]?.asset : this.txMemo?.asset,
+        this.pools
+      )
+      if (!input.asset || !outAsset) {
+        return null
+      }
+      const outAmount =
+        outTxs?.length > 0 ? parseInt(outTxs[0]?.coins?.[0]?.amount ?? 0) : 0
+      const outboundHasRefund = outTxs?.some(
+        (tx) => tx.refund || tx.memo?.toLowerCase().startsWith('refund')
+      )
+      const outboundHasSuccess = outTxs?.some((tx) =>
+        tx.memo?.toLowerCase().startsWith('out')
+      )
+      const streamingMeta = swapMeta?.streamingSwapMeta
+      const streamingProgressEstimate = (() => {
+        const directEstimate = parseInt(streamingMeta?.outEstimation ?? 0)
+        if (directEstimate) return directEstimate
+        const partialOut = parseInt(streamingMeta?.outCoin?.amount ?? 0)
+        const count = parseInt(streamingMeta?.count ?? 0)
+        const quantity = parseInt(streamingMeta?.quantity ?? 0)
+        if (!partialOut || !count || !quantity) return 0
+        return Math.round((partialOut * quantity) / count)
+      })()
+      const estimatedOutAmount =
+        outAmount ||
+        +this.quote?.expected_amount_out ||
+        streamingProgressEstimate
+      let outAmountUSD =
+        (+(swapMeta?.outPriceUSD ?? 0) * estimatedOutAmount) / 1e8 ||
+        this.amountToUSD(outAsset, estimatedOutAmount, this.pools) ||
+        0
+      if (!outboundHasSuccess && outboundHasRefund) {
+        outAmountUSD =
+          (+(swapMeta?.inPriceUSD ?? 0) * outAmount) / 1e8 ||
+          this.amountToUSD(outAsset, outAmount, this.pools) ||
+          0
+      }
+      const outUsdAtExecution =
+        !outboundHasSuccess && outboundHasRefund
+          ? !!swapMeta?.inPriceUSD
+          : !!swapMeta?.outPriceUSD
+      const output = {
+        asset: outAsset,
+        amount: estimatedOutAmount,
+        amountUSD: outAmountUSD,
+      }
 
       const inputAsset = assetFromString(input.asset)
       const outputAsset = assetFromString(output.asset)
-      const status = this.getOverviewStatus(details?.overall?.middle)
-      const inboundHeight = this.getNumericStackValue(
-        inboundStacks,
-        'Block Height'
-      )
-      const outboundHeight = this.getNumericStackValue(
-        outboundStacks,
-        'Executed at'
-      )
-      const inboundHash = this.getStackDisplayValue(inboundStacks, 'Hash')
-      const outboundHash = this.getStackDisplayValue(outboundStacks, 'Hash')
+      const status = this.getOverviewStatus({})
+
+      // The legacy inbound accordion for a swap never carried a `height`
+      // field at all (createSwapState's accordions.in[0] omits it), so the
+      // 'Block Height' stack this used to read never actually had a value —
+      // preserved as always-null rather than "improved" with a real height.
+      const inboundHeight = null
+      const outboundHeight =
+        Number(outTxs?.[0]?.height) > 0 ? Number(outTxs[0].height) : null
+      const inboundHash = this.thorStatus?.tx?.id || ''
+      const outboundHash =
+        outTxs?.[0]?.id && !isInternalTx(outTxs[0].id) ? outTxs[0].id : ''
 
       const settledSeconds =
         inboundHeight && outboundHeight && outboundHeight >= inboundHeight
           ? (outboundHeight - inboundHeight) * this.blockSeconds('THOR')
           : null
 
-      const midgardSwap =
-        (this.rawActions || []).find((a) => a.type === 'swap') ??
-        (this.rawActions || []).find((a) => a.type === 'limit_swap')
-      const contractAction = (this.rawActions || []).find(
-        (a) => a.type === 'contract'
-      )
       const actionHeight = midgardSwap ? parseInt(midgardSwap.height) : null
       const outAssetStr = assetToString(outputAsset)
       const outHeights = (midgardSwap?.out || [])
@@ -1362,35 +2028,73 @@ export default {
           ? blockTime(latestOutHeight - actionHeight)
           : null
 
-      const rate = this.getStackDisplayValue(actionStacks, 'Rate')
-      const slip = this.getStackDisplayValue(actionStacks, 'Swap Slip')
-      const affiliateBasis = this.getStackDisplayValue(
-        actionStacks,
-        'Affiliate Basis'
-      )
-      const liquidityFee = this.formatFeeDisplay(
-        this.getStackDisplayValueByPrefix(actionStacks, 'Liquidity Fee')
-      )
-      const interfaceFee = this.formatFeeDisplay(
-        this.getStackDisplayValue(actionStacks, 'Interface Fee')
-      )
-      const networkFees = outboundStacks
-        .filter((stack) => stack.key === 'Outbound Fee' && stack.is)
-        .map((stack) =>
-          this.formatFeeDisplay(this.formatStackValue(stack.value))
+      // The legacy 'Rate' stack's value was an array of plain strings —
+      // formatStackValue's array branch only ever reads an item's `.text`
+      // (absent here), so it always formatted to '' and never actually
+      // contributed to the computedRate-or-rate fallback below.
+      const rate = ''
+      const swapSlipRaw = parseInt(midgardSwap?.metadata?.swap?.swapSlip)
+      const slip = swapSlipRaw
+        ? `${this.percentageFormat(swapSlipRaw / 1e4, 2)}`
+        : ''
+      const affiliateBasis = String(sumAffiliateFee(this.txMemo?.fee || 0))
+      const streamingCount =
+        this.thorStatus?.stages?.swap_status?.streaming?.count ??
+        streamingMeta?.count
+      const streamingQuantity =
+        this.thorStatus?.stages?.swap_status?.streaming?.quantity ??
+        streamingMeta?.quantity ??
+        this.txMemo?.quantity
+      const liquidityFeeRaw =
+        parseInt(midgardSwap?.metadata?.swap?.liquidityFee) || null
+      let liquidityFee = null
+      if (liquidityFeeRaw) {
+        let totalLiquidityFees = liquidityFeeRaw
+        if (Number(streamingCount) < Number(streamingQuantity)) {
+          const one = liquidityFeeRaw / streamingCount
+          totalLiquidityFees += one * (streamingQuantity - streamingCount)
+        }
+        liquidityFee = this.formatFeeDisplay(
+          `${totalLiquidityFees / 1e8} RUNE (${this.formatSmallCurrency(totalLiquidityFees * this.runePrice)})`
         )
+      }
+      let interfaceFee = null
+      if (affiliateOut && affiliateOut.length > 0) {
+        const affiliateOutAmount = affiliateOut.reduce(
+          (a, b) => a + +(b.coins?.[0]?.amount ?? 0),
+          0
+        )
+        interfaceFee = this.formatFeeDisplay(
+          `${affiliateOutAmount / 1e8} RUNE (${this.formatSmallCurrency(affiliateOutAmount * this.runePrice)})`
+        )
+      }
+      const outboundFees = swapMeta?.networkFees?.map((n) => n?.amount) ?? []
+      const outboundFeeAssets =
+        outboundFees.length > 0
+          ? this.parseMemoAsset(
+              swapMeta?.networkFees?.map((n) => n?.asset),
+              this.pools
+            )
+          : null
+      const networkFees = outboundFees
+        .map((f, j) => {
+          if (!f) return null
+          const asset = Array.isArray(outboundFeeAssets)
+            ? outboundFeeAssets[j]
+            : outboundFeeAssets
+          const formatted =
+            `${f / 1e8} ${this.showAsset(asset)}` +
+            (this.pools
+              ? ` (${this.formatCurrency(this.amountToUSD(asset, f, this.pools))})`
+              : '')
+          return this.formatFeeDisplay(formatted)
+        })
         .filter(Boolean)
       const contractActionType = this.getContractActionType(contractAction)
 
       // Historical prices at the time the swap executed — more accurate than
-      // current pool prices for displaying USD values.
-      const swapMeta =
-        midgardSwap?.metadata?.swap ?? midgardSwap?.metadata?.limit_swap
-      // Whether the displayed USD value is derived from the historical
-      // inPriceUSD/outPriceUSD (price at the moment the swap executed) rather
-      // than a current-price fallback. Drives the USD tooltip wording.
-      const inUsdAtExecution = !!swapMeta?.inPriceUSD
-      const outUsdAtExecution = !!swapMeta?.outPriceUSD
+      // current pool prices for displaying USD values (swapMeta/
+      // inUsdAtExecution/outUsdAtExecution already computed above).
       const nonContractInUsdRaw = swapMeta?.inPriceUSD
         ? (parseFloat(input.amount) / 1e8) * parseFloat(swapMeta.inPriceUSD)
         : parseFloat(input.amountUSD) || 0
@@ -1542,6 +2246,28 @@ export default {
       const displayOutputAmount = contractDisplay
         ? contractDisplay.outputAmount
         : this.formatAssetAmount(output.amount, output.asset)
+
+      // Matches createSwapState's own swapTypeLabel (isLimitOrder already
+      // excluded by the guard above, so this reduces to rapid-vs-plain).
+      const depositAmountZero = !parseInt(
+        streamingMeta?.depositedCoin?.amount || 0
+      )
+      const rapidInterval = depositAmountZero
+        ? this.txMemo?.interval
+        : (streamingMeta?.interval ?? this.txMemo?.interval)
+      const isRapidSwap =
+        (rapidInterval === 0 || rapidInterval === '0') &&
+        Number(midgardSwap?.height) > 25400000
+      const swapTypeLabel = isRapidSwap ? 'rapid Swap' : 'swap'
+
+      const timeStampRaw = midgardSwap?.date
+      const timeStampMoment = timeStampRaw
+        ? moment.unix(timeStampRaw / 1e9)
+        : null
+      const timeDisplay = timeStampMoment?.isValid()
+        ? `${timeStampMoment.format('L LT')} (${timeStampMoment.fromNow()})`
+        : ''
+
       return {
         title: contractActionType
           ? `${contractActionType}: ${displayInputAmount} for ${displayOutputAmount}`
@@ -1549,9 +2275,9 @@ export default {
         metaLabel: `${contractActionType || this.getSwapActionLabel(inputAsset, outputAsset)} · ${this.getSwapProductLabel(contractAction)}`,
         hasContractAction: !!contractAction,
         status,
-        affiliateAddress: details?.interface || '',
-        actionTypeTitle: details?.title || '',
-        labels: details?.labels || [],
+        affiliateAddress: this.txMemo?.affiliate || '',
+        actionTypeTitle: swapTypeLabel,
+        labels: refundAction ? ['Refund'] : [],
         input: contractDisplay
           ? {
               asset: contractDisplay.inputAsset,
@@ -1684,8 +2410,7 @@ export default {
             { label: 'Status', value: status.label, type: 'status' },
             {
               label: 'Time',
-              value:
-                this.getStackDisplayValue(actionStacks, 'Timestamp') || '-',
+              value: timeDisplay || '-',
             },
             {
               label: 'Block',
@@ -1706,18 +2431,14 @@ export default {
                 }
               : {
                   label: 'From',
-                  address:
-                    this.getStackDisplayValue(inboundStacks, 'From') ||
-                    this.thorStatus?.tx?.from_address,
+                  address: this.thorStatus?.tx?.from_address,
                   type: 'address',
                 },
             !contractAction
               ? {
                   label: 'To',
                   address:
-                    this.getStackDisplayValue(outboundStacks, 'Destination') ||
-                    outTxs?.[0]?.to_address ||
-                    memo?.destAddr,
+                    outTxs?.[0]?.to_address || this.txMemo?.destAddr || null,
                   type: 'address',
                 }
               : null,
@@ -1815,10 +2536,7 @@ export default {
               contractAction?.in?.[0]?.address ||
               this.thorStatus?.tx?.from_address ||
               ''
-            const timeText = this.getStackDisplayValue(
-              actionStacks,
-              'Timestamp'
-            )
+            const timeText = timeDisplay
             const contractFailed =
               (contractAction?.metadata?.contract?.code ?? 0) > 0
             const contractLogs = contractAction?.metadata?.contract?.logs
@@ -1860,11 +2578,10 @@ export default {
             output,
             inboundHeight,
             outboundHeight,
-            actionStacks,
-            inboundStacks,
-            outboundStacks,
-            inputAsset,
-            outputAsset,
+            fromAddress: this.thorStatus?.tx?.from_address,
+            destAddress:
+              outTxs?.[0]?.to_address || this.txMemo?.destAddr || null,
+            timeText: timeDisplay,
             action: contractAction,
           })
         })(),
@@ -1971,7 +2688,7 @@ export default {
             ? this.buildTechRow(
                 'From',
                 contractAction?.in?.[0]?.address ||
-                  this.getStackDisplayValue(inboundStacks, 'From'),
+                  this.thorStatus?.tx?.from_address,
                 'address'
               )
             : null,
@@ -1979,24 +2696,38 @@ export default {
             ? this.buildTechRow(
                 'To',
                 contractAction?.out?.[0]?.address ||
-                  this.getStackDisplayValue(outboundStacks, 'Destination'),
+                  outTxs?.[0]?.to_address ||
+                  this.txMemo?.destAddr,
                 'address'
               )
             : null,
           this.buildTechRow(
             'Memo',
             contractAction?.metadata?.contract?.memo ||
-              this.getStackDisplayValue(actionStacks, 'Memo')
+              midgardSwap?.metadata?.swap?.memo ||
+              refundAction?.metadata?.refund?.memo
           ),
           this.buildTechRow(
             'Inbound stage',
-            this.getStackDisplayValue(inboundStacks, 'Inbound Stage')
+            this.formatStackValue(
+              this.getInboundStages({
+                done: this.thorStatus?.stages?.inbound_finalised?.completed,
+                inboundConfCount:
+                  this.thorStatus?.stages?.inbound_confirmation_counted,
+                observationsCompleted:
+                  this.thorStatus?.stages?.inbound_observed?.completed,
+              })
+            )
           ),
           this.buildTechRow('Exchange rate', rate),
           this.buildTechRow('Affiliate basis', affiliateBasis),
           this.buildTechRow(
             'Limit',
-            this.getStackDisplayValue(actionStacks, 'Limit')
+            this.txMemo?.limit
+              ? this.txMemo.limit > 0
+                ? `${this.txMemo.limit / 1e8} ${this.showAsset(this.parseMemoAsset(this.txMemo?.asset))}`
+                : 'No target limit'
+              : null
           ),
         ].filter(Boolean),
       }
@@ -2860,24 +3591,30 @@ export default {
 
       return rows
     },
+    // Raw-data equivalent of the accordion-stack args this used to read
+    // (actionStacks/inboundStacks/outboundStacks) — swapOverview is the only
+    // caller, migrated off `this.cards` onto thorStatus/rawActions directly.
+    // The 'Rate' meta on the middle row is preserved as always-empty: the
+    // legacy 'Rate' stack's value was an array of plain strings, and
+    // formatStackValue's array branch only ever reads an item's `.text`
+    // (absent here), so it always formatted to '' — never actually
+    // displayed anything.
     buildLifecycleRows({
       input,
       output,
       inboundHeight,
       outboundHeight,
-      actionStacks,
-      inboundStacks,
-      outboundStacks,
-      outputAsset,
+      fromAddress,
+      destAddress,
+      timeText,
       action,
     }) {
       const rows = []
-      const timeText = this.getStackDisplayValue(actionStacks, 'Timestamp')
       rows.push({
         icon: 'ArrowIcon',
         iconRotate: 180,
         title: `${this.getAssetDisplayName(input.asset)} received by THORChain`,
-        body: `${this.formatAssetAmount(input.amount, input.asset)} entered the swap flow from ${this.formatAddress(this.getStackDisplayValue(inboundStacks, 'From'))}.`,
+        body: `${this.formatAssetAmount(input.amount, input.asset)} entered the swap flow from ${this.formatAddress(fromAddress)}.`,
         meta: [
           timeText,
           inboundHeight ? `Block #${this.normalFormat(inboundHeight)}` : '',
@@ -2891,13 +3628,13 @@ export default {
         iconRotate: 0,
         title: 'Swap executed',
         body: `${this.getSwapProductLabel(action)} converted ${this.getAssetDisplayName(input.asset)} to ${this.getAssetDisplayName(output.asset)} at the current exchange rate.`,
-        meta: this.getStackDisplayValue(actionStacks, 'Rate'),
+        meta: '',
       })
       rows.push({
         icon: 'ArrowIcon',
         iconRotate: 0,
         title: `${this.getAssetDisplayName(output.asset)} delivered`,
-        body: `${this.formatAssetAmount(output.amount, output.asset)} was sent to ${this.formatAddress(this.getStackDisplayValue(outboundStacks, 'Destination'))}.`,
+        body: `${this.formatAssetAmount(output.amount, output.asset)} was sent to ${this.formatAddress(destAddress)}.`,
         meta: outboundHeight
           ? `Block #${this.normalFormat(outboundHeight)}`
           : '',
@@ -3140,6 +3877,16 @@ export default {
       // Fall back to the tx-status memo: for early inbound-stage txs the THORNode
       // detail endpoint (thorTx) isn't populated yet, but thorStatus is.
       const memo = this.parseMemo(thorTx?.tx?.tx?.memo || thorStatus?.tx?.memo)
+      // refundOverview needs the parsed memo (destAddr/asset for
+      // resolveOutboundTxs, and .type to distinguish a swap-originated
+      // "only refund" — createSwapState's onlyRefund case — from a generic
+      // per-action refund card — createAbstractState's case; both can
+      // produce a rawActions list that's entirely `type: 'refund'` entries,
+      // so that alone can't tell them apart, the memo type is the actual
+      // discriminator) plus the raw THORNode tx/details response
+      // resolveOutboundTxs also reads.
+      this.txMemo = memo
+      this.thorTx = thorTx
 
       if (memo.type === 'outbound') {
         this.gotoTx(memo.hash)
@@ -4075,6 +4822,7 @@ export default {
       return ts
     },
     createNativeTx(nativeTx) {
+      this.nativeSendAction = nativeTx
       const inAsset = nativeTx?.in?.[0]?.coins?.[0]?.asset
       const inAmount = nativeTx?.in?.[0]?.coins?.[0]?.amount
       const timeStamp = moment(nativeTx.date / 1e6)
@@ -4502,209 +5250,18 @@ export default {
       }
     },
     createSwapState(thorStatus, thorTx, actions, memo, thorHeader, quote) {
-      // swap user addresses
-      const userAddresses = new Set([
-        thorStatus?.tx.from_address.toLowerCase(),
-        // destAddr can be a dual-destination memo (PRIMARY/REFUND) — split so
-        // both addresses are recognized as belonging to the user.
-        // TODO: sometimes the memo destAddr will be THORName
-        ...(memo.destAddr?.split('/').map((a) => a.toLowerCase()) ?? []),
-      ])
-      // Non affiliate outs
-      const memoAssetStr = (() => {
-        const parsed = this.parseMemoAsset(memo?.asset)
-        return parsed ? assetToString(parsed) : null
-      })()
-      // Midgard already tells us, per outbound, whether it's an affiliate
-      // payout (`out[].affiliate`). THORNode's tx status/details have no such
-      // flag, so outTxs below is otherwise built from an address/asset
-      // heuristic that is wrong whenever an affiliate fee is paid in the
-      // swap's destination asset, or whenever the THORNode endpoints
-      // (tx/status, tx/details) fail or return incomplete data for this tx —
-      // which happens often enough to matter (load-balanced/archival nodes).
-      // Midgard's flag is unaffected by any of that, so it's used both to
-      // exclude affiliate addresses from the THORNode-derived list AND as the
-      // final fallback source of truth when THORNode gives us nothing usable.
-      const midgardSwapActionForAffiliate =
-        actions?.actions?.find((a) => a.type === 'swap') ??
-        actions?.actions?.find((a) => a.type === 'limit_swap')
-      const midgardOuts = midgardSwapActionForAffiliate?.out ?? []
-      const affiliateAddresses = new Set(
-        midgardOuts
-          .filter((o) => o.affiliate)
-          .map((o) => o.address?.toLowerCase())
-          .filter(Boolean)
+      const { outTxs: resolvedOutTxs, affiliateOut } = resolveOutboundTxs(
+        thorStatus,
+        thorTx,
+        actions,
+        memo,
+        {
+          parseMemoAsset: this.parseMemoAsset.bind(this),
+          assetToString,
+          pools: this.pools,
+        }
       )
-      const nonAffiliateMidgardOuts = midgardOuts.filter((o) => !o.affiliate)
-      let outTxs = thorStatus?.out_txs?.filter(
-        (tx) =>
-          !affiliateAddresses.has(tx.to_address?.toLowerCase()) &&
-          (userAddresses.has(tx.to_address?.toLowerCase()) ||
-            (tx.coins?.[0]?.asset === memoAssetStr &&
-              tx.id !==
-                '0000000000000000000000000000000000000000000000000000000000000000' &&
-              tx.id !== ''))
-      )
-      // get affiliate out if available
-      // Note: affiliate payouts (esp. RUNE ones) are often internal transfers
-      // with a zero-hash id, so id is not a useful filter here — go by address.
-      const affiliateOut = thorStatus?.out_txs?.filter(
-        (tx) =>
-          affiliateAddresses.has(tx.to_address?.toLowerCase()) ||
-          !userAddresses.has(tx.to_address?.toLowerCase())
-      )
-      // TODO: fix this in track code
-      if (
-        !outTxs ||
-        outTxs?.length === 0 ||
-        outTxs.every((o) => o.to_address === thorStatus?.tx.from_address) // Add scheduled outbound while having a refund
-      ) {
-        outTxs = thorStatus?.planned_out_txs
-          ?.filter(
-            (tx) =>
-              userAddresses.has(tx.to_address.toLowerCase()) &&
-              !affiliateAddresses.has(tx.to_address.toLowerCase())
-          )
-          .map((tx) => ({
-            ...tx,
-            coins: [{ amount: tx.coin.amount, asset: tx.coin.asset }],
-          }))
-      }
-
-      // THORNode gave us nothing usable (tx/status and tx/details can both
-      // fail or come back incomplete, e.g. for older/archived transactions on
-      // load-balanced nodes) — fall back to Midgard's own outs directly. It
-      // already excludes affiliate payouts, so this can never surface one.
-      if (!outTxs || outTxs.length === 0) {
-        outTxs = nonAffiliateMidgardOuts.map((o) => ({
-          id: o.txID || null,
-          to_address: o.address,
-          coins: o.coins,
-          height: o.height,
-        }))
-      }
-
-      // Add scheduled refund actions from thorTx.actions that aren't yet in out_txs
-      // e.g. streaming swap where some iterations failed → partial XRP refund is queued
-      const inboundAsset = thorStatus?.tx?.coins?.[0]?.asset
-      const scheduledRefundActions = (thorTx?.actions ?? []).filter(
-        (a) =>
-          a.coin?.asset === inboundAsset &&
-          a.memo?.toLowerCase().startsWith('refund:') &&
-          !outTxs?.some(
-            (o) =>
-              o.to_address?.toLowerCase() === a.to_address?.toLowerCase() &&
-              o.coins?.[0]?.asset === a.coin?.asset
-          )
-      )
-      if (scheduledRefundActions.length > 0) {
-        outTxs = [
-          ...(outTxs ?? []),
-          ...scheduledRefundActions.map((a) => ({
-            id: null,
-            to_address: a.to_address,
-            coins: [{ asset: a.coin.asset, amount: a.coin.amount }],
-            memo: a.memo,
-            refund: true,
-          })),
-        ]
-      }
-
-      // Add a partial refund that only Midgard's own action feed knows
-      // about — a trade/secure-asset streaming swap whose leftover
-      // unswapped input (sub-swaps that missed their price limit) is
-      // refunded as an internal THORChain ledger credit, never a
-      // cross-chain outbound. THORNode has no record of it at all (no
-      // out_txs entry, no queued 'refund:' action), so the block above
-      // can't find it — it only shows up as a separate Midgard
-      // `type: 'refund'` action alongside the tx's `type: 'swap'` action.
-      // Confirmed against a real trade-asset streaming swap,
-      // 4DEE248E75FD4CD2ABEB46CBBB1F25C41C0C8A3BEE332A5108CEC44302F61E90 —
-      // 2 of 3 sub-swaps missed their price limit, and the unswapped 2/3 of
-      // the input only appears here. Read the refund action's own `in`
-      // coin (the actual refunded amount+asset) rather than its `out`,
-      // which duplicates the swap's own out asset/amount and can't be
-      // trusted.
-      const midgardRefundAction = actions?.actions?.find(
-        (a) => a.type === 'refund'
-      )
-      const midgardRefundCoin = midgardRefundAction?.in?.[0]?.coins?.[0]
-      const hasMidgardSwapAction = actions?.actions?.some(
-        (a) => a.type === 'swap' || a.type === 'limit_swap'
-      )
-      if (
-        midgardRefundCoin &&
-        hasMidgardSwapAction &&
-        midgardRefundCoin.asset === inboundAsset &&
-        !outTxs?.some(
-          (o) =>
-            o.coins?.[0]?.asset === midgardRefundCoin.asset &&
-            String(o.coins?.[0]?.amount) === String(midgardRefundCoin.amount)
-        )
-      ) {
-        outTxs = [
-          ...(outTxs ?? []),
-          {
-            id: null,
-            to_address:
-              midgardRefundAction.in?.[0]?.address ||
-              thorStatus?.tx?.from_address,
-            coins: [midgardRefundCoin],
-            refund: true,
-          },
-        ]
-      }
-
-      // Add scheduled outbound actions from thorTx.actions not yet in out_txs.
-      // Skip anything Midgard flagged as an affiliate payout, and (as a
-      // fallback for when Midgard's out[] isn't available either) skip
-      // THOR.RUNE actions going to a non-user address — those are affiliate payments.
-      const scheduledOutActions = (thorTx?.actions ?? []).filter(
-        (a) =>
-          a.memo?.toLowerCase().startsWith('out:') &&
-          !affiliateAddresses.has(a.to_address?.toLowerCase()) &&
-          !(
-            a.coin?.asset === 'THOR.RUNE' &&
-            !userAddresses.has(a.to_address?.toLowerCase())
-          ) &&
-          !outTxs?.some(
-            (o) =>
-              o.to_address?.toLowerCase() === a.to_address?.toLowerCase() &&
-              o.coins?.[0]?.asset === a.coin?.asset &&
-              String(o.coins?.[0]?.amount) === String(a.coin?.amount)
-          )
-      )
-      if (scheduledOutActions.length > 0) {
-        outTxs = [
-          ...(outTxs ?? []),
-          ...scheduledOutActions.map((a) => ({
-            id: null,
-            to_address: a.to_address,
-            coins: [{ asset: a.coin.asset, amount: a.coin.amount }],
-            memo: a.memo,
-          })),
-        ]
-      }
-
-      // order by target swapped asset if we have refund in swap
-      outTxs = orderBy(
-        outTxs,
-        (o) => o.coins?.[0]?.asset === thorStatus?.tx?.coins?.[0]?.asset
-      )
-
-      // Trade/secure asset swap only: when multiple outbounds have same asset and amount, only show one
-      const memoOutAsset = this.parseMemoAsset(memo?.asset, this.pools)
-      if (memoOutAsset?.trade || memoOutAsset?.secure) {
-        const outboundKey = (o) =>
-          `${o.coins?.[0]?.asset ?? ''}:${o.coins?.[0]?.amount ?? ''}`
-        const seenOut = new Set()
-        outTxs = outTxs.filter((o) => {
-          const key = outboundKey(o)
-          if (seenOut.has(key)) return false
-          seenOut.add(key)
-          return true
-        })
-      }
+      const outTxs = resolvedOutTxs
 
       // Add native in/out search
       const inAsset = this.parseMemoAsset(
