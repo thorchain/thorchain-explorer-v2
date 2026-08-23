@@ -276,89 +276,57 @@
   transform: rotate(45deg);
 }
 
-/* Sticky table header WITH horizontal scroll preserved: position:sticky
-   cannot do both at once on the same element — it's scoped to the nearest
-   ancestor whose computed overflow isn't visible on either axis, and (per
-   the CSS overflow-interaction rule) setting overflow-x:auto alone still
-   makes the browser compute overflow-y as auto too. That makes .vgt-wrap
-   and .vgt-responsive (vue-good-table's own horizontal-scroll wrapper)
-   both scroll containers, and a sticky thead nested inside either of them
-   scopes to that box instead of the page — confirmed empirically (an
-   isolated test page with overflow-x:auto + an EXPLICIT overflow-y:visible
-   still failed to stick to the page; Chrome still computed overflow-y as
-   auto). So this uses vue-good-table's built-in `fixed-header` prop
-   instead — a second, fully-functional cloned <thead> (same sort/filter
-   handlers, real interactive DOM, not a static copy) rendered in
-   .vgt-fixed-header, which sits as a SIBLING of the real scrolling body
-   inside .vgt-wrap, not nested inside it — so pinning IT to the page
-   doesn't fight the body's own overflow-x:auto at all. The real thead
-   stays in the DOM (needed for vue-good-table's own column-width mirroring
-   math, which reads computed widths off it) but is visually hidden — the
-   fixed clone is the only one shown. Horizontal position is synced by JS
-   (mixins.js/stickyHeaderScrollSync.js) mirroring the body's scrollLeft
-   onto the fixed header's own scrollLeft; overflow-x:hidden below blocks
-   the user from scrolling it directly (there's only ever one real
-   scrollbar, on the body). */
-/* vue-good-table applies the SAME style-class (including `sticky-header`)
-   to both the real table and its .vgt-fixed-header clone (Table.vue:
-   `:class="tableStyleClasses"` on both) — so a bare `.vgt-table.sticky-
-   header thead` selector hides both theads, not just the real one, and the
-   visible header goes blank. Scoped to `.vgt-responsive` (only the real,
-   scrolling table sits there — the clone sits in `.vgt-fixed-header`
-   instead) so it hides only the one that's meant to be invisible. */
+/* Sticky table header WITH horizontal scroll preserved. position: sticky
+   can't do both on one element: it scopes to the nearest ancestor whose
+   computed overflow isn't visible on either axis, and overflow-x: auto
+   alone makes the browser compute overflow-y as auto too — so a sticky
+   thead inside .vgt-responsive sticks to that box, not the page. Hence
+   vue-good-table's `fixed-header` prop instead: a second, fully
+   functional cloned <thead> in .vgt-fixed-header, a SIBLING of the
+   scrolling body, so pinning it to the page doesn't fight the body's
+   overflow. The real thead stays laid out (vue-good-table reads column
+   widths off it) but hidden. Horizontal position, `top` and column widths
+   are synced in mixins.js/stickyHeaderScrollSync.js.
+
+   Hiding is scoped to .vgt-responsive because vue-good-table puts the
+   same style-class on both tables — an unscoped selector blanks the
+   visible clone too. */
 .vgt-responsive .vgt-table.sticky-header thead {
   visibility: hidden;
 }
 
-/* .vgt-wrap's own overflow: auto (above) would otherwise make IT the
-   nearest scroll-container ancestor for .vgt-fixed-header too (it's a
-   direct child) — reset only when a sticky-header table is inside, same
-   reasoning as the block comment above. .vgt-responsive (the body) keeps
-   its real overflow-x: auto untouched; it's a sibling of .vgt-fixed-header,
-   not an ancestor, so it no longer needs resetting at all. */
+/* Otherwise .vgt-wrap is the nearest scroll-container ancestor of
+   .vgt-fixed-header and scopes the sticky to itself. The body's own
+   overflow-x is untouched — it's a sibling, not an ancestor. */
 .vgt-wrap:has(.vgt-table.sticky-header) {
   overflow: visible;
 }
 
-/* Upstream ships this as position: absolute, which keeps it out of the
-   flow and overlaying the real thead; sticky is the only way to pin it to
-   the PAGE instead of to .vgt-wrap, but sticky is in-flow — so the clone
-   would stack above the body and its height would show up as a blank band
-   between the header and the first row (the real thead below stays
-   `visibility: hidden`, still reserving its own height). The mixin
-   cancels that with a measured negative margin-bottom; see the flow-
-   collapse paragraph in mixins.js/stickyHeaderScrollSync.js. */
+/* Upstream has this absolute (out of flow, over the real thead); sticky
+   is the only way to pin it to the page, but sticky is in-flow — the
+   mixin cancels the height that adds with a negative margin-bottom. */
 .vgt-wrap:has(.vgt-table.sticky-header) .vgt-fixed-header {
   position: sticky;
-  /* Pre-JS/pre-hydration fallback only — #header's real height is
-     breakpoint-dependent (51px below `lg`, 67px at/above, since its
-     padding grows there), so any single value here is wrong at some
-     viewport width and leaves a gap the scrolling body shows through.
-     mixins.js/stickyHeaderScrollSync.js measures the real height and sets
-     this as an inline style once mounted, which wins over this rule. */
+  /* Pre-JS fallback only; #header's height is breakpoint-dependent, so
+     the mixin measures it and overrides this inline. */
   top: 67px;
   z-index: 5;
   overflow-x: hidden;
   background: var(--bg-color);
   border-bottom: 1px solid var(--border-color);
 
-  /* vue-good-table's own column-width mirroring (VgtTableHeader's
-     getColumnStyle, node_modules — not ours to edit) only copies `width`
-     onto each cloned <th>, never `min-width`. Under the default
-     table-layout: auto, a bare `width` is advisory — the browser still
-     shrinks columns to fit whatever container the table sits in. The real
-     (primary) table never hits this because .vgt-responsive lets it
-     overflow freely; this cloned one sits in a viewport-width container,
-     so every column silently compressed to fit 100% instead of matching
-     the real table's actual (wider) layout — confirmed via a width dump:
-     each cloned <th> rendered narrower than its own inline `width: Npx`.
-     table-layout: fixed makes the browser honor those widths rigidly
-     instead, so the table's total width becomes their real sum and
-     genuinely overflows this container by the same amount the primary
-     table does — which is what actually gives it something to scrollLeft
-     against in the first place. */
+  /* vue-good-table copies only `width` onto each cloned <th>, which is
+     advisory under table-layout: auto — the clone sits in a
+     viewport-width container, so every column compressed to fit. Fixed
+     layout honors the widths rigidly, letting the total reach the real
+     table's and giving it something to scrollLeft against. */
   table {
     table-layout: fixed;
+
+    /* Upstream's max-width: 100% would clamp the clone to its
+       viewport-width container and squeeze every column. The real width
+       isn't knowable in CSS; the mixin measures and applies it. */
+    max-width: none;
   }
 
   thead th {

@@ -337,7 +337,7 @@ export default {
         {
           label: 'Status',
           field: 'status',
-          width: '70px',
+          width: '80px',
           tdClass: 'center',
           thClass: 'center',
         },
@@ -497,7 +497,7 @@ export default {
         {
           label: 'Status',
           field: 'status',
-          width: '70px',
+          width: '80px',
           tdClass: 'center',
           thClass: 'center',
         },
@@ -601,7 +601,7 @@ export default {
         {
           label: 'Status',
           field: 'status',
-          width: '70px',
+          width: '80px',
           tdClass: 'center',
           thClass: 'center',
         },

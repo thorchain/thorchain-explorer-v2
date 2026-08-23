@@ -1,7 +1,7 @@
 <template>
   <div>
     <vue-good-table v-if="rows" :key="1" :columns="cols" :rows="rows"
-      style-class="vgt-table net-table bordered condensed node-table" :line-numbers="true"
+      style-class="vgt-table net-table bordered condensed node-table sticky-header" :fixed-header="true" :line-numbers="true"
       :row-style-class="rowClassCallback" :search-options="{
         enabled: true,
         externalQuery: searchTerm,
@@ -397,6 +397,7 @@ import HighlightList from '@/assets/images/highlight-list.svg?inline'
 import CrossIcon from '~/assets/images/cross.svg?inline'
 import NodeIcon from '~/assets/images/node.svg?inline'
 import missingblock from '~/assets/images/missingblock.svg?inline'
+import stickyHeaderScrollSync from '~/mixins.js/stickyHeaderScrollSync'
 
 export default {
   components: {
@@ -417,6 +418,7 @@ export default {
     NodeIcon,
     missingblock,
   },
+  mixins: [stickyHeaderScrollSync],
   props: [
     'rows',
     'cols',
