@@ -314,6 +314,11 @@ export function buildActionAccordion(accordionsAction, ctx) {
       is: action?.thorname,
     },
     {
+      key: 'Pool',
+      value: action?.pool,
+      is: action?.pool,
+    },
+    {
       key: 'Address',
       value: action?.address,
       is: action?.address,
