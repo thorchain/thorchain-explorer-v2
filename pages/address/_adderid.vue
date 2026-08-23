@@ -241,6 +241,7 @@
                 :txs="addrTxs"
                 :owner="address"
                 :loading="loading"
+                :sticky-header="true"
               />
               <NewPagination
                 v-if="addrTxs && addrTxs.actions && count > -1"

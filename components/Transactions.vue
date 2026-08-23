@@ -5,7 +5,8 @@
       v-else
       :columns="cols"
       :rows="actions"
-      style-class="vgt-table net-table"
+      :style-class="`vgt-table net-table${stickyHeader ? ' sticky-header' : ''}`"
+      :fixed-header="stickyHeader"
     >
       <template slot="table-row" slot-scope="props">
         <div :class="{ 'scam-disabled': props.row.isScam }">
@@ -110,6 +111,7 @@ import alertIcon from '~/assets/images/alert.svg?inline'
 import receiveIcon from '~/assets/images/receive.svg?inline'
 import { AssetImage } from '~/classes/assetImage'
 import { isScamAddress } from '~/const/scam-addresses'
+import stickyHeaderScrollSync from '~/mixins.js/stickyHeaderScrollSync'
 
 export default {
   components: {
@@ -141,6 +143,7 @@ export default {
       }
     },
   },
+  mixins: [stickyHeaderScrollSync],
   props: {
     txs: {
       type: Object,
@@ -167,6 +170,10 @@ export default {
       },
     },
     showInlineUsd: {
+      type: Boolean,
+      default: false,
+    },
+    stickyHeader: {
       type: Boolean,
       default: false,
     },
