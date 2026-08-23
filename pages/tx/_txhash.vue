@@ -2,6 +2,7 @@
   <Page>
     <template
       v-if="
+        failedOverview ||
         sendOverview ||
         bondOverview ||
         mimirOverview ||
@@ -12,7 +13,8 @@
         contractOverview
       "
     >
-      <SendHero v-if="sendOverview" :overview="sendOverview" />
+      <FailedHero v-if="failedOverview" :overview="failedOverview" />
+      <SendHero v-else-if="sendOverview" :overview="sendOverview" />
       <BondHero
         v-else-if="bondOverview"
         :overview="bondOverview"
@@ -114,6 +116,7 @@ import {
   resolveTxOutboundTotals,
 } from './state/outboundStatus.js'
 import { resolveOutboundTxs } from './state/outboundTxs.js'
+import { resolveTxMemo } from './state/resolveTxMemo.js'
 import { parseActionReason } from './state/parseActionReason.js'
 import { computeMimirConsensus } from './state/mimirConsensus.js'
 import {
@@ -121,6 +124,7 @@ import {
   SINGLE_ACTION_BUILDERS as CONTRACT_SINGLE_ACTION_BUILDERS,
   buildCalcAggregateOverview,
 } from './state/contract/index.js'
+import FailedHero from './components/hero/FailedHero.vue'
 import SendHero from './components/hero/SendHero.vue'
 import BondHero from './components/hero/BondHero.vue'
 import MimirVoteHero from './components/hero/MimirVoteHero.vue'
@@ -153,6 +157,7 @@ export default {
     streamingSwap,
     txCard,
     Accordion,
+    FailedHero,
     SendHero,
     BondHero,
     MimirVoteHero,
@@ -189,6 +194,11 @@ export default {
       // Set by createTxState — the parsed memo and raw THORNode tx/details
       // response, both needed by refundOverview's raw-data derivation.
       txMemo: null,
+      // Provenance of txMemo — see resolveTxMemo.js's precedence chain.
+      // 'synthesized' means only .type is populated (no other memo field),
+      // so a hero reading anything beyond .type from txMemo should treat
+      // it as absent rather than render a blank.
+      txMemoSource: null,
       thorTx: null,
       inboundHash: undefined,
       thorStatus: undefined,
@@ -229,6 +239,7 @@ export default {
     // whichever hero matched. True whenever any hero owns the page.
     hasNewHeroUi() {
       return !!(
+        this.failedOverview ||
         this.sendOverview ||
         this.bondOverview ||
         this.mimirOverview ||
@@ -250,6 +261,98 @@ export default {
     // this getter's result from the template entirely.
     visibleCards() {
       return this.cards || []
+    },
+    // Any message THORChain accepted on-chain but rejected during execution
+    // (Midgard `type: 'failed'`, `metadata.failed`) — a distinct outcome
+    // from refundOverview's case, which always has an outbound leg
+    // returning funds. A failed message has none: out is always empty, and
+    // nothing was scheduled. Reads this.rawActions directly (Midgard, not
+    // THORNode) so it's unaffected by THORNode having nothing for the tx —
+    // confirmed against a real failed bond attempt,
+    // 2F8EA9D66B0B1AA3D1507FC20668C12260EA1161192A958AA7221FF2FF3B2AA3,
+    // whose THORNode /tx/ returns "doesn't exist". This is also why the
+    // template checks failedOverview before every other memo-type-driven
+    // hero (sendOverview/bondOverview/etc.) — createTxState's own routing
+    // has the matching guard (see the `failedAction` check ahead of the
+    // BUILDERS lookup) so a failed bond attempt's memo, which does parse to
+    // `type: 'bond'` once recovered from metadata.failed.memo via
+    // resolveTxMemo, can never satisfy bondOverview's gate and render as a
+    // completed bond.
+    failedOverview() {
+      const failedAction = this.rawActions?.find((a) => a.type === 'failed')
+      if (!failedAction) return null
+
+      const attemptedMemo = this.parseMemo(failedAction.metadata?.failed?.memo)
+      const inCoin = failedAction.in?.[0]?.coins?.[0]
+      const inAsset = inCoin?.asset ? this.parseMemoAsset(inCoin.asset) : null
+      const inAmount = inCoin?.amount ?? 0
+
+      const timeStamp = failedAction.date
+        ? moment.unix(failedAction.date / 1e9)
+        : null
+      const time = this.splitTrailingParen(
+        timeStamp ? `${timeStamp.format('L LT')} (${timeStamp.fromNow()})` : ''
+      )
+      const height =
+        Number(failedAction.height) > 0 ? Number(failedAction.height) : null
+      const heightDisplay = height ? `#${this.normalFormat(height)}` : '-'
+
+      const reasonRaw = failedAction.metadata?.failed?.reason || ''
+      const parsedReason = reasonRaw
+        ? parseActionReason(reasonRaw, {
+            formatAmount: (raw) =>
+              this.formatAssetAmount(
+                raw,
+                inAsset || { chain: 'THOR', ticker: 'RUNE', symbol: 'RUNE' }
+              ),
+            heightDisplay,
+          })
+        : null
+
+      const ATTEMPTED_TYPE_LABEL = {
+        bond: 'Bond',
+        unbond: 'Unbond',
+        swap: 'Swap',
+        add: 'Add liquidity',
+        withdraw: 'Withdraw',
+        thorname: 'THORName',
+        donate: 'Donate',
+      }
+
+      return {
+        kind: 'failed',
+        status: this.getOverviewStatus({ fail: true }),
+        hash: this.$route.params.txhash,
+        attemptedType: attemptedMemo.type || null,
+        attemptedLabel: ATTEMPTED_TYPE_LABEL[attemptedMemo.type] || null,
+        memo: failedAction.metadata?.failed?.memo || '',
+        inboundHash: failedAction.in?.[0]?.txID || '',
+        from: failedAction.in?.[0]?.address || '',
+        asset: inAsset,
+        amountDisplay: inAsset
+          ? this.formatAssetAmount(inAmount, inAsset)
+          : null,
+        amountUsdDisplay: inAsset
+          ? this.formatUsdValue(
+              this.amountToUSD(inAsset, inAmount, this.pools) || 0
+            )
+          : null,
+        amountRaw: Number(inAmount) || 0,
+        reasonTitle: parsedReason?.title || null,
+        reason:
+          parsedReason?.body || reasonRaw || 'No reason provided by THORChain.',
+        reasonRaw,
+        code: failedAction.metadata?.failed?.code || null,
+        timeDisplay: time.main,
+        timeAgoDisplay: time.paren,
+        height,
+        heightDisplay,
+        // Only meaningful for a failed bond/unbond attempt — the most
+        // common failed-message case in practice — so FailedHero can show
+        // them without re-parsing the memo itself.
+        nodeAddress: attemptedMemo.nodeAddress || null,
+        providerAddress: attemptedMemo.provider || null,
+      }
     },
     // Native RUNE sends never reach the swap/contract card pipeline — they
     // short-circuit through createNativeTx (see fetchTx), which sets
@@ -3857,19 +3960,52 @@ export default {
     },
     async createTxState(midgardAction, thorTx, thorStatus, thorHeader, pools) {
       this.rawActions = midgardAction?.actions ?? null
-      // Fall back to the tx-status memo: for early inbound-stage txs the THORNode
-      // detail endpoint (thorTx) isn't populated yet, but thorStatus is.
-      const memo = this.parseMemo(thorTx?.tx?.tx?.memo || thorStatus?.tx?.memo)
-      // refundOverview needs the parsed memo (destAddr/asset for
-      // resolveOutboundTxs, and .type to distinguish a swap-originated
-      // "only refund" — createSwapState's onlyRefund case — from a generic
-      // per-action refund card — createAbstractState's case; both can
-      // produce a rawActions list that's entirely `type: 'refund'` entries,
-      // so that alone can't tell them apart, the memo type is the actual
-      // discriminator) plus the raw THORNode tx/details response
-      // resolveOutboundTxs also reads.
+      // Single source of truth for the routing memo — see resolveTxMemo.js
+      // for the full precedence chain (THORNode first, Midgard as a
+      // durable fallback) and why THORNode returning nothing can never
+      // collapse to "this tx has no memo". refundOverview needs the parsed
+      // memo (destAddr/asset for resolveOutboundTxs, and .type to
+      // distinguish a swap-originated "only refund" — createSwapState's
+      // onlyRefund case — from a generic per-action refund card —
+      // createAbstractState's case; both can produce a rawActions list
+      // that's entirely `type: 'refund'` entries, so that alone can't tell
+      // them apart, the memo type is the actual discriminator) plus the
+      // raw THORNode tx/details response resolveOutboundTxs also reads.
+      const { memo, source } = resolveTxMemo(
+        { thorTx, thorStatus, midgardAction },
+        this.getBuilderContext()
+      )
       this.txMemo = memo
+      this.txMemoSource = source
       this.thorTx = thorTx
+
+      // Action outcome is checked before any memo-type dispatch: a message
+      // that failed execution (Midgard `type: 'failed'`) must never be
+      // routed by what the sender *intended* (the memo) as if it had
+      // succeeded — since resolveTxMemo above can now recover a memo type
+      // like 'bond' straight out of `metadata.failed.memo`, without this
+      // guard a failed bond attempt would satisfy createBondState's
+      // memo-type check and render as a completed bond. Reading Midgard's
+      // own action type directly (not the memo) also keeps this branch
+      // immune to THORNode having nothing at all for the tx — confirmed
+      // against 2F8EA9D66B0B1AA3D1507FC20668C12260EA1161192A958AA7221FF2FF3B2AA3,
+      // a failed bond attempt (insufficient funds) THORNode's /tx/ returns
+      // "doesn't exist" for.
+      const failedAction = midgardAction?.actions?.find(
+        (a) => a.type === 'failed'
+      )
+      if (failedAction) {
+        const { cards, accordions } = createFailedStateBuilder(
+          thorStatus,
+          midgardAction,
+          thorTx,
+          memo,
+          this.getBuilderContext()
+        )
+        this.$set(this, 'cards', [this.createCard(cards, accordions)])
+        this.appendContractCards(midgardAction, thorStatus, thorTx, memo)
+        return
+      }
 
       if (memo.type === 'outbound') {
         this.gotoTx(memo.hash)
@@ -3971,11 +4107,7 @@ export default {
         tcyStake: 'createTCYStake',
       }
 
-      // Donate might only come from Midgard
-      const effectiveType =
-        midgardAction?.actions?.[0]?.type === 'donate' ? 'donate' : memo.type
-
-      const builder = BUILDERS[effectiveType]
+      const builder = BUILDERS[memo.type]
       if (builder) {
         const result =
           typeof builder === 'function'
@@ -3990,23 +4122,6 @@ export default {
         this.$set(this, 'cards', [
           this.createCard(result.cards, result.accordions),
         ])
-        this.appendContractCards(midgardAction, thorStatus, thorTx, memo)
-        return
-      }
-
-      // Failed deposit (by action type, not memo)
-      if (
-        midgardAction?.actions?.length > 0 &&
-        midgardAction.actions[0]?.type === 'failed'
-      ) {
-        const { cards, accordions } = createFailedStateBuilder(
-          thorStatus,
-          midgardAction,
-          thorTx,
-          memo,
-          this.getBuilderContext()
-        )
-        this.$set(this, 'cards', [this.createCard(cards, accordions)])
         this.appendContractCards(midgardAction, thorStatus, thorTx, memo)
         return
       }
