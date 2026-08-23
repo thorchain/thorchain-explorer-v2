@@ -19,7 +19,7 @@
         <template v-if="overview.hasRefund">
           —
           <span class="tx-value-warning">
-            {{ overview.refundLeg.amountDisplay }} refunded
+            {{ overview.refundLeg.amountDisplay }} {{ refundVerb }}
           </span>
         </template>
       </template>
@@ -67,7 +67,7 @@
                 :amount="overview.refundLeg.amountRaw"
                 :asset="overview.refundLeg.asset"
               />
-              <span>refunded — see below</span>
+              <span>{{ refundVerb }} — see below</span>
             </div>
           </div>
 
@@ -115,8 +115,9 @@
                   :amount="overview.refundLeg.amountRaw"
                   :asset="overview.refundLeg.asset"
                 />
-                refunded
+                {{ refundVerb }}
               </span>
+              <StatusChip :status="overview.refundLeg.status" />
             </div>
             <span class="tx-detail-muted">
               {{ overview.refundLeg.amountUsdDisplay }}
@@ -124,6 +125,15 @@
           </div>
           <div class="tx-refund-callout-body">
             {{ overview.refundLeg.reason }}
+          </div>
+          <div
+            v-if="
+              overview.refundLeg.status === 'overdue' &&
+              overview.refundLeg.pastDueDisplay
+            "
+            class="tx-outbound-overdue-note"
+          >
+            Scheduled passed — past due {{ overview.refundLeg.pastDueDisplay }}
           </div>
         </div>
 
@@ -208,7 +218,7 @@
               {{ overview.status.label }}
             </span>
           </DetailRow>
-          <DetailRow v-if="overview.hasRefund" label="Refunded">
+          <DetailRow v-if="overview.hasRefund" :label="refundRowLabel">
             <span class="tx-value-warning">
               {{ overview.refundLeg.amountDisplay }}
             </span>
@@ -218,6 +228,10 @@
             >
               ({{ overview.refundLeg.amountUsdDisplay }})
             </span>
+            <StatusChip
+              v-if="overview.refundLeg.status !== 'refund'"
+              :status="overview.refundLeg.status"
+            />
           </DetailRow>
           <DetailRow
             v-if="overview.hasRefund && overview.refundLeg.hash"
@@ -306,6 +320,7 @@ import LifecycleTimeline from '~/pages/tx/components/LifecycleTimeline.vue'
 import OutboundsTable from '~/pages/tx/components/OutboundsTable.vue'
 import DeliveryBar from '~/pages/tx/components/DeliveryBar.vue'
 import DetailRow from '~/components/transactions/DetailRow.vue'
+import StatusChip from '~/components/transactions/StatusChip.vue'
 import ExternalHash from '~/components/transactions/ExternalHash.vue'
 import AssetAmountValue from '~/components/transactions/AssetAmountValue.vue'
 import AssetIcon from '~/components/AssetIcon.vue'
@@ -336,6 +351,7 @@ export default {
     OutboundsTable,
     DeliveryBar,
     DetailRow,
+    StatusChip,
     ExternalHash,
     AssetAmountValue,
     AssetIcon,
@@ -400,9 +416,11 @@ export default {
       } else if (this.overview.assetTypeBadge === 'Secure network') {
         chips.push({ label: 'Secure account' })
       }
-      if (this.overview.overdueCount > 0) {
+      const totalOverdue =
+        this.overview.overdueCount + (this.overview.refundOverdue ? 1 : 0)
+      if (totalOverdue > 0) {
         chips.push({
-          label: `${this.overview.overdueCount} outbound${this.overview.overdueCount > 1 ? 's' : ''} overdue`,
+          label: `${totalOverdue} outbound${totalOverdue > 1 ? 's' : ''} overdue`,
           tone: 'yellow',
           dot: true,
         })
@@ -430,15 +448,37 @@ export default {
       return parts.join(' · ')
     },
     hasOverdueLeg() {
-      return this.overview.overdueCount > 0
+      return this.overview.hasOverdueLeg
     },
     overdueLegLabel() {
+      // The refund leg isn't part of `legs` (different asset) — when it's
+      // the only overdue thing, neither branch below would find it (the
+      // legs.length===1 case would wrongly blame the one delivered leg
+      // instead), so it's checked first.
+      if (
+        this.overview.refundOverdue &&
+        !this.overview.legs.some((l) => l.status === 'overdue')
+      ) {
+        return 'is the refund'
+      }
       // "leg 1" only reads sensibly when there's more than one — a single-
       // outbound trade/secure withdrawal (now routed here too) just has
       // "the outbound".
       if (this.overview.legs.length === 1) return 'is the outbound'
       const first = this.overview.legs.find((l) => l.status === 'overdue')
       return first ? `is leg ${first.index + 1}` : 'are the remaining outbounds'
+    },
+    refundVerb() {
+      return this.overview.refundLeg?.status === 'refund'
+        ? 'refunded'
+        : this.overview.refundLeg?.status === 'overdue'
+          ? 'refund overdue'
+          : 'refund scheduled'
+    },
+    refundRowLabel() {
+      return this.overview.refundLeg?.status === 'refund'
+        ? 'Refunded'
+        : 'Refund'
     },
     statusToneClass() {
       const tone = this.overview.status?.tone
@@ -505,12 +545,15 @@ export default {
         })
       }
       if (overview.hasRefund) {
+        const refundDone = overview.refundLeg.status === 'refund'
         events.push({
-          icon: 'ArrowIcon',
-          iconRotate: 0,
+          icon: refundDone ? 'ArrowIcon' : 'WarningIcon',
+          iconRotate: refundDone ? 0 : undefined,
           tone: 'warning',
-          title: 'Remainder refunded',
-          body: `${overview.refundLeg.amountDisplay} returned to ${this.addressFormatV2(overview.from)} — couldn't be filled within the swap's price limit.`,
+          title: refundDone ? 'Remainder refunded' : 'Remainder refund queued',
+          body: refundDone
+            ? `${overview.refundLeg.amountDisplay} returned to ${this.addressFormatV2(overview.from)} — couldn't be filled within the swap's price limit.`
+            : `${overview.refundLeg.amountDisplay} couldn't be filled within the swap's price limit and is scheduled to be returned to ${this.addressFormatV2(overview.from)}${overview.refundLeg.status === 'overdue' ? ` — overdue by ${overview.refundLeg.pastDueDisplay || 'its scheduled window'}` : ''}.`,
         })
       }
       return events

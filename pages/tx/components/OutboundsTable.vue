@@ -37,7 +37,7 @@
            trailing row instead, reusing the exact same row shape. -->
       <div v-if="refundLeg" class="tx-outbound-row">
         <div class="tx-outbound-row-main">
-          <StatusChip status="refund" />
+          <StatusChip :status="refundLeg.status" />
           <span class="tx-outbound-leg">Leg {{ refundLeg.index + 1 }}</span>
           <ExternalHash
             v-if="refundLeg.hash"
@@ -53,6 +53,15 @@
           <span class="tx-outbound-amount mono">
             {{ refundLeg.amountDisplay }}
           </span>
+        </div>
+        <div
+          v-if="refundLeg.status === 'overdue' && refundLeg.pastDueDisplay"
+          class="tx-outbound-overdue-note"
+        >
+          Scheduled passed — past due {{ refundLeg.pastDueDisplay }}
+          <template v-if="refundLeg.pastDueBlocks">
+            ({{ normalFormat(refundLeg.pastDueBlocks) }} blocks)
+          </template>
         </div>
         <div class="tx-outbound-refund-note">{{ refundLeg.note }}</div>
       </div>
@@ -112,9 +121,14 @@ export default {
       default: null,
     },
     // A swap's own unfilled-remainder refund leg (multiOutboundOverview's
-    // overview.refundLeg) — { index, status: 'refund', hash, amountDisplay,
-    // note } | null. Kept as its own prop rather than folded into `legs`
-    // since it's a different asset and shouldn't count toward `total`.
+    // overview.refundLeg) — { index, status: 'scheduled'|'overdue'|'refund',
+    // hash, amountDisplay, pastDueDisplay?, pastDueBlocks?, note } | null.
+    // status is 'refund' (not 'delivered') once it actually lands — the
+    // same amber "expected outcome, not a failure" label the rest of this
+    // hero uses, kept distinct from the red 'refunded' vocabulary word
+    // (which means a leg that failed and got reversed). Kept as its own
+    // prop rather than folded into `legs` since it's a different asset and
+    // shouldn't count toward `total`.
     refundLeg: {
       type: Object,
       default: null,

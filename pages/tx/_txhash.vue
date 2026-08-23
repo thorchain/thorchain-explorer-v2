@@ -1196,12 +1196,26 @@ export default {
         refundLegRaw && input.amount > 0
           ? (Number(refundLegRaw.amount) / Number(input.amount)) * 100
           : null
+
+      const refundLegStatusRaw = refundLegRaw
+        ? resolveOutboundLegStatus({
+            done: !!refundLegRaw.done,
+            outboundETA: refundLegRaw.outboundETA,
+          })
+        : null
+      const refundLegStatus =
+        refundLegStatusRaw === 'delivered' ? 'refund' : refundLegStatusRaw
+      const refundPastDueBlocks =
+        refundLegRaw?.outboundETA != null && refundLegRaw.outboundETA < 0
+          ? -refundLegRaw.outboundETA
+          : null
       const refundLeg = refundLegRaw
         ? {
             // OutboundsTable numbers legs 1-based off this index — the
             // refund sits one past the last delivered leg, matching the
             // mockup ("Leg 5" after 4 delivered legs).
             index: legs.length,
+            status: refundLegStatus,
             asset: refundLegRaw.asset,
             hash:
               refundLegRaw.txid && refundLegRaw.txid !== ZERO_HASH
@@ -1212,6 +1226,10 @@ export default {
             amountDisplay: precise(refundLegRaw.amount, refundLegRaw.asset),
             amountUsdRaw: Number(refundLegRaw.amountUSD) || 0,
             amountUsdDisplay: this.formatUsdValue(refundLegRaw.amountUSD),
+            pastDueBlocks: refundPastDueBlocks,
+            pastDueDisplay: refundPastDueBlocks
+              ? `~${moment.duration(refundPastDueBlocks * this.blockSeconds('THOR'), 'seconds').humanize()}`
+              : null,
             note: `Unfilled remainder returned to the sender in the input asset — ${this.addressFormatV2(refundLegRaw.to)}.${refundHeight ? ` Delivered at block #${this.normalFormat(refundHeight)}.` : ''}`,
             reason:
               refundPercent != null
@@ -1248,17 +1266,30 @@ export default {
 
       const overdueLegs = legs.filter((l) => l.status === 'overdue')
       const deliveredCount = legs.filter((l) => l.status === 'delivered').length
+      // A still-pending refund leg is functionally an overdue/scheduled
+      // outbound too, just not part of `legs` (different asset, excluded
+      // from the same-asset delivery percentage above) — without folding it
+      // in here, the page's own top-level status/overdue signal went blind
+      // to it entirely (see refundLeg's own status comment above).
+      const refundOverdue = refundLegStatus === 'overdue'
+      const refundSettled = !refundLeg || refundLegStatus === 'refund'
       // Every still-pending leg shares one tx-wide overdue signal (see
       // resolveOutboundLegStatus's doc comment), so the "past due" duration
-      // is the same for all of them — take the first.
-      const pastDueDisplay = overdueLegs[0]?.pastDueDisplay ?? null
+      // is the same for all of them — take the first (falling back to the
+      // refund leg's own when it's the only overdue thing).
+      const pastDueDisplay =
+        overdueLegs[0]?.pastDueDisplay ??
+        (refundOverdue ? refundLeg.pastDueDisplay : null)
 
       let status
-      if (totals?.allDelivered) {
+      if (totals?.allDelivered && refundSettled) {
         status = { label: 'Delivered', tone: 'green' }
-      } else if (deliveredCount === 0 && overdueLegs.length > 0) {
+      } else if (
+        deliveredCount === 0 &&
+        (overdueLegs.length > 0 || refundOverdue)
+      ) {
         status = { label: 'Overdue', tone: 'orange' }
-      } else if (deliveredCount === 0) {
+      } else if (deliveredCount === 0 && refundSettled) {
         status = { label: 'Pending', tone: 'yellow' }
       } else {
         status = { label: 'Partially settled', tone: 'yellow' }
@@ -1495,7 +1526,14 @@ export default {
           ? precise(totals.outstanding, totalsAsset)
           : null,
         deliveredCount,
+        // legs-only — outboundsChipLabel/outboundsSummary derive "N
+        // scheduled" from `legs.length - deliveredCount - overdueCount`, so
+        // this must stay scoped to `legs` (refundLeg isn't one). Use
+        // hasOverdueLeg (below) when the refund leg's own overdue-ness
+        // needs to factor in too.
         overdueCount: overdueLegs.length,
+        refundOverdue,
+        hasOverdueLeg: overdueLegs.length > 0 || refundOverdue,
         pastDueDisplay,
         timeDisplay: time.main,
         timeAgoDisplay: time.paren,
