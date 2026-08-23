@@ -3964,13 +3964,18 @@ export default {
         secureDeposit: 'createTradeDepositState',
         bond: 'createBondState',
         unbond: 'createUnbondState',
+        donate: 'createDonateState',
         thorname: BUILDERS_MODULE.thorname,
         loanRepayment: 'createLoanRepayment',
         tcyUnstake: 'createTCYUnstake',
         tcyStake: 'createTCYStake',
       }
 
-      const builder = BUILDERS[memo.type]
+      // Donate might only come from Midgard
+      const effectiveType =
+        midgardAction?.actions?.[0]?.type === 'donate' ? 'donate' : memo.type
+
+      const builder = BUILDERS[effectiveType]
       if (builder) {
         const result =
           typeof builder === 'function'
@@ -4259,6 +4264,62 @@ export default {
             done: true,
           },
           out: outs,
+        },
+      }
+    },
+    createDonateState(thorStatus, action, thorTx, memo) {
+      action = action.actions[0]
+      const timeStamp = moment.unix(action?.date / 1e9)
+
+      const ins = action?.in.map((a) => ({
+        asset: this.parseMemoAsset(a.coins?.[0]?.asset),
+        amount: a.coins?.[0]?.amount ?? 0,
+        gas: thorStatus?.tx?.gas ? thorStatus?.tx?.gas?.[0]?.amount : null,
+        gasAsset: thorStatus?.tx?.gas
+          ? this.parseMemoAsset(thorStatus?.tx?.gas?.[0]?.asset, this.pools)
+          : null,
+        txid: a?.txID,
+        from: a?.address,
+        done: true,
+      }))
+
+      // Midgard's own `pools` field names the donated pool authoritatively;
+      // the memo's asset segment (DONATE:POOL) is the only fallback when
+      // that's missing.
+      const poolAssetStr = action?.pools?.[0] || memo?.asset
+      const poolAsset = poolAssetStr
+        ? this.parseMemoAsset(poolAssetStr, this.pools)
+        : null
+
+      return {
+        cards: {
+          title: 'Donate',
+          in: ins,
+          middle: {
+            pending: false,
+          },
+          out: [
+            {
+              asset: poolAsset,
+              text: poolAsset ? this.showAsset(poolAsset) : 'Pool',
+              class: poolAsset ? undefined : 'pad-icon',
+              icon: poolAsset
+                ? undefined
+                : require('@/assets/images/safe.svg?inline'),
+            },
+          ],
+        },
+        accordions: {
+          in: ins,
+          action: {
+            type: 'Donate',
+            memo: thorStatus?.tx?.memo,
+            pool: poolAsset ? this.showAsset(poolAsset) : undefined,
+            timeStamp,
+            height: action?.height,
+            done: true,
+          },
+          out: [],
         },
       }
     },
