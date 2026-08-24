@@ -1166,6 +1166,20 @@
       "admin": "thor1hmfsqvr4cyh02z6le3wej0v4y7l605zlxjw022",
       "description": "LTC-USDC pair for RUJI Trade orderbook."
     },
+    "thor1pvs37p0gplq9gf6d9zgyt7zkfpp88rgtr089tfh50suxh6tnar9swea8xj": {
+      "family": "rujira-fin",
+      "product": "RUJI Trade",
+      "name": "RUJI Trade RUNE-USDT",
+      "role": "Trading pair",
+      "targetProtocol": "rujira-fin",
+      "contractName": "rujira-fin",
+      "contractVersion": "2.2.1",
+      "contractLabel": "rujira-fin:rune:eth-usdt-0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "codeId": "189",
+      "checksum": "B4BCB4DE86BD6BED7CE6D4537F412D1C1BC2298D976C7888EC8131A63CB2C2C8",
+      "admin": "thor1hmfsqvr4cyh02z6le3wej0v4y7l605zlxjw022",
+      "description": "RUNE-USDT pair for RUJI Trade orderbook."
+    },
     "thor1qqql3tugjuwnslfgf9a9zfqenywn2h8zy9v025vh3398xtzpaqcsx5axyl": {
       "family": "rujira-fin",
       "product": "RUJI Trade",
@@ -1482,6 +1496,34 @@
       "role": "AMM strategy",
       "description": "XYK Pool: NAMI/USDC",
       "inferred": true
+    },
+    "thor1n52wjhf8mvfe2lymev08grpwtjh8n6jse5zku0cewlhyzl77yauqst6rw3": {
+      "family": "rujira-fin",
+      "product": "RUJI Trade",
+      "name": "RUJI Trade LUSD-USDC",
+      "role": "Trading pair",
+      "targetProtocol": "rujira-fin",
+      "contractName": "rujira-fin",
+      "contractVersion": "2.2.1",
+      "contractLabel": "rujira-fin:eth-lusd-0x5f98805a4e8be255a32880fdec7f6728c6568ba0:eth-usdc-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "codeId": "189",
+      "checksum": "B4BCB4DE86BD6BED7CE6D4537F412D1C1BC2298D976C7888EC8131A63CB2C2C8",
+      "admin": "thor1hmfsqvr4cyh02z6le3wej0v4y7l605zlxjw022",
+      "description": "LUSD-USDC pair for RUJI Trade orderbook."
+    },
+    "thor17aspfgv75azl5j25jte3dd48gruf36u2v5l48ey5hmd55tkfr8sqchmfwz": {
+      "family": "rujira-fin",
+      "product": "RUJI Trade",
+      "name": "RUJI Trade ATOM-RUNE",
+      "role": "Trading pair",
+      "targetProtocol": "rujira-fin",
+      "contractName": "rujira-fin",
+      "contractVersion": "2.2.1",
+      "contractLabel": "rujira-fin:gaia-atom:rune",
+      "codeId": "189",
+      "checksum": "B4BCB4DE86BD6BED7CE6D4537F412D1C1BC2298D976C7888EC8131A63CB2C2C8",
+      "admin": "thor1hmfsqvr4cyh02z6le3wej0v4y7l605zlxjw022",
+      "description": "ATOM-RUNE pair for RUJI Trade orderbook."
     }
   }
 }

@@ -701,6 +701,13 @@ export default {
       if (msg.account && 'bond' in msg.account) return 'Yielding Stake'
       if (msg.account && 'unbond' in msg.account) return 'Yielding Unstake'
       if (msg.account) return 'Credit Account'
+      if (msg.range?.create) return 'CCL Range'
+      if (msg.range?.claim) return 'Claim Yield'
+      if (msg.range?.transfer) return 'Transfer CCL'
+      // Event-based fallbacks only — every msg-based check above must stay
+      // ahead of them. A range action settles its position through the book,
+      // so it emits `wasm-rujira-fin/trade` too and would otherwise be
+      // mislabelled "Market Order".
       const events = row?.metadata?.contract?.contractEvents || []
       if (events.some((e) => e.type === 'wasm-calc-manager/strategy.execute'))
         return 'CALC Strategy'
@@ -713,6 +720,9 @@ export default {
       if (type === 'Market Order') return 'blue'
       if (type === 'CALC Strategy') return 'purple'
       if (type === 'Cancel Strategy') return 'red'
+      if (type === 'CCL Range') return 'green'
+      if (type === 'Claim Yield') return 'green'
+      if (type === 'Transfer CCL') return 'blue'
       return 'green'
     },
     getProductLabelForRow(row) {
@@ -721,6 +731,22 @@ export default {
       const stakingTypes = ['Liquid Stake', 'Liquid Unstake', 'Yielding Stake', 'Yielding Unstake', 'Claim Rewards']
       if (product === 'Utilities' && stakingTypes.includes(this.getContractActionType(row))) {
         return 'Staking'
+      }
+      // Every FIN action belongs to RUJI Trade. The detail page defaults to
+      // it unconditionally (getRujiraContractProduct(addr) || 'RUJI Trade'),
+      // so the list must not leave the badge empty just because the pair
+      // contract is not in the registry yet — new pairs get deployed ahead
+      // of each registry refresh.
+      const tradeTypes = [
+        'Limit Order',
+        'Scale Order',
+        'Market Order',
+        'CCL Range',
+        'Claim Yield',
+        'Transfer CCL',
+      ]
+      if (!product && tradeTypes.includes(this.getContractActionType(row))) {
+        return 'RUJI Trade'
       }
       return product
     },

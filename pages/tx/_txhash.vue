@@ -3415,6 +3415,7 @@ export default {
       if (msg.account) return 'Credit Account'
       if (msg.range?.create) return 'CCL Range'
       if (msg.range?.claim) return 'Claim Yield'
+      if (msg.range?.transfer) return 'Transfer CCL'
       const events = contractAction.metadata?.contract?.contractEvents || []
       if (events.some((e) => e.type === 'wasm-calc-manager/strategy.execute'))
         return 'CALC Strategy'
@@ -3442,6 +3443,7 @@ export default {
       if (type === 'Credit Account') return 'purple'
       if (type === 'CCL Range') return 'green'
       if (type === 'Claim Yield') return 'green'
+      if (type === 'Transfer CCL') return 'blue'
       return 'green'
     },
     getSwapProductLabel(action) {

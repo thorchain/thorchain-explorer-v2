@@ -15,6 +15,11 @@ export function buildFinMarketSwapOverview(ctx) {
     !ctx.singleAction?.metadata?.contract?.msg?.account &&
     !ctx.singleAction?.metadata?.contract?.msg?.liquid &&
     !ctx.singleAction?.metadata?.contract?.msg?.liquidate &&
+    // A range action (create/claim/transfer) settles its position through
+    // the book, so it emits wasm-rujira-fin/trade too. Without this
+    // exclusion it is claimed here — this builder runs before the range
+    // ones — and renders as a market swap instead of the range action.
+    !ctx.singleAction?.metadata?.contract?.msg?.range &&
     (ctx.singleAction?.metadata?.contract?.contractEvents || []).some(
       (e) => e.type === 'wasm-rujira-fin/trade'
     )

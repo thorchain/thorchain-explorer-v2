@@ -11,6 +11,7 @@ import { buildGhostCreditBorrowOverview } from './ghostCreditBorrow.js'
 import { buildAutoRujiraResetInstanceOverview } from './autoRujiraResetInstance.js'
 import { buildCclRangeCreateOverview } from './cclRangeCreate.js'
 import { buildCclRangeClaimOverview } from './cclRangeClaim.js'
+import { buildCclRangeTransferOverview } from './cclRangeTransfer.js'
 import { buildGhostVaultOverview } from './ghostVault.js'
 import { buildCalcSchedulerBatchExecuteOverview } from './calcSchedulerBatchExecute.js'
 import { buildCalcAggregateOverview } from './calcAggregateFallback.js'
@@ -51,6 +52,7 @@ export const SINGLE_ACTION_BUILDERS = [
   buildAutoRujiraResetInstanceOverview,
   buildCclRangeCreateOverview,
   buildCclRangeClaimOverview,
+  buildCclRangeTransferOverview,
   buildGhostVaultOverview,
   buildCalcSchedulerBatchExecuteOverview,
 ]
