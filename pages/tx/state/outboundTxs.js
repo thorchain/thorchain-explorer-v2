@@ -121,7 +121,7 @@ export function resolveOutboundTxs(thorStatus, thorTx, actions, memo, ctx) {
       (userAddresses.has(tx.to_address?.toLowerCase()) ||
         (tx.coins?.[0]?.asset === memoAssetStr &&
           tx.id !==
-            '0000000000000000000000000000000000000000000000000000000000000000' &&
+          '0000000000000000000000000000000000000000000000000000000000000000' &&
           tx.id !== ''))
   )
   // get affiliate out if available
@@ -195,8 +195,20 @@ export function resolveOutboundTxs(thorStatus, thorTx, actions, memo, ctx) {
   // matching on amount too let a stale prior version of this merge add a
   // bogus THIRD leg once THORNode's own (fee-adjusted) refund amount
   // stopped matching Midgard's pre-fee one.
+  //
+  // Also drop any leg whose Midgard txID is literally this tx's own inbound
+  // hash. A trade/secure-asset swap can be funded by sending straight to the
+  // module address (thor1v8ppstuf6e3x0r4glqc68d5jqcs2tf38cg2q6y) with the
+  // swap memo attached — Midgard's 'send' action for that deposit is a real
+  // record of that leg, not noise, but it's the SAME leg as the inbound tx,
+  // filed under that tx's own hash because it isn't a separate broadcast.
+  // It's same-asset-as-input by construction, so left in, the "same asset as
+  // input -> refund" heuristic above misreads it as an unaccounted refund
+  const inboundTxId = thorStatus?.tx?.id?.toLowerCase()
   const missingMidgardLegs = nonAffiliateMidgardLegs.filter(
-    (leg) => !outTxs?.some((o) => o.coins?.[0]?.asset === leg.coins[0].asset)
+    (leg) =>
+      !outTxs?.some((o) => o.coins?.[0]?.asset === leg.coins[0].asset) &&
+      leg.id?.toLowerCase() !== inboundTxId
   )
   if (missingMidgardLegs.length > 0) {
     outTxs = [
