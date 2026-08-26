@@ -200,11 +200,14 @@
             label="Outbound Delay Est."
             :value="overview.outboundDelayEstDisplay"
           />
-          <DetailRow v-if="overview.outboundPastDueDisplay" label="Past Due">
-            <span class="tx-value-negative">
-              {{ overview.outboundPastDueDisplay }}
-            </span>
-          </DetailRow>
+          <!-- Plain value, no tone class: the outbound is still queued and
+               retried each churn, so how long it has been waiting is a
+               neutral fact like the rows around it, not a warning. -->
+          <DetailRow
+            v-if="overview.outboundPastDueDisplay"
+            label="Past Due"
+            :value="overview.outboundPastDueDisplay"
+          />
           <DetailRow
             v-if="overview.outboundStages.length"
             label="Outbound Stage"

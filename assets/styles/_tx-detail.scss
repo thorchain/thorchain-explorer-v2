@@ -1229,9 +1229,12 @@
 
 // Per-leg overdue caption — only the still-pending leg(s) get this, so it's
 // additive under the row rather than a column every row needs to reserve
-// space for.
+// space for. A leg past its scheduled height is still queued and still
+// retrying, so this reads in the same amber as the "why is the outbound
+// waiting?" explainer rather than in red, which users read as "funds
+// lost".
 .tx-outbound-overdue-note {
-  color: var(--red);
+  color: var(--warning-color);
   font-size: $font-size-xxs;
   margin-top: $space-6;
 }
@@ -1352,14 +1355,29 @@
   );
   height: 100%;
 
+  // Once a leg is past its scheduled height the remainder stays amber (it
+  // is queued and retrying, not lost) and instead drifts: motion reads as
+  // "still working on it", where the previous red hatch read as "this
+  // failed". One stripe period along x is 8px / sin(45deg) = 11.3137px.
   &--overdue {
-    background: repeating-linear-gradient(
-      -45deg,
-      color-mix(in srgb, var(--red) 55%, transparent),
-      color-mix(in srgb, var(--red) 55%, transparent) 4px,
-      transparent 4px,
-      transparent 8px
-    );
+    background-size: 11.3137px 100%;
+    animation: tx-delivery-drift 1.6s linear infinite;
+  }
+}
+
+@keyframes tx-delivery-drift {
+  from {
+    background-position: 0 0;
+  }
+
+  to {
+    background-position: 11.3137px 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tx-delivery-bar__pending--overdue {
+    animation: none;
   }
 }
 
@@ -1380,6 +1398,27 @@
     height: 6px;
     width: 6px;
   }
+
+  &--overdue &__dot {
+    animation: tx-delay-pulse 1.8s ease-in-out infinite;
+  }
+}
+
+@keyframes tx-delay-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tx-delay-readout--overdue .tx-delay-readout__dot {
+    animation: none;
+  }
 }
 
 .tx-delivery-caption {
@@ -1398,21 +1437,20 @@
     color: var(--sec-font-color);
   }
 
-  // ...except the outbound-delay readout, which carries its own tone (amber
-  // while the hold counts down, red once it's past due) and so has to
-  // out-specify the .mono default above rather than sit beside it.
+  // ...except the outbound-delay readout, which carries its own amber tone
+  // and so has to out-specify the .mono default above rather than sit
+  // beside it. Past due stays amber too — the outbound is waiting on a
+  // vault signature, a delay rather than a failure (see
+  // .tx-outbound-overdue-note) — and reads as still-live via its pulsing
+  // dot instead of via red.
   .tx-delay-readout {
     color: var(--warning-color);
-  }
-
-  .tx-delay-readout--overdue {
-    color: var(--red);
   }
 }
 
 // Muted explainer line under a bar, e.g. the outbound-delay countdown's
-// "held before signing" note — .tx-outbound-overdue-note is red/overdue-
-// specific, this is a neutral-toned equivalent for a non-error state.
+// "held before signing" note — .tx-outbound-overdue-note is amber/overdue-
+// specific, this is a neutral-toned equivalent for an ordinary wait.
 .tx-delivery-note {
   color: var(--text-faint-color);
   font-size: $font-size-xxs;

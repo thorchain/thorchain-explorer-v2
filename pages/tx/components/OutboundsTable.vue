@@ -24,7 +24,7 @@
           v-if="leg.status === 'overdue' && leg.pastDueDisplay"
           class="tx-outbound-overdue-note"
         >
-          Scheduled passed — past due {{ leg.pastDueDisplay }}
+          Still queued — {{ leg.pastDueDisplay }} past schedule
           <template v-if="leg.pastDueBlocks">
             ({{ normalFormat(leg.pastDueBlocks) }} blocks)
           </template>
@@ -58,7 +58,7 @@
           v-if="refundLeg.status === 'overdue' && refundLeg.pastDueDisplay"
           class="tx-outbound-overdue-note"
         >
-          Scheduled passed — past due {{ refundLeg.pastDueDisplay }}
+          Still queued — {{ refundLeg.pastDueDisplay }} past schedule
           <template v-if="refundLeg.pastDueBlocks">
             ({{ normalFormat(refundLeg.pastDueBlocks) }} blocks)
           </template>

@@ -133,7 +133,7 @@
             "
             class="tx-outbound-overdue-note"
           >
-            Scheduled passed — past due {{ overview.refundLeg.pastDueDisplay }}
+            Still queued — {{ overview.refundLeg.pastDueDisplay }} past schedule
           </div>
         </div>
 
@@ -174,14 +174,12 @@
               </div>
             </div>
             <div class="tx-metric-item">
-              <div class="tx-asset-label">Past due</div>
-              <div
-                :class="[
-                  'tx-metric-value',
-                  'mono',
-                  overview.pastDueDisplay ? 'tx-value-negative' : null,
-                ]"
-              >
+              <div class="tx-asset-label">Waiting</div>
+              <!-- Plain text, no tone class: a leg past its scheduled
+                   height is still queued and retried each churn, so how
+                   long it has been waiting is a neutral fact like the
+                   metrics beside it, not a warning. -->
+              <div class="tx-metric-value mono">
                 {{ overview.pastDueDisplay || '-' }}
               </div>
             </div>

@@ -26,10 +26,11 @@
 
 <script>
 // Two-segment delivery progress for a multi-leg outbound — solid green for
-// what's landed, a hatched fill for what hasn't (amber if nothing's overdue
-// yet, red-hatched once at least one leg is). No swap-hero equivalent (a
-// swap only ever has one outbound, so it has no concept of partial
-// delivery) — genuinely new. Percent is of the original withdrawn amount,
+// what's landed, an amber hatched fill for what hasn't; once at least one
+// leg is past its scheduled height that hatch starts drifting rather than
+// turning red, since the leg is still queued and retrying (a wait, not a
+// failure). No swap-hero equivalent (a swap only ever has one outbound, so
+// it has no concept of partial delivery) — genuinely new. Percent is of the original withdrawn amount,
 // not just of what's been scheduled to go out (matches the mockup: 11.4%
 // = delivered / withdrawn, not delivered / sum-of-outbound-legs) — see
 // resolveTxOutboundTotals.
