@@ -3,6 +3,7 @@
     body-class="streaming-flex"
     :navs="[
       { title: 'Streaming Swaps', value: 'streaming-swaps' },
+      { title: 'Limit Orders', value: 'limit-orders' },
       { title: 'Swap queue', value: 'swap-queue' },
     ]"
     :act-nav.sync="mode"
@@ -10,8 +11,8 @@
     <template #header>
       <dot-live />
     </template>
-    <template v-if="mode == 'streaming-swaps'">
-      <div v-if="streamingSwaps.length > 0 || loading" class="custom-card">
+    <template v-if="mode !== 'swap-queue'">
+      <div v-if="activeSwaps.length > 0 || loading" class="custom-card">
         <div class="overview-box">
           <div class="stats-container">
             <div>
@@ -29,7 +30,7 @@
             <div>
               <span class="item-value"> Count: </span>
               <span v-if="!loading" class="total-swaps mono">{{
-                streamingSwaps.length
+                activeSwaps.length
               }}</span>
               <div v-else class="mini-skeleton"></div>
             </div>
@@ -37,9 +38,12 @@
         </div>
       </div>
       <div class="dashboard-card">
-        <div v-if="noStreaming" class="no-streaming">
+        <div v-if="isEmpty" class="no-streaming">
           <streamingIcon class="streaming-icon large-icon" />
-          <h3>There is no streaming swaps ongoing at the moment.</h3>
+          <h3 v-if="mode === 'limit-orders'">
+            There is no limit orders resting at the moment.
+          </h3>
+          <h3 v-else>There is no streaming swaps ongoing at the moment.</h3>
         </div>
         <template v-else-if="loading">
           <div v-for="index in 5" :key="index" class="streaming-item">
@@ -66,7 +70,7 @@
           </div>
         </template>
         <template v-else>
-          <template v-for="(o, i) in filteredStreamingSwaps">
+          <template v-for="(o, i) in pagedSwaps">
             <div :key="i" class="streaming-item">
               <div class="upper-body">
                 <div class="asset-container">
@@ -125,15 +129,11 @@
                 style="margin-top: 5px"
               >
                 <template v-if="isLimitOrder(o)">
-                  Limit order
-                  <span class="sec-color"
-                    ><small style="color: var(--font-color)">(expires in </small>
-                    {{ calculateETA(o) }}
-                    <small style="color: var(--font-color)"
-                      >, filled: {{ successfulCount(o) }}/{{ o.quantity }}</small
-                    >
-                    <small style="color: var(--font-color)">)</small>
-                  </span>
+                  <small style="color: var(--font-color)">Expires in </small>
+                  <span class="sec-color">{{ calculateETA(o) }}</span>
+                  <small style="color: var(--font-color)">
+                    , filled: {{ successfulCount(o) }}/{{ o.quantity }}</small
+                  >
                 </template>
                 <template v-else
                   >{{ o.interval }} Blocks / Swap
@@ -250,10 +250,10 @@
 
     <template #footer>
       <b-pagination
-        v-if="streamingSwaps.length > perPage"
+        v-if="paginationTotal > perPage"
         v-model="currentPage"
         class="center"
-        :total-rows="streamingSwaps.length"
+        :total-rows="paginationTotal"
         :per-page="perPage"
       />
     </template>
@@ -273,20 +273,46 @@ export default {
   data() {
     return {
       currentPage: 1,
-      noStreaming: false,
       loading: true,
       streamingSwaps: [],
       intervalId: undefined,
       perPage: 7,
-      totalSumAmount: 0,
       mode: 'streaming-swaps',
       swapQueue: [],
       queueLoading: true,
     }
   },
   computed: {
-    filteredStreamingSwaps() {
-      return this.streamingSwaps.slice(
+    // Resting limit orders are served by the same `swaps/streaming` endpoint
+    // as genuine streaming swaps, so split them into their own tab: their
+    // interval/quantity semantics and progress mean different things.
+    realStreamingSwaps() {
+      return this.streamingSwaps.filter((s) => !this.isLimitOrder(s))
+    },
+    limitOrderSwaps() {
+      return this.streamingSwaps.filter((s) => this.isLimitOrder(s))
+    },
+    activeSwaps() {
+      return this.mode === 'limit-orders'
+        ? this.limitOrderSwaps
+        : this.realStreamingSwaps
+    },
+    isEmpty() {
+      return !this.loading && this.activeSwaps.length === 0
+    },
+    totalSumAmount() {
+      return this.activeSwaps.reduce(
+        (a, c) => a + this.amountToUSD(c.source_asset, c.deposit, this.pools),
+        0
+      )
+    },
+    paginationTotal() {
+      return this.mode === 'swap-queue'
+        ? this.swapQueue.length
+        : this.activeSwaps.length
+    },
+    pagedSwaps() {
+      return this.activeSwaps.slice(
         (this.currentPage - 1) * this.perPage,
         this.currentPage * this.perPage
       )
@@ -321,6 +347,7 @@ export default {
     },
   },
   mounted() {
+    this.updateSwapQueue()
     this.intervalId = setInterval(() => {
       this.updateStreamingSwap()
       this.updateSwapQueue()
@@ -332,44 +359,15 @@ export default {
   methods: {
     async updateStreamingSwap() {
       try {
-        this.noStreaming = false
         const resData = (await this.$api.getStreamingSwaps()).data
 
-        if (!resData || resData.length === 0) {
-          this.noStreaming = true
-          this.streamingSwaps = []
-          this.loading = false
-          this.totalSumAmount = 0
-          return
-        }
-
         // Only show streamings that have started (have non-zero input swapped).
-        const startedStreamings = resData.filter(
+        this.streamingSwaps = (resData || []).filter(
           (s) => Number(s?.in || 0) > 0
         )
-
-        if (startedStreamings.length === 0) {
-          this.noStreaming = true
-          this.streamingSwaps = []
-          this.loading = false
-          this.totalSumAmount = 0
-          return
-        }
-
-        this.totalSumAmount = startedStreamings.reduce((a, c) => {
-          const inputUsdValue = this.amountToUSD(
-            c.source_asset,
-            c.deposit,
-            this.pools
-          )
-          return a + inputUsdValue
-        }, 0)
-
-        this.streamingSwaps = startedStreamings
         this.loading = false
       } catch (error) {
         console.error(error)
-        this.noStreaming = true
         this.loading = false
         this.streamingSwaps = []
       }
@@ -420,11 +418,15 @@ export default {
       return swap.trade_target === '0' || swap.trade_target === 0 || !swap.trade_target
     },
     async updateSwapQueue() {
-      // Swap queue
-      this.queueLoading = true
-      const queue = (await this.$api.getSwapQueue()).data
-      this.swapQueue = queue || []
-      this.queueLoading = false
+      try {
+        const queue = (await this.$api.getSwapQueue()).data
+        this.swapQueue = queue || []
+      } catch (error) {
+        console.error(error)
+        this.swapQueue = []
+      } finally {
+        this.queueLoading = false
+      }
     },
   },
 }
