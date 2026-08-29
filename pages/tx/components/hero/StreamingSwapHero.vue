@@ -83,7 +83,7 @@
               <AssetAmountValue
                 :amount="overview.outputProjectedRaw"
                 :asset="overview.outputAsset"
-                :prefix="isOutbound ? '' : '~'"
+                :prefix="isOutbound ? '' : '≈ '"
               />
               <strong
                 v-tooltip="usdBasisTooltip(overview.outputUsdAtExecution)"
@@ -116,7 +116,7 @@
               {{ overview.count }} / {{ overview.quantity }} sub-swaps
               <template v-if="isOutbound">· Complete</template>
               <template v-else-if="overview.remainingDisplay">
-                · ~{{ overview.remainingDisplay }} left
+                · ≈ {{ overview.remainingDisplay }} left
               </template>
             </span>
           </div>
@@ -549,7 +549,7 @@ export default {
           icon: 'AddIcon',
           tone: 'upcoming',
           title: 'Expected output',
-          body: `~${overview.outputProjectedDisplay} (${overview.outputProjectedUsdDisplay}) expected once streaming completes.`,
+          body: `≈ ${overview.outputProjectedDisplay} (${overview.outputProjectedUsdDisplay}) expected once streaming completes.`,
         })
       }
       return events
