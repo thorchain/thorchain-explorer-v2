@@ -78,6 +78,10 @@ export const stagenetNav = {
           name: 'TVL by Chain',
           link: '/pools/tvl',
         },
+        {
+          name: 'Pool Depths',
+          link: '/pools/depths',
+        },
       ],
     },
     {

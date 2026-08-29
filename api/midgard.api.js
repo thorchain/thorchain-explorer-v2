@@ -89,9 +89,14 @@ export function getPoolStats(poolName) {
   return $axiosInstace.get(`pool/${poolName}/stats?period=all`)
 }
 
-export function getPoolDepth(poolName, count = 30, from = undefined) {
+export function getPoolDepth(
+  poolName,
+  count = 30,
+  from = undefined,
+  interval = 'day'
+) {
   return $axiosInstace.get(
-    `history/depths/${poolName}?interval=day&count=${count}` +
+    `history/depths/${poolName}?interval=${interval}&count=${count}` +
     (from ? `&from=${from}` : '')
   )
 }
@@ -110,8 +115,8 @@ export function getSwapsHistory(params) {
   })
 }
 
-export function getTVLHistory(count = 90) {
-  return $axiosInstace.get(`history/tvl?interval=day&count=${count}`)
+export function getTVLHistory(count = 90, interval = 'day') {
+  return $axiosInstace.get(`history/tvl?interval=${interval}&count=${count}`)
 }
 
 export function getLastTvl() {

@@ -87,6 +87,10 @@ export const mainnetNav = {
           link: '/pools/tvl',
         },
         {
+          name: 'Pool Depths',
+          link: '/pools/depths',
+        },
+        {
           name: 'Rune Pool',
           link: '/pools/runepool',
         },

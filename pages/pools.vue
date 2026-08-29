@@ -29,6 +29,10 @@ export default {
           link: '/pools/tvl',
         },
         {
+          text: 'Pool Depths',
+          link: '/pools/depths',
+        },
+        {
           text: 'Rune Pool',
           link: '/pools/runepool',
         },

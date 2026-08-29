@@ -2,6 +2,7 @@
   <div :id="name" :ref="name" class="option-wrapper" @click="toggleDialog">
     <span v-if="!$slots['default']">{{ option.label }}</span>
     <slot v-else />
+    <angle-icon :class="['select-caret', { rotated: showDialog }]" />
     <div v-show="showDialog" :ref="`${name}-dialog`" class="option-dialog">
       <div
         v-for="(o, i) in options"
@@ -9,14 +10,21 @@
         :class="['option-item', { active: o.value == option.value }]"
         @click="handleSelect(o)"
       >
-        <span>{{ o.label }}</span>
+        <slot name="option" :option="o">
+          <span>{{ o.label }}</span>
+        </slot>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import AngleIcon from '~/assets/images/angle-down.svg?inline'
+
 export default {
+  components: {
+    AngleIcon,
+  },
   props: ['options', 'option', 'name'],
   emits: ['update:option'],
   data() {
@@ -57,6 +65,20 @@ export default {
     text-align: center;
     color: var(--primary-color);
   }
+
+  .select-caret {
+    flex-shrink: 0;
+    align-self: center;
+    width: 1rem;
+    height: 1rem;
+    margin-left: $space-6;
+    fill: var(--font-color);
+    transition: transform 0.3s ease;
+
+    &.rotated {
+      transform: rotate(180deg);
+    }
+  }
 }
 
 .option-dialog {
@@ -84,7 +106,10 @@ export default {
     border-radius: $radius-s;
   }
 
-  div {
+  // target the option rows only - a bare `div` here also hit any
+  // markup passed through the option slot (icons, wrappers) and
+  // clipped it with the row's padding/min-height/overflow
+  > .option-item {
     cursor: pointer;
     background: var(--card-bg-color);
     color: var(--font-color);
