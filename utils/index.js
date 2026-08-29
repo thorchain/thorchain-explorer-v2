@@ -1086,6 +1086,10 @@ export const interfaces = {
     name: 'Unstoppable',
     icon: 'unstoppable',
   },
+  thordex: {
+    name: 'THORDex',
+    icon: 'thordex',
+  },
 }
 
 export const affiliateMap = {
@@ -1158,6 +1162,7 @@ export const affiliateMap = {
   thorwallet: interfaces.thorwallet,
   ma: interfaces.moca,
   bk: interfaces.bgw,
+  tdex: interfaces.thordex,
   'te-ios': interfaces.trustwallet,
   matias: interfaces.thorwallet,
   cs: interfaces.cacaoswap,
