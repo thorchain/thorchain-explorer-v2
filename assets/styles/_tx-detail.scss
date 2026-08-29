@@ -115,20 +115,16 @@
   }
 
   &--blue {
-    background-color: color-mix(
-      in srgb,
-      var(--highlight) 10%,
-      var(--card-bg-color)
-    );
+    background-color: color-mix(in srgb,
+        var(--highlight) 10%,
+        var(--card-bg-color));
     border-color: color-mix(in srgb, var(--highlight) 50%, var(--border-color));
   }
 
   &--green {
-    background-color: color-mix(
-      in srgb,
-      var(--green) 10%,
-      var(--card-bg-color)
-    );
+    background-color: color-mix(in srgb,
+        var(--green) 10%,
+        var(--card-bg-color));
     border-color: color-mix(in srgb, var(--green) 50%, var(--border-color));
   }
 
@@ -231,25 +227,19 @@
     }
 
     &.bubble-pill--blue {
-      border-color: color-mix(
-        in srgb,
-        var(--highlight) 50%,
-        var(--border-color)
-      );
-      background-color: color-mix(
-        in srgb,
-        var(--highlight) 10%,
-        var(--card-bg-color)
-      );
+      border-color: color-mix(in srgb,
+          var(--highlight) 50%,
+          var(--border-color));
+      background-color: color-mix(in srgb,
+          var(--highlight) 10%,
+          var(--card-bg-color));
     }
 
     &.bubble-pill--green {
       border-color: color-mix(in srgb, var(--green) 50%, var(--border-color));
-      background-color: color-mix(
-        in srgb,
-        var(--green) 10%,
-        var(--card-bg-color)
-      );
+      background-color: color-mix(in srgb,
+          var(--green) 10%,
+          var(--card-bg-color));
     }
 
     &.bubble-pill--yellow {
@@ -259,11 +249,9 @@
 
     &.bubble-pill--red {
       border-color: color-mix(in srgb, var(--red) 50%, var(--border-color));
-      background-color: color-mix(
-        in srgb,
-        var(--red) 10%,
-        var(--card-bg-color)
-      );
+      background-color: color-mix(in srgb,
+          var(--red) 10%,
+          var(--card-bg-color));
     }
 
     &.bubble-pill--alert {
@@ -272,16 +260,12 @@
     }
 
     &.bubble-pill--grey {
-      border-color: color-mix(
-        in srgb,
-        var(--highlight) 50%,
-        var(--border-color)
-      );
-      background-color: color-mix(
-        in srgb,
-        var(--highlight) 10%,
-        var(--card-bg-color)
-      );
+      border-color: color-mix(in srgb,
+          var(--highlight) 50%,
+          var(--border-color));
+      background-color: color-mix(in srgb,
+          var(--highlight) 10%,
+          var(--card-bg-color));
     }
   }
 
@@ -357,6 +341,11 @@
 .tx-asset-panel {
   background: var(--card-bg);
   border: 2px solid var(--left-border, var(--border-color));
+  // Consumed by .tx-flow-split below, so the breakdown line inside a panel
+  // is tinted with that panel's own asset colour — the same one its border
+  // carries. Set here (and overridden by --accent right after, exactly as
+  // border-color is) so the split needs no per-panel class of its own.
+  --split-accent: var(--left-accent, var(--active-primary-color));
   border-radius: 16px;
   display: flex;
   flex-direction: column;
@@ -366,6 +355,8 @@
 }
 
 .tx-asset-panel--accent {
+  --split-accent: var(--right-accent, var(--active-primary-color));
+
   border-color: var(--right-border, var(--border-color));
 }
 
@@ -382,7 +373,7 @@
 // .tx-asset-label is shared well beyond .tx-asset-panel (.tx-metric-item,
 // panel-head rows, etc.), so the base-matching brighter/untracked style
 // below is scoped to panel labels only, rather than changed globally.
-.tx-asset-panel > .tx-asset-label {
+.tx-asset-panel>.tx-asset-label {
   color: var(--font-color);
   font-family: inherit;
   font-weight: normal;
@@ -454,12 +445,12 @@
   span,
   strong {
     color: var(--sec-font-color);
-    font-size: 1.1rem;
+    font-size: 1.02rem;
     font-weight: 600;
   }
 
   strong {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
   }
 }
 
@@ -780,16 +771,12 @@
   // A refund isn't a failure (funds came back) or an outright success (the
   // swap didn't complete as intended) — amber reads as neither.
   &--warning {
-    background: color-mix(
-      in srgb,
-      var(--warning-color) 12%,
-      var(--card-bg-color)
-    );
-    border-color: color-mix(
-      in srgb,
-      var(--warning-color) 35%,
-      var(--card-bg-color)
-    );
+    background: color-mix(in srgb,
+        var(--warning-color) 12%,
+        var(--card-bg-color));
+    border-color: color-mix(in srgb,
+        var(--warning-color) 35%,
+        var(--card-bg-color));
     color: var(--warning-color);
   }
 
@@ -908,16 +895,12 @@
 
   // A refund explainer isn't reporting a failure — amber instead of red.
   &--warning {
-    background: color-mix(
-      in srgb,
-      var(--warning-color) 6%,
-      var(--card-bg-color)
-    );
-    border-color: color-mix(
-      in srgb,
-      var(--warning-color) 35%,
-      var(--border-color)
-    );
+    background: color-mix(in srgb,
+        var(--warning-color) 6%,
+        var(--card-bg-color));
+    border-color: color-mix(in srgb,
+        var(--warning-color) 35%,
+        var(--border-color));
   }
 }
 
@@ -926,11 +909,11 @@
 // .tx-swap-card, right after .tx-swap-head, where nothing else provides
 // that spacing — scoped to the direct-child case so SendHero's placement
 // is unaffected.
-.tx-swap-card > .tx-explainer {
+.tx-swap-card>.tx-explainer {
   margin-top: $space-16;
 }
 
-.tx-swap-card > .tx-delivery {
+.tx-swap-card>.tx-delivery {
   margin-top: $space-16;
 }
 
@@ -980,11 +963,9 @@
 }
 
 .tx-swap-arrow--warning {
-  border-color: color-mix(
-    in srgb,
-    var(--warning-color) 40%,
-    var(--border-color)
-  );
+  border-color: color-mix(in srgb,
+      var(--warning-color) 40%,
+      var(--border-color));
 }
 
 .tx-swap-arrow-icon--warning {
@@ -1073,11 +1054,9 @@
   }
 
   &--warning {
-    background: color-mix(
-      in srgb,
-      var(--warning-color) 14%,
-      var(--card-bg-color)
-    );
+    background: color-mix(in srgb,
+        var(--warning-color) 14%,
+        var(--card-bg-color));
     color: var(--warning-color);
   }
 }
@@ -1151,11 +1130,82 @@
 // divider separating it from the amount above).
 .tx-mimir-gloss--refund {
   align-items: center;
-  border-top: 1px dashed
-    color-mix(in srgb, var(--border-color) 80%, transparent);
+  border-top: 1px dashed color-mix(in srgb, var(--border-color) 80%, transparent);
   display: flex;
   gap: $space-6;
   padding-top: $space-8;
+}
+
+// Breakdown line under a swap panel's headline amount, splitting that one
+// total into what has already settled and what is still queued
+// ("41,120.55 delivered · 27,413.70 scheduled"). Deliberately not
+// .tx-mimir-gloss, which is a plain muted sentence: these are figures that
+// must read as a live progress pair against the headline directly above
+// them, so the settled half carries the same accent the stream-progress bar
+// ends on and the queued half stays faint.
+.tx-flow-split {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-4 $space-20;
+  line-height: 1.5;
+  margin-top: $space-8;
+}
+
+.tx-flow-split__part {
+  align-items: baseline;
+  display: inline-flex;
+  gap: $space-5;
+}
+
+.tx-flow-split__value {
+  font-size: $font-size-xs;
+  font-weight: 600;
+
+  // Legend marker: solid for what has landed, a hollow ring for what is
+  // still scheduled — the same filled/outlined language as the delivery bar
+  // and its hatched pending segment.
+  &::before {
+    border-radius: 50%;
+    content: '';
+    display: inline-block;
+    height: 5px;
+    margin-right: $space-5;
+    vertical-align: middle;
+    width: 5px;
+  }
+}
+
+// Only the settled half ever carries a hover (full precision on the input
+// side, the USD figure on the output side) — the queued half is derived
+// arithmetic with nothing extra to reveal.
+.tx-flow-split__part--hint {
+  cursor: help;
+}
+
+.tx-flow-split__label {
+  color: var(--text-faint-color);
+  font-size: $font-size-xxs;
+}
+
+.tx-flow-split__part--settled .tx-flow-split__value {
+  color: var(--split-accent, var(--active-primary-color));
+
+  &::before {
+    background: var(--split-accent, var(--active-primary-color));
+  }
+}
+
+.tx-flow-split__part--pending .tx-flow-split__value {
+  color: var(--text-dim-color);
+
+  &::before {
+    border: 1px solid var(--text-dim-color);
+    // The 1px border eats into the 5px box, so the ring reads as the same
+    // optical size as the filled dot beside it.
+    height: 3px;
+    width: 3px;
+  }
 }
 
 // Panel eyebrow with a trailing status chip on the same line (e.g. "Sent to
@@ -1247,7 +1297,7 @@
   margin-top: $space-16;
   padding-top: $space-14;
 
-  > span:first-child {
+  >span:first-child {
     color: var(--sec-font-color);
     font-weight: 600;
   }
@@ -1292,8 +1342,7 @@
 // part of the SAME swap's story, not a separate topic.
 .tx-refund-callout {
   background: color-mix(in srgb, var(--warning-color) 6%, var(--card-bg-color));
-  border: 1px solid
-    color-mix(in srgb, var(--warning-color) 35%, var(--border-color));
+  border: 1px solid color-mix(in srgb, var(--warning-color) 35%, var(--border-color));
   border-radius: 14px;
   margin-top: $space-16;
   padding: $space-14;
@@ -1346,13 +1395,11 @@
 }
 
 .tx-delivery-bar__pending {
-  background: repeating-linear-gradient(
-    -45deg,
-    color-mix(in srgb, var(--warning-color) 55%, transparent),
-    color-mix(in srgb, var(--warning-color) 55%, transparent) 4px,
-    transparent 4px,
-    transparent 8px
-  );
+  background: repeating-linear-gradient(-45deg,
+      color-mix(in srgb, var(--warning-color) 55%, transparent),
+      color-mix(in srgb, var(--warning-color) 55%, transparent) 4px,
+      transparent 4px,
+      transparent 8px);
   height: 100%;
 
   // Once a leg is past its scheduled height the remainder stays amber (it
@@ -1405,6 +1452,7 @@
 }
 
 @keyframes tx-delay-pulse {
+
   0%,
   100% {
     opacity: 1;
@@ -1498,8 +1546,7 @@
 }
 
 .tx-asset-divider {
-  border-top: 1px dashed
-    color-mix(in srgb, var(--border-color) 80%, transparent);
+  border-top: 1px dashed color-mix(in srgb, var(--border-color) 80%, transparent);
   margin: $space-10 0;
 }
 
@@ -1581,8 +1628,7 @@
   font-size: 0.65rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  border-bottom: 1px solid
-    color-mix(in srgb, var(--border-color) 70%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
 
   span:not(:first-child) {
     text-align: right;
@@ -1599,8 +1645,7 @@
   align-items: center;
   padding: $space-4 $space-12;
   position: relative;
-  border-bottom: 1px solid
-    color-mix(in srgb, var(--border-color) 30%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 30%, transparent);
   transition: background 0.1s;
 
   // Depth bar fills from left for buys, right for sells
@@ -1613,19 +1658,15 @@
   }
 
   &.ob-buy::before {
-    background: linear-gradient(
-      to right,
-      rgba(53, 240, 154, 0.12) var(--depth),
-      transparent var(--depth)
-    );
+    background: linear-gradient(to right,
+        rgba(53, 240, 154, 0.12) var(--depth),
+        transparent var(--depth));
   }
 
   &.ob-sell::before {
-    background: linear-gradient(
-      to left,
-      rgba(255, 105, 94, 0.12) var(--depth),
-      transparent var(--depth)
-    );
+    background: linear-gradient(to left,
+        rgba(255, 105, 94, 0.12) var(--depth),
+        transparent var(--depth));
   }
 
   &.ob-retract {
@@ -1652,6 +1693,7 @@
   .ob-price--buy {
     color: #35f09a;
   }
+
   .ob-price--sell {
     color: #ff695e;
   }
@@ -1829,7 +1871,7 @@
   gap: $space-12;
 
   // Event blocks must never shrink — only the body scrolls
-  > * {
+  >* {
     flex-shrink: 0;
   }
 }

@@ -3126,6 +3126,7 @@ export default {
           fillPercent: 100,
           remainingDisplay: null,
           swappedSoFarDisplay: null,
+          swappedSoFarRaw: null,
           outputSoFarRaw: null,
           outputSoFarDisplay: null,
           outputSoFarUsdDisplay: null,
@@ -3151,6 +3152,7 @@ export default {
       // had actually landed from the 13 completed sub-swaps) was ~1,220 —
       // using outEstimation here would have overstated progress ~6.5x.
       let outputSoFarRaw = null
+      let swappedSoFarRaw = null
       if (raw) {
         const interval = Number(raw.interval) || 0
         const initialHeight = Number(raw.initial_height) || 0
@@ -3168,7 +3170,11 @@ export default {
             .duration(remainingBlocks * this.blockSeconds('THOR'), 'seconds')
             .humanize()
         }
-        if (raw.in) {
+        // Same string-vs-number care as raw.out below: "0" is a genuine
+        // value (nothing has settled yet), so the emptiness check is on the
+        // string, not on Number(raw.in).
+        if (raw.in != null && raw.in !== '') {
+          swappedSoFarRaw = Number(raw.in)
           swappedSoFarDisplay = `${this.baseAmountFormatOrZero(raw.in)} ${this.showTicker(inputAsset)} swapped so far`
         }
         // raw.out is a string — "0" (a genuine, valid zero, e.g. right
@@ -3187,6 +3193,10 @@ export default {
         fillPercent,
         remainingDisplay,
         swappedSoFarDisplay,
+        // Raw counterpart of the display string above — the hero splits the
+        // input panel's total into "swapped / left to swap" off this, the
+        // mirror of the output panel's delivered/scheduled split.
+        swappedSoFarRaw,
         outputSoFarRaw,
         outputSoFarDisplay:
           outputSoFarRaw != null

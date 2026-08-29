@@ -37,8 +37,20 @@
                 >{{ overview.amountUsdDisplay }}</strong
               >
             </div>
-            <div v-if="overview.swappedSoFarDisplay" class="tx-mimir-gloss">
-              {{ overview.swappedSoFarDisplay }}
+            <div v-if="inputSplit" class="tx-flow-split">
+              <span
+                v-for="part in inputSplit"
+                :key="part.label"
+                v-tooltip="part.tooltip"
+                :class="[
+                  'tx-flow-split__part',
+                  `tx-flow-split__part--${part.tone}`,
+                  { 'tx-flow-split__part--hint': part.tooltip },
+                ]"
+              >
+                <span class="tx-flow-split__value mono">{{ part.value }}</span>
+                <span class="tx-flow-split__label">{{ part.label }}</span>
+              </span>
             </div>
           </div>
 
@@ -56,7 +68,7 @@
           >
             <div class="tx-asset-panel-head">
               <div class="tx-asset-label">
-                {{ isOutbound ? 'Output' : 'Output so far' }}
+                {{ isOutbound ? 'Output' : 'Projected output' }}
               </div>
               <span v-if="isOutbound" class="tx-chip tx-chip--warning">
                 Not yet sent
@@ -67,10 +79,11 @@
               <span>{{ overview.outputName }}</span>
             </div>
             <div class="tx-asset-badge">{{ overview.outputAssetBadge }}</div>
-            <div v-if="isOutbound" class="tx-asset-values">
+            <div class="tx-asset-values">
               <AssetAmountValue
                 :amount="overview.outputProjectedRaw"
                 :asset="overview.outputAsset"
+                :prefix="isOutbound ? '' : '~'"
               />
               <strong
                 v-tooltip="usdBasisTooltip(overview.outputUsdAtExecution)"
@@ -78,24 +91,21 @@
                 >{{ overview.outputProjectedUsdDisplay }}</strong
               >
             </div>
-            <template v-else>
-              <div class="tx-asset-values">
-                <AssetAmountValue
-                  :amount="overview.outputSoFarRaw"
-                  :asset="overview.outputAsset"
-                />
-                <strong
-                  v-tooltip="usdBasisTooltip(overview.outputUsdAtExecution)"
-                  style="cursor: help"
-                  >{{ overview.outputSoFarUsdDisplay || '' }}</strong
-                >
-              </div>
-              <div class="tx-mimir-gloss">
-                ~{{ overview.outputProjectedDisplay }} ({{
-                  overview.outputProjectedUsdDisplay
-                }}) projected total
-              </div>
-            </template>
+            <div v-if="outputSplit" class="tx-flow-split">
+              <span
+                v-for="part in outputSplit"
+                :key="part.label"
+                v-tooltip="part.tooltip"
+                :class="[
+                  'tx-flow-split__part',
+                  `tx-flow-split__part--${part.tone}`,
+                  { 'tx-flow-split__part--hint': part.tooltip },
+                ]"
+              >
+                <span class="tx-flow-split__value mono">{{ part.value }}</span>
+                <span class="tx-flow-split__label">{{ part.label }}</span>
+              </span>
+            </div>
           </div>
         </div>
 
@@ -404,12 +414,19 @@ export default {
     // panel to --warning-dashed instead, which hardcodes its own
     // border-color and ignores --right-border.
     panelVars() {
+      const inputColor = this.assetColorPalette(this.overview.asset)
+      const outputColor = this.assetColorPalette(this.overview.outputAsset)
       return {
-        '--left-border':
-          this.assetColorPalette(this.overview.asset) ?? 'var(--border-color)',
-        '--right-border':
-          this.assetColorPalette(this.overview.outputAsset) ??
-          'var(--border-color)',
+        '--left-border': inputColor ?? 'var(--border-color)',
+        '--right-border': outputColor ?? 'var(--border-color)',
+        // Each panel's .tx-flow-split takes that same asset colour, so the
+        // breakdown reads as belonging to the asset it describes. Separate
+        // properties rather than reusing the border ones because the
+        // fallback has to differ: --border-color is a near-card-dark grey,
+        // fine as a 2px border but unreadable as small text, so an asset
+        // with no palette colour falls back to the standard accent here.
+        '--left-accent': inputColor ?? 'var(--active-primary-color)',
+        '--right-accent': outputColor ?? 'var(--active-primary-color)',
       }
     },
     eyebrow() {
@@ -431,6 +448,39 @@ export default {
     },
     inputTicker() {
       return this.showTicker(this.overview.asset)
+    },
+    // Both panels headline the FULL amount (input total / projected output
+    // total) and break it down underneath into what has settled versus what
+    // is still queued — so the two big numbers stay comparable as the
+    // exchange the swap is actually making, and the moving parts read as a
+    // progress line rather than as a headline figure that keeps changing.
+    // Null (no split, headline alone) until the live streaming fetch
+    // resolves, and once the stream is done — see outputSplit.
+    inputSplit() {
+      return this.buildSplit(
+        this.overview.swappedSoFarRaw,
+        this.overview.amountRaw,
+        'swapped',
+        'to go',
+        // Full base-unit precision on hover, the same deal
+        // AssetAmountValue offers on the rounded headline above.
+        this.overview.swappedSoFarDisplay
+      )
+    },
+    // Nothing to split once phase is 'outbound': streaming has finished, so
+    // the projected total IS the determined output and 100% of it is
+    // "delivered" (buildStreamingProgress zeroes the live fields there too).
+    outputSplit() {
+      if (this.isOutbound) return null
+      return this.buildSplit(
+        this.overview.outputSoFarRaw,
+        this.overview.outputProjectedRaw,
+        'delivered',
+        'scheduled',
+        this.overview.outputSoFarUsdDisplay
+          ? `≈ ${this.overview.outputSoFarUsdDisplay} delivered so far`
+          : null
+      )
     },
     // Full chain.ticker notation (e.g. "ETH.USDC") for the H1, matching
     // overview.amountDisplay's own notation on the input side —
@@ -583,6 +633,43 @@ export default {
     if (this.outboundDelayInterval) clearInterval(this.outboundDelayInterval)
   },
   methods: {
+    // [{ tone, value, label }] for .tx-flow-split, or null when the settled
+    // figure isn't known yet. Same 4dp rounding AssetAmountValue uses for
+    // the headline right above it, so the parts visibly add up to the total.
+    buildSplit(settledRaw, totalRaw, settledLabel, pendingLabel, settledHint) {
+      const settled = Number(settledRaw)
+      const total = Number(totalRaw)
+      if (settledRaw == null || !Number.isFinite(settled)) return null
+      const parts = [
+        {
+          tone: 'settled',
+          value: this.shortAmount(settled),
+          label: settledLabel,
+          tooltip: settledHint || null,
+        },
+      ]
+      // Only while there's genuinely something left — a stream whose live
+      // figure has caught up with the projection shouldn't trail a "0
+      // scheduled" that reads as an error.
+      const pending = Number.isFinite(total) ? total - settled : 0
+      if (pending > 0) {
+        parts.push({
+          tone: 'pending',
+          value: this.shortAmount(pending),
+          label: pendingLabel,
+          tooltip: null,
+        })
+      }
+      return parts
+    },
+    // Bare number, no ticker: the panel's own headline and network badge
+    // already say which asset this is.
+    shortAmount(raw) {
+      return new Intl.NumberFormat('en-US', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 4,
+      }).format(raw / 1e8)
+    },
     formatDelayClock(totalSeconds) {
       const s = Math.max(Math.round(totalSeconds), 0)
       const hours = Math.floor(s / 3600)
