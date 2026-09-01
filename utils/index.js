@@ -852,6 +852,50 @@ export function assetToString({ chain, synth, trade, symbol, secure }) {
   return `${chain}${delimiter}${symbol}`
 }
 
+// Midgard returns these as entries in the earnings `pools` array, but they are
+// not pools. They are protocol-level reserve allocations that Midgard also sums
+// into `liquidityEarnings`, so they must be excluded from any "pool earnings"
+// list and subtracted from `liquidityEarnings` before it is shown as LP income.
+export const RESERVE_REWARD_POOLS = [
+  'income_burn',
+  'dev_fund_reward',
+  'tcy_stake_reward',
+  'marketing_fund_reward',
+  'pol_reserve_reward',
+]
+
+// Human readable labels for the entries above
+export const RESERVE_REWARD_LABELS = {
+  income_burn: 'System Burn',
+  dev_fund_reward: 'Dev Fund',
+  tcy_stake_reward: 'TCY Stake Reward',
+  marketing_fund_reward: 'Marketing Fund',
+  pol_reserve_reward: 'POL Reserve Reward',
+}
+
+// Accepts either a pool name or an earnings entry ({ pool, earnings })
+export function isReserveReward(p) {
+  return RESERVE_REWARD_POOLS.includes(typeof p === 'string' ? p : p?.pool)
+}
+
+export function isRealPool(p) {
+  return !isReserveReward(p)
+}
+
+// Total RUNE (1e8) that Midgard folded into `liquidityEarnings` but that never
+// reached liquidity providers.
+export function reserveRewardTotal(interval) {
+  return (interval?.pools ?? []).reduce(
+    (a, p) => a + (isReserveReward(p) ? +p.earnings || 0 : 0),
+    0
+  )
+}
+
+// `liquidityEarnings` with the reserve allocations removed: actual LP income.
+export function realLiquidityEarnings(interval) {
+  return +interval?.liquidityEarnings - reserveRewardTotal(interval)
+}
+
 export const nameMapping = {
   t: ['t', 'T', 'thor160yye65pf9rzwrgqmtgav69n6zlsyfpgm9a7xk', 'tl', 'ts'],
   ti: ['ti', 'te', 'tr', 'td', 'tb', 't1'],

@@ -192,6 +192,8 @@ export default {
       incomeBurn: '',
       stakeReward: '',
       devFundReward: '',
+      marketingFundReward: '',
+      polReserveReward: '',
       bondReward: '',
       swapActions: [],
       endBlockEventCounts: {},
@@ -231,6 +233,16 @@ export default {
             {
               name: 'TCY Stake Reward',
               value: this.stakeReward,
+              filter: (v) => this.formatRune(v / 1e8, '0,0.000000'),
+            },
+            {
+              name: 'Marketing Fund',
+              value: this.marketingFundReward,
+              filter: (v) => this.formatRune(v / 1e8, '0,0.000000'),
+            },
+            {
+              name: 'POL Reserve Reward',
+              value: this.polReserveReward,
               filter: (v) => this.formatRune(v / 1e8, '0,0.000000'),
             },
             {
@@ -392,6 +404,8 @@ export default {
         this.devFundReward = ''
         this.incomeBurn = ''
         this.stakeReward = ''
+        this.marketingFundReward = ''
+        this.polReserveReward = ''
         this.assetRewards = {}
         this.swapActions = []
         this.endBlockEventCounts = {}
@@ -444,6 +458,8 @@ export default {
             this.devFundReward = rewardEvent.dev_fund_reward || ''
             this.incomeBurn = rewardEvent.income_burn || ''
             this.stakeReward = rewardEvent.tcy_stake_reward || ''
+            this.marketingFundReward = rewardEvent.marketing_fund_reward || ''
+            this.polReserveReward = rewardEvent.pol_reserve_reward || ''
 
             Object.keys(rewardEvent).forEach((key) => {
               if (key.includes('.')) {

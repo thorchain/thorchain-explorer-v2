@@ -184,7 +184,12 @@ import affiliateTables from '../insights/component/affiliateTables.vue'
 import NetworkStats from './NetworkStats.vue'
 import LatestTransactions from './LatestTransactions.vue'
 import ChainStatus from './ChainStatus.vue'
-import { blockTime } from '~/utils'
+import {
+  blockTime,
+  isRealPool,
+  reserveRewardTotal,
+  RESERVE_REWARD_LABELS,
+} from '~/utils'
 import StackDollar from '~/assets/images/sack-dollar.svg?inline'
 import LockIcon from '~/assets/images/lock.svg?inline'
 import ArrowRightIcon from '~/assets/images/arrow-right.svg?inline'
@@ -1000,13 +1005,7 @@ export default {
         [(o) => +o.earnings],
         ['desc']
       )
-        .filter(
-          (p) =>
-            p.pool !== 'dev_fund_reward' &&
-            p.pool !== 'income_burn' &&
-            p.pool !== 'tcy_stake_reward' && 
-            p.pool != 'marketing_fund_reward'
-        )
+        .filter(isRealPool)
         .map((p) => p.pool)
 
       const xAxis = []
@@ -1026,11 +1025,7 @@ export default {
 
         let otherEarnings = interval.pools.filter(
           (p) =>
-            !poolEarnings.slice(0, topPool).includes(p.pool) &&
-            p.pool !== 'income_burn' &&
-            p.pool !== 'dev_fund_reward' &&
-            p.pool !== 'tcy_stake_reward' &&
-            p.pool !== 'marketing_fund_reward'
+            !poolEarnings.slice(0, topPool).includes(p.pool) && isRealPool(p)
         )
 
         // sum them all
@@ -1094,13 +1089,11 @@ export default {
         (+d?.intervals[d?.intervals.length - 1]?.EODLiquidityEarnings *
           lastRunePrice) /
           1e8 ?? 0
-      // subtract the dev_fund_reward
-      const lastTotalEarning =
-        d?.intervals[d?.intervals.length - 2]?.liquidityEarnings
-      const lastDevFundEarning = +d?.intervals[
-        d?.intervals.length - 2
-      ]?.pools?.find((p) => p.pool === 'dev_fund_reward')?.earnings
-      EODValue -= ((lastDevFundEarning / lastTotalEarning) * EODValue) / 1e8
+      // subtract the reserve allocations Midgard folds into liquidityEarnings
+      const lastInterval = d?.intervals[d?.intervals.length - 2]
+      const lastTotalEarning = lastInterval?.liquidityEarnings
+      const lastReserveEarning = reserveRewardTotal(lastInterval)
+      EODValue -= ((lastReserveEarning / lastTotalEarning) * EODValue) / 1e8
 
       EODEarnings.push({
         value: EODValue > 0 ? EODValue : 0,
@@ -1190,6 +1183,7 @@ export default {
       const ib = []
       const tc = []
       const mf = []
+      const pol = []
       const EODEarning = []
       let affiliateEOD = 0
       const runePrices = this.resolveRunePrices(d?.intervals || [])
@@ -1216,18 +1210,25 @@ export default {
           (+interval.pools.find((p) => p.pool === 'marketing_fund_reward')?.earnings /
             10 ** 8) *
           runePrice
+        const polReserve =
+          (+interval.pools.find((p) => p.pool === 'pol_reserve_reward')
+            ?.earnings /
+            10 ** 8) *
+          runePrice
         le.push(
           (+interval.liquidityEarnings / 10 ** 8) * runePrice -
             devFund -
             incomeBurn -
             tcyStakeReward -
-            marketingFund
+            marketingFund -
+            polReserve
         )
         be.push((+interval.bondingEarnings / 10 ** 8) * runePrice)
         df.push(devFund)
         ib.push(incomeBurn)
         tc.push(tcyStakeReward)
         mf.push(marketingFund)
+        pol.push(polReserve)
 
         const volumeUSD = (this.volumeUSDData[index] || 0) / 1e2
         af.push({
@@ -1276,6 +1277,9 @@ export default {
           }
           mf[index] = {
             value: mf[index],
+          }
+          pol[index] = {
+            value: pol[index],
           }
         } else {
           EODEarning.push(0)
@@ -1332,6 +1336,15 @@ export default {
             stack: 'Total',
             showSymbol: false,
             data: mf,
+            smooth: true,
+          },
+          {
+            type: 'bar',
+            name: RESERVE_REWARD_LABELS.pol_reserve_reward,
+            color: '#4fa3a5',
+            stack: 'Total',
+            showSymbol: false,
+            data: pol,
             smooth: true,
           },
           this.volumeUSDData && {

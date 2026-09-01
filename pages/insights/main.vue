@@ -118,6 +118,7 @@ import {
 } from 'echarts/components'
 import VChart from 'vue-echarts'
 import { orderBy } from 'lodash'
+import { isRealPool } from '~/utils'
 import FlipSide from '~/assets/images/flipside.svg?inline'
 import TradingViewChart from '~/components/TradingViewChart.vue'
 import ChartLoader from '~/components/ChartLoader.vue'
@@ -213,13 +214,7 @@ export default {
         [(o) => Math.abs(+o.rewards)],
         ['desc']
       )
-        .filter(
-          (p) =>
-            p.pool !== 'income_burn' &&
-            p.pool !== 'dev_fund_reward' &&
-            p.pool !== 'tcy_stake_reward' &&
-            p.pool !== 'marketing_fund_reward'
-        )
+        .filter(isRealPool)
         .slice(0, top)
         .map((p) => p.pool)
 
@@ -239,12 +234,7 @@ export default {
         xAxis.push(date.format('dddd, MMM D'))
 
         let otherEarnings = interval.pools.filter(
-          (p) =>
-            !poolEarnings.slice(0, top).includes(p.pool) &&
-            p.pool !== 'income_burn' &&
-            p.pool !== 'dev_fund_reward' &&
-            p.pool !== 'tcy_stake_reward' &&
-            p.pool !== 'marketing_fund_reward'
+          (p) => !poolEarnings.slice(0, top).includes(p.pool) && isRealPool(p)
         )
 
         // sum them all

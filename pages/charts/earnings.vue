@@ -132,6 +132,12 @@ import VChart from 'vue-echarts'
 import { earnings } from '~/api/midgard.api'
 import AngleIcon from '~/assets/images/angle-down.svg?inline'
 import ChartLoader from '~/components/ChartLoader.vue'
+import {
+  RESERVE_REWARD_POOLS,
+  RESERVE_REWARD_LABELS,
+  isReserveReward,
+  realLiquidityEarnings,
+} from '~/utils'
 
 use([
   SVGRenderer,
@@ -205,6 +211,11 @@ export default {
           label: 'Total Marketing Fund',
           value: `$${this.formatNumber(this.totalMarketing)}`,
           tooltip: 'Total marketing fund earnings',
+        },
+        {
+          label: 'Total POL Reserve Reward',
+          value: `$${this.formatNumber(this.totalPOLReserve)}`,
+          tooltip: 'Total RUNE the reserve sent to shallow pools via POL',
         },
       ]
     },
@@ -282,22 +293,8 @@ export default {
       if (!this.earningsData) return 0
       return (
         this.earningsData.intervals.reduce((total, interval) => {
-          const devFund =
-            interval.pools.find((p) => p.pool === 'dev_fund_reward')
-              ?.earnings || 0
-          const incomeBurn =
-            interval.pools.find((p) => p.pool === 'income_burn')?.earnings || 0
-          const tcyStake =
-            interval.pools.find((p) => p.pool === 'tcy_stake_reward')
-              ?.earnings || 0
-          const marketingFund =
-            interval.pools.find((p) => p.pool === 'marketing_fund_reward')
-              ?.earnings || 0
-          const totalEarnings = +interval.liquidityEarnings
           return (
-            total +
-            (totalEarnings - devFund - incomeBurn - tcyStake - marketingFund) *
-              +interval.runePriceUSD
+            total + realLiquidityEarnings(interval) * +interval.runePriceUSD
           )
         }, 0) / 1e8
       )
@@ -333,16 +330,23 @@ export default {
         }, 0) / 1e8
       )
     },
+    totalPOLReserve() {
+      if (!this.earningsData) return 0
+      return (
+        this.earningsData.intervals.reduce((total, interval) => {
+          const polReserve =
+            interval.pools.find((p) => p.pool === 'pol_reserve_reward')
+              ?.earnings || 0
+          return total + +polReserve * +interval.runePriceUSD
+        }, 0) / 1e8
+      )
+    },
 
     displayText() {
       if (this.selectedOption === 'All') {
         return this.selectedOption
-      } else if (
-        ['income_burn', 'dev_fund_reward', 'tcy_stake_reward', 'marketing_fund_reward'].includes(
-          this.selectedOption
-        )
-      ) {
-        return this.selectedOption
+      } else if (isReserveReward(this.selectedOption)) {
+        return RESERVE_REWARD_LABELS[this.selectedOption]
       } else {
         return this.showAsset(this.selectedOption)
       }
@@ -487,12 +491,7 @@ export default {
     formatEarnings(d, selectedPool = 'All') {
       const xAxis = []
       const series = []
-      const specialPools = [
-        'income_burn',
-        'dev_fund_reward',
-        'tcy_stake_reward',
-        'marketing_fund_reward'
-      ]
+      const specialPools = RESERVE_REWARD_POOLS
 
       d?.intervals.forEach((interval, index) => {
         if (index === d.intervals.length - 1) return
@@ -506,7 +505,10 @@ export default {
         )
 
         if (selectedPool === 'All') {
-          const liquidity = +interval.liquidityEarnings * +interval.runePriceUSD
+          // liquidityEarnings still contains the reserve allocations, and those
+          // are stacked as their own series below, so strip them out here
+          const liquidity =
+            realLiquidityEarnings(interval) * +interval.runePriceUSD
           const bonding = interval.bondingEarnings
             ? +interval.bondingEarnings * +interval.runePriceUSD
             : 0
@@ -561,39 +563,17 @@ export default {
                 lineStyle: { width: 2 },
                 z: 2,
               },
-              {
+              ...specialPools.map((pool, i) => ({
                 type: 'bar',
-                name: 'Income Burn',
+                name: RESERVE_REWARD_LABELS[pool],
                 stack: 'Total',
                 showSymbol: false,
                 areaStyle: {},
-                data: series[2],
+                data: series[2 + i],
                 smooth: true,
                 lineStyle: { width: 2 },
                 z: 1,
-              },
-              {
-                type: 'bar',
-                name: 'Dev Fund Reward',
-                stack: 'Total',
-                showSymbol: false,
-                areaStyle: {},
-                data: series[3],
-                smooth: true,
-                lineStyle: { width: 2 },
-                z: 1,
-              },
-              {
-                type: 'bar',
-                name: 'TCY Stake Reward',
-                stack: 'Total',
-                showSymbol: false,
-                areaStyle: {},
-                data: series[4],
-                smooth: true,
-                lineStyle: { width: 2 },
-                z: 1,
-              },
+              })),
             ]
           : [
               {
