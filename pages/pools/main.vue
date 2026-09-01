@@ -69,25 +69,6 @@
                 </span>
                 <span v-else> - </span>
               </div>
-              <div v-else-if="props.column.field == 'actions'" class="action-content">
-                <drop-modal name="swap" :index="props.row.originalIndex">
-                  <template #button>
-                    <swap-icon />
-                  </template>
-                  <a v-for="ie in interfaces" :href="ie.swap_url || ie.info_url" target="_blank" class="interface">
-                    <span>{{ ie.name }}</span>
-                  </a>
-                </drop-modal>
-                <drop-modal name="earn" :index="props.row.originalIndex">
-                  <template #button>
-                    <finance-icon class="finance-icon" />
-                  </template>
-                  <a v-for="ie in interfaces.filter((e) => e.earn_url)" :href="ie.earn_url" target="_blank"
-                    class="interface">
-                    <span>{{ ie.name }}</span>
-                  </a>
-                </drop-modal>
-              </div>
               <span v-else>
                 {{ props.formattedRow[props.column.field] }}
               </span>
@@ -100,17 +81,14 @@
 </template>
 
 <script>
-import { shuffle, capitalize } from 'lodash'
+import { capitalize } from 'lodash'
 import { mapGetters } from 'vuex'
-import SwapIcon from '~/assets/images/swap.svg?inline'
-import FinanceIcon from '~/assets/images/finance-selected.svg?inline'
-import InterfacesJSON from '~/assets/wallets/index'
 import { assetFromString, tradeToAsset } from '~/utils'
 import RuneAsset from '~/components/RuneAsset.vue'
 import ProgressIcon from '~/components/ProgressIcon.vue'
 
 export default {
-  components: { SwapIcon, FinanceIcon, RuneAsset, ProgressIcon },
+  components: { RuneAsset, ProgressIcon },
   data() {
     return {
       loading: false,
@@ -198,12 +176,6 @@ export default {
           formatFn: this.formattedPrice,
           tdClass: 'mono',
         },
-        {
-          label: 'Swap/LP',
-          field: 'actions',
-          sortable: false,
-          thClass: 'th-center',
-        },
       ],
       pools: undefined,
       tables: {
@@ -216,7 +188,6 @@ export default {
           mode: 'staged',
         },
       },
-      interfaces: [],
       runePoolData: [],
       oraclePrices: [],
     }
@@ -233,7 +204,6 @@ export default {
     },
   },
   async mounted() {
-    this.loadInterfaces()
     await this.loadOraclePrices()
     this.updatePool(this.period)
     try {
@@ -243,9 +213,6 @@ export default {
     }
   },
   methods: {
-    loadInterfaces() {
-      this.interfaces = shuffle(InterfacesJSON)
-    },
     async loadOraclePrices() {
       try {
         const oracleResponse = await this.$api.getOraclePrices()
@@ -356,11 +323,6 @@ export default {
       return this.$options.filters.currency(number)
     },
     gotoPoolTable(params) {
-      const ac = Array.from(document.querySelectorAll('.action-section'))
-      const el = params.event.srcElement
-      if (ac?.some((l) => l?.contains(el))) {
-        return
-      }
       this.gotoPool(params.row.asset)
     },
     getLiquidityShareByAsset(asset) {
@@ -433,100 +395,6 @@ export default {
     border: none !important;
     margin-bottom: $space-16 !important;
     border-radius: $radius-md $radius-md;
-  }
-}
-
-.finance-icon {
-  fill: #14b8a6;
-}
-
-.action-content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: $space-10;
-}
-
-.action-btn {
-  cursor: pointer;
-  border-radius: $radius-lg;
-  border: none;
-
-  svg {
-    height: 1.3rem;
-    width: 1.3rem;
-  }
-}
-
-.action-section {
-  position: relative;
-}
-
-.swap-interfaces {
-  .swap-menu {
-    display: flex;
-    position: absolute;
-    padding: $space-3 $space-0;
-    left: calc(100% + 10px);
-    top: 0;
-
-    a {
-      display: flex;
-      align-items: center;
-      color: var(--font-color);
-      text-decoration: none;
-      padding: $space-8;
-      border-radius: $radius-sm;
-      margin: $space-0 $space-3;
-      gap: 10px;
-      font-family: 'Exo 2';
-      font-size: $font-size-mobile;
-      text-wrap: nowrap;
-
-      .interface-icon {
-        fill: inherit;
-        widows: 1rem;
-        height: 1rem;
-      }
-
-      &:hover {
-        background-color: var(--darker-bg);
-      }
-
-      .interface-icon {
-        width: 1.3rem;
-        height: 1.3rem;
-      }
-    }
-
-    &.blue {
-      a {
-        color: var(--font-color);
-      }
-    }
-  }
-}
-
-a.interface {
-  display: flex;
-  align-items: center;
-  color: var(--font-color);
-  text-decoration: none;
-  padding: $space-8 $space-5;
-  border-radius: $radius-sm;
-  margin: 0.1rem $space-3;
-  gap: 10px;
-  font-family: 'Exo 2';
-  font-size: $font-size-mobile;
-  text-wrap: nowrap;
-
-  &:hover {
-    background-color: var(--darker-bg);
-  }
-
-  .interface-icon {
-    width: 1.3rem;
-    height: 1.3rem;
   }
 }
 
