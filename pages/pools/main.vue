@@ -24,15 +24,45 @@
                   props.formattedRow[props.column.field]
                 }}</span>
               </div>
-              <div v-else-if="props.column.field == 'oraclePrice'">
-                <div v-if="props.row.oraclePrice">
-                  <div>{{ props.formattedRow[props.column.field] }}</div>
-                  <progress-icon v-if="props.row.oracleDiff !== 0"
-                    :data-number="percentageFormat(props.row.oracleDiff, 4)" :is-down="props.row.oracleDiff < 0"
-                    size="0.8rem" />
+              <VTooltip
+                v-else-if="props.column.field == 'price'"
+                class="price-cell"
+              >
+                <div class="price-value">{{ curFormat(props.row.price) }}</div>
+                <div :class="['oracle-diff', `oracle-${props.row.oracleTone}`]">
+                  <span class="oracle-dot" />
+                  <span v-if="props.row.oraclePrice">
+                    {{ oracleDiffFormat(props.row.oracleDiff) }}
+                  </span>
+                  <span v-else>no feed</span>
                 </div>
-                <span v-else>-</span>
-              </div>
+                <template #popper>
+                  <div class="tooltip-header">Oracle price</div>
+                  <div class="tooltip-body">
+                    <template v-if="props.row.oraclePrice">
+                      <span>
+                        <span>Oracle</span>
+                        <b>{{ curFormat(props.row.oraclePrice) }}</b>
+                      </span>
+                      <span>
+                        <span>Pool</span>
+                        <b>{{ curFormat(props.row.price) }}</b>
+                      </span>
+                      <span>
+                        <span>Difference</span>
+                        <b>{{ oracleDiffFormat(props.row.oracleDiff) }}</b>
+                      </span>
+                      <small>
+                        How far the pool price sits from the oracle price feed.
+                      </small>
+                    </template>
+                    <small v-else>
+                      No oracle price feed is published for this asset, so the
+                      pool price cannot be compared.
+                    </small>
+                  </div>
+                </template>
+              </VTooltip>
               <div v-else-if="props.column.field == 'volume'">
                 <span>{{ props.formattedRow[props.column.field] }}</span>
               </div>
@@ -42,12 +72,12 @@
               <div v-else-if="props.column.field == 'balances'">
                 <div v-if="props.row.balances > 0">
                   <div class="balance-row">
-                    {{ props.row.balances | number('0,0.00a') }}
-                    <RuneAsset :show-icon="false" />
-                  </div>
-                  <div class="balance-row">
                     {{ props.row.assetDepth | number('0,0.00a') }}
                     <small>{{ showAsset(props.row.asset, true) }}</small>
+                  </div>
+                  <div class="balance-row balance-secondary">
+                    {{ props.row.balances | number('0,0.00a') }}
+                    <RuneAsset :show-icon="false" />
                   </div>
                 </div>
                 <span v-else> - </span>
@@ -60,13 +90,22 @@
                 </span>
                 <span v-else> - </span>
               </div>
-              <div v-else-if="props.column.field == 'polShare'">
-                <span v-if="props.row.polShare > 0">
-                  {{ formattedPrice(props.row.polShare) }}
-                  ({{
-                    percentageFormat(props.row.polShare / props.row.depth, 0)
-                  }})
-                </span>
+              <div v-else-if="props.column.field == 'polTotal'">
+                <div v-if="props.row.polPositions.length > 0">
+                  <div
+                    v-for="position in props.row.polPositions"
+                    :key="position.type"
+                    class="pol-row"
+                  >
+                    <span :class="['pol-tag', `pol-tag-${position.type}`]">
+                      {{ position.label }}
+                    </span>
+                    <span>
+                      {{ formattedPrice(position.value) }}
+                      ({{ percentageFormat(position.share, 2) }})
+                    </span>
+                  </div>
+                </div>
                 <span v-else> - </span>
               </div>
               <span v-else>
@@ -83,12 +122,12 @@
 <script>
 import { capitalize } from 'lodash'
 import { mapGetters } from 'vuex'
+import endpoints from '~/api/endpoints'
 import { assetFromString, tradeToAsset } from '~/utils'
 import RuneAsset from '~/components/RuneAsset.vue'
-import ProgressIcon from '~/components/ProgressIcon.vue'
 
 export default {
-  components: { RuneAsset, ProgressIcon },
+  components: { RuneAsset },
   data() {
     return {
       loading: false,
@@ -122,13 +161,7 @@ export default {
           type: 'number',
           formatFn: this.curFormat,
           tdClass: 'mono',
-        },
-        {
-          label: 'Oracle',
-          field: 'oraclePrice',
-          type: 'number',
-          formatFn: this.curFormat,
-          tdClass: 'mono',
+          tooltip: 'Pool price, with its difference from the oracle price.',
         },
         {
           label: 'Volume 24H',
@@ -158,10 +191,12 @@ export default {
           tdClass: 'mono',
         },
         {
-          label: 'RUNEPool Share',
-          field: 'polShare',
+          label: 'Protocol Liquidity',
+          field: 'polTotal',
           type: 'number',
           tdClass: 'mono',
+          tooltip:
+            'Liquidity the protocol owns in this pool, split by the module holding it.\nPOL: the POL reserve module.\nReserve: the reserve module, which backs RUNEPool.\nEach row is the current redeemable value and the share of pool units it owns.',
         },
         {
           label: 'Volume/Depth',
@@ -177,6 +212,8 @@ export default {
           tdClass: 'mono',
         },
       ],
+      reserveAddress: endpoints[process.env.NETWORK].MODULE_ADDR,
+      polReserveAddress: endpoints[process.env.NETWORK].POL_RESERVE_ADDR,
       pools: undefined,
       tables: {
         activeRows: {
@@ -188,8 +225,10 @@ export default {
           mode: 'staged',
         },
       },
-      runePoolData: [],
       oraclePrices: [],
+      thorPools: {},
+      reserveUnits: {},
+      polReserveUnits: {},
     }
   },
   computed: {
@@ -204,13 +243,8 @@ export default {
     },
   },
   async mounted() {
-    await this.loadOraclePrices()
+    await Promise.all([this.loadOraclePrices(), this.loadModulePositions()])
     this.updatePool(this.period)
-    try {
-      this.runePoolData = await this.$api.getRunePoolsInfo()
-    } catch (error) {
-      console.warn('No runepools')
-    }
   },
   methods: {
     async loadOraclePrices() {
@@ -265,12 +299,21 @@ export default {
 
             const oraclePrice = this.getOraclePriceForAsset(p.asset)
             const oracleDiff = this.calculateOracleDifference(usdPrice, oraclePrice)
+            const polReserve = this.moduleShare(
+              p.asset,
+              this.polReserveUnits[p.asset]
+            )
+            const reserveShare = this.moduleShare(
+              p.asset,
+              this.reserveUnits[p.asset]
+            )
 
             return {
               status: p.status,
               price: usdPrice,
-              oraclePrice: oraclePrice,
-              oracleDiff: oracleDiff,
+              oraclePrice,
+              oracleDiff,
+              oracleTone: this.oracleTone(oraclePrice, oracleDiff),
               depth: (+p.assetDepth / 10 ** 8) * p.assetPriceUSD,
               apy: p.annualPercentageRate,
               volume: (+p.volume24h / 10 ** 8) * this.runePrice,
@@ -291,6 +334,11 @@ export default {
               assetDepth: +p.assetDepth / 1e8,
               balances: +p.runeDepth / 1e8,
               trading: (+tradeAsset?.depth / 1e8) * p.assetPriceUSD,
+              polTotal: polReserve.value + reserveShare.value,
+              polPositions: [
+                { type: 'pol', label: 'POL', ...polReserve },
+                { type: 'reserve', label: 'Reserve', ...reserveShare },
+              ].filter((position) => position.value > 0),
             }
           })
           this.sepPools(ps)
@@ -325,13 +373,76 @@ export default {
     gotoPoolTable(params) {
       this.gotoPool(params.row.asset)
     },
-    getLiquidityShareByAsset(asset) {
-      for (const i in this.runePoolData.data) {
-        if (asset === this.runePoolData.data[i].pool) {
-          return this.runePoolData.data[i].share
-        }
+    // Both module positions are read from THORNode. Midgard's pool `units` is
+    // negative on any pool with negative synthUnits (11 of 43 today), which is
+    // what made the old Midgard-derived share come out negative.
+    async loadModulePositions() {
+      let thorPools = []
+      try {
+        ;({ data: thorPools } = await this.$api.getThorPools())
+      } catch (error) {
+        console.warn('No thornode pools', error)
       }
-      return 0
+      this.thorPools = Object.fromEntries(thorPools.map((p) => [p.asset, p]))
+      const [reserveUnits, polReserveUnits] = await Promise.all([
+        this.loadReserveUnits(),
+        this.loadPolReserveUnits(thorPools),
+      ])
+      this.reserveUnits = reserveUnits
+      this.polReserveUnits = polReserveUnits
+    },
+    // The reserve module keeps its legacy POL positions as a plain LP, and the
+    // middleware already merges the THORNode liquidity provider into each row.
+    async loadReserveUnits() {
+      if (!this.reserveAddress) {
+        return {}
+      }
+      try {
+        const { data } = await this.$api.getRunePoolsInfo()
+        return Object.fromEntries(data.map((e) => [e.pool, +e.units]))
+      } catch (error) {
+        console.warn('No runepools', error)
+        return {}
+      }
+    },
+    // New style POL is deployed from its own module address, and the pools that
+    // hold it are the ones reporting pol_reserve_rune_deposited.
+    async loadPolReserveUnits(thorPools) {
+      if (!this.polReserveAddress) {
+        return {}
+      }
+      const polAssets = thorPools
+        .filter((p) => +p.pol_reserve_rune_deposited > 0)
+        .map((p) => p.asset)
+      const positions = await Promise.all(
+        polAssets.map(async (asset) => {
+          try {
+            const { data } = await this.$api.getUserLpPosition(
+              asset,
+              this.polReserveAddress
+            )
+            return [asset, +data.units]
+          } catch (error) {
+            return [asset, 0]
+          }
+        })
+      )
+      return Object.fromEntries(positions.filter(([, units]) => units > 0))
+    },
+    // Redeem value is strictly proportional to unit ownership, so the RUNE side
+    // is units / pool_units * balance_rune and the whole position is twice that.
+    // `depth` only covers the asset side of the pool, so the percentage comes
+    // from the unit ownership rather than from value / depth.
+    moduleShare(asset, units) {
+      const pool = this.thorPools[asset]
+      if (!units || !pool || +pool.pool_units <= 0) {
+        return { value: 0, share: 0 }
+      }
+      const share = units / +pool.pool_units
+      return {
+        value: ((share * +pool.balance_rune * 2) / 1e8) * this.runePrice,
+        share,
+      }
     },
     getOraclePriceForAsset(asset) {
       if (!this.oraclePrices || this.oraclePrices.length === 0) {
@@ -355,6 +466,24 @@ export default {
 
       return null
     },
+    // percentageFormat renders a bare 0 as '-' and never signs a gain, so the
+    // drift gets its own formatter.
+    oracleDiffFormat(diff) {
+      const percent = this.$options.filters.percent(diff, 2)
+      return diff > 0 ? `+${percent}` : percent
+    },
+    // A pool always drifts from the feed a little, so only a wider gap is worth
+    // colouring as something to look at.
+    oracleTone(oraclePrice, oracleDiff) {
+      if (!oraclePrice) {
+        return 'none'
+      }
+      const drift = Math.abs(oracleDiff)
+      if (drift < 0.01) {
+        return 'ok'
+      }
+      return drift < 0.03 ? 'warn' : 'bad'
+    },
     calculateOracleDifference(usdPrice, oraclePrice) {
       if (!oraclePrice || oraclePrice <= 0 || !usdPrice || usdPrice <= 0) {
         return 0
@@ -374,8 +503,6 @@ export default {
 
       for (const i in pools) {
         if (pools[i].status === 'available') {
-          pools[i].polShare =
-            this.getLiquidityShareByAsset(pools[i].asset) * pools[i].depth
           this.tables.activeRows.data.push(pools[i])
         } else {
           this.tables.standbyRows.data.push(pools[i])
@@ -403,5 +530,70 @@ export default {
   justify-content: end;
   align-items: center;
   gap: $space-8;
+}
+
+.balance-secondary {
+  color: var(--font-color);
+  font-size: $font-size-sm;
+}
+
+.price-cell {
+  display: block;
+  text-align: right;
+}
+
+.price-value {
+  color: var(--sec-font-color);
+}
+
+.oracle-diff {
+  align-items: center;
+  color: var(--font-color);
+  display: flex;
+  font-size: $font-size-sm;
+  gap: $space-4;
+  justify-content: end;
+}
+
+.oracle-dot {
+  border-radius: $radius-full;
+  background-color: currentColor;
+  height: 6px;
+  width: 6px;
+}
+
+.oracle-ok {
+  color: var(--green);
+}
+
+.oracle-warn {
+  color: var(--warning-color);
+}
+
+.oracle-bad {
+  color: var(--red);
+}
+
+.pol-row {
+  display: flex;
+  justify-content: end;
+  align-items: center;
+  gap: $space-8;
+}
+
+.pol-tag {
+  border: 1px solid var(--border-color);
+  border-radius: $radius-sm;
+  color: var(--font-color);
+  font-size: $font-size-xs;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 0 $space-4;
+  text-transform: uppercase;
+}
+
+.pol-tag-pol {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
 }
 </style>

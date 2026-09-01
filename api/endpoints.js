@@ -15,6 +15,7 @@ module.exports = {
     TENDERMINT_URL: 'https://gateway.liquify.com/chain/thorchain_rpc/',
     SERVER_URL: 'https://vanaheimex.com/',
     MODULE_ADDR: 'thor1dheycdevq39qlkxs2a6wuuzyn4aqxhve4qxtxt',
+    POL_RESERVE_ADDR: 'thor1fns25sytpf2gsdlg76g45620u5axm4mkrypqrh',
   },
   stagenet: {
     MIDGARD_BASE_URL: 'https://stagenet-midgard.ninerealms.com/v2/',
@@ -23,6 +24,7 @@ module.exports = {
     TENDERMINT_URL: 'https://stagenet-rpc.ninerealms.com/',
     SERVER_URL: serverUrl('stage/'),
     MODULE_ADDR: 'sthor1dheycdevq39qlkxs2a6wuuzyn4aqxhvepe6as4',
+    POL_RESERVE_ADDR: '',
   },
   chainnet: {
     MIDGARD_BASE_URL: 'https://chainnet-midgard.thorchain.network/v2/',
@@ -31,5 +33,6 @@ module.exports = {
     TENDERMINT_URL: 'https://chainnet-rpc.thorchain.network/',
     SERVER_URL: serverUrl('chainnet/'),
     MODULE_ADDR: '',
+    POL_RESERVE_ADDR: '',
   },
 }
