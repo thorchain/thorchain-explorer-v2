@@ -202,6 +202,12 @@ export function getEarnings() {
   )
 }
 
+export function getPOLReserveDeploy() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + 'api/polReserveDeploy'
+  )
+}
+
 export function getNodes() {
   return $axiosInstace.get(endpoints[process.env.NETWORK].SERVER_URL + 'nodes')
 }

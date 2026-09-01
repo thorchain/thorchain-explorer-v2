@@ -7,7 +7,8 @@
       <Card
         :navs="[
           { title: 'Swap Volume', value: 'swap-vol' },
-          { title: 'Pool Volume', value: 'pools-vol' },
+          { title: 'POL Deployment', value: 'pol-deploy' },
+          /* { title: 'Pool Volume', value: 'pools-vol' }, */
         ]"
         :act-nav.sync="swapMode"
       >
@@ -20,6 +21,16 @@
           :theme="chartTheme"
         />
         <ChartLoader v-if="swapMode == 'swap-vol' && !swapHistory" />
+        <VChart
+          v-if="swapMode == 'pol-deploy' && polDeployChart"
+          :key="2"
+          class="swap-volume-chart"
+          :option="polDeployChart"
+          :autoresize="true"
+          :theme="chartTheme"
+        />
+        <ChartLoader v-if="swapMode == 'pol-deploy' && !polDeployChart" />
+        <!--
         <div
           v-if="swapMode == 'pools-vol'"
           :key="1"
@@ -75,6 +86,7 @@
             </router-link>
           </div>
         </div>
+        -->
       </Card>
       <Card
         :navs="[
@@ -225,6 +237,8 @@ export default {
     RuneAsset,
     Chart,
     StackDollar,
+    // used by the commented-out Pool Volume tab
+    // eslint-disable-next-line vue/no-unused-components
     ArrowRightIcon,
     TransactionAction,
     affiliateTables,
@@ -244,6 +258,7 @@ export default {
       stats: [],
       volumeHistory: undefined,
       swapHistory: undefined,
+      polDeployChart: undefined,
       earningsHistory: undefined,
       poolEarnings: undefined,
       affiliateChart: undefined,
@@ -681,6 +696,15 @@ export default {
     })
 
     this.$api
+      .getPOLReserveDeploy()
+      .then(({ data }) => {
+        this.polDeployChart = this.formatPOLDeploy(data)
+      })
+      .catch((error) => {
+        console.error('Error fetching POL reserve deployment:', error)
+      })
+
+    this.$api
       .getReveneuPaidToTc()
       .then(({ data }) => {
         this.rujiEarningsChart = this.formatRujiEarnings(data)
@@ -829,6 +853,141 @@ export default {
         if (Number.isFinite(p) && p > 0) last = p
         return last
       })
+    },
+    // POL deployment: RUNE the reserve pushed into shallow pools, one stacked
+    // series per pool coloured with that asset's palette colour.
+    formatPOLDeploy(d) {
+      const intervals = d?.intervals ?? []
+      if (!intervals.length) {
+        return undefined
+      }
+
+      // Rank the pools by how much they received over the whole window so the
+      // biggest recipient sits at the bottom of the stack.
+      const totals = {}
+      intervals.forEach((interval) => {
+        ;(interval.pools ?? []).forEach((p) => {
+          totals[p.pool] = (totals[p.pool] ?? 0) + +p.runeAmount
+        })
+      })
+      const pools = Object.keys(totals)
+        .filter((pool) => totals[pool] > 0)
+        .sort((a, b) => totals[b] - totals[a])
+
+      if (!pools.length) {
+        return undefined
+      }
+
+      const xAxis = []
+      const dates = []
+      const data = {}
+      pools.forEach((pool) => {
+        data[pool] = []
+      })
+
+      intervals.forEach((interval) => {
+        const date = moment(
+          Math.floor((~~interval.endTime + ~~interval.startTime) / 2) * 1e3
+        )
+        xAxis.push(date.format('D MMM YYYY'))
+        dates.push(date)
+
+        pools.forEach((pool) => {
+          const found = (interval.pools ?? []).find((p) => p.pool === pool)
+          data[pool].push(+found?.runeAmount / 1e8 || 0)
+        })
+      })
+
+      // Round only the topmost non-empty bar of each day's stack
+      const topOfStack = xAxis.map((_, i) => {
+        for (let pi = pools.length - 1; pi >= 0; pi--) {
+          if (data[pools[pi]][i] > 0) return pi
+        }
+        return -1
+      })
+
+      const series = pools.map((pool, pi) => ({
+        type: 'bar',
+        name: this.showAsset(pool),
+        stack: 'Total',
+        color: this.assetColorPalette(pool),
+        showSymbol: false,
+        data: data[pool].map((value, i) => ({
+          value,
+          itemStyle: {
+            borderRadius: topOfStack[i] === pi ? [8, 8, 0, 0] : [0, 0, 0, 0],
+          },
+        })),
+        smooth: true,
+      }))
+
+      return this.basicChartFormat(
+        undefined,
+        series,
+        xAxis,
+        {
+          legend: {
+            show: false,
+          },
+          yAxis: [
+            {
+              type: 'value',
+              name: '',
+              position: 'right',
+              show: false,
+              splitLine: {
+                show: true,
+              },
+            },
+          ],
+        },
+        (param) => {
+          const rows = param
+            .filter((p) => +p.value > 0)
+            .sort((a, b) => b.value - a.value)
+          const total = param.reduce((a, c) => a + (+c.value || 0), 0)
+
+          return `
+          <div class="tooltip-header">
+            <span>${param[0].axisValue}</span>
+          </div>
+          <div class="tooltip-body">
+            ${
+              rows.length
+                ? rows
+                    .map(
+                      (p) => `
+              <span>
+                <div class="tooltip-item">
+                  <div class="data-color" style="background-color: ${
+                    p.color
+                  }"></div>
+                  <span style="text-align: left;">${p.seriesName}</span>
+                </div>
+                <b>${this.$options.filters.number(
+                  p.value,
+                  '0,0.00'
+                )} <span class="pol-tooltip-unit">RUNE</span></b>
+              </span>`
+                    )
+                    .join('')
+                : `<span><span>No deployment</span><b>0 <span class="pol-tooltip-unit">RUNE</span></b></span>`
+            }
+            ${
+              rows.length > 1
+                ? `<span class="tooltip-total tooltip-item space">
+                    <span>Total</span>
+                    <b>${this.$options.filters.number(
+                      total,
+                      '0,0.00'
+                    )} <span class="pol-tooltip-unit">RUNE</span></b>
+                  </span>`
+                : ''
+            }
+          </div>
+        `
+        }
+      )
     },
     formatSwap(d) {
       const xAxis = []
@@ -1845,6 +2004,11 @@ export default {
 </script>
 
 <style lang="scss">
+.pol-tooltip-unit {
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
 .card-title {
   display: flex;
   justify-content: space-between;
