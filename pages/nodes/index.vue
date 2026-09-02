@@ -874,10 +874,10 @@ export default {
           this.mimirs?.MAXNODETOCHURNOUTFORLOWVERSION ?? 1
         )
 
-        // findLowVersionValidators compares each node against the minimum join
-        // version (thorchain/version -> `next`). markLowVersionValidators only
-        // churns them out once ChurnOutForLowVersionBlocks have elapsed since
-        // that minimum last changed (`next_since_height`).
+        // markLowVersionValidators only churns nodes out once
+        // ChurnOutForLowVersionBlocks have elapsed since the minimum join
+        // version last changed (thorchain/version -> `next` /
+        // `next_since_height`).
         const minJoinVersion = this.minJoinVersion
         const churnOutForLowVersionBlocks = +(
           this.mimirs?.CHURNOUTFORLOWVERSIONBLOCKS ?? 21600
@@ -894,7 +894,6 @@ export default {
         let lowestBondIndex
         let oldest = this.chainsHeight?.THOR ?? Number.MAX_SAFE_INTEGER
         let oldestIndex
-        const lowVersions = []
         for (let i = 0; i < actNodes.length; i++) {
           const el = actNodes[i]
 
@@ -909,15 +908,6 @@ export default {
           ) {
             lowestBond = +el.total_bond
             lowestBondIndex = i
-          }
-
-          if (
-            valid(minJoinVersion) &&
-            valid(el.version) &&
-            lt(el.version, minJoinVersion) &&
-            el.requested_to_leave === false
-          ) {
-            lowVersions.push(el.node_address)
           }
         }
 
@@ -959,9 +949,47 @@ export default {
         const atCapacity =
           desiredValidatorSet > 0 && actNodes.length >= desiredValidatorSet
 
+        // findLowVersionValidators walks the active set in keeper order — node
+        // address ascending, the order thornode/nodes returns them in — and
+        // takes the first MaxNodeToChurnOutForLowVersion nodes below the
+        // minimum join version. Nodes already slated to churn out are skipped
+        // (LeaveScore > 0): the ones that requested to leave, plus whatever the
+        // bad-actor and low-bond passes marked, since both run before this one
+        // in churnInner. actNodes is sorted by slash points here, so the walk
+        // is done over an address-ordered copy to keep the same subset THORNode
+        // would pick when more nodes are behind than the cap allows.
+        const lowVersions = new Set()
+        if (
+          lowVersionGraceElapsed &&
+          maxLowVersion > 0 &&
+          valid(minJoinVersion)
+        ) {
+          const lowBondAddress =
+            atCapacity && lowestBondIndex !== undefined
+              ? actNodes[lowestBondIndex].node_address
+              : undefined
+          const byAddress = [...actNodes].sort((a, b) =>
+            a.node_address < b.node_address ? -1 : 1
+          )
+          for (const el of byAddress) {
+            if (lowVersions.size >= maxLowVersion) {
+              break
+            }
+            if (
+              el.requested_to_leave ||
+              badActors.has(el.node_address) ||
+              el.node_address === lowBondAddress
+            ) {
+              continue
+            }
+            if (valid(el.version) && lt(el.version, minJoinVersion)) {
+              lowVersions.add(el.node_address)
+            }
+          }
+        }
+
         const churnType =
           this.churnProgressValue > 0.5 ? 'churn-out' : 'churn-out-candidate'
-        let lowVersionMarked = 0
         const marked = new Map()
         const markLeave = (el) => {
           if (!marked.has(el.node_address)) {
@@ -1003,20 +1031,14 @@ export default {
             markLeave(el)
           }
 
-          // Low version — markLowVersionValidators, capped at
-          // MaxNodeToChurnOutForLowVersion per churn, and only after the
-          // ChurnOutForLowVersionBlocks grace period has elapsed.
-          if (
-            lowVersions.includes(el.node_address) &&
-            lowVersionMarked < maxLowVersion &&
-            lowVersionGraceElapsed
-          ) {
+          // Low version — markLowVersionValidators (already capped at
+          // MaxNodeToChurnOutForLowVersion and gated on the grace period).
+          if (lowVersions.has(el.node_address)) {
             filteredNodes[index].churn.push({
               name: 'Low Version',
               icon: require('@/assets/images/version.svg?inline'),
               type: 'churn-out',
             })
-            lowVersionMarked += 1
             markLeave(el)
           }
 
