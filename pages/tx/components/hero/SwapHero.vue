@@ -70,7 +70,9 @@
             </template>
             <template v-else>
               <div v-if="overview.input" class="tx-asset-panel">
-                <div class="tx-asset-label">Input</div>
+                <div class="tx-asset-label">
+                  {{ overview.inputLabel || 'Input' }}
+                </div>
                 <div class="tx-asset-primary">
                   <AssetIcon
                     v-if="overview.input.asset"
@@ -98,8 +100,12 @@
               </div>
 
               <div class="tx-swap-arrow">
+                <AddIcon
+                  v-if="overview.flowIcon === 'add'"
+                  class="tx-swap-arrow-icon order"
+                />
                 <OrderIcon
-                  v-if="overview.hasContractAction"
+                  v-else-if="overview.hasContractAction"
                   class="tx-swap-arrow-icon order"
                 />
                 <ArrowIcon v-else class="tx-swap-arrow-icon" />
@@ -114,7 +120,9 @@
                     : 'tx-asset-panel--accent',
                 ]"
               >
-                <div class="tx-asset-label">Output</div>
+                <div class="tx-asset-label">
+                  {{ overview.outputLabel || 'Output' }}
+                </div>
                 <div class="tx-asset-primary">
                   <AssetIcon
                     v-if="overview.output.asset"

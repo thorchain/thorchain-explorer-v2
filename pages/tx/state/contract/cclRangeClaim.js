@@ -1,5 +1,5 @@
 import moment from 'moment'
-import { toAttrs } from './shared.js'
+import { parseCoinString, resolveFinPairDenoms, toAttrs } from './shared.js'
 import { assetFromString, securedToAsset } from '~/utils'
 import {
   getRujiraContractEntry,
@@ -41,30 +41,27 @@ export function buildCclRangeClaimOverview(ctx) {
   const baseAmt = parseInt(claimAttrs.base || 0)
   const quoteAmt = parseInt(claimAttrs.quote || 0)
 
-  // Derive pair denoms from registry contractLabel ("rujira-fin:base:quote")
-  // Fall back to parsing the coin_received event
-  const pairEntry = getRujiraContractEntry(contractAddress)
-  const pairLabelParts = (pairEntry?.contractLabel || '').split(':')
-  let baseDenom = pairLabelParts[1] || ''
-  let quoteDenom = pairLabelParts[2] || ''
+  // Derive pair denoms from the registry contractLabel ("rujira-fin:base:quote"),
+  // falling back to the coins the user received — matched against the claim
+  // event's base/quote amounts, since the coin string itself is denom-sorted.
+  const receivedEvent = events.find(
+    (e) =>
+      e.type === 'coin_received' &&
+      (e.attributes || []).some(
+        (a) => a.key === 'receiver' && a.value === userAddress
+      )
+  )
+  const receivedAmtStr =
+    (receivedEvent?.attributes || []).find((a) => a.key === 'amount')?.value ||
+    ''
 
-  if (!baseDenom || !quoteDenom) {
-    const receivedEvent = events.find(
-      (e) =>
-        e.type === 'coin_received' &&
-        (e.attributes || []).some(
-          (a) => a.key === 'receiver' && a.value === userAddress
-        )
-    )
-    const receivedAmtStr =
-      (receivedEvent?.attributes || []).find((a) => a.key === 'amount')
-        ?.value || ''
-    receivedAmtStr.split(',').forEach((part, i) => {
-      const denom = part.replace(/^\d+/, '').trim()
-      if (i === 0 && !baseDenom) baseDenom = denom
-      if (i === 1 && !quoteDenom) quoteDenom = denom
-    })
-  }
+  const pairEntry = getRujiraContractEntry(contractAddress)
+  const { baseDenom, quoteDenom } = resolveFinPairDenoms({
+    pairEntry,
+    coins: parseCoinString(receivedAmtStr),
+    baseAmt,
+    quoteAmt,
+  })
 
   const denomToAssetStr = (denom) =>
     !denom
@@ -97,6 +94,11 @@ export function buildCclRangeClaimOverview(ctx) {
     hasContractAction: true,
     labels: [],
     pairDisplay: null,
+    // Both legs are received here, so the hero reads "Claimed + Claimed"
+    // rather than borrowing the swap card's Input -> Output framing.
+    inputLabel: 'Claimed',
+    outputLabel: 'Claimed',
+    flowIcon: 'add',
     input: {
       asset: baseAssetStr || null,
       name: `${baseTicker} (Base)`,

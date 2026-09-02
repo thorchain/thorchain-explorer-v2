@@ -1,5 +1,5 @@
 import moment from 'moment'
-import { toAttrs } from './shared.js'
+import { parseCoinString, resolveFinPairDenoms, toAttrs } from './shared.js'
 import { assetFromString, securedToAsset } from '~/utils'
 import {
   getRujiraContractEntry,
@@ -51,19 +51,18 @@ export function buildCclRangeCreateOverview(ctx) {
   const baseAmt = parseInt(rangeAttrs.base || 0)
   const quoteAmt = parseInt(rangeAttrs.quote || 0)
 
-  // Parse denoms from multi-asset funds string ("969729479647doge-doge,222781833369rune")
+  // Parse denoms from the multi-asset funds string
+  // ("969729479647doge-doge,222781833369rune"). Prefer registry pair info;
+  // otherwise match the funds against the event's base/quote amounts, since
+  // the funds string is sorted by denom rather than by pair side.
   const fundsStr = action.metadata?.contract?.funds || ''
-  const fundsParts = fundsStr.split(',').map((part) => {
-    const amt = parseInt(part) || 0
-    const denom = part.replace(/^\d+/, '').trim()
-    return { amt, denom }
-  })
-
-  // Prefer registry pair info, fall back to funds order
   const pairEntry = getRujiraContractEntry(contractAddress)
-  const pairLabelParts = (pairEntry?.contractLabel || '').split(':')
-  const baseDenom = pairLabelParts[1] || fundsParts[0]?.denom || ''
-  const quoteDenom = pairLabelParts[2] || fundsParts[1]?.denom || ''
+  const { baseDenom, quoteDenom } = resolveFinPairDenoms({
+    pairEntry,
+    coins: parseCoinString(fundsStr),
+    baseAmt,
+    quoteAmt,
+  })
 
   const denomToAssetStr = (denom) =>
     !denom
@@ -99,6 +98,11 @@ export function buildCclRangeCreateOverview(ctx) {
     hasContractAction: true,
     labels: [],
     pairDisplay: null,
+    // Both legs are deposited into the range together — there is no
+    // input -> output flow to show.
+    inputLabel: 'Deposited',
+    outputLabel: 'Deposited',
+    flowIcon: 'add',
     input: {
       asset: baseAssetStr || null,
       name: `${baseTicker} (Base)`,
