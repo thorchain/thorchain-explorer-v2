@@ -57,3 +57,30 @@ export function isOperationalMimir(key) {
   // all min slip mimirs are operational (SlipMinBpsMax doesn't end with this)
   return k.endsWith('SLIPMINBPS')
 }
+
+// A node cancels a vote by submitting a negative value (-1 by convention):
+// THORNode drops that node's mimir entry for the key instead of recording a
+// vote, so a withdrawal counts toward no value at all - the node simply goes
+// back to having no standing vote on that key.
+export function isVoteWithdrawal(value) {
+  const n = Number(value)
+  return Number.isFinite(n) && n < 0
+}
+
+// Vote threshold for a Mimir key, mirroring THORNode's quorum rules:
+// operational keys activate on OperationalVotesMin votes (with strict
+// plurality) rather than a supermajority, SOL-RPC-PROVIDER on a quarter of
+// the active set, and everything else on floor(2/3 * active) + 1.
+export function requiredVotes({
+  key,
+  activeNodeCount,
+  operationalVotesMin = DEFAULT_OPERATIONAL_VOTES_MIN,
+}) {
+  if (key === 'SOL-RPC-PROVIDER') {
+    return Math.floor(activeNodeCount * 0.25)
+  }
+  if (isOperationalMimir(key)) {
+    return operationalVotesMin
+  }
+  return Math.floor((activeNodeCount * 2) / 3) + 1
+}

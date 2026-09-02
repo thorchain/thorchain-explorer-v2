@@ -1,13 +1,19 @@
 <template>
   <TxHeroShell eyebrow="Mimir Vote · THORChain" :chips="chips">
     <template #title>
-      Node voted <span class="mono">{{ overview.key }}</span> =
-      <span class="mono tx-value-positive">{{ overview.value }}</span>
+      <template v-if="isWithdrawal">
+        Node withdrew its vote on
+        <span class="mono">{{ overview.key }}</span>
+      </template>
+      <template v-else>
+        Node voted <span class="mono">{{ overview.key }}</span> =
+        <span class="mono tx-value-positive">{{ overview.value }}</span>
+      </template>
     </template>
 
     <template #main>
       <section class="tx-swap-card">
-        <div class="tx-swap-head" :style="panelVars">
+        <div class="tx-swap-head tx-swap-head--vote" :style="panelVars">
           <div class="tx-asset-panel">
             <div class="tx-asset-label">Voter</div>
             <div class="tx-asset-primary tx-asset-primary--identity">
@@ -34,63 +40,53 @@
             </div>
           </div>
 
-          <div class="tx-connector-pill">Votes</div>
+          <div class="tx-connector-pill">
+            {{ isWithdrawal ? 'Cancels' : 'Votes' }}
+          </div>
 
           <div class="tx-asset-panel tx-asset-panel--accent">
             <div class="tx-asset-label">Mimir key</div>
             <div class="tx-asset-primary tx-asset-primary--compact">
-              <span>{{ overview.key }} =</span>
-              <span class="tx-value-positive">{{ overview.value }}</span>
+              <template v-if="isWithdrawal">
+                <span>{{ overview.key }}</span>
+                <span class="tx-value-warning">vote removed</span>
+              </template>
+              <template v-else>
+                <span>{{ overview.key }} =</span>
+                <span class="tx-value-positive">{{ overview.value }}</span>
+              </template>
             </div>
             <div class="tx-mimir-gloss">{{ keyDescription }}</div>
           </div>
         </div>
 
         <div class="tx-metric-strip">
-          <div class="tx-metric-item">
-            <div class="tx-asset-label">Consensus</div>
-            <div :class="['tx-metric-value', consensusToneClass]">
-              {{
-                consensus
-                  ? consensus.reached
-                    ? 'Reached'
-                    : 'Not reached'
-                  : '-'
-              }}
+          <div v-for="(m, i) in metrics" :key="i" class="tx-metric-item">
+            <div class="tx-asset-label">{{ m.label }}</div>
+            <div :class="['tx-metric-value', m.toneClass, { mono: m.mono }]">
+              {{ m.value }}
             </div>
-          </div>
-          <div class="tx-metric-item">
-            <div class="tx-asset-label">Votes for {{ overview.value }}</div>
-            <div class="tx-metric-value mono">{{ voteFractionDisplay }}</div>
-          </div>
-          <div class="tx-metric-item">
-            <div class="tx-asset-label">In effect since</div>
-            <div class="tx-metric-value mono">{{ inEffectSinceDisplay }}</div>
           </div>
         </div>
 
-        <template v-if="consensus">
+        <template v-if="showTally">
           <div class="tx-tally-bar">
             <div
               class="tx-tally-bar__fill"
-              :style="{ width: `${consensus.percentFor * 100}%` }"
-            />
-            <div
-              class="tx-tally-bar__other"
-              :style="{ width: `${consensus.percentOthers * 100}%` }"
+              :style="{ width: `${consensus.progressPercent * 100}%` }"
             />
           </div>
           <div class="tx-tally-caption">
             <span>
-              {{ (consensus.percentFor * 100).toFixed(1) }}% voting
-              {{ overview.value }}
-              <template v-if="consensus.percentOthers > 0">
-                · {{ (consensus.percentOthers * 100).toFixed(1) }}% voting other
-                values
+              {{ consensus.votesFor }} of {{ consensus.votesRequired }} votes
+              needed for {{ consensus.trackedValue }}
+              <template v-if="consensus.votesOther > 0">
+                · {{ consensus.votesOther }} backing other values
               </template>
             </span>
             <span>
-              Threshold {{ (consensus.thresholdPercent * 100).toFixed(0) }}%
+              Threshold {{ consensus.votesRequired }} of
+              {{ consensus.activeNodeCount }} nodes
             </span>
           </div>
         </template>
@@ -102,7 +98,10 @@
           <DetailRow label="Product">
             <ProductBadge label="THORChain" tone="green" />
           </DetailRow>
-          <DetailRow label="Action" value="Mimir Vote" />
+          <DetailRow
+            label="Action"
+            :value="isWithdrawal ? 'Mimir Vote Withdrawal' : 'Mimir Vote'"
+          />
           <DetailRow label="Status">
             <span :class="['mini-bubble', statusToneClass]">
               {{ overview.status.label }}
@@ -132,8 +131,11 @@
       <section class="tx-info-card">
         <div class="tx-section-title">This vote</div>
         <div class="tx-detail-rows">
-          <DetailRow label="Value voted">
-            <span class="tx-value-positive">{{ overview.value }}</span>
+          <DetailRow :label="isWithdrawal ? 'Vote' : 'Value voted'">
+            <span v-if="isWithdrawal" class="tx-value-warning">
+              Withdrawn ({{ overview.value }})
+            </span>
+            <span v-else class="tx-value-positive">{{ overview.value }}</span>
           </DetailRow>
           <DetailRow
             label="Voting nodes"
@@ -170,6 +172,12 @@ import NodeIcon from '~/assets/images/node.svg?inline'
 // identical to the already-completed swap page — see the plan's §0
 // correction. The connector and tally bar are additive (a vote moves no
 // funds and has no swap-hero equivalent to reuse).
+//
+// A negative value (overview.isWithdrawal) is not a vote for that number:
+// it cancels the node's standing vote on the key. Every place that would
+// otherwise read "voted KEY = -1" switches to withdrawal wording, and the
+// tally alongside it tracks the key's current effective value instead —
+// see computeMimirConsensus's `trackedValue`.
 export default {
   components: {
     TxHeroShell,
@@ -199,7 +207,20 @@ export default {
       // TxHeroShell's <component :is="chip.icon"> resolves against its own
       // registry, so a plain 'NodeIcon' string wouldn't find anything
       // there — pass the imported component object directly instead.
-      return [{ label: 'Network config', icon: NodeIcon }]
+      const chips = [{ label: 'Network config', icon: NodeIcon }]
+      // Same Operational/Economic split votes.vue labels its keys with —
+      // it's what explains a threshold of 3 nodes instead of a 2/3
+      // supermajority, so the number in the tally isn't left unexplained.
+      if (this.consensus) {
+        chips.push({
+          label: this.consensus.operational ? 'Operational' : 'Economic',
+          tone: this.consensus.operational ? 'blue' : 'yellow',
+        })
+      }
+      return chips
+    },
+    isWithdrawal() {
+      return !!this.overview.isWithdrawal
     },
     consensusToneClass() {
       if (!this.consensus) return null
@@ -215,9 +236,14 @@ export default {
     },
     // Swap hero picks --left-border/--right-border per-asset (panelVars);
     // a vote has a fixed role instead of assets — the Mimir key panel is
-    // always the accented side, matching the mockup.
+    // always the accented side, matching the mockup. A withdrawal takes
+    // something away rather than setting a value, so it drops the green.
     panelVars() {
-      return { '--right-border': 'var(--green)' }
+      return {
+        '--right-border': this.isWithdrawal
+          ? 'var(--warning-color)'
+          : 'var(--green)',
+      }
     },
     // Generic, always-accurate restatement of the vote rather than a
     // per-key explanation of what the key actually does — there's no
@@ -225,6 +251,9 @@ export default {
     // false governance info in front of users. This phrasing works for any
     // key/value pair.
     keyDescription() {
+      if (this.isWithdrawal) {
+        return `Removes this node's vote on ${this.overview.key} — it no longer counts toward any value`
+      }
       return `Vote ${this.overview.key} rule set to ${this.overview.value}`
     },
     nodeStatus() {
@@ -235,9 +264,16 @@ export default {
       if (bond == null) return null
       return `${this.$options.filters.number(Number(bond) / 1e8, '0.00a')} RUNE`
     },
+    currentValueDisplay() {
+      const current = this.consensus?.currentEffectiveValue
+      return current == null ? '-' : String(current)
+    },
+    // Votes cast vs. votes needed, matching how votes.vue renders every
+    // tally — against the active set it would read "3 / 87" for a key that
+    // only needs 3 votes to take effect.
     voteFractionDisplay() {
-      if (!this.consensus) return '-'
-      return `${this.consensus.votesFor} / ${this.consensus.activeNodeCount}`
+      if (!this.consensus || this.consensus.trackedValue == null) return '-'
+      return `${this.consensus.votesFor} / ${this.consensus.votesRequired}`
     },
     inEffectSinceDisplay() {
       // Best-effort: no per-vote block height is available, only the tx's
@@ -246,13 +282,89 @@ export default {
       if (!this.consensus?.reached) return '-'
       return this.overview.heightDisplay
     },
+    // A withdrawal has no value of its own to measure, so its strip answers
+    // "where does the key stand now" instead of "did this value pass".
+    metrics() {
+      if (this.isWithdrawal) {
+        return [
+          {
+            label: 'Key now',
+            value: this.currentValueDisplay,
+            mono: true,
+          },
+          {
+            label:
+              this.consensus?.trackedValue != null
+                ? `Votes for ${this.consensus.trackedValue}`
+                : 'Standing votes',
+            value: this.voteFractionDisplay,
+            mono: true,
+          },
+          {
+            label: 'Votes withdrawn',
+            value: this.consensus ? String(this.consensus.withdrawnCount) : '-',
+            mono: true,
+          },
+        ]
+      }
+      return [
+        {
+          label: 'Consensus',
+          value: this.consensus
+            ? this.consensus.reached
+              ? 'Reached'
+              : 'Not reached'
+            : '-',
+          toneClass: this.consensusToneClass,
+        },
+        {
+          label: `Votes for ${this.overview.value}`,
+          value: this.voteFractionDisplay,
+          mono: true,
+        },
+        {
+          label: 'In effect since',
+          value: this.inEffectSinceDisplay,
+          mono: true,
+        },
+      ]
+    },
+    // Nothing to plot for a withdrawal on a key with no value set at all —
+    // trackedValue is null there, so every segment would read 0%.
+    showTally() {
+      return !!this.consensus && this.consensus.trackedValue != null
+    },
     lifecycleEvents() {
+      const voter = this.addressFormatV2(this.overview.nodeAddress)
+      const memo = `mimir:${this.overview.key}:${this.overview.value}`
+      if (this.isWithdrawal) {
+        const events = [
+          {
+            icon: 'ArrowIcon',
+            iconRotate: 180,
+            title: 'Vote withdrawal observed by THORChain',
+            body: `Node ${voter} submitted ${memo}, cancelling its vote on ${this.overview.key}.`,
+            meta: this.overview.timeDisplay,
+          },
+        ]
+        if (this.consensus) {
+          events.push({
+            icon: 'ExchangeIcon',
+            title: 'Vote removed',
+            body:
+              this.consensus.trackedValue != null
+                ? `The node no longer backs any value for ${this.overview.key}; ${this.consensus.votesFor} of the ${this.consensus.votesRequired} votes needed still back the current value ${this.consensus.trackedValue}.`
+                : `The node no longer backs any value for ${this.overview.key}, which has no network-wide value set.`,
+          })
+        }
+        return events
+      }
       const events = [
         {
           icon: 'ArrowIcon',
           iconRotate: 180,
           title: 'Vote observed by THORChain',
-          body: `Node ${this.addressFormatV2(this.overview.nodeAddress)} submitted mimir:${this.overview.key}:${this.overview.value}.`,
+          body: `Node ${voter} submitted ${memo}.`,
           meta: this.overview.timeDisplay,
         },
       ]
@@ -260,7 +372,7 @@ export default {
         events.push({
           icon: 'ExchangeIcon',
           title: 'Vote recorded',
-          body: `Tally moved to ${this.consensus.votesFor} of ${this.consensus.activeNodeCount} active nodes in favor of ${this.overview.value}.`,
+          body: `Tally moved to ${this.consensus.votesFor} of the ${this.consensus.votesRequired} votes needed in favor of ${this.overview.value}.`,
         })
       }
       if (this.consensus?.reached) {

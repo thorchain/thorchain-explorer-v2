@@ -1089,6 +1089,16 @@
   }
 }
 
+// The vote hero's connector is a word rather than the swap arrow's
+// fixed-size glyph, and "CANCELS" is wider than the shared 60px middle
+// column — it would overlap the Mimir key panel. Size that column to its
+// content here instead of widening it for every hero.
+.tx-swap-head--vote {
+  @include md {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  }
+}
+
 // Non-transfer connector: a vote moves no funds, so the swap hero's
 // directional arrow would be misleading here — a plain labeled pill in the
 // same slot instead.
@@ -1110,8 +1120,9 @@
   white-space: nowrap;
 }
 
-// Two-segment vote tally bar — no swap-hero equivalent (a swap has no
-// concept of "share of a threshold").
+// Vote tally bar — no swap-hero equivalent (a swap has no concept of
+// progress toward a threshold). The fill is progress toward the key's
+// required vote count, so a full bar means the value can take effect.
 .tx-tally-bar {
   background: var(--divider-color);
   border-radius: 999px;
@@ -1122,14 +1133,6 @@
 
 .tx-tally-bar__fill {
   background: var(--green);
-  height: 100%;
-}
-
-.tx-tally-bar__other {
-  // --border-color is nearly the same darkness as the track it sits on
-  // (both are low-contrast dark blue-greys) — mixing toward --font-color
-  // gives it enough contrast to actually read as a second segment.
-  background: color-mix(in srgb, var(--font-color) 45%, var(--card-bg-color));
   height: 100%;
 }
 

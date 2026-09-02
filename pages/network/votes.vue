@@ -157,6 +157,8 @@ import SearchIcon from '~/assets/images/search.svg?inline'
 import Address from '~/components/transactions/Address.vue'
 import {
   isOperationalMimir,
+  isVoteWithdrawal,
+  requiredVotes,
   DEFAULT_OPERATIONAL_VOTES_MIN,
 } from '~/utils/mimir'
 
@@ -291,9 +293,33 @@ export default {
           notVoted: [...this.activeNodes],
         }
 
+        // The API orders each node's votes newest-first, so the first entry
+        // seen for an address is its latest vote and the rest are dropped.
+        const counted = new Set()
+
         for (let j = 0; j < vote.votes.length; j++) {
           const { key, date, address } = vote.votes[j]
           const formattedDate = moment(date / 1e6)
+
+          // notVoted starts as the full active set, so an address missing
+          // from it is either inactive or already withdrawn from the tally.
+          const delIndex = voteInfo.notVoted.indexOf(address)
+          if (counted.has(address) || delIndex === -1) {
+            continue
+          }
+          counted.add(address)
+
+          const isRecent = formattedDate.isAfter(twentyFourHoursAgo)
+          if (isRecent) {
+            this.last24HVotes++
+          }
+
+          // A negative value cancels the node's vote rather than backing
+          // that number: it joins no value bucket and stays in notVoted,
+          // while `counted` keeps its older votes from counting either.
+          if (isVoteWithdrawal(key)) {
+            continue
+          }
 
           if (!voteInfo.keys[key]) {
             voteInfo.keys[key] = {
@@ -302,27 +328,11 @@ export default {
             }
           }
 
-          const delIndex = voteInfo.notVoted.indexOf(address)
-          if (delIndex === -1) {
-            continue
-          }
-
           voteInfo.keys[key].addresses.push(address)
           voteInfo.notVoted.splice(delIndex, 1)
 
-          if (formattedDate.isAfter(twentyFourHoursAgo)) {
+          if (isRecent) {
             voteInfo.keys[key].votesInLast24h += 1
-            this.last24HVotes++
-          }
-        }
-
-        // A key can end up with no addresses if every node that voted for it
-        // has since cast a more recent vote for a different key (their
-        // latest vote wins and removes them from notVoted before this key is
-        // reached) - drop those empty entries.
-        for (const key of Object.keys(voteInfo.keys)) {
-          if (voteInfo.keys[key].addresses.length === 0) {
-            delete voteInfo.keys[key]
           }
         }
 
@@ -380,6 +390,11 @@ export default {
       return colors[+key % colors.length]
     },
     getVoteKeyLabel(voteValue, key) {
+      // A negative value isn't a value a node backs - it removes the node's
+      // vote on the key, so it never reads as "the node voted -1".
+      if (isVoteWithdrawal(key)) {
+        return `Withdrawn (${key})`
+      }
       if (voteValue === 'SOL-RPC-PROVIDER') {
         const providerMap = {
           1: '(1) Self Hosted',
@@ -396,13 +411,11 @@ export default {
       return key
     },
     getRequiredVotes(vote) {
-      if (vote.value === 'SOL-RPC-PROVIDER') {
-        return Math.floor(this.activeNodes.length * 0.25)
-      }
-      if (vote.operational) {
-        return this.operationalVotesMin
-      }
-      return this.votesRequired
+      return requiredVotes({
+        key: vote.value,
+        activeNodeCount: this.activeNodes.length,
+        operationalVotesMin: this.operationalVotesMin,
+      })
     },
     getDisplayRequired(vote) {
       return this.getRequiredVotes(vote)

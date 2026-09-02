@@ -134,6 +134,7 @@ import StreamingSwapHero from './components/hero/StreamingSwapHero.vue'
 import SwapHero from './components/hero/SwapHero.vue'
 import TxHeroSkeleton from './components/TxHeroSkeleton.vue'
 import DisconnectIcon from '~/assets/images/disconnect.svg?inline'
+import { isVoteWithdrawal } from '~/utils/mimir'
 import {
   blockTime,
   assetFromString,
@@ -2024,6 +2025,10 @@ export default {
         nodeAddress,
         key,
         value,
+        // A negative value cancels the node's vote rather than setting the
+        // key to that number - the hero renders a withdrawal instead of a
+        // vote for "-1".
+        isWithdrawal: isVoteWithdrawal(value),
         memo: `mimir:${key}:${value}`,
         timeDisplay: time.main,
         timeAgoDisplay: time.paren,
