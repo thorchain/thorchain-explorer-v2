@@ -5,7 +5,7 @@
     <BounceLoader v-if="isLoading" color="var(--font-color)" size="3rem" />
     <template v-else>
       <div
-        v-if="title"
+        v-if="title || $slots.title"
         :class="[
           { 'has-extra': $slots.header },
           'card-header',
@@ -19,9 +19,14 @@
             :src="imgSrc"
             :style="imgStyle"
           />
-          <h2 class="card-header-title">
-            {{ title }}
-          </h2>
+          <!-- `title` covers plain text; the slot is for a title that needs
+               markup, so it stays in the left-hand section instead of being
+               pushed right by `#header`'s space-between. -->
+          <slot name="title">
+            <h2 class="card-header-title">
+              {{ title }}
+            </h2>
+          </slot>
         </div>
         <slot name="header" />
       </div>

@@ -1,5 +1,8 @@
 <template>
   <card :title="title">
+    <template v-if="$scopedSlots.title" #title>
+      <slot name="title"></slot>
+    </template>
     <template #header>
       <slot name="header"></slot>
     </template>
@@ -60,9 +63,10 @@ export default {
     ApiIcon,
   },
   props: {
+    // Optional: a card can supply its title through the `title` slot instead.
     title: {
       type: String,
-      required: true,
+      default: '',
     },
     data: {
       type: Array,

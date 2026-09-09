@@ -1,19 +1,16 @@
 <template>
   <div class="leaderboard-container">
     <leaderboard-card
-      title=" "
       :data="affiliateData"
       sort-key="affiliate_fees_usd"
       :limit="limit"
       :is-loading="!affiliateData || affiliateData.length === 0"
     >
-      <template #header>
-        <span>
-          <h2 class="card-header-title">
-            Affiliate Collected
-            <small class="sub-title">- AVG affiliate bps</small>
-          </h2>
-        </span>
+      <template #title>
+        <h2 class="card-header-title">
+          Affiliate Collected
+          <small class="sub-title">- AVG affiliate bps</small>
+        </h2>
       </template>
       <template #default="{ row }">
         ${{ row.affiliate_fees_usd | number('0.00a') }}
@@ -101,6 +98,20 @@ export default {
 <style lang="scss" scoped>
 .sub-title {
   color: var(--sec-font-color);
+}
+
+// Card's own .card-header-title is scoped to Card.vue, so slotted content
+// cannot inherit it — restate it here to match the sibling cards that pass a
+// plain `title` prop.
+.card-header-title {
+  color: var(--sec-font-color);
+  font-size: $font-size-desktop;
+  font-weight: 700;
+  margin: $space-0;
+
+  @include lg {
+    font-size: $font-size-md;
+  }
 }
 
 .leaderboard-container {
