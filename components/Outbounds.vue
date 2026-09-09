@@ -262,38 +262,7 @@
       <div v-if="!topSwaps || topSwaps.length == 0" class="no-outbound">
         <h3>There is been no swaps in the last 24hr.</h3>
       </div>
-      <template v-for="(swap, index) in topSwaps">
-        <div :key="index" class="top-swap-item">
-          <div class="transactions">
-            <span style="font-size: 0.875rem; color: var(--sec-font-color)">
-              <small style="color: var(--font-color)">TxID</small>
-              <nuxt-link class="clickable" :to="`/tx/${swap.txID}`">
-                {{ formatAddress(swap.txID) }}
-              </nuxt-link>
-            </span>
-            <transaction-action
-              :row="swap"
-              :show-mini-bubble="false"
-              :no-border="true"
-            />
-          </div>
-          <div class="break"></div>
-          <div class="right-section">
-            <span class="mono">
-              <small style="color: var(--font-color)">Address</small>
-              <Address
-                :address="swap.inputAsset.address"
-                :use-custom-name="true"
-              ></Address>
-            </span>
-            <span>
-              <small style="color: var(--font-color)">Date</small>
-              <span class="date">{{ swap.date }}</span>
-            </span>
-          </div>
-        </div>
-        <hr :key="index + '-hr'" class="hr-space" />
-      </template>
+      <ActionRow v-for="(swap, index) in topSwaps" :key="index" :row="swap" />
       <nuxt-link to="/swaps" class="swaps-nav">More</nuxt-link>
     </template>
 
@@ -317,7 +286,7 @@ import moment from 'moment'
 import Address from '~/components/transactions/Address.vue'
 import scheduleIcon from '@/assets/images/schedule.svg?inline'
 import ArrowToDown from '~/assets/images/arrow-down.svg?inline'
-import TransactionAction from '~/components/transactions/TransactionAction.vue'
+import ActionRow from '~/components/transactions/ActionRow.vue'
 import AngleIcon from '~/assets/images/angle-down.svg?inline'
 import SkeletonLoader from '~/components/SkeletonLoader.vue'
 
@@ -325,7 +294,7 @@ export default {
   components: {
     scheduleIcon,
     ArrowToDown,
-    TransactionAction,
+    ActionRow,
     AngleIcon,
     Address,
     SkeletonLoader,
@@ -451,7 +420,9 @@ export default {
               in: swap.in,
               out: swap.out,
               metadata: swap.metadata,
-              date: moment(swap.date / 1e6).format('MMM D, HH:MM'),
+              // Left raw (nanoseconds) — ActionRow does its own formatting.
+              date: swap.date,
+              height: swap.height,
               txID: swap.in[0]?.txID,
               inputAsset: {
                 address: swap.in[0]?.address,
@@ -552,53 +523,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.top-swap-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  flex-direction: column;
-
-  .transactions {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-
-  @include md {
-    flex-direction: row;
-
-    .break {
-      display: none;
-    }
-  }
-
-  .right-section {
-    display: flex;
-    flex-direction: column;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    min-width: 205px;
-
-    > span {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      word-break: keep-all;
-      font-size: $font-size-sm;
-      color: var(--sec-font-color);
-
-      .value {
-        color: var(--primary-color);
-      }
-    }
-  }
-}
-
-.date {
-  color: var(--sec-font-color);
-  font-size: $font-size-sm;
-  margin-bottom: $space-8;
-  padding-left: $space-8;
-}
 .asset-item-info {
   display: flex;
   flex-direction: row;

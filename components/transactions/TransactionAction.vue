@@ -26,9 +26,7 @@
           </span>
         </div>
       </span>
-      <stream-icon v-if="isPendingSwap(row)" class="action-type">
-        ~
-      </stream-icon>
+      <stream-icon v-if="isPendingSwap" class="action-type"> ~ </stream-icon>
       <right-arrow v-else class="action-type" />
       <span
         v-for="(coin, i) in groupedOutCoins"
@@ -48,7 +46,7 @@
           </span>
         </div>
       </span>
-      <template v-if="isPendingSwap(row)">
+      <template v-if="isPendingSwap">
         <span
           v-if="
             pools &&
@@ -74,6 +72,12 @@
         </span>
         <span v-else class="pending-cell">
           <span class="pending-dots">
+            <asset-icon
+              v-if="pendingOutAsset"
+              :asset="pendingOutAsset"
+              :height="'1.2rem'"
+              :chain-height="'0.8rem'"
+            ></asset-icon>
             <span class="pending-text">Pending</span>
           </span>
         </span>
@@ -570,6 +574,30 @@ export default {
       }
       return this.row?.type
     },
+    // Affiliate payouts settle in the swap's own block, long before the
+    // user's outbound leaves THORChain, so row.out can be non-empty while the
+    // leg everyone actually cares about is still queued. groupedOutCoins
+    // already drops affiliate legs, so it — not row.out — is what says
+    // whether the swap landed.
+    isPendingSwap() {
+      return this.row?.status === 'pending' || this.groupedOutCoins.length === 0
+    },
+    // A pending swap has no out coin to draw yet, but its inbound memo names
+    // the destination asset, so the row can still say what it is swapping to
+    // instead of trailing off after the arrow.
+    pendingOutAsset() {
+      const memo = this.row?.metadata?.swap?.memo
+      if (!memo || !this.pools) {
+        return null
+      }
+      // Guard on the prefix: getOutAssetFromMemo trusts the second field to
+      // be an asset, which only holds for a swap memo (`=:ASSET:DEST:…`).
+      const prefix = memo.split(':')[0].toLowerCase()
+      if (!['=', 's', 'swap'].includes(prefix)) {
+        return null
+      }
+      return this.getOutAssetFromMemo(memo, this.pools)
+    },
     groupedOutCoins() {
       if (!this.row || !this.row.out) {
         return []
@@ -603,13 +631,6 @@ export default {
     },
   },
   methods: {
-    isPendingSwap(row) {
-      return (
-        row.out === undefined ||
-        row.out.length === 0 ||
-        row.status === 'pending'
-      )
-    },
     parseMemoToTxType(memo) {
       return parseMemoToTxType(memo)
     },

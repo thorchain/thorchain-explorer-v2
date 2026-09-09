@@ -549,12 +549,16 @@ export default {
     display: flex;
     align-items: center;
     gap: 2px;
+    // Lets the asset text below actually reach its ellipsis instead of
+    // forcing the row wider than the card.
+    min-width: 0;
   }
 
   .asset-item {
     display: flex;
     align-items: center;
     gap: 5px;
+    min-width: 0;
 
     .asset-text {
       display: inline-block;
@@ -567,23 +571,29 @@ export default {
       display: flex;
       align-items: center;
       gap: $space-5;
+      min-width: 0;
     }
   }
 
   .upper-body {
-    height: 42px;
-    overflow: auto;
     display: flex;
     align-items: center;
     margin-bottom: $space-10;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
     flex-wrap: wrap;
     justify-content: space-between;
     gap: $space-5;
+    min-width: 0;
 
-    &::-webkit-scrollbar {
-      display: none;
+    // Previously `height: 42px` with `overflow: auto` and the scrollbars
+    // hidden. Combined with flex-wrap that was self-defeating: as soon as a
+    // narrow screen pushed the tx hash onto a second line the content
+    // outgrew the fixed 42px, so the row silently became a vertically
+    // scrollable, half-clipped strip. It now grows to fit its lines.
+
+    // The hash is the part that wraps; keep it whole rather than letting it
+    // be squeezed into the leftover sliver beside the assets.
+    > small {
+      flex-shrink: 0;
     }
   }
 
