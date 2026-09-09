@@ -27,7 +27,13 @@
             <div class="tx-asset-label">Sender</div>
             <div class="tx-asset-primary tx-asset-primary--identity">
               <AssetIcon asset="THOR.RUNE" :height="'2.25rem'" />
-              <span>{{ addressFormatV2(overview.from) }}</span>
+              <nuxt-link
+                v-tooltip="overview.from"
+                class="tx-asset-address"
+                :to="`/address/${overview.from}`"
+              >
+                {{ addressFormatV2(overview.from) }}
+              </nuxt-link>
             </div>
             <div class="tx-asset-badge">THORChain network</div>
             <div class="tx-asset-values">
@@ -79,7 +85,13 @@
             </div>
             <div class="tx-asset-primary tx-asset-primary--identity">
               <AssetIcon asset="THOR.RUNE" :height="'2.25rem'" />
-              <span>{{ addressFormatV2(overview.to) }}</span>
+              <nuxt-link
+                v-tooltip="overview.to"
+                class="tx-asset-address"
+                :to="`/address/${overview.to}`"
+              >
+                {{ addressFormatV2(overview.to) }}
+              </nuxt-link>
             </div>
             <div class="tx-asset-badge">THORChain network</div>
             <div class="tx-asset-values">

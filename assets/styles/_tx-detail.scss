@@ -441,6 +441,23 @@
   }
 }
 
+// The address inside an identity panel links to that address's page. It
+// keeps .tx-asset-primary--identity's type untouched (it is the panel's
+// headline, not a .tx-link-styled affordance) and signals itself on hover
+// with colour alone — tinted with the panel's own accent like
+// .tx-flow-split is. No underline: at this size it reads as noise across
+// what is the panel's headline row.
+.tx-asset-address {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.15s ease;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--split-accent, var(--active-primary-color));
+  }
+}
+
 .tx-asset-badge {
   align-self: flex-start;
   background: color-mix(in srgb, var(--highlight) 8%, transparent);

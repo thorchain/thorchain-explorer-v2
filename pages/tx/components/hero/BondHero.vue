@@ -15,7 +15,13 @@
             <div class="tx-asset-label">Bond provider</div>
             <div class="tx-asset-primary tx-asset-primary--identity">
               <AssetIcon asset="THOR.RUNE" :height="'2.25rem'" />
-              <span>{{ addressFormatV2(overview.providerAddress) }}</span>
+              <nuxt-link
+                v-tooltip="overview.providerAddress"
+                class="tx-asset-address"
+                :to="`/address/${overview.providerAddress}`"
+              >
+                {{ addressFormatV2(overview.providerAddress) }}
+              </nuxt-link>
             </div>
             <div class="tx-asset-badge">THORChain network</div>
             <div class="tx-asset-values">
@@ -41,7 +47,13 @@
               <div class="tx-node-avatar">
                 <NodeIcon />
               </div>
-              <span>{{ addressFormatV2(overview.nodeAddress) }}</span>
+              <nuxt-link
+                v-tooltip="overview.nodeAddress"
+                class="tx-asset-address"
+                :to="`/address/${overview.nodeAddress}`"
+              >
+                {{ addressFormatV2(overview.nodeAddress) }}
+              </nuxt-link>
             </div>
             <div class="tx-panel-chips">
               <span
