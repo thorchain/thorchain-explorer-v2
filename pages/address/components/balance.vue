@@ -529,6 +529,7 @@ export default {
 .holding-row {
   column-gap: 1rem;
   display: grid;
+  grid-template-areas: 'asset amount value allocation';
   grid-template-columns:
     minmax(220px, 1.6fr) minmax(120px, 0.8fr) minmax(100px, 0.7fr)
     minmax(140px, 0.8fr);
@@ -553,6 +554,7 @@ export default {
   align-items: center;
   display: flex;
   gap: 0.85rem;
+  grid-area: asset;
   min-width: 0;
 }
 
@@ -581,10 +583,19 @@ export default {
   font-size: 0.92rem;
 }
 
+.holding-amount {
+  grid-area: amount;
+}
+
+.holding-value {
+  grid-area: value;
+}
+
 .holding-allocation {
   align-items: center;
   display: flex;
   gap: 0.7rem;
+  grid-area: allocation;
 }
 
 .allocation-track {
@@ -703,6 +714,7 @@ export default {
 @media (max-width: 1180px) {
   .holdings-head,
   .holding-row {
+    grid-template-areas: 'asset amount value';
     grid-template-columns: minmax(220px, 1.4fr) minmax(120px, 0.8fr) minmax(
         96px,
         0.7fr
@@ -715,15 +727,75 @@ export default {
   }
 }
 
+/* Stack each holding into a self-contained card so the table fits the
+   viewport width without horizontal scrolling. */
 @media (max-width: 860px) {
-  .holdings-head,
-  .holding-row {
-    grid-template-columns: minmax(0, 1.5fr) minmax(100px, 0.8fr);
+  .holdings-scroll {
+    max-height: none;
+    overflow-x: hidden;
+    overflow-y: visible;
   }
 
-  .holdings-head span:nth-child(3),
-  .holding-row .holding-value {
+  .holdings-table {
+    gap: 0;
+    min-width: 0;
+  }
+
+  .holdings-head {
     display: none;
+  }
+
+  .holding-row {
+    column-gap: 0.75rem;
+    grid-template-areas:
+      'asset value'
+      'asset amount'
+      'allocation allocation';
+    grid-template-columns: minmax(0, 1fr) minmax(0, auto);
+    min-height: 0;
+    padding: 0.85rem 0.25rem;
+    row-gap: 0.15rem;
+  }
+
+  .holding-asset {
+    align-self: center;
+    gap: 0.65rem;
+  }
+
+  .holding-name {
+    font-size: 0.95rem;
+  }
+
+  .holding-network {
+    font-size: 0.78rem;
+  }
+
+  .holding-row .holding-value {
+    align-self: end;
+    display: block;
+    font-weight: 600;
+    text-align: right;
+  }
+
+  .holding-amount {
+    align-self: start;
+    color: var(--sec-font-color);
+    font-size: 0.82rem;
+    overflow: hidden;
+    text-align: right;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .holding-row .holding-allocation {
+    display: flex;
+    margin-top: 0.5rem;
+  }
+
+  .allocation-percent {
+    font-size: 0.78rem;
+    min-width: 2.5rem;
+    text-align: right;
   }
 
   .allocation-legend {

@@ -80,6 +80,13 @@
       <div class="activity-shell">
         <div class="activity-shell__toolbar">
           <div class="toolbar-row">
+            <Select
+              class="preset-select"
+              name="address-mode"
+              :options="presetOptions"
+              :option="activePresetOption"
+              @update:option="activeMode = $event.value"
+            />
             <div class="preset-rail">
               <button
                 class="preset-pill"
@@ -414,6 +421,14 @@ import crossIcon from '~/assets/images/cross.svg?inline'
 import { getRujiraContractLabel } from '~/utils/rujiraContracts'
 import SelectFilter from '~/components/selectFilter.vue'
 
+const PRESET_OPTIONS = [
+  { label: 'Transactions', value: 'transactions' },
+  { label: 'LP/Savers', value: 'pools' },
+  { label: 'Bond', value: 'bond' },
+  { label: 'Thorname', value: 'thorname' },
+  { label: 'TCY', value: 'distribution' },
+]
+
 export default {
   components: {
     Thorname,
@@ -494,6 +509,15 @@ export default {
     }
   },
   computed: {
+    presetOptions() {
+      return PRESET_OPTIONS
+    },
+    activePresetOption() {
+      return (
+        PRESET_OPTIONS.find((o) => o.value === this.activeMode) ??
+        PRESET_OPTIONS[0]
+      )
+    },
     isScamAddress() {
       return checkScamAddress(this.address)
     },
@@ -1707,10 +1731,55 @@ export default {
   }
 }
 
+/* Below md the five modes collapse into a dropdown - the pill rail either
+   overflowed horizontally or wrapped into three cramped lines. Chip styling
+   mirrors the pool select on the depths page, with the border token in place
+   of that page's hard-coded #263238 so it holds up in the light themes. */
+.preset-select {
+  align-items: center;
+  background-color: var(--surface-4-color);
+  border: 1px solid var(--border-color);
+  border-radius: 9px;
+  justify-content: space-between;
+  padding: 7px 13px;
+  width: 100%;
+
+  ::v-deep > span {
+    color: var(--sec-font-color);
+    font-size: 14px;
+    font-weight: 700;
+    text-align: left;
+  }
+
+  ::v-deep .select-caret {
+    margin-left: 9px;
+  }
+
+  // the dropdown defaults to a 250px panel, which reads as detached under a
+  // full-width chip
+  ::v-deep .option-dialog {
+    left: 0;
+    max-width: none;
+    right: 0;
+
+    > .option-item {
+      text-align: left;
+    }
+  }
+
+  @include md {
+    display: none;
+  }
+}
+
 .preset-rail {
-  display: flex;
+  display: none;
   gap: $space-10;
   overflow-x: auto;
+
+  @include md {
+    display: flex;
+  }
 }
 
 .preset-pill {
