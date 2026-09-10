@@ -108,7 +108,9 @@
               <div class="asset-details">
                 <asset-icon :asset="group.asset" />
                 <span class="asset-name">
-                  {{ (group.totalAmount / 1e8) | number('0,0.0000') }}
+                  <span class="asset-amount mono">
+                    {{ (group.totalAmount / 1e8) | number('0,0.0000') }}
+                  </span>
                   <small class="asset-text sec-color">
                     {{ showAsset(group.asset) }}
                   </small>
@@ -540,6 +542,12 @@ export default {
   flex-direction: row;
   align-items: center;
   gap: $space-5;
+  flex: 1 1 auto;
+  min-width: 0;
+
+  > :first-child {
+    flex-shrink: 0;
+  }
 }
 .asset-item {
   display: flex;
@@ -552,6 +560,7 @@ export default {
     display: flex;
     align-items: center;
     gap: $space-5;
+    flex-shrink: 0;
   }
   .rotated {
     transform: rotate(180deg);
@@ -766,17 +775,25 @@ export default {
 
     .asset-text {
       display: inline-block;
-      max-width: 100px;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
+      overflow-wrap: anywhere;
+      min-width: 0;
     }
 
     .asset-name {
       display: flex;
       align-items: center;
+      flex-wrap: wrap;
       gap: 5px;
       color: var(--sec-font-color);
+      min-width: 0;
+    }
+
+    .asset-amount {
+      white-space: nowrap;
+    }
+
+    .asset-total-usd {
+      white-space: nowrap;
     }
   }
   .extra-right {

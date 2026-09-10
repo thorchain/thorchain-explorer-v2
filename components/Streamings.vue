@@ -572,6 +572,48 @@ export default {
       align-items: center;
       gap: $space-5;
       min-width: 0;
+      // The amount is a bare text node here, so without this a narrow row
+      // breaks it mid-value ("> " on one line, "269.4000" on the next) and
+      // knocks the ticker beside it off the shared baseline.
+      white-space: nowrap;
+    }
+  }
+
+  // Phone widths: both legs of a swap plus the arrow share one row, so at
+  // the inherited body size the amount alone eats the row and the ticker
+  // beside it collapses to a single ellipsised letter ("T…"). Shrinking the
+  // type and the icon buys back enough room for the asset name to actually
+  // read.
+  @media (max-width: #{$screen-md-min - 1px}) {
+    .asset-item {
+      gap: $space-4;
+
+      .asset-name {
+        font-size: $font-size-s;
+        gap: $space-4;
+      }
+
+      .asset-text {
+        font-size: $font-size-xs;
+      }
+
+      // AssetIcon sizes itself off these custom properties, which it sets
+      // inline from its `height` prop — so out-ranking that inline style is
+      // the only way to shrink it per-breakpoint.
+      .icon-asset-container {
+        --asset-height: 1.15rem !important;
+        --asset-width: 1.15rem !important;
+        --chain-asset-height: 0.55rem !important;
+        --chain-asset-width: 0.55rem !important;
+
+        margin-right: 0;
+      }
+    }
+
+    .action-type {
+      height: 0.8rem;
+      width: 0.8rem;
+      padding: $space-2;
     }
   }
 
@@ -594,6 +636,21 @@ export default {
     // be squeezed into the leftover sliver beside the assets.
     > small {
       flex-shrink: 0;
+    }
+
+    // Phone widths: rather than wrapping the hash onto a second line *under*
+    // the swap it belongs to — where it reads as a stray caption of the
+    // progress bar below it — give it its own full-width line above, so each
+    // item starts with the thing you tap.
+    @media (max-width: #{$screen-md-min - 1px}) {
+      gap: $space-2;
+      margin-bottom: $space-6;
+
+      > small {
+        order: -1;
+        width: 100%;
+        font-size: $font-size-xs;
+      }
     }
   }
 
@@ -627,5 +684,27 @@ export default {
   border: none;
   border-top: 1px solid var(--border-color);
   margin: $space-4 0;
+}
+
+// The .hr-space recipe exists twice already — in cards.scss (nested under
+// .card/.simple-card, which Card.vue's .card-container root is not) and in
+// Card.vue itself (whose <style> is scoped, so it cannot reach an <hr> passed
+// in through the slot: that carries *this* component's scope id, not Card's).
+// Neither reaches these rows, so the divider is defined locally, the same way
+// .skeleton-hr above is.
+.hr-space {
+  height: 0;
+  border: 0;
+  border-top: 1px solid var(--border-color);
+  opacity: 0.75;
+  // .streaming-item already carries a matching $space-10 padding-bottom, so
+  // the rule sits evenly between the two items it separates.
+  margin: $space-0 $space-0 $space-10;
+
+  // The loop emits a trailing <hr> after the last item; it would otherwise
+  // draw a rule between the list and the "TOP Swaps (24hr)" link below.
+  &:last-of-type {
+    display: none;
+  }
 }
 </style>
