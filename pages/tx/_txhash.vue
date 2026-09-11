@@ -1646,19 +1646,9 @@ export default {
       const outboundHasSuccess = outTxs?.some((tx) =>
         tx.memo?.toLowerCase().startsWith('out')
       )
-      const streamingProgressEstimate = (() => {
-        const directEstimate = parseInt(streamingMeta?.outEstimation ?? 0)
-        if (directEstimate) return directEstimate
-        const partialOut = parseInt(streamingMeta?.outCoin?.amount ?? 0)
-        const count = parseInt(streamingMeta?.count ?? 0)
-        const quantity = parseInt(streamingMeta?.quantity ?? 0)
-        if (!partialOut || !count || !quantity) return 0
-        return Math.round((partialOut * quantity) / count)
-      })()
       const estimatedOutAmount =
         outAmount ||
-        +this.quote?.expected_amount_out ||
-        streamingProgressEstimate
+        this.estimateSwapOutput(streamingMeta, inAsset, inAmount, outAsset)
       let outAmountUSD =
         (+(swapMetadata?.outPriceUSD ?? 0) * estimatedOutAmount) / 1e8 ||
         this.amountToUSD(outAsset, estimatedOutAmount, this.pools) ||
@@ -2109,19 +2099,9 @@ export default {
         tx.memo?.toLowerCase().startsWith('out')
       )
       const streamingMeta = swapMeta?.streamingSwapMeta
-      const streamingProgressEstimate = (() => {
-        const directEstimate = parseInt(streamingMeta?.outEstimation ?? 0)
-        if (directEstimate) return directEstimate
-        const partialOut = parseInt(streamingMeta?.outCoin?.amount ?? 0)
-        const count = parseInt(streamingMeta?.count ?? 0)
-        const quantity = parseInt(streamingMeta?.quantity ?? 0)
-        if (!partialOut || !count || !quantity) return 0
-        return Math.round((partialOut * quantity) / count)
-      })()
       const estimatedOutAmount =
         outAmount ||
-        +this.quote?.expected_amount_out ||
-        streamingProgressEstimate
+        this.estimateSwapOutput(streamingMeta, inAsset, inAmount, outAsset)
       let outAmountUSD =
         (+(swapMeta?.outPriceUSD ?? 0) * estimatedOutAmount) / 1e8 ||
         this.amountToUSD(outAsset, estimatedOutAmount, this.pools) ||
@@ -3103,6 +3083,42 @@ export default {
         console.error('Failed to fetch streaming progress:', error)
       }
     },
+    // Best-effort projection of a still-pending swap's final output, most
+    // trustworthy source first:
+    //   1. the quote endpoint's own expected_amount_out;
+    //   2. the stream's declared outEstimation, else its partial output
+    //      scaled up to the full sub-swap quantity;
+    //   3. a plain price-ratio estimate off current pool prices.
+    // (3) is the last resort for when the quote never arrived — the endpoint
+    // erroring, or the request being skipped because an asset couldn't be
+    // resolved — and no sub-swap has landed yet, which is exactly when the
+    // hero would otherwise show a 0 output for a swap that's clearly moving.
+    // It deliberately ignores slippage and fees, so it reads slightly high —
+    // acceptable because every caller only uses it while the real outbound
+    // amount is still unknown, and labels the figure as projected.
+    estimateSwapOutput(streamingMeta, inAsset, inAmount, outAsset) {
+      const quoted = +this.quote?.expected_amount_out
+      if (quoted) return quoted
+
+      const directEstimate = parseInt(streamingMeta?.outEstimation ?? 0)
+      if (directEstimate) return directEstimate
+
+      const partialOut = parseInt(streamingMeta?.outCoin?.amount ?? 0)
+      const count = parseInt(streamingMeta?.count ?? 0)
+      const quantity = parseInt(streamingMeta?.quantity ?? 0)
+      if (partialOut && count && quantity) {
+        return Math.round((partialOut * quantity) / count)
+      }
+
+      if (!inAsset || !outAsset || !inAmount || !this.pools) return 0
+      const inUSD = this.amountToUSD(inAsset, inAmount, this.pools)
+      // amountToUSD of one whole unit is the asset's USD price, and it
+      // already maps trade/secure/synth assets back onto their native pool
+      // before looking the price up.
+      const outUnitUSD = this.amountToUSD(outAsset, 1e8, this.pools)
+      if (!inUSD || !outUnitUSD) return 0
+      return Math.round((inUSD / outUnitUSD) * 1e8)
+    },
     // Live count/quantity/fill/remaining-time/swapped-so-far for
     // streamingOverview — falls back to the accordion snapshot
     // (count/quantity only, no in/remaining) until fetchStreamingProgress
@@ -4083,12 +4099,22 @@ export default {
         const feeParts = memo.fee ? String(memo.fee).split('/') : []
         const affiliateParamsValid =
           affiliateFee > 0 && affiliateParts.length === feeParts.length
-        if (thorStatus?.stages.swap_status?.pending && !this.quote) {
+        // Both legs must have resolved to a real asset: the quote endpoint
+        // rejects an empty from_asset/to_asset outright, so sending one is a
+        // guaranteed failure. When it can't be fetched (unresolvable asset,
+        // or the endpoint erroring), estimateSwapOutput below covers the
+        // pending output figure instead.
+        if (
+          thorStatus?.stages.swap_status?.pending &&
+          !this.quote &&
+          inAsset &&
+          outAsset
+        ) {
           try {
             const { data: quoteData } = await this.$api.getQuote({
               amount: inAmount,
-              from_asset: inAsset ? assetToString(inAsset) : '',
-              to_asset: outAsset ? assetToString(outAsset) : '',
+              from_asset: assetToString(inAsset),
+              to_asset: assetToString(outAsset),
               destination: memo.destAddr?.split('/')[0],
               streaming_interval:
                 thorStatus?.stages.swap_status?.streaming?.interval ||
@@ -5532,23 +5558,9 @@ export default {
 
       const streamingMeta = swapMetadata?.streamingSwapMeta
 
-      // When the quote endpoint fails, estimate the final output by projecting
-      // the accumulated streaming output to the full swap quantity.
-      const streamingProgressEstimate = (() => {
-        // Prefer the direct outEstimation field when available.
-        const directEstimate = parseInt(streamingMeta?.outEstimation ?? 0)
-        if (directEstimate) return directEstimate
-        // Fall back to projecting partial progress to the full quantity.
-        const partialOut = parseInt(streamingMeta?.outCoin?.amount ?? 0)
-        const count = parseInt(streamingMeta?.count ?? 0)
-        const quantity = parseInt(streamingMeta?.quantity ?? 0)
-        if (!partialOut || !count || !quantity) return 0
-        return Math.round((partialOut * quantity) / count)
-      })()
       const estimatedOutAmount =
         outAmount ||
-        +this.quote?.expected_amount_out ||
-        streamingProgressEstimate
+        this.estimateSwapOutput(streamingMeta, inAsset, inAmount, outAsset)
 
       // swapMetadata's historical inPriceUSD/outPriceUSD only exist on a
       // Midgard 'swap'/'limit_swap' action — a pure refund has neither (see

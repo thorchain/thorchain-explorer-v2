@@ -628,23 +628,38 @@ export function approxBlockSeconds(chain) {
   }
 }
 
+// Mirrors thornode's own memo short codes (common/asset.go `Asset.ShortCode`,
+// resolved by `NewAssetWithShortCodes` before the memo's asset is parsed).
+// Some codes are two characters ('tr', 'ta', 'do', 'ad'), so the lookup below
+// can't assume a single letter — a swap memo like `=:o:<addr>` (SOL.SOL) or
+// `=:tr:<addr>` (TRON.TRX) otherwise falls through unparsed and leaves the
+// target asset undefined for the whole tx page.
 const hashMapShorts = {
   a: 'AVAX.AVAX',
+  ad: 'ADA.ADA',
   b: 'BTC.BTC',
   c: 'BCH.BCH',
-  n: 'BNB.BNB',
   d: 'DOGE.DOGE',
-  s: 'BSC.BNB',
+  do: 'DOT.DOT',
   e: 'ETH.ETH',
+  f: 'BASE.ETH',
   g: 'GAIA.ATOM',
   l: 'LTC.LTC',
+  m: 'XMR.XMR',
+  n: 'BNB.BNB',
+  o: 'SOL.SOL',
+  p: 'POL.POL',
   r: 'THOR.RUNE',
-  f: 'BASE.ETH',
+  s: 'BSC.BNB',
+  ta: 'TAO.TAO',
+  tr: 'TRON.TRX',
+  u: 'SUI.SUI',
   x: 'XRP.XRP',
+  z: 'ZEC.ZEC',
 }
 
 export function shortAssetName(name) {
-  if (name.length !== 1) {
+  if (typeof name !== 'string' || name.length > 2) {
     return name
   }
 
@@ -667,6 +682,13 @@ function convertNamiToAsset(assetStr) {
 export function assetFromString(s) {
   if (typeof s === 'object') {
     return s
+  }
+
+  // Callers routinely hand this an asset that failed to resolve upstream
+  // (an unknown memo short code, a missing coin). Returning null keeps that
+  // a rendering gap instead of a TypeError that takes the whole page down.
+  if (typeof s !== 'string' || !s) {
+    return null
   }
 
   if (s.toUpperCase() === 'TCY') {
