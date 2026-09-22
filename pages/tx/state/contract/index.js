@@ -1,5 +1,6 @@
 import { buildDaoProposalOverview } from './daoProposal.js'
 import { buildOrderBookClearingOverview } from './orderBookClearing.js'
+import { buildLiquidyMarketSwapOverview } from './liquidyMarketSwap.js'
 import { buildLimitOrderOverview } from './limitOrder.js'
 import { buildCancelStrategyOverview } from './cancelStrategy.js'
 import { buildFinMarketSwapOverview } from './finMarketSwap.js'
@@ -38,6 +39,14 @@ import { buildCalcAggregateOverview } from './calcAggregateFallback.js'
 export const PRE_GUARD_BUILDERS = [
   buildDaoProposalOverview,
   buildOrderBookClearingOverview,
+  // Liquidy market orders also run pre-guard, and for both of the same
+  // reasons: they span the whole contractActions array (the router splits
+  // one order across several MsgExecuteContract messages, so
+  // ctx.singleAction is null and no SINGLE_ACTION_BUILDER can ever match),
+  // and they co-occur with a non-contract action — the `swap` Midgard
+  // raises for the FIN book's virtualisation fill — which the mixed-action
+  // guard below would otherwise bail on.
+  buildLiquidyMarketSwapOverview,
 ]
 
 export const SINGLE_ACTION_BUILDERS = [
