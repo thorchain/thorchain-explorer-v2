@@ -31,7 +31,7 @@ function withCache(key, fn, ttl = 60_000) {
 
 export function getStats() {
   return withCache('stats', () =>
-    $axiosInstace.get(`stats`)
+    $axiosInstace.get(`https://vanaheimex.com/stats`)
   )
 }
 
