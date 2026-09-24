@@ -121,6 +121,14 @@
               </div>
 
               <div class="number-item">
+                <span v-if="group.vaults.length > 0" class="vault-dots">
+                  <color-hash
+                    v-for="v in group.vaults"
+                    :key="v.pubKey"
+                    v-tooltip="vaultTooltip(v)"
+                    :name="v.pubKey"
+                  />
+                </span>
                 <span
                   v-if="group.ongoingCount > 0"
                   :class="'mini-bubble'"
@@ -166,6 +174,85 @@
                 class="asset-info"
               >
                 <div class="left-part">
+                  <VDropdown
+                    v-if="o.vault_pub_key"
+                    theme="dropdown"
+                    placement="bottom-start"
+                    class="vault-dropdown"
+                    popper-class="vault-popper"
+                    :distance="8"
+                    :triggers="['hover', 'click']"
+                    :hide-triggers="['hover']"
+                    :popper-triggers="['hover']"
+                    :delay="{ show: 60, hide: 250 }"
+                    @click.native.stop
+                  >
+                    <span class="vault-dot-hit">
+                      <color-hash :name="o.vault_pub_key" />
+                    </span>
+                    <template #popper>
+                      <div class="tooltip-header">
+                        <color-hash :name="o.vault_pub_key" />
+                        <span>Asgard Vault</span>
+                        <span
+                          v-if="vaultStatusFor(o.vault_pub_key)"
+                          :class="[
+                            'mini-bubble',
+                            {
+                              yellow:
+                                vaultStatusFor(o.vault_pub_key) === 'Retiring',
+                            },
+                          ]"
+                        >
+                          {{ vaultStatusFor(o.vault_pub_key) }}
+                        </span>
+                      </div>
+                      <div class="tooltip-body vault-popover">
+                        <div class="vault-row">
+                          <span class="vault-label">Vault Pub Key</span>
+                          <span class="vault-value mono">
+                            {{ o.vault_pub_key }}
+                            <copy
+                              :str-copy="o.vault_pub_key"
+                              size="small"
+                              :hide-toast="true"
+                            />
+                          </span>
+                        </div>
+                        <div
+                          v-if="vaultAddressFor(o.vault_pub_key, o.chain)"
+                          class="vault-row"
+                        >
+                          <span class="vault-label">
+                            {{ o.chain }} Vault Address
+                          </span>
+                          <span class="vault-value mono">
+                            <NuxtLink
+                              class="clickable"
+                              :to="{
+                                path: `/address/${vaultAddressFor(
+                                  o.vault_pub_key,
+                                  o.chain
+                                )}`,
+                              }"
+                            >
+                              {{ vaultAddressFor(o.vault_pub_key, o.chain) }}
+                            </NuxtLink>
+                            <copy
+                              :str-copy="
+                                vaultAddressFor(o.vault_pub_key, o.chain)
+                              "
+                              size="small"
+                              :hide-toast="true"
+                            />
+                          </span>
+                        </div>
+                        <span v-else class="vault-missing">
+                          Vault details unavailable
+                        </span>
+                      </div>
+                    </template>
+                  </VDropdown>
                   <span class="asset-name">
                     {{
                       $options.filters.number(o.coin.amount / 1e8, '0,0.0000')
@@ -191,18 +278,25 @@
                   >
                     Scheduled
                   </div>
-                  <small
-                    v-if="o.to_address"
-                    class="mono outbound-destination"
-                  >
-                    &rarr; <Address :address="o.to_address" :show-copy-icon="false"></Address>
+                  <small v-if="o.to_address" class="mono outbound-destination">
+                    &rarr;
+                    <Address
+                      :address="o.to_address"
+                      :show-copy-icon="false"
+                    ></Address>
                   </small>
                 </div>
                 <div class="right-part">
-                  <div v-if="o.height || o.blocksSinceScheduled != null" class="outbound-timing">
+                  <div
+                    v-if="o.height || o.blocksSinceScheduled != null"
+                    class="outbound-timing"
+                  >
                     <template v-if="blocksPastDue(o) > 0">
                       <span
-                        :class="['outbound-pastdue', { 'outbound-stuck-text': isStuck(o) }]"
+                        :class="[
+                          'outbound-pastdue',
+                          { 'outbound-stuck-text': isStuck(o) },
+                        ]"
                       >
                         ~{{ pastDueTime(blocksPastDue(o)) }} past due
                       </span>
@@ -210,11 +304,17 @@
                         {{ blocksPastDue(o) | number('0,0') }} blocks
                       </span>
                     </template>
-                    <span v-else-if="getOutboundEta(o.height)" class="outbound-eta">
+                    <span
+                      v-else-if="getOutboundEta(o.height)"
+                      class="outbound-eta"
+                    >
                       ~{{ getOutboundEta(o.height) }}
                     </span>
                     <span
-                      v-if="o.scheduledOutboundHeight && o.scheduledOutboundHeight !== o.height"
+                      v-if="
+                        o.scheduledOutboundHeight &&
+                        o.scheduledOutboundHeight !== o.height
+                      "
                       v-tooltip="'Original schedule → latest queue attempt'"
                       class="outbound-timing-sub mono"
                     >
@@ -314,6 +414,8 @@ export default {
       Mode: 'ongoing-outbounds',
       topSwaps: [],
       angleRotated: [],
+      vaults: {},
+      vaultsFetchedAt: 0,
     }
   },
   computed: {
@@ -350,6 +452,7 @@ export default {
             stuckCount: 0,
             maxBlocksPastDue: 0,
             label: o.label,
+            vaultMap: {},
             items: [],
           }
         }
@@ -360,6 +463,18 @@ export default {
         acc[key].totalAmount += amount
         acc[key].totalAmountUSD += amountUSD
         acc[key].count += 1
+
+        if (o.vault_pub_key) {
+          const vault = acc[key].vaultMap[o.vault_pub_key]
+          if (vault) {
+            vault.count += 1
+          } else {
+            acc[key].vaultMap[o.vault_pub_key] = {
+              pubKey: o.vault_pub_key,
+              count: 1,
+            }
+          }
+        }
 
         if (o.label === 'Scheduled') {
           acc[key].scheduledCount += 1
@@ -381,7 +496,10 @@ export default {
         return acc
       }, {})
 
-      return Object.values(grouped)
+      return Object.values(grouped).map((g) => ({
+        ...g,
+        vaults: Object.values(g.vaultMap),
+      }))
     },
     ...mapGetters({
       chainsHeight: 'getChainsHeight',
@@ -390,6 +508,7 @@ export default {
     }),
   },
   mounted() {
+    this.updateVaults()
     this.updateOutbounds()
     this.updateTopSwaps()
     // Update the component every 20 secs
@@ -488,6 +607,50 @@ export default {
       }
       this.outbounds = resData
       this.loading = false
+      this.ensureVaults()
+    },
+    async updateVaults() {
+      this.vaultsFetchedAt = Date.now()
+      try {
+        const { data } = await this.$api.getAsgard()
+        this.vaults = (data ?? []).reduce((acc, v) => {
+          if (v?.pub_key) acc[v.pub_key] = v
+          return acc
+        }, {})
+      } catch (error) {
+        console.error('Error fetching asgard vaults:', error)
+      }
+    },
+    // Vaults only change on churn, so refetch lazily when an outbound
+    // references a pub key we haven't seen yet (throttled to 1 min).
+    ensureVaults() {
+      const unknown = this.outbounds.some(
+        (o) => o.vault_pub_key && !this.vaults[o.vault_pub_key]
+      )
+      if (unknown && Date.now() - this.vaultsFetchedAt > 60000) {
+        this.updateVaults()
+      }
+    },
+    vaultFor(pubKey) {
+      return pubKey ? this.vaults[pubKey] : undefined
+    },
+    vaultAddressFor(pubKey, chain) {
+      if (!chain) return undefined
+      return this.vaultFor(pubKey)?.addresses?.find((a) => a.chain === chain)
+        ?.address
+    },
+    vaultStatusFor(pubKey) {
+      const status = this.vaultFor(pubKey)?.status
+      if (status === 'ActiveVault') return 'Active'
+      if (status === 'RetiringVault') return 'Retiring'
+      return status
+    },
+    vaultTooltip(vault) {
+      const status = this.vaultStatusFor(vault.pubKey)
+      return (
+        `${vault.count} outbound${vault.count === 1 ? '' : 's'} from vault ` +
+        `${this.addressFormatV2(vault.pubKey)}${status ? ` (${status})` : ''}`
+      )
     },
     blocksPastDue(o) {
       // Prefer blocks_since_scheduled from tx status (reflects original schedule,
@@ -890,6 +1053,65 @@ export default {
       color: var(--sec-font-color);
       opacity: 0.7;
     }
+  }
+}
+
+.vault-dots {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-right: $space-3;
+}
+
+.vault-dropdown {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+
+  // Enlarge the touch target around the 10px dot without shifting the row.
+  .vault-dot-hit {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: $space-8;
+    margin: -$space-8;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+.vault-popover {
+  min-width: 200px;
+
+  .vault-row {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .vault-label {
+    font-size: 10px;
+    color: var(--sec-font-color);
+    opacity: 0.7;
+  }
+
+  .vault-value {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--font-color);
+    word-break: break-all;
+
+    a {
+      word-break: break-all;
+    }
+  }
+
+  .vault-missing {
+    font-size: 11px;
+    color: var(--sec-font-color);
+    opacity: 0.7;
   }
 }
 </style>

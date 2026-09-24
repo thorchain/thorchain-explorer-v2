@@ -34,6 +34,13 @@
   border-color: var(--border-color);
 }
 
+// The outbound vault panel hangs off a 10px dot: floating-vue centres the arrow
+// on the reference rather than on the dot, so it lands adrift of what it points
+// at. The panel reads fine as a plain floating card without it.
+.v-popper__popper.vault-popper .v-popper__arrow-container {
+  display: none;
+}
+
 // Test echarts tooltip
 .echarts > div:nth-of-type(2) {
   background-color: var(--bgt-color) !important;
