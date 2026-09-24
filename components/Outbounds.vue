@@ -122,11 +122,14 @@
 
               <div class="number-item">
                 <span v-if="group.vaults.length > 0" class="vault-dots">
-                  <color-hash
+                  <vault-dot
                     v-for="v in group.vaults"
                     :key="v.pubKey"
-                    v-tooltip="vaultTooltip(v)"
-                    :name="v.pubKey"
+                    :pub-key="v.pubKey"
+                    :vault="vaultFor(v.pubKey)"
+                    :chain="v.chain"
+                    :count="v.count"
+                    compact
                   />
                 </span>
                 <span
@@ -174,85 +177,12 @@
                 class="asset-info"
               >
                 <div class="left-part">
-                  <VDropdown
+                  <vault-dot
                     v-if="o.vault_pub_key"
-                    theme="dropdown"
-                    placement="bottom-start"
-                    class="vault-dropdown"
-                    popper-class="vault-popper"
-                    :distance="8"
-                    :triggers="['hover', 'click']"
-                    :hide-triggers="['hover']"
-                    :popper-triggers="['hover']"
-                    :delay="{ show: 60, hide: 250 }"
-                    @click.native.stop
-                  >
-                    <span class="vault-dot-hit">
-                      <color-hash :name="o.vault_pub_key" />
-                    </span>
-                    <template #popper>
-                      <div class="tooltip-header">
-                        <color-hash :name="o.vault_pub_key" />
-                        <span>Asgard Vault</span>
-                        <span
-                          v-if="vaultStatusFor(o.vault_pub_key)"
-                          :class="[
-                            'mini-bubble',
-                            {
-                              yellow:
-                                vaultStatusFor(o.vault_pub_key) === 'Retiring',
-                            },
-                          ]"
-                        >
-                          {{ vaultStatusFor(o.vault_pub_key) }}
-                        </span>
-                      </div>
-                      <div class="tooltip-body vault-popover">
-                        <div class="vault-row">
-                          <span class="vault-label">Vault Pub Key</span>
-                          <span class="vault-value mono">
-                            {{ o.vault_pub_key }}
-                            <copy
-                              :str-copy="o.vault_pub_key"
-                              size="small"
-                              :hide-toast="true"
-                            />
-                          </span>
-                        </div>
-                        <div
-                          v-if="vaultAddressFor(o.vault_pub_key, o.chain)"
-                          class="vault-row"
-                        >
-                          <span class="vault-label">
-                            {{ o.chain }} Vault Address
-                          </span>
-                          <span class="vault-value mono">
-                            <NuxtLink
-                              class="clickable"
-                              :to="{
-                                path: `/address/${vaultAddressFor(
-                                  o.vault_pub_key,
-                                  o.chain
-                                )}`,
-                              }"
-                            >
-                              {{ vaultAddressFor(o.vault_pub_key, o.chain) }}
-                            </NuxtLink>
-                            <copy
-                              :str-copy="
-                                vaultAddressFor(o.vault_pub_key, o.chain)
-                              "
-                              size="small"
-                              :hide-toast="true"
-                            />
-                          </span>
-                        </div>
-                        <span v-else class="vault-missing">
-                          Vault details unavailable
-                        </span>
-                      </div>
-                    </template>
-                  </VDropdown>
+                    :pub-key="o.vault_pub_key"
+                    :vault="vaultFor(o.vault_pub_key)"
+                    :chain="o.chain"
+                  />
                   <span class="asset-name">
                     {{
                       $options.filters.number(o.coin.amount / 1e8, '0,0.0000')
@@ -471,6 +401,7 @@ export default {
           } else {
             acc[key].vaultMap[o.vault_pub_key] = {
               pubKey: o.vault_pub_key,
+              chain: o.chain,
               count: 1,
             }
           }
@@ -633,24 +564,6 @@ export default {
     },
     vaultFor(pubKey) {
       return pubKey ? this.vaults[pubKey] : undefined
-    },
-    vaultAddressFor(pubKey, chain) {
-      if (!chain) return undefined
-      return this.vaultFor(pubKey)?.addresses?.find((a) => a.chain === chain)
-        ?.address
-    },
-    vaultStatusFor(pubKey) {
-      const status = this.vaultFor(pubKey)?.status
-      if (status === 'ActiveVault') return 'Active'
-      if (status === 'RetiringVault') return 'Retiring'
-      return status
-    },
-    vaultTooltip(vault) {
-      const status = this.vaultStatusFor(vault.pubKey)
-      return (
-        `${vault.count} outbound${vault.count === 1 ? '' : 's'} from vault ` +
-        `${this.addressFormatV2(vault.pubKey)}${status ? ` (${status})` : ''}`
-      )
     },
     blocksPastDue(o) {
       // Prefer blocks_since_scheduled from tx status (reflects original schedule,
@@ -1059,59 +972,9 @@ export default {
 .vault-dots {
   display: flex;
   align-items: center;
-  gap: 3px;
+  // Matches twice the compact dot's hit padding, so the targets sit flush
+  // without overlapping onto each other.
+  gap: $space-6;
   margin-right: $space-3;
-}
-
-.vault-dropdown {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  flex-shrink: 0;
-
-  // Enlarge the touch target around the 10px dot without shifting the row.
-  .vault-dot-hit {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: $space-8;
-    margin: -$space-8;
-    -webkit-tap-highlight-color: transparent;
-  }
-}
-
-.vault-popover {
-  min-width: 200px;
-
-  .vault-row {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .vault-label {
-    font-size: 10px;
-    color: var(--sec-font-color);
-    opacity: 0.7;
-  }
-
-  .vault-value {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 11px;
-    color: var(--font-color);
-    word-break: break-all;
-
-    a {
-      word-break: break-all;
-    }
-  }
-
-  .vault-missing {
-    font-size: 11px;
-    color: var(--sec-font-color);
-    opacity: 0.7;
-  }
 }
 </style>
