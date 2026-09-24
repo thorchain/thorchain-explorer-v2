@@ -7,7 +7,6 @@ import {
 } from '@xchainjs/xchain-util'
 import compare from 'semver/functions/compare'
 import moment from 'moment'
-import ColorHash from 'color-hash'
 import { AssetImage } from '~/classes/assetImage'
 import {
   assetFromString,
@@ -21,7 +20,7 @@ import {
   interfaces,
 } from '~/utils'
 import endpoints from '~/api/endpoints'
-const colorHash = new ColorHash({ lightness: 0.5 })
+import { hashColor } from '~/utils/hashColor'
 
 export default {
   data() {
@@ -536,10 +535,10 @@ export default {
       if (disable || !vaultAddress) {
         return 'var(--active-primary-color)'
       }
-      return colorHash.hex(vaultAddress)
+      return hashColor(vaultAddress)
     },
     createColor(hash) {
-      return colorHash.hex(hash)
+      return hashColor(hash)
     },
     parseCosmosAsset(casset) {
       const firstAsset = casset.split(',')[0]
