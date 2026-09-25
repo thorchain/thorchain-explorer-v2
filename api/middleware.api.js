@@ -374,3 +374,13 @@ export function getReveneuPaidToTc() {
     endpoints[process.env.NETWORK].SERVER_URL + 'api/reveneuePaidToTc'
   )
 }
+
+// The dashboard's streaming/limit list comes from the middleware rather than
+// thornode's `swaps/streaming`: it decorates every entry with the inbound
+// `memo`, which is the only reliable way to tell a resting limit order from a
+// genuine streaming swap (and to read the affiliate off it).
+export function getStreamingSwaps() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL + 'api/streamingSwaps'
+  )
+}

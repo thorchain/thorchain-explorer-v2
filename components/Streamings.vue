@@ -102,20 +102,27 @@
                     </span>
                   </div>
                 </div>
-                <small v-if="o.tx_id" class="sec-color mono">
-                  <NuxtLink
-                    v-if="isValidTx(o.tx_id)"
-                    class="clickable"
-                    :to="{ path: `/tx/${o.tx_id}` }"
-                  >
-                    {{ formatAddress(o.tx_id) }}
-                  </NuxtLink>
-                </small>
+                <div
+                  v-if="o.tx_id || affiliateAddress(o)"
+                  class="swap-meta sec-color mono"
+                >
+                  <affiliate
+                    v-if="affiliateAddress(o)"
+                    :affiliate-address="affiliateAddress(o)"
+                  />
+                  <small v-if="o.tx_id && isValidTx(o.tx_id)">
+                    <NuxtLink
+                      class="clickable"
+                      :to="{ path: `/tx/${o.tx_id}` }"
+                    >
+                      {{ formatAddress(o.tx_id) }}
+                    </NuxtLink>
+                  </small>
+                </div>
               </div>
 
-              <div v-if="o.quantity && o.count !== undefined" class="extra-info">
+              <div v-if="o.quantity > 0" class="extra-info">
                 <progress-bar
-                  v-if="o.quantity > 0"
                   :width="(successfulCount(o) / o.quantity) * 100"
                   height="4px"
                 />
@@ -124,10 +131,7 @@
                 </small>
               </div>
 
-              <small
-                v-if="o.interval && o.quantity && o.count !== undefined"
-                style="margin-top: 5px"
-              >
+              <small v-if="o.interval && o.quantity" style="margin-top: 5px">
                 <template v-if="isLimitOrder(o)">
                   <small style="color: var(--font-color)">Expires in </small>
                   <span class="sec-color">{{ calculateETA(o) }}</span>
@@ -223,7 +227,7 @@
                     </span>
                   </div>
                 </div>
-                <small v-if="o.tx" class="sec-color mono">
+                <small v-if="o.tx" class="swap-meta sec-color mono">
                   <span v-if="o.swap_type === 'limit'" class="mini-bubble info">
                     Limit
                   </span>
@@ -283,11 +287,16 @@ export default {
     }
   },
   computed: {
-    // Resting limit orders are served by the same `swaps/streaming` endpoint
-    // as genuine streaming swaps, so split them into their own tab: their
+    // `api/streamingSwaps` returns resting limit orders and genuine streaming
+    // swaps mixed together, so split them into their own tabs: their
     // interval/quantity semantics and progress mean different things.
     realStreamingSwaps() {
-      return this.streamingSwaps.filter((s) => !this.isLimitOrder(s))
+      return this.streamingSwaps.filter(
+        // A streaming swap that hasn't swapped anything yet hasn't started, so
+        // there is nothing to show for it; a limit order resting at `in: 0` is
+        // the normal case and stays listed.
+        (s) => !this.isLimitOrder(s) && Number(s?.in || 0) > 0
+      )
     },
     limitOrderSwaps() {
       return this.streamingSwaps.filter((s) => this.isLimitOrder(s))
@@ -327,16 +336,6 @@ export default {
       pools: 'getPools',
       chainsHeight: 'getChainsHeight',
     }),
-    // Resting limit orders still show up in the swap queue (with `swap_type`
-    // and the raw memo) while they're active, so cross-reference by tx id to
-    // tell them apart from ordinary streaming swaps.
-    limitOrderTxIds() {
-      return new Set(
-        (this.swapQueue || [])
-          .filter((q) => q.swap_type === 'limit' && q.tx?.id)
-          .map((q) => q.tx.id)
-      )
-    },
   },
   watch: {
     pools(n, o) {
@@ -359,12 +358,7 @@ export default {
   methods: {
     async updateStreamingSwap() {
       try {
-        const resData = (await this.$api.getStreamingSwaps()).data
-
-        // Only show streamings that have started (have non-zero input swapped).
-        this.streamingSwaps = (resData || []).filter(
-          (s) => Number(s?.in || 0) > 0
-        )
+        this.streamingSwaps = (await this.$api.getStreamingSwaps()).data || []
         this.loading = false
       } catch (error) {
         console.error(error)
@@ -380,8 +374,21 @@ export default {
     successfulCount(o) {
       return Math.max((o.count || 0) - (o.failed_swaps?.length || 0), 0)
     },
+    // The inbound memo is the only reliable discriminator: a `=<` / `=>`
+    // prefix is a limit order, `=` / `SWAP` a streaming swap — which is
+    // exactly what `parseMemo().isLimitOrder` reads. The middleware also ships
+    // its own `isLimitSwap`, but that additionally requires `in: 0`, so it
+    // files a partially filled limit order under streaming; only fall back to
+    // it for the few entries whose memo it couldn't resolve.
+    swapMemo(o) {
+      return o?.memo ? this.parseMemo(o.memo) : null
+    },
     isLimitOrder(o) {
-      return this.limitOrderTxIds.has(o.tx_id)
+      const memo = this.swapMemo(o)
+      return memo ? !!memo.isLimitOrder : !!o?.isLimitSwap
+    },
+    affiliateAddress(o) {
+      return this.swapMemo(o)?.affiliate || null
     },
     calculateETA(o) {
       const { interval, quantity } = o
@@ -634,8 +641,23 @@ export default {
 
     // The hash is the part that wraps; keep it whole rather than letting it
     // be squeezed into the leftover sliver beside the assets.
-    > small {
+    > .swap-meta {
+      display: flex;
+      align-items: center;
+      gap: $space-8;
       flex-shrink: 0;
+
+      // Affiliate.vue sizes its logos for the transactions table; they'd
+      // tower over a dashboard row, so bring them down to the text beside
+      // them.
+      ::v-deep .affiliate-content .executed img {
+        height: 0.9rem;
+      }
+
+      ::v-deep .affiliate-content .executed em {
+        font-size: $font-size-xs;
+        max-width: 70px;
+      }
     }
 
     // Phone widths: rather than wrapping the hash onto a second line *under*
@@ -646,7 +668,7 @@ export default {
       gap: $space-2;
       margin-bottom: $space-6;
 
-      > small {
+      > .swap-meta {
         order: -1;
         width: 100%;
         font-size: $font-size-xs;

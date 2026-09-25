@@ -65,7 +65,6 @@ import {
   getStreamingSwap,
   getTxStages,
   getTxStatus,
-  getStreamingSwaps,
   getScheduled,
   getThorname,
   getDerivedPoolDetail,
@@ -137,6 +136,7 @@ import {
   getChainsWeekly,
   getChainsMonthly,
   getReveneuPaidToTc,
+  getStreamingSwaps,
 } from './middleware.api'
 import {
   getChurnHistory,
