@@ -865,6 +865,10 @@ export default {
         // BadValidatorRedline <= 0 and MaxNodeToChurnOutForLowVersion == 0 as
         // "disabled". Note MINSLASHPOINTSFORBADVALIDATOR is not exposed by the
         // thorchain/mimir endpoint unless voted on, so it relies on the default.
+        // Until mimir has loaded, the defaults can disagree with the live
+        // values (e.g. BadValidatorRedline 3 vs a voted 20 flags far more bad
+        // actors), so the mimir-driven signals are held back until it arrives.
+        const mimirsLoaded = !!this.mimirs
         const desiredValidatorSet = +(this.mimirs?.DESIREDVALIDATORSET ?? 0)
         const minSlashForBad = +(
           this.mimirs?.MINSLASHPOINTSFORBADVALIDATOR ?? 100
@@ -920,7 +924,7 @@ export default {
         // MinSlashPointsForBadValidator are considered; if none cross the
         // redline, the single worst offender is churned out.
         const badActors = new Set()
-        if (badRedline > 0) {
+        if (mimirsLoaded && badRedline > 0) {
           const offenders = actNodes.filter(
             (n) => +n.slash_points > minSlashForBad
           )
@@ -960,6 +964,7 @@ export default {
         // would pick when more nodes are behind than the cap allows.
         const lowVersions = new Set()
         if (
+          mimirsLoaded &&
           lowVersionGraceElapsed &&
           maxLowVersion > 0 &&
           valid(minJoinVersion)
@@ -1095,7 +1100,9 @@ export default {
         const leaving = markedNodes.slice(0, toRemove)
         const leavingBond = leaving.reduce((s, n) => s + +n.total_bond, 0)
 
-        this.setLeaving(leavingBond, leaving.length)
+        if (mimirsLoaded) {
+          this.setLeaving(leavingBond, leaving.length)
+        }
         return filteredNodes
       } else {
         return undefined

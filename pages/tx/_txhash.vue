@@ -116,6 +116,7 @@ import {
   resolveTxOutboundTotals,
 } from './state/outboundStatus.js'
 import { resolveOutboundTxs } from './state/outboundTxs.js'
+import { legAmountUSD, hasUnsentLegs } from './state/outboundLegs.js'
 import { resolveTxMemo } from './state/resolveTxMemo.js'
 import { parseActionReason } from './state/parseActionReason.js'
 import { computeMimirConsensus } from './state/mimirConsensus.js'
@@ -201,6 +202,8 @@ export default {
       // it as absent rather than render a blank.
       txMemoSource: null,
       thorTx: null,
+      // THORNode queue/outbound, fetched while this tx has unsent legs.
+      outboundQueue: null,
       inboundHash: undefined,
       thorStatus: undefined,
       thorHeight: 0,
@@ -541,6 +544,7 @@ export default {
           {
             parseMemoAsset: this.parseMemoAsset.bind(this),
             assetToString,
+            queue: this.outboundQueue,
             pools: this.pools,
           }
         )
@@ -892,6 +896,7 @@ export default {
           {
             parseMemoAsset: this.parseMemoAsset.bind(this),
             assetToString,
+            queue: this.outboundQueue,
             pools: this.pools,
           }
         )
@@ -940,50 +945,10 @@ export default {
           usdAtExecution: !!swapMetadata?.inPriceUSD,
         }
 
-        const outAsset0 = this.parseMemoAsset(
-          outTxs[0]?.coins?.[0]?.asset,
-          this.pools
-        )
-        const outAmount0 = parseInt(outTxs[0]?.coins?.[0]?.amount ?? 0)
-        const outboundHasRefund = outTxs.some(
-          (tx) => tx.refund || tx.memo?.toLowerCase().startsWith('refund')
-        )
-        const outboundHasSuccess = outTxs.some((tx) =>
-          tx.memo?.toLowerCase().startsWith('out')
-        )
-        let outAmountUSD0 =
-          (+(swapMetadata?.outPriceUSD ?? 0) * outAmount0) / 1e8 ||
-          this.amountToUSD(outAsset0, outAmount0, this.pools) ||
-          0
-        if (!outboundHasSuccess && outboundHasRefund) {
-          outAmountUSD0 =
-            (+(swapMetadata?.inPriceUSD ?? 0) * outAmount0) / 1e8 ||
-            this.amountToUSD(outAsset0, outAmount0, this.pools) ||
-            0
-        }
-
         const outboundSignal = resolveOutboundSignal(
           this.thorStatus,
           this.getOutboundStatusContext()
         )
-        const firstOutDone =
-          !!outTxs[0]?.id ||
-          (!this.thorStatus?.stages?.swap_status?.pending &&
-            (this.thorStatus?.stages?.outbound_signed?.completed ||
-              outAsset0?.chain === 'THOR' ||
-              outAsset0?.synth ||
-              outAsset0?.trade ||
-              outAsset0?.secure) &&
-            (this.thorStatus?.stages?.outbound_delay?.completed ?? true))
-        const moreOutDone = (o) =>
-          !!o.id ||
-          (!this.thorStatus?.stages?.swap_status?.pending &&
-            (this.thorStatus?.stages?.outbound_signed?.completed ||
-              outAsset0?.chain === 'THOR' ||
-              outAsset0?.synth ||
-              outAsset0?.trade ||
-              outAsset0?.secure))
-
         const outboundFees =
           swapMetadata?.networkFees?.map((n) => n?.amount) ?? []
         const outboundFeeAssets =
@@ -994,58 +959,39 @@ export default {
               )
             : null
 
-        outs = [
-          {
-            asset: outAsset0,
-            amount: outAmount0,
-            amountUSD: outAmountUSD0,
-            usdAtExecution:
-              !outboundHasSuccess && outboundHasRefund
-                ? !!swapMetadata?.inPriceUSD
-                : !!swapMetadata?.outPriceUSD,
-            txid: outTxs[0]?.id ?? null,
+        // Each leg is priced, and judged sent or not, on its own — see
+        // pages/tx/state/outboundLegs.js.
+        outs = outTxs.map((o, i) => {
+          const done = o.state === 'sent'
+          const { amountUSD, usdAtExecution } = legAmountUSD(
+            {
+              kind: o.kind,
+              asset: o.coins[0].asset,
+              amount: o.coins[0].amount,
+            },
+            { swapMeta: swapMetadata, poolUSD: this.poolAmountUSD }
+          )
+          return {
+            asset: this.parseMemoAsset(o.coins[0].asset, this.pools),
+            amount: parseInt(o.coins[0].amount ?? 0),
+            amountUSD,
+            usdAtExecution,
+            txid: o.id ?? null,
             to:
-              outTxs[0]?.to_address ??
-              this.txMemo?.destAddr?.split('/')[0] ??
+              o.to_address ??
+              (i === 0 ? this.txMemo?.destAddr?.split('/')[0] : null) ??
               null,
-            outboundETA: firstOutDone ? null : outboundSignal.eta,
-            done: firstOutDone,
-            height: outTxs[0]?.height ?? null,
-            gas: outTxs[0]?.gas?.[0]?.amount ?? null,
-            gasAsset: outTxs[0]?.gas
-              ? this.parseMemoAsset(outTxs[0].gas[0]?.asset, this.pools)
+            outboundETA: done ? null : this.legOutboundETA(o, outboundSignal),
+            done,
+            height: o.height ?? null,
+            gas: o.gas?.[0]?.amount ?? null,
+            gasAsset: o.gas
+              ? this.parseMemoAsset(o.gas[0]?.asset, this.pools)
               : null,
-            fees: outboundFees,
-            feeAssets: outboundFeeAssets,
-          },
-          ...outTxs.slice(1).map((o) => {
-            const oAmount = parseInt(o.coins?.[0]?.amount ?? 0)
-            const isRefundTx =
-              o.refund || o.memo?.toLowerCase().startsWith('refund')
-            const priceUSD = isRefundTx
-              ? +(swapMetadata?.inPriceUSD ?? 0)
-              : +(swapMetadata?.outPriceUSD ?? 0)
-            return {
-              asset: this.parseMemoAsset(o.coins?.[0]?.asset, this.pools),
-              amount: oAmount,
-              amountUSD: (priceUSD * oAmount) / 1e8,
-              usdAtExecution: isRefundTx
-                ? !!swapMetadata?.inPriceUSD
-                : !!swapMetadata?.outPriceUSD,
-              txid: o.id ?? null,
-              to: o.to_address ?? null,
-              outboundETA: moreOutDone(o) ? null : outboundSignal.eta,
-              done: moreOutDone(o),
-              height: o.height ?? null,
-              gas: o.gas ? o.gas[0]?.amount : null,
-              gasAsset: o.gas
-                ? this.parseMemoAsset(o.gas[0]?.asset, this.pools)
-                : null,
-              fees: null,
-              feeAssets: null,
-            }
-          }),
-        ]
+            fees: i === 0 ? outboundFees : null,
+            feeAssets: i === 0 ? outboundFeeAssets : null,
+          }
+        })
 
         kind = 'swap'
         const isLimitOrder = !!this.txMemo?.isLimitOrder
@@ -1586,6 +1532,7 @@ export default {
         {
           parseMemoAsset: this.parseMemoAsset.bind(this),
           assetToString,
+          queue: this.outboundQueue,
           pools: this.pools,
         }
       )
@@ -1640,12 +1587,9 @@ export default {
       )
       const outAmount =
         outTxs?.length > 0 ? parseInt(outTxs[0]?.coins?.[0]?.amount ?? 0) : 0
-      const outboundHasRefund = outTxs?.some(
-        (tx) => tx.refund || tx.memo?.toLowerCase().startsWith('refund')
-      )
-      const outboundHasSuccess = outTxs?.some((tx) =>
-        tx.memo?.toLowerCase().startsWith('out')
-      )
+      // Legs come outputs-first, so the first leg is a refund only when
+      // nothing was swapped — price it at the input asset's price then.
+      const firstOutIsRefund = outTxs?.[0]?.kind === 'refund'
       const estimatedOutAmount =
         outAmount ||
         this.estimateSwapOutput(streamingMeta, inAsset, inAmount, outAsset)
@@ -1653,7 +1597,7 @@ export default {
         (+(swapMetadata?.outPriceUSD ?? 0) * estimatedOutAmount) / 1e8 ||
         this.amountToUSD(outAsset, estimatedOutAmount, this.pools) ||
         0
-      if (!outboundHasSuccess && outboundHasRefund) {
+      if (firstOutIsRefund) {
         outAmountUSD =
           (+(swapMetadata?.inPriceUSD ?? 0) * outAmount) / 1e8 ||
           this.amountToUSD(outAsset, outAmount, this.pools) ||
@@ -1664,24 +1608,24 @@ export default {
         this.thorStatus,
         this.getOutboundStatusContext()
       )
-      const firstOutDone =
-        (outTxs?.length > 0 && !!outTxs[0]?.id) ||
-        (!this.thorStatus?.stages?.swap_status?.pending &&
+      // See createSwapState's firstOutDone.
+      const firstOutDone = outTxs?.[0]
+        ? outTxs[0].state === 'sent'
+        : !this.thorStatus?.stages?.swap_status?.pending &&
           (this.thorStatus?.stages?.outbound_signed?.completed ||
             outAsset?.chain === 'THOR' ||
             outAsset?.synth ||
             outAsset?.trade ||
             outAsset?.secure) &&
-          (this.thorStatus?.stages?.outbound_delay?.completed ?? true))
+          (this.thorStatus?.stages?.outbound_delay?.completed ?? true)
 
       const output = {
         asset: outAsset,
         amount: estimatedOutAmount,
         amountUSD: outAmountUSD,
-        usdAtExecution:
-          !outboundHasSuccess && outboundHasRefund
-            ? !!swapMetadata?.inPriceUSD
-            : !!swapMetadata?.outPriceUSD,
+        usdAtExecution: firstOutIsRefund
+          ? !!swapMetadata?.inPriceUSD
+          : !!swapMetadata?.outPriceUSD,
         done: firstOutDone,
         to:
           outTxs?.[0]?.to_address ??
@@ -2053,6 +1997,7 @@ export default {
         {
           parseMemoAsset: this.parseMemoAsset.bind(this),
           assetToString,
+          queue: this.outboundQueue,
           pools: this.pools,
         }
       )
@@ -2092,12 +2037,9 @@ export default {
       }
       const outAmount =
         outTxs?.length > 0 ? parseInt(outTxs[0]?.coins?.[0]?.amount ?? 0) : 0
-      const outboundHasRefund = outTxs?.some(
-        (tx) => tx.refund || tx.memo?.toLowerCase().startsWith('refund')
-      )
-      const outboundHasSuccess = outTxs?.some((tx) =>
-        tx.memo?.toLowerCase().startsWith('out')
-      )
+      // Legs come outputs-first, so the first leg is a refund only when
+      // nothing was swapped — price it at the input asset's price then.
+      const firstOutIsRefund = outTxs?.[0]?.kind === 'refund'
       const streamingMeta = swapMeta?.streamingSwapMeta
       const estimatedOutAmount =
         outAmount ||
@@ -2106,16 +2048,15 @@ export default {
         (+(swapMeta?.outPriceUSD ?? 0) * estimatedOutAmount) / 1e8 ||
         this.amountToUSD(outAsset, estimatedOutAmount, this.pools) ||
         0
-      if (!outboundHasSuccess && outboundHasRefund) {
+      if (firstOutIsRefund) {
         outAmountUSD =
           (+(swapMeta?.inPriceUSD ?? 0) * outAmount) / 1e8 ||
           this.amountToUSD(outAsset, outAmount, this.pools) ||
           0
       }
-      const outUsdAtExecution =
-        !outboundHasSuccess && outboundHasRefund
-          ? !!swapMeta?.inPriceUSD
-          : !!swapMeta?.outPriceUSD
+      const outUsdAtExecution = firstOutIsRefund
+        ? !!swapMeta?.inPriceUSD
+        : !!swapMeta?.outPriceUSD
       const output = {
         asset: outAsset,
         amount: estimatedOutAmount,
@@ -3999,6 +3940,20 @@ export default {
         pools: this.pools,
       }
     },
+    // Pool-price fallback for legAmountUSD (asset as a string).
+    poolAmountUSD(asset, amount) {
+      const parsed = this.parseMemoAsset(asset, this.pools)
+      return parsed ? this.amountToUSD(parsed, amount, this.pools) : 0
+    },
+    // Blocks until an unsent leg goes out (negative when overdue), from the
+    // leg's own queued height when known, else the tx-wide outbound stage.
+    legOutboundETA(outTx, signal) {
+      const current = this.thorHeight || this.chainsHeight?.THOR
+      if (outTx?.scheduledHeight && current) {
+        return outTx.scheduledHeight - current
+      }
+      return signal.eta
+    },
     getOutboundStatusContext() {
       return {
         getScheduledOutboundETA: this.getScheduledOutboundETA.bind(this),
@@ -4049,6 +4004,11 @@ export default {
       this.txMemo = memo
       this.txMemoSource = source
       this.thorTx = thorTx
+      // Only the queue knows an unsent leg's current (possibly rescheduled)
+      // height; it's the whole network's queue, so fetch it only when needed.
+      this.outboundQueue = hasUnsentLegs(thorTx)
+        ? ((await this.$api.getOutbound().catch(() => null))?.data ?? null)
+        : null
 
       // Action outcome is checked before any memo-type dispatch: a message
       // that failed execution (Midgard `type: 'failed'`) must never be
@@ -5460,6 +5420,7 @@ export default {
         {
           parseMemoAsset: this.parseMemoAsset.bind(this),
           assetToString,
+          queue: this.outboundQueue,
           pools: this.pools,
         }
       )
@@ -5548,13 +5509,9 @@ export default {
       let height = swapAction?.height
 
       // Refunds
-      const outboundHasRefund = outTxs?.some(
-        (tx) => tx.refund || tx.memo?.toLowerCase().startsWith('refund')
-      )
-      // sometimes the outbound doesn't come out if the outbound is in native chain
-      const outboundHasSuccess = outTxs?.some((tx) =>
-        tx.memo?.toLowerCase().startsWith('out')
-      )
+      // Legs come outputs-first, so the first leg is a refund only when
+      // nothing was swapped — price it at the input asset's price then.
+      const firstOutIsRefund = outTxs?.[0]?.kind === 'refund'
 
       const streamingMeta = swapMetadata?.streamingSwapMeta
 
@@ -5577,7 +5534,7 @@ export default {
         (+(swapMetadata?.outPriceUSD ?? 0) * estimatedOutAmount) / 1e8 ||
         this.amountToUSD(outAsset, estimatedOutAmount, this.pools) ||
         0
-      if (!outboundHasSuccess && outboundHasRefund) {
+      if (firstOutIsRefund) {
         outAmountUSD =
           (+(swapMetadata?.inPriceUSD ?? 0) * outAmount) / 1e8 ||
           this.amountToUSD(outAsset, outAmount, this.pools) ||
@@ -5648,23 +5605,18 @@ export default {
           ? 'refunded Rapid Swap'
           : 'refunded Swap'
 
-      const firstOutDone =
-        (outTxs?.length > 0 && !!outTxs[0]?.id) ||
-        (!thorStatus?.stages.swap_status?.pending &&
+      // A known leg is done exactly when THORNode has sent it; the stage
+      // fallback only covers the window before THORNode lists any leg.
+      const firstOutDone = outTxs?.[0]
+        ? outTxs[0].state === 'sent'
+        : !thorStatus?.stages.swap_status?.pending &&
           (thorStatus?.stages.outbound_signed?.completed ||
             outAsset?.chain === 'THOR' ||
             outAsset?.synth ||
             outAsset?.trade ||
             outAsset?.secure) &&
-          (thorStatus?.stages.outbound_delay?.completed ?? true))
-      const moreOutDone = (o) =>
-        !!o.id ||
-        (!thorStatus?.stages.swap_status?.pending &&
-          (thorStatus?.stages.outbound_signed?.completed ||
-            outAsset?.chain === 'THOR' ||
-            outAsset?.synth ||
-            outAsset?.trade ||
-            outAsset?.secure))
+          (thorStatus?.stages.outbound_delay?.completed ?? true)
+      const moreOutDone = (o) => o.state === 'sent'
 
       return {
         cards: {
@@ -5690,46 +5642,40 @@ export default {
               // Matches outAmountUSD's own two-branch derivation above —
               // the refund reassignment prices off inPriceUSD, not
               // outPriceUSD.
-              usdAtExecution:
-                !outboundHasSuccess && outboundHasRefund
-                  ? !!swapMetadata?.inPriceUSD
-                  : !!swapMetadata?.outPriceUSD,
+              usdAtExecution: firstOutIsRefund
+                ? !!swapMetadata?.inPriceUSD
+                : !!swapMetadata?.outPriceUSD,
               filter: outAmount
                 ? undefined
                 : (v) => `~ ${this.baseAmountFormatOrZero(v)}`,
               done: firstOutDone,
-              // Per-leg detail a multi-outbound swap (e.g. one output split
-              // across several destination-chain txs by an amount cap) needs
-              // for its own hero — same v1 fallback as
-              // createTradeWithdrawState: no per-leg scheduled height exists,
-              // so every still-pending leg shares the tx-wide signal.
               txid: outTxs?.[0]?.id ?? null,
               to:
                 outTxs?.[0]?.to_address ??
                 memo?.destAddr?.split('/')[0] ??
                 null,
-              outboundETA: firstOutDone ? null : outboundSignal.eta,
+              outboundETA: firstOutDone
+                ? null
+                : this.legOutboundETA(outTxs?.[0], outboundSignal),
             },
-            ...(outTxs ?? []).slice(1).map((o) => {
-              const oAmount = parseInt(o.coins?.[0]?.amount ?? 0)
-              const isRefundTx =
-                o.refund || o.memo?.toLowerCase().startsWith('refund')
-              const priceUSD = isRefundTx
-                ? +(swapMetadata?.inPriceUSD ?? 0)
-                : +(swapMetadata?.outPriceUSD ?? 0)
-              return {
-                asset: this.parseMemoAsset(o.coins?.[0]?.asset, this.pools),
-                amount: oAmount,
-                amountUSD: (priceUSD * oAmount) / 1e8,
-                usdAtExecution: isRefundTx
-                  ? !!swapMetadata?.inPriceUSD
-                  : !!swapMetadata?.outPriceUSD,
-                done: moreOutDone(o),
-                txid: o.id ?? null,
-                to: o.to_address ?? null,
-                outboundETA: moreOutDone(o) ? null : outboundSignal.eta,
-              }
-            }),
+            ...(outTxs ?? []).slice(1).map((o) => ({
+              asset: this.parseMemoAsset(o.coins?.[0]?.asset, this.pools),
+              amount: parseInt(o.coins?.[0]?.amount ?? 0),
+              ...legAmountUSD(
+                {
+                  kind: o.kind,
+                  asset: o.coins[0].asset,
+                  amount: o.coins[0].amount,
+                },
+                { swapMeta: swapMetadata, poolUSD: this.poolAmountUSD }
+              ),
+              done: moreOutDone(o),
+              txid: o.id ?? null,
+              to: o.to_address ?? null,
+              outboundETA: moreOutDone(o)
+                ? null
+                : this.legOutboundETA(o, outboundSignal),
+            })),
           ],
         },
         accordions: {
