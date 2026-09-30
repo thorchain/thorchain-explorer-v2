@@ -13,7 +13,7 @@
             </div>
           </template>
           <vue-good-table v-else-if="k.data.length > 0 && tableMode === k.mode" :key="i" :columns="poolCols"
-            :rows="k.data" style-class="vgt-table net-table" :sort-options="{
+            :rows="k.data" style-class="vgt-table net-table" :line-numbers="true" :sort-options="{
               enabled: true,
               initialSortBy: { field: 'depth', type: 'desc' },
             }" @on-row-click="gotoPoolTable">
@@ -144,10 +144,6 @@ export default {
         { text: '1 Year', mode: '365d' },
         { text: 'All', mode: 'all' },
       ],
-      tableModeItems: [
-        { text: 'Active Pools', mode: 'active' },
-        { text: 'Staged Pools', mode: 'staged' },
-      ],
       tableMode: 'active',
       poolCols: [
         {
@@ -235,6 +231,19 @@ export default {
     ...mapGetters({
       runePrice: 'getRunePrice',
     }),
+    tableModeItems() {
+      const count = (rows) => (this.pools ? ` (${rows.data.length})` : '')
+      return [
+        {
+          text: `Active Pools${count(this.tables.activeRows)}`,
+          mode: 'active',
+        },
+        {
+          text: `Staged Pools${count(this.tables.standbyRows)}`,
+          mode: 'staged',
+        },
+      ]
+    },
   },
   watch: {
     async period(period) {
