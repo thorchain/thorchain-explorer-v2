@@ -83,6 +83,14 @@
   align-items: center;
 }
 
+// Secondary figure beside a tooltip value, e.g. the USD value of an amount.
+.tooltip-sub {
+  color: var(--font-color);
+  font-size: $font-size-xs;
+  font-weight: 400;
+  margin-left: $space-4;
+}
+
 .tooltip-total {
   padding-top: $space-3;
   margin-top: $space-5;

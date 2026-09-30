@@ -63,6 +63,7 @@ export default {
   data() {
     return {
       lpPositions: [],
+      poolDetail: undefined,
       loading: true,
       error: false,
       runePieData: [],
@@ -87,7 +88,7 @@ export default {
           label: 'Asset added',
           field: 'asset_add',
           type: 'number',
-          formatFn: (v) => `${this.formatNumber(v)}`,
+          formatFn: this.formatAssetAmount,
         },
         {
           label: 'Rune added',
@@ -99,13 +100,21 @@ export default {
           label: 'Asset Claimable',
           field: 'assetClaimable',
           type: 'number',
-          formatFn: this.formatNumber,
+          formatFn: this.formatAssetAmount,
         },
         {
           label: 'Rune Claimable',
           field: 'claimableRune',
           type: 'number',
           formatFn: (v) => `${this.runeCur()} ${this.formatNumber(v)}`,
+        },
+        {
+          label: 'Total Value',
+          field: 'totalValue',
+          type: 'number',
+          formatFn: this.formatUSD,
+          tdClass: 'mono',
+          tooltip: 'USD value of the claimable asset and RUNE at pool price.',
         },
         {
           label: 'Ownership',
@@ -120,12 +129,9 @@ export default {
         },
       ],
       lpGeneralStats: [
-        {
-          name: 'Total Rune Balance',
-        },
-        {
-          name: 'Total Asset Balance',
-        },
+        { name: 'Asset Balance', asset: this.$route.params.poolName },
+        { name: 'Rune Balance', asset: 'THOR.RUNE' },
+        { name: 'Total Value' },
       ],
       rows: [],
     }
@@ -134,6 +140,14 @@ export default {
     ...mapGetters({
       runePrice: 'getRunePrice',
     }),
+    // Priced off the pool ratio so both sides of a position add up evenly.
+    assetPriceUSD() {
+      const balanceAsset = +this.poolDetail?.balance_asset
+      if (!balanceAsset || !this.runePrice) {
+        return 0
+      }
+      return (+this.poolDetail.balance_rune / balanceAsset) * this.runePrice
+    },
   },
   mounted() {
     this.loading = true
@@ -214,6 +228,9 @@ export default {
 
           assetClaimable,
           claimableRune,
+          totalValue:
+            assetClaimable * this.assetPriceUSD +
+            claimableRune * this.runePrice,
           ownershipPercentage,
         })
 
@@ -233,14 +250,26 @@ export default {
         const balanceRune = this.poolDetail.balance_rune
         const balanceAsset = this.poolDetail.balance_asset
 
+        const assetUSD = (balanceAsset / 1e8) * this.assetPriceUSD
+        const runeUSD = (balanceRune / 1e8) * this.runePrice
+
         this.lpGeneralStats = [
           {
-            name: 'Balance Rune',
-            value: this.$options.filters.number(balanceRune / 1e8, '0a'),
+            name: 'Asset Balance',
+            asset: this.poolName,
+            value: `${this.$options.filters.number(balanceAsset / 1e8, '0,0.00a')} ${this.showAsset(this.poolName)}`,
+            extraText: this.formatUSD(assetUSD),
           },
           {
-            name: 'Balance Asset',
-            value: this.$options.filters.number(balanceAsset / 1e8, '0a'),
+            name: 'Rune Balance',
+            asset: 'THOR.RUNE',
+            value: `${this.$options.filters.number(balanceRune / 1e8, '0,0.00a')} RUNE`,
+            extraText: this.formatUSD(runeUSD),
+          },
+          {
+            name: 'Total Value',
+            value: this.formatUSD(assetUSD + runeUSD),
+            extraText: `${this.$options.filters.number(this.rows.length, '0,0')} LP positions`,
           },
         ]
       } else {
@@ -261,6 +290,15 @@ export default {
     },
     formatNumber(number) {
       return this.$options.filters.number(number, '0,0.0000')
+    },
+    formatAssetAmount(number) {
+      if (typeof number === 'string') {
+        return number
+      }
+      return `${this.formatNumber(number)} ${this.showAsset(this.poolName)}`
+    },
+    formatUSD(number) {
+      return `$${this.$options.filters.number(number, '0,0.00a')}`
     },
     formatBlock(number) {
       return this.$options.filters.number(number, '0,0')

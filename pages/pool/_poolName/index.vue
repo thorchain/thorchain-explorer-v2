@@ -119,11 +119,16 @@ export default {
               value: this.pool?.assetDepth / 10 ** 8,
               filter: (v) =>
                 `${this.$options.filters.number(v, '0,0')} ${this.showAsset(this.pool?.asset)}`,
+              extraText:
+                this.pool?.assetPriceUSD > 0
+                  ? `$${this.$options.filters.number((this.pool.assetDepth / 10 ** 8) * this.pool.assetPriceUSD, '0.00a')}`
+                  : undefined,
             },
             {
               name: 'Rune Depth',
               value: this.pool?.runeDepth / 10 ** 8,
               filter: (v) => this.formatRune(v, '0,0a'),
+              usdValue: true,
             },
             {
               header: 'All Time Stats',
@@ -298,6 +303,7 @@ export default {
       const xAxis = []
       const pe = []
       const pr = []
+      const usd = []
       d?.intervals.forEach((interval, index) => {
         // ignore the last index
         if (index === d?.intervals?.length - 1) {
@@ -310,6 +316,15 @@ export default {
         )
         pe.push(+interval.assetDepth / 10 ** 8)
         pr.push(+interval.runeDepth / 10 ** 8)
+        // assetPrice is the asset priced in RUNE, so the RUNE USD price for
+        // the same interval is assetPriceUSD / assetPrice.
+        const assetPriceUSD = +interval.assetPriceUSD || 0
+        const runePriceUSD =
+          +interval.assetPrice > 0 ? assetPriceUSD / +interval.assetPrice : 0
+        usd.push({
+          'Asset Depth': (+interval.assetDepth / 10 ** 8) * assetPriceUSD,
+          'Rune Depth': (+interval.runeDepth / 10 ** 8) * runePriceUSD,
+        })
       })
       return this.basicChartFormat(
         (value) => `${this.$options.filters.number(+value, '0,0.00a')}`,
@@ -353,6 +368,45 @@ export default {
               max: 'dataMax',
             },
           ],
+        },
+        (param) => {
+          const rowUSD = usd[param[0]?.dataIndex] || {}
+          const totalUSD = Object.values(rowUSD).reduce((a, c) => a + c, 0)
+          return `
+            <div class="tooltip-header">
+              ${param[0].name}
+            </div>
+            <div class="tooltip-body">
+              ${param
+                .map(
+                  (p) => `
+                  <span>
+                    <div class="tooltip-item">
+                      <div class="data-color" style="background-color: ${p.color}">
+                      </div>
+                      <span style="text-align: left;">
+                        ${p.seriesName}
+                      </span>
+                    </div>
+                    <span>
+                      <b>
+                        ${this.$options.filters.number(p.value, '0,0.00a')}
+                        ${p.seriesName === 'Asset Depth' ? this.showAsset(this.poolName) : 'RUNE'}
+                      </b>
+                      <small class="tooltip-sub">
+                        $${this.$options.filters.number(rowUSD[p.seriesName] || 0, '0,0.00a')}
+                      </small>
+                    </span>
+                  </span>`
+                )
+                .join('')}
+            </div>
+            <hr>
+            <span class="tooltip-item space">
+              <span>Total Depth</span>
+              <b>$${this.$options.filters.number(totalUSD, '0,0.00a')}</b>
+            </span>
+          `
         }
       )
     },

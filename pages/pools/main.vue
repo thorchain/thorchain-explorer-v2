@@ -74,10 +74,16 @@
                   <div class="balance-row">
                     {{ props.row.assetDepth | number('0,0.00a') }}
                     <small>{{ showAsset(props.row.asset, true) }}</small>
+                    <small class="balance-usd">
+                      ({{ formattedPrice(props.row.assetDepth * props.row.price) }})
+                    </small>
                   </div>
                   <div class="balance-row balance-secondary">
                     {{ props.row.balances | number('0,0.00a') }}
                     <RuneAsset :show-icon="false" />
+                    <small class="balance-usd">
+                      ({{ formattedPrice(props.row.balances * runePrice) }})
+                    </small>
                   </div>
                 </div>
                 <span v-else> - </span>
@@ -539,6 +545,10 @@ export default {
   justify-content: end;
   align-items: center;
   gap: $space-8;
+}
+
+.balance-usd {
+  color: var(--font-color);
 }
 
 .balance-secondary {

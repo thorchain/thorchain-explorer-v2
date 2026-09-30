@@ -9,6 +9,7 @@
       class="table-stat-card"
     >
       <div class="name">
+        <AssetIcon v-if="stat.asset" :asset="stat.asset" height="1.2rem" />
         {{ stat.name }}
         <unknown-icon
           v-if="stat.description"
@@ -100,6 +101,8 @@ export default {
       display: flex;
       align-items: center;
       justify-content: center;
+
+      gap: $space-5;
 
       .header-icon {
         fill: var(--font-color);
