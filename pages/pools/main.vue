@@ -96,6 +96,38 @@
                 </span>
                 <span v-else> - </span>
               </div>
+              <div
+                v-else-if="props.column.field == 'feesDepth'"
+                class="pol-row"
+              >
+                <VTooltip v-if="props.row.asset === nextPolAsset">
+                  <span class="pol-tag pol-tag-pol pol-tag-next">Next POL</span>
+                  <template #popper>
+                    <div class="tooltip-header">Next POL target</div>
+                    <div class="tooltip-body">
+                      <template v-if="poolCycle">
+                        <span>
+                          <span>Cycle</span>
+                          <b>{{ percentageFormat(poolCycle.progress, 0) }}</b>
+                        </span>
+                        <span>
+                          <span>Resets at</span>
+                          <b>{{ poolCycle.nextReset | number('0,0') }}</b>
+                        </span>
+                        <span>
+                          <span>Time left</span>
+                          <b>~{{ durationFormat(poolCycle.secondsLeft) }}</b>
+                        </span>
+                      </template>
+                      <small>
+                        Leads this cycle among pools POL can deploy into. At the
+                        reset it becomes the pool POL deploys into.
+                      </small>
+                    </div>
+                  </template>
+                </VTooltip>
+                <span>{{ props.formattedRow[props.column.field] }}</span>
+              </div>
               <div v-else-if="props.column.field == 'polTotal'">
                 <div v-if="props.row.polPositions.length > 0">
                   <div
@@ -127,10 +159,16 @@
 
 <script>
 import { capitalize } from 'lodash'
+import moment from 'moment'
 import { mapGetters } from 'vuex'
 import endpoints from '~/api/endpoints'
 import { assetFromString, tradeToAsset } from '~/utils'
 import RuneAsset from '~/components/RuneAsset.vue'
+import {
+  cycleFeesDepth,
+  nextPolReserveTarget,
+  poolCycleProgress,
+} from '~/utils/polReserve'
 
 export default {
   components: { RuneAsset },
@@ -207,6 +245,15 @@ export default {
           tdClass: 'mono',
         },
         {
+          label: 'Fees/Depth',
+          field: 'feesDepth',
+          type: 'number',
+          formatFn: this.feesDepthFormat,
+          tdClass: 'mono',
+          tooltip:
+            'Liquidity fees collected this pool cycle (3 days) divided by the RUNE depth. It resets to zero every cycle.\nPOL deploys into the eligible pool that led the previous cycle, so the leader here is the next POL target.',
+        },
+        {
           label: 'Est. Yr. Earnings',
           field: 'estEarnings',
           type: 'number',
@@ -231,12 +278,27 @@ export default {
       thorPools: {},
       reserveUnits: {},
       polReserveUnits: {},
+      mimir: {},
     }
   },
   computed: {
     ...mapGetters({
       runePrice: 'getRunePrice',
+      chainsHeight: 'getChainsHeight',
     }),
+    thorHeight() {
+      return this.chainsHeight?.THOR
+    },
+    nextPolAsset() {
+      return nextPolReserveTarget(
+        Object.values(this.thorPools),
+        this.mimir,
+        this.thorHeight
+      )
+    },
+    poolCycle() {
+      return poolCycleProgress(this.thorHeight, this.mimir)
+    },
     tableModeItems() {
       const count = (rows) => (this.pools ? ` (${rows.data.length})` : '')
       return [
@@ -333,6 +395,9 @@ export default {
               apy: p.annualPercentageRate,
               volume: (+p.volume24h / 10 ** 8) * this.runePrice,
               vd: +p.volume24h / (+p.assetDepth * +p.assetPrice),
+              feesDepth: this.thorPools[p.asset]
+                ? cycleFeesDepth(this.thorPools[p.asset])
+                : 0,
               asset: p.asset,
               saversDepth: +p.saversDepth / 10 ** 8,
               depthToUnitsRatio: p.saversDepth
@@ -382,6 +447,12 @@ export default {
     numberFormat(number, filter) {
       return this.$options.filters.number(number, '0.00a')
     },
+    durationFormat(seconds) {
+      return moment.duration(seconds, 'seconds').humanize()
+    },
+    feesDepthFormat(number) {
+      return this.percentageFormat(number, 3)
+    },
     curFormat(number) {
       return this.$options.filters.currency(number)
     },
@@ -393,11 +464,13 @@ export default {
     // what made the old Midgard-derived share come out negative.
     async loadModulePositions() {
       let thorPools = []
+      const mimirLoad = this.loadMimir()
       try {
         ;({ data: thorPools } = await this.$api.getThorPools())
       } catch (error) {
         console.warn('No thornode pools', error)
       }
+      await mimirLoad
       this.thorPools = Object.fromEntries(thorPools.map((p) => [p.asset, p]))
       const [reserveUnits, polReserveUnits] = await Promise.all([
         this.loadReserveUnits(),
@@ -405,6 +478,15 @@ export default {
       ])
       this.reserveUnits = reserveUnits
       this.polReserveUnits = polReserveUnits
+    },
+    // Only used for POL eligibility (TOR anchors, deposit pauses, ...).
+    async loadMimir() {
+      try {
+        const { data } = await this.$api.getMimir()
+        this.mimir = data
+      } catch (error) {
+        console.warn('No mimir', error)
+      }
     },
     // The reserve module keeps its legacy POL positions as a plain LP, and the
     // middleware already merges the THORNode liquidity provider into each row.
@@ -598,6 +680,7 @@ export default {
   justify-content: end;
   align-items: center;
   gap: $space-8;
+  white-space: nowrap;
 }
 
 .pol-tag {
@@ -609,10 +692,23 @@ export default {
   letter-spacing: 0.02em;
   padding: 0 $space-4;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .pol-tag-pol {
   border-color: var(--primary-color);
   color: var(--primary-color);
+}
+
+.pol-tag-next {
+  cursor: help;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+
+  &:hover {
+    background-color: var(--primary-color);
+    color: var(--bg-color);
+  }
 }
 </style>
