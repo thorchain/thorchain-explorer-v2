@@ -13,7 +13,8 @@
             </div>
           </template>
           <vue-good-table v-else-if="k.data.length > 0 && tableMode === k.mode" :key="i" :columns="poolCols"
-            :rows="k.data" style-class="vgt-table net-table" :line-numbers="true" :sort-options="{
+            :rows="k.data" style-class="vgt-table net-table sticky-header" :fixed-header="true" :line-numbers="true"
+            :sort-options="{
               enabled: true,
               initialSortBy: { field: 'depth', type: 'desc' },
             }" @on-row-click="gotoPoolTable">
@@ -101,7 +102,9 @@
                 class="pol-row"
               >
                 <VTooltip v-if="props.row.asset === nextPolAsset">
-                  <span class="pol-tag pol-tag-pol pol-tag-next">Next POL</span>
+                  <span class="next-pol">
+                    {{ props.formattedRow[props.column.field] }}
+                  </span>
                   <template #popper>
                     <div class="tooltip-header">Next POL target</div>
                     <div class="tooltip-body">
@@ -126,7 +129,7 @@
                     </div>
                   </template>
                 </VTooltip>
-                <span>{{ props.formattedRow[props.column.field] }}</span>
+                <span v-else>{{ props.formattedRow[props.column.field] }}</span>
               </div>
               <div v-else-if="props.column.field == 'polTotal'">
                 <div v-if="props.row.polPositions.length > 0">
@@ -169,9 +172,11 @@ import {
   nextPolReserveTarget,
   poolCycleProgress,
 } from '~/utils/polReserve'
+import stickyHeaderScrollSync from '~/mixins.js/stickyHeaderScrollSync'
 
 export default {
   components: { RuneAsset },
+  mixins: [stickyHeaderScrollSync],
   data() {
     return {
       loading: false,
@@ -700,8 +705,12 @@ export default {
   color: var(--primary-color);
 }
 
-.pol-tag-next {
+.next-pol {
+  border: 1px solid var(--primary-color);
+  border-radius: $radius-sm;
+  padding: 0 $space-4;
   cursor: help;
+  color: var(--primary-color);
   transition:
     background-color 0.15s ease,
     color 0.15s ease;
