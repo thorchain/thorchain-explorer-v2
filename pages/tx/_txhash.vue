@@ -121,6 +121,10 @@ import { resolveTxMemo } from './state/resolveTxMemo.js'
 import { parseActionReason } from './state/parseActionReason.js'
 import { computeMimirConsensus } from './state/mimirConsensus.js'
 import {
+  resolveSubSwapCounts,
+  describeSubSwapProgress,
+} from './state/streamingProgress.js'
+import {
   PRE_GUARD_BUILDERS as CONTRACT_PRE_GUARD_BUILDERS,
   SINGLE_ACTION_BUILDERS as CONTRACT_SINGLE_ACTION_BUILDERS,
   buildCalcAggregateOverview,
@@ -1844,6 +1848,12 @@ export default {
         return rows
       })()
 
+      const progress = this.buildStreamingProgress(
+        { snapshotCount, snapshotQuantity, phase },
+        input.asset,
+        output
+      )
+
       return {
         kind: 'streaming',
         status: { label: 'In progress', tone: 'yellow' },
@@ -1894,10 +1904,19 @@ export default {
         // falling back to outputProjectedDisplay, which would overstate
         // progress mid-stream (it's the full swap's total, not what's
         // landed yet).
-        ...this.buildStreamingProgress(
-          { snapshotCount, snapshotQuantity, phase },
-          input.asset,
-          output
+        ...progress,
+        subSwapProgressDisplay: describeSubSwapProgress(
+          resolveSubSwapCounts({
+            count: progress.count,
+            quantity: progress.quantity,
+            // Only the live stream reports failures; once it's done
+            // (phase 'outbound') the endpoint is zeroed, so leave them out.
+            failedSwaps:
+              phase === 'outbound'
+                ? null
+                : this.streamingProgress?.failed_swaps,
+          }),
+          { interval, intervalDisplay }
         ),
         outboundHash:
           outTxs?.[0]?.id && !isInternalTx(outTxs[0].id) ? outTxs[0].id : '',

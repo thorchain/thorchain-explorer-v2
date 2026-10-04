@@ -211,7 +211,8 @@
             :value="overview.outboundDelayEstDisplay"
           />
           <!-- Plain value, no tone class: the outbound is still queued and
-               retried each churn, so how long it has been waiting is a
+               re-signed every SigningTransactionPeriod (300 blocks,
+               ~30 min), so how long it has been waiting is a
                neutral fact like the rows around it, not a warning. -->
           <DetailRow
             v-if="overview.outboundPastDueDisplay"
@@ -510,7 +511,7 @@ export default {
           title: this.isOutbound
             ? 'Streaming complete'
             : 'Streaming in progress',
-          body: `${overview.count} of ${overview.quantity} sub-swaps executed${overview.intervalDisplay ? `, one every ${overview.intervalDisplay}` : ''}.`,
+          body: overview.subSwapProgressDisplay,
         })
       } else {
         events.push({
@@ -597,7 +598,7 @@ export default {
     },
     outboundDelayNote() {
       return this.outboundDelayOverdue
-        ? 'The outbound was scheduled but has not been signed by the vault yet. It stays queued and retries — no action is needed from the sender.'
+        ? 'The outbound was scheduled but has not been signed by the vault yet. It stays queued and is retried every 300 blocks (~30 min) — no action is needed from the sender.'
         : 'Outbounds this large are held before signing. Nothing is signed or broadcast until the timer clears.'
     },
   },

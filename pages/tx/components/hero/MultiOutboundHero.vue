@@ -176,7 +176,8 @@
             <div class="tx-metric-item">
               <div class="tx-asset-label">Waiting</div>
               <!-- Plain text, no tone class: a leg past its scheduled
-                   height is still queued and retried each churn, so how
+                   height is still queued and re-signed every
+                   SigningTransactionPeriod (300 blocks, ~30 min), so how
                    long it has been waiting is a neutral fact like the
                    metrics beside it, not a warning. -->
               <div class="tx-metric-value mono">
@@ -299,9 +300,10 @@
           <span>Why {{ overdueLegLabel }} waiting?</span>
         </div>
         <div class="tx-explainer-body">
-          The outbound was scheduled but never signed by the vault. It stays
-          queued and retries each churn — no further action is needed from the
-          sender.
+          The outbound was scheduled but has not been signed by the vault yet.
+          It stays queued and is retried every 300 blocks (~30 min, the
+          SigningTransactionPeriod constant) — no further action is needed from
+          the sender.
         </div>
       </section>
 

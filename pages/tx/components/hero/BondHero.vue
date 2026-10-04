@@ -287,7 +287,9 @@ export default {
           icon: 'ArrowIcon',
           iconRotate: 0,
           title: 'Node bond updated',
-          body: `Total bond ${this.bondAfterDisplay} — eligible for the next churn.`,
+          // Bonding alone doesn't make a node churn-eligible (minimum bond,
+          // not jailed, version, ranking by bond all apply), so don't claim it.
+          body: `Total bond ${this.bondAfterDisplay}.`,
         },
       ]
     },
