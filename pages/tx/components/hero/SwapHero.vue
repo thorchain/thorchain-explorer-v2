@@ -85,7 +85,12 @@
                   {{ overview.input.badge }}
                 </div>
                 <div class="tx-asset-values">
-                  <span>{{ overview.input.amount }}</span>
+                  <AssetAmountValue
+                    v-if="overview.input.amountRaw != null"
+                    :amount="overview.input.amountRaw"
+                    :asset="overview.input.asset"
+                  />
+                  <span v-else>{{ overview.input.amount }}</span>
                   <strong
                     v-if="overview.input.usd"
                     v-tooltip="
@@ -135,7 +140,12 @@
                   {{ overview.output.badge }}
                 </div>
                 <div class="tx-asset-values">
-                  <span>{{ overview.output.amount }}</span>
+                  <AssetAmountValue
+                    v-if="overview.output.amountRaw != null"
+                    :amount="overview.output.amountRaw"
+                    :asset="overview.output.asset"
+                  />
+                  <span v-else>{{ overview.output.amount }}</span>
                   <strong
                     v-if="overview.output.usd"
                     v-tooltip="
@@ -539,6 +549,7 @@
 <script>
 import TxHeroShell from '~/pages/tx/components/TxHeroShell.vue'
 import AssetIcon from '~/components/AssetIcon.vue'
+import AssetAmountValue from '~/components/transactions/AssetAmountValue.vue'
 import AddressComponent from '~/components/transactions/Address.vue'
 import ProductBadge from '~/components/ProductBadge.vue'
 import Affiliate from '~/components/Affiliate.vue'
@@ -579,6 +590,7 @@ export default {
   components: {
     TxHeroShell,
     AssetIcon,
+    AssetAmountValue,
     AddressComponent,
     ProductBadge,
     Affiliate,

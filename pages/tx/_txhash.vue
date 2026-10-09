@@ -2380,6 +2380,9 @@ export default {
               name: this.getAssetDisplayName(input.asset),
               badge: this.getNetworkBadge(inputAsset),
               amount: this.formatAssetAmount(input.amount, input.asset),
+              // Raw base units so SwapHero can offer full precision on
+              // hover (AssetAmountValue), as StreamingSwapHero does.
+              amountRaw: input.amount,
               usd: this.formatUsdValue(nonContractInUsdRaw),
               usdAtExecution: inUsdAtExecution,
               txId: inboundHash,
@@ -2399,6 +2402,9 @@ export default {
               name: this.getAssetDisplayName(output.asset),
               badge: this.getNetworkBadge(outputAsset),
               amount: this.formatAssetAmount(output.amount, output.asset),
+              // Raw base units so SwapHero can offer full precision on
+              // hover (AssetAmountValue), as StreamingSwapHero does.
+              amountRaw: output.amount,
               usd: this.formatUsdValue(nonContractOutUsdRaw),
               usdAtExecution: outUsdAtExecution,
               txId: outboundHash,

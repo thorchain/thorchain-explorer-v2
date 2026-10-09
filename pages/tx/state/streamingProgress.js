@@ -28,7 +28,10 @@ export function resolveSubSwapCounts({ count, quantity, failedSwaps }) {
  * The interval suffix is left off for a rapid swap (interval 0), which has no
  * fixed spacing between sub-swaps.
  */
-export function describeSubSwapProgress(counts, { interval, intervalDisplay } = {}) {
+export function describeSubSwapProgress(
+  counts,
+  { interval, intervalDisplay } = {}
+) {
   let text = `${counts.processed} of ${counts.quantity} sub-swaps processed`
   if (counts.failed) {
     text += ` — ${counts.executed} executed, ${counts.failed} failed`
