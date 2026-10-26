@@ -20,13 +20,16 @@
         <div
           ref="mapViewport"
           class="map-viewport"
-          @mousedown="startPan"
-          @mousemove="pan"
-          @mouseup="endPan"
-          @mouseleave="endPan"
+          @pointerdown="onPointerDown"
+          @pointermove="onPointerMove"
+          @pointerup="onPointerUp"
+          @pointercancel="onPointerUp"
+          @pointerleave="onPointerLeave"
+          @click.capture="suppressClickAfterPan"
           @wheel.prevent="handleWheel"
         >
           <svg
+            ref="chainMap"
             class="chain-map"
             viewBox="-520 -360 1040 720"
             role="img"
@@ -317,7 +320,8 @@ export default {
         x: 0,
         y: 0,
       },
-      panStart: null,
+      gesture: null,
+      didPan: false,
       metrics: [
         { key: 'volume', label: 'Volume' },
         { key: 'txs', label: 'Txs' },
@@ -518,6 +522,10 @@ export default {
       return this.selectedCounterpartyRows.map((row) => row.chain)
     },
   },
+  created() {
+    // Active pointers in SVG units, keyed by pointerId. Not reactive on purpose.
+    this.pointers = new Map()
+  },
   mounted() {
     this.loadMap()
     document.addEventListener('click', this.handleClickOutside)
@@ -656,37 +664,126 @@ export default {
         this.selectedCounterparties.includes(chain)
       )
     },
+    clampScale(value) {
+      return Math.min(Math.max(value, 0.55), 2.4)
+    },
+    // Screen coordinates -> SVG viewBox units, so movement matches the cursor
+    // at any rendered size.
+    toSvgPoint(clientX, clientY) {
+      const svg = this.$refs.chainMap
+      const ctm = svg?.getScreenCTM()
+      if (!ctm) return { x: clientX, y: clientY }
+      const point = svg.createSVGPoint()
+      point.x = clientX
+      point.y = clientY
+      const { x, y } = point.matrixTransform(ctm.inverse())
+      return { x, y }
+    },
+    // Zoom while keeping the map point under `anchor` (SVG units) in place.
+    zoomAt(nextScale, anchor = { x: 0, y: 0 }) {
+      const scale = this.clampScale(nextScale)
+      const ratio = scale / this.scale
+      this.translate = {
+        x: anchor.x - (anchor.x - this.translate.x) * ratio,
+        y: anchor.y - (anchor.y - this.translate.y) * ratio,
+      }
+      this.scale = scale
+    },
     zoomIn() {
-      this.scale = Math.min(this.scale + 0.12, 2.4)
+      this.zoomAt(this.scale + 0.12)
     },
     zoomOut() {
-      this.scale = Math.max(this.scale - 0.12, 0.55)
+      this.zoomAt(this.scale - 0.12)
     },
     resetView() {
       this.scale = 1
       this.translate = { x: 0, y: 0 }
     },
     handleWheel(event) {
-      const delta = event.deltaY > 0 ? -0.08 : 0.08
-      this.scale = Math.min(Math.max(this.scale + delta, 0.55), 2.4)
+      // deltaMode 1 = lines; normalise to pixels so mice and trackpads match.
+      const delta = event.deltaMode === 1 ? event.deltaY * 16 : event.deltaY
+      const factor = Math.exp(-Math.max(Math.min(delta, 100), -100) * 0.0015)
+      this.zoomAt(
+        this.scale * factor,
+        this.toSvgPoint(event.clientX, event.clientY)
+      )
     },
-    startPan(event) {
-      this.panStart = {
+    startGesture() {
+      const points = [...this.pointers.values()]
+      const base = { scale: this.scale, translate: { ...this.translate } }
+
+      if (points.length === 1) {
+        this.gesture = { ...base, point: points[0] }
+      } else if (points.length >= 2) {
+        const [a, b] = points
+        this.gesture = {
+          ...base,
+          mid: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 },
+          dist: Math.hypot(a.x - b.x, a.y - b.y) || 1,
+        }
+      } else {
+        this.gesture = null
+      }
+    },
+    onPointerDown(event) {
+      if (event.pointerType === 'mouse' && event.button !== 0) return
+      if (this.pointers.size === 0) this.didPan = false
+      this.pointers.set(event.pointerId, {
         x: event.clientX,
         y: event.clientY,
-        translate: { ...this.translate },
-      }
+        ...this.toSvgPoint(event.clientX, event.clientY),
+        startX: event.clientX,
+        startY: event.clientY,
+      })
+      this.startGesture()
     },
-    pan(event) {
-      if (!this.panStart) return
+    onPointerMove(event) {
+      const pointer = this.pointers.get(event.pointerId)
+      if (!pointer || !this.gesture) return
 
-      this.translate = {
-        x: this.panStart.translate.x + (event.clientX - this.panStart.x),
-        y: this.panStart.translate.y + (event.clientY - this.panStart.y),
+      Object.assign(pointer, this.toSvgPoint(event.clientX, event.clientY))
+      if (
+        Math.hypot(
+          event.clientX - pointer.startX,
+          event.clientY - pointer.startY
+        ) > 4
+      ) {
+        this.didPan = true
       }
+
+      const { gesture } = this
+      if (gesture.point) {
+        this.translate = {
+          x: gesture.translate.x + (pointer.x - gesture.point.x),
+          y: gesture.translate.y + (pointer.y - gesture.point.y),
+        }
+        return
+      }
+
+      // Pinch: scale by finger distance, keep the start midpoint under the
+      // current midpoint.
+      const [a, b] = [...this.pointers.values()]
+      const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }
+      const dist = Math.hypot(a.x - b.x, a.y - b.y) || 1
+      const scale = this.clampScale((gesture.scale * dist) / gesture.dist)
+      const worldX = (gesture.mid.x - gesture.translate.x) / gesture.scale
+      const worldY = (gesture.mid.y - gesture.translate.y) / gesture.scale
+      this.scale = scale
+      this.translate = { x: mid.x - worldX * scale, y: mid.y - worldY * scale }
     },
-    endPan() {
-      this.panStart = null
+    onPointerUp(event) {
+      if (!this.pointers.delete(event.pointerId)) return
+      // Restart from the current view so a remaining finger keeps panning
+      // without a jump.
+      this.startGesture()
+    },
+    onPointerLeave(event) {
+      if (event.pointerType === 'mouse') this.onPointerUp(event)
+    },
+    suppressClickAfterPan(event) {
+      if (!this.didPan) return
+      event.stopPropagation()
+      this.didPan = false
     },
   },
 }
@@ -790,6 +887,8 @@ button {
   min-height: 0;
   overflow: hidden;
   cursor: grab;
+  touch-action: none;
+  user-select: none;
   background:
     linear-gradient(rgba(135, 233, 181, 0.05) 1px, transparent 1px),
     linear-gradient(90deg, rgba(135, 233, 181, 0.05) 1px, transparent 1px),
