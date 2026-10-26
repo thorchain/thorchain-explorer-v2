@@ -85,6 +85,26 @@ export default {
     imgErr(e) {
       e.target.src = require('~/assets/images/unknown.png')
     },
+    chainName(chain) {
+      return (
+        {
+          AVAX: 'Avalanche',
+          BASE: 'Base',
+          BCH: 'Bitcoin Cash',
+          BSC: 'BNB Chain',
+          BTC: 'Bitcoin',
+          DOGE: 'Dogecoin',
+          ETH: 'Ethereum',
+          GAIA: 'Cosmos Hub',
+          LTC: 'Litecoin',
+          SOL: 'Solana',
+          THOR: 'THORChain',
+          TRON: 'Tron',
+          XRP: 'XRP',
+          ZEC: 'Zcash',
+        }[chain] || chain
+      )
+    },
     baseChainAsset(chain) {
       switch (chain) {
         case 'THOR':

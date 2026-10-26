@@ -1,7 +1,18 @@
 <template>
   <Page class="pool-overview">
     <div class="cards-container">
-      <info-card :options="poolDetailStats" />
+      <info-card :options="poolDetailStats">
+        <template #name="{ item }">
+          <span class="counterparty-name">
+            <img
+              :src="assetImage(baseChainAsset(item.chain))"
+              alt=""
+              @error="imgErr"
+            />
+            {{ item.name }}
+          </span>
+        </template>
+      </info-card>
       <card :is-loading="loading" :title="`${showAsset(poolName)} Earnings`">
         <VChart
           :option="earningsHistory"
@@ -76,19 +87,40 @@ export default {
   data() {
     return {
       pool: undefined,
-      poolDetail: undefined,
       earningsHistory: undefined,
       depthHistory: undefined,
       swapHistory: undefined,
       loading: true,
       periodFees: 0,
       periodFeesUSD: 0,
+      // undefined while loading, [] when the chain has no cross-chain swaps
+      counterparties: undefined,
     }
   },
   computed: {
     ...mapGetters({
       runePrice: 'getRunePrice',
     }),
+    poolChain() {
+      return this.poolName?.split('.')[0]
+    },
+    counterpartyItems() {
+      if (!this.counterparties) {
+        // value undefined -> InfoCard shows a skeleton row
+        return [1, 2, 3].map(() => ({ name: '', value: undefined }))
+      }
+      if (!this.counterparties.length) {
+        return [{ name: 'No cross-chain swaps', value: '-' }]
+      }
+      return this.counterparties.map((row) => ({
+        name: this.chainName(row.chain),
+        nameSlot: true,
+        chain: row.chain,
+        value: row.volume,
+        filter: (v) => `$${this.$options.filters.number(v, '0,0.00a')}`,
+        extraText: `${this.$options.filters.number(row.count, '0,0')} txs`,
+      }))
+    },
     poolDetailStats() {
       return [
         {
@@ -152,6 +184,10 @@ export default {
               value: this.pool?.averageSlip / 10000,
               filter: (v) => `${this.$options.filters.percent(v, 2)}`,
             },
+            {
+              header: `Top Counterpart Chains (30D)`,
+            },
+            ...this.counterpartyItems,
           ],
         },
       ]
@@ -159,31 +195,60 @@ export default {
   },
   mounted() {
     this.loadData()
+    this.loadCounterparties()
   },
   methods: {
     async loadData() {
       this.loading = true
 
-      this.pool = (await this.$api.getPoolStats(this.poolName)).data
-
-      this.poolDetail = (await this.$api.getPoolDetail(this.poolName)).data
-
-      const resEarning = (await this.$api.getEarningHistory()).data
-      this.earningsHistory = this.formatEarnings(resEarning)
-
-      const resDepth = (await this.$api.getPoolDepth(this.poolName, 30)).data
-      this.depthHistory = this.formatDepth(resDepth)
-
-      const resSwaps = (
-        await this.$api.getSwapsHistory({
-          interval: 'day',
-          count: 30,
-          pool: this.poolName,
-        })
-      ).data
-      this.swapHistory = this.formatSwaps(resSwaps)
+      // Fetch in parallel; each section fills in as its response lands, and
+      // one failed request doesn't block the others.
+      const results = await Promise.allSettled([
+        this.$api.getPoolStats(this.poolName).then(({ data }) => {
+          this.pool = data
+        }),
+        this.$api.getEarningHistory().then(({ data }) => {
+          this.earningsHistory = this.formatEarnings(data)
+        }),
+        this.$api.getPoolDepth(this.poolName, 30).then(({ data }) => {
+          this.depthHistory = this.formatDepth(data)
+        }),
+        this.$api
+          .getSwapsHistory({ interval: 'day', count: 30, pool: this.poolName })
+          .then(({ data }) => {
+            this.swapHistory = this.formatSwaps(data)
+          }),
+      ])
+      results
+        .filter((r) => r.status === 'rejected')
+        .forEach((r) => console.error('Failed to load pool data:', r.reason))
 
       this.loading = false
+    },
+    // Chain-level only: api/chains has no pool-to-pool pairs, so this is the
+    // pool's whole chain (e.g. every ETH pool) swapping with other chains.
+    async loadCounterparties() {
+      try {
+        const { interactions } = (await this.$api.getChainsMonthly()).data
+        const totals = {}
+        ;(interactions || []).forEach((i) => {
+          if (i.chainIn === i.chainOut) return
+          let other
+          if (i.chainIn === this.poolChain) other = i.chainOut
+          else if (i.chainOut === this.poolChain) other = i.chainIn
+          else return
+          if (!totals[other]) totals[other] = { count: 0, volume: 0 }
+          totals[other].count += i.txCount
+          totals[other].volume += i.volumeUSD / 1e8
+        })
+        this.counterparties = Object.entries(totals)
+          .map(([chain, t]) => ({ chain, ...t }))
+          .sort((a, b) => b.volume - a.volume)
+          .slice(0, 3)
+      } catch (error) {
+        console.error('Failed to load pool counterparties:', error)
+        this.counterparties = []
+      }
     },
     assetString(assetStr) {
       const { chain, ticker } = assetFromString(assetStr)
@@ -536,6 +601,17 @@ export default {
   color: var(--sec-font-color);
   border-radius: $radius-lg;
   padding: $space-12;
+}
+.counterparty-name {
+  display: inline-flex;
+  align-items: center;
+  gap: $space-8;
+
+  img {
+    width: 18px;
+    height: 18px;
+    border-radius: $radius-full;
+  }
 }
 .pool-overview {
   width: 100%;

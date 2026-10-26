@@ -332,20 +332,6 @@ export default {
         { text: '7d', mode: '7d' },
         { text: '30d', mode: '30d' },
       ],
-      chainLabels: {
-        AVAX: 'Avalanche',
-        BASE: 'Base',
-        BCH: 'Bitcoin Cash',
-        BSC: 'BNB Chain',
-        BTC: 'Bitcoin',
-        DOGE: 'Dogecoin',
-        ETH: 'Ethereum',
-        GAIA: 'Cosmos Hub',
-        LTC: 'Litecoin',
-        SOL: 'Solana',
-        TRON: 'Tron',
-        XRP: 'XRP',
-      },
     }
   },
   head: {
@@ -624,9 +610,6 @@ export default {
     compactCurrency(value) {
       return `$${this.$options.filters.number(value || 0, '0.00a')}`
     },
-    chainName(chain) {
-      return this.chainLabels[chain] || chain
-    },
     nodeTransform(position) {
       return {
         transform: `translate(${position.x}px, ${position.y}px)`,
@@ -713,7 +696,8 @@ export default {
       const base = { scale: this.scale, translate: { ...this.translate } }
 
       if (points.length === 1) {
-        this.gesture = { ...base, point: points[0] }
+        // Copy: the stored pointer is updated on every move.
+        this.gesture = { ...base, point: { x: points[0].x, y: points[0].y } }
       } else if (points.length >= 2) {
         const [a, b] = points
         this.gesture = {
