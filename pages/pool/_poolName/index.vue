@@ -16,7 +16,12 @@
             :delay="{ show: 80, hide: 200 }"
           >
             <span class="counterparty-name">
-              <img :src="assetImage(item.pool)" alt="" @error="imgErr" />
+              <AssetIcon
+                :asset="item.pool"
+                :height="'18px'"
+                :chain-height="'10px'"
+                class="cp-asset"
+              />
               {{ item.name }}
               <unknown-icon class="counterparty-info" />
             </span>
@@ -24,15 +29,17 @@
               <div class="cp-popover">
                 <div class="cp-head">
                   <span class="cp-pair-icons">
-                    <img
-                      :src="assetImage(item.flow.otherAsset)"
-                      alt=""
-                      @error="imgErr"
+                    <AssetIcon
+                      :asset="item.flow.otherAsset"
+                      :height="'20px'"
+                      :chain-height="'10px'"
+                      class="cp-asset"
                     />
-                    <img
-                      :src="assetImage(item.flow.selfAsset)"
-                      alt=""
-                      @error="imgErr"
+                    <AssetIcon
+                      :asset="item.flow.selfAsset"
+                      :height="'20px'"
+                      :chain-height="'10px'"
+                      class="cp-asset"
                     />
                   </span>
                   <span class="cp-pair-name">
@@ -743,10 +750,8 @@ export default {
   align-items: center;
   gap: $space-8;
 
-  img {
-    width: 18px;
-    height: 18px;
-    border-radius: $radius-full;
+  ::v-deep .cp-asset {
+    margin-right: 0;
   }
 
   .counterparty-info {
@@ -783,19 +788,14 @@ export default {
     gap: $space-8;
   }
 
+  // Side by side rather than overlapped so each chain badge stays visible.
   .cp-pair-icons {
     display: inline-flex;
+    align-items: center;
+    gap: $space-8;
 
-    img {
-      width: 20px;
-      height: 20px;
-      border-radius: $radius-full;
-      border: 2px solid var(--card-bg-color);
-      background: var(--card-bg-color);
-
-      & + img {
-        margin-left: -$space-6;
-      }
+    ::v-deep .cp-asset {
+      margin-right: 0;
     }
   }
 
