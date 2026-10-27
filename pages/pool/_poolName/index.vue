@@ -3,14 +3,106 @@
     <div class="cards-container">
       <info-card :options="poolDetailStats">
         <template #name="{ item }">
-          <span class="counterparty-name">
-            <img
-              :src="assetImage(baseChainAsset(item.chain))"
-              alt=""
-              @error="imgErr"
-            />
-            {{ item.name }}
-          </span>
+          <VDropdown
+            v-if="item.flow"
+            theme="dropdown"
+            placement="bottom-start"
+            popper-class="counterparty-popper"
+            class="counterparty-trigger"
+            :distance="8"
+            :triggers="['hover', 'click']"
+            :hide-triggers="['hover']"
+            :popper-triggers="['hover']"
+            :delay="{ show: 80, hide: 200 }"
+          >
+            <span class="counterparty-name">
+              <img :src="assetImage(item.pool)" alt="" @error="imgErr" />
+              {{ item.name }}
+              <unknown-icon class="counterparty-info" />
+            </span>
+            <template #popper>
+              <div class="cp-popover">
+                <div class="cp-head">
+                  <span class="cp-pair-icons">
+                    <img
+                      :src="assetImage(item.flow.otherAsset)"
+                      alt=""
+                      @error="imgErr"
+                    />
+                    <img
+                      :src="assetImage(item.flow.selfAsset)"
+                      alt=""
+                      @error="imgErr"
+                    />
+                  </span>
+                  <span class="cp-pair-name">
+                    {{ item.flow.other }} <span class="cp-dim">⇄</span>
+                    {{ item.flow.self }}
+                  </span>
+                </div>
+                <div class="cp-total">
+                  <span class="mono cp-total-value">
+                    {{ item.flow.totalDisplay }}
+                  </span>
+                  <span class="cp-dim">
+                    {{ item.flow.countDisplay }} swaps · 30D
+                  </span>
+                </div>
+
+                <div v-if="item.flow.isRune" class="cp-note">
+                  Includes swaps with RUNE as well as trade and secure assets.
+                </div>
+
+                <div
+                  v-if="item.flow.directions.length"
+                  class="cp-split"
+                  role="presentation"
+                >
+                  <span
+                    v-for="d in item.flow.directions"
+                    :key="d.key"
+                    :class="['cp-split-seg', `cp-${d.key}`]"
+                    :style="{ width: `${d.sharePct}%` }"
+                  />
+                </div>
+
+                <div
+                  v-for="d in item.flow.directions"
+                  :key="d.key"
+                  class="cp-dir"
+                >
+                  <span :class="['cp-dot', `cp-${d.key}`]" />
+                  <div class="cp-dir-main">
+                    <div class="cp-dir-line">
+                      <span class="cp-dir-label">
+                        {{ d.from }} <span class="cp-dim">→</span> {{ d.to }}
+                      </span>
+                      <span class="mono cp-dir-value">
+                        {{ d.volumeDisplay }}
+                      </span>
+                    </div>
+                    <div class="cp-dir-line cp-dim">
+                      <span>
+                        {{ d.countDisplay }} swaps<template v-if="d.avgDisplay">
+                          · avg {{ d.avgDisplay }}</template
+                        >
+                      </span>
+                      <span class="mono">{{ d.shareDisplay }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <nuxt-link
+                  v-if="item.link"
+                  :to="item.link"
+                  class="cp-link clickable"
+                >
+                  View {{ item.flow.other }} pool →
+                </nuxt-link>
+              </div>
+            </template>
+          </VDropdown>
+          <span v-else class="counterparty-name">{{ item.name }}</span>
         </template>
       </info-card>
       <card :is-loading="loading" :title="`${showAsset(poolName)} Earnings`">
@@ -66,6 +158,7 @@ import {
   GridComponent,
 } from 'echarts/components'
 import VChart from 'vue-echarts'
+import UnknownIcon from '~/assets/images/unknown.svg?inline'
 
 use([
   SVGRenderer,
@@ -80,6 +173,7 @@ use([
 export default {
   components: {
     VChart,
+    UnknownIcon,
   },
   asyncData({ params }) {
     return { poolName: params.poolName }
@@ -93,7 +187,7 @@ export default {
       loading: true,
       periodFees: 0,
       periodFeesUSD: 0,
-      // undefined while loading, [] when the chain has no cross-chain swaps
+      // undefined while loading, [] when the pool had no swaps in the period
       counterparties: undefined,
     }
   },
@@ -101,25 +195,63 @@ export default {
     ...mapGetters({
       runePrice: 'getRunePrice',
     }),
-    poolChain() {
-      return this.poolName?.split('.')[0]
-    },
     counterpartyItems() {
       if (!this.counterparties) {
         // value undefined -> InfoCard shows a skeleton row
         return [1, 2, 3].map(() => ({ name: '', value: undefined }))
       }
       if (!this.counterparties.length) {
-        return [{ name: 'No cross-chain swaps', value: '-' }]
+        return [{ name: 'No swaps', value: '-' }]
       }
-      return this.counterparties.map((row) => ({
-        name: this.chainName(row.chain),
-        nameSlot: true,
-        chain: row.chain,
-        value: row.volume,
-        filter: (v) => `$${this.$options.filters.number(v, '0,0.00a')}`,
-        extraText: `${this.$options.filters.number(row.count, '0,0')} txs`,
-      }))
+      const usd = (v) => `$${this.$options.filters.number(v, '0,0.00a')}`
+      const count = (v) => this.$options.filters.number(v, '0,0')
+      const pct = (v) => this.$options.filters.percent(v, 1)
+      const self = this.showAsset(this.poolName)
+      return this.counterparties.map((row) => {
+        const other = this.showAsset(row.pool)
+        // RUNE has no pool page, and its bucket also holds trade/secure
+        // swaps, so its in/out split isn't meaningful.
+        const isRune = row.pool === 'THOR.RUNE'
+        const directional = row.inVolume + row.outVolume
+        // `in` is counterpart -> this pool, `out` this pool -> counterpart.
+        const direction = (key, from, to, volume, n) => {
+          const share = directional > 0 ? volume / directional : 0
+          return {
+            key,
+            from,
+            to,
+            volumeDisplay: usd(volume),
+            countDisplay: count(n),
+            avgDisplay: n > 0 ? usd(volume / n) : null,
+            sharePct: share * 100,
+            shareDisplay: pct(share),
+          }
+        }
+        return {
+          name: other,
+          nameSlot: true,
+          pool: row.pool,
+          link: isRune ? null : `/pool/${row.pool}`,
+          value: row.volume,
+          filter: usd,
+          extraText: `${count(row.count)} swaps`,
+          flow: {
+            self,
+            other,
+            selfAsset: this.poolName,
+            otherAsset: row.pool,
+            totalDisplay: usd(row.volume),
+            countDisplay: count(row.count),
+            isRune,
+            directions: isRune
+              ? []
+              : [
+                  direction('in', other, self, row.inVolume, row.inCount),
+                  direction('out', self, other, row.outVolume, row.outCount),
+                ],
+          },
+        }
+      })
     },
     poolDetailStats() {
       return [
@@ -185,7 +317,7 @@ export default {
               filter: (v) => `${this.$options.filters.percent(v, 2)}`,
             },
             {
-              header: `Top Counterpart Chains (30D)`,
+              header: `Top Counterpart Pools (30D)`,
             },
             ...this.counterpartyItems,
           ],
@@ -225,28 +357,27 @@ export default {
 
       this.loading = false
     },
-    // Chain-level only: api/chains has no pool-to-pool pairs, so this is the
-    // pool's whole chain (e.g. every ETH pool) swapping with other chains.
     async loadCounterparties() {
       try {
-        const { interactions } = (await this.$api.getChainsMonthly()).data
-        const totals = {}
-        ;(interactions || []).forEach((i) => {
-          if (i.chainIn === i.chainOut) return
-          let other
-          if (i.chainIn === this.poolChain) other = i.chainOut
-          else if (i.chainOut === this.poolChain) other = i.chainIn
-          else return
-          if (!totals[other]) totals[other] = { count: 0, volume: 0 }
-          totals[other].count += i.txCount
-          totals[other].volume += i.volumeUSD / 1e8
-        })
-        this.counterparties = Object.entries(totals)
-          .map(([chain, t]) => ({ chain, ...t }))
+        const { data } = await this.$api.getPoolCounterparts(
+          this.poolName,
+          '30d'
+        )
+        // USD values are 1e8-scaled strings; counts are strings too.
+        this.counterparties = (data?.counterparts || [])
+          .map((c) => ({
+            pool: c.pool,
+            volume: Number(c.volumeUSD) / 1e8,
+            count: Number(c.swapCount),
+            inVolume: Number(c.inVolumeUSD) / 1e8,
+            inCount: Number(c.inSwapCount),
+            outVolume: Number(c.outVolumeUSD) / 1e8,
+            outCount: Number(c.outSwapCount),
+          }))
           .sort((a, b) => b.volume - a.volume)
           .slice(0, 3)
       } catch (error) {
-        console.error('Failed to load pool counterparties:', error)
+        console.error('Failed to load pool counterparts:', error)
         this.counterparties = []
       }
     },
@@ -602,6 +733,11 @@ export default {
   border-radius: $radius-lg;
   padding: $space-12;
 }
+.counterparty-trigger {
+  display: inline-flex;
+  cursor: pointer;
+}
+
 .counterparty-name {
   display: inline-flex;
   align-items: center;
@@ -611,6 +747,145 @@ export default {
     width: 18px;
     height: 18px;
     border-radius: $radius-full;
+  }
+
+  .counterparty-info {
+    width: 14px;
+    height: 14px;
+    fill: var(--sec-font-color);
+    opacity: 0.6;
+    transition: opacity 0.15s;
+  }
+
+  &:hover .counterparty-info {
+    opacity: 1;
+  }
+}
+
+// Popover content: slot content keeps this component's scope id, so these
+// scoped rules reach it even though floating-vue mounts it elsewhere.
+.cp-popover {
+  display: flex;
+  flex-direction: column;
+  gap: $space-10;
+  width: 260px;
+  max-width: 100%;
+  font-size: $font-size-xs;
+  color: var(--sec-font-color);
+
+  .cp-dim {
+    color: var(--text-dim-color);
+  }
+
+  .cp-head {
+    display: flex;
+    align-items: center;
+    gap: $space-8;
+  }
+
+  .cp-pair-icons {
+    display: inline-flex;
+
+    img {
+      width: 20px;
+      height: 20px;
+      border-radius: $radius-full;
+      border: 2px solid var(--card-bg-color);
+      background: var(--card-bg-color);
+
+      & + img {
+        margin-left: -$space-6;
+      }
+    }
+  }
+
+  .cp-pair-name {
+    font-size: $font-size-s;
+    font-weight: 600;
+  }
+
+  .cp-total {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: $space-8;
+    padding-bottom: $space-10;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .cp-total-value {
+    font-size: $font-size-md;
+    font-weight: 600;
+    color: var(--primary-color);
+  }
+
+  .cp-note {
+    line-height: 1.4;
+    color: var(--text-dim-color);
+  }
+
+  .cp-split {
+    display: flex;
+    height: 6px;
+    gap: 2px;
+    border-radius: $radius-full;
+    overflow: hidden;
+    background: var(--border-color);
+  }
+
+  .cp-split-seg {
+    min-width: 2px;
+  }
+
+  .cp-in {
+    background: var(--primary-color);
+  }
+
+  .cp-out {
+    background: var(--warning-color);
+  }
+
+  .cp-dir {
+    display: flex;
+    align-items: flex-start;
+    gap: $space-8;
+  }
+
+  .cp-dot {
+    flex-shrink: 0;
+    width: 8px;
+    height: 8px;
+    margin-top: 4px;
+    border-radius: $radius-full;
+  }
+
+  .cp-dir-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: $space-2;
+  }
+
+  .cp-dir-line {
+    display: flex;
+    justify-content: space-between;
+    gap: $space-8;
+  }
+
+  .cp-dir-label {
+    font-weight: 500;
+  }
+
+  .cp-dir-value {
+    font-weight: 600;
+  }
+
+  .cp-link {
+    padding-top: $space-8;
+    border-top: 1px solid var(--border-color);
+    font-size: $font-size-xs;
+    text-align: right;
   }
 }
 .pool-overview {

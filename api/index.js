@@ -135,6 +135,7 @@ import {
   getChains,
   getChainsWeekly,
   getChainsMonthly,
+  getPoolCounterparts,
   getReveneuPaidToTc,
   getStreamingSwaps,
 } from './middleware.api'
@@ -385,6 +386,7 @@ export default function ({ $axios }, inject) {
     getChains,
     getChainsWeekly,
     getChainsMonthly,
+    getPoolCounterparts,
     getReveneuPaidToTc,
   }
 

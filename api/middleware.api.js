@@ -369,6 +369,16 @@ export function getChainsMonthly() {
   )
 }
 
+// Pool-to-pool swap volume over `period` (e.g. '7d', '30d'; server default
+// is 30d). `in*` is counterpart -> this pool, `out*` this pool -> counterpart.
+export function getPoolCounterparts(pool, period = '30d') {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].SERVER_URL +
+      `pool/${encodeURIComponent(pool)}/counterparts`,
+    { params: { period } }
+  )
+}
+
 export function getReveneuPaidToTc() {
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].SERVER_URL + 'api/reveneuePaidToTc'
