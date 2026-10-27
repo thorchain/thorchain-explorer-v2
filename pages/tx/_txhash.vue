@@ -113,6 +113,7 @@ import {
   resolveOutboundSignal,
   resolveOutboundLegState,
   resolveOutboundLegStatus,
+  resolveRefundLegStatus,
   resolveTxOutboundTotals,
 } from './state/outboundStatus.js'
 import { resolveOutboundTxs } from './state/outboundTxs.js'
@@ -578,11 +579,40 @@ export default {
         const reasonRaw = refundAction.metadata?.refund?.reason || ''
         const parsedReason = reasonRaw ? parseActionReason(reasonRaw) : null
         const outboundHash =
-          outTxs?.length && !isInternalTx(outTxs[0]?.id) ? outTxs[0].id : ''
+          outTxs?.length && outTxs[0]?.id && !isInternalTx(outTxs[0].id)
+            ? outTxs[0].id
+            : ''
+
+        // Midgard calls the refund `success` once it is scheduled; whether
+        // it was actually sent comes from the THORNode leg.
+        const refundLeg = outTxs?.find((o) => o.kind === 'refund') ?? null
+        const refundEta =
+          refundLeg && refundLeg.state !== 'sent'
+            ? this.legOutboundETA(
+                refundLeg,
+                resolveOutboundSignal(
+                  this.thorStatus,
+                  this.getOutboundStatusContext()
+                )
+              )
+            : null
+        const refundStatus = resolveRefundLegStatus(refundLeg, refundEta)
+        const pastDueBlocks =
+          refundEta != null && refundEta < 0 ? -refundEta : null
+        const status = {
+          refunded: { label: 'Refunded', tone: 'yellow' },
+          scheduled: { label: 'Refund pending', tone: 'yellow' },
+          overdue: { label: 'Refund overdue', tone: 'orange' },
+        }[refundStatus]
 
         return {
           kind: 'refund',
-          status: { label: 'Refunded', tone: 'yellow' },
+          status,
+          refundStatus,
+          refundSent: refundStatus === 'refunded',
+          pastDueDisplay: pastDueBlocks
+            ? `~${moment.duration(pastDueBlocks * this.blockSeconds('THOR'), 'seconds').humanize()}`
+            : null,
           hash: this.$route.params.txhash,
           // Same field the shipped swapOverview hero reads for its own
           // Affiliate.vue badge — shown regardless of the refund (the
@@ -679,6 +709,9 @@ export default {
       return {
         kind: 'refund',
         status: { label: 'Refunded', tone: 'yellow' },
+        refundStatus: 'refunded',
+        refundSent: true,
+        pastDueDisplay: null,
         hash: this.$route.params.txhash,
         // createAbstractState never sets accordions.action.affiliateName
         // for this path, so details.interface (and thus this field) is

@@ -5,9 +5,17 @@
     :affiliate-address="overview.affiliateAddress"
   >
     <template #title>
-      Swap refunded —
-      <span class="mono">{{ overview.refundedAmountDisplay }}</span>
-      sent back
+      <template v-if="overview.refundSent">
+        Swap refunded —
+        <span class="mono">{{ overview.refundedAmountDisplay }}</span>
+        sent back
+      </template>
+      <template v-else>
+        Swap refund
+        {{ overview.refundStatus === 'overdue' ? 'overdue' : 'pending' }} —
+        <span class="mono">{{ overview.refundedAmountDisplay }}</span>
+        not sent yet
+      </template>
     </template>
 
     <template #main>
@@ -86,7 +94,12 @@
           </DetailRow>
           <DetailRow label="Action" value="Refund" />
           <DetailRow label="Status">
-            <span class="mini-bubble yellow">{{ overview.status.label }}</span>
+            <span :class="['mini-bubble', statusToneClass]">
+              {{ overview.status.label }}
+            </span>
+            <span v-if="overview.pastDueDisplay" class="tx-detail-muted">
+              {{ overview.pastDueDisplay }} past due
+            </span>
           </DetailRow>
           <DetailRow label="Reason">
             <span class="tx-value-warning">
@@ -129,6 +142,9 @@
               :param="overview.outboundHash"
               :asset="overview.refundedAsset"
             />
+          </DetailRow>
+          <DetailRow v-else-if="!overview.refundSent" label="Refund tx">
+            <span class="tx-value-warning">Not sent yet</span>
           </DetailRow>
         </div>
       </section>
@@ -184,7 +200,14 @@ export default {
   },
   computed: {
     chips() {
-      return [{ label: 'Refund', tone: 'yellow', dot: true }]
+      const chips = [{ label: 'Refund', tone: 'yellow', dot: true }]
+      if (this.overview.refundStatus === 'overdue') {
+        chips.push({ label: 'Refund overdue', tone: 'yellow', dot: true })
+      }
+      return chips
+    },
+    statusToneClass() {
+      return this.overview.status?.tone === 'orange' ? 'orange' : 'yellow'
     },
     // Only "Input Tx" — the refund's own outbound hash already gets its
     // own external-explorer link in the rail's Refund summary card below,
@@ -222,13 +245,24 @@ export default {
           title: 'Refund triggered',
           body: this.overview.reason,
         },
-        {
-          icon: 'ArrowIcon',
-          iconRotate: 0,
-          tone: 'warning',
-          title: 'Refund sent back',
-          body: `${this.overview.refundedAmountDisplay} returned to ${this.addressFormatV2(this.overview.from)}.`,
-        },
+        this.overview.refundSent
+          ? {
+              icon: 'ArrowIcon',
+              iconRotate: 0,
+              tone: 'warning',
+              title: 'Refund sent back',
+              body: `${this.overview.refundedAmountDisplay} returned to ${this.addressFormatV2(this.overview.from)}.`,
+            }
+          : {
+              icon: 'ArrowIcon',
+              iconRotate: 0,
+              tone: 'warning',
+              title:
+                this.overview.refundStatus === 'overdue'
+                  ? 'Refund overdue'
+                  : 'Refund scheduled',
+              body: `${this.overview.refundedAmountDisplay} to ${this.addressFormatV2(this.overview.from)} has not been signed by THORChain yet${this.overview.pastDueDisplay ? ` (${this.overview.pastDueDisplay} past its scheduled block)` : ''}.`,
+            },
       ]
     },
   },

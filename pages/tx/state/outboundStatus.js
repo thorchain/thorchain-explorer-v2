@@ -60,10 +60,30 @@ export function resolveOutboundLegState(completedTx, signal) {
  * @returns {'delivered'|'scheduled'|'overdue'|'refunded'}
  */
 export function resolveOutboundLegStatus({ done, outboundETA, refund }) {
-  if (refund) return 'refunded'
-  if (done) return 'delivered'
+  // A refund leg is only 'refunded' once it was sent; until then it is as
+  // scheduled/overdue as any other outbound.
+  if (done) return refund ? 'refunded' : 'delivered'
   if (outboundETA != null && outboundETA < 0) return 'overdue'
   return 'scheduled'
+}
+
+/**
+ * Status of a refund leg from resolveOutboundLegs. Midgard records a
+ * refund action as `success` (with an empty out[]) as soon as THORChain
+ * schedules it, even when the outbound is never signed, so this reads the
+ * leg's own THORNode state. With no leg at all (no THORNode data) Midgard's
+ * word is all there is, so it counts as refunded.
+ *
+ * @param {object|null} leg OutboundLeg (or its outTx adapter shape)
+ * @param {number|null|undefined} outboundETA blocks until sent, negative when overdue
+ * @returns {'refunded'|'scheduled'|'overdue'}
+ */
+export function resolveRefundLegStatus(leg, outboundETA) {
+  return resolveOutboundLegStatus({
+    done: !leg || leg.state === 'sent',
+    outboundETA,
+    refund: true,
+  })
 }
 
 /**
