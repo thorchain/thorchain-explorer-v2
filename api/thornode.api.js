@@ -325,3 +325,12 @@ export function getStreamingTxStatus(txid) {
     endpoints[process.env.NETWORK].THORNODE_URL + `thorchain/swap/streaming/${txid}`
   )
 }
+
+// Queued limit orders. Filter on source_asset (exact THORNode string, case
+// sensitive) to keep the response small — the full queue is ~150KB.
+export function getLimitSwapsQueue(params) {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].THORNODE_URL + 'thorchain/queue/limit_swaps',
+    { params }
+  )
+}

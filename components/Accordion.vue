@@ -342,10 +342,14 @@ export default {
       if (seconds <= 0) {
         return 'Almost There!'
       }
-      const hours = Math.floor(seconds / 3600)
+      // Days split out past 24h (e.g. a limit order's expiry): "2d 22:50:48".
+      const days = Math.floor(seconds / 86400)
+      const hours = Math.floor((seconds % 86400) / 3600)
       const minutes = Math.floor((seconds % 3600) / 60)
       const remainingSeconds = seconds % 60
-      return `${hours < 10 ? '0' : ''}${hours}:${minutes < 10 ? '0' : ''}${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`
+      const pad = (n) => String(n).padStart(2, '0')
+      const hms = `${pad(hours)}:${pad(minutes)}:${pad(remainingSeconds)}`
+      return days > 0 ? `${days}d ${hms}` : hms
     },
   },
 }

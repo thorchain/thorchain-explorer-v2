@@ -78,6 +78,7 @@ import {
   getOraclePrices,
   getSwapQueue,
   getStreamingTxStatus,
+  getLimitSwapsQueue,
 } from './thornode.api'
 import { getContractSmartQuery } from './cosmwasm.api'
 import { getTendermintLatestBlocks } from './tendermint.api'
@@ -315,6 +316,7 @@ export default function ({ $axios }, inject) {
     getChainsHeight,
     getHolders,
     getStreamingTxStatus,
+    getLimitSwapsQueue,
     getUserLpPosition,
     getPol,
     getBorrowers,

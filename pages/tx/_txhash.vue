@@ -86,6 +86,8 @@
           :inbound-hash="inboundHash"
           :quote="quote"
           :height="height"
+          :is-limit-order="!!(txMemo && txMemo.isLimitOrder)"
+          :limit-order="limitOrder"
         />
       </template>
       <tx-loader v-else></tx-loader>
@@ -100,7 +102,6 @@
 
 <script>
 import moment from 'moment'
-import { groupBy, sumBy } from 'lodash'
 import { mapGetters } from 'vuex'
 import streamingSwap from './components/streamingSwap.vue'
 import txCard from './components/txCard.vue'
@@ -119,6 +120,11 @@ import {
 import { resolveOutboundTxs } from './state/outboundTxs.js'
 import { legAmountUSD, hasUnsentLegs } from './state/outboundLegs.js'
 import { resolveTxMemo } from './state/resolveTxMemo.js'
+import {
+  findLimitOrder,
+  resolveLimitOrderProgress,
+  midgardSwapOutAmount,
+} from './state/limitOrder.js'
 import { parseActionReason } from './state/parseActionReason.js'
 import { computeMimirConsensus } from './state/mimirConsensus.js'
 import {
@@ -213,6 +219,9 @@ export default {
       thorStatus: undefined,
       thorHeight: 0,
       quote: undefined,
+      // Live progress of a queued limit order (resolveLimitOrderProgress),
+      // null when the tx isn't a pending limit order or has left the queue.
+      limitOrder: null,
       height: undefined,
       nodeSnapshot: null,
       nodeSnapshotAddress: null,
@@ -4146,6 +4155,22 @@ export default {
             console.error(error)
           }
         }
+        // Only the limit-swap queue knows a pending limit order's fill and
+        // expiry. Filtered on the inbound asset so it stays a few KB.
+        if (memo.isLimitOrder && thorStatus?.stages.swap_status?.pending) {
+          const queue = (
+            await this.$api
+              .getLimitSwapsQueue({
+                source_asset: thorStatus?.tx?.coins?.[0]?.asset,
+              })
+              .catch(() => null)
+          )?.data
+          this.limitOrder = resolveLimitOrderProgress(
+            findLimitOrder(queue, thorStatus?.tx?.id)
+          )
+        } else {
+          this.limitOrder = null
+        }
         const { cards, accordions } = await this.createSwapState(
           thorStatus,
           thorTx,
@@ -5498,33 +5523,13 @@ export default {
       let outAmount =
         outTxs?.length > 0 ? parseInt(outTxs[0]?.coins?.[0]?.amount ?? 0) : 0
       if (!outAmount && actions?.actions?.length > 0) {
-        const outAssetStr = outAsset ? assetToString(outAsset) : null
-        const midgardSwapAction =
-          actions?.actions?.find((a) => a.type === 'swap') ??
-          actions?.actions?.find((a) => a.type === 'limit_swap')
-        // For trade/secure assets, sum across unique txIDs (multiple sub-outs per swap).
-        // For all other assets, use the first non-affiliate out matching the target asset.
-        if (outAsset?.trade || outAsset?.secure) {
-          outAmount = parseInt(
-            Object.values(
-              groupBy(
-                midgardSwapAction?.out?.filter(
-                  (a) => a.coins?.[0]?.asset === outAssetStr
-                ),
-                'txID'
-              )
-            ).map((group) =>
-              sumBy(group, (item) => +(item.coins?.[0]?.amount ?? 0))
-            )[0]
-          )
-        } else {
-          const midgardOut = midgardSwapAction?.out?.find(
-            (o) => !o.affiliate && o.coins?.[0]?.asset === outAssetStr
-          )
-          if (midgardOut) {
-            outAmount = parseInt(midgardOut.coins?.[0]?.amount ?? 0)
-          }
-        }
+        // Never a `limit_swap` action's out — that's the order's limit
+        // target, recorded at placement (see limitOrder.js).
+        outAmount = midgardSwapOutAmount(
+          actions.actions,
+          outAsset ? assetToString(outAsset) : null,
+          { ledger: outAsset?.trade || outAsset?.secure }
+        )
       }
 
       // only refund happened
@@ -5783,6 +5788,8 @@ export default {
               isLimitOrder && this.quote?.expected_amount_out
                 ? parseInt(this.quote.expected_amount_out)
                 : null,
+            limitOrder: isLimitOrder ? this.limitOrder : null,
+            limitInAsset: inAsset,
             affiliateName: memo?.affiliate,
             affiliateFee: sumAffiliateFee(memo?.fee || 0),
             liquidityFee:
@@ -5797,14 +5804,18 @@ export default {
             streaming: {
               count:
                 thorStatus?.stages.swap_status?.streaming?.count ??
-                streamingMeta?.count,
+                (isLimitOrder && this.limitOrder
+                  ? this.limitOrder.attempts
+                  : streamingMeta?.count),
               interval:
                 thorStatus?.stages.swap_status?.streaming?.interval ??
                 streamingMeta?.interval ??
                 memo?.interval,
               quantity:
                 thorStatus?.stages.swap_status?.streaming?.quantity ??
-                streamingMeta?.quantity ??
+                (isLimitOrder && this.limitOrder
+                  ? this.limitOrder.quantity
+                  : streamingMeta?.quantity) ??
                 memo?.quantity,
               lastHeight: streamingMeta?.lastHeight || null,
             },

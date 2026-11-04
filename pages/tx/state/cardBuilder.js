@@ -163,9 +163,18 @@ export function buildActionAccordion(accordionsAction, ctx) {
     )
   }
 
-  let liquidityFeeName = 'Liquidity Fee'
+  // Live queue state of a pending limit order (limitOrder.js), else null.
+  const lo = action.isLimitOrder ? action.limitOrder : null
+
+  // A pending limit order's fee covers only the sub-swaps Midgard has seen.
+  let liquidityFeeName = lo ? 'Liquidity Fee (so far)' : 'Liquidity Fee'
   let totalLiquidityFees = action?.liquidityFee
-  if (action.streaming?.count < action.streaming?.quantity) {
+  // A limit order's count includes missed attempts and may never reach
+  // quantity, so its fee can't be extrapolated from count/quantity.
+  if (
+    !action.isLimitOrder &&
+    action.streaming?.count < action.streaming?.quantity
+  ) {
     liquidityFeeName = 'Liquidity Fee (est)'
     const one = +action?.liquidityFee / action.streaming?.count
     totalLiquidityFees +=
@@ -173,12 +182,19 @@ export function buildActionAccordion(accordionsAction, ctx) {
   }
 
   const blockDuration = ctx.chainsHeight?.THOR - ctx.height
-  const remainingTime =
-    (+action?.streaming?.quantity * +action.streaming?.interval -
-      blockDuration) *
-    6
-  const totalTime =
-    +action?.streaming?.quantity * +action.streaming?.interval * 6
+  // A limit order runs until it fills or expires: its window is the queue's
+  // expiry, not quantity * interval (its interval is the TTL, often 0).
+  const blockSec = ctx.blockSeconds?.('THOR') || 6
+  const remainingTime = lo
+    ? lo.expiryBlocks * blockSec
+    : (+action?.streaming?.quantity * +action.streaming?.interval -
+        blockDuration) *
+      6
+  const totalTime = lo
+    ? (lo.expiryBlocks + lo.ageBlocks) * blockSec
+    : +action?.streaming?.quantity * +action.streaming?.interval * 6
+  const fmt = (raw) =>
+    ctx.baseAmountFormatOrZero ? ctx.baseAmountFormatOrZero(raw) : raw / 1e8
 
   const stacks = [
     {
@@ -198,9 +214,54 @@ export function buildActionAccordion(accordionsAction, ctx) {
       type: 'rate',
     },
     {
+      key: 'Order Status',
+      value: lo
+        ? [
+            lo.status === 'resting'
+              ? { text: 'Resting · waiting for price', class: 'yellow' }
+              : { text: 'Partially filled', class: 'yellow' },
+          ]
+        : null,
+      type: 'bubble',
+      is: !!lo,
+    },
+    {
+      key: 'Filled',
+      value: lo
+        ? `${fmt(lo.swappedIn)} / ${fmt(lo.deposit)} ${ctx.showAsset(action.limitInAsset)} (${lo.fillPercent.toFixed(2)}%) → ${fmt(lo.swappedOut)} ${ctx.showAsset(action.limitAsset)}`
+        : null,
+      is: !!lo,
+    },
+    {
+      key: 'Sub-swaps',
+      value: lo
+        ? `${lo.executed} of ${lo.quantity} executed` +
+          (lo.failed
+            ? ` · ${ctx.pluralize(lo.failed, 'attempt', { includeNumber: true })} missed the price`
+            : '')
+        : null,
+      is: !!lo,
+    },
+    {
+      key: 'Last Missed Attempt',
+      value: lo?.lastFailure
+        ? `Would return ${fmt(lo.lastFailure.emit)}, needs ${fmt(lo.lastFailure.limit)} ${ctx.showAsset(action.limitAsset)} — retrying`
+        : null,
+      is: !!lo?.lastFailure,
+    },
+    {
+      key: 'Expires In',
+      value: lo
+        ? `${moment.duration(lo.expiryBlocks * blockSec, 's').humanize()} (${ctx.pluralize(lo.expiryBlocks, 'Block', { includeNumber: true })})`
+        : null,
+      is: !!lo,
+    },
+    {
       key: 'Stream',
       value: `${action.streaming?.count} / ${action.streaming?.quantity}`,
-      is: action.streaming?.count,
+      // Covered by Sub-swaps for a limit order; its raw count includes
+      // missed attempts and reads like "69 / 4".
+      is: action.streaming?.count && !action.isLimitOrder,
     },
     {
       key: 'Interval',
@@ -216,7 +277,9 @@ export function buildActionAccordion(accordionsAction, ctx) {
               'Block',
               { includeNumber: true }
             )})`,
+      // A limit order's interval is its TTL, shown as Expires In.
       is:
+        !action.isLimitOrder &&
         action?.streaming?.interval !== undefined &&
         action?.streaming?.interval !== null,
     },

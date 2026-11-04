@@ -153,8 +153,8 @@ export function getPoolVolume(poolName) {
 }
 
 export function getNetwork() {
-  return $axiosInstace.get('network').catch((error) => {
-    console.warn('Midgard network endpoint failed, using Thornode fallback')
+  return $axiosInstace.get('https://vanaheimex.com/network').catch((error) => {
+    console.warn('vanaheimex network endpoint failed, using Thornode fallback')
 
     return $axiosInstace
       .get(endpoints[process.env.NETWORK].THORNODE_URL + 'thorchain/network')

@@ -1,35 +1,38 @@
 <template>
-  <card v-if="showStreamingCard" class="streaming-card">
+  <card v-if="showCard" class="streaming-card">
     <div class="card-header streaming-header">
-      <span>Streaming Swap <sup class="header-sup">Live</sup></span>
+      <span
+        >{{ isLimitOrder ? 'Limit Order' : 'Streaming Swap' }}
+        <sup class="header-sup">Live</sup></span
+      >
       <div
         :class="[
           'status-live',
           'mini-bubble',
-          { yellow: streamingDetail.count < streamingDetail.quantity },
+          { yellow: d.yellow || d.count < d.quantity },
         ]"
       >
-        {{ streamingDetail.status }}
+        {{ d.status }}
       </div>
     </div>
     <div class="card-body">
       <div class="info-item timer">
-        <span>Remaining Times</span>
+        <span>{{ isLimitOrder ? 'Expires In' : 'Remaining Times' }}</span>
         <strong class="mono">
-          {{ streamingDetail.remIntervalSec }}
+          {{ d.remIntervalSec }}
         </strong>
       </div>
       <div class="info-item strong">
-        <progress-bar :width="streamingDetail.fill * 100" height="4px" />
+        <progress-bar :width="d.fill * 100" height="4px" />
         <span>Progress</span>
         <span class="mono">
           <span style="color: var(--font-color); font-size: 0.75rem">
-            ({{ streamingDetail.count }}/{{ streamingDetail.quantity }})
+            ({{ d.count }}/{{ d.quantity }})
           </span>
-          {{ $options.filters.percent(streamingDetail.fill, 2) }}
+          {{ $options.filters.percent(d.fill, 2) }}
         </span>
       </div>
-      <span v-if="quoteQuality" class="info-item">
+      <span v-if="quoteQuality && !isLimitOrder" class="info-item">
         <span>Execution Quality</span>
         <span>
           {{ quoteQuality | percent(2) }}
@@ -39,15 +42,15 @@
       <div class="info-item">
         <span>Swapped / Deposited Input</span>
         <span>
-          {{ streamingDetail.swappedIn }}
+          {{ d.swappedIn }}
           <span style="color: var(--font-color); font-size: 0.75rem">
-            {{ streamingDetail.depositedAsset }}
+            {{ d.depositedAsset }}
           </span>
           /
           <span>
-            {{ streamingDetail.depositedAmt }}
+            {{ d.depositedAmt }}
             <span style="color: var(--font-color); font-size: 0.75rem">
-              {{ streamingDetail.depositedAsset }}
+              {{ d.depositedAsset }}
             </span>
           </span>
         </span>
@@ -55,23 +58,25 @@
       <div class="info-item">
         <span>Swapped Input / Output</span>
         <span>
-          {{ streamingDetail.swappedIn }}
+          {{ d.swappedIn }}
           <span style="color: var(--font-color); font-size: 0.75rem">
-            {{ streamingDetail.depositedAsset }}
+            {{ d.depositedAsset }}
           </span>
           →
           <span>
-            {{ streamingDetail.swappedOut }}
+            {{ d.swappedOut }}
             <span style="color: var(--font-color); font-size: 0.75rem">
-              {{ streamingDetail.targetAsset }}
+              {{ d.targetAsset }}
             </span>
           </span>
         </span>
       </div>
       <span class="info-item">
-        <span>Remaining Block(s)</span>
+        <span>{{
+          isLimitOrder ? 'Blocks To Expiry' : 'Remaining Block(s)'
+        }}</span>
         <span>
-          {{ streamingDetail.remInterval }}
+          {{ d.remInterval }}
           <span style="color: var(--font-color); font-size: 0.75rem">
             Blocks
           </span>
@@ -87,9 +92,13 @@ import { mapGetters } from 'vuex'
 import { assetFromString } from '~/utils'
 
 export default {
-  props: ['inboundHash', 'quote', 'height'],
+  // isLimitOrder/limitOrder: a limit order's live state comes from the
+  // page's queue/limit_swaps lookup (resolveLimitOrderProgress), so this
+  // card doesn't poll anything for one.
+  props: ['inboundHash', 'quote', 'height', 'isLimitOrder', 'limitOrder'],
   data() {
     return {
+      limitInAsset: null,
       streamingDetail: {
         is: false,
         fill: 0,
@@ -112,9 +121,47 @@ export default {
     }
   },
   computed: {
+    showCard() {
+      return this.isLimitOrder ? !!this.limitOrder : this.showStreamingCard
+    },
+    d() {
+      return this.isLimitOrder ? this.limitDetail : this.streamingDetail
+    },
+    limitDetail() {
+      const lo = this.limitOrder
+      if (!lo) return {}
+      const num = (raw) => this.$options.filters.number(raw / 1e8, '0,0.00')
+      const toAsset = (str) => {
+        const a = str ? this.parseMemoAsset(str, this.pools) : null
+        return typeof a === 'string' ? assetFromString(a) : a
+      }
+      const inAsset = toAsset(this.limitInAsset)
+      const outAsset = toAsset(lo.targetAsset)
+      const blockSec = (this.blockSeconds && this.blockSeconds('THOR')) || 6
+      return {
+        status: lo.status === 'resting' ? 'Resting' : 'Filling',
+        yellow: true,
+        fill: lo.fillPercent / 100,
+        count: lo.executed,
+        quantity: lo.quantity,
+        remIntervalSec: this.createDurationText(
+          moment.duration(lo.expiryBlocks * blockSec, 'seconds')
+        ),
+        remInterval: lo.expiryBlocks,
+        depositedAmt: num(lo.deposit),
+        depositedAsset: inAsset?.ticker ?? '',
+        swappedIn: num(lo.swappedIn),
+        swappedOut: num(lo.swappedOut),
+        targetAsset: outAsset?.ticker ?? '',
+      }
+    },
     showStreamingCard() {
       const streamedIn = Number(this.streamingData?.in || 0)
-      return this.streamingDetail.is && this.streamingDetail.fill > 0 && streamedIn > 0
+      return (
+        this.streamingDetail.is &&
+        this.streamingDetail.fill > 0 &&
+        streamedIn > 0
+      )
     },
     quoteQuality() {
       if (!this.quote || !this.streamingData) {
@@ -156,11 +203,20 @@ export default {
       )
     },
     async updateStreamingDetail(txid) {
+      if (this.isLimitOrder) {
+        // Only the inbound asset is needed; the page supplies the rest.
+        if (!this.limitInAsset) {
+          const st = (await this.$api.getTxStatus(this.inboundHash))?.data
+          this.limitInAsset = st?.tx?.coins?.[0]?.asset ?? null
+        }
+        return
+      }
       const thorStatus = (await this.$api.getTxStatus(this.inboundHash))?.data
-      const streamingStatus = (await this.$api.getStreamingTxStatus(this.inboundHash))?.data
+      const streamingStatus = (
+        await this.$api.getStreamingTxStatus(this.inboundHash)
+      )?.data
       const isSwap =
-        streamingStatus?.tx_id &&
-        thorStatus?.stages.swap_status?.pending
+        streamingStatus?.tx_id && thorStatus?.stages.swap_status?.pending
 
       const blockDuration =
         this.height && this.chainsHeight?.THOR
@@ -170,7 +226,8 @@ export default {
       // change the remaining seconds to the first height
       if (isSwap) {
         const memo = this.parseMemo(thorStatus.tx?.memo)
-        const raw = (streamingStatus || thorStatus?.stages?.swap_status?.streaming) ?? {}
+        const raw =
+          (streamingStatus || thorStatus?.stages?.swap_status?.streaming) ?? {}
         // Coerce all streaming fields to numbers — they arrive as strings from
         // both the streaming endpoint and thorStatus.
         const interval = +(raw.interval ?? 0)
@@ -182,7 +239,7 @@ export default {
         // orders that retry many times before filling. The actual number of
         // executed chunks is the attempt count minus the failed attempts.
         const count = Math.max(
-          (+(raw.count || 0)) - (streamingStatus?.failed_swaps?.length || 0),
+          +(raw.count || 0) - (streamingStatus?.failed_swaps?.length || 0),
           0
         )
         this.streamingDetail.fill = quantity ? count / quantity : 0
@@ -236,7 +293,8 @@ export default {
           this.streamingDetail.status = 'Done'
         }
 
-        const { data } = await this.$api.getStreamingSwap(txid)
+        // Same endpoint as streamingStatus above — reuse it.
+        const data = streamingStatus
         this.streamingData = data
 
         if (data.trade_target) {
@@ -338,7 +396,7 @@ export default {
 .streaming-card {
   max-width: 680px !important;
   margin: 0 10px;
-  @include lg{
+  @include lg {
     margin: auto !important;
     width: 100% !important;
   }
