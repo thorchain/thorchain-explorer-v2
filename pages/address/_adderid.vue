@@ -271,119 +271,7 @@
     </template>
 
     <template>
-      <div v-if="isVault" class="vault-container">
-        <div class="vault-header">
-          <Avatar :name="address" class="vault-header__avatar" />
-          <div class="vault-header__identity">
-            <span class="address-value" style="color: var(--sec-font-color)">
-              {{ label }}
-            </span>
-            <div class="qr-copy-wrapper">
-              <div class="item">
-                <Copy :str-copy="address" />
-              </div>
-              <div id="qrcode" class="item">
-                <qr-btn :qrcode="address"></qr-btn>
-              </div>
-            </div>
-          </div>
-        </div>
-        <info-card :options="addressStat"></info-card>
-        <Card
-          :navs="[
-            { title: 'Chain Addresses', value: 'chain-addr' },
-            { title: 'Node Members', value: 'node-mmb' },
-            { title: 'Routers', value: 'routers' },
-          ]"
-          :act-nav.sync="vaultMode"
-        >
-          <div v-if="vaultMode == 'chain-addr'" key="chain-addr">
-            <div class="addresses-container">
-              <div
-                v-for="address in chainAddresses"
-                :key="address.chain"
-                class="addresses"
-              >
-                <img
-                  class="asset-icon"
-                  :src="assetImage(baseChainAsset(address.chain))"
-                />
-                <span class="clickable mono" @click="gotoAddr(address.address)"
-                  >{{ address.address.slice(0, 8) }}...{{
-                    address.address.slice(-8)
-                  }}</span
-                >
-              </div>
-            </div>
-          </div>
-          <div v-if="vaultMode == 'node-mmb'" key="node-mmb">
-            <div class="addresses-container">
-              <div
-                v-for="address in nodeAddresses"
-                :key="address.chain"
-                class="addresses"
-              >
-                <nuxt-link :to="`/node/${address}`" class="clickable mono">
-                  {{ addressFormatV2(address) }}
-                </nuxt-link>
-              </div>
-            </div>
-          </div>
-          <div v-if="vaultMode == 'routers'" key="routers">
-            <div class="addresses-container">
-              <div v-for="r in routers" :key="r.chain" class="addresses">
-                <img
-                  class="asset-icon"
-                  :src="assetImage(baseChainAsset(r.chain))"
-                />
-                <span class="clickable mono" @click="gotoAddr(r.router)"
-                  >{{ r.router.slice(0, 8) }}...{{ r.router.slice(-8) }}</span
-                >
-              </div>
-            </div>
-          </div>
-        </Card>
-        <card title="Vault Balances">
-          <vue-good-table
-            v-if="vaultInfo"
-            :columns="cols"
-            :rows="vaultInfo.coins"
-            style-class="vgt-table net-table vgt-compact"
-            :pagination-options="{
-              enabled: true,
-              perPage: 30,
-              perPageDropdownEnabled: false,
-            }"
-          >
-            <template slot="table-row" slot-scope="props">
-              <div
-                v-if="props.column.field == 'asset'"
-                v-tooltip="props.row.asset"
-                class="cell-content clickable"
-                @click="gotoPool(props.row.asset)"
-              >
-                <img
-                  class="table-asset-icon"
-                  :src="assetImage(props.row.asset)"
-                  alt="asset-icon"
-                />
-                <span>{{ props.formattedRow[props.column.field] }}</span>
-              </div>
-              <span v-else-if="props.column.field == 'amount'">
-                <span
-                  >{{ props.formattedRow[props.column.field] }}
-                  <span class="extra-text">
-                    {{ showAsset(props.row.asset) }}
-                  </span>
-                </span>
-              </span>
-              <span v-else>
-                {{ props.formattedRow[props.column.field] }}
-              </span>
-            </template>
-          </vue-good-table>
-        </card>
-      </div>
+      <vault-view v-if="isVault && vaultInfo" :vault="vaultInfo" />
 
       <template>
         <div v-show="!addrTxs && !loading" class="error-container">
@@ -406,8 +294,9 @@ import Pools from './components/pools.vue'
 import Bonds from './components/bonds.vue'
 import Distribution from './components/distribution.vue'
 import BalanceHistory from './components/balanceHistory.vue'
+import VaultView from './components/vaultView.vue'
 import Transactions from '~/components/Transactions.vue'
-import { formatAsset, assetFromString } from '~/utils'
+import { assetFromString } from '~/utils'
 import {
   KOINLY_CSV_TOOLTIP,
   buildKoinlyUniversalCsv,
@@ -421,12 +310,18 @@ import crossIcon from '~/assets/images/cross.svg?inline'
 import { getRujiraContractLabel } from '~/utils/rujiraContracts'
 import SelectFilter from '~/components/selectFilter.vue'
 
+// `slug` is what shows in the URL as ?tab=<slug>; transactions is the default and has no tab param.
 const PRESET_OPTIONS = [
-  { label: 'Transactions', value: 'transactions' },
-  { label: 'LP/Savers', value: 'pools' },
-  { label: 'Bond', value: 'bond' },
-  { label: 'Thorname', value: 'thorname' },
-  { label: 'TCY', value: 'distribution' },
+  {
+    label: 'Transactions',
+    value: 'transactions',
+    slug: 'transactions',
+    title: 'Txs',
+  },
+  { label: 'LP/Savers', value: 'pools', slug: 'lp', title: 'LP' },
+  { label: 'Bond', value: 'bond', slug: 'bond', title: 'Bond' },
+  { label: 'Thorname', value: 'thorname', slug: 'thorname', title: 'Thorname' },
+  { label: 'TCY', value: 'distribution', slug: 'tcy', title: 'TCY' },
 ]
 
 export default {
@@ -444,6 +339,7 @@ export default {
     downloadIcon,
     SelectFilter,
     Transactions,
+    VaultView,
   },
   data() {
     return {
@@ -457,42 +353,8 @@ export default {
       loading: true,
       nextPageToken: undefined,
       prevPageToken: undefined,
-      activeMode: 'transactions',
       isVault: false,
-      chainAddresses: [],
-      routers: [],
       vaultInfo: undefined,
-      vaultType: 'Asgard',
-      vaultMode: 'chain-addr',
-      nodeAddresses: [],
-      cols: [
-        {
-          label: 'Asset',
-          field: 'asset',
-          formatFn: formatAsset,
-        },
-        {
-          label: 'Balance',
-          field: 'amount',
-          type: 'number',
-          tdClass: 'mono',
-          formatFn: this.baseAmountFormat,
-        },
-        {
-          label: 'Price',
-          field: 'price',
-          type: 'number',
-          tdClass: 'mono',
-          formatFn: this.formatCurrency,
-        },
-        {
-          label: 'Value',
-          field: 'value',
-          type: 'number',
-          tdClass: 'mono',
-          formatFn: this.formatCurrency,
-        },
-      ],
       pools: undefined,
       currentPage: 1,
       limit: 30,
@@ -509,6 +371,34 @@ export default {
     }
   },
   computed: {
+    activeMode: {
+      get() {
+        const tab = this.$route.query.tab
+        const option = PRESET_OPTIONS.find(
+          (o) => o.slug === tab || o.value === tab
+        )
+        return option ? option.value : 'transactions'
+      },
+      set(mode) {
+        if (mode === this.activeMode) return
+        const option = PRESET_OPTIONS.find((o) => o.value === mode)
+        const query = { ...this.$route.query }
+        if (!option || option.value === 'transactions') {
+          delete query.tab
+        } else {
+          query.tab = option.slug
+        }
+        this.$router.push({ path: this.$route.path, query })
+      },
+    },
+    // Only the query params that change the transactions list; switching
+    // tabs must not refetch transactions.
+    txQueryKey() {
+      return JSON.stringify({
+        ...this.checkQuery(this.$route.query),
+        page: this.$route.query.page,
+      })
+    },
     presetOptions() {
       return PRESET_OPTIONS
     },
@@ -632,43 +522,6 @@ export default {
     },
     addressStat() {
       const balances = this.otherBalances ?? []
-      if (this.isVault) {
-        return [
-          {
-            title: 'Overall Info',
-            rowStart: 1,
-            colSpan: 1,
-            items: [
-              {
-                name: 'Block Height',
-                value: this.vaultInfo?.block_height,
-                filter: (v) => this.$options.filters.number(v, '0,0'),
-              },
-              {
-                name: 'Status',
-                value: this.formatStatus(this.vaultInfo?.status),
-              },
-            ],
-          },
-          {
-            title: 'Ins/Outs',
-            rowStart: 1,
-            colSpan: 1,
-            items: [
-              {
-                name: 'Inbound Txs',
-                value: this.vaultInfo?.inbound_tx_count,
-                filter: (v) => this.$options.filters.number(v, '0,0'),
-              },
-              {
-                name: 'Outbound Txs',
-                value: this.vaultInfo?.outbound_tx_count,
-                filter: (v) => this.$options.filters.number(v, '0,0'),
-              },
-            ],
-          },
-        ]
-      }
       return balances
     },
     ...mapGetters({
@@ -682,15 +535,11 @@ export default {
     },
   },
   watch: {
-    nodesData() {
-      this.fillNodesAddresses()
-    },
-    '$route.query': {
-      handler(query) {
-        this.fetchData(query)
+    txQueryKey: {
+      handler() {
+        this.fetchData(this.$route.query)
       },
       immediate: true,
-      deep: true,
     },
   },
   mounted() {
@@ -840,55 +689,26 @@ export default {
     checkIsVault(address) {
       this.$api
         .getAsgard()
-        .then(async ({ data }) => {
-          for (const vaultIndex in data) {
-            if (
-              data[vaultIndex].addresses
-                .map((a) => a.address.toUpperCase())
-                .includes(address.toUpperCase())
-            ) {
-              this.isVault = true
-              this.vaultType = 'Asgard'
-              this.chainAddresses = data[vaultIndex].addresses
-              this.routers = data[vaultIndex].routers
-              this.vaultInfo = data[vaultIndex]
-              if (!this.pools) {
-                this.pools = (await this.$api.getPools()).data
-              }
-              this.vaultInfo.coins = this.vaultInfo.coins
-                .filter((c) => +c.amount >= 1e3)
-                .map((c) => ({
-                  ...c,
-                  price: this.amountToUSD(c.asset, 1e8, this.pools),
-                  value: this.amountToUSD(c.asset, +c.amount, this.pools),
-                }))
-              this.fillNodesAddresses()
-            }
-          }
+        .then(({ data }) => {
+          const vault = (data || []).find((v) =>
+            v.addresses.some(
+              (a) => a.address.toUpperCase() === address.toUpperCase()
+            )
+          )
+          if (!vault) return
+          this.isVault = true
+          this.vaultInfo = vault
         })
         .catch((e) => console.error(e))
-    },
-    fillNodesAddresses() {
-      this.nodeAddresses = []
-      if (this.nodesData && this.vaultInfo) {
-        this.nodesData.forEach((n) => {
-          const nodePubKey = n?.pub_key_set?.secp256k1
-          if (nodePubKey && this.vaultInfo?.membership.includes(nodePubKey)) {
-            this.nodeAddresses.push(n.node_address)
-          }
-        })
-      }
     },
     fetchData(params) {
       this.loading = true
 
       const cleanParams = this.checkQuery(params)
 
-      let offset
-      if (this.$route.query.page) {
-        this.currentPage = +this.$route.query.page
-        offset = (this.currentPage - 1) * this.limit
-      }
+      // No ?page= means page 1 (e.g. after pressing back to the first page).
+      this.currentPage = +this.$route.query.page || 1
+      const offset = (this.currentPage - 1) * this.limit
 
       this.$api
         .getActions({
@@ -1097,8 +917,17 @@ export default {
         }, {})
     },
   },
-  head: {
-    title: `THORChain Network Explorer | Address`,
+  head() {
+    // e.g. "THORChain Network Explorer | 2jnr - Txs (Page 4)"
+    const short = (this.address || '').slice(-4)
+    let section = this.isVault ? 'Vault' : this.activePresetOption.title
+    if (!this.isVault && this.activeMode === 'transactions') {
+      const page = +this.$route.query.page || 1
+      if (page > 1) section += ` (Page ${page})`
+    }
+    return {
+      title: `THORChain Network Explorer | ${short} - ${section}`,
+    }
   },
 }
 </script>
@@ -1276,34 +1105,6 @@ export default {
     line-height: 0.7rem;
   }
 
-  .vault-container {
-    display: flex;
-    flex-direction: column;
-    gap: $space-10;
-  }
-
-  .vault-header {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.6rem;
-    margin: $space-0 $space-10;
-
-    @include lg {
-      margin: $space-0;
-    }
-  }
-
-  .vault-header__identity {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-    min-width: 0;
-    font-weight: bold;
-    color: var(--font-color);
-  }
-
   .scam-warning {
     flex: 0 0 100%;
     order: -1;
@@ -1352,19 +1153,6 @@ export default {
 
 .cell-content {
   display: flex;
-}
-
-.addresses-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 10px;
-  align-items: center;
-  justify-items: center;
-
-  .addresses {
-    display: flex;
-    align-items: center;
-  }
 }
 
 .stat-wrapper {
