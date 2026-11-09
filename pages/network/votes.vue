@@ -153,6 +153,7 @@
 
 <script>
 import moment from 'moment'
+import { debounce } from 'lodash'
 import SearchIcon from '~/assets/images/search.svg?inline'
 import Address from '~/components/transactions/Address.vue'
 import {
@@ -176,7 +177,7 @@ export default {
       votesRequired: 0,
       formattedVotes: [],
       mimirData: {},
-      searchQuery: '',
+      searchQuery: this.$route.query.search || '',
       last24HVotes: 0,
     }
   },
@@ -234,6 +235,37 @@ export default {
         },
       ]
     },
+  },
+  watch: {
+    // Keep ?search= in the URL so the filter survives reloads and can be shared.
+    searchQuery(term) {
+      this.syncSearchToUrl(term)
+    },
+    // Back/forward or a link to /network/votes?search=... updates the box.
+    '$route.query.search'(search) {
+      const term = search || ''
+      if (term !== this.searchQuery) {
+        this.syncSearchToUrl.cancel()
+        this.searchQuery = term
+      }
+    },
+  },
+  created() {
+    // replace (not push) so each keystroke doesn't add a history entry.
+    this.syncSearchToUrl = debounce((term) => {
+      const query = { ...this.$route.query }
+      const trimmed = term.trim()
+      if (trimmed) {
+        query.search = trimmed
+      } else {
+        delete query.search
+      }
+      if ((this.$route.query.search || '') === (query.search || '')) return
+      this.$router.replace({ path: this.$route.path, query }).catch(() => {})
+    }, 300)
+  },
+  beforeDestroy() {
+    this.syncSearchToUrl.cancel()
   },
   async mounted() {
     try {
