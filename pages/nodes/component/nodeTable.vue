@@ -5,6 +5,7 @@
       :row-style-class="rowClassCallback" :search-options="{
         enabled: true,
         externalQuery: searchTerm,
+        searchFn: matchesSearch,
       }" :sort-options="{
         enabled: true,
         initialSortBy: sortColumn
@@ -451,6 +452,22 @@ export default {
     window.addEventListener('visibilitychange', this.unloadRank)
   },
   methods: {
+    // Match the raw value as well as the formatted one, so a full node
+    // address (e.g. from /nodes?search=thor1...) matches a shortened cell.
+    matchesSearch(row, col, formattedValue, searchTerm) {
+      const term = String(searchTerm || '')
+        .trim()
+        .toLowerCase()
+      if (!term) return true
+      const raw = row[col.field]
+      return [formattedValue, raw].some(
+        (v) =>
+          v !== undefined &&
+          v !== null &&
+          typeof v !== 'object' &&
+          String(v).toLowerCase().includes(term)
+      )
+    },
     bRuneStage(churnItem) {
       const capacity = churnItem.bRuneCapacity || 0
       const bond = churnItem.bRuneBond || 0

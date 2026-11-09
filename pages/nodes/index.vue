@@ -34,7 +34,7 @@
         <SearchIcon class="search-icon" />
       </div>
 
-      <div class="dropdown-container" ref="dropdownContainer">
+      <div ref="dropdownContainer" class="dropdown-container">
         <button class="dropdown-toggle" @click="toggleDropdown">
           <Caret :class="['dropdown-icon', { open: dropdownOpen }]" />
           Filters
@@ -50,8 +50,8 @@
                 <input
                   type="checkbox"
                   :checked="!hides.isp"
-                  @change="toggleFilter('isp')"
                   class="custom-checkbox"
+                  @change="toggleFilter('isp')"
                 />
                 <span class="custom-checkbox-label"></span>
                 <span class="filter-label">ISP</span>
@@ -61,8 +61,8 @@
                 <input
                   type="checkbox"
                   :checked="!hides.fee"
-                  @change="toggleFilter('fee')"
                   class="custom-checkbox"
+                  @change="toggleFilter('fee')"
                 />
                 <span class="custom-checkbox-label"></span>
                 <span class="filter-label">Fee</span>
@@ -72,8 +72,8 @@
                 <input
                   type="checkbox"
                   :checked="!hides.score"
-                  @change="toggleFilter('score')"
                   class="custom-checkbox"
+                  @change="toggleFilter('score')"
                 />
                 <span class="custom-checkbox-label"></span>
                 <span class="filter-label">Score</span>
@@ -83,8 +83,8 @@
                 <input
                   type="checkbox"
                   :checked="!hides.age"
-                  @change="toggleFilter('age')"
                   class="custom-checkbox"
+                  @change="toggleFilter('age')"
                 />
                 <span class="custom-checkbox-label"></span>
                 <span class="filter-label">Age</span>
@@ -94,8 +94,8 @@
                 <input
                   type="checkbox"
                   :checked="!hides.RPC && !hides.BFR"
-                  @change="toggleHealthFilter"
                   class="custom-checkbox"
+                  @change="toggleHealthFilter"
                 />
                 <span class="custom-checkbox-label"></span>
                 <span class="filter-label">Health</span>
@@ -105,8 +105,8 @@
                 <input
                   type="checkbox"
                   :checked="!hides.runebond"
-                  @change="toggleFilter('runebond')"
                   class="custom-checkbox"
+                  @change="toggleFilter('runebond')"
                 />
                 <span class="custom-checkbox-label"></span>
                 <span class="filter-label">Runebond</span>
@@ -116,8 +116,8 @@
                 <input
                   type="checkbox"
                   :checked="!hides.brune"
-                  @change="toggleFilter('brune')"
                   class="custom-checkbox"
+                  @change="toggleFilter('brune')"
                 />
                 <span class="custom-checkbox-label"></span>
                 <span class="filter-label">bRUNE</span>
@@ -189,7 +189,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import { rcompare, lt, valid } from 'semver'
-import { orderBy, countBy } from 'lodash'
+import { orderBy, countBy, debounce } from 'lodash'
 import moment from 'moment'
 import NodeTable from './component/nodeTable.vue'
 import { fillNodeData, availableChains, blockTime } from '~/utils'
@@ -229,11 +229,13 @@ export default {
       // height it last changed (drives low-version churn-out, see activeNodes).
       minJoinVersion: undefined,
       minJoinSinceHeight: undefined,
-      searchTerm: '',
+      searchTerm: this.$route.query.search || '',
       churnProgressValue: 0,
       totalAwards: undefined,
       leastBondChurn: 0,
       retiringVaults: [],
+      // node secp256k1 pubkey -> its asgard vault's THOR address
+      vaultByPubKey: {},
       enteringBond: 0,
       enteringCount: 0,
       leavingBond: 0,
@@ -273,7 +275,7 @@ export default {
       if (!this.hides.age) count++
 
       if (!this.hides.RPC && !this.hides.BFR) count++
-      
+
       if (!this.hides.runebond) count++
       if (!this.hides.brune) count++
 
@@ -1056,7 +1058,11 @@ export default {
             markLeave(el)
           }
 
-          if (el.runebond && el.runebond.available === true && !this.hides.runebond) {
+          if (
+            el.runebond &&
+            el.runebond.available === true &&
+            !this.hides.runebond
+          ) {
             filteredNodes[index].churn.push({
               name: 'This node is available to be bonded on RUNEBond',
               icon: require('@/assets/images/runebond.svg?inline'),
@@ -1221,7 +1227,11 @@ export default {
             })
           }
 
-          if (el.runebond && el.runebond.available === true && !this.hides.runebond) {
+          if (
+            el.runebond &&
+            el.runebond.available === true &&
+            !this.hides.runebond
+          ) {
             filteredNodes[i].churn.push({
               name: 'This node is available to be bonded on RUNEBond',
               icon: require('@/assets/images/runebond.svg?inline'),
@@ -1274,7 +1284,13 @@ export default {
         whtNodes.forEach((el, index) => {
           this.fillNodeRow(filteredNodes, el)
 
-          if (el.runebond && el.runebond.available === true && !this.hides.runebond && filteredNodes[index] && filteredNodes[index].churn) {
+          if (
+            el.runebond &&
+            el.runebond.available === true &&
+            !this.hides.runebond &&
+            filteredNodes[index] &&
+            filteredNodes[index].churn
+          ) {
             filteredNodes[index].churn.push({
               name: 'This node is available to be bonded on RUNEBond',
               icon: require('@/assets/images/runebond.svg?inline'),
@@ -1286,7 +1302,12 @@ export default {
           }
 
           const bRuneRow = filteredNodes[index]
-          if (bRuneRow && bRuneRow.churn && bRuneRow.bRuneWhitelisted && !this.hides.brune) {
+          if (
+            bRuneRow &&
+            bRuneRow.churn &&
+            bRuneRow.bRuneWhitelisted &&
+            !this.hides.brune
+          ) {
             filteredNodes[index].churn.push({
               iconSrc: require('@/assets/images/assets/brune.png'),
               type: 'brune',
@@ -1304,6 +1325,18 @@ export default {
     },
   },
   watch: {
+    // Keep ?search= in the URL so the filter survives reloads and can be shared.
+    searchTerm(term) {
+      this.syncSearchToUrl(term)
+    },
+    // Back/forward or a link to /nodes?search=... updates the box.
+    '$route.query.search'(search) {
+      const term = search || ''
+      if (term !== this.searchTerm) {
+        this.syncSearchToUrl.cancel()
+        this.searchTerm = term
+      }
+    },
     chainsHeight(n, o) {
       this.churnProgress()
       this.totalAwardsCalc()
@@ -1316,6 +1349,7 @@ export default {
       .getAsgard()
       .then((res) => {
         this.retiringVaults = this.getRetiringVault(res.data)
+        this.vaultByPubKey = this.mapVaultMembers(res.data)
       })
       .catch((e) => {
         console.error(e)
@@ -1374,13 +1408,41 @@ export default {
     }
     document.addEventListener('click', this.handleClickOutside)
   },
+  created() {
+    // replace (not push) so each keystroke doesn't add a history entry.
+    this.syncSearchToUrl = debounce((term) => {
+      const query = { ...this.$route.query }
+      const trimmed = term.trim()
+      if (trimmed) {
+        query.search = trimmed
+      } else {
+        delete query.search
+      }
+      if ((this.$route.query.search || '') === (query.search || '')) return
+      this.$router.replace({ path: this.$route.path, query }).catch(() => {})
+    }, 300)
+  },
   beforeDestroy() {
+    this.syncSearchToUrl.cancel()
     this.clearIntervalId(this.intervalId)
     this.clearIntervalId(this.secondInterval)
     this.clearIntervalId(this.bRuneStateInterval)
     document.removeEventListener('click', this.handleClickOutside)
   },
   methods: {
+    // Fills the Vault column, so /nodes?search=<vault address> lists that
+    // vault's members.
+    mapVaultMembers(vaults) {
+      const map = {}
+      vaults.forEach((v) => {
+        const thorAddr = v.addresses?.find((a) => a.chain === 'THOR')?.address
+        if (!thorAddr) return
+        ;(v.membership || []).forEach((pk) => {
+          map[pk] = thorAddr
+        })
+      })
+      return map
+    },
     getRetiringVault(vaults) {
       return vaults
         .filter((v) => v.status === 'RetiringVault')
@@ -1492,6 +1554,8 @@ export default {
       fillNodeData(rows, node, index)
       const row = rows[rows.length - 1]
       if (!row) return
+
+      row.vault = this.vaultByPubKey[node.pub_key_set?.secp256k1] || row.vault
 
       const bRuneState = this.bRuneNodeState[node.node_address]
 

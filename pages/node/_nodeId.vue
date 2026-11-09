@@ -48,6 +48,14 @@
       <div class="node-info">
         <copy :str-copy="nodeId" />
       </div>
+      <nuxt-link
+        v-tooltip="'Show this node in the nodes table'"
+        :to="{ path: '/nodes', query: { search: nodeId } }"
+        class="node-table-link"
+      >
+        <TableIcon class="node-table-link__icon" />
+        <span>View in table</span>
+      </nuxt-link>
     </div>
 
     <div class="node-overview">
@@ -352,6 +360,7 @@ import DangerIcon from '~/assets/images/danger.svg?inline'
 import VFlag from '~/components/VFlag.vue'
 import CloudImage from '~/components/CloudImage.vue'
 import Warning from '~/assets/images/warning.svg?inline'
+import TableIcon from '~/assets/images/highlight-list.svg?inline'
 
 export default {
   components: {
@@ -361,6 +370,7 @@ export default {
     VFlag,
     CloudImage,
     Warning,
+    TableIcon,
   },
   asyncData({ params }) {
     return { nodeId: params.nodeId }
@@ -847,6 +857,32 @@ export default {
       align-items: center;
       justify-content: center;
       height: 1rem;
+    }
+  }
+
+  .node-table-link {
+    display: flex;
+    align-items: center;
+    gap: $space-8;
+    background-color: var(--card-bg-color);
+    color: var(--sec-font-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: $space-10 $space-12;
+    font-size: 0.875rem;
+    line-height: 1rem;
+    text-decoration: none;
+    white-space: nowrap;
+
+    &:hover {
+      color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+
+    &__icon {
+      width: 1rem;
+      height: 1rem;
+      fill: currentColor;
     }
   }
 }
