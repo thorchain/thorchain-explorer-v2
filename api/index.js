@@ -79,6 +79,7 @@ import {
   getSwapQueue,
   getStreamingTxStatus,
   getLimitSwapsQueue,
+  getUpgradeProposals,
 } from './thornode.api'
 import { getContractSmartQuery } from './cosmwasm.api'
 import { getTendermintLatestBlocks } from './tendermint.api'
@@ -296,6 +297,7 @@ export default function ({ $axios }, inject) {
     getDashboardData,
     getDashboardPlots,
     getNodes,
+    getUpgradeProposals,
     getExraNodesInfo,
     getTCY,
     getChurnHistory,

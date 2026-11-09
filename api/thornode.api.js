@@ -207,6 +207,12 @@ export function getNodes() {
   )
 }
 
+export function getUpgradeProposals() {
+  return $axiosInstace.get(
+    endpoints[process.env.NETWORK].THORNODE_URL + 'thorchain/upgrade_proposals'
+  )
+}
+
 export function getNode(addr) {
   return $axiosInstace.get(
     endpoints[process.env.NETWORK].THORNODE_URL + `thorchain/node/${addr}`
