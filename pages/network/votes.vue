@@ -142,7 +142,7 @@
       <div class="mv-grid mv-grid--head">
         <span class="mv-label">Vote key</span>
         <span class="mv-label">Leading value</span>
-        <span class="mv-label">Toward threshold</span>
+        <span class="mv-label">Toward threshold · last 3</span>
         <span class="mv-label">Status</span>
         <span class="mv-label">Last vote</span>
         <span />
@@ -193,10 +193,18 @@
           </span>
 
           <span class="mv-cell mv-cell--leading">
-            <template v-if="vote.leading">
+            <template v-if="vote.wrongKey" />
+            <template v-else-if="vote.leading">
               <span class="mono mv-value">{{ vote.leading.label }}</span>
               <span
-                v-if="vote.values.length > 1"
+                v-if="vote.operational && vote.recentVotes.length"
+                class="mv-muted"
+              >
+                {{ vote.leading.count }} of {{ vote.votedCount }}
+                {{ vote.votedCount === 1 ? 'vote' : 'votes' }} · plurality
+              </span>
+              <span
+                v-else-if="vote.values.length > 1"
                 class="mv-muted is-orange-text"
               >
                 contested · {{ vote.values.length }} values
@@ -209,7 +217,48 @@
             <span v-else class="mv-muted">No standing votes</span>
           </span>
 
-          <span class="mv-cell mv-cell--bar">
+          <span v-if="vote.wrongKey" class="mv-cell mv-cell--bar">
+            <span
+              class="mv-tag mv-tag--red"
+              :title="`THORNode never reads ${vote.value}, so votes on it change nothing.`"
+            >
+              <template v-if="vote.correctKey">
+                Wrong key · use
+                <span class="mono">{{ vote.correctKey }}</span>
+              </template>
+              <template v-else>Wrong key · not read by THORNode</template>
+            </span>
+          </span>
+          <span
+            v-else-if="vote.operational && vote.recentVotes.length"
+            class="mv-cell mv-cell--bar"
+          >
+            <span class="mv-last3">
+              <span
+                v-for="(rv, i) in vote.recentVotes"
+                :key="rv.address"
+                :class="['mono', 'mv-last3__chip', rv.tone]"
+                :title="`${ordinal(i)} · ${shortAddr(
+                  rv.address
+                )} · ${getHumanizeDuration(rv.date / 1e6)}`"
+              >
+                {{ rv.withdrawn ? '–' : getVoteKeyLabel(vote.value, rv.key) }}
+              </span>
+            </span>
+            <span class="mv-dim mv-small">
+              {{ recentSummary(vote) }}
+              <template v-if="vote.flip">
+                ·
+                <span class="is-orange-text">
+                  {{ vote.flip.needed }}
+                  {{ vote.flip.needed === 1 ? 'vote' : 'votes' }} for
+                  {{ vote.flip.label }} would
+                  {{ vote.status === 'effect' ? 'flip it' : 'set it' }}
+                </span>
+              </template>
+            </span>
+          </span>
+          <span v-else class="mv-cell mv-cell--bar">
             <span class="mv-bar">
               <span
                 :class="['mv-bar__fill', barClass(vote)]"
@@ -379,6 +428,20 @@
 
             <div class="mv-panel mv-panel--pad mv-timing">
               <span class="mv-label">Effective value</span>
+              <span v-if="vote.wrongKey" class="mv-text is-red-text">
+                THORNode never reads
+                <span class="mono">{{ vote.value }}</span
+                >, so these votes change nothing.
+                <template v-if="vote.correctKey">The key it checks is</template>
+                <button
+                  v-if="vote.correctKey"
+                  type="button"
+                  class="mv-linkbtn mono"
+                  @click="jumpToKey(vote.correctKey)"
+                >
+                  {{ vote.correctKey }}</button
+                ><template v-if="vote.correctKey">.</template>
+              </span>
               <span class="mv-dim mv-text">
                 <template v-if="vote.mimirValue === undefined">
                   Not set. The key takes effect once {{ vote.required }} nodes
@@ -452,6 +515,7 @@ import { mapGetters } from 'vuex'
 import SearchIcon from '~/assets/images/search.svg?inline'
 import {
   isOperationalMimir,
+  checkOperationalKey,
   isVoteWithdrawal,
   requiredVotes,
   DEFAULT_OPERATIONAL_VOTES_MIN,
@@ -498,6 +562,7 @@ export default {
     },
     typeFilters() {
       const economic = this.formattedVotes.filter((v) => !v.operational).length
+      const wrong = this.formattedVotes.filter((v) => v.wrongKey).length
       return [
         { id: 'all', label: 'All types' },
         {
@@ -512,11 +577,16 @@ export default {
           dot: 'is-blue',
           count: this.formattedVotes.length - economic,
         },
+        ...(wrong
+          ? [{ id: 'wrong', label: 'Wrong key', dot: 'is-red', count: wrong }]
+          : []),
       ]
     },
     visibleVotes() {
       let list = this.formattedVotes
-      if (this.typeFilter !== 'all') {
+      if (this.typeFilter === 'wrong') {
+        list = list.filter((v) => v.wrongKey)
+      } else if (this.typeFilter !== 'all') {
         const op = this.typeFilter === 'operational'
         list = list.filter((v) => v.operational === op)
       }
@@ -705,6 +775,7 @@ export default {
         const voteInfo = {
           value: vote.value,
           operational: isOperationalMimir(vote.value),
+          ...this.keyCheck(vote.value),
           keys: {},
           voters: [],
           latestVote: +vote.votes[0].date,
@@ -793,12 +864,51 @@ export default {
       const runnerUp =
         status === 'split' ? Math.min(pct(values[1].count), 100 - progress) : 0
 
+      // Operational keys: show the newest three counted votes and how many
+      // more votes would change the effective value under THORNode's rule
+      // (ValueOfOperational: strict plurality AND at least
+      // OperationalVotesMin votes).
+      let recentVotes = []
+      let flip
+      if (vote.operational) {
+        const current =
+          vote.mimirValue === undefined ? undefined : String(vote.mimirValue)
+        recentVotes = vote.voters.slice(0, 3).map((v) => ({
+          ...v,
+          tone: v.withdrawn
+            ? 'is-grey'
+            : current !== undefined && +v.key === +current
+              ? 'is-green'
+              : 'is-orange',
+        }))
+        if (leading && status === 'effect') {
+          const challenger = values[1]
+          const cc = challenger ? challenger.count : 0
+          flip = {
+            needed: Math.max(required - cc, leading.count - cc + 1),
+            label: challenger ? challenger.label : 'another value',
+          }
+        } else if (leading) {
+          const second = values[1] ? values[1].count : 0
+          flip = {
+            needed: Math.max(
+              1,
+              required - leading.count,
+              second - leading.count + 1
+            ),
+            label: leading.label,
+          }
+        }
+      }
+
       return {
         ...vote,
         required,
         values,
         leading,
         status,
+        recentVotes,
+        flip,
         progress,
         runnerUpProgress: runnerUp,
         ratio: leading && required ? leading.count / required : 0,
@@ -808,6 +918,9 @@ export default {
       }
     },
     statusMeta(vote) {
+      // A mis-ordered key can still collect votes and even get a stored
+      // value, but THORNode never reads it.
+      if (vote.wrongKey) return { label: 'No effect', cls: 'mv-pill--grey' }
       switch (vote.status) {
         case 'effect':
           return { label: 'In effect', cls: 'mv-pill--green' }
@@ -818,6 +931,22 @@ export default {
         default:
           return { label: 'Withdrawn', cls: 'mv-pill--grey' }
       }
+    },
+    recentSummary(vote) {
+      const backed = vote.recentVotes.filter((v) => !v.withdrawn)
+      const n = vote.recentVotes.length
+      if (!backed.length) return `last ${n} withdrawn`
+      const agree = backed.every((v) => +v.key === +backed[0].key)
+      if (n === 1) return 'only vote'
+      return agree && backed.length === n
+        ? `last ${n} agree`
+        : `last ${n} split`
+    },
+    ordinal(i) {
+      return ['Newest', '2nd', '3rd'][i] || `${i + 1}th`
+    },
+    shortAddr(addr) {
+      return `${addr.slice(0, 5)}…${addr.slice(-4)}`
     },
     barClass(vote) {
       if (vote.status === 'effect') return 'is-green'
@@ -874,6 +1003,14 @@ export default {
       if (this.allNotVoted[vote.value]) return vote.notVoted
       return vote.notVoted.slice(0, this.notVotedLimit)
     },
+    keyCheck(key) {
+      const r = checkOperationalKey(key)
+      return { wrongKey: !!r, correctKey: r?.suggestion }
+    },
+    jumpToKey(key) {
+      this.typeFilter = 'all'
+      this.searchQuery = key
+    },
     setTypeFilter(id) {
       this.typeFilter = id
     },
@@ -928,6 +1065,7 @@ export default {
 <style scoped lang="scss">
 $orange: #e0a942;
 $blue: #7ba4ff;
+$red: #ff7b7b;
 
 .mv {
   display: flex;
@@ -989,6 +1127,9 @@ $blue: #7ba4ff;
 .is-blue-text {
   color: $blue;
 }
+.is-red-text {
+  color: $red;
+}
 
 .mv-dot {
   width: 6px;
@@ -1001,6 +1142,9 @@ $blue: #7ba4ff;
   }
   &.is-blue {
     background: $blue;
+  }
+  &.is-red {
+    background: $red;
   }
 }
 
@@ -1153,6 +1297,13 @@ $blue: #7ba4ff;
     background: rgba(84, 140, 255, 0.14);
     color: $blue;
   }
+  &--red {
+    background: rgba(255, 99, 99, 0.14);
+    color: $red;
+    letter-spacing: 0.04em;
+    text-transform: none;
+    white-space: nowrap;
+  }
 }
 
 /* Pills */
@@ -1229,6 +1380,42 @@ $blue: #7ba4ff;
     height: 14px;
     border-radius: 1px;
     background: var(--sec-font-color);
+  }
+}
+
+/* Operational: newest three votes */
+.mv-last3 {
+  display: flex;
+  gap: 4px;
+
+  &__chip {
+    flex: 1;
+    min-width: 0;
+    padding: 2px 4px;
+    border-radius: 5px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    border: 1px solid transparent;
+
+    &.is-green {
+      color: var(--green);
+      background: rgba(33, 193, 135, 0.13);
+      border-color: rgba(33, 193, 135, 0.4);
+    }
+    &.is-orange {
+      color: $orange;
+      background: rgba(224, 169, 66, 0.13);
+      border-color: rgba(224, 169, 66, 0.4);
+    }
+    &.is-grey {
+      color: var(--font-color);
+      background: var(--active-bg-color);
+      border-color: var(--border-color);
+    }
   }
 }
 
@@ -1561,6 +1748,15 @@ $blue: #7ba4ff;
   &.is-hit {
     background: rgba(44, 190, 140, 0.08);
   }
+}
+.mv-linkbtn {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--primary-color);
+  font: inherit;
+  cursor: pointer;
+  text-decoration: underline;
 }
 .mv-link {
   color: var(--font-color);
