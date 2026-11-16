@@ -145,10 +145,6 @@ export const mainnetNav = {
           link: '/rujira/contracts',
         },
         {
-          name: 'Merge',
-          link: '/rujira/merge',
-        },
-        {
           name: 'Tokens',
           link: '/rujira/tokens',
         },
