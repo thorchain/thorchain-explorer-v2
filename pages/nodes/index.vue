@@ -294,6 +294,8 @@ export default {
               type: 'number',
               tdClass: 'mono center',
               thClass: 'center no-padding',
+              sortFn: (x, y, col, rowX, rowY) =>
+                this.chainSort(x, y, col, rowX, rowY, c),
             })) || []
         : []
 
@@ -455,6 +457,8 @@ export default {
               type: 'number',
               tdClass: 'mono center',
               thClass: 'center no-padding',
+              sortFn: (x, y, col, rowX, rowY) =>
+                this.chainSort(x, y, col, rowX, rowY, c),
             })) || []
         : []
 
@@ -1710,6 +1714,21 @@ export default {
       )
       return (
         eNodes?.sort((a, b) => +a - +b)[Math.floor(eNodes.length / 2)] / 10 ** 8
+      )
+    },
+    // Severity for a chain cell: missing < OK (0) < N blocks behind <
+    // unhealthy < disabled (negative). Raw numeric sort would put disabled
+    // (-1) on the opposite end from lagging nodes.
+    chainSeverity(value, row, chain) {
+      const n = Number.parseInt(value)
+      if (Number.isNaN(n)) return -1
+      if (n < 0) return 3e15
+      if (row?.healthy?.[chain] === false) return 2e15 + n
+      return n
+    },
+    chainSort(x, y, col, rowX, rowY, chain) {
+      return (
+        this.chainSeverity(x, rowX, chain) - this.chainSeverity(y, rowY, chain)
       )
     },
     cSort(x, y, col, rowX, rowY) {
