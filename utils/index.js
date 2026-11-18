@@ -1279,6 +1279,10 @@ export function getExplorerAddressUrl(chain, query, type) {
       return isAddress
         ? `https://blockchair.com/litecoin/address/${query}`
         : `https://blockchair.com/litecoin/transaction/${query}`
+    case 'ZEC':
+      return isAddress
+        ? `https://zecblock.com/address/${query}`
+        : `https://zecblock.com/tx/${query}`
     case 'BASE':
       return isAddress
         ? `https://basescan.org/address/${query}`
