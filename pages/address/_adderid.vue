@@ -114,7 +114,7 @@
                 :class="{ active: activeMode === 'thorname' }"
                 @click="activeMode = 'thorname'"
               >
-                Thorname
+                THORName
               </button>
               <button
                 class="preset-pill"
@@ -320,7 +320,7 @@ const PRESET_OPTIONS = [
   },
   { label: 'LP/Savers', value: 'pools', slug: 'lp', title: 'LP' },
   { label: 'Bond', value: 'bond', slug: 'bond', title: 'Bond' },
-  { label: 'Thorname', value: 'thorname', slug: 'thorname', title: 'Thorname' },
+  { label: 'THORName', value: 'thorname', slug: 'thorname', title: 'THORName' },
   { label: 'TCY', value: 'distribution', slug: 'tcy', title: 'TCY' },
 ]
 

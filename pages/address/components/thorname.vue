@@ -58,7 +58,7 @@
             </template>
           </vue-good-table>
         </div>
-        <span v-else> NO THORName </span>
+        <span v-else> No THORName </span>
       </template>
     </div>
   </Card>
